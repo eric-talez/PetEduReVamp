@@ -1,0 +1,40 @@
+
+✅ 공통 디자인 컴포넌트 번들 (Tailwind + React 기준)
+/components/ui/
+├── Button.tsx           # variant='primary' | 'secondary' | 'outline' | 'danger'
+├── Card.tsx             # 기본 카드 컴포넌트
+├── ThemeToggle.tsx      # framer-motion 기반 테마 전환 버튼
+├── Avatar.tsx           # 사용자/반려견 이미지
+├── Badge.tsx            # 인증, 후기 등 배지 스타일
+/layout/
+├── AppLayout.tsx        # TopBar + Sidebar + children
+/components/
+├── TopBar.tsx
+├── Sidebar.tsx
+/context/
+├── theme-context.tsx    # 라이트/다크 모드 상태 관리
+/pages/_app.tsx
+📄 tailwind.config.js     # 색상 커스텀 + 다크모드 설정 포함
+📄 styles/theme.css       # 기본 배경, 텍스트, 애니메이션 스타일링
+
+✅ 적용 방식
+- 기존 PetEduPlatform 라우터/기능 구조 유지
+- 기존 페이지들을 AppLayout 내부로 감싸고, 공통 UI 교체
+- Replit에서 바로 실행 가능하도록 theme-context와 전역 레이아웃 통합
+- 모든 컴포넌트는 Tailwind 기반, darkMode: "class" 기준
+
+✅ 주요 색상
+- 배경: #FFFFFF / #0F172A
+- 텍스트: #111827 / #F3F4F6
+- 포인트: #B2E3D7
+- 강조: #FFD670
+
+✅ 아이콘 시스템
+- 기본: lucide-react
+- 대체: phosphor-react
+
+✅ 프레임워크
+- React (Next.js 또는 SPA)
+- Tailwind CSS
+- Framer-motion (애니메이션)
+- Optional: next-themes (추후 확장)
