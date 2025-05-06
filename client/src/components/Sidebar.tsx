@@ -55,19 +55,12 @@ export function Sidebar({ open, onClose }: SidebarProps) {
   return (
     <div
       className={cn(
-        "fixed top-16 bottom-0 left-0 bg-white dark:bg-gray-900 w-64 transform transition-transform duration-300 ease-in-out shadow-md z-40",
+        "fixed inset-y-0 left-0 bg-white dark:bg-gray-900 w-64 transform transition-transform duration-300 ease-in-out shadow-md z-50",
         open ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
       )}
     >
-      {/* Logo */}
-      <div className="h-20 flex items-center justify-center border-b border-gray-200 dark:border-gray-800 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-900">
-        <Link href="/" className="flex flex-col items-center">
-          <span className="text-2xl font-bold text-gray-800 dark:text-white">
-            PetEdu<span className="text-primary">Platform</span>
-          </span>
-          <span className="text-xs text-gray-500 dark:text-gray-400 mt-1">반려견 전문 교육 플랫폼</span>
-        </Link>
-      </div>
+      {/* 사이드바 상단 여백 */}
+      <div className="h-16"></div>
       
       {/* Navigation */}
       <div className="px-3 py-4 overflow-y-auto">

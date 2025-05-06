@@ -30,7 +30,7 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
   const userMenuRef = useClickAway<HTMLDivElement>(() => setUserMenuOpen(false));
 
   return (
-    <header className="fixed top-0 left-0 right-0 bg-white dark:bg-gray-900 shadow-sm z-50 transition-colors">
+    <header className="fixed top-0 left-0 right-0 bg-white dark:bg-gray-900 shadow-sm z-40 transition-colors">
       <div className="max-w-full mx-auto px-4 sm:px-6 lg:pl-72 lg:pr-8">
         <div className="flex justify-between items-center h-16">
           {/* Mobile menu button */}
@@ -54,27 +54,30 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
             </a>
           </div>
           
-          {/* Desktop logo */}
-          <div className="hidden lg:flex items-center mr-6">
-            <a href="/" className="flex items-center">
-              <span className="text-xl font-bold text-gray-800 dark:text-white">
-                PetEdu<span className="text-primary">Platform</span>
-              </span>
-            </a>
-          </div>
-          
-          {/* Search */}
-          <div className="hidden lg:flex flex-1 items-center">
-            <div className="max-w-xl w-full">
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Search className="h-4 w-4 text-gray-400" />
+          {/* Desktop - 로고와 검색 영역 */}
+          <div className="hidden lg:flex items-center space-x-4 flex-1">
+            {/* Logo */}
+            <div className="flex items-center mr-4">
+              <a href="/" className="flex items-center">
+                <span className="text-xl font-bold text-gray-800 dark:text-white">
+                  PetEdu<span className="text-primary">Platform</span>
+                </span>
+              </a>
+            </div>
+            
+            {/* Search */}
+            <div className="flex-1">
+              <div className="max-w-xl w-full">
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <Search className="h-4 w-4 text-gray-400" />
+                  </div>
+                  <input 
+                    type="text" 
+                    className="block w-full pl-10 pr-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-primary focus:border-primary" 
+                    placeholder="강의, 훈련사, 기관 검색" 
+                  />
                 </div>
-                <input 
-                  type="text" 
-                  className="block w-full pl-10 pr-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-primary focus:border-primary" 
-                  placeholder="강의, 훈련사, 기관 검색" 
-                />
               </div>
             </div>
           </div>
