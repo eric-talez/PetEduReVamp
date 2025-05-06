@@ -31,7 +31,7 @@ import {
   Store,
   LogIn
 } from "lucide-react";
-import { useAuth } from "@/hooks/useAuth";
+import { useAppAuth } from "../App";
 
 interface SidebarProps {
   open: boolean;
@@ -40,7 +40,7 @@ interface SidebarProps {
 
 export function Sidebar({ open, onClose }: SidebarProps) {
   const [location] = useLocation();
-  const { user, isAuthenticated } = useAuth();
+  const { userRole, isAuthenticated } = useAppAuth();
   
   // 메뉴 그룹 열기/닫기 상태 관리
   const [menuGroups, setMenuGroups] = useState({
@@ -345,7 +345,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
           )}
           
           {/* Conditional role-based menus */}
-          {(user?.role === "trainer" || user?.role === "pet-owner" || user?.role === "institute-admin" || user?.role === "admin") && (
+          {(userRole === "trainer" || userRole === "pet-owner" || userRole === "institute-admin" || userRole === "admin") && (
             <>
               <div 
                 className="px-3 py-2 mt-6 flex items-center justify-between cursor-pointer"
@@ -417,7 +417,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
             </>
           )}
           
-          {(user?.role === "institute-admin" || user?.role === "admin") && (
+          {(userRole === "institute-admin" || userRole === "admin") && (
             <>
               <div 
                 className="px-3 py-2 mt-6 flex items-center justify-between cursor-pointer"
@@ -489,7 +489,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
             </>
           )}
           
-          {user?.role === "admin" && (
+          {userRole === "admin" && (
             <>
               <div 
                 className="px-3 py-2 mt-6 flex items-center justify-between cursor-pointer"

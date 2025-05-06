@@ -1,10 +1,11 @@
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
-import { Avatar } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
+import { Avatar } from "@/components/ui/Avatar";
+import { Button } from "@/components/ui/Button";
 import { Bell, Menu, Search } from "lucide-react";
 import { useState } from "react";
 import { useClickAway } from "@/hooks/use-mobile";
 import { useLocation } from "wouter";
+import { useAppAuth } from "../App";
 
 interface TopBarProps {
   sidebarOpen: boolean;
@@ -12,17 +13,11 @@ interface TopBarProps {
 }
 
 export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
-  // 임시 mock user 데이터 사용
-  const user = {
-    name: "관리자",
-    avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100"
-  };
-  
+  const { userName, logout, isAuthenticated } = useAppAuth();
   const [, setLocation] = useLocation();
   
   const handleLogout = () => {
-    console.log("Logout clicked");
-    // 임시 로그아웃 로직
+    logout();
     setLocation("/auth");
   };
   
@@ -99,14 +94,12 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
                 onClick={() => setUserMenuOpen(!userMenuOpen)}
               >
                 <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700">
-                  <img 
-                    src={user?.avatar} 
-                    alt={user?.name} 
-                    className="w-full h-full object-cover"
-                  />
+                  <div className="w-full h-full flex items-center justify-center bg-primary text-white font-medium">
+                    {userName ? userName.substring(0, 1).toUpperCase() : "U"}
+                  </div>
                 </div>
                 <span className="ml-2 text-sm font-medium hidden lg:block">
-                  {user?.name || "사용자"}님
+                  {userName || "사용자"}님
                 </span>
                 <svg className="w-4 h-4 ml-1 hidden lg:block" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                   <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />

@@ -22,10 +22,14 @@ const AuthContext = createContext<{
   isAuthenticated: boolean;
   isLoading: boolean;
   userRole: string | null;
+  userName: string | null;
+  logout: () => void;
 }>({
   isAuthenticated: false,
   isLoading: true,
-  userRole: null
+  userRole: null,
+  userName: null,
+  logout: () => {}
 });
 
 export function useAppAuth() {
@@ -86,7 +90,12 @@ function App() {
   const [authState, setAuthState] = useState({
     isAuthenticated: false,
     isLoading: false,
-    userRole: null as string | null
+    userRole: null as string | null,
+    userName: null as string | null,
+    logout: () => {
+      // 로그아웃 이벤트 디스패치
+      window.dispatchEvent(new CustomEvent('logout'));
+    }
   });
 
   // 로컬 스토리지에서 인증 상태 확인
@@ -95,11 +104,13 @@ function App() {
     if (storedAuth) {
       try {
         const parsedAuth = JSON.parse(storedAuth);
-        setAuthState({
+        setAuthState(prevState => ({
+          ...prevState,
           isAuthenticated: true,
           isLoading: false,
-          userRole: parsedAuth.role || 'user'
-        });
+          userRole: parsedAuth.role || 'user',
+          userName: parsedAuth.user || 'User'
+        }));
       } catch (e) {
         console.error('Failed to parse auth data', e);
       }
@@ -108,13 +119,15 @@ function App() {
     // 로그인 이벤트 리스너 등록
     const handleLogin = (e: any) => {
       if (e.detail?.user) {
-        setAuthState({
+        setAuthState(prevState => ({
+          ...prevState,
           isAuthenticated: true,
           isLoading: false,
-          userRole: e.detail.user.role || 'user'
-        });
+          userRole: e.detail.user.role || 'user',
+          userName: e.detail.user.username || e.detail.user.name || 'User'
+        }));
         localStorage.setItem('petedu_auth', JSON.stringify({
-          user: e.detail.user.username,
+          user: e.detail.user.username || e.detail.user.name,
           role: e.detail.user.role
         }));
       }
@@ -122,11 +135,13 @@ function App() {
 
     // 로그아웃 이벤트 리스너 등록
     const handleLogout = () => {
-      setAuthState({
+      setAuthState(prevState => ({
+        ...prevState,
         isAuthenticated: false,
         isLoading: false,
-        userRole: null
-      });
+        userRole: null,
+        userName: null
+      }));
       localStorage.removeItem('petedu_auth');
     };
 
