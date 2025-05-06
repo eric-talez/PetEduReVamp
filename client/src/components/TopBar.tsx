@@ -1,5 +1,5 @@
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
-import { Avatar } from "@/components/ui/Avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/Button";
 import { Bell, Menu, Search } from "lucide-react";
 import { useState } from "react";
@@ -93,11 +93,11 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
                 className="flex items-center focus:outline-none focus:ring-2 focus:ring-primary rounded-full"
                 onClick={() => setUserMenuOpen(!userMenuOpen)}
               >
-                <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700">
-                  <div className="w-full h-full flex items-center justify-center bg-primary text-white font-medium">
+                <Avatar className="h-8 w-8">
+                  <AvatarFallback className="bg-primary text-white">
                     {userName ? userName.substring(0, 1).toUpperCase() : "U"}
-                  </div>
-                </div>
+                  </AvatarFallback>
+                </Avatar>
                 <span className="ml-2 text-sm font-medium hidden lg:block">
                   {userName || "사용자"}님
                 </span>
