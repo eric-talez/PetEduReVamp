@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Avatar } from "@/components/ui/Avatar";
 import { 
   Users, Shield, Bell, CheckSquare, Settings, 
-  TrendingUp, Database, BarChart2, Activity, Globe
+  TrendingUp, Database, BarChart2, Activity, Globe, Building
 } from "lucide-react";
 
 export default function AdminDashboard() {

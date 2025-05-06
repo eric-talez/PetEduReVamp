@@ -73,7 +73,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
         <div className="space-y-1">
           <div className="px-3 py-2">
             <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-              일반
+              메인 메뉴
             </h3>
           </div>
           
@@ -122,7 +122,6 @@ export function Sidebar({ open, onClose }: SidebarProps) {
             커뮤니티
           </NavItem>
 
-          {/* 주요 기능 메뉴 - 모든 사용자 */}
           <div className="px-3 py-2 mt-6">
             <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
               주요 기능
@@ -154,6 +153,15 @@ export function Sidebar({ open, onClose }: SidebarProps) {
             onClick={onClose}
           >
             쇼핑
+          </NavItem>
+          
+          <NavItem 
+            href="/messages" 
+            icon={<MessageSquare className="w-5 h-5 mr-2" />}
+            active={isActive("/messages")}
+            onClick={onClose}
+          >
+            메시지
           </NavItem>
           
           <NavItem 
@@ -406,104 +414,41 @@ export function Sidebar({ open, onClose }: SidebarProps) {
               >
                 승인 관리
               </NavItem>
-             
-              <NavItem 
-                href="/admin/delete" 
-                icon={<CheckSquare className="w-5 h-5 mr-2" />}
-                active={isActive("/admin/delete")}
-                onClick={onClose}
-              >
-                삭제 관리
-              </NavItem>
               
               <NavItem 
-                href="/admin/register" 
-                icon={<CheckSquare className="w-5 h-5 mr-2" />}
-                active={isActive("/admin/register")}
-                onClick={onClose}
-              >
-                등록 관리
-              </NavItem>
-
-              <NavItem 
-                href="/admin/notice" 
-                icon={<Bell className="w-5 h-5 mr-2" />}
-                active={isActive("/admin/notice")}
-                onClick={onClose}
-              >
-                공지 관리
-              </NavItem>
-              
-              <NavItem 
-                href="/admin/products" 
-                icon={<ShoppingBag className="w-5 h-5 mr-2" />}
-                active={isActive("/admin/products")}
-                onClick={onClose}
-              >
-                상품 등록/관리
-              </NavItem>
-              
-              <NavItem 
-                href="/admin/banners" 
-                icon={<Edit className="w-5 h-5 mr-2" />}
-                active={isActive("/admin/banners")}
-                onClick={onClose}
-              >
-                배너 관리
-              </NavItem>
-              
-              <NavItem 
-                href="/admin/events" 
-                icon={<Edit className="w-5 h-5 mr-2" />}
-                active={isActive("/admin/events")}
-                onClick={onClose}
-              >
-                이벤트 관리
-              </NavItem>
-              
-              <NavItem 
-                href="/admin/coupons" 
-                icon={<Edit className="w-5 h-5 mr-2" />}
-                active={isActive("/admin/coupons")}
-                onClick={onClose}
-              >
-                쿠폰 관리
-              </NavItem>
-              
-              <NavItem 
-                href="/admin/settings" 
-                icon={<Wrench className="w-5 h-5 mr-2" />}
-                active={isActive("/admin/settings")}
-                onClick={onClose}
-              >
-                시스템 설정
-              </NavItem>
-              
-              <NavItem 
-                href="/admin/content" 
-                icon={<Edit className="w-5 h-5 mr-2" />}
-                active={isActive("/admin/content")}
-                onClick={onClose}
-              >
-                콘텐츠 관리
-              </NavItem>
-              
-              <NavItem 
-                href="/admin/shop" 
-                icon={<ShoppingBag className="w-5 h-5 mr-2" />}
-                active={isActive("/admin/shop")}
-                onClick={onClose}
-              >
-                쇼핑 관리
-              </NavItem>
-              
-              <NavItem 
-                href="/admin/analytics" 
+                href="/admin/commission" 
                 icon={<LineChart className="w-5 h-5 mr-2" />}
-                active={isActive("/admin/analytics")}
+                active={isActive("/admin/commission")}
                 onClick={onClose}
               >
-                사이트 분석
+                수수료 관리
+              </NavItem>
+              
+              <NavItem 
+                href="/admin/referral" 
+                icon={<Users className="w-5 h-5 mr-2" />}
+                active={isActive("/admin/referral")}
+                onClick={onClose}
+              >
+                추천인 시스템
+              </NavItem>
+              
+              <NavItem 
+                href="/admin/menu-config" 
+                icon={<Wrench className="w-5 h-5 mr-2" />}
+                active={isActive("/admin/menu-config")}
+                onClick={onClose}
+              >
+                기관별 메뉴 설정
+              </NavItem>
+              
+              <NavItem 
+                href="/admin/settlement" 
+                icon={<LineChart className="w-5 h-5 mr-2" />}
+                active={isActive("/admin/settlement")}
+                onClick={onClose}
+              >
+                기관별 정산 관리
               </NavItem>
             </>
           )}
