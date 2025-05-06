@@ -1,0 +1,1413 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TALEZ - 데이터베이스 명세서</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1, h2, h3, h4 {
+            color: #2a5885;
+        }
+        .db-section {
+            margin-bottom: 30px;
+            border: 1px solid #e0e0e0;
+            border-radius: 5px;
+            padding: 15px;
+            background-color: #f9f9f9;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        .table-heading {
+            background-color: #2a5885;
+            color: white;
+            padding: 10px 15px;
+            font-weight: bold;
+            border-radius: 3px 3px 0 0;
+        }
+        .primary-key {
+            font-weight: bold;
+            color: #c0392b;
+        }
+        .foreign-key {
+            color: #2980b9;
+            font-style: italic;
+        }
+        .relation-diagram {
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #f2f2f2;
+            border-radius: 5px;
+        }
+        .note {
+            font-style: italic;
+            color: #666;
+            margin: 10px 0;
+        }
+        .entity-group {
+            margin-bottom: 40px;
+        }
+        .tag {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 3px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-right: 5px;
+        }
+        .tag-pk {
+            background-color: #e74c3c;
+            color: white;
+        }
+        .tag-fk {
+            background-color: #3498db;
+            color: white;
+        }
+        .tag-idx {
+            background-color: #f39c12;
+            color: white;
+        }
+        .tag-not-null {
+            background-color: #2ecc71;
+            color: white;
+        }
+        .tab-container {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        .tab-buttons {
+            display: flex;
+            background-color: #f2f2f2;
+            border-bottom: 1px solid #ddd;
+        }
+        .tab-button {
+            padding: 10px 20px;
+            border: none;
+            background-color: transparent;
+            cursor: pointer;
+            font-weight: bold;
+            outline: none;
+        }
+        .tab-button.active {
+            background-color: #2a5885;
+            color: white;
+        }
+        .tab-content {
+            display: none;
+            padding: 15px;
+        }
+        .tab-content.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <h1>TALEZ 데이터베이스 명세서</h1>
+    <p>TALEZ 플랫폼의 데이터베이스 구조 및 스키마를 정리한 문서입니다.</p>
+    
+    <div class="entity-group">
+        <h2>1. 사용자 관련 테이블</h2>
+        
+        <div class="db-section">
+            <div class="table-heading">users (사용자)</div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>컬럼명</th>
+                        <th>데이터 타입</th>
+                        <th>제약조건</th>
+                        <th>설명</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><span class="tag tag-pk">PK</span> id</td>
+                        <td>serial</td>
+                        <td>PRIMARY KEY</td>
+                        <td>사용자 고유 ID</td>
+                    </tr>
+                    <tr>
+                        <td>username</td>
+                        <td>varchar(255)</td>
+                        <td>UNIQUE, NOT NULL</td>
+                        <td>사용자 로그인 아이디</td>
+                    </tr>
+                    <tr>
+                        <td>email</td>
+                        <td>varchar(255)</td>
+                        <td>UNIQUE, NOT NULL</td>
+                        <td>사용자 이메일</td>
+                    </tr>
+                    <tr>
+                        <td>password</td>
+                        <td>varchar(255)</td>
+                        <td>NOT NULL</td>
+                        <td>암호화된 비밀번호</td>
+                    </tr>
+                    <tr>
+                        <td>name</td>
+                        <td>varchar(100)</td>
+                        <td></td>
+                        <td>사용자 실명</td>
+                    </tr>
+                    <tr>
+                        <td>profileImage</td>
+                        <td>varchar(255)</td>
+                        <td></td>
+                        <td>프로필 이미지 URL</td>
+                    </tr>
+                    <tr>
+                        <td>role</td>
+                        <td>enum</td>
+                        <td>NOT NULL</td>
+                        <td>역할 (ADMIN, USER, TRAINER, INSTITUTION)</td>
+                    </tr>
+                    <tr>
+                        <td>phoneNumber</td>
+                        <td>varchar(20)</td>
+                        <td></td>
+                        <td>연락처</td>
+                    </tr>
+                    <tr>
+                        <td>isActive</td>
+                        <td>boolean</td>
+                        <td>NOT NULL, DEFAULT true</td>
+                        <td>계정 활성화 상태</td>
+                    </tr>
+                    <tr>
+                        <td>verifiedAt</td>
+                        <td>timestamp</td>
+                        <td></td>
+                        <td>계정 인증 일시</td>
+                    </tr>
+                    <tr>
+                        <td>lastLogin</td>
+                        <td>timestamp</td>
+                        <td></td>
+                        <td>마지막 로그인 일시</td>
+                    </tr>
+                    <tr>
+                        <td>createdAt</td>
+                        <td>timestamp</td>
+                        <td>NOT NULL, DEFAULT NOW()</td>
+                        <td>생성 일시</td>
+                    </tr>
+                    <tr>
+                        <td>updatedAt</td>
+                        <td>timestamp</td>
+                        <td>NOT NULL, DEFAULT NOW()</td>
+                        <td>수정 일시</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="db-section">
+            <div class="table-heading">trainers (훈련사)</div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>컬럼명</th>
+                        <th>데이터 타입</th>
+                        <th>제약조건</th>
+                        <th>설명</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><span class="tag tag-pk">PK</span> id</td>
+                        <td>serial</td>
+                        <td>PRIMARY KEY</td>
+                        <td>훈련사 고유 ID</td>
+                    </tr>
+                    <tr>
+                        <td><span class="tag tag-fk">FK</span> userId</td>
+                        <td>integer</td>
+                        <td>NOT NULL, REFERENCES users(id)</td>
+                        <td>사용자 ID</td>
+                    </tr>
+                    <tr>
+                        <td>certificationCode</td>
+                        <td>varchar(100)</td>
+                        <td>UNIQUE</td>
+                        <td>인증 코드</td>
+                    </tr>
+                    <tr>
+                        <td>certificationType</td>
+                        <td>varchar(100)</td>
+                        <td></td>
+                        <td>인증 유형</td>
+                    </tr>
+                    <tr>
+                        <td>isVerified</td>
+                        <td>boolean</td>
+                        <td>NOT NULL, DEFAULT false</td>
+                        <td>인증 여부</td>
+                    </tr>
+                    <tr>
+                        <td>institutionId</td>
+                        <td>integer</td>
+                        <td>REFERENCES institutions(id)</td>
+                        <td>소속 기관 ID</td>
+                    </tr>
+                    <tr>
+                        <td>specialties</td>
+                        <td>json</td>
+                        <td></td>
+                        <td>전문 분야 (배열)</td>
+                    </tr>
+                    <tr>
+                        <td>rating</td>
+                        <td>decimal(3,2)</td>
+                        <td>DEFAULT 0.0</td>
+                        <td>평점 (0.0-5.0)</td>
+                    </tr>
+                    <tr>
+                        <td>reviewCount</td>
+                        <td>integer</td>
+                        <td>DEFAULT 0</td>
+                        <td>리뷰 수</td>
+                    </tr>
+                    <tr>
+                        <td>availableForHire</td>
+                        <td>boolean</td>
+                        <td>NOT NULL, DEFAULT true</td>
+                        <td>고용 가능 여부</td>
+                    </tr>
+                    <tr>
+                        <td>createdAt</td>
+                        <td>timestamp</td>
+                        <td>NOT NULL, DEFAULT NOW()</td>
+                        <td>생성 일시</td>
+                    </tr>
+                    <tr>
+                        <td>updatedAt</td>
+                        <td>timestamp</td>
+                        <td>NOT NULL, DEFAULT NOW()</td>
+                        <td>수정 일시</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="db-section">
+            <div class="table-heading">trainer_profiles (훈련사 프로필)</div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>컬럼명</th>
+                        <th>데이터 타입</th>
+                        <th>제약조건</th>
+                        <th>설명</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><span class="tag tag-pk">PK</span> id</td>
+                        <td>serial</td>
+                        <td>PRIMARY KEY</td>
+                        <td>프로필 고유 ID</td>
+                    </tr>
+                    <tr>
+                        <td><span class="tag tag-fk">FK</span> trainerId</td>
+                        <td>integer</td>
+                        <td>NOT NULL, REFERENCES trainers(id)</td>
+                        <td>훈련사 ID</td>
+                    </tr>
+                    <tr>
+                        <td><span class="tag tag-fk">FK</span> userId</td>
+                        <td>integer</td>
+                        <td>NOT NULL, REFERENCES users(id)</td>
+                        <td>사용자 ID</td>
+                    </tr>
+                    <tr>
+                        <td>bio</td>
+                        <td>text</td>
+                        <td>NOT NULL</td>
+                        <td>약력</td>
+                    </tr>
+                    <tr>
+                        <td>yearsOfExperience</td>
+                        <td>integer</td>
+                        <td>NOT NULL, DEFAULT 0</td>
+                        <td>경력 연수</td>
+                    </tr>
+                    <tr>
+                        <td>certification</td>
+                        <td>text</td>
+                        <td></td>
+                        <td>자격증 및 교육이수</td>
+                    </tr>
+                    <tr>
+                        <td>introduction</td>
+                        <td>text</td>
+                        <td>NOT NULL</td>
+                        <td>자기 소개</td>
+                    </tr>
+                    <tr>
+                        <td>qualifications</td>
+                        <td>text</td>
+                        <td></td>
+                        <td>추가 자격 및 업적</td>
+                    </tr>
+                    <tr>
+                        <td>hourlyRate</td>
+                        <td>integer</td>
+                        <td>NOT NULL, DEFAULT 30000</td>
+                        <td>시간당 요금</td>
+                    </tr>
+                    <tr>
+                        <td>acceptsNewClients</td>
+                        <td>boolean</td>
+                        <td>NOT NULL, DEFAULT true</td>
+                        <td>신규 고객 수락 여부</td>
+                    </tr>
+                    <tr>
+                        <td>createdAt</td>
+                        <td>timestamp</td>
+                        <td>NOT NULL, DEFAULT NOW()</td>
+                        <td>생성 일시</td>
+                    </tr>
+                    <tr>
+                        <td>updatedAt</td>
+                        <td>timestamp</td>
+                        <td>NOT NULL, DEFAULT NOW()</td>
+                        <td>수정 일시</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="db-section">
+            <div class="table-heading">owners (견주)</div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>컬럼명</th>
+                        <th>데이터 타입</th>
+                        <th>제약조건</th>
+                        <th>설명</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><span class="tag tag-pk">PK</span> id</td>
+                        <td>serial</td>
+                        <td>PRIMARY KEY</td>
+                        <td>견주 고유 ID</td>
+                    </tr>
+                    <tr>
+                        <td><span class="tag tag-fk">FK</span> userId</td>
+                        <td>integer</td>
+                        <td>NOT NULL, REFERENCES users(id), UNIQUE</td>
+                        <td>사용자 ID</td>
+                    </tr>
+                    <tr>
+                        <td>address</td>
+                        <td>text</td>
+                        <td></td>
+                        <td>주소</td>
+                    </tr>
+                    <tr>
+                        <td>preferences</td>
+                        <td>json</td>
+                        <td></td>
+                        <td>선호 설정</td>
+                    </tr>
+                    <tr>
+                        <td>createdAt</td>
+                        <td>timestamp</td>
+                        <td>NOT NULL, DEFAULT NOW()</td>
+                        <td>생성 일시</td>
+                    </tr>
+                    <tr>
+                        <td>updatedAt</td>
+                        <td>timestamp</td>
+                        <td>NOT NULL, DEFAULT NOW()</td>
+                        <td>수정 일시</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="db-section">
+            <div class="table-heading">institutions (기관)</div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>컬럼명</th>
+                        <th>데이터 타입</th>
+                        <th>제약조건</th>
+                        <th>설명</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><span class="tag tag-pk">PK</span> id</td>
+                        <td>serial</td>
+                        <td>PRIMARY KEY</td>
+                        <td>기관 고유 ID</td>
+                    </tr>
+                    <tr>
+                        <td><span class="tag tag-fk">FK</span> adminUserId</td>
+                        <td>integer</td>
+                        <td>NOT NULL, REFERENCES users(id)</td>
+                        <td>관리자 사용자 ID</td>
+                    </tr>
+                    <tr>
+                        <td>name</td>
+                        <td>varchar(255)</td>
+                        <td>NOT NULL</td>
+                        <td>기관명</td>
+                    </tr>
+                    <tr>
+                        <td>description</td>
+                        <td>text</td>
+                        <td></td>
+                        <td>기관 설명</td>
+                    </tr>
+                    <tr>
+                        <td>logoUrl</td>
+                        <td>varchar(255)</td>
+                        <td></td>
+                        <td>로고 이미지 URL</td>
+                    </tr>
+                    <tr>
+                        <td>address</td>
+                        <td>text</td>
+                        <td></td>
+                        <td>주소</td>
+                    </tr>
+                    <tr>
+                        <td>websiteUrl</td>
+                        <td>varchar(255)</td>
+                        <td></td>
+                        <td>웹사이트 URL</td>
+                    </tr>
+                    <tr>
+                        <td>contactEmail</td>
+                        <td>varchar(255)</td>
+                        <td></td>
+                        <td>연락처 이메일</td>
+                    </tr>
+                    <tr>
+                        <td>contactPhone</td>
+                        <td>varchar(20)</td>
+                        <td></td>
+                        <td>연락처 전화번호</td>
+                    </tr>
+                    <tr>
+                        <td>businessNumber</td>
+                        <td>varchar(30)</td>
+                        <td></td>
+                        <td>사업자 등록번호</td>
+                    </tr>
+                    <tr>
+                        <td>isVerified</td>
+                        <td>boolean</td>
+                        <td>DEFAULT false</td>
+                        <td>인증 여부</td>
+                    </tr>
+                    <tr>
+                        <td>createdAt</td>
+                        <td>timestamp</td>
+                        <td>NOT NULL, DEFAULT NOW()</td>
+                        <td>생성 일시</td>
+                    </tr>
+                    <tr>
+                        <td>updatedAt</td>
+                        <td>timestamp</td>
+                        <td>NOT NULL, DEFAULT NOW()</td>
+                        <td>수정 일시</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="entity-group">
+        <h2>2. 반려견 관련 테이블</h2>
+        
+        <div class="db-section">
+            <div class="table-heading">dogs (반려견)</div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>컬럼명</th>
+                        <th>데이터 타입</th>
+                        <th>제약조건</th>
+                        <th>설명</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><span class="tag tag-pk">PK</span> id</td>
+                        <td>serial</td>
+                        <td>PRIMARY KEY</td>
+                        <td>반려견 고유 ID</td>
+                    </tr>
+                    <tr>
+                        <td>name</td>
+                        <td>varchar(100)</td>
+                        <td>NOT NULL</td>
+                        <td>이름</td>
+                    </tr>
+                    <tr>
+                        <td>breed</td>
+                        <td>varchar(100)</td>
+                        <td>NOT NULL</td>
+                        <td>견종</td>
+                    </tr>
+                    <tr>
+                        <td>age</td>
+                        <td>varchar(20)</td>
+                        <td></td>
+                        <td>나이</td>
+                    </tr>
+                    <tr>
+                        <td>gender</td>
+                        <td>enum</td>
+                        <td></td>
+                        <td>성별 (male, female)</td>
+                    </tr>
+                    <tr>
+                        <td>weight</td>
+                        <td>varchar(20)</td>
+                        <td></td>
+                        <td>체중</td>
+                    </tr>
+                    <tr>
+                        <td>neutered</td>
+                        <td>boolean</td>
+                        <td>DEFAULT false</td>
+                        <td>중성화 여부</td>
+                    </tr>
+                    <tr>
+                        <td><span class="tag tag-fk">FK</span> ownerId</td>
+                        <td>integer</td>
+                        <td>NOT NULL, REFERENCES users(id)</td>
+                        <td>견주 ID</td>
+                    </tr>
+                    <tr>
+                        <td>profileImage</td>
+                        <td>varchar(255)</td>
+                        <td></td>
+                        <td>프로필 이미지 URL</td>
+                    </tr>
+                    <tr>
+                        <td>specialNeeds</td>
+                        <td>text</td>
+                        <td></td>
+                        <td>특별 관리 사항</td>
+                    </tr>
+                    <tr>
+                        <td>medicalHistory</td>
+                        <td>text</td>
+                        <td></td>
+                        <td>건강 이력</td>
+                    </tr>
+                    <tr>
+                        <td>behavior</td>
+                        <td>text</td>
+                        <td></td>
+                        <td>행동 특성</td>
+                    </tr>
+                    <tr>
+                        <td>createdAt</td>
+                        <td>timestamp</td>
+                        <td>DEFAULT NOW()</td>
+                        <td>생성 일시</td>
+                    </tr>
+                    <tr>
+                        <td>updatedAt</td>
+                        <td>timestamp</td>
+                        <td>DEFAULT NOW()</td>
+                        <td>수정 일시</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="entity-group">
+        <h2>3. 훈련 관련 테이블</h2>
+        
+        <div class="db-section">
+            <div class="table-heading">notebooks (알림장)</div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>컬럼명</th>
+                        <th>데이터 타입</th>
+                        <th>제약조건</th>
+                        <th>설명</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><span class="tag tag-pk">PK</span> id</td>
+                        <td>serial</td>
+                        <td>PRIMARY KEY</td>
+                        <td>알림장 고유 ID</td>
+                    </tr>
+                    <tr>
+                        <td>title</td>
+                        <td>varchar(255)</td>
+                        <td>NOT NULL</td>
+                        <td>제목</td>
+                    </tr>
+                    <tr>
+                        <td>content</td>
+                        <td>text</td>
+                        <td>NOT NULL</td>
+                        <td>내용</td>
+                    </tr>
+                    <tr>
+                        <td><span class="tag tag-fk">FK</span> trainerId</td>
+                        <td>integer</td>
+                        <td>NOT NULL, REFERENCES users(id)</td>
+                        <td>훈련사 ID</td>
+                    </tr>
+                    <tr>
+                        <td><span class="tag tag-fk">FK</span> ownerId</td>
+                        <td>integer</td>
+                        <td>NOT NULL, REFERENCES users(id)</td>
+                        <td>견주 ID</td>
+                    </tr>
+                    <tr>
+                        <td><span class="tag tag-fk">FK</span> dogId</td>
+                        <td>integer</td>
+                        <td>NOT NULL, REFERENCES dogs(id)</td>
+                        <td>반려견 ID</td>
+                    </tr>
+                    <tr>
+                        <td>trainingType</td>
+                        <td>varchar(100)</td>
+                        <td>NOT NULL</td>
+                        <td>훈련 유형</td>
+                    </tr>
+                    <tr>
+                        <td>trainingDate</td>
+                        <td>timestamp</td>
+                        <td>NOT NULL</td>
+                        <td>훈련 일시</td>
+                    </tr>
+                    <tr>
+                        <td>trainingDuration</td>
+                        <td>integer</td>
+                        <td>NOT NULL</td>
+                        <td>훈련 시간 (분)</td>
+                    </tr>
+                    <tr>
+                        <td>trainingGoals</td>
+                        <td>text</td>
+                        <td></td>
+                        <td>훈련 목표</td>
+                    </tr>
+                    <tr>
+                        <td>trainingProgress</td>
+                        <td>integer</td>
+                        <td>DEFAULT 0</td>
+                        <td>훈련 진행도 (0-100%)</td>
+                    </tr>
+                    <tr>
+                        <td>feedbackType</td>
+                        <td>enum</td>
+                        <td>DEFAULT 'neutral'</td>
+                        <td>피드백 유형</td>
+                    </tr>
+                    <tr>
+                        <td>homework</td>
+                        <td>text</td>
+                        <td></td>
+                        <td>과제</td>
+                    </tr>
+                    <tr>
+                        <td>isPublic</td>
+                        <td>boolean</td>
+                        <td>DEFAULT false</td>
+                        <td>공개 여부</td>
+                    </tr>
+                    <tr>
+                        <td>tags</td>
+                        <td>json</td>
+                        <td></td>
+                        <td>태그 (문자열 배열)</td>
+                    </tr>
+                    <tr>
+                        <td>status</td>
+                        <td>enum</td>
+                        <td>DEFAULT 'draft'</td>
+                        <td>상태</td>
+                    </tr>
+                    <tr>
+                        <td>createdAt</td>
+                        <td>timestamp</td>
+                        <td>NOT NULL, DEFAULT NOW()</td>
+                        <td>생성 일시</td>
+                    </tr>
+                    <tr>
+                        <td>updatedAt</td>
+                        <td>timestamp</td>
+                        <td>NOT NULL, DEFAULT NOW()</td>
+                        <td>수정 일시</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="db-section">
+            <div class="table-heading">training_classes (훈련 수업)</div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>컬럼명</th>
+                        <th>데이터 타입</th>
+                        <th>제약조건</th>
+                        <th>설명</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><span class="tag tag-pk">PK</span> id</td>
+                        <td>serial</td>
+                        <td>PRIMARY KEY</td>
+                        <td>수업 고유 ID</td>
+                    </tr>
+                    <tr>
+                        <td>title</td>
+                        <td>varchar(255)</td>
+                        <td>NOT NULL</td>
+                        <td>수업명</td>
+                    </tr>
+                    <tr>
+                        <td>description</td>
+                        <td>text</td>
+                        <td></td>
+                        <td>수업 설명</td>
+                    </tr>
+                    <tr>
+                        <td><span class="tag tag-fk">FK</span> trainerId</td>
+                        <td>integer</td>
+                        <td>NOT NULL, REFERENCES trainers(id)</td>
+                        <td>훈련사 ID</td>
+                    </tr>
+                    <tr>
+                        <td><span class="tag tag-fk">FK</span> institutionId</td>
+                        <td>integer</td>
+                        <td>REFERENCES institutions(id)</td>
+                        <td>기관 ID</td>
+                    </tr>
+                    <tr>
+                        <td>classType</td>
+                        <td>varchar(50)</td>
+                        <td>NOT NULL</td>
+                        <td>수업 유형 (개인/그룹)</td>
+                    </tr>
+                    <tr>
+                        <td>category</td>
+                        <td>varchar(100)</td>
+                        <td></td>
+                        <td>수업 카테고리</td>
+                    </tr>
+                    <tr>
+                        <td>level</td>
+                        <td>varchar(50)</td>
+                        <td></td>
+                        <td>난이도</td>
+                    </tr>
+                    <tr>
+                        <td>price</td>
+                        <td>integer</td>
+                        <td>NOT NULL</td>
+                        <td>가격</td>
+                    </tr>
+                    <tr>
+                        <td>capacity</td>
+                        <td>integer</td>
+                        <td></td>
+                        <td>최대 수용 인원</td>
+                    </tr>
+                    <tr>
+                        <td>duration</td>
+                        <td>integer</td>
+                        <td>NOT NULL</td>
+                        <td>기간 (일)</td>
+                    </tr>
+                    <tr>
+                        <td>sessions</td>
+                        <td>integer</td>
+                        <td>NOT NULL</td>
+                        <td>세션 수</td>
+                    </tr>
+                    <tr>
+                        <td>imageUrl</td>
+                        <td>varchar(255)</td>
+                        <td></td>
+                        <td>이미지 URL</td>
+                    </tr>
+                    <tr>
+                        <td>startDate</td>
+                        <td>timestamp</td>
+                        <td></td>
+                        <td>시작 일시</td>
+                    </tr>
+                    <tr>
+                        <td>endDate</td>
+                        <td>timestamp</td>
+                        <td></td>
+                        <td>종료 일시</td>
+                    </tr>
+                    <tr>
+                        <td>isActive</td>
+                        <td>boolean</td>
+                        <td>DEFAULT true</td>
+                        <td>활성화 여부</td>
+                    </tr>
+                    <tr>
+                        <td>isPublic</td>
+                        <td>boolean</td>
+                        <td>DEFAULT true</td>
+                        <td>공개 여부</td>
+                    </tr>
+                    <tr>
+                        <td>requirements</td>
+                        <td>text</td>
+                        <td></td>
+                        <td>참여 요구사항</td>
+                    </tr>
+                    <tr>
+                        <td>status</td>
+                        <td>varchar(50)</td>
+                        <td>DEFAULT 'upcoming'</td>
+                        <td>상태</td>
+                    </tr>
+                    <tr>
+                        <td>createdAt</td>
+                        <td>timestamp</td>
+                        <td>NOT NULL, DEFAULT NOW()</td>
+                        <td>생성 일시</td>
+                    </tr>
+                    <tr>
+                        <td>updatedAt</td>
+                        <td>timestamp</td>
+                        <td>NOT NULL, DEFAULT NOW()</td>
+                        <td>수정 일시</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <div class="entity-group">
+        <h2>4. 교육 콘텐츠 관련 테이블</h2>
+        
+        <div class="db-section">
+            <div class="table-heading">curriculum_sections (커리큘럼 섹션)</div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>컬럼명</th>
+                        <th>데이터 타입</th>
+                        <th>제약조건</th>
+                        <th>설명</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><span class="tag tag-pk">PK</span> id</td>
+                        <td>serial</td>
+                        <td>PRIMARY KEY</td>
+                        <td>섹션 고유 ID</td>
+                    </tr>
+                    <tr>
+                        <td><span class="tag tag-fk">FK</span> curriculumId</td>
+                        <td>integer</td>
+                        <td>NOT NULL, REFERENCES curriculums(id)</td>
+                        <td>커리큘럼 ID</td>
+                    </tr>
+                    <tr>
+                        <td>title</td>
+                        <td>varchar(255)</td>
+                        <td>NOT NULL</td>
+                        <td>섹션명</td>
+                    </tr>
+                    <tr>
+                        <td>description</td>
+                        <td>text</td>
+                        <td></td>
+                        <td>섹션 설명</td>
+                    </tr>
+                    <tr>
+                        <td>order</td>
+                        <td>integer</td>
+                        <td>NOT NULL</td>
+                        <td>정렬 순서</td>
+                    </tr>
+                    <tr>
+                        <td>createdAt</td>
+                        <td>timestamp</td>
+                        <td>NOT NULL, DEFAULT NOW()</td>
+                        <td>생성 일시</td>
+                    </tr>
+                    <tr>
+                        <td>updatedAt</td>
+                        <td>timestamp</td>
+                        <td>NOT NULL, DEFAULT NOW()</td>
+                        <td>수정 일시</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="db-section">
+            <div class="table-heading">curriculums (커리큘럼)</div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>컬럼명</th>
+                        <th>데이터 타입</th>
+                        <th>제약조건</th>
+                        <th>설명</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><span class="tag tag-pk">PK</span> id</td>
+                        <td>serial</td>
+                        <td>PRIMARY KEY</td>
+                        <td>커리큘럼 고유 ID</td>
+                    </tr>
+                    <tr>
+                        <td>title</td>
+                        <td>varchar(255)</td>
+                        <td>NOT NULL</td>
+                        <td>커리큘럼명</td>
+                    </tr>
+                    <tr>
+                        <td>description</td>
+                        <td>text</td>
+                        <td></td>
+                        <td>커리큘럼 설명</td>
+                    </tr>
+                    <tr>
+                        <td><span class="tag tag-fk">FK</span> creatorId</td>
+                        <td>integer</td>
+                        <td>NOT NULL, REFERENCES users(id)</td>
+                        <td>제작자 ID</td>
+                    </tr>
+                    <tr>
+                        <td>category</td>
+                        <td>varchar(100)</td>
+                        <td></td>
+                        <td>카테고리</td>
+                    </tr>
+                    <tr>
+                        <td>level</td>
+                        <td>varchar(50)</td>
+                        <td></td>
+                        <td>난이도</td>
+                    </tr>
+                    <tr>
+                        <td>thumbnailUrl</td>
+                        <td>varchar(255)</td>
+                        <td></td>
+                        <td>썸네일 이미지 URL</td>
+                    </tr>
+                    <tr>
+                        <td>isPublished</td>
+                        <td>boolean</td>
+                        <td>DEFAULT false</td>
+                        <td>출판 여부</td>
+                    </tr>
+                    <tr>
+                        <td>isFeatured</td>
+                        <td>boolean</td>
+                        <td>DEFAULT false</td>
+                        <td>추천 여부</td>
+                    </tr>
+                    <tr>
+                        <td>tags</td>
+                        <td>json</td>
+                        <td></td>
+                        <td>태그 (문자열 배열)</td>
+                    </tr>
+                    <tr>
+                        <td>price</td>
+                        <td>integer</td>
+                        <td>DEFAULT 0</td>
+                        <td>가격</td>
+                    </tr>
+                    <tr>
+                        <td>discountPrice</td>
+                        <td>integer</td>
+                        <td></td>
+                        <td>할인 가격</td>
+                    </tr>
+                    <tr>
+                        <td>isSalable</td>
+                        <td>boolean</td>
+                        <td>DEFAULT false</td>
+                        <td>판매 가능 여부</td>
+                    </tr>
+                    <tr>
+                        <td>createdAt</td>
+                        <td>timestamp</td>
+                        <td>NOT NULL, DEFAULT NOW()</td>
+                        <td>생성 일시</td>
+                    </tr>
+                    <tr>
+                        <td>updatedAt</td>
+                        <td>timestamp</td>
+                        <td>NOT NULL, DEFAULT NOW()</td>
+                        <td>수정 일시</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="db-section">
+            <div class="table-heading">training_videos (훈련 영상)</div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>컬럼명</th>
+                        <th>데이터 타입</th>
+                        <th>제약조건</th>
+                        <th>설명</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><span class="tag tag-pk">PK</span> id</td>
+                        <td>serial</td>
+                        <td>PRIMARY KEY</td>
+                        <td>영상 고유 ID</td>
+                    </tr>
+                    <tr>
+                        <td>title</td>
+                        <td>varchar(255)</td>
+                        <td>NOT NULL</td>
+                        <td>영상 제목</td>
+                    </tr>
+                    <tr>
+                        <td>description</td>
+                        <td>text</td>
+                        <td></td>
+                        <td>영상 설명</td>
+                    </tr>
+                    <tr>
+                        <td>videoUrl</td>
+                        <td>varchar(255)</td>
+                        <td>NOT NULL</td>
+                        <td>영상 URL</td>
+                    </tr>
+                    <tr>
+                        <td>thumbnailUrl</td>
+                        <td>varchar(255)</td>
+                        <td></td>
+                        <td>썸네일 이미지 URL</td>
+                    </tr>
+                    <tr>
+                        <td>durationSeconds</td>
+                        <td>integer</td>
+                        <td></td>
+                        <td>재생 시간 (초)</td>
+                    </tr>
+                    <tr>
+                        <td><span class="tag tag-fk">FK</span> uploaderId</td>
+                        <td>integer</td>
+                        <td>NOT NULL, REFERENCES users(id)</td>
+                        <td>업로더 ID</td>
+                    </tr>
+                    <tr>
+                        <td>category</td>
+                        <td>varchar(100)</td>
+                        <td></td>
+                        <td>카테고리</td>
+                    </tr>
+                    <tr>
+                        <td>level</td>
+                        <td>varchar(50)</td>
+                        <td></td>
+                        <td>난이도</td>
+                    </tr>
+                    <tr>
+                        <td>isFree</td>
+                        <td>boolean</td>
+                        <td>DEFAULT false</td>
+                        <td>무료 여부</td>
+                    </tr>
+                    <tr>
+                        <td>isPublished</td>
+                        <td>boolean</td>
+                        <td>DEFAULT false</td>
+                        <td>출판 여부</td>
+                    </tr>
+                    <tr>
+                        <td>viewCount</td>
+                        <td>integer</td>
+                        <td>DEFAULT 0</td>
+                        <td>조회수</td>
+                    </tr>
+                    <tr>
+                        <td>likeCount</td>
+                        <td>integer</td>
+                        <td>DEFAULT 0</td>
+                        <td>좋아요 수</td>
+                    </tr>
+                    <tr>
+                        <td>dislikeCount</td>
+                        <td>integer</td>
+                        <td>DEFAULT 0</td>
+                        <td>싫어요 수</td>
+                    </tr>
+                    <tr>
+                        <td>tags</td>
+                        <td>json</td>
+                        <td></td>
+                        <td>태그 (문자열 배열)</td>
+                    </tr>
+                    <tr>
+                        <td><span class="tag tag-fk">FK</span> sectionId</td>
+                        <td>integer</td>
+                        <td>REFERENCES curriculum_sections(id)</td>
+                        <td>섹션 ID</td>
+                    </tr>
+                    <tr>
+                        <td>order</td>
+                        <td>integer</td>
+                        <td></td>
+                        <td>정렬 순서</td>
+                    </tr>
+                    <tr>
+                        <td>createdAt</td>
+                        <td>timestamp</td>
+                        <td>NOT NULL, DEFAULT NOW()</td>
+                        <td>생성 일시</td>
+                    </tr>
+                    <tr>
+                        <td>updatedAt</td>
+                        <td>timestamp</td>
+                        <td>NOT NULL, DEFAULT NOW()</td>
+                        <td>수정 일시</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="entity-group">
+        <h2>5. 인증 및 배지 관련 테이블</h2>
+        
+        <div class="db-section">
+            <div class="table-heading">certificates (수료증)</div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>컬럼명</th>
+                        <th>데이터 타입</th>
+                        <th>제약조건</th>
+                        <th>설명</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><span class="tag tag-pk">PK</span> id</td>
+                        <td>serial</td>
+                        <td>PRIMARY KEY</td>
+                        <td>수료증 고유 ID</td>
+                    </tr>
+                    <tr>
+                        <td>certificateNumber</td>
+                        <td>varchar(100)</td>
+                        <td>NOT NULL, UNIQUE</td>
+                        <td>인증 번호</td>
+                    </tr>
+                    <tr>
+                        <td><span class="tag tag-fk">FK</span> userId</td>
+                        <td>integer</td>
+                        <td>NOT NULL, REFERENCES users(id)</td>
+                        <td>사용자 ID</td>
+                    </tr>
+                    <tr>
+                        <td><span class="tag tag-fk">FK</span> courseId</td>
+                        <td>integer</td>
+                        <td>NOT NULL, REFERENCES courses(id)</td>
+                        <td>과정 ID</td>
+                    </tr>
+                    <tr>
+                        <td>issueDate</td>
+                        <td>timestamp</td>
+                        <td>NOT NULL</td>
+                        <td>발급일</td>
+                    </tr>
+                    <tr>
+                        <td>expiryDate</td>
+                        <td>timestamp</td>
+                        <td></td>
+                        <td>만료일</td>
+                    </tr>
+                    <tr>
+                        <td>templateId</td>
+                        <td>varchar(100)</td>
+                        <td></td>
+                        <td>템플릿 ID</td>
+                    </tr>
+                    <tr>
+                        <td>pdfUrl</td>
+                        <td>varchar(255)</td>
+                        <td></td>
+                        <td>PDF URL</td>
+                    </tr>
+                    <tr>
+                        <td>isVerified</td>
+                        <td>boolean</td>
+                        <td>DEFAULT true</td>
+                        <td>인증 여부</td>
+                    </tr>
+                    <tr>
+                        <td>verificationCode</td>
+                        <td>varchar(100)</td>
+                        <td>NOT NULL, UNIQUE</td>
+                        <td>인증 코드</td>
+                    </tr>
+                    <tr>
+                        <td>metadata</td>
+                        <td>json</td>
+                        <td></td>
+                        <td>추가 메타데이터</td>
+                    </tr>
+                    <tr>
+                        <td>createdAt</td>
+                        <td>timestamp</td>
+                        <td>NOT NULL, DEFAULT NOW()</td>
+                        <td>생성 일시</td>
+                    </tr>
+                    <tr>
+                        <td>updatedAt</td>
+                        <td>timestamp</td>
+                        <td>NOT NULL, DEFAULT NOW()</td>
+                        <td>수정 일시</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="db-section">
+            <div class="table-heading">badges (배지)</div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>컬럼명</th>
+                        <th>데이터 타입</th>
+                        <th>제약조건</th>
+                        <th>설명</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><span class="tag tag-pk">PK</span> id</td>
+                        <td>serial</td>
+                        <td>PRIMARY KEY</td>
+                        <td>배지 고유 ID</td>
+                    </tr>
+                    <tr>
+                        <td>name</td>
+                        <td>varchar(100)</td>
+                        <td>NOT NULL</td>
+                        <td>배지명</td>
+                    </tr>
+                    <tr>
+                        <td>description</td>
+                        <td>text</td>
+                        <td>NOT NULL</td>
+                        <td>배지 설명</td>
+                    </tr>
+                    <tr>
+                        <td>imageUrl</td>
+                        <td>varchar(255)</td>
+                        <td>NOT NULL</td>
+                        <td>배지 이미지 URL</td>
+                    </tr>
+                    <tr>
+                        <td>category</td>
+                        <td>varchar(50)</td>
+                        <td>NOT NULL</td>
+                        <td>배지 카테고리</td>
+                    </tr>
+                    <tr>
+                        <td>level</td>
+                        <td>integer</td>
+                        <td>DEFAULT 1</td>
+                        <td>배지 레벨</td>
+                    </tr>
+                    <tr>
+                        <td>pointValue</td>
+                        <td>integer</td>
+                        <td>DEFAULT 0</td>
+                        <td>포인트 가치</td>
+                    </tr>
+                    <tr>
+                        <td>requirement</td>
+                        <td>text</td>
+                        <td></td>
+                        <td>획득 조건</td>
+                    </tr>
+                    <tr>
+                        <td>isHidden</td>
+                        <td>boolean</td>
+                        <td>DEFAULT false</td>
+                        <td>숨김 여부</td>
+                    </tr>
+                    <tr>
+                        <td>isActive</td>
+                        <td>boolean</td>
+                        <td>DEFAULT true</td>
+                        <td>활성화 여부</td>
+                    </tr>
+                    <tr>
+                        <td>createdAt</td>
+                        <td>timestamp</td>
+                        <td>NOT NULL, DEFAULT NOW()</td>
+                        <td>생성 일시</td>
+                    </tr>
+                    <tr>
+                        <td>updatedAt</td>
+                        <td>timestamp</td>
+                        <td>NOT NULL, DEFAULT NOW()</td>
+                        <td>수정 일시</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="note">
+        <p>참고: 이 데이터베이스 명세서는 현재 시스템 상태를 기준으로 작성되었으며, 향후 업데이트에 따라 변경될 수 있습니다.</p>
+    </div>
+</body>
+</html>
