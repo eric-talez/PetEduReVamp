@@ -60,11 +60,12 @@ export function Sidebar({ open, onClose }: SidebarProps) {
       )}
     >
       {/* Logo */}
-      <div className="h-16 flex items-center justify-center border-b border-gray-200 dark:border-gray-800">
-        <Link href="/" className="flex items-center">
-          <span className="text-lg font-bold text-gray-800 dark:text-white">
+      <div className="h-20 flex items-center justify-center border-b border-gray-200 dark:border-gray-800 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-900">
+        <Link href="/" className="flex flex-col items-center">
+          <span className="text-2xl font-bold text-gray-800 dark:text-white">
             PetEdu<span className="text-primary">Platform</span>
           </span>
+          <span className="text-xs text-gray-500 dark:text-gray-400 mt-1">반려견 전문 교육 플랫폼</span>
         </Link>
       </div>
       
