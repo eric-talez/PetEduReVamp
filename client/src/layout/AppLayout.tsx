@@ -23,6 +23,7 @@ export function AppLayout({ children }: AppLayoutProps) {
         sidebarOpen={sidebarOpen}
         onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
       />
+      
       <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       
       <main className="lg:pl-64 pt-16">
