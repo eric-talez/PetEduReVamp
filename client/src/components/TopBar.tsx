@@ -45,19 +45,10 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
             </Button>
           </div>
           
-          {/* Mobile logo */}
+          {/* Mobile logo - 모바일에서만 표시 */}
           <div className="flex items-center lg:hidden ml-2">
             <a href="/" className="flex items-center">
               <span className="text-lg font-semibold text-gray-800 dark:text-white">
-                PetEdu<span className="text-primary">Platform</span>
-              </span>
-            </a>
-          </div>
-          
-          {/* Logo for desktop */}
-          <div className="hidden lg:flex items-center mr-6">
-            <a href="/" className="flex items-center">
-              <span className="text-xl font-bold text-gray-800 dark:text-white">
                 PetEdu<span className="text-primary">Platform</span>
               </span>
             </a>
