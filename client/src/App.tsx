@@ -18,7 +18,9 @@ import AdminMenuConfigPage from "./pages/admin/menu-config";
 import AdminSettlementPage from "./pages/admin/settlement";
 
 function Router() {
-  const { isAuthenticated, isLoading } = useAuth();
+  // 임시로 하드코딩된 인증 상태 사용 (비회원 접속 화면을 확인하기 위해)
+  const isAuthenticated = true;
+  const isLoading = false;
 
   if (isLoading) {
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
@@ -66,11 +68,7 @@ function Router() {
 }
 
 function App() {
-  return (
-    <AuthProvider>
-      <Router />
-    </AuthProvider>
-  );
+  return <Router />;
 }
 
 export default App;

@@ -2,7 +2,6 @@ import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Bell, Menu, Search } from "lucide-react";
-import { useAuth } from "@/hooks/useAuth";
 import { useState } from "react";
 import { useClickAway } from "@/hooks/use-mobile";
 import { useLocation } from "wouter";
@@ -13,12 +12,17 @@ interface TopBarProps {
 }
 
 export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
-  const { user, isAuthenticated, logout } = useAuth();
+  // 임시 mock user 데이터 사용
+  const user = {
+    name: "관리자",
+    avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100"
+  };
+  
   const [, setLocation] = useLocation();
   
   const handleLogout = () => {
     console.log("Logout clicked");
-    logout();
+    // 임시 로그아웃 로직
     setLocation("/auth");
   };
   
@@ -90,12 +94,13 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
                 className="flex items-center focus:outline-none focus:ring-2 focus:ring-primary rounded-full"
                 onClick={() => setUserMenuOpen(!userMenuOpen)}
               >
-                <Avatar 
-                  src={user?.avatar} 
-                  alt={user?.name} 
-                  bordered 
-                  className="w-8 h-8" 
-                />
+                <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700">
+                  <img 
+                    src={user?.avatar} 
+                    alt={user?.name} 
+                    className="w-full h-full object-cover"
+                  />
+                </div>
                 <span className="ml-2 text-sm font-medium hidden lg:block">
                   {user?.name || "사용자"}님
                 </span>
