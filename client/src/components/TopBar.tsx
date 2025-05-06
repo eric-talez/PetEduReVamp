@@ -54,6 +54,15 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
             </a>
           </div>
           
+          {/* Logo for desktop */}
+          <div className="hidden lg:flex items-center mr-6">
+            <a href="/" className="flex items-center">
+              <span className="text-xl font-bold text-gray-800 dark:text-white">
+                PetEdu<span className="text-primary">Platform</span>
+              </span>
+            </a>
+          </div>
+          
           {/* Search */}
           <div className="hidden lg:flex flex-1 items-center">
             <div className="max-w-xl w-full">
