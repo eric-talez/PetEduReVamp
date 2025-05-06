@@ -12,6 +12,16 @@
     <meta property="og:title" content="PetEduPlatform - 반려견 교육 플랫폼" />
     <meta property="og:description" content="전문 훈련사의 체계적인 교육으로 더 행복한 반려생활을 시작하세요." />
     <meta property="og:type" content="website" />
+    <!-- 초기 테마 설정 스크립트 -->
+    <script>
+      // 저장된 테마 확인
+      const savedTheme = localStorage.getItem('petedu-theme');
+      if (savedTheme === 'dark') {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.add('light');
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>
