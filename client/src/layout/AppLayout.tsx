@@ -11,24 +11,34 @@ export function AppLayout({ children }: AppLayoutProps) {
 
   return (
     <div className="bg-background text-foreground min-h-screen font-sans">
-      {/* 모바일에서 사이드바가 열렸을 때 배경 오버레이 */}
-      {sidebarOpen && (
-        <div 
-          className="fixed inset-0 bg-black bg-opacity-50 z-30 lg:hidden" 
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
-      
-      <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-      
-      <TopBar
-        sidebarOpen={sidebarOpen}
-        onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
-      />
-      
-      <main className="lg:pl-64 pt-16">
-        {children}
-      </main>
+      <div className="flex">
+        {/* 사이드바 */}
+        <div className="fixed inset-y-0 left-0 z-50">
+          <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+        </div>
+        
+        {/* 모바일에서 사이드바가 열렸을 때 배경 오버레이 */}
+        {sidebarOpen && (
+          <div 
+            className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden" 
+            onClick={() => setSidebarOpen(false)}
+          />
+        )}
+        
+        {/* 메인 컨텐츠 영역 */}
+        <div className="flex-1 flex flex-col min-h-screen lg:pl-64">
+          {/* 상단바 */}
+          <TopBar
+            sidebarOpen={sidebarOpen}
+            onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
+          />
+          
+          {/* 메인 컨텐츠 */}
+          <main className="flex-1 pt-16">
+            {children}
+          </main>
+        </div>
+      </div>
     </div>
   );
 }

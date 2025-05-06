@@ -30,8 +30,8 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
   const userMenuRef = useClickAway<HTMLDivElement>(() => setUserMenuOpen(false));
 
   return (
-    <header className="fixed top-0 left-0 right-0 bg-white dark:bg-gray-900 shadow-sm z-20 transition-colors">
-      <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8">
+    <header className="sticky top-0 bg-white dark:bg-gray-900 shadow-sm z-10 transition-colors">
+      <div className="max-w-full mx-auto px-4 sm:px-6 lg:pl-6 lg:pr-8">
         <div className="flex justify-between items-center h-16">
           {/* Mobile menu button */}
           <div className="flex items-center lg:hidden">
@@ -54,16 +54,8 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
             </a>
           </div>
           
-          {/* Desktop - 로고와 검색 영역 */}
+          {/* Desktop - 검색 영역 */}
           <div className="hidden lg:flex items-center space-x-4 flex-1">
-            {/* Logo */}
-            <div className="flex items-center mr-4">
-              <a href="/" className="flex items-center">
-                <span className="text-xl font-bold text-gray-800 dark:text-white">
-                  PetEdu<span className="text-primary">Platform</span>
-                </span>
-              </a>
-            </div>
             
             {/* Search */}
             <div className="flex-1">
