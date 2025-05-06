@@ -60,29 +60,44 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   // 로컬 스토리지에서 인증 상태 확인
   useEffect(() => {
+    console.log("Auth Provider initialized, checking localStorage");
     const storedAuth = localStorage.getItem('petedu_auth');
     if (storedAuth) {
       try {
+        console.log("Found auth data in localStorage:", storedAuth);
         const parsedAuth = JSON.parse(storedAuth);
-        setAuthState(prevState => ({
-          ...prevState,
-          isAuthenticated: true,
-          isLoading: false,
-          userRole: parsedAuth.role || 'user',
-          userName: parsedAuth.user || 'User'
-        }));
+        setAuthState(prevState => {
+          const newState = {
+            ...prevState,
+            isAuthenticated: true,
+            isLoading: false,
+            userRole: parsedAuth.role || 'user',
+            userName: parsedAuth.user || 'User'
+          };
+          console.log("Updated auth state with stored data:", newState);
+          return newState;
+        });
       } catch (e) {
         console.error('Failed to parse auth data', e);
-        setAuthState(prevState => ({
-          ...prevState,
-          isLoading: false
-        }));
+        setAuthState(prevState => {
+          const newState = {
+            ...prevState,
+            isLoading: false
+          };
+          console.log("Setting isLoading to false after parse error");
+          return newState;
+        });
       }
     } else {
-      setAuthState(prevState => ({
-        ...prevState,
-        isLoading: false
-      }));
+      console.log("No auth data in localStorage, setting isLoading to false");
+      setAuthState(prevState => {
+        const newState = {
+          ...prevState,
+          isLoading: false
+        };
+        console.log("Updated state:", newState);
+        return newState;
+      });
     }
 
     // 로그인 이벤트 리스너 등록

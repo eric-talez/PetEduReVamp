@@ -77,13 +77,17 @@ function UnauthenticatedRoutes() {
 
 // 메인 앱 컴포넌트
 function App() {
-  const { isAuthenticated, isLoading } = useAppAuth();
+  const auth = useAppAuth();
   
-  if (isLoading) {
+  console.log("App render - Auth state:", auth);
+  
+  if (auth.isLoading) {
+    console.log("App is in loading state");
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   }
   
-  return isAuthenticated ? <AuthenticatedRoutes /> : <UnauthenticatedRoutes />;
+  console.log("App finished loading, isAuthenticated:", auth.isAuthenticated);
+  return auth.isAuthenticated ? <AuthenticatedRoutes /> : <UnauthenticatedRoutes />;
 }
 
 export default App;
