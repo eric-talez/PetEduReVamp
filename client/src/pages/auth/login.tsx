@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/Button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/Card";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useAppAuth } from "../../App";
+import { useAppAuth } from "../../hooks/useAppAuth";
 
 export default function Login() {
   const auth = useAppAuth();

@@ -5,7 +5,7 @@ import { Bell, Menu, Search } from "lucide-react";
 import { useState } from "react";
 import { useClickAway } from "@/hooks/use-mobile";
 import { useLocation } from "wouter";
-import { useAppAuth } from "../App";
+import { useAppAuth } from "../hooks/useAppAuth";
 
 interface TopBarProps {
   sidebarOpen: boolean;

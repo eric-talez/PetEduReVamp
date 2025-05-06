@@ -16,8 +16,7 @@ import MessagesPage from "./pages/messages";
 import AdminCommissionPage from "./pages/admin/commission";
 import AdminMenuConfigPage from "./pages/admin/menu-config";
 import AdminSettlementPage from "./pages/admin/settlement";
-import { useState, useEffect } from "react";
-import { AuthProvider, useAppAuth } from "./hooks/useAppAuth";
+import { useAppAuth, AuthProvider } from "./hooks/useAppAuth";
 
 // 인증된 사용자용 라우트
 function AuthenticatedRoutes() {
@@ -77,13 +76,24 @@ function UnauthenticatedRoutes() {
 
 // 메인 앱 컴포넌트
 function App() {
+  return (
+    <AuthProvider>
+      <AppRouter />
+    </AuthProvider>
+  );
+}
+
+// 인증 상태에 따른 라우터 컴포넌트
+function AppRouter() {
   const { isAuthenticated, isLoading } = useAppAuth();
   
   if (isLoading) {
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   }
   
-  return isAuthenticated ? <AuthenticatedRoutes /> : <UnauthenticatedRoutes />;
+  return (
+    isAuthenticated ? <AuthenticatedRoutes /> : <UnauthenticatedRoutes />
+  );
 }
 
 export default App;
