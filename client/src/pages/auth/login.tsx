@@ -39,12 +39,40 @@ export default function Login() {
         role: "user"
       };
       
+      // 테스트를 위해 로그인 시 역할 선택
+      if (loginUsername === 'admin') {
+        mockUser.role = 'admin';
+      } else if (loginUsername === 'trainer') {
+        mockUser.role = 'trainer';
+      } else if (loginUsername === 'institute') {
+        mockUser.role = 'institute-admin';
+      } else if (loginUsername === 'pet-owner') {
+        mockUser.role = 'pet-owner';
+      }
+      
       const loginEvent = new CustomEvent('login', {
         detail: { user: mockUser }
       });
       
       window.dispatchEvent(loginEvent);
-      navigate("/dashboard");
+      
+      // 역할에 따라 다른 페이지로 리디렉션
+      switch(mockUser.role) {
+        case 'pet-owner':
+          navigate("/dashboard");
+          break;
+        case 'trainer':
+          navigate("/dashboard/trainer");
+          break;
+        case 'institute-admin':
+          navigate("/dashboard/institute");
+          break;
+        case 'admin':
+          navigate("/dashboard/admin");
+          break;
+        default:
+          navigate("/"); // 일반 회원은 홈페이지로
+      }
     } catch (err) {
       setLoginError("로그인에 실패했습니다. 아이디와 비밀번호를 확인해주세요.");
     } finally {
@@ -66,12 +94,40 @@ export default function Login() {
         role: "user"
       };
       
+      // 테스트를 위해 회원가입 시 사용자명에 따라 역할 결정
+      if (registerUsername.includes('admin')) {
+        mockUser.role = 'admin';
+      } else if (registerUsername.includes('trainer')) {
+        mockUser.role = 'trainer';
+      } else if (registerUsername.includes('institute')) {
+        mockUser.role = 'institute-admin';
+      } else if (registerUsername.includes('pet') || registerUsername.includes('owner')) {
+        mockUser.role = 'pet-owner';
+      }
+      
       const loginEvent = new CustomEvent('login', {
         detail: { user: mockUser }
       });
       
       window.dispatchEvent(loginEvent);
-      navigate("/dashboard");
+      
+      // 역할에 따라 다른 페이지로 리디렉션
+      switch(mockUser.role) {
+        case 'pet-owner':
+          navigate("/dashboard");
+          break;
+        case 'trainer':
+          navigate("/dashboard/trainer");
+          break;
+        case 'institute-admin':
+          navigate("/dashboard/institute");
+          break;
+        case 'admin':
+          navigate("/dashboard/admin");
+          break;
+        default:
+          navigate("/"); // 일반 회원은 홈페이지로
+      }
     } catch (err) {
       setRegisterError("회원가입에 실패했습니다. 다시 시도해주세요.");
     } finally {
@@ -228,9 +284,14 @@ export default function Login() {
         </CardContent>
       </Card>
       
-      <p className="mt-6 text-center text-sm text-muted-foreground">
-        테스트 계정: <code>demo / password</code>
-      </p>
+      <div className="mt-6 text-center text-sm text-muted-foreground space-y-2">
+        <p>테스트 계정</p>
+        <p><strong>일반 회원: </strong><code>demo / password</code></p>
+        <p><strong>견주 회원: </strong><code>pet-owner / password</code></p>
+        <p><strong>훈련사: </strong><code>trainer / password</code></p>
+        <p><strong>기관 관리자: </strong><code>institute / password</code></p>
+        <p><strong>시스템 관리자: </strong><code>admin / password</code></p>
+      </div>
     </div>
   );
 }

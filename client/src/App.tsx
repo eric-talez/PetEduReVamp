@@ -41,8 +41,14 @@ function AuthenticatedRoutes() {
   return (
     <AppLayout>
       <Switch>
-        <Route path="/" component={Dashboard} />
-        <Route path="/dashboard" component={Dashboard} />
+        {/* 역할별 메인 페이지 (각 역할의 홈) */}
+        <Route path="/" component={Home} /> {/* 일반 회원의 홈 */}
+        <Route path="/dashboard" component={Dashboard} /> {/* 견주 회원의 대시보드 */}
+        <Route path="/dashboard/trainer" component={() => <div className="p-8"><h1 className="text-2xl font-bold mb-4">훈련사 대시보드</h1><p>훈련사를 위한 대시보드입니다.</p></div>} />
+        <Route path="/dashboard/institute" component={() => <div className="p-8"><h1 className="text-2xl font-bold mb-4">기관 관리자 대시보드</h1><p>기관 관리자를 위한 대시보드입니다.</p></div>} />
+        <Route path="/dashboard/admin" component={() => <div className="p-8"><h1 className="text-2xl font-bold mb-4">시스템 관리자 대시보드</h1><p>시스템 관리자를 위한 대시보드입니다.</p></div>} />
+        
+        {/* 일반 메뉴 */}
         <Route path="/courses" component={Courses} />
         <Route path="/trainers" component={Trainers} />
         <Route path="/institutes" component={Institutes} />
@@ -56,6 +62,8 @@ function AuthenticatedRoutes() {
         <Route path="/locations" component={LocationsPage} />
         <Route path="/recommendations" component={() => <div className="p-8"><h1 className="text-2xl font-bold mb-4">맞춤 추천</h1><p>반려견 프로필과 사용자 선호도 기반 맞춤형 추천 서비스 페이지입니다.</p></div>} />
         <Route path="/messages" component={MessagesPage} />
+        
+        {/* 관리자 메뉴 */}
         <Route path="/admin/commission" component={AdminCommissionPage} />
         <Route path="/admin/menu-config" component={AdminMenuConfigPage} />
         <Route path="/admin/settlement" component={AdminSettlementPage} />
