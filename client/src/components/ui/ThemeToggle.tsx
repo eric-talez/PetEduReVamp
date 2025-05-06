@@ -6,8 +6,10 @@ export function ThemeToggle() {
   const { theme, setTheme } = useTheme();
   
   const toggleTheme = () => {
-    setTheme(theme === "light" ? "dark" : "light");
-    console.log("Toggling theme from", theme, "to", theme === "light" ? "dark" : "light");
+    // 단순화된 토글 로직
+    const newTheme = theme === "light" ? "dark" : "light";
+    setTheme(newTheme);
+    console.log("Toggling theme to", newTheme);
   };
 
   return (

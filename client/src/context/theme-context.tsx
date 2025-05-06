@@ -14,70 +14,61 @@ type ThemeProviderState = {
 };
 
 const initialState: ThemeProviderState = {
-  theme: "system",
+  theme: "light",
   setTheme: () => null,
 };
 
 const ThemeProviderContext = createContext<ThemeProviderState>(initialState);
 
-function useTheme() {
+export const useTheme = () => {
   const context = useContext(ThemeProviderContext);
   
   if (context === undefined)
     throw new Error("useTheme must be used within a ThemeProvider");
   
   return context;
-}
+};
 
-function ThemeProvider({
+export function ThemeProvider({
   children,
-  defaultTheme = "system",
+  defaultTheme = "light",
   storageKey = "petedu-theme",
   ...props
 }: ThemeProviderProps) {
-  const [theme, setTheme] = useState<Theme>(
-    () => (localStorage.getItem(storageKey) as Theme) || defaultTheme
-  );
+  // 간단한 버전으로 되돌림
+  const [theme, setTheme] = useState<Theme>(() => {
+    try {
+      const saved = localStorage.getItem(storageKey);
+      if (saved === 'light' || saved === 'dark' || saved === 'system') {
+        return saved;
+      }
+    } catch (e) {}
+    return defaultTheme;
+  });
 
   useEffect(() => {
     const root = window.document.documentElement;
-    
     root.classList.remove("light", "dark");
     
-    if (theme === "system") {
-      const systemTheme = window.matchMedia("(prefers-color-scheme: dark)")
-        .matches
+    // 항상 light 또는 dark만 적용
+    if (theme === "light" || theme === "dark") {
+      root.classList.add(theme);
+    } else {
+      // system일 경우 OS 설정에 따라 적용
+      const systemTheme = window.matchMedia("(prefers-color-scheme: dark)").matches
         ? "dark"
         : "light";
-      
       root.classList.add(systemTheme);
-      return;
     }
-    
-    root.classList.add(theme);
-  }, [theme]);
-  
-  // 시스템 테마 변경 감지
-  useEffect(() => {
-    if (theme !== 'system') return;
-    
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    
-    const handleChange = () => {
-      const root = window.document.documentElement;
-      root.classList.remove("light", "dark");
-      root.classList.add(mediaQuery.matches ? "dark" : "light");
-    };
-    
-    mediaQuery.addEventListener('change', handleChange);
-    return () => mediaQuery.removeEventListener('change', handleChange);
   }, [theme]);
 
   const value = {
     theme,
-    setTheme: (theme: Theme) => {
-      localStorage.setItem(storageKey, theme);
-      setTheme(theme);
+    setTheme: (newTheme: Theme) => {
+      try {
+        localStorage.setItem(storageKey, newTheme);
+      } catch (e) {}
+      setTheme(newTheme);
     },
   };
 
@@ -87,5 +78,3 @@ function ThemeProvider({
     </ThemeProviderContext.Provider>
   );
 }
-
-export { ThemeProvider, useTheme };
