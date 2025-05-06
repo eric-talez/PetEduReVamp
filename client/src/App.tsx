@@ -1,6 +1,7 @@
 import { Switch, Route } from "wouter";
 import { AppLayout } from "./layout/AppLayout";
 import Dashboard from "@/pages/dashboard";
+import Home from "./pages/Home";
 import Courses from "@/pages/courses";
 import Trainers from "@/pages/trainers";
 import Institutes from "@/pages/institutes";

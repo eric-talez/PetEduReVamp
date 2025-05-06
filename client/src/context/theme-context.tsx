@@ -20,7 +20,16 @@ const initialState: ThemeProviderState = {
 
 const ThemeProviderContext = createContext<ThemeProviderState>(initialState);
 
-export function ThemeProvider({
+function useTheme() {
+  const context = useContext(ThemeProviderContext);
+  
+  if (context === undefined)
+    throw new Error("useTheme must be used within a ThemeProvider");
+  
+  return context;
+}
+
+function ThemeProvider({
   children,
   defaultTheme = "system",
   storageKey = "petedu-theme",
@@ -47,6 +56,22 @@ export function ThemeProvider({
     
     root.classList.add(theme);
   }, [theme]);
+  
+  // 시스템 테마 변경 감지
+  useEffect(() => {
+    if (theme !== 'system') return;
+    
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    
+    const handleChange = () => {
+      const root = window.document.documentElement;
+      root.classList.remove("light", "dark");
+      root.classList.add(mediaQuery.matches ? "dark" : "light");
+    };
+    
+    mediaQuery.addEventListener('change', handleChange);
+    return () => mediaQuery.removeEventListener('change', handleChange);
+  }, [theme]);
 
   const value = {
     theme,
@@ -63,11 +88,4 @@ export function ThemeProvider({
   );
 }
 
-export const useTheme = () => {
-  const context = useContext(ThemeProviderContext);
-  
-  if (context === undefined)
-    throw new Error("useTheme must be used within a ThemeProvider");
-  
-  return context;
-};
+export { ThemeProvider, useTheme };
