@@ -2,9 +2,10 @@ import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Bell, Menu, Search } from "lucide-react";
-// import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/hooks/useAuth";
 import { useState } from "react";
 import { useClickAway } from "@/hooks/use-mobile";
+import { useLocation } from "wouter";
 
 interface TopBarProps {
   sidebarOpen: boolean;
@@ -12,15 +13,13 @@ interface TopBarProps {
 }
 
 export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
-  // Mock user data for development
-  const user = {
-    name: "관리자",
-    avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100"
-  };
+  const { user, isAuthenticated, logout } = useAuth();
+  const [, setLocation] = useLocation();
   
-  const logout = () => {
+  const handleLogout = () => {
     console.log("Logout clicked");
-    window.location.href = "/login";
+    logout();
+    setLocation("/auth");
   };
   
   const [userMenuOpen, setUserMenuOpen] = useState(false);
@@ -121,7 +120,7 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
                   </a>
                   <div className="border-t border-gray-200 dark:border-gray-700"></div>
                   <button 
-                    onClick={logout}
+                    onClick={handleLogout}
                     className="block w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-800"
                   >
                     로그아웃

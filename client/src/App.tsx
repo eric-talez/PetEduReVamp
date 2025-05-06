@@ -9,7 +9,7 @@ import MyCourses from "@/pages/my-courses";
 import MyPets from "@/pages/my-pets";
 import Login from "@/pages/auth/login";
 import NotFound from "@/pages/not-found";
-// import { useAuth, User } from "@/hooks/useAuth";
+import { useAuth, AuthProvider } from "@/hooks/useAuth";
 import LocationsPage from "./pages/locations";
 import VideoCallPage from "./pages/video-call";
 import MessagesPage from "./pages/messages";
@@ -18,9 +18,7 @@ import AdminMenuConfigPage from "./pages/admin/menu-config";
 import AdminSettlementPage from "./pages/admin/settlement";
 
 function Router() {
-  // Mock user is authenticated for testing
-  const isAuthenticated = true;
-  const isLoading = false;
+  const { isAuthenticated, isLoading } = useAuth();
 
   if (isLoading) {
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
@@ -29,10 +27,10 @@ function Router() {
   if (!isAuthenticated) {
     return (
       <Switch>
-        <Route path="/login" component={Login} />
+        <Route path="/auth" component={Login} />
         <Route path="/:rest*">
           {() => {
-            window.location.href = "/login";
+            window.location.href = "/auth";
             return null;
           }}
         </Route>
@@ -68,7 +66,11 @@ function Router() {
 }
 
 function App() {
-  return <Router />;
+  return (
+    <AuthProvider>
+      <Router />
+    </AuthProvider>
+  );
 }
 
 export default App;
