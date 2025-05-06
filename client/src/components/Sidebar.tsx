@@ -1,7 +1,9 @@
 import { Link, useLocation } from "wouter";
-// import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
+import { useState } from "react";
 import {
+  ChevronDown,
+  ChevronRight,
   Home,
   GraduationCap,
   UserRoundCheck,
@@ -46,6 +48,24 @@ export function Sidebar({ open, onClose }: SidebarProps) {
     avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100"
   };
   
+  // 메뉴 그룹 열기/닫기 상태 관리
+  const [menuGroups, setMenuGroups] = useState({
+    main: true,
+    features: true,
+    myLearning: true,
+    trainer: false,
+    institute: false,
+    admin: false
+  });
+  
+  // 메뉴 그룹 토글 함수
+  const toggleMenuGroup = (group: keyof typeof menuGroups) => {
+    setMenuGroups(prev => ({
+      ...prev,
+      [group]: !prev[group]
+    }));
+  };
+  
   const isActive = (path: string) => {
     if (path === "/" && location === "/") return true;
     if (path !== "/" && location.startsWith(path)) return true;
@@ -73,10 +93,14 @@ export function Sidebar({ open, onClose }: SidebarProps) {
       
       <div className="px-3 py-4 overflow-y-auto h-[calc(100vh-4rem)]">
         <div className="space-y-1">
-          <div className="px-3 py-2">
+          <div 
+            className="px-3 py-2 flex items-center justify-between cursor-pointer"
+            onClick={() => toggleMenuGroup('main')}
+          >
             <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
               메인 메뉴
             </h3>
+            {menuGroups.main ? <ChevronDown className="h-4 w-4 text-gray-500" /> : <ChevronRight className="h-4 w-4 text-gray-500" />}
           </div>
           
           <NavItem 
@@ -124,10 +148,14 @@ export function Sidebar({ open, onClose }: SidebarProps) {
             커뮤니티
           </NavItem>
 
-          <div className="px-3 py-2 mt-6">
+          <div 
+            className="px-3 py-2 mt-6 flex items-center justify-between cursor-pointer"
+            onClick={() => toggleMenuGroup('features')}
+          >
             <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
               주요 기능
             </h3>
+            {menuGroups.features ? <ChevronDown className="h-4 w-4 text-gray-500" /> : <ChevronRight className="h-4 w-4 text-gray-500" />}
           </div>
           
           <NavItem 
@@ -193,10 +221,14 @@ export function Sidebar({ open, onClose }: SidebarProps) {
             맞춤 추천
           </NavItem>
           
-          <div className="px-3 py-2 mt-6">
+          <div 
+            className="px-3 py-2 mt-6 flex items-center justify-between cursor-pointer"
+            onClick={() => toggleMenuGroup('myLearning')}
+          >
             <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
               내 학습
             </h3>
+            {menuGroups.myLearning ? <ChevronDown className="h-4 w-4 text-gray-500" /> : <ChevronRight className="h-4 w-4 text-gray-500" />}
           </div>
           
           <NavItem 
@@ -238,10 +270,14 @@ export function Sidebar({ open, onClose }: SidebarProps) {
           {/* Conditional role-based menus */}
           {(user?.role === "trainer" || user?.role === "pet-owner" || user?.role === "institute-admin" || user?.role === "admin") && (
             <>
-              <div className="px-3 py-2 mt-6">
+              <div 
+                className="px-3 py-2 mt-6 flex items-center justify-between cursor-pointer"
+                onClick={() => toggleMenuGroup('trainer')}
+              >
                 <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   훈련사 메뉴
                 </h3>
+                {menuGroups.trainer ? <ChevronDown className="h-4 w-4 text-gray-500" /> : <ChevronRight className="h-4 w-4 text-gray-500" />}
               </div>
               
               <NavItem 
