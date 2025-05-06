@@ -3,7 +3,7 @@ import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { Avatar } from "@/components/ui/Avatar";
-import { Search, Filter, MapPin, Star, Users, Building, Calendar, Shield, Sparkles } from "lucide-react";
+import { Search, Filter, MapPin, Star, Users, Building, Calendar, Shield, Sparkles, BookOpen } from "lucide-react";
 
 export default function Institutes() {
   const [filter, setFilter] = useState("all");
