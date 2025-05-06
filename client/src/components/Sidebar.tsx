@@ -28,8 +28,10 @@ import {
   Bell,
   MapPin,
   ThumbsUp,
-  Store
+  Store,
+  LogIn
 } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
 
 interface SidebarProps {
   open: boolean;
@@ -38,15 +40,7 @@ interface SidebarProps {
 
 export function Sidebar({ open, onClose }: SidebarProps) {
   const [location] = useLocation();
-  
-  // Mock user data for development
-  const user = {
-    id: 1,
-    name: "관리자",
-    email: "admin@example.com",
-    role: "admin",
-    avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100"
-  };
+  const { user, isAuthenticated } = useAuth();
   
   // 메뉴 그룹 열기/닫기 상태 관리
   const [menuGroups, setMenuGroups] = useState({
@@ -93,189 +87,260 @@ export function Sidebar({ open, onClose }: SidebarProps) {
       
       <div className="px-3 py-4 overflow-y-auto h-[calc(100vh-4rem)]">
         <div className="space-y-1">
-          <div 
-            className="px-3 py-2 flex items-center justify-between cursor-pointer"
-            onClick={() => toggleMenuGroup('main')}
-          >
-            <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-              메인 메뉴
-            </h3>
-            {menuGroups.main ? <ChevronDown className="h-4 w-4 text-gray-500" /> : <ChevronRight className="h-4 w-4 text-gray-500" />}
-          </div>
-          
-          {menuGroups.main && (
+          {/* 비회원인 경우 표시할 메뉴 */}
+          {!isAuthenticated && (
             <>
-              <NavItem 
-                href="/dashboard" 
-                icon={<Home className="w-5 h-5 mr-2" />}
-                active={isActive("/dashboard") || isActive("/")}
-                onClick={onClose}
+              <div 
+                className="px-3 py-2 flex items-center justify-between cursor-pointer"
+                onClick={() => toggleMenuGroup('main')}
               >
-                대시보드
-              </NavItem>
+                <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  메인 메뉴
+                </h3>
+                {menuGroups.main ? <ChevronDown className="h-4 w-4 text-gray-500" /> : <ChevronRight className="h-4 w-4 text-gray-500" />}
+              </div>
               
-              <NavItem 
-                href="/courses" 
-                icon={<GraduationCap className="w-5 h-5 mr-2" />}
-                active={isActive("/courses")}
-                onClick={onClose}
-              >
-                강의 탐색
-              </NavItem>
+              {menuGroups.main && (
+                <>
+                  <NavItem 
+                    href="/courses" 
+                    icon={<GraduationCap className="w-5 h-5 mr-2" />}
+                    active={isActive("/courses")}
+                    onClick={onClose}
+                  >
+                    강의 탐색
+                  </NavItem>
+                  
+                  <NavItem 
+                    href="/trainers" 
+                    icon={<UserRoundCheck className="w-5 h-5 mr-2" />}
+                    active={isActive("/trainers")}
+                    onClick={onClose}
+                  >
+                    훈련사 찾기
+                  </NavItem>
+                  
+                  <NavItem 
+                    href="/institutes" 
+                    icon={<Building className="w-5 h-5 mr-2" />}
+                    active={isActive("/institutes")}
+                    onClick={onClose}
+                  >
+                    교육 기관
+                  </NavItem>
+                  
+                  <NavItem 
+                    href="/community" 
+                    icon={<MessageSquare className="w-5 h-5 mr-2" />}
+                    active={isActive("/community")}
+                    onClick={onClose}
+                  >
+                    커뮤니티
+                  </NavItem>
+                </>
+              )}
               
-              <NavItem 
-                href="/trainers" 
-                icon={<UserRoundCheck className="w-5 h-5 mr-2" />}
-                active={isActive("/trainers")}
-                onClick={onClose}
-              >
-                훈련사 찾기
-              </NavItem>
-              
-              <NavItem 
-                href="/institutes" 
-                icon={<Building className="w-5 h-5 mr-2" />}
-                active={isActive("/institutes")}
-                onClick={onClose}
-              >
-                교육 기관
-              </NavItem>
-              
-              <NavItem 
-                href="/community" 
-                icon={<MessageSquare className="w-5 h-5 mr-2" />}
-                active={isActive("/community")}
-                onClick={onClose}
-              >
-                커뮤니티
-              </NavItem>
+              <div className="mt-6">
+                <NavItem 
+                  href="/auth" 
+                  icon={<LogIn className="w-5 h-5 mr-2" />}
+                  active={isActive("/auth")}
+                  onClick={onClose}
+                >
+                  로그인
+                </NavItem>
+              </div>
             </>
           )}
+          
+          {/* 로그인한 사용자에게 표시할 메뉴 */}
+          {isAuthenticated && (
+            <>
+              <div 
+                className="px-3 py-2 flex items-center justify-between cursor-pointer"
+                onClick={() => toggleMenuGroup('main')}
+              >
+                <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  메인 메뉴
+                </h3>
+                {menuGroups.main ? <ChevronDown className="h-4 w-4 text-gray-500" /> : <ChevronRight className="h-4 w-4 text-gray-500" />}
+              </div>
+              
+              {menuGroups.main && (
+                <>
+                  <NavItem 
+                    href="/dashboard" 
+                    icon={<Home className="w-5 h-5 mr-2" />}
+                    active={isActive("/dashboard") || isActive("/")}
+                    onClick={onClose}
+                  >
+                    대시보드
+                  </NavItem>
+                  
+                  <NavItem 
+                    href="/courses" 
+                    icon={<GraduationCap className="w-5 h-5 mr-2" />}
+                    active={isActive("/courses")}
+                    onClick={onClose}
+                  >
+                    강의 탐색
+                  </NavItem>
+                  
+                  <NavItem 
+                    href="/trainers" 
+                    icon={<UserRoundCheck className="w-5 h-5 mr-2" />}
+                    active={isActive("/trainers")}
+                    onClick={onClose}
+                  >
+                    훈련사 찾기
+                  </NavItem>
+                  
+                  <NavItem 
+                    href="/institutes" 
+                    icon={<Building className="w-5 h-5 mr-2" />}
+                    active={isActive("/institutes")}
+                    onClick={onClose}
+                  >
+                    교육 기관
+                  </NavItem>
+                  
+                  <NavItem 
+                    href="/community" 
+                    icon={<MessageSquare className="w-5 h-5 mr-2" />}
+                    active={isActive("/community")}
+                    onClick={onClose}
+                  >
+                    커뮤니티
+                  </NavItem>
+                </>
+              )}
 
-          <div 
-            className="px-3 py-2 mt-6 flex items-center justify-between cursor-pointer"
-            onClick={() => toggleMenuGroup('features')}
-          >
-            <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-              주요 기능
-            </h3>
-            {menuGroups.features ? <ChevronDown className="h-4 w-4 text-gray-500" /> : <ChevronRight className="h-4 w-4 text-gray-500" />}
-          </div>
-          
-          {menuGroups.features && (
-            <>
-              <NavItem 
-                href="/video-training" 
-                icon={<Video className="w-5 h-5 mr-2" />}
-                active={isActive("/video-training")}
-                onClick={onClose}
+              <div 
+                className="px-3 py-2 mt-6 flex items-center justify-between cursor-pointer"
+                onClick={() => toggleMenuGroup('features')}
               >
-                영상 훈련
-              </NavItem>
+                <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  주요 기능
+                </h3>
+                {menuGroups.features ? <ChevronDown className="h-4 w-4 text-gray-500" /> : <ChevronRight className="h-4 w-4 text-gray-500" />}
+              </div>
               
-              <NavItem 
-                href="/video-call" 
-                icon={<VideoIcon className="w-5 h-5 mr-2" />}
-                active={isActive("/video-call")}
-                onClick={onClose}
-              >
-                화상 훈련
-              </NavItem>
+              {menuGroups.features && (
+                <>
+                  <NavItem 
+                    href="/video-training" 
+                    icon={<Video className="w-5 h-5 mr-2" />}
+                    active={isActive("/video-training")}
+                    onClick={onClose}
+                  >
+                    영상 훈련
+                  </NavItem>
+                  
+                  <NavItem 
+                    href="/video-call" 
+                    icon={<VideoIcon className="w-5 h-5 mr-2" />}
+                    active={isActive("/video-call")}
+                    onClick={onClose}
+                  >
+                    화상 훈련
+                  </NavItem>
+                  
+                  <NavItem 
+                    href="/shop" 
+                    icon={<ShoppingBag className="w-5 h-5 mr-2" />}
+                    active={isActive("/shop")}
+                    onClick={onClose}
+                  >
+                    쇼핑
+                  </NavItem>
+                  
+                  <NavItem 
+                    href="/messages" 
+                    icon={<MessageSquare className="w-5 h-5 mr-2" />}
+                    active={isActive("/messages")}
+                    onClick={onClose}
+                  >
+                    메시지
+                  </NavItem>
+                  
+                  <NavItem 
+                    href="/notifications" 
+                    icon={<Bell className="w-5 h-5 mr-2" />}
+                    active={isActive("/notifications")}
+                    onClick={onClose}
+                  >
+                    알림장
+                  </NavItem>
+                  
+                  <NavItem 
+                    href="/locations" 
+                    icon={<MapPin className="w-5 h-5 mr-2" />}
+                    active={isActive("/locations")}
+                    onClick={onClose}
+                  >
+                    위치 기반 서비스
+                  </NavItem>
+                  
+                  <NavItem 
+                    href="/recommendations" 
+                    icon={<ThumbsUp className="w-5 h-5 mr-2" />}
+                    active={isActive("/recommendations")}
+                    onClick={onClose}
+                  >
+                    맞춤 추천
+                  </NavItem>
+                </>
+              )}
               
-              <NavItem 
-                href="/shop" 
-                icon={<ShoppingBag className="w-5 h-5 mr-2" />}
-                active={isActive("/shop")}
-                onClick={onClose}
+              <div 
+                className="px-3 py-2 mt-6 flex items-center justify-between cursor-pointer"
+                onClick={() => toggleMenuGroup('myLearning')}
               >
-                쇼핑
-              </NavItem>
+                <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  내 학습
+                </h3>
+                {menuGroups.myLearning ? <ChevronDown className="h-4 w-4 text-gray-500" /> : <ChevronRight className="h-4 w-4 text-gray-500" />}
+              </div>
               
-              <NavItem 
-                href="/messages" 
-                icon={<MessageSquare className="w-5 h-5 mr-2" />}
-                active={isActive("/messages")}
-                onClick={onClose}
-              >
-                메시지
-              </NavItem>
-              
-              <NavItem 
-                href="/notifications" 
-                icon={<Bell className="w-5 h-5 mr-2" />}
-                active={isActive("/notifications")}
-                onClick={onClose}
-              >
-                알림장
-              </NavItem>
-              
-              <NavItem 
-                href="/locations" 
-                icon={<MapPin className="w-5 h-5 mr-2" />}
-                active={isActive("/locations")}
-                onClick={onClose}
-              >
-                위치 기반 서비스
-              </NavItem>
-              
-              <NavItem 
-                href="/recommendations" 
-                icon={<ThumbsUp className="w-5 h-5 mr-2" />}
-                active={isActive("/recommendations")}
-                onClick={onClose}
-              >
-                맞춤 추천
-              </NavItem>
-            </>
-          )}
-          
-          <div 
-            className="px-3 py-2 mt-6 flex items-center justify-between cursor-pointer"
-            onClick={() => toggleMenuGroup('myLearning')}
-          >
-            <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-              내 학습
-            </h3>
-            {menuGroups.myLearning ? <ChevronDown className="h-4 w-4 text-gray-500" /> : <ChevronRight className="h-4 w-4 text-gray-500" />}
-          </div>
-          
-          {menuGroups.myLearning && (
-            <>
-              <NavItem 
-                href="/my-courses" 
-                icon={<BookOpen className="w-5 h-5 mr-2" />}
-                active={isActive("/my-courses")}
-                onClick={onClose}
-              >
-                내 강의실
-              </NavItem>
-              
-              <NavItem 
-                href="/my-pets" 
-                icon={<PawPrint className="w-5 h-5 mr-2" />}
-                active={isActive("/my-pets")}
-                onClick={onClose}
-              >
-                내 반려견
-              </NavItem>
-              
-              <NavItem 
-                href="/calendar" 
-                icon={<Calendar className="w-5 h-5 mr-2" />}
-                active={isActive("/calendar")}
-                onClick={onClose}
-              >
-                교육 일정
-              </NavItem>
-              
-              <NavItem 
-                href="/certificates" 
-                icon={<Award className="w-5 h-5 mr-2" />}
-                active={isActive("/certificates")}
-                onClick={onClose}
-              >
-                자격증 및 수료증
-              </NavItem>
+              {menuGroups.myLearning && (
+                <>
+                  <NavItem 
+                    href="/my-courses" 
+                    icon={<BookOpen className="w-5 h-5 mr-2" />}
+                    active={isActive("/my-courses")}
+                    onClick={onClose}
+                  >
+                    내 강의실
+                  </NavItem>
+                  
+                  <NavItem 
+                    href="/my-pets" 
+                    icon={<PawPrint className="w-5 h-5 mr-2" />}
+                    active={isActive("/my-pets")}
+                    onClick={onClose}
+                  >
+                    내 반려견
+                  </NavItem>
+                  
+                  <NavItem 
+                    href="/calendar" 
+                    icon={<Calendar className="w-5 h-5 mr-2" />}
+                    active={isActive("/calendar")}
+                    onClick={onClose}
+                  >
+                    교육 일정
+                  </NavItem>
+                  
+                  <NavItem 
+                    href="/certificates" 
+                    icon={<Award className="w-5 h-5 mr-2" />}
+                    active={isActive("/certificates")}
+                    onClick={onClose}
+                  >
+                    자격증 및 수료증
+                  </NavItem>
+                </>
+              )}
             </>
           )}
           

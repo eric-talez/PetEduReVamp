@@ -34,7 +34,8 @@ const mockUser: User = {
 };
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(mockUser); // 개발을 위해 기본 사용자 설정
+  // 테스트를 위해 null로 설정하여 비로그인 상태로 시작
+  const [user, setUser] = useState<User | null>(null); 
   const [isLoading, setIsLoading] = useState(false);
 
   // 실제 구현에서는 아래 주석을 해제하고 mockUser 대신 실제 API 호출 사용
