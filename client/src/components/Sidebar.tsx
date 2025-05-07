@@ -228,7 +228,10 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                       href="/courses" 
                       icon={<GraduationCap className="w-5 h-5 mr-2" />} 
                       active={isActive("/courses")} 
-                      onClick={handleItemClick} 
+                      onClick={(path) => {
+                        console.log("강의 탐색 메뉴 클릭:", path);
+                        handleItemClick(path);
+                      }} 
                       show={true}
                     >강의 탐색</NavItem>
                     <NavItem 
