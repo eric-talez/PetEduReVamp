@@ -105,14 +105,14 @@ export function Sidebar({ open, onClose }: SidebarProps) {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
   
-  // 메뉴 그룹 열기/닫기 상태 관리
+  // 메뉴 그룹 열기/닫기 상태 관리 (사용자 역할에 따라 초기 상태 결정)
   const [menuGroups, setMenuGroups] = useState({
     main: true,
     features: true,
     myLearning: true,
-    trainer: false,
-    institute: false,
-    admin: false
+    trainer: userRole === 'trainer',
+    institute: userRole === 'institute-admin',
+    admin: userRole === 'admin'
   });
   
   // 사이드바 펼침/접힘 토글 함수
@@ -479,8 +479,8 @@ export function Sidebar({ open, onClose }: SidebarProps) {
               </>
             )}
             
-            {/* Conditional role-based menus */}
-            {(userRole === "trainer" || userRole === "pet-owner" || userRole === "institute-admin" || userRole === "admin") && (
+            {/* Trainer-specific menu */}
+            {(userRole === "trainer" || userRole === "admin") && (
               <>
                 {expanded && (
                   <div 
