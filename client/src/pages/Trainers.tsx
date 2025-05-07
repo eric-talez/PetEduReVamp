@@ -4,7 +4,7 @@ import { Avatar } from '@/components/ui/Avatar';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Star, MapPin, Search, Filter, Briefcase, Award, Sparkles } from 'lucide-react';
-import { SimpleTrainerProfileModal, type Trainer } from '@/components/SimpleTrainerProfileModal';
+import { NewTrainerProfileModal, type Trainer } from '@/components/NewTrainerProfileModal';
 
 export default function Trainers() {
   const [selectedTrainer, setSelectedTrainer] = useState<Trainer | null>(null);
@@ -432,7 +432,7 @@ export default function Trainers() {
       
       {/* 훈련사 프로필 모달 */}
       {selectedTrainer && (
-        <SimpleTrainerProfileModal
+        <NewTrainerProfileModal
           trainer={selectedTrainer}
           isOpen={isProfileOpen}
           onClose={() => {
