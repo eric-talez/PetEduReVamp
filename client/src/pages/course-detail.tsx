@@ -28,9 +28,8 @@ export default function CourseDetail() {
   const [match, params] = useRoute<{ id: string }>("/course/:id");
   // 다른 라우트 형식으로도 체크
   const [match2, params2] = useRoute<{ id: string }>("/course-detail/:id");
-  console.log('CourseDetail rendering - Route match:', match, 'params:', params, 'match2:', match2, 'params2:', params2, 'location:', window.location.pathname);
+  // 경로 파라미터를 사용하여 courseId 추출
   const courseId = (match && params) ? parseInt(params.id) : (match2 && params2) ? parseInt(params2.id) : 1;
-  console.log("강의 상세 페이지 로딩:", courseId, match, params);
   
   const { isAuthenticated } = useAuth();
   const [activeTab, setActiveTab] = useState("curriculum"); // 기본 탭을 커리큘럼으로 설정

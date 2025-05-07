@@ -27,11 +27,10 @@ export default function CourseDetail() {
   // wouter는 useParams 대신 useRoute를 사용
   const [match, params] = useRoute<{ id: string }>("/courses/:id");
   const [matchAlt, paramsAlt] = useRoute<{ id: string }>("/course/:id");
+  // 표준화된 방식으로 courseId 추출
   const courseId = 
     (match && params) ? parseInt(params.id) : 
     (matchAlt && paramsAlt) ? parseInt(paramsAlt.id) : 1;
-  console.log("강의 상세 페이지 로드:", courseId, match, params, matchAlt, paramsAlt);
-  console.log("현재 URL:", window.location.pathname, window.location.href);
   const { isAuthenticated } = useAuth();
   const [activeTab, setActiveTab] = useState("overview");
   const [isEnrolled, setIsEnrolled] = useState(false);
@@ -249,6 +248,9 @@ export default function CourseDetail() {
     }
 
     setActiveVideo(lesson);
+    
+    // 상단 비디오 플레이어 영역으로 스크롤
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   return (
