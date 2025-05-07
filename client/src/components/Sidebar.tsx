@@ -117,13 +117,16 @@ export function Sidebar({ open, onClose }: SidebarProps) {
   
   // userRole이 변경될 때마다 해당 역할의 메뉴 그룹을 자동으로 열어줌
   useEffect(() => {
+    console.log("사이드바에서 사용자 역할 변경 감지:", userRole);
     if (userRole) {
-      setMenuGroups(prev => ({
-        ...prev,
+      const updatedMenuGroups = {
+        ...menuGroups,
         trainer: userRole === 'trainer' || userRole === 'admin',
         institute: userRole === 'institute-admin' || userRole === 'admin',
         admin: userRole === 'admin'
-      }));
+      };
+      console.log("업데이트된 메뉴 그룹 상태:", updatedMenuGroups);
+      setMenuGroups(updatedMenuGroups);
     }
   }, [userRole]);
   
@@ -492,6 +495,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
             )}
             
             {/* Trainer-specific menu */}
+            {console.log("사이드바 렌더링 - userRole:", userRole, "trainer 메뉴 표시 여부:", userRole === "trainer" || userRole === "admin")}
             {(userRole === "trainer" || userRole === "admin") && (
               <>
                 {expanded && (
