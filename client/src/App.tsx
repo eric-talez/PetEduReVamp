@@ -6,7 +6,7 @@ import { useAuth } from "./SimpleApp";
 import Home from "./pages/Home";
 import Dashboard from "./pages/Dashboard";
 import CoursesPage from "./pages/courses/index";
-import CourseDetail from "./pages/courses/CourseDetail"; // 명시적으로 CourseDetail.tsx 사용
+import CourseDetail from "./pages/course-detail"; // 새로운 경로로 변경
 import TrainersPage from "./pages/trainers/index";
 import InstitutesPage from "./pages/institutes/index";
 import CommunityPage from "./pages/community/index";
