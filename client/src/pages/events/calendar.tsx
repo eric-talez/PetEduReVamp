@@ -5,7 +5,8 @@ import {
   ChevronRight, 
   Calendar as CalendarIcon,
   MapPin,
-  Clock
+  Clock,
+  Users
 } from 'lucide-react';
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -342,6 +343,35 @@ export default function EventCalendarPage() {
   
   return (
     <div className="container mx-auto px-4 py-6">
+      {/* 배너 영역 */}
+      <div className="w-full mb-8 rounded-lg overflow-hidden relative">
+        <div className="relative h-64 md:h-80">
+          <img 
+            src="https://images.unsplash.com/photo-1516734212186-a967f81ad0d7?ixlib=rb-4.0.3&auto=format&fit=crop&w=1500&h=400&q=80"
+            alt="이벤트 캘린더 배너" 
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-primary/80 to-transparent flex items-center">
+            <div className="px-6 md:px-10 text-white max-w-xl">
+              <h1 className="text-3xl md:text-4xl font-bold mb-4">이벤트 캘린더</h1>
+              <p className="text-lg mb-6">
+                날짜별로 다양한 반려동물 행사를 확인하세요.
+                일정을 미리 체크하고 참여해보세요!
+              </p>
+              <div className="flex space-x-4">
+                <Button 
+                  className="bg-white text-primary hover:bg-gray-100"
+                  onClick={() => setLocation("/events")}
+                >
+                  <Users className="h-4 w-4 mr-2" />
+                  이벤트 목록 보기
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
       <div className="flex justify-between items-center mb-8">
         <Link href="/events">
           <Button variant="outline" className="flex items-center">

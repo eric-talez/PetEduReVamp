@@ -299,6 +299,35 @@ export default function EventsPage() {
   
   return (
     <div className="container mx-auto px-4 py-6">
+      {/* 배너 영역 */}
+      <div className="w-full mb-8 rounded-lg overflow-hidden relative">
+        <div className="relative h-64 md:h-80">
+          <img 
+            src="https://images.unsplash.com/photo-1541364983171-a8ba01e95cfc?ixlib=rb-4.0.3&auto=format&fit=crop&w=1500&h=400&q=80"
+            alt="이벤트 배너" 
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-primary/80 to-transparent flex items-center">
+            <div className="px-6 md:px-10 text-white max-w-xl">
+              <h1 className="text-3xl md:text-4xl font-bold mb-4">반려동물 이벤트</h1>
+              <p className="text-lg mb-6">
+                다양한 반려동물 행사와 만남의 장을 찾아보세요. 
+                지역별, 테마별 이벤트를 한눈에!
+              </p>
+              <div className="flex space-x-4">
+                <Button 
+                  className="bg-white text-primary hover:bg-gray-100"
+                  onClick={() => setLocation("/events/calendar")}
+                >
+                  <Calendar className="h-4 w-4 mr-2" />
+                  캘린더 보기
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
       {/* 헤더 및 검색 */}
       <div className="mb-8">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">

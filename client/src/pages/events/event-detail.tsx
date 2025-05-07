@@ -246,6 +246,28 @@ export default function EventDetailPage() {
   
   return (
     <div className="container mx-auto px-4 py-6">
+      {/* 배너 영역 */}
+      {event.image && (
+        <div className="w-full mb-8 rounded-lg overflow-hidden relative">
+          <div className="relative h-64 md:h-80">
+            <img 
+              src={event.image}
+              alt={event.title} 
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-r from-primary/80 to-transparent flex items-center">
+              <div className="px-6 md:px-10 text-white max-w-xl">
+                <Badge className="mb-4 bg-white text-primary">{event.category}</Badge>
+                <h1 className="text-3xl md:text-4xl font-bold mb-4">{event.title}</h1>
+                <p className="text-lg mb-6">
+                  {formatDate(event.date)} · {event.time}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      
       {/* 뒤로가기 */}
       <div className="mb-4">
         <Link href="/events">
