@@ -35,21 +35,10 @@ export default function Trainers() {
   const handleBookConsultation = (trainerId: number) => {
     console.log(`${trainerId}번 훈련사와 상담 예약하기`);
     
-    // localStorage를 직접 확인하여 로그인 상태 확인
-    // useAuth 훅이 최신 상태를 반영하지 않을 수 있음
-    const storedAuth = localStorage.getItem('petedu_auth');
-    const isLoggedIn = !!storedAuth;
-    
-    if (isLoggedIn) {
-      console.log("로그인 상태: 상담 예약 페이지로 이동");
-      closeTrainerModal();
-      setLocation(`/video-call?trainer=${trainerId}`);
-    } else {
-      console.log("비로그인 상태: 로그인 페이지로 이동");
-      alert("상담 예약은 로그인 후 이용 가능합니다.");
-      closeTrainerModal();
-      setLocation("/auth/login?redirect=/trainers");
-    }
+    // 모든 사용자가 예약 페이지로 이동 가능하도록 변경
+    // 예약 페이지 내에서 로그인 상태에 따라 다른 UI 표시
+    closeTrainerModal();
+    setLocation(`/video-call?trainer=${trainerId}`);
   };
   
   const trainers = [
