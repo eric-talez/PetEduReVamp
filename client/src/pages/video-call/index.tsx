@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'wouter';
 import {
   Card,
@@ -136,13 +136,6 @@ const allTrainers = [
 // 화상 수업을 제공하는 훈련사만 필터링
 const trainersWithVideoClasses = allTrainers.filter(trainer => trainer.offersVideoClasses);
 
-// 수업 관리 모듈 가져오기
-import { 
-  ClassStatus, 
-  VideoClass as VideoClassType, 
-  runAutoClassCancellationCheck 
-} from '@/services/classManagement';
-
 // 수업 상태에 따른 라벨과 스타일
 const statusConfig: Record<ClassStatus, { label: string, badgeClass: string }> = {
   open: { 
@@ -160,6 +153,10 @@ const statusConfig: Record<ClassStatus, { label: string, badgeClass: string }> =
   completed: { 
     label: '종료됨', 
     badgeClass: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200' 
+  },
+  cancelled: {
+    label: '취소됨',
+    badgeClass: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100'
   }
 };
 
@@ -287,6 +284,34 @@ export default function VideoCallPage() {
   const [selectedClass, setSelectedClass] = useState<typeof videoClasses[0] | null>(null);
   // 상세 보기 다이얼로그 상태
   const [showDetail, setShowDetail] = useState(false);
+  // 수업 데이터 상태 (자동 취소 처리를 위해 상태로 관리)
+  const [classesData, setClassesData] = useState<typeof videoClasses>(videoClasses);
+  
+  // 자동 취소 처리를 위한 useEffect
+  useEffect(() => {
+    // 페이지 로드 시 자동으로 수업 취소 조건 체크
+    // 실제 서비스에서는 서버에서 주기적으로 실행되어야 함
+    const initializedClasses = videoClasses.map(cls => ({
+      ...cls,
+      // 테스트를 위해 일부 수업에 자동 취소 설정 추가
+      isAutoCancelEnabled: cls.id === 1 || cls.id === 4,
+      minParticipants: cls.id === 1 || cls.id === 4 ? 1 : null
+    }));
+    
+    // 초기 데이터 설정
+    setClassesData(initializedClasses);
+    
+    // 3초 후 자동 취소 로직 실행 (데모 목적)
+    const timer = setTimeout(() => {
+      // 자동 취소 처리 적용
+      const updatedClasses = runAutoClassCancellationCheck(classesData);
+      setClassesData(updatedClasses);
+      
+      console.log('자동 취소 처리 완료');
+    }, 3000);
+    
+    return () => clearTimeout(timer);
+  }, []);
   
   // 로그인 상태를 localStorage에서 직접 확인
   const checkIsAuthenticated = () => {
@@ -295,7 +320,7 @@ export default function VideoCallPage() {
   };
 
   // 필터링된 비디오 클래스
-  const filteredClasses = videoClasses.filter(cls => {
+  const filteredClasses = classesData.filter(cls => {
     if (filter === "all") return true;
     if (filter === "1on1") return cls.tags.includes("1:1 훈련");
     if (filter === "group") return cls.tags.includes("그룹 클래스");
