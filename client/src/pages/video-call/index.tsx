@@ -136,8 +136,12 @@ const allTrainers = [
 // 화상 수업을 제공하는 훈련사만 필터링
 const trainersWithVideoClasses = allTrainers.filter(trainer => trainer.offersVideoClasses);
 
-// 수업 상태 타입 정의
-type ClassStatus = 'open' | 'full' | 'closed' | 'completed';
+// 수업 관리 모듈 가져오기
+import { 
+  ClassStatus, 
+  VideoClass as VideoClassType, 
+  runAutoClassCancellationCheck 
+} from '@/services/classManagement';
 
 // 수업 상태에 따른 라벨과 스타일
 const statusConfig: Record<ClassStatus, { label: string, badgeClass: string }> = {

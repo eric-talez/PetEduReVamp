@@ -113,8 +113,7 @@ export default function InstituteRegister() {
   const onSubmit = (data: RegisterFormValues) => {
     toast({
       title: "교육 기관 등록 요청이 접수되었습니다",
-      description: "검토 후 승인 여부를 이메일로 안내해 드리겠습니다.",
-      variant: "success",
+      description: "검토 후 승인 여부를 이메일로 안내해 드리겠습니다."
     });
     
     console.log('Form data:', data);

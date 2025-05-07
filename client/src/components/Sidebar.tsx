@@ -290,9 +290,9 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                       href="/institutes" 
                       icon={<Building className="w-5 h-5 mr-2" />} 
                       active={isActive("/institutes")} 
-                      onClick={() => {
+                      onClick={(path) => {
                         console.log("비회원이 교육 기관 클릭");
-                        window.location.href = "/auth";
+                        handleItemClick(path);
                       }} 
                       show={true}
                     >교육 기관</NavItem>
@@ -330,9 +330,7 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                   </>
                 )}
 
-                <div className="mt-6">
-                  <NavItem href="/auth" icon={<LogIn className="w-5 h-5 mr-2" />} active={isActive("/auth")} onClick={handleItemClick} show={true}>로그인</NavItem>
-                </div>
+
               </>
             )}
 
