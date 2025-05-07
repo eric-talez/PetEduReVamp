@@ -1,6 +1,6 @@
 import { useAuth } from "../../SimpleApp";
 import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/Button";
 import { Avatar } from "@/components/ui/Avatar";
 import { Badge } from "@/components/ui/badge";
 import { useLocation, Link } from "wouter";
@@ -308,10 +308,12 @@ export default function PetOwnerDashboard({ onAction }: PetOwnerDashboardProps) 
                 </p>
                 <div className="flex justify-between items-center">
                   <div className="flex items-center">
-                    <Avatar className="w-8 h-8">
-                      <AvatarImage src={course.trainer.avatar} alt={course.trainer.name} />
-                      <AvatarFallback>{course.trainer.name.substring(0, 2)}</AvatarFallback>
-                    </Avatar>
+                    <Avatar 
+                      src={course.trainer.avatar}
+                      alt={course.trainer.name}
+                      fallback={course.trainer.name.substring(0, 2)}
+                      className="w-8 h-8"
+                    />
                     <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">{course.trainer.name}</span>
                   </div>
                   

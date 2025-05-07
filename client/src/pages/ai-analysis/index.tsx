@@ -216,7 +216,7 @@ export default function AIAnalysisPage() {
       toast({
         title: "분석이 완료되었습니다",
         description: "AI가 반려견의 상태를 분석했습니다. 24시간 후에 다시 분석할 수 있습니다.",
-        variant: "success",
+        variant: "default",
       });
     }, 2000);
   };

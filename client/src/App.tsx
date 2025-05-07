@@ -29,6 +29,7 @@ import TrainerReservationsPage from "./pages/trainer-dashboard/reservations";
 import InstituteCourseApprovalsPage from "./pages/institute-dashboard/course-approvals";
 import EventsPage from "./pages/events/index";
 import EventCalendarPage from "./pages/events/calendar";
+import AIAnalysisPage from "./pages/ai-analysis/index";
 
 // 지연 로딩되는 컴포넌트들
 const EventDetailPage = lazy(() => import('./pages/events/event-detail'));
@@ -114,6 +115,9 @@ function AuthenticatedRoutes() {
         <Route path="/settings" component={SettingsPage} />
         <Route path="/events" component={EventsPage} />
         <Route path="/events/calendar" component={EventCalendarPage} />
+        <Route path="/ai-analysis">
+          {() => checkAccess(['pet-owner', 'admin']) ? <AIAnalysisPage /> : window.location.href = '/'}
+        </Route>
         <Route path="/events/:id">
           {() => (
             <Suspense fallback={<div className="p-8 text-center">이벤트 상세 페이지 로딩 중...</div>}>
