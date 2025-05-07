@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
-import { Cloud, CloudRain, MapPin, Sun, ThermometerSun, Wind } from 'lucide-react';
+import { Cloud, CloudRain, MapPin, Sun, ThermometerSun, Wind, Locate, Loader2 } from 'lucide-react';
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { toast } from "@/hooks/use-toast";
 
 declare global {
   interface Window {
@@ -33,6 +35,8 @@ export function KakaoMapView({ selectedLocation }: KakaoMapViewProps) {
   const [weather, setWeather] = useState<Weather | null>(null);
   const [map, setMap] = useState<any>(null);
   const [markers, setMarkers] = useState<any[]>([]);
+  const [isLocating, setIsLocating] = useState(false);
+  const [myLocation, setMyLocation] = useState<{lat: number, lng: number} | null>(null);
 
   // 맵 초기화 
   useEffect(() => {
@@ -122,6 +126,108 @@ export function KakaoMapView({ selectedLocation }: KakaoMapViewProps) {
     setWeather(mockWeather);
   };
 
+  // 내 위치 찾기 함수
+  const findMyLocation = () => {
+    setIsLocating(true);
+    
+    if (!map) {
+      toast({
+        title: "오류",
+        description: "지도가 로드되지 않았습니다. 페이지를 새로고침 해주세요.",
+        variant: "destructive"
+      });
+      setIsLocating(false);
+      return;
+    }
+    
+    if (!navigator.geolocation) {
+      toast({
+        title: "위치 정보를 사용할 수 없습니다",
+        description: "브라우저가 위치 정보 서비스를 지원하지 않습니다.",
+        variant: "destructive"
+      });
+      setIsLocating(false);
+      return;
+    }
+    
+    navigator.geolocation.getCurrentPosition(
+      (geoPosition) => {
+        const lat = geoPosition.coords.latitude;
+        const lng = geoPosition.coords.longitude;
+        setMyLocation({ lat, lng });
+        
+        // 기존 마커 제거
+        markers.forEach(marker => marker.setMap(null));
+        setMarkers([]);
+        
+        // 내 위치에 마커 생성
+        const myPosition = new window.kakao.maps.LatLng(lat, lng);
+        const marker = new window.kakao.maps.Marker({
+          position: myPosition,
+          map,
+        });
+        
+        // 정보 윈도우 생성
+        const infoContent = `<div style="padding:5px;width:150px;text-align:center;">내 위치</div>`;
+        const infoWindow = new window.kakao.maps.InfoWindow({
+          content: infoContent,
+        });
+        infoWindow.open(map, marker);
+        
+        // 마커 저장
+        setMarkers([marker]);
+        
+        // 지도 중심점 이동
+        map.setCenter(myPosition);
+        map.setLevel(3); // 줌 레벨 조정
+        
+        // 내 위치 근처 약식 좌표로 날씨 정보 조회
+        const myCurrentLocation = {
+          lat, 
+          lng,
+          name: "내 위치",
+          address: "현재 위치"
+        };
+        fetchMockWeather(myCurrentLocation);
+        
+        toast({
+          title: "위치 확인 성공",
+          description: "현재 위치를 중심으로 지도를 이동했습니다.",
+        });
+        
+        setIsLocating(false);
+      },
+      (error) => {
+        let errorMessage = "알 수 없는 오류가 발생했습니다.";
+        
+        switch (error.code) {
+          case error.PERMISSION_DENIED:
+            errorMessage = "위치 정보 접근 권한이 거부되었습니다.";
+            break;
+          case error.POSITION_UNAVAILABLE:
+            errorMessage = "위치 정보를 사용할 수 없습니다.";
+            break;
+          case error.TIMEOUT:
+            errorMessage = "위치 정보 요청 시간이 초과되었습니다.";
+            break;
+        }
+        
+        toast({
+          title: "위치 확인 실패",
+          description: errorMessage,
+          variant: "destructive"
+        });
+        
+        setIsLocating(false);
+      },
+      { 
+        enableHighAccuracy: true, 
+        timeout: 10000, 
+        maximumAge: 0 
+      }
+    );
+  };
+
   // 날씨 아이콘 선택
   const getWeatherIcon = () => {
     if (!weather) return <Sun className="h-8 w-8 text-yellow-500" />;
@@ -141,11 +247,31 @@ export function KakaoMapView({ selectedLocation }: KakaoMapViewProps) {
   return (
     <div className="flex flex-col h-full">
       {/* 지도 영역 */}
-      <div 
-        ref={mapContainerRef} 
-        className="h-[350px] w-full rounded-lg bg-gray-100 dark:bg-gray-800 mb-4"
-      />
-
+      <div className="relative">
+        <div 
+          ref={mapContainerRef} 
+          className="h-[350px] w-full rounded-lg bg-gray-100 dark:bg-gray-800 mb-4"
+        />
+        
+        {/* 내 위치 찾기 버튼 */}
+        <div className="absolute bottom-4 right-4 z-10">
+          <Button
+            variant="default"
+            size="sm"
+            className="flex items-center space-x-1 bg-white/90 hover:bg-white text-black shadow-md"
+            onClick={findMyLocation}
+            disabled={isLocating}
+          >
+            {isLocating ? (
+              <Loader2 className="h-4 w-4 animate-spin mr-1" />
+            ) : (
+              <Locate className="h-4 w-4 mr-1" />
+            )}
+            <span>{isLocating ? "위치 찾는 중..." : "내 위치 찾기"}</span>
+          </Button>
+        </div>
+      </div>
+      
       {/* 위치 및 날씨 정보 */}
       {selectedLocation && (
         <Card className="mb-4">
