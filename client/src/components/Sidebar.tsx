@@ -497,6 +497,15 @@ export function Sidebar({ open, onClose }: SidebarProps) {
                 {menuGroups.trainer && (
                   <>
                     <NavItem 
+                      href="/" 
+                      icon={<Home className="w-5 h-5 mr-2" />}
+                      active={isActive("/")}
+                      onClick={onClose}
+                    >
+                      훈련사 홈
+                    </NavItem>
+                    
+                    <NavItem 
                       href="/trainer/dashboard" 
                       icon={<Presentation className="w-5 h-5 mr-2" />}
                       active={isActive("/trainer/dashboard")}
@@ -553,6 +562,15 @@ export function Sidebar({ open, onClose }: SidebarProps) {
                 
                 {menuGroups.institute && (
                   <>
+                    <NavItem 
+                      href="/" 
+                      icon={<Home className="w-5 h-5 mr-2" />}
+                      active={isActive("/")}
+                      onClick={onClose}
+                    >
+                      기관 홈
+                    </NavItem>
+
                     <NavItem 
                       href="/institute/dashboard" 
                       icon={<Presentation className="w-5 h-5 mr-2" />}
@@ -628,6 +646,15 @@ export function Sidebar({ open, onClose }: SidebarProps) {
                 
                 {menuGroups.admin && (
                   <>
+                    <NavItem 
+                      href="/" 
+                      icon={<Home className="w-5 h-5 mr-2" />}
+                      active={isActive("/")}
+                      onClick={onClose}
+                    >
+                      관리자 홈
+                    </NavItem>
+
                     <NavItem 
                       href="/admin/dashboard" 
                       icon={<Presentation className="w-5 h-5 mr-2" />}

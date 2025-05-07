@@ -20,11 +20,32 @@ import { useState, useEffect, createContext, useContext } from "react";
 
 // 인증된 사용자용 라우트
 function AuthenticatedRoutes() {
+  const auth = useAppAuth();
+  const userRole = auth.userRole;
+  
+  // 역할에 따라 홈 경로를 다르게 처리
+  const getHomeComponent = () => {
+    switch(userRole) {
+      case 'pet-owner':
+        return <Dashboard />;
+      case 'trainer':
+        return <div className="p-8"><h1 className="text-2xl font-bold mb-4">훈련사 홈</h1><p>훈련사 전용 홈 페이지입니다.</p></div>;
+      case 'institute-admin':
+        return <div className="p-8"><h1 className="text-2xl font-bold mb-4">기관 관리자 홈</h1><p>기관 관리자 전용 홈 페이지입니다.</p></div>;
+      case 'admin':
+        return <div className="p-8"><h1 className="text-2xl font-bold mb-4">시스템 관리자 홈</h1><p>시스템 관리자 전용 홈 페이지입니다.</p></div>;
+      default:
+        return <Home />;
+    }
+  };
+  
   return (
     <AppLayout>
       <Switch>
         {/* 역할별 메인 페이지 (각 역할의 홈) */}
-        <Route path="/" component={Home} /> {/* 일반 회원의 홈 */}
+        <Route path="/">
+          {() => getHomeComponent()}
+        </Route>
         <Route path="/dashboard" component={Dashboard} /> {/* 견주 회원의 대시보드 */}
         <Route path="/dashboard/trainer" component={() => <div className="p-8"><h1 className="text-2xl font-bold mb-4">훈련사 대시보드</h1><p>훈련사를 위한 대시보드입니다.</p></div>} />
         <Route path="/dashboard/institute" component={() => <div className="p-8"><h1 className="text-2xl font-bold mb-4">기관 관리자 대시보드</h1><p>기관 관리자를 위한 대시보드입니다.</p></div>} />
