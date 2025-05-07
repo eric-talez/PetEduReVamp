@@ -2,9 +2,26 @@ import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Calendar, Clock, Users, Video, User, MessageSquare } from 'lucide-react';
+import { Calendar, Clock, Users, Video, User, MessageSquare, Lock } from 'lucide-react';
+import { useAuth } from '@/SimpleApp';
+import { useLocation } from 'wouter';
 
 export default function VideoCall() {
+  const { isAuthenticated } = useAuth();
+  const [, setLocation] = useLocation();
+  
+  // 로그인 여부 검사하여 비로그인 상태면 로그인 페이지로 리디렉션
+  useEffect(() => {
+    const storedAuth = localStorage.getItem('petedu_auth');
+    const isLoggedIn = !!storedAuth;
+    
+    if (!isLoggedIn) {
+      console.log("VideoCall: 비로그인 상태 - 로그인 페이지로 리디렉션");
+      // 현재 URL에 redirect 파라미터로 추가하여 리디렉션
+      const currentPath = window.location.pathname + window.location.search;
+      setLocation(`/auth/login?redirect=${encodeURIComponent(currentPath)}`);
+    }
+  }, [setLocation]);
   const [meetingId, setMeetingId] = useState<string>('');
   const [isJoining, setIsJoining] = useState<boolean>(false);
   const [upcomingClasses, setUpcomingClasses] = useState<any[]>([
