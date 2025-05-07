@@ -348,10 +348,22 @@ function UnauthenticatedRoutes() {
         <Route path="/events" component={EventsPage} />
         <Route path="/events/calendar" component={EventCalendarPage} />
         <Route path="/events/:id" component={EventDetailPage} />
-        <Route path="/help/faq" component={() => import("./pages/help/faq").then(module => <module.default />)} />
-        <Route path="/help/guide" component={() => import("./pages/help/guide").then(module => <module.default />)} />
-        <Route path="/help/about" component={() => import("./pages/help/about").then(module => <module.default />)} />
-        <Route path="/help/contact" component={() => import("./pages/help/contact").then(module => <module.default />)} />
+        <Route path="/help/faq" component={() => {
+          const FAQPage = require('./pages/help/faq').default;
+          return <FAQPage />;
+        }} />
+        <Route path="/help/guide" component={(() => {
+          const GuidePage = require('./pages/help/guide').default;
+          return <GuidePage />;
+        })} />
+        <Route path="/help/about" component={(() => {
+          const AboutPage = require('./pages/help/about').default;
+          return <AboutPage />;
+        })} />
+        <Route path="/help/contact" component={(() => {
+          const ContactPage = require('./pages/help/contact').default;
+          return <ContactPage />;
+        })} />
         <Route path="/" component={Home} />
         <Route>
           {() => {

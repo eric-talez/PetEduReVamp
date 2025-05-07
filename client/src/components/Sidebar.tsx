@@ -34,7 +34,8 @@ import {
   ChevronsLeft,
   ChevronsRight,
   Menu,
-  Activity
+  Activity,
+  HelpCircle
 } from "lucide-react";
 
 // 사이드바 컨텍스트 생성
@@ -164,7 +165,12 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
     }
 
     // 권한 체크
-    if (!isAuthenticated && !["/", "/courses", "/trainers", "/video-training", "/video-call", "/community", "/institutes", "/institutes/register"].includes(path) && !path.startsWith('/institutes/')) {
+    if (!isAuthenticated && 
+        !["/", "/courses", "/trainers", "/video-training", "/video-call", "/community", 
+          "/institutes", "/institutes/register", "/events", "/events/calendar"].includes(path) && 
+        !path.startsWith('/institutes/') && 
+        !path.startsWith('/events/') && 
+        !path.startsWith('/help/')) {
       console.log('비인증 사용자 접근 제한');
       window.location.href = "/auth";
       return;
@@ -258,7 +264,14 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                       active={isActive("/")} 
                       onClick={(path) => {
                         console.log("비회원 메뉴 클릭:", path);
-                        if (path !== "/" && path !== "/courses" && path !== "/trainers" && path !== "/video-training") {
+                        if (path !== "/" && 
+                            path !== "/courses" && 
+                            path !== "/trainers" && 
+                            path !== "/video-training" &&
+                            path !== "/community" &&
+                            path !== "/institutes" &&
+                            path !== "/events" &&
+                            !path.startsWith("/help/")) {
                           window.location.href = "/auth";
                           return;
                         }
@@ -340,6 +353,60 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                       }} 
                       show={true}
                     >이벤트</NavItem>
+                    
+                    {/* 도움말 그룹 추가 */}
+                    {expanded && (
+                      <div className="mt-4 px-3 py-2">
+                        <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                          도움말
+                        </h3>
+                      </div>
+                    )}
+                    
+                    <NavItem 
+                      href="/help/faq" 
+                      icon={<HelpCircle className="w-5 h-5 mr-2" />} 
+                      active={isActive("/help/faq")} 
+                      onClick={(path) => {
+                        console.log("비회원이 FAQ 클릭");
+                        window.location.href = path;
+                      }} 
+                      show={true}
+                    >자주 묻는 질문</NavItem>
+                    
+                    <NavItem 
+                      href="/help/guide" 
+                      icon={<BookOpen className="w-5 h-5 mr-2" />} 
+                      active={isActive("/help/guide")} 
+                      onClick={(path) => {
+                        console.log("비회원이 이용 가이드 클릭");
+                        window.location.href = path;
+                      }} 
+                      show={true}
+                    >이용 가이드</NavItem>
+                    
+                    <NavItem 
+                      href="/help/about" 
+                      icon={<Users className="w-5 h-5 mr-2" />} 
+                      active={isActive("/help/about")} 
+                      onClick={(path) => {
+                        console.log("비회원이 소개 페이지 클릭");
+                        window.location.href = path;
+                      }} 
+                      show={true}
+                    >소개</NavItem>
+                    
+                    <NavItem 
+                      href="/help/contact" 
+                      icon={<MessageSquare className="w-5 h-5 mr-2" />} 
+                      active={isActive("/help/contact")} 
+                      onClick={(path) => {
+                        console.log("비회원이 문의하기 클릭");
+                        window.location.href = path;
+                      }} 
+                      show={true}
+                    >문의하기</NavItem>
+                    
                   </>
                 )}
 
