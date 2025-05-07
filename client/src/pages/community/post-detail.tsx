@@ -3,7 +3,7 @@ import { useParams, Link } from 'wouter';
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar } from "@/components/ui/Avatar";
 import { Textarea } from "@/components/ui/textarea";
 import { 
   Heart, 
@@ -245,9 +245,14 @@ export default function PostDetailPage() {
           {/* 작성자 정보 */}
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center">
-              <Avatar className="w-10 h-10">
-                <AvatarImage src={post.author.avatar} alt={post.author.name} />
-                <AvatarFallback>{getInitials(post.author.name)}</AvatarFallback>
+              <Avatar 
+                className="w-10 h-10"
+              >
+                <img 
+                  src={post.author.avatar} 
+                  alt={post.author.name} 
+                  className="h-full w-full object-cover"
+                />
               </Avatar>
               
               <div className="ml-3">
@@ -371,10 +376,12 @@ export default function PostDetailPage() {
             {post.comments.map((comment) => (
               <div key={comment.id} className="border-b border-gray-100 dark:border-gray-700 pb-6 last:border-b-0 last:pb-0">
                 <div className="flex items-start mb-3">
-                  <Avatar className="w-8 h-8">
-                    <AvatarImage src={comment.author.avatar} alt={comment.author.name} />
-                    <AvatarFallback>{getInitials(comment.author.name)}</AvatarFallback>
-                  </Avatar>
+                  <Avatar 
+                    src={comment.author.avatar}
+                    alt={comment.author.name}
+                    fallback={getInitials(comment.author.name)}
+                    className="w-8 h-8"
+                  />
                   
                   <div className="ml-3 flex-1">
                     <div className="flex items-center">
