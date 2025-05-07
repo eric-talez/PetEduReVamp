@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Calendar, Clock, Star, Users, Video } from "lucide-react";
+import { AlertCircle, Calendar, Clock, Star, Users, Video, X } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 
 // 모든 훈련사 데이터
@@ -269,13 +269,45 @@ export default function VideoCallPage() {
     return true;
   });
 
+  // 로그인 필요 안내 토스트 상태
+  const [showLoginAlert, setShowLoginAlert] = useState(false);
+  
   const handleReservation = (classId: number) => {
-    // 로그인 여부와 상관없이 예약 페이지로 이동
+    if (!isAuthenticated) {
+      // 비로그인 상태면 알림 표시
+      setShowLoginAlert(true);
+      
+      // 3초 후 알림 자동 닫기
+      setTimeout(() => {
+        setShowLoginAlert(false);
+      }, 3000);
+      
+      return;
+    }
+    
+    // 로그인 상태면 예약 페이지로 이동
     window.location.href = `/video-call/reserve/${classId}`;
   };
 
   return (
-    <div className="container mx-auto py-8 px-4 max-w-6xl">
+    <div className="container mx-auto py-8 px-4 max-w-6xl relative">
+      {/* 로그인 필요 알림 */}
+      {showLoginAlert && (
+        <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 bg-amber-50 border border-amber-200 text-amber-800 px-6 py-3 rounded-lg shadow-lg flex items-center space-x-3 max-w-md animate-in fade-in slide-in-from-top-4 duration-300">
+          <AlertCircle className="h-5 w-5 text-amber-600" />
+          <div>
+            <p className="font-medium">로그인이 필요한 서비스입니다.</p>
+            <p className="text-sm">화상 수업을 예약하려면 먼저 로그인해 주세요.</p>
+          </div>
+          <button 
+            onClick={() => setShowLoginAlert(false)}
+            className="ml-auto text-amber-700 hover:text-amber-900"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+      )}
+      
       <div className="mb-8 text-center">
         <h1 className="text-3xl font-bold text-gray-900 dark:text-white">화상 수업 프로그램</h1>
         <p className="mt-2 text-gray-600 dark:text-gray-300">

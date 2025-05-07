@@ -109,7 +109,33 @@ export default function VideoClassReservePage() {
     }
   };
 
-  // 비로그인 상태에서도 예약 가능
+  // 예약 시 비로그인 상태인 경우 로그인 안내 표시
+  if (!isAuthenticated) {
+    return (
+      <div className="container mx-auto py-12 px-4">
+        <Card className="max-w-md mx-auto">
+          <CardHeader>
+            <div className="flex items-center space-x-2 text-amber-500">
+              <AlertCircle className="h-6 w-6" />
+              <CardTitle>로그인 필요</CardTitle>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <p>화상 수업 예약을 위해서는 로그인이 필요합니다.</p>
+            <p className="mt-2 text-gray-500">로그인 페이지로 이동하시려면 아래 버튼을 클릭해주세요.</p>
+          </CardContent>
+          <CardFooter>
+            <Button 
+              className="w-full" 
+              onClick={() => window.location.href = '/auth'}
+            >
+              로그인 페이지로 이동
+            </Button>
+          </CardFooter>
+        </Card>
+      </div>
+    );
+  }
 
   if (!videoClass) {
     return (
