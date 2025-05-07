@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Avatar } from '@/components/ui/avatar';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -154,7 +154,7 @@ export default function TrainerDashboard() {
           <Button variant="outline" size="sm" className="flex items-center">
             <Bell className="w-4 h-4 mr-2" />
             알림
-            <Badge variant="danger" className="w-5 h-5 ml-2 rounded-full p-0 flex items-center justify-center">3</Badge>
+            <Badge variant="destructive" className="w-5 h-5 ml-2 rounded-full p-0 flex items-center justify-center">3</Badge>
           </Button>
           <Button variant="outline" size="sm" className="flex items-center">
             <Calendar className="w-4 h-4 mr-2" />
@@ -305,11 +305,10 @@ export default function TrainerDashboard() {
               <div className="space-y-5">
                 {recentStudents.map((student) => (
                   <div key={student.id} className="flex items-start">
-                    <Avatar 
-                      src={student.image} 
-                      alt={student.name}
-                      size="md"
-                    />
+                    <Avatar className="h-10 w-10">
+                      <AvatarImage src={student.image} alt={student.name} />
+                      <AvatarFallback>{student.name.substring(0, 2)}</AvatarFallback>
+                    </Avatar>
                     <div className="ml-4 flex-1">
                       <div className="flex justify-between items-start">
                         <div>
@@ -322,11 +321,10 @@ export default function TrainerDashboard() {
                       </div>
                       
                       <div className="flex items-center mt-2">
-                        <Avatar 
-                          src={student.pet.image} 
-                          alt={student.pet.name}
-                          size="sm"
-                        />
+                        <Avatar className="h-8 w-8">
+                          <AvatarImage src={student.pet.image} alt={student.pet.name} />
+                          <AvatarFallback>{student.pet.name.substring(0, 2)}</AvatarFallback>
+                        </Avatar>
                         <span className="ml-2 text-sm">{student.pet.name}</span>
                       </div>
                       
@@ -361,11 +359,10 @@ export default function TrainerDashboard() {
                   <div key={review.id} className="border-b border-gray-100 dark:border-gray-800 pb-6 last:border-0 last:pb-0">
                     <div className="flex items-start justify-between">
                       <div className="flex items-center">
-                        <Avatar 
-                          src={review.image} 
-                          alt={review.student}
-                          size="md"
-                        />
+                        <Avatar className="h-10 w-10">
+                          <AvatarImage src={review.image} alt={review.student} />
+                          <AvatarFallback>{review.student.substring(0, 2)}</AvatarFallback>
+                        </Avatar>
                         <div className="ml-3">
                           <div className="font-medium">{review.student}</div>
                           <div className="text-sm text-gray-600 dark:text-gray-400">{review.course}</div>
