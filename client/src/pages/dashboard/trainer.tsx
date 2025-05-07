@@ -1,4 +1,4 @@
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "../../SimpleApp";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
@@ -6,23 +6,23 @@ import { Avatar } from "@/components/ui/Avatar";
 import { Users, BookOpen, Calendar, DollarSign, TrendingUp, Award, BarChart2 } from "lucide-react";
 
 export default function TrainerDashboard() {
-  const { user } = useAuth();
+  const { userName } = useAuth();
 
   return (
     <div className="py-8 px-4 sm:px-6 lg:px-8">
       {/* Banner */}
-      <div className="relative rounded-xl overflow-hidden h-60 md:h-80 mb-8 bg-gradient-to-r from-primary/80 to-accent/80 shadow-lg">
+      <div className="relative rounded-xl overflow-hidden h-60 md:h-80 mb-8 bg-gradient-to-r from-blue-600/80 to-indigo-600/80 shadow-lg">
         <img 
-          src="https://images.unsplash.com/photo-1580824456266-c577a6711dfa?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=400" 
+          src="https://images.unsplash.com/photo-1583511655826-05700a52f8e4?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=400" 
           alt="훈련사 대시보드"
           className="w-full h-full object-cover absolute mix-blend-overlay"
         />
         
-        <div className="absolute inset-0 bg-gradient-to-r from-primary/80 to-accent/30 mix-blend-multiply"></div>
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-600/80 to-indigo-600/30 mix-blend-multiply"></div>
         
         <div className="relative h-full flex flex-col justify-center px-8 md:px-12">
           <h1 className="text-white text-2xl md:text-4xl font-bold mb-2 md:mb-4 max-w-xl">
-            반려견 교육의 전문가, {user?.name}님
+            반려견 교육의 전문가, {userName || '훈련사'}님
           </h1>
           <p className="text-white text-sm md:text-lg max-w-xl mb-6">
             PetEduPlatform에서 귀하의 전문성을 공유하고 더 많은 반려견 가족에게 최고의 교육을 제공하세요.
