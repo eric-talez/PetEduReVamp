@@ -89,12 +89,8 @@ function UnauthenticatedRoutes() {
         <Route path="/" component={Home} />
         <Route path="/courses" component={CoursesPage} />
         <Route path="/course/:id" component={CourseDetail} />
-        <Route>
-          {() => {
-            window.location.href = "/auth/login";
-            return null;
-          }}
-        </Route>
+        <Route path="/community" component={CommunityPage} />
+        <Route component={NotFound} />
       </Switch>
     </AppLayout>
   );
