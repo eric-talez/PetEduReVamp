@@ -12,7 +12,8 @@ import {
   ArrowLeft,
   Send,
   BookmarkPlus,
-  MoreHorizontal
+  MoreHorizontal,
+  AlertCircle
 } from "lucide-react";
 import { isAuthenticated } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
@@ -338,8 +339,16 @@ export default function PostDetailPage() {
             댓글 {post.comments.length}개
           </h2>
           
-          {/* 댓글 작성 - 로그인한 사용자에게만 표시되는 것이 아닌 모든 사용자에게 표시하되, 댓글 등록 시 로그인 체크 */}
+          {/* 댓글 작성 - 모든 사용자에게 표시하되, 비로그인 사용자에게는 안내 메시지 표시 */}
           <div className="mb-8">
+            {!isAuthenticated() && (
+              <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-md p-3 mb-3">
+                <p className="text-sm text-yellow-800 dark:text-yellow-300 flex items-center">
+                  <AlertCircle className="h-4 w-4 mr-2" />
+                  댓글을 작성하려면 <Link href="/auth/login" className="text-blue-600 dark:text-blue-400 underline ml-1 mr-1">로그인</Link>이 필요합니다.
+                </p>
+              </div>
+            )}
             <Textarea
               placeholder="댓글을 남겨보세요..."
               className="min-h-[80px] mb-3"
