@@ -47,7 +47,25 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
             </Button>
           </div>
 
-          {/* Message and Notification Icons */}
+          {/* Message and Notification Icons - 비어있게 */}
+          <div className="flex items-center space-x-2">
+          </div>
+
+          {/* Search */}
+          <div className="hidden lg:flex flex-1 max-w-xl mx-12">
+            <div className="w-full relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <Search className="h-4 w-4 text-gray-400" />
+              </div>
+              <input 
+                type="text" 
+                className="block w-full pl-10 pr-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-primary focus:border-primary" 
+                placeholder="강의, 훈련사, 기관 검색" 
+              />
+            </div>
+          </div>
+
+          {/* Action buttons */}
           <div className="flex items-center space-x-2">
             <ThemeToggle />
             
@@ -78,29 +96,9 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
                 </span>
               )}
             </Button>
-          </div>
-
-          {/* Search */}
-          <div className="hidden lg:flex flex-1 max-w-xl mx-12">
-            <div className="w-full relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Search className="h-4 w-4 text-gray-400" />
-              </div>
-              <input 
-                type="text" 
-                className="block w-full pl-10 pr-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-primary focus:border-primary" 
-                placeholder="강의, 훈련사, 기관 검색" 
-              />
-            </div>
-          </div>
-
-          {/* Action buttons */}
-          <div className="flex items-center space-x-2">
 
             {isAuthenticated ? (
               <>
-
-
                 {/* Shopping Cart */}
                 <Button 
                   variant="ghost" 
