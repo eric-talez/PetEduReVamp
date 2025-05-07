@@ -336,16 +336,7 @@ function UnauthenticatedRoutes() {
         <Route path="/video-call" component={VideoCallPage} />
         <Route path="/institutes" component={Institutes} />
         <Route path="/community" component={Community} />
-        <Route path="/community/post/:id" component={() => {
-          // 커뮤니티 게시물 상세 페이지
-          try {
-            const CommunityPostDetailPage = require('./pages/community/post-detail').default;
-            return <CommunityPostDetailPage />;
-          } catch (e) {
-            console.error("커뮤니티 게시물 상세 페이지 로드 오류:", e);
-            return <div>게시물 상세 페이지를 불러올 수 없습니다.</div>;
-          }
-        }} />
+        <Route path="/community/post/:id" component={NotFound} />
         <Route path="/" component={Home} />
         <Route>
           {() => {

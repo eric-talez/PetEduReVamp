@@ -105,7 +105,7 @@ function promptLogin() {
   // 확인 클릭 전까지는 페이지 그대로 유지
   const confirmed = window.confirm("로그인 페이지로 이동하시겠습니까?");
   if (confirmed) {
-    window.location.href = "/auth/login";
+    window.location.href = "/auth";
   }
 }
 
@@ -348,7 +348,7 @@ export default function PostDetailPage() {
               <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-md p-3 mb-3">
                 <p className="text-sm text-yellow-800 dark:text-yellow-300 flex items-center">
                   <AlertCircle className="h-4 w-4 mr-2" />
-                  댓글을 작성하려면 <Link href="/auth/login" className="text-blue-600 dark:text-blue-400 underline ml-1 mr-1">로그인</Link>이 필요합니다.
+                  댓글을 작성하려면 <Link href="/auth" className="text-blue-600 dark:text-blue-400 underline ml-1 mr-1">로그인</Link>이 필요합니다.
                 </p>
               </div>
             )}
