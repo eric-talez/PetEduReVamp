@@ -34,7 +34,6 @@ import {
   ChevronsRight,
   Menu
 } from "lucide-react";
-import { useAppAuth } from "../App";
 
 // 사이드바 컨텍스트 생성
 interface SidebarContextType {
@@ -82,18 +81,12 @@ function NavItem({ href, icon, children, active, onClick }: NavItemProps) {
 interface SidebarProps {
   open: boolean;
   onClose: () => void;
-  // 직접 props로 전달받도록 추가
   userRole: string | null;
   isAuthenticated: boolean;
 }
 
 export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarProps) {
   const [location] = useLocation();
-  
-  // 콘솔에 사용자 역할 정보 출력 (디버깅용)
-  useEffect(() => {
-    console.log("Sidebar 컴포넌트 마운트/업데이트 (props) - userRole:", userRole, "isAuthenticated:", isAuthenticated);
-  }, [userRole, isAuthenticated]);
   
   // 사이드바 펼쳐짐/접힘 상태 관리
   const [expanded, setExpanded] = useState(true);
@@ -112,8 +105,7 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
     return () => window.removeEventListener('resize', handleResize);
   }, []);
   
-  // 메뉴 그룹 열기/닫기 상태 관리 
-  // userRole 의존성을 직접 제거하고 useEffect에서만 다루도록 수정
+  // 메뉴 그룹 상태 관리
   const [menuGroups, setMenuGroups] = useState({
     main: true,
     features: true,
@@ -123,24 +115,19 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
     admin: false
   });
   
-  // userRole이 변경될 때마다 해당 역할의 메뉴 그룹을 자동으로 열어줌
+  // userRole이 변경될 때마다 메뉴 그룹 상태 업데이트
   useEffect(() => {
-    console.log("사이드바에서 사용자 역할 변경 감지:", userRole);
     if (userRole) {
-      setMenuGroups(prev => {
-        const updated = {
-          ...prev,
-          trainer: userRole === 'trainer' || userRole === 'admin',
-          institute: userRole === 'institute-admin' || userRole === 'admin',
-          admin: userRole === 'admin'
-        };
-        console.log("메뉴 그룹 상태 업데이트:", updated);
-        return updated;
-      });
+      setMenuGroups(prev => ({
+        ...prev,
+        trainer: userRole === 'trainer' || userRole === 'admin',
+        institute: userRole === 'institute-admin' || userRole === 'admin',
+        admin: userRole === 'admin'
+      }));
     }
   }, [userRole]);
   
-  // 사이드바 펼침/접힘 토글 함수
+  // 사이드바 토글 함수
   const toggleSidebar = () => {
     setExpanded(!expanded);
   };
@@ -153,13 +140,21 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
     }));
   };
   
+  // 현재 경로 확인 함수
   const isActive = (path: string) => {
     if (path === "/" && location === "/") return true;
     if (path !== "/" && location.startsWith(path)) return true;
     return false;
   };
+
+  // 클릭 핸들러 - 공통 함수
+  const handleItemClick = () => {
+    if (onClose) {
+      onClose();
+    }
+  };
   
-  // SidebarContext 값 설정
+  // 컨텍스트 값 설정
   const contextValue = {
     expanded,
     toggleSidebar
@@ -174,8 +169,7 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
           expanded ? "w-64" : "w-[70px]"
         )}
       >
-        {/* Navigation */}
-        {/* Logo */}
+        {/* 로고 */}
         <div className="h-16 flex items-center justify-between border-b border-gray-200 dark:border-gray-800 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-900 px-3">
           {expanded ? (
             <Link href="/" className="flex flex-col items-center w-full">
@@ -230,7 +224,7 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                       href="/" 
                       icon={<Home className="w-5 h-5 mr-2" />}
                       active={isActive("/")}
-                      onClick={onClose}
+                      onClick={handleItemClick}
                     >
                       홈
                     </NavItem>
@@ -239,7 +233,7 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                       href="/courses" 
                       icon={<GraduationCap className="w-5 h-5 mr-2" />}
                       active={isActive("/courses")}
-                      onClick={onClose}
+                      onClick={handleItemClick}
                     >
                       강의 탐색
                     </NavItem>
@@ -248,7 +242,7 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                       href="/trainers" 
                       icon={<UserRoundCheck className="w-5 h-5 mr-2" />}
                       active={isActive("/trainers")}
-                      onClick={onClose}
+                      onClick={handleItemClick}
                     >
                       훈련사 찾기
                     </NavItem>
@@ -257,7 +251,7 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                       href="/institutes" 
                       icon={<Building className="w-5 h-5 mr-2" />}
                       active={isActive("/institutes")}
-                      onClick={onClose}
+                      onClick={handleItemClick}
                     >
                       교육 기관
                     </NavItem>
@@ -266,7 +260,7 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                       href="/community" 
                       icon={<MessageSquare className="w-5 h-5 mr-2" />}
                       active={isActive("/community")}
-                      onClick={onClose}
+                      onClick={handleItemClick}
                     >
                       커뮤니티
                     </NavItem>
@@ -278,7 +272,7 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                     href="/auth" 
                     icon={<LogIn className="w-5 h-5 mr-2" />}
                     active={isActive("/auth")}
-                    onClick={() => onClose()}
+                    onClick={handleItemClick}
                   >
                     로그인
                   </NavItem>
@@ -311,7 +305,7 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                       href="/" 
                       icon={<Home className="w-5 h-5 mr-2" />}
                       active={isActive("/")}
-                      onClick={onClose}
+                      onClick={handleItemClick}
                     >
                       홈
                     </NavItem>
@@ -320,7 +314,7 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                       href="/dashboard" 
                       icon={<LineChart className="w-5 h-5 mr-2" />}
                       active={isActive("/dashboard")}
-                      onClick={onClose}
+                      onClick={handleItemClick}
                     >
                       대시보드
                     </NavItem>
@@ -329,7 +323,7 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                       href="/courses" 
                       icon={<GraduationCap className="w-5 h-5 mr-2" />}
                       active={isActive("/courses")}
-                      onClick={onClose}
+                      onClick={handleItemClick}
                     >
                       강의 탐색
                     </NavItem>
@@ -338,7 +332,7 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                       href="/trainers" 
                       icon={<UserRoundCheck className="w-5 h-5 mr-2" />}
                       active={isActive("/trainers")}
-                      onClick={onClose}
+                      onClick={handleItemClick}
                     >
                       훈련사 찾기
                     </NavItem>
@@ -347,7 +341,7 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                       href="/institutes" 
                       icon={<Building className="w-5 h-5 mr-2" />}
                       active={isActive("/institutes")}
-                      onClick={onClose}
+                      onClick={handleItemClick}
                     >
                       교육 기관
                     </NavItem>
@@ -356,7 +350,7 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                       href="/community" 
                       icon={<MessageSquare className="w-5 h-5 mr-2" />}
                       active={isActive("/community")}
-                      onClick={onClose}
+                      onClick={handleItemClick}
                     >
                       커뮤니티
                     </NavItem>
@@ -385,7 +379,7 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                       href="/video-training" 
                       icon={<Video className="w-5 h-5 mr-2" />}
                       active={isActive("/video-training")}
-                      onClick={onClose}
+                      onClick={handleItemClick}
                     >
                       영상 훈련
                     </NavItem>
@@ -394,7 +388,7 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                       href="/video-call" 
                       icon={<VideoIcon className="w-5 h-5 mr-2" />}
                       active={isActive("/video-call")}
-                      onClick={onClose}
+                      onClick={handleItemClick}
                     >
                       화상 훈련
                     </NavItem>
@@ -403,7 +397,7 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                       href="/shop" 
                       icon={<ShoppingBag className="w-5 h-5 mr-2" />}
                       active={isActive("/shop")}
-                      onClick={onClose}
+                      onClick={handleItemClick}
                     >
                       쇼핑
                     </NavItem>
@@ -412,7 +406,7 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                       href="/messages" 
                       icon={<MessageSquare className="w-5 h-5 mr-2" />}
                       active={isActive("/messages")}
-                      onClick={onClose}
+                      onClick={handleItemClick}
                     >
                       메시지
                     </NavItem>
@@ -421,7 +415,7 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                       href="/notifications" 
                       icon={<Bell className="w-5 h-5 mr-2" />}
                       active={isActive("/notifications")}
-                      onClick={onClose}
+                      onClick={handleItemClick}
                     >
                       알림장
                     </NavItem>
@@ -430,7 +424,7 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                       href="/locations" 
                       icon={<MapPin className="w-5 h-5 mr-2" />}
                       active={isActive("/locations")}
-                      onClick={onClose}
+                      onClick={handleItemClick}
                     >
                       위치 기반 서비스
                     </NavItem>
@@ -439,7 +433,7 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                       href="/recommendations" 
                       icon={<ThumbsUp className="w-5 h-5 mr-2" />}
                       active={isActive("/recommendations")}
-                      onClick={onClose}
+                      onClick={handleItemClick}
                     >
                       맞춤 추천
                     </NavItem>
@@ -468,7 +462,7 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                       href="/my-courses" 
                       icon={<BookOpen className="w-5 h-5 mr-2" />}
                       active={isActive("/my-courses")}
-                      onClick={onClose}
+                      onClick={handleItemClick}
                     >
                       내 강의실
                     </NavItem>
@@ -477,7 +471,7 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                       href="/my-pets" 
                       icon={<PawPrint className="w-5 h-5 mr-2" />}
                       active={isActive("/my-pets")}
-                      onClick={onClose}
+                      onClick={handleItemClick}
                     >
                       내 반려견
                     </NavItem>
@@ -486,7 +480,7 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                       href="/calendar" 
                       icon={<Calendar className="w-5 h-5 mr-2" />}
                       active={isActive("/calendar")}
-                      onClick={onClose}
+                      onClick={handleItemClick}
                     >
                       교육 일정
                     </NavItem>
@@ -495,7 +489,7 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                       href="/certificates" 
                       icon={<Award className="w-5 h-5 mr-2" />}
                       active={isActive("/certificates")}
-                      onClick={onClose}
+                      onClick={handleItemClick}
                     >
                       자격증 및 수료증
                     </NavItem>
@@ -504,7 +498,7 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
               </>
             )}
             
-            {/* Trainer 메뉴 */}
+            {/* 훈련사 메뉴 */}
             {(userRole === "trainer" || userRole === "admin") && (
               <>
                 {expanded && (
@@ -522,19 +516,10 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                 {menuGroups.trainer && (
                   <>
                     <NavItem 
-                      href="/" 
-                      icon={<Home className="w-5 h-5 mr-2" />}
-                      active={isActive("/")}
-                      onClick={onClose}
-                    >
-                      훈련사 홈
-                    </NavItem>
-                    
-                    <NavItem 
                       href="/trainer/dashboard" 
                       icon={<Presentation className="w-5 h-5 mr-2" />}
                       active={isActive("/trainer/dashboard")}
-                      onClick={onClose}
+                      onClick={handleItemClick}
                     >
                       훈련사 대시보드
                     </NavItem>
@@ -543,7 +528,7 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                       href="/trainer/courses" 
                       icon={<Edit className="w-5 h-5 mr-2" />}
                       active={isActive("/trainer/courses")}
-                      onClick={onClose}
+                      onClick={handleItemClick}
                     >
                       강의 관리
                     </NavItem>
@@ -552,7 +537,7 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                       href="/trainer/students" 
                       icon={<Users className="w-5 h-5 mr-2" />}
                       active={isActive("/trainer/students")}
-                      onClick={onClose}
+                      onClick={handleItemClick}
                     >
                       수강생 관리
                     </NavItem>
@@ -561,7 +546,7 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                       href="/trainer/stats" 
                       icon={<LineChart className="w-5 h-5 mr-2" />}
                       active={isActive("/trainer/stats")}
-                      onClick={onClose}
+                      onClick={handleItemClick}
                     >
                       통계 및 수익
                     </NavItem>
@@ -570,7 +555,7 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
               </>
             )}
             
-            {/* Institute Admin Menu */}
+            {/* 기관 관리자 메뉴 */}
             {(userRole === "institute-admin" || userRole === "admin") && (
               <>
                 {expanded && (
@@ -588,19 +573,10 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                 {menuGroups.institute && (
                   <>
                     <NavItem 
-                      href="/" 
-                      icon={<Home className="w-5 h-5 mr-2" />}
-                      active={isActive("/")}
-                      onClick={onClose}
-                    >
-                      기관 홈
-                    </NavItem>
-
-                    <NavItem 
                       href="/institute/dashboard" 
                       icon={<Presentation className="w-5 h-5 mr-2" />}
                       active={isActive("/institute/dashboard")}
-                      onClick={onClose}
+                      onClick={handleItemClick}
                     >
                       기관 대시보드
                     </NavItem>
@@ -609,7 +585,7 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                       href="/institute/trainers" 
                       icon={<UserRoundCheck className="w-5 h-5 mr-2" />}
                       active={isActive("/institute/trainers")}
-                      onClick={onClose}
+                      onClick={handleItemClick}
                     >
                       훈련사 관리
                     </NavItem>
@@ -618,7 +594,7 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                       href="/institute/courses" 
                       icon={<Edit className="w-5 h-5 mr-2" />}
                       active={isActive("/institute/courses")}
-                      onClick={onClose}
+                      onClick={handleItemClick}
                     >
                       교육과정 관리
                     </NavItem>
@@ -627,7 +603,7 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                       href="/institute/students" 
                       icon={<Users className="w-5 h-5 mr-2" />}
                       active={isActive("/institute/students")}
-                      onClick={onClose}
+                      onClick={handleItemClick}
                     >
                       수강생 관리
                     </NavItem>
@@ -636,7 +612,7 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                       href="/institute/stats" 
                       icon={<AreaChart className="w-5 h-5 mr-2" />}
                       active={isActive("/institute/stats")}
-                      onClick={onClose}
+                      onClick={handleItemClick}
                     >
                       통계 및 수익
                     </NavItem>
@@ -645,7 +621,7 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                       href="/institute/settings" 
                       icon={<Cog className="w-5 h-5 mr-2" />}
                       active={isActive("/institute/settings")}
-                      onClick={onClose}
+                      onClick={handleItemClick}
                     >
                       기관 설정
                     </NavItem>
@@ -654,7 +630,7 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
               </>
             )}
             
-            {/* System Admin Menu */}
+            {/* 시스템 관리자 메뉴 */}
             {userRole === "admin" && (
               <>
                 {expanded && (
@@ -672,19 +648,10 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                 {menuGroups.admin && (
                   <>
                     <NavItem 
-                      href="/" 
-                      icon={<Home className="w-5 h-5 mr-2" />}
-                      active={isActive("/")}
-                      onClick={onClose}
-                    >
-                      관리자 홈
-                    </NavItem>
-
-                    <NavItem 
                       href="/admin/dashboard" 
                       icon={<Presentation className="w-5 h-5 mr-2" />}
                       active={isActive("/admin/dashboard")}
-                      onClick={onClose}
+                      onClick={handleItemClick}
                     >
                       관리자 대시보드
                     </NavItem>
@@ -693,7 +660,7 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                       href="/admin/users" 
                       icon={<UserCog className="w-5 h-5 mr-2" />}
                       active={isActive("/admin/users")}
-                      onClick={onClose}
+                      onClick={handleItemClick}
                     >
                       사용자 관리
                     </NavItem>
@@ -702,7 +669,7 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                       href="/admin/institutes" 
                       icon={<Building className="w-5 h-5 mr-2" />}
                       active={isActive("/admin/institutes")}
-                      onClick={onClose}
+                      onClick={handleItemClick}
                     >
                       기관 관리
                     </NavItem>
@@ -711,7 +678,7 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                       href="/admin/courses" 
                       icon={<Edit className="w-5 h-5 mr-2" />}
                       active={isActive("/admin/courses")}
-                      onClick={onClose}
+                      onClick={handleItemClick}
                     >
                       강의 관리
                     </NavItem>
@@ -720,7 +687,7 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                       href="/admin/reports" 
                       icon={<CheckSquare className="w-5 h-5 mr-2" />}
                       active={isActive("/admin/reports")}
-                      onClick={onClose}
+                      onClick={handleItemClick}
                     >
                       신고 관리
                     </NavItem>
@@ -729,7 +696,7 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                       href="/admin/settings" 
                       icon={<Wrench className="w-5 h-5 mr-2" />}
                       active={isActive("/admin/settings")}
-                      onClick={onClose}
+                      onClick={handleItemClick}
                     >
                       시스템 설정
                     </NavItem>
@@ -738,7 +705,7 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                       href="/admin/shop" 
                       icon={<Store className="w-5 h-5 mr-2" />}
                       active={isActive("/admin/shop")}
-                      onClick={onClose}
+                      onClick={handleItemClick}
                     >
                       쇼핑몰 관리
                     </NavItem>
