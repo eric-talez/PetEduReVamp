@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { Avatar } from '@/components/ui/Avatar';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
@@ -33,14 +34,30 @@ export interface Trainer {
   };
 }
 
-interface TrainerProfileModalProps {
+interface TrainerProfileDialogProps {
   trainer: Trainer | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
-export function TrainerProfileModal({ trainer, open, onOpenChange }: TrainerProfileModalProps) {
-  console.log("TrainerProfileModal 렌더링", { trainer: trainer?.name, open });
+export function TrainerProfileDialog({ trainer, open, onOpenChange }: TrainerProfileDialogProps) {
+  const [mounted, setMounted] = useState(false);
+
+  // 컴포넌트가 마운트되었는지 확인
+  useEffect(() => {
+    setMounted(true);
+    return () => setMounted(false);
+  }, []);
+
+  useEffect(() => {
+    if (mounted) {
+      console.log("TrainerProfileDialog - 상태 변경:", { trainer: trainer?.name, open });
+    }
+  }, [trainer, open, mounted]);
+
+  if (!mounted) {
+    return null;
+  }
   
   if (!trainer) {
     console.log("훈련사 정보 없음, 모달 렌더링 중단");
@@ -48,10 +65,7 @@ export function TrainerProfileModal({ trainer, open, onOpenChange }: TrainerProf
   }
 
   return (
-    <Dialog open={open} onOpenChange={(value) => {
-      console.log("Dialog onOpenChange:", value);
-      onOpenChange(value);
-    }}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[600px] max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <div className="flex items-start gap-4">

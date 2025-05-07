@@ -1,14 +1,19 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar } from '@/components/ui/Avatar';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Star } from 'lucide-react';
-import { TrainerProfileModal, type Trainer } from '@/components/TrainerProfileModal';
+import { TrainerProfileDialog, type Trainer } from '@/components/TrainerProfileDialog';
 
 export default function Trainers() {
   const [selectedTrainer, setSelectedTrainer] = useState<Trainer | null>(null);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  
+  // 상태 변경 감지
+  useEffect(() => {
+    console.log("Trainers - 상태 변경:", { selectedTrainer: selectedTrainer?.name, isProfileOpen });
+  }, [selectedTrainer, isProfileOpen]);
 
   // Mock trainers data
   const trainers: Trainer[] = [
@@ -136,8 +141,10 @@ export default function Trainers() {
 
   // 훈련사 프로필 열기
   const openTrainerProfile = (trainer: Trainer) => {
+    console.log("프로필 열기 클릭", trainer.name);
     setSelectedTrainer(trainer);
     setIsProfileOpen(true);
+    console.log("isProfileOpen 값:", true);
   };
 
   return (
@@ -206,7 +213,7 @@ export default function Trainers() {
       </div>
       
       {/* 훈련사 프로필 모달 */}
-      <TrainerProfileModal
+      <TrainerProfileDialog
         trainer={selectedTrainer}
         open={isProfileOpen}
         onOpenChange={setIsProfileOpen}
