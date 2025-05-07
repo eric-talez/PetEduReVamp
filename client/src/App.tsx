@@ -14,6 +14,7 @@ import MyCoursesPage from "./pages/my-courses/index";
 import MyPetsPage from "./pages/my-pets/index";
 import LocationsPage from "./pages/locations/index";
 import VideoCallPage from "./pages/video-call/index";
+import CourseReservationPage from "./pages/course-reservation/index";
 import MessagesPage from "./pages/messages/index";
 import NotificationsPage from "./pages/notifications/index";
 import ShopPage from "./pages/shop/index";
@@ -21,6 +22,8 @@ import ProfilePage from "./pages/profile/index";
 import SettingsPage from "./pages/settings/index";
 import NotFound from "./pages/not-found";
 import TrainerTest from "./pages/TrainerTest";
+import TrainerReservationsPage from "./pages/trainer-dashboard/reservations";
+import InstituteCourseApprovalsPage from "./pages/institute-dashboard/course-approvals";
 
 // Auth Pages
 import LoginPage from "./pages/auth/login";
@@ -72,6 +75,13 @@ function AuthenticatedRoutes() {
         <Route path="/my-pets" component={MyPetsPage} />
         <Route path="/locations" component={LocationsPage} />
         <Route path="/video-call" component={VideoCallPage} />
+        <Route path="/course-reservation" component={CourseReservationPage} />
+        <Route path="/trainer/reservations">
+          {() => checkAccess(['trainer', 'admin']) ? <TrainerReservationsPage /> : window.location.href = '/'}
+        </Route>
+        <Route path="/institute/course-approvals">
+          {() => checkAccess(['institute-admin', 'admin']) ? <InstituteCourseApprovalsPage /> : window.location.href = '/'}
+        </Route>
         <Route path="/messages" component={MessagesPage} />
         <Route path="/notifications" component={NotificationsPage} />
         <Route path="/shop" component={ShopPage} />
