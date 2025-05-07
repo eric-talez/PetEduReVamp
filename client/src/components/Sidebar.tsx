@@ -267,6 +267,7 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                 <div className="mt-6">
                   <NavItem href="/auth" icon={<LogIn className="w-5 h-5 mr-2" />} active={isActive("/auth")} onClick={handleItemClick} show={true}>로그인</NavItem>
                 </div>
+
               </>
             )}
 
@@ -656,7 +657,6 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                     )}
                   </>
                 )}
-
                 {/* Service Statistics */}
                 <div className="mt-8 px-3">
                   <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4">
