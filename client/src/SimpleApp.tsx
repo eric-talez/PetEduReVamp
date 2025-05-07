@@ -329,21 +329,109 @@ function DebugButton() {
     localStorage.removeItem('petedu_auth');
     window.location.reload();
   };
+  
+  const handleLoginAs = (role: 'user' | 'pet-owner' | 'trainer' | 'institute-admin' | 'admin') => {
+    console.log(`Login as ${role}`);
+    const authData = { user: `demo-${role}`, role: role };
+    localStorage.setItem('petedu_auth', JSON.stringify(authData));
+    
+    // 사용자 역할에 따라 이벤트 발생
+    const loginEvent = new CustomEvent('petedu-login', { 
+      detail: { userName: `demo-${role}`, userRole: role } 
+    });
+    window.dispatchEvent(loginEvent);
+    
+    // 역할에 맞는 페이지로 리디렉션
+    switch (role) {
+      case 'pet-owner':
+        window.location.href = '/dashboard';
+        break;
+      case 'trainer':
+        window.location.href = '/trainer/dashboard';
+        break;
+      case 'institute-admin':
+        window.location.href = '/institute/dashboard';
+        break;
+      case 'admin':
+        window.location.href = '/admin/dashboard';
+        break;
+      default:
+        window.location.href = '/';
+    }
+  };
 
   return (
-    <div style={{ position: 'fixed', bottom: '20px', right: '20px', zIndex: 9999 }}>
+    <div style={{ position: 'fixed', bottom: '20px', right: '20px', zIndex: 9999, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+      <button
+        onClick={() => handleLoginAs('pet-owner')}
+        style={{ 
+          padding: '8px 12px',
+          backgroundColor: '#4caf50',
+          color: 'white',
+          border: 'none',
+          borderRadius: '5px',
+          cursor: 'pointer',
+          fontSize: '12px'
+        }}
+      >
+        Login as Pet Owner
+      </button>
+      <button
+        onClick={() => handleLoginAs('trainer')}
+        style={{ 
+          padding: '8px 12px',
+          backgroundColor: '#2196f3',
+          color: 'white',
+          border: 'none',
+          borderRadius: '5px',
+          cursor: 'pointer',
+          fontSize: '12px'
+        }}
+      >
+        Login as Trainer
+      </button>
+      <button
+        onClick={() => handleLoginAs('institute-admin')}
+        style={{ 
+          padding: '8px 12px',
+          backgroundColor: '#ff9800',
+          color: 'white',
+          border: 'none',
+          borderRadius: '5px',
+          cursor: 'pointer',
+          fontSize: '12px'
+        }}
+      >
+        Login as Institute
+      </button>
+      <button
+        onClick={() => handleLoginAs('admin')}
+        style={{ 
+          padding: '8px 12px',
+          backgroundColor: '#9c27b0',
+          color: 'white',
+          border: 'none',
+          borderRadius: '5px',
+          cursor: 'pointer',
+          fontSize: '12px'
+        }}
+      >
+        Login as Admin
+      </button>
       <button
         onClick={handleClearAuth}
         style={{ 
-          padding: '10px 15px',
+          padding: '8px 12px',
           backgroundColor: 'red',
           color: 'white',
           border: 'none',
           borderRadius: '5px',
-          cursor: 'pointer'
+          cursor: 'pointer',
+          marginTop: '8px',
+          fontSize: '12px'
         }}
       >
-        Reset Auth (Debug)
+        Logout
       </button>
     </div>
   );

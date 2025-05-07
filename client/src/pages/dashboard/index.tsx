@@ -6,7 +6,7 @@ import InstituteAdminDashboard from "./institute-admin";
 import AdminDashboard from "./admin";
 
 interface DashboardProps {
-  type?: 'pet-owner' | 'trainer' | 'institute' | 'admin';
+  type?: 'pet-owner' | 'trainer' | 'institute-admin' | 'admin';
 }
 
 export default function Dashboard({ type }: DashboardProps) {
