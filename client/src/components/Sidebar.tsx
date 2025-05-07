@@ -193,7 +193,7 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
           </button>
         </div>
 
-        <div className={cn("py-4 overflow-y-auto h-[calc(100vh-4rem)]", expanded ? "px-3" : "px-2")}>
+        <div className={cn("py-4 overflow-y-auto h-[calc(100vh-4rem)] flex flex-col", expanded ? "px-3" : "px-2")}>
           <div className="space-y-1">
             {!isAuthenticated && (
               <>
@@ -658,8 +658,8 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                   </>
                 )}
                 {/* Service Statistics */}
-                <div className="fixed bottom-0 left-0 w-64 bg-white dark:bg-gray-900 px-3 pb-4 border-t border-gray-200 dark:border-gray-800">
-                  <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4 mt-4">
+                <div className="mt-auto mb-4 px-3">
+                  <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4">
                     서비스 현황
                   </h3>
 
