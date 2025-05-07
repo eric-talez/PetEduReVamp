@@ -11,7 +11,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { AlertCircle, Calendar, Clock, Star, Users, Video, X } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "@/hooks/use-toast";
 
 // 모든 훈련사 데이터
 const allTrainers = [
@@ -258,7 +258,6 @@ const videoClasses = [
 ];
 
 export default function VideoCallPage() {
-  const { toast } = useToast();
   const [filter, setFilter] = useState("all"); // 필터 상태: all, 1on1, group
   // 로그인 상태를 localStorage에서 직접 확인
   const checkIsAuthenticated = () => {
@@ -286,7 +285,7 @@ export default function VideoCallPage() {
       toast({
         title: "로그인이 필요합니다",
         description: "화상 수업을 예약하려면 먼저 로그인해 주세요.",
-        variant: "warning",
+        variant: "destructive",
       });
       
       // 알림 표시
