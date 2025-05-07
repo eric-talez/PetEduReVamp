@@ -206,11 +206,42 @@ function App() {
   
   console.log("Auth state in App:", auth);
   
+  // 디버깅을 위한 테스트용 로그아웃 버튼 추가
+  const handleClearAuth = () => {
+    console.log("Clear auth data manually");
+    localStorage.removeItem('petedu_auth');
+    window.location.reload();
+  };
+  
   if (auth.isLoading) {
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   }
   
-  return auth.isAuthenticated ? <AuthenticatedRoutes /> : <UnauthenticatedRoutes />;
+  // 디버깅용 오버레이 버튼 추가
+  const DebugButton = () => (
+    <div style={{ position: 'fixed', bottom: '20px', right: '20px', zIndex: 9999 }}>
+      <button
+        onClick={handleClearAuth}
+        style={{ 
+          padding: '10px 15px',
+          backgroundColor: 'red',
+          color: 'white',
+          border: 'none',
+          borderRadius: '5px',
+          cursor: 'pointer'
+        }}
+      >
+        Reset Auth (Debug)
+      </button>
+    </div>
+  );
+  
+  return (
+    <>
+      {auth.isAuthenticated ? <AuthenticatedRoutes /> : <UnauthenticatedRoutes />}
+      <DebugButton />
+    </>
+  );
 }
 
 export default App;
