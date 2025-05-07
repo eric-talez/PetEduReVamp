@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link, useLocation } from "wouter";
+import { Link, useLocation, useRoute } from "wouter";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { Avatar } from "@/components/ui/Avatar";
@@ -24,9 +24,10 @@ interface Section {
 }
 
 export default function CourseDetail() {
-  const [location] = useLocation();
-  const courseId = parseInt(location.split('/').pop() || "1");
-  console.log("강의 상세 페이지 로딩:", courseId, location);
+  // URL에서 강의 ID 파라미터 가져오기
+  const [match, params] = useRoute<{ id: string }>("/courses/:id");
+  const courseId = match && params ? parseInt(params.id) : 1;
+  console.log("강의 상세 페이지 로딩:", courseId, match, params);
   
   const { isAuthenticated } = useAuth();
   const [activeTab, setActiveTab] = useState("curriculum"); // 기본 탭을 커리큘럼으로 설정
