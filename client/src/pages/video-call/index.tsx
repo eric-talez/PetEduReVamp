@@ -32,6 +32,11 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
+import { 
+  ClassStatus, 
+  VideoClass as VideoClassType, 
+  runAutoClassCancellationCheck 
+} from '@/services/classManagement';
 
 // 모든 훈련사 데이터
 const allTrainers = [
@@ -281,11 +286,11 @@ const videoClasses = [
 export default function VideoCallPage() {
   const [filter, setFilter] = useState("all"); // 필터 상태: all, 1on1, group
   // 선택된 수업 상태
-  const [selectedClass, setSelectedClass] = useState<typeof videoClasses[0] | null>(null);
+  const [selectedClass, setSelectedClass] = useState<VideoClassType | null>(null);
   // 상세 보기 다이얼로그 상태
   const [showDetail, setShowDetail] = useState(false);
   // 수업 데이터 상태 (자동 취소 처리를 위해 상태로 관리)
-  const [classesData, setClassesData] = useState<typeof videoClasses>(videoClasses);
+  const [classesData, setClassesData] = useState<VideoClassType[]>(videoClasses as VideoClassType[]);
   
   // 자동 취소 처리를 위한 useEffect
   useEffect(() => {
@@ -296,7 +301,7 @@ export default function VideoCallPage() {
       // 테스트를 위해 일부 수업에 자동 취소 설정 추가
       isAutoCancelEnabled: cls.id === 1 || cls.id === 4,
       minParticipants: cls.id === 1 || cls.id === 4 ? 1 : null
-    }));
+    })) as VideoClassType[];
     
     // 초기 데이터 설정
     setClassesData(initializedClasses);
@@ -304,7 +309,7 @@ export default function VideoCallPage() {
     // 3초 후 자동 취소 로직 실행 (데모 목적)
     const timer = setTimeout(() => {
       // 자동 취소 처리 적용
-      const updatedClasses = runAutoClassCancellationCheck(classesData);
+      const updatedClasses = runAutoClassCancellationCheck(initializedClasses);
       setClassesData(updatedClasses);
       
       console.log('자동 취소 처리 완료');
@@ -331,7 +336,7 @@ export default function VideoCallPage() {
   const [showLoginAlert, setShowLoginAlert] = useState(false);
   
   // 수업 클릭 시 상세 정보 표시
-  const handleClassClick = (videoClass: typeof videoClasses[0]) => {
+  const handleClassClick = (videoClass: VideoClassType) => {
     setSelectedClass(videoClass);
     setShowDetail(true);
   };
