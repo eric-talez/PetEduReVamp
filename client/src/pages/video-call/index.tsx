@@ -11,7 +11,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { AlertCircle, Calendar, Clock, Star, Users, Video, X } from "lucide-react";
-import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/use-toast";
 
 // 모든 훈련사 데이터
 const allTrainers = [
@@ -258,8 +258,13 @@ const videoClasses = [
 ];
 
 export default function VideoCallPage() {
-  const { isAuthenticated } = useAuth();
+  const { toast } = useToast();
   const [filter, setFilter] = useState("all"); // 필터 상태: all, 1on1, group
+  // 로그인 상태를 localStorage에서 직접 확인
+  const checkIsAuthenticated = () => {
+    const authData = localStorage.getItem('petedu_auth');
+    return !!authData; // authData가 존재하면 true, 없으면 false
+  };
 
   // 필터링된 비디오 클래스
   const filteredClasses = videoClasses.filter(cls => {
@@ -273,8 +278,18 @@ export default function VideoCallPage() {
   const [showLoginAlert, setShowLoginAlert] = useState(false);
   
   const handleReservation = (classId: number) => {
+    // 로그인 상태 확인
+    const isAuthenticated = checkIsAuthenticated();
+    
     if (!isAuthenticated) {
-      // 비로그인 상태면 알림 표시
+      // 비로그인 상태면 토스트 알림 표시
+      toast({
+        title: "로그인이 필요합니다",
+        description: "화상 수업을 예약하려면 먼저 로그인해 주세요.",
+        variant: "warning",
+      });
+      
+      // 알림 표시
       setShowLoginAlert(true);
       
       // 3초 후 알림 자동 닫기
