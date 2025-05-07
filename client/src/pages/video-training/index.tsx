@@ -398,14 +398,47 @@ export default function VideoTraining() {
   };
 
   return (
-    <div className="container py-8">
-      {/* 페이지 헤더 */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">영상 훈련</h1>
-        <p className="text-gray-600 dark:text-gray-400">
-          전문가들이 제공하는 고품질 훈련 영상으로 언제 어디서나 반려견을 교육하세요.
-        </p>
+    <div className="py-8">
+      {/* 상단 배너 */}
+      <div className="relative rounded-xl overflow-hidden h-48 md:h-64 mb-8 bg-gradient-to-r from-primary/80 to-accent/80 shadow-lg">
+        <img 
+          src="https://images.unsplash.com/photo-1598134493179-51332e39cdab?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=400" 
+          alt="영상 훈련"
+          className="w-full h-full object-cover absolute mix-blend-overlay"
+        />
+        
+        <div className="absolute inset-0 bg-gradient-to-r from-primary/80 to-accent/30 mix-blend-multiply"></div>
+        
+        <div className="relative h-full flex flex-col justify-center px-6 md:px-10 container mx-auto">
+          <h1 className="text-white text-xl md:text-3xl font-bold mb-2 md:mb-4 max-w-xl">
+            영상 훈련 라이브러리
+          </h1>
+          <p className="text-white text-sm md:text-base max-w-xl mb-4">
+            반려견 훈련 전문가들이 제공하는 고품질 영상으로 언제 어디서나 효과적인 훈련을 경험하세요.
+          </p>
+          
+          <div className="flex flex-wrap gap-2">
+            <Badge variant="secondary" className="bg-white/90 text-primary hover:bg-white">
+              500+ 무료 영상
+            </Badge>
+            <Badge variant="secondary" className="bg-white/90 text-primary hover:bg-white">
+              인기 훈련사 강의
+            </Badge>
+            <Badge variant="secondary" className="bg-white/90 text-primary hover:bg-white">
+              초보자 추천 코스
+            </Badge>
+          </div>
+        </div>
       </div>
+      
+      <div className="container mx-auto">
+        {/* 페이지 헤더 */}
+        <div className="mb-8">
+          <h2 className="text-2xl font-bold mb-2">인기 훈련 영상</h2>
+          <p className="text-gray-600 dark:text-gray-400">
+            다른 사용자들에게 인기 있는 훈련 영상을 만나보세요.
+          </p>
+        </div>
 
       {/* 탭 */}
       <Tabs defaultValue="all" className="mb-8">
@@ -652,6 +685,7 @@ export default function VideoTraining() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      </div>
     </div>
   );
 }
