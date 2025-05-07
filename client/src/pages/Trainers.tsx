@@ -376,10 +376,11 @@ export default function Trainers() {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={(e) => {
-                      e.preventDefault();
+                    onClick={() => {
+                      alert(`${trainer.name} 프로필을 열려고 합니다.`);
                       console.log("프로필 버튼 클릭됨:", trainer.name);
-                      openTrainerProfile(trainer);
+                      setSelectedTrainer(trainer);
+                      setIsProfileOpen(true);
                     }}
                   >
                     프로필 보기
@@ -431,15 +432,33 @@ export default function Trainers() {
       )}
       
       {/* 훈련사 프로필 모달 */}
-      {selectedTrainer && (
-        <NewTrainerProfileModal
-          trainer={selectedTrainer}
-          isOpen={isProfileOpen}
-          onClose={() => {
-            console.log("모달 닫기 실행");
-            setIsProfileOpen(false);
-          }}
-        />
+      {selectedTrainer && isProfileOpen && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
+          <div className="bg-white dark:bg-gray-900 rounded-lg shadow-lg max-w-xl w-full p-6 relative">
+            <button 
+              onClick={() => {
+                alert("모달을 닫습니다.");
+                setIsProfileOpen(false);
+              }}
+              className="absolute right-4 top-4 text-gray-500"
+            >
+              X
+            </button>
+            <h2 className="text-xl font-bold mb-4">{selectedTrainer.name} 트레이너</h2>
+            <p className="mb-4">{selectedTrainer.specialty}</p>
+            <p>{selectedTrainer.description}</p>
+            <div className="mt-4">
+              <Button
+                onClick={() => {
+                  alert("모달을 닫습니다.");
+                  setIsProfileOpen(false);
+                }}
+              >
+                닫기
+              </Button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
