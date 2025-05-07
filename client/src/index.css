@@ -2,6 +2,32 @@
 @tailwind components;
 @tailwind utilities;
 
+/* 테마 전환 애니메이션 */
+@layer utilities {
+  /* 페이드 인 애니메이션 */
+  .animate-fade-in {
+    animation: fadeIn 0.2s ease-in-out;
+  }
+  
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: scale(0.95);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+  
+  /* 테마 전환 효과 */
+  html.light, html.dark {
+    transition-property: background-color, color, border-color;
+    transition-duration: 150ms;
+    transition-timing-function: ease;
+  }
+}
+
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -87,29 +113,14 @@
   @apply bg-primary/10;
 }
 
-/* Theme toggle animation */
-/* Theme transitions */
-:root {
-  --theme-transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+/* 테마 전환 최적화 */
+.theme-toggle-button {
+  transform: translateZ(0); /* 하드웨어 가속 활성화 */
+  backface-visibility: hidden; /* 더 부드러운 애니메이션 */
+  will-change: transform, opacity; /* 브라우저에게 최적화 힌트 제공 */
 }
 
-body {
-  transition: var(--theme-transition);
-}
-
-/* Theme toggle animations */
-.theme-toggle-sun {
-  @apply absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 transform-gpu origin-center transition-all duration-300;
-}
-
-.dark .theme-toggle-sun {
-  @apply rotate-90 opacity-0;
-}
-
-.theme-toggle-moon {
-  @apply absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 transform-gpu origin-center transition-all duration-300 rotate-90 opacity-0;
-}
-
-.dark .theme-toggle-moon {
-  @apply rotate-0 opacity-100;
+/* 테마 전환 시 부드러운 애니메이션 */
+.theme-toggle-icon {
+  @apply transition-all duration-150 ease-out;
 }

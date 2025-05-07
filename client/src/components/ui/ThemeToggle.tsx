@@ -1,24 +1,16 @@
 import { Button } from "./Button";
 import { useTheme } from "@/context/theme-context";
 import { Moon, Sun } from "lucide-react";
-import { useEffect, useState } from "react";
+import { memo } from "react";
 
-export function ThemeToggle() {
+// 성능 최적화를 위해 memo로 컴포넌트 래핑
+export const ThemeToggle = memo(function ThemeToggle() {
   const { theme, setTheme } = useTheme();
-  const [currentTheme, setCurrentTheme] = useState<"light" | "dark">("light");
 
-  useEffect(() => {
-    const savedTheme = localStorage.getItem("petedu-theme");
-    if (savedTheme === "light" || savedTheme === "dark") {
-      setCurrentTheme(savedTheme);
-    }
-  }, []);
-
+  // 직접 컨텍스트의 theme 상태를 사용하여 불필요한 로컬 상태 제거
   const toggleTheme = () => {
-    const newTheme = currentTheme === "light" ? "dark" : "light";
-    localStorage.setItem("petedu-theme", newTheme);
-    setCurrentTheme(newTheme);
-    setTheme(newTheme);
+    // 즉시 테마 전환으로 인지된 성능 향상
+    setTheme(theme === "light" ? "dark" : "light");
   };
 
   return (
@@ -26,11 +18,15 @@ export function ThemeToggle() {
       variant="ghost"
       size="icon"
       onClick={toggleTheme}
-      className="relative h-10 w-10 rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors duration-200"
+      className="theme-toggle-button relative h-10 w-10 rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700"
       aria-label="Toggle theme"
     >
-      <Sun className="h-5 w-5 theme-toggle-sun text-amber-500" />
-      <Moon className="h-5 w-5 theme-toggle-moon text-slate-300" />
+      {/* 테마에 따라 아이콘 조건부 렌더링 - 불필요한 DOM 관리 최소화 */}
+      {theme === "light" ? (
+        <Sun className="theme-toggle-icon h-5 w-5 text-amber-500 animate-fade-in" />
+      ) : (
+        <Moon className="theme-toggle-icon h-5 w-5 text-slate-300 animate-fade-in" />
+      )}
     </Button>
   );
-}
+});
