@@ -559,6 +559,15 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                       내 반려견
                     </NavItem>
                     <NavItem
+                      href="/notebook/1"
+                      icon={<Edit className="w-5 h-5 mr-2" />}
+                      active={isActive("/notebook")}
+                      onClick={handleItemClick}
+                      show={showPetOwnerMenu}
+                    >
+                      알림장
+                    </NavItem>
+                    <NavItem
                       href="/calendar"
                       icon={<Calendar className="w-5 h-5 mr-2" />}
                       active={isActive("/calendar")}
@@ -716,6 +725,15 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                           show={true}
                         >
                           통계 및 수익
+                        </NavItem>
+                        <NavItem
+                          href="/institute/pet-assignments"
+                          icon={<PawPrint className="w-5 h-5 mr-2" />}
+                          active={isActive("/institute/pet-assignments")}
+                          onClick={handleItemClick}
+                          show={true}
+                        >
+                          반려견-훈련사 매칭
                         </NavItem>
                         <NavItem
                           href="/institute/settings"
