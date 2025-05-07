@@ -1,44 +1,59 @@
-import { Button } from "./Button";
-import { useTheme } from "@/context/theme-context";
+import { useEffect, useState } from "react";
 import { Moon, Sun } from "lucide-react";
-import { memo, useEffect, useState } from "react";
 
-// 성능 최적화를 위해 memo로 컴포넌트 래핑
-export const ThemeToggle = memo(function ThemeToggle() {
-  const { theme, setTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
-
-  // 컴포넌트가 마운트된 후에만 테마 토글을 허용
-  // 이는 hydration 오류를 방지하고 SSR 호환성을 보장합니다
+export function ThemeToggle() {
+  const [theme, setTheme] = useState<string>("light");
+  
+  // 초기 테마 로드
   useEffect(() => {
-    setMounted(true);
+    // 로컬 스토리지에서 테마 가져오기
+    const savedTheme = localStorage.getItem("petedu-theme");
+    if (savedTheme) {
+      setTheme(savedTheme);
+      applyTheme(savedTheme);
+    }
   }, []);
-
-  const toggleTheme = () => {
-    console.log("Current theme:", theme);
-    const newTheme = theme === "light" ? "dark" : "light";
-    console.log("Changing to:", newTheme);
-    setTheme(newTheme);
+  
+  // 테마 적용 함수
+  const applyTheme = (newTheme: string) => {
+    const root = document.documentElement;
+    
+    if (newTheme === "dark") {
+      root.classList.add("dark");
+      root.classList.remove("light");
+    } else {
+      root.classList.add("light");
+      root.classList.remove("dark");
+    }
   };
-
-  // 마운트되기 전까지는 버튼을 숨겨 깜빡임을 방지합니다
-  if (!mounted) {
-    return <div className="w-9 h-9" />;
-  }
-
+  
+  // 테마 토글 함수
+  const toggleTheme = () => {
+    console.log("테마 토글 버튼 클릭됨");
+    const newTheme = theme === "light" ? "dark" : "light";
+    console.log(`테마 변경: ${theme} -> ${newTheme}`);
+    
+    // 상태 업데이트
+    setTheme(newTheme);
+    
+    // DOM 업데이트
+    applyTheme(newTheme);
+    
+    // 로컬 스토리지에 저장
+    localStorage.setItem("petedu-theme", newTheme);
+  };
+  
   return (
-    <Button
-      variant="ghost"
-      size="icon"
+    <button
       onClick={toggleTheme}
-      className="relative rounded-md hover:bg-gray-100 dark:hover:bg-gray-800"
+      className="relative rounded-md p-2 hover:bg-gray-100 dark:hover:bg-gray-800"
       aria-label={theme === "light" ? "다크 모드로 전환" : "라이트 모드로 전환"}
     >
       {theme === "light" ? (
-        <Sun className="h-5 w-5 text-amber-400 animate-fade-in" />
+        <Sun className="h-5 w-5 text-amber-400" />
       ) : (
-        <Moon className="h-5 w-5 text-indigo-400 animate-fade-in" />
+        <Moon className="h-5 w-5 text-indigo-400" />
       )}
-    </Button>
+    </button>
   );
-});
+}
