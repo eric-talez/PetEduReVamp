@@ -384,7 +384,7 @@ export default function EventCalendarPage() {
                   className="pl-10 pr-16 py-6 text-black dark:text-white border-2 border-white dark:border-gray-700 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm"
                   placeholder="이벤트 검색..."
                   value={searchTerm}
-                  onChange={(e) => {
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                     setSearchTerm(e.target.value);
                     if (selectedDate) {
                       const dateString = `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, '0')}-${String(selectedDate.getDate()).padStart(2, '0')}`;

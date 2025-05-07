@@ -1,3 +1,4 @@
+import React, { lazy, Suspense } from "react";
 import { Switch, Route } from "wouter";
 import { AppLayout } from "./layout/AppLayout";
 import { useAuth } from "./SimpleApp";
@@ -28,6 +29,18 @@ import TrainerReservationsPage from "./pages/trainer-dashboard/reservations";
 import InstituteCourseApprovalsPage from "./pages/institute-dashboard/course-approvals";
 import EventsPage from "./pages/events/index";
 import EventCalendarPage from "./pages/events/calendar";
+
+// 지연 로딩되는 컴포넌트들
+const EventDetailPage = lazy(() => import('./pages/events/event-detail'));
+const CommunityPostDetailPage = lazy(() => import('./pages/community/post-detail'));
+const InstituteRegisterPage = lazy(() => import('./pages/institutes/register'));
+const InstituteDetailPage = lazy(() => import('./pages/institutes/detail'));
+
+// Help 페이지들
+const FAQPage = lazy(() => import('./pages/help/faq'));
+const GuidePage = lazy(() => import('./pages/help/guide'));
+const AboutPage = lazy(() => import('./pages/help/about'));
+const ContactPage = lazy(() => import('./pages/help/contact'));
 
 // Auth Pages
 import LoginPage from "./pages/auth/login";
@@ -77,16 +90,13 @@ function AuthenticatedRoutes() {
           {() => checkAccess(['admin']) ? <Dashboard typeProps="admin" /> : window.location.href = '/'}
         </Route>
         <Route path="/community" component={CommunityPage} />
-        <Route path="/community/post/:id" component={() => {
-          // 커뮤니티 게시물 상세 페이지
-          try {
-            const CommunityPostDetailPage = require('./pages/community/post-detail').default;
-            return <CommunityPostDetailPage />;
-          } catch (e) {
-            console.error("커뮤니티 게시물 상세 페이지 로드 오류:", e);
-            return <div>게시물 상세 페이지를 불러올 수 없습니다.</div>;
-          }
-        }} />
+        <Route path="/community/post/:id">
+          {() => (
+            <Suspense fallback={<div className="p-8 text-center">게시물 로딩 중...</div>}>
+              <CommunityPostDetailPage />
+            </Suspense>
+          )}
+        </Route>
         <Route path="/my-courses" component={MyCoursesPage} />
         <Route path="/my-pets" component={MyPetsPage} />
         <Route path="/locations" component={LocationsPage} />
@@ -105,15 +115,13 @@ function AuthenticatedRoutes() {
         <Route path="/settings" component={SettingsPage} />
         <Route path="/events" component={EventsPage} />
         <Route path="/events/calendar" component={EventCalendarPage} />
-        <Route path="/events/:id" component={() => {
-          try {
-            const EventDetailPage = require('./pages/events/event-detail').default;
-            return <EventDetailPage />;
-          } catch (e) {
-            console.error("이벤트 상세 페이지 로드 오류:", e);
-            return <div>이벤트 상세 페이지를 불러올 수 없습니다.</div>;
-          }
-        }} />
+        <Route path="/events/:id">
+          {() => (
+            <Suspense fallback={<div className="p-8 text-center">이벤트 상세 페이지 로딩 중...</div>}>
+              <EventDetailPage />
+            </Suspense>
+          )}
+        </Route>
         <Route path="/modal-test" component={TrainerTest} />
         <Route component={NotFound} />
       </Switch>
@@ -134,41 +142,40 @@ function UnauthenticatedRoutes() {
         <Route path="/video-training/:id" component={VideoTrainingDetailPage} />
         <Route path="/trainers" component={TrainersPage} />
         <Route path="/institutes" component={InstitutesPage} />
-        <Route path="/institutes/register" component={() => {
-          // Dynamically import institute registration page
-          const InstituteRegisterPage = require('./pages/institutes/register').default;
-          return <InstituteRegisterPage />;
-        }} />
-        <Route path="/institutes/:id" component={() => {
-          // Import institute detail page
-          const InstituteDetailPage = require('./pages/institutes/detail').default;
-          return <InstituteDetailPage />;
-        }} />
+        <Route path="/institutes/register">
+          {() => (
+            <Suspense fallback={<div className="p-8 text-center">기관 등록 페이지 로딩 중...</div>}>
+              <InstituteRegisterPage />
+            </Suspense>
+          )}
+        </Route>
+        <Route path="/institutes/:id">
+          {() => (
+            <Suspense fallback={<div className="p-8 text-center">기관 상세 페이지 로딩 중...</div>}>
+              <InstituteDetailPage />
+            </Suspense>
+          )}
+        </Route>
         <Route path="/community" component={CommunityPage} />
-        <Route path="/community/post/:id" component={() => {
-          // 커뮤니티 게시물 상세 페이지
-          try {
-            const CommunityPostDetailPage = require('./pages/community/post-detail').default;
-            return <CommunityPostDetailPage />;
-          } catch (e) {
-            console.error("커뮤니티 게시물 상세 페이지 로드 오류:", e);
-            return <div>게시물 상세 페이지를 불러올 수 없습니다.</div>;
-          }
-        }} />
+        <Route path="/community/post/:id">
+          {() => (
+            <Suspense fallback={<div className="p-8 text-center">게시물 로딩 중...</div>}>
+              <CommunityPostDetailPage />
+            </Suspense>
+          )}
+        </Route>
         <Route path="/video-call" component={VideoCallPage} />
         <Route path="/course-reservation" component={CourseReservationPage} />
         <Route path="/locations" component={LocationsPage} />
         <Route path="/events" component={EventsPage} />
         <Route path="/events/calendar" component={EventCalendarPage} />
-        <Route path="/events/:id" component={() => {
-          try {
-            const EventDetailPage = require('./pages/events/event-detail').default;
-            return <EventDetailPage />;
-          } catch (e) {
-            console.error("이벤트 상세 페이지 로드 오류:", e);
-            return <div>이벤트 상세 페이지를 불러올 수 없습니다.</div>;
-          }
-        }} />
+        <Route path="/events/:id">
+          {() => (
+            <Suspense fallback={<div className="p-8 text-center">이벤트 상세 페이지 로딩 중...</div>}>
+              <EventDetailPage />
+            </Suspense>
+          )}
+        </Route>
         <Route path="/modal-test" component={TrainerTest} />
         <Route component={NotFound} />
       </Switch>
