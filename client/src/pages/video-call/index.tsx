@@ -304,7 +304,7 @@ export default function VideoCallPage() {
   };
 
   return (
-    <div className="container mx-auto py-8 px-4 max-w-6xl relative">
+    <div className="container py-8">
       {/* 로그인 필요 알림 */}
       {showLoginAlert && (
         <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 bg-amber-50 border border-amber-200 text-amber-800 px-6 py-3 rounded-lg shadow-lg flex items-center space-x-3 max-w-md animate-in fade-in slide-in-from-top-4 duration-300">
@@ -322,36 +322,41 @@ export default function VideoCallPage() {
         </div>
       )}
       
-      <div className="mb-8 text-center">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">화상 수업 프로그램</h1>
-        <p className="mt-2 text-gray-600 dark:text-gray-300">
+      {/* 페이지 헤더 */}
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold mb-2">화상 수업</h1>
+        <p className="text-gray-600 dark:text-gray-400">
           전문 훈련사와 실시간으로 소통하며 효과적인 반려견 훈련을 경험하세요
         </p>
       </div>
 
-      {/* 필터 섹션 */}
-      <div className="mb-6 flex flex-wrap gap-2 justify-center">
-        <Button 
-          variant={filter === "all" ? "default" : "outline"}
-          onClick={() => setFilter("all")}
-          className="rounded-full"
-        >
-          전체 클래스
-        </Button>
-        <Button 
-          variant={filter === "1on1" ? "default" : "outline"}
-          onClick={() => setFilter("1on1")}
-          className="rounded-full"
-        >
-          1:1 개인 수업
-        </Button>
-        <Button 
-          variant={filter === "group" ? "default" : "outline"}
-          onClick={() => setFilter("group")}
-          className="rounded-full"
-        >
-          그룹 수업
-        </Button>
+      {/* 필터 섹션 - 탭 스타일로 변경 */}
+      <div className="mb-8">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4">
+          <div className="bg-muted inline-flex h-10 items-center justify-center rounded-md p-1 text-muted-foreground">
+            <Button 
+              variant={filter === "all" ? "default" : "ghost"}
+              onClick={() => setFilter("all")}
+              className="rounded-sm h-8 px-3"
+            >
+              전체 클래스
+            </Button>
+            <Button 
+              variant={filter === "1on1" ? "default" : "ghost"}
+              onClick={() => setFilter("1on1")}
+              className="rounded-sm h-8 px-3"
+            >
+              1:1 개인 수업
+            </Button>
+            <Button 
+              variant={filter === "group" ? "default" : "ghost"}
+              onClick={() => setFilter("group")}
+              className="rounded-sm h-8 px-3"
+            >
+              그룹 수업
+            </Button>
+          </div>
+        </div>
       </div>
 
       {/* 화상 수업 카드 그리드 */}
