@@ -157,7 +157,7 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
     }
 
     // 권한 체크
-    if (!isAuthenticated && !["/", "/courses", "/trainers"].includes(path)) {
+    if (!isAuthenticated && !["/", "/courses", "/trainers", "/video-training"].includes(path)) {
       console.log('비인증 사용자 접근 제한');
       window.location.href = "/auth";
       return;
@@ -236,7 +236,7 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                       active={isActive("/")} 
                       onClick={(path) => {
                         console.log("비회원 메뉴 클릭:", path);
-                        if (path !== "/" && path !== "/courses" && path !== "/trainers") {
+                        if (path !== "/" && path !== "/courses" && path !== "/trainers" && path !== "/video-training") {
                           window.location.href = "/auth";
                           return;
                         }
