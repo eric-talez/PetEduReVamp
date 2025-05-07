@@ -1,7 +1,7 @@
 import { TopBar } from "@/components/TopBar";
 import { Sidebar } from "@/components/Sidebar";
 import { ReactNode, useState } from "react";
-import { useAppAuth } from "../App";
+import { useAuth } from "../SimpleApp";
 
 interface AppLayoutProps {
   children: ReactNode;
@@ -10,7 +10,7 @@ interface AppLayoutProps {
 export function AppLayout({ children }: AppLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   // 인증 정보를 직접 전달하기 위해 가져옴
-  const auth = useAppAuth();
+  const auth = useAuth();
 
   console.log("AppLayout 렌더링 - auth:", auth);
 

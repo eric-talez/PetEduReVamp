@@ -5,7 +5,7 @@ import { Bell, Menu, Search } from "lucide-react";
 import { useState } from "react";
 import { useClickAway } from "@/hooks/use-mobile";
 import { useLocation } from "wouter";
-import { useAppAuth } from "../App";
+import { useAuth } from "../SimpleApp";
 
 interface TopBarProps {
   sidebarOpen: boolean;
@@ -13,7 +13,7 @@ interface TopBarProps {
 }
 
 export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
-  const { userName, userRole, logout, isAuthenticated } = useAppAuth();
+  const { userName, userRole, logout, isAuthenticated } = useAuth();
   const [, setLocation] = useLocation();
   
   const handleLogout = () => {
