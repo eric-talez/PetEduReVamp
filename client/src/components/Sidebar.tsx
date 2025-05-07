@@ -267,24 +267,6 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                 <div className="mt-6">
                   <NavItem href="/auth" icon={<LogIn className="w-5 h-5 mr-2" />} active={isActive("/auth")} onClick={handleItemClick} show={true}>로그인</NavItem>
                 </div>
-
-                {/* Service Statistics for non-authenticated users */}
-                <div className="mt-6"> {/*Moved this up to be above the login button*/}
-                  <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3 text-xs">
-                    <div className="flex items-center justify-between">
-                      <span className="text-gray-600 dark:text-gray-300">실시간 이용자</span>
-                      <span className="font-semibold text-primary">2,458명</span>
-                    </div>
-                    <div className="flex items-center justify-between mt-2">
-                      <span className="text-gray-600 dark:text-gray-300">사용자 분포</span>
-                      <span className="font-semibold text-blue-500">반려인 75%</span>
-                    </div>
-                    <div className="flex items-center justify-between mt-2">
-                      <span className="text-gray-600 dark:text-gray-300">평균 체류시간</span>
-                      <span className="font-semibold text-green-500">32분</span>
-                    </div>
-                  </div>
-                </div>
               </>
             )}
 
@@ -694,6 +676,26 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
               </>
             )}
           </div>
+
+          {/* Service Statistics for non-authenticated users at bottom */}
+          {!isAuthenticated && (
+            <div className="mt-auto mb-4 px-3">
+              <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3 text-xs">
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-600 dark:text-gray-300">실시간 이용자</span>
+                  <span className="font-semibold text-primary">2,458명</span>
+                </div>
+                <div className="flex items-center justify-between mt-2">
+                  <span className="text-gray-600 dark:text-gray-300">사용자 분포</span>
+                  <span className="font-semibold text-blue-500">반려인 75%</span>
+                </div>
+                <div className="flex items-center justify-between mt-2">
+                  <span className="text-gray-600 dark:text-gray-300">평균 체류시간</span>
+                  <span className="font-semibold text-green-500">32분</span>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </SidebarContext.Provider>
