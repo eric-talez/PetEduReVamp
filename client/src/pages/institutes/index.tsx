@@ -43,7 +43,7 @@ type Region =
   | "경상" 
   | "제주";
 
-export default function Institutes() {
+export default function LocationServices() {
   const [filter, setFilter] = useState<LocationType>("all");
   const [regionFilter, setRegionFilter] = useState<Region>("all");
   const [breedFilter, setBreedFilter] = useState<DogBreed>("all");
@@ -295,24 +295,50 @@ export default function Institutes() {
     });
   
   // 추가 필터링 (인증, 프리미엄)
-  const getFilteredBySpecialCondition = (specialFilter: string) => {
-    return specialFilter === "certification" 
-      ? filteredInstitutes.filter(institute => institute.certification)
-      : specialFilter === "premium"
-        ? filteredInstitutes.filter(institute => institute.premium)
-        : filteredInstitutes;
+  const finalFilteredInstitutes = specialFilter === "certification" 
+    ? filteredInstitutes.filter(institute => institute.certification)
+    : specialFilter === "premium"
+      ? filteredInstitutes.filter(institute => institute.premium)
+      : filteredInstitutes;
+
+  // 위치 데이터를 지도용 형식으로 변환하는 함수
+  const getLocationFromInstitute = (institute: typeof institutes[0]) => {
+    // 실제 API에서는 정확한 좌표 사용 필요
+    // 여기서는 기관마다 서울 시내 랜덤 좌표 생성
+    const baseLat = 37.5665;
+    const baseLng = 126.9780;
+    
+    // 기관 ID를 시드로 사용하여 일관된 좌표 생성
+    const latOffset = (institute.id * 0.01) % 0.1;
+    const lngOffset = (institute.id * 0.015) % 0.15;
+    
+    return {
+      lat: baseLat + latOffset,
+      lng: baseLng + lngOffset,
+      name: institute.name,
+      address: institute.location
+    };
+  };
+
+  // 카테고리별 아이콘
+  const getCategoryIcon = (category: string) => {
+    switch(category) {
+      case "교육 센터": return <Building className="h-4 w-4 mr-1" />;
+      case "훈련소": return <PawPrint className="h-4 w-4 mr-1" />;
+      case "펜션": return <Home className="h-4 w-4 mr-1" />;
+      case "카페": return <Coffee className="h-4 w-4 mr-1" />;
+      case "수영장": return <Droplets className="h-4 w-4 mr-1" />;
+      case "캠핑장": return <Tent className="h-4 w-4 mr-1" />;
+      case "병원": return <Heart className="h-4 w-4 mr-1" />;
+      case "미용": return <Scissors className="h-4 w-4 mr-1" />;
+      default: return <Building className="h-4 w-4 mr-1" />;
+    }
   };
 
   return (
-    <div className="py-8 px-4 sm:px-6 lg:px-8">
-      {/* Banner */}
-      <div className="relative rounded-xl overflow-hidden h-48 md:h-64 mb-8 bg-gradient-to-r from-primary/80 to-accent/80 shadow-lg">
-        <img 
-          src="https://images.unsplash.com/photo-1580824456266-c577a6711dfa?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=400" 
-          alt="교육 기관"
-          className="w-full h-full object-cover absolute mix-blend-overlay"
-        />
-        
+    <div className="container mx-auto px-4 py-8">
+      {/* Hero Banner */}
+      <div className="relative h-72 rounded-2xl overflow-hidden mb-8 bg-cover bg-center" style={{ backgroundImage: 'url("https://images.unsplash.com/photo-1534551767192-78b8dd45b51b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1740&q=80")' }}>
         <div className="absolute inset-0 bg-gradient-to-r from-primary/80 to-accent/30 mix-blend-multiply"></div>
         
         <div className="relative h-full flex flex-col justify-center px-6 md:px-10">
@@ -330,7 +356,7 @@ export default function Institutes() {
             </div>
             <input 
               type="text" 
-              placeholder="지역, 전문 분야로 교육 기관 찾기" 
+              placeholder="지역, 전문 분야로 위치 서비스 찾기" 
               className="flex-1 py-2 px-2 bg-transparent focus:outline-none text-gray-800 dark:text-gray-200"
             />
             <Button className="ml-2">
@@ -340,198 +366,428 @@ export default function Institutes() {
         </div>
       </div>
       
-      {/* Filters */}
-      <div className="mb-8 flex flex-wrap items-center gap-2">
-        <div className="flex items-center bg-gray-100 dark:bg-gray-800 rounded-lg p-1 mr-4">
-          <Filter className="h-4 w-4 text-gray-500 dark:text-gray-400 ml-2 mr-1" />
-          <span className="text-sm text-gray-700 dark:text-gray-300 mr-2">필터:</span>
+      {/* Advanced Filters Section */}
+      <div className="mb-8 flex flex-col gap-4">
+        {/* 주요 필터 */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+          {/* 서비스 종류 필터 */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">서비스 종류</label>
+            <Select
+              value={filter}
+              onValueChange={(value: LocationType) => {
+                setFilter(value);
+                setSpecialFilter("none"); // 특수 필터 초기화
+              }}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="모든 서비스" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">모든 서비스</SelectItem>
+                <SelectItem value="교육 센터">교육 센터</SelectItem>
+                <SelectItem value="훈련소">훈련소</SelectItem>
+                <SelectItem value="펜션">펜션</SelectItem>
+                <SelectItem value="카페">카페</SelectItem>
+                <SelectItem value="수영장">수영장</SelectItem>
+                <SelectItem value="캠핑장">캠핑장</SelectItem>
+                <SelectItem value="병원">병원</SelectItem>
+                <SelectItem value="미용">미용</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          
+          {/* 지역 필터 */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">지역</label>
+            <Select
+              value={regionFilter}
+              onValueChange={(value: Region) => setRegionFilter(value)}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="모든 지역" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">모든 지역</SelectItem>
+                <SelectItem value="서울">서울</SelectItem>
+                <SelectItem value="경기">경기</SelectItem>
+                <SelectItem value="인천">인천</SelectItem>
+                <SelectItem value="강원">강원</SelectItem>
+                <SelectItem value="충청">충청</SelectItem>
+                <SelectItem value="전라">전라</SelectItem>
+                <SelectItem value="경상">경상</SelectItem>
+                <SelectItem value="제주">제주</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          
+          {/* 견종 필터 */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">견종 지원</label>
+            <Select
+              value={breedFilter}
+              onValueChange={(value: DogBreed) => setBreedFilter(value)}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="모든 견종" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">모든 견종</SelectItem>
+                <SelectItem value="소형견">소형견</SelectItem>
+                <SelectItem value="중형견">중형견</SelectItem>
+                <SelectItem value="대형견">대형견</SelectItem>
+                <SelectItem value="특수견">특수견</SelectItem>
+                <SelectItem value="반려견 전체">무관</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          
+          {/* 인증/프리미엄 필터 */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">특별 조건</label>
+            <Select
+              value={specialFilter}
+              onValueChange={(value) => setSpecialFilter(value)}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="전체" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">조건 없음</SelectItem>
+                <SelectItem value="certification">인증 기관</SelectItem>
+                <SelectItem value="premium">프리미엄 기관</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
         
-        <Button
-          variant={filter === "all" ? "default" : "outline"}
-          size="sm"
-          onClick={() => setFilter("all")}
-          className="text-xs"
-        >
-          전체
-        </Button>
-        
-        <Button
-          variant={filter === "certification" ? "default" : "outline"}
-          size="sm"
-          onClick={() => setFilter("certification")}
-          className="text-xs"
-        >
-          인증 기관
-        </Button>
-        
-        <Button
-          variant={filter === "premium" ? "default" : "outline"}
-          size="sm"
-          onClick={() => setFilter("premium")}
-          className="text-xs"
-        >
-          프리미엄 기관
-        </Button>
-        
-        <Button
-          variant={filter === "종합 교육" ? "default" : "outline"}
-          size="sm"
-          onClick={() => setFilter("종합 교육")}
-          className="text-xs"
-        >
-          종합 교육
-        </Button>
-        
-        <Button
-          variant={filter === "행동 교정" ? "default" : "outline"}
-          size="sm"
-          onClick={() => setFilter("행동 교정")}
-          className="text-xs"
-        >
-          행동 교정
-        </Button>
-        
-        <Button
-          variant={filter === "사회화 중심" ? "default" : "outline"}
-          size="sm"
-          onClick={() => setFilter("사회화 중심")}
-          className="text-xs"
-        >
-          사회화 중심
-        </Button>
+        {/* 빠른 필터 버튼 */}
+        <div className="flex flex-wrap items-center gap-2 mt-2">
+          <div className="flex items-center bg-gray-100 dark:bg-gray-800 rounded-lg p-1 mr-4">
+            <Filter className="h-4 w-4 text-gray-500 dark:text-gray-400 ml-2 mr-1" />
+            <span className="text-sm text-gray-700 dark:text-gray-300 mr-2">빠른 선택:</span>
+          </div>
+          
+          <Button
+            variant={filter === "교육 센터" ? "default" : "outline"}
+            size="sm"
+            onClick={() => {
+              setFilter("교육 센터"); 
+              setSpecialFilter("none");
+            }}
+            className="text-xs"
+          >
+            <Building className="h-3 w-3 mr-1" />
+            교육 센터
+          </Button>
+          
+          <Button
+            variant={filter === "훈련소" ? "default" : "outline"}
+            size="sm"
+            onClick={() => {
+              setFilter("훈련소");
+              setSpecialFilter("none");
+            }}
+            className="text-xs"
+          >
+            <PawPrint className="h-3 w-3 mr-1" />
+            훈련소
+          </Button>
+          
+          <Button
+            variant={filter === "펜션" ? "default" : "outline"}
+            size="sm"
+            onClick={() => {
+              setFilter("펜션");
+              setSpecialFilter("none");
+            }}
+            className="text-xs"
+          >
+            <Home className="h-3 w-3 mr-1" />
+            펜션
+          </Button>
+          
+          <Button
+            variant={filter === "카페" ? "default" : "outline"}
+            size="sm"
+            onClick={() => {
+              setFilter("카페");
+              setSpecialFilter("none");
+            }}
+            className="text-xs"
+          >
+            <Coffee className="h-3 w-3 mr-1" />
+            카페
+          </Button>
+          
+          <Button
+            variant={filter === "수영장" ? "default" : "outline"}
+            size="sm"
+            onClick={() => {
+              setFilter("수영장");
+              setSpecialFilter("none");
+            }}
+            className="text-xs"
+          >
+            <Droplets className="h-3 w-3 mr-1" />
+            수영장
+          </Button>
+          
+          <Button
+            variant={filter === "캠핑장" ? "default" : "outline"}
+            size="sm"
+            onClick={() => {
+              setFilter("캠핑장");
+              setSpecialFilter("none");
+            }}
+            className="text-xs"
+          >
+            <Tent className="h-3 w-3 mr-1" />
+            캠핑장
+          </Button>
+          
+          <Button
+            variant={filter === "병원" ? "default" : "outline"}
+            size="sm"
+            onClick={() => {
+              setFilter("병원");
+              setSpecialFilter("none");
+            }}
+            className="text-xs"
+          >
+            <Heart className="h-3 w-3 mr-1" />
+            병원
+          </Button>
+          
+          <Button
+            variant={filter === "미용" ? "default" : "outline"}
+            size="sm"
+            onClick={() => {
+              setFilter("미용");
+              setSpecialFilter("none");
+            }}
+            className="text-xs"
+          >
+            <Scissors className="h-3 w-3 mr-1" />
+            미용
+          </Button>
+          
+          <Button
+            variant={specialFilter === "certification" ? "default" : "outline"}
+            size="sm"
+            onClick={() => {
+              setSpecialFilter("certification");
+              setFilter("all");
+            }}
+            className="text-xs"
+          >
+            <Shield className="h-3 w-3 mr-1" />
+            인증 기관
+          </Button>
+          
+          <Button
+            variant={specialFilter === "premium" ? "default" : "outline"}
+            size="sm"
+            onClick={() => {
+              setSpecialFilter("premium");
+              setFilter("all");
+            }}
+            className="text-xs"
+          >
+            <Sparkles className="h-3 w-3 mr-1" />
+            프리미엄 기관
+          </Button>
+        </div>
       </div>
       
-      {/* Institutes Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {filteredInstitutes.map((institute) => (
-          <Card key={institute.id} hover className="overflow-hidden border border-gray-100 dark:border-gray-700">
-            <div className="flex flex-col md:flex-row">
-              <div className="md:w-2/5">
-                <div className="h-48 md:h-full relative">
-                  <img 
-                    src={institute.image} 
-                    alt={institute.name} 
-                    className="w-full h-full object-cover"
-                  />
+      {/* Two Column Layout: 리스트 + 지도 */}
+      <div className="flex flex-col lg:flex-row gap-6">
+        {/* 왼쪽 열 - 위치 서비스 목록 */}
+        <div className="w-full lg:w-2/3">
+          <div className="grid grid-cols-1 gap-6">
+            {finalFilteredInstitutes.map((institute) => (
+              <Card 
+                key={institute.id} 
+                hover 
+                className={`overflow-hidden border border-gray-100 dark:border-gray-700 cursor-pointer transition-all ${selectedInstitute?.id === institute.id ? 'ring-2 ring-primary' : ''}`}
+                onClick={() => setSelectedInstitute(institute)}
+              >
+                <div className="flex flex-col md:flex-row">
+                  <div className="md:w-2/5">
+                    <div className="h-48 md:h-full relative">
+                      <img 
+                        src={institute.image} 
+                        alt={institute.name} 
+                        className="w-full h-full object-cover"
+                      />
+                      
+                      {institute.premium && (
+                        <Badge variant="warning" className="absolute top-2 right-2">
+                          <Sparkles className="h-3 w-3 mr-1" />
+                          프리미엄
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
                   
-                  {institute.premium && (
-                    <Badge variant="warning" className="absolute top-2 right-2">
-                      <Sparkles className="h-3 w-3 mr-1" />
-                      프리미엄
-                    </Badge>
-                  )}
-                </div>
-              </div>
-              
-              <div className="p-5 md:w-3/5">
-                <div className="flex justify-between items-start mb-2">
-                  <h3 className="text-lg font-semibold text-gray-800 dark:text-white">{institute.name}</h3>
-                  
-                  <div className="flex gap-1">
-                    {institute.certification && (
-                      <Badge variant="success" className="flex items-center">
-                        <Shield className="h-3 w-3 mr-1" />
-                        인증
+                  <div className="p-5 md:w-3/5">
+                    <div className="flex justify-between items-start mb-2">
+                      <h3 className="text-lg font-semibold text-gray-800 dark:text-white">{institute.name}</h3>
+                      
+                      <div className="flex gap-1">
+                        {institute.certification && (
+                          <Badge variant="success" className="flex items-center">
+                            <Shield className="h-3 w-3 mr-1" />
+                            인증
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-2 mb-3">
+                      <div className="flex items-center">
+                        <MapPin className="h-4 w-4 text-gray-500 dark:text-gray-400 mr-2" />
+                        <span className="text-sm text-gray-700 dark:text-gray-300">{institute.location}</span>
+                      </div>
+                      
+                      <div className="flex items-center">
+                        <Star className="h-4 w-4 text-yellow-500 fill-yellow-500 mr-2" />
+                        <span className="text-sm text-gray-700 dark:text-gray-300">{institute.rating} ({institute.reviews} 후기)</span>
+                      </div>
+                      
+                      <div className="flex items-center">
+                        <Building className="h-4 w-4 text-gray-500 dark:text-gray-400 mr-2" />
+                        <span className="text-sm text-gray-700 dark:text-gray-300">설립: {institute.established}</span>
+                      </div>
+                    </div>
+                    
+                    <div className="flex flex-wrap gap-2 mb-3">
+                      <Badge variant="outline" className="bg-primary/10 dark:bg-primary/5 text-primary-foreground flex items-center">
+                        {getCategoryIcon(institute.category)}
+                        {institute.category}
                       </Badge>
-                    )}
+                      
+                      {institute.trainers > 0 && (
+                        <Badge variant="outline">
+                          <Users className="h-3 w-3 mr-1" />
+                          훈련사 {institute.trainers}명
+                        </Badge>
+                      )}
+                      
+                      {institute.courses > 0 && (
+                        <Badge variant="outline">
+                          <BookOpen className="h-3 w-3 mr-1" />
+                          강의 {institute.courses}개
+                        </Badge>
+                      )}
+                    </div>
+                    
+                    <p className="text-sm text-gray-600 dark:text-gray-300 mb-4 line-clamp-2">
+                      {institute.description}
+                    </p>
+                    
+                    <div className="text-xs text-gray-500 dark:text-gray-400 mb-4">
+                      <div className="flex items-start mb-1">
+                        <Calendar className="h-3.5 w-3.5 mr-1.5 mt-0.5" />
+                        <span>{institute.openingHours}</span>
+                      </div>
+                      <div className="flex items-start">
+                        <Building className="h-3.5 w-3.5 mr-1.5 mt-0.5" />
+                        <span>시설: {institute.facilities.join(", ")}</span>
+                      </div>
+                    </div>
+                    
+                    <div className="flex gap-3">
+                      {/* 상세 정보 버튼 */}
+                      <Button 
+                        variant="default"
+                        className="flex-1"
+                        onClick={(e) => {
+                          e.stopPropagation(); // 부모 클릭 이벤트 전파 중지
+                          console.log("위치 서비스 상세 페이지 이동: ", institute.id);
+                          window.location.href = `/institutes/${institute.id}`;
+                        }}
+                      >
+                        상세 정보
+                      </Button>
+                      
+                      {/* 위치 보기 버튼 */}
+                      <Button 
+                        variant="outline"
+                        onClick={(e) => {
+                          e.stopPropagation(); // 부모 클릭 이벤트 전파 중지
+                          setSelectedInstitute(institute);
+                        }}
+                      >
+                        위치 보기
+                      </Button>
+                    </div>
                   </div>
                 </div>
-                
-                <div className="space-y-2 mb-3">
-                  <div className="flex items-center">
-                    <MapPin className="h-4 w-4 text-gray-500 dark:text-gray-400 mr-2" />
-                    <span className="text-sm text-gray-700 dark:text-gray-300">{institute.location}</span>
-                  </div>
-                  
-                  <div className="flex items-center">
-                    <Star className="h-4 w-4 text-yellow-500 fill-yellow-500 mr-2" />
-                    <span className="text-sm text-gray-700 dark:text-gray-300">{institute.rating} ({institute.reviews} 후기)</span>
-                  </div>
-                  
-                  <div className="flex items-center">
-                    <Building className="h-4 w-4 text-gray-500 dark:text-gray-400 mr-2" />
-                    <span className="text-sm text-gray-700 dark:text-gray-300">설립: {institute.established}</span>
-                  </div>
-                </div>
-                
-                <div className="flex flex-wrap gap-2 mb-3">
-                  <Badge variant="outline" className="bg-primary/10 dark:bg-primary/5 text-primary-foreground">
-                    {institute.category}
-                  </Badge>
-                  
-                  <Badge variant="outline">
-                    <Users className="h-3 w-3 mr-1" />
-                    훈련사 {institute.trainers}명
-                  </Badge>
-                  
-                  <Badge variant="outline">
-                    <BookOpen className="h-3 w-3 mr-1" />
-                    강의 {institute.courses}개
-                  </Badge>
-                </div>
-                
-                <p className="text-sm text-gray-600 dark:text-gray-300 mb-4 line-clamp-2">
-                  {institute.description}
-                </p>
-                
-                <div className="text-xs text-gray-500 dark:text-gray-400 mb-4">
-                  <div className="flex items-start mb-1">
-                    <Calendar className="h-3.5 w-3.5 mr-1.5 mt-0.5" />
-                    <span>{institute.openingHours}</span>
-                  </div>
-                  <div className="flex items-start">
-                    <Building className="h-3.5 w-3.5 mr-1.5 mt-0.5" />
-                    <span>시설: {institute.facilities.join(", ")}</span>
-                  </div>
-                </div>
-                
-                <Button 
-                  className="w-full"
-                  onClick={() => {
-                    console.log("교육기관 상세 페이지 이동: ", institute.id);
-                    window.location.href = `/institutes/${institute.id}`;
-                  }}
-                >
-                  상세 정보
-                </Button>
-              </div>
+              </Card>
+            ))}
+          </div>
+          
+          {/* Pagination */}
+          <div className="mt-8 flex justify-center">
+            <nav className="flex items-center space-x-2">
+              <Button variant="outline" size="sm" className="text-sm">
+                이전
+              </Button>
+              <Button variant="default" size="sm" className="text-sm">
+                1
+              </Button>
+              <Button variant="outline" size="sm" className="text-sm">
+                2
+              </Button>
+              <Button variant="outline" size="sm" className="text-sm">
+                다음
+              </Button>
+            </nav>
+          </div>
+        </div>
+        
+        {/* 오른쪽 열 - 지도 & 날씨 */}
+        <div className="w-full lg:w-1/3 sticky top-24 h-fit">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+            <div className="p-4 border-b border-gray-100 dark:border-gray-700">
+              <h3 className="font-semibold text-gray-900 dark:text-white">위치 및 날씨 정보</h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400">위치 서비스를 선택하면 지도와 현재 날씨를 확인할 수 있습니다.</p>
             </div>
-          </Card>
-        ))}
+            
+            <div className="p-4">
+              {/* Map & Weather Component */}
+              <KakaoMapView 
+                selectedLocation={selectedInstitute ? getLocationFromInstitute(selectedInstitute) : null}
+              />
+              
+              {!selectedInstitute && (
+                <div className="flex flex-col items-center justify-center py-16 text-center">
+                  <MapPin className="h-12 w-12 text-gray-300 dark:text-gray-600 mb-3" />
+                  <h3 className="text-lg font-medium text-gray-700 dark:text-gray-300 mb-1">위치 정보 없음</h3>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    왼쪽 목록에서 위치 서비스를 선택하면<br />지도와 날씨 정보가 표시됩니다.
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
       </div>
       
-      {/* Pagination */}
-      <div className="mt-10 flex justify-center">
-        <nav className="flex items-center space-x-2">
-          <Button variant="outline" size="sm" className="text-sm">
-            이전
-          </Button>
-          <Button variant="default" size="sm" className="text-sm">
-            1
-          </Button>
-          <Button variant="outline" size="sm" className="text-sm">
-            2
-          </Button>
-          <Button variant="outline" size="sm" className="text-sm">
-            다음
-          </Button>
-        </nav>
-      </div>
-      
-      {/* 교육 기관 등록 요청 섹션 */}
+      {/* 위치 서비스 등록 요청 섹션 */}
       <div className="mt-12 bg-gray-50 dark:bg-gray-800 rounded-lg p-6">
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div>
-            <h2 className="text-xl font-bold mb-2 text-gray-900 dark:text-white">교육 기관 등록 요청</h2>
+            <h2 className="text-xl font-bold mb-2 text-gray-900 dark:text-white">위치 서비스 등록 요청</h2>
             <p className="text-gray-600 dark:text-gray-300 max-w-2xl">
-              반려견 교육 기관을 운영하고 계신가요? PetEdu 플랫폼에 등록하여 더 많은 반려인에게 교육 서비스를 제공해보세요.
+              반려견 교육 기관이나 서비스를 운영하고 계신가요? PetEdu 플랫폼에 등록하여 더 많은 반려인에게 서비스를 제공해보세요.
             </p>
           </div>
           <Button 
             className="shrink-0"
             onClick={() => {
-              console.log("교육기관 등록 요청 페이지 이동");
+              console.log("위치 서비스 등록 요청 페이지 이동");
               window.location.href = '/institutes/register';
             }}
           >
