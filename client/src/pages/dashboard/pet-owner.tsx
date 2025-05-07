@@ -1,4 +1,4 @@
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "../../SimpleApp";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Avatar } from "@/components/ui/Avatar";
@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/Badge";
 import { BookOpen, Calendar, Medal, PawPrint, Star, Bone, Award, Clock } from "lucide-react";
 
 export default function PetOwnerDashboard() {
-  const { user } = useAuth();
+  const { userName, userRole } = useAuth();
 
   const courses = [
     {

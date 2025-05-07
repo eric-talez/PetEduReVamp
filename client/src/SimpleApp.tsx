@@ -236,10 +236,18 @@ function AuthenticatedRoutes() {
         </Route>
         
         {/* 대시보드 */}
-        <Route path="/dashboard" component={Dashboard} />
-        <Route path="/trainer/dashboard" component={() => <div className="p-8"><h1 className="text-2xl font-bold mb-4">훈련사 대시보드</h1><p>훈련사를 위한 대시보드입니다.</p></div>} />
-        <Route path="/institute/dashboard" component={() => <div className="p-8"><h1 className="text-2xl font-bold mb-4">기관 관리자 대시보드</h1><p>기관 관리자를 위한 대시보드입니다.</p></div>} />
-        <Route path="/admin/dashboard" component={() => <div className="p-8"><h1 className="text-2xl font-bold mb-4">시스템 관리자 대시보드</h1><p>시스템 관리자를 위한 대시보드입니다.</p></div>} />
+        <Route path="/dashboard">
+          {() => <Dashboard />}
+        </Route>
+        <Route path="/trainer/dashboard">
+          {() => <Dashboard type="trainer" />}
+        </Route>
+        <Route path="/institute/dashboard">
+          {() => <Dashboard type="institute-admin" />}
+        </Route>
+        <Route path="/admin/dashboard">
+          {() => <Dashboard type="admin" />}
+        </Route>
         
         {/* 일반 메뉴 */}
         <Route path="/courses" component={Courses} />

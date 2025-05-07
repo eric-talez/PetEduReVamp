@@ -1,5 +1,5 @@
 
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "../../SimpleApp";
 import PetOwnerDashboard from "./pet-owner";
 import TrainerDashboard from "./trainer";
 import InstituteAdminDashboard from "./institute-admin";
@@ -10,14 +10,14 @@ interface DashboardProps {
 }
 
 export default function Dashboard({ type }: DashboardProps) {
-  const { user } = useAuth();
+  const { userRole, isAuthenticated } = useAuth();
   
-  if (!user) {
+  if (!isAuthenticated) {
     return <div className="flex items-center justify-center min-h-screen">Loading dashboard...</div>;
   }
 
   // 대시보드 타입이 지정되지 않은 경우 사용자 역할 기반으로 결정
-  const dashboardType = type || user.role;
+  const dashboardType = type || userRole;
 
   switch (dashboardType) {
     case "pet-owner":
