@@ -115,6 +115,18 @@ export function Sidebar({ open, onClose }: SidebarProps) {
     admin: userRole === 'admin'
   });
   
+  // userRole이 변경될 때마다 해당 역할의 메뉴 그룹을 자동으로 열어줌
+  useEffect(() => {
+    if (userRole) {
+      setMenuGroups(prev => ({
+        ...prev,
+        trainer: userRole === 'trainer' || userRole === 'admin',
+        institute: userRole === 'institute-admin' || userRole === 'admin',
+        admin: userRole === 'admin'
+      }));
+    }
+  }, [userRole]);
+  
   // 사이드바 펼침/접힘 토글 함수
   const toggleSidebar = () => {
     setExpanded(!expanded);
