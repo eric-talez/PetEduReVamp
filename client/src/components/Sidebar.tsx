@@ -157,42 +157,63 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
   const handleItemClick = (path: string) => {
     console.log(`메뉴 클릭: ${path} (사용자 역할: ${userRole || '비로그인'})`);
     
-    // 상세 페이지 라우팅 처리
-    if (path.startsWith('/courses/')) {
-      console.log('강의 상세 페이지 접근');
-    } else if (path.startsWith('/trainers/')) {
-      console.log('훈련사 상세 페이지 접근');
-    } else if (path.startsWith('/institutes/')) {
-      console.log('교육기관 상세 페이지 접근');
-    } else if (path === '/video-call') {
-      console.log('화상 수업 페이지 접근');
-    }
-
-    // 권한 체크
-    if (!isAuthenticated && 
-        !["/", "/courses", "/trainers", "/video-training", "/video-call", "/community", 
-          "/institutes", "/institutes/register", "/events", "/events/calendar"].includes(path) && 
+    // 특정 페이지 접근 권한 및 라우팅 처리
+    const publicPaths = [
+      "/", "/courses", "/trainers", "/video-training", "/video-call", "/community",
+      "/institutes", "/institutes/register", "/events", "/events/calendar",
+      "/help/faq", "/help/guide", "/help/about", "/help/contact"
+    ];
+    
+    // 로그인 필요한 페이지 접근 시
+    if (!isAuthenticated && !publicPaths.includes(path) && 
         !path.startsWith('/institutes/') && 
         !path.startsWith('/events/') && 
         !path.startsWith('/help/')) {
-      console.log('비인증 사용자 접근 제한');
+      console.log('로그인 필요: ', path);
       window.location.href = "/auth";
       return;
     }
 
-    // 일부 라우트에서 404가 발생하는 문제 해결
-    if (path === '/video-training') {
-      console.log(`${path} 페이지로 이동 중...`);
-      // 영상 훈련 메뉴는 직접 URL 이동
+    // 역할별 접근 제한
+    if (isAuthenticated) {
+      // 훈련사 전용 페이지
+      if (path.startsWith('/trainer-dashboard') && userRole !== 'trainer' && userRole !== 'admin') {
+        console.log('훈련사 권한 필요');
+        return;
+      }
+      
+      // 기관 관리자 전용 페이지
+      if (path.startsWith('/institute-dashboard') && userRole !== 'institute-admin' && userRole !== 'admin') {
+        console.log('기관 관리자 권한 필요');
+        return;
+      }
+      
+      // 시스템 관리자 전용 페이지
+      if (path.startsWith('/admin') && userRole !== 'admin') {
+        console.log('관리자 권한 필요');
+        return;
+      }
+    }
+
+    // 특수 페이지 처리
+    const specialRoutes = {
+      '/video-training': '영상 훈련',
+      '/video-call': '화상 수업',
+      '/ai-analysis': 'AI 분석',
+      '/my-pets': '반려견 관리',
+      '/notebook': '알림장',
+      '/calendar': '교육 일정'
+    };
+
+    if (specialRoutes[path]) {
+      console.log(`${specialRoutes[path]} 페이지로 이동 중...`);
       window.location.href = path;
       return;
     }
-    
-    // 비로그인 상태에서도 화상 수업 목록 조회 가능
-    if (path === '/video-call') {
-      console.log('화상 수업 페이지로 이동 중');
-      window.location.href = path;
-      return;
+
+    // 상세 페이지 라우팅
+    if (path.match(/^\/(courses|trainers|institutes)\/\d+$/)) {
+      console.log(`${path.split('/')[1]} 상세 페이지 접근`);
     }
 
     if (onClose) {
