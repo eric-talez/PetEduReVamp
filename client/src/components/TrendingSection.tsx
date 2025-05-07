@@ -15,6 +15,7 @@ import { Button } from '@/components/ui/Button';
 import { Link } from 'wouter';
 import { TrendingUp, TrendingDown, Eye, Award, MoveUp } from 'lucide-react';
 import { Star, Users, Clock } from "lucide-react";
+import { NewTrainerProfileModal, Trainer } from './NewTrainerProfileModal';
 
 // 훈련사 데이터
 const trendingTrainers = [
@@ -444,8 +445,114 @@ const trendingCourses2 = [
   }
 ];
 
+// 트레이너 상세 정보를 위한 확장된 정보
+const trainerDetails: { [key: number]: Trainer } = {
+  1: {
+    id: 1,
+    name: '김민수',
+    image: 'https://randomuser.me/api/portraits/men/32.jpg',
+    specialty: '문제행동 교정',
+    description: '10년 이상의 반려견 훈련 경력을 가진 문제행동 교정 전문가입니다. 특히 공격성, 분리불안, 과잉행동 등 난이도 높은 행동 문제 해결에 전문성을 갖추고 있습니다.',
+    rating: 4.9,
+    reviewCount: 247,
+    certifications: ['반려동물행동교정사 1급', 'KKC 공인 훈련사', '동물매개심리상담사'],
+    coursesCount: 12,
+    location: '서울 강남구',
+    experience: '서울 반려동물 문제행동 클리닉 대표 (현재)\n서울대학교 수의과대학 반려동물행동학 외래교수 (2022-현재)\n한국애견협회 전문 훈련사 (2015-2021)',
+    education: ['서울대학교 수의학과 석사', '한국반려동물관리협회 전문과정 수료'],
+    languages: ['한국어', '영어'],
+    availableHours: '평일 10:00~19:00, 주말 12:00~18:00',
+    contactInfo: {
+      phone: '010-1234-5678',
+      email: 'trainer@example.com'
+    }
+  },
+  2: {
+    id: 2,
+    name: '박지영',
+    image: 'https://randomuser.me/api/portraits/women/44.jpg',
+    specialty: '기본 예절 교육',
+    description: '반려견과 보호자의 행복한 공존을 위한 기본 예절 교육을 전문으로 합니다. 특히 견종별 특성을 고려한 맞춤형 교육 프로그램을 제공합니다.',
+    rating: 4.8,
+    reviewCount: 183,
+    certifications: ['KKC 공인 훈련사', '반려동물관리사 1급', '유기견 재활훈련 전문가'],
+    coursesCount: 8,
+    location: '서울 송파구',
+    experience: '펫에듀 훈련센터 수석 트레이너 (현재)\n농림축산식품부 반려동물 교육 프로그램 자문위원 (2021-현재)',
+    education: ['중앙대학교 동물자원학과', '한국반려동물훈련원 전문가과정 수료'],
+    languages: ['한국어'],
+    availableHours: '평일 11:00~20:00, 토요일 10:00~15:00',
+    contactInfo: {
+      phone: '010-2345-6789',
+      email: 'trainer2@example.com'
+    }
+  },
+  3: {
+    id: 3,
+    name: '이준호',
+    image: 'https://randomuser.me/api/portraits/men/55.jpg',
+    specialty: '어질리티 훈련',
+    description: '반려견의 신체적, 정신적 발달을 돕는 어질리티 훈련 전문가입니다. 국내외 어질리티 대회에서 다수의 수상 경력이 있으며, 모든 크기와 나이의 반려견에게 적합한 프로그램을 제공합니다.',
+    rating: 4.7,
+    reviewCount: 156,
+    certifications: ['국제 어질리티 지도사', 'KKC 공인 훈련사', '반려동물 스포츠 지도사'],
+    coursesCount: 6,
+    location: '경기 고양시',
+    experience: '퍼피 어질리티 클럽 대표 (현재)\n한국어질리티협회 이사 (2020-현재)\n2022 아시아 어질리티 챔피언십 코치',
+    education: ['한경대학교 애완동물학과', '영국 IAA 어질리티 전문가 과정 수료'],
+    languages: ['한국어', '영어'],
+    availableHours: '평일 13:00~21:00, 주말 10:00~18:00',
+    contactInfo: {
+      phone: '010-3456-7890',
+      email: 'trainer3@example.com'
+    }
+  },
+  4: {
+    id: 4,
+    name: '최예린',
+    image: 'https://randomuser.me/api/portraits/women/22.jpg',
+    specialty: '사회화 훈련',
+    description: '강아지의 건강한 사회성 발달을 위한 전문 훈련사입니다. 특히 퍼피 시기의 사회화 교육과 다중 반려견 가정의 관계 개선에 전문성을 가지고 있습니다.',
+    rating: 4.6,
+    reviewCount: 129,
+    certifications: ['동물행동학 전문가', '반려동물 사회화 지도사', '유기견 재활훈련사'],
+    coursesCount: 7,
+    location: '서울 마포구',
+    experience: '해피독 트레이닝 센터 수석 트레이너 (현재)\n서울시 유기견 재활 프로그램 진행 (2019-2022)',
+    education: ['건국대학교 축산학과', '미국 CPDT 사회화 전문가 과정 수료'],
+    languages: ['한국어', '영어'],
+    availableHours: '평일 10:00~18:00, 토요일 10:00~15:00',
+    contactInfo: {
+      phone: '010-4567-8901',
+      email: 'trainer4@example.com'
+    }
+  },
+  5: {
+    id: 5,
+    name: '장현우',
+    image: 'https://randomuser.me/api/portraits/men/76.jpg',
+    specialty: '특수목적 훈련',
+    description: '서비스 독, 탐지견 등 특수 목적 훈련을 전문으로 하는 훈련사입니다. 경찰견 훈련 경력을 바탕으로 반려견의 잠재력을 최대한 이끌어내는 훈련을 제공합니다.',
+    rating: 4.5,
+    reviewCount: 112,
+    certifications: ['특수목적견 훈련사', '경찰견 훈련 전문가', 'KKC 공인 훈련사 1급'],
+    coursesCount: 5,
+    location: '경기 성남시',
+    experience: 'K9 트레이닝 센터 대표 (현재)\n경찰청 탐지견 훈련 자문위원 (2018-현재)\n전 경찰견 훈련소 교관 (2015-2018)',
+    education: ['경찰대학 특수견 훈련과정', '독일 SVV 특수견 핸들러 자격증'],
+    languages: ['한국어', '독일어'],
+    availableHours: '평일 09:00~18:00, 토요일 10:00~15:00',
+    contactInfo: {
+      phone: '010-5678-9012',
+      email: 'trainer5@example.com'
+    }
+  }
+};
+
 export function TrendingSection() {
   const [selectedTab, setSelectedTab] = useState('trainers');
+  const [selectedTrainer, setSelectedTrainer] = useState<Trainer | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const renderGraphCard = (item: any) => (
     <ResponsiveContainer width="100%" height={80}>
@@ -462,8 +569,21 @@ export function TrendingSection() {
     </ResponsiveContainer>
   );
 
+  const handleTrainerClick = (trainerId: number) => {
+    const trainerDetail = trainerDetails[trainerId];
+    if (trainerDetail) {
+      console.log('트레이너 클릭:', trainerDetail.name);
+      setSelectedTrainer(trainerDetail);
+      setIsModalOpen(true);
+    }
+  };
+
   const renderTrainerItem = (trainer: any, index: number) => (
-    <div key={trainer.id} className="flex items-center border-b border-gray-100 dark:border-gray-800 py-3">
+    <div 
+      key={trainer.id} 
+      className="flex items-center border-b border-gray-100 dark:border-gray-800 py-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+      onClick={() => handleTrainerClick(trainer.id)}
+    >
       <span className="text-lg font-bold w-6 text-gray-400">{index + 1}</span>
       <div className="h-10 w-10 rounded-full overflow-hidden mr-3">
         <img src={trainer.avatar} alt={trainer.name} className="h-full w-full object-cover" />
@@ -709,6 +829,19 @@ export function TrendingSection() {
           {trendingCourses2.map((course, index) => renderCourseItem2(course, index))}
         </TabsContent>
       </Tabs>
+
+      {/* 트레이너 프로필 모달 */}
+      {selectedTrainer && (
+        <NewTrainerProfileModal
+          trainer={selectedTrainer}
+          isOpen={isModalOpen}
+          onClose={() => {
+            setIsModalOpen(false);
+            // 모달이 닫히고 애니메이션이 끝난 후에 선택된 트레이너 정보 초기화
+            setTimeout(() => setSelectedTrainer(null), 300);
+          }}
+        />
+      )}
     </Card>
   );
 }
