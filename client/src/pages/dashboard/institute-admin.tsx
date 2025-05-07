@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 
 export default function InstituteAdminDashboard() {
-  const { user } = useAuth();
+  const { userName } = useAuth();
 
   return (
     <div className="py-8 px-4 sm:px-6 lg:px-8">

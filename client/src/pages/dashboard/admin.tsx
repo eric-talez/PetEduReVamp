@@ -1,4 +1,4 @@
-// import { useAuth } from "@/hooks/useAuth";
+// import { useAuth } from "../../SimpleApp";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
