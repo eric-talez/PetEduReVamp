@@ -91,6 +91,7 @@ function UnauthenticatedRoutes() {
         <Route path="/" component={Home} />
         <Route path="/courses" component={CoursesPage} />
         <Route path="/course/:id" component={CourseDetail} />
+        <Route path="/trainers" component={TrainersPage} />
         <Route path="/community" component={CommunityPage} />
         <Route component={NotFound} />
       </Switch>

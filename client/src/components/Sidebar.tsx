@@ -156,7 +156,7 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
     }
 
     // 권한 체크
-    if (!isAuthenticated && !["/", "/courses"].includes(path)) {
+    if (!isAuthenticated && !["/", "/courses", "/trainers"].includes(path)) {
       console.log('비인증 사용자 접근 제한');
       window.location.href = "/auth";
       return;
@@ -235,7 +235,7 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                       active={isActive("/")} 
                       onClick={(path) => {
                         console.log("비회원 메뉴 클릭:", path);
-                        if (path !== "/" && path !== "/courses") {
+                        if (path !== "/" && path !== "/courses" && path !== "/trainers") {
                           window.location.href = "/auth";
                           return;
                         }
@@ -257,9 +257,9 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                       href="/trainers" 
                       icon={<UserRoundCheck className="w-5 h-5 mr-2" />} 
                       active={isActive("/trainers")} 
-                      onClick={() => {
-                        console.log("비회원이 훈련사 찾기 클릭");
-                        window.location.href = "/auth";
+                      onClick={(path) => {
+                        console.log("훈련사 찾기 메뉴 클릭:", path);
+                        handleItemClick(path);
                       }} 
                       show={true}
                     >훈련사 찾기</NavItem>
