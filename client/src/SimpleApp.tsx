@@ -5,6 +5,7 @@ import { ReactNode, useState, useEffect, createContext, useContext } from "react
 import Home from "./pages/Home";
 import Dashboard from "@/pages/dashboard";
 import Courses from "@/pages/courses";
+import CourseDetail from "@/pages/course-detail";
 import Trainers from "@/pages/trainers";
 import Institutes from "@/pages/institutes";
 import Community from "@/pages/community";
@@ -251,6 +252,7 @@ function AuthenticatedRoutes() {
         
         {/* 일반 메뉴 */}
         <Route path="/courses" component={Courses} />
+        <Route path="/course-detail/:id" component={CourseDetail} />
         <Route path="/trainers" component={Trainers} />
         <Route path="/institutes" component={Institutes} />
         <Route path="/community" component={Community} />
@@ -305,12 +307,14 @@ function UnauthenticatedRoutes() {
       <Switch>
         <Route path="/auth" component={Login} />
         <Route path="/courses" component={Courses} />
+        <Route path="/course-detail/:id" component={CourseDetail} />
         <Route path="/trainers" component={Trainers} />
         <Route path="/institutes" component={Institutes} />
         <Route path="/community" component={Community} />
         <Route path="/" component={Home} />
-        <Route path="/:rest*">
+        <Route>
           {() => {
+            console.log("404 - 리디렉션 중");
             window.location.href = "/auth";
             return null;
           }}
