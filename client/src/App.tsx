@@ -16,8 +16,7 @@ import MessagesPage from "./pages/messages";
 import AdminCommissionPage from "./pages/admin/commission";
 import AdminMenuConfigPage from "./pages/admin/menu-config";
 import AdminSettlementPage from "./pages/admin/settlement";
-import { useState, useEffect } from "react";
-import { AuthProvider, useAppAuth } from "./hooks/useAppAuth";
+import { useState, useEffect, createContext, useContext } from "react";
 
 // 인증된 사용자용 라우트
 function AuthenticatedRoutes() {
@@ -75,18 +74,142 @@ function UnauthenticatedRoutes() {
   );
 }
 
+// 인증 상태를 위한 타입 정의
+interface AuthState {
+  isAuthenticated: boolean;
+  isLoading: boolean;
+  userRole: string | null;
+  userName: string | null;
+  logout: () => void;
+}
+
+// 인증 컨텍스트 생성
+const AuthContext = createContext<AuthState>({
+  isAuthenticated: false,
+  isLoading: true,
+  userRole: null,
+  userName: null,
+  logout: () => {}
+});
+
+// 인증 컨텍스트 훅
+export function useAppAuth() {
+  return useContext(AuthContext);
+}
+
+// 인증 상태 제공 컴포넌트
+export function AuthProvider({ children }: { children: React.ReactNode }) {
+  // 인증 상태 관리 (원래 App 컴포넌트에 있던 로직)
+  const [authState, setAuthState] = useState<AuthState>({
+    isAuthenticated: false,
+    isLoading: true,
+    userRole: null,
+    userName: null,
+    logout: async () => {
+      try {
+        const response = await fetch('/api/auth/logout', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          credentials: 'same-origin'
+        });
+        
+        window.dispatchEvent(new CustomEvent('logout'));
+      } catch (error) {
+        console.error('Logout error:', error);
+        window.dispatchEvent(new CustomEvent('logout'));
+      }
+    }
+  });
+
+  // 로컬 스토리지에서 인증 상태 확인
+  useEffect(() => {
+    console.log("AuthProvider useEffect - checking localStorage");
+    const storedAuth = localStorage.getItem('petedu_auth');
+    
+    if (storedAuth) {
+      try {
+        console.log("Found auth data in localStorage:", storedAuth);
+        const parsedAuth = JSON.parse(storedAuth);
+        setAuthState({
+          ...authState,
+          isAuthenticated: true,
+          isLoading: false,
+          userRole: parsedAuth.role || 'user',
+          userName: parsedAuth.user || 'User'
+        });
+        console.log("Updated auth state with stored data");
+      } catch (e) {
+        console.error('Failed to parse auth data', e);
+        setAuthState({
+          ...authState,
+          isLoading: false
+        });
+      }
+    } else {
+      setAuthState({
+        ...authState,
+        isLoading: false
+      });
+    }
+
+    // 로그인 이벤트 리스너 등록
+    const handleLogin = (e: any) => {
+      if (e.detail?.user) {
+        setAuthState({
+          ...authState,
+          isAuthenticated: true,
+          isLoading: false,
+          userRole: e.detail.user.role || 'user',
+          userName: e.detail.user.username || e.detail.user.name || 'User'
+        });
+        localStorage.setItem('petedu_auth', JSON.stringify({
+          user: e.detail.user.username || e.detail.user.name,
+          role: e.detail.user.role
+        }));
+      }
+    };
+
+    // 로그아웃 이벤트 리스너 등록
+    const handleLogout = () => {
+      setAuthState({
+        ...authState,
+        isAuthenticated: false,
+        isLoading: false,
+        userRole: null,
+        userName: null
+      });
+      localStorage.removeItem('petedu_auth');
+    };
+
+    window.addEventListener('login', handleLogin);
+    window.addEventListener('logout', handleLogout);
+
+    return () => {
+      window.removeEventListener('login', handleLogin);
+      window.removeEventListener('logout', handleLogout);
+    };
+  }, []);
+
+  return (
+    <AuthContext.Provider value={authState}>
+      {children}
+    </AuthContext.Provider>
+  );
+}
+
 // 메인 앱 컴포넌트
 function App() {
+  console.log("App component rendering");
   const auth = useAppAuth();
   
-  console.log("App render - Auth state:", auth);
+  console.log("Auth state in App:", auth);
   
   if (auth.isLoading) {
-    console.log("App is in loading state");
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   }
   
-  console.log("App finished loading, isAuthenticated:", auth.isAuthenticated);
   return auth.isAuthenticated ? <AuthenticatedRoutes /> : <UnauthenticatedRoutes />;
 }
 
