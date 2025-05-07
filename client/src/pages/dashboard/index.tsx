@@ -16,10 +16,12 @@ export default function Dashboard({ type }: DashboardProps) {
     return <div className="flex items-center justify-center min-h-screen">Loading dashboard...</div>;
   }
 
-  // 대시보드 타입이 지정되지 않은 경우 사용자 역할 기반으로 결정
-  const dashboardType = type || userRole;
+  // 사용자 역할에 따라 대시보드 렌더링
+  if (!userRole) {
+    return <div>권한이 없습니다</div>;
+  }
 
-  switch (dashboardType) {
+  switch (userRole) {
     case "pet-owner":
       return <PetOwnerDashboard />;
     case "trainer":

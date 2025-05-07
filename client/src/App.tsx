@@ -31,7 +31,7 @@ function AuthenticatedRoutes() {
   return (
     <AppLayout>
       <Switch>
-        <Route path="/" component={userRole === 'admin' ? Dashboard : Home} />
+        <Route path="/" component={Home} />
         <Route path="/dashboard" component={Dashboard} />
         <Route path="/courses" component={CoursesPage} />
         <Route path="/trainers" component={TrainersPage} />
