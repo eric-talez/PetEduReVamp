@@ -3,13 +3,14 @@ import { Link } from 'wouter';
 import { useAuth } from '../SimpleApp';
 import { BannerSlider } from '@/components/BannerSlider';
 import { TrendingSection } from '@/components/TrendingSection';
+import { MiniChart } from '@/components/ui/mini-chart';
 
 export default function Home() {
   const auth = useAuth();
   
   return (
     <div className="container mx-auto px-4 py-8">
-      {/* 서비스 현황 및 날씨 - 이 부분을 배너 위로 이동 */}
+      {/* 서비스 현황 및 날씨 - 배너 위 영역 */}
       <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-6">
         {/* 등록된 전문 훈련사 */}
         <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-md">
@@ -22,10 +23,30 @@ export default function Home() {
             </div>
             <div>
               <p className="text-2xl font-bold">254명</p>
-              <p className="text-sm text-gray-500 dark:text-gray-400">지난 달 대비 +12명</p>
+              <div className="flex items-center">
+                <span className="text-sm text-green-500 dark:text-green-400 font-medium">+12명</span>
+                <span className="mx-1 text-gray-500 dark:text-gray-400 text-xs">지난 달 대비</span>
+                <span className="text-green-500 dark:text-green-400">↑</span>
+              </div>
             </div>
           </div>
-          <div className="mt-3">
+          
+          <div className="mt-3 h-12">
+            <MiniChart 
+              data={[
+                { name: '7월', value: 220 },
+                { name: '8월', value: 230 },
+                { name: '9월', value: 235 },
+                { name: '10월', value: 242 },
+                { name: '11월', value: 254 }
+              ]} 
+              stroke="#22c55e"
+              fill="rgba(34, 197, 94, 0.2)"
+              positive={true}
+            />
+          </div>
+          
+          <div className="mt-2">
             <p className="text-sm">다양한 분야의 전문 훈련사들이 대기중입니다.</p>
           </div>
         </div>
@@ -41,10 +62,30 @@ export default function Home() {
             </div>
             <div>
               <p className="text-2xl font-bold">86개</p>
-              <p className="text-sm text-gray-500 dark:text-gray-400">지난 달 대비 +3개</p>
+              <div className="flex items-center">
+                <span className="text-sm text-purple-500 dark:text-purple-400 font-medium">+3개</span>
+                <span className="mx-1 text-gray-500 dark:text-gray-400 text-xs">지난 달 대비</span>
+                <span className="text-purple-500 dark:text-purple-400">↑</span>
+              </div>
             </div>
           </div>
-          <div className="mt-3">
+          
+          <div className="mt-3 h-12">
+            <MiniChart 
+              data={[
+                { name: '7월', value: 78 },
+                { name: '8월', value: 80 },
+                { name: '9월', value: 83 },
+                { name: '10월', value: 83 },
+                { name: '11월', value: 86 }
+              ]} 
+              stroke="#a855f7"
+              fill="rgba(168, 85, 247, 0.2)"
+              positive={true}
+            />
+          </div>
+          
+          <div className="mt-2">
             <p className="text-sm">전국 각지의 교육 기관에서 수준 높은 교육을 제공합니다.</p>
           </div>
         </div>
@@ -60,10 +101,30 @@ export default function Home() {
             </div>
             <div>
               <p className="text-2xl font-bold">425개</p>
-              <p className="text-sm text-gray-500 dark:text-gray-400">지난 달 대비 +28개</p>
+              <div className="flex items-center">
+                <span className="text-sm text-amber-500 dark:text-amber-400 font-medium">+28개</span>
+                <span className="mx-1 text-gray-500 dark:text-gray-400 text-xs">지난 달 대비</span>
+                <span className="text-amber-500 dark:text-amber-400">↑</span>
+              </div>
             </div>
           </div>
-          <div className="mt-3">
+          
+          <div className="mt-3 h-12">
+            <MiniChart 
+              data={[
+                { name: '7월', value: 350 },
+                { name: '8월', value: 375 },
+                { name: '9월', value: 390 },
+                { name: '10월', value: 397 },
+                { name: '11월', value: 425 }
+              ]} 
+              stroke="#f59e0b"
+              fill="rgba(245, 158, 11, 0.2)"
+              positive={true}
+            />
+          </div>
+          
+          <div className="mt-2">
             <p className="text-sm">다양한 교육 과정이 매일 새롭게 등록되고 있습니다.</p>
           </div>
         </div>
@@ -79,10 +140,29 @@ export default function Home() {
             </div>
             <div>
               <p className="text-2xl font-bold">24°C</p>
-              <p className="text-sm text-gray-500 dark:text-gray-400">서울특별시 강남구</p>
+              <div className="flex items-center">
+                <span className="text-sm text-blue-500 dark:text-blue-400 font-medium">좋음</span>
+                <span className="mx-1 text-gray-500 dark:text-gray-400 text-xs">미세먼지</span>
+              </div>
             </div>
           </div>
-          <div className="mt-3">
+          
+          <div className="mt-3 h-12">
+            <MiniChart 
+              data={[
+                { name: '오전 6시', value: 18 },
+                { name: '오전 9시', value: 20 },
+                { name: '오후 12시', value: 23 },
+                { name: '오후 3시', value: 24 },
+                { name: '오후 6시', value: 22 }
+              ]} 
+              stroke="#3b82f6"
+              fill="rgba(59, 130, 246, 0.2)"
+              positive={true}
+            />
+          </div>
+          
+          <div className="mt-2">
             <p className="text-sm">산책하기 좋은 날씨입니다! 반려견과 함께 외출해보세요.</p>
           </div>
         </div>
