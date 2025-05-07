@@ -20,6 +20,7 @@ import ShopPage from "./pages/shop/index";
 import ProfilePage from "./pages/profile/index";
 import SettingsPage from "./pages/settings/index";
 import NotFound from "./pages/not-found";
+import TrainerTest from "./pages/TrainerTest";
 
 // Auth Pages
 import LoginPage from "./pages/auth/login";
@@ -76,6 +77,7 @@ function AuthenticatedRoutes() {
         <Route path="/shop" component={ShopPage} />
         <Route path="/profile" component={ProfilePage} />
         <Route path="/settings" component={SettingsPage} />
+        <Route path="/modal-test" component={TrainerTest} />
         <Route component={NotFound} />
       </Switch>
     </AppLayout>
@@ -93,6 +95,7 @@ function UnauthenticatedRoutes() {
         <Route path="/course/:id" component={CourseDetail} />
         <Route path="/trainers" component={TrainersPage} />
         <Route path="/community" component={CommunityPage} />
+        <Route path="/modal-test" component={TrainerTest} />
         <Route component={NotFound} />
       </Switch>
     </AppLayout>
