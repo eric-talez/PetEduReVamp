@@ -7,12 +7,58 @@ import {
   Search,
   MessageSquare,
   ShoppingCart,
-  ChevronDown
+  ChevronDown,
+  ChevronRight,
+  AlertCircle,
+  Package,
+  CheckCircle,
+  ArrowRight,
+  MoreHorizontal,
+  X,
+  Calendar,
+  ShoppingBag,
+  CreditCard,
+  DollarSign
 } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useClickAway } from "@/hooks/use-mobile";
 import { Link, useLocation } from "wouter";
 import { useAuth } from "../SimpleApp";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { format } from "date-fns";
+import { ko } from "date-fns/locale";
+
+// 메시지 인터페이스
+interface Message {
+  id: string;
+  sender: string;
+  avatar?: string;
+  content: string;
+  timestamp: string;
+  read: boolean;
+}
+
+// 알림 인터페이스
+interface Notification {
+  id: string;
+  title: string;
+  content: string;
+  timestamp: string;
+  type: 'info' | 'success' | 'warning' | 'error';
+  read: boolean;
+  link?: string;
+}
+
+// 장바구니 아이템 인터페이스
+interface CartItem {
+  id: number;
+  name: string;
+  image: string;
+  price: number;
+  quantity: number;
+  discountRate?: number;
+}
 
 interface TopBarProps {
   sidebarOpen: boolean;
@@ -35,6 +81,174 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
   const logout = auth?.logout;
   const [location, setLocation] = useLocation();
   
+  // 팝업 메뉴 상태
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [messagePopupOpen, setMessagePopupOpen] = useState(false);
+  const [notificationPopupOpen, setNotificationPopupOpen] = useState(false);
+  const [cartPopupOpen, setCartPopupOpen] = useState(false);
+  
+  // 참조 (외부 클릭 감지용)
+  const userMenuRef = useClickAway<HTMLDivElement>(() => setUserMenuOpen(false));
+  const messagePopupRef = useClickAway<HTMLDivElement>(() => setMessagePopupOpen(false));
+  const notificationPopupRef = useClickAway<HTMLDivElement>(() => setNotificationPopupOpen(false));
+  const cartPopupRef = useClickAway<HTMLDivElement>(() => setCartPopupOpen(false));
+  
+  // 샘플 메시지 데이터
+  const [messages, setMessages] = useState<Message[]>([
+    {
+      id: "msg1",
+      sender: "김트레이너",
+      avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
+      content: "안녕하세요, 다음 훈련 일정 관련해서 문의드립니다.",
+      timestamp: "2024-02-15T14:30:00",
+      read: false
+    },
+    {
+      id: "msg2",
+      sender: "바우멍 훈련소",
+      avatar: "https://images.unsplash.com/photo-1579310962131-aa21f240d986?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
+      content: "3월 특별 그룹 클래스 신청이 시작되었습니다!",
+      timestamp: "2024-02-14T09:15:00",
+      read: false
+    },
+    {
+      id: "msg3",
+      sender: "박훈련사",
+      avatar: "https://images.unsplash.com/photo-1599566150163-29194dcaad36?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
+      content: "몽이의 훈련 영상을 첨부했습니다. 확인 부탁드립니다.",
+      timestamp: "2024-02-13T16:45:00",
+      read: false
+    },
+    {
+      id: "msg4",
+      sender: "퍼피스쿨",
+      content: "반려견 사회화 클래스가 내일 진행됩니다. 참석 여부 확인 부탁드립니다.",
+      timestamp: "2024-02-12T13:20:00",
+      read: true
+    },
+    {
+      id: "msg5",
+      sender: "고객센터",
+      content: "문의하신 내용에 대한 답변이 등록되었습니다.",
+      timestamp: "2024-02-10T11:05:00",
+      read: true
+    }
+  ]);
+  
+  // 샘플 알림 데이터
+  const [notifications, setNotifications] = useState<Notification[]>([
+    {
+      id: "notif1",
+      title: "수업 일정 알림",
+      content: "내일 오후 3시 기초 훈련 클래스가 예정되어 있습니다.",
+      timestamp: "2024-02-15T09:00:00",
+      type: "info",
+      read: false,
+      link: "/calendar"
+    },
+    {
+      id: "notif2",
+      title: "결제 완료",
+      content: "프리미엄 반려견 훈련용 클리커 구매가 완료되었습니다.",
+      timestamp: "2024-02-14T15:30:00",
+      type: "success",
+      read: false,
+      link: "/shop/orders"
+    },
+    {
+      id: "notif3",
+      title: "수강 신청 마감 임박",
+      content: "관심 표시한 '반려견 행동 교정 마스터' 클래스 신청이 내일 마감됩니다.",
+      timestamp: "2024-02-13T10:15:00",
+      type: "warning",
+      read: true,
+      link: "/courses"
+    },
+    {
+      id: "notif4",
+      title: "이벤트 안내",
+      content: "서울 강남 지역 반려동물 페스티벌이 이번 주말에 개최됩니다.",
+      timestamp: "2024-02-12T13:45:00",
+      type: "info",
+      read: true,
+      link: "/events"
+    }
+  ]);
+  
+  // 샘플 장바구니 데이터
+  const [cartItems, setCartItems] = useState<CartItem[]>([
+    {
+      id: 1,
+      name: "프리미엄 반려견 훈련용 클리커",
+      image: "https://images.unsplash.com/photo-1598875384021-4a23470c7997?w=150&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
+      price: 15000,
+      quantity: 1
+    },
+    {
+      id: 4,
+      name: "유기농 강아지 간식 모음",
+      image: "https://images.unsplash.com/photo-1591946614720-90a587da4a36?w=150&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
+      price: 28000,
+      quantity: 1,
+      discountRate: 10
+    }
+  ]);
+  
+  // 읽지 않은 메시지 수
+  const unreadMessagesCount = messages.filter(msg => !msg.read).length;
+  
+  // 읽지 않은 알림 수
+  const unreadNotificationsCount = notifications.filter(notif => !notif.read).length;
+  
+  // 장바구니 아이템 총 수량
+  const cartItemsCount = cartItems.reduce((total, item) => total + item.quantity, 0);
+  
+  // 장바구니 총 금액
+  const cartTotal = cartItems.reduce((total, item) => {
+    const price = item.discountRate 
+      ? item.price * (1 - item.discountRate / 100) 
+      : item.price;
+    return total + (price * item.quantity);
+  }, 0);
+  
+  // 메시지를 읽음으로 표시
+  const markMessageAsRead = (id: string) => {
+    setMessages(messages.map(msg => 
+      msg.id === id ? { ...msg, read: true } : msg
+    ));
+  };
+  
+  // 알림을 읽음으로 표시
+  const markNotificationAsRead = (id: string) => {
+    setNotifications(notifications.map(notif => 
+      notif.id === id ? { ...notif, read: true } : notif
+    ));
+  };
+  
+  // 모든 메시지를 읽음으로 표시
+  const markAllMessagesAsRead = () => {
+    setMessages(messages.map(msg => ({ ...msg, read: true })));
+  };
+  
+  // 모든 알림을 읽음으로 표시
+  const markAllNotificationsAsRead = () => {
+    setNotifications(notifications.map(notif => ({ ...notif, read: true })));
+  };
+  
+  // 장바구니에서 아이템 제거
+  const removeFromCart = (id: number) => {
+    setCartItems(cartItems.filter(item => item.id !== id));
+  };
+  
+  // 장바구니 아이템 수량 변경
+  const updateCartItemQuantity = (id: number, quantity: number) => {
+    if (quantity < 1) return;
+    
+    setCartItems(cartItems.map(item => 
+      item.id === id ? { ...item, quantity } : item
+    ));
+  };
+  
   // 디버깅용 로그 (개발 완료 후 제거)
   useEffect(() => {
     console.log('TopBar rendered with auth state:', {
@@ -53,9 +267,6 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
     console.log("Logout button clicked");
     logout();
   };
-
-  const [userMenuOpen, setUserMenuOpen] = useState(false);
-  const userMenuRef = useClickAway<HTMLDivElement>(() => setUserMenuOpen(false));
 
   return (
     <header className="sticky top-0 bg-white dark:bg-gray-900 shadow-sm z-10 transition-colors">
@@ -94,53 +305,395 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
           <div className="flex items-center space-x-2">
             {/* Group message, notification and theme toggle together as requested */}
             <div className="flex items-center space-x-2 border-r border-gray-200 dark:border-gray-700 pr-2 mr-2">
-              <Button 
-                variant="ghost" 
-                size="icon"
-                onClick={() => isAuthenticated ? setLocation("/messages") : setLocation("/auth")}
-                className="relative"
-                aria-label="메시지"
-              >
-                <MessageSquare className="h-5 w-5" />
-                {isAuthenticated && (
-                  <span className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-4 h-4 text-xs flex items-center justify-center">
-                    3
-                  </span>
+              {/* Messages Button & Popup */}
+              <div className="relative" ref={messagePopupRef}>
+                <Button 
+                  variant="ghost" 
+                  size="icon"
+                  onClick={() => {
+                    if (isAuthenticated) {
+                      setMessagePopupOpen(!messagePopupOpen);
+                      setNotificationPopupOpen(false);
+                      setCartPopupOpen(false);
+                    } else {
+                      setLocation("/auth");
+                    }
+                  }}
+                  className="relative"
+                  aria-label="메시지"
+                >
+                  <MessageSquare className="h-5 w-5" />
+                  {isAuthenticated && unreadMessagesCount > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-4 h-4 text-xs flex items-center justify-center">
+                      {unreadMessagesCount}
+                    </span>
+                  )}
+                </Button>
+                
+                {/* Messages Popup */}
+                {messagePopupOpen && isAuthenticated && (
+                  <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white dark:bg-gray-900 rounded-md shadow-lg py-1 z-50 border border-gray-200 dark:border-gray-700">
+                    <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
+                      <div className="flex justify-between items-center">
+                        <h3 className="text-sm font-semibold">메시지</h3>
+                        {unreadMessagesCount > 0 && (
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            onClick={markAllMessagesAsRead}
+                            className="text-xs h-7 px-2"
+                          >
+                            모두 읽음 표시
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                    
+                    <div className="max-h-80 overflow-y-auto py-1">
+                      {messages.length > 0 ? (
+                        messages.slice(0, 5).map((message) => (
+                          <div
+                            key={message.id}
+                            className={`px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer ${!message.read ? 'bg-blue-50 dark:bg-blue-900/20' : ''}`}
+                            onClick={() => {
+                              markMessageAsRead(message.id);
+                              setMessagePopupOpen(false);
+                              setLocation("/messages");
+                            }}
+                          >
+                            <div className="flex items-start">
+                              <div className="flex-shrink-0 mr-3">
+                                <Avatar 
+                                  className="h-8 w-8"
+                                  fallback={message.sender.substring(0, 1)}
+                                  src={message.avatar}
+                                />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <div className="flex justify-between">
+                                  <p className="text-sm font-medium truncate">{message.sender}</p>
+                                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                                    {format(new Date(message.timestamp), 'M월 d일', { locale: ko })}
+                                  </p>
+                                </div>
+                                <p className="text-sm text-gray-600 dark:text-gray-300 truncate">
+                                  {message.content}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="px-4 py-6 text-center">
+                          <p className="text-sm text-gray-500 dark:text-gray-400">메시지가 없습니다</p>
+                        </div>
+                      )}
+                    </div>
+                    
+                    <div className="border-t border-gray-200 dark:border-gray-700 py-2 px-4">
+                      <Button 
+                        variant="link" 
+                        className="w-full justify-center" 
+                        onClick={() => {
+                          setMessagePopupOpen(false);
+                          setLocation("/messages");
+                        }}
+                      >
+                        모든 메시지 보기
+                        <ChevronRight className="ml-1 h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
                 )}
-              </Button>
+              </div>
               
-              <Button 
-                variant="ghost" 
-                size="icon"
-                onClick={() => isAuthenticated ? setLocation("/notifications") : setLocation("/auth")}
-                className="relative"
-                aria-label="알림"
-              >
-                <Bell className="h-5 w-5" />
-                {isAuthenticated && (
-                  <span className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-4 h-4 text-xs flex items-center justify-center">
-                    2
-                  </span>
+              {/* Notifications Button & Popup */}
+              <div className="relative" ref={notificationPopupRef}>
+                <Button 
+                  variant="ghost" 
+                  size="icon"
+                  onClick={() => {
+                    if (isAuthenticated) {
+                      setNotificationPopupOpen(!notificationPopupOpen);
+                      setMessagePopupOpen(false);
+                      setCartPopupOpen(false);
+                    } else {
+                      setLocation("/auth");
+                    }
+                  }}
+                  className="relative"
+                  aria-label="알림"
+                >
+                  <Bell className="h-5 w-5" />
+                  {isAuthenticated && unreadNotificationsCount > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-4 h-4 text-xs flex items-center justify-center">
+                      {unreadNotificationsCount}
+                    </span>
+                  )}
+                </Button>
+                
+                {/* Notifications Popup */}
+                {notificationPopupOpen && isAuthenticated && (
+                  <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white dark:bg-gray-900 rounded-md shadow-lg py-1 z-50 border border-gray-200 dark:border-gray-700">
+                    <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
+                      <div className="flex justify-between items-center">
+                        <h3 className="text-sm font-semibold">알림</h3>
+                        {unreadNotificationsCount > 0 && (
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            onClick={markAllNotificationsAsRead}
+                            className="text-xs h-7 px-2"
+                          >
+                            모두 읽음 표시
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                    
+                    <div className="max-h-80 overflow-y-auto py-1">
+                      {notifications.length > 0 ? (
+                        notifications.map((notification) => (
+                          <div
+                            key={notification.id}
+                            className={`px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer ${!notification.read ? 'bg-blue-50 dark:bg-blue-900/20' : ''}`}
+                            onClick={() => {
+                              markNotificationAsRead(notification.id);
+                              setNotificationPopupOpen(false);
+                              if (notification.link) {
+                                setLocation(notification.link);
+                              } else {
+                                setLocation("/notifications");
+                              }
+                            }}
+                          >
+                            <div className="flex gap-3">
+                              <div className="flex-shrink-0">
+                                {notification.type === 'info' && (
+                                  <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400">
+                                    <AlertCircle className="h-4 w-4" />
+                                  </div>
+                                )}
+                                {notification.type === 'success' && (
+                                  <div className="w-8 h-8 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center text-green-600 dark:text-green-400">
+                                    <CheckCircle className="h-4 w-4" />
+                                  </div>
+                                )}
+                                {notification.type === 'warning' && (
+                                  <div className="w-8 h-8 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center text-amber-600 dark:text-amber-400">
+                                    <AlertCircle className="h-4 w-4" />
+                                  </div>
+                                )}
+                                {notification.type === 'error' && (
+                                  <div className="w-8 h-8 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center text-red-600 dark:text-red-400">
+                                    <AlertCircle className="h-4 w-4" />
+                                  </div>
+                                )}
+                              </div>
+                              <div className="flex-1">
+                                <div className="flex justify-between items-start">
+                                  <p className="text-sm font-medium">{notification.title}</p>
+                                  <p className="text-xs text-gray-500 dark:text-gray-400 ml-2 shrink-0">
+                                    {format(new Date(notification.timestamp), 'M월 d일', { locale: ko })}
+                                  </p>
+                                </div>
+                                <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
+                                  {notification.content}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="px-4 py-6 text-center">
+                          <p className="text-sm text-gray-500 dark:text-gray-400">알림이 없습니다</p>
+                        </div>
+                      )}
+                    </div>
+                    
+                    <div className="border-t border-gray-200 dark:border-gray-700 py-2 px-4">
+                      <Button 
+                        variant="link" 
+                        className="w-full justify-center" 
+                        onClick={() => {
+                          setNotificationPopupOpen(false);
+                          setLocation("/notifications");
+                        }}
+                      >
+                        모든 알림 보기
+                        <ChevronRight className="ml-1 h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
                 )}
-              </Button>
+              </div>
               
               <ThemeToggle />
             </div>
 
             {isAuthenticated ? (
               <>
-                {/* Shopping Cart */}
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  className="relative"
-                  onClick={() => setLocation("/shop/cart")}
-                >
-                  <ShoppingCart className="h-5 w-5" />
-                  <span className="absolute -top-1 -right-1 bg-primary text-white rounded-full w-4 h-4 text-xs flex items-center justify-center">
-                    1
-                  </span>
-                </Button>
+                {/* Shopping Cart Button & Popup */}
+                <div className="relative" ref={cartPopupRef}>
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="relative"
+                    onClick={() => {
+                      setCartPopupOpen(!cartPopupOpen);
+                      setMessagePopupOpen(false);
+                      setNotificationPopupOpen(false);
+                    }}
+                  >
+                    <ShoppingCart className="h-5 w-5" />
+                    {cartItemsCount > 0 && (
+                      <span className="absolute -top-1 -right-1 bg-primary text-white rounded-full w-4 h-4 text-xs flex items-center justify-center">
+                        {cartItemsCount}
+                      </span>
+                    )}
+                  </Button>
+                  
+                  {/* Cart Popup */}
+                  {cartPopupOpen && (
+                    <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white dark:bg-gray-900 rounded-md shadow-lg py-1 z-50 border border-gray-200 dark:border-gray-700">
+                      <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
+                        <div className="flex justify-between items-center">
+                          <h3 className="text-sm font-semibold">장바구니</h3>
+                          <span className="text-xs text-gray-500 dark:text-gray-400">
+                            {cartItemsCount}개 상품
+                          </span>
+                        </div>
+                      </div>
+                      
+                      <div className="max-h-80 overflow-y-auto py-1">
+                        {cartItems.length > 0 ? (
+                          <div className="divide-y divide-gray-200 dark:divide-gray-700">
+                            {cartItems.map((item) => (
+                              <div key={item.id} className="px-4 py-3">
+                                <div className="flex gap-3">
+                                  <div className="flex-shrink-0 w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded overflow-hidden">
+                                    <img 
+                                      src={item.image} 
+                                      alt={item.name} 
+                                      className="w-full h-full object-cover"
+                                    />
+                                  </div>
+                                  <div className="flex-1">
+                                    <div className="flex justify-between">
+                                      <div>
+                                        <p className="text-sm font-medium">{item.name}</p>
+                                        <div className="flex items-center mt-1">
+                                          <Button
+                                            variant="outline"
+                                            size="icon"
+                                            className="h-6 w-6 rounded-full p-0"
+                                            onClick={() => updateCartItemQuantity(item.id, item.quantity - 1)}
+                                            disabled={item.quantity <= 1}
+                                          >
+                                            <span className="sr-only">감소</span>
+                                            <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                              <path d="M2.5 7.5H12.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                                            </svg>
+                                          </Button>
+                                          <span className="mx-2 text-sm font-medium min-w-[20px] text-center">
+                                            {item.quantity}
+                                          </span>
+                                          <Button
+                                            variant="outline"
+                                            size="icon"
+                                            className="h-6 w-6 rounded-full p-0"
+                                            onClick={() => updateCartItemQuantity(item.id, item.quantity + 1)}
+                                          >
+                                            <span className="sr-only">증가</span>
+                                            <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                              <path d="M7.5 2.5V12.5M2.5 7.5H12.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                                            </svg>
+                                          </Button>
+                                        </div>
+                                      </div>
+                                      <div className="text-right">
+                                        {item.discountRate ? (
+                                          <>
+                                            <p className="text-sm font-medium">
+                                              {Math.round(item.price * (1 - item.discountRate / 100)).toLocaleString()}원
+                                            </p>
+                                            <p className="text-xs text-gray-500 dark:text-gray-400 line-through">
+                                              {item.price.toLocaleString()}원
+                                            </p>
+                                          </>
+                                        ) : (
+                                          <p className="text-sm font-medium">
+                                            {item.price.toLocaleString()}원
+                                          </p>
+                                        )}
+                                        <Button
+                                          variant="ghost"
+                                          size="icon"
+                                          className="h-6 w-6 mt-1 text-gray-500 hover:text-red-500"
+                                          onClick={() => removeFromCart(item.id)}
+                                        >
+                                          <X className="h-4 w-4" />
+                                          <span className="sr-only">삭제</span>
+                                        </Button>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="px-4 py-6 text-center">
+                            <ShoppingBag className="h-8 w-8 mx-auto text-gray-400 dark:text-gray-500 mb-2" />
+                            <p className="text-sm text-gray-500 dark:text-gray-400">장바구니가 비어있습니다</p>
+                            <Button
+                              variant="link"
+                              className="mt-2"
+                              onClick={() => {
+                                setCartPopupOpen(false);
+                                setLocation("/shop");
+                              }}
+                            >
+                              쇼핑하러 가기
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+                      
+                      {cartItems.length > 0 && (
+                        <>
+                          <div className="border-t border-gray-200 dark:border-gray-700 px-4 py-3">
+                            <div className="flex justify-between mb-2">
+                              <span className="text-sm">소계</span>
+                              <span className="text-sm font-medium">{cartTotal.toLocaleString()}원</span>
+                            </div>
+                            <Button 
+                              className="w-full"
+                              onClick={() => {
+                                setCartPopupOpen(false);
+                                setLocation("/shop/checkout");
+                              }}
+                            >
+                              결제하기
+                            </Button>
+                          </div>
+                          <div className="border-t border-gray-200 dark:border-gray-700 py-2 px-4">
+                            <Button 
+                              variant="outline" 
+                              className="w-full" 
+                              onClick={() => {
+                                setCartPopupOpen(false);
+                                setLocation("/shop/cart");
+                              }}
+                            >
+                              장바구니 보기
+                            </Button>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  )}
+                </div>
 
                 {/* User menu */}
                 <div className="relative" ref={userMenuRef}>
