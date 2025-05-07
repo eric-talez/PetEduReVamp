@@ -49,6 +49,8 @@ function AuthenticatedRoutes() {
         </Route>
         <Route path="/courses" component={CoursesPage} />
         <Route path="/course/:id" component={CourseDetail} />
+        <Route path="/video-training" component={lazy(() => import('@/pages/video-training'))} />
+        <Route path="/video-training/:id" component={lazy(() => import('@/pages/video-training/video'))} />
         <Route path="/trainers">
           {() => checkAccess(['pet-owner', 'trainer', 'institute-admin', 'admin']) ? <TrainersPage /> : window.location.href = '/'}
         </Route>
@@ -103,6 +105,8 @@ function UnauthenticatedRoutes() {
         <Route path="/" component={Home} />
         <Route path="/courses" component={CoursesPage} />
         <Route path="/course/:id" component={CourseDetail} />
+        <Route path="/video-training" component={lazy(() => import('@/pages/video-training'))} />
+        <Route path="/video-training/:id" component={lazy(() => import('@/pages/video-training/video'))} />
         <Route path="/trainers" component={TrainersPage} />
         <Route path="/community" component={CommunityPage} />
         <Route path="/video-call" component={VideoCallPage} />
