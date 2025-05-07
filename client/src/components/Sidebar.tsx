@@ -322,9 +322,10 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                       href="/community" 
                       icon={<MessageSquare className="w-5 h-5 mr-2" />} 
                       active={isActive("/community")} 
-                      onClick={() => {
+                      onClick={(path) => {
                         console.log("비회원이 커뮤니티 클릭");
-                        window.location.href = "/auth";
+                        // 비회원도 커뮤니티 페이지로 이동
+                        window.location.href = path;
                       }} 
                       show={true}
                     >커뮤니티</NavItem>
