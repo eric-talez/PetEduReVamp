@@ -13,6 +13,7 @@ import MyCourses from "@/pages/my-courses";
 import MyPets from "@/pages/my-pets";
 import Login from "@/pages/auth/login";
 import NotFound from "@/pages/not-found";
+import VideoTrainingPage from "@/pages/video-training";
 import LocationsPage from "./pages/locations";
 import VideoCallPage from "./pages/video-call";
 import MessagesPage from "./pages/messages";
@@ -282,7 +283,7 @@ function AuthenticatedRoutes() {
         <Route path="/my-pets" component={MyPets} />
         <Route path="/calendar" component={() => <div className="p-8"><h1 className="text-2xl font-bold mb-4">교육 일정</h1><p>교육 일정을 관리할 수 있는 페이지입니다.</p></div>} />
         <Route path="/certificates" component={() => <div className="p-8"><h1 className="text-2xl font-bold mb-4">자격증 및 수료증</h1><p>자격증 및 수료증을 확인할 수 있는 페이지입니다.</p></div>} />
-        <Route path="/video-training" component={() => <div className="p-8"><h1 className="text-2xl font-bold mb-4">영상 훈련</h1><p>영상으로 진행하는 훈련 컨텐츠를 볼 수 있는 페이지입니다.</p></div>} />
+        <Route path="/video-training" component={VideoTrainingPage} />
         <Route path="/video-call" component={VideoCallPage} />
         <Route path="/shop" component={() => <div className="p-8"><h1 className="text-2xl font-bold mb-4">쇼핑</h1><p>반려견 용품을 구매할 수 있는 쇼핑몰 페이지입니다.</p></div>} />
         <Route path="/notifications" component={() => <div className="p-8"><h1 className="text-2xl font-bold mb-4">알림장</h1><p>훈련사와 소통하고 훈련 진행상황을 확인할 수 있는 알림장 페이지입니다.</p></div>} />
@@ -331,7 +332,7 @@ function UnauthenticatedRoutes() {
         <Route path="/courses" component={Courses} />
         <Route path="/course/:id" component={CourseDetail} />
         <Route path="/trainers" component={Trainers} />
-        <Route path="/video-training" component={() => { window.location.href = "/video-training"; return null; }} />
+        <Route path="/video-training" component={VideoTrainingPage} />
         <Route path="/institutes" component={Institutes} />
         <Route path="/community" component={Community} />
         <Route path="/" component={Home} />
