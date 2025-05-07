@@ -185,7 +185,7 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
     <SidebarContext.Provider value={contextValue}>
       <div
         className={cn(
-          "h-screen bg-white dark:bg-gray-900 transform transition-all duration-300 ease-in-out shadow-md flex-shrink-0 z-20",
+          "fixed h-screen bg-white dark:bg-gray-900 transform transition-all duration-300 ease-in-out shadow-md flex-shrink-0 z-30",
           open ? "translate-x-0" : "-translate-x-full lg:translate-x-0",
           expanded ? "w-64" : "w-[70px]"
         )}

@@ -33,6 +33,8 @@ export function AppLayout({ children }: AppLayoutProps) {
     setSidebarOpen(!sidebarOpen);
   };
   
+  console.log("AppLayout 렌더링 - isAuthenticated:", isAuthenticated, "sidebarOpen:", sidebarOpen);
+  
   return (
     <div className="min-h-screen bg-background">
       <TopBar
@@ -40,15 +42,13 @@ export function AppLayout({ children }: AppLayoutProps) {
         onToggleSidebar={toggleSidebar}
       />
       
-      {/* 사이드바: 인증된 사용자에게만 표시 */}
-      {isAuthenticated && (
-        <Sidebar 
-          open={sidebarOpen} 
-          onClose={() => setSidebarOpen(false)}
-          userRole={userRole}
-          isAuthenticated={isAuthenticated}
-        />
-      )}
+      {/* 모든 사용자에게 사이드바 표시 (인증 여부와 관계없이) */}
+      <Sidebar 
+        open={sidebarOpen} 
+        onClose={() => setSidebarOpen(false)}
+        userRole={userRole}
+        isAuthenticated={isAuthenticated}
+      />
       
       {/* 컨텐츠 영역: 화면 크기와 인증 여부에 따라 여백 조정 */}
       <main 
