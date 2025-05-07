@@ -52,12 +52,20 @@ interface NavItemProps {
   icon: React.ReactNode;
   children: React.ReactNode;
   active?: boolean;
-  onClick?: () => void;
+  onClick?: (path: string) => void;
 }
 
 function NavItem({ href, icon, children, active, onClick }: NavItemProps) {
   // 부모 컴포넌트에서 expanded 상태를 받아오기 위해 useContext 사용
   const { expanded } = useContext(SidebarContext);
+  
+  // 클릭 핸들러에 경로 전달
+  const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    if (onClick) {
+      // 클릭 이벤트 발생 후 onClick 함수에 경로 전달
+      onClick(href);
+    }
+  };
   
   return (
     <Link 
@@ -69,7 +77,7 @@ function NavItem({ href, icon, children, active, onClick }: NavItemProps) {
           ? "bg-primary/10 text-primary" 
           : "text-gray-700 dark:text-gray-200 hover:text-primary dark:hover:text-primary"
       )}
-      onClick={onClick}
+      onClick={handleClick}
       title={expanded ? undefined : children?.toString()}
     >
       {icon}
@@ -148,9 +156,38 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
   };
 
   // 클릭 핸들러 - 공통 함수
-  const handleItemClick = () => {
+  const handleItemClick = (path: string) => {
+    // 콘솔에 메뉴 클릭 로깅
+    console.log(`메뉴 클릭: ${path} (사용자 역할: ${userRole || '비로그인'})`);
+    
+    // 모바일에서 사이드바 닫기
     if (onClose) {
       onClose();
+    }
+    
+    // 특별한 경로별 처리
+    switch(path) {
+      case '/dashboard':
+        // 권한별 대시보드 리디렉션은 라우터에서 처리하므로 여기서는 별도 작업 불필요
+        break;
+      case '/my-pets':
+        // 반려견 정보를 로컬 스토리지에서 불러와서 확인하는 등의 작업 가능
+        if (userRole === 'pet-owner') {
+          // 예: 반려견 정보 미리 로드 로직
+          console.log('반려견 정보 미리 확인 중...');
+        }
+        break;
+      case '/shop':
+        // 쇼핑몰 접근 시 권한 확인
+        // ...
+        break;
+      case '/video-call':
+        // 화상 통화 기능 접근 시 카메라/마이크 권한 확인 로직
+        console.log('화상 통화 기능 접근: 권한 확인 필요');
+        break;
+      default:
+        // 기본 동작
+        break;
     }
   };
   
