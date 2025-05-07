@@ -433,327 +433,323 @@ export default function VideoCallPage() {
           </p>
         </div>
 
-      {/* 필터 섹션 - 탭 스타일로 변경 */}
-      <div className="mb-8">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4">
-          <div className="bg-muted inline-flex h-10 items-center justify-center rounded-md p-1 text-muted-foreground">
-            <Button 
-              variant={filter === "all" ? "default" : "ghost"}
-              onClick={() => setFilter("all")}
-              className="rounded-sm h-8 px-3"
-            >
-              전체 클래스
-            </Button>
-            <Button 
-              variant={filter === "1on1" ? "default" : "ghost"}
-              onClick={() => setFilter("1on1")}
-              className="rounded-sm h-8 px-3"
-            >
-              1:1 개인 수업
-            </Button>
-            <Button 
-              variant={filter === "group" ? "default" : "ghost"}
-              onClick={() => setFilter("group")}
-              className="rounded-sm h-8 px-3"
-            >
-              그룹 수업
-            </Button>
+        {/* 필터 섹션 - 탭 스타일로 변경 */}
+        <div className="mb-8">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4">
+            <div className="bg-muted inline-flex h-10 items-center justify-center rounded-md p-1 text-muted-foreground">
+              <Button 
+                variant={filter === "all" ? "default" : "ghost"}
+                onClick={() => setFilter("all")}
+                className="rounded-sm h-8 px-3"
+              >
+                전체 클래스
+              </Button>
+              <Button 
+                variant={filter === "1on1" ? "default" : "ghost"}
+                onClick={() => setFilter("1on1")}
+                className="rounded-sm h-8 px-3"
+              >
+                1:1 개인 수업
+              </Button>
+              <Button 
+                variant={filter === "group" ? "default" : "ghost"}
+                onClick={() => setFilter("group")}
+                className="rounded-sm h-8 px-3"
+              >
+                그룹 수업
+              </Button>
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* 화상 수업 카드 그리드 */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredClasses.map((videoClass) => (
-          <Card 
-            key={videoClass.id} 
-            className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer"
-            onClick={() => handleClassClick(videoClass)}
-          >
-            <div className="h-48 overflow-hidden">
-              <img 
-                src={videoClass.image} 
-                alt={videoClass.title} 
-                className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
-              />
-            </div>
-            <CardHeader>
-              <div className="flex flex-wrap gap-2 mb-2">
-                {videoClass.tags.map((tag, index) => (
-                  <Badge key={index} variant="outline" className="bg-blue-50 dark:bg-blue-900 text-blue-600 dark:text-blue-100">
-                    {tag}
-                  </Badge>
-                ))}
+        {/* 화상 수업 카드 그리드 */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredClasses.map((videoClass) => (
+            <Card 
+              key={videoClass.id} 
+              className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer"
+              onClick={() => handleClassClick(videoClass)}
+            >
+              <div className="h-48 overflow-hidden">
+                <img 
+                  src={videoClass.image} 
+                  alt={videoClass.title} 
+                  className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+                />
               </div>
-              <CardTitle className="line-clamp-2">{videoClass.title}</CardTitle>
-              <CardDescription className="flex items-center mt-1">
-                <span className="font-medium text-gray-700 dark:text-gray-300">{videoClass.trainer} 훈련사</span>
-                <div className="flex items-center ml-auto">
-                  <Star className="h-4 w-4 text-yellow-400 fill-yellow-400 mr-1" />
-                  <span className="text-sm">{videoClass.rating} ({videoClass.reviews})</span>
+              <CardHeader>
+                <div className="flex flex-wrap gap-2 mb-2">
+                  {videoClass.tags.map((tag, index) => (
+                    <Badge key={index} variant="outline" className="bg-blue-50 dark:bg-blue-900 text-blue-600 dark:text-blue-100">
+                      {tag}
+                    </Badge>
+                  ))}
                 </div>
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-gray-600 dark:text-gray-300 text-sm line-clamp-3 mb-4">
-                {videoClass.description}
-              </p>
-              <div className="flex justify-between items-center mb-3">
-                <Badge className={statusConfig[videoClass.status].badgeClass}>
-                  {statusConfig[videoClass.status].label}
-                </Badge>
-                {videoClass.status === 'open' && (
-                  <span className="text-xs text-gray-500">
-                    {videoClass.seatsBooked}/{videoClass.seatsTotal} 예약됨
-                  </span>
-                )}
-              </div>
-              <div className="flex flex-wrap gap-y-2 text-sm text-gray-500 dark:text-gray-400">
-                <div className="flex items-center w-full sm:w-auto sm:mr-4">
-                  <Clock className="h-4 w-4 mr-1" />
-                  <span>{videoClass.duration}분</span>
-                </div>
-                <div className="flex items-center w-full sm:w-auto sm:mr-4">
-                  <Calendar className="h-4 w-4 mr-1" />
-                  <span>
-                    {videoClass.status !== 'completed' 
-                      ? `다음 일정: ${new Date(videoClass.nextSession).toLocaleDateString('ko-KR', {
-                          month: 'long', 
-                          day: 'numeric',
-                          weekday: 'short'
-                        })}` 
-                      : '진행 완료'
-                    }
-                  </span>
-                </div>
-              </div>
-            </CardContent>
-            <CardFooter className="flex justify-between items-center border-t pt-4">
-              <div className="text-lg font-bold text-primary">
-                {videoClass.price.toLocaleString()}원
-              </div>
-              {videoClass.status === 'open' ? (
-                <Button 
-                  onClick={(e) => {
-                    e.stopPropagation(); // 카드 클릭 이벤트 전파 방지
-                    handleReservation(videoClass.id);
-                  }}
-                  className="flex items-center gap-1"
-                >
-                  <Video className="h-4 w-4" />
-                  수업 예약
-                </Button>
-              ) : videoClass.status === 'full' ? (
-                <Button 
-                  variant="outline"
-                  className="flex items-center gap-1 text-amber-600 border-amber-600"
-                  disabled
-                >
-                  <Calendar className="h-4 w-4" />
-                  정원 마감
-                </Button>
-              ) : videoClass.status === 'closed' ? (
-                <Button 
-                  variant="outline"
-                  className="flex items-center gap-1"
-                  disabled
-                >
-                  <Calendar className="h-4 w-4" />
-                  접수 마감
-                </Button>
-              ) : (
-                <Button 
-                  variant="outline"
-                  className="flex items-center gap-1"
-                  disabled
-                >
-                  <Calendar className="h-4 w-4" />
-                  종료됨
-                </Button>
-              )}
-            </CardFooter>
-          </Card>
-        ))}
-      </div>
-      
-      {/* 상세 보기 다이얼로그 */}
-      <Dialog open={showDetail} onOpenChange={setShowDetail}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-          {selectedClass && (
-            <>
-              <DialogHeader>
-                <DialogTitle className="text-2xl">{selectedClass.title}</DialogTitle>
-                <DialogDescription className="flex items-center mt-2">
-                  <div className="flex items-center">
-                    <img 
-                      src={selectedClass.trainerImage} 
-                      alt={selectedClass.trainer} 
-                      className="w-8 h-8 rounded-full mr-2 object-cover"
-                    />
-                    <span className="font-medium">{selectedClass.trainer} 훈련사</span>
-                  </div>
+                <CardTitle className="line-clamp-2">{videoClass.title}</CardTitle>
+                <CardDescription className="flex items-center mt-1">
+                  <span className="font-medium text-gray-700 dark:text-gray-300">{videoClass.trainer} 훈련사</span>
                   <div className="flex items-center ml-auto">
                     <Star className="h-4 w-4 text-yellow-400 fill-yellow-400 mr-1" />
-                    <span>{selectedClass.rating} ({selectedClass.reviews})</span>
+                    <span className="text-sm">{videoClass.rating} ({videoClass.reviews})</span>
                   </div>
-                </DialogDescription>
-              </DialogHeader>
-              
-              <div className="mt-4">
-                <div className="rounded-lg overflow-hidden mb-6 max-h-[400px]">
-                  <img 
-                    src={selectedClass.image} 
-                    alt={selectedClass.title} 
-                    className="w-full object-cover"
-                  />
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-600 dark:text-gray-300 text-sm line-clamp-3 mb-4">
+                  {videoClass.description}
+                </p>
+                <div className="flex justify-between items-center mb-3">
+                  <Badge className={statusConfig[videoClass.status].badgeClass}>
+                    {statusConfig[videoClass.status].label}
+                  </Badge>
+                  {videoClass.status === 'open' && (
+                    <span className="text-xs text-gray-500">
+                      {videoClass.seatsBooked}/{videoClass.seatsTotal} 예약됨
+                    </span>
+                  )}
                 </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                  <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
-                    <h3 className="font-medium mb-2 flex items-center">
-                      <Calendar className="h-4 w-4 mr-2" />
-                      수업 정보
-                    </h3>
-                    <div className="space-y-2 text-sm">
-                      <div className="flex justify-between">
-                        <span className="text-gray-600 dark:text-gray-400">진행 시간</span>
-                        <span className="font-medium">{selectedClass.duration}분</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600 dark:text-gray-400">가능 일정</span>
-                        <span className="font-medium">{selectedClass.availability}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600 dark:text-gray-400">다음 수업</span>
-                        <span className="font-medium">
-                          {new Date(selectedClass.nextSession).toLocaleDateString('ko-KR', {
-                            year: 'numeric',
+                <div className="flex flex-wrap gap-y-2 text-sm text-gray-500 dark:text-gray-400">
+                  <div className="flex items-center w-full sm:w-auto sm:mr-4">
+                    <Clock className="h-4 w-4 mr-1" />
+                    <span>{videoClass.duration}분</span>
+                  </div>
+                  <div className="flex items-center w-full sm:w-auto sm:mr-4">
+                    <Calendar className="h-4 w-4 mr-1" />
+                    <span>
+                      {videoClass.status !== 'completed' 
+                        ? `다음 일정: ${new Date(videoClass.nextSession).toLocaleDateString('ko-KR', {
                             month: 'long', 
                             day: 'numeric',
                             weekday: 'short'
-                          })}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
-                    <h3 className="font-medium mb-2 flex items-center">
-                      <Users className="h-4 w-4 mr-2" />
-                      참가 현황
-                    </h3>
-                    <div className="space-y-2 text-sm">
-                      <div className="flex justify-between">
-                        <span className="text-gray-600 dark:text-gray-400">최대 인원</span>
-                        <span className="font-medium">{selectedClass.seatsTotal}명</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600 dark:text-gray-400">예약 현황</span>
-                        <span className="font-medium">{selectedClass.seatsBooked}/{selectedClass.seatsTotal}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600 dark:text-gray-400">예약 상태</span>
-                        <Badge className={statusConfig[selectedClass.status].badgeClass}>
-                          {statusConfig[selectedClass.status].label}
-                        </Badge>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
-                    <h3 className="font-medium mb-2 flex items-center">
-                      <CheckCircle className="h-4 w-4 mr-2" />
-                      수업 주제
-                    </h3>
-                    <div className="flex flex-wrap gap-2">
-                      {selectedClass.tags.map((tag, index) => (
-                        <Badge key={index} variant="secondary">
-                          {tag}
-                        </Badge>
-                      ))}
-                    </div>
+                          })}` 
+                        : '진행 완료'
+                      }
+                    </span>
                   </div>
                 </div>
-                
-                <div className="mb-6">
-                  <h3 className="font-medium mb-2">수업 설명</h3>
-                  <p className="text-gray-700 dark:text-gray-300 whitespace-pre-line">
-                    {selectedClass.description}
-                  </p>
+              </CardContent>
+              <CardFooter className="flex justify-between items-center border-t pt-4">
+                <div className="text-lg font-bold text-primary">
+                  {videoClass.price.toLocaleString()}원
                 </div>
+                {videoClass.status === 'open' ? (
+                  <Button 
+                    onClick={(e) => {
+                      e.stopPropagation(); // 카드 클릭 이벤트 전파 방지
+                      handleReservation(videoClass.id);
+                    }}
+                    className="flex items-center gap-1"
+                  >
+                    <Video className="h-4 w-4" />
+                    수업 예약
+                  </Button>
+                ) : videoClass.status === 'full' ? (
+                  <Button 
+                    variant="outline"
+                    className="flex items-center gap-1 text-amber-600 border-amber-600"
+                    disabled
+                  >
+                    <Calendar className="h-4 w-4" />
+                    정원 마감
+                  </Button>
+                ) : videoClass.status === 'closed' ? (
+                  <Button 
+                    variant="outline"
+                    className="flex items-center gap-1"
+                    disabled
+                  >
+                    <Calendar className="h-4 w-4" />
+                    접수 마감
+                  </Button>
+                ) : (
+                  <Button 
+                    variant="outline"
+                    className="flex items-center gap-1"
+                    disabled
+                  >
+                    <Calendar className="h-4 w-4" />
+                    종료됨
+                  </Button>
+                )}
+              </CardFooter>
+            </Card>
+          ))}
+        </div>
+        
+        {/* 상세 보기 다이얼로그 */}
+        <Dialog open={showDetail} onOpenChange={setShowDetail}>
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+            {selectedClass && (
+              <>
+                <DialogHeader>
+                  <DialogTitle className="text-2xl">{selectedClass.title}</DialogTitle>
+                  <DialogDescription className="flex items-center mt-2">
+                    <div className="flex items-center">
+                      <img 
+                        src={selectedClass.trainerImage} 
+                        alt={selectedClass.trainer} 
+                        className="w-8 h-8 rounded-full mr-2 object-cover"
+                      />
+                      <span className="font-medium">{selectedClass.trainer} 훈련사</span>
+                    </div>
+                    <div className="flex items-center ml-auto">
+                      <Star className="h-4 w-4 text-yellow-400 fill-yellow-400 mr-1" />
+                      <span>{selectedClass.rating} ({selectedClass.reviews})</span>
+                    </div>
+                  </DialogDescription>
+                </DialogHeader>
                 
-                <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg mb-6">
-                  <h3 className="font-medium mb-2">훈련사 소개</h3>
-                  <div className="flex items-start gap-4">
+                <div className="mt-4">
+                  <div className="rounded-lg overflow-hidden mb-6 max-h-[400px]">
                     <img 
-                      src={selectedClass.trainerImage} 
-                      alt={selectedClass.trainer} 
-                      className="w-16 h-16 rounded-full object-cover"
+                      src={selectedClass.image} 
+                      alt={selectedClass.title} 
+                      className="w-full object-cover"
                     />
-                    <div>
-                      <p className="font-medium">{selectedClass.trainer}</p>
-                      {/* trainerId로 해당 훈련사 정보 찾기 */}
-                      {allTrainers.find(t => t.id === selectedClass.trainerId) && (
-                        <div className="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                          <p className="mb-1">
-                            <span className="font-medium">전문 분야:</span> {allTrainers.find(t => t.id === selectedClass.trainerId)?.specialty}
-                          </p>
-                          <p>
-                            <span className="font-medium">경력:</span> {allTrainers.find(t => t.id === selectedClass.trainerId)?.experience}
-                          </p>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                    <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
+                      <h3 className="font-medium mb-2 flex items-center">
+                        <Calendar className="h-4 w-4 mr-2" />
+                        수업 정보
+                      </h3>
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between">
+                          <span className="text-gray-600 dark:text-gray-400">진행 시간</span>
+                          <span className="font-medium">{selectedClass.duration}분</span>
                         </div>
-                      )}
+                        <div className="flex justify-between">
+                          <span className="text-gray-600 dark:text-gray-400">가능 일정</span>
+                          <span className="font-medium">{selectedClass.availability}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600 dark:text-gray-400">다음 수업</span>
+                          <span className="font-medium">
+                            {new Date(selectedClass.nextSession).toLocaleDateString('ko-KR', {
+                              year: 'numeric',
+                              month: 'long', 
+                              day: 'numeric',
+                              weekday: 'short'
+                            })}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
+                      <h3 className="font-medium mb-2 flex items-center">
+                        <Users className="h-4 w-4 mr-2" />
+                        참여 정보
+                      </h3>
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between">
+                          <span className="text-gray-600 dark:text-gray-400">수업 방식</span>
+                          <span className="font-medium">
+                            {selectedClass.tags.includes("1:1 훈련") ? "1:1 개인 수업" : "그룹 수업"}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600 dark:text-gray-400">예약 현황</span>
+                          <span className="font-medium">
+                            {selectedClass.seatsBooked}/{selectedClass.seatsTotal} 명
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600 dark:text-gray-400">수업 상태</span>
+                          <Badge className={statusConfig[selectedClass.status].badgeClass}>
+                            {statusConfig[selectedClass.status].label}
+                          </Badge>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
+                      <h3 className="font-medium mb-2 flex items-center">
+                        <User className="h-4 w-4 mr-2" />
+                        훈련사 정보
+                      </h3>
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between">
+                          <span className="text-gray-600 dark:text-gray-400">전문 분야</span>
+                          <span className="font-medium truncate max-w-[120px]">
+                            {allTrainers.find(t => t.name === selectedClass.trainer)?.specialty || "반려견 훈련"}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600 dark:text-gray-400">경력</span>
+                          <span className="font-medium">
+                            {allTrainers.find(t => t.name === selectedClass.trainer)?.experience || "5년+"}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600 dark:text-gray-400">수업 횟수</span>
+                          <span className="font-medium">
+                            {selectedClass.reviews}회+
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="mb-6">
+                    <h3 className="font-bold text-lg mb-3">수업 설명</h3>
+                    <p className="text-gray-600 dark:text-gray-300">
+                      {selectedClass.description}
+                    </p>
+                  </div>
+                  
+                  <div className="mb-6 grid grid-cols-1 gap-4">
+                    <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-100 dark:border-gray-700">
+                      <h3 className="font-bold mb-2">수업 진행 방식</h3>
+                      <p className="text-sm text-gray-600 dark:text-gray-300">
+                        화상 회의 플랫폼(Zoom)을 통해 실시간으로 진행됩니다. 예약 완료 후 이메일로 수업 링크가 발송됩니다. 
+                        수업 시작 5분 전까지 접속해 주시기 바랍니다.
+                      </p>
+                    </div>
+                    <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-100 dark:border-gray-700">
+                      <h3 className="font-bold mb-2">예약 및 결제 안내</h3>
+                      <p className="text-sm text-gray-600 dark:text-gray-300">
+                        원하는 수업을 선택하고 예약 버튼을 클릭하면 일정을 선택할 수 있습니다. 결제 후 바로 수업 접근 링크가 제공됩니다.
+                      </p>
+                    </div>
+                    <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-100 dark:border-gray-700">
+                      <h3 className="font-bold mb-2">화상 수업 준비물</h3>
+                      <p className="text-sm text-gray-600 dark:text-gray-300">
+                        카메라와 마이크가 있는 기기(스마트폰, 태블릿, 노트북), 안정적인 인터넷 환경, 그리고 반려견이 편안히 있을 수 있는 공간이 필요합니다.
+                      </p>
+                    </div>
+                    <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-100 dark:border-gray-700">
+                      <h3 className="font-bold mb-2">환불 정책</h3>
+                      <p className="text-sm text-gray-600 dark:text-gray-300">
+                        수업 시작 10분 전까지 취소 시 100% 환불이 가능합니다. 그 이후에는 취소 및 환불이 불가능합니다.
+                      </p>
                     </div>
                   </div>
                 </div>
-              </div>
-              
-              <DialogFooter className="flex-col sm:flex-row justify-between gap-4">
-                <div className="text-2xl font-bold text-primary">
-                  {selectedClass.price.toLocaleString()}원
-                </div>
-                <div className="flex gap-3">
-                  <Button variant="outline" onClick={handleCloseDetail}>닫기</Button>
+                
+                <DialogFooter className="flex flex-col sm:flex-row gap-3 mt-4">
                   {selectedClass.status === 'open' && (
                     <Button 
                       onClick={() => handleReservation(selectedClass.id)}
-                      className="gap-2"
+                      className="w-full sm:w-auto flex items-center justify-center gap-2"
                     >
                       <Video className="h-4 w-4" />
                       수업 예약하기
                     </Button>
                   )}
-                </div>
-              </DialogFooter>
-            </>
-          )}
-        </DialogContent>
-      </Dialog>
-
-      {/* 안내 섹션 */}
-      <div className="mt-12 bg-gray-50 dark:bg-gray-800 p-6 rounded-lg">
-        <h2 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">화상 수업 안내</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <div className="bg-white dark:bg-gray-700 p-4 rounded-lg shadow">
-            <h3 className="font-bold mb-2">예약 방법</h3>
-            <p className="text-sm text-gray-600 dark:text-gray-300">
-              원하는 수업을 선택하고 예약 버튼을 클릭하면 일정을 선택할 수 있습니다. 결제 후 바로 수업 접근 링크가 제공됩니다.
-            </p>
-          </div>
-          <div className="bg-white dark:bg-gray-700 p-4 rounded-lg shadow">
-            <h3 className="font-bold mb-2">화상 수업 준비물</h3>
-            <p className="text-sm text-gray-600 dark:text-gray-300">
-              카메라와 마이크가 있는 기기(스마트폰, 태블릿, 노트북), 안정적인 인터넷 환경, 그리고 반려견이 편안히 있을 수 있는 공간이 필요합니다.
-            </p>
-          </div>
-          <div className="bg-white dark:bg-gray-700 p-4 rounded-lg shadow">
-            <h3 className="font-bold mb-2">환불 정책</h3>
-            <p className="text-sm text-gray-600 dark:text-gray-300">
-              수업 시작 10분 전까지 취소 시 100% 환불이 가능합니다. 그 이후에는 취소 및 환불이 불가능합니다.
-            </p>
-          </div>
-        </div>
-      </div>
+                  <Button 
+                    variant="outline" 
+                    onClick={handleCloseDetail} 
+                    className="w-full sm:w-auto"
+                  >
+                    닫기
+                  </Button>
+                </DialogFooter>
+              </>
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );

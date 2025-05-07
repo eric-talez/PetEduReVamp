@@ -398,7 +398,7 @@ export default function VideoTraining() {
   };
 
   return (
-    <div className="py-8">
+    <div className="py-8 px-4 sm:px-6 lg:px-8">
       {/* 상단 배너 */}
       <div className="relative rounded-xl overflow-hidden h-48 md:h-64 mb-8 bg-gradient-to-r from-primary/80 to-accent/80 shadow-lg">
         <img 
