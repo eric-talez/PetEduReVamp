@@ -41,6 +41,12 @@ export default function Trainers() {
     setLocation(`/video-call?trainer=${trainerId}`);
   };
   
+  const handleCourseReservation = (trainerId: number) => {
+    console.log(`${trainerId}번 훈련사의 화상수업 예약하기`);
+    closeTrainerModal();
+    setLocation(`/course-reservation?trainer=${trainerId}`);
+  };
+  
   const trainers = [
     {
       id: 1,
@@ -495,19 +501,23 @@ export default function Trainers() {
                   <p className="text-gray-600 dark:text-gray-400 mb-4">
                     {selectedTrainer.name} 훈련사는 총 {selectedTrainer.courses}개의 강의를 진행하고 있습니다.
                   </p>
-                  <div className="flex flex-col sm:flex-row gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <Button 
-                      className="flex-1"
                       onClick={() => handleViewCourses(selectedTrainer.id)}
                     >
                       강의 보기
                     </Button>
-                    <Button 
-                      className="flex-1" 
+                    <Button
                       variant="outline"
                       onClick={() => handleBookConsultation(selectedTrainer.id)}
                     >
                       상담 예약
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => handleCourseReservation(selectedTrainer.id)}
+                    >
+                      화상수업 예약
                     </Button>
                   </div>
                 </div>
