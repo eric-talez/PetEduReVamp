@@ -157,7 +157,7 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
     }
 
     // 권한 체크
-    if (!isAuthenticated && !["/", "/courses", "/trainers", "/video-training"].includes(path)) {
+    if (!isAuthenticated && !["/", "/courses", "/trainers", "/video-training", "/video-call"].includes(path)) {
       console.log('비인증 사용자 접근 제한');
       window.location.href = "/auth";
       return;
@@ -284,6 +284,16 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                       }} 
                       show={true}
                     >영상 훈련</NavItem>
+                    <NavItem 
+                      href="/video-call" 
+                      icon={<VideoIcon className="w-5 h-5 mr-2" />} 
+                      active={isActive("/video-call")} 
+                      onClick={(path) => {
+                        console.log("화상 수업 메뉴 클릭:", path);
+                        handleItemClick(path);
+                      }} 
+                      show={true}
+                    >화상 수업</NavItem>
                     <NavItem 
                       href="/community" 
                       icon={<MessageSquare className="w-5 h-5 mr-2" />} 
