@@ -129,21 +129,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     isLoading: true,
     userRole: null,
     userName: null,
-    logout: async () => {
-      try {
-        const response = await fetch('/api/auth/logout', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          credentials: 'same-origin'
-        });
-        
-        window.dispatchEvent(new CustomEvent('logout'));
-      } catch (error) {
-        console.error('Logout error:', error);
-        window.dispatchEvent(new CustomEvent('logout'));
-      }
+    logout: () => {
+      // 실제 API가 없으므로 localStorage에서 직접 정보를 삭제하고 이벤트 발생
+      localStorage.removeItem('petedu_auth');
+      console.log("Logging out: Removed auth data from localStorage");
+      window.dispatchEvent(new CustomEvent('logout'));
     }
   });
 

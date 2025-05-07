@@ -18,7 +18,10 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
   
   const handleLogout = () => {
     logout();
-    setLocation("/auth");
+    // 로그아웃 후 인증 페이지로 이동
+    setTimeout(() => {
+      setLocation("/auth");
+    }, 100); // 약간의 지연을 두어 상태 업데이트 후 리디렉션되도록 함
   };
   
   const [userMenuOpen, setUserMenuOpen] = useState(false);
