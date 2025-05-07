@@ -1,9 +1,23 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
-import { AlertCircle, Lock, Play, Star, Search, Filter } from "lucide-react";
+import { 
+  AlertCircle, 
+  Lock, 
+  Play, 
+  Pause, 
+  Star, 
+  Search, 
+  Filter, 
+  Maximize, 
+  Volume2, 
+  VolumeX,
+  SkipForward,
+  SkipBack,
+  Subtitles
+} from "lucide-react";
 import { useAuth } from "@/SimpleApp";
 import {
   AlertDialog,
@@ -45,6 +59,19 @@ export default function VideoTraining() {
   const [elapsedTime, setElapsedTime] = useState(0);
   const { isAuthenticated } = useAuth();
   const [, setLocation] = useLocation();
+  
+  // 비디오 플레이어 관련 상태
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [playerState, setPlayerState] = useState({
+    playing: false,
+    currentTime: 0,
+    duration: 0,
+    muted: false,
+    volume: 1,
+    subtitles: false,
+    playbackRate: 1
+  });
+  const [showControls, setShowControls] = useState(true);
 
   // 무료 영상과 유료 영상 데이터
   const videos: Video[] = [
@@ -202,12 +229,130 @@ export default function VideoTraining() {
         ? videos.filter(video => video.isPremium)
         : videos.filter(video => video.category === videoFilter);
 
+  // 영상 플레이어 이벤트 핸들러
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    const handleTimeUpdate = () => {
+      setPlayerState(prev => ({
+        ...prev,
+        currentTime: video.currentTime
+      }));
+    };
+
+    const handleLoadedMetadata = () => {
+      setPlayerState(prev => ({
+        ...prev,
+        duration: video.duration
+      }));
+    };
+
+    const handleEnded = () => {
+      setPlayerState(prev => ({
+        ...prev,
+        playing: false
+      }));
+    };
+
+    video.addEventListener('timeupdate', handleTimeUpdate);
+    video.addEventListener('loadedmetadata', handleLoadedMetadata);
+    video.addEventListener('ended', handleEnded);
+
+    return () => {
+      video.removeEventListener('timeupdate', handleTimeUpdate);
+      video.removeEventListener('loadedmetadata', handleLoadedMetadata);
+      video.removeEventListener('ended', handleEnded);
+    };
+  }, [isPlaying, selectedVideo]);
+
+  // 자막 토글
+  const toggleSubtitles = () => {
+    const video = videoRef.current;
+    if (!video) return;
+    
+    setPlayerState(prev => {
+      const newSubtitlesState = !prev.subtitles;
+      // 자막 트랙 활성화/비활성화 로직
+      if (video.textTracks && video.textTracks.length > 0) {
+        for (let i = 0; i < video.textTracks.length; i++) {
+          video.textTracks[i].mode = newSubtitlesState ? 'showing' : 'hidden';
+        }
+      }
+      return { ...prev, subtitles: newSubtitlesState };
+    });
+  };
+
+  // 재생/일시정지 토글
+  const togglePlay = () => {
+    const video = videoRef.current;
+    if (!video) return;
+    
+    if (playerState.playing) {
+      video.pause();
+    } else {
+      video.play();
+    }
+    
+    setPlayerState(prev => ({ ...prev, playing: !prev.playing }));
+  };
+
+  // 볼륨 변경
+  const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const video = videoRef.current;
+    if (!video) return;
+    
+    const volume = parseFloat(e.target.value);
+    video.volume = volume;
+    setPlayerState(prev => ({ ...prev, volume, muted: volume === 0 }));
+  };
+
+  // 음소거 토글
+  const toggleMute = () => {
+    const video = videoRef.current;
+    if (!video) return;
+    
+    const newMutedState = !playerState.muted;
+    video.muted = newMutedState;
+    setPlayerState(prev => ({ ...prev, muted: newMutedState }));
+  };
+
+  // 전체화면 토글
+  const toggleFullscreen = () => {
+    const videoContainer = document.querySelector('.video-container');
+    if (!videoContainer) return;
+
+    if (!document.fullscreenElement) {
+      videoContainer.requestFullscreen?.();
+    } else {
+      document.exitFullscreen?.();
+    }
+  };
+
+  // 영상 탐색 (시간 이동)
+  const handleTimeSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const video = videoRef.current;
+    if (!video) return;
+    
+    const time = parseFloat(e.target.value);
+    video.currentTime = time;
+    setPlayerState(prev => ({ ...prev, currentTime: time }));
+  };
+
+  // 시간 포맷팅 (00:00 형식)
+  const formatTime = (timeInSeconds: number) => {
+    const minutes = Math.floor(timeInSeconds / 60);
+    const seconds = Math.floor(timeInSeconds % 60);
+    return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+  };
+
   // 영상 재생 시작
   const handlePlayVideo = (video: Video) => {
     setSelectedVideo(video);
     setIsPlaying(true);
     setPreviewEnded(false);
     setElapsedTime(0);
+    setPlayerState(prev => ({ ...prev, playing: true, currentTime: 0 }));
 
     // Premium 영상이고 인증되지 않은 사용자일 경우 타이머 시작
     if (video.isPremium && !isAuthenticated) {
@@ -217,6 +362,11 @@ export default function VideoTraining() {
           if (newTime >= 60) { // 60초(1분) 후 프리뷰 종료
             clearInterval(timer);
             setPreviewEnded(true);
+            const videoElement = videoRef.current;
+            if (videoElement) {
+              videoElement.pause();
+              setPlayerState(prevState => ({ ...prevState, playing: false }));
+            }
             return 60;
           }
           return newTime;
