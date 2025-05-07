@@ -17,13 +17,16 @@ import VideoCallPage from "./pages/video-call";
 import MessagesPage from "./pages/messages";
 import NotificationsPage from "./pages/notifications";
 import ShopPage from "./pages/shop";
-import ProfilePage from "./pages/profile";
-import SettingsPage from "./pages/settings";
+import ProfilePage from "./pages/my-page";
 import NotFound from "./pages/not-found";
+
+// Admin Pages
+import MenuConfig from "./pages/admin/menu-config";
+import Commission from "./pages/admin/commission";
+import Settlement from "./pages/admin/settlement";
 
 // Auth Pages
 import LoginPage from "./pages/auth/login";
-import RegisterPage from "./pages/auth/register";
 
 function AuthenticatedRoutes() {
   const { user } = useAuth();
@@ -43,7 +46,7 @@ function AuthenticatedRoutes() {
     }
   };
 
-  // 공통 라우트
+  // 공통 라우트 
   const commonRoutes = (
     <>
       <Route path="/courses" component={CoursesPage} />
@@ -51,7 +54,6 @@ function AuthenticatedRoutes() {
       <Route path="/institutes" component={InstitutesPage} />
       <Route path="/community" component={CommunityPage} />
       <Route path="/profile" component={ProfilePage} />
-      <Route path="/settings" component={SettingsPage} />
     </>
   );
 
@@ -68,11 +70,21 @@ function AuthenticatedRoutes() {
     </>
   );
 
+  // 관리자 전용 라우트
+  const adminRoutes = (
+    <>
+      <Route path="/admin/menu-config" component={MenuConfig} />
+      <Route path="/admin/commission" component={Commission} />
+      <Route path="/admin/settlement" component={Settlement} />
+    </>
+  );
+
   return (
     <AppLayout>
       <Switch>
         <Route path="/">{getHomeComponent}</Route>
         {commonRoutes}
+        {user?.role === 'admin' && adminRoutes}
         {(user?.role === 'pet-owner' || user?.role === 'admin') && petOwnerRoutes}
         <Route component={NotFound} />
       </Switch>
@@ -85,7 +97,6 @@ function UnauthenticatedRoutes() {
     <AppLayout>
       <Switch>
         <Route path="/auth/login" component={LoginPage} />
-        <Route path="/auth/register" component={RegisterPage} />
         <Route path="/courses" component={CoursesPage} />
         <Route path="/trainers" component={TrainersPage} />
         <Route path="/institutes" component={InstitutesPage} />
