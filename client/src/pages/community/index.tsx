@@ -4,9 +4,31 @@ import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { Avatar } from "@/components/ui/Avatar";
 import { Search, Heart, MessageSquare, Share2, BookmarkPlus, Filter } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 export default function Community() {
   const [filter, setFilter] = useState("all");
+  const { toast } = useToast();
+  
+  // 로그인 상태 확인 함수
+  const isAuthenticated = (): boolean => {
+    const storedAuth = localStorage.getItem('petedu_auth');
+    return storedAuth !== null;
+  };
+  
+  // 로그인 유도 함수
+  const promptLogin = () => {
+    toast({
+      title: "로그인이 필요합니다",
+      description: "이 기능을 사용하려면 로그인이 필요합니다.",
+      variant: "destructive",
+    });
+    
+    // 2초 후 로그인 페이지로 이동
+    setTimeout(() => {
+      window.location.href = "/auth/login";
+    }, 2000);
+  };
   
   const posts = [
     {
@@ -112,11 +134,18 @@ export default function Community() {
     return initialLikes;
   });
 
+  // 좋아요 기능 (로그인 필요)
   const toggleLike = (postId: number) => {
-    setLikedPosts(prev => ({
-      ...prev,
-      [postId]: !prev[postId]
-    }));
+    if (isAuthenticated()) {
+      // 로그인 상태일 때만 좋아요 토글 처리
+      setLikedPosts(prev => ({
+        ...prev,
+        [postId]: !prev[postId]
+      }));
+    } else {
+      // 비로그인 상태면 로그인 유도
+      promptLogin();
+    }
   };
 
   return (
@@ -221,9 +250,22 @@ export default function Community() {
             </Button>
           </div>
           
-          {/* Write Button (Mobile) */}
+          {/* Write Button (Mobile) - 로그인 필요 */}
           <div className="mb-6 md:hidden">
-            <Button className="w-full">
+            <Button 
+              className="w-full"
+              onClick={() => {
+                if (!isAuthenticated()) {
+                  promptLogin();
+                } else {
+                  toast({
+                    title: "게시물 작성",
+                    description: "게시물 작성 페이지로 이동합니다.",
+                  });
+                  // 실제로는 게시물 작성 페이지로 이동
+                }
+              }}
+            >
               새 게시물 작성하기
             </Button>
           </div>
@@ -368,7 +410,22 @@ export default function Community() {
                 className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md px-4 py-2 min-h-[120px]"
               ></textarea>
             </div>
-            <Button className="w-full">게시하기</Button>
+            <Button 
+              className="w-full"
+              onClick={() => {
+                if (!isAuthenticated()) {
+                  promptLogin();
+                } else {
+                  toast({
+                    title: "게시물 작성",
+                    description: "게시물을 작성 중입니다...",
+                  });
+                  // 실제 구현에서는 게시물 데이터 서버로 전송
+                }
+              }}
+            >
+              게시하기
+            </Button>
           </Card>
           
           {/* Trending Topics */}
