@@ -1,249 +1,250 @@
-import { Link } from 'wouter';
-import { ChevronLeft, Award, GitBranch, Heart, BarChart, Users, MapPin, BookOpen } from 'lucide-react';
-import { Button } from "@/components/ui/button";
+import React from 'react';
 import { Card, CardContent } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-
-interface TeamMember {
-  id: number;
-  name: string;
-  role: string;
-  bio: string;
-  avatar: string;
-}
-
-// 팀원 데이터
-const teamMembers: TeamMember[] = [
-  {
-    id: 1,
-    name: "김태희",
-    role: "CEO & 공동 창업자",
-    bio: "반려동물 행동 전문가로 10년 이상의 경험을 가지고 있으며, 반려동물 교육의 혁신을 목표로 펫에듀를 설립했습니다.",
-    avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&h=150"
-  },
-  {
-    id: 2,
-    name: "박준혁",
-    role: "CTO & 공동 창업자",
-    bio: "IT 전문가이자 반려동물 애호가로, 기술을 통해 반려동물 교육의 접근성을 높이는 데 기여하고 있습니다.",
-    avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&h=150"
-  },
-  {
-    id: 3,
-    name: "이지민",
-    role: "수석 훈련사",
-    bio: "국제 인증 훈련사로서 다양한 반려동물 행동 문제에 대한 솔루션을 개발하고 훈련사 교육 프로그램을 총괄하고 있습니다.",
-    avatar: "https://images.unsplash.com/photo-1580489944761-15a19d654956?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&h=150"
-  },
-  {
-    id: 4,
-    name: "정민수",
-    role: "마케팅 디렉터",
-    bio: "디지털 마케팅 전문가로서 반려동물 산업에서의 풍부한 경험을 바탕으로 펫에듀의 브랜드 전략을 이끌고 있습니다.",
-    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&h=150"
-  }
-];
+import { Badge } from "@/components/ui/badge";
+import { Search, Award, PawPrint, Users, Heart, BookOpen, ThumbsUp, MapPin } from 'lucide-react';
 
 export default function AboutPage() {
+  const bannerStyle = {
+    backgroundImage: 'linear-gradient(to right, rgba(99, 102, 241, 0.8), rgba(79, 70, 229, 0.8))',
+    backgroundSize: 'cover',
+    backgroundPosition: 'center',
+  };
+
+  const teamMembers = [
+    {
+      name: '김민준',
+      role: 'CEO & 창립자',
+      bio: '반려동물 훈련 전문가이자 PetEdu의 비전을 이끄는 CEO입니다. 10년 이상의 동물 행동 연구 경험을 바탕으로 반려인과 반려동물이 더 행복한 사회를 꿈꿉니다.',
+      image: 'https://via.placeholder.com/150'
+    },
+    {
+      name: '이지은',
+      role: '수석 훈련사',
+      bio: '국내 최고의 반려견 행동 전문가로, 2,000건 이상의 문제행동 교정 성공 사례를 보유하고 있습니다. PetEdu의 교육 프로그램 개발을 총괄하고 있습니다.',
+      image: 'https://via.placeholder.com/150'
+    },
+    {
+      name: '박준호',
+      role: 'CTO',
+      bio: '10년 경력의 소프트웨어 개발자로 사용자 친화적인 플랫폼 구축에 전념하고 있습니다. 반려동물과 기술의 융합을 통한 혁신적인 솔루션 개발을 이끌고 있습니다.',
+      image: 'https://via.placeholder.com/150'
+    },
+    {
+      name: '최서연',
+      role: '마케팅 책임자',
+      bio: '디지털 마케팅 전문가로, 반려동물 산업에서의 풍부한 경험을 바탕으로 PetEdu의 브랜드 전략과 커뮤니티 구축을 담당하고 있습니다.',
+      image: 'https://via.placeholder.com/150'
+    }
+  ];
+
+  const values = [
+    {
+      title: '전문성',
+      description: '모든 교육 콘텐츠는 검증된 전문가들이 제작합니다. 우리는 과학적 근거와 윤리적 훈련 방법만을 지지합니다.',
+      icon: <Award className="w-10 h-10 text-indigo-500" />
+    },
+    {
+      title: '반려동물 복지',
+      description: '동물의 행복과 복지를 최우선으로 생각합니다. 모든 훈련 방법은 긍정 강화를 기반으로 합니다.',
+      icon: <PawPrint className="w-10 h-10 text-indigo-500" />
+    },
+    {
+      title: '커뮤니티',
+      description: '반려인들이 지식과 경험을 나누는 활발한 커뮤니티를 지향합니다. 함께 성장하는 문화를 만들어갑니다.',
+      icon: <Users className="w-10 h-10 text-indigo-500" />
+    },
+    {
+      title: '접근성',
+      description: '모든 반려인이 양질의 교육에 접근할 수 있어야 합니다. 다양한 형태와 가격대의 콘텐츠를 제공합니다.',
+      icon: <Heart className="w-10 h-10 text-indigo-500" />
+    }
+  ];
+
+  const milestones = [
+    {
+      year: 2018,
+      title: '회사 설립',
+      description: '반려동물 교육의 접근성을 높이기 위한 비전으로 PetEdu 설립'
+    },
+    {
+      year: 2019,
+      title: '첫 온라인 강의 출시',
+      description: '기본 훈련 및 문제행동 교정에 관한 10개의 강의로 서비스 시작'
+    },
+    {
+      year: 2020,
+      title: '모바일 앱 출시',
+      description: '언제 어디서나 학습할 수 있는 모바일 플랫폼 출시 및 회원 1만명 달성'
+    },
+    {
+      year: 2021,
+      title: '화상 상담 서비스 시작',
+      description: '전문 훈련사와의 1:1 맞춤형 상담 서비스 오픈 및 이용자 만족도 98% 달성'
+    },
+    {
+      year: 2022,
+      title: '오프라인 교육센터 오픈',
+      description: '서울, 부산, 대구에 오프라인 교육 센터 설립 및 지역 커뮤니티 형성'
+    },
+    {
+      year: 2023,
+      title: '제휴 파트너십 확대',
+      description: '전국 200개 이상의 동물병원, 펫샵과 제휴 파트너십 체결'
+    },
+    {
+      year: 2024,
+      title: '플랫폼 리뉴얼',
+      description: '사용자 경험을 개선한 새로운 플랫폼 출시 및 신규 기능 추가'
+    }
+  ];
+
   return (
-    <div className="container mx-auto px-4 py-6">
-      {/* 배너 영역 */}
-      <div className="w-full mb-8 rounded-lg overflow-hidden relative">
-        <div className="relative h-48 md:h-64">
-          <img 
-            src="https://images.unsplash.com/photo-1549291981-56d443d5e2a2?ixlib=rb-4.0.3&auto=format&fit=crop&w=1500&h=400&q=80"
-            alt="About Us 배너" 
-            className="w-full h-full object-cover"
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-primary/80 to-transparent flex items-center">
-            <div className="px-6 md:px-10 text-white max-w-2xl">
-              <h1 className="text-3xl md:text-4xl font-bold mb-4">펫에듀 소개</h1>
-              <p className="text-lg mb-2">
-                모든 반려동물과 견주를 위한 교육 플랫폼
-              </p>
-              <p className="text-sm md:text-base">
-                행복한 반려 생활을 위한 우리의 미션과 가치를 소개합니다.
-              </p>
+    <div className="min-h-screen">
+      {/* Banner 영역 */}
+      <div className="relative">
+        <div className="w-full py-20 px-4 sm:px-6 lg:px-8 flex flex-col items-center justify-center text-center" style={bannerStyle}>
+          <Badge className="mb-4 bg-white/20 text-white hover:bg-white/30">Pet Edu Platform</Badge>
+          <h1 className="text-3xl md:text-4xl font-bold text-white mb-6">About Us</h1>
+          <p className="text-lg text-white/90 max-w-3xl mx-auto mb-8">
+            반려동물과 반려인의 행복한 공존을 위한<br />더 나은 교육 경험을 만들어갑니다.
+          </p>
+        </div>
+      </div>
+
+      {/* 미션 & 비전 영역 */}
+      <div className="container mx-auto px-4 py-16">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold mb-6">우리의 미션</h2>
+            <p className="text-xl text-gray-600 dark:text-gray-300">
+              <span className="font-semibold text-primary">모든 반려인과 반려동물이 더 깊은 유대감을 형성하고 행복하게 공존할 수 있도록</span><br />
+              과학적이고 윤리적인 교육 방법을 누구나 쉽게 접할 수 있게 하는 것
+            </p>
+          </div>
+
+          <div className="text-center mb-20">
+            <h2 className="text-3xl font-bold mb-6">우리의 비전</h2>
+            <p className="text-xl text-gray-600 dark:text-gray-300">
+              반려동물 교육의 미래를 선도하는<br />
+              <span className="font-semibold text-primary">가장 신뢰받는 글로벌 교육 플랫폼으로 성장</span>
+            </p>
+          </div>
+        </div>
+
+        {/* 핵심 가치 */}
+        <div className="max-w-6xl mx-auto mb-20">
+          <h2 className="text-3xl font-bold text-center mb-12">핵심 가치</h2>
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {values.map((value, index) => (
+              <Card key={index} className="bg-white dark:bg-gray-800 hover:shadow-lg transition-shadow">
+                <CardContent className="p-6 text-center">
+                  <div className="flex justify-center mb-4">
+                    {value.icon}
+                  </div>
+                  <h3 className="text-xl font-bold mb-3">{value.title}</h3>
+                  <p className="text-gray-600 dark:text-gray-300">{value.description}</p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+
+        {/* 회사 연혁 */}
+        <div className="max-w-4xl mx-auto mb-20">
+          <h2 className="text-3xl font-bold text-center mb-12">회사 연혁</h2>
+          <div className="space-y-8 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-gray-300 before:to-transparent">
+            {milestones.map((milestone, index) => (
+              <div key={index} className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group">
+                <div className="flex items-center justify-center w-10 h-10 rounded-full border border-white bg-slate-300 dark:bg-slate-700 dark:border-slate-700 text-slate-500 dark:text-slate-400 shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2">
+                  {milestone.year}
+                </div>
+                <div className="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] bg-white dark:bg-gray-800 p-4 rounded shadow">
+                  <div className="font-bold text-gray-900 dark:text-white mb-1">{milestone.title}</div>
+                  <div className="text-gray-600 dark:text-gray-300">{milestone.description}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* 팀 소개 */}
+        <div className="max-w-6xl mx-auto">
+          <h2 className="text-3xl font-bold text-center mb-12">우리 팀</h2>
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {teamMembers.map((member, index) => (
+              <div key={index} className="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+                <div className="h-40 bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
+                  <div className="w-24 h-24 rounded-full bg-gray-300 dark:bg-gray-600 flex items-center justify-center text-gray-500 dark:text-gray-400">
+                    <Users className="w-10 h-10" />
+                  </div>
+                </div>
+                <div className="p-6">
+                  <h3 className="font-bold text-xl mb-1">{member.name}</h3>
+                  <p className="text-primary text-sm mb-3">{member.role}</p>
+                  <p className="text-gray-600 dark:text-gray-300 text-sm">
+                    {member.bio}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* 통계 영역 */}
+        <div className="bg-gray-50 dark:bg-gray-800/50 rounded-2xl p-8 max-w-6xl mx-auto mt-20">
+          <h2 className="text-2xl font-bold text-center mb-10">숫자로 보는 PetEdu</h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+            <div>
+              <p className="text-4xl font-bold text-primary mb-2">50,000+</p>
+              <p className="text-gray-600 dark:text-gray-300">행복한 반려인</p>
+            </div>
+            <div>
+              <p className="text-4xl font-bold text-primary mb-2">200+</p>
+              <p className="text-gray-600 dark:text-gray-300">전문 훈련사</p>
+            </div>
+            <div>
+              <p className="text-4xl font-bold text-primary mb-2">320+</p>
+              <p className="text-gray-600 dark:text-gray-300">교육 컨텐츠</p>
+            </div>
+            <div>
+              <p className="text-4xl font-bold text-primary mb-2">15+</p>
+              <p className="text-gray-600 dark:text-gray-300">교육 센터</p>
             </div>
           </div>
         </div>
-      </div>
-      
-      {/* 뒤로가기 */}
-      <div className="mb-6">
-        <Link href="/">
-          <Button variant="ghost" className="px-2">
-            <ChevronLeft className="mr-2 h-4 w-4" />
-            홈으로
-          </Button>
-        </Link>
-      </div>
-      
-      {/* 회사 소개 */}
-      <div className="mb-12">
-        <h2 className="text-3xl font-bold mb-6 text-center">Our Story</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
-          <div>
-            <p className="text-lg mb-4">
-              <span className="font-semibold text-primary">펫에듀</span>는 2023년, 반려동물 교육의 어려움을 경험한 창업자들에 의해 설립되었습니다.
-            </p>
-            <p className="mb-4">
-              우리는 모든 반려동물과 보호자가 최고 품질의 교육 자원에 쉽게 접근할 수 있어야 한다고 믿습니다. 이러한 믿음을 바탕으로, 전문 훈련사의 온라인 강의부터 1:1 맞춤형 상담, 위치 기반 서비스까지 종합적인 교육 플랫폼을 구축했습니다.
-            </p>
-            <p>
-              펫에듀는 단순한 교육 서비스를 넘어, 지속적으로 성장하는 반려동물 커뮤니티를 형성하여 모든 반려동물과 보호자가 더 행복하고 조화로운 삶을 살 수 있도록 돕는 것을 목표로 합니다.
-            </p>
-          </div>
-          <div className="rounded-lg overflow-hidden">
-            <img 
-              src="https://images.unsplash.com/photo-1601758174493-45d0a4d3e407?ixlib=rb-4.0.3&auto=format&fit=crop&w=700&h=500" 
-              alt="펫에듀 스토리" 
-              className="w-full h-auto"
-            />
+
+        {/* 파트너 로고 영역 */}
+        <div className="max-w-5xl mx-auto mt-20 text-center">
+          <h2 className="text-2xl font-bold mb-10">Our Partners</h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+            {[1, 2, 3, 4, 5, 6, 7, 8].map((item) => (
+              <div key={item} className="h-16 bg-gray-100 dark:bg-gray-800 rounded flex items-center justify-center text-gray-400">
+                <span className="text-sm">Partner Logo</span>
+              </div>
+            ))}
           </div>
         </div>
-      </div>
-      
-      {/* 미션 & 비전 */}
-      <div className="mb-16">
-        <h2 className="text-3xl font-bold mb-10 text-center">미션 & 비전</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <Card className="relative overflow-hidden border-primary/20">
-            <div className="absolute top-0 left-0 w-2 h-full bg-primary"></div>
-            <CardContent className="p-6">
-              <h3 className="text-xl font-bold mb-4 flex items-center">
-                <Award className="mr-2 h-5 w-5 text-primary" />
-                우리의 미션
-              </h3>
-              <p className="mb-4">
-                모든 반려동물과 보호자에게 최고 품질의 교육 기회를 제공하여, 더 행복하고 건강한 반려 생활을 만들어갑니다.
-              </p>
-              <ul className="space-y-2">
-                <li className="flex items-start">
-                  <Heart className="h-5 w-5 text-primary mr-2 flex-shrink-0 mt-0.5" />
-                  <span>반려동물의 행동과 심리에 대한 이해 증진</span>
-                </li>
-                <li className="flex items-start">
-                  <Users className="h-5 w-5 text-primary mr-2 flex-shrink-0 mt-0.5" />
-                  <span>전문가와 견주 간의 지식 공유 활성화</span>
-                </li>
-                <li className="flex items-start">
-                  <BookOpen className="h-5 w-5 text-primary mr-2 flex-shrink-0 mt-0.5" />
-                  <span>교육 리소스의 접근성 향상</span>
-                </li>
-              </ul>
-            </CardContent>
-          </Card>
-          
-          <Card className="relative overflow-hidden border-primary/20">
-            <div className="absolute top-0 left-0 w-2 h-full bg-primary"></div>
-            <CardContent className="p-6">
-              <h3 className="text-xl font-bold mb-4 flex items-center">
-                <GitBranch className="mr-2 h-5 w-5 text-primary" />
-                우리의 비전
-              </h3>
-              <p className="mb-4">
-                글로벌 반려동물 교육 시장을 선도하는 혁신적인 플랫폼으로 성장하여, 반려동물 복지 향상에 기여합니다.
-              </p>
-              <ul className="space-y-2">
-                <li className="flex items-start">
-                  <BarChart className="h-5 w-5 text-primary mr-2 flex-shrink-0 mt-0.5" />
-                  <span>데이터 기반 맞춤형 교육 솔루션 개발</span>
-                </li>
-                <li className="flex items-start">
-                  <MapPin className="h-5 w-5 text-primary mr-2 flex-shrink-0 mt-0.5" />
-                  <span>지역 기반 훈련사-견주 연결 생태계 구축</span>
-                </li>
-                <li className="flex items-start">
-                  <Users className="h-5 w-5 text-primary mr-2 flex-shrink-0 mt-0.5" />
-                  <span>반려동물 교육 커뮤니티 활성화</span>
-                </li>
-              </ul>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-      
-      {/* 팀 소개 */}
-      <div className="mb-16">
-        <h2 className="text-3xl font-bold mb-10 text-center">Our Team</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {teamMembers.map(member => (
-            <Card key={member.id} className="overflow-hidden hover:shadow-md transition">
-              <CardContent className="p-6 text-center">
-                <Avatar className="w-24 h-24 mx-auto mb-4">
-                  <AvatarImage src={member.avatar} alt={member.name} />
-                  <AvatarFallback>{member.name.charAt(0)}</AvatarFallback>
-                </Avatar>
-                <h3 className="text-xl font-bold mb-1">{member.name}</h3>
-                <p className="text-primary text-sm mb-3">{member.role}</p>
-                <p className="text-gray-600 dark:text-gray-300 text-sm">
-                  {member.bio}
-                </p>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </div>
-      
-      {/* 합류하기 섹션 */}
-      <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-8 text-center mb-12">
-        <h2 className="text-2xl font-bold mb-4">함께 성장하세요</h2>
-        <p className="text-gray-600 dark:text-gray-300 mb-6 max-w-2xl mx-auto">
-          반려동물의 행복한 삶을 위한 우리의 미션에 동참하세요.
-          열정적인 팀과 함께 혁신적인 반려동물 교육 플랫폼을 만들어갈 인재를 찾고 있습니다.
-        </p>
-        <Button size="lg">채용 정보 보기</Button>
-      </div>
-      
-      {/* 파트너십 */}
-      <div className="mb-12">
-        <h2 className="text-3xl font-bold mb-6 text-center">Our Partners</h2>
-        <p className="text-center text-gray-600 dark:text-gray-300 mb-8 max-w-3xl mx-auto">
-          펫에듀는 반려동물 산업의 다양한 전문가 및 기관과 협력하여 최고의 서비스를 제공합니다.
-        </p>
-        
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 items-center justify-items-center opacity-60">
-          <img 
-            src="https://via.placeholder.com/150x80?text=Partner+1" 
-            alt="파트너 1" 
-            className="h-16 w-auto grayscale hover:grayscale-0 transition"
-          />
-          <img 
-            src="https://via.placeholder.com/150x80?text=Partner+2" 
-            alt="파트너 2" 
-            className="h-16 w-auto grayscale hover:grayscale-0 transition"
-          />
-          <img 
-            src="https://via.placeholder.com/150x80?text=Partner+3" 
-            alt="파트너 3" 
-            className="h-16 w-auto grayscale hover:grayscale-0 transition"
-          />
-          <img 
-            src="https://via.placeholder.com/150x80?text=Partner+4" 
-            alt="파트너 4" 
-            className="h-16 w-auto grayscale hover:grayscale-0 transition"
-          />
-        </div>
-      </div>
-      
-      {/* 연락처 */}
-      <div className="bg-primary/5 rounded-lg p-8 text-center">
-        <h2 className="text-2xl font-bold mb-4">Contact Us</h2>
-        <p className="text-gray-600 dark:text-gray-300 mb-6 max-w-2xl mx-auto">
-          질문이나 제안이 있으신가요? 언제든지 연락주세요. 성심껏 답변 드리겠습니다.
-        </p>
-        <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <Link href="/help/contact">
-            <Button variant="outline" className="w-full sm:w-auto">
-              문의하기
-            </Button>
-          </Link>
-          <Link href="/help/faq">
-            <Button className="w-full sm:w-auto">
-              자주 묻는 질문
-            </Button>
-          </Link>
+
+        {/* 위치 정보 */}
+        <div className="max-w-5xl mx-auto mt-20 mb-10 text-center">
+          <h2 className="text-2xl font-bold mb-6">Contact Us</h2>
+          <div className="flex flex-col md:flex-row gap-8 justify-center">
+            <div className="flex flex-col items-center">
+              <MapPin className="w-6 h-6 text-primary mb-2" />
+              <p className="text-gray-800 dark:text-gray-200 font-medium">서울특별시 강남구 테헤란로 123</p>
+              <p className="text-gray-600 dark:text-gray-300">펫에듀 타워 8층</p>
+            </div>
+            <div className="flex flex-col items-center">
+              <BookOpen className="w-6 h-6 text-primary mb-2" />
+              <p className="text-gray-800 dark:text-gray-200 font-medium">운영시간</p>
+              <p className="text-gray-600 dark:text-gray-300">평일 09:00 - 18:00</p>
+            </div>
+            <div className="flex flex-col items-center">
+              <ThumbsUp className="w-6 h-6 text-primary mb-2" />
+              <p className="text-gray-800 dark:text-gray-200 font-medium">고객센터</p>
+              <p className="text-gray-600 dark:text-gray-300">1588-0000</p>
+            </div>
+          </div>
         </div>
       </div>
     </div>

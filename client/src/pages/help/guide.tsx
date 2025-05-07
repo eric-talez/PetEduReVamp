@@ -4,6 +4,19 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Search, PlayCircle, Calendar, MessageSquare, Bookmark, PawPrint, Video, Users, ShoppingBag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
+interface GuideStep {
+  title: string;
+  description: string;
+  image: string;
+}
+
+interface GuideSection {
+  id: string;
+  title: string;
+  icon: React.ReactNode;
+  steps: GuideStep[];
+}
+
 export default function GuidePage() {
   const bannerStyle = {
     backgroundImage: 'linear-gradient(to right, rgba(22, 163, 74, 0.8), rgba(5, 150, 105, 0.8))',
@@ -11,7 +24,7 @@ export default function GuidePage() {
     backgroundPosition: 'center',
   };
 
-  const guides = [
+  const guides: GuideSection[] = [
     {
       id: 'getting-started',
       title: '시작하기',
@@ -105,8 +118,7 @@ export default function GuidePage() {
         },
         {
           title: '이벤트 참가하기',
-          description: '예약한 이벤트의
-          상세 정보(장소, 시간, 준비물 등)는 "내 이벤트" 메뉴에서 확인할 수 있습니다.',
+          description: '예약한 이벤트의 상세 정보(장소, 시간, 준비물 등)는 "내 이벤트" 메뉴에서 확인할 수 있습니다.',
           image: 'https://via.placeholder.com/800x400?text=이벤트+참가+가이드'
         }
       ]
