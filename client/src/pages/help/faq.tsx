@@ -1,250 +1,169 @@
-import { Link } from 'wouter';
-import { 
-  ChevronLeft, 
-  ChevronDown, 
-  Search,
-  HelpCircle
-} from 'lucide-react';
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card } from "@/components/ui/card";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
-import { Badge } from "@/components/ui/badge";
-import { useState } from 'react';
-
-// FAQ 카테고리 및 항목 타입 정의
-interface FAQItem {
-  id: string;
-  question: string;
-  answer: string;
-  category: string;
-}
-
-// FAQ 데이터
-const faqData: FAQItem[] = [
-  {
-    id: "faq-1",
-    question: "펫에듀 플랫폼은 어떤 서비스인가요?",
-    answer: "펫에듀 플랫폼은 반려동물 교육과 관련된 종합 플랫폼입니다. 전문 훈련사의 교육 과정, 비대면 화상 상담, 지역별 훈련 시설 정보, 커뮤니티 등 다양한 서비스를 제공합니다.",
-    category: "일반"
-  },
-  {
-    id: "faq-2",
-    question: "회원가입은 어떻게 하나요?",
-    answer: "화면 우측 상단의 '로그인/회원가입' 버튼을 클릭한 후, 회원가입 양식을 작성하시면 됩니다. 일반 사용자, 훈련사, 교육기관 관리자 등 다양한 역할로 가입이 가능합니다.",
-    category: "계정"
-  },
-  {
-    id: "faq-3",
-    question: "교육 과정은 어떻게 신청하나요?",
-    answer: "로그인 후 '교육 과정' 메뉴에서 원하는 강좌를 선택하고 신청 버튼을 클릭하시면 됩니다. 신청 시 결제 페이지로 이동하며, 결제 완료 후 바로 수강이 가능합니다.",
-    category: "교육"
-  },
-  {
-    id: "faq-4",
-    question: "화상 상담은 어떻게 진행되나요?",
-    answer: "화상 상담은 사전 예약 후 지정된 시간에 진행됩니다. 예약한 시간에 '내 화상 상담' 메뉴로 접속하시면 훈련사와 연결됩니다. 화상 상담은 PC와 모바일 모두 지원합니다.",
-    category: "상담"
-  },
-  {
-    id: "faq-5",
-    question: "결제 방법은 어떤 것이 있나요?",
-    answer: "신용카드, 체크카드, 가상계좌, 휴대폰 결제 등 다양한 결제 방법을 지원합니다. 또한 네이버페이, 카카오페이 등 간편결제도 이용 가능합니다.",
-    category: "결제"
-  },
-  {
-    id: "faq-6",
-    question: "환불 정책은 어떻게 되나요?",
-    answer: "강의 시작 후 7일 이내에는 수강률 25% 미만일 경우 전액 환불이 가능합니다. 7일 이후에는 잔여 기간에 대해 일할 계산된 금액이 환불됩니다. 자세한 내용은 이용약관을 참고해주세요.",
-    category: "결제"
-  },
-  {
-    id: "faq-7",
-    question: "훈련사로 등록하려면 어떻게 해야 하나요?",
-    answer: "회원가입 시 '훈련사'로 역할을 선택한 후, 필요한 자격증 및 경력 정보를 업로드하시면 관리자 검토 후 승인됩니다. 승인 후에는 교육 과정을 등록하고 상담을 진행할 수 있습니다.",
-    category: "훈련사"
-  },
-  {
-    id: "faq-8",
-    question: "반려동물 등록은 어떻게 하나요?",
-    answer: "로그인 후 '마이페이지 > 내 반려동물'에서 반려동물 정보를 등록할 수 있습니다. 이름, 종류, 나이, 성별, 특징 등 상세 정보를 입력하면 맞춤형 교육 추천을 받을 수 있습니다.",
-    category: "반려동물"
-  },
-  {
-    id: "faq-9",
-    question: "모바일 앱도 있나요?",
-    answer: "현재 모바일 웹으로 서비스를 제공하고 있으며, iOS 및 Android 앱은 개발 중입니다. 모바일 웹은 PC 버전과 동일한 기능을 모두 사용할 수 있습니다.",
-    category: "일반"
-  },
-  {
-    id: "faq-10",
-    question: "커뮤니티 이용 규칙은 무엇인가요?",
-    answer: "커뮤니티에서는 반려동물 교육과 관련된 정보 공유, 질문, 경험담 등을 자유롭게 나눌 수 있습니다. 다만 광고성 게시물, 타인을 비방하는 내용, 유해한 콘텐츠는 제재 대상이 될 수 있습니다.",
-    category: "커뮤니티"
-  },
-  {
-    id: "faq-11",
-    question: "이벤트 정보는 어디서 확인할 수 있나요?",
-    answer: "'이벤트' 메뉴에서 다양한 오프라인 모임, 세미나, 할인 혜택 등의 이벤트 정보를 확인할 수 있습니다. 로그인 없이도 이벤트 정보 조회가 가능합니다.",
-    category: "이벤트"
-  },
-  {
-    id: "faq-12",
-    question: "위치 기반 서비스는 어떻게 이용하나요?",
-    answer: "'위치 서비스' 메뉴에서 내 주변 훈련 센터, 애견 카페, 동물병원 등의 정보를 확인할 수 있습니다. '내 위치 찾기' 버튼을 클릭하면 현재 위치 기준으로 정보가 제공됩니다.",
-    category: "위치 서비스"
-  }
-];
-
-// 카테고리 목록 생성
-const categories = ["전체", ...Array.from(new Set(faqData.map(item => item.category)))];
+import React from 'react';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { Button } from '@/components/ui/button';
+import { Search } from 'lucide-react';
 
 export default function FAQPage() {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("전체");
-  
-  // 검색 및 필터링된 FAQ 항목
-  const filteredFAQs = faqData.filter(faq => {
-    const matchesSearch = 
-      faq.question.toLowerCase().includes(searchTerm.toLowerCase()) || 
-      faq.answer.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesCategory = selectedCategory === "전체" || faq.category === selectedCategory;
-    
-    return matchesSearch && matchesCategory;
+  const bannerStyle = {
+    backgroundImage: 'linear-gradient(to right, rgba(59, 130, 246, 0.8), rgba(37, 99, 235, 0.8))',
+    backgroundSize: 'cover',
+    backgroundPosition: 'center',
+  };
+
+  const faqCategories = [
+    { id: 'general', name: '일반' },
+    { id: 'account', name: '계정' },
+    { id: 'course', name: '강의' },
+    { id: 'payment', name: '결제' },
+    { id: 'trainer', name: '훈련사' },
+    { id: 'technical', name: '기술 지원' },
+  ];
+
+  const faqs = [
+    {
+      category: 'general',
+      question: 'PetEdu 플랫폼이란 무엇인가요?',
+      answer: 'PetEdu 플랫폼은 반려동물 교육을 위한 종합 플랫폼입니다. 전문 훈련사의 강의, 1:1 화상 상담, 오프라인 교육 예약, 커뮤니티 활동 등 다양한 기능을 제공합니다.'
+    },
+    {
+      category: 'general',
+      question: '어떤 반려동물을 위한 서비스인가요?',
+      answer: '현재는 반려견을 중심으로 서비스를 제공하고 있으며, 추후 반려묘 등 다른 반려동물로 확장할 예정입니다.'
+    },
+    {
+      category: 'account',
+      question: '회원가입은 어떻게 하나요?',
+      answer: '홈페이지 우측 상단의 "로그인" 버튼을 클릭한 후 "회원가입" 옵션을 선택하시면 됩니다. 이메일 인증 후 기본 정보를 입력하면 가입이 완료됩니다.'
+    },
+    {
+      category: 'account',
+      question: '아이디/비밀번호를 잊어버렸어요.',
+      answer: '로그인 페이지에서 "아이디/비밀번호 찾기" 옵션을 이용해 주세요. 가입 시 등록한 이메일로 인증 후 정보를 찾을 수 있습니다.'
+    },
+    {
+      category: 'course',
+      question: '강의는 어떻게 수강하나요?',
+      answer: '강의 페이지에서 원하는 강의를 선택하고 결제 후 바로 수강이 가능합니다. 구매한 강의는 "내 강의실"에서 언제든지 다시 볼 수 있습니다.'
+    },
+    {
+      category: 'course',
+      question: '수강 기간에 제한이 있나요?',
+      answer: '대부분의 강의는 구매 후 평생 수강이 가능합니다. 단, 일부 시즌제 강의나 특별 프로그램은 기간 제한이 있을 수 있으니 강의 상세 페이지에서 확인해 주세요.'
+    },
+    {
+      category: 'payment',
+      question: '결제 방법은 어떤 것이 있나요?',
+      answer: '신용카드, 체크카드, 계좌이체, 무통장입금, 카카오페이, 네이버페이 등 다양한 결제 방법을 지원합니다.'
+    },
+    {
+      category: 'payment',
+      question: '환불 정책은 어떻게 되나요?',
+      answer: '강의 구매 후 7일 이내, 수강 진도율 25% 미만인 경우 전액 환불이 가능합니다. 그 이후에는 정해진 환불 규정에 따라 부분 환불이 이루어집니다.'
+    },
+    {
+      category: 'trainer',
+      question: '훈련사는 어떤 검증 과정을 거치나요?',
+      answer: '모든 훈련사는 전문 자격증, 경력 증명, 인터뷰 등 엄격한 검증 과정을 통과한 분들입니다. 훈련사의 프로필에서 자격증과 경력을 확인할 수 있습니다.'
+    },
+    {
+      category: 'trainer',
+      question: '훈련사와 1:1 상담은 어떻게 진행되나요?',
+      answer: '훈련사 프로필에서 "상담 예약" 버튼을 클릭하여 원하는 날짜와 시간을 선택할 수 있습니다. 화상 상담은 예약 시간에 맞춰 플랫폼 내 화상회의실에서 진행됩니다.'
+    },
+    {
+      category: 'technical',
+      question: '영상이 재생되지 않아요.',
+      answer: '먼저 인터넷 연결을 확인해 주세요. 그래도 문제가 지속된다면 다른 브라우저(크롬, 사파리 등)로 시도하거나, 브라우저 캐시를 삭제 후 재접속해 보세요.'
+    },
+    {
+      category: 'technical',
+      question: '앱은 없나요?',
+      answer: '현재 모바일 앱은 개발 중에 있으며, 웹사이트는 모바일 환경에 최적화되어 있어 모바일 브라우저에서도 편리하게 이용하실 수 있습니다.'
+    }
+  ];
+
+  const [activeCategory, setActiveCategory] = React.useState('general');
+  const [searchQuery, setSearchQuery] = React.useState('');
+
+  const filteredFaqs = faqs.filter(faq => {
+    const matchesCategory = activeCategory === 'all' || faq.category === activeCategory;
+    const matchesSearch = !searchQuery || 
+                          faq.question.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                          faq.answer.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesCategory && matchesSearch;
   });
-  
+
   return (
-    <div className="container mx-auto px-4 py-6">
-      {/* 배너 영역 */}
-      <div className="w-full mb-8 rounded-lg overflow-hidden relative">
-        <div className="relative h-48 md:h-64">
-          <img 
-            src="https://images.unsplash.com/photo-1450778869180-41d0601e046e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1500&h=400&q=80"
-            alt="FAQ 배너" 
-            className="w-full h-full object-cover"
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-primary/80 to-transparent flex items-center">
-            <div className="px-6 md:px-10 text-white max-w-2xl">
-              <h1 className="text-3xl md:text-4xl font-bold mb-4">자주 묻는 질문</h1>
-              <p className="text-lg mb-2">
-                펫에듀 플랫폼에 대한 궁금증을 해결해 드립니다.
-              </p>
-              <p className="text-sm md:text-base">
-                원하는 답변을 찾지 못하셨다면 고객센터로 문의해주세요.
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-      
-      {/* 뒤로가기 */}
-      <div className="mb-6">
-        <Link href="/">
-          <Button variant="ghost" className="px-2">
-            <ChevronLeft className="mr-2 h-4 w-4" />
-            홈으로
-          </Button>
-        </Link>
-      </div>
-      
-      {/* 검색 및 필터 영역 */}
-      <div className="mb-8">
-        <div className="flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-4 mb-6">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-            <Input
-              className="pl-10"
-              placeholder="질문 또는 키워드 검색..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+    <div className="min-h-screen">
+      {/* Banner 영역 */}
+      <div className="relative">
+        <div className="w-full py-20 px-4 sm:px-6 lg:px-8 flex flex-col items-center justify-center text-center" style={bannerStyle}>
+          <h1 className="text-3xl md:text-4xl font-bold text-white mb-6">자주 묻는 질문</h1>
+          <p className="text-lg text-white/90 max-w-3xl mx-auto mb-8">
+            PetEdu 플랫폼에 대한 궁금증을 해결해 드립니다. 원하는 답변을 찾지 못하셨다면 문의하기를 이용해 주세요.
+          </p>
+          <div className="relative w-full max-w-md">
+            <input
+              type="text"
+              placeholder="질문 검색하기"
+              className="w-full px-4 py-3 pl-12 rounded-full bg-white/90 shadow-md border-0 focus:ring-2 focus:ring-blue-400"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
             />
-          </div>
-          
-          <div className="flex flex-wrap gap-2">
-            {categories.map(category => (
-              <Badge
-                key={category}
-                variant={selectedCategory === category ? "default" : "outline"}
-                className="cursor-pointer"
-                onClick={() => setSelectedCategory(category)}
-              >
-                {category}
-              </Badge>
-            ))}
+            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500" size={18} />
           </div>
         </div>
       </div>
-      
-      {/* FAQ 아코디언 */}
-      <Card className="mb-8 p-6">
-        {filteredFAQs.length > 0 ? (
-          <Accordion type="single" collapsible className="w-full">
-            {filteredFAQs.map((faq) => (
-              <AccordionItem key={faq.id} value={faq.id}>
-                <AccordionTrigger className="text-left">
-                  <div className="flex items-start">
-                    <span className="text-primary font-semibold mr-2">Q.</span>
-                    <div>
-                      <span>{faq.question}</span>
-                      <Badge variant="outline" className="ml-2 text-xs">{faq.category}</Badge>
-                    </div>
-                  </div>
-                </AccordionTrigger>
-                <AccordionContent>
-                  <div className="flex">
-                    <span className="text-primary font-semibold mr-2">A.</span>
-                    <div className="flex-1">
-                      <p className="whitespace-pre-line">{faq.answer}</p>
-                    </div>
-                  </div>
-                </AccordionContent>
-              </AccordionItem>
-            ))}
-          </Accordion>
-        ) : (
-          <div className="py-12 text-center">
-            <HelpCircle className="mx-auto h-12 w-12 text-gray-300 mb-4" />
-            <h3 className="text-lg font-medium mb-2">검색 결과가 없습니다</h3>
-            <p className="text-gray-500 mb-4">
-              다른 검색어를 입력하거나 다른 카테고리를 선택해보세요.
-            </p>
-            <Button 
-              variant="outline" 
-              onClick={() => {
-                setSearchTerm("");
-                setSelectedCategory("전체");
-              }}
+
+      {/* 콘텐츠 영역 */}
+      <div className="container mx-auto px-4 py-12">
+        <div className="flex flex-wrap gap-2 mb-8 justify-center">
+          <Button
+            variant={activeCategory === 'all' ? 'default' : 'outline'}
+            onClick={() => setActiveCategory('all')}
+            className="rounded-full"
+          >
+            전체
+          </Button>
+          {faqCategories.map(category => (
+            <Button
+              key={category.id}
+              variant={activeCategory === category.id ? 'default' : 'outline'}
+              onClick={() => setActiveCategory(category.id)}
+              className="rounded-full"
             >
-              필터 초기화
+              {category.name}
             </Button>
-          </div>
-        )}
-      </Card>
-      
-      {/* 추가 도움말 */}
-      <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-6 text-center">
-        <h3 className="text-xl font-semibold mb-4">더 궁금한 점이 있으신가요?</h3>
-        <p className="text-gray-600 dark:text-gray-300 mb-6 max-w-2xl mx-auto">
-          자주 묻는 질문에서 원하는 답변을 찾지 못하셨다면, 1:1 문의를 통해 상세한 답변을 받아보세요.
-          전문 상담원이 신속하게 답변해 드립니다.
-        </p>
-        <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <Link href="/help/guide">
-            <Button variant="outline" className="w-full sm:w-auto">
-              이용 가이드 보기
-            </Button>
-          </Link>
-          <Link href="/help/contact">
-            <Button className="w-full sm:w-auto">
-              1:1 문의하기
-            </Button>
-          </Link>
+          ))}
+        </div>
+
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 max-w-4xl mx-auto">
+          <Accordion type="single" collapsible className="space-y-4">
+            {filteredFaqs.length > 0 ? (
+              filteredFaqs.map((faq, i) => (
+                <AccordionItem key={i} value={`item-${i}`} className="border rounded-lg px-4 py-2">
+                  <AccordionTrigger className="text-lg font-medium text-left">
+                    {faq.question}
+                  </AccordionTrigger>
+                  <AccordionContent className="text-gray-600 dark:text-gray-300 pt-2 pb-4">
+                    {faq.answer}
+                  </AccordionContent>
+                </AccordionItem>
+              ))
+            ) : (
+              <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                <p>검색 결과가 없습니다.</p>
+                <p className="mt-2">다른 키워드로 검색하거나 문의하기를 이용해 주세요.</p>
+              </div>
+            )}
+          </Accordion>
+        </div>
+
+        <div className="mt-12 text-center">
+          <p className="mb-4 text-gray-600 dark:text-gray-300">원하는 답변을 찾지 못하셨나요?</p>
+          <Button onClick={() => window.location.href = '/help/contact'}>
+            1:1 문의하기
+          </Button>
         </div>
       </div>
     </div>
