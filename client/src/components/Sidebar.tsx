@@ -61,6 +61,11 @@ interface NavItemProps {
 function NavItem({ href, icon, children, active, onClick, show }: NavItemProps) {
   const { expanded } = useContext(SidebarContext);
   const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    // 일부 경로는 직접 URL 이동으로 처리하기 위해 기본 동작 방지
+    if (href === '/video-call' || href === '/video-training') {
+      e.preventDefault();
+    }
+    
     if (onClick) {
       onClick(href);
     }
@@ -154,12 +159,22 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
       console.log('훈련사 상세 페이지 접근');
     } else if (path.startsWith('/institutes/')) {
       console.log('교육기관 상세 페이지 접근');
+    } else if (path === '/video-call') {
+      console.log('화상 수업 페이지 접근');
     }
 
     // 권한 체크
-    if (!isAuthenticated && !["/", "/courses", "/trainers", "/video-training", "/video-call"].includes(path)) {
+    if (!isAuthenticated && !["/", "/courses", "/trainers", "/video-training", "/video-call", "/community"].includes(path)) {
       console.log('비인증 사용자 접근 제한');
       window.location.href = "/auth";
+      return;
+    }
+
+    // 일부 라우트에서 404가 발생하는 문제 해결
+    if (path === '/video-call' || path === '/video-training') {
+      console.log(`${path} 페이지로 이동 중...`);
+      // 화상 수업 메뉴는 직접 URL 이동
+      window.location.href = path;
       return;
     }
 
