@@ -9,6 +9,7 @@ import {
   Shield, Sparkles, BookOpen, Coffee, Droplets, Tent, Home,
   Map, PawPrint, Scissors, Heart
 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 // 위치 서비스 타입 정의
 type LocationType = 
@@ -49,6 +50,27 @@ export default function LocationServices() {
   const [breedFilter, setBreedFilter] = useState<DogBreed>("all");
   const [specialFilter, setSpecialFilter] = useState<string>("none"); // 'none', 'certification', 'premium'
   const [selectedInstitute, setSelectedInstitute] = useState<typeof institutes[0] | null>(null);
+  const { toast } = useToast();
+  
+  // 로그인 상태 확인 함수
+  const isAuthenticated = (): boolean => {
+    const storedAuth = localStorage.getItem('petedu_auth');
+    return storedAuth !== null;
+  };
+  
+  // 로그인 유도 함수
+  const promptLogin = () => {
+    toast({
+      title: "로그인이 필요합니다",
+      description: "이 기능을 사용하려면 로그인이 필요합니다.",
+      variant: "default",
+    });
+    
+    // 3초 후 로그인 페이지로 이동
+    setTimeout(() => {
+      window.location.href = "/auth";
+    }, 3000);
+  };
   
   // 업데이트된 데이터: 교육 시설 + 다양한 반려견 서비스 위치 포함
   const institutes = [
