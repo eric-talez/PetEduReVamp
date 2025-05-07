@@ -300,9 +300,13 @@ export default function Courses() {
               </div>
             </div>
             <div className="bg-gray-50 dark:bg-gray-700/50 px-5 py-3 border-t border-gray-100 dark:border-gray-700">
-              <a href={`/course/${course.id}`} className="text-sm font-medium text-primary hover:text-primary/80">
+              <Button 
+                variant="link" 
+                onClick={() => window.location.href = `/course/${course.id}`}
+                className="text-sm font-medium text-primary hover:text-primary/80 p-0"
+              >
                 자세히 보기
-              </a>
+              </Button>
             </div>
           </Card>
         ))}
