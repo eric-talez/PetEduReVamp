@@ -65,27 +65,18 @@ export function BarChart({
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis dataKey="name" />
           <YAxis />
-          <Tooltip 
-            contentStyle={{
-              backgroundColor: 'rgba(255, 255, 255, 0.9)',
-              border: '1px solid #ccc',
-              borderRadius: '4px',
-              padding: '8px'
-            }}
-            formatter={(value: any, name: string) => [value, name]}
-            labelStyle={{
-              color: '#666',
-              marginBottom: '4px'
-            }}
-          />
-          <Legend />
           {data.datasets.map((dataset: any, index: number) => (
+            <>
             <Line 
-              key={index} 
               type="monotone" 
               dataKey={dataset.label} 
               stroke={dataset.backgroundColor}
-              activeDot={{ r: 8 }}
+              activeDot={{ 
+                r: 8,
+                stroke: dataset.backgroundColor,
+                strokeWidth: 2,
+                fill: "#fff"
+              }}
               dot={{ 
                 r: 4,
                 strokeWidth: 2,
@@ -93,7 +84,29 @@ export function BarChart({
                 stroke: dataset.backgroundColor
               }}
             />
+            <Tooltip
+              contentStyle={{
+                backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                border: '1px solid #e2e8f0',
+                borderRadius: '8px',
+                padding: '8px 12px',
+                boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+              }}
+              itemStyle={{
+                color: dataset.backgroundColor,
+                fontSize: '14px',
+                padding: '4px 0'
+              }}
+              labelStyle={{
+                color: '#64748b',
+                fontSize: '12px',
+                marginBottom: '4px'
+              }}
+              cursor={false}
+            />
+            </>
           ))}
+          <Legend />
         </RechartsLineChart>
       </ResponsiveContainer>
     );
