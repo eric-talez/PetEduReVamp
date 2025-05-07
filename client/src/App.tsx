@@ -2,6 +2,7 @@ import React, { lazy, Suspense } from "react";
 import { Switch, Route } from "wouter";
 import { AppLayout } from "./layout/AppLayout";
 import { useAuth } from "./SimpleApp";
+import { CartProvider } from "./context/cart-context";
 
 // Pages
 import Home from "./pages/Home";
@@ -249,5 +250,9 @@ export default function App() {
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   }
 
-  return auth.isAuthenticated ? <AuthenticatedRoutes /> : <UnauthenticatedRoutes />;
+  return (
+    <CartProvider>
+      {auth.isAuthenticated ? <AuthenticatedRoutes /> : <UnauthenticatedRoutes />}
+    </CartProvider>
+  );
 }
