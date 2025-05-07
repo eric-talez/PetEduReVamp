@@ -333,6 +333,7 @@ function UnauthenticatedRoutes() {
         <Route path="/course/:id" component={CourseDetail} />
         <Route path="/trainers" component={Trainers} />
         <Route path="/video-training" component={VideoTrainingPage} />
+        <Route path="/video-call" component={VideoCallPage} />
         <Route path="/institutes" component={Institutes} />
         <Route path="/community" component={Community} />
         <Route path="/" component={Home} />
