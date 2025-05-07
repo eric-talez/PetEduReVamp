@@ -346,14 +346,33 @@ export default function VideoCallPage() {
               <p className="text-gray-600 dark:text-gray-300 text-sm line-clamp-3 mb-4">
                 {videoClass.description}
               </p>
+              <div className="flex justify-between items-center mb-3">
+                <Badge className={statusConfig[videoClass.status].badgeClass}>
+                  {statusConfig[videoClass.status].label}
+                </Badge>
+                {videoClass.status === 'open' && (
+                  <span className="text-xs text-gray-500">
+                    {videoClass.seatsBooked}/{videoClass.seatsTotal} 예약됨
+                  </span>
+                )}
+              </div>
               <div className="flex flex-wrap gap-y-2 text-sm text-gray-500 dark:text-gray-400">
                 <div className="flex items-center w-full sm:w-auto sm:mr-4">
                   <Clock className="h-4 w-4 mr-1" />
                   <span>{videoClass.duration}분</span>
                 </div>
-                <div className="flex items-center w-full sm:w-auto">
+                <div className="flex items-center w-full sm:w-auto sm:mr-4">
                   <Calendar className="h-4 w-4 mr-1" />
-                  <span>{videoClass.availability}</span>
+                  <span>
+                    {videoClass.status !== 'completed' 
+                      ? `다음 일정: ${new Date(videoClass.nextSession).toLocaleDateString('ko-KR', {
+                          month: 'long', 
+                          day: 'numeric',
+                          weekday: 'short'
+                        })}` 
+                      : '진행 완료'
+                    }
+                  </span>
                 </div>
               </div>
             </CardContent>
@@ -361,13 +380,42 @@ export default function VideoCallPage() {
               <div className="text-lg font-bold text-primary">
                 {videoClass.price.toLocaleString()}원
               </div>
-              <Button 
-                onClick={() => handleReservation(videoClass.id)}
-                className="flex items-center gap-1"
-              >
-                <Video className="h-4 w-4" />
-                수업 예약
-              </Button>
+              {videoClass.status === 'open' ? (
+                <Button 
+                  onClick={() => handleReservation(videoClass.id)}
+                  className="flex items-center gap-1"
+                >
+                  <Video className="h-4 w-4" />
+                  수업 예약
+                </Button>
+              ) : videoClass.status === 'full' ? (
+                <Button 
+                  variant="outline"
+                  className="flex items-center gap-1 text-amber-600 border-amber-600"
+                  disabled
+                >
+                  <Calendar className="h-4 w-4" />
+                  정원 마감
+                </Button>
+              ) : videoClass.status === 'closed' ? (
+                <Button 
+                  variant="outline"
+                  className="flex items-center gap-1"
+                  disabled
+                >
+                  <Calendar className="h-4 w-4" />
+                  접수 마감
+                </Button>
+              ) : (
+                <Button 
+                  variant="outline"
+                  className="flex items-center gap-1"
+                  disabled
+                >
+                  <Calendar className="h-4 w-4" />
+                  종료됨
+                </Button>
+              )}
             </CardFooter>
           </Card>
         ))}
