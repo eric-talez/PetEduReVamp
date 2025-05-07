@@ -3,7 +3,7 @@ import { useParams, Link } from 'wouter';
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Avatar } from "@/components/ui/avatar";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Textarea } from "@/components/ui/textarea";
 import { 
   Heart, 
@@ -15,7 +15,7 @@ import {
   MoreHorizontal,
   AlertCircle
 } from "lucide-react";
-import { isAuthenticated } from "@/lib/utils";
+import { isAuthenticated, getInitials } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 
 // 댓글 타입 정의
@@ -241,11 +241,10 @@ export default function PostDetailPage() {
           {/* 작성자 정보 */}
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center">
-              <Avatar
-                src={post.author.avatar}
-                alt={post.author.name}
-                className="w-10 h-10"
-              />
+              <Avatar className="w-10 h-10">
+                <AvatarImage src={post.author.avatar} alt={post.author.name} />
+                <AvatarFallback>{getInitials(post.author.name)}</AvatarFallback>
+              </Avatar>
               
               <div className="ml-3">
                 <div className="flex items-center">
@@ -368,11 +367,10 @@ export default function PostDetailPage() {
             {post.comments.map((comment) => (
               <div key={comment.id} className="border-b border-gray-100 dark:border-gray-700 pb-6 last:border-b-0 last:pb-0">
                 <div className="flex items-start mb-3">
-                  <Avatar
-                    src={comment.author.avatar}
-                    alt={comment.author.name}
-                    className="w-8 h-8"
-                  />
+                  <Avatar className="w-8 h-8">
+                    <AvatarImage src={comment.author.avatar} alt={comment.author.name} />
+                    <AvatarFallback>{getInitials(comment.author.name)}</AvatarFallback>
+                  </Avatar>
                   
                   <div className="ml-3 flex-1">
                     <div className="flex items-center">
