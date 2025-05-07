@@ -303,7 +303,7 @@ export default function EventsPage() {
       <div className="w-full mb-8 rounded-lg overflow-hidden relative">
         <div className="relative h-64 md:h-80">
           <img 
-            src="https://images.unsplash.com/photo-1541364983171-a8ba01e95cfc?ixlib=rb-4.0.3&auto=format&fit=crop&w=1500&h=400&q=80"
+            src="https://images.unsplash.com/photo-1508887631346-b7681bd4f933?ixlib=rb-4.0.3&auto=format&fit=crop&w=1500&h=400&q=80"
             alt="이벤트 배너" 
             className="w-full h-full object-cover"
           />

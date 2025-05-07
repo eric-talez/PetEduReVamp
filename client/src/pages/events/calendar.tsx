@@ -347,7 +347,7 @@ export default function EventCalendarPage() {
       <div className="w-full mb-8 rounded-lg overflow-hidden relative">
         <div className="relative h-64 md:h-80">
           <img 
-            src="https://images.unsplash.com/photo-1516734212186-a967f81ad0d7?ixlib=rb-4.0.3&auto=format&fit=crop&w=1500&h=400&q=80"
+            src="https://images.unsplash.com/photo-1476743430992-6f0d31713aaa?ixlib=rb-4.0.3&auto=format&fit=crop&w=1500&h=400&q=80"
             alt="이벤트 캘린더 배너" 
             className="w-full h-full object-cover"
           />
