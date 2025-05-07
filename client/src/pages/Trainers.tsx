@@ -4,7 +4,7 @@ import { Avatar } from '@/components/ui/Avatar';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Star } from 'lucide-react';
-import { TrainerProfileDialog, type Trainer } from '@/components/TrainerProfileDialog';
+import { SimpleTrainerProfileModal, type Trainer } from '@/components/SimpleTrainerProfileModal';
 
 export default function Trainers() {
   const [selectedTrainer, setSelectedTrainer] = useState<Trainer | null>(null);
@@ -213,11 +213,13 @@ export default function Trainers() {
       </div>
       
       {/* 훈련사 프로필 모달 */}
-      <TrainerProfileDialog
-        trainer={selectedTrainer}
-        open={isProfileOpen}
-        onOpenChange={setIsProfileOpen}
-      />
+      {selectedTrainer && (
+        <SimpleTrainerProfileModal
+          trainer={selectedTrainer}
+          isOpen={isProfileOpen}
+          onClose={() => setIsProfileOpen(false)}
+        />
+      )}
     </div>
   );
 }
