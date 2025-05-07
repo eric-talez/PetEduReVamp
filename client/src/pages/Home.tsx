@@ -9,6 +9,85 @@ export default function Home() {
   
   return (
     <div className="container mx-auto px-4 py-8">
+      {/* 서비스 현황 및 날씨 - 이 부분을 배너 위로 이동 */}
+      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-6">
+        {/* 등록된 전문 훈련사 */}
+        <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-md">
+          <h3 className="text-lg font-semibold mb-2">등록된 전문 훈련사</h3>
+          <div className="flex items-center">
+            <div className="p-2 bg-green-100 dark:bg-green-900 rounded-full mr-3">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+            </div>
+            <div>
+              <p className="text-2xl font-bold">254명</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">지난 달 대비 +12명</p>
+            </div>
+          </div>
+          <div className="mt-3">
+            <p className="text-sm">다양한 분야의 전문 훈련사들이 대기중입니다.</p>
+          </div>
+        </div>
+        
+        {/* 등록된 교육 기관 */}
+        <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-md">
+          <h3 className="text-lg font-semibold mb-2">등록된 교육 기관</h3>
+          <div className="flex items-center">
+            <div className="p-2 bg-purple-100 dark:bg-purple-900 rounded-full mr-3">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+              </svg>
+            </div>
+            <div>
+              <p className="text-2xl font-bold">86개</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">지난 달 대비 +3개</p>
+            </div>
+          </div>
+          <div className="mt-3">
+            <p className="text-sm">전국 각지의 교육 기관에서 수준 높은 교육을 제공합니다.</p>
+          </div>
+        </div>
+        
+        {/* 활성화된 교육 과정 */}
+        <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-md">
+          <h3 className="text-lg font-semibold mb-2">활성화된 교육 과정</h3>
+          <div className="flex items-center">
+            <div className="p-2 bg-amber-100 dark:bg-amber-900 rounded-full mr-3">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+              </svg>
+            </div>
+            <div>
+              <p className="text-2xl font-bold">425개</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">지난 달 대비 +28개</p>
+            </div>
+          </div>
+          <div className="mt-3">
+            <p className="text-sm">다양한 교육 과정이 매일 새롭게 등록되고 있습니다.</p>
+          </div>
+        </div>
+        
+        {/* 날씨 영역 - 맨 오른쪽으로 이동 */}
+        <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-md">
+          <h3 className="text-lg font-semibold mb-2">오늘의 날씨</h3>
+          <div className="flex items-center">
+            <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-full mr-3">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" />
+              </svg>
+            </div>
+            <div>
+              <p className="text-2xl font-bold">24°C</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">서울특별시 강남구</p>
+            </div>
+          </div>
+          <div className="mt-3">
+            <p className="text-sm">산책하기 좋은 날씨입니다! 반려견과 함께 외출해보세요.</p>
+          </div>
+        </div>
+      </div>
+      
       {/* 상단 영역: 배너와 프로필 */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
         {/* 배너 영역 */}
