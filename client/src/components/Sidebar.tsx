@@ -274,48 +274,18 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                     서비스 현황
                   </h3>
                   
-                  <div className="space-y-4">
-                    {/* Current Users */}
-                    <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-xs text-gray-600 dark:text-gray-300">실시간 이용자</span>
-                        <span className="text-sm font-semibold text-primary">2,458명</span>
-                      </div>
-                      <div className="h-20">
-                        <BarChart
-                          data={{
-                            labels: ['9시', '10시', '11시', '12시', '13시', '14시'],
-                            datasets: [{
-                              label: '접속자 수',
-                              data: [1200, 1500, 1800, 2100, 2300, 2458],
-                              backgroundColor: 'hsl(var(--primary))'
-                            }]
-                          }}
-                          type="line"
-                          height={80}
-                        />
-                      </div>
+                  <div className="space-y-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-600 dark:text-gray-300">실시간 이용자</span>
+                      <span className="text-sm font-semibold text-primary">2,458명</span>
                     </div>
-
-                    {/* User Distribution */}
-                    <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-xs text-gray-600 dark:text-gray-300">사용자 분포</span>
-                      </div>
-                      <div className="h-24">
-                        <BarChart
-                          data={{
-                            labels: ['반려인', '훈련사', '기관'],
-                            datasets: [{
-                              label: '사용자 타입',
-                              data: [75, 15, 10],
-                              backgroundColor: ['#818CF8', '#34D399', '#F472B6']
-                            }]
-                          }}
-                          type="pie"
-                          height={96}
-                        />
-                      </div>
+                    <div className="border-t border-gray-200 dark:border-gray-700 pt-2 flex items-center justify-between">
+                      <span className="text-sm text-gray-600 dark:text-gray-300">사용자 분포</span>
+                      <span className="text-sm font-semibold text-blue-500">반려인 75% / 훈련사 15% / 기관 10%</span>
+                    </div>
+                    <div className="border-t border-gray-200 dark:border-gray-700 pt-2 flex items-center justify-between">
+                      <span className="text-sm text-gray-600 dark:text-gray-300">평균 체류시간</span>
+                      <span className="text-sm font-semibold text-green-500">32분</span>
                     </div>
                   </div>
                 </div>
