@@ -2,12 +2,55 @@ import { useState } from "react";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
-import { Avatar } from "@/components/ui/Avatar";
-import { Search, Filter, MapPin, Star, Users, Building, Calendar, Shield, Sparkles, BookOpen } from "lucide-react";
+import { KakaoMapView } from "@/components/KakaoMapView";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { 
+  Search, Filter, MapPin, Star, Users, Building, Calendar, 
+  Shield, Sparkles, BookOpen, Coffee, Droplets, Tent, Home,
+  Map, PawPrint, Scissors, Heart
+} from "lucide-react";
+
+// 위치 서비스 타입 정의
+type LocationType = 
+  | "all" 
+  | "교육 센터" 
+  | "훈련소" 
+  | "펜션" 
+  | "카페" 
+  | "수영장" 
+  | "캠핑장" 
+  | "병원" 
+  | "미용";
+
+// 견종 카테고리
+type DogBreed = 
+  | "all" 
+  | "소형견" 
+  | "중형견" 
+  | "대형견" 
+  | "특수견" 
+  | "반려견 전체";
+
+// 지역 카테고리
+type Region = 
+  | "all" 
+  | "서울" 
+  | "경기" 
+  | "인천" 
+  | "강원" 
+  | "충청" 
+  | "전라" 
+  | "경상" 
+  | "제주";
 
 export default function Institutes() {
-  const [filter, setFilter] = useState("all");
+  const [filter, setFilter] = useState<LocationType>("all");
+  const [regionFilter, setRegionFilter] = useState<Region>("all");
+  const [breedFilter, setBreedFilter] = useState<DogBreed>("all");
+  const [specialFilter, setSpecialFilter] = useState<string>("none"); // 'none', 'certification', 'premium'
+  const [selectedInstitute, setSelectedInstitute] = useState<typeof institutes[0] | null>(null);
   
+  // 업데이트된 데이터: 교육 시설 + 다양한 반려견 서비스 위치 포함
   const institutes = [
     {
       id: 1,
@@ -21,7 +64,9 @@ export default function Institutes() {
       courses: 12,
       facilities: ["실내 훈련장", "야외 훈련장", "대기실", "상담실"],
       openingHours: "평일 10:00 - 20:00, 주말 10:00 - 18:00",
-      category: "종합 교육",
+      category: "교육 센터",
+      region: "서울",
+      breedSupport: ["소형견", "중형견", "대형견"],
       certification: true,
       premium: true,
       established: "2015년"
@@ -38,7 +83,9 @@ export default function Institutes() {
       courses: 8,
       facilities: ["실내 훈련장", "놀이터", "카페"],
       openingHours: "매일 11:00 - 19:00",
-      category: "사회화 중심",
+      category: "훈련소",
+      region: "서울",
+      breedSupport: ["소형견", "중형견"],
       certification: true,
       established: "2018년"
     },
@@ -54,7 +101,9 @@ export default function Institutes() {
       courses: 5,
       facilities: ["실내 훈련장", "놀이터", "그루밍실"],
       openingHours: "평일 09:00 - 18:00, 주말 10:00 - 17:00",
-      category: "유견 특화",
+      category: "훈련소",
+      region: "서울",
+      breedSupport: ["소형견"],
       certification: true,
       established: "2019년"
     },
@@ -70,7 +119,9 @@ export default function Institutes() {
       courses: 4,
       facilities: ["실내 훈련장", "어질리티 코스", "휴게실"],
       openingHours: "평일 13:00 - 21:00, 주말 10:00 - 18:00",
-      category: "운동 특화",
+      category: "교육 센터",
+      region: "경기",
+      breedSupport: ["중형견", "대형견"],
       certification: false,
       premium: true,
       established: "2017년"
@@ -87,7 +138,9 @@ export default function Institutes() {
       courses: 7,
       facilities: ["상담실", "개별 훈련실", "그룹 훈련장"],
       openingHours: "평일 10:00 - 19:00, 토요일 10:00 - 15:00",
-      category: "행동 교정",
+      category: "훈련소",
+      region: "서울",
+      breedSupport: ["소형견", "중형견", "대형견", "특수견"],
       certification: true,
       established: "2016년"
     },
@@ -103,19 +156,152 @@ export default function Institutes() {
       courses: 6,
       facilities: ["강의실", "실습장", "야외 훈련장"],
       openingHours: "평일 10:00 - 18:00, 토요일 10:00 - 14:00",
-      category: "종합 교육",
+      category: "교육 센터",
+      region: "인천",
+      breedSupport: ["소형견", "중형견", "대형견"],
       certification: false,
       established: "2020년"
+    },
+    // 신규 위치 서비스 데이터
+    {
+      id: 7,
+      name: "멍멍 펜션",
+      description: "반려견과 함께 쉴 수 있는 프라이빗한 공간을 제공합니다. 넓은 운동장과 수영장을 갖추고 있어 반려견과 즐거운 시간을 보낼 수 있습니다.",
+      image: "https://images.unsplash.com/photo-1596394516093-501ba68a0ba6?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=450",
+      location: "강원도 춘천시",
+      rating: 4.8,
+      reviews: 92,
+      trainers: 0,
+      courses: 0,
+      facilities: ["개별 객실", "운동장", "수영장", "바베큐장"],
+      openingHours: "연중무휴 (체크인 15:00, 체크아웃 11:00)",
+      category: "펜션",
+      region: "강원",
+      breedSupport: ["반려견 전체"],
+      certification: false,
+      premium: true,
+      established: "2018년"
+    },
+    {
+      id: 8,
+      name: "댕댕 카페",
+      description: "반려견과 함께할 수 있는 애견 카페입니다. 다양한 수제 간식과 음료를 즐기며 반려견도 놀 수 있는 공간이 마련되어 있습니다.",
+      image: "https://images.unsplash.com/photo-1592921870583-aeafb0639ffe?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=450",
+      location: "서울시 강남구",
+      rating: 4.6,
+      reviews: 124,
+      trainers: 0,
+      courses: 0,
+      facilities: ["카페", "놀이터", "간식 판매"],
+      openingHours: "매일 10:00 - 22:00",
+      category: "카페",
+      region: "서울",
+      breedSupport: ["소형견", "중형견"],
+      certification: false,
+      established: "2019년"
+    },
+    {
+      id: 9,
+      name: "도그 수영장",
+      description: "반려견 전용 수영장으로, 깨끗하고 안전한 환경에서 반려견이 물놀이를 즐길 수 있습니다. 전문 수상안전 강사가 상주합니다.",
+      image: "https://images.unsplash.com/photo-1588943211346-0908a1fb0b01?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=450",
+      location: "경기도 용인시",
+      rating: 4.7,
+      reviews: 56,
+      trainers: 2,
+      courses: 3,
+      facilities: ["실내 수영장", "샤워실", "휴게실"],
+      openingHours: "평일 12:00 - 20:00, 주말 10:00 - 18:00",
+      category: "수영장",
+      region: "경기",
+      breedSupport: ["소형견", "중형견", "대형견"],
+      certification: true,
+      established: "2020년"
+    },
+    {
+      id: 10,
+      name: "반려견 캠핑장",
+      description: "반려견과 함께 캠핑을 즐길 수 있는 특별한 공간입니다. 전용 놀이시설과 안전한 울타리가 설치되어 있어 안심하고 이용할 수 있습니다.",
+      image: "https://images.unsplash.com/photo-1523987355523-c7b5b0dd90a7?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=450",
+      location: "충청남도 태안군",
+      rating: 4.5,
+      reviews: 78,
+      trainers: 0,
+      courses: 0,
+      facilities: ["캠핑사이트", "놀이터", "샤워시설", "매점"],
+      openingHours: "연중무휴 (체크인 14:00, 체크아웃 12:00)",
+      category: "캠핑장",
+      region: "충청",
+      breedSupport: ["반려견 전체"],
+      certification: false,
+      premium: true,
+      established: "2019년"
+    },
+    {
+      id: 11,
+      name: "강아지 병원 24시",
+      description: "24시간 응급 진료가 가능한 반려견 전문 병원입니다. 최신 의료 장비와 전문 의료진이 상주하여 신속하고 정확한 진료를 제공합니다.",
+      image: "https://images.unsplash.com/photo-1584794171574-fe3f84b43838?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=450",
+      location: "서울시 송파구",
+      rating: 4.9,
+      reviews: 183,
+      trainers: 0,
+      courses: 0,
+      facilities: ["진료실", "입원실", "수술실", "약국"],
+      openingHours: "24시간 영업",
+      category: "병원",
+      region: "서울",
+      breedSupport: ["반려견 전체"],
+      certification: true,
+      established: "2015년"
+    },
+    {
+      id: 12,
+      name: "럭셔리 애견 미용실",
+      description: "최고급 미용 용품과 전문 그루머가 반려견의 품종별 특성에 맞는 맞춤형 미용 서비스를 제공합니다.",
+      image: "https://images.unsplash.com/photo-1516734212186-a967f81ad0d7?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=450",
+      location: "서울시 강남구",
+      rating: 4.8,
+      reviews: 142,
+      trainers: 0,
+      courses: 0,
+      facilities: ["미용실", "대기실", "목욕실"],
+      openingHours: "평일 10:00 - 19:00, 토요일 10:00 - 17:00",
+      category: "미용",
+      region: "서울",
+      breedSupport: ["소형견", "중형견", "특수견"],
+      certification: false,
+      premium: true,
+      established: "2017년"
     }
   ];
 
-  const filteredInstitutes = filter === "all" 
-    ? institutes 
-    : filter === "certification" 
-      ? institutes.filter(institute => institute.certification)
-      : filter === "premium"
-        ? institutes.filter(institute => institute.premium)
-        : institutes.filter(institute => institute.category === filter);
+  // 지역, 견종, 카테고리를 모두 고려한 필터링
+  const filteredInstitutes = institutes
+    .filter(institute => {
+      // 서비스 타입 필터링
+      const categoryMatch = filter === "all" || institute.category === filter;
+      
+      // 지역 필터링
+      const regionMatch = regionFilter === "all" || institute.region === regionFilter;
+      
+      // 견종 필터링 (배열에 포함 여부)
+      const breedMatch = breedFilter === "all" || 
+        institute.breedSupport.includes(breedFilter) || 
+        institute.breedSupport.includes("반려견 전체");
+      
+      // 모든 조건을 만족해야 함
+      return categoryMatch && regionMatch && breedMatch;
+    });
+  
+  // 추가 필터링 (인증, 프리미엄)
+  const getFilteredBySpecialCondition = (specialFilter: string) => {
+    return specialFilter === "certification" 
+      ? filteredInstitutes.filter(institute => institute.certification)
+      : specialFilter === "premium"
+        ? filteredInstitutes.filter(institute => institute.premium)
+        : filteredInstitutes;
+  };
 
   return (
     <div className="py-8 px-4 sm:px-6 lg:px-8">
