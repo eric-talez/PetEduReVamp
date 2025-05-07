@@ -431,28 +431,57 @@ export default function Trainers() {
         </div>
       )}
       
-      {/* 훈련사 프로필 모달 */}
-      {selectedTrainer && isProfileOpen && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
-          <div className="bg-white dark:bg-gray-900 rounded-lg shadow-lg max-w-xl w-full p-6 relative">
+      {/* 간단한 테스트 모달 섹션 */}
+      <div className="mt-8 bg-gray-100 dark:bg-gray-800 p-6 rounded-lg">
+        <h2 className="text-xl font-bold mb-4">모달 테스트 섹션</h2>
+        <p className="mb-4">아래 버튼을 클릭하여 기본 모달 작동을 테스트해 보세요.</p>
+        <Button 
+          onClick={() => {
+            console.log("테스트 모달 버튼 클릭");
+            alert("테스트 모달을 열려고 합니다.");
+            setIsProfileOpen(true);
+          }}
+          variant="default"
+        >
+          테스트 모달 열기
+        </Button>
+      </div>
+      
+      {/* 훈련사 프로필 모달 - 기본 구현 */}
+      {isProfileOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center"
+          onClick={() => {
+            console.log("모달 배경 클릭");
+            setIsProfileOpen(false);
+          }}
+        >
+          <div 
+            className="bg-white dark:bg-gray-900 rounded-lg shadow-lg max-w-xl w-full p-6 relative"
+            onClick={(e) => e.stopPropagation()}
+          >
             <button 
               onClick={() => {
+                console.log("모달 닫기 X 버튼 클릭");
                 alert("모달을 닫습니다.");
                 setIsProfileOpen(false);
               }}
-              className="absolute right-4 top-4 text-gray-500"
+              className="absolute right-4 top-4 text-gray-500 hover:text-gray-700"
+              type="button"
             >
               X
             </button>
-            <h2 className="text-xl font-bold mb-4">{selectedTrainer.name} 트레이너</h2>
-            <p className="mb-4">{selectedTrainer.specialty}</p>
-            <p>{selectedTrainer.description}</p>
-            <div className="mt-4">
+            <h2 className="text-xl font-bold mb-4">기본 모달 테스트</h2>
+            <p className="mb-4">이 모달은 훈련사 프로필 대신 표시되는 간단한 테스트 모달입니다.</p>
+            <p className="mb-6">모달이 제대로 열리고 닫히는지 확인하기 위한 것입니다.</p>
+            <div className="mt-4 flex justify-end">
               <Button
                 onClick={() => {
+                  console.log("모달 닫기 버튼 클릭");
                   alert("모달을 닫습니다.");
                   setIsProfileOpen(false);
                 }}
+                variant="default"
               >
                 닫기
               </Button>
