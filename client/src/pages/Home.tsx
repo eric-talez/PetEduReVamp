@@ -1,6 +1,8 @@
 import { Button } from '@/components/ui/Button';
 import { Link } from 'wouter';
 import { useAuth } from '../SimpleApp';
+import { BannerSlider } from '@/components/BannerSlider';
+import { TrendingSection } from '@/components/TrendingSection';
 
 export default function Home() {
   const auth = useAuth();
@@ -10,38 +12,8 @@ export default function Home() {
       {/* 상단 영역: 배너와 프로필 */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
         {/* 배너 영역 */}
-        <div className="lg:col-span-2 relative rounded-xl overflow-hidden h-60 md:h-80 bg-gradient-to-r from-primary/80 to-accent/80 shadow-lg">
-          <img
-            src="https://images.unsplash.com/photo-1548199973-03cce0bbc87b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=400"
-            alt="반려견 교육"
-            className="w-full h-full object-cover absolute mix-blend-overlay"
-          />
-          
-          <div className="absolute inset-0 bg-gradient-to-r from-primary/80 to-accent/30 mix-blend-multiply"></div>
-          
-          <div className="relative h-full flex flex-col justify-center px-8 md:px-12">
-            <h1 className="text-white text-2xl md:text-4xl font-display font-bold mb-2 md:mb-4 max-w-xl">
-              반려견과 함께하는 특별한 교육 여정
-            </h1>
-            <p className="text-white text-sm md:text-lg max-w-xl mb-6">
-              PetEduPlatform과 함께 전문 훈련사의 체계적인 교육으로 더 행복한 반려생활을 시작하세요.
-            </p>
-            <div>
-              <Button
-                variant="default"
-                className="bg-white text-primary font-semibold mr-3"
-              >
-                <Link href="/courses">강의 둘러보기</Link>
-              </Button>
-              
-              <Button 
-                variant="outline"
-                className="text-white border-white hover:bg-white/10"
-              >
-                <Link href="/free-webinar">무료 웨비나 참여</Link>
-              </Button>
-            </div>
-          </div>
+        <div className="lg:col-span-2">
+          <BannerSlider />
         </div>
         
         {/* 프로필 영역 (로그인/회원가입) */}
@@ -165,6 +137,12 @@ export default function Home() {
             <p className="text-sm">다양한 교육 과정이 매일 새롭게 등록되고 있습니다.</p>
           </div>
         </div>
+      </div>
+      
+      {/* 트렌딩 섹션 추가 */}
+      <div className="mb-10">
+        <h2 className="text-2xl font-bold mb-6">트렌딩</h2>
+        <TrendingSection />
       </div>
       
       {/* 주요 서비스 섹션 */}
