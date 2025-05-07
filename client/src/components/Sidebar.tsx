@@ -171,10 +171,17 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
     }
 
     // 일부 라우트에서 404가 발생하는 문제 해결
-    if (path === '/video-call' || path === '/video-training') {
+    if (path === '/video-training') {
       console.log(`${path} 페이지로 이동 중...`);
-      // 화상 수업 메뉴는 직접 URL 이동
+      // 영상 훈련 메뉴는 직접 URL 이동
       window.location.href = path;
+      return;
+    }
+    
+    // 화상 수업은 로그인 필요
+    if (path === '/video-call') {
+      console.log('화상 수업은 로그인 필요 - 로그인 페이지로 이동');
+      window.location.href = "/auth";
       return;
     }
 
@@ -303,9 +310,9 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                       href="/video-call" 
                       icon={<VideoIcon className="w-5 h-5 mr-2" />} 
                       active={isActive("/video-call")} 
-                      onClick={(path) => {
-                        console.log("화상 수업 메뉴 클릭:", path);
-                        handleItemClick(path);
+                      onClick={() => {
+                        console.log("비회원이 화상 수업 클릭 - 로그인 페이지로 이동");
+                        window.location.href = "/auth";
                       }} 
                       show={true}
                     >화상 수업</NavItem>
