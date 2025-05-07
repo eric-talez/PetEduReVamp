@@ -296,7 +296,7 @@ export default function ShopPage() {
                           <span className="ml-2 text-sm text-gray-500 dark:text-gray-400 line-through">
                             {product.price.toLocaleString()}원
                           </span>
-                          <Badge variant="destructive" className="ml-2 px-1.5 py-0.5 text-[10px]">
+                          <Badge variant="danger" className="ml-2 px-1.5 py-0.5 text-[10px]">
                             {product.discountRate}% 할인
                           </Badge>
                         </>
