@@ -21,6 +21,9 @@ import MessagesPage from "./pages/messages";
 import AdminCommissionPage from "./pages/admin/commission";
 import AdminMenuConfigPage from "./pages/admin/menu-config";
 import AdminSettlementPage from "./pages/admin/settlement";
+import EventsPage from "./pages/events";
+import EventDetailPage from "./pages/events/event-detail";
+import EventCalendarPage from "./pages/events/calendar";
 
 // 레이아웃 및 컴포넌트 임포트
 import { TopBar } from "@/components/TopBar";
@@ -280,6 +283,10 @@ function AuthenticatedRoutes() {
         <Route path="/trainers" component={Trainers} />
         <Route path="/institutes" component={Institutes} />
         <Route path="/community" component={Community} />
+        <Route path="/community/post/:id" component={CommunityPostDetail} />
+        <Route path="/events" component={EventsPage} />
+        <Route path="/events/calendar" component={EventCalendarPage} />
+        <Route path="/events/:id" component={EventDetailPage} />
         <Route path="/my-courses" component={MyCourses} />
         <Route path="/my-pets" component={MyPets} />
         <Route path="/calendar" component={() => <div className="p-8"><h1 className="text-2xl font-bold mb-4">교육 일정</h1><p>교육 일정을 관리할 수 있는 페이지입니다.</p></div>} />
@@ -338,6 +345,9 @@ function UnauthenticatedRoutes() {
         <Route path="/institutes" component={Institutes} />
         <Route path="/community" component={Community} />
         <Route path="/community/post/:id" component={CommunityPostDetail} />
+        <Route path="/events" component={EventsPage} />
+        <Route path="/events/calendar" component={EventCalendarPage} />
+        <Route path="/events/:id" component={EventDetailPage} />
         <Route path="/" component={Home} />
         <Route>
           {() => {

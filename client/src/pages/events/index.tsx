@@ -1,13 +1,29 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'wouter';
-import { Calendar, MapPin, Filter, ChevronRight, Search } from 'lucide-react';
+import { 
+  Search, 
+  Calendar, 
+  MapPin, 
+  Filter, 
+  Clock, 
+  Users,
+  ChevronRight,
+  ChevronDown
+} from 'lucide-react';
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+// Tabs 컴포넌트는 현재 사용하지 않으므로 임포트 제거
+import { 
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuCheckboxItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { KakaoMapView } from '@/components/KakaoMapView';
-import { Avatar } from '@/components/ui/Avatar';
 
 // 임시 데이터 타입 정의
 interface EventLocation {
@@ -159,306 +175,341 @@ const MOCK_EVENTS: EventItem[] = [
   }
 ];
 
-// 지역 리스트
-const REGIONS = ["전체", "서울", "부산", "대구", "인천", "광주", "대전", "울산", "경기", "강원", "충북", "충남", "전북", "전남", "경북", "경남", "제주"];
+// 지역 목록
+const REGIONS = ["전체", "서울", "부산", "대구", "인천", "광주", "대전", "울산", "세종", "경기", "강원", "충북", "충남", "전북", "전남", "경북", "경남", "제주"];
 
-// 카테고리 리스트
-const CATEGORIES = ["전체", "소셜", "교육", "축제", "입양", "건강", "트레이닝", "경연대회"];
+// 카테고리 목록
+const CATEGORIES = ["전체", "소셜", "교육", "축제", "입양", "훈련", "건강", "기타"];
+
+// 요금 필터 옵션
+const PRICE_OPTIONS = ["전체", "무료", "유료"];
 
 export default function EventsPage() {
   const [, setLocation] = useLocation();
+  const [filteredEvents, setFilteredEvents] = useState<EventItem[]>(MOCK_EVENTS);
+  const [searchTerm, setSearchTerm] = useState("");
   const [selectedRegion, setSelectedRegion] = useState("전체");
   const [selectedCategory, setSelectedCategory] = useState("전체");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [viewType, setViewType] = useState<"list" | "map" | "calendar">("list");
-  const [filteredEvents, setFilteredEvents] = useState<EventItem[]>(MOCK_EVENTS);
+  const [selectedPrice, setSelectedPrice] = useState("전체");
   const [selectedLocation, setSelectedLocation] = useState<EventLocation | null>(null);
-
-  // 모든 필터 적용
+  const [isMobile, setIsMobile] = useState(false);
+  const [showMap, setShowMap] = useState(true);
+  
+  // 모바일 화면 감지
   useEffect(() => {
-    let result = MOCK_EVENTS;
+    const checkIsMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+      if (window.innerWidth < 768) {
+        setShowMap(false);
+      }
+    };
+    
+    checkIsMobile();
+    window.addEventListener("resize", checkIsMobile);
+    
+    return () => {
+      window.removeEventListener("resize", checkIsMobile);
+    };
+  }, []);
+  
+  // 필터링 로직
+  useEffect(() => {
+    let filtered = [...MOCK_EVENTS];
+    
+    // 검색어 필터링
+    if (searchTerm) {
+      filtered = filtered.filter(
+        event => event.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                event.description.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
     
     // 지역 필터링
     if (selectedRegion !== "전체") {
-      result = result.filter(event => event.location.region === selectedRegion);
+      filtered = filtered.filter(event => event.location.region === selectedRegion);
     }
     
     // 카테고리 필터링
     if (selectedCategory !== "전체") {
-      result = result.filter(event => event.category === selectedCategory);
+      filtered = filtered.filter(event => event.category === selectedCategory);
     }
     
-    // 검색어 필터링
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      result = result.filter(
-        event => 
-          event.title.toLowerCase().includes(query) || 
-          event.description.toLowerCase().includes(query) ||
-          event.location.name.toLowerCase().includes(query)
-      );
+    // 요금 필터링
+    if (selectedPrice !== "전체") {
+      if (selectedPrice === "무료") {
+        filtered = filtered.filter(event => event.price === "무료");
+      } else {
+        filtered = filtered.filter(event => event.price !== "무료");
+      }
     }
     
-    setFilteredEvents(result);
-  }, [selectedRegion, selectedCategory, searchQuery]);
-
-  const formatDate = (dateStr: string) => {
-    const date = new Date(dateStr);
-    return `${date.getFullYear()}년 ${date.getMonth() + 1}월 ${date.getDate()}일`;
+    setFilteredEvents(filtered);
+  }, [searchTerm, selectedRegion, selectedCategory, selectedPrice]);
+  
+  // 위치 기반 정렬 (선택한 위치에 가까운 순)
+  const sortByLocation = (events: EventItem[], location: EventLocation) => {
+    return [...events].sort((a, b) => {
+      const distA = calculateDistance(a.location.lat, a.location.lng, location.lat, location.lng);
+      const distB = calculateDistance(b.location.lat, b.location.lng, location.lat, location.lng);
+      return distA - distB;
+    });
   };
-
-  const handleEventClick = (eventId: number) => {
-    setLocation(`/events/${eventId}`);
+  
+  // 거리 계산 함수 (Haversine 공식)
+  const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
+    const R = 6371; // 지구 반경 (km)
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = 
+      Math.sin(dLat/2) * Math.sin(dLat/2) +
+      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+      Math.sin(dLon/2) * Math.sin(dLon/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return R * c;
   };
-
+  
+  // 지도 마커 클릭 핸들러
   const handleMapMarkerClick = (location: EventLocation) => {
     setSelectedLocation(location);
+    
+    // 선택한 위치에 가까운 이벤트 정렬
+    const sortedEvents = sortByLocation(filteredEvents, location);
+    setFilteredEvents(sortedEvents);
   };
-
+  
+  // 날짜 포맷팅
+  const formatDate = (dateStr: string) => {
+    const date = new Date(dateStr);
+    const now = new Date();
+    
+    const diffDays = Math.floor((date.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+    
+    if (diffDays < 0) {
+      return "종료됨";
+    } else if (diffDays === 0) {
+      return "오늘";
+    } else if (diffDays === 1) {
+      return "내일";
+    } else if (diffDays < 7) {
+      return `${diffDays}일 후`;
+    } else {
+      return `${date.getMonth() + 1}월 ${date.getDate()}일`;
+    }
+  };
+  
   return (
     <div className="container mx-auto px-4 py-6">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
-        <div>
-          <h1 className="text-2xl font-bold">반려동물 이벤트</h1>
-          <p className="text-gray-500 mt-1">다가오는 반려동물 관련 이벤트와 모임을 찾아보세요</p>
+      {/* 헤더 및 검색 */}
+      <div className="mb-8">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
+          <h1 className="text-3xl font-bold mb-4 md:mb-0">
+            이벤트 찾기
+          </h1>
+          <div className="flex space-x-2">
+            <Button 
+              variant="outline" 
+              className="flex items-center"
+              onClick={() => setLocation("/events/calendar")}
+            >
+              <Calendar className="h-4 w-4 mr-2" />
+              캘린더 보기
+            </Button>
+            {isMobile && (
+              <Button 
+                variant="outline"
+                onClick={() => setShowMap(!showMap)}
+              >
+                <MapPin className="h-4 w-4 mr-2" />
+                {showMap ? "지도 숨기기" : "지도 보기"}
+              </Button>
+            )}
+          </div>
         </div>
         
-        <div className="flex items-center mt-4 md:mt-0">
-          <Tabs value={viewType} onValueChange={(v) => setViewType(v as any)} className="w-[400px]">
-            <TabsList className="grid grid-cols-3">
-              <TabsTrigger value="list">목록</TabsTrigger>
-              <TabsTrigger value="map">지도</TabsTrigger>
-              <TabsTrigger value="calendar">캘린더</TabsTrigger>
-            </TabsList>
-          </Tabs>
-        </div>
-      </div>
-      
-      {/* 검색 및 필터 섹션 */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 mb-6">
-        <div className="flex flex-col md:flex-row gap-4">
-          <div className="flex-1">
-            <div className="relative">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
-              <Input
-                type="text"
-                placeholder="이벤트, 장소 검색..."
-                className="pl-9"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-            </div>
+        <div className="flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-4">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+            <Input
+              className="pl-10"
+              placeholder="이벤트 검색..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
           </div>
           
-          <div className="flex flex-wrap gap-2">
-            <div className="relative min-w-[200px]">
-              <select
-                className="w-full h-10 px-3 py-2 bg-white dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
-                value={selectedRegion}
-                onChange={(e) => setSelectedRegion(e.target.value)}
-              >
-                {REGIONS.map(region => (
-                  <option key={region} value={region}>{region}</option>
+          <div className="flex space-x-2">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" className="flex items-center">
+                  <MapPin className="h-4 w-4 mr-2" />
+                  {selectedRegion === "전체" ? "지역" : selectedRegion}
+                  <ChevronDown className="h-4 w-4 ml-2" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48 max-h-64 overflow-y-auto">
+                <DropdownMenuLabel>지역 선택</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                {REGIONS.map((region) => (
+                  <DropdownMenuCheckboxItem
+                    key={region}
+                    checked={selectedRegion === region}
+                    onCheckedChange={() => setSelectedRegion(region)}
+                  >
+                    {region}
+                  </DropdownMenuCheckboxItem>
                 ))}
-              </select>
-              <MapPin className="absolute right-3 top-2.5 h-4 w-4 text-gray-500 pointer-events-none" />
-            </div>
+              </DropdownMenuContent>
+            </DropdownMenu>
             
-            <div className="relative min-w-[200px]">
-              <select
-                className="w-full h-10 px-3 py-2 bg-white dark:bg-gray-950 border border-gray-300 dark:border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
-              >
-                {CATEGORIES.map(category => (
-                  <option key={category} value={category}>{category}</option>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" className="flex items-center">
+                  <Filter className="h-4 w-4 mr-2" />
+                  {selectedCategory === "전체" ? "카테고리" : selectedCategory}
+                  <ChevronDown className="h-4 w-4 ml-2" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuLabel>카테고리 선택</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                {CATEGORIES.map((category) => (
+                  <DropdownMenuCheckboxItem
+                    key={category}
+                    checked={selectedCategory === category}
+                    onCheckedChange={() => setSelectedCategory(category)}
+                  >
+                    {category}
+                  </DropdownMenuCheckboxItem>
                 ))}
-              </select>
-              <Filter className="absolute right-3 top-2.5 h-4 w-4 text-gray-500 pointer-events-none" />
-            </div>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" className="flex items-center">
+                  {selectedPrice === "전체" ? "요금" : selectedPrice}
+                  <ChevronDown className="h-4 w-4 ml-2" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuLabel>요금 선택</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                {PRICE_OPTIONS.map((price) => (
+                  <DropdownMenuCheckboxItem
+                    key={price}
+                    checked={selectedPrice === price}
+                    onCheckedChange={() => setSelectedPrice(price)}
+                  >
+                    {price}
+                  </DropdownMenuCheckboxItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
       </div>
       
-      {/* 뷰 타입에 따른 내용 표시 */}
-      <TabsContent value="list" className="m-0">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredEvents.length > 0 ? (
-            filteredEvents.map(event => (
-              <Card 
-                key={event.id} 
-                className="overflow-hidden hover:shadow-md transition cursor-pointer"
-                onClick={() => handleEventClick(event.id)}
-              >
-                <div className="relative h-48">
-                  <img 
-                    src={event.image} 
-                    alt={event.title} 
-                    className="w-full h-full object-cover"
-                  />
-                  <div className="absolute top-3 right-3">
-                    <Badge className="bg-primary text-white">
-                      {event.category}
-                    </Badge>
-                  </div>
-                </div>
-                
-                <div className="p-4">
-                  <h3 className="text-lg font-semibold mb-2">{event.title}</h3>
-                  
-                  <div className="flex items-center text-gray-500 mb-2">
-                    <Calendar className="h-4 w-4 mr-2" />
-                    <span>{formatDate(event.date)} · {event.time}</span>
-                  </div>
-                  
-                  <div className="flex items-center text-gray-500 mb-3">
-                    <MapPin className="h-4 w-4 mr-2" />
-                    <span>{event.location.name}</span>
-                  </div>
-                  
-                  <div className="flex items-center justify-between mt-4">
-                    <div className="flex items-center">
-                      <Avatar
-                        className="w-8 h-8 mr-2"
-                      >
-                        <img
-                          src={event.organizer.avatar}
-                          alt={event.organizer.name}
-                          className="h-full w-full object-cover"
-                        />
-                      </Avatar>
-                      <span className="text-sm">{event.organizer.name}</span>
-                    </div>
-                    
-                    <div>
-                      <Badge variant={event.price === '무료' ? "outline" : "secondary"}>
-                        {event.price === '무료' ? '무료' : `${event.price.toLocaleString()}원`}
-                      </Badge>
-                    </div>
-                  </div>
-                  
-                  {event.maxAttendees && (
-                    <div className="mt-3 text-sm text-gray-500">
-                      참가자: {event.attendees}/{event.maxAttendees}명
-                    </div>
-                  )}
-                </div>
-              </Card>
-            ))
-          ) : (
-            <div className="col-span-full flex flex-col items-center justify-center py-10">
-              <p className="text-gray-500 mb-4">검색 조건에 맞는 이벤트가 없습니다.</p>
+      {/* 메인 컨텐츠 */}
+      <div className="flex flex-col md:flex-row gap-6">
+        {/* 이벤트 목록 */}
+        <div className={`${showMap ? 'md:w-7/12 lg:w-8/12' : 'w-full'}`}>
+          {filteredEvents.length === 0 ? (
+            <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-8 text-center">
+              <h3 className="text-lg font-medium mb-2">검색 결과가 없습니다</h3>
+              <p className="text-gray-500 dark:text-gray-400 mb-4">
+                다른 검색어나 필터 조건을 시도해보세요.
+              </p>
               <Button 
                 variant="outline" 
                 onClick={() => {
+                  setSearchTerm("");
                   setSelectedRegion("전체");
                   setSelectedCategory("전체");
-                  setSearchQuery("");
+                  setSelectedPrice("전체");
                 }}
               >
                 필터 초기화
               </Button>
             </div>
-          )}
-        </div>
-      </TabsContent>
-      
-      <TabsContent value="map" className="m-0">
-        <div className="flex flex-col lg:flex-row gap-6">
-          <div className="w-full lg:w-1/3 h-[calc(100vh-350px)] overflow-y-auto pr-2">
-            {filteredEvents.map(event => (
-              <Card 
-                key={event.id} 
-                className="mb-4 overflow-hidden hover:shadow-md transition cursor-pointer"
-                onClick={() => {
-                  handleMapMarkerClick(event.location);
-                  handleEventClick(event.id);
-                }}
-              >
-                <div className="p-4 flex gap-4">
-                  <div className="w-24 h-24 flex-shrink-0">
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+              {filteredEvents.map((event) => (
+                <Card 
+                  key={event.id}
+                  className="overflow-hidden h-full flex flex-col hover:shadow-md transition cursor-pointer"
+                  onClick={() => setLocation(`/events/${event.id}`)}
+                >
+                  <div className="relative h-48">
                     <img 
                       src={event.image} 
                       alt={event.title} 
-                      className="w-full h-full object-cover rounded-md"
+                      className="w-full h-full object-cover"
                     />
-                  </div>
-                  
-                  <div className="flex-1">
-                    <h3 className="text-base font-semibold mb-1 line-clamp-1">{event.title}</h3>
-                    
-                    <div className="flex items-center text-gray-500 text-xs mb-1">
-                      <Calendar className="h-3 w-3 mr-1" />
-                      <span>{formatDate(event.date)}</span>
-                    </div>
-                    
-                    <div className="flex items-center text-gray-500 text-xs mb-2">
-                      <MapPin className="h-3 w-3 mr-1" />
-                      <span className="line-clamp-1">{event.location.name}</span>
-                    </div>
-                    
-                    <div className="flex items-center justify-between">
-                      <Badge variant={event.price === '무료' ? "outline" : "secondary"} className="text-xs">
-                        {event.price === '무료' ? '무료' : `${event.price.toLocaleString()}원`}
-                      </Badge>
-                      
-                      <Badge className="bg-primary text-white text-xs">
+                    <div className="absolute top-2 right-2">
+                      <Badge className="bg-primary text-white">
                         {event.category}
                       </Badge>
                     </div>
+                    <div className="absolute top-2 left-2">
+                      <Badge variant="outline" className="bg-white text-black dark:bg-black dark:text-white">
+                        {formatDate(event.date)}
+                      </Badge>
+                    </div>
                   </div>
-                </div>
-              </Card>
-            ))}
-          </div>
-          
-          <div className="w-full lg:w-2/3 h-[calc(100vh-350px)] rounded-lg overflow-hidden">
-            <KakaoMapView selectedLocation={selectedLocation} />
-          </div>
-        </div>
-      </TabsContent>
-      
-      <TabsContent value="calendar" className="m-0">
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
-          <div className="text-center mb-8">
-            <h2 className="text-xl font-semibold">이벤트 캘린더</h2>
-            <p className="text-gray-500">현재 준비 중입니다. 곧 업데이트될 예정입니다.</p>
-          </div>
-          
-          <div className="grid grid-cols-7 gap-2">
-            {["일", "월", "화", "수", "목", "금", "토"].map(day => (
-              <div key={day} className="text-center font-medium py-2 border-b">
-                {day}
-              </div>
-            ))}
-            
-            {/* 임시 캘린더 더미 UI */}
-            {Array.from({ length: 35 }).map((_, i) => {
-              const hasEvent = [3, 8, 15, 20, 27].includes(i);
-              return (
-                <div 
-                  key={i} 
-                  className={`
-                    h-24 border rounded-md p-1 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition 
-                    ${hasEvent ? 'border-primary/30' : 'border-gray-200 dark:border-gray-700'}
-                  `}
-                >
-                  <div className="text-right text-sm font-medium">
-                    {i + 1}
-                  </div>
-                  {hasEvent && (
-                    <div className="mt-1">
-                      <div className="bg-primary/10 text-primary text-xs p-1 rounded mb-1 truncate">
-                        이벤트 {i}
+                  
+                  <div className="p-4 flex-1 flex flex-col">
+                    <h3 className="font-semibold text-lg mb-2 line-clamp-1">{event.title}</h3>
+                    <p className="text-gray-500 dark:text-gray-400 text-sm mb-3 line-clamp-2">
+                      {event.description}
+                    </p>
+                    
+                    <div className="mt-auto space-y-2 text-sm">
+                      <div className="flex items-center text-gray-500">
+                        <Clock className="h-4 w-4 mr-2 flex-shrink-0" />
+                        <span>{event.time}</span>
+                      </div>
+                      
+                      <div className="flex items-center text-gray-500">
+                        <MapPin className="h-4 w-4 mr-2 flex-shrink-0" />
+                        <span className="truncate">{event.location.name}, {event.location.region}</span>
+                      </div>
+                      
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center text-gray-500">
+                          <Users className="h-4 w-4 mr-2 flex-shrink-0" />
+                          <span>
+                            {event.attendees}명
+                            {event.maxAttendees && ` / ${event.maxAttendees}명`}
+                          </span>
+                        </div>
+                        
+                        <Badge variant={event.price === '무료' ? "outline" : "secondary"}>
+                          {event.price === '무료' ? '무료' : `${event.price.toLocaleString()}원`}
+                        </Badge>
                       </div>
                     </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          )}
         </div>
-      </TabsContent>
+        
+        {/* 지도 영역 */}
+        {showMap && (
+          <div className="md:w-5/12 lg:w-4/12">
+            <div className="sticky top-20">
+              <Card className="overflow-hidden">
+                <div className="h-[calc(100vh-180px)] min-h-[400px]">
+                  <KakaoMapView 
+                    selectedLocation={selectedLocation}
+                  />
+                </div>
+              </Card>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
