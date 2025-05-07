@@ -7,6 +7,7 @@ export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
+  getInstituteByCode(code: string): Promise<any>; // Added method signature
 }
 
 export class MemStorage implements IStorage {
@@ -33,6 +34,16 @@ export class MemStorage implements IStorage {
     const user: User = { ...insertUser, id };
     this.users.set(id, user);
     return user;
+  }
+
+  // Added method implementation
+  async getInstituteByCode(code: string): Promise<any> {
+    // Replace with your actual database query
+    // This is a placeholder and requires a proper database connection and query mechanism.
+    // Assuming 'db' is a database client and 'institutes' is a table with a 'code' column.
+    return await db.query.institutes.findFirst({
+      where: eq(institutes.code, code)
+    });
   }
 }
 

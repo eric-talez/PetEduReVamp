@@ -66,6 +66,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (existingUser) {
         return res.status(409).json({ message: "Username already taken" });
       }
+
+      // 기관 코드가 제공된 경우 검증
+      if (userData.instituteCode) {
+        const institute = await storage.getInstituteByCode(userData.instituteCode);
+        if (!institute) {
+          return res.status(400).json({ message: "Invalid institute code" });
+        }
+        userData.role = 'trainer';
+        userData.instituteId = institute.id;
+      }
       
       const newUser = await storage.createUser(userData);
       

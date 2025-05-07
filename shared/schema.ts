@@ -21,11 +21,15 @@ export const users = pgTable("users", {
   instituteId: integer("institute_id").references(() => institutes.id, { onDelete: 'set null' }),
 });
 
-export const createUserSchema = createInsertSchema(users).omit({
-  id: true,
-  createdAt: true,
-  instituteId: true
-});
+export const createUserSchema = createInsertSchema(users)
+  .omit({
+    id: true,
+    createdAt: true,
+    instituteId: true
+  })
+  .extend({
+    instituteCode: z.string().optional(),
+  });
 
 // Pet types
 export const pets = pgTable("pets", {
