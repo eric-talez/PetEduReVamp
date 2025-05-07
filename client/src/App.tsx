@@ -42,7 +42,7 @@ function AuthenticatedRoutes() {
           {() => checkAccess(['pet-owner', 'trainer', 'institute-admin', 'admin']) ? <Dashboard /> : window.location.href = '/'}
         </Route>
         <Route path="/courses" component={CoursesPage} />
-        <Route path="/courses/:id" component={CourseDetail} />
+        <Route path="/course/:id" component={CourseDetail} />
         <Route path="/trainers">
           {() => checkAccess(['pet-owner', 'trainer', 'institute-admin', 'admin']) ? <TrainersPage /> : window.location.href = '/'}
         </Route>
@@ -88,7 +88,7 @@ function UnauthenticatedRoutes() {
         <Route path="/auth/register" component={RegisterPage} />
         <Route path="/" component={Home} />
         <Route path="/courses" component={CoursesPage} />
-        <Route path="/courses/:id" component={CourseDetail} />
+        <Route path="/course/:id" component={CourseDetail} />
         <Route>
           {() => {
             window.location.href = "/auth/login";
