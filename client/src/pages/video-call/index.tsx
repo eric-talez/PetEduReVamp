@@ -21,7 +21,8 @@ import {
   User,
   MapPin,
   CheckCircle,
-  ChevronRight
+  ChevronRight,
+  Search
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import {
@@ -410,7 +411,7 @@ export default function VideoCallPage() {
             자격을 갖춘 전문 훈련사와 함께 실시간으로 소통하며 맞춤형 훈련 지도를 받으세요. 1:1 또는 그룹 수업 가능합니다.
           </p>
           
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2 mb-4">
             <Badge variant="secondary" className="bg-white/90 text-primary hover:bg-white">
               1:1 개인 맞춤형
             </Badge>
@@ -420,6 +421,21 @@ export default function VideoCallPage() {
             <Badge variant="secondary" className="bg-white/90 text-primary hover:bg-white">
               전문가 실시간 피드백
             </Badge>
+          </div>
+          
+          {/* Search Bar */}
+          <div className="max-w-lg bg-white dark:bg-gray-800 rounded-lg flex items-center p-1">
+            <div className="px-2">
+              <Search className="h-5 w-5 text-gray-400" />
+            </div>
+            <input 
+              type="text" 
+              placeholder="화상 수업 검색" 
+              className="flex-1 py-2 px-2 bg-transparent focus:outline-none text-gray-800 dark:text-gray-200"
+            />
+            <Button className="ml-2">
+              검색
+            </Button>
           </div>
         </div>
       </div>

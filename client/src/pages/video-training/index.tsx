@@ -417,7 +417,7 @@ export default function VideoTraining() {
             반려견 훈련 전문가들이 제공하는 고품질 영상으로 언제 어디서나 효과적인 훈련을 경험하세요.
           </p>
           
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2 mb-4">
             <Badge variant="secondary" className="bg-white/90 text-primary hover:bg-white">
               500+ 무료 영상
             </Badge>
@@ -427,6 +427,21 @@ export default function VideoTraining() {
             <Badge variant="secondary" className="bg-white/90 text-primary hover:bg-white">
               초보자 추천 코스
             </Badge>
+          </div>
+          
+          {/* Search Bar */}
+          <div className="max-w-lg bg-white dark:bg-gray-800 rounded-lg flex items-center p-1">
+            <div className="px-2">
+              <Search className="h-5 w-5 text-gray-400" />
+            </div>
+            <input 
+              type="text" 
+              placeholder="훈련 영상 검색" 
+              className="flex-1 py-2 px-2 bg-transparent focus:outline-none text-gray-800 dark:text-gray-200"
+            />
+            <Button className="ml-2">
+              검색
+            </Button>
           </div>
         </div>
       </div>
