@@ -164,7 +164,7 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
     }
 
     // 권한 체크
-    if (!isAuthenticated && !["/", "/courses", "/trainers", "/video-training", "/video-call", "/community"].includes(path)) {
+    if (!isAuthenticated && !["/", "/courses", "/trainers", "/video-training", "/video-call", "/community", "/institutes", "/institutes/register"].includes(path) && !path.startsWith('/institutes/')) {
       console.log('비인증 사용자 접근 제한');
       window.location.href = "/auth";
       return;
@@ -292,7 +292,8 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                       active={isActive("/institutes")} 
                       onClick={(path) => {
                         console.log("비회원이 교육 기관 클릭");
-                        handleItemClick(path);
+                        // 교육 기관 메뉴는 비회원도 접근 가능
+                        window.location.href = path;
                       }} 
                       show={true}
                     >교육 기관</NavItem>
