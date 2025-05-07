@@ -35,7 +35,10 @@ import {
   ChevronsRight,
   Menu,
   Activity,
-  HelpCircle
+  HelpCircle,
+  Brain,
+  BarChart2,
+  Sparkles
 } from "lucide-react";
 
 // 사이드바 컨텍스트 생성
@@ -485,6 +488,15 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                       show={true}
                     >
                       쇼핑
+                    </NavItem>
+                    <NavItem
+                      href="/ai-analysis"
+                      icon={<Sparkles className="w-5 h-5 mr-2" />}
+                      active={isActive("/ai-analysis")}
+                      onClick={handleItemClick}
+                      show={true}
+                    >
+                      AI 분석
                     </NavItem>
                     <NavItem
                       href="/messages"

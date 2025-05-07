@@ -1,7 +1,7 @@
 import { useAuth } from "../../SimpleApp";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar } from "@/components/ui/Avatar";
 import { Badge } from "@/components/ui/badge";
 import { useLocation, Link } from "wouter";
 import { BookOpen, Calendar, Medal, PawPrint, Star, Bone, Award, Clock } from "lucide-react";
@@ -391,10 +391,12 @@ export default function PetOwnerDashboard({ onAction }: PetOwnerDashboardProps) 
             <Card key={post.id} className="overflow-hidden border border-gray-100 dark:border-gray-700 card-hover">
               <div className="p-5">
                 <div className="flex items-center mb-4">
-                  <Avatar className="w-10 h-10">
-                    <AvatarImage src={post.author.avatar} alt={post.author.name} />
-                    <AvatarFallback>{post.author.name.substring(0, 2)}</AvatarFallback>
-                  </Avatar>
+                  <Avatar 
+                    src={post.author.avatar}
+                    alt={post.author.name}
+                    fallback={post.author.name.substring(0, 2)}
+                    className="w-10 h-10"
+                  />
                   
                   <div className="ml-3">
                     <h3 className="text-sm font-medium text-gray-800 dark:text-white">{post.author.name}</h3>
