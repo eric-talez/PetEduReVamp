@@ -331,6 +331,7 @@ function UnauthenticatedRoutes() {
         <Route path="/courses" component={Courses} />
         <Route path="/course/:id" component={CourseDetail} />
         <Route path="/trainers" component={Trainers} />
+        <Route path="/video-training" component={() => { window.location.href = "/video-training"; return null; }} />
         <Route path="/institutes" component={Institutes} />
         <Route path="/community" component={Community} />
         <Route path="/" component={Home} />
