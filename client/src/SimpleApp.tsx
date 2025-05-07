@@ -130,6 +130,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           userName: username
         }));
         console.log("Updated auth state with login data");
+        
+        // 역할 기반 리다이렉션 구현
+        setTimeout(() => {
+          switch(role) {
+            case 'pet-owner':
+              window.location.href = '/dashboard';
+              break;
+            case 'trainer':
+              window.location.href = '/trainer/dashboard';
+              break;
+            case 'institute-admin':
+              window.location.href = '/institute/dashboard';
+              break;
+            case 'admin':
+              window.location.href = '/admin/dashboard';
+              break;
+            default:
+              window.location.href = '/';
+              break;
+          }
+          console.log(`Redirecting to role-specific dashboard for: ${role}`);
+        }, 300); // 상태 업데이트 후 리다이렉션을 위한 짧은 지연
       }
     };
 

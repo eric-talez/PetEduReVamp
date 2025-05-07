@@ -50,10 +50,6 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
             </Button>
           </div>
 
-          {/* Message and Notification Icons - 비어있게 */}
-          <div className="flex items-center space-x-2">
-          </div>
-
           {/* Search */}
           <div className="hidden lg:flex flex-1 max-w-xl mx-12">
             <div className="w-full relative">
@@ -68,37 +64,42 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
             </div>
           </div>
 
-          {/* Action buttons */}
+          {/* Action buttons - Grouped together for better layout */}
           <div className="flex items-center space-x-2">
-            <ThemeToggle />
-            
-            <Button 
-              variant="ghost" 
-              size="icon"
-              onClick={() => setLocation("/messages")}
-              className="relative"
-            >
-              <MessageSquare className="h-5 w-5" />
-              {isAuthenticated && (
-                <span className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-4 h-4 text-xs flex items-center justify-center">
-                  3
-                </span>
-              )}
-            </Button>
-            
-            <Button 
-              variant="ghost" 
-              size="icon"
-              onClick={() => setLocation("/notifications")}
-              className="relative"
-            >
-              <Bell className="h-5 w-5" />
-              {isAuthenticated && (
-                <span className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-4 h-4 text-xs flex items-center justify-center">
-                  2
-                </span>
-              )}
-            </Button>
+            {/* Group message, notification and theme toggle together as requested */}
+            <div className="flex items-center space-x-1">
+              <Button 
+                variant="ghost" 
+                size="icon"
+                onClick={() => setLocation("/messages")}
+                className="relative"
+                aria-label="메시지"
+              >
+                <MessageSquare className="h-5 w-5" />
+                {isAuthenticated && (
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-4 h-4 text-xs flex items-center justify-center">
+                    3
+                  </span>
+                )}
+              </Button>
+              
+              <Button 
+                variant="ghost" 
+                size="icon"
+                onClick={() => setLocation("/notifications")}
+                className="relative"
+                aria-label="알림"
+              >
+                <Bell className="h-5 w-5" />
+                {isAuthenticated && (
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-4 h-4 text-xs flex items-center justify-center">
+                    2
+                  </span>
+                )}
+              </Button>
+              
+              <ThemeToggle />
+            </div>
 
             {isAuthenticated ? (
               <>
