@@ -252,13 +252,13 @@ export default function ShopPage() {
                     
                     <div className="absolute top-2 left-2 flex flex-col gap-1">
                       {product.isNew && (
-                        <Badge variant="primary" className="px-2 py-1">신상품</Badge>
+                        <Badge variant="default" className="px-2 py-1 bg-blue-500">신상품</Badge>
                       )}
                       {product.isBestSeller && (
                         <Badge variant="success" className="px-2 py-1">베스트셀러</Badge>
                       )}
                       {product.isOnSale && (
-                        <Badge variant="destructive" className="px-2 py-1">할인 중</Badge>
+                        <Badge variant="danger" className="px-2 py-1">할인 중</Badge>
                       )}
                     </div>
                     
