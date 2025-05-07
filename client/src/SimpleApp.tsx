@@ -55,7 +55,14 @@ const AuthContext = createContext<AuthState>({
  * 인증 상태 훅
  */
 export function useAuth() {
-  return useContext(AuthContext);
+  const context = useContext(AuthContext);
+  // 디버깅용 로그 추가 (개발 완료 후 제거)
+  console.log("useAuth hook called, authState:", { 
+    isAuthenticated: context.isAuthenticated,
+    userRole: context.userRole,
+    userName: context.userName
+  });
+  return context;
 }
 
 /**
