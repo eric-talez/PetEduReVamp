@@ -4,8 +4,12 @@ import { getUserRole } from '@/lib/utils';
 import { Link } from 'wouter';
 import { Button } from '@/components/ui/Button';
 
-export default function Dashboard() {
-  const userRole = getUserRole();
+type DashboardProps = {
+  typeProps?: string;
+};
+
+export default function Dashboard({ typeProps }: DashboardProps) {
+  const userRole = typeProps || getUserRole();
   
   if (userRole === 'trainer') {
     return (

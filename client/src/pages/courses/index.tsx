@@ -301,14 +301,18 @@ export default function Courses() {
               </div>
             </div>
             <div className="bg-gray-50 dark:bg-gray-700/50 px-5 py-3 border-t border-gray-100 dark:border-gray-700">
-              <Link href={`/course/${course.id}`} onClick={() => console.log(`강의 상세 페이지로 이동: /course/${course.id} (단수형)`)}>
+              <a href={`/course/${course.id}`} onClick={(e) => {
+                  e.preventDefault();
+                  console.log(`강의 상세 페이지로 이동: /course/${course.id} (단수형)`);
+                  window.location.href = `/course/${course.id}`;
+                }}>
                 <Button 
                   variant="link" 
                   className="text-sm font-medium text-primary hover:text-primary/80 p-0"
                 >
                   자세히 보기
                 </Button>
-              </Link>
+              </a>
             </div>
           </Card>
         ))}

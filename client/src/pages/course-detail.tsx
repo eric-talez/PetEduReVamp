@@ -26,6 +26,7 @@ interface Section {
 export default function CourseDetail() {
   // URL에서 강의 ID 파라미터 가져오기
   const [match, params] = useRoute<{ id: string }>("/course/:id");
+  console.log('CourseDetail rendering - Route match:', match, 'params:', params, 'location:', window.location.pathname);
   const courseId = match && params ? parseInt(params.id) : 1;
   console.log("강의 상세 페이지 로딩:", courseId, match, params);
   

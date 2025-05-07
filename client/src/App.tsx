@@ -26,6 +26,8 @@ import LoginPage from "./pages/auth/login";
 // 임시로 로그인 페이지를 재사용 (회원가입 페이지가 아직 없을 경우)
 import RegisterPage from "./pages/auth/login";
 
+console.log('App initialized - CourseDetail component:', CourseDetail);
+
 function AuthenticatedRoutes() {
   const { userRole } = useAuth();
 
@@ -56,13 +58,13 @@ function AuthenticatedRoutes() {
           {() => checkAccess(['pet-owner']) ? <MyPetsPage /> : window.location.href = '/'}
         </Route>
         <Route path="/trainer/dashboard">
-          {() => checkAccess(['trainer', 'admin']) ? <Dashboard type="trainer" /> : window.location.href = '/'}
+          {() => checkAccess(['trainer', 'admin']) ? <Dashboard typeProps="trainer" /> : window.location.href = '/'}
         </Route>
         <Route path="/institute/dashboard">
-          {() => checkAccess(['institute-admin', 'admin']) ? <Dashboard type="institute-admin" /> : window.location.href = '/'}
+          {() => checkAccess(['institute-admin', 'admin']) ? <Dashboard typeProps="institute-admin" /> : window.location.href = '/'}
         </Route>
         <Route path="/admin/dashboard">
-          {() => checkAccess(['admin']) ? <Dashboard type="admin" /> : window.location.href = '/'}
+          {() => checkAccess(['admin']) ? <Dashboard typeProps="admin" /> : window.location.href = '/'}
         </Route>
         <Route path="/community" component={CommunityPage} />
         <Route path="/my-courses" component={MyCoursesPage} />
