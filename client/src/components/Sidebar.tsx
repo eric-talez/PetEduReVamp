@@ -329,6 +329,17 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                       }} 
                       show={true}
                     >커뮤니티</NavItem>
+                    <NavItem 
+                      href="/events" 
+                      icon={<Calendar className="w-5 h-5 mr-2" />} 
+                      active={isActive("/events")} 
+                      onClick={(path) => {
+                        console.log("비회원이 이벤트 메뉴 클릭");
+                        // 비회원도 이벤트 페이지로 이동
+                        window.location.href = path;
+                      }} 
+                      show={true}
+                    >이벤트</NavItem>
                   </>
                 )}
 
@@ -357,6 +368,7 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                     <NavItem href="/trainers" icon={<UserRoundCheck className="w-5 h-5 mr-2" />} active={isActive("/trainers")} onClick={handleItemClick} show={true}>훈련사 찾기</NavItem>
                     <NavItem href="/institutes" icon={<MapPin className="w-5 h-5 mr-2" />} active={isActive("/institutes")} onClick={handleItemClick} show={true}>위치 서비스</NavItem>
                     <NavItem href="/community" icon={<MessageSquare className="w-5 h-5 mr-2" />} active={isActive("/community")} onClick={handleItemClick} show={true}>커뮤니티</NavItem>
+                    <NavItem href="/events" icon={<Calendar className="w-5 h-5 mr-2" />} active={isActive("/events")} onClick={handleItemClick} show={true}>이벤트</NavItem>
                   </>
                 )}
 
