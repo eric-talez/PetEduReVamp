@@ -6,6 +6,7 @@ import { useAuth } from "./SimpleApp";
 import Home from "./pages/Home";
 import Dashboard from "./pages/Dashboard";
 import CoursesPage from "./pages/courses/index";
+import CourseDetail from "./pages/courses/CourseDetail";
 import TrainersPage from "./pages/trainers/index";
 import InstitutesPage from "./pages/institutes/index";
 import CommunityPage from "./pages/community/index";

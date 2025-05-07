@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "wouter";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
@@ -300,13 +301,14 @@ export default function Courses() {
               </div>
             </div>
             <div className="bg-gray-50 dark:bg-gray-700/50 px-5 py-3 border-t border-gray-100 dark:border-gray-700">
-              <Button 
-                variant="link" 
-                onClick={() => window.location.href = `/courses/${course.id}`}
-                className="text-sm font-medium text-primary hover:text-primary/80 p-0"
-              >
-                자세히 보기
-              </Button>
+              <Link href={`/courses/${course.id}`}>
+                <Button 
+                  variant="link" 
+                  className="text-sm font-medium text-primary hover:text-primary/80 p-0"
+                >
+                  자세히 보기
+                </Button>
+              </Link>
             </div>
           </Card>
         ))}
