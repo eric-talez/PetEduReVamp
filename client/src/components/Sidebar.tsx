@@ -88,6 +88,11 @@ export function Sidebar({ open, onClose }: SidebarProps) {
   const [location] = useLocation();
   const { userRole, isAuthenticated } = useAppAuth();
   
+  // 콘솔에 사용자 역할 정보 출력 (디버깅용)
+  useEffect(() => {
+    console.log("Sidebar 컴포넌트 마운트/업데이트 - userRole:", userRole, "isAuthenticated:", isAuthenticated);
+  }, [userRole, isAuthenticated]);
+  
   // 사이드바 펼쳐짐/접힘 상태 관리
   const [expanded, setExpanded] = useState(true);
   
@@ -105,28 +110,31 @@ export function Sidebar({ open, onClose }: SidebarProps) {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
   
-  // 메뉴 그룹 열기/닫기 상태 관리 (사용자 역할에 따라 초기 상태 결정)
+  // 메뉴 그룹 열기/닫기 상태 관리 
+  // userRole 의존성을 직접 제거하고 useEffect에서만 다루도록 수정
   const [menuGroups, setMenuGroups] = useState({
     main: true,
     features: true,
     myLearning: true,
-    trainer: userRole === 'trainer',
-    institute: userRole === 'institute-admin',
-    admin: userRole === 'admin'
+    trainer: false,
+    institute: false,
+    admin: false
   });
   
   // userRole이 변경될 때마다 해당 역할의 메뉴 그룹을 자동으로 열어줌
   useEffect(() => {
     console.log("사이드바에서 사용자 역할 변경 감지:", userRole);
     if (userRole) {
-      const updatedMenuGroups = {
-        ...menuGroups,
-        trainer: userRole === 'trainer' || userRole === 'admin',
-        institute: userRole === 'institute-admin' || userRole === 'admin',
-        admin: userRole === 'admin'
-      };
-      console.log("업데이트된 메뉴 그룹 상태:", updatedMenuGroups);
-      setMenuGroups(updatedMenuGroups);
+      setMenuGroups(prev => {
+        const updated = {
+          ...prev,
+          trainer: userRole === 'trainer' || userRole === 'admin',
+          institute: userRole === 'institute-admin' || userRole === 'admin',
+          admin: userRole === 'admin'
+        };
+        console.log("메뉴 그룹 상태 업데이트:", updated);
+        return updated;
+      });
     }
   }, [userRole]);
   
