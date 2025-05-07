@@ -209,11 +209,57 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
 
                 {menuGroups.main && (
                   <>
-                    <NavItem href="/" icon={<Home className="w-5 h-5 mr-2" />} active={isActive("/")} onClick={handleItemClick} show={true}>홈</NavItem>
-                    <NavItem href="/courses" icon={<GraduationCap className="w-5 h-5 mr-2" />} active={isActive("/courses")} onClick={handleItemClick} show={true}>강의 탐색</NavItem>
-                    <NavItem href="/trainers" icon={<UserRoundCheck className="w-5 h-5 mr-2" />} active={isActive("/trainers")} onClick={handleItemClick} show={true}>훈련사 찾기</NavItem>
-                    <NavItem href="/institutes" icon={<Building className="w-5 h-5 mr-2" />} active={isActive("/institutes")} onClick={handleItemClick} show={true}>교육 기관</NavItem>
-                    <NavItem href="/community" icon={<MessageSquare className="w-5 h-5 mr-2" />} active={isActive("/community")} onClick={handleItemClick} show={true}>커뮤니티</NavItem>
+                    <NavItem 
+                      href="/" 
+                      icon={<Home className="w-5 h-5 mr-2" />} 
+                      active={isActive("/")} 
+                      onClick={(path) => {
+                        console.log("비회원 메뉴 클릭:", path);
+                        if (path !== "/" && path !== "/courses") {
+                          window.location.href = "/auth";
+                          return;
+                        }
+                        handleItemClick(path);
+                      }} 
+                      show={true}
+                    >홈</NavItem>
+                    <NavItem 
+                      href="/courses" 
+                      icon={<GraduationCap className="w-5 h-5 mr-2" />} 
+                      active={isActive("/courses")} 
+                      onClick={handleItemClick} 
+                      show={true}
+                    >강의 탐색</NavItem>
+                    <NavItem 
+                      href="/trainers" 
+                      icon={<UserRoundCheck className="w-5 h-5 mr-2" />} 
+                      active={isActive("/trainers")} 
+                      onClick={() => {
+                        console.log("비회원이 훈련사 찾기 클릭");
+                        window.location.href = "/auth";
+                      }} 
+                      show={true}
+                    >훈련사 찾기</NavItem>
+                    <NavItem 
+                      href="/institutes" 
+                      icon={<Building className="w-5 h-5 mr-2" />} 
+                      active={isActive("/institutes")} 
+                      onClick={() => {
+                        console.log("비회원이 교육 기관 클릭");
+                        window.location.href = "/auth";
+                      }} 
+                      show={true}
+                    >교육 기관</NavItem>
+                    <NavItem 
+                      href="/community" 
+                      icon={<MessageSquare className="w-5 h-5 mr-2" />} 
+                      active={isActive("/community")} 
+                      onClick={() => {
+                        console.log("비회원이 커뮤니티 클릭");
+                        window.location.href = "/auth";
+                      }} 
+                      show={true}
+                    >커뮤니티</NavItem>
                   </>
                 )}
 
