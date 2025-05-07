@@ -1,12 +1,17 @@
+import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar } from '@/components/ui/Avatar';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Star } from 'lucide-react';
+import { TrainerProfileModal, type Trainer } from '@/components/TrainerProfileModal';
 
 export default function Trainers() {
+  const [selectedTrainer, setSelectedTrainer] = useState<Trainer | null>(null);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+
   // Mock trainers data
-  const trainers = [
+  const trainers: Trainer[] = [
     {
       id: 1,
       name: "김훈련",
@@ -16,7 +21,16 @@ export default function Trainers() {
       rating: 4.9,
       reviewCount: 128,
       certifications: ["KKF 공인 훈련사", "국제 반려동물 관리사"],
-      coursesCount: 5
+      coursesCount: 5,
+      location: "서울 강남구",
+      experience: "반려견 훈련 10년, 대형견 전문 훈련사 5년, 경찰견 훈련 참여 2년",
+      education: [
+        "서울대학교 수의학과 학사",
+        "국제 반려동물 훈련사 자격증 취득",
+        "문제행동 교정 전문가 과정 수료"
+      ],
+      languages: ["한국어", "영어"],
+      availableHours: "평일 10:00 - 18:00, 주말 12:00 - 17:00"
     },
     {
       id: 2,
@@ -27,7 +41,16 @@ export default function Trainers() {
       rating: 4.8,
       reviewCount: 92,
       certifications: ["국제 어질리티 심판", "반려동물행동교정사"],
-      coursesCount: 3
+      coursesCount: 3,
+      location: "서울 송파구",
+      experience: "어질리티 대회 참가 8년, 국제 대회 우승 3회, 도그스포츠 지도 6년",
+      education: [
+        "한국체육대학교 체육학과",
+        "국제 어질리티 코치 자격증",
+        "스포츠 트레이닝 전문가 과정"
+      ],
+      languages: ["한국어", "일본어"],
+      availableHours: "평일 13:00 - 21:00, 주말 09:00 - 18:00"
     },
     {
       id: 3,
@@ -38,7 +61,16 @@ export default function Trainers() {
       rating: 4.7,
       reviewCount: 83,
       certifications: ["동물행동학 석사", "유아견 전문 훈련사"],
-      coursesCount: 4
+      coursesCount: 4,
+      location: "인천 연수구",
+      experience: "퍼피 클래스 운영 7년, 아동-반려견 사회화 프로그램 개발 및 운영",
+      education: [
+        "동국대학교 동물자원학과",
+        "유아견 사회화 전문가 과정",
+        "아동심리학 수료"
+      ],
+      languages: ["한국어"],
+      availableHours: "평일 10:00 - 16:00"
     },
     {
       id: 4,
@@ -49,7 +81,16 @@ export default function Trainers() {
       rating: 5.0,
       reviewCount: 76,
       certifications: ["동물심리상담사", "수의행동학 전문가"],
-      coursesCount: 2
+      coursesCount: 2,
+      location: "경기 분당구",
+      experience: "반려동물 행동교정 센터 운영 9년, 분리불안 특화 훈련 개발",
+      education: [
+        "건국대학교 수의학 박사",
+        "동물행동학 연구소 연구원",
+        "해외 문제행동 클리닉 연수"
+      ],
+      languages: ["한국어", "영어", "독일어"],
+      availableHours: "상담 예약제 운영"
     },
     {
       id: 5,
@@ -60,7 +101,16 @@ export default function Trainers() {
       rating: 4.9,
       reviewCount: 62,
       certifications: ["노즈워크 국제 인증 트레이너", "수색견 훈련 전문가"],
-      coursesCount: 3
+      coursesCount: 3,
+      location: "경기 고양시",
+      experience: "군용견 훈련 5년, 노즈워크 대회 심사위원, 수색견 훈련 컨설팅",
+      education: [
+        "호서대학교 애완동물학과",
+        "유럽 노즈워크 아카데미 수료",
+        "특수 목적견 훈련 자격증"
+      ],
+      languages: ["한국어", "영어"],
+      availableHours: "평일/주말 09:00 - 18:00"
     },
     {
       id: 6,
@@ -71,9 +121,24 @@ export default function Trainers() {
       rating: 4.8,
       reviewCount: 54,
       certifications: ["동물 심리치료사", "노령견 케어 전문가"],
-      coursesCount: 2
+      coursesCount: 2,
+      location: "서울 마포구",
+      experience: "노령견 케어 센터 운영 6년, 치료견 프로그램 개발, 병원 연계 치료 프로그램 운영",
+      education: [
+        "이화여자대학교 심리학과",
+        "반려동물 심리상담사 자격증",
+        "노인심리학 전공"
+      ],
+      languages: ["한국어"],
+      availableHours: "평일 10:00 - 17:00"
     }
   ];
+
+  // 훈련사 프로필 열기
+  const openTrainerProfile = (trainer: Trainer) => {
+    setSelectedTrainer(trainer);
+    setIsProfileOpen(true);
+  };
 
   return (
     <div>
@@ -94,7 +159,7 @@ export default function Trainers() {
                   src={trainer.image} 
                   alt={trainer.name}
                   size="lg"
-                  border
+                  bordered
                 />
                 
                 <div className="flex-1">
@@ -125,7 +190,13 @@ export default function Trainers() {
                   
                   <div className="mt-4 flex justify-between items-center">
                     <span className="text-sm">강의 {trainer.coursesCount}개</span>
-                    <Button variant="outline" size="sm">프로필 보기</Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => openTrainerProfile(trainer)}
+                    >
+                      프로필 보기
+                    </Button>
                   </div>
                 </div>
               </div>
@@ -133,6 +204,13 @@ export default function Trainers() {
           </Card>
         ))}
       </div>
+      
+      {/* 훈련사 프로필 모달 */}
+      <TrainerProfileModal
+        trainer={selectedTrainer}
+        open={isProfileOpen}
+        onOpenChange={setIsProfileOpen}
+      />
     </div>
   );
 }

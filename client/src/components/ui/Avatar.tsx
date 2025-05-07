@@ -7,17 +7,27 @@ interface AvatarProps extends React.HTMLAttributes<HTMLDivElement> {
   alt?: string;
   fallback?: React.ReactNode;
   bordered?: boolean;
+  size?: 'sm' | 'md' | 'lg' | 'xl';
 }
 
 const Avatar = forwardRef<HTMLDivElement, AvatarProps>(
-  ({ className, src, alt, fallback, bordered = false, ...props }, ref) => {
+  ({ className, src, alt, fallback, bordered = false, size = 'md', ...props }, ref) => {
     const hasImage = src && src.length > 0;
+    
+    // Size map
+    const sizeClasses = {
+      sm: "h-8 w-8",
+      md: "h-10 w-10",
+      lg: "h-14 w-14",
+      xl: "h-20 w-20",
+    };
     
     return (
       <div
         ref={ref}
         className={cn(
-          "relative flex h-10 w-10 shrink-0 overflow-hidden rounded-full",
+          "relative flex shrink-0 overflow-hidden rounded-full",
+          sizeClasses[size],
           bordered && "border-2 border-primary",
           className
         )}
@@ -41,4 +51,4 @@ const Avatar = forwardRef<HTMLDivElement, AvatarProps>(
 
 Avatar.displayName = "Avatar";
 
-export { Avatar };
+export { Avatar, type AvatarProps };
