@@ -17,43 +17,154 @@ export default function Home() {
         </div>
         
         {/* 프로필 영역 (로그인/회원가입) */}
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
           {auth.isAuthenticated ? (
-            <div className="flex flex-col items-center">
-              <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mb-4">
-                <span className="text-3xl font-bold text-primary">{auth.userName?.charAt(0) || "U"}</span>
+            <div className="flex flex-col">
+              {/* 환영 메시지 헤더 */}
+              <div className="bg-green-50 dark:bg-green-900/30 p-4 flex items-center">
+                <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center mr-3">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="font-semibold text-green-800 dark:text-green-100">
+                    반려견과 함께하는 즐거운 일상
+                  </h3>
+                  <p className="text-xs text-green-600 dark:text-green-300">
+                    로그인하여 맞춤형 훈련 서비스와 다양한 정보를 만나보세요
+                  </p>
+                </div>
               </div>
-              <p className="font-semibold text-xl mb-2">{auth.userName || "사용자"} 님</p>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-                {auth.userRole === 'pet-owner' ? '견주 회원' : 
-                 auth.userRole === 'trainer' ? '훈련사 회원' : 
-                 auth.userRole === 'institute-admin' ? '기관 관리자' : 
-                 auth.userRole === 'admin' ? '시스템 관리자' : '일반 회원'}
-              </p>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 w-full">
+
+              {/* 사용자 정보 */}
+              <div className="p-4 flex">
+                <div className="w-14 h-14 bg-primary/10 rounded-full flex items-center justify-center">
+                  <span className="text-xl font-bold text-primary">{auth.userName?.charAt(0) || "U"}</span>
+                </div>
+                <div className="ml-3">
+                  <p className="font-semibold text-lg">{auth.userName || "사용자"} 님</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                    {auth.userRole === 'pet-owner' ? '견주 회원' : 
+                     auth.userRole === 'trainer' ? '훈련사 회원' : 
+                     auth.userRole === 'institute-admin' ? '기관 관리자' : 
+                     auth.userRole === 'admin' ? '시스템 관리자' : '일반 회원'}
+                  </p>
+                </div>
+              </div>
+
+              {/* 버튼 그룹 */}
+              <div className="px-4 pb-4 grid grid-cols-2 gap-2">
                 <Link href="/my-page" className="w-full">
-                  <Button variant="default" className="w-full">마이페이지</Button>
+                  <Button variant="default" className="w-full" size="sm">마이페이지</Button>
                 </Link>
-                <Button variant="outline" className="w-full" onClick={auth.logout}>
+                <Button variant="outline" className="w-full" size="sm" onClick={auth.logout}>
                   로그아웃
                 </Button>
               </div>
+
+              {/* 회원 혜택 */}
+              <div className="bg-gray-50 dark:bg-gray-900/40 p-4 mt-2">
+                <h4 className="text-sm font-medium mb-2">회원 혜택</h4>
+                <div className="text-xs text-gray-600 dark:text-gray-400 space-y-1">
+                  <div className="flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 text-primary mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span>맞춤형 훈련 프로그램 추천</span>
+                  </div>
+                  <div className="flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 text-primary mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span>전문 훈련사 1:1 상담</span>
+                  </div>
+                  <div className="flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 text-primary mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span>신규 회원 할인 쿠폰 지급</span>
+                  </div>
+                </div>
+              </div>
             </div>
           ) : (
-            <div className="flex flex-col items-center">
-              <div className="w-20 h-20 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center mb-4">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-gray-500 dark:text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                </svg>
+            <div className="flex flex-col">
+              {/* 로그인 헤더 */}
+              <div className="bg-green-50 dark:bg-green-900/30 p-4 flex items-center">
+                <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center mr-3">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="font-semibold text-green-800 dark:text-green-100">
+                    반려견과 함께하는 즐거운 일상
+                  </h3>
+                  <p className="text-xs text-green-600 dark:text-green-300">
+                    로그인하여 맞춤형 훈련 서비스와 다양한 정보를 만나보세요
+                  </p>
+                </div>
               </div>
-              <h3 className="font-semibold text-lg mb-4">로그인 후 더 많은 서비스를 이용해보세요</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 w-full">
-                <Button variant="default" className="w-full">
-                  <Link href="/auth">로그인</Link>
-                </Button>
-                <Button variant="outline" className="w-full">
-                  <Link href="/auth?tab=register">회원가입</Link>
-                </Button>
+
+              {/* 로그인 버튼 */}
+              <div className="p-4">
+                <div className="grid grid-cols-2 gap-2 mb-3">
+                  <Link href="/auth" className="w-full">
+                    <Button variant="default" className="w-full" size="sm">로그인</Button>
+                  </Link>
+                  <Link href="/auth?tab=register" className="w-full">
+                    <Button variant="outline" className="w-full" size="sm">회원가입</Button>
+                  </Link>
+                </div>
+                <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-2">
+                  <Link href="/auth/find-id" className="hover:underline">아이디 찾기</Link>
+                  <span>|</span>
+                  <Link href="/auth/reset-password" className="hover:underline">비밀번호 찾기</Link>
+                  <span>|</span>
+                  <Link href="/auth/help" className="hover:underline">로그인 도움말</Link>
+                </div>
+              </div>
+
+              {/* 간편 로그인 */}
+              <div className="px-4 pb-4">
+                <p className="text-xs text-gray-500 dark:text-gray-400 mb-3 text-center relative">
+                  <span className="bg-white dark:bg-gray-800 px-2 relative z-10">간편 로그인</span>
+                  <span className="absolute left-0 right-0 top-1/2 h-px bg-gray-200 dark:bg-gray-700"></span>
+                </p>
+                <div className="flex justify-center space-x-4">
+                  <button className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white">
+                    <span className="text-sm font-bold">페</span>
+                  </button>
+                  <button className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center text-white">
+                    <span className="text-sm font-bold">네</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* 회원 혜택 */}
+              <div className="bg-gray-50 dark:bg-gray-900/40 p-4 mt-2">
+                <h4 className="text-sm font-medium mb-2">회원 혜택</h4>
+                <div className="text-xs text-gray-600 dark:text-gray-400 space-y-1">
+                  <div className="flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 text-primary mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span>맞춤형 훈련 프로그램 추천</span>
+                  </div>
+                  <div className="flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 text-primary mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span>전문 훈련사 1:1 상담</span>
+                  </div>
+                  <div className="flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 text-primary mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span>신규 회원 할인 쿠폰 지급</span>
+                  </div>
+                </div>
               </div>
             </div>
           )}
