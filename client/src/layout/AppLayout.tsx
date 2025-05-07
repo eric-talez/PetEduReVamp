@@ -1,6 +1,7 @@
 import { TopBar } from "@/components/TopBar";
 import { Sidebar } from "@/components/Sidebar";
 import { ReactNode, useState } from "react";
+import { useAppAuth } from "../App";
 
 interface AppLayoutProps {
   children: ReactNode;
@@ -8,13 +9,22 @@ interface AppLayoutProps {
 
 export function AppLayout({ children }: AppLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  // 인증 정보를 직접 전달하기 위해 가져옴
+  const auth = useAppAuth();
+
+  console.log("AppLayout 렌더링 - auth:", auth);
 
   return (
     <div className="bg-background text-foreground min-h-screen font-sans">
       <div className="flex">
-        {/* 사이드바 */}
+        {/* 사이드바 - 인증 정보 직접 전달 */}
         <div className="fixed inset-y-0 left-0 z-50">
-          <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+          <Sidebar 
+            open={sidebarOpen} 
+            onClose={() => setSidebarOpen(false)} 
+            userRole={auth.userRole} 
+            isAuthenticated={auth.isAuthenticated} 
+          />
         </div>
         
         {/* 모바일에서 사이드바가 열렸을 때 배경 오버레이 */}

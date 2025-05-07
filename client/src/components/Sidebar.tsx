@@ -82,15 +82,17 @@ function NavItem({ href, icon, children, active, onClick }: NavItemProps) {
 interface SidebarProps {
   open: boolean;
   onClose: () => void;
+  // 직접 props로 전달받도록 추가
+  userRole: string | null;
+  isAuthenticated: boolean;
 }
 
-export function Sidebar({ open, onClose }: SidebarProps) {
+export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarProps) {
   const [location] = useLocation();
-  const { userRole, isAuthenticated } = useAppAuth();
   
   // 콘솔에 사용자 역할 정보 출력 (디버깅용)
   useEffect(() => {
-    console.log("Sidebar 컴포넌트 마운트/업데이트 - userRole:", userRole, "isAuthenticated:", isAuthenticated);
+    console.log("Sidebar 컴포넌트 마운트/업데이트 (props) - userRole:", userRole, "isAuthenticated:", isAuthenticated);
   }, [userRole, isAuthenticated]);
   
   // 사이드바 펼쳐짐/접힘 상태 관리
@@ -276,7 +278,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
                     href="/auth" 
                     icon={<LogIn className="w-5 h-5 mr-2" />}
                     active={isActive("/auth")}
-                    onClick={onClose}
+                    onClick={() => onClose()}
                   >
                     로그인
                   </NavItem>
@@ -502,8 +504,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
               </>
             )}
             
-            {/* Trainer-specific menu */}
-            {console.log("사이드바 렌더링 - userRole:", userRole, "trainer 메뉴 표시 여부:", userRole === "trainer" || userRole === "admin")}
+            {/* Trainer 메뉴 */}
             {(userRole === "trainer" || userRole === "admin") && (
               <>
                 {expanded && (
