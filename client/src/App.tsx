@@ -34,6 +34,7 @@ function AuthenticatedRoutes() {
         <Route path="/" component={Home} />
         <Route path="/dashboard" component={Dashboard} />
         <Route path="/courses" component={CoursesPage} />
+        <Route path="/courses/:id" component={CourseDetail} />
         <Route path="/trainers" component={TrainersPage} />
         <Route path="/institutes" component={InstitutesPage} />
         <Route path="/community" component={CommunityPage} />
