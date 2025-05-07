@@ -172,10 +172,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
 
     window.addEventListener('login', handleLogin as EventListener);
+    window.addEventListener('petedu-login', handleLogin as EventListener);
     window.addEventListener('logout', handleLogout);
 
     return () => {
       window.removeEventListener('login', handleLogin as EventListener);
+      window.removeEventListener('petedu-login', handleLogin as EventListener);
       window.removeEventListener('logout', handleLogout);
     };
   }, []);
