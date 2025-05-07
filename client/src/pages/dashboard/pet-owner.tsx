@@ -1,8 +1,8 @@
 import { useAuth } from "../../SimpleApp";
-import { Card } from "@/components/ui/Card";
-import { Button } from "@/components/ui/Button";
-import { Avatar } from "@/components/ui/Avatar";
-import { Badge } from "@/components/ui/Badge";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Avatar } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import { BookOpen, Calendar, Medal, PawPrint, Star, Bone, Award, Clock } from "lucide-react";
 
 interface PetOwnerDashboardProps {
@@ -197,18 +197,20 @@ export default function PetOwnerDashboard({ onAction }: PetOwnerDashboardProps) 
           </div>
           <div className="mt-4">
             <div className="flex items-center">
-              <Avatar 
-                src="https://images.unsplash.com/photo-1600077106724-946750eeaf3c?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100" 
-                alt="토리" 
-                className="w-8 h-8"
-                bordered
-              />
-              <Avatar 
-                src="https://images.unsplash.com/photo-1537151608828-ea2b11777ee8?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100" 
-                alt="몽이" 
-                className="w-8 h-8 -ml-2"
-                bordered
-              />
+              <div className="w-8 h-8 rounded-full border-2 border-white overflow-hidden">
+                <img 
+                  src="https://images.unsplash.com/photo-1600077106724-946750eeaf3c?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100" 
+                  alt="토리" 
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div className="w-8 h-8 -ml-2 rounded-full border-2 border-white overflow-hidden">
+                <img 
+                  src="https://images.unsplash.com/photo-1537151608828-ea2b11777ee8?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100" 
+                  alt="몽이"
+                  className="w-full h-full object-cover"
+                />
+              </div>
               <a href="/my-pets" className="ml-2 text-xs text-primary hover:text-primary/80">관리하기</a>
             </div>
           </div>

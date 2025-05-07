@@ -11,8 +11,17 @@ interface DashboardProps {
 }
 
 export default function Dashboard({ type }: DashboardProps) {
+  // 전역 상태에서 인증 정보 직접 확인
+  const globalAuth = (window as any).__peteduAuthState;
+  
+  // 로컬 상태와 전역 상태 둘 다 확인
   const auth = useAuth();
-  const { userRole, isAuthenticated } = auth;
+  // 전역 상태가 있으면 우선 사용
+  const authState = globalAuth || auth;
+  
+  // 상태 추출
+  const userRole = authState?.userRole || auth?.userRole;
+  const isAuthenticated = authState?.isAuthenticated || auth?.isAuthenticated;
   
   useEffect(() => {
     // 대시보드 진입 로깅 - 디버깅용
