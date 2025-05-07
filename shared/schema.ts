@@ -29,6 +29,17 @@ export const createUserSchema = createInsertSchema(users)
   })
   .extend({
     instituteCode: z.string().optional(),
+    address: z.string().optional(),
+    phoneNumber: z.string().optional(),
+    petInfo: z.object({
+      name: z.string(),
+      breed: z.string(),
+      age: z.string(),
+      gender: z.enum(['male', 'female']),
+      weight: z.string(),
+      neutered: z.boolean(),
+      medicalHistory: z.string().optional(),
+    }).optional(),
   });
 
 // Pet types

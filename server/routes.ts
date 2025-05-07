@@ -316,6 +316,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // ===== User Management Routes =====
+  
+  // Upgrade user to pet owner
+  app.post("/api/users/:id/upgrade-to-pet-owner", async (req, res) => {
+    try {
+      if (!req.session.user) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+      
+      // Check if user is institute admin
+      if (req.session.user.role !== "institute-admin") {
+        return res.status(403).json({ message: "Only institute admins can upgrade users" });
+      }
+      
+      const userId = parseInt(req.params.id);
+      const { trainerId } = req.body;
+      
+      // Validate trainer belongs to institute
+      const trainer = await storage.getTrainer(trainerId);
+      if (!trainer || trainer.instituteId !== req.session.user.instituteId) {
+        return res.status(400).json({ message: "Invalid trainer" });
+      }
+      
+      // Upgrade user
+      const updatedUser = await storage.updateUserRole(userId, 'pet-owner', trainerId);
+      
+      return res.status(200).json(updatedUser);
+    } catch (error) {
+      console.error("Upgrade user error:", error);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
   // ===== Institute Routes =====
   
   // Get all institutes

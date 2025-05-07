@@ -2,12 +2,18 @@ import { users, type User, type InsertUser } from "@shared/schema";
 
 // modify the interface with any CRUD methods
 // you might need
+enum UserRole {
+  USER = 'user',
+  TRAINER = 'trainer',
+  INSTITUTE_ADMIN = 'institute_admin',
+}
 
 export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
-  getInstituteByCode(code: string): Promise<any>; // Added method signature
+  getInstituteByCode(code: string): Promise<any>;
+  updateUserRole(userId: number, role: UserRole, trainerId?: number): Promise<User>;
 }
 
 export class MemStorage implements IStorage {
@@ -31,7 +37,7 @@ export class MemStorage implements IStorage {
 
   async createUser(insertUser: InsertUser): Promise<User> {
     const id = this.currentId++;
-    const user: User = { ...insertUser, id };
+    const user: User = { ...insertUser, id, role: UserRole.USER }; // Default role
     this.users.set(id, user);
     return user;
   }
@@ -44,6 +50,16 @@ export class MemStorage implements IStorage {
     return await db.query.institutes.findFirst({
       where: eq(institutes.code, code)
     });
+  }
+
+  async updateUserRole(userId: number, role: UserRole, trainerId?: number): Promise<User> {
+    const user = this.users.get(userId);
+    if (!user) {
+      throw new Error("User not found");
+    }
+    const updatedUser = { ...user, role, trainerId };
+    this.users.set(userId, updatedUser);
+    return updatedUser;
   }
 }
 
