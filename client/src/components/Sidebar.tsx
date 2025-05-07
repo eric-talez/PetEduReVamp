@@ -145,6 +145,23 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
 
   const handleItemClick = (path: string) => {
     console.log(`메뉴 클릭: ${path} (사용자 역할: ${userRole || '비로그인'})`);
+    
+    // 상세 페이지 라우팅 처리
+    if (path.startsWith('/courses/')) {
+      console.log('강의 상세 페이지 접근');
+    } else if (path.startsWith('/trainers/')) {
+      console.log('훈련사 상세 페이지 접근');
+    } else if (path.startsWith('/institutes/')) {
+      console.log('교육기관 상세 페이지 접근');
+    }
+
+    // 권한 체크
+    if (!isAuthenticated && !["/", "/courses"].includes(path)) {
+      console.log('비인증 사용자 접근 제한');
+      window.location.href = "/auth";
+      return;
+    }
+
     if (onClose) {
       onClose();
     }
