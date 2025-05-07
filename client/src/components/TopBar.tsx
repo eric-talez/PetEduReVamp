@@ -47,7 +47,32 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
             </Button>
           </div>
 
-          
+          {/* Message and Notification Icons */}
+          <div className="flex items-center space-x-2">
+            <Button 
+              variant="ghost" 
+              size="icon"
+              onClick={() => setLocation("/messages")}
+              className="relative"
+            >
+              <MessageSquare className="h-5 w-5" />
+              <span className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-4 h-4 text-xs flex items-center justify-center">
+                3
+              </span>
+            </Button>
+            
+            <Button 
+              variant="ghost" 
+              size="icon"
+              onClick={() => setLocation("/notifications")}
+              className="relative"
+            >
+              <Bell className="h-5 w-5" />
+              <span className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-4 h-4 text-xs flex items-center justify-center">
+                2
+              </span>
+            </Button>
+          </div>
 
           {/* Search */}
           <div className="hidden lg:flex flex-1 max-w-xl mx-12">
@@ -65,40 +90,36 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
 
           {/* Action buttons */}
           <div className="flex items-center space-x-2">
-            {/* Notifications - 항상 표시 */}
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              className="relative"
-              onClick={() => setLocation("/notifications")}
-            >
-              <Bell className="h-5 w-5" />
-              {isAuthenticated && (
-                <span className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-4 h-4 text-xs flex items-center justify-center">
-                  2
-                </span>
-              )}
-            </Button>
-
-            {/* Messages - 항상 표시 */}
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              className="relative"
-              onClick={() => setLocation("/messages")}
-            >
-              <MessageSquare className="h-5 w-5" />
-              {isAuthenticated && (
-                <span className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-4 h-4 text-xs flex items-center justify-center">
-                  3
-                </span>
-              )}
-            </Button>
-
             <ThemeToggle />
 
             {isAuthenticated ? (
               <>
+                {/* Notifications */}
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="relative"
+                  onClick={() => setLocation("/notifications")}
+                >
+                  <Bell className="h-5 w-5" />
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-4 h-4 text-xs flex items-center justify-center">
+                    2
+                  </span>
+                </Button>
+
+                {/* Messages */}
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="relative"
+                  onClick={() => setLocation("/messages")}
+                >
+                  <MessageSquare className="h-5 w-5" />
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-4 h-4 text-xs flex items-center justify-center">
+                    3
+                  </span>
+                </Button>
+
                 {/* Shopping Cart */}
                 <Button 
                   variant="ghost" 
