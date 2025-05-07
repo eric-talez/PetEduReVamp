@@ -3,6 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { useLocation, Link } from "wouter";
 import { BookOpen, Calendar, Medal, PawPrint, Star, Bone, Award, Clock } from "lucide-react";
 
 interface PetOwnerDashboardProps {
@@ -11,6 +12,7 @@ interface PetOwnerDashboardProps {
 
 export default function PetOwnerDashboard({ onAction }: PetOwnerDashboardProps) {
   const { userName, userRole } = useAuth();
+  const [, setLocation] = useLocation();
 
   const courses = [
     {
@@ -152,12 +154,14 @@ export default function PetOwnerDashboard({ onAction }: PetOwnerDashboardProps) 
           <div>
             <Button
               className="bg-white text-primary font-semibold hover:bg-gray-50 mr-3"
+              onClick={() => setLocation("/courses")}
             >
               강의 둘러보기
             </Button>
             <Button
               variant="outline"
               className="border-2 border-white text-white hover:bg-white/10"
+              onClick={() => setLocation("/events")}
             >
               무료 웨비나 참여
             </Button>
@@ -211,7 +215,7 @@ export default function PetOwnerDashboard({ onAction }: PetOwnerDashboardProps) 
                   className="w-full h-full object-cover"
                 />
               </div>
-              <a href="/my-pets" className="ml-2 text-xs text-primary hover:text-primary/80">관리하기</a>
+              <Link href="/my-pets" className="ml-2 text-xs text-primary hover:text-primary/80">관리하기</Link>
             </div>
           </div>
         </Card>
@@ -237,7 +241,7 @@ export default function PetOwnerDashboard({ onAction }: PetOwnerDashboardProps) 
               <div className="w-6 h-6 rounded-full bg-blue-500 text-white flex items-center justify-center text-xs -ml-1">
                 <Award className="h-3 w-3" />
               </div>
-              <a href="/my-badges" className="ml-2 text-xs text-primary hover:text-primary/80">모두 보기</a>
+              <Link href="/my-badges" className="ml-2 text-xs text-primary hover:text-primary/80">모두 보기</Link>
             </div>
           </div>
         </Card>
@@ -271,7 +275,7 @@ export default function PetOwnerDashboard({ onAction }: PetOwnerDashboardProps) 
       <div className="mb-12">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-xl font-bold text-gray-800 dark:text-white">진행 중인 강의</h2>
-          <a href="/my-courses" className="text-sm text-primary hover:text-primary/80 font-medium">모두 보기</a>
+          <Link href="/my-courses" className="text-sm text-primary hover:text-primary/80 font-medium">모두 보기</Link>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -340,7 +344,7 @@ export default function PetOwnerDashboard({ onAction }: PetOwnerDashboardProps) 
       <div className="mb-12">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-xl font-bold text-gray-800 dark:text-white">내 반려견을 위한 맞춤 추천</h2>
-          <a href="/recommendations" className="text-sm text-primary hover:text-primary/80 font-medium">더 많은 추천</a>
+          <Link href="/recommendations" className="text-sm text-primary hover:text-primary/80 font-medium">더 많은 추천</Link>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -380,7 +384,7 @@ export default function PetOwnerDashboard({ onAction }: PetOwnerDashboardProps) 
       <div>
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-xl font-bold text-gray-800 dark:text-white">인기 커뮤니티 소식</h2>
-          <a href="/community" className="text-sm text-primary hover:text-primary/80 font-medium">커뮤니티 가기</a>
+          <Link href="/community" className="text-sm text-primary hover:text-primary/80 font-medium">커뮤니티 가기</Link>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
