@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams, Link } from "wouter";
+import { Link, useRoute } from "wouter";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { Avatar } from "@/components/ui/Avatar";
@@ -24,8 +24,10 @@ interface Section {
 }
 
 export default function CourseDetail() {
-  const { id } = useParams();
-  const courseId = parseInt(id || "1");
+  // wouter는 useParams 대신 useRoute를 사용
+  const [match, params] = useRoute<{ id: string }>("/courses/:id");
+  const courseId = match && params ? parseInt(params.id) : 1;
+  console.log("강의 상세 페이지:", courseId);
   const { isAuthenticated } = useAuth();
   const [activeTab, setActiveTab] = useState("overview");
   const [isEnrolled, setIsEnrolled] = useState(false);
