@@ -44,8 +44,7 @@ const ContactPage = lazy(() => import('./pages/help/contact'));
 
 // Auth Pages
 import LoginPage from "./pages/auth/login";
-// 임시로 로그인 페이지를 재사용 (회원가입 페이지가 아직 없을 경우)
-import RegisterPage from "./pages/auth/login";
+import RegisterPage from "./pages/auth/login"; // 임시로 로그인 페이지를 재사용
 
 console.log('App initialized - CourseDetail component:', CourseDetail);
 
@@ -122,6 +121,34 @@ function AuthenticatedRoutes() {
             </Suspense>
           )}
         </Route>
+        <Route path="/help/faq">
+          {() => (
+            <Suspense fallback={<div className="p-8 text-center">FAQ 페이지 로딩 중...</div>}>
+              <FAQPage />
+            </Suspense>
+          )}
+        </Route>
+        <Route path="/help/guide">
+          {() => (
+            <Suspense fallback={<div className="p-8 text-center">이용 가이드 로딩 중...</div>}>
+              <GuidePage />
+            </Suspense>
+          )}
+        </Route>
+        <Route path="/help/about">
+          {() => (
+            <Suspense fallback={<div className="p-8 text-center">회사 소개 로딩 중...</div>}>
+              <AboutPage />
+            </Suspense>
+          )}
+        </Route>
+        <Route path="/help/contact">
+          {() => (
+            <Suspense fallback={<div className="p-8 text-center">문의하기 페이지 로딩 중...</div>}>
+              <ContactPage />
+            </Suspense>
+          )}
+        </Route>
         <Route path="/modal-test" component={TrainerTest} />
         <Route component={NotFound} />
       </Switch>
@@ -173,6 +200,34 @@ function UnauthenticatedRoutes() {
           {() => (
             <Suspense fallback={<div className="p-8 text-center">이벤트 상세 페이지 로딩 중...</div>}>
               <EventDetailPage />
+            </Suspense>
+          )}
+        </Route>
+        <Route path="/help/faq">
+          {() => (
+            <Suspense fallback={<div className="p-8 text-center">FAQ 페이지 로딩 중...</div>}>
+              <FAQPage />
+            </Suspense>
+          )}
+        </Route>
+        <Route path="/help/guide">
+          {() => (
+            <Suspense fallback={<div className="p-8 text-center">이용 가이드 로딩 중...</div>}>
+              <GuidePage />
+            </Suspense>
+          )}
+        </Route>
+        <Route path="/help/about">
+          {() => (
+            <Suspense fallback={<div className="p-8 text-center">회사 소개 로딩 중...</div>}>
+              <AboutPage />
+            </Suspense>
+          )}
+        </Route>
+        <Route path="/help/contact">
+          {() => (
+            <Suspense fallback={<div className="p-8 text-center">문의하기 페이지 로딩 중...</div>}>
+              <ContactPage />
             </Suspense>
           )}
         </Route>
