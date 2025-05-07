@@ -88,18 +88,28 @@
 }
 
 /* Theme toggle animation */
+/* Theme transitions */
+:root {
+  --theme-transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+body {
+  transition: var(--theme-transition);
+}
+
+/* Theme toggle animations */
 .theme-toggle-sun {
-  @apply absolute transform-gpu origin-center transition-transform duration-500;
+  @apply absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 transform-gpu origin-center transition-all duration-300;
 }
 
 .dark .theme-toggle-sun {
-  @apply scale-0;
+  @apply rotate-90 opacity-0;
 }
 
 .theme-toggle-moon {
-  @apply absolute transform-gpu origin-center transition-transform duration-500 scale-0;
+  @apply absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 transform-gpu origin-center transition-all duration-300 rotate-90 opacity-0;
 }
 
 .dark .theme-toggle-moon {
-  @apply scale-100;
+  @apply rotate-0 opacity-100;
 }
