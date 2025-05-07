@@ -300,7 +300,10 @@ export default function Institutes() {
                   </div>
                 </div>
                 
-                <Button className="w-full">
+                <Button 
+                  className="w-full"
+                  onClick={() => window.location.href = `/institutes/${institute.id}`}
+                >
                   상세 정보
                 </Button>
               </div>
@@ -325,6 +328,24 @@ export default function Institutes() {
             다음
           </Button>
         </nav>
+      </div>
+      
+      {/* 교육 기관 등록 요청 섹션 */}
+      <div className="mt-12 bg-gray-50 dark:bg-gray-800 rounded-lg p-6">
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+          <div>
+            <h2 className="text-xl font-bold mb-2 text-gray-900 dark:text-white">교육 기관 등록 요청</h2>
+            <p className="text-gray-600 dark:text-gray-300 max-w-2xl">
+              반려견 교육 기관을 운영하고 계신가요? PetEdu 플랫폼에 등록하여 더 많은 반려인에게 교육 서비스를 제공해보세요.
+            </p>
+          </div>
+          <Button 
+            className="shrink-0"
+            onClick={() => window.location.href = '/institutes/register'}
+          >
+            등록 요청하기
+          </Button>
+        </div>
       </div>
     </div>
   );
