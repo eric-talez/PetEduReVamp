@@ -5,10 +5,15 @@ import { Badge } from "@/components/ui/Badge";
 import { Avatar } from "@/components/ui/Avatar";
 import { Search, Filter, MapPin, Star, Briefcase, Award, Sparkles, X } from "lucide-react";
 
+import { useLocation } from "wouter";
+import { useAuth } from "@/SimpleApp"; // SimpleApp에서 useAuth 훅 사용
+
 export default function Trainers() {
   const [filter, setFilter] = useState("all");
   const [selectedTrainer, setSelectedTrainer] = useState<any>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [, setLocation] = useLocation();
+  const { isAuthenticated } = useAuth(); // useAuth 훅을 사용하여 로그인 상태 확인
   
   const openTrainerModal = (trainer: any) => {
     console.log("훈련사 프로필 열기:", trainer.name);
@@ -19,6 +24,28 @@ export default function Trainers() {
   const closeTrainerModal = () => {
     console.log("훈련사 프로필 닫기");
     setIsModalOpen(false);
+  };
+  
+  const handleViewCourses = (trainerId: number) => {
+    console.log(`${trainerId}번 훈련사의 강의 목록 보기`);
+    closeTrainerModal();
+    setLocation(`/courses?trainer=${trainerId}`);
+  };
+  
+  const handleBookConsultation = (trainerId: number) => {
+    console.log(`${trainerId}번 훈련사와 상담 예약하기`);
+    
+    // useAuth 훅으로 로그인 상태 확인
+    if (isAuthenticated) {
+      console.log("로그인 상태: 상담 예약 페이지로 이동");
+      closeTrainerModal();
+      setLocation(`/video-call?trainer=${trainerId}`);
+    } else {
+      console.log("비로그인 상태: 로그인 페이지로 이동");
+      alert("상담 예약은 로그인 후 이용 가능합니다.");
+      closeTrainerModal();
+      setLocation("/auth/login?redirect=/trainers");
+    }
   };
   
   const trainers = [
@@ -476,8 +503,19 @@ export default function Trainers() {
                     {selectedTrainer.name} 훈련사는 총 {selectedTrainer.courses}개의 강의를 진행하고 있습니다.
                   </p>
                   <div className="flex flex-col sm:flex-row gap-3">
-                    <Button className="flex-1">강의 보기</Button>
-                    <Button className="flex-1" variant="outline">상담 예약</Button>
+                    <Button 
+                      className="flex-1"
+                      onClick={() => handleViewCourses(selectedTrainer.id)}
+                    >
+                      강의 보기
+                    </Button>
+                    <Button 
+                      className="flex-1" 
+                      variant="outline"
+                      onClick={() => handleBookConsultation(selectedTrainer.id)}
+                    >
+                      상담 예약
+                    </Button>
                   </div>
                 </div>
               </div>
