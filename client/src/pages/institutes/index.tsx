@@ -302,7 +302,10 @@ export default function Institutes() {
                 
                 <Button 
                   className="w-full"
-                  onClick={() => window.location.href = `/institutes/${institute.id}`}
+                  onClick={() => {
+                    console.log("교육기관 상세 페이지 이동: ", institute.id);
+                    window.location.href = `/institutes/${institute.id}`;
+                  }}
                 >
                   상세 정보
                 </Button>
@@ -341,7 +344,10 @@ export default function Institutes() {
           </div>
           <Button 
             className="shrink-0"
-            onClick={() => window.location.href = '/institutes/register'}
+            onClick={() => {
+              console.log("교육기관 등록 요청 페이지 이동");
+              window.location.href = '/institutes/register';
+            }}
           >
             등록 요청하기
           </Button>

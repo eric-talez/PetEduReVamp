@@ -111,15 +111,15 @@ function UnauthenticatedRoutes() {
         <Route path="/video-training/:id" component={VideoTrainingDetailPage} />
         <Route path="/trainers" component={TrainersPage} />
         <Route path="/institutes" component={InstitutesPage} />
-        <Route path="/institutes/:id" component={() => {
-          // Dynamically import institute detail page to avoid requiring the full module upfront
-          const InstituteDetailPage = require('./pages/institutes/[id]').default;
-          return <InstituteDetailPage />;
-        }} />
         <Route path="/institutes/register" component={() => {
           // Dynamically import institute registration page
           const InstituteRegisterPage = require('./pages/institutes/register').default;
           return <InstituteRegisterPage />;
+        }} />
+        <Route path="/institutes/:id" component={() => {
+          // Import institute detail page
+          const InstituteDetailPage = require('./pages/institutes/detail').default;
+          return <InstituteDetailPage />;
         }} />
         <Route path="/community" component={CommunityPage} />
         <Route path="/video-call" component={VideoCallPage} />
