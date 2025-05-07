@@ -700,7 +700,7 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                 ) : (
                   <div className="mt-auto mb-4 px-2">
                     <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-2 flex justify-center">
-                      <ActivityIcon className="w-5 h-5 text-primary" title="서비스 현황" />
+                      <Activity className="w-5 h-5 text-primary" aria-label="서비스 현황" />
                     </div>
                   </div>
                 )}
@@ -710,22 +710,30 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
 
           {/* Service Statistics for non-authenticated users at bottom */}
           {!isAuthenticated && (
-            <div className="mt-auto mb-4 px-3">
-              <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3 text-xs">
-                <div className="flex items-center justify-between">
-                  <span className="text-gray-600 dark:text-gray-300">실시간 이용자</span>
-                  <span className="font-semibold text-primary">2,458명</span>
-                </div>
-                <div className="flex items-center justify-between mt-2">
-                  <span className="text-gray-600 dark:text-gray-300">사용자 분포</span>
-                  <span className="font-semibold text-blue-500">반려인 75%</span>
-                </div>
-                <div className="flex items-center justify-between mt-2">
-                  <span className="text-gray-600 dark:text-gray-300">평균 체류시간</span>
-                  <span className="font-semibold text-green-500">32분</span>
+            expanded ? (
+              <div className="mt-auto mb-4 px-3">
+                <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3 text-xs">
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-600 dark:text-gray-300">실시간 이용자</span>
+                    <span className="font-semibold text-primary">2,458명</span>
+                  </div>
+                  <div className="flex items-center justify-between mt-2">
+                    <span className="text-gray-600 dark:text-gray-300">사용자 분포</span>
+                    <span className="font-semibold text-blue-500">반려인 75%</span>
+                  </div>
+                  <div className="flex items-center justify-between mt-2">
+                    <span className="text-gray-600 dark:text-gray-300">평균 체류시간</span>
+                    <span className="font-semibold text-green-500">32분</span>
+                  </div>
                 </div>
               </div>
-            </div>
+            ) : (
+              <div className="mt-auto mb-4 px-2">
+                <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-2 flex justify-center">
+                  <Activity className="w-5 h-5 text-primary" aria-label="서비스 현황" />
+                </div>
+              </div>
+            )
           )}
         </div>
       </div>
