@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Avatar } from '@/components/ui/Avatar';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
-import { Calendar, Clock, MapPin, MessageSquare, Phone, Star, VideoIcon, X } from 'lucide-react';
+import { Calendar, Clock, MapPin, MessageSquare, Phone, Star, VideoIcon, X, Award, Briefcase, Sparkles } from 'lucide-react';
 
 // 훈련사 정보 타입 정의
 export interface Trainer {
