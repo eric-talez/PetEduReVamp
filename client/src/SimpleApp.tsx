@@ -252,6 +252,7 @@ function AuthenticatedRoutes() {
         
         {/* 일반 메뉴 */}
         <Route path="/courses" component={Courses} />
+        <Route path="/course/:id" component={CourseDetail} />
         <Route path="/trainers" component={Trainers} />
         <Route path="/institutes" component={Institutes} />
         <Route path="/community" component={Community} />

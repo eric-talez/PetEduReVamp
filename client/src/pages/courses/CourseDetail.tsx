@@ -26,8 +26,11 @@ interface Section {
 export default function CourseDetail() {
   // wouter는 useParams 대신 useRoute를 사용
   const [match, params] = useRoute<{ id: string }>("/courses/:id");
-  const courseId = match && params ? parseInt(params.id) : 1;
-  console.log("강의 상세 페이지 로드:", courseId, match, params);
+  const [matchAlt, paramsAlt] = useRoute<{ id: string }>("/course/:id");
+  const courseId = 
+    (match && params) ? parseInt(params.id) : 
+    (matchAlt && paramsAlt) ? parseInt(paramsAlt.id) : 1;
+  console.log("강의 상세 페이지 로드:", courseId, match, params, matchAlt, paramsAlt);
   console.log("현재 URL:", window.location.pathname, window.location.href);
   const { isAuthenticated } = useAuth();
   const [activeTab, setActiveTab] = useState("overview");
