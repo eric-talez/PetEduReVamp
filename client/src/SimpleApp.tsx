@@ -1,5 +1,5 @@
 import { Switch, Route } from "wouter";
-import { ReactNode, useState, useEffect, createContext, useContext } from "react";
+import React, { ReactNode, useState, useEffect, createContext, useContext, lazy, Suspense } from "react";
 
 // 페이지 컴포넌트 임포트
 import Home from "./pages/Home";
@@ -348,22 +348,46 @@ function UnauthenticatedRoutes() {
         <Route path="/events" component={EventsPage} />
         <Route path="/events/calendar" component={EventCalendarPage} />
         <Route path="/events/:id" component={EventDetailPage} />
-        <Route path="/help/faq" component={() => {
-          const FAQPage = require('./pages/help/faq').default;
-          return <FAQPage />;
-        }} />
-        <Route path="/help/guide" component={(() => {
-          const GuidePage = require('./pages/help/guide').default;
-          return <GuidePage />;
-        })} />
-        <Route path="/help/about" component={(() => {
-          const AboutPage = require('./pages/help/about').default;
-          return <AboutPage />;
-        })} />
-        <Route path="/help/contact" component={(() => {
-          const ContactPage = require('./pages/help/contact').default;
-          return <ContactPage />;
-        })} />
+        <Route path="/help/faq">
+          {() => {
+            const FAQPage = lazy(() => import('./pages/help/faq'));
+            return (
+              <Suspense fallback={<div className="p-8 text-center">FAQ 페이지 로딩 중...</div>}>
+                <FAQPage />
+              </Suspense>
+            );
+          }}
+        </Route>
+        <Route path="/help/guide">
+          {() => {
+            const GuidePage = lazy(() => import('./pages/help/guide'));
+            return (
+              <Suspense fallback={<div className="p-8 text-center">이용 가이드 로딩 중...</div>}>
+                <GuidePage />
+              </Suspense>
+            );
+          }}
+        </Route>
+        <Route path="/help/about">
+          {() => {
+            const AboutPage = lazy(() => import('./pages/help/about'));
+            return (
+              <Suspense fallback={<div className="p-8 text-center">회사 소개 로딩 중...</div>}>
+                <AboutPage />
+              </Suspense>
+            );
+          }}
+        </Route>
+        <Route path="/help/contact">
+          {() => {
+            const ContactPage = lazy(() => import('./pages/help/contact'));
+            return (
+              <Suspense fallback={<div className="p-8 text-center">문의하기 페이지 로딩 중...</div>}>
+                <ContactPage />
+              </Suspense>
+            );
+          }}
+        </Route>
         <Route path="/" component={Home} />
         <Route>
           {() => {
