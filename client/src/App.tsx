@@ -146,55 +146,72 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       try {
         console.log("Found auth data in localStorage:", storedAuth);
         const parsedAuth = JSON.parse(storedAuth);
-        setAuthState({
-          ...authState,
+        setAuthState(prevState => ({
+          ...prevState,
           isAuthenticated: true,
           isLoading: false,
           userRole: parsedAuth.role || 'user',
           userName: parsedAuth.user || 'User'
-        });
-        console.log("Updated auth state with stored data");
+        }));
+        console.log("Updated auth state with stored data:", parsedAuth);
       } catch (e) {
         console.error('Failed to parse auth data', e);
-        setAuthState({
-          ...authState,
+        setAuthState(prevState => ({
+          ...prevState,
           isLoading: false
-        });
+        }));
       }
     } else {
-      setAuthState({
-        ...authState,
+      setAuthState(prevState => ({
+        ...prevState,
         isLoading: false
-      });
+      }));
+      console.log("No auth data found in localStorage");
     }
 
     // 로그인 이벤트 리스너 등록
     const handleLogin = (e: any) => {
       if (e.detail?.user) {
-        setAuthState({
-          ...authState,
+        const username = e.detail.user.username || e.detail.user.name || 'User';
+        const role = e.detail.user.role || 'user';
+        
+        console.log("Login event received with user:", username, "role:", role);
+        
+        // 로컬 스토리지에 저장
+        localStorage.setItem('petedu_auth', JSON.stringify({
+          user: username,
+          role: role
+        }));
+        console.log("Saved auth data to localStorage");
+        
+        // 상태 업데이트
+        setAuthState(prevState => ({
+          ...prevState,
           isAuthenticated: true,
           isLoading: false,
-          userRole: e.detail.user.role || 'user',
-          userName: e.detail.user.username || e.detail.user.name || 'User'
-        });
-        localStorage.setItem('petedu_auth', JSON.stringify({
-          user: e.detail.user.username || e.detail.user.name,
-          role: e.detail.user.role
+          userRole: role,
+          userName: username
         }));
+        console.log("Updated auth state with login data");
       }
     };
 
     // 로그아웃 이벤트 리스너 등록
     const handleLogout = () => {
-      setAuthState({
-        ...authState,
+      console.log("Logout event received");
+      // 먼저 localStorage에서 인증 데이터 삭제
+      localStorage.removeItem('petedu_auth');
+      console.log("Auth data removed in event handler");
+      
+      // 인증 상태 업데이트
+      setAuthState(prevState => ({
+        ...prevState,
         isAuthenticated: false,
         isLoading: false,
         userRole: null,
         userName: null
-      });
-      localStorage.removeItem('petedu_auth');
+      }));
+      console.log("Auth state updated");
     };
 
     window.addEventListener('login', handleLogin);

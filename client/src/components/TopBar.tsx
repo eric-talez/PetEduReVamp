@@ -17,11 +17,18 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
   const [, setLocation] = useLocation();
   
   const handleLogout = () => {
+    console.log("Logout button clicked");
+    // 먼저 직접 localStorage 삭제
+    localStorage.removeItem('petedu_auth');
+    console.log("Removed auth data from localStorage");
+    
+    // 로그아웃 함수 호출
     logout();
-    // 로그아웃 후 인증 페이지로 이동
-    setTimeout(() => {
-      setLocation("/auth");
-    }, 100); // 약간의 지연을 두어 상태 업데이트 후 리디렉션되도록 함
+    console.log("Called logout function");
+    
+    // 페이지 리디렉션
+    console.log("Redirecting to auth page");
+    window.location.href = "/auth";
   };
   
   const [userMenuOpen, setUserMenuOpen] = useState(false);
