@@ -137,7 +137,7 @@ export default function Courses() {
             description={course.description}
             badge={course.badge}
             trainer={course.trainer}
-            onClick={() => {}}
+            onClick={() => window.location.href = `/course/${course.id}`}
           >
             <div className="flex justify-between items-center mt-4 text-sm">
               <Badge variant="outline">{course.level}</Badge>
