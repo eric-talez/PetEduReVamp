@@ -9,6 +9,7 @@ import CourseDetail from "@/pages/course-detail";
 import Trainers from "@/pages/trainers";
 import Institutes from "@/pages/institutes";
 import Community from "@/pages/community";
+import CommunityPostDetail from "@/pages/community/post-detail";
 import MyCourses from "@/pages/my-courses";
 import MyPets from "@/pages/my-pets";
 import Login from "@/pages/auth/login";
@@ -336,7 +337,7 @@ function UnauthenticatedRoutes() {
         <Route path="/video-call" component={VideoCallPage} />
         <Route path="/institutes" component={Institutes} />
         <Route path="/community" component={Community} />
-        <Route path="/community/post/:id" component={NotFound} />
+        <Route path="/community/post/:id" component={CommunityPostDetail} />
         <Route path="/" component={Home} />
         <Route>
           {() => {
