@@ -177,8 +177,7 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
   const showInstituteMenu = userRole === 'institute-admin' || userRole === 'admin';
   const showAdminMenu = userRole === 'admin';
   const showPetOwnerMenu = userRole === 'pet-owner' || userRole === 'admin';
-  const showBasicMenu = true; // 모든 사용자가 접근 가능한 메뉴min' || userRole === 'admin';
-  const showAdminMenu = userRole === 'admin';
+  const showBasicMenu = true; // 모든 사용자가 접근 가능한 메뉴
   const isPetOwner = userRole === 'pet-owner';
 
 
