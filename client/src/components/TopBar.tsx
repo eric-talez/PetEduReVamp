@@ -67,11 +67,11 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
           {/* Action buttons - Grouped together for better layout */}
           <div className="flex items-center space-x-2">
             {/* Group message, notification and theme toggle together as requested */}
-            <div className="flex items-center space-x-1">
+            <div className="flex items-center space-x-2 border-r border-gray-200 dark:border-gray-700 pr-2 mr-2">
               <Button 
                 variant="ghost" 
                 size="icon"
-                onClick={() => setLocation("/messages")}
+                onClick={() => isAuthenticated ? setLocation("/messages") : setLocation("/auth")}
                 className="relative"
                 aria-label="메시지"
               >
@@ -86,7 +86,7 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
               <Button 
                 variant="ghost" 
                 size="icon"
-                onClick={() => setLocation("/notifications")}
+                onClick={() => isAuthenticated ? setLocation("/notifications") : setLocation("/auth")}
                 className="relative"
                 aria-label="알림"
               >

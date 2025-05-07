@@ -18,14 +18,14 @@ export const ThemeToggle = memo(function ThemeToggle() {
       variant="ghost"
       size="icon"
       onClick={toggleTheme}
-      className="theme-toggle-button relative h-10 w-10 rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700"
+      className="theme-toggle-button relative rounded-md bg-transparent hover:bg-gray-100 dark:hover:bg-gray-800"
       aria-label="Toggle theme"
     >
       {/* 테마에 따라 아이콘 조건부 렌더링 - 불필요한 DOM 관리 최소화 */}
       {theme === "light" ? (
-        <Sun className="theme-toggle-icon h-5 w-5 text-amber-500 animate-fade-in" />
+        <Sun className="theme-toggle-icon h-5 w-5 text-amber-400 animate-fade-in" />
       ) : (
-        <Moon className="theme-toggle-icon h-5 w-5 text-slate-300 animate-fade-in" />
+        <Moon className="theme-toggle-icon h-5 w-5 text-indigo-400 animate-fade-in" />
       )}
     </Button>
   );
