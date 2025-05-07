@@ -3,7 +3,17 @@ import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { Avatar } from "@/components/ui/Avatar";
-import { Search, Filter, MapPin, Star, Briefcase, Award, Sparkles, X } from "lucide-react";
+import { Search, Filter, MapPin, Star, Briefcase, Award, Sparkles, X, AlertCircle } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 import { useLocation } from "wouter";
 import { useAuth } from "@/SimpleApp"; // SimpleApp에서 useAuth 훅 사용
@@ -12,6 +22,8 @@ export default function Trainers() {
   const [filter, setFilter] = useState("all");
   const [selectedTrainer, setSelectedTrainer] = useState<any>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [showMemberAlert, setShowMemberAlert] = useState(false);
+  const [alertMessage, setAlertMessage] = useState({ title: "", description: "" });
   const [, setLocation] = useLocation();
   const { isAuthenticated } = useAuth(); // useAuth 훅을 사용하여 로그인 상태 확인
   
@@ -35,16 +47,40 @@ export default function Trainers() {
   const handleBookConsultation = (trainerId: number) => {
     console.log(`${trainerId}번 훈련사와 상담 예약하기`);
     
-    // 모든 사용자가 예약 페이지로 이동 가능하도록 변경
-    // 예약 페이지 내에서 로그인 상태에 따라 다른 UI 표시
+    if (!isAuthenticated) {
+      closeTrainerModal();
+      setAlertMessage({
+        title: "회원 전용 서비스",
+        description: "상담 예약은 로그인 후 이용 가능합니다. 로그인 페이지로 이동하시겠습니까?"
+      });
+      setShowMemberAlert(true);
+      return;
+    }
+    
     closeTrainerModal();
     setLocation(`/video-call?trainer=${trainerId}`);
   };
   
   const handleCourseReservation = (trainerId: number) => {
     console.log(`${trainerId}번 훈련사의 화상수업 예약하기`);
+    
+    if (!isAuthenticated) {
+      closeTrainerModal();
+      setAlertMessage({
+        title: "회원 전용 서비스",
+        description: "화상수업 예약은 로그인 후 이용 가능합니다. 로그인 페이지로 이동하시겠습니까?"
+      });
+      setShowMemberAlert(true);
+      return;
+    }
+    
     closeTrainerModal();
     setLocation(`/course-reservation?trainer=${trainerId}`);
+  };
+  
+  const handleLoginRedirect = () => {
+    setShowMemberAlert(false);
+    setLocation('/auth');
   };
   
   const trainers = [
@@ -394,6 +430,29 @@ export default function Trainers() {
           </Button>
         </nav>
       </div>
+      
+      {/* 회원 전용 서비스 알림 */}
+      <AlertDialog open={showMemberAlert} onOpenChange={setShowMemberAlert}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center">
+              <AlertCircle className="h-5 w-5 text-amber-500 mr-2" />
+              {alertMessage.title}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {alertMessage.description}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setShowMemberAlert(false)}>
+              취소
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={handleLoginRedirect}>
+              로그인 페이지로 이동
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
       
       {/* 트레이너 프로필 모달 */}
       {isModalOpen && selectedTrainer && (
