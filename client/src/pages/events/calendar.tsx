@@ -6,11 +6,13 @@ import {
   Calendar as CalendarIcon,
   MapPin,
   Clock,
-  Users
+  Users,
+  Search
 } from 'lucide-react';
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 // 임시 데이터 타입 정의

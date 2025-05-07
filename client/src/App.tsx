@@ -26,6 +26,8 @@ import NotFound from "./pages/not-found";
 import TrainerTest from "./pages/TrainerTest";
 import TrainerReservationsPage from "./pages/trainer-dashboard/reservations";
 import InstituteCourseApprovalsPage from "./pages/institute-dashboard/course-approvals";
+import EventsPage from "./pages/events/index";
+import EventCalendarPage from "./pages/events/calendar";
 
 // Auth Pages
 import LoginPage from "./pages/auth/login";
@@ -101,6 +103,17 @@ function AuthenticatedRoutes() {
         <Route path="/shop" component={ShopPage} />
         <Route path="/profile" component={ProfilePage} />
         <Route path="/settings" component={SettingsPage} />
+        <Route path="/events" component={EventsPage} />
+        <Route path="/events/calendar" component={EventCalendarPage} />
+        <Route path="/events/:id" component={() => {
+          try {
+            const EventDetailPage = require('./pages/events/event-detail').default;
+            return <EventDetailPage />;
+          } catch (e) {
+            console.error("이벤트 상세 페이지 로드 오류:", e);
+            return <div>이벤트 상세 페이지를 불러올 수 없습니다.</div>;
+          }
+        }} />
         <Route path="/modal-test" component={TrainerTest} />
         <Route component={NotFound} />
       </Switch>
@@ -145,6 +158,17 @@ function UnauthenticatedRoutes() {
         <Route path="/video-call" component={VideoCallPage} />
         <Route path="/course-reservation" component={CourseReservationPage} />
         <Route path="/locations" component={LocationsPage} />
+        <Route path="/events" component={EventsPage} />
+        <Route path="/events/calendar" component={EventCalendarPage} />
+        <Route path="/events/:id" component={() => {
+          try {
+            const EventDetailPage = require('./pages/events/event-detail').default;
+            return <EventDetailPage />;
+          } catch (e) {
+            console.error("이벤트 상세 페이지 로드 오류:", e);
+            return <div>이벤트 상세 페이지를 불러올 수 없습니다.</div>;
+          }
+        }} />
         <Route path="/modal-test" component={TrainerTest} />
         <Route component={NotFound} />
       </Switch>
