@@ -131,10 +131,10 @@ export default function Institutes() {
         
         <div className="relative h-full flex flex-col justify-center px-6 md:px-10">
           <h1 className="text-white text-xl md:text-3xl font-bold mb-2 md:mb-4 max-w-xl">
-            전문 반려견 교육 기관 찾기
+            반려견 교육 및 서비스 위치 찾기
           </h1>
           <p className="text-white text-sm md:text-base max-w-xl mb-4">
-            다양한 시설과 프로그램을 갖춘 전문 교육 기관에서 체계적인 반려견 교육을 시작하세요.
+            내 주변의 반려견 교육 시설, 전문 훈련소, 관련 서비스 위치 정보를 확인하세요.
           </p>
           
           {/* Search Bar */}
