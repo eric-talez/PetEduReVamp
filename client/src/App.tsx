@@ -59,16 +59,23 @@ function AuthenticatedRoutes() {
 function UnauthenticatedRoutes() {
   return (
     <Switch>
-      <Route path="/auth" component={Login} />
-      <Route path="/courses" component={Courses} />
-      <Route path="/trainers" component={Trainers} />
-      <Route path="/institutes" component={Institutes} />
-      <Route path="/community" component={Community} />
-      <Route path="/:rest*">
-        {() => {
-          window.location.href = "/auth";
-          return null;
-        }}
+      <Route path="/auth">
+        {() => <Login />}
+      </Route>
+      
+      <Route path="*">
+        {() => (
+          <AppLayout>
+            <Switch>
+              <Route path="/courses" component={Courses} />
+              <Route path="/trainers" component={Trainers} />
+              <Route path="/institutes" component={Institutes} />
+              <Route path="/community" component={Community} />
+              <Route path="/" component={Home} />
+              <Route path="/:rest*" component={() => <Login />} />
+            </Switch>
+          </AppLayout>
+        )}
       </Route>
     </Switch>
   );
