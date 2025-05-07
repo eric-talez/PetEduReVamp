@@ -18,6 +18,8 @@ import CourseReservationPage from "./pages/course-reservation/index";
 import MessagesPage from "./pages/messages/index";
 import NotificationsPage from "./pages/notifications/index";
 import ShopPage from "./pages/shop/index";
+import VideoTrainingPage from "./pages/video-training/index";
+import VideoTrainingDetailPage from "./pages/video-training/video";
 import ProfilePage from "./pages/profile/index";
 import SettingsPage from "./pages/settings/index";
 import NotFound from "./pages/not-found";
@@ -49,8 +51,8 @@ function AuthenticatedRoutes() {
         </Route>
         <Route path="/courses" component={CoursesPage} />
         <Route path="/course/:id" component={CourseDetail} />
-        <Route path="/video-training" component={lazy(() => import('@/pages/video-training'))} />
-        <Route path="/video-training/:id" component={lazy(() => import('@/pages/video-training/video'))} />
+        <Route path="/video-training" component={VideoTrainingPage} />
+        <Route path="/video-training/:id" component={VideoTrainingDetailPage} />
         <Route path="/trainers">
           {() => checkAccess(['pet-owner', 'trainer', 'institute-admin', 'admin']) ? <TrainersPage /> : window.location.href = '/'}
         </Route>
@@ -105,8 +107,8 @@ function UnauthenticatedRoutes() {
         <Route path="/" component={Home} />
         <Route path="/courses" component={CoursesPage} />
         <Route path="/course/:id" component={CourseDetail} />
-        <Route path="/video-training" component={lazy(() => import('@/pages/video-training'))} />
-        <Route path="/video-training/:id" component={lazy(() => import('@/pages/video-training/video'))} />
+        <Route path="/video-training" component={VideoTrainingPage} />
+        <Route path="/video-training/:id" component={VideoTrainingDetailPage} />
         <Route path="/trainers" component={TrainersPage} />
         <Route path="/community" component={CommunityPage} />
         <Route path="/video-call" component={VideoCallPage} />
