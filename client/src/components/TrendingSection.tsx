@@ -1,19 +1,20 @@
 import { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
-  LineChart, 
-  Line, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
-  ResponsiveContainer 
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer
 } from 'recharts';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/Button';
 import { Link } from 'wouter';
 import { TrendingUp, Eye, Award, MoveUp } from 'lucide-react';
+import { Star, Users, Clock } from "lucide-react";
 
 // 훈련사 데이터
 const trendingTrainers = [
@@ -413,24 +414,54 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   return null;
 };
 
+const trendingCourses2 = [
+  {
+    title: "기초 복종 훈련 마스터하기",
+    trainer: "김철수 훈련사",
+    rating: 4.8,
+    students: 128,
+    duration: "4주 과정",
+    tags: ["기초훈련", "복종훈련"],
+    image: "https://images.unsplash.com/photo-1587300003388-59208cc962cb"
+  },
+  {
+    title: "분리불안 극복하기",
+    trainer: "박영희 훈련사",
+    rating: 4.9,
+    students: 95,
+    duration: "6주 과정",
+    tags: ["행동교정", "분리불안"],
+    image: "https://images.unsplash.com/photo-1601758228041-f3b2795255f1"
+  },
+  {
+    title: "사회화 트레이닝",
+    trainer: "이지훈 훈련사",
+    rating: 4.7,
+    students: 156,
+    duration: "8주 과정",
+    tags: ["사회화", "행동교정"],
+    image: "https://images.unsplash.com/photo-1588943211346-0908a1fb0b01"
+  }
+];
+
 export function TrendingSection() {
   const [selectedTab, setSelectedTab] = useState('trainers');
-  
+
   const renderGraphCard = (item: any) => (
     <ResponsiveContainer width="100%" height={80}>
       <LineChart data={item.dailyData} margin={{ top: 5, right: 5, bottom: 5, left: 5 }}>
-        <Line 
-          type="monotone" 
-          dataKey="views" 
-          stroke="#8884d8" 
-          strokeWidth={2} 
+        <Line
+          type="monotone"
+          dataKey="views"
+          stroke="#8884d8"
+          strokeWidth={2}
           dot={false}
         />
         <Tooltip content={<CustomTooltip />} />
       </LineChart>
     </ResponsiveContainer>
   );
-  
+
   const renderTrainerItem = (trainer: any, index: number) => (
     <div key={trainer.id} className="flex items-center border-b border-gray-100 dark:border-gray-800 py-3">
       <span className="text-lg font-bold w-6 text-gray-400">{index + 1}</span>
@@ -453,7 +484,7 @@ export function TrendingSection() {
       </div>
     </div>
   );
-  
+
   const renderContentItem = (content: any, index: number) => (
     <div key={content.id} className="flex border-b border-gray-100 dark:border-gray-800 py-3">
       <span className="text-lg font-bold w-6 text-gray-400">{index + 1}</span>
@@ -476,7 +507,7 @@ export function TrendingSection() {
       </div>
     </div>
   );
-  
+
   const renderPostItem = (post: any, index: number) => (
     <div key={post.id} className="flex border-b border-gray-100 dark:border-gray-800 py-3">
       <span className="text-lg font-bold w-6 text-gray-400">{index + 1}</span>
@@ -499,7 +530,7 @@ export function TrendingSection() {
       </div>
     </div>
   );
-  
+
   const renderCourseItem = (course: any, index: number) => (
     <div key={course.id} className="flex border-b border-gray-100 dark:border-gray-800 py-3">
       <span className="text-lg font-bold w-6 text-gray-400">{index + 1}</span>
@@ -522,7 +553,47 @@ export function TrendingSection() {
       </div>
     </div>
   );
-  
+
+  const renderCourseItem2 = (course: any, index: number) => (
+    <div key={index} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <Card key={index} className="overflow-hidden">
+          <div className="aspect-video relative">
+            <img
+              src={course.image}
+              alt={course.title}
+              className="absolute inset-0 w-full h-full object-cover"
+            />
+          </div>
+          <div className="p-4">
+            <div className="flex gap-2 mb-2">
+              {course.tags.map((tag, i) => (
+                <Badge key={i} variant="secondary">{tag}</Badge>
+              ))}
+            </div>
+            <h3 className="text-lg font-semibold mb-2">{course.title}</h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">
+              {course.trainer}
+            </p>
+            <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
+              <div className="flex items-center gap-1">
+                <Star className="w-4 h-4 text-yellow-400" />
+                <span>{course.rating}</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <Users className="w-4 h-4" />
+                <span>{course.students}명</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <Clock className="w-4 h-4" />
+                <span>{course.duration}</span>
+              </div>
+            </div>
+          </div>
+        </Card>
+    </div>
+  );
+
+
   return (
     <Card className="p-0 overflow-hidden">
       <div className="p-4 bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
@@ -530,10 +601,10 @@ export function TrendingSection() {
           <Award className="mr-2 text-primary" /> 실시간 인기 차트
         </h3>
       </div>
-      
+
       <Tabs value={selectedTab} onValueChange={setSelectedTab} className="w-full">
         <TabsList className="grid grid-cols-4 h-auto p-0">
-          <TabsTrigger value="trainers" className="py-3 rounded-none data-[state=active]:bg-gray-100 dark:data-[state=active]:bg-gray-800">
+          <TabsTrigger value="trainers" className="py-3 rounded-nonedata-[state=active]:bg-gray-100 dark:data-[state=active]:bg-gray-800">
             인기 훈련사
           </TabsTrigger>
           <TabsTrigger value="contents" className="py-3 rounded-none data-[state=active]:bg-gray-100 dark:data-[state=active]:bg-gray-800">
@@ -546,7 +617,7 @@ export function TrendingSection() {
             인기 강좌
           </TabsTrigger>
         </TabsList>
-        
+
         <TabsContent value="trainers" className="m-0 p-4 bg-white dark:bg-gray-950">
           <div className="space-y-1">
             {trendingTrainers.map((trainer, index) => renderTrainerItem(trainer, index))}
@@ -558,7 +629,7 @@ export function TrendingSection() {
             </Link>
           </Button>
         </TabsContent>
-        
+
         <TabsContent value="contents" className="m-0 p-4 bg-white dark:bg-gray-950">
           <div className="space-y-1">
             {trendingContents.map((content, index) => renderContentItem(content, index))}
@@ -570,7 +641,7 @@ export function TrendingSection() {
             </Link>
           </Button>
         </TabsContent>
-        
+
         <TabsContent value="posts" className="m-0 p-4 bg-white dark:bg-gray-950">
           <div className="space-y-1">
             {trendingPosts.map((post, index) => renderPostItem(post, index))}
@@ -582,7 +653,7 @@ export function TrendingSection() {
             </Link>
           </Button>
         </TabsContent>
-        
+
         <TabsContent value="courses" className="m-0 p-4 bg-white dark:bg-gray-950">
           <div className="space-y-1">
             {trendingCourses.map((course, index) => renderCourseItem(course, index))}
@@ -593,6 +664,9 @@ export function TrendingSection() {
               <MoveUp size={16} className="ml-1 rotate-45" />
             </Link>
           </Button>
+        </TabsContent>
+        <TabsContent value="courses2" className="m-0 p-4 bg-white dark:bg-gray-950">
+          {trendingCourses2.map((course, index) => renderCourseItem2(course, index))}
         </TabsContent>
       </Tabs>
     </Card>
