@@ -252,7 +252,6 @@ function AuthenticatedRoutes() {
         
         {/* 일반 메뉴 */}
         <Route path="/courses" component={Courses} />
-        <Route path="/course-detail/:id" component={CourseDetail} />
         <Route path="/trainers" component={Trainers} />
         <Route path="/institutes" component={Institutes} />
         <Route path="/community" component={Community} />
@@ -307,7 +306,7 @@ function UnauthenticatedRoutes() {
       <Switch>
         <Route path="/auth" component={Login} />
         <Route path="/courses" component={Courses} />
-        <Route path="/course-detail/:id" component={CourseDetail} />
+        <Route path="/course/:id" component={CourseDetail} />
         <Route path="/trainers" component={Trainers} />
         <Route path="/institutes" component={Institutes} />
         <Route path="/community" component={Community} />

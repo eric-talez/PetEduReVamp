@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Avatar } from "@/components/ui/Avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Star, Clock, Calendar, CheckCircle, PlayCircle, List, Download, Share2, Bookmark, Heart } from "lucide-react";
-import { useAuth } from "../SimpleApp";
+import { useAuth } from "../../SimpleApp";
 
 // 커리큘럼 타입 정의
 interface Lesson {
@@ -26,10 +26,8 @@ interface Section {
 export default function CourseDetail() {
   // URL에서 강의 ID 파라미터 가져오기
   const [match, params] = useRoute<{ id: string }>("/course/:id");
-  // 다른 라우트 형식으로도 체크
-  const [match2, params2] = useRoute<{ id: string }>("/course-detail/:id");
-  console.log('CourseDetail rendering - Route match:', match, 'params:', params, 'match2:', match2, 'params2:', params2, 'location:', window.location.pathname);
-  const courseId = (match && params) ? parseInt(params.id) : (match2 && params2) ? parseInt(params2.id) : 1;
+  console.log('CourseDetail rendering - Route match:', match, 'params:', params, 'location:', window.location.pathname);
+  const courseId = match && params ? parseInt(params.id) : 1;
   console.log("강의 상세 페이지 로딩:", courseId, match, params);
   
   const { isAuthenticated } = useAuth();
@@ -318,128 +316,126 @@ export default function CourseDetail() {
 
           {/* 탭 영역 */}
           <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-6">
-            <TabsList className="mb-4 border-b border-gray-200 dark:border-gray-700 w-full flex bg-transparent">
-              <TabsTrigger value="overview" className="flex-1 rounded-none py-3">강의 소개</TabsTrigger>
-              <TabsTrigger value="curriculum" className="flex-1 rounded-none py-3">커리큘럼</TabsTrigger>
-              <TabsTrigger value="instructor" className="flex-1 rounded-none py-3">강사 소개</TabsTrigger>
-              <TabsTrigger value="reviews" className="flex-1 rounded-none py-3">수강평</TabsTrigger>
+            <TabsList className="w-full grid grid-cols-3 mb-4">
+              <TabsTrigger value="about">강의 소개</TabsTrigger>
+              <TabsTrigger value="curriculum">커리큘럼</TabsTrigger>
+              <TabsTrigger value="reviews">수강평</TabsTrigger>
             </TabsList>
-            
+
             {/* 강의 소개 탭 */}
-            <TabsContent value="overview" className="pt-4">
-              <div className="space-y-6">
-                <h2 className="text-2xl font-bold">강의 소개</h2>
-                <p className="whitespace-pre-line text-gray-700 dark:text-gray-300">
-                  {course.fullDescription}
-                </p>
-                
-                {/* 강의 정보 */}
-                <div className="mt-8">
-                  <h3 className="text-xl font-semibold mb-4">강의 정보</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="flex items-center">
-                      <Clock className="h-5 w-5 text-gray-500 mr-2" />
-                      <span>총 수업 시간: {course.totalHours}</span>
-                    </div>
-                    <div className="flex items-center">
-                      <List className="h-5 w-5 text-gray-500 mr-2" />
-                      <span>총 {course.lectures}개 강의</span>
-                    </div>
-                    <div className="flex items-center">
-                      <Calendar className="h-5 w-5 text-gray-500 mr-2" />
-                      <span>{course.lastUpdated}</span>
-                    </div>
-                    <div className="flex items-center">
-                      <Badge variant={
-                        course.level === "초급" ? "success" : 
-                        course.level === "중급" ? "info" : "secondary"
-                      }>
-                        {course.level}
-                      </Badge>
-                    </div>
-                  </div>
-                </div>
-                
-                {/* 수강 대상 및 선수 조건 */}
-                <div className="mt-8">
-                  <h3 className="text-xl font-semibold mb-4">수강 전 준비사항</h3>
-                  <ul className="list-disc pl-5 space-y-2">
-                    {course.requirements.map((req, index) => (
-                      <li key={index} className="text-gray-700 dark:text-gray-300">{req}</li>
-                    ))}
-                  </ul>
-                </div>
-                
-                {/* 강의 포함 내용 */}
-                <div className="mt-8">
-                  <h3 className="text-xl font-semibold mb-4">이 강의에 포함된 내용</h3>
-                  <ul className="space-y-2">
-                    {course.includes.map((item, index) => (
-                      <li key={index} className="flex items-center">
-                        <CheckCircle className="h-5 w-5 text-primary mr-2" />
-                        <span>{item}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-                
-                {/* 강의 태그 */}
-                <div className="mt-8">
-                  <div className="flex flex-wrap gap-2">
-                    {course.tags.map((tag, index) => (
-                      <Badge key={index} variant="outline" className="text-xs">
-                        {tag}
-                      </Badge>
-                    ))}
+            <TabsContent value="about" className="space-y-6">
+              <div className="prose prose-sm max-w-none dark:prose-invert">
+                <h2 className="text-2xl font-bold mb-6">강의 소개</h2>
+                <p className="whitespace-pre-line text-gray-700 dark:text-gray-300">{course.fullDescription}</p>
+              </div>
+
+              <div>
+                <h3 className="text-xl font-semibold mt-8 mb-4">포함 사항</h3>
+                <ul className="space-y-2">
+                  {course.includes.map((item, index) => (
+                    <li key={index} className="flex items-start">
+                      <CheckCircle className="h-5 w-5 text-primary mt-0.5 mr-2" />
+                      <span className="text-gray-700 dark:text-gray-300">{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <div>
+                <h3 className="text-xl font-semibold mt-8 mb-4">수강 요건</h3>
+                <ul className="space-y-2">
+                  {course.requirements.map((item, index) => (
+                    <li key={index} className="flex items-start">
+                      <span className="text-primary mr-2">•</span>
+                      <span className="text-gray-700 dark:text-gray-300">{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <div>
+                <h2 className="text-2xl font-bold mb-6">강사 소개</h2>
+                <div className="flex items-start space-x-4">
+                  <Avatar
+                    src={course.trainer.avatar}
+                    alt={course.trainer.name}
+                    className="w-14 h-14"
+                  />
+                  <div>
+                    <h3 className="font-bold text-lg">{course.trainer.name}</h3>
+                    <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">{course.trainer.bio}</p>
+                    <p className="mt-4 text-gray-700 dark:text-gray-300">{course.trainer.description}</p>
                   </div>
                 </div>
               </div>
             </TabsContent>
-            
+
             {/* 커리큘럼 탭 */}
-            <TabsContent value="curriculum" className="pt-4">
+            <TabsContent value="curriculum">
               <div>
-                <h2 className="text-2xl font-bold mb-6">강의 커리큘럼</h2>
-                <p className="text-gray-600 dark:text-gray-300 mb-4">
-                  총 {curriculum.length}개 섹션, {allLessons.length}개 강의 ({course.totalHours})
-                </p>
-                
+                <h2 className="text-2xl font-bold mb-6">커리큘럼</h2>
+                <div className="text-sm text-gray-500 dark:text-gray-400 mb-6 flex flex-wrap gap-4">
+                  <div className="flex items-center">
+                    <List className="h-4 w-4 mr-1" />
+                    <span>{curriculum.length} 섹션</span>
+                  </div>
+                  <div className="flex items-center">
+                    <PlayCircle className="h-4 w-4 mr-1" />
+                    <span>{course.lectures} 강의</span>
+                  </div>
+                  <div className="flex items-center">
+                    <Clock className="h-4 w-4 mr-1" />
+                    <span>총 {course.totalHours}</span>
+                  </div>
+                  <div className="flex items-center">
+                    <Calendar className="h-4 w-4 mr-1" />
+                    <span>{course.lastUpdated}</span>
+                  </div>
+                </div>
+
+                {/* 커리큘럼 아코디언 */}
                 <div className="space-y-4">
                   {curriculum.map((section) => (
                     <div key={section.id} className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
-                      <div className="bg-gray-50 dark:bg-gray-800 px-4 py-3 border-b border-gray-200 dark:border-gray-700">
-                        <h3 className="font-semibold">{section.title}</h3>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">
-                          {section.lessons.length}개 강의
+                      <div className="bg-gray-50 dark:bg-gray-800 p-4">
+                        <h3 className="font-semibold text-base">{section.title}</h3>
+                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                          {section.lessons.length} 강의 • {section.lessons.reduce((acc, lesson) => {
+                            if (lesson.duration.includes('분')) return acc;
+                            const [min, sec] = lesson.duration.split(':').map(Number);
+                            return acc + min + (sec / 60);
+                          }, 0).toFixed(0)}분
                         </p>
                       </div>
                       <div className="divide-y divide-gray-200 dark:divide-gray-700">
                         {section.lessons.map((lesson) => (
                           <div 
                             key={lesson.id} 
-                            className={`px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer flex items-center justify-between ${activeVideo?.id === lesson.id ? 'bg-primary/10 border-l-4 border-primary' : ''}`}
+                            className={`p-4 flex justify-between items-center hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer ${activeVideo?.id === lesson.id ? 'bg-primary/5' : ''}`}
                             onClick={() => handleWatchLesson(lesson)}
                           >
-                            <div className="flex items-center">
-                              {lesson.type === 'video' ? (
-                                <PlayCircle className="h-5 w-5 text-gray-500 mr-3" />
-                              ) : lesson.type === 'document' ? (
-                                <Download className="h-5 w-5 text-gray-500 mr-3" />
-                              ) : (
-                                <List className="h-5 w-5 text-gray-500 mr-3" />
-                              )}
+                            <div className="flex items-start">
+                              <div className="mr-3 mt-1">
+                                {lesson.type === 'video' ? (
+                                  <PlayCircle className="h-5 w-5 text-primary" />
+                                ) : lesson.type === 'document' ? (
+                                  <Download className="h-5 w-5 text-primary" />
+                                ) : (
+                                  <List className="h-5 w-5 text-primary" />
+                                )}
+                              </div>
                               <div>
-                                <p className="font-medium text-sm">{lesson.title}</p>
-                                <p className="text-xs text-gray-500 dark:text-gray-400">
+                                <h4 className="font-medium text-sm">{lesson.title}</h4>
+                                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                                   {lesson.type === 'video' ? '비디오' : lesson.type === 'document' ? '문서' : '퀴즈'} • {lesson.duration}
                                 </p>
                               </div>
                             </div>
-                            <div className="flex items-center ml-2">
-                              {lesson.preview && (
-                                <Badge variant="info" className="text-xs">미리보기</Badge>
-                              )}
-                            </div>
+                            {lesson.preview && (
+                              <Badge variant="outline" className="ml-2">
+                                미리보기
+                              </Badge>
+                            )}
                           </div>
                         ))}
                       </div>
@@ -448,177 +444,172 @@ export default function CourseDetail() {
                 </div>
               </div>
             </TabsContent>
-            
-            {/* 강사 소개 탭 */}
-            <TabsContent value="instructor" className="pt-4">
-              <div>
-                <h2 className="text-2xl font-bold mb-6">강사 소개</h2>
-                <div className="flex items-start mb-6">
-                  <Avatar src={course.trainer.avatar} alt={course.trainer.name} className="w-16 h-16 rounded-full mr-4" />
-                  <div>
-                    <h3 className="text-xl font-semibold">{course.trainer.name}</h3>
-                    <p className="text-gray-600 dark:text-gray-300 text-sm">{course.trainer.bio}</p>
-                    <Link href={`/trainers/${course.trainer.id}`}>
-                      <Button variant="link" className="p-0 h-auto mt-2 text-primary">
-                        강사 프로필 보기
-                      </Button>
-                    </Link>
-                  </div>
-                </div>
-                <div className="mt-6">
-                  <p className="whitespace-pre-line text-gray-700 dark:text-gray-300">
-                    {course.trainer.description}
-                  </p>
-                </div>
-              </div>
-            </TabsContent>
-            
+
             {/* 수강평 탭 */}
-            <TabsContent value="reviews" className="pt-4">
+            <TabsContent value="reviews">
               <div>
                 <h2 className="text-2xl font-bold mb-6">수강평</h2>
-                <div className="flex items-center mb-8">
-                  <div className="text-5xl font-bold mr-6">{course.rating}</div>
-                  <div>
-                    <div className="flex items-center mb-2">
+                <div className="flex items-center mb-6">
+                  <div className="mr-4">
+                    <div className="text-3xl font-bold">{course.rating}</div>
+                    <div className="flex mt-1">
                       {[...Array(5)].map((_, i) => (
-                        <Star
-                          key={i}
-                          className={`h-5 w-5 ${i < Math.floor(course.rating) ? 'text-yellow-500 fill-yellow-500' : 'text-gray-300'}`}
-                        />
+                        <Star key={i} className={`h-4 w-4 ${i < Math.floor(course.rating) ? 'text-yellow-500 fill-yellow-500' : 'text-gray-300'}`} />
                       ))}
-                      <span className="ml-2 text-gray-600 dark:text-gray-300">
-                        {course.rating} 점
-                      </span>
                     </div>
-                    <p className="text-gray-600 dark:text-gray-300">
-                      총 {course.reviewCount}개 수강평
-                    </p>
+                    <div className="text-sm text-gray-500 dark:text-gray-400 mt-1">{course.reviewCount} 수강평</div>
                   </div>
-                </div>
-                
-                {/* 수강평이 있으면 여기에 표시할 수 있음 */}
-                <div className="mb-6 text-center text-gray-500 dark:text-gray-400">
-                  <p>실제 수강생들의 리뷰가 표시됩니다.</p>
-                </div>
-                
-                {isEnrolled && (
-                  <div className="mt-8">
-                    <h3 className="text-xl font-semibold mb-4">리뷰 작성하기</h3>
-                    <textarea
-                      className="w-full p-3 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
-                      rows={4}
-                      placeholder="이 강의에 대한 리뷰를 작성해주세요..."
-                    />
-                    <div className="flex items-center mt-2">
-                      <div className="flex mr-4">
-                        {[...Array(5)].map((_, i) => (
-                          <Star
-                            key={i}
-                            className="h-5 w-5 text-gray-300 cursor-pointer"
+                  
+                  <div className="flex-1 max-w-md">
+                    {/* 별점 분포를 보여주는 바 차트 (예시) */}
+                    {[5, 4, 3, 2, 1].map((star) => (
+                      <div key={star} className="flex items-center mb-1">
+                        <div className="text-sm w-5">{star}</div>
+                        <Star className="h-3 w-3 text-yellow-500 fill-yellow-500 ml-1 mr-2" />
+                        <div className="w-full bg-gray-200 dark:bg-gray-700 h-2 rounded-full overflow-hidden">
+                          <div 
+                            className="bg-primary h-full rounded-full" 
+                            style={{ 
+                              width: `${star === 5 ? 70 : star === 4 ? 20 : star === 3 ? 5 : star === 2 ? 3 : 2}%` 
+                            }}
                           />
-                        ))}
+                        </div>
                       </div>
-                      <Button className="ml-auto">리뷰 등록</Button>
-                    </div>
+                    ))}
                   </div>
-                )}
+                </div>
+
+                {/* 샘플 수강평 */}
+                <div className="space-y-6">
+                  {[
+                    {
+                      id: 1,
+                      user: {
+                        name: "홍길동",
+                        avatar: "https://images.unsplash.com/photo-1599566150163-29194dcaad36?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100"
+                      },
+                      rating: 5,
+                      date: "2023년 12월 15일",
+                      content: "정말 유익한 강의였습니다. 제 반려견이 명령어를 이해하는 모습을 보니 감동이었어요. 특히 산책 시 리드 당김 문제가 많이 나아졌습니다. 훈련사님의 친절한 설명과 실제 시연이 큰 도움이 되었습니다."
+                    },
+                    {
+                      id: 2,
+                      user: {
+                        name: "김철수",
+                        avatar: "https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100"
+                      },
+                      rating: 4,
+                      date: "2023년 11월 20일",
+                      content: "처음 강아지를 키우는 초보 견주로서 이 강의는 정말 필수였습니다. 기본 명령어부터 차근차근 알려주셔서 좋았어요. 다만 더 다양한 품종의 사례가 있었으면 좋겠습니다."
+                    },
+                    {
+                      id: 3,
+                      user: {
+                        name: "이영희",
+                        avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100"
+                      },
+                      rating: 5,
+                      date: "2023년 10월 5일",
+                      content: "강아지를 3마리 키우고 있는데, 이 강의를 듣고 모두에게 적용하니 집안이 정말 평화로워졌어요. 특히 '기다려' 명령이 잘 통해서 식사 시간이 한결 여유로워졌습니다. 정말 감사합니다!"
+                    }
+                  ].map((review) => (
+                    <div key={review.id} className="border-b border-gray-100 dark:border-gray-800 pb-6">
+                      <div className="flex justify-between items-start">
+                        <div className="flex items-center">
+                          <Avatar 
+                            src={review.user.avatar} 
+                            alt={review.user.name}
+                            className="w-10 h-10 mr-3"
+                          />
+                          <div>
+                            <h4 className="font-medium">{review.user.name}</h4>
+                            <div className="flex items-center mt-1">
+                              {[...Array(5)].map((_, i) => (
+                                <Star key={i} className={`h-3 w-3 ${i < review.rating ? 'text-yellow-500 fill-yellow-500' : 'text-gray-300'}`} />
+                              ))}
+                              <span className="text-xs text-gray-500 dark:text-gray-400 ml-2">{review.date}</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <p className="mt-3 text-gray-700 dark:text-gray-300 text-sm">{review.content}</p>
+                    </div>
+                  ))}
+                </div>
               </div>
             </TabsContent>
           </Tabs>
         </div>
-        
-        {/* 우측: 강의 정보 및 수강 신청 */}
+
+        {/* 우측: 강의 정보 및 구매 카드 */}
         <div className="lg:col-span-1">
-          <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm p-6 sticky top-20">
-            <div className="mb-4">
-              <div className="flex items-center">
-                <span className="text-2xl font-bold text-primary">{course.price}</span>
-                {course.originalPrice && (
-                  <>
-                    <span className="ml-2 text-gray-500 line-through text-sm">
-                      {course.originalPrice}
-                    </span>
-                    <Badge variant="warning" className="ml-2">
-                      {course.discount} 할인
-                    </Badge>
-                  </>
-                )}
+          <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm sticky top-20">
+            <div className="p-6">
+              <div className="mb-4">
+                <div className="flex items-center">
+                  <span className="text-2xl font-bold">{course.price}</span>
+                  {course.discount && (
+                    <>
+                      <span className="text-gray-500 dark:text-gray-400 text-lg line-through ml-2">{course.originalPrice}</span>
+                      <Badge variant="success" className="ml-2">{course.discount} 할인</Badge>
+                    </>
+                  )}
+                </div>
               </div>
-            </div>
-            
-            {isAuthenticated ? (
-              isEnrolled ? (
-                <>
-                  <Button className="w-full mb-3" variant="default">
-                    이어서 학습하기
-                  </Button>
-                  <p className="text-center text-sm text-gray-500 dark:text-gray-400 mb-4">
-                    이미 수강 중인 강의입니다
-                  </p>
-                </>
-              ) : (
-                <>
-                  <Button className="w-full mb-3" variant="default">
-                    수강 신청하기
-                  </Button>
-                  <Button className="w-full mb-4" variant="outline">
+
+              <div className="space-y-4 mb-6">
+                <Button className="w-full" size="lg">
+                  {isEnrolled ? '수강 계속하기' : '수강 신청하기'}
+                </Button>
+                
+                {!isEnrolled && (
+                  <Button variant="outline" className="w-full">
                     장바구니에 추가
                   </Button>
-                </>
-              )
-            ) : (
-              <>
-                <Button className="w-full mb-3" variant="default">
-                  <Link href="/auth/login">로그인 후 수강 신청</Link>
-                </Button>
-                <p className="text-center text-sm text-gray-500 dark:text-gray-400 mb-4">
-                  수강 신청을 위해 로그인이 필요합니다
-                </p>
-              </>
-            )}
-            
-            <p className="text-center text-sm text-gray-500 dark:text-gray-400 mb-6">
-              30일 이내 환불 가능
-            </p>
-            
-            <div className="space-y-4 mb-6">
-              <div className="flex items-center">
-                <Clock className="h-5 w-5 text-gray-500 mr-2" />
-                <span className="text-sm">총 강의 시간: {course.totalHours}</span>
+                )}
               </div>
-              <div className="flex items-center">
-                <List className="h-5 w-5 text-gray-500 mr-2" />
-                <span className="text-sm">총 {course.lectures}개 강의</span>
+
+              <div className="text-sm text-gray-500 dark:text-gray-400 text-center mb-6">
+                30일 환불 보장
               </div>
-              <div className="flex items-center">
-                <Star className="h-5 w-5 text-gray-500 mr-2" />
-                <span className="text-sm">평점: {course.rating} ({course.reviewCount}개 리뷰)</span>
+
+              <div className="space-y-4">
+                <h3 className="font-semibold mb-2">이 강의는</h3>
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="flex items-center">
+                    <Clock className="h-4 w-4 text-primary mr-2" />
+                    <span className="text-sm">{course.totalHours}</span>
+                  </div>
+                  <div className="flex items-center">
+                    <PlayCircle className="h-4 w-4 text-primary mr-2" />
+                    <span className="text-sm">{course.lectures}개 강의</span>
+                  </div>
+                  <div className="flex items-center">
+                    <Download className="h-4 w-4 text-primary mr-2" />
+                    <span className="text-sm">다운로드 가능</span>
+                  </div>
+                  <div className="flex items-center">
+                    <CheckCircle className="h-4 w-4 text-primary mr-2" />
+                    <span className="text-sm">수료증</span>
+                  </div>
+                </div>
               </div>
-              <div className="flex items-center">
-                <Calendar className="h-5 w-5 text-gray-500 mr-2" />
-                <span className="text-sm">{course.lastUpdated}</span>
-              </div>
-              <div className="flex items-center">
-                <CheckCircle className="h-5 w-5 text-gray-500 mr-2" />
-                <span className="text-sm">수강 인원: {course.studentCount}명</span>
-              </div>
-            </div>
-            
-            <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
-              <div className="flex justify-between">
-                <Button variant="ghost" size="sm" className="flex items-center">
-                  <Heart className="h-4 w-4 mr-1" />
-                  <span className="text-xs">찜하기</span>
-                </Button>
-                <Button variant="ghost" size="sm" className="flex items-center">
-                  <Share2 className="h-4 w-4 mr-1" />
-                  <span className="text-xs">공유하기</span>
-                </Button>
-                <Button variant="ghost" size="sm" className="flex items-center">
-                  <Bookmark className="h-4 w-4 mr-1" />
-                  <span className="text-xs">저장</span>
-                </Button>
+
+              <div className="border-t border-gray-200 dark:border-gray-700 mt-6 pt-6">
+                <div className="flex justify-between">
+                  <Button variant="ghost" size="sm" className="w-1/3">
+                    <Share2 className="h-4 w-4 mr-2" />
+                    공유
+                  </Button>
+                  <Button variant="ghost" size="sm" className="w-1/3">
+                    <Bookmark className="h-4 w-4 mr-2" />
+                    저장
+                  </Button>
+                  <Button variant="ghost" size="sm" className="w-1/3">
+                    <Heart className="h-4 w-4 mr-2" />
+                    좋아요
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
