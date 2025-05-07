@@ -62,13 +62,13 @@ export default function Login() {
           navigate("/dashboard");
           break;
         case 'trainer':
-          navigate("/dashboard/trainer");
+          navigate("/trainer/dashboard");
           break;
         case 'institute-admin':
-          navigate("/dashboard/institute");
+          navigate("/institute/dashboard");
           break;
         case 'admin':
-          navigate("/dashboard/admin");
+          navigate("/admin/dashboard");
           break;
         default:
           navigate("/"); // 일반 회원은 홈페이지로
@@ -117,13 +117,13 @@ export default function Login() {
           navigate("/dashboard");
           break;
         case 'trainer':
-          navigate("/dashboard/trainer");
+          navigate("/trainer/dashboard");
           break;
         case 'institute-admin':
-          navigate("/dashboard/institute");
+          navigate("/institute/dashboard");
           break;
         case 'admin':
-          navigate("/dashboard/admin");
+          navigate("/admin/dashboard");
           break;
         default:
           navigate("/"); // 일반 회원은 홈페이지로
