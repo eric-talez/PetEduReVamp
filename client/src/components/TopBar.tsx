@@ -1,5 +1,5 @@
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
 import { 
   Bell, 
@@ -122,11 +122,10 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
                     className="flex items-center space-x-2 focus:outline-none"
                     onClick={() => setUserMenuOpen(!userMenuOpen)}
                   >
-                    <Avatar className="h-8 w-8">
-                      <AvatarFallback className="bg-primary text-white">
-                        {userName ? userName.substring(0, 1).toUpperCase() : "U"}
-                      </AvatarFallback>
-                    </Avatar>
+                    <Avatar 
+                      className="h-8 w-8" 
+                      fallback={userName ? userName.substring(0, 1).toUpperCase() : "U"} 
+                    />
                     <span className="hidden lg:flex items-center space-x-1">
                       <span className="text-sm font-medium">{userName}</span>
                       <ChevronDown className="h-4 w-4" />

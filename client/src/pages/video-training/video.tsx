@@ -258,6 +258,7 @@ export default function VideoDetailPage() {
                     <Lock size={40} className="text-amber-500 mb-3" />
                     <h2 className="text-white text-2xl font-bold mb-2">미리보기가 종료되었습니다</h2>
                     <p className="text-gray-300 mb-6 max-w-xl">
+                      <span className="text-amber-400 font-bold block mb-2">로그인 후 결제가 필요한 서비스입니다.</span>
                       이 프리미엄 영상의 나머지 부분을 시청하려면 로그인하고 멤버십에 가입하세요.
                       회원이 되면 모든 프리미엄 콘텐츠에 제한 없이 접근할 수 있습니다.
                     </p>
