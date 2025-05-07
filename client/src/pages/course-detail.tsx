@@ -29,7 +29,7 @@ export default function CourseDetail() {
   console.log("강의 상세 페이지 로딩:", courseId, location);
   
   const { isAuthenticated } = useAuth();
-  const [activeTab, setActiveTab] = useState("overview");
+  const [activeTab, setActiveTab] = useState("curriculum"); // 기본 탭을 커리큘럼으로 설정
   const [isEnrolled, setIsEnrolled] = useState(false);
   const [activeVideo, setActiveVideo] = useState<Lesson | null>(null);
 
@@ -234,6 +234,8 @@ export default function CourseDetail() {
 
   // 강의 시청 핸들러
   const handleWatchLesson = (lesson: Lesson) => {
+    console.log("강의 시청 요청:", lesson.title);
+    
     if (!isAuthenticated && !lesson.preview) {
       alert("이 강의를 시청하려면 로그인 후 수강 신청이 필요합니다.");
       return;
@@ -244,7 +246,11 @@ export default function CourseDetail() {
       return;
     }
 
+    // 커리큘럼 탭에서 클릭한 경우에도 재생하도록 설정
     setActiveVideo(lesson);
+    
+    // 상단 비디오 플레이어 영역으로 스크롤
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   return (
@@ -407,7 +413,7 @@ export default function CourseDetail() {
                         {section.lessons.map((lesson) => (
                           <div 
                             key={lesson.id} 
-                            className={`px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer flex items-center justify-between ${activeVideo?.id === lesson.id ? 'bg-primary/5' : ''}`}
+                            className={`px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer flex items-center justify-between ${activeVideo?.id === lesson.id ? 'bg-primary/10 border-l-4 border-primary' : ''}`}
                             onClick={() => handleWatchLesson(lesson)}
                           >
                             <div className="flex items-center">
