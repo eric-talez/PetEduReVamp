@@ -8,7 +8,7 @@ import { Search, Filter, SlidersHorizontal, Star } from "lucide-react";
 
 export default function Courses() {
   const [filter, setFilter] = useState("all");
-  
+
   const courses = [
     {
       id: 1,
@@ -148,9 +148,9 @@ export default function Courses() {
           alt="강의 탐색"
           className="w-full h-full object-cover absolute mix-blend-overlay"
         />
-        
+
         <div className="absolute inset-0 bg-gradient-to-r from-primary/80 to-accent/30 mix-blend-multiply"></div>
-        
+
         <div className="relative h-full flex flex-col justify-center px-6 md:px-10">
           <h1 className="text-white text-xl md:text-3xl font-bold mb-2 md:mb-4 max-w-xl">
             반려견을 위한 체계적인 교육 과정
@@ -158,7 +158,7 @@ export default function Courses() {
           <p className="text-white text-sm md:text-base max-w-xl mb-4">
             평생 함께할 반려견에게 필요한 훈련과 교육을 전문가와 함께 시작하세요.
           </p>
-          
+
           {/* Search Bar */}
           <div className="max-w-lg bg-white dark:bg-gray-800 rounded-lg flex items-center p-1">
             <div className="px-2">
@@ -175,14 +175,14 @@ export default function Courses() {
           </div>
         </div>
       </div>
-      
+
       {/* Filters */}
       <div className="mb-8 flex flex-wrap items-center gap-2">
         <div className="flex items-center bg-gray-100 dark:bg-gray-800 rounded-lg p-1 mr-4">
           <Filter className="h-4 w-4 text-gray-500 dark:text-gray-400 ml-2 mr-1" />
           <span className="text-sm text-gray-700 dark:text-gray-300 mr-2">필터:</span>
         </div>
-        
+
         <Button
           variant={filter === "all" ? "default" : "outline"}
           size="sm"
@@ -191,7 +191,7 @@ export default function Courses() {
         >
           전체
         </Button>
-        
+
         <Button
           variant={filter === "초급" ? "default" : "outline"}
           size="sm"
@@ -200,7 +200,7 @@ export default function Courses() {
         >
           초급
         </Button>
-        
+
         <Button
           variant={filter === "중급" ? "default" : "outline"}
           size="sm"
@@ -209,7 +209,7 @@ export default function Courses() {
         >
           중급
         </Button>
-        
+
         <Button
           variant={filter === "기본 훈련" ? "default" : "outline"}
           size="sm"
@@ -218,7 +218,7 @@ export default function Courses() {
         >
           기본 훈련
         </Button>
-        
+
         <Button
           variant={filter === "사회화" ? "default" : "outline"}
           size="sm"
@@ -227,7 +227,7 @@ export default function Courses() {
         >
           사회화
         </Button>
-        
+
         <Button
           variant={filter === "행동 교정" ? "default" : "outline"}
           size="sm"
@@ -236,7 +236,7 @@ export default function Courses() {
         >
           행동 교정
         </Button>
-        
+
         <Button
           variant="outline"
           size="sm"
@@ -246,7 +246,7 @@ export default function Courses() {
           고급 필터
         </Button>
       </div>
-      
+
       {/* Course Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {filteredCourses.map((course) => (
@@ -265,7 +265,7 @@ export default function Courses() {
             </div>
             <div className="p-5">
               <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-1">{course.title}</h3>
-              
+
               <div className="flex items-center mb-2">
                 <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
                 <span className="text-sm text-gray-700 dark:text-gray-300 ml-1 mr-2">
@@ -274,7 +274,7 @@ export default function Courses() {
                 <span className="text-xs text-gray-500 dark:text-gray-400">
                   ({course.reviews} 후기)
                 </span>
-                
+
                 <Badge variant={
                   course.level === "초급" ? "success" : 
                   course.level === "중급" ? "info" : "secondary"
@@ -282,11 +282,11 @@ export default function Courses() {
                   {course.level}
                 </Badge>
               </div>
-              
+
               <p className="text-sm text-gray-600 dark:text-gray-300 mb-4 line-clamp-2">
                 {course.description}
               </p>
-              
+
               <div className="flex items-center justify-between">
                 <div className="flex items-center">
                   <Avatar 
@@ -296,12 +296,12 @@ export default function Courses() {
                   />
                   <span className="ml-2 text-xs text-gray-700 dark:text-gray-300">{course.trainer.name}</span>
                 </div>
-                
+
                 <span className="font-medium text-sm text-accent">{course.price}</span>
               </div>
             </div>
             <div className="bg-gray-50 dark:bg-gray-700/50 px-5 py-3 border-t border-gray-100 dark:border-gray-700">
-              <Link href={`/course-detail/${course.id}`}>
+              <Link href={`/courses/${course.id}`}>
                 <Button 
                   variant="link" 
                   className="text-sm font-medium text-primary hover:text-primary/80 p-0"
@@ -313,7 +313,7 @@ export default function Courses() {
           </Card>
         ))}
       </div>
-      
+
       {/* Pagination */}
       <div className="mt-10 flex justify-center">
         <nav className="flex items-center space-x-2">

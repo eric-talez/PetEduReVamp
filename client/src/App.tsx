@@ -35,7 +35,7 @@ function AuthenticatedRoutes() {
         <Route path="/" component={Home} />
         <Route path="/dashboard" component={Dashboard} />
         <Route path="/courses" component={CoursesPage} />
-        <Route path="/course-detail/:id" component={CourseDetail} />
+        <Route path="/courses/:id" component={CourseDetail} />
         <Route path="/trainers" component={TrainersPage} />
         <Route path="/institutes" component={InstitutesPage} />
         <Route path="/community" component={CommunityPage} />
@@ -62,7 +62,7 @@ function UnauthenticatedRoutes() {
         <Route path="/auth/register" component={RegisterPage} />
         <Route path="/" component={Home} />
         <Route path="/courses" component={CoursesPage} />
-        <Route path="/course-detail/:id" component={CourseDetail} />
+        <Route path="/courses/:id" component={CourseDetail} />
         <Route>
           {() => {
             window.location.href = "/auth/login";
