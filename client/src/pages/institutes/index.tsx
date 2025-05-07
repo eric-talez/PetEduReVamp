@@ -720,23 +720,14 @@ export default function LocationServices() {
                     </div>
                     
                     <div className="flex gap-3">
-                      {/* 상세 정보 버튼 - 예약/리뷰 작성 시 로그인 필요 */}
+                      {/* 상세 정보 버튼 - 비회원도 이용 가능 */}
                       <Button 
                         variant="default"
                         className="flex-1"
                         onClick={(e) => {
                           e.stopPropagation(); // 부모 클릭 이벤트 전파 중지
-                          // 조회는 비회원도 가능하나, 예약 등의 기능은 로그인 필요함을 안내
                           console.log("위치 서비스 상세 페이지 이동: ", institute.id);
-                          
-                          // 상세 정보 페이지로 이동하되 로그인 필요성 토스트 메시지 표시
-                          if (!isAuthenticated()) {
-                            toast({
-                              title: "알림",
-                              description: "예약 및 리뷰 작성은 로그인 후 이용 가능합니다.",
-                              variant: "default",
-                            });
-                          }
+                          // 비회원도 상세 정보를 볼 수 있도록 수정
                           window.location.href = `/institutes/${institute.id}`;
                         }}
                       >
