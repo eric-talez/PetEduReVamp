@@ -13,7 +13,7 @@ interface TopBarProps {
 }
 
 export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
-  const { userName, logout, isAuthenticated } = useAppAuth();
+  const { userName, userRole, logout, isAuthenticated } = useAppAuth();
   const [, setLocation] = useLocation();
   
   const handleLogout = () => {
@@ -100,6 +100,15 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
                 </Avatar>
                 <span className="ml-2 text-sm font-medium hidden lg:block">
                   {userName || "사용자"}님
+                  {userRole && (
+                    <span className="ml-1 px-1.5 py-0.5 text-xs bg-primary/10 text-primary rounded-full">
+                      {userRole === 'admin' && '관리자'}
+                      {userRole === 'trainer' && '훈련사'}
+                      {userRole === 'institute-admin' && '기관 관리자'}
+                      {userRole === 'pet-owner' && '견주'}
+                      {userRole === 'user' && '일반회원'}
+                    </span>
+                  )}
                 </span>
                 <svg className="w-4 h-4 ml-1 hidden lg:block" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                   <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
@@ -108,6 +117,16 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
               
               {userMenuOpen && (
                 <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-900 rounded-md shadow-lg py-1 z-50 border border-gray-200 dark:border-gray-700">
+                  <div className="px-4 py-2 text-sm text-gray-900 dark:text-gray-100 border-b border-gray-200 dark:border-gray-700">
+                    <div className="font-semibold">{userName || "사용자"}</div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400">
+                      {userRole === 'admin' && '시스템 관리자'}
+                      {userRole === 'trainer' && '훈련사'}
+                      {userRole === 'institute-admin' && '기관 관리자'}
+                      {userRole === 'pet-owner' && '견주 회원'}
+                      {userRole === 'user' && '일반 회원'}
+                    </div>
+                  </div>
                   <a href="/profile" className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800">
                     내 프로필
                   </a>
