@@ -6,7 +6,7 @@ import { useAuth } from "./SimpleApp";
 import Home from "./pages/Home";
 import Dashboard from "./pages/Dashboard";
 import CoursesPage from "./pages/courses/index";
-import CourseDetail from "./pages/courses/CourseDetail";
+import CourseDetail from "./pages/courses/CourseDetail"; // 명시적으로 CourseDetail.tsx 사용
 import TrainersPage from "./pages/trainers/index";
 import InstitutesPage from "./pages/institutes/index";
 import CommunityPage from "./pages/community/index";
@@ -61,6 +61,8 @@ function UnauthenticatedRoutes() {
         <Route path="/auth/login" component={LoginPage} />
         <Route path="/auth/register" component={RegisterPage} />
         <Route path="/" component={Home} />
+        <Route path="/courses" component={CoursesPage} />
+        <Route path="/courses/:id" component={CourseDetail} />
         <Route>
           {() => {
             window.location.href = "/auth/login";
