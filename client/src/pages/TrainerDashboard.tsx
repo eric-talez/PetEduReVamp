@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Avatar } from '@/components/ui/Avatar';
-import { Badge } from '@/components/ui/Badge';
-import { Button } from '@/components/ui/Button';
+import { Avatar } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { BarChart3, Users, Star, TrendingUp, Calendar, Clock, Bell, List } from 'lucide-react';
 import { BarChart } from '@/components/ui/chart';
@@ -154,7 +154,7 @@ export default function TrainerDashboard() {
           <Button variant="outline" size="sm" className="flex items-center">
             <Bell className="w-4 h-4 mr-2" />
             알림
-            <Badge variant="destructive" className="w-5 h-5 ml-2 rounded-full p-0 flex items-center justify-center">3</Badge>
+            <Badge variant="danger" className="w-5 h-5 ml-2 rounded-full p-0 flex items-center justify-center">3</Badge>
           </Button>
           <Button variant="outline" size="sm" className="flex items-center">
             <Calendar className="w-4 h-4 mr-2" />
@@ -212,7 +212,7 @@ export default function TrainerDashboard() {
               </div>
             </div>
             <div className="mt-4 flex items-center text-sm">
-              <Badge variant="green" className="mr-2">+0.1</Badge>
+              <Badge variant="success" className="mr-2">+0.1</Badge>
               <span className="text-gray-500 dark:text-gray-400">지난 3개월 대비</span>
             </div>
           </CardContent>
@@ -230,7 +230,7 @@ export default function TrainerDashboard() {
               </div>
             </div>
             <div className="mt-4 flex items-center text-sm">
-              <Badge variant="green" className="mr-2">+8%</Badge>
+              <Badge variant="success" className="mr-2">+8%</Badge>
               <span className="text-gray-500 dark:text-gray-400">지난달 대비</span>
             </div>
           </CardContent>
@@ -265,7 +265,7 @@ export default function TrainerDashboard() {
                     <div className="font-medium">{schedule.title}</div>
                     <div className="text-sm text-gray-600 dark:text-gray-400 flex items-center">
                       <span className="mr-2">{schedule.time}</span>
-                      <Badge variant={schedule.type === "수업" ? "info" : "purple"} size="sm">
+                      <Badge variant={schedule.type === "수업" ? "info" : "purple"} className="text-[10px] px-2 py-0.5">
                         {schedule.type}
                       </Badge>
                     </div>
