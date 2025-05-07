@@ -154,7 +154,7 @@ export default function TrainerDashboard() {
           <Button variant="outline" size="sm" className="flex items-center">
             <Bell className="w-4 h-4 mr-2" />
             알림
-            <Badge variant="red" className="w-5 h-5 ml-2 rounded-full p-0 flex items-center justify-center">3</Badge>
+            <Badge variant="destructive" className="w-5 h-5 ml-2 rounded-full p-0 flex items-center justify-center">3</Badge>
           </Button>
           <Button variant="outline" size="sm" className="flex items-center">
             <Calendar className="w-4 h-4 mr-2" />
@@ -176,7 +176,7 @@ export default function TrainerDashboard() {
               </div>
             </div>
             <div className="mt-4 flex items-center text-sm">
-              <Badge variant="green" className="mr-2">+12%</Badge>
+              <Badge variant="success" className="mr-2">+12%</Badge>
               <span className="text-gray-500 dark:text-gray-400">지난달 대비</span>
             </div>
           </CardContent>
@@ -194,7 +194,7 @@ export default function TrainerDashboard() {
               </div>
             </div>
             <div className="mt-4 flex items-center text-sm">
-              <Badge variant="green" className="mr-2">+1</Badge>
+              <Badge variant="success" className="mr-2">+1</Badge>
               <span className="text-gray-500 dark:text-gray-400">지난달 신규 강의</span>
             </div>
           </CardContent>
@@ -265,7 +265,7 @@ export default function TrainerDashboard() {
                     <div className="font-medium">{schedule.title}</div>
                     <div className="text-sm text-gray-600 dark:text-gray-400 flex items-center">
                       <span className="mr-2">{schedule.time}</span>
-                      <Badge variant={schedule.type === "수업" ? "blue" : "purple"} size="sm">
+                      <Badge variant={schedule.type === "수업" ? "info" : "purple"} size="sm">
                         {schedule.type}
                       </Badge>
                     </div>
