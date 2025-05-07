@@ -8,7 +8,11 @@ import {
   TrendingUp, Database, BarChart2, Activity, Globe, Building
 } from "lucide-react";
 
-export default function AdminDashboard() {
+interface AdminDashboardProps {
+  onAction: (action: string, data?: any) => void;
+}
+
+export default function AdminDashboard({ onAction }: AdminDashboardProps) {
   // Mock user data for development
   const user = {
     id: 1,

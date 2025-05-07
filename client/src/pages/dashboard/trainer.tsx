@@ -5,7 +5,11 @@ import { Badge } from "@/components/ui/Badge";
 import { Avatar } from "@/components/ui/Avatar";
 import { Users, BookOpen, Calendar, DollarSign, TrendingUp, Award, BarChart2 } from "lucide-react";
 
-export default function TrainerDashboard() {
+interface TrainerDashboardProps {
+  onAction: (action: string, data?: any) => void;
+}
+
+export default function TrainerDashboard({ onAction }: TrainerDashboardProps) {
   const { userName } = useAuth();
 
   return (
