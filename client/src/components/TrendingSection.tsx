@@ -13,7 +13,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/Button';
 import { Link } from 'wouter';
-import { TrendingUp, Eye, Award, MoveUp } from 'lucide-react';
+import { TrendingUp, TrendingDown, Eye, Award, MoveUp } from 'lucide-react';
 import { Star, Users, Clock } from "lucide-react";
 
 // 훈련사 데이터
@@ -477,8 +477,18 @@ export function TrendingSection() {
         </div>
         <div className="flex items-center">
           <Badge variant="outline" className="text-xs mr-2">{trainer.specialty}</Badge>
-          <div className="text-xs text-green-500 flex items-center">
-            <TrendingUp size={12} className="mr-1" /> {trainer.change}%
+          <div className="flex items-center space-x-2">
+            <div className={`text-xs flex items-center ${trainer.change >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+              {trainer.change >= 0 ? (
+                <TrendingUp size={12} className="mr-1" />
+              ) : (
+                <TrendingDown size={12} className="mr-1" />
+              )}
+              {Math.abs(trainer.change)}%
+            </div>
+            <Badge variant={trainer.change >= 0 ? "success" : "destructive"} className="text-xs">
+              {trainer.change >= 0 ? `${trainer.rankChange || 0}위 ▲` : `${Math.abs(trainer.rankChange || 0)}위 ▼`}
+            </Badge>
           </div>
         </div>
       </div>
