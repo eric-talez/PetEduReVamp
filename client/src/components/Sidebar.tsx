@@ -34,7 +34,7 @@ import {
   ChevronsRight,
   Menu
 } from "lucide-react";
-import { useAppAuth } from "../hooks/useAppAuth";
+import { useAppAuth } from "../App";
 
 // 사이드바 컨텍스트 생성
 interface SidebarContextType {

@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/Button';
 import { Link } from 'wouter';
-import { useAppAuth } from '../hooks/useAppAuth';
+import { useAppAuth } from '../App';
 
 export default function Home() {
   const auth = useAppAuth();
