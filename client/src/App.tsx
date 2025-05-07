@@ -28,6 +28,8 @@ import NotFound from "./pages/not-found";
 import TrainerTest from "./pages/TrainerTest";
 import TrainerReservationsPage from "./pages/trainer-dashboard/reservations";
 import InstituteCourseApprovalsPage from "./pages/institute-dashboard/course-approvals";
+import InstitutePetAssignmentsPage from "./pages/institute-dashboard/pet-assignments";
+import NotebookPage from "./pages/notebook/index";
 import EventsPage from "./pages/events/index";
 import EventCalendarPage from "./pages/events/calendar";
 import AIAnalysisPage from "./pages/ai-analysis/index";
@@ -108,6 +110,12 @@ function AuthenticatedRoutes() {
         </Route>
         <Route path="/institute/course-approvals">
           {() => checkAccess(['institute-admin', 'admin']) ? <InstituteCourseApprovalsPage /> : window.location.href = '/'}
+        </Route>
+        <Route path="/institute/pet-assignments">
+          {() => checkAccess(['institute-admin', 'admin']) ? <InstitutePetAssignmentsPage /> : window.location.href = '/'}
+        </Route>
+        <Route path="/notebook/:id">
+          {() => checkAccess(['pet-owner', 'trainer', 'institute-admin']) ? <NotebookPage /> : window.location.href = '/'}
         </Route>
         <Route path="/messages" component={MessagesPage} />
         <Route path="/notifications" component={NotificationsPage} />
