@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "wouter";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
@@ -364,9 +365,9 @@ export default function Community() {
                       </Button>
                     </div>
                     <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-                      <a href={`/community/post/${post.id}`} className="text-primary hover:text-primary/80">
+                      <Link href={`/community/post/${post.id}`} className="text-primary hover:text-primary/80">
                         {post.comments}개의 댓글 모두 보기
-                      </a>
+                      </Link>
                     </div>
                   </div>
                 )}

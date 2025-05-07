@@ -98,12 +98,9 @@ const MOCK_POST: Post = {
 
 // 로그인 유도 함수
 function promptLogin() {
-  // 먼저 토스트 알림 표시
-  toast({
-    title: "로그인이 필요합니다",
-    description: "이 기능을 사용하려면 로그인이 필요합니다.",
-    variant: "destructive",
-  });
+  // 먼저 토스트 알림 표시 (toast는 useToast 훅에서 가져온 것을 사용해야 함)
+  // 여기서는 전역 함수로 정의하므로 window.alert로 대체
+  window.alert("로그인이 필요합니다. 이 기능을 사용하려면 로그인이 필요합니다.");
   
   // 확인 클릭 전까지는 페이지 그대로 유지
   const confirmed = window.confirm("로그인 페이지로 이동하시겠습니까?");
