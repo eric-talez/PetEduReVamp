@@ -75,6 +75,16 @@ function AuthenticatedRoutes() {
           {() => checkAccess(['admin']) ? <Dashboard typeProps="admin" /> : window.location.href = '/'}
         </Route>
         <Route path="/community" component={CommunityPage} />
+        <Route path="/community/post/:id" component={() => {
+          // 커뮤니티 게시물 상세 페이지
+          try {
+            const CommunityPostDetailPage = require('./pages/community/post-detail').default;
+            return <CommunityPostDetailPage />;
+          } catch (e) {
+            console.error("커뮤니티 게시물 상세 페이지 로드 오류:", e);
+            return <div>게시물 상세 페이지를 불러올 수 없습니다.</div>;
+          }
+        }} />
         <Route path="/my-courses" component={MyCoursesPage} />
         <Route path="/my-pets" component={MyPetsPage} />
         <Route path="/locations" component={LocationsPage} />
@@ -122,6 +132,16 @@ function UnauthenticatedRoutes() {
           return <InstituteDetailPage />;
         }} />
         <Route path="/community" component={CommunityPage} />
+        <Route path="/community/post/:id" component={() => {
+          // 커뮤니티 게시물 상세 페이지
+          try {
+            const CommunityPostDetailPage = require('./pages/community/post-detail').default;
+            return <CommunityPostDetailPage />;
+          } catch (e) {
+            console.error("커뮤니티 게시물 상세 페이지 로드 오류:", e);
+            return <div>게시물 상세 페이지를 불러올 수 없습니다.</div>;
+          }
+        }} />
         <Route path="/video-call" component={VideoCallPage} />
         <Route path="/course-reservation" component={CourseReservationPage} />
         <Route path="/locations" component={LocationsPage} />
