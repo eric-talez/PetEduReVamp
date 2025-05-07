@@ -13,19 +13,17 @@ export function AppLayout({ children }: AppLayoutProps) {
   
   return (
     <div className="min-h-screen bg-background">
+      <TopBar
+        sidebarOpen={sidebarOpen}
+        onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
+      />
       {isAuthenticated && (
-        <>
-          <Sidebar 
-            open={sidebarOpen} 
-            onClose={() => setSidebarOpen(false)}
-            userRole={userRole}
-            isAuthenticated={isAuthenticated}
-          />
-          <TopBar
-            sidebarOpen={sidebarOpen}
-            onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
-          />
-        </>
+        <Sidebar 
+          open={sidebarOpen} 
+          onClose={() => setSidebarOpen(false)}
+          userRole={userRole}
+          isAuthenticated={isAuthenticated}
+        />
       )}
       <main className={`${isAuthenticated ? 'ml-64 pt-16' : 'pt-16'}`}> {/* Added pt-16 for non-authenticated users */}
         {children}
