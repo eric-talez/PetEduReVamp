@@ -178,10 +178,10 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
       return;
     }
     
-    // 화상 수업은 로그인 필요
+    // 비로그인 상태에서도 화상 수업 목록 조회 가능
     if (path === '/video-call') {
-      console.log('화상 수업은 로그인 필요 - 로그인 페이지로 이동');
-      window.location.href = "/auth";
+      console.log('화상 수업 페이지로 이동 중');
+      window.location.href = path;
       return;
     }
 
@@ -310,9 +310,10 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                       href="/video-call" 
                       icon={<VideoIcon className="w-5 h-5 mr-2" />} 
                       active={isActive("/video-call")} 
-                      onClick={() => {
-                        console.log("비회원이 화상 수업 클릭 - 로그인 페이지로 이동");
-                        window.location.href = "/auth";
+                      onClick={(path) => {
+                        console.log("화상 수업 메뉴 클릭:", path);
+                        // 직접 URL 이동 처리 (비로그인 화상 수업 접근 허용)
+                        window.location.href = path;
                       }} 
                       show={true}
                     >화상 수업</NavItem>
