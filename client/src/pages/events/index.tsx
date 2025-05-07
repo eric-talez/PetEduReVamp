@@ -310,10 +310,28 @@ export default function EventsPage() {
           <div className="absolute inset-0 bg-gradient-to-r from-primary/80 to-transparent flex items-center">
             <div className="px-6 md:px-10 text-white max-w-xl">
               <h1 className="text-3xl md:text-4xl font-bold mb-4">반려동물 이벤트</h1>
-              <p className="text-lg mb-6">
+              <p className="text-lg mb-4">
                 다양한 반려동물 행사와 만남의 장을 찾아보세요. 
                 지역별, 테마별 이벤트를 한눈에!
               </p>
+              
+              {/* 배너 내 검색 영역 추가 */}
+              <div className="relative flex w-full max-w-md mb-6">
+                <Input
+                  className="pl-10 pr-16 py-6 text-black dark:text-white border-2 border-white dark:border-gray-700 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm"
+                  placeholder="이벤트 검색..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-500" />
+                <Button 
+                  className="absolute right-0 h-full rounded-l-none"
+                  type="submit"
+                >
+                  검색
+                </Button>
+              </div>
+              
               <div className="flex space-x-4">
                 <Button 
                   className="bg-white text-primary hover:bg-gray-100"

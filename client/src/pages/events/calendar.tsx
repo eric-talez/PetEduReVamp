@@ -181,6 +181,7 @@ export default function EventCalendarPage() {
   const [currentMonth, setCurrentMonth] = useState(today.getMonth());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [eventsOnSelectedDate, setEventsOnSelectedDate] = useState<EventItem[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
   
   // 현재 달의 날짜수와 1일의 요일 계산
   const daysInMonth = getDaysInMonth(currentYear, currentMonth);
@@ -203,7 +204,10 @@ export default function EventCalendarPage() {
     
     // 선택한 날짜의 이벤트 찾기
     const dateString = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-    setEventsOnSelectedDate(eventsByDate[dateString] || []);
+    const events = eventsByDate[dateString] || [];
+    
+    // 검색어가 있으면 필터링 적용
+    setEventsOnSelectedDate(filterEventsBySearchTerm(events));
   };
   
   // 이전/다음 달 이동
@@ -237,6 +241,19 @@ export default function EventCalendarPage() {
   // 특정 월로 이동
   const handleMonthChange = (month: string) => {
     setCurrentMonth(parseInt(month));
+  };
+  
+  // 검색 필터링
+  const filterEventsBySearchTerm = (events: EventItem[]) => {
+    if (!searchTerm) return events;
+    
+    return events.filter(event => 
+      event.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      event.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      event.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      event.location.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      event.location.region.toLowerCase().includes(searchTerm.toLowerCase())
+    );
   };
   
   // 연도 옵션 생성 (현재 연도 +/- 5년)
@@ -354,10 +371,35 @@ export default function EventCalendarPage() {
           <div className="absolute inset-0 bg-gradient-to-r from-primary/80 to-transparent flex items-center">
             <div className="px-6 md:px-10 text-white max-w-xl">
               <h1 className="text-3xl md:text-4xl font-bold mb-4">이벤트 캘린더</h1>
-              <p className="text-lg mb-6">
+              <p className="text-lg mb-4">
                 날짜별로 다양한 반려동물 행사를 확인하세요.
                 일정을 미리 체크하고 참여해보세요!
               </p>
+              
+              {/* 배너 내 검색 영역 추가 */}
+              <div className="relative flex w-full max-w-md mb-6">
+                <Input
+                  className="pl-10 pr-16 py-6 text-black dark:text-white border-2 border-white dark:border-gray-700 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm"
+                  placeholder="이벤트 검색..."
+                  value={searchTerm}
+                  onChange={(e) => {
+                    setSearchTerm(e.target.value);
+                    if (selectedDate) {
+                      const dateString = `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, '0')}-${String(selectedDate.getDate()).padStart(2, '0')}`;
+                      const events = eventsByDate[dateString] || [];
+                      setEventsOnSelectedDate(filterEventsBySearchTerm(events));
+                    }
+                  }}
+                />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-500" />
+                <Button 
+                  className="absolute right-0 h-full rounded-l-none"
+                  type="submit"
+                >
+                  검색
+                </Button>
+              </div>
+              
               <div className="flex space-x-4">
                 <Button 
                   className="bg-white text-primary hover:bg-gray-100"
