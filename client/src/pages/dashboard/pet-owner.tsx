@@ -5,7 +5,11 @@ import { Avatar } from "@/components/ui/Avatar";
 import { Badge } from "@/components/ui/Badge";
 import { BookOpen, Calendar, Medal, PawPrint, Star, Bone, Award, Clock } from "lucide-react";
 
-export default function PetOwnerDashboard() {
+interface PetOwnerDashboardProps {
+  onAction: (action: string, data?: any) => void;
+}
+
+export default function PetOwnerDashboard({ onAction }: PetOwnerDashboardProps) {
   const { userName, userRole } = useAuth();
 
   const courses = [

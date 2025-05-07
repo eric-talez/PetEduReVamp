@@ -43,6 +43,13 @@ interface AuthState {
   logout: () => void;
 }
 
+// 디버깅을 위한 전역 변수 타입 정의
+declare global {
+  interface Window {
+    __peteduAuthState?: AuthState;
+  }
+}
+
 const AuthContext = createContext<AuthState>({
   isAuthenticated: false,
   isLoading: true,
@@ -85,37 +92,50 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   });
 
-  // 로컬 스토리지에서 인증 상태 확인
+  // 컴포넌트 마운트 시 즉시 로컬 스토리지에서 인증 상태 확인
   useEffect(() => {
     console.log("AuthProvider useEffect - checking localStorage");
     const storedAuth = localStorage.getItem('petedu_auth');
     
-    if (storedAuth) {
-      try {
-        console.log("Found auth data in localStorage:", storedAuth);
-        const parsedAuth = JSON.parse(storedAuth);
-        setAuthState(prevState => ({
-          ...prevState,
-          isAuthenticated: true,
-          isLoading: false,
-          userRole: parsedAuth.role || 'user',
-          userName: parsedAuth.user || 'User'
-        }));
-        console.log("Updated auth state with stored data:", parsedAuth);
-      } catch (e) {
-        console.error('Failed to parse auth data', e);
+    // 즉시 실행되도록 별도 함수로 분리
+    const initAuthState = () => {
+      if (storedAuth) {
+        try {
+          console.log("Found auth data in localStorage:", storedAuth);
+          const parsedAuth = JSON.parse(storedAuth);
+          
+          // setAuthState 함수를 직접 호출하지 않고 초기값으로 설정
+          const updatedState = {
+            isAuthenticated: true,
+            isLoading: false,
+            userRole: parsedAuth.role || 'user',
+            userName: parsedAuth.user || 'User',
+            logout: authState.logout // 기존 logout 함수 유지
+          };
+          
+          setAuthState(updatedState);
+          console.log("Updated auth state with stored data:", parsedAuth);
+          
+          // 디버깅용 전역 변수 설정 - TypeScript 오류 수정
+          (window as any).__peteduAuthState = updatedState;
+        } catch (e) {
+          console.error('Failed to parse auth data', e);
+          setAuthState(prevState => ({
+            ...prevState,
+            isLoading: false
+          }));
+        }
+      } else {
+        console.log("No auth data found in localStorage");
         setAuthState(prevState => ({
           ...prevState,
           isLoading: false
         }));
       }
-    } else {
-      console.log("No auth data found in localStorage");
-      setAuthState(prevState => ({
-        ...prevState,
-        isLoading: false
-      }));
-    }
+    };
+    
+    // 즉시 초기화 실행
+    initAuthState();
 
     // 로그인 이벤트 리스너 등록
     const handleLogin = (e: CustomEvent) => {

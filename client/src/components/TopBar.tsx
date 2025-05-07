@@ -9,7 +9,7 @@ import {
   ShoppingCart,
   ChevronDown
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useClickAway } from "@/hooks/use-mobile";
 import { Link, useLocation } from "wouter";
 import { useAuth } from "../SimpleApp";
@@ -20,8 +20,24 @@ interface TopBarProps {
 }
 
 export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
-  const { userName, userRole, logout, isAuthenticated } = useAuth();
+  // 전체 auth 객체를 가져와서 비구조화 할당
+  const auth = useAuth();
+  const { userName, userRole, logout, isAuthenticated } = auth;
   const [location, setLocation] = useLocation();
+  
+  // 디버깅용 로그 (개발 완료 후 제거)
+  useEffect(() => {
+    console.log('TopBar rendered with auth state:', {
+      isAuthenticated,
+      userRole,
+      userName
+    });
+    
+    // 전역 상태 확인
+    if ((window as any).__peteduAuthState) {
+      console.log('TopBar global auth state:', (window as any).__peteduAuthState);
+    }
+  }, [isAuthenticated, userRole, userName]);
 
   const handleLogout = () => {
     console.log("Logout button clicked");
