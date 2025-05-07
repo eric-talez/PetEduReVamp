@@ -365,9 +365,17 @@ export default function Community() {
                       </Button>
                     </div>
                     <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-                      <Link href={`/community/post/${post.id}`} className="text-primary hover:text-primary/80">
+                      <a 
+                        href="#" 
+                        onClick={(e) => {
+                          e.preventDefault();
+                          console.log(`이동: /community/post/${post.id}`);
+                          window.location.href = `/community/post/${post.id}`;
+                        }}
+                        className="text-primary hover:text-primary/80"
+                      >
                         {post.comments}개의 댓글 모두 보기
-                      </Link>
+                      </a>
                     </div>
                   </div>
                 )}
