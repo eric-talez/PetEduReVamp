@@ -510,8 +510,18 @@ export function TrendingSection() {
         </div>
         <div className="flex items-center">
           <Badge variant="outline" className="text-xs mr-2">{content.type}</Badge>
-          <div className="text-xs text-green-500 flex items-center">
-            <TrendingUp size={12} className="mr-1" /> {content.change}%
+          <div className="flex items-center space-x-2">
+            <div className={`text-xs flex items-center ${content.change >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+              {content.change >= 0 ? (
+                <TrendingUp size={12} className="mr-1" />
+              ) : (
+                <TrendingDown size={12} className="mr-1" />
+              )}
+              {Math.abs(content.change)}%
+            </div>
+            <Badge variant={content.change >= 0 ? "success" : "destructive"} className="text-xs">
+              {content.change >= 0 ? `${content.rankChange || 0}위 ▲` : `${Math.abs(content.rankChange || 0)}위 ▼`}
+            </Badge>
           </div>
         </div>
       </div>
@@ -533,8 +543,18 @@ export function TrendingSection() {
         </div>
         <div className="flex items-center">
           <span className="text-xs text-gray-500 mr-2">{post.author}</span>
-          <div className="text-xs text-green-500 flex items-center">
-            <TrendingUp size={12} className="mr-1" /> {post.change}%
+          <div className="flex items-center space-x-2">
+            <div className={`text-xs flex items-center ${post.change >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+              {post.change >= 0 ? (
+                <TrendingUp size={12} className="mr-1" />
+              ) : (
+                <TrendingDown size={12} className="mr-1" />
+              )}
+              {Math.abs(post.change)}%
+            </div>
+            <Badge variant={post.change >= 0 ? "success" : "destructive"} className="text-xs">
+              {post.change >= 0 ? `${post.rankChange || 0}위 ▲` : `${Math.abs(post.rankChange || 0)}위 ▼`}
+            </Badge>
           </div>
         </div>
       </div>
@@ -556,8 +576,18 @@ export function TrendingSection() {
         </div>
         <div className="flex items-center justify-between">
           <span className="text-xs text-gray-500">{course.instructor}</span>
-          <div className="text-xs text-green-500 flex items-center">
-            <TrendingUp size={12} className="mr-1" /> {course.change}%
+          <div className="flex items-center space-x-2">
+            <div className={`text-xs flex items-center ${course.change >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+              {course.change >= 0 ? (
+                <TrendingUp size={12} className="mr-1" />
+              ) : (
+                <TrendingDown size={12} className="mr-1" />
+              )}
+              {Math.abs(course.change)}%
+            </div>
+            <Badge variant={course.change >= 0 ? "success" : "destructive"} className="text-xs">
+              {course.change >= 0 ? `${course.rankChange || 0}위 ▲` : `${Math.abs(course.rankChange || 0)}위 ▼`}
+            </Badge>
           </div>
         </div>
       </div>
