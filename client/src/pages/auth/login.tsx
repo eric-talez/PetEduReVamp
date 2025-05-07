@@ -136,11 +136,7 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
-      <div className="absolute top-4 right-4">
-        <ThemeToggle />
-      </div>
-      
+    <div className="flex flex-col items-center justify-center py-12">
       <div className="mb-8 text-center">
         <h1 className="text-3xl font-bold">
           PetEdu<span className="text-primary">Platform</span>
@@ -150,8 +146,8 @@ export default function Login() {
       
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle>반려견 교육 플랫폼</CardTitle>
-          <CardDescription>로그인하여 다양한 교육 서비스를 이용하세요</CardDescription>
+          <CardTitle>로그인 / 회원가입</CardTitle>
+          <CardDescription>PetEdu 플랫폼 서비스를 이용하세요</CardDescription>
         </CardHeader>
         
         <CardContent>

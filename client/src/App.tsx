@@ -1,4 +1,4 @@
-import { Switch, Route } from "wouter";
+import { Switch, Route, useLocation } from "wouter";
 import { AppLayout } from "./layout/AppLayout";
 import Dashboard from "@/pages/dashboard";
 import Home from "./pages/Home";
@@ -58,26 +58,22 @@ function AuthenticatedRoutes() {
 // 비인증 사용자용 라우트
 function UnauthenticatedRoutes() {
   return (
-    <Switch>
-      <Route path="/auth">
-        {() => <Login />}
-      </Route>
-      
-      <Route path="*">
-        {() => (
-          <AppLayout>
-            <Switch>
-              <Route path="/courses" component={Courses} />
-              <Route path="/trainers" component={Trainers} />
-              <Route path="/institutes" component={Institutes} />
-              <Route path="/community" component={Community} />
-              <Route path="/" component={Home} />
-              <Route path="/:rest*" component={() => <Login />} />
-            </Switch>
-          </AppLayout>
-        )}
-      </Route>
-    </Switch>
+    <AppLayout>
+      <Switch>
+        <Route path="/auth" component={Login} />
+        <Route path="/courses" component={Courses} />
+        <Route path="/trainers" component={Trainers} />
+        <Route path="/institutes" component={Institutes} />
+        <Route path="/community" component={Community} />
+        <Route path="/" component={Home} />
+        <Route path="/:rest*">
+          {() => {
+            window.location.href = "/auth";
+            return null;
+          }}
+        </Route>
+      </Switch>
+    </AppLayout>
   );
 }
 
