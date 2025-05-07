@@ -20,9 +20,19 @@ interface TopBarProps {
 }
 
 export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
-  // 전체 auth 객체를 가져와서 비구조화 할당
+  // 전역 상태에서 인증 정보 직접 확인
+  const globalAuth = (window as any).__peteduAuthState;
+  
+  // 로컬 상태와 전역 상태 둘 다 확인
   const auth = useAuth();
-  const { userName, userRole, logout, isAuthenticated } = auth;
+  // 전역 상태가 있으면 우선 사용
+  const authState = globalAuth || auth;
+  
+  // 상태 추출
+  const userName = authState?.userName || auth?.userName;
+  const userRole = authState?.userRole || auth?.userRole;
+  const isAuthenticated = authState?.isAuthenticated || auth?.isAuthenticated;
+  const logout = auth?.logout;
   const [location, setLocation] = useLocation();
   
   // 디버깅용 로그 (개발 완료 후 제거)
