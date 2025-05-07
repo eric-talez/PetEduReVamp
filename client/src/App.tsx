@@ -29,15 +29,45 @@ import RegisterPage from "./pages/auth/login";
 function AuthenticatedRoutes() {
   const { userRole } = useAuth();
 
+  const checkAccess = (allowedRoles: string[]) => {
+    if (!userRole) return false;
+    return allowedRoles.includes(userRole);
+  };
+
   return (
     <AppLayout>
       <Switch>
         <Route path="/" component={Home} />
-        <Route path="/dashboard" component={Dashboard} />
-        <Route path="/courses" component={CoursesPage} />
-        <Route path="/courses/:id" component={CourseDetail} />
-        <Route path="/trainers" component={TrainersPage} />
-        <Route path="/institutes" component={InstitutesPage} />
+        <Route path="/dashboard">
+          {() => checkAccess(['pet-owner', 'trainer', 'institute-admin', 'admin']) ? <Dashboard /> : window.location.href = '/'}
+        </Route>
+        <Route path="/courses">
+          {() => <CoursesPage />}
+        </Route>
+        <Route path="/courses/:id">
+          {() => <CourseDetail />}
+        </Route>
+        <Route path="/trainers">
+          {() => checkAccess(['pet-owner', 'trainer', 'institute-admin', 'admin']) ? <TrainersPage /> : window.location.href = '/'}
+        </Route>
+        <Route path="/institutes">
+          {() => checkAccess(['pet-owner', 'trainer', 'institute-admin', 'admin']) ? <InstitutesPage /> : window.location.href = '/'}
+        </Route>
+        <Route path="/my-courses">
+          {() => checkAccess(['pet-owner']) ? <MyCoursesPage /> : window.location.href = '/'}
+        </Route>
+        <Route path="/my-pets">
+          {() => checkAccess(['pet-owner']) ? <MyPetsPage /> : window.location.href = '/'}
+        </Route>
+        <Route path="/trainer/dashboard">
+          {() => checkAccess(['trainer', 'admin']) ? <Dashboard type="trainer" /> : window.location.href = '/'}
+        </Route>
+        <Route path="/institute/dashboard">
+          {() => checkAccess(['institute-admin', 'admin']) ? <Dashboard type="institute-admin" /> : window.location.href = '/'}
+        </Route>
+        <Route path="/admin/dashboard">
+          {() => checkAccess(['admin']) ? <Dashboard type="admin" /> : window.location.href = '/'}
+        </Route>
         <Route path="/community" component={CommunityPage} />
         <Route path="/my-courses" component={MyCoursesPage} />
         <Route path="/my-pets" component={MyPetsPage} />

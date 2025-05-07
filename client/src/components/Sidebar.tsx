@@ -155,9 +155,12 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
     toggleSidebar
   };
 
-  const showDashboardLink = userRole !== null; // Always show dashboard
+  const showDashboardLink = userRole !== null;
   const showTrainerMenu = userRole === 'trainer' || userRole === 'admin';
   const showInstituteMenu = userRole === 'institute-admin' || userRole === 'admin';
+  const showAdminMenu = userRole === 'admin';
+  const showPetOwnerMenu = userRole === 'pet-owner' || userRole === 'admin';
+  const showBasicMenu = true; // 모든 사용자가 접근 가능한 메뉴min' || userRole === 'admin';
   const showAdminMenu = userRole === 'admin';
   const isPetOwner = userRole === 'pet-owner';
 
