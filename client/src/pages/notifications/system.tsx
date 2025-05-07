@@ -1,11 +1,10 @@
-
 import React, { useState, useEffect } from "react";
+import { useLocation } from "wouter";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/Tabs";
-import NotificationsMenu from "./menu";
 import { 
   AlertCircle, 
   Bell, 
@@ -15,6 +14,7 @@ import {
   ChevronUp, 
   Clock, 
   Info, 
+  MessageSquare,
   Package, 
   Settings, 
   Shield, 
@@ -25,6 +25,7 @@ import {
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
 import { AppLayout } from "@/layout/AppLayout";
+import NotificationsMenu from "./menu";
 
 // 알림 유형별 아이콘 및 색상 매핑
 const notificationTypeMap = {
@@ -69,34 +70,16 @@ interface Notification {
   link?: string;
 }
 
-export default function NotificationsPage() {
+export default function SystemNotificationsPage() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [filter, setFilter] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [expandedNotifications, setExpandedNotifications] = useState<Set<string>>(new Set());
+  const [location, setLocation] = useLocation();
 
   // 샘플 알림 데이터
   useEffect(() => {
     // 실제 애플리케이션에서는 API를 통해 알림 데이터를 가져와야 합니다
     const mockNotifications: Notification[] = [
-      {
-        id: "notif1",
-        title: "수업 일정 알림",
-        content: "내일 오후 3시 기초 훈련 클래스가 예정되어 있습니다. 반려견과 함께 참석해 주세요. 준비물: 리드줄, 간식, 물병, 매트. 주차는 건물 뒤편에서 가능합니다. 수업 시작 10분 전에 도착해서 반려견이 환경에 적응할 수 있게 해주세요.",
-        timestamp: "2024-02-15T09:00:00",
-        type: "event",
-        read: false,
-        link: "/calendar"
-      },
-      {
-        id: "notif2",
-        title: "결제 완료",
-        content: "프리미엄 반려견 훈련용 클리커 구매가 완료되었습니다. 배송은 1-2일 내로 시작될 예정입니다.",
-        timestamp: "2024-02-14T15:30:00",
-        type: "payment",
-        read: false,
-        link: "/shop/orders"
-      },
       {
         id: "notif3",
         title: "수강 신청 마감 임박",
@@ -107,57 +90,12 @@ export default function NotificationsPage() {
         link: "/courses"
       },
       {
-        id: "notif4",
-        title: "이벤트 안내",
-        content: "서울 강남 지역 반려동물 페스티벌이 이번 주말에 개최됩니다. 다양한 부스와 프로그램이 준비되어 있으니 반려동물과 함께 방문해보세요.",
-        timestamp: "2024-02-12T13:45:00",
-        type: "event",
-        read: true,
-        link: "/events"
-      },
-      {
-        id: "notif5",
-        title: "멍멍이의 훈련 피드백",
-        content: "오늘 멍멍이의 '앉아' 훈련 진도가 많이 나아졌습니다. 집에서도 짧은 세션으로 연습해 주세요. 손 신호와 간식 보상을 함께 사용하는 것이 효과적입니다.",
-        timestamp: "2024-02-11T17:20:00",
-        type: "training",
-        read: false,
-        link: "/my-pets/training"
-      },
-      {
         id: "notif6",
         title: "시스템 점검 안내",
         content: "내일 새벽 2시부터 4시까지 시스템 점검이 있을 예정입니다. 이 시간 동안 서비스 이용이 제한될 수 있습니다.",
         timestamp: "2024-02-10T09:00:00",
-        type: "security",
+        type: "system",
         read: true
-      },
-      {
-        id: "notif7",
-        title: "구매하신 상품 배송 시작",
-        content: "주문하신 '프리미엄 강아지 사료 5kg'이 배송을 시작했습니다. 배송 추적은 주문 내역에서 확인하실 수 있습니다.",
-        timestamp: "2024-02-09T11:30:00",
-        type: "order",
-        read: true,
-        link: "/shop/orders"
-      },
-      {
-        id: "notif8",
-        title: "멍멍이 건강 체크 알림",
-        content: "멍멍이의 다음 건강 검진 날짜가 다음 주 화요일입니다. 예약을 확인해 주세요.",
-        timestamp: "2024-02-08T08:15:00",
-        type: "pet",
-        read: false,
-        link: "/my-pets/health"
-      },
-      {
-        id: "notif9",
-        title: "새로운 훈련 과정 추천",
-        content: "멍멍이의 활동 수준과 훈련 진도에 맞춰 '중급 순종 훈련' 과정을 추천합니다. 관심이 있으시면 확인해 보세요.",
-        timestamp: "2024-02-07T14:20:00",
-        type: "training",
-        read: true,
-        link: "/courses"
       },
       {
         id: "notif10",
@@ -207,11 +145,6 @@ export default function NotificationsPage() {
 
   // 필터링 및 검색된 알림 목록
   const filteredNotifications = notifications.filter(notif => {
-    // 유형 필터링
-    if (filter !== "all" && notif.type !== filter) {
-      return false;
-    }
-    
     // 검색어 필터링
     if (searchQuery && !notif.title.toLowerCase().includes(searchQuery.toLowerCase()) && 
         !notif.content.toLowerCase().includes(searchQuery.toLowerCase())) {
@@ -229,8 +162,8 @@ export default function NotificationsPage() {
       <div className="container mx-auto py-6 px-4 max-w-6xl">
         <div className="flex justify-between items-center mb-6">
           <div>
-            <h1 className="text-2xl font-bold">알림장</h1>
-            <p className="text-gray-500 mt-1">모든 알림과 메시지를 확인하세요</p>
+            <h1 className="text-2xl font-bold">시스템 알림</h1>
+            <p className="text-gray-500 mt-1">시스템 및 보안 관련 알림을 확인하세요</p>
           </div>
           <div className="flex items-center space-x-2">
             {unreadCount > 0 && (
@@ -267,12 +200,12 @@ export default function NotificationsPage() {
           <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
             <div className="flex items-start">
               <div className="bg-blue-100 dark:bg-blue-800 rounded-full p-2 mr-4">
-                <Bell className="h-6 w-6 text-blue-500 dark:text-blue-300" />
+                <Info className="h-6 w-6 text-blue-500 dark:text-blue-300" />
               </div>
               <div>
-                <h3 className="font-medium text-blue-800 dark:text-blue-300">알림 정보</h3>
+                <h3 className="font-medium text-blue-800 dark:text-blue-300">시스템 알림 정보</h3>
                 <p className="text-sm text-blue-600 dark:text-blue-400 mt-1">
-                  알림은 30일 동안 보관되며, 그 이후에는 자동으로 삭제됩니다. 지금 읽지 않은 알림이 {unreadCount}개 있습니다.
+                  시스템 알림은 PetEdu 서비스 업데이트, 점검 일정, 비밀번호 변경 요청 등 중요한 정보를 포함합니다.
                 </p>
               </div>
             </div>
@@ -281,7 +214,7 @@ export default function NotificationsPage() {
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           <div className="md:col-span-1">
-            <NotificationsMenu currentPath="/notifications" />
+            <NotificationsMenu currentPath="/notifications/system" />
           </div>
           
           <div className="md:col-span-3">

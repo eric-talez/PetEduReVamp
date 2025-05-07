@@ -511,30 +511,13 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                     <NavItem
                       href="/notifications"
                       icon={<Bell className="w-5 h-5 mr-2" />}
-                      active={isActive("/notifications")}
+                      active={isActive("/notifications") || isActive("/notifications/system") || isActive("/notifications/training") || isActive("/notifications/payment") || isActive("/notifications/event")}
                       onClick={handleItemClick}
                       show={true}
                     >
                       알림장
                     </NavItem>
-                    <NavItem
-                      href="/locations"
-                      icon={<MapPin className="w-5 h-5 mr-2" />}
-                      active={isActive("/locations")}
-                      onClick={handleItemClick}
-                      show={true}
-                    >
-                      위치 기반 서비스
-                    </NavItem>
-                    <NavItem
-                      href="/recommendations"
-                      icon={<ThumbsUp className="w-5 h-5 mr-2" />}
-                      active={isActive("/recommendations")}
-                      onClick={handleItemClick}
-                      show={true}
-                    >
-                      맞춤 추천
-                    </NavItem>
+
                   </>
                 )}
 
