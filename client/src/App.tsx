@@ -1,36 +1,37 @@
 import { Switch, Route } from "wouter";
 import { AppLayout } from "./layout/AppLayout";
-import { useAuth } from "./hooks/useAuth";
+import { useAuth } from "./SimpleApp";
 
 // Pages
 import Home from "./pages/Home";
-import Dashboard from "./pages/dashboard";
-import CoursesPage from "./pages/courses";
-import TrainersPage from "./pages/trainers";
-import InstitutesPage from "./pages/institutes";
-import CommunityPage from "./pages/community";
-import MyCoursesPage from "./pages/my-courses";
-import MyPetsPage from "./pages/my-pets";
-import LocationsPage from "./pages/locations";
-import VideoCallPage from "./pages/video-call";
-import MessagesPage from "./pages/messages";
-import NotificationsPage from "./pages/notifications";
-import ShopPage from "./pages/shop";
-import ProfilePage from "./pages/profile";
-import SettingsPage from "./pages/settings";
+import Dashboard from "./pages/Dashboard";
+import CoursesPage from "./pages/courses/index";
+import TrainersPage from "./pages/trainers/index";
+import InstitutesPage from "./pages/institutes/index";
+import CommunityPage from "./pages/community/index";
+import MyCoursesPage from "./pages/my-courses/index";
+import MyPetsPage from "./pages/my-pets/index";
+import LocationsPage from "./pages/locations/index";
+import VideoCallPage from "./pages/video-call/index";
+import MessagesPage from "./pages/messages/index";
+import NotificationsPage from "./pages/notifications/index";
+import ShopPage from "./pages/shop/index";
+import ProfilePage from "./pages/profile/index";
+import SettingsPage from "./pages/settings/index";
 import NotFound from "./pages/not-found";
 
 // Auth Pages
 import LoginPage from "./pages/auth/login";
-import RegisterPage from "./pages/auth/register";
+// 임시로 로그인 페이지를 재사용 (회원가입 페이지가 아직 없을 경우)
+import RegisterPage from "./pages/auth/login";
 
 function AuthenticatedRoutes() {
-  const { user } = useAuth();
+  const { userRole } = useAuth();
 
   return (
     <AppLayout>
       <Switch>
-        <Route path="/" component={user?.role === 'admin' ? Dashboard : Home} />
+        <Route path="/" component={userRole === 'admin' ? Dashboard : Home} />
         <Route path="/dashboard" component={Dashboard} />
         <Route path="/courses" component={CoursesPage} />
         <Route path="/trainers" component={TrainersPage} />

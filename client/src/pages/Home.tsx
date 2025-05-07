@@ -1,9 +1,9 @@
 import { Button } from '@/components/ui/Button';
 import { Link } from 'wouter';
-import { useAppAuth } from '../App';
+import { useAuth } from '../SimpleApp';
 
 export default function Home() {
-  const auth = useAppAuth();
+  const auth = useAuth();
   
   return (
     <div className="container mx-auto px-4 py-8">
