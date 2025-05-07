@@ -1,4 +1,5 @@
 
+import { useEffect } from "react";
 import { useAuth } from "../../SimpleApp";
 import PetOwnerDashboard from "./pet-owner";
 import TrainerDashboard from "./trainer";
@@ -12,25 +13,34 @@ interface DashboardProps {
 export default function Dashboard({ type }: DashboardProps) {
   const { userRole, isAuthenticated } = useAuth();
   
+  useEffect(() => {
+    // 대시보드 진입 로깅
+    console.log(`Dashboard accessed - User Role: ${userRole}`);
+  }, [userRole]);
+
   if (!isAuthenticated) {
     return <div className="flex items-center justify-center min-h-screen">Loading dashboard...</div>;
   }
 
-  // 사용자 역할에 따라 대시보드 렌더링
-  if (!userRole) {
-    return <div>권한이 없습니다</div>;
-  }
+  // 대시보드 타입이 지정되지 않은 경우 사용자 역할 기반으로 결정
+  const dashboardType = type || userRole;
 
-  switch (userRole) {
+  // 권한별 대시보드 렌더링 및 클릭 이벤트 처리
+  const handleDashboardClick = (action: string, data?: any) => {
+    console.log(`Dashboard action: ${action}`, data);
+    // 여기에 추가적인 클릭 이벤트 처리 로직 구현
+  };
+
+  switch (dashboardType) {
     case "pet-owner":
-      return <PetOwnerDashboard />;
+      return <PetOwnerDashboard onAction={handleDashboardClick} />;
     case "trainer":
-      return <TrainerDashboard />;
+      return <TrainerDashboard onAction={handleDashboardClick} />;
     case "institute-admin":
-      return <InstituteAdminDashboard />;
+      return <InstituteAdminDashboard onAction={handleDashboardClick} />;
     case "admin":
-      return <AdminDashboard />;
+      return <AdminDashboard onAction={handleDashboardClick} />;
     default:
-      return <PetOwnerDashboard />; 
+      return <PetOwnerDashboard onAction={handleDashboardClick} />; 
   }
 }

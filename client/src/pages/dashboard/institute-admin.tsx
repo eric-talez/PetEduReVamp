@@ -8,8 +8,17 @@ import {
   TrendingUp, DollarSign, Calendar, MapPin 
 } from "lucide-react";
 
-export default function InstituteAdminDashboard() {
+interface InstituteAdminDashboardProps {
+  onAction: (action: string, data?: any) => void;
+}
+
+export default function InstituteAdminDashboard({ onAction }: InstituteAdminDashboardProps) {
   const { userName } = useAuth();
+
+  const handleClick = (action: string, data?: any) => {
+    console.log(`Institute Admin action: ${action}`, data);
+    onAction(action, data);
+  };
 
   return (
     <div className="py-8 px-4 sm:px-6 lg:px-8">
