@@ -137,7 +137,11 @@ export default function Courses() {
             description={course.description}
             badge={course.badge}
             trainer={course.trainer}
-            onClick={() => window.location.href = `/course/${course.id}`}
+            onClick={() => {
+              // 표준화된 방식으로 라우팅 처리
+              window.history.pushState({}, "", `/course/${course.id}`);
+              window.dispatchEvent(new PopStateEvent("popstate"));
+            }}
           >
             <div className="flex justify-between items-center mt-4 text-sm">
               <Badge variant="outline">{course.level}</Badge>

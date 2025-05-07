@@ -235,21 +235,27 @@ export default function CourseDetail() {
     }
   }, [courseId]);
 
-  // 강의 시청 핸들러
+  // 강의 시청 핸들러 - 접근 권한 확인 및 사용자 경험 개선
   const handleWatchLesson = (lesson: Lesson) => {
-    console.log("강의 시청 요청:", lesson.title);
-    
+    // 인증되지 않은 사용자가 비공개 강의를 보려고 할 때
     if (!isAuthenticated && !lesson.preview) {
       alert("이 강의를 시청하려면 로그인 후 수강 신청이 필요합니다.");
       return;
     }
 
+    // 인증되었지만 수강 신청하지 않은 사용자가 비공개 강의를 보려고 할 때
     if (!isEnrolled && !lesson.preview) {
       alert("이 강의를 시청하려면 수강 신청이 필요합니다.");
       return;
     }
 
-    // 커리큘럼 탭에서 클릭한 경우에도 재생하도록 설정
+    // 현재 선택된 강의가 이미 활성화된 강의인 경우 스크롤만 진행
+    if (activeVideo?.id === lesson.id) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+
+    // 액티브 비디오 상태 업데이트
     setActiveVideo(lesson);
     
     // 상단 비디오 플레이어 영역으로 스크롤
