@@ -268,6 +268,27 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                   <NavItem href="/auth" icon={<LogIn className="w-5 h-5 mr-2" />} active={isActive("/auth")} onClick={handleItemClick} show={true}>로그인</NavItem>
                 </div>
 
+                {/* Service Statistics for non-authenticated users */}
+                <div className="mt-auto mb-4">
+                  <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4">
+                    서비스 현황
+                  </h3>
+                  
+                  <div className="space-y-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-600 dark:text-gray-300">실시간 이용자</span>
+                      <span className="text-sm font-semibold text-primary">2,458명</span>
+                    </div>
+                    <div className="border-t border-gray-200 dark:border-gray-700 pt-2 flex items-center justify-between">
+                      <span className="text-sm text-gray-600 dark:text-gray-300">사용자 분포</span>
+                      <span className="text-sm font-semibold text-blue-500">반려인 75% / 훈련사 15% / 기관 10%</span>
+                    </div>
+                    <div className="border-t border-gray-200 dark:border-gray-700 pt-2 flex items-center justify-between">
+                      <span className="text-sm text-gray-600 dark:text-gray-300">평균 체류시간</span>
+                      <span className="text-sm font-semibold text-green-500">32분</span>
+                    </div>
+                  </div>
+                </div>
               </>
             )}
 
