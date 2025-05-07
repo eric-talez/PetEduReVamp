@@ -1,7 +1,7 @@
 import { useAuth } from "../../SimpleApp";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Avatar } from "@/components/ui/avatar";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { useLocation, Link } from "wouter";
 import { BookOpen, Calendar, Medal, PawPrint, Star, Bone, Award, Clock } from "lucide-react";
@@ -308,11 +308,10 @@ export default function PetOwnerDashboard({ onAction }: PetOwnerDashboardProps) 
                 </p>
                 <div className="flex justify-between items-center">
                   <div className="flex items-center">
-                    <Avatar
-                      src={course.trainer.avatar}
-                      alt={course.trainer.name}
-                      className="w-8 h-8"
-                    />
+                    <Avatar className="w-8 h-8">
+                      <AvatarImage src={course.trainer.avatar} alt={course.trainer.name} />
+                      <AvatarFallback>{course.trainer.name.substring(0, 2)}</AvatarFallback>
+                    </Avatar>
                     <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">{course.trainer.name}</span>
                   </div>
                   
@@ -328,12 +327,12 @@ export default function PetOwnerDashboard({ onAction }: PetOwnerDashboardProps) 
                 </div>
               </div>
               <div className="bg-gray-50 dark:bg-gray-700/50 px-5 py-3 border-t border-gray-100 dark:border-gray-700">
-                <a 
+                <Link 
                   href={`/course/${course.id}`} 
                   className="text-sm font-medium text-primary hover:text-primary/80"
                 >
                   이어서 학습하기
-                </a>
+                </Link>
               </div>
             </Card>
           ))}
@@ -358,7 +357,7 @@ export default function PetOwnerDashboard({ onAction }: PetOwnerDashboardProps) 
                 />
                 {course.petName && (
                   <Badge 
-                    variant="danger" 
+                    variant="destructive" 
                     className="absolute top-0 left-0 m-2"
                   >
                     {course.petName}에게 맞춤
@@ -392,11 +391,10 @@ export default function PetOwnerDashboard({ onAction }: PetOwnerDashboardProps) 
             <Card key={post.id} className="overflow-hidden border border-gray-100 dark:border-gray-700 card-hover">
               <div className="p-5">
                 <div className="flex items-center mb-4">
-                  <Avatar
-                    src={post.author.avatar}
-                    alt={post.author.name}
-                    className="w-10 h-10"
-                  />
+                  <Avatar className="w-10 h-10">
+                    <AvatarImage src={post.author.avatar} alt={post.author.name} />
+                    <AvatarFallback>{post.author.name.substring(0, 2)}</AvatarFallback>
+                  </Avatar>
                   
                   <div className="ml-3">
                     <h3 className="text-sm font-medium text-gray-800 dark:text-white">{post.author.name}</h3>
