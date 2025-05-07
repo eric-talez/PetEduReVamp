@@ -202,6 +202,15 @@ export function Sidebar({ open, onClose }: SidebarProps) {
                 {menuGroups.main && (
                   <>
                     <NavItem 
+                      href="/" 
+                      icon={<Home className="w-5 h-5 mr-2" />}
+                      active={isActive("/")}
+                      onClick={onClose}
+                    >
+                      홈
+                    </NavItem>
+
+                    <NavItem 
                       href="/courses" 
                       icon={<GraduationCap className="w-5 h-5 mr-2" />}
                       active={isActive("/courses")}
@@ -274,9 +283,18 @@ export function Sidebar({ open, onClose }: SidebarProps) {
                 {menuGroups.main && (
                   <>
                     <NavItem 
-                      href="/dashboard" 
+                      href="/" 
                       icon={<Home className="w-5 h-5 mr-2" />}
-                      active={isActive("/dashboard") || isActive("/")}
+                      active={isActive("/")}
+                      onClick={onClose}
+                    >
+                      홈
+                    </NavItem>
+
+                    <NavItem 
+                      href="/dashboard" 
+                      icon={<LineChart className="w-5 h-5 mr-2" />}
+                      active={isActive("/dashboard")}
                       onClick={onClose}
                     >
                       대시보드
