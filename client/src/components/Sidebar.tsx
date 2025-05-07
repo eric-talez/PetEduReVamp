@@ -297,28 +297,6 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                       </div>
                     </div>
 
-                    {/* Average Session Time */}
-                    <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-xs text-gray-600 dark:text-gray-300">평균 체류 시간</span>
-                        <span className="text-sm font-semibold text-green-600">32분</span>
-                      </div>
-                      <div className="h-20">
-                        <BarChart
-                          data={{
-                            labels: ['월', '화', '수', '목', '금', '토'],
-                            datasets: [{
-                              label: '체류 시간(분)',
-                              data: [28, 25, 30, 35, 32, 34],
-                              backgroundColor: 'hsl(var(--success))'
-                            }]
-                          }}
-                          type="bar"
-                          height={80}
-                        />
-                      </div>
-                    </div>
-
                     {/* User Distribution */}
                     <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3">
                       <div className="flex items-center justify-between mb-2">
