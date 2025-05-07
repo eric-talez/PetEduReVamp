@@ -98,8 +98,15 @@ const MOCK_POST: Post = {
 
 // 로그인 유도 함수
 function promptLogin() {
-  // 로그인 페이지로 이동하는 대신 모달을 표시하거나 다른 UX를 사용할 수 있습니다
-  const confirmed = window.confirm("이 기능은 로그인이 필요합니다. 로그인 페이지로 이동하시겠습니까?");
+  // 먼저 토스트 알림 표시
+  toast({
+    title: "로그인이 필요합니다",
+    description: "이 기능을 사용하려면 로그인이 필요합니다.",
+    variant: "destructive",
+  });
+  
+  // 확인 클릭 전까지는 페이지 그대로 유지
+  const confirmed = window.confirm("로그인 페이지로 이동하시겠습니까?");
   if (confirmed) {
     window.location.href = "/auth/login";
   }

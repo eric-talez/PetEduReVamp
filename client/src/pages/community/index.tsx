@@ -18,16 +18,18 @@ export default function Community() {
   
   // 로그인 유도 함수
   const promptLogin = () => {
+    // 먼저 토스트 알림 표시
     toast({
       title: "로그인이 필요합니다",
       description: "이 기능을 사용하려면 로그인이 필요합니다.",
       variant: "destructive",
     });
     
-    // 2초 후 로그인 페이지로 이동
-    setTimeout(() => {
+    // 확인 클릭 전까지는 커뮤니티 페이지 그대로 유지
+    const confirmed = window.confirm("로그인 페이지로 이동하시겠습니까?");
+    if (confirmed) {
       window.location.href = "/auth/login";
-    }, 2000);
+    }
   };
   
   const posts = [
