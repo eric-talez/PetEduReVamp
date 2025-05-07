@@ -51,7 +51,7 @@ export function BarChart({
       </ResponsiveContainer>
     );
   }
-  
+
   if (type === "line") {
     return (
       <ResponsiveContainer width={width} height={height}>
@@ -65,7 +65,19 @@ export function BarChart({
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis dataKey="name" />
           <YAxis />
-          <Tooltip />
+          <Tooltip 
+            contentStyle={{
+              backgroundColor: 'rgba(255, 255, 255, 0.9)',
+              border: '1px solid #ccc',
+              borderRadius: '4px',
+              padding: '8px'
+            }}
+            formatter={(value: any, name: string) => [value, name]}
+            labelStyle={{
+              color: '#666',
+              marginBottom: '4px'
+            }}
+          />
           <Legend />
           {data.datasets.map((dataset: any, index: number) => (
             <Line 
@@ -74,27 +86,33 @@ export function BarChart({
               dataKey={dataset.label} 
               stroke={dataset.backgroundColor}
               activeDot={{ r: 8 }}
+              dot={{ 
+                r: 4,
+                strokeWidth: 2,
+                fill: "#fff",
+                stroke: dataset.backgroundColor
+              }}
             />
           ))}
         </RechartsLineChart>
       </ResponsiveContainer>
     );
   }
-  
+
   if (type === "pie" || type === "doughnut") {
     const pieData = data.labels.map((label: string, index: number) => {
       const value = data.datasets[0].data[index];
       const backgroundColor = Array.isArray(data.datasets[0].backgroundColor) 
         ? data.datasets[0].backgroundColor[index] 
         : data.datasets[0].backgroundColor;
-      
+
       return {
         name: label,
         value,
         backgroundColor
       };
     });
-    
+
     return (
       <ResponsiveContainer width={width} height={height}>
         <RechartsPieChart>
@@ -134,6 +152,6 @@ export function BarChart({
       </ResponsiveContainer>
     );
   }
-  
+
   return null;
 }
