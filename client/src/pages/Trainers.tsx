@@ -144,9 +144,20 @@ export default function Trainers() {
   // 훈련사 프로필 열기
   const openTrainerProfile = (trainer: Trainer) => {
     console.log("프로필 열기 클릭", trainer.name);
-    setSelectedTrainer(trainer);
-    setIsProfileOpen(true);
-    console.log("isProfileOpen 값:", true);
+    try {
+      setSelectedTrainer(trainer);
+      setIsProfileOpen(true);
+      console.log("isProfileOpen 값:", true);
+      // 디버깅을 위한 추가 로그
+      setTimeout(() => {
+        console.log("모달 상태 확인:", { 
+          isOpen: isProfileOpen, 
+          selectedTrainer: selectedTrainer?.name 
+        });
+      }, 100);
+    } catch (error) {
+      console.error("프로필 열기 오류:", error);
+    }
   };
 
   // 필터된 훈련사 목록
@@ -365,7 +376,11 @@ export default function Trainers() {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => openTrainerProfile(trainer)}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      console.log("프로필 버튼 클릭됨:", trainer.name);
+                      openTrainerProfile(trainer);
+                    }}
                   >
                     프로필 보기
                   </Button>
@@ -420,7 +435,10 @@ export default function Trainers() {
         <SimpleTrainerProfileModal
           trainer={selectedTrainer}
           isOpen={isProfileOpen}
-          onClose={() => setIsProfileOpen(false)}
+          onClose={() => {
+            console.log("모달 닫기 실행");
+            setIsProfileOpen(false);
+          }}
         />
       )}
     </div>

@@ -33,13 +33,35 @@ interface SimpleTrainerProfileModalProps {
 }
 
 export function SimpleTrainerProfileModal({ trainer, isOpen, onClose }: SimpleTrainerProfileModalProps) {
-  if (!isOpen) return null;
+  // 디버깅을 위한 훅 사용
+  useEffect(() => {
+    if (isOpen) {
+      console.log("SimpleTrainerProfileModal - 모달이 열렸습니다:", trainer.name);
+    }
+  }, [isOpen, trainer]);
+
+  if (!isOpen) {
+    console.log("SimpleTrainerProfileModal - 모달이 닫혀있습니다");
+    return null;
+  }
   
-  console.log("모달 렌더링:", trainer.name);
+  console.log("SimpleTrainerProfileModal - 렌더링:", trainer.name);
 
   return (
-    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 overflow-y-auto">
-      <div className="bg-white dark:bg-gray-900 rounded-lg shadow-lg max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+    <div 
+      className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 overflow-y-auto"
+      onClick={(e) => {
+        // 배경 클릭 시 모달 닫기 (이벤트 버블링 방지)
+        if (e.target === e.currentTarget) {
+          console.log("모달 배경 클릭");
+          onClose();
+        }
+      }}
+    >
+      <div 
+        className="bg-white dark:bg-gray-900 rounded-lg shadow-lg max-w-3xl w-full max-h-[90vh] overflow-y-auto"
+        onClick={(e) => e.stopPropagation()} // 모달 내부 클릭 시 이벤트 버블링 방지
+      >
         {/* 헤더 */}
         <div className="p-6 border-b border-gray-100 dark:border-gray-800 relative">
           <div className="flex items-start gap-4">
@@ -70,7 +92,12 @@ export function SimpleTrainerProfileModal({ trainer, isOpen, onClose }: SimpleTr
             </div>
           </div>
           <button 
-            onClick={onClose}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              console.log("모달 내부 X 버튼 클릭");
+              onClose();
+            }}
             className="absolute right-4 top-4 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300"
           >
             <X className="h-5 w-5" />
@@ -164,7 +191,17 @@ export function SimpleTrainerProfileModal({ trainer, isOpen, onClose }: SimpleTr
           
           <div className="mt-4 flex justify-between">
             <span className="text-sm">강의 {trainer.coursesCount}개</span>
-            <Button variant="ghost" size="sm" onClick={onClose}>닫기</Button>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={(e) => {
+                e.preventDefault();
+                console.log("모달 내부 닫기 버튼 클릭");
+                onClose();
+              }}
+            >
+              닫기
+            </Button>
           </div>
         </div>
       </div>
