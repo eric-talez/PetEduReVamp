@@ -81,13 +81,8 @@ export default function VideoClassReservePage() {
       setLocation('/video-call');
     }
 
-    // 비로그인 상태면 로그인 페이지로 리디렉션
-    if (!isAuthenticated) {
-      console.log('로그인이 필요한 페이지입니다.');
-      setTimeout(() => {
-        window.location.href = '/auth';
-      }, 2000);
-    }
+    // 로그인 상태를 확인하지만 비로그인 상태로도 계속 진행 가능
+    console.log('예약 페이지 접근: 로그인 상태 =', isAuthenticated ? '로그인됨' : '비로그인');
   }, [isAuthenticated, setLocation]);
 
   const handleDateSelect = (date: string) => {
@@ -114,24 +109,7 @@ export default function VideoClassReservePage() {
     }
   };
 
-  if (!isAuthenticated) {
-    return (
-      <div className="container mx-auto py-12 px-4">
-        <Card className="max-w-md mx-auto">
-          <CardHeader>
-            <div className="flex items-center space-x-2 text-amber-500">
-              <AlertCircle className="h-6 w-6" />
-              <CardTitle>로그인 필요</CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <p>화상 수업 예약을 위해서는 로그인이 필요합니다.</p>
-            <p className="mt-2 text-gray-500">잠시 후 로그인 페이지로 이동합니다...</p>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
+  // 비로그인 상태에서도 예약 가능
 
   if (!videoClass) {
     return (
@@ -317,6 +295,7 @@ export default function VideoClassReservePage() {
                 <Info className="h-5 w-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
                 <div className="text-sm text-blue-700 dark:text-blue-300">
                   <p>결제 완료 후 예약 확정 이메일이 발송됩니다. 수업 시작 10분 전에 입장 링크가 담긴 알림을 받게 됩니다.</p>
+                  <p className="mt-1">수업 시작 10분 전까지 취소 시 100% 환불이 가능하며, 그 이후에는 취소 및 환불이 불가능합니다.</p>
                 </div>
               </div>
             </CardContent>

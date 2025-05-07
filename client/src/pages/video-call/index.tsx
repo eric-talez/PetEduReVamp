@@ -270,13 +270,7 @@ export default function VideoCallPage() {
   });
 
   const handleReservation = (classId: number) => {
-    if (!isAuthenticated) {
-      // 로그인이 필요한 경우 로그인 페이지로 리다이렉트
-      window.location.href = "/auth"; // 또는 모달로 로그인 유도
-      return;
-    }
-    
-    // 로그인된 경우 예약 페이지로 이동
+    // 로그인 여부와 상관없이 예약 페이지로 이동
     window.location.href = `/video-call/reserve/${classId}`;
   };
 
@@ -440,7 +434,7 @@ export default function VideoCallPage() {
           <div className="bg-white dark:bg-gray-700 p-4 rounded-lg shadow">
             <h3 className="font-bold mb-2">환불 정책</h3>
             <p className="text-sm text-gray-600 dark:text-gray-300">
-              수업 시작 24시간 전까지 취소 시 100% 환불, 12시간 전까지 50% 환불이 가능합니다. 그 이후에는 환불이 불가능합니다.
+              수업 시작 10분 전까지 취소 시 100% 환불이 가능합니다. 그 이후에는 취소 및 환불이 불가능합니다.
             </p>
           </div>
         </div>
