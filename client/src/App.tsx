@@ -120,6 +120,8 @@ function AuthenticatedRoutes() {
         <Route path="/messages" component={MessagesPage} />
         <Route path="/notifications" component={NotificationsPage} />
         <Route path="/shop" component={ShopPage} />
+        <Route path="/shop/cart" component={lazy(() => import('./pages/shop/cart'))} />
+        <Route path="/shop/checkout" component={lazy(() => import('./pages/shop/checkout'))} />
         <Route path="/profile" component={ProfilePage} />
         <Route path="/settings" component={SettingsPage} />
         <Route path="/events" component={EventsPage} />
@@ -207,6 +209,9 @@ function UnauthenticatedRoutes() {
         <Route path="/video-call" component={VideoCallPage} />
         <Route path="/course-reservation" component={CourseReservationPage} />
         <Route path="/locations" component={LocationsPage} />
+        <Route path="/shop" component={ShopPage} />
+        <Route path="/shop/cart" component={lazy(() => import('./pages/shop/cart'))} />
+        <Route path="/shop/checkout" component={lazy(() => import('./pages/shop/checkout'))} />
         <Route path="/events" component={EventsPage} />
         <Route path="/events/calendar" component={EventCalendarPage} />
         <Route path="/events/:id">

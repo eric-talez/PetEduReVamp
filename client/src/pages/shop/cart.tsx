@@ -397,7 +397,7 @@ export default function CartPage() {
           <div className="mt-4 text-sm text-gray-500">
             <p>· 30,000원 이상 구매 시 무료 배송</p>
             <p>· 추천인 코드는 해당 코드를 발급한 트레이너에게 수수료가 지급됩니다.</p>
-            <p>· 결제 완료 후 취소는 마이페이지 > 주문내역에서 가능합니다.</p>
+            <p>· 결제 완료 후 취소는 마이페이지 {'>'} 주문내역에서 가능합니다.</p>
           </div>
         </div>
       </div>
