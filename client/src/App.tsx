@@ -20,17 +20,14 @@ import CourseReservationPage from "./pages/course-reservation/index";
 import MessagesPage from "./pages/messages/index";
 import NotificationsPage from "./pages/notifications/index";
 // 쇼핑 페이지: 새로운 컴포넌트 사용
-import ShopNewPage from "./pages/shop-new/index";
-import SimpleShopPage from "./pages/shop-simple/index";
+
 import VideoTrainingPage from "./pages/video-training/index";
 import VideoTrainingDetailPage from "./pages/video-training/video";
 import ProfilePage from "./pages/profile/index";
 import SettingsPage from "./pages/settings/index";
 import NotFound from "./pages/not-found";
 import TrainerTest from "./pages/TrainerTest";
-import ShopRedirect from "./pages/ShopRedirect";
-import ShopBasicPage from "./pages/ShopBasicPage";
-import ShopSimplePage from "./pages/shop-simple"; // 추가된 import
+
 import TrainerReservationsPage from "./pages/trainer-dashboard/reservations";
 import InstituteCourseApprovalsPage from "./pages/institute-dashboard/course-approvals";
 import InstitutePetAssignmentsPage from "./pages/institute-dashboard/pet-assignments";
@@ -126,44 +123,7 @@ function AuthenticatedRoutes() {
         </Route>
         <Route path="/messages" component={MessagesPage} />
         <Route path="/notifications" component={NotificationsPage} />
-        <Route path="/shop-new">
-          {() => {
-            console.log("ShopNewPage 렌더링 - /shop-new 경로 (인증)");
-            return <ShopNewPage />;
-          }}
-        </Route>
-        {/* 쇼핑몰 라우트 통합 */}
-        <Route path="/shop" component={ShopBasicPage} />
-        <Route path="/shop-simple" component={ShopSimplePage} />
-        <Route path="/shop-redirect" component={ShopRedirect} />
 
-        {/* 추가: ShopBasicPage 라우트 (인증) */}
-        <Route path="/shop-basic">
-          {() => {
-            console.log("ShopBasicPage 렌더링 (인증)");
-            return <ShopBasicPage />;
-          }}
-        </Route>
-        <Route path="/shop/cart">
-          {() => {
-            const CartPage = lazy(() => import('./pages/shop/cart'));
-            return (
-              <Suspense fallback={<div className="p-8 text-center">장바구니 로딩 중...</div>}>
-                <CartPage />
-              </Suspense>
-            );
-          }}
-        </Route>
-        <Route path="/shop/checkout">
-          {() => {
-            const CheckoutPage = lazy(() => import('./pages/shop/checkout'));
-            return (
-              <Suspense fallback={<div className="p-8 text-center">결제 페이지 로딩 중...</div>}>
-                <CheckoutPage />
-              </Suspense>
-            );
-          }}
-        </Route>
         <Route path="/profile" component={ProfilePage} />
         <Route path="/settings" component={SettingsPage} />
         <Route path="/events" component={EventsPage} />
@@ -227,54 +187,7 @@ function UnauthenticatedRoutes() {
         <Route path="/auth/login" component={LoginPage} />
         <Route path="/auth/register" component={RegisterPage} />
 
-        {/* 쇼핑 관련 - 이 부분이 중요합니다 */}
-        <Route path="/shop/cart">
-          {() => {
-            const CartPage = lazy(() => import('./pages/shop/cart'));
-            return (
-              <Suspense fallback={<div className="p-8 text-center">장바구니 로딩 중...</div>}>
-                <CartPage />
-              </Suspense>
-            );
-          }}
-        </Route>
-        <Route path="/shop/checkout">
-          {() => {
-            const CheckoutPage = lazy(() => import('./pages/shop/checkout'));
-            return (
-              <Suspense fallback={<div className="p-8 text-center">결제 페이지 로딩 중...</div>}>
-                <CheckoutPage />
-              </Suspense>
-            );
-          }}
-        </Route>
-        <Route path="/shop-new">
-          {() => {
-            console.log("ShopNewPage 렌더링 - /shop-new 경로 (비인증)");
-            return <ShopNewPage />;
-          }}
-        </Route>
-        {/* 기존 /shop 경로에서 ShopBasicPage 직접 렌더링 (비인증) */}
-        <Route path="/shop" component={ShopBasicPage} />
-        <Route path="/shop-simple" component={() => {
-          const SimpleShopPage = lazy(() => import('./pages/shop-simple'));
-          return (
-            <Suspense fallback={<div className="p-8 text-center">쇼핑몰 로딩 중...</div>}>
-              <SimpleShopPage />
-            </Suspense>
-          );
-        }} />
-        <Route path="/shop-redirect" component={ShopRedirect} />
 
-        {/* 추가: ShopBasicPage 라우트 (비인증) */}
-        <Route path="/shop-basic">
-          {() => {
-            console.log("ShopBasicPage 렌더링 (비인증)");
-            return <ShopBasicPage />;
-          }}
-        </Route>
-
-        {/* 강의 및 비디오 관련 */}
         <Route path="/course/:id" component={CourseDetail} />
         <Route path="/courses" component={CoursesPage} />
         <Route path="/video-training/:id" component={VideoTrainingDetailPage} />

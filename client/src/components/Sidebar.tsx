@@ -388,31 +388,7 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                       show={true}
                     >이벤트</NavItem>
 
-                    <NavItem
-                      href="/shop-simple"
-                      icon={<ShoppingBag className="w-5 h-5 mr-2" />}
-                      active={isActive("/shop") || isActive("/shop-simple")}
-                      onClick={(path) => {
-                        console.log("쇼핑 메뉴 클릭 처리", {
-                          isAuthenticated,
-                          path,
-                          location: window.location.href
-                        });
-                        
-                        if (!isAuthenticated) {
-                          console.log("비로그인 사용자 -> 로그인 페이지");
-                          window.location.href = "/auth/login";
-                          return;
-                        }
-                        
-                        console.log("로그인 사용자 -> 쇼핑 페이지");
-                        window.location.href = "/shop-simple";
-                        if (onClose) onClose();
-                      }}
-                      show={true}
-                    >
-                      쇼핑
-                    </NavItem>
+                    {/* 쇼핑 메뉴 제거됨 */}
 
                     {/* 도움말 그룹 추가 */}
                     {expanded && (
