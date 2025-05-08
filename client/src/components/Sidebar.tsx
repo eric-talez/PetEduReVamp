@@ -81,11 +81,15 @@ interface NavItemProps {
 function NavItem({ href, icon, children, active, onClick, show }: NavItemProps) {
   const { expanded } = useContext(SidebarContext);
   const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
-    // 기본 동작 항상 중지하고 우리의 라우팅 로직 사용
+    // 기본 동작 방지하고 커스텀 라우팅 로직 사용
     e.preventDefault();
     
     if (onClick) {
       onClick(href);
+    } else {
+      console.log("기본 네비게이션 시도:", href);
+      // onClick이 없는 경우 window.location 사용 (임시 조치)
+      window.location.href = href;
     }
   };
 
@@ -404,7 +408,8 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                         console.log("비로그인 사용자 쇼핑 메뉴 클릭");
                         console.log("현재 URL:", window.location.href);
                         console.log("이동할 경로: /shop-basic");
-                        navigate(path); // 직접 path를 사용하여 href와 일치시킴
+                        // navigate 대신 직접 location 변경 시도
+                        window.location.href = "/shop-basic";
                         if (onClose) onClose();
                         return; // 이후 처리 중단
                       }} 
@@ -542,7 +547,8 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                         console.log("인증된 사용자 쇼핑 메뉴 클릭");
                         console.log("현재 URL:", window.location.href);
                         console.log("이동할 경로:", path);
-                        navigate(path); // 직접 path를 사용하여 href와 일치시킴
+                        // navigate 대신 직접 location 변경 시도
+                        window.location.href = "/shop-basic";
                         if (onClose) onClose();
                         return; // 이후 처리 중단
                       }}
