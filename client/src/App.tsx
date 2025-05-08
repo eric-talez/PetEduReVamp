@@ -261,6 +261,16 @@ function UnauthenticatedRoutes() {
           )}
         </Route>
 
+        {/* 쇼핑 관련 라우트 */}
+        <Route path="/shop" component={ShopPage} />
+        <Route path="/shop/cart">
+          {() => (
+            <Suspense fallback={<div className="p-8 text-center">장바구니 로딩 중...</div>}>
+              <Cart />
+            </Suspense>
+          )}
+        </Route>
+
         {/* 기타 페이지 */}
         <Route path="/trainers" component={TrainersPage} />
         <Route path="/video-call" component={VideoCallPage} />
