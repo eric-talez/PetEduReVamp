@@ -8,6 +8,7 @@ import { WeeklyWeatherModal } from '@/components/WeeklyWeatherModal';
 import { useState } from 'react';
 
 export default function Home() {
+  console.log("홈 페이지 렌더링");
   const auth = useAuth();
   const [isWeatherModalOpen, setIsWeatherModalOpen] = useState(false);
   
@@ -312,6 +313,19 @@ export default function Home() {
       </div>
       
 
+      
+      {/* 디버깅용 링크 */}
+      <div className="mb-4 p-4 bg-blue-50 dark:bg-blue-900 rounded-xl">
+        <h2 className="text-lg font-semibold mb-2">디버깅 링크</h2>
+        <div className="flex flex-wrap gap-2 mt-2">
+          <a href="/shop-new" className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors">
+            Shop-New 페이지 직접 접근
+          </a>
+          <a href="/shop" className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors">
+            Shop 페이지
+          </a>
+        </div>
+      </div>
       
       {/* 트렌딩 섹션 추가 */}
       <div className="mb-10">

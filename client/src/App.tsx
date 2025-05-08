@@ -122,9 +122,15 @@ function AuthenticatedRoutes() {
         </Route>
         <Route path="/messages" component={MessagesPage} />
         <Route path="/notifications" component={NotificationsPage} />
+        <Route path="/shop-new">
+          {() => {
+            console.log("ShopNewPage 렌더링 - /shop-new 경로 (인증)");
+            return <ShopNewPage />;
+          }}
+        </Route>
         <Route path="/shop">
           {() => {
-            console.log("ShopNewPage 렌더링 - 인증된 사용자");
+            console.log("ShopNewPage 렌더링 - /shop 경로 (인증)");
             return <ShopNewPage />;
           }}
         </Route>
@@ -227,9 +233,15 @@ function UnauthenticatedRoutes() {
             );
           }}
         </Route>
+        <Route path="/shop-new">
+          {() => {
+            console.log("ShopNewPage 렌더링 - /shop-new 경로 (비인증)");
+            return <ShopNewPage />;
+          }}
+        </Route>
         <Route path="/shop">
           {() => {
-            console.log("ShopNewPage 렌더링 - 비인증 사용자");
+            console.log("ShopNewPage 렌더링 - /shop 경로 (비인증)");
             return <ShopNewPage />;
           }}
         </Route>

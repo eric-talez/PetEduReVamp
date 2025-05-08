@@ -6,6 +6,14 @@ import { ShoppingBag, Star } from "lucide-react";
 export default function ShopNewPage() {
   console.log("===== 새로운 ShopNewPage 컴포넌트 렌더링 =====");
   
+  // 현재 위치 정보 출력
+  console.log("현재 창의 URL 정보:", {
+    href: window.location.href,
+    pathname: window.location.pathname,
+    host: window.location.host,
+    protocol: window.location.protocol
+  });
+  
   // 샘플 제품 데이터
   const sampleProducts = [
     {
