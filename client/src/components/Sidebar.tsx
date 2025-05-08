@@ -2,6 +2,7 @@ import { Link, useLocation } from "wouter";
 import { BarChart } from "@/components/ui/chart";
 import { cn } from "@/lib/utils";
 import React, { useState, useEffect, createContext, useContext } from "react";
+import { SpecialShopLink } from "./SpecialShopLink";
 
 // 라우팅 문제 해결을 위한 전용 함수
 function goToShopPage() {

@@ -1,5 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { AlertCircle } from "lucide-react";
+import { SpecialShopLink } from "@/components/SpecialShopLink";
 
 export default function NotFound() {
   console.log("404 - 페이지를 찾을 수 없습니다");
@@ -23,9 +24,42 @@ export default function NotFound() {
               <a href="/shop-new" className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors">
                 /shop-new 링크
               </a>
+              <a href="/shop" className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600 transition-colors">
+                /shop 링크
+              </a>
+              <a 
+                href="#" 
+                onClick={(e) => {
+                  e.preventDefault();
+                  window.location.href = window.location.origin + '/shop';
+                }} 
+                className="px-3 py-1 bg-purple-500 text-white rounded hover:bg-purple-600 transition-colors"
+              >
+                전체 URL /shop
+              </a>
+              <a 
+                href="#" 
+                onClick={(e) => {
+                  e.preventDefault();
+                  const url = new URL('/shop', window.location.origin);
+                  console.log('새 URL 생성:', url.toString());
+                  window.location.href = url.toString();
+                }} 
+                className="px-3 py-1 bg-orange-500 text-white rounded hover:bg-orange-600 transition-colors"
+              >
+                URL 객체 이용
+              </a>
               <a href="/" className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors">
                 홈으로 이동
               </a>
+              <SpecialShopLink className="px-3 py-1 bg-pink-500 text-white rounded hover:bg-pink-600 transition-colors">
+                특수 쇼핑 링크
+              </SpecialShopLink>
+              <div className="w-full mt-3">
+                <p className="text-sm text-blue-700 dark:text-blue-300">현재 URL: {window.location.href}</p>
+                <p className="text-sm text-blue-700 dark:text-blue-300">Origin: {window.location.origin}</p>
+                <p className="text-sm text-blue-700 dark:text-blue-300">Pathname: {window.location.pathname}</p>
+              </div>
             </div>
           </div>
         </CardContent>
