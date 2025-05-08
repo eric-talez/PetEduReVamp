@@ -10,7 +10,7 @@ export function SpecialShopLink({ children, className = "" }: SpecialShopLinkPro
 
   useEffect(() => {
     // 마운트 시에만 URL 설정
-    setUrl(window.location.origin + "/shop");
+    setUrl(window.location.origin + "/shop/simple");
   }, []);
 
   const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {

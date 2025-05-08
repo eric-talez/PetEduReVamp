@@ -179,7 +179,7 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
       "/", "/courses", "/trainers", "/video-training", "/video-call", "/community",
       "/institutes", "/institutes/register", "/events", "/events/calendar",
       "/help/faq", "/help/guide", "/help/about", "/help/contact", "/shop",
-      "/shop-redirect", "/shop-new"
+      "/shop-redirect", "/shop-new", "/shop/simple", "/shop/test"
     ];
 
     // 로그인 필요한 페이지 접근 시
@@ -388,7 +388,17 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                       show={true}
                     >이벤트</NavItem>
 
-                    {/* 쇼핑 메뉴 제거됨 */}
+                    <NavItem 
+                      href="/shop/simple" 
+                      icon={<ShoppingBag className="w-5 h-5 mr-2" />} 
+                      active={isActive("/shop") || isActive("/shop/simple")} 
+                      onClick={(path) => {
+                        console.log("비인증 사용자가 쇼핑 메뉴 클릭");
+                        // 직접 URL 이동을 사용하여 간소화된 쇼핑 페이지로 이동
+                        window.location.href = "/shop/simple";
+                      }} 
+                      show={true}
+                    >쇼핑</NavItem>
 
                     {/* 도움말 그룹 추가 */}
                     {expanded && (
