@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Search, ShoppingBag, Star, RefreshCw, Tag, Truck, Gift, Heart, ShoppingCart, AlertCircle, PawPrint } from "lucide-react";
-import { useAuth } from "../../SimpleApp";
+import { useAuth } from "@/hooks/useAuth";
 import { useCart } from "@/context/cart-context";
 
 interface Product {
@@ -27,6 +27,7 @@ interface Product {
 }
 
 export default function ShopPage() {
+  console.log("ShopPage 컴포넌트 렌더링 시작");
   const [activeTab, setActiveTab] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [referralCode, setReferralCode] = useState<string | null>(null);
