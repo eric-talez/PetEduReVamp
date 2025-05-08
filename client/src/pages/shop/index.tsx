@@ -6,8 +6,9 @@ import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
-import { Search, ShoppingBag, Star, RefreshCw, Tag, Truck, Gift, Heart, ShoppingCart, AlertCircle } from "lucide-react";
+import { Search, ShoppingBag, Star, RefreshCw, Tag, Truck, Gift, Heart, ShoppingCart, AlertCircle, PawPrint } from "lucide-react";
 import { useAuth } from "../../SimpleApp";
+import { useCart } from "@/context/cart-context";
 
 interface Product {
   id: number;
@@ -29,10 +30,10 @@ interface Product {
 export default function ShopPage() {
   const [activeTab, setActiveTab] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState<string>("");
-  const [cartCount, setCartCount] = useState<number>(0);
   const [referralCode, setReferralCode] = useState<string | null>(null);
-  const [location] = useLocation();
+  const [location, navigate] = useLocation();
   const auth = useAuth();
+  const { cartItems, cartCount, addToCart } = useCart();
   
   // 제품 데이터
   const products: Product[] = [
@@ -174,10 +175,17 @@ export default function ShopPage() {
   });
 
   // 장바구니에 추가
-  const addToCart = (productId: number) => {
-    // 실제 구현에서는 장바구니 상태 관리가 필요
-    setCartCount(prev => prev + 1);
-    console.log(`Product ${productId} added to cart`);
+  const handleAddToCart = (product: Product) => {
+    // cart-context의 함수를 활용하여 장바구니에 상품 추가
+    addToCart({
+      productId: product.id,
+      name: product.name,
+      price: product.price,
+      discountedPrice: product.discountRate ? Math.round(product.price * (1 - product.discountRate / 100)) : undefined,
+      quantity: 1,
+      imageUrl: product.imageUrl,
+      inStock: product.inStock
+    });
     
     // 추천 코드가 있는 경우 로그
     if (referralCode) {
