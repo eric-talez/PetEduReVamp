@@ -389,13 +389,13 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                     >이벤트</NavItem>
 
                     <NavItem 
-                      href="/shop/simple" 
+                      href="/shop" 
                       icon={<ShoppingBag className="w-5 h-5 mr-2" />} 
-                      active={isActive("/shop") || isActive("/shop/simple")} 
+                      active={isActive("/shop")} 
                       onClick={(path) => {
                         console.log("비인증 사용자가 쇼핑 메뉴 클릭");
-                        // 직접 URL 이동을 사용하여 간소화된 쇼핑 페이지로 이동
-                        window.location.href = "/shop/simple";
+                        // 직접 URL 이동을 사용하여 쇼핑 페이지로 이동
+                        window.location.href = "/shop";
                       }} 
                       show={true}
                     >쇼핑</NavItem>
@@ -482,10 +482,10 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                     <NavItem href="/institutes" icon={<MapPin className="w-5 h-5 mr-2" />} active={isActive("/institutes")} onClick={handleItemClick} show={true}>위치 서비스</NavItem>
                     <NavItem href="/community" icon={<MessageSquare className="w-5 h-5 mr-2" />} active={isActive("/community")} onClick={handleItemClick} show={true}>커뮤니티</NavItem>
                     <NavItem href="/events" icon={<Calendar className="w-5 h-5 mr-2" />} active={isActive("/events")} onClick={handleItemClick} show={true}>이벤트</NavItem>
-                    <NavItem href="/shop/simple" icon={<ShoppingBag className="w-5 h-5 mr-2" />} active={isActive("/shop") || isActive("/shop/simple")} onClick={(path) => {
-                      console.log("쇼핑 메뉴 클릭 - 간단한 테스트 페이지로 이동");
+                    <NavItem href="/shop" icon={<ShoppingBag className="w-5 h-5 mr-2" />} active={isActive("/shop")} onClick={(path) => {
+                      console.log("쇼핑 메뉴 클릭");
                       // 쇼핑 페이지는 특별 처리
-                      window.location.href = "/shop/simple";
+                      window.location.href = "/shop";
                     }} show={true}>쇼핑</NavItem>
                   </>
                 )}
