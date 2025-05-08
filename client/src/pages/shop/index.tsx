@@ -33,7 +33,7 @@ export default function ShopPage() {
   const [referralCode, setReferralCode] = useState<string | null>(null);
   const [location, navigate] = useLocation();
   const auth = useAuth();
-  const { cartItems, cartCount, addToCart } = useCart();
+  const { cartItems, cartCount, addToCart: addItemToCart } = useCart();
   
   // 제품 데이터
   const products: Product[] = [
@@ -177,7 +177,7 @@ export default function ShopPage() {
   // 장바구니에 추가
   const handleAddToCart = (product: Product) => {
     // cart-context의 함수를 활용하여 장바구니에 상품 추가
-    addToCart({
+    addItemToCart({
       productId: product.id,
       name: product.name,
       price: product.price,
@@ -335,7 +335,7 @@ export default function ShopPage() {
                       <Button 
                         className="flex-1"
                         disabled={!product.inStock}
-                        onClick={() => addToCart(product.id)}
+                        onClick={() => handleAddToCart(product)}
                       >
                         <ShoppingBag className="mr-2 h-4 w-4" />
                         {product.inStock ? "장바구니" : "품절"}
