@@ -4,168 +4,179 @@ import { useAuth } from '../SimpleApp';
 import { BannerSlider } from '@/components/BannerSlider';
 import { TrendingSection } from '@/components/TrendingSection';
 import { MiniChart } from '@/components/ui/mini-chart';
+import { WeeklyWeatherModal } from '@/components/WeeklyWeatherModal';
+import { useState } from 'react';
 
 export default function Home() {
   const auth = useAuth();
+  const [isWeatherModalOpen, setIsWeatherModalOpen] = useState(false);
   
   return (
     <div className="container mx-auto px-4 py-8">
       {/* 서비스 현황 및 날씨 - 배너 위 영역 */}
       <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-6">
         {/* 등록된 전문 훈련사 */}
-        <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-md">
-          <h3 className="text-lg font-semibold mb-2">등록된 전문 훈련사</h3>
-          <div className="flex items-center">
-            <div className="p-2 bg-green-100 dark:bg-green-900 rounded-full mr-3">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-              </svg>
-            </div>
-            <div>
-              <p className="text-2xl font-bold">254명</p>
-              <div className="flex items-center">
-                <span className="text-sm text-green-500 dark:text-green-400 font-medium">+12명</span>
-                <span className="mx-1 text-gray-500 dark:text-gray-400 text-xs">지난 달 대비</span>
-                <span className="text-green-500 dark:text-green-400">↑</span>
+        <Link href="/trainers" className="group">
+          <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-md transition-all duration-300 hover:shadow-lg hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer">
+            <h3 className="text-lg font-semibold mb-2 group-hover:text-primary transition-colors">등록된 전문 훈련사</h3>
+            <div className="flex items-center">
+              <div className="p-2 bg-green-100 dark:bg-green-900 rounded-full mr-3 group-hover:bg-green-200 dark:group-hover:bg-green-800 transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+              </div>
+              <div>
+                <p className="text-2xl font-bold">254명</p>
+                <div className="flex items-center">
+                  <span className="text-sm text-green-500 dark:text-green-400 font-medium">+12명</span>
+                  <span className="mx-1 text-gray-500 dark:text-gray-400 text-xs">지난 달 대비</span>
+                  <span className="text-green-500 dark:text-green-400">↑</span>
+                </div>
               </div>
             </div>
+            
+            <div className="mt-3 h-12">
+              <MiniChart 
+                data={[
+                  { name: '7월', value: 220 },
+                  { name: '8월', value: 230 },
+                  { name: '9월', value: 235 },
+                  { name: '10월', value: 242 },
+                  { name: '11월', value: 254 }
+                ]} 
+                stroke="#22c55e"
+                fill="rgba(34, 197, 94, 0.2)"
+                positive={true}
+              />
+            </div>
+            
+            <div className="mt-2">
+              <p className="text-sm">다양한 분야의 전문 훈련사들이 대기중입니다.</p>
+            </div>
           </div>
-          
-          <div className="mt-3 h-12">
-            <MiniChart 
-              data={[
-                { name: '7월', value: 220 },
-                { name: '8월', value: 230 },
-                { name: '9월', value: 235 },
-                { name: '10월', value: 242 },
-                { name: '11월', value: 254 }
-              ]} 
-              stroke="#22c55e"
-              fill="rgba(34, 197, 94, 0.2)"
-              positive={true}
-            />
-          </div>
-          
-          <div className="mt-2">
-            <p className="text-sm">다양한 분야의 전문 훈련사들이 대기중입니다.</p>
-          </div>
-        </div>
+        </Link>
         
         {/* 등록된 교육 기관 */}
-        <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-md">
-          <h3 className="text-lg font-semibold mb-2">등록된 교육 기관</h3>
-          <div className="flex items-center">
-            <div className="p-2 bg-purple-100 dark:bg-purple-900 rounded-full mr-3">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-              </svg>
-            </div>
-            <div>
-              <p className="text-2xl font-bold">86개</p>
-              <div className="flex items-center">
-                <span className="text-sm text-purple-500 dark:text-purple-400 font-medium">+3개</span>
-                <span className="mx-1 text-gray-500 dark:text-gray-400 text-xs">지난 달 대비</span>
-                <span className="text-purple-500 dark:text-purple-400">↑</span>
+        <Link href="/institutes" className="group">
+          <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-md transition-all duration-300 hover:shadow-lg hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer">
+            <h3 className="text-lg font-semibold mb-2 group-hover:text-primary transition-colors">등록된 교육 기관</h3>
+            <div className="flex items-center">
+              <div className="p-2 bg-purple-100 dark:bg-purple-900 rounded-full mr-3 group-hover:bg-purple-200 dark:group-hover:bg-purple-800 transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                </svg>
+              </div>
+              <div>
+                <p className="text-2xl font-bold">86개</p>
+                <div className="flex items-center">
+                  <span className="text-sm text-purple-500 dark:text-purple-400 font-medium">+3개</span>
+                  <span className="mx-1 text-gray-500 dark:text-gray-400 text-xs">지난 달 대비</span>
+                  <span className="text-purple-500 dark:text-purple-400">↑</span>
+                </div>
               </div>
             </div>
+            
+            <div className="mt-3 h-12">
+              <MiniChart 
+                data={[
+                  { name: '7월', value: 78 },
+                  { name: '8월', value: 80 },
+                  { name: '9월', value: 83 },
+                  { name: '10월', value: 83 },
+                  { name: '11월', value: 86 }
+                ]} 
+                stroke="#a855f7"
+                fill="rgba(168, 85, 247, 0.2)"
+                positive={true}
+              />
+            </div>
+            
+            <div className="mt-2">
+              <p className="text-sm">전국 각지의 교육 기관에서 수준 높은 교육을 제공합니다.</p>
+            </div>
           </div>
-          
-          <div className="mt-3 h-12">
-            <MiniChart 
-              data={[
-                { name: '7월', value: 78 },
-                { name: '8월', value: 80 },
-                { name: '9월', value: 83 },
-                { name: '10월', value: 83 },
-                { name: '11월', value: 86 }
-              ]} 
-              stroke="#a855f7"
-              fill="rgba(168, 85, 247, 0.2)"
-              positive={true}
-            />
-          </div>
-          
-          <div className="mt-2">
-            <p className="text-sm">전국 각지의 교육 기관에서 수준 높은 교육을 제공합니다.</p>
-          </div>
-        </div>
+        </Link>
         
         {/* 활성화된 교육 과정 */}
-        <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-md">
-          <h3 className="text-lg font-semibold mb-2">활성화된 교육 과정</h3>
-          <div className="flex items-center">
-            <div className="p-2 bg-amber-100 dark:bg-amber-900 rounded-full mr-3">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-              </svg>
-            </div>
-            <div>
-              <p className="text-2xl font-bold">425개</p>
-              <div className="flex items-center">
-                <span className="text-sm text-amber-500 dark:text-amber-400 font-medium">+28개</span>
-                <span className="mx-1 text-gray-500 dark:text-gray-400 text-xs">지난 달 대비</span>
-                <span className="text-amber-500 dark:text-amber-400">↑</span>
+        <Link href="/courses" className="group">
+          <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-md transition-all duration-300 hover:shadow-lg hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer">
+            <h3 className="text-lg font-semibold mb-2 group-hover:text-primary transition-colors">활성화된 교육 과정</h3>
+            <div className="flex items-center">
+              <div className="p-2 bg-amber-100 dark:bg-amber-900 rounded-full mr-3 group-hover:bg-amber-200 dark:group-hover:bg-amber-800 transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                </svg>
+              </div>
+              <div>
+                <p className="text-2xl font-bold">425개</p>
+                <div className="flex items-center">
+                  <span className="text-sm text-amber-500 dark:text-amber-400 font-medium">+28개</span>
+                  <span className="mx-1 text-gray-500 dark:text-gray-400 text-xs">지난 달 대비</span>
+                  <span className="text-amber-500 dark:text-amber-400">↑</span>
+                </div>
               </div>
             </div>
+            
+            <div className="mt-3 h-12">
+              <MiniChart 
+                data={[
+                  { name: '7월', value: 350 },
+                  { name: '8월', value: 375 },
+                  { name: '9월', value: 390 },
+                  { name: '10월', value: 397 },
+                  { name: '11월', value: 425 }
+                ]} 
+                stroke="#f59e0b"
+                fill="rgba(245, 158, 11, 0.2)"
+                positive={true}
+              />
+            </div>
+            
+            <div className="mt-2">
+              <p className="text-sm">다양한 교육 과정이 매일 새롭게 등록되고 있습니다.</p>
+            </div>
           </div>
-          
-          <div className="mt-3 h-12">
-            <MiniChart 
-              data={[
-                { name: '7월', value: 350 },
-                { name: '8월', value: 375 },
-                { name: '9월', value: 390 },
-                { name: '10월', value: 397 },
-                { name: '11월', value: 425 }
-              ]} 
-              stroke="#f59e0b"
-              fill="rgba(245, 158, 11, 0.2)"
-              positive={true}
-            />
-          </div>
-          
-          <div className="mt-2">
-            <p className="text-sm">다양한 교육 과정이 매일 새롭게 등록되고 있습니다.</p>
-          </div>
-        </div>
+        </Link>
         
         {/* 날씨 영역 - 맨 오른쪽으로 이동 */}
-        <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-md">
-          <h3 className="text-lg font-semibold mb-2">오늘의 날씨</h3>
-          <div className="flex items-center">
-            <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-full mr-3">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" />
-              </svg>
-            </div>
-            <div>
-              <p className="text-2xl font-bold">24°C</p>
-              <div className="flex items-center">
-                <span className="text-sm text-blue-500 dark:text-blue-400 font-medium">좋음</span>
-                <span className="mx-1 text-gray-500 dark:text-gray-400 text-xs">미세먼지</span>
+        <Link href="/locations" className="group">
+          <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-md transition-all duration-300 hover:shadow-lg hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer">
+            <h3 className="text-lg font-semibold mb-2 group-hover:text-primary transition-colors">오늘의 날씨</h3>
+            <div className="flex items-center">
+              <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-full mr-3 group-hover:bg-blue-200 dark:group-hover:bg-blue-800 transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" />
+                </svg>
+              </div>
+              <div>
+                <p className="text-2xl font-bold">24°C</p>
+                <div className="flex items-center">
+                  <span className="text-sm text-blue-500 dark:text-blue-400 font-medium">좋음</span>
+                  <span className="mx-1 text-gray-500 dark:text-gray-400 text-xs">미세먼지</span>
+                </div>
               </div>
             </div>
+            
+            <div className="mt-3 h-12">
+              <MiniChart 
+                data={[
+                  { name: '오전 6시', value: 18 },
+                  { name: '오전 9시', value: 20 },
+                  { name: '오후 12시', value: 23 },
+                  { name: '오후 3시', value: 24 },
+                  { name: '오후 6시', value: 22 }
+                ]} 
+                stroke="#3b82f6"
+                fill="rgba(59, 130, 246, 0.2)"
+                positive={true}
+              />
+            </div>
+            
+            <div className="mt-2">
+              <p className="text-sm">산책하기 좋은 날씨입니다! 반려견과 함께 외출해보세요.</p>
+            </div>
           </div>
-          
-          <div className="mt-3 h-12">
-            <MiniChart 
-              data={[
-                { name: '오전 6시', value: 18 },
-                { name: '오전 9시', value: 20 },
-                { name: '오후 12시', value: 23 },
-                { name: '오후 3시', value: 24 },
-                { name: '오후 6시', value: 22 }
-              ]} 
-              stroke="#3b82f6"
-              fill="rgba(59, 130, 246, 0.2)"
-              positive={true}
-            />
-          </div>
-          
-          <div className="mt-2">
-            <p className="text-sm">산책하기 좋은 날씨입니다! 반려견과 함께 외출해보세요.</p>
-          </div>
-        </div>
+        </Link>
       </div>
       
       {/* 상단 영역: 배너와 프로필 */}
