@@ -24,6 +24,7 @@ import ShopBasicPage from "./pages/ShopBasicPage";
 import ShopTestPage from "./pages/ShopTestPage";
 import ShopNewPage from "./pages/shop-new/index";
 import SimpleShopPage from "./pages/shop-simple/index";
+import SimpleShop from "./pages/SimpleShopPage";
 import ShopRedirect from "./pages/ShopRedirect";
 
 import VideoTrainingPage from "./pages/video-training/index";
@@ -271,6 +272,12 @@ function UnauthenticatedRoutes() {
           {() => {
             console.log("ShopTestPage 렌더링 (/shop/test 경로에서 - App.tsx)");
             return <ShopTestPage />;
+          }}
+        </Route>
+        <Route path="/shop/simple">
+          {() => {
+            console.log("SimpleShop 렌더링 (/shop/simple 경로에서 - App.tsx)");
+            return <SimpleShop />;
           }}
         </Route>
         <Route path="/shop">

@@ -10,9 +10,9 @@ function goToShopPage() {
   // 현재 URL을 출력
   console.log("현재 URL:", window.location.href);
   // 전체 경로 출력
-  console.log("전체 경로:", window.location.origin + "/shop");
+  console.log("전체 경로:", window.location.origin + "/shop/simple");
   // 직접 URL 변경 - 전체 경로를 사용
-  const shopUrl = window.location.origin + "/shop";
+  const shopUrl = window.location.origin + "/shop/simple";
   console.log("이동할 경로:", shopUrl);
   window.location.href = shopUrl;
   return false;
