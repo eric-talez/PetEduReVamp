@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { Card } from "@/components/ui/Card";
@@ -33,7 +32,7 @@ export default function ShopPage() {
   const [referralCode, setReferralCode] = useState<string | null>(null);
   const [location, navigate] = useLocation();
   const auth = useAuth();
-  const { cartItems, cartCount, addToCart: addItemToCart } = useCart();
+  const { cartCount, addToCart } = useCart();
   
   // 제품 데이터
   const products: Product[] = [
@@ -177,7 +176,7 @@ export default function ShopPage() {
   // 장바구니에 추가
   const handleAddToCart = (product: Product) => {
     // cart-context의 함수를 활용하여 장바구니에 상품 추가
-    addItemToCart({
+    addToCart({
       productId: product.id,
       name: product.name,
       price: product.price,
@@ -193,6 +192,11 @@ export default function ShopPage() {
     }
   };
 
+  // 장바구니 페이지로 이동
+  const goToCart = () => {
+    navigate('/shop/cart');
+  };
+
   return (
     <div className="p-6">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
@@ -204,7 +208,10 @@ export default function ShopPage() {
         </div>
         
         <div className="mt-4 md:mt-0 flex items-center">
-          <div className="relative mr-4">
+          <div 
+            className="relative mr-4 cursor-pointer" 
+            onClick={goToCart}
+          >
             <ShoppingCart className="w-6 h-6 text-gray-600 dark:text-gray-300" />
             {cartCount > 0 && (
               <span className="absolute -top-2 -right-2 w-5 h-5 rounded-full bg-primary text-white text-xs flex items-center justify-center">
@@ -384,6 +391,55 @@ export default function ShopPage() {
             현재 추천인 코드 <strong className="text-primary">{referralCode}</strong>가 적용된 상태입니다. 
             상품 구매 시 추천인에게 커미션이 지급되며, 귀하에게는 할인 혜택이 제공됩니다.
           </p>
+        </div>
+      )}
+      
+      {auth.isAuthenticated && auth.userRole === 'pet-owner' && (
+        <div className="mt-8 p-6 bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800/30 rounded-lg">
+          <h2 className="text-xl font-bold flex items-center text-amber-800 dark:text-amber-400 mb-4">
+            <PawPrint className="mr-2 h-5 w-5" />
+            반려동물 맞춤 추천 상품
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <Card className="overflow-hidden border-amber-200 dark:border-amber-800/30">
+              <div className="p-4">
+                <h3 className="font-semibold mb-2 flex items-center">
+                  <Star className="h-4 w-4 fill-amber-500 mr-1" />
+                  당신의 반려견에게 딱 맞는 상품
+                </h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+                  등록된 반려견 정보를 기반으로 맞춤형 상품을 추천해드립니다.
+                </p>
+                <Button variant="outline" className="w-full">반려견 정보 업데이트</Button>
+              </div>
+            </Card>
+            
+            <Card className="overflow-hidden border-amber-200 dark:border-amber-800/30">
+              <div className="p-4">
+                <h3 className="font-semibold mb-2 flex items-center">
+                  <Gift className="h-4 w-4 text-amber-500 mr-1" />
+                  반려견 생일 선물 추천
+                </h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+                  다가오는 반려견의 생일을 위한 특별한 선물을 골라보세요.
+                </p>
+                <Button variant="outline" className="w-full">선물 보기</Button>
+              </div>
+            </Card>
+            
+            <Card className="overflow-hidden border-amber-200 dark:border-amber-800/30">
+              <div className="p-4">
+                <h3 className="font-semibold mb-2 flex items-center">
+                  <ShoppingBag className="h-4 w-4 text-amber-500 mr-1" />
+                  정기 구독 상품
+                </h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+                  매월 필요한 반려견 용품을 자동으로 받아보세요. 10% 할인 혜택!
+                </p>
+                <Button variant="outline" className="w-full">구독 상품 보기</Button>
+              </div>
+            </Card>
+          </div>
         </div>
       )}
     </div>

@@ -3,6 +3,7 @@ import { useLocation } from 'wouter';
 import { useAuth } from '../../SimpleApp';
 import { ShoppingBag, Trash2, Plus, Minus, ChevronRight, RefreshCw, CreditCard, Check } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useCart } from '@/context/cart-context';
 
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -20,21 +21,6 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/componen
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 
-// 장바구니 아이템 타입 정의
-interface CartItem {
-  id: number;
-  productId: number;
-  name: string;
-  price: number;
-  discountedPrice?: number;
-  quantity: number;
-  imageUrl: string;
-  color?: string;
-  size?: string;
-  inStock: boolean;
-  isSelected: boolean;
-}
-
 // 추천인 코드 타입 정의
 interface ReferralCode {
   code: string;
@@ -46,106 +32,36 @@ export default function CartPage() {
   const [location, navigate] = useLocation();
   const { isAuthenticated } = useAuth();
   const { toast } = useToast();
+  const { 
+    cartItems, 
+    updateQuantity, 
+    removeFromCart, 
+    toggleItemSelection, 
+    toggleAllSelection, 
+    calculateSubtotal, 
+    calculateTotal, 
+    selectedItemCount 
+  } = useCart();
 
-  const [cartItems, setCartItems] = useState<CartItem[]>([]);
-  const [allSelected, setAllSelected] = useState(true);
   const [referralCode, setReferralCode] = useState('');
   const [appliedReferral, setAppliedReferral] = useState<ReferralCode | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [allSelected, setAllSelected] = useState(true);
 
-  // 장바구니 아이템 데이터 로드 (실제로는 API에서 가져와야 함)
+  // 초기에 장바구니 모든 아이템 선택 상태 확인
   useEffect(() => {
-    // 모의 데이터
-    const mockCartItems: CartItem[] = [
-      {
-        id: 1,
-        productId: 1,
-        name: "프리미엄 반려견 훈련용 클리커",
-        price: 15000,
-        quantity: 1,
-        imageUrl: "https://images.unsplash.com/photo-1598875384021-4a23470c7997?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
-        inStock: true,
-        isSelected: true
-      },
-      {
-        id: 2,
-        productId: 3,
-        name: "프리미엄 가죽 리드줄",
-        price: 45000,
-        quantity: 1,
-        imageUrl: "https://images.unsplash.com/photo-1581434271564-7e273485524c?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
-        color: "브라운",
-        size: "M",
-        inStock: true,
-        isSelected: true
-      },
-      {
-        id: 3,
-        productId: 2,
-        name: "반려견 지능 개발 장난감 세트",
-        price: 35000,
-        discountedPrice: 29750, // 15% 할인
-        quantity: 2,
-        imageUrl: "https://images.unsplash.com/photo-1516734212186-a967f81ad0d7?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
-        inStock: true,
-        isSelected: true
-      }
-    ];
-
-    setCartItems(mockCartItems);
-  }, []);
+    setAllSelected(cartItems.length > 0 && cartItems.every(item => item.isSelected));
+  }, [cartItems]);
 
   // 모든 아이템 선택/해제
   const handleSelectAll = (checked: boolean) => {
     setAllSelected(checked);
-    setCartItems(prevItems => 
-      prevItems.map(item => ({ ...item, isSelected: checked }))
-    );
+    toggleAllSelection(checked);
   };
 
   // 개별 아이템 선택/해제
   const handleSelectItem = (itemId: number, checked: boolean) => {
-    setCartItems(prevItems => 
-      prevItems.map(item => 
-        item.id === itemId ? { ...item, isSelected: checked } : item
-      )
-    );
-
-    // 모든 아이템 선택 여부 확인
-    const updatedItems = cartItems.map(item => 
-      item.id === itemId ? { ...item, isSelected: checked } : item
-    );
-    setAllSelected(updatedItems.every(item => item.isSelected));
-  };
-
-  // 수량 변경
-  const updateQuantity = (itemId: number, newQuantity: number) => {
-    if (newQuantity < 1) return;
-
-    setCartItems(prevItems => 
-      prevItems.map(item => 
-        item.id === itemId ? { ...item, quantity: newQuantity } : item
-      )
-    );
-  };
-
-  // 아이템 삭제
-  const removeItem = (itemId: number) => {
-    setCartItems(prevItems => prevItems.filter(item => item.id !== itemId));
-    toast({
-      title: "상품이 장바구니에서 삭제되었습니다",
-    });
-  };
-
-  // 선택된 아이템 삭제
-  const removeSelectedItems = () => {
-    const selectedCount = cartItems.filter(item => item.isSelected).length;
-    if (selectedCount === 0) return;
-
-    setCartItems(prevItems => prevItems.filter(item => !item.isSelected));
-    toast({
-      title: `${selectedCount}개 상품이 장바구니에서 삭제되었습니다`,
-    });
+    toggleItemSelection(itemId, checked);
   };
 
   // 추천인 코드 적용
@@ -196,8 +112,7 @@ export default function CartPage() {
       return;
     }
 
-    const selectedItems = cartItems.filter(item => item.isSelected);
-    if (selectedItems.length === 0) {
+    if (selectedItemCount === 0) {
       toast({
         title: "상품을 선택해주세요",
         variant: "destructive",
@@ -207,16 +122,6 @@ export default function CartPage() {
 
     // 결제 페이지로 이동
     navigate('/shop/checkout');
-  };
-
-  // 선택된 상품의 총 금액 계산
-  const calculateSubtotal = () => {
-    return cartItems
-      .filter(item => item.isSelected)
-      .reduce((total, item) => {
-        const itemPrice = item.discountedPrice || item.price;
-        return total + itemPrice * item.quantity;
-      }, 0);
   };
 
   // 배송비 계산 (3만원 이상 무료, 그 이하는 3,000원)
@@ -231,8 +136,8 @@ export default function CartPage() {
     return Math.round(calculateSubtotal() * (appliedReferral.discount / 100));
   };
 
-  // 최종 결제 금액 계산
-  const calculateTotal = () => {
+  // 최종 결제 금액 계산 (추천인 코드 적용)
+  const calculateFinalTotal = () => {
     return calculateSubtotal() + calculateShipping() - calculateReferralDiscount();
   };
 
@@ -277,14 +182,20 @@ export default function CartPage() {
                     onCheckedChange={handleSelectAll}
                   />
                   <Label htmlFor="select-all" className="ml-2">
-                    전체 선택 ({cartItems.filter(item => item.isSelected).length}/{cartItems.length})
+                    전체 선택 ({selectedItemCount}/{cartItems.length})
                   </Label>
                 </div>
                 <Button
                   variant="ghost"
                   className="ml-auto text-sm"
-                  onClick={removeSelectedItems}
-                  disabled={!cartItems.some(item => item.isSelected)}
+                  onClick={() => {
+                    const selectedItems = cartItems.filter(item => item.isSelected);
+                    selectedItems.forEach(item => removeFromCart(item.id));
+                    toast({
+                      title: `${selectedItems.length}개 상품이 장바구니에서 삭제되었습니다`,
+                    });
+                  }}
+                  disabled={selectedItemCount === 0}
                 >
                   <Trash2 className="w-4 h-4 mr-1" />
                   선택 삭제
@@ -352,147 +263,142 @@ export default function CartPage() {
                             </span>
                           )}
                         </div>
-
-                        <div className="flex items-center mt-2">
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            className="h-8 w-8"
-                            onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                            disabled={item.quantity <= 1}
-                          >
-                            <Minus className="h-3 w-3" />
-                          </Button>
-                          <span className="w-10 text-center">{item.quantity}</span>
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            className="h-8 w-8"
-                            onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                          >
-                            <Plus className="h-3 w-3" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8 ml-2 text-red-500 hover:text-red-700 hover:bg-red-50"
-                            onClick={() => removeItem(item.id)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
                       </div>
+                    </div>
+
+                    <div className="flex justify-between items-end mt-3">
+                      <div className="flex items-center border rounded-md">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 p-0 rounded-none"
+                          onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                          disabled={item.quantity <= 1}
+                        >
+                          <Minus className="h-3 w-3" />
+                        </Button>
+                        <div className="w-10 text-center">{item.quantity}</div>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 p-0 rounded-none"
+                          onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                        >
+                          <Plus className="h-3 w-3" />
+                        </Button>
+                      </div>
+
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-gray-500 hover:text-gray-700"
+                        onClick={() => removeFromCart(item.id)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
                     </div>
                   </div>
                 </div>
               ))}
             </CardContent>
-            <CardFooter className="flex justify-between">
-              <Button variant="outline" onClick={() => navigate('/shop')}>
-                쇼핑 계속하기
-              </Button>
-              <Button onClick={handleCheckout} disabled={!cartItems.some(item => item.isSelected)}>
-                {cartItems.filter(item => item.isSelected).length}개 상품 주문하기
-              </Button>
-            </CardFooter>
           </Card>
         </div>
 
         {/* 주문 요약 */}
         <div className="lg:w-1/3">
-          <Card className="sticky top-4">
+          <Card>
             <CardHeader>
               <CardTitle>주문 요약</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {/* 추천인 코드 입력 */}
-              <div>
-                <Label className="mb-2 block">추천인 코드</Label>
-                <div className="flex">
-                  <Input
-                    placeholder="추천인 코드 입력"
-                    value={referralCode}
-                    onChange={(e) => setReferralCode(e.target.value)}
-                    disabled={!!appliedReferral || isLoading}
-                    className="mr-2"
-                  />
-                  {appliedReferral ? (
-                    <Button
-                      variant="outline"
-                      onClick={removeReferralCode}
-                      className="whitespace-nowrap"
-                    >
-                      <RefreshCw className="w-4 h-4 mr-1" />
-                      취소
-                    </Button>
+              <div className="flex justify-between">
+                <span className="text-gray-600">상품 금액</span>
+                <span>{calculateSubtotal().toLocaleString()}원</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600">배송비</span>
+                <span>
+                  {calculateShipping() === 0 ? (
+                    <span className="text-green-600">무료</span>
                   ) : (
-                    <Button
-                      onClick={applyReferralCode}
-                      disabled={isLoading}
-                      className="whitespace-nowrap"
-                    >
-                      {isLoading ? (
-                        <RefreshCw className="w-4 h-4 mr-1 animate-spin" />
-                      ) : (
-                        "적용"
-                      )}
-                    </Button>
+                    `${calculateShipping().toLocaleString()}원`
                   )}
-                </div>
-                {appliedReferral && (
-                  <div className="mt-2 text-sm text-green-600 flex items-center">
-                    <Check className="w-4 h-4 mr-1" />
-                    {appliedReferral.discount}% 할인 적용됨
-                  </div>
-                )}
+                </span>
               </div>
 
-              <Separator />
-
-              {/* 가격 정보 */}
-              <div className="space-y-2">
-                <div className="flex justify-between">
-                  <span className="text-gray-600">상품 금액</span>
-                  <span>{calculateSubtotal().toLocaleString()}원</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">배송비</span>
-                  <span>
-                    {calculateShipping() === 0
-                      ? "무료"
-                      : `${calculateShipping().toLocaleString()}원`}
+              {appliedReferral && (
+                <div className="flex justify-between text-primary">
+                  <span className="flex items-center">
+                    <Check className="mr-1 h-4 w-4" />
+                    추천인 할인 ({appliedReferral.discount}%)
                   </span>
+                  <span>-{calculateReferralDiscount().toLocaleString()}원</span>
                 </div>
-                {appliedReferral && (
-                  <div className="flex justify-between text-green-600">
-                    <span>추천인 할인 ({appliedReferral.discount}%)</span>
-                    <span>-{calculateReferralDiscount().toLocaleString()}원</span>
-                  </div>
-                )}
-              </div>
+              )}
 
               <Separator />
 
               <div className="flex justify-between font-bold text-lg">
                 <span>총 결제 금액</span>
-                <span>{calculateTotal().toLocaleString()}원</span>
+                <span>{calculateFinalTotal().toLocaleString()}원</span>
               </div>
 
-              <Button
-                className="w-full mt-4"
-                size="lg"
-                onClick={handleCheckout}
-                disabled={!cartItems.some(item => item.isSelected)}
-              >
-                <CreditCard className="w-4 h-4 mr-2" />
-                결제하기
-              </Button>
+              <div className="mt-6">
+                <div className="flex gap-2 mb-4">
+                  <Input
+                    type="text"
+                    placeholder="추천인 코드 입력"
+                    value={referralCode}
+                    onChange={(e) => setReferralCode(e.target.value)}
+                    disabled={!!appliedReferral}
+                    className="flex-1"
+                  />
+                  {appliedReferral ? (
+                    <Button
+                      variant="outline"
+                      onClick={removeReferralCode}
+                    >
+                      제거
+                    </Button>
+                  ) : (
+                    <Button
+                      onClick={applyReferralCode}
+                      disabled={isLoading}
+                    >
+                      {isLoading ? '확인 중...' : '적용'}
+                    </Button>
+                  )}
+                </div>
 
-              <div className="text-xs text-gray-500 mt-2">
-                결제하기 버튼을 클릭하면 구매 조건에 동의하는 것으로 간주합니다.
+                <Button
+                  className="w-full"
+                  size="lg"
+                  onClick={handleCheckout}
+                  disabled={selectedItemCount === 0}
+                >
+                  <CreditCard className="mr-2 h-5 w-5" />
+                  {selectedItemCount > 0 ? '결제하기' : '상품을 선택해주세요'}
+                </Button>
+                
+                <Button
+                  variant="outline"
+                  className="w-full mt-3"
+                  onClick={() => navigate('/shop')}
+                >
+                  <ShoppingBag className="mr-2 h-5 w-5" />
+                  쇼핑 계속하기
+                </Button>
               </div>
             </CardContent>
           </Card>
+
+          <div className="mt-4 text-sm text-gray-500">
+            <p>· 30,000원 이상 구매 시 무료 배송</p>
+            <p>· 추천인 코드는 해당 코드를 발급한 트레이너에게 수수료가 지급됩니다.</p>
+            <p>· 결제 완료 후 취소는 마이페이지 > 주문내역에서 가능합니다.</p>
+          </div>
         </div>
       </div>
     </div>
