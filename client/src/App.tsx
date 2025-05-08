@@ -19,8 +19,8 @@ import VideoCallPage from "./pages/video-call/index";
 import CourseReservationPage from "./pages/course-reservation/index";
 import MessagesPage from "./pages/messages/index";
 import NotificationsPage from "./pages/notifications/index";
-// 쇼핑 페이지 dynamic import에서 직접 import로 변경
-import ShopPage from "./pages/shop/index";
+// 쇼핑 페이지: 단순화된 버전 사용
+import ShopPage from "./pages/shop/simple";
 import VideoTrainingPage from "./pages/video-training/index";
 import VideoTrainingDetailPage from "./pages/video-training/video";
 import ProfilePage from "./pages/profile/index";

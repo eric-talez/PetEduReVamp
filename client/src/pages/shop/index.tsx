@@ -1,39 +1,18 @@
-import { useState, useEffect } from "react";
-import { useLocation } from "wouter";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Input } from "@/components/ui/input";
-import { Search, ShoppingBag, Star, RefreshCw, Tag, Truck, Gift, Heart, ShoppingCart, AlertCircle, PawPrint } from "lucide-react";
-import { useAuth } from "@/hooks/useAuth";
-import { useCart } from "@/context/cart-context";
-
-interface Product {
-  id: number;
-  name: string;
-  category: string;
-  price: number;
-  discountRate?: number;
-  rating: number;
-  reviewCount: number;
-  imageUrl: string;
-  description: string;
-  isNew?: boolean;
-  isBestSeller?: boolean;
-  isOnSale?: boolean;
-  referralCommission?: number;
-  inStock: boolean;
-}
+import React from "react";
 
 export default function ShopPage() {
-  console.log("ShopPage 컴포넌트 렌더링 시작");
-  const [activeTab, setActiveTab] = useState<string>("all");
-  const [searchQuery, setSearchQuery] = useState<string>("");
-  const [referralCode, setReferralCode] = useState<string | null>(null);
-  const [location, navigate] = useLocation();
-  const auth = useAuth();
-  const { cartCount, addToCart } = useCart();
+  console.log("극단적으로 단순화된 ShopPage 컴포넌트 렌더링");
+  
+  return (
+    <div className="container mx-auto p-6">
+      <h1 className="text-3xl font-bold mb-6">반려견 용품 쇼핑</h1>
+      <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-8">
+        <p className="text-lg mb-4">쇼핑 페이지 테스트 중</p>
+        <p>정상적으로 렌더링되었습니다!</p>
+      </div>
+    </div>
+  );
+}
   
   // 제품 데이터
   const products: Product[] = [
