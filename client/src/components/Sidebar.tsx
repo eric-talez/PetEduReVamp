@@ -403,9 +403,9 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                       onClick={(path) => {
                         console.log("쇼핑 메뉴 클릭");
                         console.log("현재 URL:", window.location.href);
-                        console.log("이동할 경로:", path);
-                        // 직접 shop-simple 페이지로 이동
-                        window.location.href = "/shop-simple";
+                        // 리다이렉트 페이지로 변경
+                        console.log("이동할 경로: /shop-redirect");
+                        window.location.href = "/shop-redirect";
                         return; // 이후 처리 중단
                       }} 
                       show={true}
@@ -541,9 +541,9 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                       onClick={(path) => {
                         console.log("인증된 사용자 쇼핑 메뉴 클릭");
                         console.log("현재 URL:", window.location.href);
-                        console.log("이동할 경로:", path);
-                        // 직접 shop-simple 페이지로 이동
-                        window.location.href = "/shop-simple";
+                        console.log("이동할 경로: /shop-redirect");
+                        // 리다이렉트 페이지로 이동 변경
+                        window.location.href = "/shop-redirect";
                         return; // 이후 처리 중단
                       }}
                       show={true}
