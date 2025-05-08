@@ -280,9 +280,11 @@ export default function ShopBasicPage() {
   const [isLoaded, setIsLoaded] = useState(false);
   
   useEffect(() => {
-    console.log("ShopBasicPage 마운트됨 - useEffect 실행");
+    console.log("===== ShopBasicPage 마운트됨 - 메인 쇼핑 페이지 =====");
+    console.log("ShopBasicPage 컴포넌트 경로: /client/src/pages/ShopBasicPage.tsx");
     console.log("현재 URL:", window.location.href);
     console.log("현재 경로:", window.location.pathname);
+    console.log("App.tsx에서 import 설정: import ShopPage from './pages/ShopBasicPage';");
     setIsLoaded(true);
   }, []);
   

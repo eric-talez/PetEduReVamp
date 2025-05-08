@@ -272,8 +272,13 @@ function UnauthenticatedRoutes() {
           )}
         </Route>
 
-        {/* 쇼핑 관련 라우트 - 간소화 */}
-        <Route path="/shop" component={ShopPage} />
+        {/* 쇼핑 관련 라우트 - 절대 경로 이용 */}
+        <Route path="/shop">
+          {() => {
+            console.log("비인증 사용자가 /shop 경로에 접근, ShopPage 컴포넌트 렌더링");
+            return <ShopPage />;
+          }}
+        </Route>
         <Route path="/shop/cart">
           {() => (
             <Suspense fallback={<div className="p-8 text-center">장바구니 로딩 중...</div>}>
