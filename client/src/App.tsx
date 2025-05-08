@@ -21,7 +21,7 @@ import MessagesPage from "./pages/messages/index";
 import NotificationsPage from "./pages/notifications/index";
 // 쇼핑 페이지: 새로운 컴포넌트 사용
 import ShopNewPage from "./pages/shop-new/index";
-import SimpleShopPage from "./pages/shop/simple";
+import SimpleShopPage from "./pages/shop-simple/index";
 import VideoTrainingPage from "./pages/video-training/index";
 import VideoTrainingDetailPage from "./pages/video-training/video";
 import ProfilePage from "./pages/profile/index";
