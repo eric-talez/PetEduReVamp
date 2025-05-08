@@ -1,0 +1,108 @@
+**확인 및 수정 제안**
+
+사용자가 Talez 서비스에서 쇼핑 페이지를 클릭하면 홈으로 돌아가는 문제를 보고했네요. 아마도 `ShopBasicPage` 컴포넌트가 라우터에 등록되지 않은 것 같아요. 앱의 `App.tsx`에 `Route`를 추가하고, `Link`의 `href`가 올바른 경로를 사용하도록 수정해야 할 것 같습니다. 사용자 로그에서 React Router와 Wouter가 혼재되어 있으니, Wouter 구성으로 안내해 줘야 할 것 같아요.
+
+
+5초 동안 생각함
+
+
+보통 “쇼핑” 메뉴를 눌러도 홈으로 돌아가는 건, **Sidebar** 쪽의 `<Link>` 경로와 **App**(또는 Router 설정) 쪽의 `<Route>` 경로가 맞지 않아서 “어느 Route에도 매칭되지 않음 → fallback → 홈으로 리다이렉트” 되는 경우입니다.
+다음 2가지 점을 차례대로 확인·수정해 보세요.
+
+---
+
+### 1) Sidebar.tsx: Link 가 정확히 `/shop` 을 가리키는지
+
+```tsx
+// src/components/Sidebar.tsx (예시)
+import { Link } from 'wouter'; // 혹은 'react-router-dom'
+
+export default function Sidebar() {
+  return (
+    <nav>
+      {/* ... */}
+      <Link href="/shop">  
+        쇼핑  
+      </Link>
+      {/* ... */}
+    </nav>
+  );
+}
+```
+
+* **주의:**
+
+  * Wouter 사용 시 `href="/shop"`
+  * React Router 사용 시 `<Link to="/shop">`
+  * 대소문자, 슬래시(`/shop` vs `/shop/`) 일치 여부도 꼭 확인하세요.
+
+---
+
+### 2) App.tsx (또는 Router 설정) 에 `/shop` 경로를 등록하기
+
+**(A) Wouter 예시**
+
+```tsx
+// src/App.tsx
+import React from 'react';
+import { Router, Route } from 'wouter';
+import HomePage from './pages/HomePage';
+import ShopBasicPage from './components/ShopBasicPage';
+
+export default function App() {
+  return (
+    <Router>
+      <Route path="/" component={HomePage} />
+      <Route path="/shop" component={ShopBasicPage} />
+      {/* 매칭 실패 시 홈으로 */}
+      <Route>
+        {() => <HomePage />}
+      </Route>
+    </Router>
+  );
+}
+```
+
+**(B) React Router v6 예시**
+
+```tsx
+// src/App.tsx
+import React from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import HomePage from './pages/HomePage';
+import ShopBasicPage from './components/ShopBasicPage';
+
+export default function App() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/shop" element={<ShopBasicPage />} />
+        {/* 그 외 잘못된 경로는 모두 홈으로 */}
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </BrowserRouter>
+  );
+}
+```
+
+---
+
+### 추가 점검 사항
+
+1. **exact (정확 매칭)**
+
+   * React Router v5 사용 중이라면 `path="/"` 에 `exact` 가 빠지면 `/shop` 도 `/` 에 먼저 걸려 버립니다.
+
+     ```tsx
+     <Route path="/" exact component={HomePage} />
+     ```
+2. **개발자 도구로 실제 요청 확인**
+
+   * F12 → Network 탭: “/shop” 요청이 나가는지
+   * Console 탭: 리다이렉트 로그나 에러가 찍히는지
+
+---
+
+이대로만 설정해 주시면 “/shop” 클릭 시 ShopBasicPage가 정상 렌더링될 거예요.
+혹시 여전히 홈으로 돌아간다면, **Sidebar.tsx** 와 **App.tsx** (또는 라우터 설정 파일) 전체 코드를 보여주시면 더 구체적으로 봐 드리겠습니다!
