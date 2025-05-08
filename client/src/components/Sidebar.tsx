@@ -116,7 +116,7 @@ interface SidebarProps {
 }
 
 export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarProps) {
-  const [location, setLocation] = useLocation();
+  const [location, navigate] = useLocation();
   const [expanded, setExpanded] = useState(true);
 
   useEffect(() => {
@@ -218,10 +218,7 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
       '/ai-analysis': 'AI 분석',
       '/my-pets': '반려견 관리',
       '/notebook': '알림장',
-      '/calendar': '교육 일정',
-      '/shop': '쇼핑',
-      '/shop-redirect': '쇼핑 페이지',
-      '/shop-new': '신규 쇼핑'
+      '/calendar': '교육 일정'
     };
 
     if (path in specialRoutes) {
@@ -405,8 +402,8 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                       active={isActive("/shop-new") || isActive("/shop") || isActive("/shop-redirect")} 
                       onClick={(path) => {
                         console.log("쇼핑 메뉴 클릭");
-                        // wouter 라우팅 사용
-                        navigate('/shop');
+                        // 직접 URL 이동 방식 - 임시 조치
+                        window.location.href = "/shop";
                       }} 
                       show={true}
                     >쇼핑</NavItem>
@@ -540,8 +537,8 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                       active={isActive("/shop-new") || isActive("/shop") || isActive("/shop-redirect")}
                       onClick={(path) => {
                         console.log("로그인 사용자 쇼핑 메뉴 클릭");
-                        // Wouter 라우팅 사용
-                        navigate('/shop');
+                        // 직접 URL 이동 방식 - 임시 조치
+                        window.location.href = "/shop";
                       }}
                       show={true}
                     >
