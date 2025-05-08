@@ -130,19 +130,8 @@ function AuthenticatedRoutes() {
             return <ShopNewPage />;
           }}
         </Route>
-        {/* 아예 새로운 페이지로 대체 */}
-        <Route path="/shop">
-          {() => {
-            console.log("기본 쇼핑 페이지 렌더링 시도 (인증)");
-            // 직접 import 대신 미리 import
-            const ShopBasicPage = lazy(() => import('./pages/ShopBasicPage'));
-            return (
-              <Suspense fallback={<div className="p-8 text-center">쇼핑 페이지 로딩 중...</div>}>
-                <ShopBasicPage />
-              </Suspense>
-            );
-          }}
-        </Route>
+        {/* 표준화된 방식으로 수정 */}
+        <Route path="/shop" component={lazy(() => import('./pages/shop/ShopPage'))} />
         <Route path="/shop-redirect">
           {() => {
             console.log("Shop 리다이렉트 페이지 렌더링 (인증)");
@@ -254,19 +243,8 @@ function UnauthenticatedRoutes() {
             return <ShopNewPage />;
           }}
         </Route>
-        {/* 아예 새로운 페이지로 대체 (비인증) */}
-        <Route path="/shop">
-          {() => {
-            console.log("기본 쇼핑 페이지 렌더링 시도 (비인증)");
-            // 직접 import 대신 미리 import
-            const ShopBasicPage = lazy(() => import('./pages/ShopBasicPage'));
-            return (
-              <Suspense fallback={<div className="p-8 text-center">쇼핑 페이지 로딩 중...</div>}>
-                <ShopBasicPage />
-              </Suspense>
-            );
-          }}
-        </Route>
+        {/* 표준화된 방식으로 수정 (비인증) */}
+        <Route path="/shop" component={lazy(() => import('./pages/shop/ShopPage'))} />
         <Route path="/shop-redirect">
           {() => {
             console.log("Shop 리다이렉트 페이지 렌더링 (비인증)");

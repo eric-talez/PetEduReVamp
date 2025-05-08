@@ -534,12 +534,8 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                     <NavItem
                       href="/shop"
                       icon={<ShoppingBag className="w-5 h-5 mr-2" />}
-                      active={isActive("/shop-new") || isActive("/shop") || isActive("/shop-redirect")}
-                      onClick={(path) => {
-                        console.log("로그인 사용자 쇼핑 메뉴 클릭");
-                        // 직접 URL 이동 방식 - 임시 조치
-                        window.location.href = "/shop";
-                      }}
+                      active={isActive("/shop")}
+                      onClick={handleItemClick}
                       show={true}
                     >
                       쇼핑
