@@ -384,8 +384,9 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                       icon={<ShoppingBag className="w-5 h-5 mr-2" />} 
                       active={isActive("/shop")} 
                       onClick={(path) => {
-                        console.log("비회원이 쇼핑 메뉴 클릭");
-                        window.location.href = path;
+                        console.log("비회원이 쇼핑 메뉴 클릭", path);
+                        // wouter 라우팅 사용
+                        setLocation(path);
                       }} 
                       show={true}
                     >쇼핑</NavItem>

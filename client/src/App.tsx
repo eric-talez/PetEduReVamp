@@ -202,47 +202,12 @@ function UnauthenticatedRoutes() {
   return (
     <AppLayout>
       <Switch>
+        {/* 더 구체적인 경로가 먼저 오도록 순서 정렬 */}
+        {/* 인증 관련 */}
         <Route path="/auth/login" component={LoginPage} />
         <Route path="/auth/register" component={RegisterPage} />
-        <Route path="/" component={Home} />
-        <Route path="/courses" component={CoursesPage} />
-        <Route path="/course/:id" component={CourseDetail} />
-        <Route path="/video-training" component={VideoTrainingPage} />
-        <Route path="/video-training/:id" component={VideoTrainingDetailPage} />
-        <Route path="/trainers" component={TrainersPage} />
-        <Route path="/institutes" component={InstitutesPage} />
-        <Route path="/institutes/register">
-          {() => (
-            <Suspense fallback={<div className="p-8 text-center">기관 등록 페이지 로딩 중...</div>}>
-              <InstituteRegisterPage />
-            </Suspense>
-          )}
-        </Route>
-        <Route path="/institutes/:id">
-          {() => (
-            <Suspense fallback={<div className="p-8 text-center">기관 상세 페이지 로딩 중...</div>}>
-              <InstituteDetailPage />
-            </Suspense>
-          )}
-        </Route>
-        <Route path="/community" component={CommunityPage} />
-        <Route path="/community/post/:id">
-          {() => (
-            <Suspense fallback={<div className="p-8 text-center">게시물 로딩 중...</div>}>
-              <CommunityPostDetailPage />
-            </Suspense>
-          )}
-        </Route>
-        <Route path="/video-call" component={VideoCallPage} />
-        <Route path="/course-reservation" component={CourseReservationPage} />
-        <Route path="/locations" component={LocationsPage} />
-        <Route path="/shop">
-          {() => (
-            <Suspense fallback={<div className="p-8 text-center">쇼핑 페이지 로딩 중...</div>}>
-              <ShopPage />
-            </Suspense>
-          )}
-        </Route>
+        
+        {/* 쇼핑 관련 - 이 부분이 중요합니다 */}
         <Route path="/shop/cart">
           {() => {
             const CartPage = lazy(() => import('./pages/shop/cart'));
@@ -263,7 +228,21 @@ function UnauthenticatedRoutes() {
             );
           }}
         </Route>
-        <Route path="/events" component={EventsPage} />
+        <Route path="/shop">
+          {() => (
+            <Suspense fallback={<div className="p-8 text-center">쇼핑 페이지 로딩 중...</div>}>
+              <ShopPage />
+            </Suspense>
+          )}
+        </Route>
+        
+        {/* 강의 및 비디오 관련 */}
+        <Route path="/course/:id" component={CourseDetail} />
+        <Route path="/courses" component={CoursesPage} />
+        <Route path="/video-training/:id" component={VideoTrainingDetailPage} />
+        <Route path="/video-training" component={VideoTrainingPage} />
+        
+        {/* 이벤트 관련 */}
         <Route path="/events/calendar" component={EventCalendarPage} />
         <Route path="/events/:id">
           {() => (
@@ -272,6 +251,36 @@ function UnauthenticatedRoutes() {
             </Suspense>
           )}
         </Route>
+        <Route path="/events" component={EventsPage} />
+        
+        {/* 기관 관련 */}
+        <Route path="/institutes/register">
+          {() => (
+            <Suspense fallback={<div className="p-8 text-center">기관 등록 페이지 로딩 중...</div>}>
+              <InstituteRegisterPage />
+            </Suspense>
+          )}
+        </Route>
+        <Route path="/institutes/:id">
+          {() => (
+            <Suspense fallback={<div className="p-8 text-center">기관 상세 페이지 로딩 중...</div>}>
+              <InstituteDetailPage />
+            </Suspense>
+          )}
+        </Route>
+        <Route path="/institutes" component={InstitutesPage} />
+        
+        {/* 커뮤니티 관련 */}
+        <Route path="/community/post/:id">
+          {() => (
+            <Suspense fallback={<div className="p-8 text-center">게시물 로딩 중...</div>}>
+              <CommunityPostDetailPage />
+            </Suspense>
+          )}
+        </Route>
+        <Route path="/community" component={CommunityPage} />
+        
+        {/* 도움말 관련 */}
         <Route path="/help/faq">
           {() => (
             <Suspense fallback={<div className="p-8 text-center">FAQ 페이지 로딩 중...</div>}>
@@ -300,7 +309,18 @@ function UnauthenticatedRoutes() {
             </Suspense>
           )}
         </Route>
+        
+        {/* 기타 페이지 */}
+        <Route path="/trainers" component={TrainersPage} />
+        <Route path="/video-call" component={VideoCallPage} />
+        <Route path="/course-reservation" component={CourseReservationPage} />
+        <Route path="/locations" component={LocationsPage} />
         <Route path="/modal-test" component={TrainerTest} />
+        
+        {/* 루트 경로는 마지막에 */}
+        <Route path="/" component={Home} />
+        
+        {/* 찾을 수 없는 페이지 */}
         <Route component={NotFound} />
       </Switch>
     </AppLayout>
