@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'wouter';
 import { useAuth } from '../../SimpleApp';
-import { ShoppingBag, Trash2, Plus, Minus, ChevronRight, RefreshCw, CreditCard, Check } from 'lucide-react';
+import { ShoppingBag, Trash2, Plus, Minus, ChevronRight, RefreshCw, CreditCard, Check, Info } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useCart } from '@/context/cart-context';
 
@@ -140,6 +140,29 @@ export default function CartPage() {
   const calculateFinalTotal = () => {
     return calculateSubtotal() + calculateShipping() - calculateReferralDiscount();
   };
+
+  // 로그인이 필요하면 안내 표시
+  if (!isAuthenticated) {
+    return (
+      <div className="container mx-auto py-10 px-4">
+        <div className="max-w-3xl mx-auto text-center py-12">
+          <Info className="w-12 h-12 mx-auto text-primary mb-4" />
+          <h1 className="text-2xl font-bold mb-2">로그인이 필요합니다</h1>
+          <p className="text-gray-600 dark:text-gray-400 mb-6">
+            장바구니 이용 및 구매를 위해 로그인해주세요.
+          </p>
+          <div className="flex flex-col sm:flex-row justify-center gap-4">
+            <Button onClick={() => navigate('/auth/login')}>
+              로그인하기
+            </Button>
+            <Button variant="outline" onClick={() => navigate('/shop')}>
+              쇼핑 계속하기
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // 장바구니가 비어있을 때
   if (cartItems.length === 0) {
