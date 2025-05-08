@@ -406,8 +406,10 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                       active={isActive("/shop") || isActive("/shop-simple")} 
                       onClick={(path) => {
                         console.log("쇼핑 메뉴 클릭");
-                        // shop-simple 페이지로 직접 이동
-                        window.location.href = "/shop-simple";
+                        // Navigate using full URL
+                        const shopUrl = window.location.origin + "/shop-simple";
+                        console.log("이동할 쇼핑 URL:", shopUrl);
+                        window.location.href = shopUrl;
                         if (onClose) onClose();
                         return;
                       }}
@@ -545,8 +547,10 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                       active={isActive("/shop") || isActive("/shop-simple")}
                       onClick={(path) => {
                         console.log("쇼핑 메뉴 클릭");
-                        // shop-simple 페이지로 직접 이동
-                        window.location.href = "/shop-simple";
+                        // Navigate using full URL
+                        const shopUrl = window.location.origin + "/shop-simple";
+                        console.log("이동할 쇼핑 URL:", shopUrl);
+                        window.location.href = shopUrl;
                         if (onClose) onClose();
                         return;
                       }}
