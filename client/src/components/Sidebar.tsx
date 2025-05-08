@@ -403,10 +403,10 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                       onClick={(path) => {
                         console.log("비로그인 사용자 쇼핑 메뉴 클릭");
                         console.log("현재 URL:", window.location.href);
-                        // 비로그인 사용자는 일반 shop 경로 사용
-                        console.log("이동할 경로: /shop");
-                        // 완전한 경로로 이동
-                        window.location.href = "/shop";
+                        // 비로그인 사용자는 리다이렉트 페이지 사용
+                        console.log("이동할 경로: /shop-redirect");
+                        // 리다이렉트 페이지로 이동
+                        window.location.href = "/shop-redirect";
                         return; // 이후 처리 중단
                       }} 
                       show={true}
@@ -542,9 +542,9 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                       onClick={(path) => {
                         console.log("인증된 사용자 쇼핑 메뉴 클릭");
                         console.log("현재 URL:", window.location.href);
-                        // 로그인 사용자는 다른 쇼핑 페이지로 이동
-                        console.log("이동할 경로: /shop");
-                        window.location.href = "/shop";
+                        // 로그인 사용자는 리다이렉트 페이지 사용
+                        console.log("이동할 경로: /shop-redirect");
+                        window.location.href = "/shop-redirect";
                         return; // 이후 처리 중단
                       }}
                       show={true}
