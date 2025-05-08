@@ -81,10 +81,8 @@ interface NavItemProps {
 function NavItem({ href, icon, children, active, onClick, show }: NavItemProps) {
   const { expanded } = useContext(SidebarContext);
   const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
-    // 일부 경로는 직접 URL 이동으로 처리하기 위해 기본 동작 방지
-    if (href === '/video-call' || href === '/video-training') {
-      e.preventDefault();
-    }
+    // 기본 동작 항상 중지하고 우리의 라우팅 로직 사용
+    e.preventDefault();
     
     if (onClick) {
       onClick(href);
@@ -218,7 +216,8 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
       '/ai-analysis': 'AI 분석',
       '/my-pets': '반려견 관리',
       '/notebook': '알림장',
-      '/calendar': '교육 일정'
+      '/calendar': '교육 일정',
+      '/shop': '쇼핑'
     };
 
     if (path in specialRoutes) {
@@ -402,8 +401,11 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                       active={isActive("/shop-new") || isActive("/shop") || isActive("/shop-redirect")} 
                       onClick={(path) => {
                         console.log("쇼핑 메뉴 클릭");
-                        // 직접 URL 이동 방식 - 임시 조치
+                        console.log("현재 URL:", window.location.href);
+                        console.log("이동할 경로:", path);
+                        // 직접 URL 이동 방식으로 변경
                         window.location.href = "/shop";
+                        return; // 이후 처리 중단
                       }} 
                       show={true}
                     >쇼핑</NavItem>
@@ -535,7 +537,14 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                       href="/shop"
                       icon={<ShoppingBag className="w-5 h-5 mr-2" />}
                       active={isActive("/shop")}
-                      onClick={handleItemClick}
+                      onClick={(path) => {
+                        console.log("인증된 사용자 쇼핑 메뉴 클릭");
+                        console.log("현재 URL:", window.location.href);
+                        console.log("이동할 경로:", path);
+                        // 직접 URL 이동 방식으로 변경
+                        window.location.href = "/shop";
+                        return; // 이후 처리 중단
+                      }}
                       show={true}
                     >
                       쇼핑
