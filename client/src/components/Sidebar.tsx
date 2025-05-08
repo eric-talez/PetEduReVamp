@@ -399,14 +399,15 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                     <NavItem 
                       href="/shop" 
                       icon={<ShoppingBag className="w-5 h-5 mr-2" />} 
-                      active={isActive("/shop-new") || isActive("/shop") || isActive("/shop-redirect")} 
+                      active={isActive("/shop-new") || isActive("/shop") || isActive("/shop-redirect") || isActive("/shop-basic")} 
                       onClick={(path) => {
                         console.log("비로그인 사용자 쇼핑 메뉴 클릭");
                         console.log("현재 URL:", window.location.href);
-                        // 비로그인 사용자는 기본 쇼핑 페이지로 직접 이동
+                        // 비로그인 사용자는 기본 쇼핑 페이지로 navigate 사용
                         console.log("이동할 경로: /shop-basic");
-                        // 직접 쇼핑 페이지로 이동
-                        window.location.href = "/shop-basic";
+                        // navigate 함수 사용 (클라이언트 사이드 라우팅)
+                        navigate("/shop-basic");
+                        if (onClose) onClose();
                         return; // 이후 처리 중단
                       }} 
                       show={true}
@@ -542,9 +543,11 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                       onClick={(path) => {
                         console.log("인증된 사용자 쇼핑 메뉴 클릭");
                         console.log("현재 URL:", window.location.href);
-                        // 로그인 사용자도 기본 쇼핑 페이지로 직접 이동
+                        // 로그인 사용자도 기본 쇼핑 페이지로 navigate 사용
                         console.log("이동할 경로: /shop-basic");
-                        window.location.href = "/shop-basic";
+                        // navigate 함수 사용 (클라이언트 사이드 라우팅)
+                        navigate("/shop-basic");
+                        if (onClose) onClose();
                         return; // 이후 처리 중단
                       }}
                       show={true}
