@@ -101,7 +101,7 @@ interface SidebarProps {
 }
 
 export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarProps) {
-  const [location] = useLocation();
+  const [location, setLocation] = useLocation();
   const [expanded, setExpanded] = useState(true);
 
   useEffect(() => {
@@ -385,8 +385,8 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                       active={isActive("/shop")} 
                       onClick={(path) => {
                         console.log("비회원이 쇼핑 메뉴 클릭", path);
-                        // wouter 라우팅 사용
-                        setLocation(path);
+                        // 직접 URL 이동 처리 (다른 메뉴와 일관성)
+                        window.location.href = path;
                       }} 
                       show={true}
                     >쇼핑</NavItem>
