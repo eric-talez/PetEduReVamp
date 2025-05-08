@@ -382,13 +382,13 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                     >이벤트</NavItem>
 
                     <NavItem 
-                      href="/shop" 
+                      href="/shop-new" 
                       icon={<ShoppingBag className="w-5 h-5 mr-2" />} 
-                      active={isActive("/shop")} 
+                      active={isActive("/shop-new") || isActive("/shop")} 
                       onClick={(path) => {
-                        console.log("비회원이 쇼핑 메뉴 클릭 - 직접 리다이렉션 (수정됨)", path);
-                        // 쇼핑 페이지를 직접 하드코딩된 경로로 접근하도록 수정
-                        window.location.href = "/shop-new";
+                        console.log("비회원이 쇼핑 메뉴 클릭 - 직접 이동", path);
+                        // href와 일치하는 경로로 이동하도록 수정
+                        window.location.href = path;
                       }} 
                       show={true}
                     >쇼핑</NavItem>
@@ -521,8 +521,9 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                       icon={<ShoppingBag className="w-5 h-5 mr-2" />}
                       active={isActive("/shop-new") || isActive("/shop")}
                       onClick={(path) => {
-                        console.log("인증 사용자 쇼핑 메뉴 클릭 - 직접 URL 접근");
-                        window.location.href = "/shop-new";
+                        console.log("인증 사용자 쇼핑 메뉴 클릭 - 직접 이동", path);
+                        // href와 일치하는 경로로 이동하도록 수정
+                        window.location.href = path;
                       }}
                       show={true}
                     >
