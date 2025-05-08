@@ -176,7 +176,8 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
     const publicPaths = [
       "/", "/courses", "/trainers", "/video-training", "/video-call", "/community",
       "/institutes", "/institutes/register", "/events", "/events/calendar",
-      "/help/faq", "/help/guide", "/help/about", "/help/contact", "/shop"
+      "/help/faq", "/help/guide", "/help/about", "/help/contact", "/shop",
+      "/shop-redirect", "/shop-new"
     ];
     
     // 로그인 필요한 페이지 접근 시
@@ -218,7 +219,9 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
       '/my-pets': '반려견 관리',
       '/notebook': '알림장',
       '/calendar': '교육 일정',
-      '/shop': '쇼핑'
+      '/shop': '쇼핑',
+      '/shop-redirect': '쇼핑 페이지',
+      '/shop-new': '신규 쇼핑'
     };
 
     if (path in specialRoutes) {
@@ -397,12 +400,14 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                     >이벤트</NavItem>
 
                     <NavItem 
-                      href="/shop-redirect" 
+                      href="/shop" 
                       icon={<ShoppingBag className="w-5 h-5 mr-2" />} 
                       active={isActive("/shop-new") || isActive("/shop") || isActive("/shop-redirect")} 
                       onClick={(path) => {
-                        console.log("쇼핑 메뉴 클릭 - 리다이렉트 페이지로 이동");
-                        handleItemClick(path);
+                        console.log("쇼핑 메뉴 클릭 - 직접 쇼핑으로 이동");
+                        
+                        // 직접 이동 방식
+                        window.location.href = "/shop";
                       }} 
                       show={true}
                     >쇼핑</NavItem>
@@ -531,12 +536,13 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                       화상 훈련
                     </NavItem>
                     <NavItem
-                      href="/shop-redirect"
+                      href="/shop"
                       icon={<ShoppingBag className="w-5 h-5 mr-2" />}
                       active={isActive("/shop-new") || isActive("/shop") || isActive("/shop-redirect")}
                       onClick={(path) => {
-                        console.log("로그인 사용자 쇼핑 메뉴 클릭 - 리다이렉트 페이지로 이동");
-                        handleItemClick(path);
+                        console.log("로그인 사용자 쇼핑 메뉴 클릭 - 직접 쇼핑으로 이동");
+                        // 직접 이동 방식 사용
+                        window.location.href = "/shop";
                       }}
                       show={true}
                     >
