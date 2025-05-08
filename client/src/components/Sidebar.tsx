@@ -202,12 +202,17 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
       '/ai-analysis': 'AI 분석',
       '/my-pets': '반려견 관리',
       '/notebook': '알림장',
-      '/calendar': '교육 일정'
+      '/calendar': '교육 일정',
+      '/shop': '쇼핑'
     };
 
     if (path in specialRoutes) {
       console.log(`${specialRoutes[path]} 페이지로 이동 중...`);
-      window.location.href = path;
+      if (path === '/shop') {
+        setLocation(path); // 쇼핑 페이지는 Wouter의 setLocation 사용
+      } else {
+        window.location.href = path;
+      }
       return;
     }
 
@@ -385,8 +390,12 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                       active={isActive("/shop")} 
                       onClick={(path) => {
                         console.log("비회원이 쇼핑 메뉴 클릭", path);
-                        // 수정: Wouter의 setLocation을 사용
+                        // Wouter의 setLocation을 사용하여 라우트로 이동
                         setLocation(path);
+                        // 모바일에서는 사이드바 닫기
+                        if (window.innerWidth < 1024) {
+                          onClose();
+                        }
                       }} 
                       show={true}
                     >쇼핑</NavItem>
@@ -518,11 +527,7 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                       href="/shop"
                       icon={<ShoppingBag className="w-5 h-5 mr-2" />}
                       active={isActive("/shop")}
-                      onClick={(path) => {
-                        console.log("쇼핑 메뉴 클릭", path);
-                        // 수정: Wouter의 setLocation을 사용
-                        setLocation(path);
-                      }}
+                      onClick={handleItemClick}
                       show={true}
                     >
                       쇼핑
