@@ -161,7 +161,7 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
     const publicPaths = [
       "/", "/courses", "/trainers", "/video-training", "/video-call", "/community",
       "/institutes", "/institutes/register", "/events", "/events/calendar",
-      "/help/faq", "/help/guide", "/help/about", "/help/contact"
+      "/help/faq", "/help/guide", "/help/about", "/help/contact", "/shop"
     ];
     
     // 로그인 필요한 페이지 접근 시
@@ -518,7 +518,10 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                       href="/shop"
                       icon={<ShoppingBag className="w-5 h-5 mr-2" />}
                       active={isActive("/shop")}
-                      onClick={handleItemClick}
+                      onClick={(path) => {
+                        console.log("쇼핑 메뉴 클릭", path);
+                        window.location.href = path;
+                      }}
                       show={true}
                     >
                       쇼핑
