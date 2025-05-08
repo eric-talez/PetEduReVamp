@@ -1,16 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useRoute } from 'wouter';
 import { useAuth } from '../../SimpleApp';
-import { 
-  PawPrint, 
-  Calendar, 
-  User, 
-  FileText, 
-  Award, 
-  Edit, 
-  Plus, 
-  ChevronRight, 
-  Trash2, 
+import {
+  PawPrint,
+  Calendar,
+  User,
+  FileText,
+  Award,
+  Edit,
+  Plus,
+  ChevronRight,
+  Trash2,
   ChevronLeft,
   ChevronDown,
   ArrowLeft,
@@ -23,7 +23,8 @@ import {
   Send,
   StickyNote,
   X,
-  MessageSquare
+  MessageSquare,
+  Bell,
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { format, subDays, addDays, isSameDay } from 'date-fns';
@@ -202,7 +203,7 @@ export default function NotebookPage() {
         trainerId: 2,
         trainerName: "김훈련"
       };
-      
+
       // 알림장 항목 샘플 데이터
       const mockEntries: NotebookEntry[] = [
         {
@@ -300,7 +301,7 @@ export default function NotebookPage() {
           }
         }
       ];
-      
+
       setPet(mockPet);
       setEntries(mockEntries);
     }
@@ -349,7 +350,7 @@ export default function NotebookPage() {
 
     setEntries([...entries, entryToAdd]);
     setIsAddEntryDialogOpen(false);
-    
+
     // 입력 폼 초기화
     setNewEntry({
       category: 'training',
@@ -387,11 +388,11 @@ export default function NotebookPage() {
   // 알림장 항목 삭제
   const deleteEntry = () => {
     if (!selectedEntry) return;
-    
+
     setEntries(entries.filter(entry => entry.id !== selectedEntry.id));
     setIsDeleteDialogOpen(false);
     setSelectedEntry(null);
-    
+
     toast({
       title: "알림장 항목 삭제 완료",
       description: "선택한 항목이 삭제되었습니다.",
@@ -430,7 +431,7 @@ export default function NotebookPage() {
     setEntries(updatedEntries);
     setCommentText('');
     setIsCommentDialogOpen(false);
-    
+
     toast({
       title: "댓글 추가 완료",
       description: "댓글이 추가되었습니다.",
@@ -469,9 +470,9 @@ export default function NotebookPage() {
       {/* 반려견 정보 및 날짜 네비게이션 */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
         <div className="flex items-center">
-          <Avatar 
-            src={pet.image} 
-            fallback={pet.name[0]} 
+          <Avatar
+            src={pet.image}
+            fallback={pet.name[0]}
             alt={pet.name}
             className="w-16 h-16 mr-4"
           />
@@ -487,16 +488,16 @@ export default function NotebookPage() {
             </div>
           </div>
         </div>
-        
+
         <div className="flex items-center space-x-2">
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             size="icon"
             onClick={goToPreviousDay}
           >
             <ChevronLeft className="h-4 w-4" />
           </Button>
-          
+
           <div className="bg-white dark:bg-gray-800 px-4 py-2 rounded-md border text-center min-w-[140px]">
             <div className="text-sm font-medium">
               {format(selectedDate, 'PPP', { locale: ko })}
@@ -505,15 +506,15 @@ export default function NotebookPage() {
               {format(selectedDate, 'EEEE', { locale: ko })}
             </div>
           </div>
-          
-          <Button 
-            variant="outline" 
+
+          <Button
+            variant="outline"
             size="icon"
             onClick={goToNextDay}
           >
             <ChevronRight className="h-4 w-4" />
           </Button>
-          
+
           <Button onClick={() => setIsAddEntryDialogOpen(true)}>
             <Plus className="h-4 w-4 mr-1" />
             작성하기
@@ -536,7 +537,7 @@ export default function NotebookPage() {
             </div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center">
@@ -550,7 +551,7 @@ export default function NotebookPage() {
             </div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center">
@@ -566,11 +567,56 @@ export default function NotebookPage() {
         </Card>
       </div>
 
+      {/* 추가된 카드 컴포넌트 */}
+      <div className="grid md:grid-cols-2 gap-6 mb-8">
+        <Card className="p-4">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <Bell className="w-5 h-5 text-primary" />
+              <h2 className="text-xl font-semibold">오늘의 알림</h2>
+            </div>
+            <button className="text-primary hover:text-primary/80">
+              <Edit className="w-5 h-5" />
+            </button>
+          </div>
+          <div className="space-y-4">
+            <div className="p-3 bg-gray-50 rounded-lg">
+              <h3 className="font-medium">산책 기록</h3>
+              <p className="text-sm text-gray-600 mt-1">오전 30분 산책 완료</p>
+            </div>
+            <div className="p-3 bg-gray-50 rounded-lg">
+              <h3 className="font-medium">식사량</h3>
+              <p className="text-sm text-gray-600 mt-1">아침, 점심 식사 완료</p>
+            </div>
+          </div>
+        </Card>
+
+        <Card className="p-4">
+          <div className="flex items-center gap-2 mb-4">
+            <MessageSquare className="w-5 h-5 text-primary" />
+            <h2 className="text-xl font-semibold">훈련사 피드백</h2>
+          </div>
+          <div className="space-y-4">
+            <div className="p-3 bg-gray-50 rounded-lg">
+              <div className="flex items-center justify-between">
+                <h3 className="font-medium">기본 훈련 진행상황</h3>
+                <span className="text-sm text-green-600">양호</span>
+              </div>
+              <p className="text-sm text-gray-600 mt-2">
+                기본 명령어 습득이 잘 되고 있습니다.
+                지속적인 보상 훈련을 추천드립니다.
+              </p>
+            </div>
+          </div>
+        </Card>
+      </div>
+
+
       {/* 알림장 내용 */}
       <div className="mb-8">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-semibold">알림장 내용</h2>
-          
+
           <div className="flex items-center gap-2">
             <Select
               value={selectedCategory}
@@ -617,7 +663,7 @@ export default function NotebookPage() {
                         </div>
                       </div>
                     </div>
-                    
+
                     <div className="flex items-center">
                       <Badge
                         variant="outline"
@@ -635,7 +681,7 @@ export default function NotebookPage() {
                         {entry.category === 'behavior' && '행동'}
                         {entry.category === 'etc' && '기타'}
                       </Badge>
-                      
+
                       <div className="flex ml-2">
                         <Button
                           variant="ghost"
@@ -648,31 +694,31 @@ export default function NotebookPage() {
                         >
                           <MessageSquare className="h-4 w-4" />
                         </Button>
-                        {(userRole === 'trainer' && entry.authorRole === 'trainer') || 
-                         (userRole === 'pet-owner' && entry.authorRole === 'owner') && (
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8 text-red-500 hover:text-red-600"
-                            onClick={() => {
-                              setSelectedEntry(entry);
-                              setIsDeleteDialogOpen(true);
-                            }}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        )}
+                        {(userRole === 'trainer' && entry.authorRole === 'trainer') ||
+                          (userRole === 'pet-owner' && entry.authorRole === 'owner') && (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 text-red-500 hover:text-red-600"
+                              onClick={() => {
+                                setSelectedEntry(entry);
+                                setIsDeleteDialogOpen(true);
+                              }}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          )}
                       </div>
                     </div>
                   </div>
                 </CardHeader>
-                
+
                 <CardContent className="pt-4">
                   {/* 내용 */}
                   <div className="mb-4">
                     <p className="whitespace-pre-line">{entry.content}</p>
                   </div>
-                  
+
                   {/* 사진 */}
                   {entry.photos && entry.photos.length > 0 && (
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mb-4">
@@ -687,7 +733,7 @@ export default function NotebookPage() {
                       ))}
                     </div>
                   )}
-                  
+
                   {/* 기분 */}
                   {entry.mood && (
                     <div className="flex items-center mb-3">
@@ -706,7 +752,7 @@ export default function NotebookPage() {
                       </Badge>
                     </div>
                   )}
-                  
+
                   {/* 태그 */}
                   {entry.tags && entry.tags.length > 0 && (
                     <div className="flex flex-wrap gap-1 mb-3">
@@ -717,7 +763,7 @@ export default function NotebookPage() {
                       ))}
                     </div>
                   )}
-                  
+
                   {/* 훈련 상세 */}
                   {entry.category === 'training' && entry.trainingDetails && (
                     <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-md mb-3">
@@ -736,8 +782,8 @@ export default function NotebookPage() {
                         <div className="flex items-center">
                           <span className="text-gray-500 mr-2">진행도:</span>
                           <div className="w-24 h-2 bg-gray-200 rounded-full overflow-hidden">
-                            <div 
-                              className="h-full bg-blue-500" 
+                            <div
+                              className="h-full bg-blue-500"
                               style={{ width: `${entry.trainingDetails.progress}%` }}
                             ></div>
                           </div>
@@ -747,7 +793,7 @@ export default function NotebookPage() {
                           <span className="text-gray-500 mr-2">훈련 항목:</span>
                           <div className="flex flex-wrap gap-1">
                             {entry.trainingDetails.exercises.map((exercise, index) => (
-                              <Badge key={index} variant="outline" className="bg-white">
+                              <Badge key={index}                              variant="outline" className="bg-white">
                                 {exercise}
                               </Badge>
                             ))}
@@ -756,7 +802,7 @@ export default function NotebookPage() {
                       </div>
                     </div>
                   )}
-                  
+
                   {/* 식사 상세 */}
                   {entry.category === 'meal' && entry.mealDetails && (
                     <div className="bg-green-50 dark:bg-green-900/20 p-3 rounded-md mb-3">
@@ -795,7 +841,7 @@ export default function NotebookPage() {
                       </div>
                     </div>
                   )}
-                  
+
                   {/* 건강 상세 */}
                   {entry.category === 'health' && entry.healthDetails && (
                     <div className="bg-red-50 dark:bg-red-900/20 p-3 rounded-md mb-3">
@@ -836,7 +882,7 @@ export default function NotebookPage() {
                       </div>
                     </div>
                   )}
-                  
+
                   {/* 댓글 */}
                   {entry.comments && entry.comments.length > 0 && (
                     <div className="mt-4 pt-4 border-t">
@@ -870,7 +916,7 @@ export default function NotebookPage() {
                     </div>
                   )}
                 </CardContent>
-                
+
                 <CardFooter className="pt-0">
                   <Button
                     variant="ghost"
@@ -915,7 +961,7 @@ export default function NotebookPage() {
               {pet.name}의 {format(selectedDate, 'PPP', { locale: ko })} 알림장을 작성합니다.
             </DialogDescription>
           </DialogHeader>
-          
+
           <Tabs
             defaultValue="training"
             value={newEntry.category}
@@ -928,7 +974,7 @@ export default function NotebookPage() {
               <TabsTrigger value="behavior">행동</TabsTrigger>
               <TabsTrigger value="etc">기타</TabsTrigger>
             </TabsList>
-            
+
             <div className="space-y-4 mb-4">
               <div>
                 <Label htmlFor="content">내용</Label>
@@ -941,7 +987,7 @@ export default function NotebookPage() {
                   rows={5}
                 />
               </div>
-              
+
               <div>
                 <Label>기분</Label>
                 <div className="flex space-x-2 mt-1">
@@ -971,7 +1017,7 @@ export default function NotebookPage() {
                   </Button>
                 </div>
               </div>
-              
+
               <div>
                 <Label>태그 (선택사항)</Label>
                 <Input
@@ -1012,7 +1058,7 @@ export default function NotebookPage() {
                   </div>
                 )}
               </div>
-              
+
               <div>
                 <Label>사진 (선택사항)</Label>
                 <div className="mt-1">
@@ -1039,7 +1085,7 @@ export default function NotebookPage() {
                           "https://images.unsplash.com/photo-1562176566-e9afd27531d4?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
                           "https://images.unsplash.com/photo-1598875384021-4a23470c7997?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3"
                         ];
-                        
+
                         const randomUrl = mockUrls[Math.floor(Math.random() * mockUrls.length)];
                         setNewEntry({
                           ...newEntry,
@@ -1049,7 +1095,7 @@ export default function NotebookPage() {
                     }}
                   />
                 </div>
-                
+
                 {newEntry.photos && newEntry.photos.length > 0 && (
                   <div className="grid grid-cols-3 gap-2 mt-2">
                     {newEntry.photos.map((photo, index) => (
@@ -1076,7 +1122,7 @@ export default function NotebookPage() {
                   </div>
                 )}
               </div>
-              
+
               {/* 카테고리별 추가 필드 */}
               {newEntry.category === 'training' && (
                 <div className="border p-4 rounded-md bg-blue-50 dark:bg-blue-900/20">
@@ -1098,7 +1144,7 @@ export default function NotebookPage() {
                         })}
                       />
                     </div>
-                    
+
                     <div>
                       <Label htmlFor="training-duration">훈련 시간 (분)</Label>
                       <Input
@@ -1117,7 +1163,7 @@ export default function NotebookPage() {
                         })}
                       />
                     </div>
-                    
+
                     <div>
                       <Label htmlFor="training-progress">진행도 (%)</Label>
                       <Input
@@ -1136,7 +1182,7 @@ export default function NotebookPage() {
                         })}
                       />
                     </div>
-                    
+
                     <div>
                       <Label>훈련 항목</Label>
                       <Input
@@ -1186,7 +1232,7 @@ export default function NotebookPage() {
                   </div>
                 </div>
               )}
-              
+
               {newEntry.category === 'meal' && (
                 <div className="border p-4 rounded-md bg-green-50 dark:bg-green-900/20">
                   <h3 className="font-medium mb-3">식사 세부 정보</h3>
@@ -1207,7 +1253,7 @@ export default function NotebookPage() {
                         })}
                       />
                     </div>
-                    
+
                     <div>
                       <Label htmlFor="meal-lunch">점심</Label>
                       <Input
@@ -1224,7 +1270,7 @@ export default function NotebookPage() {
                         })}
                       />
                     </div>
-                    
+
                     <div>
                       <Label htmlFor="meal-dinner">저녁</Label>
                       <Input
@@ -1241,7 +1287,7 @@ export default function NotebookPage() {
                         })}
                       />
                     </div>
-                    
+
                     <div>
                       <Label htmlFor="meal-snacks">간식</Label>
                       <Input
@@ -1258,7 +1304,7 @@ export default function NotebookPage() {
                         })}
                       />
                     </div>
-                    
+
                     <div>
                       <Label htmlFor="meal-amount">총 식사량 (g)</Label>
                       <Input
@@ -1279,7 +1325,7 @@ export default function NotebookPage() {
                   </div>
                 </div>
               )}
-              
+
               {newEntry.category === 'health' && (
                 <div className="border p-4 rounded-md bg-red-50 dark:bg-red-900/20">
                   <h3 className="font-medium mb-3">건강 세부 정보</h3>
@@ -1302,7 +1348,7 @@ export default function NotebookPage() {
                         })}
                       />
                     </div>
-                    
+
                     <div>
                       <Label>증상</Label>
                       <Input
@@ -1349,7 +1395,7 @@ export default function NotebookPage() {
                         </div>
                       )}
                     </div>
-                    
+
                     <div>
                       <Label htmlFor="health-medication">약물/처치</Label>
                       <Input
@@ -1366,7 +1412,7 @@ export default function NotebookPage() {
                         })}
                       />
                     </div>
-                    
+
                     <div>
                       <Label htmlFor="health-notes">특이사항</Label>
                       <Textarea
@@ -1388,7 +1434,7 @@ export default function NotebookPage() {
               )}
             </div>
           </Tabs>
-          
+
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsAddEntryDialogOpen(false)}>취소</Button>
             <Button onClick={addEntry}>작성 완료</Button>
@@ -1405,7 +1451,7 @@ export default function NotebookPage() {
               {selectedEntry?.authorName}님의 알림장에 댓글을 작성합니다.
             </DialogDescription>
           </DialogHeader>
-          
+
           <div className="space-y-4 py-4">
             <Textarea
               placeholder="댓글 내용을 입력하세요..."
@@ -1414,7 +1460,7 @@ export default function NotebookPage() {
               rows={4}
             />
           </div>
-          
+
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsCommentDialogOpen(false)}>취소</Button>
             <Button onClick={addComment}>댓글 작성</Button>
