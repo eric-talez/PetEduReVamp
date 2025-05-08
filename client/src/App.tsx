@@ -20,7 +20,7 @@ import CourseReservationPage from "./pages/course-reservation/index";
 import MessagesPage from "./pages/messages/index";
 import NotificationsPage from "./pages/notifications/index";
 // 쇼핑 페이지
-import ShopPage from "./pages/SimpleShopPage";
+import ShopPage from "./pages/SimpleShopPage"; // 배너 및 상품 리스트가 있는 쇼핑 페이지
 
 import VideoTrainingPage from "./pages/video-training/index";
 import VideoTrainingDetailPage from "./pages/video-training/video";

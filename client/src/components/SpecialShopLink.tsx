@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 
 interface SpecialShopLinkProps {
   children: React.ReactNode;
@@ -6,27 +6,19 @@ interface SpecialShopLinkProps {
 }
 
 export function SpecialShopLink({ children, className = "" }: SpecialShopLinkProps) {
-  const [url, setUrl] = useState<string>("");
-
-  useEffect(() => {
-    // 마운트 시에만 URL 설정
-    setUrl(window.location.origin + "/shop/simple");
-  }, []);
-
   const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
     console.log("SpecialShopLink 클릭됨");
-    console.log("이동할 URL:", url);
     
-    // 직접 URL 설정
-    if (url) {
-      window.location.href = url;
-    }
+    // 직접 URL 설정 - 항상 /shop로 이동하도록 수정
+    const shopUrl = "/shop";
+    console.log("이동할 URL:", shopUrl);
+    window.location.href = shopUrl;
   };
 
   return (
     <a
-      href="#"
+      href="/shop"
       className={className}
       onClick={handleClick}
       data-special="shop-link"

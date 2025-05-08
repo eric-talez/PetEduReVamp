@@ -170,7 +170,7 @@ export default function ShopPage() {
               <h3 className="font-medium line-clamp-2">{product.name}</h3>
               <div className="flex items-center gap-2">
                 {product.discountRate && (
-                  <Badge variant="destructive">{product.discountRate}%</Badge>
+                  <Badge variant="danger">{product.discountRate}%</Badge>
                 )}
                 <span className="font-bold text-lg">
                   {product.price.toLocaleString()}원
