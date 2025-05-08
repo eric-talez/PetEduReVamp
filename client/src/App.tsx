@@ -131,7 +131,17 @@ function AuthenticatedRoutes() {
           }}
         </Route>
         {/* 표준화된 방식으로 수정 */}
-        <Route path="/shop" component={lazy(() => import('./pages/shop/ShopPage'))} />
+        <Route path="/shop">
+          {() => {
+            console.log("표준화된 쇼핑 페이지 렌더링 시도 (인증)");
+            const ShopPage = lazy(() => import('./pages/shop/index'));
+            return (
+              <Suspense fallback={<div className="p-8 text-center">쇼핑 페이지 로딩 중...</div>}>
+                <ShopPage />
+              </Suspense>
+            );
+          }}
+        </Route>
         <Route path="/shop-redirect">
           {() => {
             console.log("Shop 리다이렉트 페이지 렌더링 (인증)");
@@ -244,7 +254,17 @@ function UnauthenticatedRoutes() {
           }}
         </Route>
         {/* 표준화된 방식으로 수정 (비인증) */}
-        <Route path="/shop" component={lazy(() => import('./pages/shop/ShopPage'))} />
+        <Route path="/shop">
+          {() => {
+            console.log("표준화된 쇼핑 페이지 렌더링 시도 (비인증)");
+            const ShopPage = lazy(() => import('./pages/shop/index'));
+            return (
+              <Suspense fallback={<div className="p-8 text-center">쇼핑 페이지 로딩 중...</div>}>
+                <ShopPage />
+              </Suspense>
+            );
+          }}
+        </Route>
         <Route path="/shop-redirect">
           {() => {
             console.log("Shop 리다이렉트 페이지 렌더링 (비인증)");
