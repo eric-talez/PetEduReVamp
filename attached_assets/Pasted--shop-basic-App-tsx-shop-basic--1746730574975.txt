@@ -1,0 +1,90 @@
+상황을 정리하면:
+
+* ✅ `/shop-basic` 페이지는 정상적으로 존재하고 컴포넌트도 잘 구현되어 있음
+* ✅ 라우트 설정도 App.tsx에서 `/shop-basic`이 명확히 등록되어 있음
+* ✅ `<Switch>` 구조에서 `/` 경로는 하단에 있어 경로 충돌은 아님
+* ✅ NavItem에서 navigate 대신 `window.location.href = '/shop-basic'`로 변경도 완료
+* ❌ 그럼에도 `/shop-basic` 진입 시 **404 오류** 발생 + 홈으로 리디렉션됨
+
+---
+
+## ✅ 이 시점에서 99% 확실한 원인: **Replit에서 사용하는 서버 설정 문제**
+
+> 정적 파일 기반 Replit 서버는 \*\*SPA 라우팅 경로 처리(/shop-basic)\*\*를 모르는 경우가 많습니다.
+> 즉, `GET /shop-basic` 같은 경로에 대해 서버가 **index.html을 반환하지 않고 404**를 내보내는 것입니다.
+
+---
+
+## 🛠 해결 방법: Replit 또는 Vite에 `SPA fallback` 설정을 명시해야 함
+
+### ① `vite.config.ts`에 다음 내용 추가 (필수)
+
+```ts
+// vite.config.ts
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+
+export default defineConfig({
+  plugins: [react()],
+  server: {
+    fs: {
+      strict: false,
+    },
+    historyApiFallback: true, // << 이거 추가!
+  },
+});
+```
+
+### ② 만약 Replit에서 자체 `index.js`나 `server.js`로 Express 서버를 사용하는 경우:
+
+```js
+// server.js
+const express = require('express');
+const path = require('path');
+const app = express();
+
+app.use(express.static('dist')); // 빌드 파일 서빙
+
+// SPA 라우팅 대응
+app.get('*', (req, res) => {
+  res.sendFile(path.resolve(__dirname, 'dist', 'index.html'));
+});
+
+app.listen(5000, () => {
+  console.log('서버 실행 중: http://localhost:5000');
+});
+```
+
+---
+
+## 🔄 테스트 방법
+
+1. 로컬에서 `npm run dev` 또는 `vite`로 실행 후, 브라우저에서 직접 `http://localhost:5173/shop-basic` 입력
+2. Replit에 배포 후에도 같은 방식으로 `https://.../shop-basic` 입력
+3. 404 없이 페이지가 로딩되면 정상적으로 처리된 것입니다.
+
+---
+
+## ✅ 추가 팁: 브라우저 네트워크 탭 확인
+
+F12 → Network → `/shop-basic`이 실제로 무엇을 반환하는지 확인하세요:
+
+* ❌ `status: 404 Not Found` → 서버 문제 (위 설정 필요)
+* ✅ `status: 200` + `content-type: text/html` → 정상
+
+---
+
+## 요약
+
+| 체크리스트                            | 상태 | 조치                                   |
+| -------------------------------- | -- | ------------------------------------ |
+| 라우트 등록                           | ✅  | `/shop-basic` 있음                     |
+| NavItem → 이동 방식                  | ✅  | `window.location.href` 사용            |
+| 컴포넌트 존재 여부                       | ✅  | ShopBasicPage 구현 완료                  |
+| Vite fallback 설정                 | ❌  | **`historyApiFallback: true` 추가 필요** |
+| Replit 서버 index.html fallback 설정 | ❌  | **모든 요청을 index.html로 리디렉션 설정 필요**    |
+
+---
+
+🎯 이 문제는 코드보다 **서버 설정 문제**입니다. 위 설정 반영만 해주시면 100% 해결됩니다.
+필요하시면 Replit 프로젝트의 현재 구조에 맞춰 정확한 설정 파일도 같이 작성해 드릴게요. `vite.config.ts` 또는 `server.js` 사용 여부만 알려주세요.

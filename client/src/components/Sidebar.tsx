@@ -401,15 +401,15 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                     >이벤트</NavItem>
 
                     <NavItem 
-                      href="/shop-basic" 
+                      href="/shop" 
                       icon={<ShoppingBag className="w-5 h-5 mr-2" />} 
-                      active={isActive("/shop-basic")} 
+                      active={isActive("/shop") || isActive("/shop-basic")} 
                       onClick={(path) => {
                         console.log("비로그인 사용자 쇼핑 메뉴 클릭");
                         console.log("현재 URL:", window.location.href);
-                        console.log("이동할 경로: /shop-basic");
+                        console.log("이동할 경로: /shop");
                         // navigate 대신 직접 location 변경 시도
-                        window.location.href = "/shop-basic";
+                        window.location.href = "/shop";
                         if (onClose) onClose();
                         return; // 이후 처리 중단
                       }} 
@@ -540,15 +540,15 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                       화상 훈련
                     </NavItem>
                     <NavItem
-                      href="/shop-basic"
+                      href="/shop"
                       icon={<ShoppingBag className="w-5 h-5 mr-2" />}
-                      active={isActive("/shop-basic")}
+                      active={isActive("/shop") || isActive("/shop-basic")}
                       onClick={(path) => {
                         console.log("인증된 사용자 쇼핑 메뉴 클릭");
                         console.log("현재 URL:", window.location.href);
                         console.log("이동할 경로:", path);
                         // navigate 대신 직접 location 변경 시도
-                        window.location.href = "/shop-basic";
+                        window.location.href = "/shop";
                         if (onClose) onClose();
                         return; // 이후 처리 중단
                       }}
