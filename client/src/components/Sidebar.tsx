@@ -401,11 +401,12 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                       icon={<ShoppingBag className="w-5 h-5 mr-2" />} 
                       active={isActive("/shop-new") || isActive("/shop") || isActive("/shop-redirect")} 
                       onClick={(path) => {
-                        console.log("쇼핑 메뉴 클릭");
+                        console.log("비로그인 사용자 쇼핑 메뉴 클릭");
                         console.log("현재 URL:", window.location.href);
-                        // 직접 shop-basic으로 변경
-                        console.log("이동할 경로: /shop-basic");
-                        window.location.href = "/shop-basic";
+                        // 비로그인 사용자는 ShopBasicPage 렌더링
+                        const shopPageUrl = window.location.protocol + "//" + window.location.host + "/shop-simple";
+                        console.log("이동할 경로:", shopPageUrl);
+                        window.location.href = shopPageUrl;
                         return; // 이후 처리 중단
                       }} 
                       show={true}
@@ -541,9 +542,10 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                       onClick={(path) => {
                         console.log("인증된 사용자 쇼핑 메뉴 클릭");
                         console.log("현재 URL:", window.location.href);
-                        console.log("이동할 경로: /shop-basic");
-                        // 직접 shop-basic 페이지로 이동
-                        window.location.href = "/shop-basic";
+                        // 로그인 사용자는 다른 쇼핑 페이지로 이동
+                        const shopPageUrl = window.location.protocol + "//" + window.location.host + "/shop";
+                        console.log("이동할 경로:", shopPageUrl);
+                        window.location.href = shopPageUrl;
                         return; // 이후 처리 중단
                       }}
                       show={true}
