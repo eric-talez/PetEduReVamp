@@ -19,20 +19,8 @@ import VideoCallPage from "./pages/video-call/index";
 import CourseReservationPage from "./pages/course-reservation/index";
 import MessagesPage from "./pages/messages/index";
 import NotificationsPage from "./pages/notifications/index";
-// 쇼핑 페이지: 직접 구현
-// 외부 파일 의존성 없이 직접 App.tsx에 구현
-const InlineShopPage = () => {
-  console.log("인라인 ShopPage 컴포넌트 렌더링");
-  return (
-    <div className="container mx-auto p-6">
-      <h1 className="text-3xl font-bold mb-6">반려견 용품 쇼핑</h1>
-      <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-8">
-        <p className="text-lg mb-4">쇼핑 페이지 테스트 중</p>
-        <p>정상적으로 렌더링되었습니다!</p>
-      </div>
-    </div>
-  );
-};
+// 쇼핑 페이지: 새로운 컴포넌트 사용
+import ShopNewPage from "./pages/shop-new/index";
 import VideoTrainingPage from "./pages/video-training/index";
 import VideoTrainingDetailPage from "./pages/video-training/video";
 import ProfilePage from "./pages/profile/index";
@@ -134,7 +122,7 @@ function AuthenticatedRoutes() {
         </Route>
         <Route path="/messages" component={MessagesPage} />
         <Route path="/notifications" component={NotificationsPage} />
-        <Route path="/shop" component={InlineShopPage} />
+        <Route path="/shop" component={ShopNewPage} />
         <Route path="/shop/cart">
           {() => {
             const CartPage = lazy(() => import('./pages/shop/cart'));
@@ -234,7 +222,7 @@ function UnauthenticatedRoutes() {
             );
           }}
         </Route>
-        <Route path="/shop" component={InlineShopPage} />
+        <Route path="/shop" component={ShopNewPage} />
         
         {/* 강의 및 비디오 관련 */}
         <Route path="/course/:id" component={CourseDetail} />
