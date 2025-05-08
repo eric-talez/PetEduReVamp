@@ -21,6 +21,7 @@ import MessagesPage from "./pages/messages/index";
 import NotificationsPage from "./pages/notifications/index";
 // 쇼핑 페이지: 새로운 컴포넌트 사용
 import ShopBasicPage from "./pages/ShopBasicPage";
+import ShopTestPage from "./pages/ShopTestPage";
 import ShopNewPage from "./pages/shop-new/index";
 import SimpleShopPage from "./pages/shop-simple/index";
 import ShopRedirect from "./pages/ShopRedirect";
@@ -266,6 +267,12 @@ function UnauthenticatedRoutes() {
         </Route>
 
         {/* 쇼핑 관련 라우트 */}
+        <Route path="/shop/test">
+          {() => {
+            console.log("ShopTestPage 렌더링 (/shop/test 경로에서 - App.tsx)");
+            return <ShopTestPage />;
+          }}
+        </Route>
         <Route path="/shop">
           {() => {
             console.log("ShopBasicPage 렌더링 (/shop 경로에서 - App.tsx)");

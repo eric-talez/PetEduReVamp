@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   ShoppingBag, Package, Search, ChevronRight, TrendingUp, 
   Heart, Percent, Tag, Gift, Star, Clock, Award, Truck 
@@ -277,6 +277,14 @@ function ProductCard({ product }: { product: any }) {
 
 export default function ShopBasicPage() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [isLoaded, setIsLoaded] = useState(false);
+  
+  useEffect(() => {
+    console.log("ShopBasicPage 마운트됨 - useEffect 실행");
+    console.log("현재 URL:", window.location.href);
+    console.log("현재 경로:", window.location.pathname);
+    setIsLoaded(true);
+  }, []);
   
   // 카테고리 필터링된 상품 목록
   const filteredProducts = selectedCategory 
@@ -289,6 +297,13 @@ export default function ShopBasicPage() {
   // 할인 상품 목록
   const discountedProducts = products.filter(product => product.discountRate > 0)
     .sort((a, b) => b.discountRate - a.discountRate);
+    
+  console.log("ShopBasicPage 렌더링 중...", {
+    isLoaded,
+    selectedCategory,
+    filteredProductsCount: filteredProducts.length,
+    bestSellerCount: bestSellerProducts.length
+  });
   
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
