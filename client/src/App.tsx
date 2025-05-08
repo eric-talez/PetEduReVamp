@@ -30,6 +30,7 @@ import NotFound from "./pages/not-found";
 import TrainerTest from "./pages/TrainerTest";
 import ShopRedirect from "./pages/ShopRedirect";
 import ShopBasicPage from "./pages/ShopBasicPage";
+import ShopSimplePage from "./pages/shop-simple"; // 추가된 import
 import TrainerReservationsPage from "./pages/trainer-dashboard/reservations";
 import InstituteCourseApprovalsPage from "./pages/institute-dashboard/course-approvals";
 import InstitutePetAssignmentsPage from "./pages/institute-dashboard/pet-assignments";
