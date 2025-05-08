@@ -6,17 +6,31 @@ export default function ShopRedirect() {
     console.log("현재 URL:", window.location.href);
     console.log("origin:", window.location.origin);
     
-    // 0.5초 후 리다이렉트 실행
-    const timer = setTimeout(() => {
+    // 즉시 리다이렉트 실행
+    try {
       // 원하는 경로
       const targetPath = '/shop';
-      const targetUrl = window.location.origin + targetPath;
+      const baseUrl = window.location.origin;
+      const targetUrl = baseUrl + targetPath;
       
-      console.log("리다이렉트 실행:", targetUrl);
+      console.log("ShopRedirect - 리다이렉트 실행:", targetUrl);
+      
+      // 즉시 실행 및 백업 타이머
       window.location.href = targetUrl;
-    }, 500);
-    
-    return () => clearTimeout(timer);
+      window.location.replace(targetUrl);
+      
+      // 추가 타이머 백업
+      const timer = setTimeout(() => {
+        console.log("타이머 백업으로 리다이렉트 재시도");
+        window.location.href = targetUrl;
+      }, 200);
+      
+      return () => clearTimeout(timer);
+    } catch (error) {
+      console.error("리다이렉트 중 오류 발생:", error);
+      // 오류 발생 시 바로 경로 이동 시도
+      window.location.pathname = '/shop';
+    }
   }, []);
   
   return (

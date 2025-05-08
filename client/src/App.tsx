@@ -130,10 +130,11 @@ function AuthenticatedRoutes() {
             return <ShopNewPage />;
           }}
         </Route>
+        {/* 아예 새로운 페이지로 대체 */}
         <Route path="/shop">
           {() => {
-            console.log("SimpleShopPage 렌더링 - /shop 경로 (인증)");
-            return <SimpleShopPage />;
+            console.log("새로운 쇼핑 페이지 렌더링 시도 (인증)");
+            return <ShopNewPage />;
           }}
         </Route>
         <Route path="/shop-redirect">
@@ -247,10 +248,11 @@ function UnauthenticatedRoutes() {
             return <ShopNewPage />;
           }}
         </Route>
+        {/* 아예 새로운 페이지로 대체 (비인증) */}
         <Route path="/shop">
           {() => {
-            console.log("SimpleShopPage 렌더링 - /shop 경로 (비인증)");
-            return <SimpleShopPage />;
+            console.log("새로운 쇼핑 페이지 렌더링 시도 (비인증)");
+            return <ShopNewPage />;
           }}
         </Route>
         <Route path="/shop-redirect">
