@@ -20,6 +20,10 @@ import CourseReservationPage from "./pages/course-reservation/index";
 import MessagesPage from "./pages/messages/index";
 import NotificationsPage from "./pages/notifications/index";
 // 쇼핑 페이지: 새로운 컴포넌트 사용
+import ShopBasicPage from "./pages/ShopBasicPage";
+import ShopNewPage from "./pages/shop-new/index";
+import SimpleShopPage from "./pages/shop-simple/index";
+import ShopRedirect from "./pages/ShopRedirect";
 
 import VideoTrainingPage from "./pages/video-training/index";
 import VideoTrainingDetailPage from "./pages/video-training/video";
@@ -262,7 +266,12 @@ function UnauthenticatedRoutes() {
         </Route>
 
         {/* 쇼핑 관련 라우트 */}
-        <Route path="/shop" component={ShopPage} />
+        <Route path="/shop">
+          {() => {
+            console.log("ShopBasicPage 렌더링 (/shop 경로에서 - App.tsx)");
+            return <ShopBasicPage />;
+          }}
+        </Route>
         <Route path="/shop/cart">
           {() => (
             <Suspense fallback={<div className="p-8 text-center">장바구니 로딩 중...</div>}>
