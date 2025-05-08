@@ -132,32 +132,17 @@ function AuthenticatedRoutes() {
           }}
         </Route>
         {/* 기존 /shop 경로에서 ShopBasicPage 직접 렌더링 */}
-        <Route path="/shop">
-          {() => {
-            console.log("ShopBasicPage 렌더링 (/shop 경로에서)");
-            return <ShopBasicPage />;
-          }}
-        </Route>
-        
-        {/* shop-simple 경로 추가 */}
-        <Route path="/shop-simple">
-          {() => {
-            console.log("단순 쇼핑 페이지 렌더링 시도 (인증)");
-            const SimpleShopPage = lazy(() => import('./pages/shop-simple/index'));
-            return (
-              <Suspense fallback={<div className="p-8 text-center">쇼핑 페이지 로딩 중...</div>}>
-                <SimpleShopPage />
-              </Suspense>
-            );
-          }}
-        </Route>
-        <Route path="/shop-redirect">
-          {() => {
-            console.log("Shop 리다이렉트 페이지 렌더링 (인증)");
-            return <ShopRedirect />;
-          }}
-        </Route>
-        
+        <Route path="/shop" component={ShopBasicPage} />
+        <Route path="/shop-simple" component={() => {
+          const SimpleShopPage = lazy(() => import('./pages/shop-simple'));
+          return (
+            <Suspense fallback={<div>Loading...</div>}>
+              <SimpleShopPage />
+            </Suspense>
+          );
+        }} />
+        <Route path="/shop-redirect" component={ShopRedirect} />
+
         {/* 추가: ShopBasicPage 라우트 (인증) */}
         <Route path="/shop-basic">
           {() => {
@@ -228,10 +213,10 @@ function AuthenticatedRoutes() {
           )}
         </Route>
         <Route path="/modal-test" component={TrainerTest} />
-        
+
         {/* 루트 경로를 마지막에 추가 */}
         <Route path="/" component={Home} />
-        
+
         {/* 매칭되는 경로가 없는 경우 */}
         <Route component={NotFound} />
       </Switch>
@@ -247,7 +232,7 @@ function UnauthenticatedRoutes() {
         {/* 인증 관련 */}
         <Route path="/auth/login" component={LoginPage} />
         <Route path="/auth/register" component={RegisterPage} />
-        
+
         {/* 쇼핑 관련 - 이 부분이 중요합니다 */}
         <Route path="/shop/cart">
           {() => {
@@ -276,32 +261,17 @@ function UnauthenticatedRoutes() {
           }}
         </Route>
         {/* 기존 /shop 경로에서 ShopBasicPage 직접 렌더링 (비인증) */}
-        <Route path="/shop">
-          {() => {
-            console.log("ShopBasicPage 렌더링 (/shop 경로에서 - 비인증)");
-            return <ShopBasicPage />;
-          }}
-        </Route>
-        
-        {/* shop-simple 경로 추가 (비인증) */}
-        <Route path="/shop-simple">
-          {() => {
-            console.log("단순 쇼핑 페이지 렌더링 시도 (비인증)");
-            const SimpleShopPage = lazy(() => import('./pages/shop-simple/index'));
-            return (
-              <Suspense fallback={<div className="p-8 text-center">쇼핑 페이지 로딩 중...</div>}>
-                <SimpleShopPage />
-              </Suspense>
-            );
-          }}
-        </Route>
-        <Route path="/shop-redirect">
-          {() => {
-            console.log("Shop 리다이렉트 페이지 렌더링 (비인증)");
-            return <ShopRedirect />;
-          }}
-        </Route>
-        
+        <Route path="/shop" component={ShopBasicPage} />
+        <Route path="/shop-simple" component={() => {
+          const SimpleShopPage = lazy(() => import('./pages/shop-simple'));
+          return (
+            <Suspense fallback={<div>Loading...</div>}>
+              <SimpleShopPage />
+            </Suspense>
+          );
+        }} />
+        <Route path="/shop-redirect" component={ShopRedirect} />
+
         {/* 추가: ShopBasicPage 라우트 (비인증) */}
         <Route path="/shop-basic">
           {() => {
@@ -309,13 +279,13 @@ function UnauthenticatedRoutes() {
             return <ShopBasicPage />;
           }}
         </Route>
-        
+
         {/* 강의 및 비디오 관련 */}
         <Route path="/course/:id" component={CourseDetail} />
         <Route path="/courses" component={CoursesPage} />
         <Route path="/video-training/:id" component={VideoTrainingDetailPage} />
         <Route path="/video-training" component={VideoTrainingPage} />
-        
+
         {/* 이벤트 관련 */}
         <Route path="/events/calendar" component={EventCalendarPage} />
         <Route path="/events/:id">
@@ -326,7 +296,7 @@ function UnauthenticatedRoutes() {
           )}
         </Route>
         <Route path="/events" component={EventsPage} />
-        
+
         {/* 기관 관련 */}
         <Route path="/institutes/register">
           {() => (
@@ -343,7 +313,7 @@ function UnauthenticatedRoutes() {
           )}
         </Route>
         <Route path="/institutes" component={InstitutesPage} />
-        
+
         {/* 커뮤니티 관련 */}
         <Route path="/community/post/:id">
           {() => (
@@ -353,7 +323,7 @@ function UnauthenticatedRoutes() {
           )}
         </Route>
         <Route path="/community" component={CommunityPage} />
-        
+
         {/* 도움말 관련 */}
         <Route path="/help/faq">
           {() => (
@@ -383,17 +353,17 @@ function UnauthenticatedRoutes() {
             </Suspense>
           )}
         </Route>
-        
+
         {/* 기타 페이지 */}
         <Route path="/trainers" component={TrainersPage} />
         <Route path="/video-call" component={VideoCallPage} />
         <Route path="/course-reservation" component={CourseReservationPage} />
         <Route path="/locations" component={LocationsPage} />
         <Route path="/modal-test" component={TrainerTest} />
-        
+
         {/* 루트 경로는 마지막에 */}
         <Route path="/" component={Home} />
-        
+
         {/* 찾을 수 없는 페이지 */}
         <Route component={NotFound} />
       </Switch>

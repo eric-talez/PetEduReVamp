@@ -548,12 +548,13 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                       active={isActive("/shop") || isActive("/shop-simple")}
                       onClick={(path) => {
                         console.log("쇼핑 메뉴 클릭");
-                        // Navigate using full URL
-                        const shopUrl = window.location.origin + "/shop-simple";
-                        console.log("이동할 쇼핑 URL:", shopUrl);
-                        window.location.href = shopUrl;
+                        if (!isAuthenticated) {
+                          console.log("비로그인 사용자 - 로그인 페이지로 이동");
+                          window.location.href = "/auth/login";
+                          return;
+                        }
+                        navigate("/shop-simple");
                         if (onClose) onClose();
-                        return;
                       }}
                       show={true}
                     >
