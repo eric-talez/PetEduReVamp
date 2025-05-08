@@ -400,14 +400,19 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                       show={true}
                     >이벤트</NavItem>
 
-                    <NavItem 
-                      href="/shop-simple" 
-                      icon={<ShoppingBag className="w-5 h-5 mr-2" />} 
-                      active={isActive("/shop") || isActive("/shop-simple")} 
+                    <NavItem
+                      href="/shop-simple"
+                      icon={<ShoppingBag className="w-5 h-5 mr-2" />}
+                      active={isActive("/shop") || isActive("/shop-simple")}
                       onClick={(path) => {
-                        console.log("쇼핑 메뉴 클릭");
-                        // 내부 라우팅 사용
-                        handleItemClick("/shop-simple");
+                        console.log("쇼핑 메뉴 클릭 - 인증 상태:", isAuthenticated);
+                        if (!isAuthenticated) {
+                          console.log("비로그인 사용자 - 로그인 페이지로 이동");
+                          window.location.href = "/auth/login";
+                          return;
+                        }
+                        console.log("로그인 사용자 - 쇼핑 페이지로 이동");
+                        window.location.href = "/shop-simple";
                       }}
                       show={true}
                     >
