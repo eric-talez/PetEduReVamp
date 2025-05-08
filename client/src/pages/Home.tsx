@@ -139,7 +139,7 @@ export default function Home() {
         </Link>
         
         {/* 날씨 영역 - 맨 오른쪽으로 이동 */}
-        <Link href="/locations" className="group">
+        <div className="group" onClick={() => setIsWeatherModalOpen(true)}>
           <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-md transition-all duration-300 hover:shadow-lg hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer">
             <h3 className="text-lg font-semibold mb-2 group-hover:text-primary transition-colors">오늘의 날씨</h3>
             <div className="flex items-center">
@@ -176,7 +176,7 @@ export default function Home() {
               <p className="text-sm">산책하기 좋은 날씨입니다! 반려견과 함께 외출해보세요.</p>
             </div>
           </div>
-        </Link>
+        </div>
       </div>
       
       {/* 상단 영역: 배너와 프로필 */}
@@ -364,6 +364,13 @@ export default function Home() {
           </div>
         </div>
       </div>
+
+      {/* 주간 날씨 모달 */}
+      <WeeklyWeatherModal
+        isOpen={isWeatherModalOpen}
+        onClose={() => setIsWeatherModalOpen(false)}
+        location={{ name: "서울", region: "강남구" }}
+      />
     </div>
   );
 }
