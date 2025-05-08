@@ -385,8 +385,8 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                       active={isActive("/shop")} 
                       onClick={(path) => {
                         console.log("비회원이 쇼핑 메뉴 클릭", path);
-                        // 직접 URL 이동 처리 (다른 메뉴와 일관성)
-                        window.location.href = path;
+                        // 수정: Wouter의 setLocation을 사용
+                        setLocation(path);
                       }} 
                       show={true}
                     >쇼핑</NavItem>
@@ -520,7 +520,8 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                       active={isActive("/shop")}
                       onClick={(path) => {
                         console.log("쇼핑 메뉴 클릭", path);
-                        window.location.href = path;
+                        // 수정: Wouter의 setLocation을 사용
+                        setLocation(path);
                       }}
                       show={true}
                     >
