@@ -134,9 +134,9 @@ function AuthenticatedRoutes() {
         {/* 기존 /shop 경로에서 ShopBasicPage 직접 렌더링 */}
         <Route path="/shop" component={ShopBasicPage} />
         <Route path="/shop-simple" component={() => {
-          const SimpleShopPage = lazy(() => import('./pages/shop-simple'));
+          const SimpleShopPage = lazy(() => import('./pages/shop-simple/index'));
           return (
-            <Suspense fallback={<div>Loading...</div>}>
+            <Suspense fallback={<div className="p-8 text-center">쇼핑몰 로딩 중...</div>}>
               <SimpleShopPage />
             </Suspense>
           );
@@ -263,9 +263,9 @@ function UnauthenticatedRoutes() {
         {/* 기존 /shop 경로에서 ShopBasicPage 직접 렌더링 (비인증) */}
         <Route path="/shop" component={ShopBasicPage} />
         <Route path="/shop-simple" component={() => {
-          const SimpleShopPage = lazy(() => import('./pages/shop-simple'));
+          const SimpleShopPage = lazy(() => import('./pages/shop-simple/index'));
           return (
-            <Suspense fallback={<div>Loading...</div>}>
+            <Suspense fallback={<div className="p-8 text-center">쇼핑몰 로딩 중...</div>}>
               <SimpleShopPage />
             </Suspense>
           );
