@@ -208,11 +208,8 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
 
     if (path in specialRoutes) {
       console.log(`${specialRoutes[path]} 페이지로 이동 중...`);
-      if (path === '/shop') {
-        setLocation(path); // 쇼핑 페이지는 Wouter의 setLocation 사용
-      } else {
-        window.location.href = path;
-      }
+      // 모든 특수 페이지는 직접 URL 이동 사용
+      window.location.href = path;
       return;
     }
 
@@ -389,13 +386,9 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                       icon={<ShoppingBag className="w-5 h-5 mr-2" />} 
                       active={isActive("/shop")} 
                       onClick={(path) => {
-                        console.log("비회원이 쇼핑 메뉴 클릭", path);
-                        // Wouter의 setLocation을 사용하여 라우트로 이동
-                        setLocation(path);
-                        // 모바일에서는 사이드바 닫기
-                        if (window.innerWidth < 1024) {
-                          onClose();
-                        }
+                        console.log("비회원이 쇼핑 메뉴 클릭 - 직접 리다이렉션", path);
+                        // 직접 window.location.href 사용
+                        window.location.href = path;
                       }} 
                       show={true}
                     >쇼핑</NavItem>

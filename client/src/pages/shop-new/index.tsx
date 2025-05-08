@@ -4,7 +4,7 @@ import { Card } from "@/components/ui/card";
 import { ShoppingBag, Star } from "lucide-react";
 
 export default function ShopNewPage() {
-  console.log("새로운 ShopNewPage 컴포넌트 렌더링");
+  console.log("===== 새로운 ShopNewPage 컴포넌트 렌더링 =====");
   
   // 샘플 제품 데이터
   const sampleProducts = [
