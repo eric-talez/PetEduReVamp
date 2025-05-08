@@ -225,7 +225,7 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
       '/notebook': '알림장',
       '/calendar': '교육 일정',
       '/shop': '쇼핑',
-      '/shop-simple': '쇼핑'
+      '/shop/simple': '쇼핑'
     };
 
     if (path in specialRoutes) {

@@ -19,13 +19,8 @@ import VideoCallPage from "./pages/video-call/index";
 import CourseReservationPage from "./pages/course-reservation/index";
 import MessagesPage from "./pages/messages/index";
 import NotificationsPage from "./pages/notifications/index";
-// 쇼핑 페이지: 새로운 컴포넌트 사용
-import ShopBasicPage from "./pages/ShopBasicPage";
-import ShopTestPage from "./pages/ShopTestPage";
-import ShopNewPage from "./pages/shop-new/index";
-import SimpleShopPage from "./pages/shop-simple/index";
+// 쇼핑 페이지: 간소화된 컴포넌트 사용
 import SimpleShop from "./pages/SimpleShopPage";
-import ShopRedirect from "./pages/ShopRedirect";
 
 import VideoTrainingPage from "./pages/video-training/index";
 import VideoTrainingDetailPage from "./pages/video-training/video";
@@ -129,6 +124,17 @@ function AuthenticatedRoutes() {
         </Route>
         <Route path="/messages" component={MessagesPage} />
         <Route path="/notifications" component={NotificationsPage} />
+        
+        {/* 쇼핑 관련 라우트 - 로그인 사용자 */}
+        <Route path="/shop/simple" component={SimpleShop} />
+        <Route path="/shop" component={SimpleShop} />
+        <Route path="/shop/cart">
+          {() => (
+            <Suspense fallback={<div className="p-8 text-center">장바구니 로딩 중...</div>}>
+              <Cart />
+            </Suspense>
+          )}
+        </Route>
 
         <Route path="/profile" component={ProfilePage} />
         <Route path="/settings" component={SettingsPage} />
@@ -267,25 +273,9 @@ function UnauthenticatedRoutes() {
           )}
         </Route>
 
-        {/* 쇼핑 관련 라우트 */}
-        <Route path="/shop/test">
-          {() => {
-            console.log("ShopTestPage 렌더링 (/shop/test 경로에서 - App.tsx)");
-            return <ShopTestPage />;
-          }}
-        </Route>
-        <Route path="/shop/simple">
-          {() => {
-            console.log("SimpleShop 렌더링 (/shop/simple 경로에서 - App.tsx)");
-            return <SimpleShop />;
-          }}
-        </Route>
-        <Route path="/shop">
-          {() => {
-            console.log("ShopBasicPage 렌더링 (/shop 경로에서 - App.tsx)");
-            return <ShopBasicPage />;
-          }}
-        </Route>
+        {/* 쇼핑 관련 라우트 - 간소화 */}
+        <Route path="/shop/simple" component={SimpleShop} />
+        <Route path="/shop" component={SimpleShop} />
         <Route path="/shop/cart">
           {() => (
             <Suspense fallback={<div className="p-8 text-center">장바구니 로딩 중...</div>}>
