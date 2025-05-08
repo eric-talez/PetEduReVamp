@@ -134,7 +134,13 @@ function AuthenticatedRoutes() {
         <Route path="/shop">
           {() => {
             console.log("새로운 쇼핑 페이지 렌더링 시도 (인증)");
-            return <ShopNewPage />;
+            // 새로 만든 ShopPage 컴포넌트 사용
+            const ShopPage = lazy(() => import('./pages/shop'));
+            return (
+              <Suspense fallback={<div className="p-8 text-center">쇼핑 페이지 로딩 중...</div>}>
+                <ShopPage />
+              </Suspense>
+            );
           }}
         </Route>
         <Route path="/shop-redirect">
@@ -252,7 +258,13 @@ function UnauthenticatedRoutes() {
         <Route path="/shop">
           {() => {
             console.log("새로운 쇼핑 페이지 렌더링 시도 (비인증)");
-            return <ShopNewPage />;
+            // 새로 만든 ShopPage 컴포넌트 사용
+            const ShopPage = lazy(() => import('./pages/shop'));
+            return (
+              <Suspense fallback={<div className="p-8 text-center">쇼핑 페이지 로딩 중...</div>}>
+                <ShopPage />
+              </Suspense>
+            );
           }}
         </Route>
         <Route path="/shop-redirect">

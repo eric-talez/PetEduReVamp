@@ -1,4 +1,4 @@
-import { Link, useLocation } from "wouter";
+import { Link, useLocation, useRoute } from "wouter";
 import { BarChart } from "@/components/ui/chart";
 import { cn } from "@/lib/utils";
 import React, { useState, useEffect, createContext, useContext } from "react";
@@ -404,10 +404,9 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                       icon={<ShoppingBag className="w-5 h-5 mr-2" />} 
                       active={isActive("/shop-new") || isActive("/shop") || isActive("/shop-redirect")} 
                       onClick={(path) => {
-                        console.log("쇼핑 메뉴 클릭 - 직접 쇼핑으로 이동");
-                        
-                        // 직접 이동 방식
-                        window.location.href = "/shop";
+                        console.log("쇼핑 메뉴 클릭");
+                        // wouter 라우팅 사용
+                        navigate('/shop');
                       }} 
                       show={true}
                     >쇼핑</NavItem>
@@ -540,9 +539,9 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                       icon={<ShoppingBag className="w-5 h-5 mr-2" />}
                       active={isActive("/shop-new") || isActive("/shop") || isActive("/shop-redirect")}
                       onClick={(path) => {
-                        console.log("로그인 사용자 쇼핑 메뉴 클릭 - 직접 쇼핑으로 이동");
-                        // 직접 이동 방식 사용
-                        window.location.href = "/shop";
+                        console.log("로그인 사용자 쇼핑 메뉴 클릭");
+                        // Wouter 라우팅 사용
+                        navigate('/shop');
                       }}
                       show={true}
                     >
