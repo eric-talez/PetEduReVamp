@@ -122,7 +122,12 @@ function AuthenticatedRoutes() {
         </Route>
         <Route path="/messages" component={MessagesPage} />
         <Route path="/notifications" component={NotificationsPage} />
-        <Route path="/shop" component={ShopNewPage} />
+        <Route path="/shop">
+          {() => {
+            console.log("ShopNewPage 렌더링 - 인증된 사용자");
+            return <ShopNewPage />;
+          }}
+        </Route>
         <Route path="/shop/cart">
           {() => {
             const CartPage = lazy(() => import('./pages/shop/cart'));
@@ -222,7 +227,12 @@ function UnauthenticatedRoutes() {
             );
           }}
         </Route>
-        <Route path="/shop" component={ShopNewPage} />
+        <Route path="/shop">
+          {() => {
+            console.log("ShopNewPage 렌더링 - 비인증 사용자");
+            return <ShopNewPage />;
+          }}
+        </Route>
         
         {/* 강의 및 비디오 관련 */}
         <Route path="/course/:id" component={CourseDetail} />
