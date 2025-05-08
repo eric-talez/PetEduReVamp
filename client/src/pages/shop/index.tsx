@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
-import { Card } from "@/components/ui/Card";
-import { Button } from "@/components/ui/Button";
-import { Badge } from "@/components/ui/Badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/Tabs";
-import { Input } from "@/components/ui/Input";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Input } from "@/components/ui/input";
 import { Search, ShoppingBag, Star, RefreshCw, Tag, Truck, Gift, Heart, ShoppingCart, AlertCircle, PawPrint } from "lucide-react";
 import { useAuth } from "../../SimpleApp";
 import { useCart } from "@/context/cart-context";
@@ -270,10 +270,10 @@ export default function ShopPage() {
                         <Badge variant="default" className="px-2 py-1 bg-blue-500">신상품</Badge>
                       )}
                       {product.isBestSeller && (
-                        <Badge variant="success" className="px-2 py-1">베스트셀러</Badge>
+                        <Badge variant="default" className="px-2 py-1 bg-green-500">베스트셀러</Badge>
                       )}
                       {product.isOnSale && (
-                        <Badge variant="danger" className="px-2 py-1">할인 중</Badge>
+                        <Badge variant="destructive" className="px-2 py-1">할인 중</Badge>
                       )}
                     </div>
                     
@@ -311,7 +311,7 @@ export default function ShopPage() {
                           <span className="ml-2 text-sm text-gray-500 dark:text-gray-400 line-through">
                             {product.price.toLocaleString()}원
                           </span>
-                          <Badge variant="danger" className="ml-2 px-1.5 py-0.5 text-[10px]">
+                          <Badge variant="destructive" className="ml-2 px-1.5 py-0.5 text-[10px]">
                             {product.discountRate}% 할인
                           </Badge>
                         </>
