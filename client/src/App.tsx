@@ -56,11 +56,11 @@ import RegisterPage from "./pages/auth/login"; // 임시로 로그인 페이지�
 console.log('App initialized - CourseDetail component:', CourseDetail);
 
 function AuthenticatedRoutes() {
-  const { userRole } = useAuth();
+  const { user } = useAuth();
 
   const checkAccess = (allowedRoles: string[]) => {
-    if (!userRole) return false;
-    return allowedRoles.includes(userRole);
+    if (!user || !user.role) return false;
+    return allowedRoles.includes(user.role);
   };
 
   return (
