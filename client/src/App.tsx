@@ -130,14 +130,14 @@ function AuthenticatedRoutes() {
             return <ShopNewPage />;
           }}
         </Route>
-        {/* 표준화된 방식으로 수정 */}
+        {/* 매우 단순화된 방식으로 수정 */}
         <Route path="/shop">
           {() => {
-            console.log("표준화된 쇼핑 페이지 렌더링 시도 (인증)");
-            const ShopPage = lazy(() => import('./pages/shop/index'));
+            console.log("단순 쇼핑 페이지 렌더링 시도 (인증)");
+            const SimpleShopPage = lazy(() => import('./pages/shop-simple/index'));
             return (
               <Suspense fallback={<div className="p-8 text-center">쇼핑 페이지 로딩 중...</div>}>
-                <ShopPage />
+                <SimpleShopPage />
               </Suspense>
             );
           }}
@@ -253,14 +253,14 @@ function UnauthenticatedRoutes() {
             return <ShopNewPage />;
           }}
         </Route>
-        {/* 표준화된 방식으로 수정 (비인증) */}
+        {/* 매우 단순화된 방식으로 수정 (비인증) */}
         <Route path="/shop">
           {() => {
-            console.log("표준화된 쇼핑 페이지 렌더링 시도 (비인증)");
-            const ShopPage = lazy(() => import('./pages/shop/index'));
+            console.log("단순 쇼핑 페이지 렌더링 시도 (비인증)");
+            const SimpleShopPage = lazy(() => import('./pages/shop-simple/index'));
             return (
               <Suspense fallback={<div className="p-8 text-center">쇼핑 페이지 로딩 중...</div>}>
-                <ShopPage />
+                <SimpleShopPage />
               </Suspense>
             );
           }}
