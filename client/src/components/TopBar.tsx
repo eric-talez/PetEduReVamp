@@ -651,7 +651,8 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
                               className="mt-2"
                               onClick={() => {
                                 setCartPopupOpen(false);
-                                setLocation("/shop");
+                                console.log("카트 팝업에서 쇼핑 버튼 클릭 - /shop-redirect로 이동");
+                                setLocation("/shop-redirect");
                               }}
                             >
                               쇼핑하러 가기
@@ -671,7 +672,9 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
                               className="w-full"
                               onClick={() => {
                                 setCartPopupOpen(false);
-                                setLocation("/shop/checkout");
+                                console.log("카트 팝업에서 결제 버튼 클릭");
+                                // 결제 페이지도 직접 이동
+                                window.location.href = window.location.origin + "/shop/checkout";
                               }}
                             >
                               결제하기
@@ -683,7 +686,9 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
                               className="w-full" 
                               onClick={() => {
                                 setCartPopupOpen(false);
-                                setLocation("/shop/cart");
+                                console.log("카트 팝업에서 장바구니 버튼 클릭");
+                                // 장바구니는 직접 이동해야 함 (리다이렉트 사용하지 않음)
+                                window.location.href = window.location.origin + "/shop/cart";
                               }}
                             >
                               장바구니 보기

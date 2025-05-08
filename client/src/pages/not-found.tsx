@@ -55,6 +55,9 @@ export default function NotFound() {
               <SpecialShopLink className="px-3 py-1 bg-pink-500 text-white rounded hover:bg-pink-600 transition-colors">
                 특수 쇼핑 링크
               </SpecialShopLink>
+              <a href="/shop-redirect" className="px-3 py-1 bg-indigo-500 text-white rounded hover:bg-indigo-600 transition-colors">
+                쇼핑 리다이렉트
+              </a>
               <div className="w-full mt-3">
                 <p className="text-sm text-blue-700 dark:text-blue-300">현재 URL: {window.location.href}</p>
                 <p className="text-sm text-blue-700 dark:text-blue-300">Origin: {window.location.origin}</p>
