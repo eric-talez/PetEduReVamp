@@ -191,6 +191,106 @@ export default function ShopPage() {
 
   return (
     <div className="container mx-auto px-4 py-8">
+      {/* 상단 배너 */}
+      <div className="w-full mb-10 bg-gradient-to-r from-blue-100 via-indigo-100 to-purple-100 dark:from-blue-900 dark:via-indigo-900 dark:to-purple-900 rounded-xl overflow-hidden shadow-lg">
+        <div className="flex flex-col md:flex-row items-center p-6 md:p-10">
+          <div className="md:w-1/2 mb-6 md:mb-0">
+            <h2 className="text-2xl md:text-4xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400">
+              반려견 전문가 케어 제품
+            </h2>
+            <p className="text-gray-700 dark:text-gray-300 mb-4 md:text-lg">
+              반려견 훈련사들이 추천하는 최고의 제품들을 만나보세요.
+              <br />프로페셔널 훈련에 사용되는 고품질 제품들을 특별 할인가에 제공합니다.
+            </p>
+            <button className="px-6 py-2 bg-primary text-white rounded-md hover:bg-primary/90 transition-colors shadow-md">
+              할인 제품 보기
+            </button>
+          </div>
+          <div className="md:w-1/2 flex justify-center">
+            <img 
+              src="https://images.unsplash.com/photo-1548199973-03cce0bbc87b?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2069&q=80" 
+              alt="행복한 반려견" 
+              className="rounded-lg shadow-xl w-full max-w-sm object-cover h-64"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* TOP 제품 */}
+      <div className="mb-10">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-2xl font-bold">🔥 인기 제품</h2>
+          <a href="#" className="text-primary hover:underline flex items-center">
+            더 보기 <ChevronRight className="w-4 h-4 ml-1" />
+          </a>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          {sampleProducts
+            .filter(product => product.isBestseller)
+            .slice(0, 4)
+            .map(product => (
+              <div 
+                key={product.id} 
+                className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden transition-transform hover:shadow-lg"
+              >
+                <div className="relative h-48 bg-gray-200 dark:bg-gray-700">
+                  <img 
+                    src={product.image} 
+                    alt={product.name} 
+                    className="h-full w-full object-cover"
+                  />
+                  <span className="absolute top-2 right-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded">BEST</span>
+                  {product.discountRate && (
+                    <span className="absolute bottom-2 left-2 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded">
+                      {product.discountRate}% OFF
+                    </span>
+                  )}
+                </div>
+                <div className="p-4">
+                  <div className="flex items-center mb-1">
+                    <div className="flex">
+                      {[...Array(5)].map((_, i) => (
+                        <Star 
+                          key={i} 
+                          className={`w-4 h-4 ${
+                            i < Math.floor(product.rating) 
+                              ? 'fill-yellow-400 text-yellow-400' 
+                              : 'text-gray-300'
+                          }`} 
+                        />
+                      ))}
+                    </div>
+                    <span className="text-sm text-gray-500 ml-1">({product.reviewCount})</span>
+                  </div>
+                  <h3 className="text-lg font-semibold mb-1">{product.name}</h3>
+                  <div className="flex justify-between items-center mt-auto">
+                    <div>
+                      {product.discountRate ? (
+                        <div>
+                          <span className="text-gray-500 line-through text-sm">
+                            {product.price.toLocaleString()}원
+                          </span>
+                          <div className="font-bold text-lg">
+                            {Math.round(product.price * (1 - product.discountRate / 100)).toLocaleString()}원
+                          </div>
+                        </div>
+                      ) : (
+                        <span className="font-bold text-lg">{product.price.toLocaleString()}원</span>
+                      )}
+                    </div>
+                    <button 
+                      className="p-2 rounded-md bg-primary text-white hover:bg-primary/90"
+                      onClick={() => handleAddToCart(product)}
+                    >
+                      <ShoppingBag size={20} />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+        </div>
+      </div>
+      
       <div className="flex flex-col md:flex-row justify-between items-start gap-6">
         {/* 사이드바 (데스크톱 뷰) */}
         <div className="hidden md:block w-64 bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md">
@@ -428,34 +528,91 @@ export default function ShopPage() {
       
       {/* 훈련사 전용 섹션 */}
       {userRole === 'trainer' && (
-        <div className="mt-8 bg-blue-100 dark:bg-blue-900 p-4 rounded-lg">
-          <h2 className="text-lg font-semibold mb-2">훈련사 회원을 위한 특별 제품</h2>
-          <p className="mb-4">Tales 인증 훈련사는 유니폼과 명함을 주문할 수 있습니다.</p>
-          <div className="flex gap-4">
-            <div className="bg-white dark:bg-gray-800 rounded-lg p-4 flex-1">
-              <h3 className="font-medium">Tales 유니폼</h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
-                공식 인증 훈련사 유니폼으로 전문성을 높이세요.
+        <div className="mt-12 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950 dark:to-indigo-950 p-6 rounded-xl shadow-lg">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-2xl font-bold text-indigo-700 dark:text-indigo-300">훈련사 회원 전용 제품</h2>
+            <div className="flex items-center bg-blue-600 text-white px-3 py-1 rounded-full text-sm">
+              <span className="mr-1">인증 훈련사</span>
+              <div className="h-2 w-2 rounded-full bg-green-400"></div>
+            </div>
+          </div>
+          
+          <p className="mb-6 text-gray-700 dark:text-gray-300">
+            Tales 인증 훈련사는 전문가용 유니폼과 명함 등 특별 제품을 주문할 수 있습니다.
+            <br />인증 마크와 함께 전문성을 높이고 브랜드 이미지를 강화하세요.
+          </p>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-5 shadow-md hover:shadow-lg transition-shadow">
+              <div className="h-40 bg-gray-100 dark:bg-gray-700 rounded-md mb-4 flex items-center justify-center overflow-hidden">
+                <img 
+                  src="https://images.unsplash.com/photo-1593419528756-3cdfa1367a71?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1374&q=80" 
+                  alt="Tales 훈련사 유니폼" 
+                  className="h-full w-full object-cover"
+                />
+              </div>
+              <h3 className="font-bold text-lg mb-1">Tales 훈련사 유니폼</h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+                전문 디자인된 프리미엄 폴로 셔츠와 자켓으로 전문성을 높이세요.
               </p>
               <div className="flex justify-between items-center">
-                <span className="font-bold">58,000원</span>
-                <button className="px-3 py-1 bg-primary text-white rounded-md text-sm">
+                <span className="font-bold text-lg">58,000원</span>
+                <button className="px-4 py-2 bg-primary text-white rounded-md text-sm hover:bg-primary/90 transition-colors">
                   구매하기
                 </button>
               </div>
             </div>
             
-            <div className="bg-white dark:bg-gray-800 rounded-lg p-4 flex-1">
-              <h3 className="font-medium">Tales 명함 (100매)</h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
-                전문 디자인된 명함으로 고객에게 신뢰감을 주세요.
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-5 shadow-md hover:shadow-lg transition-shadow">
+              <div className="h-40 bg-gray-100 dark:bg-gray-700 rounded-md mb-4 flex items-center justify-center overflow-hidden">
+                <img 
+                  src="https://images.unsplash.com/photo-1609093578472-5f3cac4c6489?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1470&q=80" 
+                  alt="Tales 명함" 
+                  className="h-full w-full object-cover"
+                />
+              </div>
+              <h3 className="font-bold text-lg mb-1">Tales 명함 (100매)</h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+                프리미엄 용지에 인쇄된 명함으로 고객에게 신뢰감을 주세요.
               </p>
               <div className="flex justify-between items-center">
-                <span className="font-bold">25,000원</span>
-                <button className="px-3 py-1 bg-primary text-white rounded-md text-sm">
+                <span className="font-bold text-lg">25,000원</span>
+                <button className="px-4 py-2 bg-primary text-white rounded-md text-sm hover:bg-primary/90 transition-colors">
                   구매하기
                 </button>
               </div>
+            </div>
+            
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-5 shadow-md hover:shadow-lg transition-shadow">
+              <div className="h-40 bg-gray-100 dark:bg-gray-700 rounded-md mb-4 flex items-center justify-center overflow-hidden">
+                <img 
+                  src="https://images.unsplash.com/photo-1576266392450-6a8685812c47?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1470&q=80" 
+                  alt="Tales 훈련 키트" 
+                  className="h-full w-full object-cover"
+                />
+              </div>
+              <h3 className="font-bold text-lg mb-1">프로페셔널 훈련 키트</h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+                훈련사 전용 특별 장비로 전문적인 훈련 세션을 제공하세요.
+              </p>
+              <div className="flex justify-between items-center">
+                <span className="font-bold text-lg">95,000원</span>
+                <button className="px-4 py-2 bg-primary text-white rounded-md text-sm hover:bg-primary/90 transition-colors">
+                  구매하기
+                </button>
+              </div>
+            </div>
+          </div>
+          
+          <div className="mt-6 bg-blue-100 dark:bg-blue-900 p-4 rounded-lg">
+            <div className="flex items-center">
+              <div className="flex items-center justify-center h-10 w-10 rounded-full bg-blue-600 text-white mr-3">
+                <span className="font-bold">i</span>
+              </div>
+              <p className="text-sm text-blue-700 dark:text-blue-300">
+                Tales 인증 훈련사는 모든 전문 제품을 <span className="font-bold">10% 할인</span>된 가격으로 구매할 수 있습니다.
+                회원 계정으로 로그인하면 자동으로 할인이 적용됩니다.
+              </p>
             </div>
           </div>
         </div>
