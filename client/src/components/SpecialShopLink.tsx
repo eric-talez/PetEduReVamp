@@ -10,8 +10,8 @@ export function SpecialShopLink({ children, className = "" }: SpecialShopLinkPro
     e.preventDefault();
     console.log("SpecialShopLink 클릭됨");
     
-    // 직접 URL 설정 - 항상 /shop로 이동하도록 수정
-    const shopUrl = "/shop";
+    // 직접 URL 설정 - 절대 경로 사용
+    const shopUrl = window.location.origin + "/shop";
     console.log("이동할 URL:", shopUrl);
     window.location.href = shopUrl;
   };

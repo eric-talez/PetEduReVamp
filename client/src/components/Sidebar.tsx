@@ -394,8 +394,10 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                       active={isActive("/shop")} 
                       onClick={(path) => {
                         console.log("비인증 사용자가 쇼핑 메뉴 클릭");
-                        // 직접 URL 이동을 사용하여 쇼핑 페이지로 이동
-                        window.location.href = "/shop";
+                        // 강제로 절대 경로 사용
+                        const fullPath = window.location.origin + "/shop";
+                        console.log("이동할 경로:", fullPath);
+                        window.location.href = fullPath;
                       }} 
                       show={true}
                     >쇼핑</NavItem>
@@ -484,8 +486,10 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                     <NavItem href="/events" icon={<Calendar className="w-5 h-5 mr-2" />} active={isActive("/events")} onClick={handleItemClick} show={true}>이벤트</NavItem>
                     <NavItem href="/shop" icon={<ShoppingBag className="w-5 h-5 mr-2" />} active={isActive("/shop")} onClick={(path) => {
                       console.log("쇼핑 메뉴 클릭");
-                      // 쇼핑 페이지는 특별 처리
-                      window.location.href = "/shop";
+                      // 쇼핑 페이지는 특별 처리 - 절대 경로 사용
+                      const fullPath = window.location.origin + "/shop";
+                      console.log("이동할 경로:", fullPath);
+                      window.location.href = fullPath;
                     }} show={true}>쇼핑</NavItem>
                   </>
                 )}
