@@ -513,28 +513,7 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                     >
                       화상 훈련
                     </NavItem>
-                    <NavItem
-                      href="/shop-simple"
-                      icon={<ShoppingBag className="w-5 h-5 mr-2" />}
-                      active={isActive("/shop") || isActive("/shop-simple")}
-                      onClick={(path) => {
-                        console.log("쇼핑 메뉴 클릭 - 인증 상태:", isAuthenticated);
-                        if (!isAuthenticated) {
-                          console.log("비로그인 사용자 - 로그인 페이지로 이동");
-                          window.location.href = "/auth/login";
-                          return;
-                        }
-                        console.log("로그인 사용자 - 쇼핑 페이지로 이동");
-                        // 절대 경로 사용
-                        const shopUrl = "/shop-simple";
-                        console.log("이동할 URL:", shopUrl);
-                        window.location.href = shopUrl;
-                        if (onClose) onClose();
-                      }}
-                      show={true}
-                    >
-                      쇼핑
-                    </NavItem>
+                    
                     <NavItem
                       href="/ai-analysis"
                       icon={<Sparkles className="w-5 h-5 mr-2" />}
