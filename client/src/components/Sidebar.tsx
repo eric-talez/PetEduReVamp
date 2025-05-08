@@ -83,7 +83,7 @@ function NavItem({ href, icon, children, active, onClick, show }: NavItemProps) 
   const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     // 기본 동작 방지하고 커스텀 라우팅 로직 사용
     e.preventDefault();
-    
+
     if (onClick) {
       onClick(href);
     } else {
@@ -173,7 +173,7 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
 
   const handleItemClick = (path: string) => {
     console.log(`메뉴 클릭: ${path} (사용자 역할: ${userRole || '비로그인'})`);
-    
+
     // 특정 페이지 접근 권한 및 라우팅 처리
     const publicPaths = [
       "/", "/courses", "/trainers", "/video-training", "/video-call", "/community",
@@ -181,7 +181,7 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
       "/help/faq", "/help/guide", "/help/about", "/help/contact", "/shop",
       "/shop-redirect", "/shop-new"
     ];
-    
+
     // 로그인 필요한 페이지 접근 시
     if (!isAuthenticated && !publicPaths.includes(path) && 
         !path.startsWith('/institutes/') && 
@@ -199,13 +199,13 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
         console.log('훈련사 권한 필요');
         return;
       }
-      
+
       // 기관 관리자 전용 페이지
       if (path.startsWith('/institute-dashboard') && userRole !== 'institute-admin' && userRole !== 'admin') {
         console.log('기관 관리자 권한 필요');
         return;
       }
-      
+
       // 시스템 관리자 전용 페이지
       if (path.startsWith('/admin') && userRole !== 'admin') {
         console.log('관리자 권한 필요');
@@ -401,21 +401,21 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                     >이벤트</NavItem>
 
                     <NavItem 
-                      href="/shop" 
+                      href="/shop-simple" 
                       icon={<ShoppingBag className="w-5 h-5 mr-2" />} 
-                      active={isActive("/shop") || isActive("/shop-basic")} 
+                      active={isActive("/shop") || isActive("/shop-simple")} 
                       onClick={(path) => {
-                        console.log("비로그인 사용자 쇼핑 메뉴 클릭");
-                        console.log("현재 URL:", window.location.href);
-                        console.log("이동할 경로: /shop");
-                        // navigate 대신 직접 location 변경 시도
-                        window.location.href = "/shop";
+                        console.log("쇼핑 메뉴 클릭");
+                        // shop-simple 페이지로 직접 이동
+                        window.location.href = "/shop-simple";
                         if (onClose) onClose();
-                        return; // 이후 처리 중단
-                      }} 
+                        return;
+                      }}
                       show={true}
-                    >쇼핑</NavItem>
-                    
+                    >
+                      쇼핑
+                    </NavItem>
+
                     {/* 도움말 그룹 추가 */}
                     {expanded && (
                       <div className="mt-4 px-3 py-2">
@@ -424,7 +424,7 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                         </h3>
                       </div>
                     )}
-                    
+
                     <NavItem 
                       href="/help/faq" 
                       icon={<HelpCircle className="w-5 h-5 mr-2" />} 
@@ -435,7 +435,7 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                       }} 
                       show={true}
                     >자주 묻는 질문</NavItem>
-                    
+
                     <NavItem 
                       href="/help/guide" 
                       icon={<BookOpen className="w-5 h-5 mr-2" />} 
@@ -446,7 +446,7 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                       }} 
                       show={true}
                     >이용 가이드</NavItem>
-                    
+
                     <NavItem 
                       href="/help/about" 
                       icon={<Users className="w-5 h-5 mr-2" />} 
@@ -457,7 +457,7 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                       }} 
                       show={true}
                     >소개</NavItem>
-                    
+
                     <NavItem 
                       href="/help/contact" 
                       icon={<MessageSquare className="w-5 h-5 mr-2" />} 
@@ -468,7 +468,7 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                       }} 
                       show={true}
                     >문의하기</NavItem>
-                    
+
                   </>
                 )}
 
@@ -540,17 +540,15 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                       화상 훈련
                     </NavItem>
                     <NavItem
-                      href="/shop"
+                      href="/shop-simple"
                       icon={<ShoppingBag className="w-5 h-5 mr-2" />}
-                      active={isActive("/shop") || isActive("/shop-basic")}
+                      active={isActive("/shop") || isActive("/shop-simple")}
                       onClick={(path) => {
-                        console.log("인증된 사용자 쇼핑 메뉴 클릭");
-                        console.log("현재 URL:", window.location.href);
-                        console.log("이동할 경로:", path);
-                        // navigate 대신 직접 location 변경 시도
-                        window.location.href = "/shop";
+                        console.log("쇼핑 메뉴 클릭");
+                        // shop-simple 페이지로 직접 이동
+                        window.location.href = "/shop-simple";
                         if (onClose) onClose();
-                        return; // 이후 처리 중단
+                        return;
                       }}
                       show={true}
                     >
@@ -908,7 +906,7 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                     )}
                   </>
                 )}
-                
+
                 {/* Help Menu for authenticated users */}
                 {expanded ? (
                   <div
@@ -923,7 +921,7 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                     <HelpCircle className="h-4 w-4 text-gray-500" />
                   </div>
                 )}
-                
+
                 <NavItem
                   href="/help/faq"
                   icon={<HelpCircle className="w-5 h-5 mr-2" />}
@@ -933,7 +931,7 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                 >
                   자주 묻는 질문
                 </NavItem>
-                
+
                 <NavItem
                   href="/help/guide"
                   icon={<BookOpen className="w-5 h-5 mr-2" />}
@@ -943,7 +941,7 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                 >
                   이용 가이드
                 </NavItem>
-                
+
                 <NavItem
                   href="/help/about"
                   icon={<Users className="w-5 h-5 mr-2" />}
@@ -953,7 +951,7 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                 >
                   소개
                 </NavItem>
-                
+
                 <NavItem
                   href="/help/contact"
                   icon={<MessageSquare className="w-5 h-5 mr-2" />}
@@ -963,7 +961,7 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                 >
                   문의하기
                 </NavItem>
-                
+
                 {/* Service Statistics - moved to the bottom */}
                 {expanded ? (
                   <div className="mt-auto mb-4 px-3">
