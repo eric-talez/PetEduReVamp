@@ -217,7 +217,8 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
       '/my-pets': '반려견 관리',
       '/notebook': '알림장',
       '/calendar': '교육 일정',
-      '/shop': '쇼핑'
+      '/shop': '쇼핑',
+      '/shop-simple': '쇼핑'
     };
 
     if (path in specialRoutes) {
@@ -403,8 +404,8 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                         console.log("쇼핑 메뉴 클릭");
                         console.log("현재 URL:", window.location.href);
                         console.log("이동할 경로:", path);
-                        // 직접 URL 이동 방식으로 변경
-                        window.location.href = "/shop";
+                        // 직접 shop-simple 페이지로 이동
+                        window.location.href = "/shop-simple";
                         return; // 이후 처리 중단
                       }} 
                       show={true}
@@ -541,8 +542,8 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                         console.log("인증된 사용자 쇼핑 메뉴 클릭");
                         console.log("현재 URL:", window.location.href);
                         console.log("이동할 경로:", path);
-                        // 직접 URL 이동 방식으로 변경
-                        window.location.href = "/shop";
+                        // 직접 shop-simple 페이지로 이동
+                        window.location.href = "/shop-simple";
                         return; // 이후 처리 중단
                       }}
                       show={true}
