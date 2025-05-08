@@ -133,11 +133,11 @@ function AuthenticatedRoutes() {
         {/* 아예 새로운 페이지로 대체 */}
         <Route path="/shop">
           {() => {
-            console.log("새로운 쇼핑 페이지 렌더링 시도 (인증)");
-            const ShopPage = lazy(() => import('./pages/shop'));
+            console.log("심플 쇼핑 페이지 렌더링 시도 (인증)");
+            const SimpleShopPage = lazy(() => import('./pages/shop-simple'));
             return (
               <Suspense fallback={<div className="p-8 text-center">쇼핑 페이지 로딩 중...</div>}>
-                <ShopPage />
+                <SimpleShopPage />
               </Suspense>
             );
           }}
@@ -256,11 +256,11 @@ function UnauthenticatedRoutes() {
         {/* 아예 새로운 페이지로 대체 (비인증) */}
         <Route path="/shop">
           {() => {
-            console.log("새로운 쇼핑 페이지 렌더링 시도 (비인증)");
-            const ShopPage = lazy(() => import('./pages/shop'));
+            console.log("심플 쇼핑 페이지 렌더링 시도 (비인증)");
+            const SimpleShopPage = lazy(() => import('./pages/shop-simple'));
             return (
               <Suspense fallback={<div className="p-8 text-center">쇼핑 페이지 로딩 중...</div>}>
-                <ShopPage />
+                <SimpleShopPage />
               </Suspense>
             );
           }}
