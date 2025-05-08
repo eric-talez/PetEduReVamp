@@ -28,6 +28,7 @@ import ProfilePage from "./pages/profile/index";
 import SettingsPage from "./pages/settings/index";
 import NotFound from "./pages/not-found";
 import TrainerTest from "./pages/TrainerTest";
+import ShopRedirect from "./pages/ShopRedirect";
 import TrainerReservationsPage from "./pages/trainer-dashboard/reservations";
 import InstituteCourseApprovalsPage from "./pages/institute-dashboard/course-approvals";
 import InstitutePetAssignmentsPage from "./pages/institute-dashboard/pet-assignments";
@@ -133,6 +134,12 @@ function AuthenticatedRoutes() {
           {() => {
             console.log("SimpleShopPage 렌더링 - /shop 경로 (인증)");
             return <SimpleShopPage />;
+          }}
+        </Route>
+        <Route path="/shop-redirect">
+          {() => {
+            console.log("Shop 리다이렉트 페이지 렌더링 (인증)");
+            return <ShopRedirect />;
           }}
         </Route>
         <Route path="/shop/cart">
@@ -244,6 +251,12 @@ function UnauthenticatedRoutes() {
           {() => {
             console.log("SimpleShopPage 렌더링 - /shop 경로 (비인증)");
             return <SimpleShopPage />;
+          }}
+        </Route>
+        <Route path="/shop-redirect">
+          {() => {
+            console.log("Shop 리다이렉트 페이지 렌더링 (비인증)");
+            return <ShopRedirect />;
           }}
         </Route>
         

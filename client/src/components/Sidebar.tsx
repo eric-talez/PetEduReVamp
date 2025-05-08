@@ -397,12 +397,12 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                     >이벤트</NavItem>
 
                     <NavItem 
-                      href="/shop-new" 
+                      href="/shop-redirect" 
                       icon={<ShoppingBag className="w-5 h-5 mr-2" />} 
-                      active={isActive("/shop-new") || isActive("/shop")} 
-                      onClick={() => {
-                        // 전용 함수를 호출하여 쇼핑 페이지로 이동
-                        goToShopPage();
+                      active={isActive("/shop-new") || isActive("/shop") || isActive("/shop-redirect")} 
+                      onClick={(path) => {
+                        console.log("쇼핑 메뉴 클릭 - 리다이렉트 페이지로 이동");
+                        handleItemClick(path);
                       }} 
                       show={true}
                     >쇼핑</NavItem>
@@ -531,12 +531,12 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                       화상 훈련
                     </NavItem>
                     <NavItem
-                      href="/shop-new"
+                      href="/shop-redirect"
                       icon={<ShoppingBag className="w-5 h-5 mr-2" />}
-                      active={isActive("/shop-new") || isActive("/shop")}
-                      onClick={() => {
-                        // 전용 함수 호출하여 쇼핑 페이지로 이동
-                        goToShopPage();
+                      active={isActive("/shop-new") || isActive("/shop") || isActive("/shop-redirect")}
+                      onClick={(path) => {
+                        console.log("로그인 사용자 쇼핑 메뉴 클릭 - 리다이렉트 페이지로 이동");
+                        handleItemClick(path);
                       }}
                       show={true}
                     >
