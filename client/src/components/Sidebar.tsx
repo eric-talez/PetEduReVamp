@@ -2,6 +2,16 @@ import { Link, useLocation } from "wouter";
 import { BarChart } from "@/components/ui/chart";
 import { cn } from "@/lib/utils";
 import React, { useState, useEffect, createContext, useContext } from "react";
+
+// 라우팅 문제 해결을 위한 전용 함수
+function goToShopPage() {
+  console.log("쇼핑 페이지로 이동하는 특수 함수 호출됨");
+  // 현재 URL을 출력
+  console.log("현재 URL:", window.location.href);
+  // 직접 URL 변경 (replace 사용)
+  window.location.replace("/shop-new");
+  return false;
+}
 import {
   ChevronDown,
   ChevronRight,
@@ -385,10 +395,9 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                       href="/shop-new" 
                       icon={<ShoppingBag className="w-5 h-5 mr-2" />} 
                       active={isActive("/shop-new") || isActive("/shop")} 
-                      onClick={(path) => {
-                        console.log("비회원이 쇼핑 메뉴 클릭 - 직접 이동", path);
-                        // href와 일치하는 경로로 이동하도록 수정
-                        window.location.href = path;
+                      onClick={() => {
+                        // 전용 함수를 호출하여 쇼핑 페이지로 이동
+                        goToShopPage();
                       }} 
                       show={true}
                     >쇼핑</NavItem>
@@ -520,10 +529,9 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                       href="/shop-new"
                       icon={<ShoppingBag className="w-5 h-5 mr-2" />}
                       active={isActive("/shop-new") || isActive("/shop")}
-                      onClick={(path) => {
-                        console.log("인증 사용자 쇼핑 메뉴 클릭 - 직접 이동", path);
-                        // href와 일치하는 경로로 이동하도록 수정
-                        window.location.href = path;
+                      onClick={() => {
+                        // 전용 함수 호출하여 쇼핑 페이지로 이동
+                        goToShopPage();
                       }}
                       show={true}
                     >
