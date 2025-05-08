@@ -19,7 +19,8 @@ import VideoCallPage from "./pages/video-call/index";
 import CourseReservationPage from "./pages/course-reservation/index";
 import MessagesPage from "./pages/messages/index";
 import NotificationsPage from "./pages/notifications/index";
-import ShopPage from "./pages/shop/index";
+// 쇼핑 페이지 직접 import
+const ShopPage = lazy(() => import('./pages/shop/index'));
 import VideoTrainingPage from "./pages/video-training/index";
 import VideoTrainingDetailPage from "./pages/video-training/video";
 import ProfilePage from "./pages/profile/index";
@@ -39,6 +40,8 @@ const EventDetailPage = lazy(() => import('./pages/events/event-detail'));
 const CommunityPostDetailPage = lazy(() => import('./pages/community/post-detail'));
 const InstituteRegisterPage = lazy(() => import('./pages/institutes/register'));
 const InstituteDetailPage = lazy(() => import('./pages/institutes/detail'));
+const Cart = lazy(() => import('./pages/shop/cart'));
+const Checkout = lazy(() => import('./pages/shop/checkout'));
 
 // Help 페이지들
 const FAQPage = lazy(() => import('./pages/help/faq'));
@@ -119,9 +122,33 @@ function AuthenticatedRoutes() {
         </Route>
         <Route path="/messages" component={MessagesPage} />
         <Route path="/notifications" component={NotificationsPage} />
-        <Route path="/shop" component={ShopPage} />
-        <Route path="/shop/cart" component={lazy(() => import('./pages/shop/cart'))} />
-        <Route path="/shop/checkout" component={lazy(() => import('./pages/shop/checkout'))} />
+        <Route path="/shop">
+          {() => (
+            <Suspense fallback={<div className="p-8 text-center">쇼핑 페이지 로딩 중...</div>}>
+              <ShopPage />
+            </Suspense>
+          )}
+        </Route>
+        <Route path="/shop/cart">
+          {() => {
+            const CartPage = lazy(() => import('./pages/shop/cart'));
+            return (
+              <Suspense fallback={<div className="p-8 text-center">장바구니 로딩 중...</div>}>
+                <CartPage />
+              </Suspense>
+            );
+          }}
+        </Route>
+        <Route path="/shop/checkout">
+          {() => {
+            const CheckoutPage = lazy(() => import('./pages/shop/checkout'));
+            return (
+              <Suspense fallback={<div className="p-8 text-center">결제 페이지 로딩 중...</div>}>
+                <CheckoutPage />
+              </Suspense>
+            );
+          }}
+        </Route>
         <Route path="/profile" component={ProfilePage} />
         <Route path="/settings" component={SettingsPage} />
         <Route path="/events" component={EventsPage} />
@@ -209,9 +236,33 @@ function UnauthenticatedRoutes() {
         <Route path="/video-call" component={VideoCallPage} />
         <Route path="/course-reservation" component={CourseReservationPage} />
         <Route path="/locations" component={LocationsPage} />
-        <Route path="/shop" component={ShopPage} />
-        <Route path="/shop/cart" component={lazy(() => import('./pages/shop/cart'))} />
-        <Route path="/shop/checkout" component={lazy(() => import('./pages/shop/checkout'))} />
+        <Route path="/shop">
+          {() => (
+            <Suspense fallback={<div className="p-8 text-center">쇼핑 페이지 로딩 중...</div>}>
+              <ShopPage />
+            </Suspense>
+          )}
+        </Route>
+        <Route path="/shop/cart">
+          {() => {
+            const CartPage = lazy(() => import('./pages/shop/cart'));
+            return (
+              <Suspense fallback={<div className="p-8 text-center">장바구니 로딩 중...</div>}>
+                <CartPage />
+              </Suspense>
+            );
+          }}
+        </Route>
+        <Route path="/shop/checkout">
+          {() => {
+            const CheckoutPage = lazy(() => import('./pages/shop/checkout'));
+            return (
+              <Suspense fallback={<div className="p-8 text-center">결제 페이지 로딩 중...</div>}>
+                <CheckoutPage />
+              </Suspense>
+            );
+          }}
+        </Route>
         <Route path="/events" component={EventsPage} />
         <Route path="/events/calendar" component={EventCalendarPage} />
         <Route path="/events/:id">

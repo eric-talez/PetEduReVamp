@@ -196,7 +196,7 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
     }
 
     // 특수 페이지 처리
-    const specialRoutes = {
+    const specialRoutes: Record<string, string> = {
       '/video-training': '영상 훈련',
       '/video-call': '화상 수업',
       '/ai-analysis': 'AI 분석',
@@ -205,7 +205,7 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
       '/calendar': '교육 일정'
     };
 
-    if (specialRoutes[path]) {
+    if (path in specialRoutes) {
       console.log(`${specialRoutes[path]} 페이지로 이동 중...`);
       window.location.href = path;
       return;
