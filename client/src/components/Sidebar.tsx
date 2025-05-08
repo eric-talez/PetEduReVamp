@@ -547,13 +547,17 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                       icon={<ShoppingBag className="w-5 h-5 mr-2" />}
                       active={isActive("/shop") || isActive("/shop-simple")}
                       onClick={(path) => {
-                        console.log("쇼핑 메뉴 클릭");
+                        console.log("쇼핑 메뉴 클릭 - 인증 상태:", isAuthenticated);
                         if (!isAuthenticated) {
                           console.log("비로그인 사용자 - 로그인 페이지로 이동");
                           window.location.href = "/auth/login";
                           return;
                         }
-                        navigate("/shop-simple");
+                        console.log("로그인 사용자 - 쇼핑 페이지로 이동");
+                        // 절대 경로 사용
+                        const shopUrl = "/shop-simple";
+                        console.log("이동할 URL:", shopUrl);
+                        window.location.href = shopUrl;
                         if (onClose) onClose();
                       }}
                       show={true}
