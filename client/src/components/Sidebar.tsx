@@ -188,7 +188,7 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
         !path.startsWith('/events/') && 
         !path.startsWith('/help/')) {
       console.log('로그인 필요: ', path);
-      window.location.href = "/auth";
+      window.location.href = "/auth/login";
       return;
     }
 
@@ -197,18 +197,21 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
       // 훈련사 전용 페이지
       if (path.startsWith('/trainer-dashboard') && userRole !== 'trainer' && userRole !== 'admin') {
         console.log('훈련사 권한 필요');
+        window.location.href = "/";
         return;
       }
 
       // 기관 관리자 전용 페이지
       if (path.startsWith('/institute-dashboard') && userRole !== 'institute-admin' && userRole !== 'admin') {
         console.log('기관 관리자 권한 필요');
+        window.location.href = "/";
         return;
       }
 
       // 시스템 관리자 전용 페이지
       if (path.startsWith('/admin') && userRole !== 'admin') {
         console.log('관리자 권한 필요');
+        window.location.href = "/";
         return;
       }
     }
@@ -227,19 +230,15 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
 
     if (path in specialRoutes) {
       console.log(`${specialRoutes[path]} 페이지로 이동 중...`);
-      // 모든 특수 페이지는 직접 URL 이동 사용
       window.location.href = path;
+      if (onClose) onClose();
       return;
     }
 
-    // 상세 페이지 라우팅
-    if (path.match(/^\/(courses|trainers|institutes)\/\d+$/)) {
-      console.log(`${path.split('/')[1]} 상세 페이지 접근`);
-    }
-
-    if (onClose) {
-      onClose();
-    }
+    // 일반 페이지 라우팅
+    console.log('페이지 이동:', path);
+    window.location.href = path;
+    if (onClose) onClose();
   };
 
   const contextValue = {
