@@ -131,15 +131,17 @@ function AuthenticatedRoutes() {
             return <ShopNewPage />;
           }}
         </Route>
-        {/* 기존 /shop 경로에서 ShopBasicPage 직접 렌더링 */}
+        {/* 쇼핑몰 라우트 통합 */}
         <Route path="/shop" component={ShopBasicPage} />
-        <Route path="/shop-simple" component={() => {
-          const SimpleShopPage = lazy(() => import('./pages/shop-simple'));
-          return (
-            <Suspense fallback={<div className="p-8 text-center">쇼핑몰 로딩 중...</div>}>
-              <SimpleShopPage />
-            </Suspense>
-          );
+        <Route path="/shop-simple">
+          {() => {
+            console.log("Shop Simple 페이지 렌더링");
+            return (
+              <Suspense fallback={<div className="p-8 text-center">쇼핑몰 로딩 중...</div>}>
+                <SimpleShopPage />
+              </Suspense>
+            );
+          }}
         }} />
         <Route path="/shop-redirect" component={ShopRedirect} />
 
