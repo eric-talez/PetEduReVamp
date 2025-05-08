@@ -309,17 +309,6 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                       active={isActive("/")} 
                       onClick={(path) => {
                         console.log("비회원 메뉴 클릭:", path);
-                        if (path !== "/" && 
-                            path !== "/courses" && 
-                            path !== "/trainers" && 
-                            path !== "/video-training" &&
-                            path !== "/community" &&
-                            path !== "/institutes" &&
-                            path !== "/events" &&
-                            !path.startsWith("/help/")) {
-                          window.location.href = "/auth";
-                          return;
-                        }
                         handleItemClick(path);
                       }} 
                       show={true}
