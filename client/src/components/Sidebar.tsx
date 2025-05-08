@@ -397,16 +397,14 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                     >이벤트</NavItem>
 
                     <NavItem 
-                      href="/shop" 
+                      href="/shop-basic" 
                       icon={<ShoppingBag className="w-5 h-5 mr-2" />} 
-                      active={isActive("/shop-new") || isActive("/shop") || isActive("/shop-redirect") || isActive("/shop-basic")} 
+                      active={isActive("/shop-basic")} 
                       onClick={(path) => {
                         console.log("비로그인 사용자 쇼핑 메뉴 클릭");
                         console.log("현재 URL:", window.location.href);
-                        // 비로그인 사용자는 기본 쇼핑 페이지로 navigate 사용
                         console.log("이동할 경로: /shop-basic");
-                        // navigate 함수 사용 (클라이언트 사이드 라우팅)
-                        navigate("/shop-basic");
+                        navigate(path); // 직접 path를 사용하여 href와 일치시킴
                         if (onClose) onClose();
                         return; // 이후 처리 중단
                       }} 
@@ -537,16 +535,14 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                       화상 훈련
                     </NavItem>
                     <NavItem
-                      href="/shop"
+                      href="/shop-basic"
                       icon={<ShoppingBag className="w-5 h-5 mr-2" />}
-                      active={isActive("/shop")}
+                      active={isActive("/shop-basic")}
                       onClick={(path) => {
                         console.log("인증된 사용자 쇼핑 메뉴 클릭");
                         console.log("현재 URL:", window.location.href);
-                        // 로그인 사용자도 기본 쇼핑 페이지로 navigate 사용
-                        console.log("이동할 경로: /shop-basic");
-                        // navigate 함수 사용 (클라이언트 사이드 라우팅)
-                        navigate("/shop-basic");
+                        console.log("이동할 경로:", path);
+                        navigate(path); // 직접 path를 사용하여 href와 일치시킴
                         if (onClose) onClose();
                         return; // 이후 처리 중단
                       }}
