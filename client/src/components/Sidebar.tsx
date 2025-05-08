@@ -406,12 +406,8 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                       active={isActive("/shop") || isActive("/shop-simple")} 
                       onClick={(path) => {
                         console.log("쇼핑 메뉴 클릭");
-                        // Navigate using full URL
-                        const shopUrl = window.location.origin + "/shop-simple";
-                        console.log("이동할 쇼핑 URL:", shopUrl);
-                        window.location.href = shopUrl;
-                        if (onClose) onClose();
-                        return;
+                        // 내부 라우팅 사용
+                        handleItemClick("/shop-simple");
                       }}
                       show={true}
                     >
