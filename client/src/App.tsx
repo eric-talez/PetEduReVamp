@@ -69,7 +69,7 @@ function AuthenticatedRoutes() {
   return (
     <AppLayout>
       <Switch>
-        <Route path="/" component={Home} />
+        {/* 루트 경로(/)를 마지막으로 이동하여 더 구체적인 경로가 먼저 매칭되도록 함 */}
         <Route path="/dashboard">
           {() => checkAccess(['pet-owner', 'trainer', 'institute-admin', 'admin']) ? <Dashboard /> : window.location.href = '/'}
         </Route>
@@ -131,16 +131,11 @@ function AuthenticatedRoutes() {
             return <ShopNewPage />;
           }}
         </Route>
-        {/* 기존 /shop 경로 유지 */}
+        {/* 기존 /shop 경로에서 ShopBasicPage 직접 렌더링 */}
         <Route path="/shop">
           {() => {
-            console.log("일반 쇼핑 페이지 렌더링 시도 (인증)");
-            const ShopPage = lazy(() => import('./pages/shop/index'));
-            return (
-              <Suspense fallback={<div className="p-8 text-center">쇼핑 페이지 로딩 중...</div>}>
-                <ShopPage />
-              </Suspense>
-            );
+            console.log("ShopBasicPage 렌더링 (/shop 경로에서)");
+            return <ShopBasicPage />;
           }}
         </Route>
         
@@ -233,6 +228,11 @@ function AuthenticatedRoutes() {
           )}
         </Route>
         <Route path="/modal-test" component={TrainerTest} />
+        
+        {/* 루트 경로를 마지막에 추가 */}
+        <Route path="/" component={Home} />
+        
+        {/* 매칭되는 경로가 없는 경우 */}
         <Route component={NotFound} />
       </Switch>
     </AppLayout>
@@ -275,16 +275,11 @@ function UnauthenticatedRoutes() {
             return <ShopNewPage />;
           }}
         </Route>
-        {/* 기존 /shop 경로 유지 (비인증) */}
+        {/* 기존 /shop 경로에서 ShopBasicPage 직접 렌더링 (비인증) */}
         <Route path="/shop">
           {() => {
-            console.log("일반 쇼핑 페이지 렌더링 시도 (비인증)");
-            const ShopPage = lazy(() => import('./pages/shop/index'));
-            return (
-              <Suspense fallback={<div className="p-8 text-center">쇼핑 페이지 로딩 중...</div>}>
-                <ShopPage />
-              </Suspense>
-            );
+            console.log("ShopBasicPage 렌더링 (/shop 경로에서 - 비인증)");
+            return <ShopBasicPage />;
           }}
         </Route>
         

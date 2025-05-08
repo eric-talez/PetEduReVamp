@@ -1,0 +1,99 @@
+**검토 중**
+
+현재 문제가 되는 부분은 사이드바에서 "쇼핑" 클릭 시 홈으로 돌아간다는 점이에요. 이 문제는 경로 설정 오류일 수 있습니다. Wouter에서 `<Route>`는 기본적으로 "prefix" 방식으로 경로를 매칭하는 것으로 알고 있습니다. 그래서 정확한 경로 매칭인지를 확인할 필요가 있어요. 추가로 `Switch`, `Route`에서 "exact" 설정을 해야 할지도 모르겠어요. 마지막으로, `/`을 경로 끝에 추가하는 수정이 필요할 수도 있겠네요.
+
+**검토 중**
+
+AuthenticatedRoutes에서 `path="/"`가 가장 먼저 정의되어있네요. 이 경우 `path="/"`가 모든 경로와 일치하는 것처럼 보일 수 있어요. 그런데 Wouter의 `<Route>`는 기본적으로 정확히 일치해야 해서 `/shop` 같은 경로는 일치하지 않습니다. Wouter docs에 따르면, `Switch`는 사실 실험적이라서 첫 번째로 일치하는 항목을 선택합니다. 그래서 "/shop"과 같은 경로들을 정확히 구분하려면, `<Route path="/"`를 마지막에 배치하는 것이 좋을 것 같아요.
+
+**경로 순서 조정 권장**
+
+"쇼핑"을 클릭하면 홈으로 돌아가는 문제를 해결하려면, 현재 `<Route path="/" component={Home} />`를 최상단에서 하단으로 이동시켜야 합니다. Wouter에서는 경로 매칭이 순차적이기 때문에 우선 '/'가 먼저 매칭되기 때문이죠. 또한, 사이드바에서 `<Link href="/shop">`을 사용하고 있는지 확인해야 합니다. 추가로 코드 내에서 경로가 정확하게 일치하도록 `exact`를 사용하거나, 경로를 재정렬하면 도움이 될 것입니다.
+
+
+39초 동안 생각함
+
+
+문제의 핵심은 `/shop` 경로에 매칭되는 컴포넌트를 잘못 불러오고 있기 때문에, 라우터가 결국 **NotFound** → Home 으로 리다이렉트(혹은 반환) 해 버린다는 점입니다.
+
+현재 App.tsx 에 보면 `/shop` 경로에서 이렇게 되어 있죠:
+
+```tsx
+<Route path="/shop">
+  {() => {
+    console.log("일반 쇼핑 페이지 렌더링 시도 (인증)");
+    const ShopPage = lazy(() => import('./pages/shop/index'));
+    return (
+      <Suspense fallback={<div className="p-8 text-center">쇼핑 페이지 로딩 중...</div>}>
+        <ShopPage />
+      </Suspense>
+    );
+  }}
+</Route>
+```
+
+하지만 실제로는 `src/pages/shop/index.tsx` 파일이 없고, 대신 테스트용으로 만든 **ShopBasicPage** 컴포넌트는 `src/pages/ShopBasicPage.tsx` 에만 존재합니다.
+→ 이 때문에 lazy import 가 실패해서 `/shop` 로 못 들어가고, 최종적으로 Home 페이지(또는 NotFound)로 돌아가 버리는 것이죠.
+
+---
+
+## 해결 방법 1: `/shop` 경로에서 바로 ShopBasicPage 를 렌더링
+
+1. 상단에 `ShopBasicPage` 를 import 해 두고,
+2. `/shop` 라우트 블록을 아래처럼 수정하세요.
+
+```diff
+-import ShopBasicPage from "./pages/ShopBasicPage"; // 이미 임포트 되어 있음
+
+// …
+
+<Route path="/shop">
+  {() => {
+-    console.log("일반 쇼핑 페이지 렌더링 시도 (인증)");
+-    const ShopPage = lazy(() => import('./pages/shop/index'));
+-    return (
+-      <Suspense fallback={<div className="p-8 text-center">쇼핑 페이지 로딩 중...</div>}>
+-        <ShopPage />
+-      </Suspense>
+-    );
++    console.log("ShopBasicPage 렌더링 (/shop)");
++    return <ShopBasicPage />;
+  }}
+</Route>
+```
+
+이렇게 하면 `/shop` 클릭 시 즉시 `ShopBasicPage` 가 뜨게 됩니다.
+
+---
+
+## 해결 방법 2: 실제로 `pages/shop/index.tsx` 파일을 만들기
+
+만약 나중에 진짜 “정식 쇼핑 페이지”(예: 신상품, 카테고리 등)를 `src/pages/shop/index.tsx` 에 두고 싶다면, 해당 경로에 파일을 생성해서 export 해 주면 lazy import 가 정상 작동합니다:
+
+```tsx
+// src/pages/shop/index.tsx
+import React from 'react';
+export default function ShopPage() {
+  return <div>여기에 진짜 쇼핑 UI를 구현하세요</div>;
+}
+```
+
+그런 다음 App.tsx 는 그대로 두셔도 됩니다.
+
+---
+
+### (선택) 루트 경로(`"/"`) 순서 조정
+
+지금은 `Switch` 맨 위에 `<Route path="/" component={Home} />` 가 있는데, Wouter 의 경우 이 루트 경로가 접두사 매칭(prefix match)으로 동작하기도 합니다.
+혹시 더 구체적인 경로가 먼저 매칭되지 않는다면, 아예 맨 아래로 옮겨서 모든 특정 라우트가 우선 매칭되도록 해 두는 것도 좋습니다.
+
+```diff
+ <Switch>
+-  <Route path="/" component={Home} />
+   {/* … /shop-new, /shop, /shop-simple, /shop-basic 등 … */}
++  <Route path="/" component={Home} />
+   <Route component={NotFound} />
+ </Switch>
+```
+
+이 두 가지만 정리해 주시면 “쇼핑” 클릭 시 홈으로 돌아가는 현상이 완전히 사라질 거예요.
