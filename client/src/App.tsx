@@ -19,8 +19,8 @@ import VideoCallPage from "./pages/video-call/index";
 import CourseReservationPage from "./pages/course-reservation/index";
 import MessagesPage from "./pages/messages/index";
 import NotificationsPage from "./pages/notifications/index";
-// 쇼핑 페이지 직접 import
-const ShopPage = lazy(() => import('./pages/shop/index'));
+// 쇼핑 페이지 dynamic import에서 직접 import로 변경
+import ShopPage from "./pages/shop/index";
 import VideoTrainingPage from "./pages/video-training/index";
 import VideoTrainingDetailPage from "./pages/video-training/video";
 import ProfilePage from "./pages/profile/index";
@@ -122,13 +122,7 @@ function AuthenticatedRoutes() {
         </Route>
         <Route path="/messages" component={MessagesPage} />
         <Route path="/notifications" component={NotificationsPage} />
-        <Route path="/shop">
-          {() => (
-            <Suspense fallback={<div className="p-8 text-center">쇼핑 페이지 로딩 중...</div>}>
-              <ShopPage />
-            </Suspense>
-          )}
-        </Route>
+        <Route path="/shop" component={ShopPage} />
         <Route path="/shop/cart">
           {() => {
             const CartPage = lazy(() => import('./pages/shop/cart'));
@@ -228,13 +222,7 @@ function UnauthenticatedRoutes() {
             );
           }}
         </Route>
-        <Route path="/shop">
-          {() => (
-            <Suspense fallback={<div className="p-8 text-center">쇼핑 페이지 로딩 중...</div>}>
-              <ShopPage />
-            </Suspense>
-          )}
-        </Route>
+        <Route path="/shop" component={ShopPage} />
         
         {/* 강의 및 비디오 관련 */}
         <Route path="/course/:id" component={CourseDetail} />
