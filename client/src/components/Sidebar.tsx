@@ -8,8 +8,12 @@ function goToShopPage() {
   console.log("쇼핑 페이지로 이동하는 특수 함수 호출됨");
   // 현재 URL을 출력
   console.log("현재 URL:", window.location.href);
-  // 직접 URL 변경 (replace 사용)
-  window.location.replace("/shop-new");
+  // 전체 경로 출력
+  console.log("전체 경로:", window.location.origin + "/shop");
+  // 직접 URL 변경 - 전체 경로를 사용
+  const shopUrl = window.location.origin + "/shop";
+  console.log("이동할 경로:", shopUrl);
+  window.location.href = shopUrl;
   return false;
 }
 import {

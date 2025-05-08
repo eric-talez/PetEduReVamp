@@ -21,6 +21,7 @@ import MessagesPage from "./pages/messages/index";
 import NotificationsPage from "./pages/notifications/index";
 // 쇼핑 페이지: 새로운 컴포넌트 사용
 import ShopNewPage from "./pages/shop-new/index";
+import SimpleShopPage from "./pages/shop/simple";
 import VideoTrainingPage from "./pages/video-training/index";
 import VideoTrainingDetailPage from "./pages/video-training/video";
 import ProfilePage from "./pages/profile/index";
@@ -130,8 +131,8 @@ function AuthenticatedRoutes() {
         </Route>
         <Route path="/shop">
           {() => {
-            console.log("ShopNewPage 렌더링 - /shop 경로 (인증)");
-            return <ShopNewPage />;
+            console.log("SimpleShopPage 렌더링 - /shop 경로 (인증)");
+            return <SimpleShopPage />;
           }}
         </Route>
         <Route path="/shop/cart">
@@ -241,8 +242,8 @@ function UnauthenticatedRoutes() {
         </Route>
         <Route path="/shop">
           {() => {
-            console.log("ShopNewPage 렌더링 - /shop 경로 (비인증)");
-            return <ShopNewPage />;
+            console.log("SimpleShopPage 렌더링 - /shop 경로 (비인증)");
+            return <SimpleShopPage />;
           }}
         </Route>
         

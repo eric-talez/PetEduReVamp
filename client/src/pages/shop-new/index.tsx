@@ -5,6 +5,7 @@ import { ShoppingBag, Star } from "lucide-react";
 
 export default function ShopNewPage() {
   console.log("===== 새로운 ShopNewPage 컴포넌트 렌더링 =====");
+  console.log("ShopNewPage 파일 경로: client/src/pages/shop-new/index.tsx");
   
   // 현재 위치 정보 출력
   console.log("현재 창의 URL 정보:", {
