@@ -215,6 +215,34 @@
       border-color: var(--gray-700);
     }
     
+    /* 테일즈 본 서비스 버튼 */
+    .service-button {
+      display: flex;
+      justify-content: flex-end;
+      margin-bottom: 0.75rem;
+    }
+    
+    .main-service-btn {
+      display: inline-flex;
+      align-items: center;
+      background-color: var(--primary-color);
+      color: white;
+      padding: 0.5rem 1rem;
+      border-radius: var(--border-radius);
+      font-size: 0.875rem;
+      font-weight: medium;
+      text-decoration: none;
+      transition: background-color 0.2s ease;
+    }
+    
+    .main-service-btn svg {
+      margin-left: 0.5rem;
+    }
+    
+    .main-service-btn:hover {
+      background-color: var(--primary-hover);
+    }
+    
     .category-list {
       display: flex;
       list-style: none;
@@ -705,6 +733,21 @@
       color: var(--primary-color);
     }
     
+    .mobile-service-link {
+      margin-top: 1.5rem;
+      border-top: 1px solid var(--gray-200);
+      padding-top: 1.5rem;
+    }
+    
+    .dark-mode .mobile-service-link {
+      border-top-color: var(--gray-700);
+    }
+    
+    .mobile-service-link a {
+      color: var(--primary-color);
+      font-weight: 600;
+    }
+    
     .menu-overlay {
       position: fixed;
       top: 0;
@@ -789,6 +832,15 @@
     
     <div class="category-nav">
       <div class="container">
+        <div class="service-button">
+          <a href="javascript:void(0)" onclick="goToMain()" class="main-service-btn">
+            테일즈 본 서비스로 이동
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M5 12h14"></path>
+              <path d="M12 5l7 7-7 7"></path>
+            </svg>
+          </a>
+        </div>
         <ul class="category-list">
           <li class="category-item">
             <a href="#" class="category-link">
@@ -1200,6 +1252,7 @@
       <li class="mobile-menu-item"><a href="#" class="mobile-menu-link">마이페이지</a></li>
       <li class="mobile-menu-item"><a href="#" class="mobile-menu-link">장바구니</a></li>
       <li class="mobile-menu-item"><a href="#" class="mobile-menu-link">고객센터</a></li>
+      <li class="mobile-menu-item mobile-service-link"><a href="javascript:void(0)" onclick="goToMain()" class="mobile-menu-link">테일즈 본 서비스로 이동</a></li>
     </ul>
   </div>
   
@@ -1208,6 +1261,11 @@
   <script>
     // 홈으로 이동하는 함수
     function goToHome() {
+      window.location.href = '/';
+    }
+    
+    // 테일즈 본 서비스로 이동하는 함수
+    function goToMain() {
       window.location.href = '/';
     }
     
