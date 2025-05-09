@@ -1171,8 +1171,8 @@
       
       <nav>
         <ul class="nav-menu">
-          <li><a href="javascript:goToHome()">홈</a></li>
-          <li><a href="javascript:goToShop()">쇼핑 홈</a></li>
+          <li><a href="javascript:goToMainService()">본서비스</a></li>
+          <li><a href="javascript:goToHome()">쇼핑 홈</a></li>
           <li><a href="#">베스트</a></li>
           <li><a href="#">신상품</a></li>
           <li><a href="#">타임세일</a></li>
@@ -1966,9 +1966,9 @@
       }
     }
     
-    // 홈으로 이동
-    function goToHome() {
-      console.log('테일즈 홈으로 이동 함수 호출됨');
+    // 본서비스로 이동
+    function goToMainService() {
+      console.log('본서비스로 이동 함수 호출됨');
       try {
         window.top.location.href = '/';
       } catch (error) {
@@ -1977,15 +1977,20 @@
       }
     }
     
-    // 쇼핑 홈으로 이동
-    function goToShop() {
-      console.log('쇼핑 홈으로 이동 함수 호출됨');
+    // 쇼핑몰 홈으로 이동
+    function goToHome() {
+      console.log('테일즈 쇼핑 홈으로 이동 함수 호출됨');
       try {
         window.top.location.href = '/shop.html';
       } catch (error) {
         console.error('페이지 이동 중 오류:', error);
         window.location.href = '/shop.html';
       }
+    }
+    
+    // goToHome과 동일한 기능 (하위 호환성 유지)
+    function goToShop() {
+      goToHome();
     }
     
     // 장바구니 페이지로 이동
