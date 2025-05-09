@@ -3,6 +3,7 @@ import { ShoppingBag, Search, Menu as MenuIcon, ChevronDown } from 'lucide-react
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useTheme } from '@/context/theme-context';
+import { useLocation } from 'wouter';
 
 /**
  * 쇼핑몰 메인 컴포넌트 (직접 구현)
@@ -11,6 +12,7 @@ import { useTheme } from '@/context/theme-context';
  * - 독립적인 컴포넌트로 구현하여 라우팅 문제 해결
  */
 export default function ShopIndex() {
+  const [, setLocation] = useLocation();
   const [categories] = useState([
     { id: 1, name: '사료', count: 120 },
     { id: 2, name: '간식', count: 85 },
@@ -87,7 +89,7 @@ export default function ShopIndex() {
                     <Button variant="ghost" size="sm" onClick={(e) => {
                       e.preventDefault();
                       console.log("장바구니 버튼 클릭 - setLocation 사용");
-                      window.location.href = "/shop/cart";
+                      setLocation("/shop/cart");
                     }}>
                       장바구니 ({cartItemsCount})
                     </Button>
@@ -97,7 +99,7 @@ export default function ShopIndex() {
                   <Button variant="default" size="sm" onClick={(e) => {
                       e.preventDefault();
                       console.log("로그인 버튼 클릭 - setLocation 사용");
-                      window.location.href = "/auth";
+                      setLocation("/auth");
                     }}>
                     로그인
                   </Button>
@@ -109,7 +111,7 @@ export default function ShopIndex() {
                   onClick={(e) => {
                     e.preventDefault();
                     console.log("메인으로 돌아가기 버튼 클릭 - setLocation 사용");
-                    window.location.href = "/";
+                    setLocation("/");
                   }}
                   aria-label="메인으로 돌아가기"
                 >
@@ -144,6 +146,7 @@ export default function ShopIndex() {
                 onClick={(e) => {
                   e.preventDefault();
                   console.log(`카테고리 클릭: ${category.name}`);
+                  setLocation(`/shop/category/${category.id}`);
                 }}
               >
                 {category.name} ({category.count})
@@ -166,7 +169,7 @@ export default function ShopIndex() {
             <Button onClick={(e) => {
               e.preventDefault();
               console.log("신상품 보러가기 버튼 클릭 - setLocation 사용");
-              window.location.href = "/shop/category/new";
+              setLocation("/shop/category/new");
             }}>
               신상품 보러가기
             </Button>
