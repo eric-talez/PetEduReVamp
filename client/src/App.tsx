@@ -3,6 +3,7 @@ import { Switch, Route, useLocation } from "wouter";
 import { AppLayout } from "./layout/AppLayout";
 import { useAuth } from "./hooks/useAuth";
 import { CartProvider } from "./context/cart-context";
+import { RedirectHandler } from "./components/RedirectHandler";
 
 // Pages
 import Home from "./pages/Home";
@@ -142,7 +143,7 @@ function AuthenticatedRoutes() {
         <Route path="/shop-basic">
           {() => {
             console.log("인증된 사용자가 기본 쇼핑 페이지 접근");
-            return <Redirect to="/shop" />;
+            return <RedirectHandler to="/shop" />;
           }}
         </Route>
         
@@ -150,7 +151,7 @@ function AuthenticatedRoutes() {
         <Route path="/shop-login-required">
           {() => {
             console.log("인증된 사용자가 shop-login-required 접근 - /shop으로 리다이렉트");
-            return <Redirect to="/shop" />;
+            return <RedirectHandler to="/shop" />;
           }}
         </Route>
 
@@ -298,7 +299,7 @@ function UnauthenticatedRoutes() {
         <Route path="/shop">
           {() => {
             console.log("비인증 사용자가 /shop 경로에 직접 접근");
-            return <Redirect to="/shop-login-required" />;
+            return <RedirectHandler to="/shop-login-required" />;
           }}
         </Route>
         
@@ -306,7 +307,7 @@ function UnauthenticatedRoutes() {
         <Route path="/shop/cart">
           {() => {
             console.log("비인증 사용자가 /shop/cart 경로에 접근");
-            return <Redirect to="/shop-login-required" />;
+            return <RedirectHandler to="/shop-login-required" />;
           }}
         </Route>
         
@@ -314,7 +315,7 @@ function UnauthenticatedRoutes() {
         <Route path="/shop-basic">
           {() => {
             console.log("비인증 사용자가 /shop-basic 경로에 직접 접근");
-            return <Redirect to="/shop-login-required" />;
+            return <RedirectHandler to="/shop-login-required" />;
           }}
         </Route>
 
