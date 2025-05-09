@@ -301,11 +301,11 @@ function UnauthenticatedRoutes() {
           )}
         </Route>
 
-        {/* 쇼핑 로그인 요구 페이지 라우트 (현재는 사용하지 않지만 향후 필요할 경우를 위해 유지) */}
+        {/* 쇼핑 로그인 요구 페이지 라우트 - 카트 연결 전 페이지 */}
         <Route path="/shop-login-required">
           {() => {
-            console.log("ShopLoginRequiredPage 컴포넌트 렌더링");
-            return <ShopLoginRequiredPage />;
+            console.log("로그인 필요 페이지 - auth로 리다이렉트");
+            return <RedirectHandler to="/auth" />;
           }}
         </Route>
 
