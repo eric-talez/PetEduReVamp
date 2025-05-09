@@ -22,6 +22,7 @@ import NotificationsPage from "./pages/notifications/index";
 // 쇼핑 페이지
 // 절대 경로 사용으로 변경
 import ShopPage from "@/pages/ShopBasicPage"; // 배너 및 상품 리스트가 있는 메인 쇼핑 페이지
+import CartPage from "@/pages/Cart"; // 장바구니 페이지
 import ShopRedirect from "./pages/shop-redirect"; // 쇼핑 페이지 리디렉션 컴포넌트
 
 import VideoTrainingPage from "./pages/video-training/index";
@@ -44,7 +45,6 @@ const EventDetailPage = lazy(() => import('./pages/events/event-detail'));
 const CommunityPostDetailPage = lazy(() => import('./pages/community/post-detail'));
 const InstituteRegisterPage = lazy(() => import('./pages/institutes/register'));
 const InstituteDetailPage = lazy(() => import('./pages/institutes/detail'));
-const Cart = lazy(() => import('./pages/shop/cart'));
 const Checkout = lazy(() => import('./pages/shop/checkout'));
 
 // Help 페이지들
@@ -141,7 +141,7 @@ function AuthenticatedRoutes() {
             console.log("인증된 사용자가 장바구니 접근");
             return (
               <Suspense fallback={<div className="p-8 text-center">장바구니 로딩 중...</div>}>
-                <Cart />
+                <CartPage />
               </Suspense>
             );
           }}
