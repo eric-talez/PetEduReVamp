@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="fragments/layout :: layout(~{::title}, ~{::main})">
+<head>
+    <title th:text="${pageTitle} + ' - 테일즈 쇼핑'">상품 목록 - 테일즈 쇼핑</title>
+</head>
+<body>
+    <main>
+        <div class="container">
+            <div class="product-list-container">
+                <!-- 페이지 제목 및 필터 섹션 -->
+                <div class="list-header">
+                    <h1 class="list-title" th:text="${pageTitle}">상품 목록</h1>
+                    
+                    <!-- 검색 결과 카운트 (검색 페이지인 경우) -->
+                    <div class="search-result-info" th:if="${query != null}">
+                        '<span th:text="${query}"></span>' 검색 결과 <span th:text="${products.size()}">0</span>개의 상품
+                    </div>
+                    
+                    <!-- 필터링 및 정렬 옵션 -->
+                    <div class="list-filters">
+                        <div class="sorting-options">
+                            <label for="sort-select">정렬</label>
+                            <select id="sort-select" class="sort-select">
+                                <option value="popular">인기순</option>
+                                <option value="recent">최신순</option>
+                                <option value="price-low">가격 낮은순</option>
+                                <option value="price-high">가격 높은순</option>
+                                <option value="review">리뷰 많은순</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 상품 목록 그리드 -->
+                <div class="product-list-grid">
+                    <div th:each="product : ${products}" th:onclick="'goToProductDetail(' + ${product.id} + ')'" class="product-card">
+                        <div class="product-image">
+                            <img th:src="${product.mainImage}" th:alt="${product.name}">
+                            <div th:if="${product.discountRate > 0}" class="product-badge" th:text="${product.discountRate} + '%'">30%</div>
+                        </div>
+                        <div class="product-content">
+                            <div class="product-brand" th:text="${product.brand}">브랜드명</div>
+                            <div class="product-title" th:text="${product.name}">상품명</div>
+                            <div class="product-price">
+                                <div th:if="${product.discountRate > 0}" class="product-discount" th:text="${product.discountRate} + '%'">30%</div>
+                                <div class="product-current" th:text="${#numbers.formatInteger(product.price, 0, 'COMMA') + '원'}">29,800원</div>
+                                <div th:if="${product.discountRate > 0}" class="product-original" th:text="${#numbers.formatInteger(product.originalPrice, 0, 'COMMA') + '원'}">38,000원</div>
+                            </div>
+                            <div class="product-rating">
+                                <div class="product-stars">
+                                    <span th:each="i : ${#numbers.sequence(1, 5)}">
+                                        <svg th:if="${i <= product.rating}" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                                        </svg>
+                                        <svg th:unless="${i <= product.rating}" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                                        </svg>
+                                    </span>
+                                </div>
+                                <span th:text="'리뷰 ' + ${product.reviewCount}">리뷰 128개</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 상품이 없는 경우 -->
+                    <div th:if="${#lists.isEmpty(products)}" class="no-products">
+                        <div class="no-products-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="9" cy="21" r="1"></circle>
+                                <circle cx="20" cy="21" r="1"></circle>
+                                <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+                            </svg>
+                        </div>
+                        <h3 class="no-products-title">상품이 없습니다</h3>
+                        <p class="no-products-text" th:if="${query != null}">
+                            '<span th:text="${query}"></span>'에 대한 검색 결과가 없습니다.<br>
+                            다른 검색어로 다시 시도해보세요.
+                        </p>
+                        <p class="no-products-text" th:unless="${query != null}">
+                            아직 등록된 상품이 없습니다.<br>
+                            다른 카테고리를 확인해보세요.
+                        </p>
+                        <a th:href="@{/shop}" class="no-products-button">쇼핑 계속하기</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <style>
+        .product-list-container {
+            margin: 2rem 0 4rem 0;
+        }
+        
+        .list-header {
+            margin-bottom: 2rem;
+        }
+        
+        .list-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+        
+        .dark-mode .list-title {
+            color: var(--gray-100);
+        }
+        
+        .search-result-info {
+            font-size: 1rem;
+            color: var(--gray-600);
+            margin-bottom: 1.5rem;
+        }
+        
+        .dark-mode .search-result-info {
+            color: var(--gray-400);
+        }
+        
+        .list-filters {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            padding: 1rem 0;
+            border-bottom: 1px solid var(--gray-200);
+        }
+        
+        .dark-mode .list-filters {
+            border-color: var(--gray-700);
+        }
+        
+        .sorting-options {
+            display: flex;
+            align-items: center;
+        }
+        
+        .sorting-options label {
+            margin-right: 0.5rem;
+            font-size: 0.875rem;
+            color: var(--gray-700);
+        }
+        
+        .dark-mode .sorting-options label {
+            color: var(--gray-400);
+        }
+        
+        .sort-select {
+            padding: 0.5rem;
+            border: 1px solid var(--gray-300);
+            border-radius: 0.25rem;
+            font-size: 0.875rem;
+            background-color: white;
+            color: var(--text-color);
+        }
+        
+        .dark-mode .sort-select {
+            background-color: var(--gray-800);
+            border-color: var(--gray-600);
+            color: var(--gray-300);
+        }
+        
+        .product-list-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+        
+        .no-products {
+            grid-column: 1 / -1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 4rem 0;
+            text-align: center;
+        }
+        
+        .no-products-icon {
+            color: var(--gray-400);
+            margin-bottom: 1.5rem;
+        }
+        
+        .dark-mode .no-products-icon {
+            color: var(--gray-600);
+        }
+        
+        .no-products-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+        
+        .dark-mode .no-products-title {
+            color: var(--gray-200);
+        }
+        
+        .no-products-text {
+            font-size: 1rem;
+            color: var(--gray-600);
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+        
+        .dark-mode .no-products-text {
+            color: var(--gray-400);
+        }
+        
+        .no-products-button {
+            display: inline-block;
+            padding: 0.75rem 1.5rem;
+            background-color: var(--primary-color);
+            color: white;
+            font-weight: 500;
+            border-radius: 0.25rem;
+            transition: background-color 0.2s;
+        }
+        
+        .no-products-button:hover {
+            background-color: var(--primary-hover);
+        }
+    </style>
+</body>
+</html>
