@@ -753,36 +753,44 @@
       }
     }
     
-    /* 다크모드 토글 버튼 */
+    /* 다크모드 토글 버튼 - 본서비스와 동일한 스타일 */
     .theme-toggle-btn {
       background: none;
       border: none;
       cursor: pointer;
-      width: 3rem;
-      height: 1.5rem;
-      border-radius: 0.75rem;
-      background-color: var(--gray-300);
-      position: relative;
-      transition: background-color 0.2s ease;
+      padding: 0.5rem;
+      border-radius: 0.375rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--gray-600);
+      transition: background-color 0.2s ease, color 0.2s ease;
+    }
+    
+    .theme-toggle-btn:hover {
+      background-color: var(--gray-100);
+      color: var(--primary-color);
     }
     
     .dark-mode .theme-toggle-btn {
-      background-color: var(--primary-color);
+      color: var(--gray-300);
     }
     
-    .toggle-ball {
-      position: absolute;
-      top: 0.125rem;
-      left: 0.125rem;
-      width: 1.25rem;
-      height: 1.25rem;
-      border-radius: 50%;
-      background-color: white;
-      transition: transform 0.2s ease;
+    .dark-mode .theme-toggle-btn:hover {
+      background-color: var(--gray-700);
+      color: var(--primary-color);
     }
     
-    .dark-mode .toggle-ball {
-      transform: translateX(1.5rem);
+    /* 다크모드 아이콘 */
+    #dark-mode-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    #dark-mode-icon svg {
+      width: 20px;
+      height: 20px;
     }
     
     /* 모바일 메뉴 토글 */
@@ -1828,11 +1836,24 @@
         }, '*');
       });
       
-      // 제품 카드 호버 효과
+      // 제품 카드 클릭 효과
       const productCards = document.querySelectorAll('.product-card');
       productCards.forEach(card => {
         card.addEventListener('click', function() {
-          alert('상품 상세 페이지로 이동합니다.');
+          // 상품 ID (데모용)
+          const productId = this.getAttribute('data-product-id') || '1';
+          // 상품 상세 페이지로 이동 - 실제 구현에서는 이 부분을 활성화
+          // window.location.href = `/product/${productId}`;
+          
+          // 부모 창에 메시지 전송
+          try {
+            window.parent.postMessage({
+              type: 'NAVIGATE_TO_PRODUCT',
+              data: { productId }
+            }, '*');
+          } catch (error) {
+            console.warn('부모 창에 메시지 전송 실패:', error);
+          }
         });
       });
       
@@ -1842,7 +1863,18 @@
         link.addEventListener('click', function(e) {
           e.preventDefault();
           const category = this.querySelector('span').textContent;
-          alert(`${category} 카테고리로 이동합니다.`);
+          // 카테고리 페이지로 이동 - 실제 구현에서는 이 부분을 활성화
+          // window.location.href = `/category/${category}`;
+          
+          // 부모 창에 메시지 전송
+          try {
+            window.parent.postMessage({
+              type: 'NAVIGATE_TO_CATEGORY',
+              data: { category }
+            }, '*');
+          } catch (error) {
+            console.warn('부모 창에 메시지 전송 실패:', error);
+          }
         });
       });
       
@@ -1852,7 +1884,19 @@
         if (e.key === 'Enter') {
           const searchTerm = this.value.trim();
           if (searchTerm) {
-            alert(`"${searchTerm}" 검색 결과로 이동합니다.`);
+            // 검색 결과 페이지로 이동 - 실제 구현에서는 이 부분을 활성화
+            // window.location.href = `/search?q=${encodeURIComponent(searchTerm)}`;
+            
+            // 부모 창에 메시지 전송
+            try {
+              window.parent.postMessage({
+                type: 'NAVIGATE_TO_SEARCH',
+                data: { searchTerm }
+              }, '*');
+            } catch (error) {
+              console.warn('부모 창에 메시지 전송 실패:', error);
+            }
+            
             this.value = '';
           }
         }
@@ -1861,7 +1905,18 @@
       // 배너 섹션 클릭
       const bannerSection = document.querySelector('.banner-section');
       bannerSection.addEventListener('click', function() {
-        alert('프로모션 상세 페이지로 이동합니다.');
+        // 프로모션 페이지로 이동 - 실제 구현에서는 이 부분을 활성화
+        // window.location.href = '/promotion/pet-health-campaign';
+        
+        // 부모 창에 메시지 전송
+        try {
+          window.parent.postMessage({
+            type: 'NAVIGATE_TO_PROMOTION',
+            data: { promotionId: 'pet-health-campaign' }
+          }, '*');
+        } catch (error) {
+          console.warn('부모 창에 메시지 전송 실패:', error);
+        }
       });
       
       // 모바일에서만 보여지는 햄버거 메뉴
@@ -1884,23 +1939,8 @@
           localStorage.setItem('referralCode', referralCode);
           console.log(`추천인 코드 저장됨: ${referralCode}`);
           
-          // 개발 편의를 위한 알림 (실제 서비스에서는 제거)
-          const savedCode = document.createElement('div');
-          savedCode.style.position = 'fixed';
-          savedCode.style.bottom = '10px';
-          savedCode.style.right = '10px';
-          savedCode.style.padding = '8px 12px';
-          savedCode.style.backgroundColor = 'rgba(0,0,0,0.7)';
-          savedCode.style.color = 'white';
-          savedCode.style.borderRadius = '4px';
-          savedCode.style.fontSize = '12px';
-          savedCode.style.zIndex = '1000';
-          savedCode.innerHTML = `추천인 코드: ${referralCode}`;
-          document.body.appendChild(savedCode);
-          
-          setTimeout(() => {
-            savedCode.remove();
-          }, 5000);
+          // 추천인 코드가 저장되었음을 사용자에게 알려줌
+          showToast(`추천인 코드가 적용되었습니다: ${referralCode}`);
         }
       }
       
