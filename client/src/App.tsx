@@ -20,7 +20,8 @@ import CourseReservationPage from "./pages/course-reservation/index";
 import MessagesPage from "./pages/messages/index";
 import NotificationsPage from "./pages/notifications/index";
 // 쇼핑 페이지
-import ShopPage from "./pages/ShopBasicPage"; // 배너 및 상품 리스트가 있는 메인 쇼핑 페이지
+// 절대 경로 사용으로 변경
+import ShopPage from "@/pages/ShopBasicPage"; // 배너 및 상품 리스트가 있는 메인 쇼핑 페이지
 
 import VideoTrainingPage from "./pages/video-training/index";
 import VideoTrainingDetailPage from "./pages/video-training/video";
@@ -125,14 +126,22 @@ function AuthenticatedRoutes() {
         <Route path="/messages" component={MessagesPage} />
         <Route path="/notifications" component={NotificationsPage} />
         
-        {/* 쇼핑 관련 라우트 - 로그인 사용자 */}
-        <Route path="/shop" component={ShopPage} />
-        <Route path="/shop/cart">
-          {() => (
-            <Suspense fallback={<div className="p-8 text-center">장바구니 로딩 중...</div>}>
-              <Cart />
-            </Suspense>
-          )}
+        {/* 쇼핑 관련 라우트 - 로그인 사용자 - 와일드카드 패턴으로 수정 */}
+        <Route path="/shop*">
+          {(params) => {
+            console.log("인증된 사용자가 쇼핑 경로에 접근:", window.location.pathname);
+            console.log("Route params:", params);
+            // 특정 하위 경로인 경우 처리
+            if (window.location.pathname.includes("/shop/cart")) {
+              return (
+                <Suspense fallback={<div className="p-8 text-center">장바구니 로딩 중...</div>}>
+                  <Cart />
+                </Suspense>
+              );
+            }
+            // 기본적으로 ShopBasicPage 반환
+            return <ShopPage />;
+          }}
         </Route>
 
         <Route path="/profile" component={ProfilePage} />
@@ -272,21 +281,29 @@ function UnauthenticatedRoutes() {
           )}
         </Route>
 
-        {/* 쇼핑 관련 라우트 - 와일드카드 패턴 사용 */}
-        <Route path="/shop*">
-          {(params) => {
-            console.log("비인증 사용자가 쇼핑 경로에 접근:", window.location.pathname);
-            console.log("Route params:", params);
-            // ShopBasicPage 컴포넌트를 직접 로드하여 렌더링
+        {/* 쇼핑 관련 라우트 - 명확한 경로 사용 */}
+        <Route path="/shop">
+          {() => {
+            console.log("비인증 사용자가 /shop 정확한 경로에 접근");
             return <ShopPage />;
           }}
         </Route>
+        
+        {/* 쇼핑 관련 하위 라우트 */}
         <Route path="/shop/cart">
           {() => (
             <Suspense fallback={<div className="p-8 text-center">장바구니 로딩 중...</div>}>
               <Cart />
             </Suspense>
           )}
+        </Route>
+        
+        {/* 쇼핑 관련 대체 경로 */}
+        <Route path="/shop-basic">
+          {() => {
+            console.log("비인증 사용자가 /shop-basic 경로에 접근");
+            return <ShopPage />;
+          }}
         </Route>
 
         {/* 기타 페이지 */}

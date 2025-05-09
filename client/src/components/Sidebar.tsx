@@ -389,34 +389,28 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                     >이벤트</NavItem>
 
                     <NavItem 
-                      href="/shop" 
+                      href="/#/shop" 
                       icon={<ShoppingBag className="w-5 h-5 mr-2" />} 
                       active={isActive("/shop")} 
                       onClick={(path) => {
-                        console.log("비인증 사용자가 쇼핑 메뉴 클릭 - 개선된 이동 방식");
+                        console.log("비인증 사용자가 쇼핑 메뉴 클릭 - 해시 기반 라우팅");
                         
-                        // 직접 경로 강제 지정
-                        const shopPath = "/shop";
-                        
-                        // window.location 대신 history API 사용
+                        // 해시 라우팅으로 변경 (SPA 내부 라우팅)
                         try {
-                          // 직접 경로 이동
-                          console.log("쇼핑 페이지로 이동 시도:", shopPath);
-                          window.location.href = shopPath;
+                          // Wouter가 해시 기반 라우팅을 사용하도록 해시 추가
+                          console.log("쇼핑 페이지로 이동 시도 (해시 라우팅)");
+                          window.location.href = "/#/shop";
                         } catch (e) {
-                          console.error("페이지 이동 오류:", e);
+                          console.error("해시 라우팅 오류:", e);
                           
-                          // 백업 방식
-                          console.log("백업 방식으로 페이지 이동");
+                          // 백업 방식 - 직접 URL 사용
                           try {
-                            // 방법 1: Push State
-                            window.history.pushState({}, '', shopPath);
-                            window.dispatchEvent(new PopStateEvent('popstate'));
-                            console.log("Push State 방식 적용됨");
+                            window.location.replace(window.location.origin + "/#/shop");
                           } catch (e2) {
-                            console.error("History API 오류:", e2);
-                            // 방법 2: 절대 URL 방식
-                            window.location.replace(window.location.origin + shopPath);
+                            console.error("최종 백업 이동 오류:", e2);
+                            
+                            // 최후의 방법 - 정적 HTML 페이지로 이동
+                            window.location.replace(window.location.origin + "/shop/index.html");
                           }
                         }
                       }} 
