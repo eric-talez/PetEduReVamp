@@ -152,35 +152,118 @@ export function Chatbot() {
   };
 
   return (
-    <div className="chatbot-container">
+    <div className="chatbot-container" style={{ position: 'fixed', bottom: '20px', right: '20px', zIndex: 9999 }}>
       <button 
         className="chatbot-button"
         onClick={toggleChatbot}
         aria-label="챗봇 열기"
+        style={{ 
+          width: '60px', 
+          height: '60px', 
+          borderRadius: '30px',
+          backgroundColor: 'var(--primary-color, #a7e8c5)',
+          color: 'white',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          cursor: 'pointer',
+          boxShadow: '0 4px 10px rgba(0, 0, 0, 0.2)',
+          border: 'none'
+        }}
       >
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
         </svg>
         {showBadge && (
-          <span className="unread-badge">1</span>
+          <span className="unread-badge" style={{
+            position: 'absolute',
+            top: '-5px',
+            right: '-5px',
+            width: '20px',
+            height: '20px',
+            borderRadius: '50%',
+            backgroundColor: '#e53e3e',
+            color: 'white',
+            fontSize: '12px',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            fontWeight: 'bold'
+          }}>1</span>
         )}
       </button>
       
-      <div className={`chatbot-panel ${isOpen ? 'open' : ''}`}>
-        <div className="chatbot-header">
+      <div className={`chatbot-panel ${isOpen ? 'open' : ''}`} style={{
+        position: 'absolute',
+        bottom: '75px',
+        right: '0',
+        width: '350px',
+        height: '500px',
+        backgroundColor: 'white',
+        borderRadius: '12px',
+        boxShadow: '0 4px 20px rgba(0, 0, 0, 0.15)',
+        display: 'flex',
+        flexDirection: 'column',
+        overflow: 'hidden',
+        transition: 'all 0.3s ease',
+        transformOrigin: 'bottom right',
+        transform: isOpen ? 'scale(1)' : 'scale(0)',
+        opacity: isOpen ? '1' : '0',
+        pointerEvents: isOpen ? 'all' : 'none',
+        zIndex: 9999
+      }}>
+        <div className="chatbot-header" style={{
+          padding: '15px 20px',
+          backgroundColor: 'var(--primary-color, #a7e8c5)',
+          color: 'white',
+          fontWeight: '600',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center'
+        }}>
           <span>테일즈 AI 도우미</span>
           <button 
             className="chatbot-close"
             onClick={toggleChatbot}
             aria-label="챗봇 닫기"
+            style={{
+              background: 'none',
+              border: 'none',
+              color: 'white',
+              cursor: 'pointer',
+              fontSize: '20px',
+              lineHeight: '1'
+            }}
           >
             ✕
           </button>
         </div>
         
-        <div className="chatbot-messages">
+        <div style={{
+          flex: '1',
+          padding: '15px',
+          overflowY: 'auto',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '10px'
+        }}>
           {messages.map((message, index) => (
-            <div key={index} className={`chat-message ${message.role}`}>
+            <div 
+              key={index} 
+              style={{
+                maxWidth: '80%',
+                padding: '10px 14px',
+                borderRadius: '16px',
+                fontSize: '14px',
+                lineHeight: '1.4',
+                position: 'relative',
+                alignSelf: message.role === 'bot' ? 'flex-start' : 'flex-end',
+                backgroundColor: message.role === 'bot' ? '#f7fafc' : 'var(--primary-color, #a7e8c5)',
+                color: message.role === 'bot' ? '#2d3748' : 'white',
+                borderBottomLeftRadius: message.role === 'bot' ? '4px' : '16px',
+                borderBottomRightRadius: message.role === 'bot' ? '16px' : '4px'
+              }}
+            >
               {message.content}
             </div>
           ))}
@@ -188,11 +271,27 @@ export function Chatbot() {
         </div>
         
         {suggestions.length > 0 && (
-          <div className="chatbot-suggestions-container">
+          <div style={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            padding: '0 15px 10px 15px'
+          }}>
             {suggestions.map((suggestion, index) => (
               <div 
                 key={index}
-                className="chatbot-suggestion"
+                style={{
+                  padding: '8px 12px',
+                  backgroundColor: '#f7fafc',
+                  color: 'var(--primary-color, #a7e8c5)',
+                  borderRadius: '16px',
+                  fontSize: '12px',
+                  marginRight: '8px',
+                  marginBottom: '8px',
+                  cursor: 'pointer',
+                  display: 'inline-block',
+                  border: '1px solid #edf2f7',
+                  transition: 'all 0.2s ease'
+                }}
                 onClick={() => handleSuggestionClick(suggestion)}
               >
                 {suggestion}
@@ -201,18 +300,45 @@ export function Chatbot() {
           </div>
         )}
         
-        <form onSubmit={handleSubmit} className="chatbot-input-container">
+        <form onSubmit={handleSubmit} style={{
+          padding: '12px',
+          borderTop: '1px solid #edf2f7',
+          display: 'flex',
+          gap: '10px',
+          backgroundColor: 'white'
+        }}>
           <input
             ref={inputRef}
             type="text"
-            className="chatbot-input"
+            style={{
+              flex: '1',
+              border: '1px solid #e2e8f0',
+              borderRadius: '20px',
+              padding: '10px 15px',
+              fontSize: '14px',
+              outline: 'none',
+              backgroundColor: 'white',
+              color: '#2d3748'
+            }}
             placeholder="메시지를 입력하세요..."
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
           />
           <button 
             type="submit"
-            className="chatbot-send"
+            style={{
+              width: '36px',
+              height: '36px',
+              borderRadius: '50%',
+              backgroundColor: !inputValue.trim() ? '#e2e8f0' : 'var(--primary-color, #a7e8c5)',
+              color: 'white',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              cursor: !inputValue.trim() ? 'not-allowed' : 'pointer',
+              border: 'none',
+              transition: 'background-color 0.2s ease'
+            }}
             disabled={!inputValue.trim()}
             aria-label="메시지 보내기"
           >
