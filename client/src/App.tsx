@@ -1,5 +1,5 @@
 import React, { lazy, Suspense } from "react";
-import { Switch, Route } from "wouter";
+import { Switch, Route, useLocation } from "wouter";
 import { AppLayout } from "./layout/AppLayout";
 import { useAuth } from "./hooks/useAuth";
 import { CartProvider } from "./context/cart-context";
@@ -127,7 +127,7 @@ function AuthenticatedRoutes() {
         <Route path="/messages" component={MessagesPage} />
         <Route path="/notifications" component={NotificationsPage} />
         
-        {/* 쇼핑 관련 라우트 - 인증된 사용자 - 명확한 경로로 수정 */}
+        {/* 인증된 사용자 쇼핑 관련 라우트 */}
         <Route path="/shop">
           {() => {
             console.log("인증된 사용자가 쇼핑 경로에 접근");
@@ -136,22 +136,13 @@ function AuthenticatedRoutes() {
         </Route>
         
         {/* 쇼핑 관련 하위 라우트 - 카트 (인증된 사용자) */}
-        <Route path="/shop/cart">
-          {() => {
-            console.log("인증된 사용자가 장바구니 접근");
-            return (
-              <Suspense fallback={<div className="p-8 text-center">장바구니 로딩 중...</div>}>
-                <CartPage />
-              </Suspense>
-            );
-          }}
-        </Route>
+        <Route path="/shop/cart" component={CartPage} />
         
         {/* 쇼핑 관련 대체 경로 - 인증된 사용자 */}
         <Route path="/shop-basic">
           {() => {
             console.log("인증된 사용자가 기본 쇼핑 페이지 접근");
-            return <ShopPage />;
+            return <Redirect to="/shop" />;
           }}
         </Route>
         
@@ -159,8 +150,7 @@ function AuthenticatedRoutes() {
         <Route path="/shop-login-required">
           {() => {
             console.log("인증된 사용자가 shop-login-required 접근 - /shop으로 리다이렉트");
-            window.location.href = "/shop";
-            return null;
+            return <Redirect to="/shop" />;
           }}
         </Route>
 
@@ -302,34 +292,21 @@ function UnauthenticatedRoutes() {
         </Route>
 
         {/* 쇼핑 로그인 요구 페이지 라우트 - 비인증 사용자를 위한 안내 페이지 */}
-        <Route path="/shop-login-required">
-          {() => {
-            console.log("비인증 사용자 쇼핑 로그인 안내 페이지 진입");
-            const ShopLoginRequiredPage = lazy(() => import('./pages/shop-login-required'));
-            return (
-              <Suspense fallback={<div className="p-8 text-center">로그인 안내 페이지 로딩 중...</div>}>
-                <ShopLoginRequiredPage />
-              </Suspense>
-            );
-          }}
-        </Route>
+        <Route path="/shop-login-required" component={lazy(() => import('./pages/shop-login-required'))} />
 
-        {/* 쇼핑 관련 통합 라우트 - 직접 컴포넌트 렌더링 */}
+        {/* 쇼핑 관련 모든 경로 - 로그인 안내 페이지 컴포넌트로 라우팅 */}
         <Route path="/shop">
           {() => {
             console.log("비인증 사용자가 /shop 경로에 직접 접근");
-            // 비인증 상태에서는 로그인 안내 페이지로 리다이렉트
-            window.location.href = "/shop-login-required";
-            return null;
+            return <Redirect to="/shop-login-required" />;
           }}
         </Route>
         
         {/* 쇼핑 관련 하위 라우트 - 카트 */}
         <Route path="/shop/cart">
           {() => {
-            console.log("비인증 사용자가 /shop/cart 경로에 접근 - 로그인 필요");
-            window.location.href = "/shop-login-required";
-            return null;
+            console.log("비인증 사용자가 /shop/cart 경로에 접근");
+            return <Redirect to="/shop-login-required" />;
           }}
         </Route>
         
@@ -337,8 +314,7 @@ function UnauthenticatedRoutes() {
         <Route path="/shop-basic">
           {() => {
             console.log("비인증 사용자가 /shop-basic 경로에 직접 접근");
-            window.location.href = "/shop-login-required";
-            return null;
+            return <Redirect to="/shop-login-required" />;
           }}
         </Route>
 

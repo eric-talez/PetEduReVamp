@@ -389,31 +389,12 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                     >이벤트</NavItem>
 
                     <NavItem 
-                      href="/shop" 
+                      href="/shop-login-required" 
                       icon={<ShoppingBag className="w-5 h-5 mr-2" />} 
-                      active={isActive("/shop") || isActive("/shop-basic") || isActive("/shop-redirect")} 
+                      active={isActive("/shop") || isActive("/shop-login-required") || isActive("/shop-basic") || isActive("/shop-redirect")} 
                       onClick={(path) => {
-                        console.log("비인증 사용자가 쇼핑 메뉴 클릭 - 직접 라우팅");
-                        
-                        // iframe 없이 직접 컴포넌트 렌더링
-                        try {
-                          // Wouter 방식 1: window.location 직접 사용
-                          console.log("shop 페이지로 직접 이동");
-                          window.location.href = "/shop";
-                        } catch (e) {
-                          console.error("shop 페이지 이동 오류:", e);
-                          
-                          // 백업 방식: 네비게이션 API 사용
-                          try {
-                            window.history.pushState({}, "", "/shop");
-                            window.dispatchEvent(new PopStateEvent("popstate"));
-                          } catch (e2) {
-                            console.error("history API 사용 오류:", e2);
-                            
-                            // 최종 백업: shop-redirect 컴포넌트 사용
-                            window.location.href = "/shop-redirect";
-                          }
-                        }
+                        console.log("비인증 사용자가 쇼핑 메뉴 클릭 - 직접 shop-login-required로 이동");
+                        window.location.href = "/shop-login-required";
                       }} 
                       show={true}
                     >쇼핑</NavItem>
@@ -500,19 +481,9 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                     <NavItem href="/institutes" icon={<MapPin className="w-5 h-5 mr-2" />} active={isActive("/institutes")} onClick={handleItemClick} show={true}>위치 서비스</NavItem>
                     <NavItem href="/community" icon={<MessageSquare className="w-5 h-5 mr-2" />} active={isActive("/community")} onClick={handleItemClick} show={true}>커뮤니티</NavItem>
                     <NavItem href="/events" icon={<Calendar className="w-5 h-5 mr-2" />} active={isActive("/events")} onClick={handleItemClick} show={true}>이벤트</NavItem>
-                    <NavItem href="/shop" icon={<ShoppingBag className="w-5 h-5 mr-2" />} active={isActive("/shop")} onClick={(path) => {
-                      console.log("쇼핑 메뉴 클릭");
-                      // 쇼핑 페이지는 특별 처리 - URL 객체 사용
-                      try {
-                        const url = new URL('/shop', window.location.origin);
-                        console.log("이동할 경로 (URL 객체 사용):", url.toString());
-                        // 페이지 새로고침 느낌으로 이동
-                        window.location.replace(url.toString());
-                      } catch (e) {
-                        console.error("URL 생성 오류:", e);
-                        // 백업 방식
-                        window.location.href = "/shop";
-                      }
+                    <NavItem href="/shop" icon={<ShoppingBag className="w-5 h-5 mr-2" />} active={isActive("/shop")} onClick={() => {
+                      console.log("인증된 사용자가 쇼핑 메뉴 클릭");
+                      window.location.href = "/shop";
                     }} show={true}>쇼핑</NavItem>
                   </>
                 )}
