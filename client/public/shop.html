@@ -1755,22 +1755,41 @@
     // 다크모드 토글
     const themeToggleBtn = document.querySelector('.theme-toggle-btn');
     const body = document.body;
+    const darkModeIcon = document.getElementById('dark-mode-icon');
+    
+    // 다크 모드 아이콘 업데이트 함수
+    function updateDarkModeIcon(isDarkMode) {
+      if (darkModeIcon) {
+        if (isDarkMode) {
+          darkModeIcon.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="m4.93 4.93 1.41 1.41"></path><path d="m17.66 17.66 1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="m6.34 17.66-1.41 1.41"></path><path d="m19.07 4.93-1.41 1.41"></path></svg>';
+        } else {
+          darkModeIcon.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path></svg>';
+        }
+      }
+    }
     
     // 저장된 테마 불러오기
     const savedTheme = localStorage.getItem('theme');
     if (savedTheme === 'dark') {
       body.classList.add('dark-mode');
+      updateDarkModeIcon(true);
+    } else {
+      updateDarkModeIcon(false);
     }
     
     themeToggleBtn.addEventListener('click', () => {
       body.classList.toggle('dark-mode');
       
       // 테마 저장
-      if (body.classList.contains('dark-mode')) {
+      const isDarkMode = body.classList.contains('dark-mode');
+      if (isDarkMode) {
         localStorage.setItem('theme', 'dark');
       } else {
         localStorage.setItem('theme', 'light');
       }
+      
+      // 아이콘 업데이트
+      updateDarkModeIcon(isDarkMode);
     });
     
     // 모바일 메뉴 토글
@@ -1796,10 +1815,15 @@
     
     // 쇼핑 연동
     document.addEventListener('DOMContentLoaded', function() {
-      // 장바구니 버튼 이벤트
+      // 장바구니 버튼 이벤트 - 본서비스의 장바구니와 연결
       const cartBtn = document.querySelector('.cart-btn');
       cartBtn.addEventListener('click', function() {
-        alert('장바구니로 이동합니다.');
+        // 본서비스의 장바구니 페이지로 리다이렉트
+        // window.location.href = '/cart'; // 직접 리다이렉션
+        window.parent.postMessage({
+          type: 'NAVIGATE_TO_CART',
+          data: {}
+        }, '*');
       });
       
       // 제품 카드 호버 효과
@@ -2007,6 +2031,47 @@
           toggleFilterSection();
         }
       }
+      
+      // 본서비스와의 통신을 위한 이벤트 리스너 등록
+      window.addEventListener('message', function(event) {
+        try {
+          // 메시지 처리
+          const message = event.data;
+          
+          if (message && message.type) {
+            switch (message.type) {
+              case 'SYNC_CART':
+                // 장바구니 동기화 요청 처리
+                if (message.data && message.data.cartItems) {
+                  console.log('장바구니 동기화 요청 받음:', message.data.cartItems);
+                  // 여기서 적절한 장바구니 동기화 함수를 호출
+                }
+                break;
+                
+              case 'DARK_MODE_CHANGE':
+                // 다크 모드 변경 요청 처리
+                if (message.data && message.data.darkMode !== undefined) {
+                  const isDarkMode = message.data.darkMode;
+                  if (isDarkMode && !document.body.classList.contains('dark-mode')) {
+                    document.body.classList.add('dark-mode');
+                    updateDarkModeIcon(true);
+                    localStorage.setItem('theme', 'dark');
+                  } else if (!isDarkMode && document.body.classList.contains('dark-mode')) {
+                    document.body.classList.remove('dark-mode');
+                    updateDarkModeIcon(false);
+                    localStorage.setItem('theme', 'light');
+                  }
+                }
+                break;
+                
+              default:
+                console.log('알 수 없는 메시지 타입:', message.type);
+            }
+          }
+        } catch (error) {
+          console.error('메시지 처리 중 오류 발생:', error);
+        }
+      });
     });
     
     // 챗봇 기능 구현
