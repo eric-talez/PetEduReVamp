@@ -59,13 +59,70 @@ public class CategoryService {
     private List<Category> createSampleCategories() {
         List<Category> categories = new ArrayList<>();
         
-        categories.add(new Category(1L, "강아지 사료", "https://images.unsplash.com/photo-1548767797-d8c844163c4c?q=80&w=400&auto=format&fit=crop&ixlib=rb-4.0.3", 45));
-        categories.add(new Category(2L, "강아지 간식", "https://images.unsplash.com/photo-1585671962151-940be0defc3d?q=80&w=400&auto=format&fit=crop&ixlib=rb-4.0.3", 38));
-        categories.add(new Category(3L, "강아지 용품", "https://images.unsplash.com/photo-1516734212186-a967f81ad0d7?q=80&w=400&auto=format&fit=crop&ixlib=rb-4.0.3", 67));
-        categories.add(new Category(4L, "고양이 사료", "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?q=80&w=400&auto=format&fit=crop&ixlib=rb-4.0.3", 32));
-        categories.add(new Category(5L, "고양이 간식", "https://images.unsplash.com/photo-1606491048802-8342506d6471?q=80&w=400&auto=format&fit=crop&ixlib=rb-4.0.3", 29));
-        categories.add(new Category(6L, "고양이 용품", "https://images.unsplash.com/photo-1570458436416-b8fcccfe883f?q=80&w=400&auto=format&fit=crop&ixlib=rb-4.0.3", 52));
+        // 카테고리 정보 (아이콘용 이미지 URL 사용)
+        Category dogFood = new Category(1L, "강아지 사료", "/images/icons/dog-food-icon.svg", 45);
+        dogFood.setDescription("다양한 브랜드의 건강한 강아지 사료");
+        
+        Category dogTreat = new Category(2L, "강아지 간식", "/images/icons/dog-treat-icon.svg", 38);
+        dogTreat.setDescription("강아지를 위한 영양 간식과 육포");
+        
+        Category dogSupplies = new Category(3L, "강아지 용품", "/images/icons/dog-supply-icon.svg", 67);
+        dogSupplies.setDescription("강아지 장난감, 목줄, 옷 등 다양한 용품");
+        
+        Category catFood = new Category(4L, "고양이 사료", "/images/icons/cat-food-icon.svg", 32);
+        catFood.setDescription("고양이의 건강을 위한 프리미엄 사료");
+        
+        Category catTreat = new Category(5L, "고양이 간식", "/images/icons/cat-treat-icon.svg", 29);
+        catTreat.setDescription("고양이가 좋아하는 다양한 간식");
+        
+        Category catSupplies = new Category(6L, "고양이 용품", "/images/icons/cat-supply-icon.svg", 52);
+        catSupplies.setDescription("고양이 장난감, 스크래쳐, 캣타워 등");
+        
+        Category eduSupplies = new Category(7L, "교육용품", "/images/icons/edu-supply-icon.svg", 24);
+        eduSupplies.setDescription("반려동물 훈련 및 교육을 위한 용품");
+        
+        Category birthdayItems = new Category(8L, "생일용품", "/images/icons/birthday-icon.svg", 18);
+        birthdayItems.setDescription("반려동물 생일 파티를 위한 다양한 용품");
+        
+        // 카테고리 리스트에 추가
+        categories.add(dogFood);
+        categories.add(dogTreat);
+        categories.add(dogSupplies);
+        categories.add(catFood);
+        categories.add(catTreat);
+        categories.add(catSupplies);
+        categories.add(eduSupplies);
+        categories.add(birthdayItems);
         
         return categories;
+    }
+    
+    /**
+     * 아이콘 URL이 없는 경우를 위한 기본 아이콘 제공
+     * 
+     * @param categoryName 카테고리 이름
+     * @return 기본 아이콘 URL
+     */
+    public String getDefaultIconUrl(String categoryName) {
+        switch (categoryName.toLowerCase()) {
+            case "강아지 사료":
+                return "/images/icons/dog-food-icon.svg";
+            case "강아지 간식":
+                return "/images/icons/dog-treat-icon.svg";
+            case "강아지 용품":
+                return "/images/icons/dog-supply-icon.svg";
+            case "고양이 사료":
+                return "/images/icons/cat-food-icon.svg";
+            case "고양이 간식":
+                return "/images/icons/cat-treat-icon.svg";
+            case "고양이 용품":
+                return "/images/icons/cat-supply-icon.svg";
+            case "교육용품":
+                return "/images/icons/edu-supply-icon.svg";
+            case "생일용품":
+                return "/images/icons/birthday-icon.svg";
+            default:
+                return "/images/icons/default-icon.svg";
+        }
     }
 }

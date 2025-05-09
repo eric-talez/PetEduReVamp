@@ -51,76 +51,178 @@
                 </div>
             </section>
             
-            <!-- 카테고리 그리드 -->
-            <section>
-                <div class="category-grid">
-                    <a th:each="category : ${categories}" th:href="@{'/shop/category/' + ${category.name}}" class="category-card">
-                        <div class="category-card-image">
+            <!-- 카테고리 아이콘 그리드 -->
+            <section class="category-icon-section">
+                <div class="category-icon-grid">
+                    <a th:each="category : ${categories}" th:href="@{'/shop/category/' + ${category.name}}" class="category-icon-item">
+                        <div class="category-icon">
                             <img th:src="${category.imageUrl}" th:alt="${category.name}">
                         </div>
-                        <div class="category-card-content">
-                            <div class="category-card-title" th:text="${category.name}">카테고리명</div>
-                            <div class="category-card-subtitle" th:text="${category.productCount} + '개 상품'">상품 수</div>
-                        </div>
+                        <div class="category-icon-title" th:text="${category.name}">카테고리명</div>
                     </a>
                     <!-- 카테고리 데이터가 없을 경우 기본 데이터 표시 -->
                     <th:block th:if="${#lists.isEmpty(categories)}">
-                        <a href="#" class="category-card">
-                            <div class="category-card-image">
-                                <img src="https://images.unsplash.com/photo-1548767797-d8c844163c4c?q=80&w=400&auto=format&fit=crop&ixlib=rb-4.0.3" alt="강아지 사료">
+                        <a href="#" class="category-icon-item">
+                            <div class="category-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M7.5 12h9m-9 5.25h9m-9-10.5h9M4.5 19.5h15a2.25 2.25 0 0 0 2.25-2.25V6.75A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25v10.5A2.25 2.25 0 0 0 4.5 19.5Z"></path>
+                                </svg>
                             </div>
-                            <div class="category-card-content">
-                                <div class="category-card-title">강아지 사료</div>
-                                <div class="category-card-subtitle">45개 상품</div>
-                            </div>
+                            <div class="category-icon-title">강아지 사료</div>
                         </a>
-                        <a href="#" class="category-card">
-                            <div class="category-card-image">
-                                <img src="https://images.unsplash.com/photo-1585671962151-940be0defc3d?q=80&w=400&auto=format&fit=crop&ixlib=rb-4.0.3" alt="강아지 간식">
+                        <a href="#" class="category-icon-item">
+                            <div class="category-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M12.73 2.51A9 9 0 0 0 4.5 18h15a9 9 0 0 0-6.77-15.49M12 6.5a2.5 2.5 0 0 1 0 5 2.5 2.5 0 0 1 0-5m-4.17 5.959C9.1 13.819 10.5 14.5 12 14.5c1.5 0 2.9-.68 4.17-2.041l1.06 1.048C15.55 15.346 13.78 16 12 16s-3.55-.654-5.23-2.493l1.06-1.048Z"></path>
+                                </svg>
                             </div>
-                            <div class="category-card-content">
-                                <div class="category-card-title">강아지 간식</div>
-                                <div class="category-card-subtitle">38개 상품</div>
-                            </div>
+                            <div class="category-icon-title">강아지 간식</div>
                         </a>
-                        <a href="#" class="category-card">
-                            <div class="category-card-image">
-                                <img src="https://images.unsplash.com/photo-1516734212186-a967f81ad0d7?q=80&w=400&auto=format&fit=crop&ixlib=rb-4.0.3" alt="강아지 용품">
+                        <a href="#" class="category-icon-item">
+                            <div class="category-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M10 16v5a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-5m16 0v5a2 2 0 0 1-2 2h-2a2 2 0 0 1-2-2v-5M4 11V3a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8M1 11h22"></path>
+                                </svg>
                             </div>
-                            <div class="category-card-content">
-                                <div class="category-card-title">강아지 용품</div>
-                                <div class="category-card-subtitle">67개 상품</div>
-                            </div>
+                            <div class="category-icon-title">강아지 용품</div>
                         </a>
-                        <a href="#" class="category-card">
-                            <div class="category-card-image">
-                                <img src="https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?q=80&w=400&auto=format&fit=crop&ixlib=rb-4.0.3" alt="고양이 사료">
+                        <a href="#" class="category-icon-item">
+                            <div class="category-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M7.5 12h9m-9 5.25h9m-9-10.5h9M4.5 19.5h15a2.25 2.25 0 0 0 2.25-2.25V6.75A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25v10.5A2.25 2.25 0 0 0 4.5 19.5Z"></path>
+                                </svg>
                             </div>
-                            <div class="category-card-content">
-                                <div class="category-card-title">고양이 사료</div>
-                                <div class="category-card-subtitle">32개 상품</div>
-                            </div>
+                            <div class="category-icon-title">고양이 사료</div>
                         </a>
-                        <a href="#" class="category-card">
-                            <div class="category-card-image">
-                                <img src="https://images.unsplash.com/photo-1606491048802-8342506d6471?q=80&w=400&auto=format&fit=crop&ixlib=rb-4.0.3" alt="고양이 간식">
+                        <a href="#" class="category-icon-item">
+                            <div class="category-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M12.73 2.51A9 9 0 0 0 4.5 18h15a9 9 0 0 0-6.77-15.49M12 6.5a2.5 2.5 0 0 1 0 5 2.5 2.5 0 0 1 0-5m-4.17 5.959C9.1 13.819 10.5 14.5 12 14.5c1.5 0 2.9-.68 4.17-2.041l1.06 1.048C15.55 15.346 13.78 16 12 16s-3.55-.654-5.23-2.493l1.06-1.048Z"></path>
+                                </svg>
                             </div>
-                            <div class="category-card-content">
-                                <div class="category-card-title">고양이 간식</div>
-                                <div class="category-card-subtitle">29개 상품</div>
-                            </div>
+                            <div class="category-icon-title">고양이 간식</div>
                         </a>
-                        <a href="#" class="category-card">
-                            <div class="category-card-image">
-                                <img src="https://images.unsplash.com/photo-1570458436416-b8fcccfe883f?q=80&w=400&auto=format&fit=crop&ixlib=rb-4.0.3" alt="고양이 용품">
+                        <a href="#" class="category-icon-item">
+                            <div class="category-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M10 16v5a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-5m16 0v5a2 2 0 0 1-2 2h-2a2 2 0 0 1-2-2v-5M4 11V3a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8M1 11h22"></path>
+                                </svg>
                             </div>
-                            <div class="category-card-content">
-                                <div class="category-card-title">고양이 용품</div>
-                                <div class="category-card-subtitle">52개 상품</div>
+                            <div class="category-icon-title">고양이 용품</div>
+                        </a>
+                        <a href="#" class="category-icon-item">
+                            <div class="category-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M14 9v6m-3-3h6M8.5 19H8a2 2 0 0 1-2-2v-1a2 2 0 0 0-2-2 2 2 0 0 0 2-2V11a2 2 0 0 1 2-2h.5M15 5h1a2 2 0 0 1 2 2v1a2 2 0 0 0 2 2 2 2 0 0 0-2 2v1a2 2 0 0 1-2 2h-1"></path>
+                                </svg>
                             </div>
+                            <div class="category-icon-title">교육용품</div>
+                        </a>
+                        <a href="#" class="category-icon-item">
+                            <div class="category-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M20 21v-8a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8"></path>
+                                    <path d="M4 16s.5-1 2-1 2.5 2 4 2 2.5-2 4-2 2.5 2 4 2 2-1 2-1"></path>
+                                    <path d="M2 21h20"></path>
+                                    <path d="M7 8v2"></path>
+                                    <path d="M12 8v2"></path>
+                                    <path d="M17 8v2"></path>
+                                    <path d="M7 4h.01"></path>
+                                    <path d="M12 4h.01"></path>
+                                    <path d="M17 4h.01"></path>
+                                </svg>
+                            </div>
+                            <div class="category-icon-title">생일용품</div>
                         </a>
                     </th:block>
                 </div>
+
+                <style>
+                    .category-icon-section {
+                        margin: 2.5rem 0;
+                    }
+                    
+                    .category-icon-grid {
+                        display: flex;
+                        flex-wrap: wrap;
+                        justify-content: center;
+                        gap: 1.5rem;
+                    }
+                    
+                    .category-icon-item {
+                        display: flex;
+                        flex-direction: column;
+                        align-items: center;
+                        width: 90px;
+                        text-align: center;
+                        text-decoration: none;
+                        transition: transform 0.2s;
+                    }
+                    
+                    .category-icon-item:hover {
+                        transform: translateY(-3px);
+                    }
+                    
+                    .category-icon {
+                        width: 60px;
+                        height: 60px;
+                        border-radius: 50%;
+                        background-color: var(--primary-color);
+                        color: white;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        margin-bottom: 0.75rem;
+                        transition: all 0.3s ease;
+                    }
+                    
+                    .category-icon img {
+                        width: 100%;
+                        height: 100%;
+                        object-fit: cover;
+                        border-radius: 50%;
+                    }
+                    
+                    .category-icon svg {
+                        width: 32px;
+                        height: 32px;
+                    }
+                    
+                    .category-icon-item:hover .category-icon {
+                        background-color: var(--primary-hover);
+                        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+                    }
+                    
+                    .category-icon-title {
+                        font-size: 0.875rem;
+                        color: var(--text-color);
+                        font-weight: 500;
+                    }
+                    
+                    .dark-mode .category-icon-title {
+                        color: var(--gray-300);
+                    }
+                    
+                    @media (max-width: 768px) {
+                        .category-icon-grid {
+                            gap: 1rem;
+                        }
+                        
+                        .category-icon-item {
+                            width: 80px;
+                        }
+                        
+                        .category-icon {
+                            width: 50px;
+                            height: 50px;
+                        }
+                        
+                        .category-icon svg {
+                            width: 28px;
+                            height: 28px;
+                        }
+                    }
+                </style>
             </section>
             
             <!-- 베스트 상품 섹션 -->
