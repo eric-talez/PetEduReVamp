@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import './Chatbot.css';
 
 interface ChatMessage {
   role: 'user' | 'bot';

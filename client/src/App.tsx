@@ -4,6 +4,7 @@ import { AppLayout } from "./layout/AppLayout";
 import { useAuth } from "./hooks/useAuth";
 import { CartProvider } from "./context/cart-context";
 import { RedirectHandler } from "./components/RedirectHandler";
+import { Chatbot } from "./components/features/Chatbot";
 
 // Pages
 import Home from "./pages/Home";
@@ -352,6 +353,7 @@ export default function App() {
   return (
     <CartProvider>
       {auth.isAuthenticated ? <AuthenticatedRoutes /> : <UnauthenticatedRoutes />}
+      <Chatbot />
     </CartProvider>
   );
 }
