@@ -282,10 +282,10 @@ function UnauthenticatedRoutes() {
           )}
         </Route>
 
-        {/* 쇼핑 관련 라우트 - 명확한 경로 사용 */}
+        {/* 쇼핑 관련 통합 라우트 - iframe 없이 직접 컴포넌트 렌더링 */}
         <Route path="/shop">
           {() => {
-            console.log("비인증 사용자가 /shop 정확한 경로에 접근");
+            console.log("비인증 사용자가 /shop 경로에 직접 접근");
             return <ShopPage />;
           }}
         </Route>
@@ -302,13 +302,18 @@ function UnauthenticatedRoutes() {
         {/* 쇼핑 관련 대체 경로 */}
         <Route path="/shop-basic">
           {() => {
-            console.log("비인증 사용자가 /shop-basic 경로에 접근");
+            console.log("비인증 사용자가 /shop-basic 경로에 직접 접근");
             return <ShopPage />;
           }}
         </Route>
         
-        {/* 쇼핑 리디렉션 라우트 - 특수 처리를 위한 경로 */}
-        <Route path="/shop-redirect" component={ShopRedirect} />
+        {/* 쇼핑 전용 진입점 라우트 - iframe 대신 직접 ShopAccess 컴포넌트 사용 */}
+        <Route path="/shop-redirect">
+          {() => {
+            console.log("비인증 사용자가 /shop-redirect 경로에 접근 (iframe 없이 직접 렌더링)");
+            return <ShopRedirect />;
+          }}
+        </Route>
 
         {/* 기타 페이지 */}
         <Route path="/trainers" component={TrainersPage} />

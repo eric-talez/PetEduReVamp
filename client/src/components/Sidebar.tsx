@@ -389,28 +389,29 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                     >이벤트</NavItem>
 
                     <NavItem 
-                      href="/shop-redirect" 
+                      href="/shop" 
                       icon={<ShoppingBag className="w-5 h-5 mr-2" />} 
                       active={isActive("/shop") || isActive("/shop-basic") || isActive("/shop-redirect")} 
                       onClick={(path) => {
-                        console.log("비인증 사용자가 쇼핑 메뉴 클릭 - 리디렉션 컴포넌트 사용");
+                        console.log("비인증 사용자가 쇼핑 메뉴 클릭 - 직접 라우팅");
                         
-                        // 특수 리디렉션 컴포넌트 사용
+                        // iframe 없이 직접 컴포넌트 렌더링
                         try {
-                          console.log("쇼핑 리디렉션 페이지로 이동");
-                          window.location.href = "/shop-redirect";
+                          // Wouter 방식 1: window.location 직접 사용
+                          console.log("shop 페이지로 직접 이동");
+                          window.location.href = "/shop";
                         } catch (e) {
-                          console.error("리디렉션 페이지 이동 오류:", e);
+                          console.error("shop 페이지 이동 오류:", e);
                           
-                          // 백업 방식들
+                          // 백업 방식: 네비게이션 API 사용
                           try {
-                            // 백업 방식 1: 직접 shop-basic 라우트 사용
-                            window.location.href = "/shop-basic";
+                            window.history.pushState({}, "", "/shop");
+                            window.dispatchEvent(new PopStateEvent("popstate"));
                           } catch (e2) {
-                            console.error("백업 방식 1 오류:", e2);
+                            console.error("history API 사용 오류:", e2);
                             
-                            // 백업 방식 2: 직접 ShopPage 로드를 위한 URL 구성
-                            window.location.href = "/?initiateShop=true";
+                            // 최종 백업: shop-redirect 컴포넌트 사용
+                            window.location.href = "/shop-redirect";
                           }
                         }
                       }} 

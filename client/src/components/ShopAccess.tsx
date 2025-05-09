@@ -1,5 +1,6 @@
-import React from 'react';
-import { ShoppingBag } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { ShoppingBag, Package2, Search, ShoppingCart } from 'lucide-react';
+import { useLocation } from 'wouter';
 
 /**
  * 쇼핑 페이지 직접 접근 컴포넌트
@@ -7,66 +8,108 @@ import { ShoppingBag } from 'lucide-react';
  * - 여러 방식의 접근 방법 제공
  */
 export function ShopAccess() {
-  // 다양한 방식으로 쇼핑 페이지로 이동 시도
-  const navigateToShop = (e: React.MouseEvent) => {
-    e.preventDefault();
+  const [location, setLocation] = useLocation();
+  const [isLoading, setIsLoading] = useState(true);
+  
+  useEffect(() => {
+    console.log('ShopAccess 컴포넌트 마운트됨, 현재 경로:', location);
+    const timeout = setTimeout(() => {
+      setIsLoading(false);
+    }, 300);
     
-    console.log("ShopAccess: 쇼핑 페이지로 이동 시도");
-    
+    return () => clearTimeout(timeout);
+  }, [location]);
+  
+  // 직접 쇼핑 페이지로 이동하기 위한 핸들러
+  const handleDirectAccess = () => {
+    console.log('직접 쇼핑 페이지로 이동 시도');
     try {
-      // 1. 직접 URL 이동 (가장 확실한 방법)
-      window.location.href = "/shop";
+      // Wouter 라우팅 사용
+      setLocation('/shop-basic');
+    } catch (e) {
+      console.error('Wouter 라우팅 실패:', e);
       
-      // 아래는 백업 방법들로, 위 방법이 실패할 경우 사용됨
-      
-      // 2. History API 사용하여 이동
-      // window.history.pushState({}, '', '/shop');
-      // window.dispatchEvent(new PopStateEvent('popstate'));
-      
-      // 3. 대체 URL 패턴 사용
-      // window.location.href = "/shop-simple";
-      
-      // 4. 절대 URL 사용
-      // window.location.href = window.location.origin + "/shop";
-    } catch (error) {
-      console.error("쇼핑 페이지 이동 오류:", error);
-      
-      // 실패 시 대체 방법으로 이동
-      try {
-        window.location.replace("/shop");
-      } catch (e) {
-        console.error("대체 이동 방법도 실패:", e);
-        alert("쇼핑 페이지 접근 실패. 다시 시도해주세요.");
-      }
+      // 백업 방식: 브라우저 API 사용
+      window.location.href = '/shop-basic';
     }
   };
   
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center">
+        <div className="animate-spin w-10 h-10 border-4 border-primary border-t-transparent rounded-full mb-4"></div>
+        <h1 className="text-xl font-bold mb-2">쇼핑 페이지 준비 중...</h1>
+        <p className="text-gray-500">잠시만 기다려주세요</p>
+      </div>
+    );
+  }
+  
   return (
-    <div className="bg-blue-50 dark:bg-blue-900/20 p-6 rounded-xl shadow-sm border border-blue-100 dark:border-blue-800">
-      <div className="flex items-center mb-4">
-        <ShoppingBag className="w-8 h-8 text-primary mr-3" />
-        <h2 className="text-xl font-bold">쇼핑 페이지 바로가기</h2>
+    <div className="min-h-screen bg-background">
+      {/* 쇼핑 페이지 헤더 */}
+      <div className="bg-primary text-primary-foreground p-4">
+        <div className="container mx-auto">
+          <div className="flex items-center justify-between">
+            <h1 className="text-2xl font-bold flex items-center">
+              <ShoppingBag className="mr-2" /> 펫에듀 쇼핑
+            </h1>
+            <div className="flex space-x-4">
+              <button className="p-2 rounded-full hover:bg-primary-foreground/10">
+                <Search />
+              </button>
+              <button className="p-2 rounded-full hover:bg-primary-foreground/10">
+                <ShoppingCart />
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
       
-      <p className="text-gray-600 dark:text-gray-300 mb-4">
-        다양한 반려견 용품과 특별 할인 상품을 만나보세요!
-      </p>
-      
-      <div className="flex space-x-3">
-        <button
-          onClick={navigateToShop}
-          className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors flex items-center"
-        >
-          <ShoppingBag className="w-4 h-4 mr-2" />
-          쇼핑 시작하기
-        </button>
+      {/* 쇼핑 페이지 메인 콘텐츠 */}
+      <div className="container mx-auto p-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-8">
+          {/* 쇼핑 카테고리 카드 */}
+          {Array.from({ length: 6 }).map((_, index) => (
+            <div key={index} className="bg-card rounded-lg shadow-md overflow-hidden transition-transform duration-300 hover:transform hover:scale-105">
+              <div className="p-6">
+                <div className="flex items-center justify-center bg-primary/10 rounded-full w-12 h-12 mb-4">
+                  <Package2 className="text-primary" />
+                </div>
+                <h3 className="text-lg font-bold mb-2">반려동물 {index % 2 === 0 ? '사료' : '간식'} {index + 1}</h3>
+                <p className="text-gray-500 mb-4">고품질의 건강한 제품을 만나보세요</p>
+                <button 
+                  className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
+                  onClick={handleDirectAccess}
+                >
+                  구경하기
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
         
-        <a 
-          href="/shop"
-          className="px-4 py-2 bg-white text-primary border border-primary rounded-lg hover:bg-gray-50 transition-colors"
-        >
-          일반 링크로 이동
-        </a>
+        {/* 직접 접근 버튼 */}
+        <div className="mt-12 text-center">
+          <button 
+            className="px-6 py-3 bg-primary text-primary-foreground rounded-lg shadow-lg hover:bg-primary/90 transition-colors"
+            onClick={handleDirectAccess}
+          >
+            쇼핑몰 바로가기
+          </button>
+        </div>
+      </div>
+      
+      {/* 에러 시 공지 */}
+      <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mt-8 mx-4">
+        <p className="text-amber-700">
+          참고: 쇼핑 페이지에 접근하는 중 문제가 발생했나요? 
+          <button 
+            className="ml-2 underline text-primary"
+            onClick={handleDirectAccess}
+          >
+            여기를 클릭하여 다시 시도하세요
+          </button>
+        </p>
       </div>
     </div>
   );
