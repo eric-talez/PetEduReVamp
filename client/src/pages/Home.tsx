@@ -5,7 +5,7 @@ import { BannerSlider } from '@/components/BannerSlider';
 import { TrendingSection } from '@/components/TrendingSection';
 import { MiniChart } from '@/components/ui/mini-chart';
 import { WeeklyWeatherModal } from '@/components/WeeklyWeatherModal';
-import { ShopAccess } from '@/components/ShopAccess'; // 새로 추가한 컴포넌트
+import { ShopPreview } from '@/components/ShopPreview'; // 인증 상태에 의존하지 않는 컴포넌트
 import { useState } from 'react';
 
 export default function Home() {
@@ -381,7 +381,7 @@ export default function Home() {
       </div>
 
       {/* 쇼핑 페이지 접근 컴포넌트 */}
-      <ShopAccess />
+      <ShopPreview />
 
       {/* 주간 날씨 모달 */}
       <WeeklyWeatherModal

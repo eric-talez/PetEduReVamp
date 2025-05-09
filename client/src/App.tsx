@@ -127,21 +127,40 @@ function AuthenticatedRoutes() {
         <Route path="/messages" component={MessagesPage} />
         <Route path="/notifications" component={NotificationsPage} />
         
-        {/* 쇼핑 관련 라우트 - 로그인 사용자 - 와일드카드 패턴으로 수정 */}
-        <Route path="/shop*">
-          {(params) => {
-            console.log("인증된 사용자가 쇼핑 경로에 접근:", window.location.pathname);
-            console.log("Route params:", params);
-            // 특정 하위 경로인 경우 처리
-            if (window.location.pathname.includes("/shop/cart")) {
-              return (
-                <Suspense fallback={<div className="p-8 text-center">장바구니 로딩 중...</div>}>
-                  <Cart />
-                </Suspense>
-              );
-            }
-            // 기본적으로 ShopBasicPage 반환
+        {/* 쇼핑 관련 라우트 - 인증된 사용자 - 명확한 경로로 수정 */}
+        <Route path="/shop">
+          {() => {
+            console.log("인증된 사용자가 쇼핑 경로에 접근");
             return <ShopPage />;
+          }}
+        </Route>
+        
+        {/* 쇼핑 관련 하위 라우트 - 카트 (인증된 사용자) */}
+        <Route path="/shop/cart">
+          {() => {
+            console.log("인증된 사용자가 장바구니 접근");
+            return (
+              <Suspense fallback={<div className="p-8 text-center">장바구니 로딩 중...</div>}>
+                <Cart />
+              </Suspense>
+            );
+          }}
+        </Route>
+        
+        {/* 쇼핑 관련 대체 경로 - 인증된 사용자 */}
+        <Route path="/shop-basic">
+          {() => {
+            console.log("인증된 사용자가 기본 쇼핑 페이지 접근");
+            return <ShopPage />;
+          }}
+        </Route>
+        
+        {/* 쇼핑 로그인 요구 페이지 (인증된 사용자는 /shop으로 리다이렉트) */}
+        <Route path="/shop-login-required">
+          {() => {
+            console.log("인증된 사용자가 shop-login-required 접근 - /shop으로 리다이렉트");
+            window.location.href = "/shop";
+            return null;
           }}
         </Route>
 
@@ -282,36 +301,44 @@ function UnauthenticatedRoutes() {
           )}
         </Route>
 
-        {/* 쇼핑 관련 통합 라우트 - iframe 없이 직접 컴포넌트 렌더링 */}
+        {/* 쇼핑 로그인 요구 페이지 라우트 - 비인증 사용자를 위한 안내 페이지 */}
+        <Route path="/shop-login-required">
+          {() => {
+            console.log("비인증 사용자 쇼핑 로그인 안내 페이지 진입");
+            const ShopLoginRequiredPage = lazy(() => import('./pages/shop-login-required'));
+            return (
+              <Suspense fallback={<div className="p-8 text-center">로그인 안내 페이지 로딩 중...</div>}>
+                <ShopLoginRequiredPage />
+              </Suspense>
+            );
+          }}
+        </Route>
+
+        {/* 쇼핑 관련 통합 라우트 - 직접 컴포넌트 렌더링 */}
         <Route path="/shop">
           {() => {
             console.log("비인증 사용자가 /shop 경로에 직접 접근");
-            return <ShopPage />;
+            // 비인증 상태에서는 로그인 안내 페이지로 리다이렉트
+            window.location.href = "/shop-login-required";
+            return null;
           }}
         </Route>
         
-        {/* 쇼핑 관련 하위 라우트 */}
+        {/* 쇼핑 관련 하위 라우트 - 카트 */}
         <Route path="/shop/cart">
-          {() => (
-            <Suspense fallback={<div className="p-8 text-center">장바구니 로딩 중...</div>}>
-              <Cart />
-            </Suspense>
-          )}
+          {() => {
+            console.log("비인증 사용자가 /shop/cart 경로에 접근 - 로그인 필요");
+            window.location.href = "/shop-login-required";
+            return null;
+          }}
         </Route>
         
         {/* 쇼핑 관련 대체 경로 */}
         <Route path="/shop-basic">
           {() => {
             console.log("비인증 사용자가 /shop-basic 경로에 직접 접근");
-            return <ShopPage />;
-          }}
-        </Route>
-        
-        {/* 쇼핑 전용 진입점 라우트 - iframe 대신 직접 ShopAccess 컴포넌트 사용 */}
-        <Route path="/shop-redirect">
-          {() => {
-            console.log("비인증 사용자가 /shop-redirect 경로에 접근 (iframe 없이 직접 렌더링)");
-            return <ShopRedirect />;
+            window.location.href = "/shop-login-required";
+            return null;
           }}
         </Route>
 

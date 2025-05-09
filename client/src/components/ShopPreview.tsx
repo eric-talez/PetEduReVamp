@@ -1,26 +1,24 @@
 import React, { useEffect, useState } from 'react';
-import { ShoppingBag, Package2, Search, ShoppingCart } from 'lucide-react';
-import { useLocation } from 'wouter';
+import { ShoppingBag, Package2 } from 'lucide-react';
 import { Link } from 'wouter';
 
 /**
- * 쇼핑 페이지 접근 안내 컴포넌트
- * - 쇼핑 미리보기 제공
- * - 직접 쇼핑 페이지로 이동 버튼 제공
+ * 쇼핑 페이지 미리보기 컴포넌트
+ * - 인증 상태 고려 없이 홈 페이지에서 사용 가능
+ * - 쇼핑 페이지로 이동하는 링크 제공
  */
-export function ShopAccess() {
-  const [location, setLocation] = useLocation();
+export function ShopPreview() {
   const [isLoading, setIsLoading] = useState(true);
   
   useEffect(() => {
-    console.log('ShopAccess 컴포넌트 마운트됨, 현재 경로:', location);
+    console.log('ShopPreview 컴포넌트 마운트됨');
     
     const timeout = setTimeout(() => {
       setIsLoading(false);
     }, 300);
     
     return () => clearTimeout(timeout);
-  }, [location]);
+  }, []);
   
   // 로딩 중 표시
   if (isLoading) {
