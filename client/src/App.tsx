@@ -21,12 +21,9 @@ import VideoCallPage from "./pages/video-call/index";
 import CourseReservationPage from "./pages/course-reservation/index";
 import MessagesPage from "./pages/messages/index";
 import NotificationsPage from "./pages/notifications/index";
-// 쇼핑 페이지
-// 절대 경로 사용으로 변경
-import ShopBasicPage from "@/pages/ShopBasicPage"; // 배너 및 상품 리스트가 있는 메인 쇼핑 페이지
+// 쇼핑 페이지 - 통합 경로 사용
 import CartPage from "@/pages/Cart"; // 장바구니 페이지
-import ShopRedirect from "./pages/shop-redirect"; // 쇼핑 페이지 리디렉션 컴포넌트
-import ShopPage from "./pages/shop/ShopPage"; // 쇼핑 페이지 메인 컴포넌트
+import ShopPage from "./pages/shop/ShopPage"; // 쇼핑 페이지 메인 컴포넌트 (단일 진입점)
 import ProductDetailPage from "./pages/shop/product"; // 상품 상세 페이지
 
 import VideoTrainingPage from "./pages/video-training/index";
@@ -324,17 +321,8 @@ function UnauthenticatedRoutes() {
         {/* 쇼핑 관련 모든 경로 - 비인증 상태에서도 직접 접근 가능 */}
         <Route path="/shop">
           {() => {
-            console.log("비인증 사용자가 /shop 경로에 직접 접근 - 모든 사용자 접속 허용");
-            console.log("정확한 /shop 경로 매칭 - ShopPageIndex로 연결 (비인증)");
-            
-            try {
-              // Lazy import를 사용하지 않고 직접 import한 컴포넌트 사용
-              const ShopPageIndex = require('./pages/shop/index').default;
-              return <ShopPageIndex />;
-            } catch (error) {
-              console.error("ShopPageIndex 로드 실패 (비인증):", error);
-              return <div>쇼핑 페이지를 로드하는 중 오류가 발생했습니다.</div>;
-            }
+            console.log("비인증 사용자가 /shop 경로에 접근 - 단일 진입점으로 연결");
+            return <ShopPage />;
           }}
         </Route>
 
