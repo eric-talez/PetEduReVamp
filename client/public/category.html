@@ -2127,7 +2127,11 @@
     
     // 상품 상세 페이지로 이동
     function goToProductDetail(productId) {
-      window.location.href = `product-detail.html?id=${productId}`;
+      // 상대 경로가 아닌 절대 경로로 설정
+      window.location.href = `/product-detail.html?id=${productId}`;
+      
+      // 콘솔에 디버그 정보 출력
+      console.log(`상품 상세 페이지로 이동: /product-detail.html?id=${productId}`);
     }
     
     // 홈으로 이동

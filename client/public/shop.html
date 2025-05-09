@@ -2015,7 +2015,12 @@
     
     // 상품 상세 페이지로 이동
     function goToProductDetail(productId) {
-      // 부모 창에 메시지 전송
+      console.log(`상품 상세 페이지로 이동: /product-detail.html?id=${productId}`);
+
+      // 직접 페이지 이동 방식 사용
+      window.location.href = `/product-detail.html?id=${productId}`;
+      
+      /* 메시지 전송 방식은 현재 작동하지 않아 주석 처리
       try {
         window.parent.postMessage({
           type: 'NAVIGATE_TO_PRODUCT',
@@ -2026,6 +2031,7 @@
         // 대체 처리 - 직접 페이지 이동
         window.location.href = `/product-detail.html?id=${productId}`;
       }
+      */
     }
     
     // 토스트 메시지 표시
