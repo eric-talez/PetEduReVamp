@@ -1,0 +1,2002 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>상품 상세 - 테일즈 서비스 쇼핑</title>
+  <meta name="description" content="반려동물을 위한 프리미엄 상품 정보와 리뷰를 확인하세요. 테일즈 서비스 쇼핑에서 품질 좋은 제품을 만나보세요.">
+  
+  <!-- Open Graph 태그 -->
+  <meta property="og:title" content="상품 상세 - 테일즈 서비스 쇼핑">
+  <meta property="og:description" content="반려동물을 위한 프리미엄 상품 정보와 리뷰를 확인하세요.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://petedu.replit.app/product-detail.html">
+  
+  <!-- 파비콘 -->
+  <link rel="icon" type="image/png" href="/favicon.ico">
+  
+  <!-- 스타일시트 -->
+  <style>
+    :root {
+      --primary-color: #3b82f6;
+      --primary-hover: #2563eb;
+      --secondary-color: #64748b;
+      --text-color: #1e293b;
+      --light-bg: #f8fafc;
+      --dark-bg: #0f172a;
+      --gray-100: #f1f5f9;
+      --gray-200: #e2e8f0;
+      --gray-300: #cbd5e1;
+      --gray-400: #94a3b8;
+      --gray-500: #64748b;
+      --gray-600: #475569;
+      --gray-700: #334155;
+      --gray-800: #1e293b;
+      --gray-900: #0f172a;
+      --success-color: #10b981;
+      --warning-color: #f59e0b;
+      --error-color: #ef4444;
+      --heart-color: #f43f5e;
+      --border-radius: 0.375rem;
+      --box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+    }
+    
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background-color: var(--light-bg);
+      color: var(--text-color);
+      line-height: 1.5;
+    }
+    
+    .dark-mode {
+      background-color: var(--dark-bg);
+      color: var(--gray-100);
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 1rem;
+    }
+    
+    /* 헤더 스타일 */
+    header {
+      background-color: white;
+      box-shadow: var(--box-shadow);
+      position: relative;
+      z-index: 100;
+    }
+    
+    .dark-mode header {
+      background-color: var(--gray-800);
+    }
+    
+    .header-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem;
+    }
+    
+    .logo {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: var(--primary-color);
+      text-decoration: none;
+    }
+    
+    .logo-text {
+      display: inline-block;
+      vertical-align: middle;
+    }
+    
+    .logo-icon {
+      display: inline-flex;
+      vertical-align: middle;
+      margin-right: 0.5rem;
+      width: 1.5rem;
+      height: 1.5rem;
+      background-color: var(--primary-color);
+      border-radius: 50%;
+      justify-content: center;
+      align-items: center;
+      color: white;
+      font-weight: bold;
+    }
+    
+    .dark-mode .logo {
+      color: var(--primary-color);
+    }
+    
+    .nav-menu {
+      display: flex;
+      gap: 1.5rem;
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+    
+    .nav-menu a {
+      color: var(--gray-600);
+      text-decoration: none;
+      font-weight: 500;
+      padding: 0.5rem 0;
+      transition: color 0.2s ease;
+    }
+    
+    .dark-mode .nav-menu a {
+      color: var(--gray-300);
+    }
+    
+    .nav-menu a:hover {
+      color: var(--primary-color);
+    }
+    
+    .search-container {
+      display: flex;
+      align-items: center;
+      flex: 1;
+      max-width: 500px;
+      margin: 0 2rem;
+    }
+    
+    .search-input {
+      width: 100%;
+      padding: 0.5rem 1rem;
+      border: 1px solid var(--gray-300);
+      border-radius: var(--border-radius);
+      font-size: 0.875rem;
+      outline: none;
+      transition: border-color 0.2s ease;
+    }
+    
+    .dark-mode .search-input {
+      background-color: var(--gray-700);
+      border-color: var(--gray-600);
+      color: var(--gray-100);
+    }
+    
+    .search-input:focus {
+      border-color: var(--primary-color);
+    }
+    
+    .user-actions {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    
+    .action-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 2.5rem;
+      height: 2.5rem;
+      border-radius: 50%;
+      color: var(--gray-600);
+      transition: background-color 0.2s ease;
+    }
+    
+    .dark-mode .action-btn {
+      color: var(--gray-300);
+    }
+    
+    .action-btn:hover {
+      background-color: var(--gray-100);
+      color: var(--primary-color);
+    }
+    
+    .dark-mode .action-btn:hover {
+      background-color: var(--gray-700);
+    }
+    
+    .theme-toggle {
+      cursor: pointer;
+      padding: 0.5rem;
+      border-radius: var(--border-radius);
+      display: flex;
+      align-items: center;
+    }
+    
+    /* 다크모드 토글 버튼 */
+    .theme-toggle-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      width: 3rem;
+      height: 1.5rem;
+      border-radius: 0.75rem;
+      background-color: var(--gray-300);
+      position: relative;
+      transition: background-color 0.2s ease;
+    }
+    
+    .dark-mode .theme-toggle-btn {
+      background-color: var(--primary-color);
+    }
+    
+    .toggle-ball {
+      position: absolute;
+      top: 0.125rem;
+      left: 0.125rem;
+      width: 1.25rem;
+      height: 1.25rem;
+      border-radius: 50%;
+      background-color: white;
+      transition: transform 0.2s ease;
+    }
+    
+    .dark-mode .toggle-ball {
+      transform: translateX(1.5rem);
+    }
+    
+    /* 상품 상세 스타일 */
+    .product-detail {
+      padding: 2rem 0;
+    }
+    
+    .product-breadcrumb {
+      display: flex;
+      margin-bottom: 1.5rem;
+      gap: 0.5rem;
+      color: var(--gray-500);
+      font-size: 0.875rem;
+    }
+    
+    .product-breadcrumb a {
+      color: var(--gray-500);
+      text-decoration: none;
+    }
+    
+    .product-breadcrumb a:hover {
+      color: var(--primary-color);
+    }
+    
+    .product-content {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+      margin-bottom: 2rem;
+    }
+    
+    .product-gallery {
+      position: relative;
+    }
+    
+    .product-main-image {
+      width: 100%;
+      height: auto;
+      border-radius: var(--border-radius);
+      object-fit: cover;
+      aspect-ratio: 1 / 1;
+    }
+    
+    .product-thumbnails {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 1rem;
+    }
+    
+    .product-thumbnail {
+      width: 70px;
+      height: 70px;
+      border-radius: var(--border-radius);
+      object-fit: cover;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: border-color 0.2s ease;
+    }
+    
+    .product-thumbnail:hover,
+    .product-thumbnail.active {
+      border-color: var(--primary-color);
+    }
+    
+    .product-info {
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .product-badge {
+      display: inline-block;
+      background-color: var(--primary-color);
+      color: white;
+      font-size: 0.75rem;
+      font-weight: 500;
+      padding: 0.25rem 0.5rem;
+      border-radius: var(--border-radius);
+      margin-bottom: 0.5rem;
+    }
+    
+    .product-title {
+      font-size: 1.75rem;
+      margin: 0 0 0.5rem 0;
+    }
+    
+    .product-brand {
+      color: var(--gray-500);
+      margin-bottom: 1rem;
+    }
+    
+    .dark-mode .product-brand {
+      color: var(--gray-400);
+    }
+    
+    .product-rating {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+    
+    .stars {
+      display: flex;
+      gap: 0.125rem;
+      color: var(--warning-color);
+    }
+    
+    .review-count {
+      color: var(--gray-500);
+      font-size: 0.875rem;
+    }
+    
+    .dark-mode .review-count {
+      color: var(--gray-400);
+    }
+    
+    .product-price-container {
+      display: flex;
+      align-items: baseline;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+    }
+    
+    .product-original-price {
+      font-size: 1rem;
+      color: var(--gray-500);
+      text-decoration: line-through;
+    }
+    
+    .dark-mode .product-original-price {
+      color: var(--gray-400);
+    }
+    
+    .product-price {
+      font-size: 1.5rem;
+      font-weight: 600;
+    }
+    
+    .product-discount {
+      font-size: 1rem;
+      color: var(--error-color);
+      font-weight: 500;
+    }
+    
+    .product-description {
+      margin-bottom: 1.5rem;
+      color: var(--gray-600);
+    }
+    
+    .dark-mode .product-description {
+      color: var(--gray-300);
+    }
+    
+    .product-options {
+      margin-bottom: 1.5rem;
+    }
+    
+    .option-label {
+      display: block;
+      font-weight: 500;
+      margin-bottom: 0.5rem;
+    }
+    
+    .option-select {
+      width: 100%;
+      padding: 0.5rem;
+      border: 1px solid var(--gray-300);
+      border-radius: var(--border-radius);
+      margin-bottom: 1rem;
+      font-size: 0.875rem;
+      background-color: white;
+    }
+    
+    .dark-mode .option-select {
+      background-color: var(--gray-700);
+      border-color: var(--gray-600);
+      color: var(--gray-100);
+    }
+    
+    .quantity-selector {
+      display: flex;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
+    
+    .quantity-btn {
+      background: none;
+      border: 1px solid var(--gray-300);
+      width: 2rem;
+      height: 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+    
+    .dark-mode .quantity-btn {
+      border-color: var(--gray-600);
+      color: var(--gray-300);
+    }
+    
+    .quantity-input {
+      width: 3rem;
+      height: 2rem;
+      border: 1px solid var(--gray-300);
+      border-left: none;
+      border-right: none;
+      text-align: center;
+      font-size: 0.875rem;
+    }
+    
+    .dark-mode .quantity-input {
+      background-color: var(--gray-700);
+      border-color: var(--gray-600);
+      color: var(--gray-100);
+    }
+    
+    .product-actions {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+    
+    .add-to-cart-btn, .buy-now-btn {
+      flex: 1;
+      padding: 0.75rem 1.5rem;
+      border-radius: var(--border-radius);
+      font-weight: 500;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+    
+    .add-to-cart-btn {
+      background-color: var(--gray-100);
+      color: var(--gray-800);
+      border: 1px solid var(--gray-300);
+    }
+    
+    .dark-mode .add-to-cart-btn {
+      background-color: var(--gray-700);
+      color: var(--gray-100);
+      border-color: var(--gray-600);
+    }
+    
+    .add-to-cart-btn:hover {
+      background-color: var(--gray-200);
+    }
+    
+    .dark-mode .add-to-cart-btn:hover {
+      background-color: var(--gray-600);
+    }
+    
+    .buy-now-btn {
+      background-color: var(--primary-color);
+      color: white;
+      border: none;
+    }
+    
+    .buy-now-btn:hover {
+      background-color: var(--primary-hover);
+    }
+    
+    .wishlist-btn {
+      width: 3rem;
+      height: 3rem;
+      border-radius: 50%;
+      border: 1px solid var(--gray-300);
+      background-color: white;
+      color: var(--gray-500);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    
+    .dark-mode .wishlist-btn {
+      background-color: var(--gray-700);
+      border-color: var(--gray-600);
+      color: var(--gray-300);
+    }
+    
+    .wishlist-btn:hover, .wishlist-btn.active {
+      color: var(--heart-color);
+      border-color: var(--heart-color);
+    }
+    
+    .product-meta {
+      margin-top: 1.5rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--gray-200);
+    }
+    
+    .dark-mode .product-meta {
+      border-color: var(--gray-700);
+    }
+    
+    .meta-item {
+      display: flex;
+      margin-bottom: 0.5rem;
+      font-size: 0.875rem;
+    }
+    
+    .meta-label {
+      width: 8rem;
+      color: var(--gray-500);
+    }
+    
+    .dark-mode .meta-label {
+      color: var(--gray-400);
+    }
+    
+    .meta-value {
+      flex: 1;
+    }
+    
+    .share-buttons {
+      display: flex;
+      gap: 0.75rem;
+      margin-top: 1rem;
+    }
+    
+    .share-btn {
+      width: 2rem;
+      height: 2rem;
+      border-radius: 50%;
+      background-color: var(--gray-100);
+      color: var(--gray-600);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    }
+    
+    .dark-mode .share-btn {
+      background-color: var(--gray-700);
+      color: var(--gray-300);
+    }
+    
+    .share-btn:hover {
+      background-color: var(--primary-color);
+      color: white;
+    }
+    
+    /* 탭 섹션 */
+    .product-tabs {
+      margin-top: 3rem;
+    }
+    
+    .tabs-header {
+      display: flex;
+      border-bottom: 1px solid var(--gray-200);
+      margin-bottom: 2rem;
+    }
+    
+    .dark-mode .tabs-header {
+      border-color: var(--gray-700);
+    }
+    
+    .tab-btn {
+      padding: 1rem 1.5rem;
+      border: none;
+      background: none;
+      font-size: 1rem;
+      font-weight: 500;
+      color: var(--gray-500);
+      cursor: pointer;
+      position: relative;
+      transition: color 0.2s ease;
+    }
+    
+    .dark-mode .tab-btn {
+      color: var(--gray-400);
+    }
+    
+    .tab-btn:hover {
+      color: var(--primary-color);
+    }
+    
+    .tab-btn.active {
+      color: var(--primary-color);
+    }
+    
+    .tab-btn.active::after {
+      content: '';
+      position: absolute;
+      bottom: -1px;
+      left: 0;
+      width: 100%;
+      height: 2px;
+      background-color: var(--primary-color);
+    }
+    
+    .tab-content {
+      display: none;
+    }
+    
+    .tab-content.active {
+      display: block;
+    }
+    
+    /* 상세 설명 탭 */
+    .product-details-content {
+      margin-bottom: 3rem;
+    }
+    
+    .detail-section {
+      margin-bottom: 2rem;
+    }
+    
+    .detail-title {
+      font-size: 1.25rem;
+      margin-bottom: 1rem;
+    }
+    
+    .detail-text {
+      color: var(--gray-600);
+      margin-bottom: 1rem;
+    }
+    
+    .dark-mode .detail-text {
+      color: var(--gray-300);
+    }
+    
+    .detail-image {
+      width: 100%;
+      max-width: 600px;
+      height: auto;
+      margin: 1rem 0;
+      border-radius: var(--border-radius);
+    }
+    
+    .feature-list {
+      padding-left: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+    
+    .feature-list li {
+      margin-bottom: 0.5rem;
+      color: var(--gray-600);
+    }
+    
+    .dark-mode .feature-list li {
+      color: var(--gray-300);
+    }
+    
+    /* 리뷰 탭 */
+    .reviews-filter {
+      display: flex;
+      align-items: center;
+      margin-bottom: 2rem;
+      gap: 1rem;
+    }
+    
+    .review-average {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      background-color: var(--gray-100);
+      border-radius: var(--border-radius);
+      width: 120px;
+    }
+    
+    .dark-mode .review-average {
+      background-color: var(--gray-700);
+    }
+    
+    .average-score {
+      font-size: 2.5rem;
+      font-weight: 700;
+      line-height: 1;
+      margin-bottom: 0.5rem;
+    }
+    
+    .average-stars {
+      display: flex;
+      gap: 0.125rem;
+      color: var(--warning-color);
+      margin-bottom: 0.25rem;
+    }
+    
+    .total-reviews {
+      font-size: 0.75rem;
+      color: var(--gray-500);
+    }
+    
+    .dark-mode .total-reviews {
+      color: var(--gray-400);
+    }
+    
+    .filter-by {
+      flex: 1;
+    }
+    
+    .filter-option {
+      background: none;
+      border: 1px solid var(--gray-300);
+      border-radius: var(--border-radius);
+      padding: 0.5rem 1rem;
+      margin-right: 0.5rem;
+      font-size: 0.875rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    
+    .dark-mode .filter-option {
+      border-color: var(--gray-600);
+      color: var(--gray-300);
+    }
+    
+    .filter-option:hover, .filter-option.active {
+      background-color: var(--primary-color);
+      border-color: var(--primary-color);
+      color: white;
+    }
+    
+    .write-review-btn {
+      background-color: var(--primary-color);
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: var(--border-radius);
+      font-size: 0.875rem;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    }
+    
+    .write-review-btn:hover {
+      background-color: var(--primary-hover);
+    }
+    
+    .review-list {
+      margin-bottom: 2rem;
+    }
+    
+    .review-item {
+      border-bottom: 1px solid var(--gray-200);
+      padding-bottom: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+    
+    .dark-mode .review-item {
+      border-color: var(--gray-700);
+    }
+    
+    .review-header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 0.75rem;
+    }
+    
+    .reviewer-avatar {
+      width: 2.5rem;
+      height: 2.5rem;
+      border-radius: 50%;
+      margin-right: 0.75rem;
+      object-fit: cover;
+    }
+    
+    .reviewer-info {
+      flex: 1;
+    }
+    
+    .reviewer-name {
+      font-weight: 500;
+      margin-bottom: 0.25rem;
+    }
+    
+    .review-date {
+      font-size: 0.75rem;
+      color: var(--gray-500);
+    }
+    
+    .dark-mode .review-date {
+      color: var(--gray-400);
+    }
+    
+    .review-content {
+      margin-bottom: 1rem;
+    }
+    
+    .review-photos {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+    
+    .review-photo {
+      width: 80px;
+      height: 80px;
+      border-radius: var(--border-radius);
+      object-fit: cover;
+      cursor: pointer;
+    }
+    
+    .review-reaction {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    
+    .helpful-btn {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+      background: none;
+      border: none;
+      color: var(--gray-500);
+      font-size: 0.875rem;
+      cursor: pointer;
+    }
+    
+    .dark-mode .helpful-btn {
+      color: var(--gray-400);
+    }
+    
+    .helpful-btn:hover {
+      color: var(--primary-color);
+    }
+    
+    /* 토스트 메시지 */
+    .toast {
+      position: fixed;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: var(--gray-800);
+      color: white;
+      padding: 0.75rem 1.5rem;
+      border-radius: var(--border-radius);
+      box-shadow: var(--box-shadow);
+      z-index: 1000;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      pointer-events: none;
+    }
+    
+    .toast.show {
+      opacity: 1;
+    }
+    
+    /* 모바일 반응형 */
+    @media (max-width: 768px) {
+      .product-content {
+        grid-template-columns: 1fr;
+      }
+      
+      .product-thumbnails {
+        justify-content: center;
+      }
+      
+      .product-actions {
+        flex-direction: column;
+      }
+      
+      .wishlist-btn {
+        align-self: center;
+      }
+      
+      .tabs-header {
+        overflow-x: auto;
+        white-space: nowrap;
+        padding-bottom: 0.5rem;
+      }
+      
+      .tab-btn {
+        padding: 0.75rem 1rem;
+      }
+      
+      .reviews-filter {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      
+      .review-average {
+        width: 100%;
+        flex-direction: row;
+        justify-content: space-around;
+      }
+    }
+    
+    /* 푸터 스타일 */
+    footer {
+      background-color: var(--gray-100);
+      padding: 3rem 0;
+      margin-top: 3rem;
+    }
+    
+    .dark-mode footer {
+      background-color: var(--gray-800);
+    }
+    
+    .footer-content {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 2rem;
+    }
+    
+    .footer-column {
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .footer-title {
+      font-weight: 600;
+      margin-bottom: 1rem;
+    }
+    
+    .footer-links {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    
+    .footer-link {
+      color: var(--gray-500);
+      text-decoration: none;
+      font-size: 0.875rem;
+    }
+    
+    .dark-mode .footer-link {
+      color: var(--gray-400);
+    }
+    
+    .footer-link:hover {
+      color: var(--primary-color);
+    }
+    
+    .footer-bottom {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 2rem;
+      padding-top: 2rem;
+      border-top: 1px solid var(--gray-200);
+    }
+    
+    .dark-mode .footer-bottom {
+      border-color: var(--gray-700);
+    }
+    
+    .copyright {
+      font-size: 0.875rem;
+      color: var(--gray-500);
+    }
+    
+    .dark-mode .copyright {
+      color: var(--gray-400);
+    }
+    
+    .payment-methods {
+      display: flex;
+      gap: 0.75rem;
+    }
+    
+    .payment-icon {
+      width: 40px;
+      height: 24px;
+      object-fit: contain;
+    }
+    
+    /* 챗봇 스타일 */
+    #chatbot {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      z-index: 100;
+    }
+    
+    .chatbot-trigger {
+      width: 3.5rem;
+      height: 3.5rem;
+      border-radius: 50%;
+      background-color: var(--primary-color);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      transition: transform 0.2s ease, background-color 0.2s ease;
+    }
+    
+    .chatbot-trigger:hover {
+      transform: scale(1.05);
+      background-color: var(--primary-hover);
+    }
+    
+    #unread-badge {
+      position: absolute;
+      top: -5px;
+      right: -5px;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background-color: var(--error-color);
+      color: white;
+      font-size: 0.75rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    #chatbot-panel {
+      position: fixed;
+      bottom: 6rem;
+      right: 2rem;
+      width: 320px;
+      height: 400px;
+      background-color: white;
+      border-radius: var(--border-radius);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      display: flex;
+      flex-direction: column;
+      opacity: 0;
+      transform: translateY(20px);
+      pointer-events: none;
+      transition: opacity 0.3s ease, transform 0.3s ease;
+      overflow: hidden;
+    }
+    
+    .dark-mode #chatbot-panel {
+      background-color: var(--gray-800);
+    }
+    
+    #chatbot-panel.open {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: all;
+    }
+    
+    .chatbot-header {
+      padding: 1rem;
+      background-color: var(--primary-color);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    
+    .chatbot-title {
+      font-weight: 500;
+    }
+    
+    .chatbot-close {
+      cursor: pointer;
+    }
+    
+    #chatbot-messages {
+      flex: 1;
+      padding: 1rem;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    
+    .chat-message {
+      max-width: 80%;
+      padding: 0.75rem 1rem;
+      border-radius: 1rem;
+      font-size: 0.875rem;
+      line-height: 1.4;
+      position: relative;
+    }
+    
+    .chat-message.bot {
+      align-self: flex-start;
+      background-color: var(--gray-100);
+      border-bottom-left-radius: 0.25rem;
+    }
+    
+    .dark-mode .chat-message.bot {
+      background-color: var(--gray-700);
+    }
+    
+    .chat-message.user {
+      align-self: flex-end;
+      background-color: var(--primary-color);
+      color: white;
+      border-bottom-right-radius: 0.25rem;
+    }
+    
+    .suggestion-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+    }
+    
+    .suggestion-chip {
+      background-color: var(--gray-100);
+      color: var(--gray-700);
+      padding: 0.5rem 0.75rem;
+      border-radius: 1rem;
+      font-size: 0.75rem;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+      border: none;
+    }
+    
+    .dark-mode .suggestion-chip {
+      background-color: var(--gray-700);
+      color: var(--gray-300);
+    }
+    
+    .suggestion-chip:hover {
+      background-color: var(--gray-200);
+    }
+    
+    .dark-mode .suggestion-chip:hover {
+      background-color: var(--gray-600);
+    }
+    
+    .chatbot-input-container {
+      display: flex;
+      padding: 0.75rem;
+      border-top: 1px solid var(--gray-200);
+    }
+    
+    .dark-mode .chatbot-input-container {
+      border-color: var(--gray-700);
+    }
+    
+    #chatbot-input {
+      flex: 1;
+      padding: 0.75rem;
+      border: 1px solid var(--gray-300);
+      border-radius: var(--border-radius);
+      font-size: 0.875rem;
+      outline: none;
+    }
+    
+    .dark-mode #chatbot-input {
+      background-color: var(--gray-700);
+      border-color: var(--gray-600);
+      color: var(--gray-100);
+    }
+    
+    #chatbot-input:focus {
+      border-color: var(--primary-color);
+    }
+    
+    #chatbot-send {
+      background-color: var(--primary-color);
+      color: white;
+      border: none;
+      width: 40px;
+      height: 40px;
+      border-radius: var(--border-radius);
+      margin-left: 0.5rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background-color 0.2s ease;
+    }
+    
+    #chatbot-send:hover {
+      background-color: var(--primary-hover);
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container header-container">
+      <a href="shop.html" class="logo">
+        <span class="logo-icon">T</span>
+        <span class="logo-text">테일즈 쇼핑</span>
+      </a>
+      
+      <div class="search-container">
+        <input type="text" class="search-input" placeholder="상품을 검색해보세요">
+      </div>
+      
+      <div class="user-actions">
+        <button class="action-btn cart-btn" id="cartBtn" aria-label="장바구니" onclick="openCart()">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="21" r="1"></circle><circle cx="19" cy="21" r="1"></circle><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"></path></svg>
+        </button>
+        
+        <div class="theme-toggle">
+          <button class="theme-toggle-btn" id="themeToggle" aria-label="테마 변경">
+            <span class="toggle-ball"></span>
+          </button>
+        </div>
+        
+        <button class="main-service-btn" onclick="goToMain()">
+          테일즈 본 서비스
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+        </button>
+      </div>
+    </div>
+  </header>
+  
+  <main class="container">
+    <section class="product-detail">
+      <div class="product-breadcrumb">
+        <a href="shop.html">홈</a>
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+        <a href="#">반려견 용품</a>
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+        <span>프리미엄 강아지 훈련용 간식</span>
+      </div>
+      
+      <div class="product-content">
+        <div class="product-gallery">
+          <img src="https://source.unsplash.com/random/600x600/?dog,treat" alt="프리미엄 강아지 훈련용 간식" class="product-main-image" id="main-image">
+          
+          <div class="product-thumbnails">
+            <img src="https://source.unsplash.com/random/600x600/?dog,treat" alt="썸네일 1" class="product-thumbnail active" onclick="changeImage('https://source.unsplash.com/random/600x600/?dog,treat')">
+            <img src="https://source.unsplash.com/random/600x600/?puppy,treat" alt="썸네일 2" class="product-thumbnail" onclick="changeImage('https://source.unsplash.com/random/600x600/?puppy,treat')">
+            <img src="https://source.unsplash.com/random/600x600/?pet,food" alt="썸네일 3" class="product-thumbnail" onclick="changeImage('https://source.unsplash.com/random/600x600/?pet,food')">
+            <img src="https://source.unsplash.com/random/600x600/?dog,training" alt="썸네일 4" class="product-thumbnail" onclick="changeImage('https://source.unsplash.com/random/600x600/?dog,training')">
+          </div>
+        </div>
+        
+        <div class="product-info">
+          <span class="product-badge">베스트셀러</span>
+          <h1 class="product-title">프리미엄 강아지 훈련용 간식 - 천연 재료</h1>
+          <div class="product-brand">테일즈 펫 푸드</div>
+          
+          <div class="product-rating">
+            <div class="stars">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+            </div>
+            <span class="review-count">리뷰 128개</span>
+          </div>
+          
+          <div class="product-price-container">
+            <span class="product-original-price">₩24,000</span>
+            <span class="product-price">₩19,200</span>
+            <span class="product-discount">20% 할인</span>
+          </div>
+          
+          <p class="product-description">
+            천연 재료로 만든 강아지 훈련용 간식입니다. 인공 첨가물이 없어 안심하고 급여할 수 있으며, 훈련 효과를 높이기 위한 특별한 풍미가 있습니다. 작은 크기로 훈련 중 쉽게 줄 수 있습니다.
+          </p>
+          
+          <div class="product-options">
+            <label class="option-label">옵션 선택</label>
+            <select class="option-select" id="size-option">
+              <option value="">-- 사이즈 선택 --</option>
+              <option value="small">소형견용 (150g)</option>
+              <option value="medium">중형견용 (300g)</option>
+              <option value="large">대형견용 (500g)</option>
+            </select>
+            
+            <select class="option-select" id="flavor-option">
+              <option value="">-- 맛 선택 --</option>
+              <option value="chicken">닭고기 맛</option>
+              <option value="beef">소고기 맛</option>
+              <option value="salmon">연어 맛</option>
+            </select>
+          </div>
+          
+          <div class="quantity-selector">
+            <button class="quantity-btn" onclick="decreaseQuantity()">-</button>
+            <input type="number" class="quantity-input" id="quantity" value="1" min="1">
+            <button class="quantity-btn" onclick="increaseQuantity()">+</button>
+          </div>
+          
+          <div class="product-actions">
+            <button class="add-to-cart-btn" onclick="addToCart()">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="21" r="1"></circle><circle cx="19" cy="21" r="1"></circle><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"></path></svg>
+              장바구니 담기
+            </button>
+            <button class="buy-now-btn" onclick="buyNow()">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><polyline points="19 12 12 19 5 12"></polyline></svg>
+              바로 구매하기
+            </button>
+            <button id="wishlist-btn" class="wishlist-btn" onclick="toggleWishlist()">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+            </button>
+          </div>
+          
+          <div class="product-meta">
+            <div class="meta-item">
+              <div class="meta-label">배송 정보</div>
+              <div class="meta-value">무료 배송 (3만원 이상 구매 시)</div>
+            </div>
+            <div class="meta-item">
+              <div class="meta-label">적립금</div>
+              <div class="meta-value">구매 금액의 3% (로그인 시)</div>
+            </div>
+            <div class="meta-item">
+              <div class="meta-label">원산지</div>
+              <div class="meta-value">한국</div>
+            </div>
+            <div class="meta-item">
+              <div class="meta-label">제조사</div>
+              <div class="meta-value">테일즈 펫 푸드</div>
+            </div>
+            <div class="meta-item">
+              <div class="meta-label">공유하기</div>
+              <div class="meta-value">
+                <div class="share-buttons">
+                  <button class="share-btn" onclick="shareProduct('facebook')">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg>
+                  </button>
+                  <button class="share-btn" onclick="shareProduct('twitter')">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"></path></svg>
+                  </button>
+                  <button class="share-btn" onclick="shareProduct('kakaotalk')">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><circle cx="15.5" cy="8.5" r="1.5"></circle><path d="M8.5 13.5l3.5 2 3.5-2"></path></svg>
+                  </button>
+                  <button class="share-btn" onclick="copyLink()">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="product-tabs">
+        <div class="tabs-header">
+          <button class="tab-btn active" onclick="openTab('product-details')">상품 상세</button>
+          <button class="tab-btn" onclick="openTab('reviews')">리뷰 (128)</button>
+          <button class="tab-btn" onclick="openTab('shipping')">배송/교환/반품 안내</button>
+        </div>
+        
+        <div id="product-details" class="tab-content active">
+          <div class="product-details-content">
+            <div class="detail-section">
+              <h3 class="detail-title">상품 소개</h3>
+              <p class="detail-text">
+                테일즈 펫 푸드의 프리미엄 강아지 훈련용 간식은 100% 천연 재료로 만들어진 건강한 간식입니다. 인공 향료, 색소, 방부제를 첨가하지 않아 반려견의 건강을 최우선으로 생각했습니다. 작은 크기로 훈련 중에 쉽게 급여할 수 있으며, 특별한 풍미로 훈련 효과를 높일 수 있습니다.
+              </p>
+              <img src="https://source.unsplash.com/random/800x400/?dog,training" alt="강아지 훈련 이미지" class="detail-image">
+            </div>
+            
+            <div class="detail-section">
+              <h3 class="detail-title">주요 특징</h3>
+              <ul class="feature-list">
+                <li>100% 천연 재료로 만든 건강한 간식</li>
+                <li>인공 첨가물 무첨가 (향료, 색소, 방부제 등)</li>
+                <li>작은 크기로 훈련 중 급여 용이</li>
+                <li>특별한 풍미로 훈련 효과 향상</li>
+                <li>소화가 잘되는 저자극성 포뮬러</li>
+                <li>수의사 추천 제품</li>
+              </ul>
+            </div>
+            
+            <div class="detail-section">
+              <h3 class="detail-title">사용 방법</h3>
+              <p class="detail-text">
+                반려견의 훈련 시 보상으로 사용하세요. 앉기, 기다리기, 손 주기 등의 명령을 성공적으로 수행했을 때 간식을 제공하면 효과적인 훈련이 가능합니다. 하루 권장 급여량은 반려견의 크기와 활동량에 따라 조절하세요.
+              </p>
+            </div>
+          </div>
+        </div>
+        
+        <div id="reviews" class="tab-content">
+          <div class="reviews-filter">
+            <div class="review-average">
+              <div class="average-score">4.9</div>
+              <div class="average-stars">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+              </div>
+              <div class="total-reviews">총 128개 리뷰</div>
+            </div>
+            
+            <div class="filter-by">
+              <button class="filter-option active">전체</button>
+              <button class="filter-option">5점 (112)</button>
+              <button class="filter-option">4점 (10)</button>
+              <button class="filter-option">3점 (4)</button>
+              <button class="filter-option">2점 (2)</button>
+              <button class="filter-option">1점 (0)</button>
+              <button class="filter-option">포토 리뷰 (45)</button>
+            </div>
+            
+            <button class="write-review-btn" onclick="openReviewForm()">리뷰 작성</button>
+          </div>
+          
+          <div class="review-list">
+            <!-- 리뷰 항목 1 -->
+            <div class="review-item">
+              <div class="review-header">
+                <img src="https://source.unsplash.com/random/100x100/?person" alt="리뷰어 프로필" class="reviewer-avatar">
+                <div class="reviewer-info">
+                  <div class="reviewer-name">김**</div>
+                  <div class="review-date">2023.06.15</div>
+                </div>
+                <div class="stars">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                </div>
+              </div>
+              
+              <div class="review-content">
+                우리 강아지가 정말 좋아해요! 훈련할 때 이 간식을 주면 집중력이 확 좋아집니다. 천연 재료로 만들어서 안심하고 줄 수 있어요. 크기도 딱 적당해서 훈련 중에 급여하기 좋습니다. 다른 분들께도 추천합니다!
+              </div>
+              
+              <div class="review-photos">
+                <img src="https://source.unsplash.com/random/200x200/?puppy" alt="리뷰 사진 1" class="review-photo">
+                <img src="https://source.unsplash.com/random/200x200/?dog,training" alt="리뷰 사진 2" class="review-photo">
+              </div>
+              
+              <div class="review-reaction">
+                <button class="helpful-btn" onclick="markHelpful(1)">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg>
+                  도움이 됐어요 (15)
+                </button>
+              </div>
+            </div>
+            
+            <!-- 리뷰 항목 2 -->
+            <div class="review-item">
+              <div class="review-header">
+                <img src="https://source.unsplash.com/random/100x100/?person,woman" alt="리뷰어 프로필" class="reviewer-avatar">
+                <div class="reviewer-info">
+                  <div class="reviewer-name">이**</div>
+                  <div class="review-date">2023.05.22</div>
+                </div>
+                <div class="stars">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                </div>
+              </div>
+              
+              <div class="review-content">
+                타 제품보다 가격은 조금 높지만 품질이 확실히 다릅니다. 강아지가 먹고 설사하는 일도 없고, 훈련 보상용으로 딱이에요. 특히 소형견인 우리 아이에게는 사이즈가 딱 적당해요. 계속 구매할 예정입니다!
+              </div>
+              
+              <div class="review-reaction">
+                <button class="helpful-btn" onclick="markHelpful(2)">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg>
+                  도움이 됐어요 (8)
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div id="shipping" class="tab-content">
+          <div class="product-details-content">
+            <div class="detail-section">
+              <h3 class="detail-title">배송 안내</h3>
+              <ul class="feature-list">
+                <li>배송비: 3,000원 (3만원 이상 구매 시 무료배송)</li>
+                <li>배송방법: 택배</li>
+                <li>배송지역: 전국 (제주, 도서산간 지역은 추가 배송비 발생)</li>
+                <li>배송기간: 결제 확인 후 1~3일 이내 발송, 주말 및 공휴일은 배송일에서 제외</li>
+              </ul>
+            </div>
+            
+            <div class="detail-section">
+              <h3 class="detail-title">교환 및 반품 안내</h3>
+              <ul class="feature-list">
+                <li>교환/반품 신청기간: 상품 수령 후 7일 이내</li>
+                <li>교환/반품 방법: 고객센터(1544-9999) 또는 마이페이지 > 주문내역에서 신청</li>
+                <li>교환/반품 배송비: 단순 변심의 경우 왕복 배송비 고객 부담, 상품 불량/오배송의 경우 왕복 배송비 판매자 부담</li>
+                <li>교환/반품 불가사유:
+                  <ul>
+                    <li>포장을 개봉하거나 상품이 훼손된 경우</li>
+                    <li>고객의 사용, 시간 경과, 일부 소비에 의해 상품 가치가 감소한 경우</li>
+                    <li>동물용 사료 특성상 개봉 후에는 교환/반품이 불가합니다.</li>
+                  </ul>
+                </li>
+              </ul>
+            </div>
+            
+            <div class="detail-section">
+              <h3 class="detail-title">품질보증 및 A/S 안내</h3>
+              <p class="detail-text">
+                본 상품은 식품위생법에 의거하여 제조/유통되는 상품으로 품질보증 및 A/S 관련 규정이 명시되어 있습니다. 
+                상품에 문제가 있을 경우 소비자분쟁해결기준에 의거하여 교환 또는 환불 처리해 드립니다.
+              </p>
+              <p class="detail-text">
+                <strong>고객센터: 1544-9999 (평일 09:00~18:00, 주말/공휴일 휴무)</strong>
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+  
+  <footer>
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-column">
+          <h3 class="footer-title">고객센터</h3>
+          <div class="footer-links">
+            <span style="font-size: 1.25rem; font-weight: 600; margin-bottom: 0.5rem;">1544-9999</span>
+            <span>평일 09:00 - 18:00</span>
+            <span>점심시간 12:00 - 13:00</span>
+            <span>주말/공휴일 휴무</span>
+          </div>
+        </div>
+        
+        <div class="footer-column">
+          <h3 class="footer-title">쇼핑몰 정보</h3>
+          <div class="footer-links">
+            <a href="#" class="footer-link">회사소개</a>
+            <a href="#" class="footer-link">이용약관</a>
+            <a href="#" class="footer-link">개인정보처리방침</a>
+            <a href="#" class="footer-link">이용안내</a>
+          </div>
+        </div>
+        
+        <div class="footer-column">
+          <h3 class="footer-title">고객지원</h3>
+          <div class="footer-links">
+            <a href="#" class="footer-link">자주 묻는 질문</a>
+            <a href="#" class="footer-link">공지사항</a>
+            <a href="#" class="footer-link">1:1 문의</a>
+            <a href="#" class="footer-link">상품 제안</a>
+          </div>
+        </div>
+        
+        <div class="footer-column">
+          <h3 class="footer-title">마이페이지</h3>
+          <div class="footer-links">
+            <a href="#" class="footer-link">주문/배송조회</a>
+            <a href="#" class="footer-link">취소/반품/교환</a>
+            <a href="#" class="footer-link">적립금 내역</a>
+            <a href="#" class="footer-link">쿠폰</a>
+          </div>
+        </div>
+      </div>
+      
+      <div class="footer-bottom">
+        <div class="copyright">
+          © 2023 테일즈 서비스 쇼핑. All Rights Reserved.
+        </div>
+        
+        <div class="payment-methods">
+          <img src="https://via.placeholder.com/40x24" alt="신용카드" class="payment-icon">
+          <img src="https://via.placeholder.com/40x24" alt="체크카드" class="payment-icon">
+          <img src="https://via.placeholder.com/40x24" alt="무통장입금" class="payment-icon">
+          <img src="https://via.placeholder.com/40x24" alt="휴대폰결제" class="payment-icon">
+        </div>
+      </div>
+    </div>
+  </footer>
+  
+  <!-- 챗봇 -->
+  <div id="chatbot">
+    <div id="unread-badge">1</div>
+    <div class="chatbot-trigger" onclick="toggleChatbot()">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+    </div>
+    
+    <div id="chatbot-panel">
+      <div class="chatbot-header">
+        <div class="chatbot-title">테일즈 AI 도우미</div>
+        <div class="chatbot-close" onclick="toggleChatbot()">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </div>
+      </div>
+      
+      <div id="chatbot-messages"></div>
+      
+      <div class="chatbot-input-container">
+        <input type="text" id="chatbot-input" placeholder="궁금한 점을 물어보세요">
+        <button id="chatbot-send" onclick="sendMessage()">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- 토스트 메시지 -->
+  <div id="toast" class="toast"></div>
+  
+  <script>
+    let currentTab = 'product-details';
+    let isWishlisted = false;
+    let isChatbotOpen = false;
+    let chatHistory = [];
+    let currentQuantity = 1;
+    
+    const defaultSuggestions = [
+      "상품 추천해주세요",
+      "배송 관련 문의",
+      "결제 방법 안내",
+      "반품/교환 절차"
+    ];
+    
+    // 테마 토글
+    const toggleTheme = () => {
+      document.body.classList.toggle('dark-mode');
+      localStorage.setItem('theme', document.body.classList.contains('dark-mode') ? 'dark' : 'light');
+      showToast(document.body.classList.contains('dark-mode') ? '다크 모드로 변경되었습니다.' : '라이트 모드로 변경되었습니다.');
+    };
+    
+    // 페이지 로드 시 테마 설정
+    document.addEventListener('DOMContentLoaded', () => {
+      const savedTheme = localStorage.getItem('theme');
+      if (savedTheme === 'dark' || (savedTheme === null && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        document.body.classList.add('dark-mode');
+      }
+      
+      // 테마 토글 버튼 이벤트 설정
+      const themeToggle = document.getElementById('themeToggle');
+      if (themeToggle) {
+        themeToggle.addEventListener('click', toggleTheme);
+      }
+      
+      // 챗봇 입력창 엔터 이벤트
+      const chatbotInput = document.getElementById('chatbot-input');
+      if (chatbotInput) {
+        chatbotInput.addEventListener('keypress', (e) => {
+          if (e.key === 'Enter') {
+            sendMessage();
+          }
+        });
+      }
+      
+      // 첫 열기 시에만 기본 메시지 표시
+      if (chatHistory.length === 0) {
+        addBotMessage("안녕하세요! 테일즈 AI 도우미입니다. 무엇을 도와드릴까요?");
+        showSuggestions(defaultSuggestions);
+      }
+    });
+    
+    // 상품 이미지 변경
+    function changeImage(src) {
+      const mainImage = document.getElementById('main-image');
+      mainImage.src = src;
+      
+      const thumbnails = document.querySelectorAll('.product-thumbnail');
+      thumbnails.forEach(thumb => {
+        thumb.classList.remove('active');
+        if (thumb.getAttribute('onclick').includes(src)) {
+          thumb.classList.add('active');
+        }
+      });
+    }
+    
+    // 수량 증가 함수
+    function increaseQuantity() {
+      const quantityInput = document.getElementById('quantity');
+      currentQuantity = parseInt(quantityInput.value) + 1;
+      quantityInput.value = currentQuantity;
+    }
+    
+    // 수량 감소 함수
+    function decreaseQuantity() {
+      const quantityInput = document.getElementById('quantity');
+      let value = parseInt(quantityInput.value);
+      if (value > 1) {
+        currentQuantity = value - 1;
+        quantityInput.value = currentQuantity;
+      }
+    }
+    
+    // 찜하기 토글
+    function toggleWishlist() {
+      const wishlistBtn = document.getElementById('wishlist-btn');
+      isWishlisted = !isWishlisted;
+      
+      if (isWishlisted) {
+        wishlistBtn.classList.add('active');
+        wishlistBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="var(--heart-color)" stroke="var(--heart-color)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>`;
+        showToast('상품을 찜 목록에 추가했습니다.');
+      } else {
+        wishlistBtn.classList.remove('active');
+        wishlistBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>`;
+        showToast('상품을 찜 목록에서 제거했습니다.');
+      }
+    }
+    
+    // 장바구니 추가
+    function addToCart() {
+      const sizeOption = document.getElementById('size-option').value;
+      const flavorOption = document.getElementById('flavor-option').value;
+      
+      if (!sizeOption || !flavorOption) {
+        showToast('옵션을 모두 선택해주세요.');
+        return;
+      }
+      
+      // 장바구니에 추가하는 로직
+      // 본 서비스의 장바구니에 상품 정보 전달
+      window.parent.postMessage({
+        type: 'ADD_TO_CART',
+        payload: {
+          id: 1,
+          productId: 1001,
+          name: '프리미엄 강아지 훈련용 간식 - 천연 재료',
+          price: 19200,
+          originalPrice: 24000,
+          quantity: currentQuantity,
+          imageUrl: document.getElementById('main-image').src,
+          size: sizeOption,
+          flavor: flavorOption,
+          inStock: true,
+          isSelected: true
+        }
+      }, '*');
+      
+      showToast('상품이 장바구니에 추가되었습니다.');
+    }
+    
+    // 바로 구매
+    function buyNow() {
+      const sizeOption = document.getElementById('size-option').value;
+      const flavorOption = document.getElementById('flavor-option').value;
+      
+      if (!sizeOption || !flavorOption) {
+        showToast('옵션을 모두 선택해주세요.');
+        return;
+      }
+      
+      // 장바구니에 추가한 후 장바구니 페이지로 이동
+      addToCart();
+      openCart();
+    }
+    
+    // 장바구니 페이지 열기
+    function openCart() {
+      window.parent.postMessage({
+        type: 'OPEN_CART',
+        payload: {}
+      }, '*');
+    }
+    
+    // 본 서비스로 이동
+    function goToMain() {
+      window.parent.postMessage({
+        type: 'GO_TO_MAIN',
+        payload: {}
+      }, '*');
+    }
+    
+    // 탭 열기
+    function openTab(tabId) {
+      // 현재 활성화된 탭 비활성화
+      document.getElementById(currentTab).classList.remove('active');
+      document.querySelector(`.tab-btn[onclick="openTab('${currentTab}')"]`).classList.remove('active');
+      
+      // 새 탭 활성화
+      document.getElementById(tabId).classList.add('active');
+      document.querySelector(`.tab-btn[onclick="openTab('${tabId}')"]`).classList.add('active');
+      
+      currentTab = tabId;
+    }
+    
+    // 리뷰 작성 폼 열기
+    function openReviewForm() {
+      // 로그인 상태 확인 (현재는 팝업만 표시)
+      showToast('로그인 후 리뷰를 작성할 수 있습니다.');
+    }
+    
+    // 도움돼요 표시
+    function markHelpful(reviewId) {
+      // 도움돼요 카운트 증가 로직 (현재는 팝업만 표시)
+      showToast('리뷰에 도움됐어요를 표시했습니다.');
+    }
+    
+    // 공유하기
+    function shareProduct(platform) {
+      const url = window.location.href;
+      const title = document.querySelector('.product-title').textContent;
+      
+      let shareUrl = '';
+      
+      switch (platform) {
+        case 'facebook':
+          shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;
+          break;
+        case 'twitter':
+          shareUrl = `https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(title)}`;
+          break;
+        case 'kakaotalk':
+          // 카카오톡 공유는 SDK가 필요합니다.
+          showToast('카카오톡 공유는 현재 준비 중입니다.');
+          return;
+      }
+      
+      if (shareUrl) {
+        window.open(shareUrl, '_blank', 'width=600,height=400');
+      }
+    }
+    
+    // 링크 복사
+    function copyLink() {
+      const url = window.location.href;
+      navigator.clipboard.writeText(url).then(() => {
+        showToast('링크가 클립보드에 복사되었습니다.');
+      });
+    }
+    
+    // 토스트 메시지 표시
+    function showToast(message) {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.classList.add('show');
+      
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 3000);
+    }
+    
+    // 챗봇 토글 함수
+    function toggleChatbot() {
+      const chatbotPanel = document.getElementById('chatbot-panel');
+      isChatbotOpen = !isChatbotOpen;
+      
+      if (isChatbotOpen) {
+        chatbotPanel.classList.add('open');
+        document.getElementById('unread-badge').style.display = 'none';
+        
+        // 첫 열기 시 기본 메시지 표시
+        if (chatHistory.length === 0) {
+          addBotMessage("안녕하세요! 테일즈 AI 도우미입니다. 무엇을 도와드릴까요?");
+          showSuggestions(defaultSuggestions);
+        }
+      } else {
+        chatbotPanel.classList.remove('open');
+      }
+    }
+    
+    // 봇 메시지 추가
+    function addBotMessage(message) {
+      const messagesContainer = document.getElementById('chatbot-messages');
+      const messageElement = document.createElement('div');
+      messageElement.className = 'chat-message bot';
+      messageElement.innerText = message;
+      
+      messagesContainer.appendChild(messageElement);
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+      
+      // 히스토리에 저장
+      chatHistory.push({
+        role: 'bot',
+        content: message
+      });
+    }
+    
+    // 사용자 메시지 추가
+    function addUserMessage(message) {
+      const messagesContainer = document.getElementById('chatbot-messages');
+      const messageElement = document.createElement('div');
+      messageElement.className = 'chat-message user';
+      messageElement.innerText = message;
+      
+      messagesContainer.appendChild(messageElement);
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+      
+      // 히스토리에 저장
+      chatHistory.push({
+        role: 'user',
+        content: message
+      });
+    }
+    
+    // 메시지 전송
+    function sendMessage() {
+      const chatbotInput = document.getElementById('chatbot-input');
+      const message = chatbotInput.value.trim();
+      
+      if (message) {
+        addUserMessage(message);
+        chatbotInput.value = '';
+        
+        // 응답 처리
+        const response = findResponse(message);
+        setTimeout(() => {
+          addBotMessage(response);
+          
+          // 추천 질문 표시
+          showSuggestions(defaultSuggestions);
+        }, 500);
+      }
+    }
+    
+    // 추천 질문 표시
+    function showSuggestions(suggestions) {
+      const messagesContainer = document.getElementById('chatbot-messages');
+      const suggestionsContainer = document.createElement('div');
+      suggestionsContainer.className = 'suggestion-chips';
+      
+      suggestions.forEach(suggestion => {
+        const chip = document.createElement('button');
+        chip.className = 'suggestion-chip';
+        chip.innerText = suggestion;
+        chip.onclick = () => {
+          addUserMessage(suggestion);
+          const response = findResponse(suggestion);
+          
+          setTimeout(() => {
+            addBotMessage(response);
+            showSuggestions(defaultSuggestions.filter(s => s !== suggestion));
+          }, 500);
+        };
+        
+        suggestionsContainer.appendChild(chip);
+      });
+      
+      const lastMessage = messagesContainer.lastElementChild;
+      if (lastMessage && lastMessage.classList.contains('bot')) {
+        messagesContainer.appendChild(suggestionsContainer);
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+      }
+    }
+    
+    // 응답 찾기
+    function findResponse(userMessage) {
+      // 간단한 키워드 기반 응답 로직
+      const message = userMessage.toLowerCase();
+      
+      if (message.includes('배송') || message.includes('언제') || message.includes('도착')) {
+        return "상품은 결제 확인 후 1~3일 이내에 발송됩니다. 주말 및 공휴일은 배송일에서 제외되며, 3만원 이상 구매 시 무료배송입니다.";
+      }
+      else if (message.includes('결제') || message.includes('지불') || message.includes('카드')) {
+        return "신용카드, 체크카드, 무통장입금, 휴대폰 결제 등 다양한 결제 방법을 지원합니다. 카카오페이, 네이버페이도 사용 가능합니다.";
+      }
+      else if (message.includes('반품') || message.includes('교환') || message.includes('환불')) {
+        return "상품 수령 후 7일 이내에 교환/반품 신청이 가능합니다. 단, 개봉하거나 사용한 경우에는 불가합니다. 더 자세한 사항은 배송/교환/반품 안내 탭을 참고해주세요.";
+      }
+      else if (message.includes('추천') || message.includes('어떤')) {
+        return "강아지 훈련용 간식으로는 현재 보고 계신 '프리미엄 강아지 훈련용 간식'이 가장 인기 있습니다. 천연 재료로 만들어져 건강에 좋고, 작은 크기로 훈련에 적합합니다. 이외에도 '동결건조 닭가슴살 큐브'나 '소프트 미니 트릿'도 인기 있는 제품입니다.";
+      }
+      else if (message.includes('안녕') || message.includes('hi') || message.includes('hello')) {
+        return "안녕하세요! 테일즈 쇼핑몰 AI 도우미입니다. 어떤 도움이 필요하신가요?";
+      }
+      
+      return "죄송합니다. 질문을 이해하지 못했습니다. 다른 방식으로 질문해주시거나, 더 자세한 정보는 고객센터(1544-9999)로 문의해 주세요.";
+    }
+    
+    // 메시지 수신 이벤트 리스너
+    window.addEventListener('message', (event) => {
+      const { type, payload } = event.data;
+      
+      if (type === 'CART_UPDATED') {
+        // 장바구니 업데이트 처리
+        showToast('장바구니가 업데이트되었습니다.');
+      }
+      else if (type === 'THEME_CHANGED') {
+        // 테마 변경 처리
+        if (payload.theme === 'dark' && !document.body.classList.contains('dark-mode')) {
+          document.body.classList.add('dark-mode');
+        } else if (payload.theme === 'light' && document.body.classList.contains('dark-mode')) {
+          document.body.classList.remove('dark-mode');
+        }
+      }
+    });
+  </script>
+</body>
+</html>
