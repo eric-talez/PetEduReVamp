@@ -208,9 +208,17 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
       '/ai-analysis': 'AI 분석',
       '/my-pets': '반려견 관리',
       '/notebook': '알림장',
-      '/calendar': '교육 일정',
-      '/shop': '쇼핑'
+      '/calendar': '교육 일정'
+      // '/shop' 항목은 제거 - 사이드바에서 직접 새 창으로 열기 처리
     };
+
+    // 쇼핑 페이지는 새 창에서 열기
+    if (path === '/shop') {
+      console.log('쇼핑 페이지를 새 창에서 열기');
+      window.open(path, '_blank', 'noopener,noreferrer');
+      if (onClose) onClose();
+      return;
+    }
 
     if (path in specialRoutes) {
       console.log(`${specialRoutes[path]} 페이지로 이동 중...`);
@@ -481,26 +489,29 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                     <NavItem href="/community" icon={<MessageSquare className="w-5 h-5 mr-2" />} active={isActive("/community")} onClick={handleItemClick} show={true}>커뮤니티</NavItem>
                     <NavItem href="/events" icon={<Calendar className="w-5 h-5 mr-2" />} active={isActive("/events")} onClick={handleItemClick} show={true}>이벤트</NavItem>
                     <li className="relative">
-                      <NavItem 
+                      <a 
                         href="/shop" 
-                        icon={<ShoppingBag className="w-5 h-5 mr-2" />} 
-                        active={isActive("/shop")} 
-                        onClick={(path) => {
-                          console.log("인증된 사용자가 쇼핑 메뉴 클릭 - setLocation 사용");
-                          // 인증된 사용자도 동일하게 Wouter의 setLocation 사용
-                          setLocation('/shop');
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={cn(
+                          "sidebar-link flex items-center py-2 text-sm font-medium rounded-md transition-all duration-200 ease-in-out",
+                          expanded ? "px-3" : "px-2 justify-center",
+                          isActive("/shop") ? "bg-primary/10 text-primary" : "text-gray-700 dark:text-gray-200 hover:text-primary dark:hover:text-primary"
+                        )}
+                        onClick={(e) => {
+                          // 기본 a 태그 동작(새 창 열기)은 유지하고 추가 로직만 실행
+                          console.log("인증된 사용자가 쇼핑 메뉴 클릭 - 새 창으로 열기");
                           
                           // 디버깅 정보
-                          console.log("쇼핑 페이지 이동 시작 (인증사용자):", new Date().toISOString());
+                          console.log("쇼핑 페이지 새 창으로 열기 (인증사용자):", new Date().toISOString());
                           console.log("현재 경로:", window.location.pathname);
-                          console.log("이동할 경로:", "/shop");
                           
                           if (onClose) onClose();
-                        }} 
-                        show={true}
+                        }}
                       >
-                        쇼핑
-                      </NavItem>
+                        <ShoppingBag className="w-5 h-5 mr-2" />
+                        {expanded && <span>쇼핑</span>}
+                      </a>
                     </li>
                   </>
                 )}
