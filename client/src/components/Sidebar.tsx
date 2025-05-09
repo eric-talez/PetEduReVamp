@@ -104,7 +104,7 @@ interface SidebarProps {
 }
 
 export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarProps) {
-  const [location, navigate] = useLocation();
+  const [location, setLocation] = useLocation();
   const [expanded, setExpanded] = useState(true);
 
   useEffect(() => {
@@ -378,9 +378,9 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                         icon={<ShoppingBag className="w-5 h-5 mr-2" />} 
                         active={isActive("/shop")} 
                         onClick={(path) => {
-                          console.log("비인증 사용자가 쇼핑 메뉴 클릭 - 직접 URL로 이동");
-                          // 특수 쇼핑 로직: 인증 여부에 상관없이 접근을 허용하고 직접 URL로 이동
-                          window.location.href = "/shop";
+                          console.log("비인증 사용자가 쇼핑 메뉴 클릭 - setLocation 사용");
+                          // 특수 쇼핑 로직: 인증 여부에 관계없이 접근을 허용하되 Wouter의 setLocation 사용
+                          setLocation('/shop');
                           
                           // 디버깅 정보
                           console.log("쇼핑 페이지 이동 시작:", new Date().toISOString());
@@ -483,9 +483,9 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                         icon={<ShoppingBag className="w-5 h-5 mr-2" />} 
                         active={isActive("/shop")} 
                         onClick={(path) => {
-                          console.log("인증된 사용자가 쇼핑 메뉴 클릭 - 직접 URL로 이동");
-                          // 인증된 사용자도 똑같이 직접 URL 사용
-                          window.location.href = "/shop";
+                          console.log("인증된 사용자가 쇼핑 메뉴 클릭 - setLocation 사용");
+                          // 인증된 사용자도 동일하게 Wouter의 setLocation 사용
+                          setLocation('/shop');
                           
                           // 디버깅 정보
                           console.log("쇼핑 페이지 이동 시작 (인증사용자):", new Date().toISOString());
