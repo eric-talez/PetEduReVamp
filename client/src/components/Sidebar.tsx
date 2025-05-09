@@ -164,8 +164,7 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
     const publicPaths = [
       "/", "/courses", "/trainers", "/video-training", "/video-call", "/community",
       "/institutes", "/institutes/register", "/events", "/events/calendar",
-      "/help/faq", "/help/guide", "/help/about", "/help/contact", "/shop",
-      "/shop-redirect", "/shop-new", "/shop/simple", "/shop/test"
+      "/help/faq", "/help/guide", "/help/about", "/help/contact", "/shop"
     ];
 
     // 로그인 필요한 페이지 접근 시
@@ -210,8 +209,7 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
       '/my-pets': '반려견 관리',
       '/notebook': '알림장',
       '/calendar': '교육 일정',
-      '/shop': '쇼핑',
-      '/shop/simple': '쇼핑'
+      '/shop': '쇼핑'
     };
 
     if (path in specialRoutes) {
