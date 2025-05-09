@@ -151,8 +151,12 @@ export function Chatbot() {
     sendMessage(suggestion);
   };
 
+  // 다크 모드 여부 확인
+  const isDarkMode = document.documentElement.classList.contains('dark') || 
+                   document.documentElement.getAttribute('data-theme') === 'dark';
+
   return (
-    <div className="chatbot-container" style={{ position: 'fixed', bottom: '20px', right: '20px', zIndex: 9999 }}>
+    <div className="chatbot-container" style={{ position: 'fixed', bottom: '120px', right: '20px', zIndex: 9999 }}>
       <button 
         className="chatbot-button"
         onClick={toggleChatbot}
@@ -162,7 +166,7 @@ export function Chatbot() {
           height: '60px', 
           borderRadius: '30px',
           backgroundColor: 'var(--primary-color, #a7e8c5)',
-          color: 'white',
+          color: isDarkMode ? '#1a1d23' : 'white',
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
@@ -196,12 +200,12 @@ export function Chatbot() {
       <div className={`chatbot-panel ${isOpen ? 'open' : ''}`} style={{
         position: 'absolute',
         bottom: '75px',
-        right: '0',
+        right: '0px',
         width: '350px',
         height: '500px',
-        backgroundColor: 'white',
+        backgroundColor: isDarkMode ? '#1a1d23' : 'white',
         borderRadius: '12px',
-        boxShadow: '0 4px 20px rgba(0, 0, 0, 0.15)',
+        boxShadow: isDarkMode ? '0 4px 20px rgba(0, 0, 0, 0.5)' : '0 4px 20px rgba(0, 0, 0, 0.15)',
         display: 'flex',
         flexDirection: 'column',
         overflow: 'hidden',
@@ -258,8 +262,12 @@ export function Chatbot() {
                 lineHeight: '1.4',
                 position: 'relative',
                 alignSelf: message.role === 'bot' ? 'flex-start' : 'flex-end',
-                backgroundColor: message.role === 'bot' ? '#f7fafc' : 'var(--primary-color, #a7e8c5)',
-                color: message.role === 'bot' ? '#2d3748' : 'white',
+                backgroundColor: message.role === 'bot' 
+                  ? (isDarkMode ? '#2d3748' : '#f7fafc') 
+                  : 'var(--primary-color, #a7e8c5)',
+                color: message.role === 'bot' 
+                  ? (isDarkMode ? '#e2e8f0' : '#2d3748') 
+                  : (isDarkMode ? '#1a1d23' : 'white'),
                 borderBottomLeftRadius: message.role === 'bot' ? '4px' : '16px',
                 borderBottomRightRadius: message.role === 'bot' ? '16px' : '4px'
               }}
@@ -281,7 +289,7 @@ export function Chatbot() {
                 key={index}
                 style={{
                   padding: '8px 12px',
-                  backgroundColor: '#f7fafc',
+                  backgroundColor: isDarkMode ? '#2d3748' : '#f7fafc',
                   color: 'var(--primary-color, #a7e8c5)',
                   borderRadius: '16px',
                   fontSize: '12px',
@@ -289,7 +297,7 @@ export function Chatbot() {
                   marginBottom: '8px',
                   cursor: 'pointer',
                   display: 'inline-block',
-                  border: '1px solid #edf2f7',
+                  border: isDarkMode ? '1px solid #4a5568' : '1px solid #edf2f7',
                   transition: 'all 0.2s ease'
                 }}
                 onClick={() => handleSuggestionClick(suggestion)}
@@ -302,23 +310,23 @@ export function Chatbot() {
         
         <form onSubmit={handleSubmit} style={{
           padding: '12px',
-          borderTop: '1px solid #edf2f7',
+          borderTop: isDarkMode ? '1px solid #4a5568' : '1px solid #edf2f7',
           display: 'flex',
           gap: '10px',
-          backgroundColor: 'white'
+          backgroundColor: isDarkMode ? '#1a1d23' : 'white'
         }}>
           <input
             ref={inputRef}
             type="text"
             style={{
               flex: '1',
-              border: '1px solid #e2e8f0',
+              border: isDarkMode ? '1px solid #4a5568' : '1px solid #e2e8f0',
               borderRadius: '20px',
               padding: '10px 15px',
               fontSize: '14px',
               outline: 'none',
-              backgroundColor: 'white',
-              color: '#2d3748'
+              backgroundColor: isDarkMode ? '#2d3748' : 'white',
+              color: isDarkMode ? '#e2e8f0' : '#2d3748'
             }}
             placeholder="메시지를 입력하세요..."
             value={inputValue}
