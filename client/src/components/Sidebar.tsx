@@ -3,20 +3,6 @@ import { BarChart } from "@/components/ui/chart";
 import { cn } from "@/lib/utils";
 import React, { useState, useEffect, createContext, useContext } from "react";
 import { SpecialShopLink } from "./SpecialShopLink";
-
-// 라우팅 문제 해결을 위한 전용 함수
-function goToShopPage() {
-  console.log("쇼핑 페이지로 이동하는 특수 함수 호출됨");
-  // 현재 URL을 출력
-  console.log("현재 URL:", window.location.href);
-  // 전체 경로 출력
-  console.log("전체 경로:", window.location.origin + "/shop/simple");
-  // 직접 URL 변경 - 전체 경로를 사용
-  const shopUrl = window.location.origin + "/shop/simple";
-  console.log("이동할 경로:", shopUrl);
-  window.location.href = shopUrl;
-  return false;
-}
 import {
   ChevronDown,
   ChevronRight,
@@ -394,8 +380,8 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                         icon={<ShoppingBag className="w-5 h-5 mr-2" />} 
                         active={isActive("/shop")} 
                         onClick={(path) => {
-                          console.log("비인증 사용자가 쇼핑 메뉴 클릭 - 절대 경로 형식으로 직접 URL 이동");
-                          // 라우팅 이슈를 해결하기 위해 window.location.href 사용 + 절대 경로 형식으로 완전한 URL 작성
+                          console.log("비인증 사용자가 쇼핑 메뉴 클릭 - Link 컴포넌트 사용");
+                          // 특수 쇼핑 로직: 인증 여부에 상관없이 접근을 허용하고 직접 URL로 이동
                           const baseUrl = window.location.origin;
                           window.location.href = `${baseUrl}/shop`;
                           if (onClose) onClose();
@@ -494,8 +480,10 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                         icon={<ShoppingBag className="w-5 h-5 mr-2" />} 
                         active={isActive("/shop")} 
                         onClick={(path) => {
-                          console.log("인증된 사용자가 쇼핑 메뉴 클릭 - React 라우트로 이동");
-                          navigate("/shop");
+                          console.log("인증된 사용자가 쇼핑 메뉴 클릭 - 절대 경로 형식으로 직접 URL 이동");
+                          // 인증된 사용자도 똑같이 직접 URL 사용
+                          const baseUrl = window.location.origin;
+                          window.location.href = `${baseUrl}/shop`;
                           if (onClose) onClose();
                         }} 
                         show={true}
