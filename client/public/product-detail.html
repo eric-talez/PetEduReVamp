@@ -1172,6 +1172,7 @@
       <nav>
         <ul class="nav-menu">
           <li><a href="javascript:void(0)" onclick="goToHome()">홈</a></li>
+          <li><a href="javascript:void(0)" onclick="goToShop()">쇼핑 홈</a></li>
           <li><a href="#">베스트</a></li>
           <li><a href="#">신상품</a></li>
           <li><a href="#">타임세일</a></li>
@@ -1218,6 +1219,8 @@
       <div class="container">
         <div class="product-breadcrumb">
           <a href="javascript:void(0)" onclick="goToHome()">홈</a>
+          <span>›</span>
+          <a href="javascript:void(0)" onclick="goToShop()">쇼핑</a>
           <span>›</span>
           <a href="#">강아지용품</a>
           <span>›</span>
@@ -1654,6 +1657,7 @@
         <div class="footer-column">
           <h4>쇼핑 정보</h4>
           <ul class="footer-links">
+            <li><a href="javascript:void(0)" onclick="goToShop()">쇼핑 홈</a></li>
             <li><a href="#">이용약관</a></li>
             <li><a href="#">개인정보처리방침</a></li>
             <li><a href="#">판매자 정보</a></li>
@@ -1665,7 +1669,7 @@
         <div class="footer-column">
           <h4>테일즈 서비스</h4>
           <ul class="footer-links">
-            <li><a href="#" onclick="goToHome()">테일즈 홈</a></li>
+            <li><a href="javascript:void(0)" onclick="goToHome()">테일즈 홈</a></li>
             <li><a href="#">전문가 상담</a></li>
             <li><a href="#">강아지 교육 강좌</a></li>
             <li><a href="#">훈련사 찾기</a></li>
@@ -1974,6 +1978,21 @@
         console.warn('부모 창에 메시지 전송 실패:', error);
         // 대체 처리 - 직접 페이지 이동
         window.location.href = '/';
+      }
+    }
+    
+    // 쇼핑 홈으로 이동
+    function goToShop() {
+      // 부모 창에 메시지 전송
+      try {
+        window.parent.postMessage({
+          type: 'NAVIGATE_TO_SHOP',
+          data: {}
+        }, '*');
+      } catch (error) {
+        console.warn('부모 창에 메시지 전송 실패:', error);
+        // 대체 처리 - 직접 페이지 이동
+        window.location.href = '/shop.html';
       }
     }
     
