@@ -381,7 +381,7 @@ export default function ShopPage() {
         </div>
       </main>
       
-      <style jsx>{`
+      <style>{`
         .shop-page {
           --primary-color: #4F46E5;
           --primary-hover: #4338CA;

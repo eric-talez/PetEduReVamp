@@ -389,24 +389,19 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                     >이벤트</NavItem>
 
                     <li className="relative">
-                      <a 
+                      <NavItem 
                         href="/shop" 
-                        className={cn(
-                          "flex items-center px-3 py-2 rounded-md transition-colors mx-1",
-                          isActive("/shop") || isActive("/shop-login-required") || isActive("/shop-basic") || isActive("/shop-redirect") 
-                            ? "bg-primary text-primary-foreground" 
-                            : "hover:bg-gray-100 dark:hover:bg-gray-800"
-                        )}
-                        onClick={(e) => {
-                          e.preventDefault();
+                        icon={<ShoppingBag className="w-5 h-5 mr-2" />} 
+                        active={isActive("/shop")} 
+                        onClick={(path) => {
                           console.log("비인증 사용자가 쇼핑 메뉴 클릭 - React 라우트로 이동");
-                          window.location.href = '/shop';
+                          navigate("/shop");
                           if (onClose) onClose();
-                        }}
+                        }} 
+                        show={true}
                       >
-                        <ShoppingBag className="w-5 h-5 mr-2" />
-                        <span className={expanded ? "opacity-100" : "lg:opacity-0"}>쇼핑</span>
-                      </a>
+                        쇼핑
+                      </NavItem>
                     </li>
 
                     {/* 도움말 그룹 추가 */}
@@ -492,24 +487,19 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                     <NavItem href="/community" icon={<MessageSquare className="w-5 h-5 mr-2" />} active={isActive("/community")} onClick={handleItemClick} show={true}>커뮤니티</NavItem>
                     <NavItem href="/events" icon={<Calendar className="w-5 h-5 mr-2" />} active={isActive("/events")} onClick={handleItemClick} show={true}>이벤트</NavItem>
                     <li className="relative">
-                      <a 
+                      <NavItem 
                         href="/shop" 
-                        className={cn(
-                          "flex items-center px-3 py-2 rounded-md transition-colors mx-1",
-                          isActive("/shop") 
-                            ? "bg-primary text-primary-foreground" 
-                            : "hover:bg-gray-100 dark:hover:bg-gray-800"
-                        )}
-                        onClick={(e) => {
-                          e.preventDefault();
+                        icon={<ShoppingBag className="w-5 h-5 mr-2" />} 
+                        active={isActive("/shop")} 
+                        onClick={(path) => {
                           console.log("인증된 사용자가 쇼핑 메뉴 클릭 - React 라우트로 이동");
-                          window.location.href = '/shop';
+                          navigate("/shop");
                           if (onClose) onClose();
-                        }}
+                        }} 
+                        show={true}
                       >
-                        <ShoppingBag className="w-5 h-5 mr-2" />
-                        <span>쇼핑</span>
-                      </a>
+                        쇼핑
+                      </NavItem>
                     </li>
                   </>
                 )}
