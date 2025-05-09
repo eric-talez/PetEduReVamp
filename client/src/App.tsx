@@ -23,7 +23,7 @@ import MessagesPage from "./pages/messages/index";
 import NotificationsPage from "./pages/notifications/index";
 // 쇼핑 페이지 - 통합 경로 사용
 import CartPage from "@/pages/Cart"; // 장바구니 페이지
-import ShopPage from "./pages/shop/ShopPage"; // 쇼핑 페이지 메인 컴포넌트 (단일 진입점)
+import ShopIndex from "./pages/shop/index"; // 쇼핑 페이지 메인 컴포넌트 (단일 진입점)
 import ProductDetailPage from "./pages/shop/product"; // 상품 상세 페이지
 
 import VideoTrainingPage from "./pages/video-training/index";
@@ -133,7 +133,7 @@ function AuthenticatedRoutes() {
         <Route path="/shop">
           {() => {
             console.log("인증된 사용자가 /shop 경로에 접근 - 단일 컴포넌트로 연결");
-            return <ShopPage />;
+            return <ShopIndex />;
           }}
         </Route>
         
@@ -152,7 +152,7 @@ function AuthenticatedRoutes() {
         <Route path="/shop/*">
           {() => {
             console.log("인증된 사용자가 /shop/* 경로에 접근");
-            return <ShopPage />;
+            return <ShopIndex />;
           }}
         </Route>
         
