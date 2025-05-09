@@ -1136,6 +1136,7 @@
   <div class="utility-nav">
     <div class="container utility-nav-container">
       <ul class="utility-links">
+        <li><a href="javascript:void(0)" onclick="goToMainService()" class="main-service-link">메인 서비스</a></li>
         <li><a href="#">로그인</a></li>
         <li><a href="#">회원가입</a></li>
         <li><a href="#">마이페이지</a></li>
@@ -1983,33 +1984,36 @@
       }, 300000); // 5분 (실제 사용 시에는 길게 설정)
     }
     
-    // 홈으로 이동
-    function goToHome() {
-      // 부모 창에 메시지 전송
+    // 본서비스로 이동
+    function goToMainService() {
+      console.log('본서비스로 이동 함수 호출됨');
       try {
-        window.parent.postMessage({
-          type: 'NAVIGATE_TO_HOME',
-          data: {}
-        }, '*');
+        window.top.location.href = '/';
       } catch (error) {
-        console.warn('부모 창에 메시지 전송 실패:', error);
-        // 대체 처리 - 직접 페이지 이동
+        console.error('페이지 이동 중 오류:', error);
         window.location.href = '/';
+      }
+    }
+    
+    // 홈으로 이동 (쇼핑몰 홈)
+    function goToHome() {
+      console.log('쇼핑몰 홈으로 이동 함수 호출됨');
+      try {
+        window.top.location.href = '/shop.html';
+      } catch (error) {
+        console.error('페이지 이동 중 오류:', error);
+        window.location.href = '/shop.html';
       }
     }
     
     // 장바구니 페이지로 이동
     function goToCart() {
-      // 부모 창에 메시지 전송
+      console.log('장바구니 페이지로 이동 함수 호출됨');
       try {
-        window.parent.postMessage({
-          type: 'NAVIGATE_TO_CART',
-          data: {}
-        }, '*');
+        window.top.location.href = '/cart.html';
       } catch (error) {
-        console.warn('부모 창에 메시지 전송 실패:', error);
-        // 대체 처리 - 직접 페이지 이동
-        window.location.href = '/checkout.html';
+        console.error('페이지 이동 중 오류:', error);
+        window.location.href = '/cart.html';
       }
     }
     
