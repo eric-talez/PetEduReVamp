@@ -394,9 +394,10 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                         icon={<ShoppingBag className="w-5 h-5 mr-2" />} 
                         active={isActive("/shop")} 
                         onClick={(path) => {
-                          console.log("비인증 사용자가 쇼핑 메뉴 클릭 - 직접 URL 이동");
-                          // 라우팅 이슈를 해결하기 위해 window.location.href 사용
-                          window.location.href = "/shop";
+                          console.log("비인증 사용자가 쇼핑 메뉴 클릭 - 절대 경로 형식으로 직접 URL 이동");
+                          // 라우팅 이슈를 해결하기 위해 window.location.href 사용 + 절대 경로 형식으로 완전한 URL 작성
+                          const baseUrl = window.location.origin;
+                          window.location.href = `${baseUrl}/shop`;
                           if (onClose) onClose();
                         }} 
                         show={true}
