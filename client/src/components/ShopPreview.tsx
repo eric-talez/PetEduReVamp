@@ -45,8 +45,8 @@ export function ShopPreview() {
               className="px-4 py-2 bg-primary-foreground/20 hover:bg-primary-foreground/30 rounded-md text-sm font-medium transition-colors"
               onClick={(e) => {
                 e.preventDefault();
-                console.log("ShopPreview에서 쇼핑몰 바로가기 클릭");
-                window.location.href = '/shop';
+                console.log("ShopPreview에서 쇼핑몰 바로가기 클릭 - 정적 페이지로 이동");
+                window.location.href = '/shop.html';
               }}
             >
               쇼핑몰 바로가기
@@ -66,8 +66,8 @@ export function ShopPreview() {
               className="bg-gray-50 dark:bg-gray-700 rounded-lg overflow-hidden transition-transform duration-300 hover:transform hover:scale-105 shadow-sm"
               onClick={(e) => {
                 e.preventDefault();
-                console.log("ShopPreview에서 카테고리 카드 클릭");
-                window.location.href = '/shop';
+                console.log("ShopPreview에서 카테고리 카드 클릭 - 정적 페이지로 이동");
+                window.location.href = '/shop.html';
               }}
             >
               <div className="p-3">

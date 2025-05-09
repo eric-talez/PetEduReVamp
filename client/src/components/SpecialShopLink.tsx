@@ -32,13 +32,13 @@ export function SpecialShopLink({ children, className = "" }: SpecialShopLinkPro
     
     // window.location 사용 (전통적인 브라우저 네비게이션)
     // 인증 여부와 관계없이 쇼핑 페이지로 직접 이동
-    // 전체 URL을 명시적으로 설정
-    window.location.href = "/shop";
+    // 정적 HTML 페이지로 이동
+    window.location.href = "/shop.html";
   };
   
   return (
     <a 
-      href="/shop" 
+      href="/shop.html" 
       onClick={handleClick}
       className={className}
     >
