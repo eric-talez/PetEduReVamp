@@ -1160,7 +1160,7 @@
 <body>
   <header>
     <div class="container header-container">
-      <a href="javascript:void(0)" onclick="goToHome()" class="logo">
+      <a href="/" onclick="goToHome(); return false;" class="logo">
         <span class="logo-icon">T</span>
         <span class="logo-text">테일즈 쇼핑</span>
       </a>
@@ -1171,8 +1171,8 @@
       
       <nav>
         <ul class="nav-menu">
-          <li><a href="javascript:void(0)" onclick="goToHome()">홈</a></li>
-          <li><a href="javascript:void(0)" onclick="goToShop()">쇼핑 홈</a></li>
+          <li><a href="/" onclick="goToHome(); return false;">홈</a></li>
+          <li><a href="/shop.html" onclick="goToShop(); return false;">쇼핑 홈</a></li>
           <li><a href="#">베스트</a></li>
           <li><a href="#">신상품</a></li>
           <li><a href="#">타임세일</a></li>
@@ -1218,9 +1218,9 @@
     <section class="product-detail">
       <div class="container">
         <div class="product-breadcrumb">
-          <a href="javascript:void(0)" onclick="goToHome()">홈</a>
+          <a href="/" onclick="goToHome(); return false;">홈</a>
           <span>›</span>
-          <a href="javascript:void(0)" onclick="goToShop()">쇼핑</a>
+          <a href="/shop.html" onclick="goToShop(); return false;">쇼핑</a>
           <span>›</span>
           <a href="#">강아지용품</a>
           <span>›</span>
