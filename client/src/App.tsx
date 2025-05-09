@@ -132,30 +132,9 @@ function AuthenticatedRoutes() {
         <Route path="/messages" component={MessagesPage} />
         <Route path="/notifications" component={NotificationsPage} />
         
-        {/* 인증된 사용자 쇼핑 관련 라우트 */}
-        <Route path="/shop">
-          {() => {
-            console.log("인증된 사용자가 쇼핑 경로에 접근");
-            return <ShopPage />;
-          }}
-        </Route>
-        
-        {/* 쇼핑 관련 하위 라우트 - 카트 및 상품 상세 (인증된 사용자) */}
+        {/* 인증된 사용자 쇼핑 관련 라우트는 제거 - 비인증 사용자 라우트만 사용 */}
+        {/* 쇼핑 카트 접근은 인증된 사용자만 가능 */}
         <Route path="/shop/cart" component={CartPage} />
-        <Route path="/shop/product/:id">
-          {(params) => {
-            console.log("인증된 사용자가 상품 상세 페이지 접근:", params.id);
-            return <ProductDetailPage />;
-          }}
-        </Route>
-        
-        {/* 쇼핑 관련 대체 경로 - 인증된 사용자 */}
-        <Route path="/shop-basic">
-          {() => {
-            console.log("인증된 사용자가 기본 쇼핑 페이지 접근");
-            return <RedirectHandler to="/shop" />;
-          }}
-        </Route>
         
         {/* 쇼핑 로그인 요구 페이지 (인증된 사용자는 /shop으로 리다이렉트) */}
         <Route path="/shop-login-required">

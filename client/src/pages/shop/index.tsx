@@ -48,13 +48,14 @@ const sampleProducts: Product[] = [
   // ... Add more sample products
 ];
 
-// ShopBasicPage를 절대 경로로 가져옵니다
-import ShopBasicPage from '@/pages/ShopBasicPage';
+// 이 파일은 ShopPage.tsx로 리디렉션합니다
+import ShopPage from './ShopPage';
 
-export default function ShopPage() {
-  console.log("Shop/index.tsx: ShopBasicPage로 리디렉션");
-  // ShopBasicPage 컴포넌트를 직접 반환
-  return <ShopBasicPage />;
+// 동일한 경로에 index.tsx와 ShopPage.tsx가 있으면 혼란을 일으킬 수 있으므로
+// index.tsx는 단순히 ShopPage.tsx를 내보내는 역할만 합니다
+export default function ShopPageIndex() {
+  console.log("Shop/index.tsx: ShopPage.tsx 컴포넌트로 리디렉션");
+  return <ShopPage />;
 }
 
 // 아래 코드는 더 이상 사용하지 않습니다 - ShopBasicPage를 사용합니다
