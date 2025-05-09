@@ -332,18 +332,10 @@ function UnauthenticatedRoutes() {
           }}
         </Route>
         
-        {/* 쇼핑 관련 대체 경로 */}
-        <Route path="/shop-basic">
-          {() => {
-            console.log("비인증 사용자가 /shop-basic 경로에 직접 접근");
-            return <ShopPage />;
-          }}
-        </Route>
-        
-        {/* 추가 - 모든 쇼핑 관련 URL 처리 (조금 더 구체적인 경로는 위에서 처리) */}
+        {/* 모든 쇼핑 관련 URL 통합 처리 */}
         <Route path="/shop/*">
           {() => {
-            console.log("비인증 사용자가 /shop/* 경로에 접근 - 쇼핑 페이지로 리다이렉트");
+            console.log("비인증 사용자가 /shop/* 경로에 접근");
             return <ShopPage />;
           }}
         </Route>

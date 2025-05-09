@@ -651,8 +651,8 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
                               className="mt-2"
                               onClick={() => {
                                 setCartPopupOpen(false);
-                                console.log("카트 팝업에서 쇼핑 버튼 클릭 - /shop-redirect로 이동");
-                                setLocation("/shop-redirect");
+                                console.log("카트 팝업에서 쇼핑 버튼 클릭 - 직접 /shop으로 이동");
+                                window.location.href = "/shop";
                               }}
                             >
                               쇼핑하러 가기
