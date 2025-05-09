@@ -132,17 +132,8 @@ function AuthenticatedRoutes() {
         {/* 인증된 사용자의 쇼핑 관련 라우트 */}
         <Route path="/shop">
           {() => {
-            console.log("인증된 사용자가 /shop 경로에 직접 접근 - 쇼핑 페이지로 이동 (정확한 경로)");
-            console.log("ShopPageIndex로 연결 (인증 사용자)");
-            
-            try {
-              // Lazy import를 사용하지 않고 직접 import한 컴포넌트 사용
-              const ShopPageIndex = require('./pages/shop/index').default;
-              return <ShopPageIndex />;
-            } catch (error) {
-              console.error("ShopPageIndex 로드 실패 (인증):", error);
-              return <div>쇼핑 페이지를 로드하는 중 오류가 발생했습니다.</div>;
-            }
+            console.log("인증된 사용자가 /shop 경로에 접근 - 단일 컴포넌트로 연결");
+            return <ShopPage />;
           }}
         </Route>
         
@@ -160,7 +151,7 @@ function AuthenticatedRoutes() {
         {/* 추가 - 모든 쇼핑 관련 URL 처리 (조금 더 구체적인 경로는 위에서 처리) */}
         <Route path="/shop/*">
           {() => {
-            console.log("인증된 사용자가 /shop/* 경로에 접근 - 쇼핑 페이지로 리다이렉트");
+            console.log("인증된 사용자가 /shop/* 경로에 접근");
             return <ShopPage />;
           }}
         </Route>
