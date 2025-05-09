@@ -57,6 +57,7 @@ const ContactPage = lazy(() => import('./pages/help/contact'));
 // Auth Pages
 import LoginPage from "./pages/auth/login";
 import RegisterPage from "./pages/auth/login"; // 임시로 로그인 페이지를 재사용
+import ShopLoginRequiredPage from "./pages/shop-login-required";
 
 console.log('App initialized - CourseDetail component:', CourseDetail);
 
@@ -293,7 +294,7 @@ function UnauthenticatedRoutes() {
         </Route>
 
         {/* 쇼핑 로그인 요구 페이지 라우트 - 비인증 사용자를 위한 안내 페이지 */}
-        <Route path="/shop-login-required" component={lazy(() => import('./pages/shop-login-required'))} />
+        <Route path="/shop-login-required" component={ShopLoginRequiredPage} />
 
         {/* 쇼핑 관련 모든 경로 - 로그인 안내 페이지 컴포넌트로 라우팅 */}
         <Route path="/shop">

@@ -394,7 +394,7 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                       active={isActive("/shop") || isActive("/shop-login-required") || isActive("/shop-basic") || isActive("/shop-redirect")} 
                       onClick={(path) => {
                         console.log("비인증 사용자가 쇼핑 메뉴 클릭 - 직접 shop-login-required로 이동");
-                        window.location.href = "/shop-login-required";
+                        navigate("/shop-login-required");
                       }} 
                       show={true}
                     >쇼핑</NavItem>
@@ -483,7 +483,7 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                     <NavItem href="/events" icon={<Calendar className="w-5 h-5 mr-2" />} active={isActive("/events")} onClick={handleItemClick} show={true}>이벤트</NavItem>
                     <NavItem href="/shop" icon={<ShoppingBag className="w-5 h-5 mr-2" />} active={isActive("/shop")} onClick={() => {
                       console.log("인증된 사용자가 쇼핑 메뉴 클릭");
-                      window.location.href = "/shop";
+                      navigate("/shop");
                     }} show={true}>쇼핑</NavItem>
                   </>
                 )}

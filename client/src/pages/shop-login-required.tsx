@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'wouter';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import { ShoppingBag, User, Lock, Store } from 'lucide-react';
 
 /**
