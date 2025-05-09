@@ -53,36 +53,36 @@ export default function ShopIndex() {
   ]);
   
   const [sliders] = useState([
-    { id: 1, title: "반려동물 봄 신상품 모음전", subtitle: "견생주치가 추천하는 반려동물 맞춤 상품", imageUrl: "https://placehold.co/1200x400/e9f5e9/03c75a?text=반려동물+봄+신상품" },
-    { id: 2, title: "프리미엄 사료 할인전", subtitle: "건강한 영양을 위한 최고급 사료 모음", imageUrl: "https://placehold.co/1200x400/e1f5ff/0078d7?text=프리미엄+사료+할인전" },
-    { id: 3, title: "펫 장난감 특별기획전", subtitle: "활동성 높은 반려동물을 위한 다양한 장난감", imageUrl: "https://placehold.co/1200x400/f5e9e9/d70000?text=펫+장난감+특별기획전" }
+    { id: 1, title: "반려동물 봄 신상품 모음전", subtitle: "견생주치가 추천하는 반려동물 맞춤 상품", imageUrl: "/images/pet-banner-spring.jpg" },
+    { id: 2, title: "프리미엄 사료 할인전", subtitle: "건강한 영양을 위한 최고급 사료 모음", imageUrl: "/images/pet-banner-food.jpg" },
+    { id: 3, title: "펫 장난감 특별기획전", subtitle: "활동성 높은 반려동물을 위한 다양한 장난감", imageUrl: "/images/pet-banner-toys.jpg" }
   ]);
   
   const [popularProducts] = useState([
-    { id: 1, name: '프리미엄 닭고기 사료 대용량', price: 45000, discountRate: 10, imageUrl: 'https://placehold.co/300x300/f8fafc/475569?text=사료', brand: '네이처스', rating: 4.8, reviews: 256, isFreeShipping: true, isNew: false },
-    { id: 2, name: '강아지 덴탈 껌 10개입', price: 12000, discountRate: 0, imageUrl: 'https://placehold.co/300x300/f8fafc/475569?text=간식', brand: '펫투데이', rating: 4.5, reviews: 189, isFreeShipping: true, isNew: true },
-    { id: 3, name: '반려견 종합 영양제 120정', price: 35000, discountRate: 15, imageUrl: 'https://placehold.co/300x300/f8fafc/475569?text=영양제', brand: '헬시펫', rating: 4.9, reviews: 312, isFreeShipping: true, isNew: false },
-    { id: 4, name: '인터랙티브 노즈워크 장난감', price: 25000, discountRate: 0, imageUrl: 'https://placehold.co/300x300/f8fafc/475569?text=장난감', brand: '퍼피플레이', rating: 4.7, reviews: 124, isFreeShipping: false, isNew: false },
+    { id: 1, name: '프리미엄 닭고기 사료 대용량', price: 45000, discountRate: 10, imageUrl: '/images/pet-food-premium.jpg', brand: '네이처스', rating: 4.8, reviews: 256, isFreeShipping: true, isNew: false },
+    { id: 2, name: '강아지 덴탈 껌 10개입', price: 12000, discountRate: 0, imageUrl: '/images/pet-treats.jpg', brand: '펫투데이', rating: 4.5, reviews: 189, isFreeShipping: true, isNew: true },
+    { id: 3, name: '반려견 종합 영양제 120정', price: 35000, discountRate: 15, imageUrl: '/images/pet-supplements.jpg', brand: '헬시펫', rating: 4.9, reviews: 312, isFreeShipping: true, isNew: false },
+    { id: 4, name: '인터랙티브 노즈워크 장난감', price: 25000, discountRate: 0, imageUrl: '/images/pet-toy-interactive.jpg', brand: '퍼피플레이', rating: 4.7, reviews: 124, isFreeShipping: false, isNew: false },
   ]);
   
   const [trendingProducts] = useState([
-    { id: 5, name: '반려견 패딩조끼 겨울용', price: 28000, discountRate: 5, imageUrl: 'https://placehold.co/300x300/f8fafc/475569?text=의류', brand: '펫라이프', rating: 4.6, reviews: 95, isFreeShipping: true, isNew: true },
-    { id: 6, name: '프리미엄 방석형 하우스 중형', price: 42000, discountRate: 20, imageUrl: 'https://placehold.co/300x300/f8fafc/475569?text=하우스', brand: '코지홈', rating: 4.4, reviews: 78, isFreeShipping: true, isNew: false },
-    { id: 7, name: '안전 하네스 산책용 (M사이즈)', price: 18000, discountRate: 0, imageUrl: 'https://placehold.co/300x300/f8fafc/475569?text=하네스', brand: '세이프티', rating: 4.8, reviews: 156, isFreeShipping: false, isNew: false },
-    { id: 8, name: '저자극 반려견 샴푸 500ml', price: 15000, discountRate: 10, imageUrl: 'https://placehold.co/300x300/f8fafc/475569?text=케어', brand: '퓨어펫', rating: 4.7, reviews: 203, isFreeShipping: true, isNew: true }
+    { id: 5, name: '반려견 패딩조끼 겨울용', price: 28000, discountRate: 5, imageUrl: '/images/pet-clothing.jpg', brand: '펫라이프', rating: 4.6, reviews: 95, isFreeShipping: true, isNew: true },
+    { id: 6, name: '프리미엄 방석형 하우스 중형', price: 42000, discountRate: 20, imageUrl: '/images/pet-house.jpg', brand: '코지홈', rating: 4.4, reviews: 78, isFreeShipping: true, isNew: false },
+    { id: 7, name: '안전 하네스 산책용 (M사이즈)', price: 18000, discountRate: 0, imageUrl: '/images/pet-harness.jpg', brand: '세이프티', rating: 4.8, reviews: 156, isFreeShipping: false, isNew: false },
+    { id: 8, name: '저자극 반려견 샴푸 500ml', price: 15000, discountRate: 10, imageUrl: '/images/pet-shampoo.jpg', brand: '퓨어펫', rating: 4.7, reviews: 203, isFreeShipping: true, isNew: true }
   ]);
   
   // 네이버 쇼핑 인기 기획전
   const [shoppingEvents] = useState([
-    { id: 1, title: '여름맞이 반려동물 용품', discount: '최대 40%', imageUrl: 'https://placehold.co/500x300/e9f5f9/03a9f4?text=여름맞이+특가' },
-    { id: 2, title: '프리미엄 사료 모음전', discount: '~30%', imageUrl: 'https://placehold.co/500x300/f9e9e9/f44336?text=프리미엄+사료' },
-    { id: 3, title: '신상 애견의류 특가', discount: '~25%', imageUrl: 'https://placehold.co/500x300/e9f9e9/4caf50?text=신상+애견의류' },
+    { id: 1, title: '여름맞이 반려동물 용품', discount: '최대 40%', imageUrl: '/images/pet-summer-event.jpg' },
+    { id: 2, title: '프리미엄 사료 모음전', discount: '~30%', imageUrl: '/images/pet-food-collection.jpg' },
+    { id: 3, title: '신상 애견의류 특가', discount: '~25%', imageUrl: '/images/pet-clothing-sale.jpg' },
   ]);
   
   // 최근 본 상품 (예시)
   const [recentlyViewed] = useState([
-    { id: 101, name: '고양이 캣타워', price: 89000, imageUrl: 'https://placehold.co/200x200/f8fafc/475569?text=캣타워' },
-    { id: 102, name: '강아지 자동급식기', price: 35000, imageUrl: 'https://placehold.co/200x200/f8fafc/475569?text=급식기' },
+    { id: 101, name: '고양이 캣타워', price: 89000, imageUrl: '/images/cat-tower.jpg' },
+    { id: 102, name: '강아지 자동급식기', price: 35000, imageUrl: '/images/pet-feeder.jpg' },
   ]);
   
   // 슬라이더 관련 상태 및 함수
@@ -225,34 +225,47 @@ export default function ShopIndex() {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* TopBar와 Sidebar는 AppLayout에서 제공되므로 여기서는 중복 렌더링하지 않음 */}
       <div className=""> {/* TopBar 패딩 제거 (AppLayout에서 제공) */}
-        {/* 네이버 쇼핑 스타일 검색바 */}
+        {/* FunnyTalez 스타일 검색바 */}
         <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 py-3">
           <div className="container mx-auto px-4">
             <div className="flex items-center justify-between">
+              {/* 쇼핑몰 로고 영역 */}
+              <div className="mr-4">
+                <a href="/shop" className="flex items-center" onClick={(e) => {
+                  e.preventDefault();
+                  setLocation('/shop');
+                }}>
+                  <h1 className="text-2xl font-bold text-[#03c75a]">테일즈 쇼핑</h1>
+                </a>
+              </div>
+              
+              {/* 검색 영역 */}
               <div className="flex items-center w-full max-w-xl relative">
                 <form onSubmit={handleSearch} className="flex w-full relative">
-                  <Input
-                    className="pr-10 border-[#03c75a] focus-visible:ring-[#03c75a] h-12 text-base"
-                    placeholder="검색어를 입력해 주세요"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    onFocus={handleSearchFocus}
-                    onBlur={handleSearchBlur}
-                  />
-                  <button 
-                    type="submit" 
-                    className="absolute right-0 top-0 h-full px-3 text-[#03c75a] hover:text-[#02b04a]"
-                  >
-                    <Search className="h-5 w-5" />
-                  </button>
+                  <div className="relative flex-1">
+                    <Input
+                      className="pr-10 rounded-full border-[#03c75a] focus-visible:ring-[#03c75a] h-12 text-base pl-5"
+                      placeholder="반려동물 용품을 검색해보세요"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      onFocus={handleSearchFocus}
+                      onBlur={handleSearchBlur}
+                    />
+                    <button 
+                      type="submit" 
+                      className="absolute right-0 top-0 h-full px-4 bg-[#03c75a] hover:bg-[#02b04a] text-white rounded-r-full flex items-center justify-center"
+                    >
+                      <Search className="h-5 w-5" />
+                    </button>
+                  </div>
                 </form>
                 
                 {/* 검색어 자동완성/최근 검색어 */}
                 {showSearchSuggestions && (
-                  <div className="absolute top-full left-0 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg z-20">
+                  <div className="absolute top-full left-0 w-full mt-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg z-20">
                     <div className="p-4">
                       <div className="flex items-center justify-between mb-2">
-                        <h3 className="text-sm font-medium">최근 검색어</h3>
+                        <h3 className="text-sm font-bold">최근 검색어</h3>
                         <button className="text-xs text-gray-500 hover:text-gray-700">
                           전체 삭제
                         </button>
@@ -269,17 +282,26 @@ export default function ShopIndex() {
                       </div>
                       
                       <div className="border-t border-gray-200 dark:border-gray-700 pt-3">
-                        <h3 className="text-sm font-medium mb-2">인기 검색어</h3>
+                        <h3 className="text-sm font-bold mb-2">인기 검색어</h3>
                         <div className="grid grid-cols-2 gap-2">
                           {popularSearches.slice(0, 10).map((item) => (
-                            <div key={item.rank} className="flex items-center group">
+                            <div 
+                              key={item.rank} 
+                              className="flex items-center group cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 p-1 rounded"
+                              onClick={() => {
+                                setSearchQuery(item.term);
+                                handleSearch(new Event('submit') as any);
+                              }}
+                            >
                               <span className={`w-5 text-sm font-bold ${item.rank <= 3 ? 'text-[#03c75a]' : 'text-gray-500'}`}>
                                 {item.rank}
                               </span>
                               <span className="text-sm flex-1 truncate group-hover:text-[#03c75a]">
                                 {item.term}
                               </span>
-                              <span className="text-xs">
+                              <span className={`text-xs ${item.change === 'up' ? 'text-red-500' : 
+                                item.change === 'down' ? 'text-blue-500' : 
+                                item.change === 'new' ? 'text-[#03c75a] font-bold' : 'text-gray-400'}`}>
                                 {item.change === 'up' ? '↑' : 
                                   item.change === 'down' ? '↓' : 
                                   item.change === 'new' ? 'NEW' : '-'}
@@ -335,47 +357,68 @@ export default function ShopIndex() {
           </div>
         </div>
         
-        {/* 카테고리 내비게이션 바 - 네이버 쇼핑 스타일 */}
+        {/* 카테고리 내비게이션 바 - FunnyTalez 스타일 */}
         <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
           <div className="container mx-auto px-4">
-            <div className="flex items-center space-x-6 overflow-x-auto py-3 no-scrollbar">
-              <a 
-                href="#" 
-                className="text-sm font-medium text-[#03c75a] border-b-2 border-[#03c75a] pb-2 flex items-center whitespace-nowrap"
-                onClick={(e) => {
-                  e.preventDefault();
-                  setLocation('/shop');
-                }}
-              >
-                <Home className="h-4 w-4 mr-1" />
-                홈
-              </a>
-              
-              {categories.slice(0, 8).map((category) => (
+            <div className="flex justify-between items-center py-3">
+              {/* 주요 카테고리 내비게이션 */}
+              <div className="flex items-center space-x-6 overflow-x-auto no-scrollbar">
                 <a 
-                  key={category.id}
-                  href={`/shop/category/${category.id}`}
-                  className="text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-[#03c75a] whitespace-nowrap"
+                  href="#" 
+                  className="text-sm font-bold text-[#03c75a] border-b-2 border-[#03c75a] pb-2 flex items-center whitespace-nowrap"
                   onClick={(e) => {
                     e.preventDefault();
-                    setLocation(`/shop/category/${category.id}`);
+                    setLocation('/shop');
                   }}
                 >
-                  {category.name}
+                  <Home className="h-4 w-4 mr-1" />
+                  홈
                 </a>
-              ))}
+                
+                {categories.slice(0, 6).map((category) => (
+                  <a 
+                    key={category.id}
+                    href={`/shop/category/${category.id}`}
+                    className="text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-[#03c75a] whitespace-nowrap pb-2 border-b-2 border-transparent hover:border-[#03c75a] transition-colors"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setLocation(`/shop/category/${category.id}`);
+                    }}
+                  >
+                    {category.name}
+                  </a>
+                ))}
+              </div>
               
-              <a 
-                href="#" 
-                className="text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-[#03c75a] whitespace-nowrap flex items-center"
-                onClick={(e) => {
-                  e.preventDefault();
-                  // 카테고리 더보기
-                }}
-              >
-                더보기
-                <ChevronDown className="h-4 w-4 ml-1" />
-              </a>
+              {/* 카테고리 드롭다운 */}
+              <div className="relative group">
+                <button 
+                  className="flex items-center text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-[#03c75a] whitespace-nowrap"
+                >
+                  전체 카테고리
+                  <ChevronDown className="h-4 w-4 ml-1" />
+                </button>
+                
+                <div className="absolute hidden group-hover:block right-0 mt-2 w-64 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg z-20">
+                  <div className="grid grid-cols-1 gap-0">
+                    {categories.map((category) => (
+                      <a 
+                        key={category.id}
+                        href={`/shop/category/${category.id}`}
+                        className="flex items-center p-3 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-[#03c75a]"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setLocation(`/shop/category/${category.id}`);
+                        }}
+                      >
+                        <span className="text-xl mr-2">{category.icon}</span>
+                        <span>{category.name}</span>
+                        <span className="ml-auto text-xs text-gray-400">({category.count})</span>
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>

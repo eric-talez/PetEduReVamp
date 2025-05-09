@@ -46,14 +46,17 @@ export function ShopPreview() {
               className="px-4 py-2 bg-primary-foreground/20 hover:bg-primary-foreground/30 rounded-md text-sm font-medium transition-colors"
               onClick={(e) => {
                 e.preventDefault();
-                console.log("ShopPreview에서 쇼핑몰 바로가기 클릭 - setLocation 사용");
-                setLocation('/shop');
+                console.log("ShopPreview에서 쇼핑몰 바로가기 클릭 - 새 창으로 열기");
+                
+                // 쇼핑 페이지를 새 창에서 열기
+                window.open('/shop', '_blank', 'noopener,noreferrer');
                 
                 // 디버깅 정보
-                console.log("ShopPreview에서 쇼핑 페이지 이동 시작:", new Date().toISOString());
+                console.log("ShopPreview에서 쇼핑 페이지 새 창으로 열기:", new Date().toISOString());
                 console.log("현재 경로:", window.location.pathname);
-                console.log("이동할 경로:", "/shop");
               }}
+              target="_blank"
+              rel="noopener noreferrer"
             >
               쇼핑몰 바로가기
             </a>
@@ -72,13 +75,14 @@ export function ShopPreview() {
               className="bg-gray-50 dark:bg-gray-700 rounded-lg overflow-hidden transition-transform duration-300 hover:transform hover:scale-105 shadow-sm"
               onClick={(e) => {
                 e.preventDefault();
-                console.log("ShopPreview에서 카테고리 카드 클릭 - setLocation 사용");
-                setLocation('/shop');
+                console.log("ShopPreview에서 카테고리 카드 클릭 - 새 창으로 열기");
+                
+                // 쇼핑 페이지를 새 창에서 열기
+                window.open('/shop', '_blank', 'noopener,noreferrer');
                 
                 // 디버깅 정보
-                console.log("ShopPreview 카테고리에서 쇼핑 페이지 이동 시작:", new Date().toISOString());
+                console.log("ShopPreview 카테고리에서 쇼핑 페이지 새 창으로 열기:", new Date().toISOString());
                 console.log("현재 경로:", window.location.pathname);
-                console.log("이동할 경로:", "/shop");
               }}
             >
               <div className="p-3">

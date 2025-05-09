@@ -373,26 +373,29 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                     >이벤트</NavItem>
 
                     <li className="relative">
-                      <NavItem 
+                      <a 
                         href="/shop" 
-                        icon={<ShoppingBag className="w-5 h-5 mr-2" />} 
-                        active={isActive("/shop")} 
-                        onClick={(path) => {
-                          console.log("비인증 사용자가 쇼핑 메뉴 클릭 - setLocation 사용");
-                          // 특수 쇼핑 로직: 인증 여부에 관계없이 접근을 허용하되 Wouter의 setLocation 사용
-                          setLocation('/shop');
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={cn(
+                          "sidebar-link flex items-center py-2 text-sm font-medium rounded-md transition-all duration-200 ease-in-out",
+                          expanded ? "px-3" : "px-2 justify-center",
+                          isActive("/shop") ? "bg-primary/10 text-primary" : "text-gray-700 dark:text-gray-200 hover:text-primary dark:hover:text-primary"
+                        )}
+                        onClick={(e) => {
+                          // 기본 a 태그 동작(새 창 열기)은 유지하고 추가 로직만 실행
+                          console.log("비인증 사용자가 쇼핑 메뉴 클릭 - 새 창으로 열기");
                           
                           // 디버깅 정보
-                          console.log("쇼핑 페이지 이동 시작:", new Date().toISOString());
+                          console.log("쇼핑 페이지 새 창 열기:", new Date().toISOString());
                           console.log("현재 경로:", window.location.pathname);
-                          console.log("이동할 경로:", "/shop");
                           
                           if (onClose) onClose();
-                        }} 
-                        show={true}
+                        }}
                       >
-                        쇼핑
-                      </NavItem>
+                        <ShoppingBag className="w-5 h-5 mr-2" />
+                        {expanded && <span>쇼핑</span>}
+                      </a>
                     </li>
 
                     {/* 도움말 그룹 추가 */}

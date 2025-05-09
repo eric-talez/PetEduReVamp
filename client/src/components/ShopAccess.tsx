@@ -44,13 +44,14 @@ export function ShopAccess() {
           <div className="flex space-x-2">
             <button 
               onClick={() => {
-                console.log("ShopAccess에서 쇼핑몰 바로가기 클릭 - setLocation 사용");
-                setLocation('/shop');
+                console.log("ShopAccess에서 쇼핑몰 바로가기 클릭 - 새 창으로 열기");
+                
+                // 쇼핑 페이지를 새 창에서 열기
+                window.open('/shop', '_blank', 'noopener,noreferrer');
                 
                 // 디버깅 정보
-                console.log("ShopAccess에서 쇼핑 페이지 이동 시작:", new Date().toISOString());
+                console.log("ShopAccess에서 쇼핑 페이지 새 창으로 열기:", new Date().toISOString());
                 console.log("현재 경로:", window.location.pathname);
-                console.log("이동할 경로:", "/shop");
               }}
               className="px-4 py-2 bg-primary-foreground/20 hover:bg-primary-foreground/30 rounded-md text-sm font-medium transition-colors"
             >
@@ -68,13 +69,14 @@ export function ShopAccess() {
             <div 
               key={index} 
               onClick={() => {
-                console.log("ShopAccess에서 카테고리 클릭 - setLocation 사용");
-                setLocation('/shop');
+                console.log("ShopAccess에서 카테고리 클릭 - 새 창으로 열기");
+                
+                // 쇼핑 페이지를 새 창에서 열기
+                window.open('/shop', '_blank', 'noopener,noreferrer');
                 
                 // 디버깅 정보
-                console.log("ShopAccess 카테고리에서 이동 시작:", new Date().toISOString());
+                console.log("ShopAccess 카테고리에서 새 창으로 열기:", new Date().toISOString());
                 console.log("현재 경로:", window.location.pathname);
-                console.log("이동할 경로:", "/shop");
               }}
               className="bg-gray-50 dark:bg-gray-700 rounded-lg overflow-hidden transition-transform duration-300 hover:transform hover:scale-105 shadow-sm cursor-pointer"
             >
