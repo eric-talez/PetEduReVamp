@@ -48,13 +48,19 @@ const sampleProducts: Product[] = [
   // ... Add more sample products
 ];
 
-// 이 파일은 ShopPage.tsx로 리디렉션합니다
+// 이 파일은 ShopPage.tsx로 직접 연결합니다
 import ShopPage from './ShopPage';
 
 // 동일한 경로에 index.tsx와 ShopPage.tsx가 있으면 혼란을 일으킬 수 있으므로
-// index.tsx는 단순히 ShopPage.tsx를 내보내는 역할만 합니다
+// index.tsx는 단순히 ShopPage.tsx를 내보내기만 합니다
 export default function ShopPageIndex() {
-  console.log("Shop/index.tsx: ShopPage.tsx 컴포넌트로 리디렉션");
+  // 중요: 이 컴포넌트에 접근할 때 실행됨
+  console.log("Shop/index.tsx: ShopPage.tsx 컴포넌트로 직접 연결");
+  
+  // 쇼핑 페이지가 연결된 시점을 기록
+  console.log("쇼핑 페이지 로딩 시작:", new Date().toISOString());
+  
+  // ShopPage 컴포넌트를 직접 반환
   return <ShopPage />;
 }
 
