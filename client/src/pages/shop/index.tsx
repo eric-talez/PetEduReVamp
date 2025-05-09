@@ -223,20 +223,10 @@ export default function ShopIndex() {
   
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      {/* 메인 서비스의 TopBar 사용 */}
-      <TopBar sidebarOpen={sidebarOpen} onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
-      
-      {/* 메인 서비스의 Sidebar 사용 */}
-      <Sidebar 
-        open={sidebarOpen} 
-        onClose={() => setSidebarOpen(false)} 
-        userRole={authState.userRole}
-        isAuthenticated={authState.isAuthenticated}
-      />
-      
-      <div className="pt-16"> {/* TopBar의 높이만큼 패딩 추가 */}
+      {/* TopBar와 Sidebar는 AppLayout에서 제공되므로 여기서는 중복 렌더링하지 않음 */}
+      <div className=""> {/* TopBar 패딩 제거 (AppLayout에서 제공) */}
         {/* 네이버 쇼핑 스타일 검색바 */}
-        <div className="sticky top-16 z-10 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 py-3">
+        <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 py-3">
           <div className="container mx-auto px-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center w-full max-w-xl relative">
@@ -346,7 +336,7 @@ export default function ShopIndex() {
         </div>
         
         {/* 카테고리 내비게이션 바 - 네이버 쇼핑 스타일 */}
-        <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-28 z-10">
+        <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
           <div className="container mx-auto px-4">
             <div className="flex items-center space-x-6 overflow-x-auto py-3 no-scrollbar">
               <a 
@@ -834,7 +824,7 @@ export default function ShopIndex() {
           </div>
         </div>
         
-        {/* 고정된 하단 네비게이션 바 (모바일용) */}
+        {/* 고정된 하단 네비게이션 바는 모바일 사용성을 위해 유지하되 레이아웃 문제를 해결하기 위해 z-index 조정 */}
         <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 z-20">
           <div className="grid grid-cols-5 h-16">
             <a 
