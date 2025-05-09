@@ -1818,6 +1818,10 @@
     
     // 챗봇 초기화
     function initChatbot() {
+      // 첫 시작 메시지 추가
+      addBotMessage("안녕하세요! 테일즈 AI 도우미입니다. 무엇을 도와드릴까요?");
+      showSuggestions(defaultSuggestions);
+      
       // 페이지 로드 시 비활성 타이머 시작
       resetInactivityTimer();
       
@@ -1839,6 +1843,16 @@
           localStorage.removeItem('showCouponOffer');
         }, 1000);
       }
+      
+      // 처음에는 알림 배지 숨기기
+      document.getElementById('unread-badge').style.display = 'none';
+      
+      // 10초 후 알림 배지 표시 (사용자가 챗봇을 열지 않았다면)
+      setTimeout(() => {
+        if (!isChatbotOpen) {
+          document.getElementById('unread-badge').style.display = 'flex';
+        }
+      }, 10000);
     }
     
     // 챗봇 토글 함수
