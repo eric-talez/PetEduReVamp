@@ -243,6 +243,94 @@
       background-color: var(--primary-hover);
     }
     
+    /* 필터 섹션 스타일 */
+    .filter-section {
+      margin-bottom: 1rem;
+      background-color: var(--gray-100);
+      border-radius: var(--border-radius);
+      padding: 1rem;
+    }
+    
+    .dark-mode .filter-section {
+      background-color: var(--gray-700);
+    }
+    
+    .filter-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      align-items: flex-end;
+    }
+    
+    .filter-group {
+      flex: 1;
+      min-width: 200px;
+    }
+    
+    .filter-group label {
+      display: block;
+      font-size: 0.875rem;
+      font-weight: 500;
+      margin-bottom: 0.5rem;
+      color: var(--gray-600);
+    }
+    
+    .dark-mode .filter-group label {
+      color: var(--gray-300);
+    }
+    
+    .filter-select {
+      width: 100%;
+      padding: 0.5rem;
+      border: 1px solid var(--gray-300);
+      border-radius: var(--border-radius);
+      background-color: white;
+      font-size: 0.875rem;
+      color: var(--gray-800);
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 0.5rem center;
+      background-size: 1rem;
+      cursor: pointer;
+    }
+    
+    .dark-mode .filter-select {
+      background-color: var(--gray-800);
+      border-color: var(--gray-600);
+      color: var(--gray-100);
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23cbd5e1' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    }
+    
+    .filter-button {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      background-color: var(--primary-color);
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: var(--border-radius);
+      font-size: 0.875rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    }
+    
+    .filter-button:hover {
+      background-color: var(--primary-hover);
+    }
+    
+    @media (max-width: 768px) {
+      .filter-container {
+        flex-direction: column;
+      }
+      
+      .filter-group {
+        width: 100%;
+      }
+    }
+    
     .category-list {
       display: flex;
       list-style: none;
@@ -840,6 +928,45 @@
               <path d="M12 5l7 7-7 7"></path>
             </svg>
           </a>
+        </div>
+        
+        <!-- 견종별/훈련사 추천 상품 필터 -->
+        <div class="filter-section">
+          <div class="filter-container">
+            <div class="filter-group">
+              <label for="breed-filter">견종별 상품</label>
+              <select id="breed-filter" class="filter-select">
+                <option value="">모든 견종</option>
+                <option value="maltese">말티즈</option>
+                <option value="poodle">푸들</option>
+                <option value="bichon">비숑</option>
+                <option value="shih-tzu">시츄</option>
+                <option value="pomeranian">포메라니안</option>
+                <option value="welsh-corgi">웰시코기</option>
+                <option value="golden-retriever">골든 리트리버</option>
+                <option value="samoyed">사모예드</option>
+              </select>
+            </div>
+
+            <div class="filter-group">
+              <label for="trainer-filter">훈련사 추천</label>
+              <select id="trainer-filter" class="filter-select">
+                <option value="">모든 훈련사</option>
+                <option value="trainer1">김철수 훈련사</option>
+                <option value="trainer2">이영희 훈련사</option>
+                <option value="trainer3">박지성 훈련사</option>
+                <option value="trainer4">정소연 훈련사</option>
+                <option value="trainer5">최민준 훈련사</option>
+              </select>
+            </div>
+            
+            <button class="filter-button" onclick="applyFilters()">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+              </svg>
+              필터 적용
+            </button>
+          </div>
         </div>
         <ul class="category-list">
           <li class="category-item">
