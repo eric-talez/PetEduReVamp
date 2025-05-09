@@ -58,13 +58,21 @@ export default function ShopIndex() {
               <div className="flex items-center space-x-4">
                 {isAuthenticated ? (
                   <div className="flex items-center space-x-4">
-                    <Button variant="ghost" size="sm" onClick={() => window.location.href = "/shop/cart"}>
+                    <Button variant="ghost" size="sm" onClick={(e) => {
+                      e.preventDefault();
+                      console.log("장바구니 버튼 클릭 - setLocation 사용");
+                      window.location.href = "/shop/cart";
+                    }}>
                       장바구니 ({cartItems.length})
                     </Button>
                     <span className="text-sm">{userName} 님</span>
                   </div>
                 ) : (
-                  <Button variant="default" size="sm" onClick={() => window.location.href = "/auth"}>
+                  <Button variant="default" size="sm" onClick={(e) => {
+                      e.preventDefault();
+                      console.log("로그인 버튼 클릭 - setLocation 사용");
+                      window.location.href = "/auth";
+                    }}>
                     로그인
                   </Button>
                 )}
@@ -72,7 +80,11 @@ export default function ShopIndex() {
                 <Button 
                   variant="ghost" 
                   size="icon" 
-                  onClick={() => window.location.href = "/"}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    console.log("메인으로 돌아가기 버튼 클릭 - setLocation 사용");
+                    window.location.href = "/";
+                  }}
                   aria-label="메인으로 돌아가기"
                 >
                   <MenuIcon className="h-5 w-5" />
@@ -125,7 +137,11 @@ export default function ShopIndex() {
               PetEdu 쇼핑에서 반려동물을 위한 최고의 제품을 만나보세요. 
               신규 회원 10% 할인 혜택을 놓치지 마세요!
             </p>
-            <Button onClick={() => window.location.href = "/shop/category/new"}>
+            <Button onClick={(e) => {
+              e.preventDefault();
+              console.log("신상품 보러가기 버튼 클릭 - setLocation 사용");
+              window.location.href = "/shop/category/new";
+            }}>
               신상품 보러가기
             </Button>
           </div>
