@@ -379,6 +379,309 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // ===== 쇼핑 API 엔드포인트 =====
+  
+  // 상품 카테고리 목록 가져오기
+  app.get("/api/shop/categories", (req, res) => {
+    try {
+      const categories = [
+        { id: 1, name: "사료", slug: "food", count: 32 },
+        { id: 2, name: "간식", slug: "treats", count: 28 },
+        { id: 3, name: "장난감", slug: "toys", count: 45 },
+        { id: 4, name: "의류", slug: "clothing", count: 20 },
+        { id: 5, name: "목줄/하네스", slug: "leashes", count: 15 },
+        { id: 6, name: "위생용품", slug: "hygiene", count: 22 },
+        { id: 7, name: "건강관리", slug: "health", count: 18 },
+        { id: 8, name: "훈련용품", slug: "training", count: 12 }
+      ];
+      
+      return res.status(200).json({ categories });
+    } catch (error) {
+      console.error("Get shop categories error:", error);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // 인기 반려견 품종 목록 가져오기
+  app.get("/api/shop/popular-breeds", (req, res) => {
+    try {
+      const breeds = [
+        { id: 1, name: "말티즈", slug: "maltese", count: 145 },
+        { id: 2, name: "푸들", slug: "poodle", count: 132 },
+        { id: 3, name: "포메라니안", slug: "pomeranian", count: 98 },
+        { id: 4, name: "시츄", slug: "shih-tzu", count: 87 },
+        { id: 5, name: "비숑 프리제", slug: "bichon-frise", count: 76 },
+        { id: 6, name: "웰시 코기", slug: "welsh-corgi", count: 65 },
+        { id: 7, name: "치와와", slug: "chihuahua", count: 52 },
+        { id: 8, name: "댕댕이", slug: "mixed-breed", count: 189 }
+      ];
+      
+      return res.status(200).json({ breeds });
+    } catch (error) {
+      console.error("Get popular breeds error:", error);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // 상품 목록 가져오기 (필터링 지원)
+  app.get("/api/shop/products", async (req, res) => {
+    try {
+      // 필터링 파라미터 가져오기
+      const { category, breed, minPrice, maxPrice, sort, page = 1, limit = 12 } = req.query;
+      
+      // 상품 목록 (예시 데이터)
+      const products = [
+        {
+          id: 1,
+          name: "프리미엄 강아지 사료",
+          description: "영양 균형이 완벽한 프리미엄 사료",
+          price: 45000,
+          discountRate: 10,
+          image: "/images/products/dog-food-premium.jpg",
+          category: "food",
+          rating: 4.8,
+          reviewCount: 142,
+          inStock: true,
+          attributes: {
+            weight: "3kg",
+            flavor: "닭고기",
+            suitableFor: ["all", "small", "medium"]
+          }
+        },
+        {
+          id: 2,
+          name: "강아지 덴탈 간식",
+          description: "치아 건강에 좋은 덴탈 간식",
+          price: 12000,
+          discountRate: 0,
+          image: "/images/products/dog-treats-dental.jpg",
+          category: "treats",
+          rating: 4.5,
+          reviewCount: 89,
+          inStock: true,
+          attributes: {
+            weight: "300g",
+            flavor: "치즈",
+            suitableFor: ["all", "small", "medium", "large"]
+          }
+        },
+        {
+          id: 3,
+          name: "인터랙티브 장난감",
+          description: "반려견의 지능 발달에 도움이 되는 장난감",
+          price: 28000,
+          discountRate: 15,
+          image: "/images/products/dog-toy-interactive.jpg",
+          category: "toys",
+          rating: 4.7,
+          reviewCount: 76,
+          inStock: true,
+          attributes: {
+            material: "고무, 플라스틱",
+            size: "중형",
+            suitableFor: ["all", "medium", "large"]
+          }
+        },
+        {
+          id: 4,
+          name: "강아지 겨울 패딩",
+          description: "추운 겨울을 따뜻하게 보낼 수 있는 패딩",
+          price: 35000,
+          discountRate: 20,
+          image: "/images/products/dog-clothing-winter.jpg",
+          category: "clothing",
+          rating: 4.6,
+          reviewCount: 52,
+          inStock: true,
+          attributes: {
+            size: ["XS", "S", "M", "L", "XL"],
+            color: ["레드", "네이비", "블랙"],
+            material: "면, 폴리에스터",
+            suitableFor: ["small", "medium"]
+          }
+        },
+        {
+          id: 5,
+          name: "편안한 강아지 하네스",
+          description: "산책할 때 편안하게 착용할 수 있는 하네스",
+          price: 25000,
+          discountRate: 5,
+          image: "/images/products/dog-harness.jpg",
+          category: "leashes",
+          rating: 4.9,
+          reviewCount: 112,
+          inStock: true,
+          attributes: {
+            size: ["S", "M", "L"],
+            color: ["블랙", "블루", "그린"],
+            material: "나일론, 메쉬",
+            suitableFor: ["all", "small", "medium", "large"]
+          }
+        },
+        {
+          id: 6,
+          name: "강아지 샴푸",
+          description: "피부 자극이 적은 천연 성분 샴푸",
+          price: 18000,
+          discountRate: 0,
+          image: "/images/products/dog-shampoo.jpg",
+          category: "hygiene",
+          rating: 4.7,
+          reviewCount: 95,
+          inStock: true,
+          attributes: {
+            volume: "500ml",
+            type: "저자극성",
+            suitableFor: ["all", "sensitive-skin"]
+          }
+        }
+      ];
+      
+      // 페이지네이션 계산
+      const startIndex = (Number(page) - 1) * Number(limit);
+      const endIndex = startIndex + Number(limit);
+      
+      // 응답 데이터 구성
+      const response = {
+        products: products.slice(startIndex, endIndex),
+        total: products.length,
+        page: Number(page),
+        limit: Number(limit),
+        totalPages: Math.ceil(products.length / Number(limit))
+      };
+      
+      return res.status(200).json(response);
+    } catch (error) {
+      console.error("Get products error:", error);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // 상품 상세 정보 가져오기
+  app.get("/api/shop/products/:id", async (req, res) => {
+    try {
+      const productId = parseInt(req.params.id);
+      
+      // 예시 상품 상세 데이터
+      const products = [
+        {
+          id: 1,
+          name: "프리미엄 강아지 사료",
+          description: "영양 균형이 완벽한 프리미엄 사료",
+          longDescription: "이 프리미엄 사료는 성장기 강아지부터 성견까지 모든 연령대의 강아지에게 적합합니다. 필수 영양소와 비타민, 미네랄이 풍부하게 함유되어 있어 반려견의 건강한 성장과 유지에 도움을 줍니다. 인공 색소와 방부제를 첨가하지 않은 자연 그대로의 맛을 느낄 수 있습니다.",
+          price: 45000,
+          discountRate: 10,
+          images: [
+            "/images/products/dog-food-premium.jpg",
+            "/images/products/dog-food-premium-2.jpg",
+            "/images/products/dog-food-premium-3.jpg"
+          ],
+          category: "food",
+          rating: 4.8,
+          reviewCount: 142,
+          inStock: true,
+          attributes: {
+            weight: "3kg",
+            flavor: "닭고기",
+            suitableFor: ["all", "small", "medium"],
+            ingredients: "닭고기, 현미, 고구마, 당근, 블루베리, 비타민 E, 오메가3, 오메가6",
+            nutritionalInfo: "단백질 26%, 지방 15%, 섬유질 4%, 수분 10%",
+            feedingGuide: "체중 5kg 미만: 1일 100g, 체중 5-10kg: 1일 200g, 체중 10kg 이상: 1일 300g"
+          },
+          relatedProducts: [2, 6, 7],
+          reviews: [
+            { id: 1, user: "강아지집사", rating: 5, content: "우리 강아지가 정말 잘 먹어요!", date: "2023-04-15" },
+            { id: 2, user: "멍멍이맘", rating: 4, content: "품질은 좋은데 가격이 조금 비싸요", date: "2023-03-22" }
+          ]
+        }
+      ];
+      
+      const product = products.find(p => p.id === productId);
+      
+      if (!product) {
+        return res.status(404).json({ message: "Product not found" });
+      }
+      
+      return res.status(200).json(product);
+    } catch (error) {
+      console.error("Get product detail error:", error);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // 장바구니에 상품 추가
+  app.post("/api/shop/cart", async (req, res) => {
+    try {
+      if (!req.session.user) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+      
+      const { productId, quantity } = req.body;
+      
+      if (!productId || !quantity) {
+        return res.status(400).json({ message: "Product ID and quantity are required" });
+      }
+      
+      // 간단한 성공 응답
+      return res.status(200).json({ 
+        success: true, 
+        message: "Product added to cart",
+        cart: {
+          userId: req.session.user.id,
+          items: [{ productId, quantity }]
+        } 
+      });
+    } catch (error) {
+      console.error("Add to cart error:", error);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // 장바구니 정보 가져오기
+  app.get("/api/shop/cart", async (req, res) => {
+    try {
+      if (!req.session.user) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+      
+      // 간단한 장바구니 데이터 반환
+      return res.status(200).json({
+        userId: req.session.user.id,
+        items: [],
+        subtotal: 0,
+        total: 0
+      });
+    } catch (error) {
+      console.error("Get cart error:", error);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // 추천인 코드 확인
+  app.post("/api/shop/check-referral", async (req, res) => {
+    try {
+      const { referralCode } = req.body;
+      
+      if (!referralCode) {
+        return res.status(400).json({ message: "Referral code is required" });
+      }
+      
+      // 예시 추천인 코드
+      const validCodes = ["TALES2024", "WELCOME10", "PETFRIEND"];
+      
+      const isValid = validCodes.includes(referralCode);
+      
+      return res.status(200).json({
+        valid: isValid,
+        discount: isValid ? 10 : 0,
+        message: isValid ? "Valid referral code. 10% discount applied." : "Invalid referral code."
+      });
+    } catch (error) {
+      console.error("Check referral code error:", error);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
