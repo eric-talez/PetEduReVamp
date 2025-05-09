@@ -32,7 +32,10 @@ export default function ShopIndex() {
   ]);
   
   const { theme } = useTheme();
-  const { isAuthenticated, userName } = useAuth();
+  const auth = useAuth();
+  const isAuthenticated = auth.isAuthenticated;
+  const userRole = window.__peteduAuthState?.userRole || null;
+  const userName = window.__peteduAuthState?.userName || null;
   const { cartItems } = useCart();
   
   useEffect(() => {

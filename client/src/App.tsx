@@ -313,7 +313,7 @@ function UnauthenticatedRoutes() {
         <Route path="/shop">
           {() => {
             console.log("비인증 사용자가 /shop 경로에 접근 - 단일 진입점으로 연결");
-            return <ShopPage />;
+            return <ShopIndex />;
           }}
         </Route>
 
@@ -336,7 +336,7 @@ function UnauthenticatedRoutes() {
         <Route path="/shop/*">
           {() => {
             console.log("비인증 사용자가 /shop/* 경로에 접근");
-            return <ShopPage />;
+            return <ShopIndex />;
           }}
         </Route>
 
