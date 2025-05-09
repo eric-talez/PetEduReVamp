@@ -26,11 +26,12 @@ import {
   Card,
   CardContent,
 } from '@/components/ui/Card';
-import { Badge } from '@/components/ui/Badge';
+import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Avatar } from '@/components/ui/Avatar';
-import { Label } from '@/components/ui/Label';
+import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/Input';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
 // 제품 타입 정의 (shop/index.tsx와 일치시켜야 함)
 interface Product {
@@ -314,7 +315,7 @@ export default function ProductDetailPage() {
     } else {
       toast({
         title: "유효하지 않은 추천인 코드입니다",
-        variant: "danger",
+        variant: "destructive",
       });
     }
   };
@@ -431,7 +432,7 @@ export default function ProductDetailPage() {
               <div className="flex items-center">
                 <span className="text-xl font-bold mr-2">{finalPrice.toLocaleString()}원</span>
                 <span className="text-gray-500 line-through">{product.price.toLocaleString()}원</span>
-                <Badge variant="danger" className="ml-2">
+                <Badge variant="destructive" className="ml-2">
                   {product.discountRate}% 할인
                 </Badge>
               </div>
