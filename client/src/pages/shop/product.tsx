@@ -723,12 +723,10 @@ export default function ProductDetailPage() {
                   <div key={review.id} className="border-b pb-6">
                     <div className="flex justify-between items-start mb-2">
                       <div className="flex items-center">
-                        <Avatar 
-                          src={review.userAvatar} 
-                          fallback={review.userName[0]}
-                          size="sm"
-                          className="mr-2"
-                        />
+                        <Avatar className="h-8 w-8 mr-2">
+                          <AvatarImage src={review.userAvatar} alt={review.userName} />
+                          <AvatarFallback>{review.userName[0]}</AvatarFallback>
+                        </Avatar>
                         <div>
                           <div className="flex items-center">
                             <span className="font-medium mr-2">{review.userName}</span>
