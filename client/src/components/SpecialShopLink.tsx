@@ -30,15 +30,13 @@ export function SpecialShopLink({ children, className = "" }: SpecialShopLinkPro
     e.preventDefault();
     console.log('특별 쇼핑 링크 클릭됨');
     
-    // window.location 사용 (전통적인 브라우저 네비게이션)
-    // 인증 여부와 관계없이 쇼핑 페이지로 직접 이동
-    // 정적 HTML 페이지로 이동
-    window.location.href = "/shop.html";
+    // React 라우팅 사용 - 인증 여부와 관계없이 쇼핑 페이지로 직접 이동
+    setLocation('/shop');
   };
   
   return (
     <a 
-      href="/shop.html" 
+      href="/shop" 
       onClick={handleClick}
       className={className}
     >

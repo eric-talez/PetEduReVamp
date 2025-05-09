@@ -26,6 +26,7 @@ import NotificationsPage from "./pages/notifications/index";
 import ShopBasicPage from "@/pages/ShopBasicPage"; // 배너 및 상품 리스트가 있는 메인 쇼핑 페이지
 import CartPage from "@/pages/Cart"; // 장바구니 페이지
 import ShopRedirect from "./pages/shop-redirect"; // 쇼핑 페이지 리디렉션 컴포넌트
+import ShopPage from "./pages/shop/ShopPage"; // 새로운 React 기반 쇼핑 페이지
 
 import VideoTrainingPage from "./pages/video-training/index";
 import VideoTrainingDetailPage from "./pages/video-training/video";
@@ -134,7 +135,7 @@ function AuthenticatedRoutes() {
         <Route path="/shop">
           {() => {
             console.log("인증된 사용자가 쇼핑 경로에 접근");
-            return <ShopBasicPage />;
+            return <ShopPage />;
           }}
         </Route>
         
@@ -306,7 +307,7 @@ function UnauthenticatedRoutes() {
         <Route path="/shop">
           {() => {
             console.log("비인증 사용자가 /shop 경로에 직접 접근 - 모든 사용자 접속 허용");
-            return <ShopBasicPage />;
+            return <ShopPage />;
           }}
         </Route>
         
@@ -322,7 +323,7 @@ function UnauthenticatedRoutes() {
         <Route path="/shop-basic">
           {() => {
             console.log("비인증 사용자가 /shop-basic 경로에 직접 접근");
-            return <ShopBasicPage />;
+            return <ShopPage />;
           }}
         </Route>
 
