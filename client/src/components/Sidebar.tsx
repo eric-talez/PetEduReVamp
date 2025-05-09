@@ -388,19 +388,26 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                       show={true}
                     >이벤트</NavItem>
 
-                    <NavItem 
-                      href="/shop" 
-                      icon={<ShoppingBag className="w-5 h-5 mr-2" />} 
-                      active={isActive("/shop") || isActive("/shop-login-required") || isActive("/shop-basic") || isActive("/shop-redirect")} 
-                      onClick={(path) => {
-                        console.log("비인증 사용자가 쇼핑 메뉴 클릭 - 직접 /shop으로 이동");
-                        // window.location.href를 사용하여 페이지 전체 리로드
-                        window.location.href = window.location.origin + "/shop";
-                        // 이벤트 전파 중단
-                        return false;
-                      }} 
-                      show={true}
-                    >쇼핑</NavItem>
+                    <li className="relative">
+                      <a 
+                        href="/shop" 
+                        className={cn(
+                          "flex items-center px-3 py-2 rounded-md transition-colors mx-1",
+                          isActive("/shop") || isActive("/shop-login-required") || isActive("/shop-basic") || isActive("/shop-redirect") 
+                            ? "bg-primary text-primary-foreground" 
+                            : "hover:bg-gray-100 dark:hover:bg-gray-800"
+                        )}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          console.log("비인증 사용자가 쇼핑 메뉴 클릭 - 직접 /shop으로 이동");
+                          window.location.href = '/shop';
+                          if (onClose) onClose();
+                        }}
+                      >
+                        <ShoppingBag className="w-5 h-5 mr-2" />
+                        <span className={expanded ? "opacity-100" : "lg:opacity-0"}>쇼핑</span>
+                      </a>
+                    </li>
 
                     {/* 도움말 그룹 추가 */}
                     {expanded && (
@@ -484,13 +491,26 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                     <NavItem href="/institutes" icon={<MapPin className="w-5 h-5 mr-2" />} active={isActive("/institutes")} onClick={handleItemClick} show={true}>위치 서비스</NavItem>
                     <NavItem href="/community" icon={<MessageSquare className="w-5 h-5 mr-2" />} active={isActive("/community")} onClick={handleItemClick} show={true}>커뮤니티</NavItem>
                     <NavItem href="/events" icon={<Calendar className="w-5 h-5 mr-2" />} active={isActive("/events")} onClick={handleItemClick} show={true}>이벤트</NavItem>
-                    <NavItem href="/shop" icon={<ShoppingBag className="w-5 h-5 mr-2" />} active={isActive("/shop")} onClick={() => {
-                      console.log("인증된 사용자가 쇼핑 메뉴 클릭");
-                      // window.location.href를 사용하여 페이지 전체 리로드
-                      window.location.href = window.location.origin + "/shop";
-                      // 이벤트 전파 중단
-                      return false;
-                    }} show={true}>쇼핑</NavItem>
+                    <li className="relative">
+                      <a 
+                        href="/shop" 
+                        className={cn(
+                          "flex items-center px-3 py-2 rounded-md transition-colors mx-1",
+                          isActive("/shop") 
+                            ? "bg-primary text-primary-foreground" 
+                            : "hover:bg-gray-100 dark:hover:bg-gray-800"
+                        )}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          console.log("인증된 사용자가 쇼핑 메뉴 클릭");
+                          window.location.href = '/shop';
+                          if (onClose) onClose();
+                        }}
+                      >
+                        <ShoppingBag className="w-5 h-5 mr-2" />
+                        <span>쇼핑</span>
+                      </a>
+                    </li>
                   </>
                 )}
 
