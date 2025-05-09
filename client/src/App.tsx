@@ -22,6 +22,7 @@ import NotificationsPage from "./pages/notifications/index";
 // 쇼핑 페이지
 // 절대 경로 사용으로 변경
 import ShopPage from "@/pages/ShopBasicPage"; // 배너 및 상품 리스트가 있는 메인 쇼핑 페이지
+import ShopRedirect from "./pages/shop-redirect"; // 쇼핑 페이지 리디렉션 컴포넌트
 
 import VideoTrainingPage from "./pages/video-training/index";
 import VideoTrainingDetailPage from "./pages/video-training/video";
@@ -305,6 +306,9 @@ function UnauthenticatedRoutes() {
             return <ShopPage />;
           }}
         </Route>
+        
+        {/* 쇼핑 리디렉션 라우트 - 특수 처리를 위한 경로 */}
+        <Route path="/shop-redirect" component={ShopRedirect} />
 
         {/* 기타 페이지 */}
         <Route path="/trainers" component={TrainersPage} />

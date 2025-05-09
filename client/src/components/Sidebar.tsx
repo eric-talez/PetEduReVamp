@@ -389,28 +389,28 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                     >이벤트</NavItem>
 
                     <NavItem 
-                      href="/#/shop" 
+                      href="/shop-redirect" 
                       icon={<ShoppingBag className="w-5 h-5 mr-2" />} 
-                      active={isActive("/shop")} 
+                      active={isActive("/shop") || isActive("/shop-basic") || isActive("/shop-redirect")} 
                       onClick={(path) => {
-                        console.log("비인증 사용자가 쇼핑 메뉴 클릭 - 해시 기반 라우팅");
+                        console.log("비인증 사용자가 쇼핑 메뉴 클릭 - 리디렉션 컴포넌트 사용");
                         
-                        // 해시 라우팅으로 변경 (SPA 내부 라우팅)
+                        // 특수 리디렉션 컴포넌트 사용
                         try {
-                          // Wouter가 해시 기반 라우팅을 사용하도록 해시 추가
-                          console.log("쇼핑 페이지로 이동 시도 (해시 라우팅)");
-                          window.location.href = "/#/shop";
+                          console.log("쇼핑 리디렉션 페이지로 이동");
+                          window.location.href = "/shop-redirect";
                         } catch (e) {
-                          console.error("해시 라우팅 오류:", e);
+                          console.error("리디렉션 페이지 이동 오류:", e);
                           
-                          // 백업 방식 - 직접 URL 사용
+                          // 백업 방식들
                           try {
-                            window.location.replace(window.location.origin + "/#/shop");
+                            // 백업 방식 1: 직접 shop-basic 라우트 사용
+                            window.location.href = "/shop-basic";
                           } catch (e2) {
-                            console.error("최종 백업 이동 오류:", e2);
+                            console.error("백업 방식 1 오류:", e2);
                             
-                            // 최후의 방법 - 정적 HTML 페이지로 이동
-                            window.location.replace(window.location.origin + "/shop/index.html");
+                            // 백업 방식 2: 직접 ShopPage 로드를 위한 URL 구성
+                            window.location.href = "/?initiateShop=true";
                           }
                         }
                       }} 
