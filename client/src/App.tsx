@@ -294,7 +294,12 @@ function UnauthenticatedRoutes() {
         </Route>
 
         {/* 쇼핑 로그인 요구 페이지 라우트 - 비인증 사용자를 위한 안내 페이지 */}
-        <Route path="/shop-login-required" component={ShopLoginRequiredPage} />
+        <Route path="/shop-login-required">
+          {() => {
+            console.log("ShopLoginRequiredPage 컴포넌트 렌더링");
+            return <ShopLoginRequiredPage />;
+          }}
+        </Route>
 
         {/* 쇼핑 관련 모든 경로 - 로그인 안내 페이지 컴포넌트로 라우팅 */}
         <Route path="/shop">

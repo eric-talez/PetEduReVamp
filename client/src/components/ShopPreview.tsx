@@ -40,9 +40,9 @@ export function ShopPreview() {
             <ShoppingBag className="mr-2" /> 펫에듀 쇼핑
           </h2>
           <div className="flex space-x-2">
-            <Link href="/shop" className="px-4 py-2 bg-primary-foreground/20 hover:bg-primary-foreground/30 rounded-md text-sm font-medium transition-colors">
+            <a href="/shop-login-required" className="px-4 py-2 bg-primary-foreground/20 hover:bg-primary-foreground/30 rounded-md text-sm font-medium transition-colors">
               쇼핑몰 바로가기
-            </Link>
+            </a>
           </div>
         </div>
       </div>
