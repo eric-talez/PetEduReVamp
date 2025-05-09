@@ -1968,47 +1968,23 @@
     
     // 홈으로 이동
     function goToHome() {
-      // 부모 창에 메시지 전송
-      try {
-        window.parent.postMessage({
-          type: 'NAVIGATE_TO_HOME',
-          data: {}
-        }, '*');
-      } catch (error) {
-        console.warn('부모 창에 메시지 전송 실패:', error);
-        // 대체 처리 - 직접 페이지 이동
-        window.location.href = '/';
-      }
+      console.log('테일즈 홈으로 이동 함수 호출됨');
+      // 직접 페이지 이동 - 부모 창 메시지 전송 우회
+      window.location.href = '/';
     }
     
     // 쇼핑 홈으로 이동
     function goToShop() {
-      // 부모 창에 메시지 전송
-      try {
-        window.parent.postMessage({
-          type: 'NAVIGATE_TO_SHOP',
-          data: {}
-        }, '*');
-      } catch (error) {
-        console.warn('부모 창에 메시지 전송 실패:', error);
-        // 대체 처리 - 직접 페이지 이동
-        window.location.href = '/shop.html';
-      }
+      console.log('쇼핑 홈으로 이동 함수 호출됨');
+      // 직접 페이지 이동 - 부모 창 메시지 전송 우회
+      window.location.href = '/shop.html';
     }
     
     // 장바구니 페이지로 이동
     function goToCart() {
-      // 부모 창에 메시지 전송
-      try {
-        window.parent.postMessage({
-          type: 'NAVIGATE_TO_CART',
-          data: {}
-        }, '*');
-      } catch (error) {
-        console.warn('부모 창에 메시지 전송 실패:', error);
-        // 대체 처리 - 직접 페이지 이동
-        window.location.href = '/cart.html';
-      }
+      console.log('장바구니로 이동 함수 호출됨');
+      // 직접 페이지 이동 - 부모 창 메시지 전송 우회
+      window.location.href = '/cart.html';
     }
     
     // 토스트 메시지 표시
