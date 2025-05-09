@@ -48,8 +48,8 @@ const sampleProducts: Product[] = [
   // ... Add more sample products
 ];
 
-// ShopBasicPage를 가져옵니다
-import ShopBasicPage from '../ShopBasicPage';
+// ShopBasicPage를 절대 경로로 가져옵니다
+import ShopBasicPage from '@/pages/ShopBasicPage';
 
 export default function ShopPage() {
   console.log("Shop/index.tsx: ShopBasicPage로 리디렉션");

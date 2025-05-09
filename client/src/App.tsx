@@ -26,7 +26,7 @@ import NotificationsPage from "./pages/notifications/index";
 import ShopBasicPage from "@/pages/ShopBasicPage"; // 배너 및 상품 리스트가 있는 메인 쇼핑 페이지
 import CartPage from "@/pages/Cart"; // 장바구니 페이지
 import ShopRedirect from "./pages/shop-redirect"; // 쇼핑 페이지 리디렉션 컴포넌트
-import ShopPage from "./pages/shop/ShopPage"; // 새로운 React 기반 쇼핑 페이지
+import ShopPage from "./pages/shop/index"; // 쇼핑 페이지 메인 (ShopBasicPage 사용)
 import ProductDetailPage from "./pages/shop/product"; // 상품 상세 페이지
 
 import VideoTrainingPage from "./pages/video-training/index";
