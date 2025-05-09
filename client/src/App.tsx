@@ -22,7 +22,7 @@ import MessagesPage from "./pages/messages/index";
 import NotificationsPage from "./pages/notifications/index";
 // 쇼핑 페이지
 // 절대 경로 사용으로 변경
-import ShopPage from "@/pages/ShopBasicPage"; // 배너 및 상품 리스트가 있는 메인 쇼핑 페이지
+import ShopBasicPage from "@/pages/ShopBasicPage"; // 배너 및 상품 리스트가 있는 메인 쇼핑 페이지
 import CartPage from "@/pages/Cart"; // 장바구니 페이지
 import ShopRedirect from "./pages/shop-redirect"; // 쇼핑 페이지 리디렉션 컴포넌트
 
@@ -133,7 +133,7 @@ function AuthenticatedRoutes() {
         <Route path="/shop">
           {() => {
             console.log("인증된 사용자가 쇼핑 경로에 접근");
-            return <ShopPage />;
+            return <ShopBasicPage />;
           }}
         </Route>
         
@@ -305,7 +305,7 @@ function UnauthenticatedRoutes() {
         <Route path="/shop">
           {() => {
             console.log("비인증 사용자가 /shop 경로에 직접 접근 - 모든 사용자 접속 허용");
-            return <ShopPage />;
+            return <ShopBasicPage />;
           }}
         </Route>
         
@@ -321,7 +321,7 @@ function UnauthenticatedRoutes() {
         <Route path="/shop-basic">
           {() => {
             console.log("비인증 사용자가 /shop-basic 경로에 직접 접근");
-            return <ShopPage />;
+            return <ShopBasicPage />;
           }}
         </Route>
 
