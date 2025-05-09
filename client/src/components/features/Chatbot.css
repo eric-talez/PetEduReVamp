@@ -98,7 +98,8 @@
 }
 
 .dark .chatbot-panel,
-[data-theme="dark"] .chatbot-panel {
+[data-theme="dark"] .chatbot-panel,
+html[class~="dark"] .chatbot-panel {
   background-color: var(--gray-800, #1a202c);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
 }
@@ -160,7 +161,8 @@
 }
 
 .dark .chat-message.bot,
-[data-theme="dark"] .chat-message.bot {
+[data-theme="dark"] .chat-message.bot,
+html[class~="dark"] .chat-message.bot {
   background-color: var(--gray-700, #4a5568);
   color: var(--gray-100, #f7fafc);
 }
@@ -181,7 +183,8 @@
 }
 
 .dark .chatbot-input-container,
-[data-theme="dark"] .chatbot-input-container {
+[data-theme="dark"] .chatbot-input-container,
+html[class~="dark"] .chatbot-input-container {
   background-color: var(--gray-800, #1a202c);
   border-color: var(--gray-700, #4a5568);
 }
@@ -198,7 +201,8 @@
 }
 
 .dark .chatbot-input,
-[data-theme="dark"] .chatbot-input {
+[data-theme="dark"] .chatbot-input,
+html[class~="dark"] .chatbot-input {
   background-color: var(--gray-700, #4a5568);
   border-color: var(--gray-600, #718096);
   color: var(--gray-100, #f7fafc);
@@ -228,7 +232,8 @@
 }
 
 .dark .chatbot-send:disabled,
-[data-theme="dark"] .chatbot-send:disabled {
+[data-theme="dark"] .chatbot-send:disabled,
+html[class~="dark"] .chatbot-send:disabled {
   background-color: var(--gray-600, #718096);
 }
 
@@ -247,7 +252,8 @@
 }
 
 .dark .chatbot-suggestion,
-[data-theme="dark"] .chatbot-suggestion {
+[data-theme="dark"] .chatbot-suggestion,
+html[class~="dark"] .chatbot-suggestion {
   background-color: var(--gray-700, #4a5568);
   border-color: var(--gray-600, #718096);
 }

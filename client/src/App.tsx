@@ -353,6 +353,7 @@ export default function App() {
   return (
     <CartProvider>
       {auth.isAuthenticated ? <AuthenticatedRoutes /> : <UnauthenticatedRoutes />}
+      {/* 챗봇 컴포넌트는 항상 모든 화면에 표시됩니다 */}
       <Chatbot />
     </CartProvider>
   );
