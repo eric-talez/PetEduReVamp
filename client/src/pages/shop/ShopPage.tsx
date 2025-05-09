@@ -55,8 +55,11 @@ export default function ShopPage() {
   
   // 상품 상세 페이지로 이동
   const goToProductDetail = (productId: number) => {
-    // React Router 네비게이션 추가 예정
-    console.log(`상품 ID ${productId}로 이동`);
+    // React 라우팅 구현
+    console.log(`상품 ID ${productId}로 이동 - React 라우트 사용`);
+    // 상품 상세 페이지로 이동 구현
+    // 실제 구현에서는 useLocation 훅을 사용하여 라우팅하는 것이 좋습니다
+    window.location.href = `/shop/product/${productId}`;
   };
   
   // 샘플 카테고리 데이터
@@ -121,7 +124,10 @@ export default function ShopPage() {
 
   // 메인 서비스로 이동
   const goToMainService = () => {
-    window.location.href = '/'; // 메인 페이지로 이동
+    console.log("메인 서비스로 이동 - React 라우트 사용");
+    window.location.href = '/'; // 메인 페이지로 이동 
+    // 참고: 동일 React 애플리케이션 내에서 이동하는 경우에는 useLocation()을 사용할 수 있지만,
+    // 메인 서비스로 이동하는 경우는 전체 페이지 리로드가 필요하기 때문에 window.location 사용
   };
 
   return (
