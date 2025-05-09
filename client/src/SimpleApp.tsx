@@ -355,7 +355,18 @@ function AuthenticatedRoutes() {
         <Route path="/certificates" component={() => <div className="p-8"><h1 className="text-2xl font-bold mb-4">자격증 및 수료증</h1><p>자격증 및 수료증을 확인할 수 있는 페이지입니다.</p></div>} />
         <Route path="/video-training" component={VideoTrainingPage} />
         <Route path="/video-call" component={VideoCallPage} />
-        <Route path="/shop" component={() => <div className="p-8"><h1 className="text-2xl font-bold mb-4">쇼핑</h1><p>반려견 용품을 구매할 수 있는 쇼핑몰 페이지입니다.</p></div>} />
+        <Route path="/shop">
+          {() => {
+            console.log("인증된 사용자 /shop 경로 접근");
+            // ShopIndex 컴포넌트를 동적으로 임포트
+            const ShopIndex = lazy(() => import('./pages/shop/index'));
+            return (
+              <Suspense fallback={<div className="p-8 text-center">쇼핑 페이지 로딩 중...</div>}>
+                <ShopIndex />
+              </Suspense>
+            );
+          }}
+        </Route>
         <Route path="/notifications" component={() => <div className="p-8"><h1 className="text-2xl font-bold mb-4">알림장</h1><p>훈련사와 소통하고 훈련 진행상황을 확인할 수 있는 알림장 페이지입니다.</p></div>} />
         <Route path="/locations" component={LocationsPage} />
         <Route path="/recommendations" component={() => <div className="p-8"><h1 className="text-2xl font-bold mb-4">맞춤 추천</h1><p>반려견 프로필과 사용자 선호도 기반 맞춤형 추천 서비스 페이지입니다.</p></div>} />
@@ -410,6 +421,18 @@ function UnauthenticatedRoutes() {
         <Route path="/events" component={EventsPage} />
         <Route path="/events/calendar" component={EventCalendarPage} />
         <Route path="/events/:id" component={EventDetailPage} />
+        <Route path="/shop">
+          {() => {
+            console.log("비인증 사용자 /shop 경로 접근");
+            // ShopIndex 컴포넌트를 동적으로 임포트
+            const ShopIndex = lazy(() => import('./pages/shop/index'));
+            return (
+              <Suspense fallback={<div className="p-8 text-center">쇼핑 페이지 로딩 중...</div>}>
+                <ShopIndex />
+              </Suspense>
+            );
+          }}
+        </Route>
         <Route path="/help/faq">
           {() => {
             const FAQPage = lazy(() => import('./pages/help/faq'));
