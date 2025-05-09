@@ -4,12 +4,15 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useTheme } from '@/context/theme-context';
 import { useLocation } from 'wouter';
+import { TopBar } from '@/components/TopBar';
+import { Sidebar } from '@/components/Sidebar';
 
 /**
  * 테일즈 쇼핑 스타일의 쇼핑몰 메인 컴포넌트
  * - 모든 shop/* 경로 요청의 진입점 
  * - 인증 여부와 관계없이 접근 가능
  * - funnytalez.com/shop.html 디자인 참고
+ * - 메인 서비스의 헤더와 사이드바 사용
  */
 export default function ShopIndex() {
   const [, setLocation] = useLocation();
@@ -61,15 +64,18 @@ export default function ShopIndex() {
   
   const { theme } = useTheme();
   
-  // 상태 관리
+  // 사이드바 상태 관리
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  
+  // 간단한 장바구니 상태 (테스트용)
+  const [cartItemsCount, setCartItemsCount] = useState(0);
+  
+  // 인증 상태 로드
   const [authState, setAuthState] = useState({
     isAuthenticated: false,
     userRole: null as string | null,
     userName: null as string | null
   });
-  
-  // 간단한 장바구니 상태 (테스트용)
-  const [cartItemsCount, setCartItemsCount] = useState(0);
   
   // 컴포넌트 마운트 시 window 객체에서 인증 상태 로드
   useEffect(() => {
@@ -101,152 +107,18 @@ export default function ShopIndex() {
   
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      {/* 최상단 유틸리티 네비게이션 */}
-      <div className="bg-gray-100 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-        <div className="container mx-auto px-4">
-          <div className="flex justify-end h-8 items-center text-xs text-gray-600 dark:text-gray-300">
-            {authState.isAuthenticated ? (
-              <div className="flex items-center space-x-3">
-                <span className="text-sm">{authState.userName} 님</span>
-                <a href="#" className="hover:text-[#03c75a]" onClick={(e) => { e.preventDefault(); }}>마이페이지</a>
-                <span>|</span>
-                <a href="#" className="hover:text-[#03c75a]" onClick={(e) => { e.preventDefault(); }}>로그아웃</a>
-              </div>
-            ) : (
-              <div className="flex items-center space-x-3">
-                <a href="#" className="hover:text-[#03c75a]" onClick={(e) => { e.preventDefault(); setLocation("/auth"); }}>로그인</a>
-                <span>|</span>
-                <a href="#" className="hover:text-[#03c75a]" onClick={(e) => { e.preventDefault(); setLocation("/auth"); }}>회원가입</a>
-              </div>
-            )}
-            <span className="mx-2">|</span>
-            <a href="#" className="hover:text-[#03c75a]" onClick={(e) => { e.preventDefault(); }}>고객센터</a>
-            <span className="mx-2">|</span>
-            <a 
-              href="#" 
-              className="hover:text-[#03c75a]" 
-              onClick={(e) => { 
-                e.preventDefault(); 
-                setLocation("/"); 
-              }}
-            >
-              메인으로
-            </a>
-          </div>
-        </div>
-      </div>
+      {/* 메인 서비스의 TopBar 사용 */}
+      <TopBar sidebarOpen={sidebarOpen} onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
       
-      {/* 쇼핑몰 헤더 */}
-      <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-        <div className="container mx-auto px-4">
-          <div className="header-top py-5">
-            <div className="flex items-center justify-between">
-              {/* 로고 영역 */}
-              <div className="flex items-center cursor-pointer" onClick={() => setLocation("/shop")}>
-                <ShoppingBag className="h-8 w-8 text-[#03c75a] mr-2" />
-                <span className="text-2xl font-bold">테일즈 쇼핑</span>
-              </div>
-              
-              {/* 검색창 영역 */}
-              <div className="w-full max-w-xl mx-4">
-                <div className="relative flex items-center">
-                  <Input 
-                    className="pl-4 pr-20 py-2.5 border-2 border-[#03c75a] rounded-sm focus:ring-2 focus:ring-[#03c75a]" 
-                    placeholder="검색어를 입력해주세요"
-                    type="search"
-                  />
-                  <Button 
-                    className="absolute right-0 h-full bg-[#03c75a] hover:bg-[#02b04a] px-4 rounded-none rounded-r-sm"
-                  >
-                    <Search className="h-5 w-5" />
-                  </Button>
-                </div>
-              </div>
-              
-              {/* 유틸리티 아이콘 영역 */}
-              <div className="flex items-center space-x-5">
-                <a 
-                  href="#" 
-                  className="flex flex-col items-center text-gray-600 dark:text-gray-300 hover:text-[#03c75a]"
-                  onClick={(e) => { e.preventDefault(); }}
-                >
-                  <User className="h-6 w-6" />
-                  <span className="text-xs mt-1">마이페이지</span>
-                </a>
-                
-                <a 
-                  href="#" 
-                  className="flex flex-col items-center text-gray-600 dark:text-gray-300 hover:text-[#03c75a]"
-                  onClick={(e) => { e.preventDefault(); }}
-                >
-                  <Heart className="h-6 w-6" />
-                  <span className="text-xs mt-1">찜목록</span>
-                </a>
-                
-                <a 
-                  href="#" 
-                  className="flex flex-col items-center text-gray-600 dark:text-gray-300 hover:text-[#03c75a] relative"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setLocation("/shop/cart");
-                  }}
-                >
-                  <ShoppingCart className="h-6 w-6" />
-                  {cartItemsCount > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                      {cartItemsCount}
-                    </span>
-                  )}
-                  <span className="text-xs mt-1">장바구니</span>
-                </a>
-              </div>
-            </div>
-          </div>
-        </div>
-      </header>
+      {/* 메인 서비스의 Sidebar 사용 */}
+      <Sidebar 
+        open={sidebarOpen} 
+        onClose={() => setSidebarOpen(false)} 
+        userRole={authState.userRole}
+        isAuthenticated={authState.isAuthenticated}
+      />
       
-      {/* 메인 네비게이션 */}
-      <div className="main-nav bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-        <div className="container mx-auto px-4">
-          <div className="flex items-center h-12">
-            {/* 카테고리 메뉴 */}
-            <div className="flex items-center h-full bg-[#03c75a] text-white px-4 font-medium cursor-pointer">
-              <MenuIcon className="h-5 w-5 mr-2" />
-              <span>카테고리</span>
-            </div>
-            
-            {/* 메인 메뉴 */}
-            <div className="flex-1 ml-6">
-              <ul className="flex space-x-8">
-                <li>
-                  <a href="#" className="text-sm font-medium hover:text-[#03c75a] border-b-2 border-[#03c75a] py-3.5">홈</a>
-                </li>
-                <li>
-                  <a href="#" className="text-sm font-medium hover:text-[#03c75a] py-3.5">베스트</a>
-                </li>
-                <li>
-                  <a href="#" className="text-sm font-medium hover:text-[#03c75a] py-3.5">신상품</a>
-                </li>
-                <li>
-                  <a href="#" className="text-sm font-medium hover:text-[#03c75a] py-3.5">특가/혜택</a>
-                </li>
-                <li>
-                  <a href="#" className="text-sm font-medium hover:text-[#03c75a] py-3.5">이벤트</a>
-                </li>
-                <li>
-                  <a href="#" className="text-sm font-medium hover:text-[#03c75a] py-3.5">타임세일</a>
-                </li>
-              </ul>
-            </div>
-            
-            {/* 공지사항 */}
-            <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
-              <span className="bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded text-xs text-gray-600 dark:text-gray-300 mr-2">공지</span>
-              <span className="truncate max-w-[200px]">반려동물 의류 신상품 10% 할인 이벤트 진행 중!</span>
-            </div>
-          </div>
-        </div>
-      </div>
+      <div className="pt-16"> {/* TopBar의 높이만큼 패딩 추가 */}
       
       {/* 메인 슬라이더 배너 */}
       <section className="banner-section bg-white dark:bg-gray-800 py-6">
@@ -649,6 +521,7 @@ export default function ShopIndex() {
           </div>
         </div>
       </footer>
+      </div> {/* pt-16 div 닫기 */}
     </div>
   );
 }
