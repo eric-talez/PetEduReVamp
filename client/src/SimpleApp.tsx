@@ -137,6 +137,39 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // 즉시 초기화 실행
     initAuthState();
 
+    // 쇼핑 페이지 이동 메시지 이벤트 리스너
+    const handleMessage = (event: MessageEvent) => {
+      try {
+        const message = event.data;
+        
+        if (message && message.type) {
+          console.log("메시지 수신:", message.type);
+          
+          switch (message.type) {
+            case 'NAVIGATE_TO_SHOP':
+              console.log("쇼핑 페이지로 이동 요청 수신");
+              window.location.href = '/shop';
+              break;
+              
+            case 'NAVIGATE_TO_HOME':
+              console.log("홈으로 이동 요청 수신");
+              window.location.href = '/';
+              break;
+          }
+        }
+      } catch (error) {
+        console.error("메시지 처리 중 오류 발생:", error);
+      }
+    };
+    
+    // 메시지 이벤트 리스너 등록
+    window.addEventListener('message', handleMessage);
+    
+    // 컴포넌트 언마운트 시 이벤트 리스너 제거
+    return () => {
+      window.removeEventListener('message', handleMessage);
+    };
+
     // 로그인 이벤트 리스너 등록
     const handleLogin = (e: CustomEvent) => {
       const detail = e.detail as any;
