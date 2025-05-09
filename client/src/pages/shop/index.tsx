@@ -2,9 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { ShoppingBag, Search, Menu as MenuIcon, ChevronDown } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { useAuth } from '@/hooks/useAuth';
 import { useTheme } from '@/context/theme-context';
-import { useCart } from '@/context/cart-context';
 
 /**
  * 쇼핑몰 메인 컴포넌트 (직접 구현)
@@ -32,11 +30,39 @@ export default function ShopIndex() {
   ]);
   
   const { theme } = useTheme();
-  const auth = useAuth();
-  const isAuthenticated = auth.isAuthenticated;
-  const userRole = window.__peteduAuthState?.userRole || null;
-  const userName = window.__peteduAuthState?.userName || null;
-  const { cartItems } = useCart();
+  
+  // 상태 관리
+  const [authState, setAuthState] = useState({
+    isAuthenticated: false,
+    userRole: null as string | null,
+    userName: null as string | null
+  });
+  
+  // 간단한 장바구니 상태 (테스트용)
+  const [cartItemsCount, setCartItemsCount] = useState(0);
+  
+  // 컴포넌트 마운트 시 window 객체에서 인증 상태 로드
+  useEffect(() => {
+    const windowAuth = window.__peteduAuthState;
+    if (windowAuth) {
+      setAuthState({
+        isAuthenticated: windowAuth.isAuthenticated || false,
+        userRole: windowAuth.userRole || null,
+        userName: windowAuth.userName || null
+      });
+    }
+    
+    // 로컬 스토리지에서 장바구니 정보 로드 (있다면)
+    try {
+      const storedCart = localStorage.getItem('petedu_cart');
+      if (storedCart) {
+        const parsedCart = JSON.parse(storedCart);
+        setCartItemsCount(Array.isArray(parsedCart) ? parsedCart.length : 0);
+      }
+    } catch (error) {
+      console.error('장바구니 데이터 로드 오류:', error);
+    }
+  }, []);
   
   useEffect(() => {
     console.log("shop/index.tsx가 로드됨:", new Date().toISOString());
@@ -56,16 +82,16 @@ export default function ShopIndex() {
               </div>
               
               <div className="flex items-center space-x-4">
-                {isAuthenticated ? (
+                {authState.isAuthenticated ? (
                   <div className="flex items-center space-x-4">
                     <Button variant="ghost" size="sm" onClick={(e) => {
                       e.preventDefault();
                       console.log("장바구니 버튼 클릭 - setLocation 사용");
                       window.location.href = "/shop/cart";
                     }}>
-                      장바구니 ({cartItems.length})
+                      장바구니 ({cartItemsCount})
                     </Button>
-                    <span className="text-sm">{userName} 님</span>
+                    <span className="text-sm">{authState.userName} 님</span>
                   </div>
                 ) : (
                   <Button variant="default" size="sm" onClick={(e) => {
