@@ -1160,7 +1160,7 @@
 <body>
   <header>
     <div class="container header-container">
-      <a href="/" onclick="goToHome(); return false;" class="logo">
+      <a href="javascript:goToHome()" class="logo">
         <span class="logo-icon">T</span>
         <span class="logo-text">테일즈 쇼핑</span>
       </a>
@@ -1171,8 +1171,8 @@
       
       <nav>
         <ul class="nav-menu">
-          <li><a href="/" onclick="goToHome(); return false;">홈</a></li>
-          <li><a href="/shop.html" onclick="goToShop(); return false;">쇼핑 홈</a></li>
+          <li><a href="javascript:goToHome()">홈</a></li>
+          <li><a href="javascript:goToShop()">쇼핑 홈</a></li>
           <li><a href="#">베스트</a></li>
           <li><a href="#">신상품</a></li>
           <li><a href="#">타임세일</a></li>
@@ -1218,9 +1218,9 @@
     <section class="product-detail">
       <div class="container">
         <div class="product-breadcrumb">
-          <a href="/" onclick="goToHome(); return false;">홈</a>
+          <a href="javascript:goToHome()">홈</a>
           <span>›</span>
-          <a href="/shop.html" onclick="goToShop(); return false;">쇼핑</a>
+          <a href="javascript:goToShop()">쇼핑</a>
           <span>›</span>
           <a href="#">강아지용품</a>
           <span>›</span>
@@ -1969,22 +1969,34 @@
     // 홈으로 이동
     function goToHome() {
       console.log('테일즈 홈으로 이동 함수 호출됨');
-      // 직접 페이지 이동 - 부모 창 메시지 전송 우회
-      window.location.href = '/';
+      try {
+        window.top.location.href = '/';
+      } catch (error) {
+        console.error('페이지 이동 중 오류:', error);
+        window.location.href = '/';
+      }
     }
     
     // 쇼핑 홈으로 이동
     function goToShop() {
       console.log('쇼핑 홈으로 이동 함수 호출됨');
-      // 직접 페이지 이동 - 부모 창 메시지 전송 우회
-      window.location.href = '/shop.html';
+      try {
+        window.top.location.href = '/shop.html';
+      } catch (error) {
+        console.error('페이지 이동 중 오류:', error);
+        window.location.href = '/shop.html';
+      }
     }
     
     // 장바구니 페이지로 이동
     function goToCart() {
       console.log('장바구니로 이동 함수 호출됨');
-      // 직접 페이지 이동 - 부모 창 메시지 전송 우회
-      window.location.href = '/cart.html';
+      try {
+        window.top.location.href = '/cart.html';
+      } catch (error) {
+        console.error('페이지 이동 중 오류:', error);
+        window.location.href = '/cart.html';
+      }
     }
     
     // 토스트 메시지 표시
