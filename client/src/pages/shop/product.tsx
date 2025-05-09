@@ -237,7 +237,7 @@ export default function ProductDetailPage() {
     if (product.options?.color && !selectedColor) {
       toast({
         title: "색상을 선택해주세요",
-        variant: "danger",
+        variant: "destructive",
       });
       return;
     }
@@ -245,7 +245,7 @@ export default function ProductDetailPage() {
     if (product.options?.size && !selectedSize) {
       toast({
         title: "사이즈를 선택해주세요",
-        variant: "danger",
+        variant: "destructive",
       });
       return;
     }
@@ -277,7 +277,7 @@ export default function ProductDetailPage() {
       toast({
         title: "로그인이 필요합니다",
         description: "위시리스트를 이용하려면 로그인해주세요.",
-        variant: "danger",
+        variant: "destructive",
       });
       return;
     }
@@ -294,7 +294,7 @@ export default function ProductDetailPage() {
     if (!referralCode.trim()) {
       toast({
         title: "추천인 코드를 입력해주세요",
-        variant: "danger",
+        variant: "destructive",
       });
       return;
     }
