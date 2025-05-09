@@ -29,18 +29,7 @@ import {
 import { Badge } from '@/components/ui/Badge';
 import { Separator } from '@/components/ui/separator';
 import { Avatar } from '@/components/ui/Avatar';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/Select';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/Popover';
+import { Label } from '@/components/ui/Label';
 import { Input } from '@/components/ui/Input';
 
 // 제품 타입 정의 (shop/index.tsx와 일치시켜야 함)
@@ -205,6 +194,7 @@ const reviews: Review[] = [
 
 export default function ProductDetailPage() {
   const [match, params] = useRoute<{ id: string }>('/shop/product/:id');
+  console.log("ProductDetailPage rendered with params:", params);
   const [location, navigate] = useLocation();
   const { isAuthenticated } = useAuth();
   const { toast } = useToast();
