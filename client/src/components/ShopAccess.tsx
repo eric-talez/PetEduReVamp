@@ -43,7 +43,15 @@ export function ShopAccess() {
           </h2>
           <div className="flex space-x-2">
             <button 
-              onClick={() => window.location.href = '/shop.html'}
+              onClick={() => {
+                console.log("ShopAccess에서 쇼핑몰 바로가기 클릭 - setLocation 사용");
+                setLocation('/shop');
+                
+                // 디버깅 정보
+                console.log("ShopAccess에서 쇼핑 페이지 이동 시작:", new Date().toISOString());
+                console.log("현재 경로:", window.location.pathname);
+                console.log("이동할 경로:", "/shop");
+              }}
               className="px-4 py-2 bg-primary-foreground/20 hover:bg-primary-foreground/30 rounded-md text-sm font-medium transition-colors"
             >
               쇼핑몰 바로가기
@@ -59,7 +67,15 @@ export function ShopAccess() {
           {Array.from({ length: 4 }).map((_, index) => (
             <div 
               key={index} 
-              onClick={() => window.location.href = '/shop.html'} 
+              onClick={() => {
+                console.log("ShopAccess에서 카테고리 클릭 - setLocation 사용");
+                setLocation('/shop');
+                
+                // 디버깅 정보
+                console.log("ShopAccess 카테고리에서 이동 시작:", new Date().toISOString());
+                console.log("현재 경로:", window.location.pathname);
+                console.log("이동할 경로:", "/shop");
+              }}
               className="bg-gray-50 dark:bg-gray-700 rounded-lg overflow-hidden transition-transform duration-300 hover:transform hover:scale-105 shadow-sm cursor-pointer"
             >
               <div className="p-3">
