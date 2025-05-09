@@ -132,9 +132,33 @@ function AuthenticatedRoutes() {
         <Route path="/messages" component={MessagesPage} />
         <Route path="/notifications" component={NotificationsPage} />
         
-        {/* 인증된 사용자 쇼핑 관련 라우트는 제거 - 비인증 사용자 라우트만 사용 */}
+        {/* 인증된 사용자의 쇼핑 관련 라우트 */}
+        <Route path="/shop">
+          {() => {
+            console.log("인증된 사용자가 /shop 경로에 직접 접근 - 쇼핑 페이지로 이동");
+            // URL 직접 이동 대신 컴포넌트 렌더링
+            return <ShopPage />;
+          }}
+        </Route>
+        
         {/* 쇼핑 카트 접근은 인증된 사용자만 가능 */}
         <Route path="/shop/cart" component={CartPage} />
+        
+        {/* 상품 상세 페이지 */}
+        <Route path="/shop/product/:id">
+          {(params) => {
+            console.log("인증된 사용자가 상품 상세 페이지 접근:", params.id);
+            return <ProductDetailPage />;
+          }}
+        </Route>
+        
+        {/* 추가 - 모든 쇼핑 관련 URL 처리 (조금 더 구체적인 경로는 위에서 처리) */}
+        <Route path="/shop/*">
+          {() => {
+            console.log("인증된 사용자가 /shop/* 경로에 접근 - 쇼핑 페이지로 리다이렉트");
+            return <ShopPage />;
+          }}
+        </Route>
         
         {/* 쇼핑 로그인 요구 페이지 (인증된 사용자는 /shop으로 리다이렉트) */}
         <Route path="/shop-login-required">
@@ -293,10 +317,11 @@ function UnauthenticatedRoutes() {
         <Route path="/shop">
           {() => {
             console.log("비인증 사용자가 /shop 경로에 직접 접근 - 모든 사용자 접속 허용");
+            // 상위 경로가 먼저 매칭될 수 있으므로 정확한 경로 매칭이 필요함
             return <ShopPage />;
           }}
         </Route>
-        
+
         {/* 쇼핑 관련 하위 라우트 - 카트는 계속 인증 필요, 상품 상세는 모든 사용자 접근 가능 */}
         <Route path="/shop/cart">
           {() => {
@@ -304,6 +329,7 @@ function UnauthenticatedRoutes() {
             return <RedirectHandler to="/auth" />;
           }}
         </Route>
+        
         <Route path="/shop/product/:id">
           {(params) => {
             console.log("비인증 사용자가 상품 상세 페이지 접근:", params.id);
@@ -315,6 +341,14 @@ function UnauthenticatedRoutes() {
         <Route path="/shop-basic">
           {() => {
             console.log("비인증 사용자가 /shop-basic 경로에 직접 접근");
+            return <ShopPage />;
+          }}
+        </Route>
+        
+        {/* 추가 - 모든 쇼핑 관련 URL 처리 (조금 더 구체적인 경로는 위에서 처리) */}
+        <Route path="/shop/*">
+          {() => {
+            console.log("비인증 사용자가 /shop/* 경로에 접근 - 쇼핑 페이지로 리다이렉트");
             return <ShopPage />;
           }}
         </Route>
