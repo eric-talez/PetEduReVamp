@@ -48,7 +48,17 @@ const sampleProducts: Product[] = [
   // ... Add more sample products
 ];
 
+// ShopBasicPage를 가져옵니다
+import ShopBasicPage from '../ShopBasicPage';
+
 export default function ShopPage() {
+  console.log("Shop/index.tsx: ShopBasicPage로 리디렉션");
+  // ShopBasicPage 컴포넌트를 직접 반환
+  return <ShopBasicPage />;
+}
+
+// 아래 코드는 더 이상 사용하지 않습니다 - ShopBasicPage를 사용합니다
+function OriginalShopPage() {
   const [activeCategory, setActiveCategory] = useState('all');
   const { addToCart } = useCart();
 
