@@ -394,8 +394,9 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                         icon={<ShoppingBag className="w-5 h-5 mr-2" />} 
                         active={isActive("/shop")} 
                         onClick={(path) => {
-                          console.log("비인증 사용자가 쇼핑 메뉴 클릭 - React 라우트로 이동");
-                          navigate("/shop");
+                          console.log("비인증 사용자가 쇼핑 메뉴 클릭 - 직접 URL 이동");
+                          // 라우팅 이슈를 해결하기 위해 window.location.href 사용
+                          window.location.href = "/shop";
                           if (onClose) onClose();
                         }} 
                         show={true}
