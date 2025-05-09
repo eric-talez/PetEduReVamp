@@ -28,10 +28,16 @@ export function SpecialShopLink({ children, className = "" }: SpecialShopLinkPro
   
   const handleClick = (e: React.MouseEvent) => {
     e.preventDefault();
-    console.log('특별 쇼핑 링크 클릭됨');
+    console.log('특별 쇼핑 링크 클릭됨 - 직접 URL로 이동');
     
-    // React 라우팅 사용 - 인증 여부와 관계없이 쇼핑 페이지로 직접 이동
-    setLocation('/shop');
+    // 인증 여부와 관계없이 쇼핑 페이지로 직접 이동하되 window.location.href 사용
+    // wouter의 setLocation 대신 직접 URL 이동 방식을 사용하여 일관성 유지
+    window.location.href = "/shop";
+    
+    // 디버깅 정보
+    console.log("SpecialShopLink에서 쇼핑 페이지 이동 시작:", new Date().toISOString());
+    console.log("현재 경로:", window.location.pathname);
+    console.log("이동할 경로:", "/shop");
   };
   
   return (

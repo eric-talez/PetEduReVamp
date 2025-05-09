@@ -380,10 +380,15 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                         icon={<ShoppingBag className="w-5 h-5 mr-2" />} 
                         active={isActive("/shop")} 
                         onClick={(path) => {
-                          console.log("비인증 사용자가 쇼핑 메뉴 클릭 - Link 컴포넌트 사용");
+                          console.log("비인증 사용자가 쇼핑 메뉴 클릭 - 직접 URL로 이동");
                           // 특수 쇼핑 로직: 인증 여부에 상관없이 접근을 허용하고 직접 URL로 이동
-                          const baseUrl = window.location.origin;
-                          window.location.href = `${baseUrl}/shop`;
+                          window.location.href = "/shop";
+                          
+                          // 디버깅 정보
+                          console.log("쇼핑 페이지 이동 시작:", new Date().toISOString());
+                          console.log("현재 경로:", window.location.pathname);
+                          console.log("이동할 경로:", "/shop");
+                          
                           if (onClose) onClose();
                         }} 
                         show={true}
@@ -480,10 +485,15 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                         icon={<ShoppingBag className="w-5 h-5 mr-2" />} 
                         active={isActive("/shop")} 
                         onClick={(path) => {
-                          console.log("인증된 사용자가 쇼핑 메뉴 클릭 - 절대 경로 형식으로 직접 URL 이동");
+                          console.log("인증된 사용자가 쇼핑 메뉴 클릭 - 직접 URL로 이동");
                           // 인증된 사용자도 똑같이 직접 URL 사용
-                          const baseUrl = window.location.origin;
-                          window.location.href = `${baseUrl}/shop`;
+                          window.location.href = "/shop";
+                          
+                          // 디버깅 정보
+                          console.log("쇼핑 페이지 이동 시작 (인증사용자):", new Date().toISOString());
+                          console.log("현재 경로:", window.location.pathname);
+                          console.log("이동할 경로:", "/shop");
+                          
                           if (onClose) onClose();
                         }} 
                         show={true}
