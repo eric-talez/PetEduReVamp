@@ -1987,7 +1987,27 @@
     function toggleFilterSection() {
       const filterSection = document.querySelector('.filter-section');
       filterSection.classList.toggle('collapsed');
+      
+      // 아이콘 회전 효과 추가
+      const filterIcon = document.querySelector('.filter-toggle-icon');
+      if (filterSection.classList.contains('collapsed')) {
+        filterIcon.style.transform = 'rotate(180deg)';
+      } else {
+        filterIcon.style.transform = 'rotate(0deg)';
+      }
     }
+    
+    // 페이지 로드 시 기본으로 펼쳐진 상태
+    document.addEventListener('DOMContentLoaded', function() {
+      // 필터 섹션이 이미 존재하는지 확인
+      const filterSection = document.querySelector('.filter-section');
+      if (filterSection) {
+        // 모바일에서는 기본으로 접힌 상태로 시작
+        if (window.innerWidth <= 768) {
+          toggleFilterSection();
+        }
+      }
+    });
     
     // 챗봇 기능 구현
     let isChatbotOpen = false;
