@@ -94,7 +94,7 @@ function NavItem({ href, icon, children, active, onClick, show }: NavItemProps) 
   };
 
   return show ? ( // 추가: show 프로퍼티를 사용하여 메뉴 표시 여부 제어
-    <Link
+    <a
       href={href}
       className={cn(
         "sidebar-link flex items-center py-2 text-sm font-medium rounded-md transition-all duration-200 ease-in-out",
@@ -106,7 +106,7 @@ function NavItem({ href, icon, children, active, onClick, show }: NavItemProps) 
     >
       {icon}
       {expanded && <span>{children}</span>}
-    </Link>
+    </a>
   ) : null;
 }
 
@@ -266,16 +266,16 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
       >
         <div className="h-16 flex items-center justify-between border-b border-gray-200 dark:border-gray-800 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-900 px-3">
           {expanded ? (
-            <Link href="/" className="flex flex-col items-center w-full">
+            <a href="/" className="flex flex-col items-center w-full">
               <span className="text-2xl font-bold text-gray-800 dark:text-white">
                 PetEdu<span className="text-primary">Platform</span>
               </span>
               <span className="text-xs text-gray-500 dark:text-gray-400 mt-1">반려견 전문 교육 플랫폼</span>
-            </Link>
+            </a>
           ) : (
-            <Link href="/" className="flex items-center justify-center w-full">
+            <a href="/" className="flex items-center justify-center w-full">
               <span className="text-2xl font-bold text-primary">P</span>
-            </Link>
+            </a>
           )}
           <button
             onClick={toggleSidebar}

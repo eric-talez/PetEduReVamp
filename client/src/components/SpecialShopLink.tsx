@@ -7,6 +7,17 @@ import { Link, useLocation } from 'wouter';
  * - 다양한 라우팅 방식 지원 (Wouter, 브라우저 API)
  */
 
+// 전역 window 인터페이스 확장
+declare global {
+  interface Window {
+    __peteduAuthState?: {
+      isAuthenticated: boolean;
+      userRole: string | null;
+      userName: string | null;
+    };
+  }
+}
+
 interface SpecialShopLinkProps {
   children: React.ReactNode;
   className?: string;
@@ -19,8 +30,10 @@ export function SpecialShopLink({ children, className = "" }: SpecialShopLinkPro
     e.preventDefault();
     console.log('특별 쇼핑 링크 클릭됨');
     
-    // Wouter의 setLocation 사용 (프로그래매틱 라우팅)
-    setLocation("/shop");
+    // window.location 사용 (전통적인 브라우저 네비게이션)
+    const isAuthenticated = window.__peteduAuthState?.isAuthenticated || false;
+    const targetPath = isAuthenticated ? "/shop" : "/shop-login-required";
+    window.location.href = window.location.origin + targetPath;
   };
   
   return (

@@ -52,7 +52,7 @@ export function ShopPreview() {
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {/* 쇼핑 카테고리 카드 */}
           {Array.from({ length: 4 }).map((_, index) => (
-            <Link key={index} href="/shop" className="bg-gray-50 dark:bg-gray-700 rounded-lg overflow-hidden transition-transform duration-300 hover:transform hover:scale-105 shadow-sm">
+            <a key={index} href="/shop-login-required" className="bg-gray-50 dark:bg-gray-700 rounded-lg overflow-hidden transition-transform duration-300 hover:transform hover:scale-105 shadow-sm">
               <div className="p-3">
                 <div className="flex items-center justify-center bg-primary/10 rounded-full w-8 h-8 mb-2">
                   <Package2 className="text-primary w-4 h-4" />
@@ -60,7 +60,7 @@ export function ShopPreview() {
                 <h3 className="text-sm font-bold mb-1">반려동물 {index % 2 === 0 ? '사료' : '간식'}</h3>
                 <p className="text-xs text-gray-500 dark:text-gray-400">고품질 제품</p>
               </div>
-            </Link>
+            </a>
           ))}
         </div>
         
