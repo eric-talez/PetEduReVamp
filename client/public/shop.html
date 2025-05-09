@@ -870,6 +870,33 @@
       align-items: center;
       justify-content: center;
     }
+    
+    /* 토스트 메시지 스타일 */
+    .toast-message {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background-color: var(--primary-color);
+      color: white;
+      padding: 12px 20px;
+      border-radius: var(--border-radius);
+      font-size: 0.875rem;
+      z-index: 1000;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      opacity: 0;
+      transition: transform 0.3s ease, opacity 0.3s ease;
+    }
+    
+    .toast-message.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+    
+    .dark-mode .toast-message {
+      background-color: var(--primary-color);
+      box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+    }
   </style>
 </head>
 <body>
@@ -1525,6 +1552,107 @@
       // 페이지 로드 시 추천인 코드 확인
       checkReferralCode();
     });
+    
+    // 제품 필터링 기능 구현
+    window.applyFilters = function() {
+      const breedFilter = document.getElementById('breed-filter').value;
+      const trainerFilter = document.getElementById('trainer-filter').value;
+      
+      if (!breedFilter && !trainerFilter) {
+        showToast('필터를 선택해주세요.');
+        return;
+      }
+      
+      // 필터링 된 상품 표시 로직
+      const products = document.querySelectorAll('.product-card');
+      let filteredCount = 0;
+      
+      // 실제 구현에서는 각 상품마다 견종과 훈련사 속성을 설정하고
+      // 그에 따라 필터링하는 로직을 넣어야 함
+      // 여기서는 단순히 선택된 필터에 따라 상품을 무작위로 표시/숨김
+      
+      products.forEach((product, index) => {
+        let shouldShow = true;
+        
+        // 견종 필터 적용 (데모용: 짝수/홀수 인덱스로 시뮬레이션)
+        if (breedFilter && (index % 2 === 0)) {
+          shouldShow = false;
+        }
+        
+        // 훈련사 필터 적용 (데모용: 3의 배수 인덱스로 시뮬레이션)
+        if (trainerFilter && (index % 3 !== 0)) {
+          shouldShow = false;
+        }
+        
+        // 필터가 선택되지 않은 경우에는 해당 조건 무시
+        if ((!breedFilter && !trainerFilter) || 
+            (!breedFilter && trainerFilter && index % 3 === 0) || 
+            (breedFilter && !trainerFilter && index % 2 !== 0)) {
+          shouldShow = true;
+        }
+        
+        if (shouldShow) {
+          product.style.display = 'block';
+          filteredCount++;
+        } else {
+          product.style.display = 'none';
+        }
+      });
+      
+      // 필터링 결과 알림
+      let filterMessage = '';
+      if (breedFilter && trainerFilter) {
+        filterMessage = `${getBreedName(breedFilter)} + ${getTrainerName(trainerFilter)} 추천 상품 (${filteredCount}개)`;
+      } else if (breedFilter) {
+        filterMessage = `${getBreedName(breedFilter)} 추천 상품 (${filteredCount}개)`;
+      } else if (trainerFilter) {
+        filterMessage = `${getTrainerName(trainerFilter)} 추천 상품 (${filteredCount}개)`;
+      }
+      
+      showToast(filterMessage);
+    }
+    
+    // 견종명 가져오기
+    function getBreedName(breedValue) {
+      const breedSelect = document.getElementById('breed-filter');
+      const selectedOption = breedSelect.options[breedSelect.selectedIndex];
+      return selectedOption.text;
+    }
+    
+    // 훈련사명 가져오기
+    function getTrainerName(trainerValue) {
+      const trainerSelect = document.getElementById('trainer-filter');
+      const selectedOption = trainerSelect.options[trainerSelect.selectedIndex];
+      return selectedOption.text;
+    }
+    
+    // 토스트 메시지 표시
+    function showToast(message) {
+      // 이미 있는 토스트 제거
+      const existingToast = document.querySelector('.toast-message');
+      if (existingToast) {
+        existingToast.remove();
+      }
+      
+      const toast = document.createElement('div');
+      toast.className = 'toast-message';
+      toast.innerText = message;
+      
+      document.body.appendChild(toast);
+      
+      // 애니메이션 효과
+      setTimeout(() => {
+        toast.classList.add('show');
+      }, 100);
+      
+      // 3초 후 제거
+      setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => {
+          toast.remove();
+        }, 500);
+      }, 3000);
+    }
   </script>
 </body>
 </html>
