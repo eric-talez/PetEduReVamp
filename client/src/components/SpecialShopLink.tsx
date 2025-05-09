@@ -31,9 +31,8 @@ export function SpecialShopLink({ children, className = "" }: SpecialShopLinkPro
     console.log('특별 쇼핑 링크 클릭됨');
     
     // window.location 사용 (전통적인 브라우저 네비게이션)
-    const isAuthenticated = window.__peteduAuthState?.isAuthenticated || false;
-    const targetPath = isAuthenticated ? "/shop" : "/shop-login-required";
-    window.location.href = window.location.origin + targetPath;
+    // 인증 여부와 관계없이 쇼핑 페이지로 직접 이동
+    window.location.href = window.location.origin + "/shop";
   };
   
   return (

@@ -40,7 +40,7 @@ export function ShopPreview() {
             <ShoppingBag className="mr-2" /> 펫에듀 쇼핑
           </h2>
           <div className="flex space-x-2">
-            <a href="/shop-login-required" className="px-4 py-2 bg-primary-foreground/20 hover:bg-primary-foreground/30 rounded-md text-sm font-medium transition-colors">
+            <a href="/shop" className="px-4 py-2 bg-primary-foreground/20 hover:bg-primary-foreground/30 rounded-md text-sm font-medium transition-colors">
               쇼핑몰 바로가기
             </a>
           </div>
@@ -52,7 +52,7 @@ export function ShopPreview() {
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {/* 쇼핑 카테고리 카드 */}
           {Array.from({ length: 4 }).map((_, index) => (
-            <a key={index} href="/shop-login-required" className="bg-gray-50 dark:bg-gray-700 rounded-lg overflow-hidden transition-transform duration-300 hover:transform hover:scale-105 shadow-sm">
+            <a key={index} href="/shop" className="bg-gray-50 dark:bg-gray-700 rounded-lg overflow-hidden transition-transform duration-300 hover:transform hover:scale-105 shadow-sm">
               <div className="p-3">
                 <div className="flex items-center justify-center bg-primary/10 rounded-full w-8 h-8 mb-2">
                   <Package2 className="text-primary w-4 h-4" />

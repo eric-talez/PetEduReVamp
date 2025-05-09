@@ -293,7 +293,7 @@ function UnauthenticatedRoutes() {
           )}
         </Route>
 
-        {/* 쇼핑 로그인 요구 페이지 라우트 - 비인증 사용자를 위한 안내 페이지 */}
+        {/* 쇼핑 로그인 요구 페이지 라우트 (현재는 사용하지 않지만 향후 필요할 경우를 위해 유지) */}
         <Route path="/shop-login-required">
           {() => {
             console.log("ShopLoginRequiredPage 컴포넌트 렌더링");
@@ -301,19 +301,19 @@ function UnauthenticatedRoutes() {
           }}
         </Route>
 
-        {/* 쇼핑 관련 모든 경로 - 로그인 안내 페이지 컴포넌트로 라우팅 */}
+        {/* 쇼핑 관련 모든 경로 - 비인증 상태에서도 직접 접근 가능 */}
         <Route path="/shop">
           {() => {
-            console.log("비인증 사용자가 /shop 경로에 직접 접근");
-            return <RedirectHandler to="/shop-login-required" />;
+            console.log("비인증 사용자가 /shop 경로에 직접 접근 - 모든 사용자 접속 허용");
+            return <ShopPage />;
           }}
         </Route>
         
-        {/* 쇼핑 관련 하위 라우트 - 카트 */}
+        {/* 쇼핑 관련 하위 라우트 - 카트는 계속 인증 필요 */}
         <Route path="/shop/cart">
           {() => {
-            console.log("비인증 사용자가 /shop/cart 경로에 접근");
-            return <RedirectHandler to="/shop-login-required" />;
+            console.log("비인증 사용자가 /shop/cart 경로에 접근 - 로그인 필요");
+            return <RedirectHandler to="/auth" />;
           }}
         </Route>
         
@@ -321,7 +321,7 @@ function UnauthenticatedRoutes() {
         <Route path="/shop-basic">
           {() => {
             console.log("비인증 사용자가 /shop-basic 경로에 직접 접근");
-            return <RedirectHandler to="/shop-login-required" />;
+            return <ShopPage />;
           }}
         </Route>
 
