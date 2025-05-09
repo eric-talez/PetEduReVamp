@@ -393,17 +393,31 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                       icon={<ShoppingBag className="w-5 h-5 mr-2" />} 
                       active={isActive("/shop")} 
                       onClick={(path) => {
-                        console.log("비인증 사용자가 쇼핑 메뉴 클릭");
-                        // 강제로 절대 경로 사용하되 URL 객체 사용
+                        console.log("비인증 사용자가 쇼핑 메뉴 클릭 - 개선된 이동 방식");
+                        
+                        // 직접 경로 강제 지정
+                        const shopPath = "/shop";
+                        
+                        // window.location 대신 history API 사용
                         try {
-                          const url = new URL('/shop', window.location.origin);
-                          console.log("이동할 경로 (URL 객체 사용):", url.toString());
-                          // 페이지 새로고침 느낌으로 이동
-                          window.location.replace(url.toString());
+                          // 직접 경로 이동
+                          console.log("쇼핑 페이지로 이동 시도:", shopPath);
+                          window.location.href = shopPath;
                         } catch (e) {
-                          console.error("URL 생성 오류:", e);
+                          console.error("페이지 이동 오류:", e);
+                          
                           // 백업 방식
-                          window.location.href = "/shop";
+                          console.log("백업 방식으로 페이지 이동");
+                          try {
+                            // 방법 1: Push State
+                            window.history.pushState({}, '', shopPath);
+                            window.dispatchEvent(new PopStateEvent('popstate'));
+                            console.log("Push State 방식 적용됨");
+                          } catch (e2) {
+                            console.error("History API 오류:", e2);
+                            // 방법 2: 절대 URL 방식
+                            window.location.replace(window.location.origin + shopPath);
+                          }
                         }
                       }} 
                       show={true}

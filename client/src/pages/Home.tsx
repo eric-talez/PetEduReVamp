@@ -379,6 +379,36 @@ export default function Home() {
         </div>
       </div>
 
+      {/* 쇼핑 페이지 바로가기 섹션 */}
+      <div className="mt-8 mb-8 p-6 bg-gradient-to-r from-blue-100 to-indigo-100 dark:from-blue-900/30 dark:to-indigo-900/30 rounded-xl shadow-sm">
+        <h2 className="text-2xl font-bold mb-3">반려견 용품 쇼핑</h2>
+        <p className="mb-4">다양한 펫 용품을 합리적인 가격에 만나보세요. 특별 할인 중!</p>
+        <div className="flex space-x-3">
+          <a 
+            href="/shop"
+            onClick={(e) => {
+              e.preventDefault();
+              console.log("쇼핑 바로가기 클릭 - 홈페이지에서 직접 이동");
+              window.location.href = "/shop";
+            }}
+            className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors"
+          >
+            쇼핑 바로가기
+          </a>
+          <a 
+            href="/shop/best"
+            onClick={(e) => {
+              e.preventDefault(); 
+              console.log("베스트셀러 클릭 - 홈페이지에서 직접 이동");
+              window.location.href = "/shop/best";
+            }}
+            className="px-4 py-2 bg-white text-primary border border-primary rounded-lg hover:bg-gray-50 transition-colors"
+          >
+            베스트셀러
+          </a>
+        </div>
+      </div>
+
       {/* 주간 날씨 모달 */}
       <WeeklyWeatherModal
         isOpen={isWeatherModalOpen}

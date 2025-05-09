@@ -272,10 +272,12 @@ function UnauthenticatedRoutes() {
           )}
         </Route>
 
-        {/* 쇼핑 관련 라우트 - 절대 경로 이용 */}
-        <Route path="/shop">
-          {() => {
-            console.log("비인증 사용자가 /shop 경로에 접근, ShopPage 컴포넌트 렌더링");
+        {/* 쇼핑 관련 라우트 - 와일드카드 패턴 사용 */}
+        <Route path="/shop*">
+          {(params) => {
+            console.log("비인증 사용자가 쇼핑 경로에 접근:", window.location.pathname);
+            console.log("Route params:", params);
+            // ShopBasicPage 컴포넌트를 직접 로드하여 렌더링
             return <ShopPage />;
           }}
         </Route>
