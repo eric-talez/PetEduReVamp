@@ -399,8 +399,8 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                         )}
                         onClick={(e) => {
                           e.preventDefault();
-                          console.log("비인증 사용자가 쇼핑 메뉴 클릭 - 정적 페이지로 이동");
-                          window.location.href = '/shop.html';
+                          console.log("비인증 사용자가 쇼핑 메뉴 클릭 - React 라우트로 이동");
+                          window.location.href = '/shop';
                           if (onClose) onClose();
                         }}
                       >
@@ -502,8 +502,8 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                         )}
                         onClick={(e) => {
                           e.preventDefault();
-                          console.log("인증된 사용자가 쇼핑 메뉴 클릭 - 정적 페이지로 이동");
-                          window.location.href = '/shop.html';
+                          console.log("인증된 사용자가 쇼핑 메뉴 클릭 - React 라우트로 이동");
+                          window.location.href = '/shop';
                           if (onClose) onClose();
                         }}
                       >

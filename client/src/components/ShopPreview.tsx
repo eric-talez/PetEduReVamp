@@ -40,17 +40,15 @@ export function ShopPreview() {
             <ShoppingBag className="mr-2" /> 펫에듀 쇼핑
           </h2>
           <div className="flex space-x-2">
-            <a 
+            <Link
               href="/shop" 
               className="px-4 py-2 bg-primary-foreground/20 hover:bg-primary-foreground/30 rounded-md text-sm font-medium transition-colors"
-              onClick={(e) => {
-                e.preventDefault();
-                console.log("ShopPreview에서 쇼핑몰 바로가기 클릭 - 정적 페이지로 이동");
-                window.location.href = '/shop.html';
+              onClick={() => {
+                console.log("ShopPreview에서 쇼핑몰 바로가기 클릭 - React 라우트로 이동");
               }}
             >
               쇼핑몰 바로가기
-            </a>
+            </Link>
           </div>
         </div>
       </div>
@@ -60,14 +58,12 @@ export function ShopPreview() {
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {/* 쇼핑 카테고리 카드 */}
           {Array.from({ length: 4 }).map((_, index) => (
-            <a 
+            <Link 
               key={index} 
               href="/shop" 
               className="bg-gray-50 dark:bg-gray-700 rounded-lg overflow-hidden transition-transform duration-300 hover:transform hover:scale-105 shadow-sm"
-              onClick={(e) => {
-                e.preventDefault();
-                console.log("ShopPreview에서 카테고리 카드 클릭 - 정적 페이지로 이동");
-                window.location.href = '/shop.html';
+              onClick={() => {
+                console.log("ShopPreview에서 카테고리 카드 클릭 - React 라우트로 이동");
               }}
             >
               <div className="p-3">
@@ -77,7 +73,7 @@ export function ShopPreview() {
                 <h3 className="text-sm font-bold mb-1">반려동물 {index % 2 === 0 ? '사료' : '간식'}</h3>
                 <p className="text-xs text-gray-500 dark:text-gray-400">고품질 제품</p>
               </div>
-            </a>
+            </Link>
           ))}
         </div>
         
