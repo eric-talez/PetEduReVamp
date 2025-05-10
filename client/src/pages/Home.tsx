@@ -55,24 +55,24 @@ export default function Home() {
   function renderDefaultHome() {
     return (
       <div className="container mx-auto px-4 py-8">
-        {/* 서비스 현황 및 날씨 - 배너 위 영역 */}
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-6">
+        {/* 서비스 현황 및 날씨 - 배너 위 영역 - 절반 크기로 축소 */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
           {/* 서비스 현황 카드 */}
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md md:col-span-2 lg:col-span-3">
-            <h2 className="text-lg font-semibold mb-4">서비스 현황</h2>
-            <div className="grid grid-cols-1 gap-4">
+          <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-md md:col-span-3">
+            <h2 className="text-base font-semibold mb-2">서비스 현황</h2>
+            <div className="grid grid-cols-3 gap-3">
               {/* 활성 사용자 */}
-              <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
-                <div className="flex justify-between items-center mb-2">
+              <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg">
+                <div className="flex justify-between items-center">
                   <div>
-                    <span className="text-2xl font-bold text-blue-600 dark:text-blue-400">2,580</span>
-                    <span className="text-sm ml-2 text-gray-600 dark:text-gray-400">활성 사용자</span>
+                    <span className="text-xl font-bold text-blue-600 dark:text-blue-400">2,580</span>
+                    <div className="text-xs text-gray-600 dark:text-gray-400">활성 사용자</div>
                   </div>
-                  <span className="text-xs text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900/30 py-1 px-2 rounded-full">
+                  <span className="text-xs text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900/30 py-0.5 px-1.5 rounded-full">
                     +12.5%
                   </span>
                 </div>
-                <div className="h-10">
+                <div className="h-6 mt-1">
                   <MiniChart 
                     data={[
                       { name: '1월', value: 1800 },
@@ -83,23 +83,23 @@ export default function Home() {
                     ]} 
                     stroke="#3b82f6"
                     fill="rgba(59, 130, 246, 0.2)"
-                    height={50}
+                    height={25}
                   />
                 </div>
               </div>
               
               {/* 인증 훈련사 */}
-              <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg">
-                <div className="flex justify-between items-center mb-2">
+              <div className="bg-green-50 dark:bg-green-900/20 p-3 rounded-lg">
+                <div className="flex justify-between items-center">
                   <div>
-                    <span className="text-2xl font-bold text-green-600 dark:text-green-400">157</span>
-                    <span className="text-sm ml-2 text-gray-600 dark:text-gray-400">인증 훈련사</span>
+                    <span className="text-xl font-bold text-green-600 dark:text-green-400">157</span>
+                    <div className="text-xs text-gray-600 dark:text-gray-400">인증 훈련사</div>
                   </div>
-                  <span className="text-xs text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900/30 py-1 px-2 rounded-full">
+                  <span className="text-xs text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900/30 py-0.5 px-1.5 rounded-full">
                     +4.7%
                   </span>
                 </div>
-                <div className="h-10">
+                <div className="h-6 mt-1">
                   <MiniChart 
                     data={[
                       { name: '1월', value: 135 },
@@ -110,23 +110,23 @@ export default function Home() {
                     ]} 
                     stroke="#16a34a"
                     fill="rgba(22, 163, 74, 0.2)"
-                    height={50}
+                    height={25}
                   />
                 </div>
               </div>
               
               {/* 수료 반려견 */}
-              <div className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg">
-                <div className="flex justify-between items-center mb-2">
+              <div className="bg-purple-50 dark:bg-purple-900/20 p-3 rounded-lg">
+                <div className="flex justify-between items-center">
                   <div>
-                    <span className="text-2xl font-bold text-purple-600 dark:text-purple-400">4,750</span>
-                    <span className="text-sm ml-2 text-gray-600 dark:text-gray-400">수료 반려견</span>
+                    <span className="text-xl font-bold text-purple-600 dark:text-purple-400">4,750</span>
+                    <div className="text-xs text-gray-600 dark:text-gray-400">수료 반려견</div>
                   </div>
-                  <span className="text-xs text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900/30 py-1 px-2 rounded-full">
+                  <span className="text-xs text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900/30 py-0.5 px-1.5 rounded-full">
                     +21.3%
                   </span>
                 </div>
-                <div className="h-10">
+                <div className="h-6 mt-1">
                   <MiniChart 
                     data={[
                       { name: '1월', value: 3200 },
@@ -137,7 +137,7 @@ export default function Home() {
                     ]} 
                     stroke="#9333ea"
                     fill="rgba(147, 51, 234, 0.2)"
-                    height={50}
+                    height={25}
                   />
                 </div>
               </div>
@@ -145,20 +145,20 @@ export default function Home() {
           </div>
           
           {/* 날씨 카드 */}
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md">
-            <div className="flex justify-between items-start mb-4">
-              <h2 className="text-lg font-semibold">오늘의 날씨</h2>
+          <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-md">
+            <div className="flex justify-between items-start mb-1">
+              <h2 className="text-base font-semibold">오늘의 날씨</h2>
               <Button 
                 variant="ghost" 
                 size="sm" 
-                className="text-xs"
+                className="text-xs h-6 px-2"
                 onClick={() => setIsWeatherModalOpen(true)}
               >
-                주간 날씨
+                주간
               </Button>
             </div>
-            <div className="flex flex-col items-center">
-              <div className="w-20 h-20 mb-2">
+            <div className="flex items-center space-x-3">
+              <div className="w-12 h-12">
                 {/* 날씨 아이콘 - 맑음 */}
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-amber-500">
                   <circle cx="12" cy="12" r="5" />
@@ -172,28 +172,27 @@ export default function Home() {
                   <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
                 </svg>
               </div>
+              <div>
+                <p className="text-xl font-bold">23°C</p>
+                <p className="text-xs text-gray-600 dark:text-gray-400">맑음 · 서울 강남구</p>
+              </div>
+            </div>
+            <div className="flex justify-between w-full mt-2 text-xs">
               <div className="text-center">
-                <p className="text-2xl font-bold">23°C</p>
-                <p className="text-sm text-gray-600 dark:text-gray-400">맑음</p>
-                <p className="text-sm text-gray-600 dark:text-gray-400">서울특별시 강남구</p>
+                <p className="text-gray-600 dark:text-gray-400">습도</p>
+                <p className="font-semibold">45%</p>
               </div>
-              <div className="flex justify-between w-full mt-4">
-                <div className="text-center">
-                  <p className="text-xs text-gray-600 dark:text-gray-400">습도</p>
-                  <p className="font-semibold">45%</p>
-                </div>
-                <div className="text-center">
-                  <p className="text-xs text-gray-600 dark:text-gray-400">바람</p>
-                  <p className="font-semibold">3m/s</p>
-                </div>
-                <div className="text-center">
-                  <p className="text-xs text-gray-600 dark:text-gray-400">미세먼지</p>
-                  <p className="font-semibold">좋음</p>
-                </div>
+              <div className="text-center">
+                <p className="text-gray-600 dark:text-gray-400">바람</p>
+                <p className="font-semibold">3m/s</p>
               </div>
-              <div className="mt-4 text-xs text-gray-500 dark:text-gray-400">
-                <p>산책하기 좋은 날씨입니다!</p>
+              <div className="text-center">
+                <p className="text-gray-600 dark:text-gray-400">미세먼지</p>
+                <p className="font-semibold">좋음</p>
               </div>
+            </div>
+            <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+              <p>산책하기 좋은 날씨입니다!</p>
             </div>
           </div>
         </div>
@@ -206,7 +205,7 @@ export default function Home() {
           </div>
           
           {/* 로그인 영역 - 오른쪽 1/4 */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 flex flex-col">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 flex flex-col h-[400px] overflow-y-auto">
             <h2 className="text-lg font-semibold mb-4">로그인</h2>
             {isAuthenticated ? (
               <>
