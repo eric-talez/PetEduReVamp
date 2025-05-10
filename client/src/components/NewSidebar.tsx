@@ -105,6 +105,7 @@ export function NewSidebar({
     main: true,
     features: true,
     myLearning: true,
+    help: true, // 도움말 메뉴 그룹 추가
     trainer: userRole === 'trainer' || userRole === 'admin',
     institute: userRole === 'institute-admin' || userRole === 'admin',
     admin: userRole === 'admin'
@@ -662,11 +663,66 @@ export function NewSidebar({
                   </>
                 )}
 
-                {/* Help Menu for authenticated users - using HelpSection component */}
-                <HelpSection 
-                  expanded={expanded}
-                  handleItemClick={handleItemClick}
-                />
+                {/* Help Menu Group */}
+                {expanded ? (
+                  <div 
+                    className="px-3 py-2 flex items-center justify-between cursor-pointer mt-6" 
+                    onClick={() => toggleMenuGroup('help')}
+                  >
+                    <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      도움말
+                    </h3>
+                    {menuGroups.help ? <ChevronDown className="h-4 w-4 text-gray-500" /> : <ChevronRight className="h-4 w-4 text-gray-500" />}
+                  </div>
+                ) : (
+                  <div className="flex justify-center py-2 mt-6">
+                    <HelpCircle className="h-5 w-5 text-gray-500" />
+                  </div>
+                )}
+
+                {menuGroups.help && (
+                  <>
+                    <NavItem
+                      href="/help/faq"
+                      icon={<HelpCircle className="w-5 h-5 mr-2" />}
+                      active={isActive("/help/faq")}
+                      onClick={handleItemClick}
+                      show={true}
+                    >
+                      자주 묻는 질문
+                    </NavItem>
+
+                    <NavItem
+                      href="/help/guide"
+                      icon={<BookOpen className="w-5 h-5 mr-2" />}
+                      active={isActive("/help/guide")}
+                      onClick={handleItemClick}
+                      show={true}
+                    >
+                      이용 가이드
+                    </NavItem>
+
+                    <NavItem
+                      href="/help/about"
+                      icon={<Users className="w-5 h-5 mr-2" />}
+                      active={isActive("/help/about")}
+                      onClick={handleItemClick}
+                      show={true}
+                    >
+                      소개
+                    </NavItem>
+
+                    <NavItem
+                      href="/help/contact"
+                      icon={<MessageSquare className="w-5 h-5 mr-2" />}
+                      active={isActive("/help/contact")}
+                      onClick={handleItemClick}
+                      show={true}
+                    >
+                      문의하기
+                    </NavItem>
+                  </>
+                )}
 
                 {/* Service Statistics with Toggle using StatisticsSection component */}
                 <StatisticsSection expanded={expanded} />
