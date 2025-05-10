@@ -19,9 +19,9 @@ export function SimpleDogLoading({ text = '로딩 중...', className = '', color
             <div className="absolute w-5 h-5 bg-amber-300 rounded-full -left-1 -top-1 animate-bounce [animation-duration:2s]"></div>
             <div className="absolute w-5 h-5 bg-amber-300 rounded-full -right-1 -top-1 animate-bounce [animation-duration:2.2s]"></div>
             
-            {/* 눈 */}
-            <div className="absolute w-2 h-2 bg-gray-800 rounded-full left-2 top-3"></div>
-            <div className="absolute w-2 h-2 bg-gray-800 rounded-full right-2 top-3"></div>
+            {/* 눈 - 깜빡이는 효과 추가 */}
+            <div className="absolute w-2 h-2 bg-gray-800 rounded-full left-2 top-3 animate-blink"></div>
+            <div className="absolute w-2 h-2 bg-gray-800 rounded-full right-2 top-3 animate-blink" style={{ animationDelay: '0.5s' }}></div>
             
             {/* 코 */}
             <div className="absolute w-2.5 h-2 bg-gray-800 rounded-full left-1/2 top-5 -translate-x-1/2"></div>
@@ -33,31 +33,24 @@ export function SimpleDogLoading({ text = '로딩 중...', className = '', color
           <div className="absolute w-2 h-5 bg-amber-200 rounded-md right-6 bottom-0 animate-bounce [animation-duration:1s]"></div>
           <div className="absolute w-2 h-5 bg-amber-200 rounded-md right-2 bottom-0 animate-bounce [animation-duration:1.1s]"></div>
           
-          {/* 꼬리 */}
-          <div className="absolute w-4 h-2 bg-amber-200 rounded-md -left-3 top-1/2 -translate-y-1/2 origin-right animate-[wiggle_1s_ease-in-out_infinite]"></div>
+          {/* 꼬리 - Tailwind 설정의 애니메이션 사용 */}
+          <div className="absolute w-4 h-2 bg-amber-200 rounded-md -left-3 top-1/2 -translate-y-1/2 origin-right animate-wiggle"></div>
         </div>
       </div>
       
-      {/* 로딩 텍스트 */}
+      {/* 로딩 텍스트 - 애니메이션 적용 */}
       {text && (
-        <div className="mt-4 text-sm font-medium flex space-x-1">
+        <div className="mt-4 text-sm font-medium flex space-x-1 text-primary">
           <span>{text}</span>
           <span className="inline-flex">
             <span className="animate-bounce">.</span>
-            <span className="animate-bounce" style={{ animationDelay: '0.2s' }}>.</span>
-            <span className="animate-bounce" style={{ animationDelay: '0.4s' }}>.</span>
+            <span className="animate-bounce [animation-delay:0.2s]">.</span>
+            <span className="animate-bounce [animation-delay:0.4s]">.</span>
           </span>
         </div>
       )}
       
-      {/* 애니메이션 키프레임 */}
-      <style>{`
-        @keyframes wiggle {
-          0%, 100% { transform: rotate(0deg) translateY(-50%); }
-          25% { transform: rotate(20deg) translateY(-50%); }
-          75% { transform: rotate(-20deg) translateY(-50%); }
-        }
-      `}</style>
+      {/* 애니메이션은 tailwind.config.ts에 정의됨 */}
     </div>
   );
 }
