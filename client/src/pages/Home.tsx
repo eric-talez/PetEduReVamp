@@ -147,9 +147,105 @@ export default function Home() {
           </div>
         </div>
         
-        {/* 배너 슬라이더 */}
-        <div className="mb-8">
-          <BannerSlider />
+        {/* 배너 슬라이더와 로그인 영역 */}
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">
+          {/* 배너 슬라이더 - 왼쪽 3/4 */}
+          <div className="lg:col-span-3">
+            <BannerSlider />
+          </div>
+          
+          {/* 로그인 영역 - 오른쪽 1/4 */}
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 flex flex-col">
+            <h2 className="text-lg font-semibold mb-4">로그인</h2>
+            {isAuthenticated ? (
+              <>
+                <div className="flex items-center mb-4">
+                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center mr-3">
+                    <span className="text-primary font-bold">{userName?.charAt(0)}</span>
+                  </div>
+                  <div>
+                    <p className="font-medium">{userName}</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                      {userRole === 'pet-owner' && '반려인'}
+                      {userRole === 'trainer' && '훈련사'}
+                      {userRole === 'institute-admin' && '기관 관리자'}
+                      {userRole === 'admin' && '관리자'}
+                    </p>
+                  </div>
+                </div>
+                <Button 
+                  variant="default" 
+                  className="mb-2 w-full"
+                  onClick={() => window.location.href = '/dashboard'}
+                >
+                  대시보드로 이동
+                </Button>
+                <Button 
+                  variant="outline" 
+                  className="w-full"
+                  onClick={logout}
+                >
+                  로그아웃
+                </Button>
+              </>
+            ) : (
+              <>
+                <p className="text-gray-600 dark:text-gray-300 mb-4">
+                  로그인하여 모든 서비스를 이용해보세요.
+                </p>
+                <div className="space-y-3">
+                  <Button 
+                    variant="default" 
+                    className="w-full"
+                    onClick={() => window.location.href = '/auth/login'}
+                  >
+                    로그인
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    className="w-full"
+                    onClick={() => window.location.href = '/auth/register'}
+                  >
+                    회원가입
+                  </Button>
+                </div>
+                <div className="mt-4">
+                  <Button 
+                    variant="link" 
+                    size="sm" 
+                    className="w-full"
+                    onClick={() => window.location.href = '/auth/password-reset'}
+                  >
+                    비밀번호를 잊으셨나요?
+                  </Button>
+                </div>
+              </>
+            )}
+            <hr className="my-4 dark:border-gray-700" />
+            <div className="space-y-2">
+              <Button 
+                variant="success" 
+                className="w-full bg-green-600 hover:bg-green-700 text-white"
+                onClick={() => window.location.href = '/auth/login?role=pet-owner'}
+              >
+                반려인으로 로그인
+              </Button>
+              <Button 
+                variant="info" 
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                onClick={() => window.location.href = '/auth/login?role=trainer'}
+              >
+                훈련사로 로그인
+              </Button>
+              <Button 
+                variant="warning" 
+                className="w-full bg-orange-500 hover:bg-orange-600 text-white"
+                onClick={() => window.location.href = '/auth/login?role=institute'}
+              >
+                기관으로 로그인
+              </Button>
+            </div>
+          </div>
         </div>
         
         {/* 인기 훈련사 섹션 */}
