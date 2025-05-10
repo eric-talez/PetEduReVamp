@@ -108,7 +108,7 @@ export default function PetAssignmentsPage() {
       });
       navigate('/');
     }
-  }, [isAuthenticated, userRole, navigate, toast]);
+  }, [isAuthenticated, user, navigate, toast]);
 
   // 데모 데이터
   const [petOwners, setPetOwners] = useState<PetOwner[]>([
