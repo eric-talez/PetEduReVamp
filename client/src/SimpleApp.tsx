@@ -251,7 +251,7 @@ function AppLayout({ children }: { children: ReactNode }) {
     <div className="bg-background text-foreground min-h-screen font-sans">
       <div className="flex">
         {/* 사이드바 */}
-        <div className="fixed inset-y-0 left-0 z-50">
+        <div className={`fixed inset-y-0 left-0 z-50 transition-transform duration-300 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
           <Sidebar 
             open={sidebarOpen} 
             onClose={() => setSidebarOpen(false)} 
@@ -269,7 +269,7 @@ function AppLayout({ children }: { children: ReactNode }) {
         )}
         
         {/* 메인 컨텐츠 영역 */}
-        <div className="flex-1 flex flex-col min-h-screen lg:pl-64">
+        <div className={`flex-1 flex flex-col min-h-screen transition-all duration-300 ${sidebarOpen ? 'lg:pl-64' : 'pl-0'}`}>
           {/* 상단바 */}
           <TopBar
             sidebarOpen={sidebarOpen}

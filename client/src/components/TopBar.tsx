@@ -272,8 +272,8 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
     <header className="sticky top-0 bg-white dark:bg-gray-900 shadow-sm z-10 transition-colors">
       <div className="max-w-full mx-auto px-4 sm:px-6 lg:pl-6 lg:pr-8">
         <div className="flex justify-between items-center h-16">
-          {/* Mobile menu button */}
-          <div className="flex items-center lg:hidden">
+          {/* 햄버거 메뉴 버튼 - 모바일에서는 항상 표시, 데스크탑에서는 사이드바가 접혔을 때만 표시 */}
+          <div className="flex items-center">
             <Button 
               variant="ghost" 
               size="icon" 
