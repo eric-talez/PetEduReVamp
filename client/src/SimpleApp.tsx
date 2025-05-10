@@ -539,22 +539,106 @@ function AuthenticatedRoutes() {
         </Route>
         
         {/* 기관 관리자 메뉴 */}
-        <Route path="/institute/trainers" component={() => <div className="p-8"><h1 className="text-2xl font-bold mb-4">훈련사 관리</h1><p>기관의 훈련사를 관리하는 페이지입니다.</p></div>} />
-        <Route path="/institute/courses" component={() => <div className="p-8"><h1 className="text-2xl font-bold mb-4">교육과정 관리</h1><p>기관의 교육과정을 관리하는 페이지입니다.</p></div>} />
-        <Route path="/institute/students" component={() => <div className="p-8"><h1 className="text-2xl font-bold mb-4">수강생 관리</h1><p>기관의 수강생을 관리하는 페이지입니다.</p></div>} />
-        <Route path="/institute/stats" component={() => <div className="p-8"><h1 className="text-2xl font-bold mb-4">통계 및 수익</h1><p>기관의 통계와 수익을 확인하는 페이지입니다.</p></div>} />
-        <Route path="/institute/settings" component={() => <div className="p-8"><h1 className="text-2xl font-bold mb-4">기관 설정</h1><p>기관의 설정을 관리하는 페이지입니다.</p></div>} />
+        <Route path="/institute/trainers">
+          {() => (
+            <ProtectedInstituteRoute 
+              component={() => <div className="p-8"><h1 className="text-2xl font-bold mb-4">훈련사 관리</h1><p>기관의 훈련사를 관리하는 페이지입니다.</p></div>}
+            />
+          )}
+        </Route>
+        <Route path="/institute/courses">
+          {() => (
+            <ProtectedInstituteRoute 
+              component={() => <div className="p-8"><h1 className="text-2xl font-bold mb-4">교육과정 관리</h1><p>기관의 교육과정을 관리하는 페이지입니다.</p></div>}
+            />
+          )}
+        </Route>
+        <Route path="/institute/students">
+          {() => (
+            <ProtectedInstituteRoute 
+              component={() => <div className="p-8"><h1 className="text-2xl font-bold mb-4">수강생 관리</h1><p>기관의 수강생을 관리하는 페이지입니다.</p></div>}
+            />
+          )}
+        </Route>
+        <Route path="/institute/stats">
+          {() => (
+            <ProtectedInstituteRoute 
+              component={() => <div className="p-8"><h1 className="text-2xl font-bold mb-4">통계 및 수익</h1><p>기관의 통계와 수익을 확인하는 페이지입니다.</p></div>}
+            />
+          )}
+        </Route>
+        <Route path="/institute/settings">
+          {() => (
+            <ProtectedInstituteRoute 
+              component={() => <div className="p-8"><h1 className="text-2xl font-bold mb-4">기관 설정</h1><p>기관의 설정을 관리하는 페이지입니다.</p></div>}
+            />
+          )}
+        </Route>
         
         {/* 관리자 메뉴 */}
-        <Route path="/admin/users" component={() => <div className="p-8"><h1 className="text-2xl font-bold mb-4">사용자 관리</h1><p>시스템 사용자를 관리하는 페이지입니다.</p></div>} />
-        <Route path="/admin/institutes" component={() => <div className="p-8"><h1 className="text-2xl font-bold mb-4">기관 관리</h1><p>교육 기관을 관리하는 페이지입니다.</p></div>} />
-        <Route path="/admin/courses" component={() => <div className="p-8"><h1 className="text-2xl font-bold mb-4">강의 관리</h1><p>전체 강의를 관리하는 페이지입니다.</p></div>} />
-        <Route path="/admin/reports" component={() => <div className="p-8"><h1 className="text-2xl font-bold mb-4">신고 관리</h1><p>사용자 신고를 관리하는 페이지입니다.</p></div>} />
-        <Route path="/admin/settings" component={() => <div className="p-8"><h1 className="text-2xl font-bold mb-4">시스템 설정</h1><p>시스템 설정을 관리하는 페이지입니다.</p></div>} />
-        <Route path="/admin/shop" component={() => <div className="p-8"><h1 className="text-2xl font-bold mb-4">쇼핑몰 관리</h1><p>쇼핑몰을 관리하는 페이지입니다.</p></div>} />
-        <Route path="/admin/commission" component={AdminCommissionPage} />
-        <Route path="/admin/menu-config" component={AdminMenuConfigPage} />
-        <Route path="/admin/settlement" component={AdminSettlementPage} />
+        <Route path="/admin/users">
+          {() => (
+            <ProtectedAdminRoute 
+              component={() => <div className="p-8"><h1 className="text-2xl font-bold mb-4">사용자 관리</h1><p>시스템 사용자를 관리하는 페이지입니다.</p></div>}
+            />
+          )}
+        </Route>
+        <Route path="/admin/institutes">
+          {() => (
+            <ProtectedAdminRoute 
+              component={() => <div className="p-8"><h1 className="text-2xl font-bold mb-4">기관 관리</h1><p>교육 기관을 관리하는 페이지입니다.</p></div>}
+            />
+          )}
+        </Route>
+        <Route path="/admin/courses">
+          {() => (
+            <ProtectedAdminRoute 
+              component={() => <div className="p-8"><h1 className="text-2xl font-bold mb-4">강의 관리</h1><p>전체 강의를 관리하는 페이지입니다.</p></div>}
+            />
+          )}
+        </Route>
+        <Route path="/admin/reports">
+          {() => (
+            <ProtectedAdminRoute 
+              component={() => <div className="p-8"><h1 className="text-2xl font-bold mb-4">신고 관리</h1><p>사용자 신고를 관리하는 페이지입니다.</p></div>}
+            />
+          )}
+        </Route>
+        <Route path="/admin/settings">
+          {() => (
+            <ProtectedAdminRoute 
+              component={() => <div className="p-8"><h1 className="text-2xl font-bold mb-4">시스템 설정</h1><p>시스템 설정을 관리하는 페이지입니다.</p></div>}
+            />
+          )}
+        </Route>
+        <Route path="/admin/shop">
+          {() => (
+            <ProtectedAdminRoute 
+              component={() => <div className="p-8"><h1 className="text-2xl font-bold mb-4">쇼핑몰 관리</h1><p>쇼핑몰을 관리하는 페이지입니다.</p></div>}
+            />
+          )}
+        </Route>
+        <Route path="/admin/commission">
+          {() => (
+            <ProtectedAdminRoute 
+              component={AdminCommissionPage}
+            />
+          )}
+        </Route>
+        <Route path="/admin/menu-config">
+          {() => (
+            <ProtectedAdminRoute 
+              component={AdminMenuConfigPage}
+            />
+          )}
+        </Route>
+        <Route path="/admin/settlement">
+          {() => (
+            <ProtectedAdminRoute 
+              component={AdminSettlementPage}
+            />
+          )}
+        </Route>
         
         {/* 404 페이지 */}
         <Route component={NotFound} />

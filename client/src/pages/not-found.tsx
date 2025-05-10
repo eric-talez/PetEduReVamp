@@ -27,7 +27,9 @@ export default function NotFound() {
     }
     
     // 중복 제거 후 최종 추천 목록 설정
-    setSuggestions([...new Set([...customSuggestions, ...defaultSuggestions])].slice(0, 4));
+    const allSuggestions = [...customSuggestions, ...defaultSuggestions];
+    const uniqueSuggestions = Array.from(new Set(allSuggestions));
+    setSuggestions(uniqueSuggestions.slice(0, 4));
   }, [location]);
   
   return (
