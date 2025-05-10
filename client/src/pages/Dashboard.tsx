@@ -3,13 +3,41 @@ import { Badge } from '@/components/ui/Badge';
 import { getUserRole } from '@/lib/utils';
 import { Link } from 'wouter';
 import { Button } from '@/components/ui/Button';
+import { useState } from 'react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
 type DashboardProps = {
   typeProps?: string;
+  subview?: string;
 };
 
-export default function Dashboard({ typeProps }: DashboardProps) {
+// 모달 타입 정의
+type ModalType = 'course-management' | 'course-details' | 'course-history' | 
+                'student-management' | 'student-details' | 'student-history' | 
+                'earnings-management' | 'earnings-details' | 'earnings-history' | null;
+
+export default function Dashboard({ typeProps, subview }: DashboardProps) {
   const userRole = typeProps || getUserRole();
+  // 모달 상태
+  const [activeModal, setActiveModal] = useState<ModalType>(null);
+  const [activeTab, setActiveTab] = useState("current"); // 기본 탭 설정
+  
+  // 모달 열기
+  const openModal = (type: ModalType) => {
+    console.log(`대시보드: ${type} 모달 열기`);
+    setActiveModal(type);
+  };
+
+  // 모달 닫기
+  const closeModal = () => {
+    setActiveModal(null);
+  };
+  
+  console.log("Dashboard accessed - User Role:", userRole);
+  console.log("Dashboard component auth state:", {isAuthenticated: false, isLoading: true, userRole: null, userName: null});
+  console.log("Global auth state:", {isAuthenticated: true, isLoading: false, userRole, userName: "demo-trainer"});
   
   if (userRole === 'trainer') {
     return (
@@ -23,10 +51,28 @@ export default function Dashboard({ typeProps }: DashboardProps) {
             <CardContent>
               <p>현재 제공 중인 강의: 5개</p>
               <p>준비 중인 강의: 2개</p>
-              <div className="mt-4">
-                <Link href="/trainer/courses">
-                  <Button variant="outline" size="sm">강의 관리</Button>
-                </Link>
+              <div className="mt-4 grid grid-cols-3 gap-2">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => openModal('course-management')}
+                >
+                  관리
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => openModal('course-details')}
+                >
+                  상세
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => openModal('course-history')}
+                >
+                  내역
+                </Button>
               </div>
             </CardContent>
           </Card>
@@ -38,10 +84,28 @@ export default function Dashboard({ typeProps }: DashboardProps) {
             <CardContent>
               <p>총 수강생: 78명</p>
               <p>신규 수강생 (이번 달): 12명</p>
-              <div className="mt-4">
-                <Link href="/trainer/students">
-                  <Button variant="outline" size="sm">수강생 관리</Button>
-                </Link>
+              <div className="mt-4 grid grid-cols-3 gap-2">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => openModal('student-management')}
+                >
+                  관리
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => openModal('student-details')}
+                >
+                  상세
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => openModal('student-history')}
+                >
+                  내역
+                </Button>
               </div>
             </CardContent>
           </Card>
@@ -52,15 +116,929 @@ export default function Dashboard({ typeProps }: DashboardProps) {
             </CardHeader>
             <CardContent>
               <p>이번 달 수익: 2,450,000원</p>
-              <p>전월 대비: <Badge variant="green">+15%</Badge></p>
-              <div className="mt-4">
-                <Link href="/trainer/earnings">
-                  <Button variant="outline" size="sm">수익 관리</Button>
-                </Link>
+              <p>전월 대비: <Badge variant="success">+15%</Badge></p>
+              <div className="mt-4 grid grid-cols-3 gap-2">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => openModal('earnings-management')}
+                >
+                  관리
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => openModal('earnings-details')}
+                >
+                  상세
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => openModal('earnings-history')}
+                >
+                  내역
+                </Button>
               </div>
             </CardContent>
           </Card>
         </div>
+        
+        {/* 강의 관리 모달 */}
+        <Dialog open={activeModal === 'course-management'} onOpenChange={closeModal}>
+          <DialogContent className="sm:max-w-[800px]">
+            <DialogHeader>
+              <DialogTitle className="text-xl">강의 관리</DialogTitle>
+              <DialogDescription>
+                현재 운영 중인 강의 및 예정된 강의를 관리합니다.
+              </DialogDescription>
+            </DialogHeader>
+            
+            <Tabs defaultValue="active" value={activeTab} onValueChange={setActiveTab}>
+              <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="active">진행 중</TabsTrigger>
+                <TabsTrigger value="upcoming">예정</TabsTrigger>
+                <TabsTrigger value="completed">완료</TabsTrigger>
+              </TabsList>
+              <TabsContent value="active" className="mt-4">
+                <div className="space-y-4">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>강의명</TableHead>
+                        <TableHead>유형</TableHead>
+                        <TableHead>기간</TableHead>
+                        <TableHead>수강생</TableHead>
+                        <TableHead>상태</TableHead>
+                        <TableHead>액션</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      <TableRow>
+                        <TableCell className="font-medium">반려견 기초 훈련 마스터하기</TableCell>
+                        <TableCell>그룹</TableCell>
+                        <TableCell>4/15 - 6/15</TableCell>
+                        <TableCell>12명</TableCell>
+                        <TableCell>진행 중</TableCell>
+                        <TableCell>
+                          <Button variant="outline" size="sm" className="mr-2">수정</Button>
+                          <Button variant="outline" size="sm">중지</Button>
+                        </TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell className="font-medium">문제행동 교정 과정</TableCell>
+                        <TableCell>1:1</TableCell>
+                        <TableCell>4/28 - 5/28</TableCell>
+                        <TableCell>5명</TableCell>
+                        <TableCell>진행 중</TableCell>
+                        <TableCell>
+                          <Button variant="outline" size="sm" className="mr-2">수정</Button>
+                          <Button variant="outline" size="sm">중지</Button>
+                        </TableCell>
+                      </TableRow>
+                    </TableBody>
+                  </Table>
+                </div>
+              </TabsContent>
+              <TabsContent value="upcoming" className="mt-4">
+                <div className="space-y-4">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>강의명</TableHead>
+                        <TableHead>유형</TableHead>
+                        <TableHead>예정일</TableHead>
+                        <TableHead>인원</TableHead>
+                        <TableHead>상태</TableHead>
+                        <TableHead>액션</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      <TableRow>
+                        <TableCell className="font-medium">반려견 어질리티 입문</TableCell>
+                        <TableCell>그룹</TableCell>
+                        <TableCell>5/20 시작</TableCell>
+                        <TableCell>6명/10명</TableCell>
+                        <TableCell>모집 중</TableCell>
+                        <TableCell>
+                          <Button variant="outline" size="sm" className="mr-2">수정</Button>
+                          <Button variant="outline" size="sm">취소</Button>
+                        </TableCell>
+                      </TableRow>
+                    </TableBody>
+                  </Table>
+                </div>
+              </TabsContent>
+              <TabsContent value="completed" className="mt-4">
+                <div className="text-center py-8 text-gray-500">
+                  <p>지난 3개월 내 완료된 강의가 없습니다.</p>
+                </div>
+              </TabsContent>
+            </Tabs>
+            
+            <DialogFooter className="flex justify-between">
+              <Button variant="outline">새 강의 등록</Button>
+              <Button onClick={closeModal}>닫기</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+        
+        {/* 강의 상세 모달 */}
+        <Dialog open={activeModal === 'course-details'} onOpenChange={closeModal}>
+          <DialogContent className="sm:max-w-[800px]">
+            <DialogHeader>
+              <DialogTitle className="text-xl">강의 상세 정보</DialogTitle>
+              <DialogDescription>
+                강의 상세 정보 및 통계를 확인합니다.
+              </DialogDescription>
+            </DialogHeader>
+            
+            <Tabs defaultValue="course1" value={activeTab} onValueChange={setActiveTab}>
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="course1">반려견 기초 훈련</TabsTrigger>
+                <TabsTrigger value="course2">문제행동 교정</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="course1" className="mt-4">
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <Card>
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-md">강의 정보</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-2">
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">강의명:</span>
+                            <span className="font-medium">반려견 기초 훈련 마스터하기</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">유형:</span>
+                            <span>그룹 수업</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">기간:</span>
+                            <span>2025.04.15 - 2025.06.15</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">시간:</span>
+                            <span>매주 화/목 19:00-21:00</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">장소:</span>
+                            <span>서울 강남구 펫에듀센터</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">수강료:</span>
+                            <span className="font-medium">240,000원</span>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                    
+                    <Card>
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-md">통계</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-2">
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">등록 인원:</span>
+                            <span>12명 / 15명</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">진행률:</span>
+                            <span>40%</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">출석률:</span>
+                            <span>95%</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">과제 제출률:</span>
+                            <span>88%</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">만족도:</span>
+                            <span className="font-medium">4.8/5.0</span>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                  
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-md">강의 커리큘럼</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>주차</TableHead>
+                            <TableHead>내용</TableHead>
+                            <TableHead>상태</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          <TableRow>
+                            <TableCell>1주차</TableCell>
+                            <TableCell>기초 복종 훈련 - 앉기, 기다리기</TableCell>
+                            <TableCell>완료</TableCell>
+                          </TableRow>
+                          <TableRow>
+                            <TableCell>2주차</TableCell>
+                            <TableCell>기초 복종 훈련 - 엎드리기, 일어서기</TableCell>
+                            <TableCell>완료</TableCell>
+                          </TableRow>
+                          <TableRow>
+                            <TableCell>3주차</TableCell>
+                            <TableCell>기초 복종 훈련 - 따라오기, 제자리</TableCell>
+                            <TableCell>진행 중</TableCell>
+                          </TableRow>
+                        </TableBody>
+                      </Table>
+                    </CardContent>
+                  </Card>
+                </div>
+              </TabsContent>
+              
+              <TabsContent value="course2" className="mt-4">
+                <div className="text-center py-8 text-gray-500">
+                  <p>다른 강의를 선택하세요.</p>
+                </div>
+              </TabsContent>
+            </Tabs>
+            
+            <DialogFooter>
+              <Button onClick={closeModal}>닫기</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+        
+        {/* 강의 내역 모달 */}
+        <Dialog open={activeModal === 'course-history'} onOpenChange={closeModal}>
+          <DialogContent className="sm:max-w-[800px]">
+            <DialogHeader>
+              <DialogTitle className="text-xl">강의 이력</DialogTitle>
+              <DialogDescription>
+                과거 진행했던 강의 내역을 확인합니다.
+              </DialogDescription>
+            </DialogHeader>
+            
+            <div className="space-y-4">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>강의명</TableHead>
+                    <TableHead>기간</TableHead>
+                    <TableHead>수강생</TableHead>
+                    <TableHead>만족도</TableHead>
+                    <TableHead>수료율</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  <TableRow>
+                    <TableCell className="font-medium">반려견 사회화 트레이닝</TableCell>
+                    <TableCell>2025.01.10 - 2025.03.10</TableCell>
+                    <TableCell>15명</TableCell>
+                    <TableCell>4.7/5.0</TableCell>
+                    <TableCell>93%</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell className="font-medium">퍼피 기초 훈련</TableCell>
+                    <TableCell>2024.11.05 - 2025.01.05</TableCell>
+                    <TableCell>12명</TableCell>
+                    <TableCell>4.9/5.0</TableCell>
+                    <TableCell>100%</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell className="font-medium">반려견 공격성 교정</TableCell>
+                    <TableCell>2024.09.15 - 2024.11.15</TableCell>
+                    <TableCell>8명</TableCell>
+                    <TableCell>4.6/5.0</TableCell>
+                    <TableCell>88%</TableCell>
+                  </TableRow>
+                </TableBody>
+              </Table>
+            </div>
+            
+            <DialogFooter>
+              <Button onClick={closeModal}>닫기</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+        
+        {/* 수강생 관리 모달 */}
+        <Dialog open={activeModal === 'student-management'} onOpenChange={closeModal}>
+          <DialogContent className="sm:max-w-[800px]">
+            <DialogHeader>
+              <DialogTitle className="text-xl">수강생 관리</DialogTitle>
+              <DialogDescription>
+                현재 등록된 수강생과 진행 상황을 관리합니다.
+              </DialogDescription>
+            </DialogHeader>
+            
+            <Tabs defaultValue="current" value={activeTab} onValueChange={setActiveTab}>
+              <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="current">현재 수강생</TabsTrigger>
+                <TabsTrigger value="pending">대기 중</TabsTrigger>
+                <TabsTrigger value="graduated">수료 완료</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="current" className="mt-4">
+                <div className="space-y-4">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>이름</TableHead>
+                        <TableHead>반려견</TableHead>
+                        <TableHead>강의</TableHead>
+                        <TableHead>진도율</TableHead>
+                        <TableHead>시작일</TableHead>
+                        <TableHead>액션</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      <TableRow>
+                        <TableCell className="font-medium">이지은</TableCell>
+                        <TableCell>몽이 (말티즈)</TableCell>
+                        <TableCell>기초 훈련</TableCell>
+                        <TableCell>65%</TableCell>
+                        <TableCell>2025.04.15</TableCell>
+                        <TableCell>
+                          <Button variant="outline" size="sm" className="mr-2">보기</Button>
+                          <Button variant="outline" size="sm">메시지</Button>
+                        </TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell className="font-medium">김민준</TableCell>
+                        <TableCell>코코 (푸들)</TableCell>
+                        <TableCell>문제행동 교정</TableCell>
+                        <TableCell>40%</TableCell>
+                        <TableCell>2025.04.28</TableCell>
+                        <TableCell>
+                          <Button variant="outline" size="sm" className="mr-2">보기</Button>
+                          <Button variant="outline" size="sm">메시지</Button>
+                        </TableCell>
+                      </TableRow>
+                    </TableBody>
+                  </Table>
+                </div>
+              </TabsContent>
+              
+              <TabsContent value="pending" className="mt-4">
+                <div className="space-y-4">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>이름</TableHead>
+                        <TableHead>반려견</TableHead>
+                        <TableHead>강의</TableHead>
+                        <TableHead>신청일</TableHead>
+                        <TableHead>상태</TableHead>
+                        <TableHead>액션</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      <TableRow>
+                        <TableCell className="font-medium">박서현</TableCell>
+                        <TableCell>해피 (포메라니안)</TableCell>
+                        <TableCell>어질리티 입문</TableCell>
+                        <TableCell>2025.05.05</TableCell>
+                        <TableCell>결제 완료</TableCell>
+                        <TableCell>
+                          <Button variant="outline" size="sm" className="mr-2">승인</Button>
+                          <Button variant="outline" size="sm">거절</Button>
+                        </TableCell>
+                      </TableRow>
+                    </TableBody>
+                  </Table>
+                </div>
+              </TabsContent>
+              
+              <TabsContent value="graduated" className="mt-4">
+                <div className="text-center py-8 text-gray-500">
+                  <p>지난 3개월 내 수료한 수강생이 없습니다.</p>
+                </div>
+              </TabsContent>
+            </Tabs>
+            
+            <DialogFooter>
+              <Button onClick={closeModal}>닫기</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+        
+        {/* 수강생 상세 모달 */}
+        <Dialog open={activeModal === 'student-details'} onOpenChange={closeModal}>
+          <DialogContent className="sm:max-w-[800px]">
+            <DialogHeader>
+              <DialogTitle className="text-xl">수강생 상세 정보</DialogTitle>
+              <DialogDescription>
+                수강생 상세 정보 및 진행 상황을 확인합니다.
+              </DialogDescription>
+            </DialogHeader>
+            
+            <Tabs defaultValue="student1" value={activeTab} onValueChange={setActiveTab}>
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="student1">이지은</TabsTrigger>
+                <TabsTrigger value="student2">김민준</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="student1" className="mt-4">
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <Card>
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-md">수강생 정보</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-2">
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">이름:</span>
+                            <span className="font-medium">이지은</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">연락처:</span>
+                            <span>010-1234-5678</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">이메일:</span>
+                            <span>jieun@example.com</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">등록일:</span>
+                            <span>2025.04.10</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">현재 강의:</span>
+                            <span>기초 훈련 마스터하기</span>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                    
+                    <Card>
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-md">반려견 정보</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-2">
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">이름:</span>
+                            <span>몽이</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">품종:</span>
+                            <span>말티즈</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">나이:</span>
+                            <span>2살</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">성별:</span>
+                            <span>수컷 (중성화)</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">특이사항:</span>
+                            <span>낯가림, 소심함</span>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                  
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-md">교육 진행 상황</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>회차</TableHead>
+                            <TableHead>내용</TableHead>
+                            <TableHead>출석</TableHead>
+                            <TableHead>과제</TableHead>
+                            <TableHead>평가</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          <TableRow>
+                            <TableCell>1회차</TableCell>
+                            <TableCell>오리엔테이션, 기초 사회화</TableCell>
+                            <TableCell>O</TableCell>
+                            <TableCell>제출</TableCell>
+                            <TableCell>A</TableCell>
+                          </TableRow>
+                          <TableRow>
+                            <TableCell>2회차</TableCell>
+                            <TableCell>앉기, 기다리기 훈련</TableCell>
+                            <TableCell>O</TableCell>
+                            <TableCell>제출</TableCell>
+                            <TableCell>B+</TableCell>
+                          </TableRow>
+                          <TableRow>
+                            <TableCell>3회차</TableCell>
+                            <TableCell>엎드리기, 일어서기 훈련</TableCell>
+                            <TableCell>O</TableCell>
+                            <TableCell>미제출</TableCell>
+                            <TableCell>-</TableCell>
+                          </TableRow>
+                        </TableBody>
+                      </Table>
+                    </CardContent>
+                  </Card>
+                </div>
+              </TabsContent>
+              
+              <TabsContent value="student2" className="mt-4">
+                <div className="text-center py-8 text-gray-500">
+                  <p>다른 수강생을 선택하세요.</p>
+                </div>
+              </TabsContent>
+            </Tabs>
+            
+            <DialogFooter>
+              <Button onClick={closeModal}>닫기</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+        
+        {/* 수강생 내역 모달 */}
+        <Dialog open={activeModal === 'student-history'} onOpenChange={closeModal}>
+          <DialogContent className="sm:max-w-[800px]">
+            <DialogHeader>
+              <DialogTitle className="text-xl">수강생 이력</DialogTitle>
+              <DialogDescription>
+                과거 수강생 등록 및 수료 내역을 확인합니다.
+              </DialogDescription>
+            </DialogHeader>
+            
+            <div className="space-y-4">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>이름</TableHead>
+                    <TableHead>강의명</TableHead>
+                    <TableHead>기간</TableHead>
+                    <TableHead>상태</TableHead>
+                    <TableHead>결과</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  <TableRow>
+                    <TableCell className="font-medium">오수진</TableCell>
+                    <TableCell>반려견 사회화 트레이닝</TableCell>
+                    <TableCell>2025.01.10 - 2025.03.10</TableCell>
+                    <TableCell>수료</TableCell>
+                    <TableCell>A</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell className="font-medium">정우진</TableCell>
+                    <TableCell>퍼피 기초 훈련</TableCell>
+                    <TableCell>2024.11.05 - 2025.01.05</TableCell>
+                    <TableCell>수료</TableCell>
+                    <TableCell>A+</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell className="font-medium">김태희</TableCell>
+                    <TableCell>반려견 공격성 교정</TableCell>
+                    <TableCell>2024.09.15 - 2024.11.15</TableCell>
+                    <TableCell>중도포기</TableCell>
+                    <TableCell>-</TableCell>
+                  </TableRow>
+                </TableBody>
+              </Table>
+            </div>
+            
+            <DialogFooter>
+              <Button onClick={closeModal}>닫기</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+        
+        {/* 수익 관리 모달 */}
+        <Dialog open={activeModal === 'earnings-management'} onOpenChange={closeModal}>
+          <DialogContent className="sm:max-w-[800px]">
+            <DialogHeader>
+              <DialogTitle className="text-xl">수익 관리</DialogTitle>
+              <DialogDescription>
+                수익 현황을 관리하고 정산 내역을 확인합니다.
+              </DialogDescription>
+            </DialogHeader>
+            
+            <Tabs defaultValue="monthly" value={activeTab} onValueChange={setActiveTab}>
+              <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="monthly">월별 수익</TabsTrigger>
+                <TabsTrigger value="courses">강의별 수익</TabsTrigger>
+                <TabsTrigger value="payments">정산 현황</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="monthly" className="mt-4">
+                <div className="space-y-4">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>월</TableHead>
+                        <TableHead>총 수익</TableHead>
+                        <TableHead>강의 수</TableHead>
+                        <TableHead>수강생 수</TableHead>
+                        <TableHead>증감률</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      <TableRow>
+                        <TableCell className="font-medium">2025년 5월</TableCell>
+                        <TableCell>₩2,450,000</TableCell>
+                        <TableCell>3개</TableCell>
+                        <TableCell>17명</TableCell>
+                        <TableCell className="text-green-600">+15%</TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell className="font-medium">2025년 4월</TableCell>
+                        <TableCell>₩2,130,000</TableCell>
+                        <TableCell>3개</TableCell>
+                        <TableCell>15명</TableCell>
+                        <TableCell className="text-green-600">+18%</TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell className="font-medium">2025년 3월</TableCell>
+                        <TableCell>₩1,800,000</TableCell>
+                        <TableCell>2개</TableCell>
+                        <TableCell>12명</TableCell>
+                        <TableCell className="text-gray-500">-</TableCell>
+                      </TableRow>
+                    </TableBody>
+                  </Table>
+                </div>
+              </TabsContent>
+              
+              <TabsContent value="courses" className="mt-4">
+                <div className="space-y-4">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>강의명</TableHead>
+                        <TableHead>유형</TableHead>
+                        <TableHead>수강생 수</TableHead>
+                        <TableHead>월 수익</TableHead>
+                        <TableHead>비율</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      <TableRow>
+                        <TableCell className="font-medium">반려견 기초 훈련 마스터하기</TableCell>
+                        <TableCell>그룹</TableCell>
+                        <TableCell>12명</TableCell>
+                        <TableCell>₩1,200,000</TableCell>
+                        <TableCell>49%</TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell className="font-medium">문제행동 교정 과정</TableCell>
+                        <TableCell>1:1</TableCell>
+                        <TableCell>5명</TableCell>
+                        <TableCell>₩1,250,000</TableCell>
+                        <TableCell>51%</TableCell>
+                      </TableRow>
+                    </TableBody>
+                  </Table>
+                </div>
+              </TabsContent>
+              
+              <TabsContent value="payments" className="mt-4">
+                <div className="space-y-4">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>정산 예정일</TableHead>
+                        <TableHead>금액</TableHead>
+                        <TableHead>수수료</TableHead>
+                        <TableHead>실 수령액</TableHead>
+                        <TableHead>상태</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      <TableRow>
+                        <TableCell className="font-medium">2025.05.25</TableCell>
+                        <TableCell>₩2,450,000</TableCell>
+                        <TableCell>₩245,000 (10%)</TableCell>
+                        <TableCell>₩2,205,000</TableCell>
+                        <TableCell>예정</TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell className="font-medium">2025.04.25</TableCell>
+                        <TableCell>₩2,130,000</TableCell>
+                        <TableCell>₩213,000 (10%)</TableCell>
+                        <TableCell>₩1,917,000</TableCell>
+                        <TableCell>완료</TableCell>
+                      </TableRow>
+                    </TableBody>
+                  </Table>
+                </div>
+              </TabsContent>
+            </Tabs>
+            
+            <DialogFooter>
+              <Button variant="outline" className="mr-2">정산 계좌 설정</Button>
+              <Button onClick={closeModal}>닫기</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+        
+        {/* 수익 상세 모달 */}
+        <Dialog open={activeModal === 'earnings-details'} onOpenChange={closeModal}>
+          <DialogContent className="sm:max-w-[800px]">
+            <DialogHeader>
+              <DialogTitle className="text-xl">수익 상세 분석</DialogTitle>
+              <DialogDescription>
+                수익 상세 내역 및 분석 자료를 확인합니다.
+              </DialogDescription>
+            </DialogHeader>
+            
+            <Tabs defaultValue="summary" value={activeTab} onValueChange={setActiveTab}>
+              <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="summary">요약</TabsTrigger>
+                <TabsTrigger value="trends">추이</TabsTrigger>
+                <TabsTrigger value="details">상세</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="summary" className="mt-4">
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <Card>
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-md">수익 요약 (2025년 5월)</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-2">
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">총 수익:</span>
+                            <span className="font-bold">₩2,450,000</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">수수료:</span>
+                            <span>₩245,000 (10%)</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">순 수익:</span>
+                            <span className="font-bold">₩2,205,000</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">전월 대비:</span>
+                            <span className="text-green-600">+15%</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">수익 목표:</span>
+                            <span>₩2,500,000 (98% 달성)</span>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                    
+                    <Card>
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-md">수익원 분석</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-2">
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">그룹 강의:</span>
+                            <span>₩1,200,000 (49%)</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">1:1 강의:</span>
+                            <span>₩1,250,000 (51%)</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">옵션 서비스:</span>
+                            <span>₩0 (0%)</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">기타:</span>
+                            <span>₩0 (0%)</span>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                </div>
+              </TabsContent>
+              
+              <TabsContent value="trends" className="mt-4">
+                <div className="space-y-4">
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-md">월별 수익 추이 (최근 6개월)</CardTitle>
+                    </CardHeader>
+                    <CardContent className="h-60 bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+                      <p className="text-muted-foreground">이 영역에 그래프가 표시됩니다.</p>
+                    </CardContent>
+                  </Card>
+                </div>
+              </TabsContent>
+              
+              <TabsContent value="details" className="mt-4">
+                <div className="space-y-4">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>날짜</TableHead>
+                        <TableHead>설명</TableHead>
+                        <TableHead>수강생</TableHead>
+                        <TableHead>금액</TableHead>
+                        <TableHead>수수료</TableHead>
+                        <TableHead>순액</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      <TableRow>
+                        <TableCell>2025.05.05</TableCell>
+                        <TableCell>기초 훈련 강의 수강료</TableCell>
+                        <TableCell>이지은</TableCell>
+                        <TableCell>₩240,000</TableCell>
+                        <TableCell>₩24,000</TableCell>
+                        <TableCell>₩216,000</TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell>2025.05.03</TableCell>
+                        <TableCell>문제행동 교정 과정 수강료</TableCell>
+                        <TableCell>김민준</TableCell>
+                        <TableCell>₩280,000</TableCell>
+                        <TableCell>₩28,000</TableCell>
+                        <TableCell>₩252,000</TableCell>
+                      </TableRow>
+                    </TableBody>
+                  </Table>
+                </div>
+              </TabsContent>
+            </Tabs>
+            
+            <DialogFooter>
+              <Button onClick={closeModal}>닫기</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+        
+        {/* 수익 내역 모달 */}
+        <Dialog open={activeModal === 'earnings-history'} onOpenChange={closeModal}>
+          <DialogContent className="sm:max-w-[800px]">
+            <DialogHeader>
+              <DialogTitle className="text-xl">수익 내역</DialogTitle>
+              <DialogDescription>
+                지난 정산 내역 및 이력을 확인합니다.
+              </DialogDescription>
+            </DialogHeader>
+            
+            <div className="space-y-4">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>정산월</TableHead>
+                    <TableHead>총액</TableHead>
+                    <TableHead>수수료</TableHead>
+                    <TableHead>순액</TableHead>
+                    <TableHead>정산일</TableHead>
+                    <TableHead>상태</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  <TableRow>
+                    <TableCell className="font-medium">2025년 4월</TableCell>
+                    <TableCell>₩2,130,000</TableCell>
+                    <TableCell>₩213,000</TableCell>
+                    <TableCell>₩1,917,000</TableCell>
+                    <TableCell>2025.04.25</TableCell>
+                    <TableCell>완료</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell className="font-medium">2025년 3월</TableCell>
+                    <TableCell>₩1,800,000</TableCell>
+                    <TableCell>₩180,000</TableCell>
+                    <TableCell>₩1,620,000</TableCell>
+                    <TableCell>2025.03.25</TableCell>
+                    <TableCell>완료</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell className="font-medium">2025년 2월</TableCell>
+                    <TableCell>₩1,750,000</TableCell>
+                    <TableCell>₩175,000</TableCell>
+                    <TableCell>₩1,575,000</TableCell>
+                    <TableCell>2025.02.25</TableCell>
+                    <TableCell>완료</TableCell>
+                  </TableRow>
+                </TableBody>
+              </Table>
+            </div>
+            
+            <DialogFooter>
+              <Button variant="outline" className="mr-2">명세서 다운로드</Button>
+              <Button onClick={closeModal}>닫기</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     );
   }
