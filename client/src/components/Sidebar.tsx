@@ -188,14 +188,26 @@ export function Sidebar({
   
   // 도움말 메뉴 토글 함수
   const toggleHelpMenu = () => {
-    console.log("도움말 메뉴 토글: ", !helpMenuExpanded);
-    setHelpMenuExpanded(!helpMenuExpanded);
+    console.log("도움말 메뉴 토글: 호출됨", helpMenuExpanded, "->", !helpMenuExpanded);
+    const newState = !helpMenuExpanded;
+    setHelpMenuExpanded(newState);
+    
+    // 상태 변경 확인을 위한 타임아웃 설정
+    setTimeout(() => {
+      console.log("도움말 메뉴 상태 변경 확인:", helpMenuExpanded, "->", newState);
+    }, 100);
   };
   
   // 서비스 현황 메뉴 토글 함수
   const toggleStatsMenu = () => {
-    console.log("서비스 현황 메뉴 토글: ", !statsMenuExpanded);
-    setStatsMenuExpanded(!statsMenuExpanded);
+    console.log("서비스 현황 메뉴 토글: 호출됨", statsMenuExpanded, "->", !statsMenuExpanded);
+    const newState = !statsMenuExpanded;
+    setStatsMenuExpanded(newState);
+    
+    // 상태 변경 확인을 위한 타임아웃 설정
+    setTimeout(() => {
+      console.log("서비스 현황 메뉴 상태 변경 확인:", statsMenuExpanded, "->", newState);
+    }, 100);
   };
 
   const isActive = (path: string) => {
