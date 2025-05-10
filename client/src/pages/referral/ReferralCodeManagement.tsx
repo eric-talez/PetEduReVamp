@@ -756,16 +756,69 @@ export default function ReferralCodeManagement() {
           </DialogHeader>
 
           <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-4 items-center gap-4">
-              <label htmlFor="code" className="text-right text-sm">코드</label>
-              <Input
-                id="code"
-                className="col-span-3"
-                placeholder="추천인 코드 입력"
-                defaultValue={selectedItem?.code || ""}
-                readOnly={dialogMode === "view" || dialogMode === "approve"}
-              />
-            </div>
+            {dialogMode === "add" && (
+              <>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <label htmlFor="institutionCode" className="text-right text-sm">기관 코드</label>
+                  <Select defaultValue="HPT101">
+                    <SelectTrigger className="col-span-3">
+                      <SelectValue placeholder="기관 선택" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="HPT101">해피 펫 트레이닝 센터 (HPT101)</SelectItem>
+                      <SelectItem value="PLA102">퍼피 러브 아카데미 (PLA102)</SelectItem>
+                      <SelectItem value="PCT103">펫케어 트레이닝 (PCT103)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <label htmlFor="trainerCode" className="text-right text-sm">훈련사 코드</label>
+                  <Select defaultValue="TR001">
+                    <SelectTrigger className="col-span-3">
+                      <SelectValue placeholder="훈련사 선택" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="TR001">김훈련사 (TR001)</SelectItem>
+                      <SelectItem value="TR002">박훈련사 (TR002)</SelectItem>
+                      <SelectItem value="TR005">이훈련사 (TR005)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <label className="text-right text-sm">생성된 코드</label>
+                  <div className="col-span-3 flex items-center space-x-2">
+                    <Input
+                      value="HPT101-TR001"
+                      readOnly
+                      className="font-medium text-blue-600"
+                    />
+                    <Button variant="outline" size="sm">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                      </svg>
+                      복사
+                    </Button>
+                  </div>
+                </div>
+              </>
+            )}
+            
+            {(dialogMode === "view" || dialogMode === "approve" || dialogMode === "edit") && (
+              <div className="grid grid-cols-4 items-center gap-4">
+                <label htmlFor="code" className="text-right text-sm">코드</label>
+                <Input
+                  id="code"
+                  className="col-span-3"
+                  placeholder="추천인 코드 입력"
+                  defaultValue={selectedItem?.code || ""}
+                  readOnly={dialogMode === "view" || dialogMode === "approve"}
+                />
+              </div>
+            )}
+            
             <div className="grid grid-cols-4 items-center gap-4">
               <label htmlFor="description" className="text-right text-sm">설명</label>
               <Input
@@ -776,6 +829,7 @@ export default function ReferralCodeManagement() {
                 readOnly={dialogMode === "view" || dialogMode === "approve"}
               />
             </div>
+            
             <div className="grid grid-cols-4 items-center gap-4">
               <label htmlFor="discount" className="text-right text-sm">할인율 (%)</label>
               <Input
@@ -789,6 +843,24 @@ export default function ReferralCodeManagement() {
                 readOnly={dialogMode === "view" || dialogMode === "approve"}
               />
             </div>
+            
+            {dialogMode === "add" && (
+              <div className="grid grid-cols-4 items-center gap-4">
+                <label htmlFor="profitShare" className="text-right text-sm">수익 공유 (%)</label>
+                <div className="col-span-3 flex items-center space-x-2">
+                  <Input
+                    id="profitShare"
+                    type="number"
+                    min="0"
+                    max="100"
+                    defaultValue="70"
+                    className="flex-1"
+                    placeholder="훈련사 수익 비율"
+                  />
+                  <span className="text-sm text-muted-foreground whitespace-nowrap">훈련사 수익률</span>
+                </div>
+              </div>
+            )}
             {(dialogMode === "approve" || dialogMode === "view") && (
               <>
                 <div className="grid grid-cols-4 items-center gap-4">
@@ -826,6 +898,32 @@ export default function ReferralCodeManagement() {
                     </SelectContent>
                   </Select>
                 </div>
+                
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <label htmlFor="trainerDetails" className="text-right text-sm">훈련사 정보</label>
+                  <div className="col-span-3 bg-muted p-2 rounded-md">
+                    <div className="flex items-center space-x-2">
+                      <span className="font-medium">{selectedItem?.trainerName}</span>
+                      <span className="text-xs text-muted-foreground">({selectedItem?.trainerCode})</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <label htmlFor="profitShare" className="text-right text-sm">수익 공유 (%)</label>
+                  <div className="col-span-3 flex items-center space-x-2">
+                    <Input
+                      id="profitShare"
+                      type="number"
+                      min="0"
+                      max="100"
+                      className="flex-1"
+                      defaultValue={selectedItem?.profitShare || "70"}
+                    />
+                    <span className="text-sm text-muted-foreground whitespace-nowrap">훈련사 수익률</span>
+                  </div>
+                </div>
+                
                 <div className="grid grid-cols-4 items-center gap-4">
                   <label htmlFor="expiryDate" className="text-right text-sm">만료일</label>
                   <Input
@@ -835,6 +933,7 @@ export default function ReferralCodeManagement() {
                     defaultValue={selectedItem?.expiryDate || ""}
                   />
                 </div>
+                
                 <div className="grid grid-cols-4 items-center gap-4">
                   <label htmlFor="maxUsage" className="text-right text-sm">최대 사용 횟수</label>
                   <Input
@@ -845,6 +944,16 @@ export default function ReferralCodeManagement() {
                     placeholder="제한 없음"
                     defaultValue={selectedItem?.maxUsage || ""}
                   />
+                </div>
+                
+                <div className="mt-2 bg-blue-50 dark:bg-blue-950 p-3 rounded-md text-sm">
+                  <p className="text-blue-600 dark:text-blue-400 font-medium mb-1">수익 배분 정보</p>
+                  <div className="flex items-center space-x-2">
+                    <Percent className="h-4 w-4 text-blue-500 dark:text-blue-400" />
+                    <span>훈련사 <span className="font-medium">{selectedItem?.profitShare || 70}%</span></span>
+                    <span className="text-gray-400">/</span>
+                    <span>기관 <span className="font-medium">{100 - (selectedItem?.profitShare || 70)}%</span></span>
+                  </div>
                 </div>
               </>
             )}
