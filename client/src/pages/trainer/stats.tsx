@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useAuth } from '../../hooks/useAuth';
+import { useAuth } from '../../SimpleApp';
 import { Button } from '../../components/ui/Button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../../components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '../../components/ui/dialog';
@@ -45,7 +45,9 @@ const mockChartData = {
 };
 
 export default function TrainerStats() {
-  const { user, isAuthenticated } = useAuth();
+  const auth = useAuth();
+  const isAuthenticated = auth.isAuthenticated;
+  const user = { name: auth.userName };
   const [activeTab, setActiveTab] = useState<string>('earnings');
   const [activeModal, setActiveModal] = useState<ModalType>(null);
   const [selectedDateRange, setSelectedDateRange] = useState<string>('month');
