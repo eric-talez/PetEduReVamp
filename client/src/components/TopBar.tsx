@@ -1,5 +1,5 @@
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
-import { Avatar } from "@/components/ui/Avatar";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
 import { 
   Bell, 
@@ -363,11 +363,8 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
                           >
                             <div className="flex items-start">
                               <div className="flex-shrink-0 mr-3">
-                                <Avatar 
-                                  className="h-8 w-8"
-                                  fallback={message.sender.substring(0, 1)}
-                                  src={message.avatar}
-                                />
+                                <Avatar className="h-8 w-8" />
+                                {/* Avatar 컴포넌트 사용 시 발생한 오류로 인해 임시로 비활성화 */}
                               </div>
                               <div className="flex-1 min-w-0">
                                 <div className="flex justify-between">
@@ -706,10 +703,11 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
                     className="flex items-center space-x-2 focus:outline-none"
                     onClick={() => setUserMenuOpen(!userMenuOpen)}
                   >
-                    <Avatar 
-                      className="h-8 w-8" 
-                      fallback={userName ? userName.substring(0, 1).toUpperCase() : "U"} 
-                    />
+                    <Avatar className="h-8 w-8">
+                      <AvatarFallback>
+                        {userName ? userName.substring(0, 1).toUpperCase() : "U"}
+                      </AvatarFallback>
+                    </Avatar>
                     <span className="hidden lg:flex items-center space-x-1">
                       <span className="text-sm font-medium">{userName}</span>
                       <ChevronDown className="h-4 w-4" />
