@@ -7,7 +7,7 @@ import { MiniChart } from '@/components/ui/mini-chart';
 import { WeeklyWeatherModal } from '@/components/WeeklyWeatherModal';
 import { ShopPreview } from '@/components/ShopPreview'; // 인증 상태에 의존하지 않는 컴포넌트
 import { useState, lazy, Suspense } from 'react';
-import { Loader2 } from 'lucide-react';
+import { Loader2, ChevronDown, ChevronRight } from 'lucide-react';
 
 // 각 역할별 홈 페이지를 동적으로 임포트
 const TrainerHome = lazy(() => import('./trainer/TrainerHome'));
@@ -18,6 +18,12 @@ export default function Home() {
   console.log("홈 페이지 렌더링");
   const { isAuthenticated, userRole, userName, logout } = useAuth();
   const [isWeatherModalOpen, setIsWeatherModalOpen] = useState(false);
+  const [isServiceStatsOpen, setIsServiceStatsOpen] = useState(true);
+  
+  // 서비스 현황 토글 함수
+  const toggleServiceStats = () => {
+    setIsServiceStatsOpen(prev => !prev);
+  };
   
   // 사용자 역할에 따라 적절한 홈페이지 컴포넌트를 반환
   if (isAuthenticated) {
@@ -55,145 +61,227 @@ export default function Home() {
   function renderDefaultHome() {
     return (
       <div className="container mx-auto px-4 py-8">
-        {/* 서비스 현황 및 날씨 - 배너 위 영역 - 절반 크기로 축소 */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
-          {/* 서비스 현황 카드 */}
-          <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-md md:col-span-3">
-            <h2 className="text-base font-semibold mb-2">서비스 현황</h2>
-            <div className="grid grid-cols-3 gap-3">
-              {/* 활성 사용자 */}
-              <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg">
-                <div className="flex justify-between items-center">
-                  <div>
-                    <span className="text-xl font-bold text-blue-600 dark:text-blue-400">2,580</span>
-                    <div className="text-xs text-gray-600 dark:text-gray-400">활성 사용자</div>
+        {/* 서비스 현황 및 날씨 - 배너 위 영역 - 토글 가능한 섹션 */}
+        <div className="mb-4">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden transition-all duration-300">
+            {/* 헤더 영역 - 클릭 시 토글 */}
+            <div 
+              className="flex items-center justify-between px-4 py-3 cursor-pointer"
+              onClick={toggleServiceStats}
+            >
+              <div className="flex items-center space-x-2">
+                <h2 className="text-base font-semibold">서비스 현황</h2>
+              </div>
+              <div className="flex items-center">
+                {isServiceStatsOpen ? (
+                  <ChevronDown className="h-5 w-5 text-gray-500" />
+                ) : (
+                  <ChevronRight className="h-5 w-5 text-gray-500" />
+                )}
+              </div>
+            </div>
+
+            {/* 축소된 상태일 때 간략한 정보 표시 */}
+            {!isServiceStatsOpen && (
+              <div className="px-4 pb-3 grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div className="md:col-span-3 flex justify-between">
+                  <div className="flex items-center space-x-3">
+                    <div className="flex flex-col">
+                      <span className="text-sm font-semibold text-blue-600 dark:text-blue-400">활성 사용자</span>
+                      <span className="text-lg font-bold">2,580</span>
+                    </div>
+                    <span className="text-xs text-green-600 bg-green-100 dark:bg-green-900/30 dark:text-green-400 py-0.5 px-1.5 rounded-full">
+                      +12.5%
+                    </span>
                   </div>
-                  <span className="text-xs text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900/30 py-0.5 px-1.5 rounded-full">
-                    +12.5%
-                  </span>
-                </div>
-                <div className="h-6 mt-1">
-                  <MiniChart 
-                    data={[
-                      { name: '1월', value: 1800 },
-                      { name: '2월', value: 1950 },
-                      { name: '3월', value: 2100 },
-                      { name: '4월', value: 2350 },
-                      { name: '5월', value: 2580 }
-                    ]} 
-                    stroke="#3b82f6"
-                    fill="rgba(59, 130, 246, 0.2)"
-                    height={25}
-                  />
-                </div>
-              </div>
-              
-              {/* 인증 훈련사 */}
-              <div className="bg-green-50 dark:bg-green-900/20 p-3 rounded-lg">
-                <div className="flex justify-between items-center">
-                  <div>
-                    <span className="text-xl font-bold text-green-600 dark:text-green-400">157</span>
-                    <div className="text-xs text-gray-600 dark:text-gray-400">인증 훈련사</div>
+                  
+                  <div className="flex items-center space-x-3">
+                    <div className="flex flex-col">
+                      <span className="text-sm font-semibold text-green-600 dark:text-green-400">인증 훈련사</span>
+                      <span className="text-lg font-bold">157</span>
+                    </div>
+                    <span className="text-xs text-green-600 bg-green-100 dark:bg-green-900/30 dark:text-green-400 py-0.5 px-1.5 rounded-full">
+                      +4.7%
+                    </span>
                   </div>
-                  <span className="text-xs text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900/30 py-0.5 px-1.5 rounded-full">
-                    +4.7%
-                  </span>
-                </div>
-                <div className="h-6 mt-1">
-                  <MiniChart 
-                    data={[
-                      { name: '1월', value: 135 },
-                      { name: '2월', value: 142 },
-                      { name: '3월', value: 147 },
-                      { name: '4월', value: 152 },
-                      { name: '5월', value: 157 }
-                    ]} 
-                    stroke="#16a34a"
-                    fill="rgba(22, 163, 74, 0.2)"
-                    height={25}
-                  />
-                </div>
-              </div>
-              
-              {/* 수료 반려견 */}
-              <div className="bg-purple-50 dark:bg-purple-900/20 p-3 rounded-lg">
-                <div className="flex justify-between items-center">
-                  <div>
-                    <span className="text-xl font-bold text-purple-600 dark:text-purple-400">4,750</span>
-                    <div className="text-xs text-gray-600 dark:text-gray-400">수료 반려견</div>
+                  
+                  <div className="flex items-center space-x-3">
+                    <div className="flex flex-col">
+                      <span className="text-sm font-semibold text-purple-600 dark:text-purple-400">수료 반려견</span>
+                      <span className="text-lg font-bold">4,750</span>
+                    </div>
+                    <span className="text-xs text-green-600 bg-green-100 dark:bg-green-900/30 dark:text-green-400 py-0.5 px-1.5 rounded-full">
+                      +21.3%
+                    </span>
                   </div>
-                  <span className="text-xs text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900/30 py-0.5 px-1.5 rounded-full">
-                    +21.3%
-                  </span>
                 </div>
-                <div className="h-6 mt-1">
-                  <MiniChart 
-                    data={[
-                      { name: '1월', value: 3200 },
-                      { name: '2월', value: 3650 },
-                      { name: '3월', value: 4050 },
-                      { name: '4월', value: 4450 },
-                      { name: '5월', value: 4750 }
-                    ]} 
-                    stroke="#9333ea"
-                    fill="rgba(147, 51, 234, 0.2)"
-                    height={25}
-                  />
+                
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-10 h-10">
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-amber-500">
+                        <circle cx="12" cy="12" r="5" />
+                        <line x1="12" y1="1" x2="12" y2="3" />
+                        <line x1="12" y1="21" x2="12" y2="23" />
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+                        <line x1="1" y1="12" x2="3" y2="12" />
+                        <line x1="21" y1="12" x2="23" y2="12" />
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+                      </svg>
+                    </div>
+                    <div>
+                      <p className="text-lg font-bold">23°C</p>
+                      <p className="text-xs text-gray-600 dark:text-gray-400">맑음 · 서울 강남구</p>
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
-          </div>
-          
-          {/* 날씨 카드 */}
-          <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-md">
-            <div className="flex justify-between items-start mb-1">
-              <h2 className="text-base font-semibold">오늘의 날씨</h2>
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="text-xs h-6 px-2"
-                onClick={() => setIsWeatherModalOpen(true)}
-              >
-                주간
-              </Button>
-            </div>
-            <div className="flex items-center space-x-3">
-              <div className="w-12 h-12">
-                {/* 날씨 아이콘 - 맑음 */}
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-amber-500">
-                  <circle cx="12" cy="12" r="5" />
-                  <line x1="12" y1="1" x2="12" y2="3" />
-                  <line x1="12" y1="21" x2="12" y2="23" />
-                  <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
-                  <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
-                  <line x1="1" y1="12" x2="3" y2="12" />
-                  <line x1="21" y1="12" x2="23" y2="12" />
-                  <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
-                  <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
-                </svg>
+            )}
+
+            {/* 확장된 상태일 때 상세 정보 표시 */}
+            {isServiceStatsOpen && (
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 px-4 pb-4">
+                {/* 서비스 현황 카드 */}
+                <div className="md:col-span-3">
+                  <div className="grid grid-cols-3 gap-3">
+                    {/* 활성 사용자 */}
+                    <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg">
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <span className="text-xl font-bold text-blue-600 dark:text-blue-400">2,580</span>
+                          <div className="text-xs text-gray-600 dark:text-gray-400">활성 사용자</div>
+                        </div>
+                        <span className="text-xs text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900/30 py-0.5 px-1.5 rounded-full">
+                          +12.5%
+                        </span>
+                      </div>
+                      <div className="h-6 mt-1">
+                        <MiniChart 
+                          data={[
+                            { name: '1월', value: 1800 },
+                            { name: '2월', value: 1950 },
+                            { name: '3월', value: 2100 },
+                            { name: '4월', value: 2350 },
+                            { name: '5월', value: 2580 }
+                          ]} 
+                          stroke="#3b82f6"
+                          fill="rgba(59, 130, 246, 0.2)"
+                          height={25}
+                        />
+                      </div>
+                    </div>
+                    
+                    {/* 인증 훈련사 */}
+                    <div className="bg-green-50 dark:bg-green-900/20 p-3 rounded-lg">
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <span className="text-xl font-bold text-green-600 dark:text-green-400">157</span>
+                          <div className="text-xs text-gray-600 dark:text-gray-400">인증 훈련사</div>
+                        </div>
+                        <span className="text-xs text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900/30 py-0.5 px-1.5 rounded-full">
+                          +4.7%
+                        </span>
+                      </div>
+                      <div className="h-6 mt-1">
+                        <MiniChart 
+                          data={[
+                            { name: '1월', value: 135 },
+                            { name: '2월', value: 142 },
+                            { name: '3월', value: 147 },
+                            { name: '4월', value: 152 },
+                            { name: '5월', value: 157 }
+                          ]} 
+                          stroke="#16a34a"
+                          fill="rgba(22, 163, 74, 0.2)"
+                          height={25}
+                        />
+                      </div>
+                    </div>
+                    
+                    {/* 수료 반려견 */}
+                    <div className="bg-purple-50 dark:bg-purple-900/20 p-3 rounded-lg">
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <span className="text-xl font-bold text-purple-600 dark:text-purple-400">4,750</span>
+                          <div className="text-xs text-gray-600 dark:text-gray-400">수료 반려견</div>
+                        </div>
+                        <span className="text-xs text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900/30 py-0.5 px-1.5 rounded-full">
+                          +21.3%
+                        </span>
+                      </div>
+                      <div className="h-6 mt-1">
+                        <MiniChart 
+                          data={[
+                            { name: '1월', value: 3200 },
+                            { name: '2월', value: 3650 },
+                            { name: '3월', value: 4050 },
+                            { name: '4월', value: 4450 },
+                            { name: '5월', value: 4750 }
+                          ]} 
+                          stroke="#9333ea"
+                          fill="rgba(147, 51, 234, 0.2)"
+                          height={25}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* 날씨 카드 */}
+                <div>
+                  <div className="flex justify-between items-start mb-1">
+                    <h2 className="text-base font-semibold">오늘의 날씨</h2>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="text-xs h-6 px-2"
+                      onClick={() => setIsWeatherModalOpen(true)}
+                    >
+                      주간
+                    </Button>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <div className="w-12 h-12">
+                      {/* 날씨 아이콘 - 맑음 */}
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-amber-500">
+                        <circle cx="12" cy="12" r="5" />
+                        <line x1="12" y1="1" x2="12" y2="3" />
+                        <line x1="12" y1="21" x2="12" y2="23" />
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+                        <line x1="1" y1="12" x2="3" y2="12" />
+                        <line x1="21" y1="12" x2="23" y2="12" />
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+                      </svg>
+                    </div>
+                    <div>
+                      <p className="text-xl font-bold">23°C</p>
+                      <p className="text-xs text-gray-600 dark:text-gray-400">맑음 · 서울 강남구</p>
+                    </div>
+                  </div>
+                  <div className="flex justify-between w-full mt-2 text-xs">
+                    <div className="text-center">
+                      <p className="text-gray-600 dark:text-gray-400">습도</p>
+                      <p className="font-semibold">45%</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-gray-600 dark:text-gray-400">바람</p>
+                      <p className="font-semibold">3m/s</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-gray-600 dark:text-gray-400">미세먼지</p>
+                      <p className="font-semibold">좋음</p>
+                    </div>
+                  </div>
+                  <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                    <p>산책하기 좋은 날씨입니다!</p>
+                  </div>
+                </div>
               </div>
-              <div>
-                <p className="text-xl font-bold">23°C</p>
-                <p className="text-xs text-gray-600 dark:text-gray-400">맑음 · 서울 강남구</p>
-              </div>
-            </div>
-            <div className="flex justify-between w-full mt-2 text-xs">
-              <div className="text-center">
-                <p className="text-gray-600 dark:text-gray-400">습도</p>
-                <p className="font-semibold">45%</p>
-              </div>
-              <div className="text-center">
-                <p className="text-gray-600 dark:text-gray-400">바람</p>
-                <p className="font-semibold">3m/s</p>
-              </div>
-              <div className="text-center">
-                <p className="text-gray-600 dark:text-gray-400">미세먼지</p>
-                <p className="font-semibold">좋음</p>
-              </div>
-            </div>
-            <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-              <p>산책하기 좋은 날씨입니다!</p>
-            </div>
+            )}
           </div>
         </div>
         
