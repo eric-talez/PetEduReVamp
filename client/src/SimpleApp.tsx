@@ -268,16 +268,16 @@ function AppLayout({ children }: { children: ReactNode }) {
           />
         )}
         
-        {/* 메인 컨텐츠 영역 */}
-        <div className={`flex-1 flex flex-col min-h-screen transition-all duration-300 ${sidebarOpen ? 'lg:pl-64' : 'pl-0'}`}>
+        {/* 메인 컨텐츠 영역 - 사이드바 상태와 관계없이 항상 전체 너비를 사용 */}
+        <div className="flex-1 flex flex-col min-h-screen w-full transition-all duration-300">
           {/* 상단바 */}
           <TopBar
             sidebarOpen={sidebarOpen}
             onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
           />
           
-          {/* 메인 컨텐츠 */}
-          <main className="flex-1 pt-16">
+          {/* 메인 컨텐츠 - 사이드바가 열려있을 때 적절한 패딩 추가 */}
+          <main className={`flex-1 pt-16 transition-all duration-300 ${sidebarOpen ? 'lg:ml-64' : 'ml-0'} w-full`}>
             {children}
           </main>
         </div>

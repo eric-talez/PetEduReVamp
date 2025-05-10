@@ -272,19 +272,9 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
     <header className="sticky top-0 bg-white dark:bg-gray-900 shadow-sm z-10 transition-colors">
       <div className="max-w-full mx-auto px-4 sm:px-6 lg:pl-6 lg:pr-8">
         <div className="flex justify-between items-center h-16">
-          {/* 햄버거 메뉴 버튼 - 모바일에서는 항상 표시, 데스크탑에서는 사이드바가 접혔을 때만 표시 */}
+          {/* 로고나 타이틀 영역 */}
           <div className="flex items-center">
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              onClick={() => {
-                console.log("햄버거 버튼 클릭");
-                onToggleSidebar();
-              }}
-              className="text-gray-500 hover:text-gray-700 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-gray-200 dark:hover:bg-gray-800"
-            >
-              <Menu className="h-5 w-5" />
-            </Button>
+            <div className="text-xl font-semibold">PetEdu</div>
           </div>
 
           {/* Search */}
