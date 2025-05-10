@@ -5,10 +5,16 @@ import * as AvatarPrimitive from "@radix-ui/react-avatar"
 
 import { cn } from "@/lib/utils"
 
+// Avatar 컴포넌트에 fallback 속성 추가
+interface AvatarProps extends React.ComponentPropsWithoutRef<typeof AvatarPrimitive.Root> {
+  fallback?: React.ReactNode;
+  src?: string;
+}
+
 const Avatar = React.forwardRef<
   React.ElementRef<typeof AvatarPrimitive.Root>,
-  React.ComponentPropsWithoutRef<typeof AvatarPrimitive.Root>
->(({ className, ...props }, ref) => (
+  AvatarProps
+>(({ className, fallback, src, ...props }, ref) => (
   <AvatarPrimitive.Root
     ref={ref}
     className={cn(
@@ -16,7 +22,10 @@ const Avatar = React.forwardRef<
       className
     )}
     {...props}
-  />
+  >
+    {src && <AvatarImage src={src} />}
+    {fallback && <AvatarFallback>{fallback}</AvatarFallback>}
+  </AvatarPrimitive.Root>
 ))
 Avatar.displayName = AvatarPrimitive.Root.displayName
 

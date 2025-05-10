@@ -15,7 +15,7 @@ const PetOwnerHome = lazy(() => import('./pet-owner/PetOwnerHome'));
 const InstituteAdminHome = lazy(() => import('./institute-admin/InstituteAdminHome'));
 
 export default function Home() {
-  console.log("홈 페이지 렌더링");
+  // 불필요한 로그 제거
   const { isAuthenticated, userRole, userName, logout } = useAuth();
   const [isWeatherModalOpen, setIsWeatherModalOpen] = useState(false);
   const [isServiceStatsOpen, setIsServiceStatsOpen] = useState(true);
