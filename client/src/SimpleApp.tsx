@@ -272,18 +272,24 @@ function AppLayout({ children }: { children: ReactNode }) {
         onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
       />
       
-      <div className="flex pt-16">
-        {/* 고정 사이드바 - 데스크탑에서는 고정, 모바일에서는 토글 */}
-        <div className={`h-[calc(100vh-4rem)] ${sidebarOpen || isDesktop ? 'w-64' : 'w-0'} transition-all duration-300 overflow-hidden flex-shrink-0`}>
+      <div className="pt-16 flex">
+        {/* 사이드바 - 항상 고정된 너비를 가짐 */}
+        <aside 
+          className={`
+            w-64 shrink-0 h-[calc(100vh-4rem)] 
+            transition-all duration-300
+            ${sidebarOpen || isDesktop ? 'block' : 'hidden'}
+          `}
+        >
           <Sidebar 
             open={sidebarOpen} 
             onClose={() => setSidebarOpen(false)} 
             userRole={auth.userRole} 
             isAuthenticated={auth.isAuthenticated} 
           />
-        </div>
+        </aside>
         
-        {/* 모바일 오버레이 */}
+        {/* 모바일 오버레이 - 사이드바가 열리면 본문 위에 표시 */}
         {sidebarOpen && !isDesktop && (
           <div 
             className="fixed inset-0 top-16 bg-black bg-opacity-50 z-30" 
@@ -291,12 +297,13 @@ function AppLayout({ children }: { children: ReactNode }) {
           />
         )}
         
-        {/* 메인 컨텐츠 영역 - 사이드바에 의해 밀려남 */}
-        <div className="flex-1 transition-all duration-300 min-h-[calc(100vh-4rem)]">
-          <main className="min-h-[calc(100vh-4rem)]">
-            {children}
-          </main>
-        </div>
+        {/* 메인 컨텐츠 영역 - 사이드바 상태에 따라 전체 너비 차지 */}
+        <main className={`
+          grow transition-all duration-300
+          ${(sidebarOpen || isDesktop) ? '' : 'w-full'}
+        `}>
+          {children}
+        </main>
       </div>
     </div>
   );
