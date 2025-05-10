@@ -39,9 +39,13 @@ import { ShieldAlert, FileText, ClipboardCheck, Link, Calendar, Percent } from "
 // 추천인 코드 타입 정의
 interface ReferralCode {
   id: number;
-  code: string;
+  code: string;                 // 기관코드(INST) + 훈련사코드(TR)의 형태(예: INST001-TR001)
   institution: string;
   institutionId: number;
+  institutionCode: string;      // 기관 고유 코드
+  trainerName: string;          // 훈련사 이름
+  trainerId: number;            // 훈련사 ID
+  trainerCode: string;          // 훈련사 고유 코드
   description: string;
   discount: number;
   status: "pending" | "approved" | "rejected" | "expired";
@@ -52,6 +56,7 @@ interface ReferralCode {
   maxUsage?: number;
   createdBy: string;
   approvedBy?: string;
+  profitShare: number;          // 수익 공유 비율(%)
 }
 
 // 제품 추천 타입 정의
@@ -78,10 +83,14 @@ interface ProductRecommendation {
 const dummyReferralCodes: ReferralCode[] = [
   {
     id: 1,
-    code: "HAPPY2025",
+    code: "HPT101-TR001",
     institution: "해피 펫 트레이닝 센터",
     institutionId: 101,
-    description: "신규 회원 할인 코드",
+    institutionCode: "HPT101",
+    trainerName: "김훈련사",
+    trainerId: 1001,
+    trainerCode: "TR001",
+    description: "신규 고객 할인",
     discount: 10,
     status: "approved",
     requestDate: "2025-04-01",
@@ -90,25 +99,35 @@ const dummyReferralCodes: ReferralCode[] = [
     usageCount: 23,
     maxUsage: 100,
     createdBy: "김관리자",
-    approvedBy: "시스템 관리자"
+    approvedBy: "시스템 관리자",
+    profitShare: 70 // 70%는 훈련사에게, 30%는 기관에게
   },
   {
     id: 2,
-    code: "PUPPY2025",
+    code: "PLA102-TR005",
     institution: "퍼피 러브 아카데미",
     institutionId: 102,
+    institutionCode: "PLA102",
+    trainerName: "이훈련사",
+    trainerId: 1005,
+    trainerCode: "TR005",
     description: "신규 강아지 전용 할인",
     discount: 15,
     status: "pending",
     requestDate: "2025-04-05",
     usageCount: 0,
-    createdBy: "이매니저"
+    createdBy: "이매니저",
+    profitShare: 60 // 60%는 훈련사에게, 40%는 기관에게
   },
   {
     id: 3,
-    code: "SPRING25",
+    code: "HPT101-TR002",
     institution: "해피 펫 트레이닝 센터",
     institutionId: 101,
+    institutionCode: "HPT101",
+    trainerName: "박훈련사",
+    trainerId: 1002,
+    trainerCode: "TR002",
     description: "봄맞이 이벤트 할인",
     discount: 20,
     status: "rejected",
@@ -116,7 +135,29 @@ const dummyReferralCodes: ReferralCode[] = [
     approvalDate: "2025-03-16",
     usageCount: 0,
     createdBy: "김관리자",
-    approvedBy: "시스템 관리자"
+    approvedBy: "시스템 관리자",
+    profitShare: 65 // 65%는 훈련사에게, 35%는 기관에게
+  },
+  {
+    id: 4,
+    code: "HPT101-TR001",
+    institution: "해피 펫 트레이닝 센터",
+    institutionId: 101,
+    institutionCode: "HPT101",
+    trainerName: "김훈련사",
+    trainerId: 1001,
+    trainerCode: "TR001",
+    description: "여름 특별 할인",
+    discount: 25,
+    status: "approved",
+    requestDate: "2025-05-15",
+    approvalDate: "2025-05-16",
+    expiryDate: "2025-08-31",
+    usageCount: 5,
+    maxUsage: 50,
+    createdBy: "김관리자",
+    approvedBy: "시스템 관리자",
+    profitShare: 75 // 75%는 훈련사에게, 25%는 기관에게
   }
 ];
 
@@ -362,9 +403,10 @@ export default function ReferralCodeManagement() {
                       <TableRow>
                         <TableHead>코드</TableHead>
                         <TableHead>기관</TableHead>
+                        <TableHead>훈련사</TableHead>
                         <TableHead>할인율</TableHead>
+                        <TableHead>수익공유</TableHead>
                         <TableHead>상태</TableHead>
-                        <TableHead>요청일</TableHead>
                         <TableHead>사용횟수</TableHead>
                         <TableHead>액션</TableHead>
                       </TableRow>
@@ -373,14 +415,30 @@ export default function ReferralCodeManagement() {
                       {getFilteredReferralCodes().map((code) => (
                         <TableRow key={code.id}>
                           <TableCell className="font-medium">{code.code}</TableCell>
-                          <TableCell>{code.institution}</TableCell>
+                          <TableCell>
+                            <div className="flex flex-col">
+                              <span>{code.institution}</span>
+                              <span className="text-xs text-muted-foreground">{code.institutionCode}</span>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex flex-col">
+                              <span>{code.trainerName}</span>
+                              <span className="text-xs text-muted-foreground">{code.trainerCode}</span>
+                            </div>
+                          </TableCell>
                           <TableCell>{code.discount}%</TableCell>
+                          <TableCell>
+                            <div className="flex items-center">
+                              <span className="font-medium text-blue-600">{code.profitShare}%</span>
+                              <span className="text-xs text-muted-foreground ml-1">훈련사</span>
+                            </div>
+                          </TableCell>
                           <TableCell>
                             <Badge variant={getStatusBadgeVariant(code.status)}>
                               {getStatusText(code.status)}
                             </Badge>
                           </TableCell>
-                          <TableCell>{code.requestDate}</TableCell>
                           <TableCell>
                             {code.usageCount}{code.maxUsage ? `/${code.maxUsage}` : ""}
                           </TableCell>
