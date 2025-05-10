@@ -1,5 +1,5 @@
 import { createContext, ReactNode, useContext, useState, useEffect, useMemo, useCallback } from "react";
-import { DogLoadingState } from '@/components/ui/DogLoadingState';
+import { SimpleDogLoading } from '@/components/SimpleDogLoading';
 
 // 사용자 역할 타입 정의
 export type UserRole = 'user' | 'pet-owner' | 'trainer' | 'institute-admin' | 'admin';
@@ -135,7 +135,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   if (authState.isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <DogLoadingState size="md" text="로딩 중..." />
+        <SimpleDogLoading text="로딩 중..." />
       </div>
     );
   }
