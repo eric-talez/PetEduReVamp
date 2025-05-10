@@ -1,5 +1,6 @@
 import { ReactNode, useState, useEffect } from "react";
 import { Sidebar } from "@/components/Sidebar";
+import { NewSidebar } from "@/components/NewSidebar"; // 새로운 사이드바 컴포넌트 추가
 import { TopBar } from "@/components/TopBar";
 import { Chatbot } from "@/components/features/Chatbot";
 import { useAuth } from "../SimpleApp";
@@ -43,8 +44,8 @@ export function AppLayout({ children }: AppLayoutProps) {
         onToggleSidebar={toggleSidebar}
       />
       
-      {/* 모든 사용자에게 사이드바 표시 (인증 여부와 관계없이) */}
-      <Sidebar 
+      {/* 모든 사용자에게 사이드바 표시 (인증 여부와 관계없이) - 새 버전 사용 */}
+      <NewSidebar
         open={sidebarOpen} 
         onClose={() => setSidebarOpen(false)}
         userRole={userRole}

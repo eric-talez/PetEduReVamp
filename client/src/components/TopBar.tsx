@@ -265,7 +265,17 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
 
   const handleLogout = () => {
     console.log("Logout button clicked");
-    logout();
+    // 기존 logout 함수가 있으면 사용, 없으면 직접 구현
+    if (logout) {
+      logout();
+    } else {
+      // 직접 로그아웃 처리
+      console.log("직접 로그아웃 처리 실행");
+      localStorage.removeItem('petedu_auth');
+      window.dispatchEvent(new CustomEvent('logout'));
+      // 임시적으로 window.location 사용
+      window.location.href = "/auth";
+    }
   };
 
   return (
