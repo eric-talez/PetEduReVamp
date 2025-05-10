@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/Button';
 import { Link } from 'wouter';
-import { useAuth } from '../SimpleApp';
+import { useAuth } from '../hooks/useAuth';
 import { BannerSlider } from '@/components/BannerSlider';
 import { TrendingSection } from '@/components/TrendingSection';
 import { MiniChart } from '@/components/ui/mini-chart';
@@ -190,21 +190,21 @@ export default function Home() {
         
         {/* 프로필 영역 (로그인/회원가입) */}
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
-          {auth.isAuthenticated ? (
+          {auth.isAuthenticated && auth.user ? (
             <div className="flex flex-col h-full">
               {/* 로그인된 상태 */}
               <div className="bg-primary/10 dark:bg-primary/5 p-4 border-b border-gray-100 dark:border-gray-700">
                 <div className="flex items-center">
                   <div className="w-12 h-12 bg-primary/20 rounded-full flex items-center justify-center">
-                    <span className="text-xl font-bold text-primary">{auth.userName?.charAt(0) || "U"}</span>
+                    <span className="text-xl font-bold text-primary">{auth.user.name?.charAt(0) || "U"}</span>
                   </div>
                   <div className="ml-3">
-                    <p className="font-semibold text-lg">{auth.userName || "사용자"} 님</p>
+                    <p className="font-semibold text-lg">{auth.user.name || "사용자"} 님</p>
                     <p className="text-xs text-gray-500 dark:text-gray-400">
-                      {auth.userRole === 'pet-owner' ? '견주 회원' : 
-                      auth.userRole === 'trainer' ? '훈련사 회원' : 
-                      auth.userRole === 'institute-admin' ? '기관 관리자' : 
-                      auth.userRole === 'admin' ? '시스템 관리자' : '일반 회원'}
+                      {auth.user.role === 'pet-owner' ? '견주 회원' : 
+                      auth.user.role === 'trainer' ? '훈련사 회원' : 
+                      auth.user.role === 'institute-admin' ? '기관 관리자' : 
+                      auth.user.role === 'admin' ? '시스템 관리자' : '일반 회원'}
                     </p>
                   </div>
                 </div>
@@ -215,7 +215,7 @@ export default function Home() {
                   <Link href="/my-page" className="w-full">
                     <Button variant="default" className="w-full">마이페이지</Button>
                   </Link>
-                  <Button variant="outline" className="w-full" onClick={auth.logout}>
+                  <Button variant="outline" className="w-full" onClick={() => auth.logout()}>
                     로그아웃
                   </Button>
                 </div>

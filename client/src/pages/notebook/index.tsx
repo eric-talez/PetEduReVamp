@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useRoute } from 'wouter';
-import { useAuth } from '../../SimpleApp';
+import { useAuth } from '../../hooks/useAuth';
 import {
   PawPrint,
   Calendar,
@@ -30,14 +30,14 @@ import { useToast } from '@/hooks/use-toast';
 import { format, subDays, addDays, isSameDay } from 'date-fns';
 import { ko } from 'date-fns/locale';
 
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
-import { Avatar } from '@/components/ui/Avatar';
-import { Badge } from '@/components/ui/Badge';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Avatar } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/Tabs';
-import { Input } from '@/components/ui/Input';
-import { Textarea } from '@/components/ui/Textarea';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import {
   Select,
@@ -45,7 +45,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/Select';
+} from '@/components/ui/select';
 import {
   Dialog,
   DialogContent,
@@ -133,7 +133,7 @@ interface NotebookComment {
 export default function NotebookPage() {
   const [match, params] = useRoute<{ id: string }>('/notebook/:id');
   const [location, navigate] = useLocation();
-  const { isAuthenticated, userRole } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   const { toast } = useToast();
 
   // 인증되지 않은 사용자 리디렉션

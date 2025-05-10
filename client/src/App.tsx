@@ -1,7 +1,7 @@
 import React, { lazy, Suspense } from "react";
 import { Switch, Route } from "wouter";
 import { AppLayout } from "./layout/AppLayout";
-import { useAuth } from "./hooks/useAuth";
+import { useAuth, AuthProvider } from "./hooks/useAuth";
 import { CartProvider } from "./context/cart-context";
 import { RedirectHandler } from "./components/RedirectHandler";
 
@@ -59,6 +59,14 @@ import RegisterPage from "./pages/auth/login"; // 임시로 로그인 페이지�
 import ShopLoginRequiredPage from "./pages/shop-login-required";
 
 export default function App() {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
+  );
+}
+
+function AppContent() {
   const auth = useAuth();
 
   if (auth.isLoading) {
