@@ -60,36 +60,87 @@ export default function Home() {
           {/* 서비스 현황 카드 */}
           <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md md:col-span-2 lg:col-span-3">
             <h2 className="text-lg font-semibold mb-4">서비스 현황</h2>
-            <div className="grid grid-cols-3 gap-4">
-              <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg">
-                <div className="flex flex-col items-center">
-                  <span className="text-2xl font-bold text-blue-600 dark:text-blue-400">2,580</span>
-                  <span className="text-sm text-gray-600 dark:text-gray-400">활성 사용자</span>
+            <div className="grid grid-cols-1 gap-4">
+              {/* 활성 사용자 */}
+              <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
+                <div className="flex justify-between items-center mb-2">
+                  <div>
+                    <span className="text-2xl font-bold text-blue-600 dark:text-blue-400">2,580</span>
+                    <span className="text-sm ml-2 text-gray-600 dark:text-gray-400">활성 사용자</span>
+                  </div>
+                  <span className="text-xs text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900/30 py-1 px-2 rounded-full">
+                    +12.5%
+                  </span>
+                </div>
+                <div className="h-10">
+                  <MiniChart 
+                    data={[
+                      { name: '1월', value: 1800 },
+                      { name: '2월', value: 1950 },
+                      { name: '3월', value: 2100 },
+                      { name: '4월', value: 2350 },
+                      { name: '5월', value: 2580 }
+                    ]} 
+                    stroke="#3b82f6"
+                    fill="rgba(59, 130, 246, 0.2)"
+                    height={50}
+                  />
                 </div>
               </div>
-              <div className="bg-green-50 dark:bg-green-900/20 p-3 rounded-lg">
-                <div className="flex flex-col items-center">
-                  <span className="text-2xl font-bold text-green-600 dark:text-green-400">157</span>
-                  <span className="text-sm text-gray-600 dark:text-gray-400">인증 훈련사</span>
+              
+              {/* 인증 훈련사 */}
+              <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg">
+                <div className="flex justify-between items-center mb-2">
+                  <div>
+                    <span className="text-2xl font-bold text-green-600 dark:text-green-400">157</span>
+                    <span className="text-sm ml-2 text-gray-600 dark:text-gray-400">인증 훈련사</span>
+                  </div>
+                  <span className="text-xs text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900/30 py-1 px-2 rounded-full">
+                    +4.7%
+                  </span>
+                </div>
+                <div className="h-10">
+                  <MiniChart 
+                    data={[
+                      { name: '1월', value: 135 },
+                      { name: '2월', value: 142 },
+                      { name: '3월', value: 147 },
+                      { name: '4월', value: 152 },
+                      { name: '5월', value: 157 }
+                    ]} 
+                    stroke="#16a34a"
+                    fill="rgba(22, 163, 74, 0.2)"
+                    height={50}
+                  />
                 </div>
               </div>
-              <div className="bg-purple-50 dark:bg-purple-900/20 p-3 rounded-lg">
-                <div className="flex flex-col items-center">
-                  <span className="text-2xl font-bold text-purple-600 dark:text-purple-400">4,750</span>
-                  <span className="text-sm text-gray-600 dark:text-gray-400">수료 반려견</span>
+              
+              {/* 수료 반려견 */}
+              <div className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg">
+                <div className="flex justify-between items-center mb-2">
+                  <div>
+                    <span className="text-2xl font-bold text-purple-600 dark:text-purple-400">4,750</span>
+                    <span className="text-sm ml-2 text-gray-600 dark:text-gray-400">수료 반려견</span>
+                  </div>
+                  <span className="text-xs text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900/30 py-1 px-2 rounded-full">
+                    +21.3%
+                  </span>
+                </div>
+                <div className="h-10">
+                  <MiniChart 
+                    data={[
+                      { name: '1월', value: 3200 },
+                      { name: '2월', value: 3650 },
+                      { name: '3월', value: 4050 },
+                      { name: '4월', value: 4450 },
+                      { name: '5월', value: 4750 }
+                    ]} 
+                    stroke="#9333ea"
+                    fill="rgba(147, 51, 234, 0.2)"
+                    height={50}
+                  />
                 </div>
               </div>
-            </div>
-            
-            {/* 미니 차트 */}
-            <div className="mt-4">
-              <MiniChart data={[
-                { name: '1월', value: 140 },
-                { name: '2월', value: 180 },
-                { name: '3월', value: 220 },
-                { name: '4월', value: 280 },
-                { name: '5월', value: 310 }
-              ]} />
             </div>
           </div>
           
@@ -225,21 +276,21 @@ export default function Home() {
             <div className="space-y-2">
               <Button 
                 variant="success" 
-                className="w-full bg-green-600 hover:bg-green-700 text-white"
+                className="w-full"
                 onClick={() => window.location.href = '/auth/login?role=pet-owner'}
               >
                 반려인으로 로그인
               </Button>
               <Button 
                 variant="info" 
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                className="w-full"
                 onClick={() => window.location.href = '/auth/login?role=trainer'}
               >
                 훈련사로 로그인
               </Button>
               <Button 
                 variant="warning" 
-                className="w-full bg-orange-500 hover:bg-orange-600 text-white"
+                className="w-full"
                 onClick={() => window.location.href = '/auth/login?role=institute'}
               >
                 기관으로 로그인

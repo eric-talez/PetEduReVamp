@@ -14,6 +14,11 @@ const buttonVariants = cva(
         danger: "bg-destructive text-destructive-foreground hover:bg-destructive/90",
         ghost: "hover:bg-accent hover:text-accent-foreground",
         link: "underline-offset-4 hover:underline text-primary",
+        // 추가 사용자 지정 버튼 스타일
+        success: "bg-green-600 text-white hover:bg-green-700",
+        info: "bg-blue-600 text-white hover:bg-blue-700",
+        warning: "bg-orange-500 text-white hover:bg-orange-600",
+        destructive: "bg-red-600 text-white hover:bg-red-700",
       },
       size: {
         default: "h-10 py-2 px-4",
