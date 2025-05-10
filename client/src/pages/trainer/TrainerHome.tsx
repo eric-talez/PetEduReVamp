@@ -1,8 +1,8 @@
 import { Link } from 'wouter';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from "../../SimpleApp";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/Button';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/Avatar';
+// Avatar 컴포넌트 대신 기본 div 요소 사용
 import { Badge } from '@/components/ui/badge';
 import { 
   Calendar, 
@@ -132,7 +132,7 @@ const messages = [
 ];
 
 export default function TrainerHome() {
-  const { user, userRole, userName } = useAuth();
+  const { isAuthenticated, userRole, userName } = useAuth();
 
   useEffect(() => {
     console.log("훈련사 홈 페이지 로드됨");
@@ -146,10 +146,11 @@ export default function TrainerHome() {
           <div className="p-6">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between">
               <div className="flex items-center mb-4 md:mb-0">
-                <Avatar className="h-16 w-16 mr-4">
-                  {user?.avatar && <AvatarImage src={user.avatar} alt={userName || ""} />}
-                  <AvatarFallback className="text-lg">{userName?.charAt(0) || "T"}</AvatarFallback>
-                </Avatar>
+                <div className="relative h-16 w-16 mr-4 flex shrink-0 overflow-hidden rounded-full bg-primary/20">
+                  <div className="flex h-full w-full items-center justify-center">
+                    <span className="text-lg font-bold text-primary">{userName?.charAt(0) || "T"}</span>
+                  </div>
+                </div>
                 <div>
                   <h1 className="text-2xl font-bold">{userName || '훈련사'} 님, 안녕하세요!</h1>
                   <div className="flex items-center mt-1">
@@ -303,10 +304,15 @@ export default function TrainerHome() {
               <div className="space-y-4">
                 {recentStudents.map(student => (
                   <div key={student.id} className="flex items-start p-3 rounded-lg border border-gray-100 dark:border-gray-800">
-                    <Avatar className="h-10 w-10">
-                      <AvatarImage src={student.image} alt={student.name} />
-                      <AvatarFallback>{student.name.charAt(0)}</AvatarFallback>
-                    </Avatar>
+                    <div className="relative h-10 w-10 flex shrink-0 overflow-hidden rounded-full bg-primary/20">
+                      {student.image ? (
+                        <img src={student.image} alt={student.name} className="h-full w-full object-cover" />
+                      ) : (
+                        <div className="flex h-full w-full items-center justify-center">
+                          <span className="text-sm font-bold text-primary">{student.name.charAt(0)}</span>
+                        </div>
+                      )}
+                    </div>
                     <div className="ml-3 flex-1">
                       <div className="flex justify-between">
                         <div>
@@ -319,10 +325,15 @@ export default function TrainerHome() {
                       </div>
                       <div className="flex items-center mt-2">
                         <div className="flex items-center">
-                          <Avatar className="h-6 w-6 mr-2">
-                            <AvatarImage src={student.pet.image} alt={student.pet.name} />
-                            <AvatarFallback>{student.pet.name.charAt(0)}</AvatarFallback>
-                          </Avatar>
+                          <div className="relative h-6 w-6 mr-2 flex shrink-0 overflow-hidden rounded-full bg-primary/20">
+                            {student.pet.image ? (
+                              <img src={student.pet.image} alt={student.pet.name} className="h-full w-full object-cover" />
+                            ) : (
+                              <div className="flex h-full w-full items-center justify-center">
+                                <span className="text-xs font-bold text-primary">{student.pet.name.charAt(0)}</span>
+                              </div>
+                            )}
+                          </div>
                           <span className="text-sm">{student.pet.name} ({student.pet.breed})</span>
                         </div>
                         <div className="ml-auto">
