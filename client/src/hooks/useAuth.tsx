@@ -1,4 +1,5 @@
-import { createContext, ReactNode, useContext, useState, useEffect } from "react";
+import { createContext, ReactNode, useContext, useState, useEffect, useMemo, useCallback } from "react";
+import { DogLoadingState } from '@/components/ui/DogLoadingState';
 
 // 사용자 역할 타입 정의
 export type UserRole = 'user' | 'pet-owner' | 'trainer' | 'institute-admin' | 'admin';
@@ -129,6 +130,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       };
     }
   }, [authState]);
+
+  // 로딩 중일 때 강아지 로딩 애니메이션 표시
+  if (authState.isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <DogLoadingState size="md" text="로딩 중..." />
+      </div>
+    );
+  }
 
   return (
     <AuthContext.Provider value={authState}>
