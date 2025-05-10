@@ -55,7 +55,11 @@ export function StatisticsSection({ expanded }: StatisticsSectionProps) {
           <div className="bg-gray-900 p-3">
             <div className="grid grid-cols-3 gap-4">
               {/* 활성 사용자 */}
-              <div className="py-2 relative">
+              <button 
+                type="button" 
+                className="py-2 relative text-left focus:outline-none cursor-pointer"
+                onClick={() => console.log('활성 사용자 통계 클릭')}
+              >
                 <div className="text-blue-400 text-3xl font-bold">2,580</div>
                 <div className="flex items-center justify-between text-xs mt-1">
                   <span className="text-gray-400">활성 사용자</span>
@@ -68,10 +72,14 @@ export function StatisticsSection({ expanded }: StatisticsSectionProps) {
                     <div className="h-full bg-blue-500 rounded-full" style={{width: '40%'}}></div>
                   </div>
                 </div>
-              </div>
+              </button>
 
               {/* 인증 훈련사 */}
-              <div className="py-2 relative">
+              <button 
+                type="button" 
+                className="py-2 relative text-left focus:outline-none cursor-pointer"
+                onClick={() => console.log('인증 훈련사 통계 클릭')}
+              >
                 <div className="text-green-400 text-3xl font-bold">157</div>
                 <div className="flex items-center justify-between text-xs mt-1">
                   <span className="text-gray-400">인증 훈련사</span>
@@ -84,10 +92,14 @@ export function StatisticsSection({ expanded }: StatisticsSectionProps) {
                     <div className="h-full bg-green-500 rounded-full" style={{width: '35%'}}></div>
                   </div>
                 </div>
-              </div>
+              </button>
 
               {/* 수료 반려견 */}
-              <div className="py-2 relative">
+              <button 
+                type="button" 
+                className="py-2 relative text-left focus:outline-none cursor-pointer"
+                onClick={() => console.log('수료 반려견 통계 클릭')}
+              >
                 <div className="text-purple-400 text-3xl font-bold">4,750</div>
                 <div className="flex items-center justify-between text-xs mt-1">
                   <span className="text-gray-400">수료 반려견</span>
@@ -100,20 +112,30 @@ export function StatisticsSection({ expanded }: StatisticsSectionProps) {
                     <div className="h-full bg-purple-500 rounded-full" style={{width: '65%'}}></div>
                   </div>
                 </div>
-              </div>
+              </button>
             </div>
 
             {/* 날씨 정보 섹션 - 헤더 */}
             <div className="mt-5 flex justify-between items-center">
               <div className="flex items-center">
                 <div className="text-sm text-white mr-2">오늘의 날씨</div>
-                <div className="text-xs text-gray-400">주간</div>
+                <button 
+                  type="button" 
+                  className="text-xs text-gray-400 hover:text-gray-300 focus:outline-none"
+                  onClick={() => console.log('주간 날씨 버튼 클릭')}
+                >
+                  주간
+                </button>
               </div>
             </div>
 
             {/* 날씨 정보 내용 */}
             <div className="flex justify-between items-start mt-2">
-              <div className="flex-1 flex items-center">
+              <button 
+                type="button"
+                className="flex-1 flex items-center text-left focus:outline-none cursor-pointer"
+                onClick={() => console.log('현재 날씨 정보 클릭')}
+              >
                 <div className="flex items-center">
                   <div className="flex flex-col">
                     <div className="flex items-center mb-1">
@@ -123,26 +145,42 @@ export function StatisticsSection({ expanded }: StatisticsSectionProps) {
                     <div className="text-xs text-gray-300 ml-11">맑음 · 서울 강남구</div>
                   </div>
                 </div>
-              </div>
+              </button>
               
               <div className="flex-1">
                 <div className="grid grid-cols-2 gap-x-4 gap-y-2">
-                  <div>
+                  <button 
+                    type="button"
+                    className="text-left focus:outline-none cursor-pointer"
+                    onClick={() => console.log('습도 정보 클릭')}
+                  >
                     <div className="text-xs text-gray-400">습도</div>
                     <div className="font-bold text-white">45%</div>
-                  </div>
-                  <div>
+                  </button>
+                  <button 
+                    type="button"
+                    className="text-left focus:outline-none cursor-pointer"
+                    onClick={() => console.log('바람 정보 클릭')}
+                  >
                     <div className="text-xs text-gray-400">바람</div>
                     <div className="font-bold text-white">3m/s</div>
-                  </div>
-                  <div>
+                  </button>
+                  <button 
+                    type="button"
+                    className="text-left focus:outline-none cursor-pointer"
+                    onClick={() => console.log('미세먼지 정보 클릭')}
+                  >
                     <div className="text-xs text-gray-400">미세먼지</div>
                     <div className="font-bold text-white">좋음</div>
-                  </div>
-                  <div>
+                  </button>
+                  <button 
+                    type="button"
+                    className="text-left focus:outline-none cursor-pointer"
+                    onClick={() => console.log('산책날씨 정보 클릭')}
+                  >
                     <div className="text-xs text-gray-400">산책날씨</div>
                     <div className="font-bold text-green-400">적합</div>
-                  </div>
+                  </button>
                 </div>
               </div>
             </div>
