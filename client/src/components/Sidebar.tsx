@@ -139,16 +139,19 @@ export function Sidebar({
     return () => window.removeEventListener('resize', handleResize);
   }, [onToggleExpand]);
 
+  // 기본 메뉴 그룹
   const [menuGroups, setMenuGroups] = useState({
     main: true,
     features: true,
     myLearning: true,
-    help: true,
-    statistics: true, // 서비스 통계/현황 섹션 상태
     trainer: false,
     institute: false,
     admin: false
   });
+  
+  // 도움말과 서비스 현황을 위한 별도의 state
+  const [helpMenuExpanded, setHelpMenuExpanded] = useState(true);
+  const [statsMenuExpanded, setStatsMenuExpanded] = useState(true);
 
   useEffect(() => {
     if (userRole) {
@@ -179,6 +182,18 @@ export function Sidebar({
       console.log(`메뉴 상태 변경 후: ${group} = ${!prev[group]}`);
       return newState;
     });
+  };
+  
+  // 도움말 메뉴 토글 함수
+  const toggleHelpMenu = () => {
+    console.log("도움말 메뉴 토글: ", !helpMenuExpanded);
+    setHelpMenuExpanded(!helpMenuExpanded);
+  };
+  
+  // 서비스 현황 메뉴 토글 함수
+  const toggleStatsMenu = () => {
+    console.log("서비스 현황 메뉴 토글: ", !statsMenuExpanded);
+    setStatsMenuExpanded(!statsMenuExpanded);
   };
 
   const isActive = (path: string) => {
@@ -928,18 +943,21 @@ export function Sidebar({
                 {expanded ? (
                   <div
                     className="px-3 py-2 mt-6 flex items-center justify-between cursor-pointer bg-gray-100 dark:bg-gray-700 p-1 rounded mx-3"
-                    onClick={() => toggleMenuGroup('help')}
+                    onClick={toggleHelpMenu}
                   >
                     <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                       도움말
                     </h3>
-                    {menuGroups.help ? <ChevronDown className="h-4 w-4 text-primary" /> : <ChevronRight className="h-4 w-4 text-primary" />}
+                    {helpMenuExpanded ? 
+                      <ChevronDown className="h-4 w-4 text-primary" /> : 
+                      <ChevronRight className="h-4 w-4 text-primary" />
+                    }
                   </div>
                 ) : (
                   <div className="py-2 mt-6"></div>
                 )}
 
-                {menuGroups.help && (
+                {helpMenuExpanded && expanded && (
                   <>
                     <NavItem
                       href="/help/faq"
@@ -989,19 +1007,19 @@ export function Sidebar({
                     {/* 헤더 영역 - 클릭 시 토글 */}
                     <div 
                       className="flex items-center justify-between mb-2 cursor-pointer bg-gray-100 dark:bg-gray-700 p-1 rounded"
-                      onClick={() => toggleMenuGroup('statistics')}
+                      onClick={toggleStatsMenu}
                     >
                       <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                         서비스 현황
                       </h3>
-                      {menuGroups.statistics ? 
+                      {statsMenuExpanded ? 
                         <ChevronDown className="h-4 w-4 text-primary" /> : 
                         <ChevronRight className="h-4 w-4 text-primary" />
                       }
                     </div>
 
                     {/* 통계 내용 - 토글 상태에 따라 표시/숨김 */}
-                    {menuGroups.statistics ? (
+                    {statsMenuExpanded ? (
                       <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3 text-xs">
                         <div className="flex items-center justify-between">
                           <span className="text-gray-600 dark:text-gray-300">실시간 이용자</span>
