@@ -269,9 +269,9 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
   };
 
   return (
-    <header className="sticky top-0 bg-white dark:bg-gray-900 shadow-sm z-10 transition-colors">
-      <div className="max-w-full mx-auto px-4 sm:px-6 lg:pl-6 lg:pr-8">
-        <div className="flex justify-between items-center h-16">
+    <header className="bg-white dark:bg-gray-900 shadow-sm z-10 transition-colors">
+      <div className="w-full mx-auto px-0">
+        <div className="flex justify-between items-center h-16 px-4">
           {/* Search */}
           <div className="hidden lg:flex flex-1 max-w-xl ml-0">
             <div className="w-full relative">

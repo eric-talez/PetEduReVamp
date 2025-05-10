@@ -265,20 +265,14 @@ function AppLayout({ children }: { children: ReactNode }) {
   }, []);
   
   return (
-    <div className="bg-background text-foreground min-h-screen font-sans">
-      {/* 상단바 (전체 너비) */}
-      <TopBar
-        sidebarOpen={sidebarOpen}
-        onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
-      />
-      
-      <div className="pt-16 flex">
+    <div className="bg-background text-foreground min-h-screen font-sans flex flex-col">
+      <div className="flex flex-grow">
         {/* 사이드바 - 항상 고정된 너비를 가짐 */}
         <aside 
           className={`
-            w-64 shrink-0 h-[calc(100vh-4rem)] 
+            w-64 shrink-0 h-screen fixed left-0 top-0 z-20
             transition-all duration-300
-            ${sidebarOpen || isDesktop ? 'block' : 'hidden'}
+            ${sidebarOpen || isDesktop ? 'translate-x-0' : '-translate-x-full'}
           `}
         >
           <Sidebar 
@@ -292,18 +286,27 @@ function AppLayout({ children }: { children: ReactNode }) {
         {/* 모바일 오버레이 - 사이드바가 열리면 본문 위에 표시 */}
         {sidebarOpen && !isDesktop && (
           <div 
-            className="fixed inset-0 top-16 bg-black bg-opacity-50 z-30" 
+            className="fixed inset-0 bg-black bg-opacity-50 z-10" 
             onClick={() => setSidebarOpen(false)}
           />
         )}
         
-        {/* 메인 컨텐츠 영역 - 사이드바 상태에 따라 전체 너비 차지 */}
-        <main className={`
-          grow transition-all duration-300
-          ${(sidebarOpen || isDesktop) ? '' : 'w-full'}
+        {/* 우측 컨텐츠 영역 (헤더 + 메인) */}
+        <div className={`
+          flex-grow flex flex-col min-h-screen transition-all duration-300
+          ${(sidebarOpen || isDesktop) ? 'ml-64' : 'ml-0'}
         `}>
-          {children}
-        </main>
+          {/* 상단바 */}
+          <TopBar
+            sidebarOpen={sidebarOpen}
+            onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
+          />
+          
+          {/* 메인 컨텐츠 영역 */}
+          <main className="flex-grow">
+            {children}
+          </main>
+        </div>
       </div>
     </div>
   );
