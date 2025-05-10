@@ -23,7 +23,7 @@ import {
 import { useState, useEffect, useRef } from "react";
 import { useClickAway } from "@/hooks/use-mobile";
 import { Link, useLocation } from "wouter";
-import { useAuth } from "../SimpleApp";
+import { useAuth } from "../hooks/useAuth";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { format } from "date-fns";
@@ -67,18 +67,12 @@ interface TopBarProps {
 
 export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
   // 전역 상태에서 인증 정보 직접 확인
-  const globalAuth = (window as any).__peteduAuthState;
+  // 인증 상태 사용
+  const { user, isAuthenticated, logout } = useAuth();
   
-  // 로컬 상태와 전역 상태 둘 다 확인
-  const auth = useAuth();
-  // 전역 상태가 있으면 우선 사용
-  const authState = globalAuth || auth;
-  
-  // 상태 추출
-  const userName = authState?.userName || auth?.userName;
-  const userRole = authState?.userRole || auth?.userRole;
-  const isAuthenticated = authState?.isAuthenticated || auth?.isAuthenticated;
-  const logout = auth?.logout;
+  // 사용자 정보 추출
+  const userName = user?.name;
+  const userRole = user?.role;
   const [location, setLocation] = useLocation();
   
   // 팝업 메뉴 상태
