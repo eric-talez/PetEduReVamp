@@ -272,9 +272,42 @@ function DebugButton() {
 function SimpleApp() {
   const auth = useAuth();
   
-  // 로딩 상태 처리
+  // 로딩 상태 처리 - 강아지 테마 로딩 애니메이션 적용
   if (auth.isLoading) {
-    return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="flex flex-col items-center">
+          <div className="relative w-20 h-20">
+            {/* 몸통 */}
+            <div className="absolute top-0 left-0 w-full h-full animate-wiggle origin-bottom">
+              <div className="bg-primary rounded-full w-16 h-16 mx-auto"></div>
+              <div className="bg-primary h-10 w-5 absolute top-10 left-1/2 -ml-2.5 rounded-b-full"></div>
+            </div>
+            
+            {/* 귀 */}
+            <div className="absolute top-0 w-full">
+              <div className="relative mx-auto w-16">
+                <div className="absolute left-1 top-0 w-5 h-6 bg-primary rounded-tl-full transform -rotate-12"></div>
+                <div className="absolute right-1 top-0 w-5 h-6 bg-primary rounded-tr-full transform rotate-12"></div>
+              </div>
+            </div>
+            
+            {/* 꼬리 */}
+            <div className="absolute right-1 top-6 w-4 h-5 bg-primary rounded-full animate-bounce-tail origin-top"></div>
+            
+            {/* 얼굴 */}
+            <div className="absolute top-5 left-1/2 transform -translate-x-1/2">
+              <div className="flex space-x-5">
+                <div className="bg-white w-2.5 h-2.5 rounded-full animate-blink"></div>
+                <div className="bg-white w-2.5 h-2.5 rounded-full animate-blink"></div>
+              </div>
+              <div className="mt-3 bg-white w-4 h-1.5 mx-auto rounded-full"></div>
+            </div>
+          </div>
+          <p className="mt-4 text-primary font-medium">로딩 중...</p>
+        </div>
+      </div>
+    );
   }
   
   return (
@@ -285,7 +318,5 @@ function SimpleApp() {
   );
 }
 
-// 최종 내보내기 - 이제 main.tsx에서 AuthProvider를 직접 가져와 사용함
-export default function AppWithAuth() {
-  return <SimpleApp />;
-}
+// 최종 내보내기 - main.tsx에서는 이미 AuthProvider를 사용 중이므로 SimpleApp을 직접 내보냄
+export default SimpleApp;
