@@ -1208,37 +1208,36 @@ export default function ReferralCodeManagement() {
         <DialogContent className="sm:max-w-[600px]">
           <DialogHeader>
             <DialogTitle>
-              {"code" in (selectedItem || {}) 
+              {selectedItem && "code" in selectedItem 
                 ? "추천인 코드 상세 정보" 
                 : "제품 추천 상세 정보"}
             </DialogTitle>
           </DialogHeader>
 
-          <div className="space-y-4 py-4">
-            {"code" in (selectedItem || {}) ? (
-              // 추천인 코드 상세 정보
-              <div>
+          {selectedItem && (
+            "code" in selectedItem ? (
+              <div className="space-y-4 py-4">
                 <div className="bg-gray-50 dark:bg-gray-900 rounded-md p-4 mb-4">
                   <div className="flex justify-between items-center mb-3">
                     <div>
-                      <h3 className="text-lg font-bold mb-1">{selectedItem?.code}</h3>
-                      <p className="text-sm text-muted-foreground">{selectedItem?.description}</p>
+                      <h3 className="text-lg font-bold mb-1">{selectedItem.code}</h3>
+                      <p className="text-sm text-muted-foreground">{selectedItem.description}</p>
                     </div>
                     <Badge 
                       className="text-sm"
-                      variant={getStatusBadgeVariant(selectedItem?.status)}
+                      variant={getStatusBadgeVariant(selectedItem.status)}
                     >
-                      {getStatusText(selectedItem?.status)}
+                      {getStatusText(selectedItem.status)}
                     </Badge>
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div className="flex items-center space-x-1.5">
-                      <Tag className="h-4 w-4 text-blue-500" />
-                      <span className="text-sm">할인율: <span className="font-medium">{selectedItem?.discount}%</span></span>
+                      <Tag size={16} className="text-blue-500" />
+                      <span className="text-sm">할인율: <span className="font-medium">{selectedItem.discount}%</span></span>
                     </div>
                     <div className="flex items-center space-x-1.5">
-                      <Calendar className="h-4 w-4 text-blue-500" />
-                      <span className="text-sm">만료: <span className="font-medium">{selectedItem?.expiryDate || "제한없음"}</span></span>
+                      <Calendar size={16} className="text-blue-500" />
+                      <span className="text-sm">만료: <span className="font-medium">{selectedItem.expiryDate || "제한없음"}</span></span>
                     </div>
                   </div>
                 </div>
@@ -1248,13 +1247,13 @@ export default function ReferralCodeManagement() {
                     <h3 className="text-sm font-medium text-gray-500 mb-2">기관 정보</h3>
                     <div className="space-y-2">
                       <div className="flex flex-col">
-                        <span className="font-medium">{selectedItem?.institution}</span>
-                        <span className="text-xs text-muted-foreground">{selectedItem?.institutionCode}</span>
+                        <span className="font-medium">{selectedItem.institution}</span>
+                        <span className="text-xs text-muted-foreground">{selectedItem.institutionCode}</span>
                       </div>
                       <div className="text-sm mt-2">
                         <div className="flex items-center space-x-1.5">
-                          <Building className="h-4 w-4 text-gray-400" />
-                          <span>기관 ID: {selectedItem?.institutionId}</span>
+                          <Building size={16} className="text-gray-400" />
+                          <span>기관 ID: {selectedItem.institutionId}</span>
                         </div>
                       </div>
                     </div>
@@ -1264,13 +1263,13 @@ export default function ReferralCodeManagement() {
                     <h3 className="text-sm font-medium text-gray-500 mb-2">훈련사 정보</h3>
                     <div className="space-y-2">
                       <div className="flex flex-col">
-                        <span className="font-medium">{selectedItem?.trainerName}</span>
-                        <span className="text-xs text-muted-foreground">{selectedItem?.trainerCode}</span>
+                        <span className="font-medium">{selectedItem.trainerName}</span>
+                        <span className="text-xs text-muted-foreground">{selectedItem.trainerCode}</span>
                       </div>
                       <div className="text-sm mt-2">
                         <div className="flex items-center space-x-1.5">
-                          <UserRoundCheck className="h-4 w-4 text-gray-400" />
-                          <span>훈련사 ID: {selectedItem?.trainerId}</span>
+                          <UserRound size={16} className="text-gray-400" />
+                          <span>훈련사 ID: {selectedItem.trainerId}</span>
                         </div>
                       </div>
                     </div>
@@ -1280,15 +1279,15 @@ export default function ReferralCodeManagement() {
                 <div className="grid grid-cols-3 gap-4 mb-2">
                   <div className="space-y-2">
                     <h3 className="text-sm font-medium text-gray-500">생성자</h3>
-                    <p>{selectedItem?.createdBy}</p>
+                    <p>{selectedItem.createdBy}</p>
                   </div>
                   <div className="space-y-2">
                     <h3 className="text-sm font-medium text-gray-500">요청일</h3>
-                    <p>{selectedItem?.requestDate}</p>
+                    <p>{selectedItem.requestDate}</p>
                   </div>
                   <div className="space-y-2">
                     <h3 className="text-sm font-medium text-gray-500">승인자</h3>
-                    <p>{selectedItem?.approvedBy || "-"}</p>
+                    <p>{selectedItem.approvedBy || "-"}</p>
                   </div>
                 </div>
                 
@@ -1297,157 +1296,142 @@ export default function ReferralCodeManagement() {
                   <div className="grid grid-cols-3 gap-2">
                     <div className="bg-white dark:bg-gray-800 p-2 rounded-md text-center">
                       <div className="text-xl font-bold text-green-600 dark:text-green-400">
-                        {selectedItem?.profitShare}%
+                        {selectedItem.profitShare}%
                       </div>
                       <div className="text-xs text-gray-500">훈련사 수익</div>
                     </div>
                     <div className="bg-white dark:bg-gray-800 p-2 rounded-md text-center">
                       <div className="text-xl font-bold text-blue-600 dark:text-blue-400">
-                        {100 - (selectedItem?.profitShare || 0)}%
+                        {100 - (selectedItem.profitShare || 0)}%
                       </div>
                       <div className="text-xs text-gray-500">기관 수익</div>
                     </div>
                     <div className="bg-white dark:bg-gray-800 p-2 rounded-md text-center">
                       <div className="text-xl font-bold text-gray-600 dark:text-gray-400">
-                        {selectedItem?.usageCount || 0}
+                        {selectedItem.usageCount || 0}
                       </div>
                       <div className="text-xs text-gray-500">사용 횟수</div>
                     </div>
                   </div>
                 </div>
               </div>
-                <div className="space-y-2">
-                  <h3 className="text-sm font-medium text-gray-500">사용 현황</h3>
-                  <p>
-                    {selectedItem?.usageCount}
-                    {selectedItem?.maxUsage ? `/${selectedItem.maxUsage}` : ""}
-                  </p>
-                </div>
-                <div className="space-y-2">
-                  <h3 className="text-sm font-medium text-gray-500">생성자</h3>
-                  <p>{selectedItem?.createdBy}</p>
-                </div>
-                <div className="space-y-2">
-                  <h3 className="text-sm font-medium text-gray-500">승인자</h3>
-                  <p>{selectedItem?.approvedBy || "-"}</p>
-                </div>
-              </div>
             ) : (
-              // 제품 추천 상세 정보
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <h3 className="text-sm font-medium text-gray-500">제품명</h3>
-                  <p className="font-medium">{selectedItem?.productName}</p>
-                </div>
-                <div className="space-y-2">
-                  <h3 className="text-sm font-medium text-gray-500">브랜드</h3>
-                  <p>{selectedItem?.brand}</p>
-                </div>
-                <div className="space-y-2">
-                  <h3 className="text-sm font-medium text-gray-500">카테고리</h3>
-                  <p>{selectedItem?.category}</p>
-                </div>
-                <div className="space-y-2">
-                  <h3 className="text-sm font-medium text-gray-500">상태</h3>
-                  <Badge variant={getStatusBadgeVariant(selectedItem?.status)}>
-                    {getStatusText(selectedItem?.status)}
-                  </Badge>
-                </div>
-                <div className="space-y-2">
-                  <h3 className="text-sm font-medium text-gray-500">요청자</h3>
-                  <p>{selectedItem?.requestedBy}</p>
-                </div>
-                <div className="space-y-2">
-                  <h3 className="text-sm font-medium text-gray-500">요청일</h3>
-                  <p>{selectedItem?.requestDate}</p>
-                </div>
-                <div className="space-y-2 col-span-2">
-                  <h3 className="text-sm font-medium text-gray-500">설명</h3>
-                  <p>{selectedItem?.description}</p>
-                </div>
-                {selectedItem?.meetingDate && (
+              <div className="space-y-4 py-4">
+                <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <h3 className="text-sm font-medium text-gray-500">미팅일</h3>
-                    <p>{selectedItem.meetingDate}</p>
+                    <h3 className="text-sm font-medium text-gray-500">제품명</h3>
+                    <p className="font-medium">{selectedItem.productName}</p>
                   </div>
-                )}
-                {selectedItem?.price && (
                   <div className="space-y-2">
-                    <h3 className="text-sm font-medium text-gray-500">가격</h3>
-                    <p>{selectedItem.price.toLocaleString()}원</p>
+                    <h3 className="text-sm font-medium text-gray-500">브랜드</h3>
+                    <p>{selectedItem.brand}</p>
                   </div>
-                )}
-                {selectedItem?.quantity && (
                   <div className="space-y-2">
-                    <h3 className="text-sm font-medium text-gray-500">수량</h3>
-                    <p>{selectedItem.quantity}</p>
+                    <h3 className="text-sm font-medium text-gray-500">카테고리</h3>
+                    <p>{selectedItem.category}</p>
                   </div>
-                )}
-                {selectedItem?.commission && (
                   <div className="space-y-2">
-                    <h3 className="text-sm font-medium text-gray-500">총 수수료</h3>
-                    <p>{selectedItem.commission}%</p>
+                    <h3 className="text-sm font-medium text-gray-500">상태</h3>
+                    <Badge variant={getStatusBadgeVariant(selectedItem.status)}>
+                      {getStatusText(selectedItem.status)}
+                    </Badge>
                   </div>
-                )}
-                {selectedItem?.estimatedProfit && (
                   <div className="space-y-2">
-                    <h3 className="text-sm font-medium text-gray-500">예상 총 수익</h3>
-                    <p>{selectedItem.estimatedProfit.toLocaleString()}원</p>
+                    <h3 className="text-sm font-medium text-gray-500">요청자</h3>
+                    <p>{selectedItem.requestedBy}</p>
                   </div>
-                )}
-                {selectedItem?.trainerShare && (
                   <div className="space-y-2">
-                    <h3 className="text-sm font-medium text-gray-500">훈련사 몫</h3>
-                    <p className="text-green-600 dark:text-green-400">
-                      {selectedItem.trainerShare}% 
-                      {selectedItem.estimatedProfit && (
-                        <span className="text-gray-600 dark:text-gray-400 text-sm ml-2">
-                          ({Math.round(selectedItem.estimatedProfit * (selectedItem.trainerShare / 100)).toLocaleString()}원)
-                        </span>
-                      )}
-                    </p>
+                    <h3 className="text-sm font-medium text-gray-500">요청일</h3>
+                    <p>{selectedItem.requestDate}</p>
                   </div>
-                )}
-                {selectedItem?.platformShare && (
-                  <div className="space-y-2">
-                    <h3 className="text-sm font-medium text-gray-500">플랫폼 몫</h3>
-                    <p className="text-blue-600 dark:text-blue-400">
-                      {selectedItem.platformShare}%
-                      {selectedItem.estimatedProfit && (
-                        <span className="text-gray-600 dark:text-gray-400 text-sm ml-2">
-                          ({Math.round(selectedItem.estimatedProfit * (selectedItem.platformShare / 100)).toLocaleString()}원)
-                        </span>
-                      )}
-                    </p>
-                  </div>
-                )}
-                {selectedItem?.salesCount && (
-                  <div className="space-y-2">
-                    <h3 className="text-sm font-medium text-gray-500">판매 횟수</h3>
-                    <p>{selectedItem.salesCount}회</p>
-                  </div>
-                )}
-                {selectedItem?.totalSales && (
-                  <div className="space-y-2">
-                    <h3 className="text-sm font-medium text-gray-500">총 판매액</h3>
-                    <p>{selectedItem.totalSales.toLocaleString()}원</p>
-                  </div>
-                )}
-                {selectedItem?.referralLink && (
                   <div className="space-y-2 col-span-2">
-                    <h3 className="text-sm font-medium text-gray-500">추천 링크</h3>
-                    <div className="flex items-center space-x-2">
-                      <Input value={selectedItem.referralLink} readOnly />
-                      <Button size="sm" variant="outline">
-                        <Link className="h-4 w-4 mr-1" />
-                        복사
-                      </Button>
-                    </div>
+                    <h3 className="text-sm font-medium text-gray-500">설명</h3>
+                    <p>{selectedItem.description}</p>
                   </div>
-                )}
+                  {selectedItem.meetingDate && (
+                    <div className="space-y-2">
+                      <h3 className="text-sm font-medium text-gray-500">미팅일</h3>
+                      <p>{selectedItem.meetingDate}</p>
+                    </div>
+                  )}
+                  {selectedItem.price && (
+                    <div className="space-y-2">
+                      <h3 className="text-sm font-medium text-gray-500">가격</h3>
+                      <p>{selectedItem.price.toLocaleString()}원</p>
+                    </div>
+                  )}
+                  {selectedItem.quantity && (
+                    <div className="space-y-2">
+                      <h3 className="text-sm font-medium text-gray-500">수량</h3>
+                      <p>{selectedItem.quantity}</p>
+                    </div>
+                  )}
+                  {selectedItem.commission && (
+                    <div className="space-y-2">
+                      <h3 className="text-sm font-medium text-gray-500">총 수수료</h3>
+                      <p>{selectedItem.commission}%</p>
+                    </div>
+                  )}
+                  {selectedItem.estimatedProfit && (
+                    <div className="space-y-2">
+                      <h3 className="text-sm font-medium text-gray-500">예상 총 수익</h3>
+                      <p>{selectedItem.estimatedProfit.toLocaleString()}원</p>
+                    </div>
+                  )}
+                  {selectedItem.trainerShare && (
+                    <div className="space-y-2">
+                      <h3 className="text-sm font-medium text-gray-500">훈련사 몫</h3>
+                      <p className="text-green-600 dark:text-green-400">
+                        {selectedItem.trainerShare}% 
+                        {selectedItem.estimatedProfit && (
+                          <span className="text-gray-600 dark:text-gray-400 text-sm ml-2">
+                            ({Math.round(selectedItem.estimatedProfit * (selectedItem.trainerShare / 100)).toLocaleString()}원)
+                          </span>
+                        )}
+                      </p>
+                    </div>
+                  )}
+                  {selectedItem.platformShare && (
+                    <div className="space-y-2">
+                      <h3 className="text-sm font-medium text-gray-500">플랫폼 몫</h3>
+                      <p className="text-blue-600 dark:text-blue-400">
+                        {selectedItem.platformShare}%
+                        {selectedItem.estimatedProfit && (
+                          <span className="text-gray-600 dark:text-gray-400 text-sm ml-2">
+                            ({Math.round(selectedItem.estimatedProfit * (selectedItem.platformShare / 100)).toLocaleString()}원)
+                          </span>
+                        )}
+                      </p>
+                    </div>
+                  )}
+                  {selectedItem.salesCount && (
+                    <div className="space-y-2">
+                      <h3 className="text-sm font-medium text-gray-500">판매 횟수</h3>
+                      <p>{selectedItem.salesCount}회</p>
+                    </div>
+                  )}
+                  {selectedItem.totalSales && (
+                    <div className="space-y-2">
+                      <h3 className="text-sm font-medium text-gray-500">총 판매액</h3>
+                      <p>{selectedItem.totalSales.toLocaleString()}원</p>
+                    </div>
+                  )}
+                  {selectedItem.referralLink && (
+                    <div className="space-y-2 col-span-2">
+                      <h3 className="text-sm font-medium text-gray-500">추천 링크</h3>
+                      <div className="flex items-center space-x-2">
+                        <Input value={selectedItem.referralLink} readOnly />
+                        <Button size="sm" variant="outline">
+                          <Link className="h-4 w-4 mr-1" />
+                          복사
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
-            )}
-          </div>
+            )
+          )}
 
           <DialogFooter>
             <Button variant="outline" onClick={() => setDetailsDialogOpen(false)}>
