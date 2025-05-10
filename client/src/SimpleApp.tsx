@@ -245,13 +245,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
  */
 function AppLayout({ children }: { children: ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(false);
   const auth = useAuth();
+  
+  // 화면 크기 변경 감지
+  useEffect(() => {
+    function handleResize() {
+      setIsDesktop(window.innerWidth >= 1024);
+    }
+    
+    // 초기 실행
+    handleResize();
+    
+    // 이벤트 리스너 등록
+    window.addEventListener('resize', handleResize);
+    
+    // 클린업
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
   
   return (
     <div className="bg-background text-foreground min-h-screen font-sans">
-      <div className="flex">
-        {/* 사이드바 */}
-        <div className={`fixed inset-y-0 left-0 z-50 transition-transform duration-300 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
+      {/* 상단바 (전체 너비) */}
+      <TopBar
+        sidebarOpen={sidebarOpen}
+        onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
+      />
+      
+      <div className="flex pt-16">
+        {/* 고정 사이드바 - 데스크탑에서는 고정, 모바일에서는 토글 */}
+        <div className={`h-[calc(100vh-4rem)] ${sidebarOpen || isDesktop ? 'w-64' : 'w-0'} transition-all duration-300 overflow-hidden flex-shrink-0`}>
           <Sidebar 
             open={sidebarOpen} 
             onClose={() => setSidebarOpen(false)} 
@@ -261,23 +284,16 @@ function AppLayout({ children }: { children: ReactNode }) {
         </div>
         
         {/* 모바일 오버레이 */}
-        {sidebarOpen && (
+        {sidebarOpen && !isDesktop && (
           <div 
-            className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden" 
+            className="fixed inset-0 top-16 bg-black bg-opacity-50 z-30" 
             onClick={() => setSidebarOpen(false)}
           />
         )}
         
-        {/* 메인 컨텐츠 영역 - 사이드바 상태와 관계없이 항상 전체 너비를 사용 */}
-        <div className="flex-1 flex flex-col min-h-screen w-full transition-all duration-300">
-          {/* 상단바 */}
-          <TopBar
-            sidebarOpen={sidebarOpen}
-            onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
-          />
-          
-          {/* 메인 컨텐츠 - 사이드바가 열려있을 때 적절한 패딩 추가 */}
-          <main className={`flex-1 pt-16 transition-all duration-300 ${sidebarOpen ? 'lg:ml-64' : 'ml-0'} w-full`}>
+        {/* 메인 컨텐츠 영역 - 사이드바에 의해 밀려남 */}
+        <div className="flex-1 transition-all duration-300 min-h-[calc(100vh-4rem)]">
+          <main className="min-h-[calc(100vh-4rem)]">
             {children}
           </main>
         </div>
