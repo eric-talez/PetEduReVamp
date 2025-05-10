@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Activity, ArrowUp, ChevronDown, ChevronRight, Droplets, Wind, Sun } from 'lucide-react';
 
 interface StatisticsSectionProps {
@@ -8,6 +8,28 @@ interface StatisticsSectionProps {
 export function StatisticsSection({ expanded }: StatisticsSectionProps) {
   // 서비스 상태 및 날씨 정보 토글을 위한 통합 상태
   const [isOpen, setIsOpen] = useState(true);
+  const headerRef = useRef<HTMLDivElement>(null);
+  
+  // 토글 함수
+  const toggleSection = () => {
+    console.log("서비스 현황 토글 실행:", !isOpen);
+    setIsOpen(prev => !prev);
+  };
+  
+  useEffect(() => {
+    // 클릭 이벤트를 직접 등록
+    const headerElement = headerRef.current;
+    if (headerElement) {
+      headerElement.addEventListener('click', toggleSection);
+    }
+    
+    return () => {
+      // 컴포넌트 언마운트 시 이벤트 리스너 제거
+      if (headerElement) {
+        headerElement.removeEventListener('click', toggleSection);
+      }
+    };
+  }, [isOpen]); // isOpen이 변경될 때마다 이벤트 리스너 갱신
 
   // 사이드바가 축소되었을 때는 아이콘만 표시
   if (!expanded) {
@@ -23,11 +45,12 @@ export function StatisticsSection({ expanded }: StatisticsSectionProps) {
   return (
     <div className="mt-auto mb-4 px-3">
       {/* 서비스 정보 컨테이너 */}
-      <div className="overflow-hidden rounded-xl">
+      <div className="overflow-hidden rounded-xl shadow-md transition-all duration-300 ease-in-out" id="statistics-section">
         {/* 헤더 영역 - 클릭 시 토글 */}
         <div 
-          className="flex items-center justify-between cursor-pointer bg-gray-800/80 p-3 rounded-t-xl"
-          onClick={() => setIsOpen(!isOpen)}
+          ref={headerRef}
+          className="flex items-center justify-between cursor-pointer bg-gradient-to-r from-gray-800 to-gray-700 p-3 rounded-t-xl hover:bg-gray-700"
+          style={{ cursor: 'pointer' }}
         >
           <div className="flex items-center">
             <h3 className="text-sm font-semibold text-white uppercase tracking-wider">
