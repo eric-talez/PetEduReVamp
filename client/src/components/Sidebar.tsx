@@ -108,14 +108,28 @@ interface SidebarProps {
   onToggleExpand?: () => void;
 }
 
-export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarProps) {
+export function Sidebar({ 
+  open, 
+  onClose, 
+  userRole, 
+  isAuthenticated,
+  expanded: externalExpanded,
+  onToggleExpand
+}: SidebarProps) {
   const [location, setLocation] = useLocation();
-  const [expanded, setExpanded] = useState(true);
+  const [internalExpanded, setInternalExpanded] = useState(true);
+  
+  // 외부에서 제어되는 상태 또는 내부 상태 사용
+  const expanded = externalExpanded !== undefined ? externalExpanded : internalExpanded;
 
   useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth < 1024) {
-        setExpanded(true);
+        if (onToggleExpand) {
+          // 외부 상태 사용
+        } else {
+          setInternalExpanded(true);
+        }
       }
     };
 
@@ -123,7 +137,7 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
     handleResize();
 
     return () => window.removeEventListener('resize', handleResize);
-  }, []);
+  }, [onToggleExpand]);
 
   const [menuGroups, setMenuGroups] = useState({
     main: true,
@@ -146,7 +160,11 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
   }, [userRole]);
 
   const toggleSidebar = () => {
-    setExpanded(!expanded);
+    if (onToggleExpand) {
+      onToggleExpand();
+    } else {
+      setInternalExpanded(!internalExpanded);
+    }
   };
 
   const toggleMenuGroup = (group: keyof typeof menuGroups) => {
