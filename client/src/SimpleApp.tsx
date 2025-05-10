@@ -386,6 +386,16 @@ function AuthenticatedRoutes() {
             );
           }}
         </Route>
+        <Route path="/trainer/referrals">
+          {() => {
+            const ReferralManagement = lazy(() => import('./pages/referral/ReferralCodeManagement'));
+            return (
+              <Suspense fallback={<div className="p-8 text-center">페이지 로딩 중...</div>}>
+                <ReferralManagement />
+              </Suspense>
+            );
+          }}
+        </Route>
         <Route path="/trainer/students">
           {() => {
             const StudentManagement = lazy(() => import('./pages/trainer/students'));

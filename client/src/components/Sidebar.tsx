@@ -707,22 +707,13 @@ export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarPro
                           통계 및 수익
                         </NavItem>
                         <NavItem
-                          href="/trainer-dashboard/referrals"
-                          icon={<Users className="w-5 h-5 mr-2" />}
-                          active={isActive("/trainer-dashboard/referrals")}
+                          href="/trainer/referrals"
+                          icon={<Gift className="w-5 h-5 mr-2" />}
+                          active={isActive("/trainer/referrals")}
                           onClick={handleItemClick}
                           show={true}
                         >
-                          추천인 코드 관리
-                        </NavItem>
-                        <NavItem
-                          href="/trainer-dashboard/product-referrals"
-                          icon={<ShoppingBag className="w-5 h-5 mr-2" />}
-                          active={isActive("/trainer-dashboard/product-referrals")}
-                          onClick={handleItemClick}
-                          show={true}
-                        >
-                          제품 추천 관리
+                          추천 관리
                         </NavItem>
                       </>
                     )}
