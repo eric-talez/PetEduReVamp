@@ -34,7 +34,17 @@ import {
 } from "@/components/ui/select";
 import { useAuth } from "../../SimpleApp";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ShieldAlert, FileText, ClipboardCheck, Link, Calendar, Percent } from "lucide-react";
+import { 
+  ShieldAlert, 
+  FileText, 
+  ClipboardCheck, 
+  Link, 
+  Calendar, 
+  Percent,
+  Tag,
+  Building,
+  UserRound
+} from "lucide-react";
 
 // 추천인 코드 타입 정의
 interface ReferralCode {
