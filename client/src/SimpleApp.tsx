@@ -61,12 +61,11 @@ const AuthContext = createContext<AuthState>({
 });
 
 /**
- * 인증 상태 훅
+ * 인증 상태 훅 - 별도 함수로 분리하여 Fast Refresh 호환성 개선
  */
-export function useAuth() {
-  const context = useContext(AuthContext);
-  return context;
-}
+// 고정 함수로 선언하여 Fast Refresh 호환성 유지
+const useAuthContext = () => useContext(AuthContext);
+export const useAuth = useAuthContext;
 
 /**
  * 인증 상태 제공 컴포넌트
