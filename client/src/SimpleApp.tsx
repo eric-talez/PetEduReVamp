@@ -29,6 +29,7 @@ import EventCalendarPage from "./pages/events/calendar";
 // 레이아웃 및 컴포넌트 임포트
 import { TopBar } from "@/components/TopBar";
 import { Sidebar } from "@/components/Sidebar";
+import { NewSidebar } from "./components/NewSidebar";
 import { Toaster } from "@/components/ui/toaster";
 
 /**
@@ -282,7 +283,7 @@ function AppLayout({ children }: { children: ReactNode }) {
             ${sidebarOpen || isDesktop ? 'translate-x-0' : '-translate-x-full'}
           `}
         >
-          <Sidebar 
+          <NewSidebar 
             open={sidebarOpen} 
             onClose={() => setSidebarOpen(false)} 
             userRole={auth.userRole} 
