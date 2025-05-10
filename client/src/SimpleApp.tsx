@@ -275,7 +275,7 @@ function SimpleApp() {
   return (
     <>
       {auth.isAuthenticated ? <AuthenticatedRoutes /> : <UnauthenticatedRoutes />}
-      {process.env.NODE_ENV === 'development' && <DebugButton />}
+      <DebugButton />
     </>
   );
 }
