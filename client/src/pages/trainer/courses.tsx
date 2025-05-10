@@ -32,6 +32,8 @@ interface Course {
   status: '준비중' | '모집중' | '진행중' | '완료' | '취소';
   price: number;
   description: string;
+  approvalStatus?: '승인대기' | '기관승인' | '최종승인' | '반려';
+  approvalNote?: string;
 }
 
 export default function TrainerCourses() {
@@ -41,6 +43,18 @@ export default function TrainerCourses() {
   const [activeTab, setActiveTab] = useState<string>('active');
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
   const [activeModal, setActiveModal] = useState<ModalType>(null);
+  const [approvalStatus, setApprovalStatus] = useState<string>('승인대기');
+  const [newCourse, setNewCourse] = useState<Partial<Course>>({
+    title: '',
+    type: '그룹',
+    startDate: '',
+    endDate: '',
+    students: 0,
+    maxStudents: 0,
+    status: '준비중',
+    price: 0,
+    description: ''
+  });
 
   // 샘플 강의 데이터
   const courses: Course[] = [
@@ -54,7 +68,8 @@ export default function TrainerCourses() {
       maxStudents: 15,
       status: '진행중',
       price: 240000,
-      description: '반려견의 기초 복종 훈련과 사회화 교육을 진행하는 그룹 강의입니다. 8주 과정으로 앉기, 기다리기, 엎드리기 등 기본 명령어를 학습합니다.'
+      description: '반려견의 기초 복종 훈련과 사회화 교육을 진행하는 그룹 강의입니다. 8주 과정으로 앉기, 기다리기, 엎드리기 등 기본 명령어를 학습합니다.',
+      approvalStatus: '최종승인'
     },
     {
       id: 2,
@@ -66,7 +81,8 @@ export default function TrainerCourses() {
       maxStudents: null,
       status: '진행중',
       price: 280000,
-      description: '짖음, 물기, 분리불안 등 반려견의 문제행동을 개선하는 1:1 맞춤형 과정입니다. 반려견의 특성과 환경을 고려한 맞춤형 솔루션을 제공합니다.'
+      description: '짖음, 물기, 분리불안 등 반려견의 문제행동을 개선하는 1:1 맞춤형 과정입니다. 반려견의 특성과 환경을 고려한 맞춤형 솔루션을 제공합니다.',
+      approvalStatus: '최종승인'
     },
     {
       id: 3,
@@ -78,7 +94,9 @@ export default function TrainerCourses() {
       maxStudents: 10,
       status: '모집중',
       price: 320000,
-      description: '어질리티 훈련의 기초를 배우는 과정입니다. 장애물 통과, 터널, 점프 등 기본 어질리티 과정을 훈련합니다.'
+      description: '어질리티 훈련의 기초를 배우는 과정입니다. 장애물 통과, 터널, 점프 등 기본 어질리티 과정을 훈련합니다.',
+      approvalStatus: '기관승인',
+      approvalNote: '최종 관리자 승인 대기 중입니다.'
     },
     {
       id: 4,
@@ -90,7 +108,22 @@ export default function TrainerCourses() {
       maxStudents: 30,
       status: '준비중',
       price: 180000,
-      description: '재미있는 트릭을 가르치는 온라인 과정입니다. 손 흔들기, 하이파이브, 돌기 등 다양한 트릭을 배웁니다.'
+      description: '재미있는 트릭을 가르치는 온라인 과정입니다. 손 흔들기, 하이파이브, 돌기 등 다양한 트릭을 배웁니다.',
+      approvalStatus: '승인대기'
+    },
+    {
+      id: 5,
+      title: '반려견 수영 기초',
+      type: '그룹',
+      startDate: '2025.07.10',
+      endDate: '2025.08.15',
+      students: 0,
+      maxStudents: 8,
+      status: '준비중',
+      price: 350000,
+      description: '반려견의 수영 기초부터 안전한 물놀이 방법까지 배우는 특별 여름 강좌입니다. 시원한 실내 수영장에서 진행됩니다.',
+      approvalStatus: '반려',
+      approvalNote: '안전 관련 서류가 부족합니다. 수정 후 재신청해주세요.'
     }
   ];
 
@@ -416,6 +449,256 @@ export default function TrainerCourses() {
       </Dialog>
 
       {/* 수강생 관리 모달 */}
+      {/* 강의 생성 모달 */}
+      <Dialog open={activeModal === 'create'} onOpenChange={() => activeModal === 'create' && closeModal()}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle>새 강의 등록</DialogTitle>
+            <DialogDescription>
+              새로운 강의를 등록합니다. 승인 절차를 통해 최종 확정됩니다.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <label htmlFor="title" className="text-right font-medium">
+                강의명
+              </label>
+              <input
+                id="title"
+                className="col-span-3 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                value={newCourse.title}
+                onChange={(e) => setNewCourse({...newCourse, title: e.target.value})}
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <label htmlFor="type" className="text-right font-medium">
+                유형
+              </label>
+              <select
+                id="type"
+                className="col-span-3 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                value={newCourse.type}
+                onChange={(e) => setNewCourse({...newCourse, type: e.target.value as '그룹' | '1:1' | '온라인'})}
+              >
+                <option value="그룹">그룹</option>
+                <option value="1:1">1:1</option>
+                <option value="온라인">온라인</option>
+              </select>
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <label htmlFor="startDate" className="text-right font-medium">
+                시작일
+              </label>
+              <input
+                id="startDate"
+                type="date"
+                className="col-span-3 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                value={newCourse.startDate}
+                onChange={(e) => setNewCourse({...newCourse, startDate: e.target.value})}
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <label htmlFor="endDate" className="text-right font-medium">
+                종료일
+              </label>
+              <input
+                id="endDate"
+                type="date"
+                className="col-span-3 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                value={newCourse.endDate}
+                onChange={(e) => setNewCourse({...newCourse, endDate: e.target.value})}
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <label htmlFor="maxStudents" className="text-right font-medium">
+                최대 인원
+              </label>
+              <input
+                id="maxStudents"
+                type="number"
+                className="col-span-3 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                value={newCourse.maxStudents || ''}
+                onChange={(e) => setNewCourse({...newCourse, maxStudents: parseInt(e.target.value) || null})}
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <label htmlFor="price" className="text-right font-medium">
+                가격 (원)
+              </label>
+              <input
+                id="price"
+                type="number"
+                className="col-span-3 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                value={newCourse.price}
+                onChange={(e) => setNewCourse({...newCourse, price: parseInt(e.target.value)})}
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <label htmlFor="description" className="text-right font-medium">
+                강의 설명
+              </label>
+              <textarea
+                id="description"
+                className="col-span-3 flex h-20 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                value={newCourse.description}
+                onChange={(e) => setNewCourse({...newCourse, description: e.target.value})}
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <label className="text-right font-medium">승인 프로세스</label>
+              <div className="col-span-3 text-sm text-gray-600">
+                <p>1. 강의 등록 시 <Badge variant="warning">승인대기</Badge> 상태로 시작</p>
+                <p>2. 기관 관리자 검토 후 <Badge variant="info">기관승인</Badge> 또는 <Badge variant="danger">반려</Badge></p>
+                <p>3. 시스템 관리자 검토 후 <Badge variant="success">최종승인</Badge> 완료</p>
+              </div>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={closeModal}>취소</Button>
+            <Button onClick={() => {
+              // 실제 구현에서는 API 호출
+              console.log('새 강의 등록:', {...newCourse, approvalStatus: '승인대기'});
+              closeModal();
+            }}>등록하기</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* 강의 수정 모달 */}
+      <Dialog open={activeModal === 'edit'} onOpenChange={() => activeModal === 'edit' && closeModal()}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle>강의 정보 수정</DialogTitle>
+            <DialogDescription>
+              {selectedCourse?.title}의 정보를 수정합니다.
+            </DialogDescription>
+          </DialogHeader>
+
+          {selectedCourse && (
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-4 items-center gap-4">
+                <label htmlFor="edit-title" className="text-right font-medium">
+                  강의명
+                </label>
+                <input
+                  id="edit-title"
+                  className="col-span-3 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  defaultValue={selectedCourse.title}
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <label htmlFor="edit-type" className="text-right font-medium">
+                  유형
+                </label>
+                <select
+                  id="edit-type"
+                  className="col-span-3 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  defaultValue={selectedCourse.type}
+                >
+                  <option value="그룹">그룹</option>
+                  <option value="1:1">1:1</option>
+                  <option value="온라인">온라인</option>
+                </select>
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <label htmlFor="edit-status" className="text-right font-medium">
+                  상태
+                </label>
+                <select
+                  id="edit-status"
+                  className="col-span-3 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  defaultValue={selectedCourse.status}
+                >
+                  <option value="준비중">준비중</option>
+                  <option value="모집중">모집중</option>
+                  <option value="진행중">진행중</option>
+                  <option value="완료">완료</option>
+                  <option value="취소">취소</option>
+                </select>
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <label htmlFor="edit-startDate" className="text-right font-medium">
+                  시작일
+                </label>
+                <input
+                  id="edit-startDate"
+                  type="text"
+                  className="col-span-3 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  defaultValue={selectedCourse.startDate}
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <label htmlFor="edit-endDate" className="text-right font-medium">
+                  종료일
+                </label>
+                <input
+                  id="edit-endDate"
+                  type="text"
+                  className="col-span-3 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  defaultValue={selectedCourse.endDate}
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <label htmlFor="edit-price" className="text-right font-medium">
+                  가격 (원)
+                </label>
+                <input
+                  id="edit-price"
+                  type="number"
+                  className="col-span-3 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  defaultValue={selectedCourse.price}
+                />
+              </div>
+              
+              {selectedCourse.approvalStatus && (
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <label className="text-right font-medium">
+                    승인 상태
+                  </label>
+                  <div className="col-span-3">
+                    <Badge 
+                      variant={
+                        selectedCourse.approvalStatus === '승인대기' ? 'warning' :
+                        selectedCourse.approvalStatus === '기관승인' ? 'info' :
+                        selectedCourse.approvalStatus === '최종승인' ? 'success' :
+                        'danger'
+                      }
+                    >
+                      {selectedCourse.approvalStatus}
+                    </Badge>
+                    {selectedCourse.approvalNote && (
+                      <p className="mt-1 text-sm text-gray-600">{selectedCourse.approvalNote}</p>
+                    )}
+                  </div>
+                </div>
+              )}
+              
+              <div className="grid grid-cols-4 items-center gap-4">
+                <label htmlFor="edit-description" className="text-right font-medium">
+                  강의 설명
+                </label>
+                <textarea
+                  id="edit-description"
+                  className="col-span-3 flex h-20 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  defaultValue={selectedCourse.description}
+                />
+              </div>
+            </div>
+          )}
+
+          <DialogFooter>
+            <Button variant="outline" onClick={closeModal}>취소</Button>
+            <Button onClick={() => {
+              // 실제 구현에서는 API 호출
+              console.log(`강의 ID ${selectedCourse?.id} 정보 업데이트 요청`);
+              closeModal();
+            }}>저장하기</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       <Dialog open={activeModal === 'students'} onOpenChange={() => activeModal === 'students' && closeModal()}>
         <DialogContent className="sm:max-w-[800px]">
           <DialogHeader>
