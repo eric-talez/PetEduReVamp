@@ -1,5 +1,5 @@
 import { createRoot } from "react-dom/client";
-import App from "./App";
+import SimpleApp from "./SimpleApp";
 import { AuthProvider } from "./hooks/useAuth";
 import "./index.css";
 import { ThemeProvider } from "./context/theme-context";
@@ -12,7 +12,7 @@ createRoot(document.getElementById("root")!).render(
     <ThemeProvider>
       <TooltipProvider>
         <AuthProvider>
-          <App />
+          <SimpleApp />
         </AuthProvider>
       </TooltipProvider>
     </ThemeProvider>
