@@ -96,25 +96,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // 이벤트 리스너 등록
     window.addEventListener('storage', handleStorageChange);
     
-    // 디버깅을 위한 초기 인증 정보 설정
-    if (!localStorage.getItem('petedu_auth')) {
-      localStorage.setItem('petedu_auth', JSON.stringify({
-        user: '박훈련',
-        role: 'trainer'
-      }));
-    }
-    
-    // 초기 로드 시 스토리지 확인
+    // 초기 로드 시 스토리지 확인 - 있는 경우에만 읽기
     handleStorageChange();
-    
-    // 전역 인증 상태 설정 및 로딩 상태 false로 변경
-    if (typeof window !== 'undefined') {
-      window.__peteduAuthState = {
-        isAuthenticated: true,
-        userRole: 'trainer',
-        userName: '박훈련'
-      };
-    }
     
     // 로딩 상태 false로 설정
     setAuthState(prev => ({
