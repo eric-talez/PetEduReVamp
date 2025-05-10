@@ -46,71 +46,77 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   });
 
-  // 컴포넌트 마운트 시 즉시 로컬 스토리지에서 인증 상태 확인
-  useEffect(() => {
+  // 초기화 로직을 useMemo로 최적화하여 불필요한 재계산 방지
+  const initAuthState = useCallback(() => {
     const storedAuth = localStorage.getItem('petedu_auth');
     
-    // 즉시 실행되도록 별도 함수로 분리
-    const initAuthState = () => {
-      if (storedAuth) {
-        try {
-          const parsedAuth = JSON.parse(storedAuth);
-          
-          // setAuthState 함수를 직접 호출하지 않고 초기값으로 설정
-          const updatedState = {
-            isAuthenticated: true,
-            isLoading: false,
-            userRole: parsedAuth.role || 'user',
-            userName: parsedAuth.user || 'User',
-            logout: authState.logout
-          };
-          
-          setAuthState(updatedState);
-        } catch (e) {
-          console.error('저장된 인증 정보 파싱 오류:', e);
-          localStorage.removeItem('petedu_auth');
-        }
-      } else {
-        setAuthState(prevState => ({
-          ...prevState,
-          isLoading: false
-        }));
-      }
-    };
-    
-    // 함수 즉시 실행
-    initAuthState();
-  }, []);
-  
-  // 이벤트 리스너 등록/제거
-  useEffect(() => {
-    // 메시지 이벤트 처리 핸들러
-    const handleMessage = (event: MessageEvent) => {
-      if (event.data?.type === 'login' && event.data?.user) {
-        const user = event.data.user;
-        console.log("Message received with user:", user);
-        
-        // 로그인 처리
-        const username = user.username || user.name || 'User';
-        const role = user.role || 'user';
-        
-        // 로컬 스토리지에 저장
-        localStorage.setItem('petedu_auth', JSON.stringify({
-          user: username,
-          role: role
-        }));
+    if (storedAuth) {
+      try {
+        const parsedAuth = JSON.parse(storedAuth);
         
         // 상태 업데이트
         setAuthState(prevState => ({
           ...prevState,
           isAuthenticated: true,
           isLoading: false,
-          userRole: role as UserRole,
-          userName: username
+          userRole: parsedAuth.role || 'user',
+          userName: parsedAuth.user || 'User'
+        }));
+      } catch (e) {
+        console.error('저장된 인증 정보 파싱 오류:', e);
+        localStorage.removeItem('petedu_auth');
+        
+        // 에러 발생 시 로딩 상태 해제
+        setAuthState(prevState => ({
+          ...prevState,
+          isLoading: false
         }));
       }
-    };
-    
+    } else {
+      // 인증 정보가 없는 경우 로딩 상태만 해제
+      setAuthState(prevState => ({
+        ...prevState,
+        isLoading: false
+      }));
+    }
+  }, []);
+  
+  // 컴포넌트 마운트 시 한 번만 실행
+  useEffect(() => {
+    // 브라우저 환경에서만 실행
+    if (typeof window !== 'undefined') {
+      initAuthState();
+    }
+  }, [initAuthState]);
+  
+  // 메시지 이벤트 처리 핸들러를 메모이제이션하여 불필요한 재생성 방지
+  const handleMessage = useCallback((event: MessageEvent) => {
+    if (event.data?.type === 'login' && event.data?.user) {
+      const user = event.data.user;
+      
+      // 로그인 처리
+      const username = user.username || user.name || 'User';
+      const role = user.role || 'user';
+      
+      // 로컬 스토리지에 저장
+      localStorage.setItem('petedu_auth', JSON.stringify({
+        user: username,
+        role: role
+      }));
+      
+      // 상태 업데이트
+      setAuthState(prevState => ({
+        ...prevState,
+        isAuthenticated: true,
+        isLoading: false,
+        userRole: role as UserRole,
+        userName: username
+      }));
+    }
+  }, []);
+  
+  // 이벤트 리스너 등록/제거
+  useEffect(() => {
     // 이벤트 리스너 등록
     window.addEventListener('message', handleMessage);
     
@@ -118,10 +124,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => {
       window.removeEventListener('message', handleMessage);
     };
-  }, []);
+  }, [handleMessage]); // 의존성 배열에 메모이제이션된 핸들러만 포함
   
-  // 글로벌 변수에 인증 상태 저장 (디버깅용)
-  useEffect(() => {
+  // 글로벌 변수에 인증 상태 저장 (디버깅용) - 메모이제이션 적용
+  const syncGlobalState = useCallback(() => {
     if (typeof window !== 'undefined') {
       window.__peteduAuthState = {
         isAuthenticated: authState.isAuthenticated,
@@ -129,16 +135,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         userName: authState.userName
       };
     }
-  }, [authState]);
+  }, [authState.isAuthenticated, authState.userRole, authState.userName]);
+  
+  // 의존성 최적화를 위해 별도 useEffect로 분리
+  useEffect(() => {
+    syncGlobalState();
+  }, [syncGlobalState]);
 
   // 로딩 중일 때 강아지 로딩 애니메이션 표시
-  if (authState.isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <SimpleDogLoading text="로딩 중..." />
-      </div>
-    );
-  }
+  // isLoading 상태를 컨텍스트로 전달하여 컴포넌트에서 처리하도록 개선
+  // 중앙에서 직접 렌더링하지 않음으로써 이중 렌더링 문제 방지
 
   return (
     <AuthContext.Provider value={authState}>
