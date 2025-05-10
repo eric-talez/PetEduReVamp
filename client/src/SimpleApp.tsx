@@ -4,6 +4,9 @@ import React, { ReactNode, lazy, Suspense } from "react";
 import { useAuth, AuthProvider } from './hooks/useAuth';
 import { Button } from "@/components/ui/Button";
 
+// 이전 버전과의 호환성을 위한 재내보내기
+export { useAuth, AuthProvider } from './hooks/useAuth';
+
 // 페이지 컴포넌트 임포트
 import Home from "./pages/Home";
 import Dashboard from "@/pages/dashboard";
