@@ -143,6 +143,7 @@ export function Sidebar({
     main: true,
     features: true,
     myLearning: true,
+    help: true,
     trainer: false,
     institute: false,
     admin: false
@@ -921,56 +922,60 @@ export function Sidebar({
                 {expanded ? (
                   <div
                     className="px-3 py-2 mt-6 flex items-center justify-between cursor-pointer"
+                    onClick={() => toggleMenuGroup('help')}
                   >
                     <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                       도움말
                     </h3>
+                    {menuGroups.help ? <ChevronDown className="h-4 w-4 text-gray-500" /> : <ChevronRight className="h-4 w-4 text-gray-500" />}
                   </div>
                 ) : (
-                  <div className="flex justify-center py-2 mt-6">
-                    <ChevronRight className="h-4 w-4 text-gray-500" />
-                  </div>
+                  <div className="py-2 mt-6"></div>
                 )}
 
-                <NavItem
-                  href="/help/faq"
-                  icon={<HelpCircle className="w-5 h-5 mr-2" />}
-                  active={isActive("/help/faq")}
-                  onClick={handleItemClick}
-                  show={true}
-                >
-                  자주 묻는 질문
-                </NavItem>
+                {menuGroups.help && (
+                  <>
+                    <NavItem
+                      href="/help/faq"
+                      icon={<HelpCircle className="w-5 h-5 mr-2" />}
+                      active={isActive("/help/faq")}
+                      onClick={handleItemClick}
+                      show={true}
+                    >
+                      자주 묻는 질문
+                    </NavItem>
 
-                <NavItem
-                  href="/help/guide"
-                  icon={<BookOpen className="w-5 h-5 mr-2" />}
-                  active={isActive("/help/guide")}
-                  onClick={handleItemClick}
-                  show={true}
-                >
-                  이용 가이드
-                </NavItem>
+                    <NavItem
+                      href="/help/guide"
+                      icon={<BookOpen className="w-5 h-5 mr-2" />}
+                      active={isActive("/help/guide")}
+                      onClick={handleItemClick}
+                      show={true}
+                    >
+                      이용 가이드
+                    </NavItem>
 
-                <NavItem
-                  href="/help/about"
-                  icon={<Users className="w-5 h-5 mr-2" />}
-                  active={isActive("/help/about")}
-                  onClick={handleItemClick}
-                  show={true}
-                >
-                  소개
-                </NavItem>
+                    <NavItem
+                      href="/help/about"
+                      icon={<Users className="w-5 h-5 mr-2" />}
+                      active={isActive("/help/about")}
+                      onClick={handleItemClick}
+                      show={true}
+                    >
+                      소개
+                    </NavItem>
 
-                <NavItem
-                  href="/help/contact"
-                  icon={<MessageSquare className="w-5 h-5 mr-2" />}
-                  active={isActive("/help/contact")}
-                  onClick={handleItemClick}
-                  show={true}
-                >
-                  문의하기
-                </NavItem>
+                    <NavItem
+                      href="/help/contact"
+                      icon={<MessageSquare className="w-5 h-5 mr-2" />}
+                      active={isActive("/help/contact")}
+                      onClick={handleItemClick}
+                      show={true}
+                    >
+                      문의하기
+                    </NavItem>
+                  </>
+                )}
 
                 {/* Service Statistics - moved to the bottom */}
                 {expanded ? (
