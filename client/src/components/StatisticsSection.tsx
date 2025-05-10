@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Activity, ChevronDown, ChevronRight, Cloud, Droplets, Wind, Sun } from 'lucide-react';
 
 interface StatisticsSectionProps {
@@ -11,45 +11,6 @@ export function StatisticsSection({ expanded }: StatisticsSectionProps) {
   
   // 날씨 데이터 토글을 위한 상태
   const [weatherOpen, setWeatherOpen] = useState(true);
-  
-  // 상태 변화 디버깅 및 직접 DOM 이벤트 처리를 위한 로직
-  const statsRef = React.useRef<HTMLDivElement>(null);
-  const weatherRef = React.useRef<HTMLDivElement>(null);
-  
-  useEffect(() => {
-    console.log("StatisticsSection 상태 변경:", { isOpen, weatherOpen, expanded });
-    
-    // DOM 직접 접근하여 이벤트 리스너 추가
-    const statsHeader = statsRef.current;
-    const weatherHeader = weatherRef.current;
-    
-    const handleStatsClick = () => {
-      console.log("서비스 현황 헤더 클릭 - DOM 이벤트");
-      setIsOpen(prev => !prev);
-    };
-    
-    const handleWeatherClick = () => {
-      console.log("날씨 헤더 클릭 - DOM 이벤트");
-      setWeatherOpen(prev => !prev);
-    };
-    
-    if (statsHeader) {
-      statsHeader.addEventListener('click', handleStatsClick);
-    }
-    
-    if (weatherHeader) {
-      weatherHeader.addEventListener('click', handleWeatherClick);
-    }
-    
-    return () => {
-      if (statsHeader) {
-        statsHeader.removeEventListener('click', handleStatsClick);
-      }
-      if (weatherHeader) {
-        weatherHeader.removeEventListener('click', handleWeatherClick);
-      }
-    };
-  }, [expanded]);
 
   // 사이드바가 축소되었을 때는 아이콘만 표시
   if (!expanded) {
@@ -62,25 +23,17 @@ export function StatisticsSection({ expanded }: StatisticsSectionProps) {
     );
   }
 
-  // 토글 핸들러 함수들
-  const handleStatsToggle = () => {
-    console.log("서비스 현황 토글 클릭됨:", !isOpen);
-    setIsOpen(prev => !prev);
-  };
-  
-  const handleWeatherToggle = () => {
-    console.log("날씨 정보 토글 클릭됨:", !weatherOpen);
-    setWeatherOpen(prev => !prev);
-  };
-
   return (
     <div className="mt-auto mb-4 px-3">
       {/* 서비스 현황 컨테이너 */}
       <div className="mb-3">
         {/* 헤더 영역 - 클릭 시 토글 */}
         <div 
-          ref={statsRef}
           className="flex items-center justify-between mb-2 cursor-pointer bg-gray-100 dark:bg-gray-700 p-2 rounded"
+          onClick={() => {
+            console.log("서비스 현황 토글 클릭됨:", !isOpen);
+            setIsOpen(!isOpen);
+          }}
         >
           <div className="flex items-center">
             <Activity className="w-4 h-4 mr-1 text-primary" />
@@ -117,8 +70,11 @@ export function StatisticsSection({ expanded }: StatisticsSectionProps) {
       <div>
         {/* 날씨 헤더 영역 - 클릭 시 토글 */}
         <div 
-          ref={weatherRef}
           className="flex items-center justify-between mb-2 cursor-pointer bg-gray-100 dark:bg-gray-700 p-2 rounded"
+          onClick={() => {
+            console.log("날씨 정보 토글 클릭됨:", !weatherOpen);
+            setWeatherOpen(!weatherOpen);
+          }}
         >
           <div className="flex items-center">
             <Sun className="w-4 h-4 mr-1 text-amber-500" />
