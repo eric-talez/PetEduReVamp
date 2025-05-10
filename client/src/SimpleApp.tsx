@@ -308,7 +308,7 @@ function AppLayout({ children }: { children: ReactNode }) {
           {/* 상단바 */}
           <TopBar
             sidebarOpen={sidebarOpen}
-            onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
+            onToggleSidebar={isDesktop ? toggleSidebarSize : () => setSidebarOpen(!sidebarOpen)}
           />
           
           {/* 메인 컨텐츠 영역 */}
