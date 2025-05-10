@@ -255,10 +255,11 @@ function getStatusText(status: string) {
 
 export default function ReferralCodeManagement() {
   const auth = useAuth();
-  const userRole = auth.userRole;
+  // 임시 역할 처리 (호환성 문제)
+  const userRole = auth.userRole || window.__peteduAuthState?.userRole || 'user';
   const isAdmin = userRole === "admin";
   const isInstituteAdmin = userRole === "institute-admin";
-  const isTrainer = userRole === "trainer";
+  const isTrainer = userRole === "trainer" || userRole === "pet-trainer";
 
   // 상태 관리
   const [activeTab, setActiveTab] = useState("referral-codes");

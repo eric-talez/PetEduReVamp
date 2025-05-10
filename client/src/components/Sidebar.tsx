@@ -40,7 +40,10 @@ import {
   Brain,
   BarChart2,
   Sparkles,
-  DollarSign
+  DollarSign,
+  Gift,
+  Percent,
+  Tag
 } from "lucide-react";
 
 // 사이드바 컨텍스트 생성
