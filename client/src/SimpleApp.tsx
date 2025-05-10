@@ -322,24 +322,74 @@ function AppLayout({ children }: { children: ReactNode }) {
 }
 
 /**
+ * 로그인 필요 경로 보호 컴포넌트
+ */
+function ProtectedRoute({ component: Component, requiredRoles = null, fallback = <div className="p-8 text-center">접근 권한이 없습니다</div> }: {
+  component: React.ComponentType<any>;
+  requiredRoles?: Array<UserRole> | null;
+  fallback?: React.ReactNode;
+}) {
+  const { isAuthenticated, userRole } = useAuth();
+  
+  // 로그인 여부 체크
+  if (!isAuthenticated) {
+    return <RedirectHandler to="/auth" />;
+  }
+  
+  // 권한 검증 (requiredRoles이 null이면 로그인만 되어 있으면 됨)
+  if (requiredRoles && userRole && !requiredRoles.includes(userRole as UserRole)) {
+    return <>{fallback}</>;
+  }
+  
+  return <Component />;
+}
+
+/**
  * 훈련사 전용 경로에 대한 권한 검증 컴포넌트
  */
 function ProtectedTrainerRoute({ component: Component, fallback = <div className="p-8 text-center">접근 권한이 없습니다</div> }: {
   component: React.ComponentType<any>;
   fallback?: React.ReactNode;
 }) {
-  const { isAuthenticated, userRole } = useAuth();
-  
-  if (!isAuthenticated) {
-    return <RedirectHandler to="/auth" />;
-  }
-  
-  // 훈련사 또는 관리자만 접근 가능
-  if (userRole !== 'trainer' && userRole !== 'admin') {
-    return <>{fallback}</>;
-  }
-  
-  return <Component />;
+  return (
+    <ProtectedRoute 
+      component={Component} 
+      requiredRoles={['trainer', 'admin']} 
+      fallback={fallback}
+    />
+  );
+}
+
+/**
+ * 기관 관리자 전용 경로 보호 컴포넌트
+ */
+function ProtectedInstituteRoute({ component: Component, fallback = <div className="p-8 text-center">접근 권한이 없습니다</div> }: {
+  component: React.ComponentType<any>;
+  fallback?: React.ReactNode;
+}) {
+  return (
+    <ProtectedRoute 
+      component={Component} 
+      requiredRoles={['institute-admin', 'admin']} 
+      fallback={fallback}
+    />
+  );
+}
+
+/**
+ * 관리자 전용 경로 보호 컴포넌트
+ */
+function ProtectedAdminRoute({ component: Component, fallback = <div className="p-8 text-center">접근 권한이 없습니다</div> }: {
+  component: React.ComponentType<any>;
+  fallback?: React.ReactNode;
+}) {
+  return (
+    <ProtectedRoute 
+      component={Component} 
+      requiredRoles={['admin']} 
+      fallback={fallback}
+    />
+  );
 }
 
 /**
@@ -417,10 +467,34 @@ function AuthenticatedRoutes() {
             );
           }}
         </Route>
-        <Route path="/notifications" component={() => <div className="p-8"><h1 className="text-2xl font-bold mb-4">알림장</h1><p>훈련사와 소통하고 훈련 진행상황을 확인할 수 있는 알림장 페이지입니다.</p></div>} />
-        <Route path="/locations" component={LocationsPage} />
-        <Route path="/recommendations" component={() => <div className="p-8"><h1 className="text-2xl font-bold mb-4">맞춤 추천</h1><p>반려견 프로필과 사용자 선호도 기반 맞춤형 추천 서비스 페이지입니다.</p></div>} />
-        <Route path="/messages" component={MessagesPage} />
+        <Route path="/notifications">
+          {() => (
+            <ProtectedRoute 
+              component={() => <div className="p-8"><h1 className="text-2xl font-bold mb-4">알림장</h1><p>훈련사와 소통하고 훈련 진행상황을 확인할 수 있는 알림장 페이지입니다.</p></div>}
+            />
+          )}
+        </Route>
+        <Route path="/locations">
+          {() => (
+            <ProtectedRoute 
+              component={LocationsPage}
+            />
+          )}
+        </Route>
+        <Route path="/recommendations">
+          {() => (
+            <ProtectedRoute 
+              component={() => <div className="p-8"><h1 className="text-2xl font-bold mb-4">맞춤 추천</h1><p>반려견 프로필과 사용자 선호도 기반 맞춤형 추천 서비스 페이지입니다.</p></div>}
+            />
+          )}
+        </Route>
+        <Route path="/messages">
+          {() => (
+            <ProtectedRoute 
+              component={MessagesPage}
+            />
+          )}
+        </Route>
         
         {/* 훈련사 메뉴 - 권한 검증 적용 */}
         <Route path="/trainer/courses">
