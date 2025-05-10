@@ -68,11 +68,11 @@ console.log('App initialized - CourseDetail component:', CourseDetail);
 
 // 인증된 사용자를 위한 라우트 컴포넌트
 function AuthenticatedRoutesContent() {
-  const { user } = useAuth();
+  const { userRole } = useAuth();
 
   const checkAccess = (allowedRoles: string[]) => {
-    if (!user || !user.role) return false;
-    return allowedRoles.includes(user.role);
+    if (!userRole) return false;
+    return allowedRoles.includes(userRole);
   };
 
   return (
