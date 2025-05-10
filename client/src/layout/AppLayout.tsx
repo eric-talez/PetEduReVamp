@@ -44,8 +44,8 @@ export function AppLayout({ children }: AppLayoutProps) {
         onToggleSidebar={toggleSidebar}
       />
       
-      {/* 모든 사용자에게 사이드바 표시 (인증 여부와 관계없이) - 새 버전 사용 */}
-      <NewSidebar
+      {/* 모든 사용자에게 사이드바 표시 (인증 여부와 관계없이) */}
+      <Sidebar 
         open={sidebarOpen} 
         onClose={() => setSidebarOpen(false)}
         userRole={userRole}

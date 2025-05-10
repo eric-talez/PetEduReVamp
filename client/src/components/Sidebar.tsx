@@ -3,6 +3,8 @@ import { BarChart } from "@/components/ui/chart";
 import { cn } from "@/lib/utils";
 import React, { useState, useEffect, createContext, useContext } from "react";
 import { SpecialShopLink } from "./SpecialShopLink";
+import { HelpSection } from "./HelpSection";
+import { StatisticsSection } from "./StatisticsSection";
 import {
   ChevronDown,
   ChevronRight,
