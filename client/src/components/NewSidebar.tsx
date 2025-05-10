@@ -662,125 +662,14 @@ export function NewSidebar({
                   </>
                 )}
 
-                {/* Help Menu for authenticated users - with toggle */}
-                {expanded ? (
-                  <div
-                    className="px-3 py-2 mt-6 flex items-center justify-between cursor-pointer bg-gray-100 dark:bg-gray-700 p-1 rounded mx-3"
-                    onClick={toggleHelpMenu}
-                  >
-                    <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                      도움말
-                    </h3>
-                    {helpMenuOpen ? 
-                      <ChevronDown className="h-4 w-4 text-primary" /> : 
-                      <ChevronRight className="h-4 w-4 text-primary" />
-                    }
-                  </div>
-                ) : (
-                  <div className="py-2 mt-6"></div>
-                )}
+                {/* Help Menu for authenticated users - using HelpSection component */}
+                <HelpSection 
+                  expanded={expanded}
+                  handleItemClick={handleItemClick}
+                />
 
-                {helpMenuOpen && expanded && (
-                  <>
-                    <NavItem
-                      href="/help/faq"
-                      icon={<HelpCircle className="w-5 h-5 mr-2" />}
-                      active={isActive("/help/faq")}
-                      onClick={handleItemClick}
-                      show={true}
-                    >
-                      자주 묻는 질문
-                    </NavItem>
-
-                    <NavItem
-                      href="/help/guide"
-                      icon={<BookOpen className="w-5 h-5 mr-2" />}
-                      active={isActive("/help/guide")}
-                      onClick={handleItemClick}
-                      show={true}
-                    >
-                      이용 가이드
-                    </NavItem>
-
-                    <NavItem
-                      href="/help/about"
-                      icon={<Users className="w-5 h-5 mr-2" />}
-                      active={isActive("/help/about")}
-                      onClick={handleItemClick}
-                      show={true}
-                    >
-                      소개
-                    </NavItem>
-
-                    <NavItem
-                      href="/help/contact"
-                      icon={<MessageSquare className="w-5 h-5 mr-2" />}
-                      active={isActive("/help/contact")}
-                      onClick={handleItemClick}
-                      show={true}
-                    >
-                      문의하기
-                    </NavItem>
-                  </>
-                )}
-
-                {/* Service Statistics with Toggle */}
-                {expanded ? (
-                  <div className="mt-auto mb-4 px-3">
-                    {/* 헤더 영역 - 클릭 시 토글 */}
-                    <div 
-                      className="flex items-center justify-between mb-2 cursor-pointer bg-gray-100 dark:bg-gray-700 p-1 rounded"
-                      onClick={toggleStatsMenu}
-                    >
-                      <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                        서비스 현황
-                      </h3>
-                      {statsMenuOpen ? 
-                        <ChevronDown className="h-4 w-4 text-primary" /> : 
-                        <ChevronRight className="h-4 w-4 text-primary" />
-                      }
-                    </div>
-
-                    {/* 통계 내용 - 토글 상태에 따라 표시/숨김 */}
-                    {statsMenuOpen ? (
-                      <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3 text-xs">
-                        <div className="flex items-center justify-between">
-                          <span className="text-gray-600 dark:text-gray-300">실시간 이용자</span>
-                          <span className="font-semibold text-primary">2,458명</span>
-                        </div>
-                        <div className="flex items-center justify-between mt-2">
-                          <span className="text-gray-600 dark:text-gray-300">사용자 분포</span>
-                          <span className="font-semibold text-blue-500">반려인 75%</span>
-                        </div>
-                        <div className="flex items-center justify-between mt-2">
-                          <span className="text-gray-600 dark:text-gray-300">평균 체류시간</span>
-                          <span className="font-semibold text-green-500">32분</span>
-                        </div>
-                        <div className="flex items-center justify-between mt-2">
-                          <span className="text-gray-600 dark:text-gray-300">현재 날씨</span>
-                          <span className="font-semibold text-orange-500">맑음 24℃</span>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-2 text-xs">
-                        <div className="flex items-center justify-between">
-                          <span className="text-gray-600 dark:text-gray-300">이용자</span>
-                          <span className="font-semibold text-primary">2,458명</span>
-                        </div>
-                        <div className="flex items-center justify-between mt-1">
-                          <span className="text-gray-600 dark:text-gray-300">날씨</span>
-                          <span className="font-semibold text-orange-500">맑음 24℃</span>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  <div className="mt-auto mb-4 px-2">
-                    <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-2 flex justify-center">
-                      <Activity className="w-5 h-5 text-primary" aria-label="서비스 현황" />
-                    </div>
-                  </div>
-                )}
+                {/* Service Statistics with Toggle using StatisticsSection component */}
+                <StatisticsSection expanded={expanded} />
               </>
             ) : (
               // Non-authenticated user menu
@@ -852,56 +741,10 @@ export function NewSidebar({
                 </NavItem>
 
                 {/* Help section for non-authenticated users */}
-                {expanded ? (
-                  <div
-                    className="px-3 py-2 mt-6 flex items-center justify-between cursor-pointer bg-gray-100 dark:bg-gray-700 p-1 rounded mx-3"
-                    onClick={toggleHelpMenu}
-                  >
-                    <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                      도움말
-                    </h3>
-                    {helpMenuOpen ? 
-                      <ChevronDown className="h-4 w-4 text-primary" /> : 
-                      <ChevronRight className="h-4 w-4 text-primary" />
-                    }
-                  </div>
-                ) : (
-                  <div className="py-2 mt-6"></div>
-                )}
-
-                {helpMenuOpen && expanded && (
-                  <>
-                    <NavItem
-                      href="/help/faq"
-                      icon={<HelpCircle className="w-5 h-5 mr-2" />}
-                      active={isActive("/help/faq")}
-                      onClick={handleItemClick}
-                      show={true}
-                    >
-                      자주 묻는 질문
-                    </NavItem>
-
-                    <NavItem
-                      href="/help/guide"
-                      icon={<BookOpen className="w-5 h-5 mr-2" />}
-                      active={isActive("/help/guide")}
-                      onClick={handleItemClick}
-                      show={true}
-                    >
-                      이용 가이드
-                    </NavItem>
-
-                    <NavItem
-                      href="/help/about"
-                      icon={<Users className="w-5 h-5 mr-2" />}
-                      active={isActive("/help/about")}
-                      onClick={handleItemClick}
-                      show={true}
-                    >
-                      소개
-                    </NavItem>
-                  </>
-                )}
+                <HelpSection 
+                  expanded={expanded}
+                  handleItemClick={handleItemClick}
+                />
               </>
             )}
           </nav>
