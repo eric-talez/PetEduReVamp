@@ -45,11 +45,12 @@ interface AuthState {
 }
 
 // 디버깅을 위한 전역 변수 타입 정의
-declare global {
-  interface Window {
-    __peteduAuthState?: AuthState;
-  }
-}
+// Note: global 타입 선언은 중복되어 발생하는 문제가 있어서 일부 코드에서 사용한다면 주석으로 남겨둡니다
+// declare global {
+//   interface Window {
+//     __peteduAuthState?: AuthState;
+//   }
+// }
 
 const AuthContext = createContext<AuthState>({
   isAuthenticated: false,
@@ -413,7 +414,7 @@ function AuthenticatedRoutes() {
             const StudentManagement = lazy(() => import('./pages/trainer/students'));
             return (
               <Suspense fallback={<div className="p-8 text-center">페이지 로딩 중...</div>}>
-                <StudentManagement />
+                <ProtectedTrainerRoute component={StudentManagement} />
               </Suspense>
             );
           }}
@@ -423,7 +424,7 @@ function AuthenticatedRoutes() {
             const TrainerStats = lazy(() => import('./pages/trainer/stats'));
             return (
               <Suspense fallback={<div className="p-8 text-center">페이지 로딩 중...</div>}>
-                <TrainerStats />
+                <ProtectedTrainerRoute component={TrainerStats} />
               </Suspense>
             );
           }}

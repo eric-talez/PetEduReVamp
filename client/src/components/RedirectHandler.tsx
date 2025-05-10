@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { useLocation } from 'wouter';
 
 /**
@@ -13,13 +13,8 @@ export function RedirectHandler({ to }: RedirectHandlerProps) {
   const [, setLocation] = useLocation();
   
   useEffect(() => {
-    console.log(`RedirectHandler: ${to}로 리다이렉트`);
     setLocation(to);
   }, [to, setLocation]);
   
-  return (
-    <div className="p-4 text-center">
-      <p>리다이렉트 중...</p>
-    </div>
-  );
+  return null;
 }

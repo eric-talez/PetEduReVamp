@@ -1,4 +1,4 @@
-import { Link } from 'wouter';
+import { Link, useLocation } from 'wouter';
 import { useAuth } from "../../SimpleApp";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/Button';
@@ -23,18 +23,20 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 // 모달 상태 타입 정의
 type StatsModalType = 'students' | 'courses' | 'schedule' | 'income' | null;
 
-// 페이지 이동 핸들러 함수
+// 페이지 이동 핸들러 함수 - wouter의 useLocation 활용
 const handleNavigation = (path: string, userRole: string | null) => {
-  console.log(`훈련사 홈 페이지에서 이동: ${path} (역할: ${userRole})`);
+  const [, setLocation] = useLocation();
   
   // 훈련사 전용 페이지 권한 확인
   if (path.startsWith('/trainer/') && userRole !== 'trainer' && userRole !== 'admin') {
+    // 권한 없음 페이지로 리다이렉트할 수도 있지만 
+    // 여기선 간단히 콘솔 경고만 표시 (이미 상위 컴포넌트에서 권한 검증함)
     console.warn('권한 부족: 해당 페이지에 접근할 수 없습니다.');
     return false;
   }
   
-  // 정상 이동 처리
-  window.location.href = path;
+  // 정상 이동 처리 - Wouter 라우터 사용
+  setLocation(path);
   return true;
 };
 
