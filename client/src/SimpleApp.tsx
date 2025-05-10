@@ -1,4 +1,5 @@
 import { Switch, Route } from "wouter";
+import { RedirectHandler } from './components/RedirectHandler';
 import React, { ReactNode, useState, useEffect, createContext, useContext, lazy, Suspense } from "react";
 
 // 페이지 컴포넌트 임포트
@@ -286,6 +287,27 @@ function AppLayout({ children }: { children: ReactNode }) {
 }
 
 /**
+ * 훈련사 전용 경로에 대한 권한 검증 컴포넌트
+ */
+function ProtectedTrainerRoute({ component: Component, fallback = <div className="p-8 text-center">접근 권한이 없습니다</div> }: {
+  component: React.ComponentType<any>;
+  fallback?: React.ReactNode;
+}) {
+  const { isAuthenticated, userRole } = useAuth();
+  
+  if (!isAuthenticated) {
+    return <RedirectHandler to="/auth" />;
+  }
+  
+  // 훈련사 또는 관리자만 접근 가능
+  if (userRole !== 'trainer' && userRole !== 'admin') {
+    return <>{fallback}</>;
+  }
+  
+  return <Component />;
+}
+
+/**
  * 인증된 사용자를 위한 라우트
  */
 function AuthenticatedRoutes() {
@@ -365,13 +387,13 @@ function AuthenticatedRoutes() {
         <Route path="/recommendations" component={() => <div className="p-8"><h1 className="text-2xl font-bold mb-4">맞춤 추천</h1><p>반려견 프로필과 사용자 선호도 기반 맞춤형 추천 서비스 페이지입니다.</p></div>} />
         <Route path="/messages" component={MessagesPage} />
         
-        {/* 훈련사 메뉴 */}
+        {/* 훈련사 메뉴 - 권한 검증 적용 */}
         <Route path="/trainer/courses">
           {() => {
             const CourseManagement = lazy(() => import('./pages/trainer/courses'));
             return (
               <Suspense fallback={<div className="p-8 text-center">페이지 로딩 중...</div>}>
-                <CourseManagement />
+                <ProtectedTrainerRoute component={CourseManagement} />
               </Suspense>
             );
           }}
@@ -381,7 +403,7 @@ function AuthenticatedRoutes() {
             const ReferralManagement = lazy(() => import('./pages/referral/ReferralCodeManagement'));
             return (
               <Suspense fallback={<div className="p-8 text-center">페이지 로딩 중...</div>}>
-                <ReferralManagement />
+                <ProtectedTrainerRoute component={ReferralManagement} />
               </Suspense>
             );
           }}
