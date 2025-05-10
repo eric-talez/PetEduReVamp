@@ -23,7 +23,7 @@ import {
 import { useState, useEffect, useRef } from "react";
 import { useClickAway } from "@/hooks/use-mobile";
 import { Link, useLocation } from "wouter";
-import { useAuth } from "../SimpleApp";
+import { useAuth } from "../hooks/useAuth";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { format } from "date-fns";

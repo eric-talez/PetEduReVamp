@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Avatar } from "@/components/ui/Avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Star, Clock, Calendar, CheckCircle, PlayCircle, List, Download, Share2, Bookmark, Heart } from "lucide-react";
-import { useAuth } from "../SimpleApp";
+import { useAuth } from "../hooks/useAuth";
 
 // 커리큘럼 타입 정의
 interface Lesson {

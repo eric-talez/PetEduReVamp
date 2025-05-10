@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useRoute } from 'wouter';
-import { useAuth } from '../../SimpleApp';
+import { useAuth } from '../../hooks/useAuth';
 import {
   PawPrint,
   Calendar,
