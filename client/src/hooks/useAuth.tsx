@@ -1,4 +1,4 @@
-import { createContext, ReactNode, useContext, useState, useEffect } from "react";
+import React, { createContext, ReactNode, useContext, useState, useEffect } from "react";
 
 // 사용자 역할 타입 정의
 export type UserRole = 'user' | 'pet-owner' | 'trainer' | 'institute-admin' | 'admin';
@@ -12,29 +12,24 @@ interface AuthState {
   logout: () => void;
 }
 
-// 인증 컨텍스트 생성
-const AuthContext = createContext<AuthState>({
-  isAuthenticated: false,
-  isLoading: true,
-  userRole: null,
-  userName: null,
-  logout: () => {},
-});
+// 컨텍스트 생성
+const AuthContext = createContext<AuthState | null>(null);
 
 /**
  * 인증 상태 제공 컴포넌트
  */
 export function AuthProvider({ children }: { children: ReactNode }) {
-  // 인증 상태 관리 - 기본적으로 인증된 상태로 설정 (훈련사)
+  // 인증 상태 관리 - 간소화된 버전
   const [authState, setAuthState] = useState<AuthState>({
-    isAuthenticated: true,
+    isAuthenticated: true,  // 항상 인증된 상태로 유지 (개발 편의성)
     isLoading: false,
-    userRole: 'trainer',
+    userRole: 'trainer',    // 기본적으로 훈련사 권한 부여
     userName: '박훈련',
     logout: () => {
+      console.log("로그아웃 실행");
       localStorage.removeItem('petedu_auth');
-      setAuthState(prevState => ({
-        ...prevState,
+      setAuthState(prev => ({
+        ...prev,
         isAuthenticated: false,
         userRole: null,
         userName: null
@@ -45,19 +40,69 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   });
 
-  // 컴포넌트 마운트 시 로컬 스토리지에 인증 정보 저장
+  // 로컬 스토리지 인증 정보 변경 처리 (디버그 메뉴에서 사용)
   useEffect(() => {
-    // 인증 정보 설정 (훈련사로 로그인)
-    const authData = {
-      user: '박훈련',
-      role: 'trainer',
-      id: 1
+    // 로컬 스토리지 변경 이벤트 핸들러
+    const handleStorageChange = () => {
+      const storedAuth = localStorage.getItem('petedu_auth');
+      
+      if (storedAuth) {
+        try {
+          const authData = JSON.parse(storedAuth);
+          console.log('인증 정보 변경됨:', authData);
+          
+          setAuthState(prev => ({
+            ...prev,
+            isAuthenticated: true,
+            userRole: authData.role || null,
+            userName: authData.user || null
+          }));
+          
+          // 전역 인증 상태 업데이트 (iframe 통신용)
+          if (typeof window !== 'undefined') {
+            window.__peteduAuthState = {
+              isAuthenticated: true,
+              userRole: authData.role || null,
+              userName: authData.user || null
+            };
+          }
+        } catch (error) {
+          console.error('인증 정보 파싱 오류:', error);
+        }
+      } else {
+        setAuthState(prev => ({
+          ...prev,
+          isAuthenticated: false,
+          userRole: null,
+          userName: null
+        }));
+        
+        // 전역 인증 상태 업데이트 (iframe 통신용)
+        if (typeof window !== 'undefined') {
+          window.__peteduAuthState = {
+            isAuthenticated: false,
+            userRole: null,
+            userName: null
+          };
+        }
+      }
     };
+
+    // 이벤트 리스너 등록
+    window.addEventListener('storage', handleStorageChange);
     
-    // 로컬 스토리지에 저장
-    localStorage.setItem('petedu_auth', JSON.stringify(authData));
+    // 디버깅을 위한 초기 인증 정보 설정
+    if (!localStorage.getItem('petedu_auth')) {
+      localStorage.setItem('petedu_auth', JSON.stringify({
+        user: '박훈련',
+        role: 'trainer'
+      }));
+    }
     
-    // 글로벌 변수에도 저장
+    // 초기 로드 시 스토리지 확인
+    handleStorageChange();
+    
+    // 전역 인증 상태 설정
     if (typeof window !== 'undefined') {
       window.__peteduAuthState = {
         isAuthenticated: true,
@@ -65,56 +110,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         userName: '박훈련'
       };
     }
-  }, []);
-  
-  // 이벤트 리스너 등록/제거
-  useEffect(() => {
-    // 메시지 이벤트 처리 핸들러
-    const handleMessage = (event: MessageEvent) => {
-      if (event.data?.type === 'login' && event.data?.user) {
-        const user = event.data.user;
-        console.log("Message received with user:", user);
-        
-        // 로그인 처리
-        const username = user.username || user.name || 'User';
-        const role = user.role || 'user';
-        
-        // 로컬 스토리지에 저장
-        localStorage.setItem('petedu_auth', JSON.stringify({
-          user: username,
-          role: role
-        }));
-        
-        // 상태 업데이트
-        setAuthState(prevState => ({
-          ...prevState,
-          isAuthenticated: true,
-          isLoading: false,
-          userRole: role as UserRole,
-          userName: username
-        }));
-      }
-    };
     
-    // 이벤트 리스너 등록
-    window.addEventListener('message', handleMessage);
-    
-    // 컴포넌트 언마운트 시 이벤트 리스너 제거
+    // 클린업 함수
     return () => {
-      window.removeEventListener('message', handleMessage);
+      window.removeEventListener('storage', handleStorageChange);
     };
   }, []);
-  
-  // 글로벌 변수에 인증 상태 저장 (디버깅용)
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      window.__peteduAuthState = {
-        isAuthenticated: authState.isAuthenticated,
-        userRole: authState.userRole,
-        userName: authState.userName
-      };
-    }
-  }, [authState]);
 
   return (
     <AuthContext.Provider value={authState}>
@@ -127,10 +128,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
  * 인증 상태 훅
  */
 export function useAuth() {
-  return useContext(AuthContext);
+  const context = useContext(AuthContext);
+  
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  
+  return context;
 }
 
-// 디버깅을 위한 전역 변수 타입 정의
+// 전역 인터페이스 확장 (타입스크립트용)
 declare global {
   interface Window {
     __peteduAuthState?: {

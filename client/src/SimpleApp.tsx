@@ -1,11 +1,6 @@
 import { Switch, Route } from "wouter";
 import { RedirectHandler } from './components/RedirectHandler';
-import React, { ReactNode, lazy, Suspense } from "react";
-import { useAuth, AuthProvider } from './hooks/useAuth';
-import { Button } from "@/components/ui/Button";
-
-// 이전 버전과의 호환성을 위한 재내보내기
-export { useAuth, AuthProvider } from './hooks/useAuth';
+import React, { ReactNode, useState, useEffect, createContext, useContext, lazy, Suspense } from "react";
 
 // 페이지 컴포넌트 임포트
 import Home from "./pages/Home";
@@ -13,60 +8,303 @@ import Dashboard from "@/pages/dashboard";
 import Courses from "@/pages/courses";
 import CourseDetail from "@/pages/course-detail";
 import Trainers from "@/pages/trainers";
+import Institutes from "@/pages/institutes";
+import Community from "@/pages/community";
+import CommunityPostDetail from "@/pages/community/post-detail";
+import MyCourses from "@/pages/my-courses";
+import MyPets from "@/pages/my-pets";
+import Login from "@/pages/auth/login";
+import NotFound from "@/pages/not-found";
+import VideoTrainingPage from "@/pages/video-training";
+import LocationsPage from "./pages/locations";
+import VideoCallPage from "./pages/video-call";
+import MessagesPage from "./pages/messages";
+import AdminCommissionPage from "./pages/admin/commission";
+import AdminMenuConfigPage from "./pages/admin/menu-config";
+import AdminSettlementPage from "./pages/admin/settlement";
+import EventsPage from "./pages/events";
+import EventDetailPage from "./pages/events/event-detail";
+import EventCalendarPage from "./pages/events/calendar";
 
-// UI 컴포넌트
+// 레이아웃 및 컴포넌트 임포트
 import { TopBar } from "@/components/TopBar";
 import { Sidebar } from "@/components/Sidebar";
 import { Toaster } from "@/components/ui/toaster";
 
 /**
- * 훈련사 전용 경로에 대한 권한 검증 컴포넌트
+ * 인증 관련 타입 및 인터페이스
  */
-function ProtectedTrainerRoute({ component: Component, fallback = <div className="p-8 text-center">접근 권한이 없습니다</div> }: {
-  component: React.ComponentType;
-  fallback?: React.ReactNode;
-}) {
-  const { userRole } = useAuth();
-  
-  if (userRole !== 'trainer' && userRole !== 'admin') {
-    return <>{fallback}</>;
-  }
-  
-  return <Component />;
+export type UserRole = 'user' | 'pet-owner' | 'trainer' | 'institute-admin' | 'admin';
+
+interface AuthState {
+  isAuthenticated: boolean;
+  isLoading: boolean;
+  userRole: UserRole | null;
+  userName: string | null;
+  logout: () => void;
+}
+
+// 디버깅을 위한 전역 변수 타입 정의
+// Note: global 타입 선언은 중복되어 발생하는 문제가 있어서 일부 코드에서 사용한다면 주석으로 남겨둡니다
+// declare global {
+//   interface Window {
+//     __peteduAuthState?: AuthState;
+//   }
+// }
+
+const AuthContext = createContext<AuthState>({
+  isAuthenticated: false,
+  isLoading: true,
+  userRole: null,
+  userName: null,
+  logout: () => {},
+});
+
+/**
+ * 인증 상태 훅 - 별도 함수로 분리하여 Fast Refresh 호환성 개선
+ */
+// 고정 함수로 선언하여 Fast Refresh 호환성 유지
+const useAuthContext = () => useContext(AuthContext);
+export const useAuth = useAuthContext;
+
+/**
+ * 인증 상태 제공 컴포넌트
+ */
+export function AuthProvider({ children }: { children: ReactNode }) {
+  const [authState, setAuthState] = useState<AuthState>({
+    isAuthenticated: false,
+    isLoading: true,
+    userRole: null,
+    userName: null,
+    logout: () => {
+      localStorage.removeItem('petedu_auth');
+      window.dispatchEvent(new CustomEvent('logout'));
+      // React-Router 또는 Wouter를 사용하는 방향으로 변경 필요
+      // window.location.href = "/auth";
+      // 임시적으로 window.location 사용
+      window.location.href = "/auth";
+    }
+  });
+
+  // 컴포넌트 마운트 시 즉시 로컬 스토리지에서 인증 상태 확인
+  useEffect(() => {
+    const storedAuth = localStorage.getItem('petedu_auth');
+    
+    // 즉시 실행되도록 별도 함수로 분리
+    const initAuthState = () => {
+      if (storedAuth) {
+        try {
+          const parsedAuth = JSON.parse(storedAuth);
+          
+          // setAuthState 함수를 직접 호출하지 않고 초기값으로 설정
+          const updatedState = {
+            isAuthenticated: true,
+            isLoading: false,
+            userRole: parsedAuth.role || 'user',
+            userName: parsedAuth.user || 'User',
+            logout: authState.logout // 기존 logout 함수 유지
+          };
+          
+          setAuthState(updatedState);
+          
+          // 디버깅용 전역 변수 설정 - TypeScript 오류 수정
+          (window as any).__peteduAuthState = updatedState;
+        } catch (e) {
+          console.error('Failed to parse auth data', e);
+          setAuthState(prevState => ({
+            ...prevState,
+            isLoading: false
+          }));
+        }
+      } else {
+        console.log("No auth data found in localStorage");
+        setAuthState(prevState => ({
+          ...prevState,
+          isLoading: false
+        }));
+      }
+    };
+    
+    // 즉시 초기화 실행
+    initAuthState();
+
+    // 쇼핑 페이지 이동 메시지 이벤트 리스너
+    const handleMessage = (event: MessageEvent) => {
+      try {
+        const message = event.data;
+        
+        if (message && message.type) {
+          console.log("메시지 수신:", message.type);
+          
+          switch (message.type) {
+            case 'NAVIGATE_TO_SHOP':
+              console.log("쇼핑 페이지로 이동 요청 수신");
+              window.location.href = '/shop';
+              break;
+              
+            case 'NAVIGATE_TO_HOME':
+              console.log("홈으로 이동 요청 수신");
+              window.location.href = '/';
+              break;
+          }
+        }
+      } catch (error) {
+        console.error("메시지 처리 중 오류 발생:", error);
+      }
+    };
+    
+    // 메시지 이벤트 리스너 등록
+    window.addEventListener('message', handleMessage);
+    
+    // 컴포넌트 언마운트 시 이벤트 리스너 제거
+    return () => {
+      window.removeEventListener('message', handleMessage);
+    };
+
+    // 로그인 이벤트 리스너 등록
+    const handleLogin = (e: CustomEvent) => {
+      const detail = e.detail as any;
+      if (detail?.user) {
+        const username = detail.user.username || detail.user.name || 'User';
+        const role = detail.user.role || 'user';
+        
+        console.log("Login event received with user:", username, "role:", role);
+        
+        // 로컬 스토리지에 저장
+        localStorage.setItem('petedu_auth', JSON.stringify({
+          user: username,
+          role: role
+        }));
+        console.log("Saved auth data to localStorage");
+        
+        // 상태 업데이트
+        setAuthState(prevState => ({
+          ...prevState,
+          isAuthenticated: true,
+          isLoading: false,
+          userRole: role as UserRole,
+          userName: username
+        }));
+        console.log("Updated auth state with login data");
+        
+        // 역할 기반 리다이렉션 구현
+        setTimeout(() => {
+          switch(role) {
+            case 'pet-owner':
+              window.location.href = '/dashboard';
+              break;
+            case 'trainer':
+              window.location.href = '/trainer/dashboard';
+              break;
+            case 'institute-admin':
+              window.location.href = '/institute/dashboard';
+              break;
+            case 'admin':
+              window.location.href = '/admin/dashboard';
+              break;
+            default:
+              window.location.href = '/';
+              break;
+          }
+          console.log(`Redirecting to role-specific dashboard for: ${role}`);
+        }, 300); // 상태 업데이트 후 리다이렉션을 위한 짧은 지연
+      }
+    };
+
+    // 로그아웃 이벤트 리스너 등록
+    const handleLogout = () => {
+      setAuthState(prevState => ({
+        ...prevState,
+        isAuthenticated: false,
+        isLoading: false,
+        userRole: null,
+        userName: null
+      }));
+    };
+
+    window.addEventListener('login', handleLogin as EventListener);
+    window.addEventListener('petedu-login', handleLogin as EventListener);
+    window.addEventListener('logout', handleLogout);
+
+    return () => {
+      window.removeEventListener('login', handleLogin as EventListener);
+      window.removeEventListener('petedu-login', handleLogin as EventListener);
+      window.removeEventListener('logout', handleLogout);
+    };
+  }, []);
+
+  return (
+    <AuthContext.Provider value={authState}>
+      {children}
+    </AuthContext.Provider>
+  );
 }
 
 /**
  * 응용 프로그램 레이아웃 컴포넌트
  */
 function AppLayout({ children }: { children: ReactNode }) {
-  const [sidebarOpen, setSidebarOpen] = React.useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const auth = useAuth();
   
   return (
     <div className="bg-background text-foreground min-h-screen font-sans">
       <div className="flex">
         {/* 사이드바 */}
-        <Sidebar 
-          open={sidebarOpen} 
-          onClose={() => setSidebarOpen(false)}
-          userRole={auth.userRole}
-          isAuthenticated={auth.isAuthenticated}
-        />
-        
-        {/* 메인 콘텐츠 */}
-        <div className="flex-1">
-          <TopBar 
-            sidebarOpen={sidebarOpen} 
-            onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} 
+        <div className="fixed inset-y-0 left-0 z-50">
+          <Sidebar 
+            open={sidebarOpen} 
+            onClose={() => setSidebarOpen(false)} 
+            userRole={auth.userRole} 
+            isAuthenticated={auth.isAuthenticated} 
           />
-          <main className="p-0">
+        </div>
+        
+        {/* 모바일 오버레이 */}
+        {sidebarOpen && (
+          <div 
+            className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden" 
+            onClick={() => setSidebarOpen(false)}
+          />
+        )}
+        
+        {/* 메인 컨텐츠 영역 */}
+        <div className="flex-1 flex flex-col min-h-screen lg:pl-64">
+          {/* 상단바 */}
+          <TopBar
+            sidebarOpen={sidebarOpen}
+            onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
+          />
+          
+          {/* 메인 컨텐츠 */}
+          <main className="flex-1 pt-16">
             {children}
           </main>
         </div>
       </div>
-      <Toaster />
     </div>
   );
+}
+
+/**
+ * 훈련사 전용 경로에 대한 권한 검증 컴포넌트
+ */
+function ProtectedTrainerRoute({ component: Component, fallback = <div className="p-8 text-center">접근 권한이 없습니다</div> }: {
+  component: React.ComponentType<any>;
+  fallback?: React.ReactNode;
+}) {
+  const { isAuthenticated, userRole } = useAuth();
+  
+  if (!isAuthenticated) {
+    return <RedirectHandler to="/auth" />;
+  }
+  
+  // 훈련사 또는 관리자만 접근 가능
+  if (userRole !== 'trainer' && userRole !== 'admin') {
+    return <>{fallback}</>;
+  }
+  
+  return <Component />;
 }
 
 /**
@@ -86,12 +324,9 @@ function AuthenticatedRoutes() {
           <TrainerHome />
         </Suspense>;
       case 'institute-admin':
-        const InstituteAdminHome = lazy(() => import('./pages/institute-admin/InstituteAdminHome'));
-        return <Suspense fallback={<div className="flex items-center justify-center min-h-screen"><div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full"></div></div>}>
-          <InstituteAdminHome />
-        </Suspense>;
+        return <div className="p-8"><h1 className="text-2xl font-bold mb-4">기관 관리자 홈</h1><p>기관 관리자 전용 홈 페이지입니다.</p></div>;
       case 'admin':
-        return <div className="p-8"><h1 className="text-2xl font-bold mb-4">관리자 대시보드</h1><p>시스템 관리자를 위한 대시보드입니다.</p></div>;
+        return <div className="p-8"><h1 className="text-2xl font-bold mb-4">시스템 관리자 홈</h1><p>시스템 관리자 전용 홈 페이지입니다.</p></div>;
       default:
         return <Home />;
     }
@@ -100,21 +335,75 @@ function AuthenticatedRoutes() {
   return (
     <AppLayout>
       <Switch>
-        {/* 메인 경로 */}
-        <Route path="/" component={() => getHomeComponent()} />
+        {/* 역할별 메인 페이지 */}
+        <Route path="/">
+          {() => getHomeComponent()}
+        </Route>
+        
+        {/* 대시보드 */}
+        <Route path="/dashboard">
+          {() => <Dashboard />}
+        </Route>
+        <Route path="/trainer/dashboard">
+          {() => <Dashboard type="trainer" />}
+        </Route>
+        <Route path="/institute/dashboard">
+          {() => <Dashboard type="institute-admin" />}
+        </Route>
+        <Route path="/admin/dashboard">
+          {() => <Dashboard type="admin" />}
+        </Route>
+        
+        {/* 일반 메뉴 */}
         <Route path="/courses" component={Courses} />
         <Route path="/course/:id" component={CourseDetail} />
         <Route path="/trainers" component={Trainers} />
-        <Route path="/institute" component={() => <div className="p-8"><h1 className="text-2xl font-bold mb-4">기관 정보</h1><p>기관 정보 페이지입니다.</p></div>} />
-        <Route path="/membership" component={() => <div className="p-8"><h1 className="text-2xl font-bold mb-4">멤버십</h1><p>멤버십 정보 페이지입니다.</p></div>} />
+        <Route path="/institutes" component={Institutes} />
+        <Route path="/community" component={Community} />
+        <Route path="/community/post/:id" component={CommunityPostDetail} />
+        <Route path="/events" component={EventsPage} />
+        <Route path="/events/calendar" component={EventCalendarPage} />
+        <Route path="/events/:id" component={EventDetailPage} />
+        <Route path="/my-courses" component={MyCourses} />
+        <Route path="/my-pets" component={MyPets} />
+        <Route path="/calendar" component={() => <div className="p-8"><h1 className="text-2xl font-bold mb-4">교육 일정</h1><p>교육 일정을 관리할 수 있는 페이지입니다.</p></div>} />
+        <Route path="/certificates" component={() => <div className="p-8"><h1 className="text-2xl font-bold mb-4">자격증 및 수료증</h1><p>자격증 및 수료증을 확인할 수 있는 페이지입니다.</p></div>} />
+        <Route path="/video-training" component={VideoTrainingPage} />
+        <Route path="/video-call" component={VideoCallPage} />
+        <Route path="/shop">
+          {() => {
+            console.log("인증된 사용자 /shop 경로 접근");
+            // ShopIndex 컴포넌트를 동적으로 임포트
+            const ShopIndex = lazy(() => import('./pages/shop/index'));
+            return (
+              <Suspense fallback={<div className="p-8 text-center">쇼핑 페이지 로딩 중...</div>}>
+                <ShopIndex />
+              </Suspense>
+            );
+          }}
+        </Route>
+        <Route path="/notifications" component={() => <div className="p-8"><h1 className="text-2xl font-bold mb-4">알림장</h1><p>훈련사와 소통하고 훈련 진행상황을 확인할 수 있는 알림장 페이지입니다.</p></div>} />
+        <Route path="/locations" component={LocationsPage} />
+        <Route path="/recommendations" component={() => <div className="p-8"><h1 className="text-2xl font-bold mb-4">맞춤 추천</h1><p>반려견 프로필과 사용자 선호도 기반 맞춤형 추천 서비스 페이지입니다.</p></div>} />
+        <Route path="/messages" component={MessagesPage} />
         
-        {/* 훈련사 메뉴 */}
+        {/* 훈련사 메뉴 - 권한 검증 적용 */}
         <Route path="/trainer/courses">
           {() => {
-            const TrainerCourses = lazy(() => import('./pages/trainer/courses'));
+            const CourseManagement = lazy(() => import('./pages/trainer/courses'));
             return (
               <Suspense fallback={<div className="p-8 text-center">페이지 로딩 중...</div>}>
-                <ProtectedTrainerRoute component={TrainerCourses} />
+                <ProtectedTrainerRoute component={CourseManagement} />
+              </Suspense>
+            );
+          }}
+        </Route>
+        <Route path="/trainer/referrals">
+          {() => {
+            const ReferralManagement = lazy(() => import('./pages/referral/ReferralCodeManagement'));
+            return (
+              <Suspense fallback={<div className="p-8 text-center">페이지 로딩 중...</div>}>
+                <ProtectedTrainerRoute component={ReferralManagement} />
               </Suspense>
             );
           }}
@@ -149,21 +438,17 @@ function AuthenticatedRoutes() {
         
         {/* 관리자 메뉴 */}
         <Route path="/admin/users" component={() => <div className="p-8"><h1 className="text-2xl font-bold mb-4">사용자 관리</h1><p>시스템 사용자를 관리하는 페이지입니다.</p></div>} />
-        <Route path="/admin/institutes" component={() => <div className="p-8"><h1 className="text-2xl font-bold mb-4">기관 관리</h1><p>등록된 기관을 관리하는 페이지입니다.</p></div>} />
-        <Route path="/admin/system" component={() => <div className="p-8"><h1 className="text-2xl font-bold mb-4">시스템 설정</h1><p>시스템 설정을 관리하는 페이지입니다.</p></div>} />
+        <Route path="/admin/institutes" component={() => <div className="p-8"><h1 className="text-2xl font-bold mb-4">기관 관리</h1><p>교육 기관을 관리하는 페이지입니다.</p></div>} />
+        <Route path="/admin/courses" component={() => <div className="p-8"><h1 className="text-2xl font-bold mb-4">강의 관리</h1><p>전체 강의를 관리하는 페이지입니다.</p></div>} />
+        <Route path="/admin/reports" component={() => <div className="p-8"><h1 className="text-2xl font-bold mb-4">신고 관리</h1><p>사용자 신고를 관리하는 페이지입니다.</p></div>} />
+        <Route path="/admin/settings" component={() => <div className="p-8"><h1 className="text-2xl font-bold mb-4">시스템 설정</h1><p>시스템 설정을 관리하는 페이지입니다.</p></div>} />
+        <Route path="/admin/shop" component={() => <div className="p-8"><h1 className="text-2xl font-bold mb-4">쇼핑몰 관리</h1><p>쇼핑몰을 관리하는 페이지입니다.</p></div>} />
+        <Route path="/admin/commission" component={AdminCommissionPage} />
+        <Route path="/admin/menu-config" component={AdminMenuConfigPage} />
+        <Route path="/admin/settlement" component={AdminSettlementPage} />
         
-        {/* 공통 메뉴 */}
-        <Route path="/profile" component={() => <div className="p-8"><h1 className="text-2xl font-bold mb-4">프로필</h1><p>사용자 프로필 페이지입니다.</p></div>} />
-        <Route path="/settings" component={() => <div className="p-8"><h1 className="text-2xl font-bold mb-4">설정</h1><p>사용자 설정 페이지입니다.</p></div>} />
-        
-        {/* 찾을 수 없는 페이지 */}
-        <Route>
-          <div className="p-8 text-center">
-            <h1 className="text-2xl font-bold mb-4">페이지를 찾을 수 없습니다</h1>
-            <p className="mb-4">요청하신 페이지가 존재하지 않습니다.</p>
-            <Button onClick={() => window.location.href = "/"}>홈으로 돌아가기</Button>
-          </div>
-        </Route>
+        {/* 404 페이지 */}
+        <Route component={NotFound} />
       </Switch>
     </AppLayout>
   );
@@ -174,26 +459,88 @@ function AuthenticatedRoutes() {
  */
 function UnauthenticatedRoutes() {
   return (
-    <div className="min-h-screen">
+    <AppLayout>
       <Switch>
-        <Route path="/auth">
+        <Route path="/auth" component={Login} />
+        <Route path="/courses" component={Courses} />
+        <Route path="/course/:id" component={CourseDetail} />
+        <Route path="/trainers" component={Trainers} />
+        <Route path="/video-training" component={VideoTrainingPage} />
+        <Route path="/video-call" component={VideoCallPage} />
+        <Route path="/institutes" component={Institutes} />
+        <Route path="/community" component={Community} />
+        <Route path="/community/post/:id" component={CommunityPostDetail} />
+        <Route path="/events" component={EventsPage} />
+        <Route path="/events/calendar" component={EventCalendarPage} />
+        <Route path="/events/:id" component={EventDetailPage} />
+        <Route path="/shop">
           {() => {
-            const Auth = lazy(() => import('./pages/auth.js'));
+            console.log("비인증 사용자 /shop 경로 접근");
+            // ShopIndex 컴포넌트를 동적으로 임포트
+            const ShopIndex = lazy(() => import('./pages/shop/index'));
             return (
-              <Suspense fallback={<div className="flex items-center justify-center min-h-screen"><div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full"></div></div>}>
-                <Auth />
+              <Suspense fallback={<div className="p-8 text-center">쇼핑 페이지 로딩 중...</div>}>
+                <ShopIndex />
               </Suspense>
             );
           }}
         </Route>
-        <Route path="/">
-          <Home />
+        <Route path="/help/faq">
+          {() => {
+            const FAQPage = lazy(() => import('./pages/help/faq'));
+            return (
+              <Suspense fallback={<div className="p-8 text-center">FAQ 페이지 로딩 중...</div>}>
+                <FAQPage />
+              </Suspense>
+            );
+          }}
         </Route>
+        <Route path="/help/guide">
+          {() => {
+            const GuidePage = lazy(() => import('./pages/help/guide'));
+            return (
+              <Suspense fallback={<div className="p-8 text-center">이용 가이드 로딩 중...</div>}>
+                <GuidePage />
+              </Suspense>
+            );
+          }}
+        </Route>
+        <Route path="/help/about">
+          {() => {
+            const AboutPage = lazy(() => import('./pages/help/about'));
+            return (
+              <Suspense fallback={<div className="p-8 text-center">회사 소개 로딩 중...</div>}>
+                <AboutPage />
+              </Suspense>
+            );
+          }}
+        </Route>
+        <Route path="/help/contact">
+          {() => {
+            const ContactPage = lazy(() => import('./pages/help/contact'));
+            return (
+              <Suspense fallback={<div className="p-8 text-center">문의하기 페이지 로딩 중...</div>}>
+                <ContactPage />
+              </Suspense>
+            );
+          }}
+        </Route>
+        <Route path="/" component={Home} />
         <Route>
-          <RedirectHandler to="/auth" />
+          {() => {
+            console.log("404 - 페이지를 찾을 수 없습니다");
+            // 필요한 경우에만 특정 경로로 리디렉션하고, 
+            // 커뮤니티 관련 경로인 경우 리디렉션하지 않음
+            const path = window.location.pathname;
+            if (path.startsWith('/community')) {
+              return <div>페이지를 찾을 수 없습니다.</div>;
+            }
+            window.location.href = "/";
+            return null;
+          }}
         </Route>
       </Switch>
-    </div>
+    </AppLayout>
   );
 }
 
@@ -201,66 +548,115 @@ function UnauthenticatedRoutes() {
  * 디버그 버튼 컴포넌트
  */
 function DebugButton() {
-  const { logout } = useAuth();
+  const handleClearAuth = () => {
+    console.log("Clear auth data manually");
+    localStorage.removeItem('petedu_auth');
+    window.location.reload();
+  };
   
+  const handleLoginAs = (role: 'user' | 'pet-owner' | 'trainer' | 'institute-admin' | 'admin') => {
+    console.log(`Login as ${role}`);
+    const authData = { user: `demo-${role}`, role: role };
+    localStorage.setItem('petedu_auth', JSON.stringify(authData));
+    
+    // 사용자 역할에 따라 이벤트 발생
+    const loginEvent = new CustomEvent('petedu-login', { 
+      detail: { userName: `demo-${role}`, userRole: role } 
+    });
+    window.dispatchEvent(loginEvent);
+    
+    // 역할에 맞는 페이지로 리디렉션
+    switch (role) {
+      case 'pet-owner':
+        window.location.href = '/dashboard';
+        break;
+      case 'trainer':
+        window.location.href = '/trainer/dashboard';
+        break;
+      case 'institute-admin':
+        window.location.href = '/institute/dashboard';
+        break;
+      case 'admin':
+        window.location.href = '/admin/dashboard';
+        break;
+      default:
+        window.location.href = '/';
+    }
+  };
+
   return (
-    <div className="fixed bottom-4 right-4 z-50 bg-black bg-opacity-80 p-2 rounded shadow-lg text-white text-sm">
-      <div className="flex flex-col space-y-1">
-        <button 
-          onClick={() => {
-            localStorage.setItem('petedu_auth', JSON.stringify({
-              user: 'demo-user',
-              role: 'pet-owner'
-            }));
-            window.location.reload();
-          }}
-          className="px-2 py-1 bg-blue-600 rounded hover:bg-blue-700"
-        >
-          일반 사용자 로그인
-        </button>
-        <button 
-          onClick={() => {
-            localStorage.setItem('petedu_auth', JSON.stringify({
-              user: 'demo-trainer',
-              role: 'trainer'
-            }));
-            window.location.reload();
-          }}
-          className="px-2 py-1 bg-green-600 rounded hover:bg-green-700"
-        >
-          훈련사 로그인
-        </button>
-        <button 
-          onClick={() => {
-            localStorage.setItem('petedu_auth', JSON.stringify({
-              user: 'demo-admin',
-              role: 'institute-admin'
-            }));
-            window.location.reload();
-          }}
-          className="px-2 py-1 bg-purple-600 rounded hover:bg-purple-700"
-        >
-          기관 관리자 로그인
-        </button>
-        <button 
-          onClick={() => {
-            localStorage.setItem('petedu_auth', JSON.stringify({
-              user: 'admin',
-              role: 'admin'
-            }));
-            window.location.reload();
-          }}
-          className="px-2 py-1 bg-red-600 rounded hover:bg-red-700"
-        >
-          시스템 관리자 로그인
-        </button>
-        <button 
-          onClick={() => logout()}
-          className="px-2 py-1 bg-gray-600 rounded hover:bg-gray-700"
-        >
-          로그아웃
-        </button>
-      </div>
+    <div style={{ position: 'fixed', bottom: '20px', right: '20px', zIndex: 9999, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+      <button
+        onClick={() => handleLoginAs('pet-owner')}
+        style={{ 
+          padding: '8px 12px',
+          backgroundColor: '#4caf50',
+          color: 'white',
+          border: 'none',
+          borderRadius: '5px',
+          cursor: 'pointer',
+          fontSize: '12px'
+        }}
+      >
+        Login as Pet Owner
+      </button>
+      <button
+        onClick={() => handleLoginAs('trainer')}
+        style={{ 
+          padding: '8px 12px',
+          backgroundColor: '#2196f3',
+          color: 'white',
+          border: 'none',
+          borderRadius: '5px',
+          cursor: 'pointer',
+          fontSize: '12px'
+        }}
+      >
+        Login as Trainer
+      </button>
+      <button
+        onClick={() => handleLoginAs('institute-admin')}
+        style={{ 
+          padding: '8px 12px',
+          backgroundColor: '#ff9800',
+          color: 'white',
+          border: 'none',
+          borderRadius: '5px',
+          cursor: 'pointer',
+          fontSize: '12px'
+        }}
+      >
+        Login as Institute
+      </button>
+      <button
+        onClick={() => handleLoginAs('admin')}
+        style={{ 
+          padding: '8px 12px',
+          backgroundColor: '#9c27b0',
+          color: 'white',
+          border: 'none',
+          borderRadius: '5px',
+          cursor: 'pointer',
+          fontSize: '12px'
+        }}
+      >
+        Login as Admin
+      </button>
+      <button
+        onClick={handleClearAuth}
+        style={{ 
+          padding: '8px 12px',
+          backgroundColor: 'red',
+          color: 'white',
+          border: 'none',
+          borderRadius: '5px',
+          cursor: 'pointer',
+          marginTop: '8px',
+          fontSize: '12px'
+        }}
+      >
+        Logout
+      </button>
     </div>
   );
 }
@@ -270,70 +666,19 @@ function DebugButton() {
  */
 function SimpleApp() {
   const auth = useAuth();
-  console.log("SimpleApp - Auth State:", auth);
   
-  // 로딩 상태와 인증 상태를 표시하는 디버그 화면
+  // 로딩 상태 처리
+  if (auth.isLoading) {
+    return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+  }
+  
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <div className="container mx-auto p-4">
-        <header className="py-6 mb-8 border-b">
-          <h1 className="text-3xl font-bold">PetEdu Platform</h1>
-          <p>인증 상태: {auth.isAuthenticated ? '로그인됨' : '로그인 필요'}</p>
-          <p>역할: {auth.userRole || '없음'}</p>
-          <p>이름: {auth.userName || '없음'}</p>
-          <p>로딩: {auth.isLoading ? '로딩 중' : '로딩 완료'}</p>
-        </header>
-
-        <main>
-          <div className="mb-8 p-6 border rounded-lg shadow-sm">
-            <h2 className="text-2xl font-bold mb-4">인증 정보</h2>
-            <pre className="bg-slate-100 dark:bg-slate-800 p-4 rounded overflow-auto">
-              {JSON.stringify(auth, null, 2)}
-            </pre>
-          </div>
-          
-          <div className="mb-8">
-            <h2 className="text-2xl font-bold mb-4">테스트 화면</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <button 
-                onClick={() => {
-                  auth.isAuthenticated 
-                    ? window.location.href = "/"
-                    : window.location.href = "/auth"
-                }}
-                className="p-4 border rounded bg-blue-500 text-white hover:bg-blue-600"
-              >
-                {auth.isAuthenticated ? '홈페이지 보기' : '로그인 페이지로'}
-              </button>
-              
-              <button 
-                onClick={() => window.location.reload()}
-                className="p-4 border rounded bg-green-500 text-white hover:bg-green-600"
-              >
-                새로고침
-              </button>
-            </div>
-          </div>
-          
-          {auth.isAuthenticated && (
-            <div className="mb-8">
-              <button
-                onClick={() => auth.logout()}
-                className="w-full p-4 border rounded bg-red-500 text-white hover:bg-red-600"
-              >
-                로그아웃
-              </button>
-            </div>
-          )}
-        </main>
-      </div>
-      
+    <>
+      {auth.isAuthenticated ? <AuthenticatedRoutes /> : <UnauthenticatedRoutes />}
       <DebugButton />
-    </div>
+      <Toaster />
+    </>
   );
 }
 
-// 최종 내보내기 - 이제 main.tsx에서 AuthProvider를 직접 가져와 사용함
-export default function AppWithAuth() {
-  return <SimpleApp />;
-}
+export default SimpleApp;

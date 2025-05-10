@@ -31,7 +31,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
-import { useAuth } from '../../hooks/useAuth';
+import { useAuth } from '@/SimpleApp';
 
 export default function InstituteCourseApprovals() {
   // 상태 관리

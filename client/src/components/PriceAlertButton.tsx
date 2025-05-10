@@ -1,5 +1,5 @@
 import React from 'react';
-import { useAuth } from '../hooks/useAuth';
+import { useAuth } from '../SimpleApp';
 
 /**
  * 가격 알림 버튼 컴포넌트

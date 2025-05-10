@@ -68,12 +68,11 @@ console.log('App initialized - CourseDetail component:', CourseDetail);
 
 // 인증된 사용자를 위한 라우트 컴포넌트
 function AuthenticatedRoutesContent() {
-  const auth = useAuth();
-  const userRole = auth.userRole;
+  const { user } = useAuth();
 
   const checkAccess = (allowedRoles: string[]) => {
-    if (!userRole) return false;
-    return allowedRoles.includes(userRole);
+    if (!user || !user.role) return false;
+    return allowedRoles.includes(user.role);
   };
 
   return (
@@ -380,6 +379,10 @@ function UnauthenticatedRoutesContent() {
 
 export default function App() {
   const auth = useAuth();
+
+  if (auth.isLoading) {
+    return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+  }
 
   // 라우트 설정 - 중요: 인증 여부에 관계 없이 쇼핑 페이지는 접근 가능해야 함
   // 홈 페이지도 인증 여부에 관계없이 동일한 내용이 표시되어야 함

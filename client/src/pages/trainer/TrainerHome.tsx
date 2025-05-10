@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'wouter';
-import { useAuth } from "../../hooks/useAuth";
+import { useAuth } from "../../SimpleApp";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/Button';
 // Avatar 컴포넌트 대신 기본 div 요소 사용

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'wouter';
-import { useAuth } from '../../hooks/useAuth';
+import { useAuth } from '../../SimpleApp';
 import { 
   Search, 
   Users, 
@@ -15,11 +15,11 @@ import {
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Avatar } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/Card';
+import { Button } from '@/components/ui/Button';
+import { Avatar } from '@/components/ui/Avatar';
+import { Badge } from '@/components/ui/Badge';
+import { Input } from '@/components/ui/Input';
 import { Label } from '@/components/ui/label';
 import { 
   Table, 
@@ -45,13 +45,13 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
+} from '@/components/ui/Select';
 import { Separator } from '@/components/ui/separator';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from '@/components/ui/popover';
+} from '@/components/ui/Popover';
 
 // 회원(반려인) 타입 정의
 interface PetOwner {

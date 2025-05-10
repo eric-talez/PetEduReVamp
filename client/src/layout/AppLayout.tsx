@@ -2,7 +2,7 @@ import { ReactNode, useState, useEffect } from "react";
 import { Sidebar } from "@/components/Sidebar";
 import { TopBar } from "@/components/TopBar";
 import { Chatbot } from "@/components/features/Chatbot";
-import { useAuth } from "../hooks/useAuth";
+import { useAuth } from "../SimpleApp";
 
 interface AppLayoutProps {
   children: ReactNode;

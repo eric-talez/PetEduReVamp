@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'wouter';
-import { useAuth } from '../../hooks/useAuth';
+import { useAuth } from '../../SimpleApp';
 import { 
   Building, 
   Users, 
@@ -41,7 +41,7 @@ import {
   TableHeader, 
   TableRow 
 } from '@/components/ui/table';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/Tabs';
 import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
 import {
@@ -50,7 +50,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
+} from '@/components/ui/Select';
 import {
   Tooltip,
   TooltipContent,
