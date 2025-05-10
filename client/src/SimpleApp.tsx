@@ -63,12 +63,6 @@ const AuthContext = createContext<AuthState>({
  */
 export function useAuth() {
   const context = useContext(AuthContext);
-  // 디버깅용 로그 추가 (개발 완료 후 제거)
-  console.log("useAuth hook called, authState:", { 
-    isAuthenticated: context.isAuthenticated,
-    userRole: context.userRole,
-    userName: context.userName
-  });
   return context;
 }
 
@@ -82,26 +76,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     userRole: null,
     userName: null,
     logout: () => {
-      console.log("Logout button clicked");
       localStorage.removeItem('petedu_auth');
-      console.log("Removed auth data from localStorage");
       window.dispatchEvent(new CustomEvent('logout'));
-      console.log("Called logout function");
-      console.log("Redirecting to auth page");
+      // React-Router 또는 Wouter를 사용하는 방향으로 변경 필요
+      // window.location.href = "/auth";
+      // 임시적으로 window.location 사용
       window.location.href = "/auth";
     }
   });
 
   // 컴포넌트 마운트 시 즉시 로컬 스토리지에서 인증 상태 확인
   useEffect(() => {
-    console.log("AuthProvider useEffect - checking localStorage");
     const storedAuth = localStorage.getItem('petedu_auth');
     
     // 즉시 실행되도록 별도 함수로 분리
     const initAuthState = () => {
       if (storedAuth) {
         try {
-          console.log("Found auth data in localStorage:", storedAuth);
           const parsedAuth = JSON.parse(storedAuth);
           
           // setAuthState 함수를 직접 호출하지 않고 초기값으로 설정
@@ -114,7 +105,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           };
           
           setAuthState(updatedState);
-          console.log("Updated auth state with stored data:", parsedAuth);
           
           // 디버깅용 전역 변수 설정 - TypeScript 오류 수정
           (window as any).__peteduAuthState = updatedState;

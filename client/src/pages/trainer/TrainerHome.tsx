@@ -170,15 +170,13 @@ export default function TrainerHome() {
   };
 
   useEffect(() => {
-    console.log("훈련사 홈 페이지 로드됨");
-    console.log("사용자 정보:", { isAuthenticated, userRole, userName });
-    
     // 권한 체크 (훈련사 전용 페이지 접근 권한 검증)
     if (!isAuthenticated || (userRole !== 'trainer' && userRole !== 'admin')) {
-      console.warn("주의: 허가되지 않은 사용자가 훈련사 페이지에 접근 시도");
-      // 실제 프로덕션 환경에서는 적절한 페이지로 리다이렉트 처리 필요
+      // 인증되지 않았거나 훈련사 또는 관리자가 아닌 경우, 
+      // 이 부분은 상위 라우트에서 처리하는 것이 더 좋음
+      // 여기서는 페이지 내부 콘텐츠 숨김 정도로만 처리
     }
-  }, [isAuthenticated, userRole, userName]);
+  }, [isAuthenticated, userRole]);
 
   return (
     <div className="container mx-auto px-4 py-8">
