@@ -83,7 +83,13 @@ export default function Home() {
             
             {/* 미니 차트 */}
             <div className="mt-4">
-              <MiniChart />
+              <MiniChart data={[
+                { name: '1월', value: 140 },
+                { name: '2월', value: 180 },
+                { name: '3월', value: 220 },
+                { name: '4월', value: 280 },
+                { name: '5월', value: 310 }
+              ]} />
             </div>
           </div>
           

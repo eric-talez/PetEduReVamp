@@ -226,7 +226,9 @@ export default function PetOwnerHome() {
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg font-bold flex items-center">
-                  <Paw className="h-5 w-5 mr-2 text-primary" />
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8s-9-3.582-9-8 4.03-8 9-8 9 3.582 9 8z" />
+                  </svg>
                   내 반려동물
                 </CardTitle>
                 <Link href="/my-pets">
@@ -361,7 +363,9 @@ export default function PetOwnerHome() {
                       ) : activity.type === 'health' ? (
                         <Heart className="h-4 w-4 text-red-500" />
                       ) : (
-                        <Paw className="h-4 w-4 text-amber-500" />
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-amber-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8s-9-3.582-9-8 4.03-8 9-8 9 3.582 9 8z" />
+                        </svg>
                       )}
                     </div>
                     <div className="ml-3 flex-1">
