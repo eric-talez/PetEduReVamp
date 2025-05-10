@@ -1,10 +1,24 @@
-import React, { createContext, ReactNode, useContext, useState, useEffect } from "react";
+// useAuth.tsx
+// 인증 관련 기능을 모듈화한 파일
+// Fast Refresh 호환성을 위해 named export 방식 사용
 
-// 사용자 역할 타입 정의
+import { createContext, ReactNode, useContext, useState, useEffect } from "react";
+import { useToast } from "@/hooks/use-toast";
+
+// 사용자 역할 타입 (역호환성을 위해 타입과 const enum 모두 제공)
 export type UserRole = 'user' | 'pet-owner' | 'trainer' | 'institute-admin' | 'admin';
 
+// 상수로도 제공 (상호 참조 문제 해결)
+export const USER_ROLES = {
+  USER: 'user' as UserRole,
+  PET_OWNER: 'pet-owner' as UserRole,
+  TRAINER: 'trainer' as UserRole,
+  INSTITUTE_ADMIN: 'institute-admin' as UserRole,
+  ADMIN: 'admin' as UserRole
+};
+
 // 인증 상태 인터페이스
-interface AuthState {
+export interface AuthState {
   isAuthenticated: boolean;
   isLoading: boolean;
   userRole: UserRole | null;
@@ -12,108 +26,233 @@ interface AuthState {
   logout: () => void;
 }
 
-// 컨텍스트 생성
-const AuthContext = createContext<AuthState | null>(null);
+// 기본 인증 상태
+const defaultAuthState: AuthState = {
+  isAuthenticated: false,
+  isLoading: true,
+  userRole: null,
+  userName: null,
+  logout: () => {},
+};
+
+// Fast Refresh를 위한 확실한 분리: 인증 컨텍스트 생성
+export const AuthContext = createContext<AuthState>(defaultAuthState);
+
+// Fast Refresh를 위한 일관된 훅 정의 (named function)
+export const useAuth = () => useContext(AuthContext);
 
 /**
  * 인증 상태 제공 컴포넌트
  */
 export function AuthProvider({ children }: { children: ReactNode }) {
-  // 인증 상태 관리 - 로그인 필요한 상태로 변경
+  const { toast } = useToast();
   const [authState, setAuthState] = useState<AuthState>({
-    isAuthenticated: false,  // 로그인 필요한 상태로 초기화
+    isAuthenticated: false,
     isLoading: true,
-    userRole: null,         // 기본 권한 없음
+    userRole: null,
     userName: null,
     logout: () => {
-      console.log("로그아웃 실행");
-      // 로컬 스토리지 데이터 삭제
-      localStorage.removeItem('petedu_auth');
-      // 전역 변수 초기화
-      (window as any).__peteduAuthState = null;
-      // 인증 상태 초기화
-      setAuthState(prev => ({
-        ...prev,
-        isAuthenticated: false,
-        userRole: null,
-        userName: null
-      }));
-      // 커스텀 이벤트 발생
-      window.dispatchEvent(new CustomEvent('clear-auth'));
-      // 로그아웃 후 인증 페이지로 리다이렉트
-      window.location.href = "/auth";
+      try {
+        localStorage.removeItem('petedu_auth');
+        window.dispatchEvent(new CustomEvent('logout'));
+        
+        // 로그아웃 성공 알림
+        toast({
+          title: "로그아웃 성공",
+          description: "성공적으로 로그아웃되었습니다.",
+          variant: "default",
+        });
+        
+        window.location.href = "/auth";
+      } catch (error) {
+        console.error("로그아웃 중 오류 발생:", error);
+        
+        // 로그아웃 실패 알림
+        toast({
+          title: "로그아웃 실패",
+          description: "로그아웃 중 오류가 발생했습니다. 다시 시도해주세요.",
+          variant: "destructive",
+        });
+      }
     }
   });
 
-  // 로컬 스토리지 인증 정보 변경 처리 (디버그 메뉴에서 사용)
+  // 로깅 유틸리티 함수
+  const logAuthEvent = (event: string, data?: any) => {
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`[Auth] ${event}`, data ? data : '');
+    }
+  };
+
+  // 인증 상태 업데이트 유틸리티 함수
+  const updateAuthState = (isAuthenticated: boolean, role: UserRole | null, name: string | null) => {
+    setAuthState(prev => ({
+      ...prev,
+      isAuthenticated,
+      isLoading: false,
+      userRole: role, 
+      userName: name
+    }));
+    
+    // 전역 객체에 인증 상태 저장 (웹뷰 통신용)
+    window.__peteduAuthState = {
+      isAuthenticated,
+      userRole: role,
+      userName: name,
+    };
+    
+    logAuthEvent('상태 업데이트', { isAuthenticated, role, name });
+  };
+
+  // 컴포넌트 마운트 시 즉시 로컬 스토리지에서 인증 상태 확인
   useEffect(() => {
-    // 로컬 스토리지 변경 이벤트 핸들러
-    const handleStorageChange = () => {
+    logAuthEvent('컴포넌트 마운트');
+    
+    // 인증 상태 초기화 함수
+    const initAuthState = () => {
       const storedAuth = localStorage.getItem('petedu_auth');
       
       if (storedAuth) {
         try {
-          const authData = JSON.parse(storedAuth);
-          console.log('인증 정보 변경됨:', authData);
+          const parsedAuth = JSON.parse(storedAuth);
+          logAuthEvent('저장된 인증 정보 발견', parsedAuth);
           
-          setAuthState(prev => ({
-            ...prev,
-            isAuthenticated: true,
-            userRole: authData.role || null,
-            userName: authData.user || null
-          }));
-          
-          // 전역 인증 상태 업데이트 (iframe 통신용)
-          if (typeof window !== 'undefined') {
-            window.__peteduAuthState = {
-              isAuthenticated: true,
-              userRole: authData.role || null,
-              userName: authData.user || null
-            };
-          }
+          updateAuthState(
+            true, 
+            parsedAuth.role, 
+            parsedAuth.name || parsedAuth.userName
+          );
         } catch (error) {
-          console.error('인증 정보 파싱 오류:', error);
+          // JSON 파싱 오류 시 인증 상태 초기화
+          console.error("인증 상태 파싱 오류:", error);
+          localStorage.removeItem('petedu_auth');
+          updateAuthState(false, null, null);
+          
+          // 오류 알림
+          toast({
+            title: "인증 오류",
+            description: "인증 정보가 손상되었습니다. 다시 로그인해주세요.",
+            variant: "destructive",
+          });
         }
       } else {
-        setAuthState(prev => ({
-          ...prev,
-          isAuthenticated: false,
-          userRole: null,
-          userName: null
-        }));
-        
-        // 전역 인증 상태 업데이트 (iframe 통신용)
-        if (typeof window !== 'undefined') {
-          window.__peteduAuthState = {
-            isAuthenticated: false,
-            userRole: null,
-            userName: null
-          };
+        logAuthEvent('저장된 인증 정보 없음');
+        updateAuthState(false, null, null);
+      }
+    };
+    
+    // 즉시 초기화 실행
+    initAuthState();
+    
+    // 메시지 이벤트 리스너 등록
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data && event.data.type === 'petedu-auth') {
+        try {
+          logAuthEvent('petedu-auth 메시지 수신', event.data);
+          const { role, name } = event.data.data;
+          
+          // 로컬 스토리지 업데이트
+          const authData = { role, name };
+          localStorage.setItem('petedu_auth', JSON.stringify(authData));
+          
+          // 인증 상태 업데이트
+          updateAuthState(true, role, name);
+          
+          // 로그인 성공 알림
+          toast({
+            title: "로그인 성공",
+            description: `${name}님, 환영합니다!`,
+            variant: "default",
+          });
+        } catch (error) {
+          console.error("메시지 처리 오류:", error);
+          toast({
+            title: "인증 오류",
+            description: "메시지 처리 중 오류가 발생했습니다.",
+            variant: "destructive",
+          });
         }
       }
     };
-
-    // 이벤트 리스너 등록
-    window.addEventListener('storage', handleStorageChange);
     
-    // 초기 로드 시 스토리지 확인 - 있는 경우에만 읽기
-    handleStorageChange();
-    
-    // 로딩 상태 false로 설정
-    setAuthState(prev => ({
-      ...prev,
-      isLoading: false,
-      isAuthenticated: true,
-      userRole: 'trainer',
-      userName: '박훈련'
-    }));
-    
-    // 클린업 함수
-    return () => {
-      window.removeEventListener('storage', handleStorageChange);
+    // 커스텀 이벤트 핸들러 등록
+    const handleLogin = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      logAuthEvent('login 이벤트 수신', customEvent.detail);
+      
+      if (customEvent.detail) {
+        try {
+          const { role, name } = customEvent.detail;
+          
+          // 로컬 스토리지 업데이트
+          const authData = { role, name };
+          localStorage.setItem('petedu_auth', JSON.stringify(authData));
+          
+          // 인증 상태 업데이트
+          updateAuthState(true, role, name);
+          
+          // 로그인 성공 알림
+          toast({
+            title: "로그인 성공",
+            description: `${name}님, 환영합니다!`,
+            variant: "default",
+          });
+          
+          // 역할에 따른 redirect 처리
+          setTimeout(() => {
+            let redirectPath = '/';
+            
+            switch(role) {
+              case 'pet-owner':
+                redirectPath = '/dashboard';
+                break;
+              case 'trainer':
+                redirectPath = '/trainer/dashboard';
+                break;
+              case 'institute-admin':
+                redirectPath = '/institute/dashboard';
+                break;
+              case 'admin':
+                redirectPath = '/admin/dashboard';
+                break;
+            }
+            
+            logAuthEvent('역할 기반 리다이렉션', { role, redirectPath });
+            window.location.href = redirectPath;
+          }, 300);
+        } catch (error) {
+          console.error("로그인 처리 오류:", error);
+          toast({
+            title: "로그인 오류",
+            description: "로그인 처리 중 오류가 발생했습니다.",
+            variant: "destructive",
+          });
+        }
+      }
     };
-  }, []);
-
+    
+    // 로그아웃 이벤트 핸들러
+    const handleLogout = () => {
+      logAuthEvent('logout 이벤트 수신');
+      updateAuthState(false, null, null);
+    };
+    
+    // 이벤트 리스너 등록
+    window.addEventListener('message', handleMessage);
+    window.addEventListener('login', handleLogin as EventListener);
+    window.addEventListener('petedu-login', handleLogin as EventListener);
+    window.addEventListener('logout', handleLogout);
+    
+    // 컴포넌트 언마운트 시 이벤트 리스너 제거
+    return () => {
+      logAuthEvent('컴포넌트 언마운트');
+      window.removeEventListener('message', handleMessage);
+      window.removeEventListener('login', handleLogin as EventListener);
+      window.removeEventListener('petedu-login', handleLogin as EventListener);
+      window.removeEventListener('logout', handleLogout);
+    };
+  }, [toast]); // toast 의존성 추가
+  
   return (
     <AuthContext.Provider value={authState}>
       {children}
@@ -121,20 +260,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 }
 
-/**
- * 인증 상태 훅
- */
-export function useAuth() {
-  const context = useContext(AuthContext);
-  
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  
-  return context;
-}
-
-// 전역 인터페이스 확장 (타입스크립트용)
+// 글로벌 타입 확장 (Window 객체에 추가 프로퍼티 정의)
 declare global {
   interface Window {
     __peteduAuthState?: {

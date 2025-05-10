@@ -1,6 +1,6 @@
 import { Switch, Route } from "wouter";
 import { RedirectHandler } from './components/RedirectHandler';
-import React, { ReactNode, useState, useEffect, createContext, useContext, lazy, Suspense } from "react";
+import React, { ReactNode, useState, useEffect, lazy, Suspense } from "react";
 
 // 페이지 컴포넌트 임포트
 import Home from "./pages/Home";
@@ -31,213 +31,56 @@ import { TopBar } from "@/components/TopBar";
 import { Sidebar } from "@/components/Sidebar";
 import { Toaster } from "@/components/ui/toaster";
 
-/**
- * 인증 관련 타입 및 인터페이스
- */
-export type UserRole = 'user' | 'pet-owner' | 'trainer' | 'institute-admin' | 'admin';
+// 인증 관련 임포트 - 호환성 레이어 사용
+import { useAuth, USER_ROLES, type UserRole, type AuthState, UserRoleEnum } from "@/lib/auth-compat";
 
-interface AuthState {
-  isAuthenticated: boolean;
-  isLoading: boolean;
-  userRole: UserRole | null;
-  userName: string | null;
-  logout: () => void;
-}
-
-// 디버깅을 위한 전역 변수 타입 정의
-// Note: global 타입 선언은 중복되어 발생하는 문제가 있어서 일부 코드에서 사용한다면 주석으로 남겨둡니다
-// declare global {
-//   interface Window {
-//     __peteduAuthState?: AuthState;
-//   }
-// }
-
-const AuthContext = createContext<AuthState>({
-  isAuthenticated: false,
-  isLoading: true,
-  userRole: null,
-  userName: null,
-  logout: () => {},
-});
+// 역호환성 유지를 위한 re-export
+// 다른 파일에서 SimpleApp에서 useAuth를 import하는 경우 호환성 유지
+export { useAuth, USER_ROLES, UserRoleEnum };
+// 타입 re-export
+export type { AuthState, UserRole };
 
 /**
- * 인증 상태 훅 - 별도 함수로 분리하여 Fast Refresh 호환성 개선
+ * 특수 메시지 리스너 컴포넌트
+ * 특수한 네비게이션 이벤트를 처리하는 역할만 담당
  */
-// 고정 함수로 선언하여 Fast Refresh 호환성 유지
-const useAuthContext = () => useContext(AuthContext);
-export const useAuth = useAuthContext;
-
-/**
- * 인증 상태 제공 컴포넌트
- */
-export function AuthProvider({ children }: { children: ReactNode }) {
-  const [authState, setAuthState] = useState<AuthState>({
-    isAuthenticated: false,
-    isLoading: true,
-    userRole: null,
-    userName: null,
-    logout: () => {
-      localStorage.removeItem('petedu_auth');
-      window.dispatchEvent(new CustomEvent('logout'));
-      // React-Router 또는 Wouter를 사용하는 방향으로 변경 필요
-      // window.location.href = "/auth";
-      // 임시적으로 window.location 사용
-      window.location.href = "/auth";
-    }
-  });
-
-  // 컴포넌트 마운트 시 즉시 로컬 스토리지에서 인증 상태 확인
+function NavigationMessageListener({ children }: { children: ReactNode }) {
   useEffect(() => {
-    const storedAuth = localStorage.getItem('petedu_auth');
-    
-    // 즉시 실행되도록 별도 함수로 분리
-    const initAuthState = () => {
-      if (storedAuth) {
-        try {
-          const parsedAuth = JSON.parse(storedAuth);
-          
-          // setAuthState 함수를 직접 호출하지 않고 초기값으로 설정
-          const updatedState = {
-            isAuthenticated: true,
-            isLoading: false,
-            userRole: parsedAuth.role || 'user',
-            userName: parsedAuth.user || 'User',
-            logout: authState.logout // 기존 logout 함수 유지
-          };
-          
-          setAuthState(updatedState);
-          
-          // 디버깅용 전역 변수 설정 - TypeScript 오류 수정
-          (window as any).__peteduAuthState = updatedState;
-        } catch (e) {
-          console.error('Failed to parse auth data', e);
-          setAuthState(prevState => ({
-            ...prevState,
-            isLoading: false
-          }));
-        }
-      } else {
-        console.log("No auth data found in localStorage");
-        setAuthState(prevState => ({
-          ...prevState,
-          isLoading: false
-        }));
-      }
-    };
-    
-    // 즉시 초기화 실행
-    initAuthState();
-
-    // 쇼핑 페이지 이동 메시지 이벤트 리스너
-    const handleMessage = (event: MessageEvent) => {
+    // 쇼핑 페이지 이동 등 특수 메시지 이벤트 리스너
+    const handleSpecialNavigation = (event: MessageEvent) => {
       try {
         const message = event.data;
         
         if (message && message.type) {
-          console.log("메시지 수신:", message.type);
+          console.log("[Navigation] 메시지 수신:", message.type);
           
           switch (message.type) {
             case 'NAVIGATE_TO_SHOP':
-              console.log("쇼핑 페이지로 이동 요청 수신");
+              console.log("[Navigation] 쇼핑 페이지로 이동 요청 수신");
               window.location.href = '/shop';
               break;
               
             case 'NAVIGATE_TO_HOME':
-              console.log("홈으로 이동 요청 수신");
+              console.log("[Navigation] 홈으로 이동 요청 수신");
               window.location.href = '/';
               break;
           }
         }
       } catch (error) {
-        console.error("메시지 처리 중 오류 발생:", error);
+        console.error("[Navigation] 메시지 처리 중 오류 발생:", error);
       }
     };
     
-    // 메시지 이벤트 리스너 등록
-    window.addEventListener('message', handleMessage);
+    // 이벤트 리스너 등록
+    window.addEventListener('message', handleSpecialNavigation);
     
-    // 컴포넌트 언마운트 시 이벤트 리스너 제거
+    // 정리 함수
     return () => {
-      window.removeEventListener('message', handleMessage);
-    };
-
-    // 로그인 이벤트 리스너 등록
-    const handleLogin = (e: CustomEvent) => {
-      const detail = e.detail as any;
-      if (detail?.user) {
-        const username = detail.user.username || detail.user.name || 'User';
-        const role = detail.user.role || 'user';
-        
-        console.log("Login event received with user:", username, "role:", role);
-        
-        // 로컬 스토리지에 저장
-        localStorage.setItem('petedu_auth', JSON.stringify({
-          user: username,
-          role: role
-        }));
-        console.log("Saved auth data to localStorage");
-        
-        // 상태 업데이트
-        setAuthState(prevState => ({
-          ...prevState,
-          isAuthenticated: true,
-          isLoading: false,
-          userRole: role as UserRole,
-          userName: username
-        }));
-        console.log("Updated auth state with login data");
-        
-        // 역할 기반 리다이렉션 구현
-        setTimeout(() => {
-          switch(role) {
-            case 'pet-owner':
-              window.location.href = '/dashboard';
-              break;
-            case 'trainer':
-              window.location.href = '/trainer/dashboard';
-              break;
-            case 'institute-admin':
-              window.location.href = '/institute/dashboard';
-              break;
-            case 'admin':
-              window.location.href = '/admin/dashboard';
-              break;
-            default:
-              window.location.href = '/';
-              break;
-          }
-          console.log(`Redirecting to role-specific dashboard for: ${role}`);
-        }, 300); // 상태 업데이트 후 리다이렉션을 위한 짧은 지연
-      }
-    };
-
-    // 로그아웃 이벤트 리스너 등록
-    const handleLogout = () => {
-      setAuthState(prevState => ({
-        ...prevState,
-        isAuthenticated: false,
-        isLoading: false,
-        userRole: null,
-        userName: null
-      }));
-    };
-
-    window.addEventListener('login', handleLogin as EventListener);
-    window.addEventListener('petedu-login', handleLogin as EventListener);
-    window.addEventListener('logout', handleLogout);
-
-    return () => {
-      window.removeEventListener('login', handleLogin as EventListener);
-      window.removeEventListener('petedu-login', handleLogin as EventListener);
-      window.removeEventListener('logout', handleLogout);
+      window.removeEventListener('message', handleSpecialNavigation);
     };
   }, []);
 
-  return (
-    <AuthContext.Provider value={authState}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <>{children}</>;
 }
 
 /**

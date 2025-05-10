@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/Button';
 import { Link } from 'wouter';
-import { useAuth } from '../SimpleApp';
+import { useAuth } from '@/hooks/useAuth';
 import { BannerSlider } from '@/components/BannerSlider';
 import { TrendingSection } from '@/components/TrendingSection';
 import { MiniChart } from '@/components/ui/mini-chart';

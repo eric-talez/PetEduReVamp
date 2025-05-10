@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
-import { Avatar } from "@/components/ui/Avatar";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Search, Filter, MapPin, Star, Briefcase, Award, Sparkles, X, AlertCircle } from "lucide-react";
 import {
   AlertDialog,
@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/alert-dialog";
 
 import { useLocation } from "wouter";
-import { useAuth } from "@/SimpleApp"; // SimpleApp에서 useAuth 훅 사용
+import { useAuth } from "@/hooks/useAuth"; // 모듈화된 useAuth 훅 사용
 
 export default function Trainers() {
   const [filter, setFilter] = useState("all");
@@ -345,11 +345,10 @@ export default function Trainers() {
             
             <div className="pt-0 p-5">
               <div className="flex items-end -mt-12 mb-4">
-                <Avatar 
-                  src={trainer.avatar} 
-                  alt={trainer.name} 
-                  className="w-20 h-20 border-4 border-white dark:border-gray-800"
-                />
+                <Avatar className="w-20 h-20 border-4 border-white dark:border-gray-800">
+                  <AvatarImage src={trainer.avatar} alt={trainer.name} />
+                  <AvatarFallback>{trainer.name.charAt(0)}</AvatarFallback>
+                </Avatar>
                 <div className="ml-4 pb-1">
                   <h3 className="text-lg font-semibold text-gray-800 dark:text-white">{trainer.name}</h3>
                   <p className="text-sm text-gray-600 dark:text-gray-300">{trainer.title}</p>

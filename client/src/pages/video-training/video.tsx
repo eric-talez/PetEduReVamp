@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useLocation, useRoute } from "wouter";
-import { useAuth } from "@/SimpleApp";
+import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import {

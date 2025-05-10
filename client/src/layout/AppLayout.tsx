@@ -3,7 +3,7 @@ import { Sidebar } from "@/components/Sidebar";
 import { NewSidebar } from "@/components/NewSidebar"; // 새로운 사이드바 컴포넌트 추가
 import { TopBar } from "@/components/TopBar";
 import { Chatbot } from "@/components/features/Chatbot";
-import { useAuth } from "../SimpleApp";
+import { useAuth } from "@/hooks/useAuth";
 
 interface AppLayoutProps {
   children: ReactNode;
