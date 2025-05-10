@@ -246,7 +246,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 function AppLayout({ children }: { children: ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isDesktop, setIsDesktop] = useState(false);
+  const [sidebarExpanded, setSidebarExpanded] = useState(true);
   const auth = useAuth();
+  
+  // 사이드바 크기 토글 핸들러
+  const toggleSidebarSize = () => {
+    setSidebarExpanded(!sidebarExpanded);
+  };
   
   // 화면 크기 변경 감지
   useEffect(() => {
@@ -270,8 +276,9 @@ function AppLayout({ children }: { children: ReactNode }) {
         {/* 사이드바 - 항상 고정된 너비를 가짐 */}
         <aside 
           className={`
-            w-64 shrink-0 h-screen fixed left-0 top-0 z-20
+            shrink-0 h-screen fixed left-0 top-0 z-20
             transition-all duration-300
+            ${sidebarExpanded ? 'w-64' : 'w-[70px]'}
             ${sidebarOpen || isDesktop ? 'translate-x-0' : '-translate-x-full'}
           `}
         >
@@ -279,7 +286,9 @@ function AppLayout({ children }: { children: ReactNode }) {
             open={sidebarOpen} 
             onClose={() => setSidebarOpen(false)} 
             userRole={auth.userRole} 
-            isAuthenticated={auth.isAuthenticated} 
+            isAuthenticated={auth.isAuthenticated}
+            expanded={sidebarExpanded}
+            onToggleExpand={toggleSidebarSize}
           />
         </aside>
         
@@ -293,8 +302,8 @@ function AppLayout({ children }: { children: ReactNode }) {
         
         {/* 우측 컨텐츠 영역 (헤더 + 메인) */}
         <div className={`
-          flex-grow flex flex-col min-h-screen transition-all duration-300
-          ${(sidebarOpen || isDesktop) ? 'ml-64' : 'ml-0'}
+          flex-grow flex flex-col min-h-screen transition-all duration-300 w-full
+          ${isDesktop ? (sidebarExpanded ? 'ml-64' : 'ml-[70px]') : 'ml-0'}
         `}>
           {/* 상단바 */}
           <TopBar

@@ -104,6 +104,8 @@ interface SidebarProps {
   onClose: () => void;
   userRole: string | null;
   isAuthenticated: boolean;
+  expanded?: boolean;
+  onToggleExpand?: () => void;
 }
 
 export function Sidebar({ open, onClose, userRole, isAuthenticated }: SidebarProps) {
