@@ -102,7 +102,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // 초기 로드 시 스토리지 확인
     handleStorageChange();
     
-    // 전역 인증 상태 설정
+    // 전역 인증 상태 설정 및 로딩 상태 false로 변경
     if (typeof window !== 'undefined') {
       window.__peteduAuthState = {
         isAuthenticated: true,
@@ -110,6 +110,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         userName: '박훈련'
       };
     }
+    
+    // 로딩 상태 false로 설정
+    setAuthState(prev => ({
+      ...prev,
+      isLoading: false,
+      isAuthenticated: true,
+      userRole: 'trainer',
+      userName: '박훈련'
+    }));
     
     // 클린업 함수
     return () => {

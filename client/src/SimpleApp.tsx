@@ -667,10 +667,13 @@ function DebugButton() {
 function SimpleApp() {
   const auth = useAuth();
   
-  // 로딩 상태 처리
-  if (auth.isLoading) {
-    return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
-  }
+  // 디버깅: 현재 인증 상태 출력
+  console.log('SimpleApp render - Auth state:', auth);
+  
+  // 로딩 상태는 더 이상 체크하지 않음 - 이미 useAuth에서 처리됨
+  // if (auth.isLoading) {
+  //   return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+  // }
   
   return (
     <>
