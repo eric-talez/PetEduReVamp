@@ -151,7 +151,14 @@ export default function TrainerHome() {
 
   useEffect(() => {
     console.log("훈련사 홈 페이지 로드됨");
-  }, []);
+    console.log("사용자 정보:", { isAuthenticated, userRole, userName });
+    
+    // 권한 체크 (훈련사 전용 페이지 접근 권한 검증)
+    if (!isAuthenticated || (userRole !== 'trainer' && userRole !== 'admin')) {
+      console.warn("주의: 허가되지 않은 사용자가 훈련사 페이지에 접근 시도");
+      // 실제 프로덕션 환경에서는 적절한 페이지로 리다이렉트 처리 필요
+    }
+  }, [isAuthenticated, userRole, userName]);
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -303,11 +310,14 @@ export default function TrainerHome() {
                 )}
 
                 <div className="mt-2 pt-2 border-t border-gray-100 dark:border-gray-800">
-                  <Link href="/trainer/schedule/new">
-                    <Button variant="outline" size="sm" className="w-full">
-                      새 일정 등록하기
-                    </Button>
-                  </Link>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="w-full"
+                    onClick={() => handleNavigation('/trainer/schedule/new', userRole)}
+                  >
+                    새 일정 등록하기
+                  </Button>
                 </div>
               </div>
             </CardContent>
@@ -321,9 +331,13 @@ export default function TrainerHome() {
                   <Users className="h-5 w-5 mr-2 text-primary" />
                   최근 수강생
                 </CardTitle>
-                <Link href="/trainer/students">
-                  <Button variant="ghost" size="sm">전체 보기</Button>
-                </Link>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={() => handleNavigation('/trainer/students', userRole)}
+                >
+                  전체 보기
+                </Button>
               </div>
             </CardHeader>
             <CardContent>
@@ -395,9 +409,13 @@ export default function TrainerHome() {
                   <Award className="h-5 w-5 mr-2 text-primary" />
                   자격증 및 성과
                 </CardTitle>
-                <Link href="/trainer/profile/certificates">
-                  <Button variant="ghost" size="sm">관리하기</Button>
-                </Link>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={() => handleNavigation('/trainer/profile/certificates', userRole)}
+                >
+                  관리하기
+                </Button>
               </div>
             </CardHeader>
             <CardContent>
