@@ -3,7 +3,6 @@ import { RedirectHandler } from './components/RedirectHandler';
 import React, { ReactNode, lazy, Suspense } from "react";
 import { useAuth, AuthProvider } from './hooks/useAuth';
 import { Button } from "@/components/ui/Button";
-import { SimpleDogLoading } from './components/SimpleDogLoading';
 
 // 이전 버전과의 호환성을 위한 재내보내기
 export { useAuth, AuthProvider } from './hooks/useAuth';
@@ -181,7 +180,7 @@ function UnauthenticatedRoutes() {
           {() => {
             const Auth = lazy(() => import('./pages/auth.js'));
             return (
-              <Suspense fallback={<div className="flex items-center justify-center min-h-screen"><SimpleDogLoading /></div>}>
+              <Suspense fallback={<div className="flex items-center justify-center min-h-screen"><div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full"></div></div>}>
                 <Auth />
               </Suspense>
             );
@@ -272,13 +271,20 @@ function DebugButton() {
 function SimpleApp() {
   const auth = useAuth();
   
+  // 로딩 상태 처리
+  if (auth.isLoading) {
+    return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+  }
+  
   return (
     <>
       {auth.isAuthenticated ? <AuthenticatedRoutes /> : <UnauthenticatedRoutes />}
-      <DebugButton />
+      {process.env.NODE_ENV === 'development' && <DebugButton />}
     </>
   );
 }
 
-// 최종 내보내기 - main.tsx에서는 이미 AuthProvider를 사용 중이므로 SimpleApp을 직접 내보냄
-export default SimpleApp;
+// 최종 내보내기 - 이제 main.tsx에서 AuthProvider를 직접 가져와 사용함
+export default function AppWithAuth() {
+  return <SimpleApp />;
+}

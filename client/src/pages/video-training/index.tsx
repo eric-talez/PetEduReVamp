@@ -18,7 +18,7 @@ import {
   SkipBack,
   Subtitles
 } from "lucide-react";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/SimpleApp";
 import {
   AlertDialog,
   AlertDialogAction,

@@ -21,7 +21,7 @@ import {
   Check,
   Undo2
 } from "lucide-react";
-import { useAuth } from "../../hooks/useAuth";
+import { useAuth } from "../../SimpleApp";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";

@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Link, useLocation, useRoute } from "wouter";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar } from "@/components/ui/Avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Star, Clock, Calendar, CheckCircle, PlayCircle, List, Download, Share2, Bookmark, Heart } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
@@ -459,10 +459,7 @@ export default function CourseDetail() {
               <div>
                 <h2 className="text-2xl font-bold mb-6">강사 소개</h2>
                 <div className="flex items-start mb-6">
-                  <Avatar className="w-16 h-16 mr-4">
-                    <AvatarImage src={course.trainer.avatar} alt={course.trainer.name} />
-                    <AvatarFallback>{course.trainer.name.substring(0, 1)}</AvatarFallback>
-                  </Avatar>
+                  <Avatar src={course.trainer.avatar} alt={course.trainer.name} className="w-16 h-16 rounded-full mr-4" />
                   <div>
                     <h3 className="text-xl font-semibold">{course.trainer.name}</h3>
                     <p className="text-gray-600 dark:text-gray-300 text-sm">{course.trainer.bio}</p>

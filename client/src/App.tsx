@@ -380,10 +380,6 @@ function UnauthenticatedRoutesContent() {
 export default function App() {
   const auth = useAuth();
 
-  if (auth.isLoading) {
-    return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
-  }
-
   // 라우트 설정 - 중요: 인증 여부에 관계 없이 쇼핑 페이지는 접근 가능해야 함
   // 홈 페이지도 인증 여부에 관계없이 동일한 내용이 표시되어야 함
   return (
