@@ -663,73 +663,55 @@ export function NewSidebar({
                   </>
                 )}
 
-                {/* Help Menu Group - 첨부 이미지대로 메인 메뉴처럼 구현 */}
-                {expanded ? (
-                  <button
-                    className={cn(
-                      "w-full flex items-center justify-between px-3 py-2 text-left text-sm rounded-md",
-                      menuGroups.help ? "bg-gray-700/80 text-white" : "text-gray-400 hover:text-white hover:bg-gray-700/80"
-                    )}
-                    onClick={() => toggleMenuGroup('help')}
-                  >
-                    <div className="flex items-center">
-                      <HelpCircle className="w-5 h-5 mr-2" />
-                      <span>도움말</span>
-                    </div>
-                    {menuGroups.help ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-                  </button>
-                ) : (
-                  <div 
-                    className="flex justify-center py-2 mt-2 hover:bg-gray-700/30 rounded-md"
-                    onClick={() => toggleMenuGroup('help')}
-                  >
-                    <HelpCircle className="h-5 w-5 text-gray-500" />
+                {/* 도움말 헤더 - 그룹 헤더 스타일 */}
+                {expanded && (
+                  <div className="px-3 py-2 mt-6">
+                    <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      도움말
+                    </h3>
                   </div>
                 )}
 
-                {menuGroups.help && expanded && (
-                  <div className="pl-2 pr-1 mt-1">
-                    <NavItem
-                      href="/help/faq"
-                      icon={<HelpCircle className="w-5 h-5 mr-2" />}
-                      active={isActive("/help/faq")}
-                      onClick={handleItemClick}
-                      show={true}
-                    >
-                      자주 묻는 질문
-                    </NavItem>
+                {/* 도움말 메뉴 항목들 - 첨부 이미지처럼 구현 */}
+                <NavItem
+                  href="/help/faq"
+                  icon={<HelpCircle className="w-5 h-5 mr-2" />}
+                  active={isActive("/help/faq")}
+                  onClick={handleItemClick}
+                  show={true}
+                >
+                  자주 묻는 질문
+                </NavItem>
 
-                    <NavItem
-                      href="/help/guide"
-                      icon={<BookOpen className="w-5 h-5 mr-2" />}
-                      active={isActive("/help/guide")}
-                      onClick={handleItemClick}
-                      show={true}
-                    >
-                      이용 가이드
-                    </NavItem>
+                <NavItem
+                  href="/help/guide"
+                  icon={<BookOpen className="w-5 h-5 mr-2" />}
+                  active={isActive("/help/guide")}
+                  onClick={handleItemClick}
+                  show={true}
+                >
+                  이용 가이드
+                </NavItem>
 
-                    <NavItem
-                      href="/help/about"
-                      icon={<Users className="w-5 h-5 mr-2" />}
-                      active={isActive("/help/about")}
-                      onClick={handleItemClick}
-                      show={true}
-                    >
-                      소개
-                    </NavItem>
+                <NavItem
+                  href="/help/about"
+                  icon={<Users className="w-5 h-5 mr-2" />}
+                  active={isActive("/help/about")}
+                  onClick={handleItemClick}
+                  show={true}
+                >
+                  소개
+                </NavItem>
 
-                    <NavItem
-                      href="/help/contact"
-                      icon={<MessageSquare className="w-5 h-5 mr-2" />}
-                      active={isActive("/help/contact")}
-                      onClick={handleItemClick}
-                      show={true}
-                    >
-                      문의하기
-                    </NavItem>
-                  </div>
-                )}
+                <NavItem
+                  href="/help/contact"
+                  icon={<MessageSquare className="w-5 h-5 mr-2" />}
+                  active={isActive("/help/contact")}
+                  onClick={handleItemClick}
+                  show={true}
+                >
+                  문의하기
+                </NavItem>
 
                 {/* Service Statistics with Toggle using StatisticsSection component */}
                 <StatisticsSection expanded={expanded} />
