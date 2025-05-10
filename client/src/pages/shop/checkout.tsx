@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useLocation } from 'wouter';
-import { useAuth } from '../../SimpleApp';
+import { useAuth } from '../../hooks/useAuth';
 import { useCart } from '@/context/cart-context';
 import { useToast } from '@/hooks/use-toast';
 import { CreditCard, Home, Package, Check, Info, ArrowLeft, ShoppingBag, ChevronRight } from 'lucide-react';
