@@ -116,6 +116,24 @@ function AuthenticatedRoutesContent() {
       <Route path="/trainer/reservations">
         {() => checkAccess(['trainer', 'admin']) ? <TrainerReservationsPage /> : window.location.href = '/'}
       </Route>
+      <Route path="/trainer/profile">
+        {() => checkAccess(['trainer', 'admin']) ? <ProfilePage userType="trainer" /> : window.location.href = '/'}
+      </Route>
+      <Route path="/trainer/schedule">
+        {() => checkAccess(['trainer', 'admin']) ? <TrainerReservationsPage /> : window.location.href = '/'}
+      </Route>
+      <Route path="/trainer/students">
+        {() => checkAccess(['trainer', 'admin']) ? <Dashboard typeProps="trainer" subview="students" /> : window.location.href = '/'}
+      </Route>
+      <Route path="/trainer/courses/new">
+        {() => checkAccess(['trainer', 'admin']) ? <CoursesPage mode="create" userType="trainer" /> : window.location.href = '/'}
+      </Route>
+      <Route path="/trainer/schedule/new">
+        {() => checkAccess(['trainer', 'admin']) ? <TrainerReservationsPage mode="create" /> : window.location.href = '/'}
+      </Route>
+      <Route path="/trainer/profile/certificates">
+        {() => checkAccess(['trainer', 'admin']) ? <ProfilePage userType="trainer" section="certificates" /> : window.location.href = '/'}
+      </Route>
       <Route path="/institute/course-approvals">
         {() => checkAccess(['institute-admin', 'admin']) ? <InstituteCourseApprovalsPage /> : window.location.href = '/'}
       </Route>

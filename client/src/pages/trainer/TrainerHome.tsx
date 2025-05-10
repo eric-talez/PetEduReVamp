@@ -15,7 +15,22 @@ import {
   Sparkles,
   Award
 } from 'lucide-react';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+
+// 페이지 이동 핸들러 함수
+const handleNavigation = (path: string, userRole: string | null) => {
+  console.log(`훈련사 홈 페이지에서 이동: ${path} (역할: ${userRole})`);
+  
+  // 훈련사 전용 페이지 권한 확인
+  if (path.startsWith('/trainer/') && userRole !== 'trainer' && userRole !== 'admin') {
+    console.warn('권한 부족: 해당 페이지에 접근할 수 없습니다.');
+    return false;
+  }
+  
+  // 정상 이동 처리
+  window.location.href = path;
+  return true;
+};
 
 // 훈련사 대시보드를 위한 목업 데이터
 const recentStudents = [
@@ -161,12 +176,19 @@ export default function TrainerHome() {
               </div>
 
               <div className="flex gap-2">
-                <Link href="/trainer/profile">
-                  <Button variant="outline" size="sm">프로필 관리</Button>
-                </Link>
-                <Link href="/trainer/courses/new">
-                  <Button size="sm">강의 개설하기</Button>
-                </Link>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => handleNavigation('/trainer/profile', userRole)}
+                >
+                  프로필 관리
+                </Button>
+                <Button 
+                  size="sm"
+                  onClick={() => handleNavigation('/trainer/courses/new', userRole)}
+                >
+                  강의 개설하기
+                </Button>
               </div>
             </div>
           </div>
@@ -236,9 +258,13 @@ export default function TrainerHome() {
                   <Calendar className="h-5 w-5 mr-2 text-primary" />
                   다가오는 일정
                 </CardTitle>
-                <Link href="/trainer/schedule">
-                  <Button variant="ghost" size="sm">전체 보기</Button>
-                </Link>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={() => handleNavigation('/trainer/schedule', userRole)}
+                >
+                  전체 보기
+                </Button>
               </div>
             </CardHeader>
             <CardContent>
