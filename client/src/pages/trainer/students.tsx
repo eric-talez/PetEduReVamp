@@ -734,23 +734,32 @@ export default function TrainerStudents() {
                   id="institute-code"
                   className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                   placeholder="기관에서 제공받은 코드를 입력하세요"
+                  type="password"
                 />
                 <Button variant="outline">확인</Button>
               </div>
               <p className="text-sm text-gray-500">
-                기관 코드는 소속 기관의 관리자에게 받을 수 있습니다.
+                기관 코드는 소속 기관의 관리자에게만 제공되며 보안을 위해 공개되지 않습니다.
               </p>
             </div>
 
             <div className="border rounded-md p-4">
               <h3 className="font-medium mb-2">기관 코드 등록 절차</h3>
               <ol className="space-y-2 list-decimal list-inside text-sm text-gray-600">
-                <li>반려동물 소유자는 기관 코드를 입력하여 등록합니다.</li>
-                <li>기관 관리자가 등록 요청을 검토하고 승인합니다.</li>
+                <li>반려동물 소유자는 <strong>기관에서 직접 제공받은</strong> 코드를 입력합니다.</li>
+                <li>기관 코드는 <strong>각 기관의 관리자만 발급</strong>할 수 있으며 엄격하게 관리됩니다.</li>
+                <li>코드 확인 후 기관 관리자가 등록 요청을 검토하고 승인합니다.</li>
                 <li>승인이 완료되면 기관 소속 견주로 등록됩니다.</li>
                 <li>기관 관리자가 적합한 훈련사와 매칭을 진행합니다.</li>
-                <li>매칭이 완료되면 훈련 과정을 시작할 수 있습니다.</li>
               </ol>
+              <div className="mt-2 p-2 bg-yellow-50 dark:bg-yellow-900/20 rounded border border-yellow-200 dark:border-yellow-800 text-sm text-yellow-800 dark:text-yellow-200">
+                <p className="flex items-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  기관 코드는 절대 공유되지 않으며, 타 기관에서는 접근할 수 없습니다.
+                </p>
+              </div>
             </div>
           </div>
 
@@ -775,32 +784,52 @@ export default function TrainerStudents() {
           </DialogHeader>
 
           <div className="space-y-4 py-4">
+            <div className="border rounded-md p-4">
+              <h3 className="font-medium mb-2">매칭 권한 안내</h3>
+              <p className="text-sm text-gray-600 mb-2">
+                훈련사 매칭은 <strong>각 기관의 관리자만</strong> 수행할 수 있는 작업입니다. 
+                훈련사는 자신에게 매칭된 견주와 반려견만 확인할 수 있습니다.
+              </p>
+              <div className="p-2 bg-blue-50 dark:bg-blue-900/20 rounded border border-blue-200 dark:border-blue-800 text-sm text-blue-800 dark:text-blue-200 mb-2">
+                <p className="flex items-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  다른 기관에 소속된 견주는 표시되지 않으며, 각 기관은 자신의 소속 견주만 관리합니다.
+                </p>
+              </div>
+            </div>
+
             <div className="border rounded-md p-4 bg-gray-50 dark:bg-gray-800">
-              <h3 className="font-medium mb-2">매칭 대기 중인 견주</h3>
+              <h3 className="font-medium mb-2">내게 매칭된 견주</h3>
               <Table>
                 <TableHeader>
                   <TableRow>
                     <TableHead>이름</TableHead>
                     <TableHead>반려견</TableHead>
                     <TableHead>기관</TableHead>
-                    <TableHead>액션</TableHead>
+                    <TableHead>매칭 날짜</TableHead>
+                    <TableHead>상태</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {students.filter(s => s.matchStatus === '대기중').map(student => (
-                    <TableRow key={`match-${student.id}`}>
-                      <TableCell className="font-medium">{student.name}</TableCell>
-                      <TableCell>{student.petName} ({student.petBreed})</TableCell>
-                      <TableCell>{student.instituteName}</TableCell>
-                      <TableCell>
-                        <Button size="sm" variant="outline">매칭하기</Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                  {students.filter(s => s.matchStatus === '대기중').length === 0 && (
+                  {students
+                    .filter(s => s.matchStatus === '매치완료' && s.matchedTrainerId === 101) // 101은 현재 훈련사 ID
+                    .map(student => (
+                      <TableRow key={`matched-${student.id}`}>
+                        <TableCell className="font-medium">{student.name}</TableCell>
+                        <TableCell>{student.petName} ({student.petBreed})</TableCell>
+                        <TableCell>{student.instituteName}</TableCell>
+                        <TableCell>2025.04.01</TableCell>
+                        <TableCell>
+                          <Badge variant="success">매칭 완료</Badge>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  {students.filter(s => s.matchStatus === '매치완료' && s.matchedTrainerId === 101).length === 0 && (
                     <TableRow>
-                      <TableCell colSpan={4} className="text-center py-4">
-                        매칭 대기 중인 견주가 없습니다.
+                      <TableCell colSpan={5} className="text-center py-4">
+                        매칭된 견주가 없습니다.
                       </TableCell>
                     </TableRow>
                   )}
@@ -808,46 +837,63 @@ export default function TrainerStudents() {
               </Table>
             </div>
 
-            <div className="space-y-2">
-              <h3 className="font-medium">수동 매칭</h3>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label htmlFor="student-select" className="text-sm font-medium block mb-1">견주 선택</label>
-                  <select
-                    id="student-select"
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                  >
-                    <option value="">선택하세요</option>
-                    {students.filter(s => !s.matchStatus || s.matchStatus !== '매치완료')
-                      .map(s => (
-                        <option key={`select-${s.id}`} value={s.id}>
-                          {s.name} ({s.petName})
-                        </option>
-                      ))}
-                  </select>
-                </div>
-                <div>
-                  <label htmlFor="trainer-select" className="text-sm font-medium block mb-1">훈련사 선택</label>
-                  <select
-                    id="trainer-select"
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                  >
-                    <option value="">선택하세요</option>
-                    <option value="101">김훈련</option>
-                    <option value="102">이트레이너</option>
-                    <option value="103">박트레이너</option>
-                  </select>
+            <div className="border rounded-md p-4 bg-yellow-50 dark:bg-yellow-900/20">
+              <h3 className="font-medium mb-2">기관 관리자 기능</h3>
+              <p className="text-sm text-gray-600 mb-4">
+                아래 기능은 <strong>기관 관리자만</strong> 사용할 수 있습니다. 훈련사는 조회만 가능합니다.
+              </p>
+              
+              <div className="border-t pt-2 opacity-60">
+                <h4 className="font-medium text-sm mb-2">매칭 대기 중인 견주</h4>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>이름</TableHead>
+                      <TableHead>반려견</TableHead>
+                      <TableHead>기관</TableHead>
+                      <TableHead>액션</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    <TableRow>
+                      <TableCell colSpan={4} className="text-center py-4 text-gray-500 italic">
+                        기관 관리자 권한 필요
+                      </TableCell>
+                    </TableRow>
+                  </TableBody>
+                </Table>
+              </div>
+
+              <div className="border-t pt-2 mt-4 opacity-60">
+                <h4 className="font-medium text-sm mb-2">수동 매칭</h4>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label htmlFor="student-select" className="text-sm font-medium block mb-1">견주 선택</label>
+                    <select
+                      id="student-select"
+                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                      disabled
+                    >
+                      <option value="">기관 관리자 권한 필요</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label htmlFor="trainer-select" className="text-sm font-medium block mb-1">훈련사 선택</label>
+                    <select
+                      id="trainer-select"
+                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                      disabled
+                    >
+                      <option value="">기관 관리자 권한 필요</option>
+                    </select>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
 
           <DialogFooter>
-            <Button variant="outline" onClick={closeModal}>취소</Button>
-            <Button onClick={() => {
-              console.log('수동 매칭 요청');
-              closeModal();
-            }}>매칭 완료</Button>
+            <Button variant="outline" onClick={closeModal}>닫기</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
