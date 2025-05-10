@@ -33,6 +33,11 @@ import SettingsPage from "./pages/settings/index";
 import NotFound from "./pages/not-found";
 import TrainerTest from "./pages/TrainerTest";
 
+// 훈련사 페이지 임포트
+import TrainerCoursesPage from "./pages/trainer/courses";
+import TrainerStudentsPage from "./pages/trainer/students";
+import TrainerStatsPage from "./pages/trainer/stats";
+
 import TrainerReservationsPage from "./pages/trainer-dashboard/reservations";
 import InstituteCourseApprovalsPage from "./pages/institute-dashboard/course-approvals";
 import InstitutePetAssignmentsPage from "./pages/institute-dashboard/pet-assignments";
@@ -122,8 +127,15 @@ function AuthenticatedRoutesContent() {
       <Route path="/trainer/schedule">
         {() => checkAccess(['trainer', 'admin']) ? <TrainerReservationsPage /> : window.location.href = '/'}
       </Route>
+      {/* 훈련사 관련 라우트 */}
+      <Route path="/trainer/courses">
+        {() => checkAccess(['trainer', 'admin']) ? <TrainerCoursesPage /> : window.location.href = '/'}
+      </Route>
       <Route path="/trainer/students">
-        {() => checkAccess(['trainer', 'admin']) ? <Dashboard typeProps="trainer" subview="students" /> : window.location.href = '/'}
+        {() => checkAccess(['trainer', 'admin']) ? <TrainerStudentsPage /> : window.location.href = '/'}
+      </Route>
+      <Route path="/trainer/stats">
+        {() => checkAccess(['trainer', 'admin']) ? <TrainerStatsPage /> : window.location.href = '/'}
       </Route>
       <Route path="/trainer/courses/new">
         {() => checkAccess(['trainer', 'admin']) ? <CoursesPage mode="create" userType="trainer" /> : window.location.href = '/'}

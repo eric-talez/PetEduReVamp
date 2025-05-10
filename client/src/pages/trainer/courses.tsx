@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useAuth } from '@/hooks/use-auth';
+import { useAuth } from '../../hooks/useAuth';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
@@ -35,7 +35,7 @@ interface Course {
 }
 
 export default function TrainerCourses() {
-  const { isAuthenticated, userRole, userName } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   const [activeTab, setActiveTab] = useState<string>('active');
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
   const [activeModal, setActiveModal] = useState<ModalType>(null);
