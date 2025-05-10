@@ -1,6 +1,6 @@
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
+import { Avatar } from "@/components/ui/Avatar";
+import { Button } from "@/components/ui/Button";
 import { 
   Bell, 
   Menu, 
@@ -23,7 +23,7 @@ import {
 import { useState, useEffect, useRef } from "react";
 import { useClickAway } from "@/hooks/use-mobile";
 import { Link, useLocation } from "wouter";
-import { useAuth } from "../hooks/useAuth";
+import { useAuth } from "../SimpleApp";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { format } from "date-fns";
@@ -67,12 +67,18 @@ interface TopBarProps {
 
 export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
   // 전역 상태에서 인증 정보 직접 확인
-  // 인증 상태 사용
-  const { user, isAuthenticated, logout } = useAuth();
+  const globalAuth = (window as any).__peteduAuthState;
   
-  // 사용자 정보 추출
-  const userName = user?.name;
-  const userRole = user?.role;
+  // 로컬 상태와 전역 상태 둘 다 확인
+  const auth = useAuth();
+  // 전역 상태가 있으면 우선 사용
+  const authState = globalAuth || auth;
+  
+  // 상태 추출
+  const userName = authState?.userName || auth?.userName;
+  const userRole = authState?.userRole || auth?.userRole;
+  const isAuthenticated = authState?.isAuthenticated || auth?.isAuthenticated;
+  const logout = auth?.logout;
   const [location, setLocation] = useLocation();
   
   // 팝업 메뉴 상태
@@ -357,10 +363,11 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
                           >
                             <div className="flex items-start">
                               <div className="flex-shrink-0 mr-3">
-                                <Avatar className="h-8 w-8">
-                                  {message.avatar && <AvatarImage src={message.avatar} alt={message.sender} />}
-                                  <AvatarFallback>{message.sender.substring(0, 1)}</AvatarFallback>
-                                </Avatar>
+                                <Avatar 
+                                  className="h-8 w-8"
+                                  fallback={message.sender.substring(0, 1)}
+                                  src={message.avatar}
+                                />
                               </div>
                               <div className="flex-1 min-w-0">
                                 <div className="flex justify-between">
@@ -699,10 +706,10 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
                     className="flex items-center space-x-2 focus:outline-none"
                     onClick={() => setUserMenuOpen(!userMenuOpen)}
                   >
-                    <Avatar className="h-8 w-8">
-                      {user?.avatar && <AvatarImage src={user.avatar} alt={userName || ""} />}
-                      <AvatarFallback>{userName ? userName.substring(0, 1).toUpperCase() : "U"}</AvatarFallback>
-                    </Avatar>
+                    <Avatar 
+                      className="h-8 w-8" 
+                      fallback={userName ? userName.substring(0, 1).toUpperCase() : "U"} 
+                    />
                     <span className="hidden lg:flex items-center space-x-1">
                       <span className="text-sm font-medium">{userName}</span>
                       <ChevronDown className="h-4 w-4" />

@@ -1,19 +1,23 @@
-import { forwardRef } from "react";
+import { forwardRef, createContext, useContext } from "react";
 import { cn } from "@/lib/utils";
 import { User } from "lucide-react";
 
+const AvatarContext = createContext<{ size?: 'sm' | 'md' | 'lg' | 'xl' }>({});
+
 interface AvatarProps extends React.HTMLAttributes<HTMLDivElement> {
-  src?: string;
-  alt?: string;
-  fallback?: React.ReactNode;
   bordered?: boolean;
   size?: 'sm' | 'md' | 'lg' | 'xl';
 }
 
+interface AvatarImageProps extends React.ImgHTMLAttributes<HTMLImageElement> {
+  alt?: string;
+}
+
+interface AvatarFallbackProps extends React.HTMLAttributes<HTMLDivElement> {
+}
+
 const Avatar = forwardRef<HTMLDivElement, AvatarProps>(
-  ({ className, src, alt, fallback, bordered = false, size = 'md', ...props }, ref) => {
-    const hasImage = src && src.length > 0;
-    
+  ({ className, bordered = false, size = 'md', ...props }, ref) => {
     // Size map
     const sizeClasses = {
       sm: "h-8 w-8",
@@ -23,32 +27,54 @@ const Avatar = forwardRef<HTMLDivElement, AvatarProps>(
     };
     
     return (
+      <AvatarContext.Provider value={{ size }}>
+        <div
+          ref={ref}
+          className={cn(
+            "relative flex shrink-0 overflow-hidden rounded-full",
+            sizeClasses[size],
+            bordered && "border-2 border-primary",
+            className
+          )}
+          {...props}
+        />
+      </AvatarContext.Provider>
+    );
+  }
+);
+
+const AvatarImage = forwardRef<HTMLImageElement, AvatarImageProps>(
+  ({ className, alt, ...props }, ref) => {
+    return (
+      <img
+        ref={ref}
+        alt={alt || "Avatar"}
+        className={cn("aspect-square h-full w-full object-cover", className)}
+        {...props}
+      />
+    );
+  }
+);
+
+const AvatarFallback = forwardRef<HTMLDivElement, AvatarFallbackProps>(
+  ({ className, children, ...props }, ref) => {
+    return (
       <div
         ref={ref}
         className={cn(
-          "relative flex shrink-0 overflow-hidden rounded-full",
-          sizeClasses[size],
-          bordered && "border-2 border-primary",
+          "flex h-full w-full items-center justify-center bg-primary/20",
           className
         )}
         {...props}
       >
-        {hasImage ? (
-          <img
-            src={src}
-            alt={alt || "Avatar"}
-            className="aspect-square h-full w-full object-cover"
-          />
-        ) : (
-          <div className="flex h-full w-full items-center justify-center bg-primary/20">
-            {fallback || <User className="h-5 w-5 text-primary" />}
-          </div>
-        )}
+        {children || <User className="h-5 w-5 text-primary" />}
       </div>
     );
   }
 );
 
 Avatar.displayName = "Avatar";
+AvatarImage.displayName = "AvatarImage";
+AvatarFallback.displayName = "AvatarFallback";
 
-export { Avatar, type AvatarProps };
+export { Avatar, AvatarImage, AvatarFallback, type AvatarProps, type AvatarImageProps, type AvatarFallbackProps };

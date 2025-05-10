@@ -26,16 +26,16 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 // 테스트용 사용자 데이터 (실제 구현에서는 API로 교체 필요)
 const mockUser: User = {
   id: 1,
-  username: "demo-trainer",
-  name: "훈련사",
-  email: "trainer@example.com",
-  role: "trainer",
+  username: "admin",
+  name: "관리자",
+  email: "admin@example.com",
+  role: "admin",
   avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100"
 };
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  // 테스트를 위해 로그인 상태로 시작 (훈련사 권한)
-  const [user, setUser] = useState<User | null>(mockUser); 
+  // 테스트를 위해 null로 설정하여 비로그인 상태로 시작
+  const [user, setUser] = useState<User | null>(null); 
   const [isLoading, setIsLoading] = useState(false);
 
   // 실제 구현에서는 아래 주석을 해제하고 mockUser 대신 실제 API 호출 사용

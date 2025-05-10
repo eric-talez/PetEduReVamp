@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'wouter';
-import { useAuth } from '../../hooks/useAuth';
+import { useAuth } from '../../SimpleApp';
 import { 
   Search, 
   Users, 
@@ -45,13 +45,13 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
+} from '@/components/ui/Select';
 import { Separator } from '@/components/ui/separator';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from '@/components/ui/popover';
+} from '@/components/ui/Popover';
 
 // 회원(반려인) 타입 정의
 interface PetOwner {
@@ -95,12 +95,12 @@ interface Trainer {
 
 export default function PetAssignmentsPage() {
   const [location, navigate] = useLocation();
-  const { user, isAuthenticated } = useAuth();
+  const { isAuthenticated, userRole } = useAuth();
   const { toast } = useToast();
 
   // 인증되지 않은 사용자 또는 기관 관리자가 아닌 사용자 리디렉션
   useEffect(() => {
-    if (!isAuthenticated || user?.role !== 'institute-admin') {
+    if (!isAuthenticated || userRole !== 'institute-admin') {
       toast({
         title: "접근 권한이 없습니다",
         description: "기관 관리자만 접근할 수 있는 페이지입니다.",
@@ -108,7 +108,7 @@ export default function PetAssignmentsPage() {
       });
       navigate('/');
     }
-  }, [isAuthenticated, user, navigate, toast]);
+  }, [isAuthenticated, userRole, navigate, toast]);
 
   // 데모 데이터
   const [petOwners, setPetOwners] = useState<PetOwner[]>([
