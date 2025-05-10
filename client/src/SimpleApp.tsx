@@ -376,9 +376,36 @@ function AuthenticatedRoutes() {
         <Route path="/messages" component={MessagesPage} />
         
         {/* 훈련사 메뉴 */}
-        <Route path="/trainer/courses" component={() => <div className="p-8"><h1 className="text-2xl font-bold mb-4">강의 관리</h1><p>훈련사의 강의를 관리하는 페이지입니다.</p></div>} />
-        <Route path="/trainer/students" component={() => <div className="p-8"><h1 className="text-2xl font-bold mb-4">수강생 관리</h1><p>훈련사의 수강생을 관리하는 페이지입니다.</p></div>} />
-        <Route path="/trainer/stats" component={() => <div className="p-8"><h1 className="text-2xl font-bold mb-4">통계 및 수익</h1><p>훈련사의 통계와 수익을 확인하는 페이지입니다.</p></div>} />
+        <Route path="/trainer/courses">
+          {() => {
+            const CourseManagement = lazy(() => import('./pages/trainer/courses'));
+            return (
+              <Suspense fallback={<div className="p-8 text-center">페이지 로딩 중...</div>}>
+                <CourseManagement />
+              </Suspense>
+            );
+          }}
+        </Route>
+        <Route path="/trainer/students">
+          {() => {
+            const StudentManagement = lazy(() => import('./pages/trainer/students'));
+            return (
+              <Suspense fallback={<div className="p-8 text-center">페이지 로딩 중...</div>}>
+                <StudentManagement />
+              </Suspense>
+            );
+          }}
+        </Route>
+        <Route path="/trainer/stats">
+          {() => {
+            const TrainerStats = lazy(() => import('./pages/trainer/stats'));
+            return (
+              <Suspense fallback={<div className="p-8 text-center">페이지 로딩 중...</div>}>
+                <TrainerStats />
+              </Suspense>
+            );
+          }}
+        </Route>
         
         {/* 기관 관리자 메뉴 */}
         <Route path="/institute/trainers" component={() => <div className="p-8"><h1 className="text-2xl font-bold mb-4">훈련사 관리</h1><p>기관의 훈련사를 관리하는 페이지입니다.</p></div>} />
