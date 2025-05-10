@@ -270,17 +270,66 @@ function DebugButton() {
  */
 function SimpleApp() {
   const auth = useAuth();
+  console.log("SimpleApp - Auth State:", auth);
   
-  // 로딩 상태 처리
-  if (auth.isLoading) {
-    return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
-  }
-  
+  // 로딩 상태와 인증 상태를 표시하는 디버그 화면
   return (
-    <>
-      {auth.isAuthenticated ? <AuthenticatedRoutes /> : <UnauthenticatedRoutes />}
-      {process.env.NODE_ENV === 'development' && <DebugButton />}
-    </>
+    <div className="min-h-screen bg-background text-foreground">
+      <div className="container mx-auto p-4">
+        <header className="py-6 mb-8 border-b">
+          <h1 className="text-3xl font-bold">PetEdu Platform</h1>
+          <p>인증 상태: {auth.isAuthenticated ? '로그인됨' : '로그인 필요'}</p>
+          <p>역할: {auth.userRole || '없음'}</p>
+          <p>이름: {auth.userName || '없음'}</p>
+          <p>로딩: {auth.isLoading ? '로딩 중' : '로딩 완료'}</p>
+        </header>
+
+        <main>
+          <div className="mb-8 p-6 border rounded-lg shadow-sm">
+            <h2 className="text-2xl font-bold mb-4">인증 정보</h2>
+            <pre className="bg-slate-100 dark:bg-slate-800 p-4 rounded overflow-auto">
+              {JSON.stringify(auth, null, 2)}
+            </pre>
+          </div>
+          
+          <div className="mb-8">
+            <h2 className="text-2xl font-bold mb-4">테스트 화면</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <button 
+                onClick={() => {
+                  auth.isAuthenticated 
+                    ? window.location.href = "/"
+                    : window.location.href = "/auth"
+                }}
+                className="p-4 border rounded bg-blue-500 text-white hover:bg-blue-600"
+              >
+                {auth.isAuthenticated ? '홈페이지 보기' : '로그인 페이지로'}
+              </button>
+              
+              <button 
+                onClick={() => window.location.reload()}
+                className="p-4 border rounded bg-green-500 text-white hover:bg-green-600"
+              >
+                새로고침
+              </button>
+            </div>
+          </div>
+          
+          {auth.isAuthenticated && (
+            <div className="mb-8">
+              <button
+                onClick={() => auth.logout()}
+                className="w-full p-4 border rounded bg-red-500 text-white hover:bg-red-600"
+              >
+                로그아웃
+              </button>
+            </div>
+          )}
+        </main>
+      </div>
+      
+      <DebugButton />
+    </div>
   );
 }
 
