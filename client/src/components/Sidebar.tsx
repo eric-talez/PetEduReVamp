@@ -310,9 +310,7 @@ export function Sidebar({
                     {menuGroups.main ? <ChevronDown className="h-4 w-4 text-gray-500" /> : <ChevronRight className="h-4 w-4 text-gray-500" />}
                   </div>
                 ) : (
-                  <div className="flex justify-center py-2">
-                    <ChevronRight className="h-4 w-4 text-gray-500" />
-                  </div>
+                  <div className="py-2"></div>
                 )}
 
                 {menuGroups.main && (
@@ -496,9 +494,7 @@ export function Sidebar({
                     {menuGroups.main ? <ChevronDown className="h-4 w-4 text-gray-500" /> : <ChevronRight className="h-4 w-4 text-gray-500" />}
                   </div>
                 ) : (
-                  <div className="flex justify-center py-2">
-                    <ChevronRight className="h-4 w-4 text-gray-500" />
-                  </div>
+                  <div className="py-2"></div>
                 )}
 
                 {menuGroups.main && (
