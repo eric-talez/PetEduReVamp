@@ -44,7 +44,15 @@ export function HelpSection({ expanded, handleItemClick }: HelpSectionProps) {
     return false;
   };
 
-  if (!expanded) return null;
+  if (!expanded) {
+    return (
+      <div className="mt-6 px-2">
+        <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-2 flex justify-center">
+          <HelpCircle className="w-5 h-5 text-primary" aria-label="도움말" />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div>
