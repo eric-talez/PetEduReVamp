@@ -1217,37 +1217,105 @@ export default function ReferralCodeManagement() {
           <div className="space-y-4 py-4">
             {"code" in (selectedItem || {}) ? (
               // 추천인 코드 상세 정보
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <h3 className="text-sm font-medium text-gray-500">코드</h3>
-                  <p className="font-medium">{selectedItem?.code}</p>
+              <div>
+                <div className="bg-gray-50 dark:bg-gray-900 rounded-md p-4 mb-4">
+                  <div className="flex justify-between items-center mb-3">
+                    <div>
+                      <h3 className="text-lg font-bold mb-1">{selectedItem?.code}</h3>
+                      <p className="text-sm text-muted-foreground">{selectedItem?.description}</p>
+                    </div>
+                    <Badge 
+                      className="text-sm"
+                      variant={getStatusBadgeVariant(selectedItem?.status)}
+                    >
+                      {getStatusText(selectedItem?.status)}
+                    </Badge>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="flex items-center space-x-1.5">
+                      <Tag className="h-4 w-4 text-blue-500" />
+                      <span className="text-sm">할인율: <span className="font-medium">{selectedItem?.discount}%</span></span>
+                    </div>
+                    <div className="flex items-center space-x-1.5">
+                      <Calendar className="h-4 w-4 text-blue-500" />
+                      <span className="text-sm">만료: <span className="font-medium">{selectedItem?.expiryDate || "제한없음"}</span></span>
+                    </div>
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <h3 className="text-sm font-medium text-gray-500">기관</h3>
-                  <p>{selectedItem?.institution}</p>
+                
+                <div className="grid grid-cols-2 gap-6 mb-4">
+                  <div className="border rounded-md p-3">
+                    <h3 className="text-sm font-medium text-gray-500 mb-2">기관 정보</h3>
+                    <div className="space-y-2">
+                      <div className="flex flex-col">
+                        <span className="font-medium">{selectedItem?.institution}</span>
+                        <span className="text-xs text-muted-foreground">{selectedItem?.institutionCode}</span>
+                      </div>
+                      <div className="text-sm mt-2">
+                        <div className="flex items-center space-x-1.5">
+                          <Building className="h-4 w-4 text-gray-400" />
+                          <span>기관 ID: {selectedItem?.institutionId}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="border rounded-md p-3">
+                    <h3 className="text-sm font-medium text-gray-500 mb-2">훈련사 정보</h3>
+                    <div className="space-y-2">
+                      <div className="flex flex-col">
+                        <span className="font-medium">{selectedItem?.trainerName}</span>
+                        <span className="text-xs text-muted-foreground">{selectedItem?.trainerCode}</span>
+                      </div>
+                      <div className="text-sm mt-2">
+                        <div className="flex items-center space-x-1.5">
+                          <UserRoundCheck className="h-4 w-4 text-gray-400" />
+                          <span>훈련사 ID: {selectedItem?.trainerId}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <h3 className="text-sm font-medium text-gray-500">설명</h3>
-                  <p>{selectedItem?.description}</p>
+                
+                <div className="grid grid-cols-3 gap-4 mb-2">
+                  <div className="space-y-2">
+                    <h3 className="text-sm font-medium text-gray-500">생성자</h3>
+                    <p>{selectedItem?.createdBy}</p>
+                  </div>
+                  <div className="space-y-2">
+                    <h3 className="text-sm font-medium text-gray-500">요청일</h3>
+                    <p>{selectedItem?.requestDate}</p>
+                  </div>
+                  <div className="space-y-2">
+                    <h3 className="text-sm font-medium text-gray-500">승인자</h3>
+                    <p>{selectedItem?.approvedBy || "-"}</p>
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <h3 className="text-sm font-medium text-gray-500">할인율</h3>
-                  <p>{selectedItem?.discount}%</p>
+                
+                <div className="bg-blue-50 dark:bg-blue-950 p-3 rounded-md">
+                  <h3 className="text-sm font-medium text-blue-700 dark:text-blue-300 mb-2">수익 배분 정보</h3>
+                  <div className="grid grid-cols-3 gap-2">
+                    <div className="bg-white dark:bg-gray-800 p-2 rounded-md text-center">
+                      <div className="text-xl font-bold text-green-600 dark:text-green-400">
+                        {selectedItem?.profitShare}%
+                      </div>
+                      <div className="text-xs text-gray-500">훈련사 수익</div>
+                    </div>
+                    <div className="bg-white dark:bg-gray-800 p-2 rounded-md text-center">
+                      <div className="text-xl font-bold text-blue-600 dark:text-blue-400">
+                        {100 - (selectedItem?.profitShare || 0)}%
+                      </div>
+                      <div className="text-xs text-gray-500">기관 수익</div>
+                    </div>
+                    <div className="bg-white dark:bg-gray-800 p-2 rounded-md text-center">
+                      <div className="text-xl font-bold text-gray-600 dark:text-gray-400">
+                        {selectedItem?.usageCount || 0}
+                      </div>
+                      <div className="text-xs text-gray-500">사용 횟수</div>
+                    </div>
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <h3 className="text-sm font-medium text-gray-500">상태</h3>
-                  <Badge variant={getStatusBadgeVariant(selectedItem?.status)}>
-                    {getStatusText(selectedItem?.status)}
-                  </Badge>
-                </div>
-                <div className="space-y-2">
-                  <h3 className="text-sm font-medium text-gray-500">요청일</h3>
-                  <p>{selectedItem?.requestDate}</p>
-                </div>
-                <div className="space-y-2">
-                  <h3 className="text-sm font-medium text-gray-500">만료일</h3>
-                  <p>{selectedItem?.expiryDate || "-"}</p>
-                </div>
+              </div>
                 <div className="space-y-2">
                   <h3 className="text-sm font-medium text-gray-500">사용 현황</h3>
                   <p>
