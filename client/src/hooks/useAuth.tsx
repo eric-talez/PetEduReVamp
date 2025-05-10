@@ -85,6 +85,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     // 브라우저 환경에서만 실행
     if (typeof window !== 'undefined') {
+      // 강제로 로딩 상태 해제 - 서비스 검수를 위해 바로 진입
+      setAuthState(prevState => ({
+        ...prevState,
+        isLoading: false
+      }));
       initAuthState();
     }
   }, [initAuthState]);
