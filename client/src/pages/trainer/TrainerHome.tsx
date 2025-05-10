@@ -16,6 +16,12 @@ import {
   Award
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+
+// 모달 상태 타입 정의
+type StatsModalType = 'students' | 'courses' | 'schedule' | 'income' | null;
 
 // 페이지 이동 핸들러 함수
 const handleNavigation = (path: string, userRole: string | null) => {
@@ -148,6 +154,20 @@ const messages = [
 
 export default function TrainerHome() {
   const { isAuthenticated, userRole, userName } = useAuth();
+  // 모달 상태
+  const [activeModal, setActiveModal] = useState<StatsModalType>(null);
+  const [activeTab, setActiveTab] = useState("current"); // 기본 탭 설정
+
+  // 모달 열기
+  const openModal = (type: StatsModalType) => {
+    console.log(`${type} 모달 열기`);
+    setActiveModal(type);
+  };
+
+  // 모달 닫기
+  const closeModal = () => {
+    setActiveModal(null);
+  };
 
   useEffect(() => {
     console.log("훈련사 홈 페이지 로드됨");
@@ -202,7 +222,10 @@ export default function TrainerHome() {
 
           {/* 통계 카드 */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 p-6 pt-0">
-            <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
+            <div 
+              className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-800/40 transition-colors cursor-pointer"
+              onClick={() => openModal('students')}
+            >
               <div className="flex items-center">
                 <div className="p-2 bg-blue-100 dark:bg-blue-800/30 rounded-full mr-3">
                   <Users className="h-5 w-5 text-blue-600 dark:text-blue-400" />
@@ -214,7 +237,10 @@ export default function TrainerHome() {
               </div>
             </div>
 
-            <div className="bg-amber-50 dark:bg-amber-900/20 p-4 rounded-lg">
+            <div 
+              className="bg-amber-50 dark:bg-amber-900/20 p-4 rounded-lg hover:bg-amber-100 dark:hover:bg-amber-800/40 transition-colors cursor-pointer"
+              onClick={() => openModal('courses')}
+            >
               <div className="flex items-center">
                 <div className="p-2 bg-amber-100 dark:bg-amber-800/30 rounded-full mr-3">
                   <BookOpen className="h-5 w-5 text-amber-600 dark:text-amber-400" />
@@ -226,7 +252,10 @@ export default function TrainerHome() {
               </div>
             </div>
 
-            <div className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg">
+            <div 
+              className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg hover:bg-purple-100 dark:hover:bg-purple-800/40 transition-colors cursor-pointer"
+              onClick={() => openModal('schedule')}
+            >
               <div className="flex items-center">
                 <div className="p-2 bg-purple-100 dark:bg-purple-800/30 rounded-full mr-3">
                   <Calendar className="h-5 w-5 text-purple-600 dark:text-purple-400" />
@@ -238,7 +267,10 @@ export default function TrainerHome() {
               </div>
             </div>
 
-            <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg">
+            <div 
+              className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg hover:bg-green-100 dark:hover:bg-green-800/40 transition-colors cursor-pointer"
+              onClick={() => openModal('income')}
+            >
               <div className="flex items-center">
                 <div className="p-2 bg-green-100 dark:bg-green-800/30 rounded-full mr-3">
                   <TrendingUp className="h-5 w-5 text-green-600 dark:text-green-400" />
@@ -604,6 +636,347 @@ export default function TrainerHome() {
           </Card>
         </div>
       </div>
+
+      {/* 수강생 모달 */}
+      <Dialog open={activeModal === 'students'} onOpenChange={closeModal}>
+        <DialogContent className="sm:max-w-[800px]">
+          <DialogHeader>
+            <DialogTitle className="text-xl flex items-center gap-2">
+              <Users className="h-5 w-5 text-primary" /> 수강생 현황
+            </DialogTitle>
+            <DialogDescription>
+              현재 등록된 수강생 목록과 진행 상황을 확인하세요.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <Tabs defaultValue="current" value={activeTab} onValueChange={setActiveTab}>
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="current">현재 수강생</TabsTrigger>
+              <TabsTrigger value="graduated">수료 완료</TabsTrigger>
+            </TabsList>
+            <TabsContent value="current" className="mt-4">
+              <div className="space-y-4">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>이름</TableHead>
+                      <TableHead>반려견</TableHead>
+                      <TableHead>강의</TableHead>
+                      <TableHead>진도율</TableHead>
+                      <TableHead>최근 활동</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {recentStudents.map(student => (
+                      <TableRow key={student.id}>
+                        <TableCell className="font-medium">{student.name}</TableCell>
+                        <TableCell>{student.pet.name} ({student.pet.breed})</TableCell>
+                        <TableCell>{student.course}</TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <span>{student.progress}%</span>
+                            <div className="bg-gray-200 dark:bg-gray-700 h-2 w-20 rounded-full overflow-hidden">
+                              <div 
+                                className="bg-primary h-full rounded-full" 
+                                style={{ width: `${student.progress}%` }} 
+                              />
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell>{student.lastActivity}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </TabsContent>
+            <TabsContent value="graduated" className="mt-4">
+              <div className="text-center py-8 text-gray-500">
+                <p>수료 완료된 수강생이 없습니다.</p>
+              </div>
+            </TabsContent>
+          </Tabs>
+          
+          <DialogFooter>
+            <Button onClick={closeModal} variant="ghost">닫기</Button>
+            <Button onClick={() => handleNavigation('/trainer/students', userRole)}>모든 수강생 보기</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* 강의 모달 */}
+      <Dialog open={activeModal === 'courses'} onOpenChange={closeModal}>
+        <DialogContent className="sm:max-w-[800px]">
+          <DialogHeader>
+            <DialogTitle className="text-xl flex items-center gap-2">
+              <BookOpen className="h-5 w-5 text-primary" /> 강의 현황
+            </DialogTitle>
+            <DialogDescription>
+              현재 운영 중인 강의와 예정된 강의 목록입니다.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <Tabs defaultValue="active" value={activeTab} onValueChange={setActiveTab}>
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="active">진행 중</TabsTrigger>
+              <TabsTrigger value="upcoming">예정</TabsTrigger>
+              <TabsTrigger value="completed">완료</TabsTrigger>
+            </TabsList>
+            <TabsContent value="active" className="mt-4">
+              <div className="space-y-4">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>강의명</TableHead>
+                      <TableHead>유형</TableHead>
+                      <TableHead>수강생 수</TableHead>
+                      <TableHead>시작일</TableHead>
+                      <TableHead>평점</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    <TableRow>
+                      <TableCell className="font-medium">반려견 기초 훈련 마스터하기</TableCell>
+                      <TableCell>그룹</TableCell>
+                      <TableCell>12명</TableCell>
+                      <TableCell>2025.04.15</TableCell>
+                      <TableCell>4.8/5.0</TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell className="font-medium">문제행동 교정 과정</TableCell>
+                      <TableCell>1:1</TableCell>
+                      <TableCell>5명</TableCell>
+                      <TableCell>2025.04.28</TableCell>
+                      <TableCell>4.9/5.0</TableCell>
+                    </TableRow>
+                  </TableBody>
+                </Table>
+              </div>
+            </TabsContent>
+            <TabsContent value="upcoming" className="mt-4">
+              <div className="space-y-4">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>강의명</TableHead>
+                      <TableHead>유형</TableHead>
+                      <TableHead>예정 인원</TableHead>
+                      <TableHead>시작일</TableHead>
+                      <TableHead>상태</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    <TableRow>
+                      <TableCell className="font-medium">반려견 어질리티 입문</TableCell>
+                      <TableCell>그룹</TableCell>
+                      <TableCell>6명</TableCell>
+                      <TableCell>2025.05.20</TableCell>
+                      <TableCell>모집 중</TableCell>
+                    </TableRow>
+                  </TableBody>
+                </Table>
+              </div>
+            </TabsContent>
+            <TabsContent value="completed" className="mt-4">
+              <div className="text-center py-8 text-gray-500">
+                <p>지난 3개월 내 완료된 강의가 없습니다.</p>
+              </div>
+            </TabsContent>
+          </Tabs>
+          
+          <DialogFooter>
+            <Button onClick={closeModal} variant="ghost">닫기</Button>
+            <Button onClick={() => handleNavigation('/trainer/courses', userRole)}>모든 강의 보기</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* 일정 모달 */}
+      <Dialog open={activeModal === 'schedule'} onOpenChange={closeModal}>
+        <DialogContent className="sm:max-w-[800px]">
+          <DialogHeader>
+            <DialogTitle className="text-xl flex items-center gap-2">
+              <Calendar className="h-5 w-5 text-primary" /> 주간 일정
+            </DialogTitle>
+            <DialogDescription>
+              이번 주 및 다음 주 예정된 일정입니다.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <Tabs defaultValue="thisWeek" value={activeTab} onValueChange={setActiveTab}>
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="thisWeek">이번 주</TabsTrigger>
+              <TabsTrigger value="nextWeek">다음 주</TabsTrigger>
+            </TabsList>
+            <TabsContent value="thisWeek" className="mt-4">
+              <div className="space-y-4">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>일정</TableHead>
+                      <TableHead>날짜</TableHead>
+                      <TableHead>시간</TableHead>
+                      <TableHead>유형</TableHead>
+                      <TableHead>수강생</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {upcomingClasses.map(session => (
+                      <TableRow key={session.id}>
+                        <TableCell className="font-medium">{session.title}</TableCell>
+                        <TableCell>{session.date.replace(/-/g, '.')}</TableCell>
+                        <TableCell>{session.time}</TableCell>
+                        <TableCell>{session.type}</TableCell>
+                        <TableCell>{session.student}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </TabsContent>
+            <TabsContent value="nextWeek" className="mt-4">
+              <div className="text-center py-8 text-gray-500">
+                <p>다음 주 예정된 일정이 없습니다.</p>
+              </div>
+            </TabsContent>
+          </Tabs>
+          
+          <DialogFooter className="flex justify-between">
+            <Button onClick={() => handleNavigation('/trainer/schedule/new', userRole)} variant="outline">새 일정 등록</Button>
+            <div>
+              <Button onClick={closeModal} variant="ghost" className="mr-2">닫기</Button>
+              <Button onClick={() => handleNavigation('/trainer/schedule', userRole)}>일정 관리</Button>
+            </div>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* 수익 모달 */}
+      <Dialog open={activeModal === 'income'} onOpenChange={closeModal}>
+        <DialogContent className="sm:max-w-[800px]">
+          <DialogHeader>
+            <DialogTitle className="text-xl flex items-center gap-2">
+              <TrendingUp className="h-5 w-5 text-primary" /> 수익 현황
+            </DialogTitle>
+            <DialogDescription>
+              월별 수익 및 수강료 정산 현황입니다.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <Tabs defaultValue="monthly" value={activeTab} onValueChange={setActiveTab}>
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="monthly">월별 수익</TabsTrigger>
+              <TabsTrigger value="courses">강의별 수익</TabsTrigger>
+              <TabsTrigger value="payments">정산 현황</TabsTrigger>
+            </TabsList>
+            <TabsContent value="monthly" className="mt-4">
+              <div className="space-y-4">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>월</TableHead>
+                      <TableHead>총 수익</TableHead>
+                      <TableHead>강의 수</TableHead>
+                      <TableHead>수강생 수</TableHead>
+                      <TableHead>증감률</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    <TableRow>
+                      <TableCell className="font-medium">2025년 5월</TableCell>
+                      <TableCell>₩1,250,000</TableCell>
+                      <TableCell>3개</TableCell>
+                      <TableCell>17명</TableCell>
+                      <TableCell className="text-green-600">+15%</TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell className="font-medium">2025년 4월</TableCell>
+                      <TableCell>₩1,080,000</TableCell>
+                      <TableCell>3개</TableCell>
+                      <TableCell>15명</TableCell>
+                      <TableCell className="text-green-600">+8%</TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell className="font-medium">2025년 3월</TableCell>
+                      <TableCell>₩1,000,000</TableCell>
+                      <TableCell>2개</TableCell>
+                      <TableCell>12명</TableCell>
+                      <TableCell className="text-gray-400">-</TableCell>
+                    </TableRow>
+                  </TableBody>
+                </Table>
+              </div>
+            </TabsContent>
+            <TabsContent value="courses" className="mt-4">
+              <div className="space-y-4">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>강의명</TableHead>
+                      <TableHead>유형</TableHead>
+                      <TableHead>수강생 수</TableHead>
+                      <TableHead>월 수익</TableHead>
+                      <TableHead>비율</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    <TableRow>
+                      <TableCell className="font-medium">반려견 기초 훈련 마스터하기</TableCell>
+                      <TableCell>그룹</TableCell>
+                      <TableCell>12명</TableCell>
+                      <TableCell>₩600,000</TableCell>
+                      <TableCell>48%</TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell className="font-medium">문제행동 교정 과정</TableCell>
+                      <TableCell>1:1</TableCell>
+                      <TableCell>5명</TableCell>
+                      <TableCell>₩650,000</TableCell>
+                      <TableCell>52%</TableCell>
+                    </TableRow>
+                  </TableBody>
+                </Table>
+              </div>
+            </TabsContent>
+            <TabsContent value="payments" className="mt-4">
+              <div className="space-y-4">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>정산 예정일</TableHead>
+                      <TableHead>금액</TableHead>
+                      <TableHead>공제액</TableHead>
+                      <TableHead>실 수령액</TableHead>
+                      <TableHead>상태</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    <TableRow>
+                      <TableCell className="font-medium">2025.05.25</TableCell>
+                      <TableCell>₩1,250,000</TableCell>
+                      <TableCell>₩125,000</TableCell>
+                      <TableCell>₩1,125,000</TableCell>
+                      <TableCell>정산 예정</TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell className="font-medium">2025.04.25</TableCell>
+                      <TableCell>₩1,080,000</TableCell>
+                      <TableCell>₩108,000</TableCell>
+                      <TableCell>₩972,000</TableCell>
+                      <TableCell>정산 완료</TableCell>
+                    </TableRow>
+                  </TableBody>
+                </Table>
+              </div>
+            </TabsContent>
+          </Tabs>
+          
+          <DialogFooter>
+            <Button onClick={closeModal} variant="ghost">닫기</Button>
+            <Button onClick={() => handleNavigation('/trainer/income', userRole)}>상세 수익 보기</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
