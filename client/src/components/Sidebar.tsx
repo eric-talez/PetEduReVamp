@@ -170,10 +170,15 @@ export function Sidebar({
   };
 
   const toggleMenuGroup = (group: keyof typeof menuGroups) => {
-    setMenuGroups(prev => ({
-      ...prev,
-      [group]: !prev[group]
-    }));
+    console.log(`토글 메뉴 그룹: ${group}, 현재 상태: ${menuGroups[group]}`);
+    setMenuGroups(prev => {
+      const newState = {
+        ...prev,
+        [group]: !prev[group]
+      };
+      console.log(`메뉴 상태 변경 후: ${group} = ${!prev[group]}`);
+      return newState;
+    });
   };
 
   const isActive = (path: string) => {
@@ -922,13 +927,13 @@ export function Sidebar({
                 {/* Help Menu for authenticated users */}
                 {expanded ? (
                   <div
-                    className="px-3 py-2 mt-6 flex items-center justify-between cursor-pointer"
+                    className="px-3 py-2 mt-6 flex items-center justify-between cursor-pointer bg-gray-100 dark:bg-gray-700 p-1 rounded mx-3"
                     onClick={() => toggleMenuGroup('help')}
                   >
                     <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                       도움말
                     </h3>
-                    {menuGroups.help ? <ChevronDown className="h-4 w-4 text-gray-500" /> : <ChevronRight className="h-4 w-4 text-gray-500" />}
+                    {menuGroups.help ? <ChevronDown className="h-4 w-4 text-primary" /> : <ChevronRight className="h-4 w-4 text-primary" />}
                   </div>
                 ) : (
                   <div className="py-2 mt-6"></div>
@@ -983,15 +988,15 @@ export function Sidebar({
                   <div className="mt-auto mb-4 px-3">
                     {/* 헤더 영역 - 클릭 시 토글 */}
                     <div 
-                      className="flex items-center justify-between mb-2 cursor-pointer"
+                      className="flex items-center justify-between mb-2 cursor-pointer bg-gray-100 dark:bg-gray-700 p-1 rounded"
                       onClick={() => toggleMenuGroup('statistics')}
                     >
                       <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                         서비스 현황
                       </h3>
                       {menuGroups.statistics ? 
-                        <ChevronDown className="h-4 w-4 text-gray-500" /> : 
-                        <ChevronRight className="h-4 w-4 text-gray-500" />
+                        <ChevronDown className="h-4 w-4 text-primary" /> : 
+                        <ChevronRight className="h-4 w-4 text-primary" />
                       }
                     </div>
 
