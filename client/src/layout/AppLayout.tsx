@@ -2,14 +2,14 @@ import { ReactNode, useState, useEffect } from "react";
 import { Sidebar } from "@/components/Sidebar";
 import { TopBar } from "@/components/TopBar";
 import { Chatbot } from "@/components/features/Chatbot";
-import { useAuth } from "../SimpleApp";
+import { useAuth } from "../hooks/useAuth";
 
 interface AppLayoutProps {
   children: ReactNode;
 }
 
 export function AppLayout({ children }: AppLayoutProps) {
-  const { isAuthenticated, userRole } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   
@@ -47,7 +47,7 @@ export function AppLayout({ children }: AppLayoutProps) {
       <Sidebar 
         open={sidebarOpen} 
         onClose={() => setSidebarOpen(false)}
-        userRole={userRole}
+        userRole={user?.role || null}
         isAuthenticated={isAuthenticated}
       />
       
