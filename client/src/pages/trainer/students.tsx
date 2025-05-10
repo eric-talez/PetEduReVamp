@@ -20,7 +20,7 @@ import {
 } from 'lucide-react';
 
 // 모달 타입 정의
-type ModalType = 'details' | 'message' | 'schedule' | 'notes' | 'assignments' | 'remove' | null;
+type ModalType = 'details' | 'message' | 'schedule' | 'notes' | 'assignments' | 'remove' | 'register' | 'match' | null;
 
 // 수강생 인터페이스
 interface Student {
@@ -42,6 +42,12 @@ interface Student {
   attendance: number;
   lastAttendance: string;
   note?: string;
+  instituteId?: number;
+  instituteName?: string;
+  instituteCode?: string;
+  matchStatus?: '미지정' | '대기중' | '매치완료';
+  matchedTrainerId?: number;
+  matchedTrainerName?: string;
 }
 
 export default function TrainerStudents() {
@@ -72,7 +78,12 @@ export default function TrainerStudents() {
       progress: 35,
       attendance: 100,
       lastAttendance: '2025.04.29',
-      note: '낯가림이 심한 편, 소음에 민감하게 반응'
+      note: '낯가림이 심한 편, 소음에 민감하게 반응',
+      instituteId: 1,
+      instituteName: '행복한 애견 교실',
+      matchStatus: '매치완료',
+      matchedTrainerId: 101,
+      matchedTrainerName: '김훈련'
     },
     {
       id: 2,
@@ -91,7 +102,12 @@ export default function TrainerStudents() {
       courseType: '그룹',
       progress: 40,
       attendance: 100,
-      lastAttendance: '2025.04.29'
+      lastAttendance: '2025.04.29',
+      instituteId: 1,
+      instituteName: '행복한 애견 교실',
+      matchStatus: '매치완료',
+      matchedTrainerId: 101,
+      matchedTrainerName: '김훈련'
     },
     {
       id: 3,
@@ -111,7 +127,10 @@ export default function TrainerStudents() {
       progress: 50,
       attendance: 80,
       lastAttendance: '2025.04.15',
-      note: '주인의 출장으로 인해 일시 중지 상태'
+      note: '주인의 출장으로 인해 일시 중지 상태',
+      instituteId: 2,
+      instituteName: '도그 아카데미',
+      matchStatus: '대기중'
     },
     {
       id: 4,
@@ -130,7 +149,12 @@ export default function TrainerStudents() {
       courseType: '그룹',
       progress: 100,
       attendance: 95,
-      lastAttendance: '2025.02.15'
+      lastAttendance: '2025.02.15',
+      instituteId: 1,
+      instituteName: '행복한 애견 교실',
+      matchStatus: '매치완료',
+      matchedTrainerId: 102,
+      matchedTrainerName: '이트레이너'
     },
     {
       id: 5,
@@ -150,7 +174,33 @@ export default function TrainerStudents() {
       progress: 20,
       attendance: 60,
       lastAttendance: '2025.03.25',
-      note: '이사로 인한 중도 포기'
+      note: '이사로 인한 중도 포기',
+      instituteId: 2,
+      instituteName: '도그 아카데미',
+      matchStatus: '매치완료',
+      matchedTrainerId: 103,
+      matchedTrainerName: '박트레이너'
+    },
+    {
+      id: 6,
+      name: '장나라',
+      contact: '010-9876-5432',
+      email: 'nara@example.com',
+      petName: '보리',
+      petBreed: '웰시코기',
+      petAge: 1,
+      petGender: '암컷',
+      petNeutered: false,
+      status: '수강중',
+      joinDate: '2025.04.20',
+      courseId: 3,
+      courseName: '반려견 어질리티 입문',
+      courseType: '그룹',
+      progress: 10,
+      attendance: 100,
+      lastAttendance: '2025.04.27',
+      instituteCode: 'HAPPY2025',
+      note: '기관 코드 등록 완료, 기관 승인 대기 중'
     }
   ];
 
@@ -204,6 +254,14 @@ export default function TrainerStudents() {
           <h1 className="text-2xl font-bold">수강생 관리</h1>
           <p className="text-gray-500 mt-1">수강생 정보와 진행 상황을 관리하세요.</p>
         </div>
+        <div className="flex space-x-2">
+          <Button onClick={() => openModal('register')}>
+            기관 코드 등록
+          </Button>
+          <Button onClick={() => openModal('match')}>
+            훈련사 매칭
+          </Button>
+        </div>
       </div>
 
       <Card>
@@ -226,6 +284,8 @@ export default function TrainerStudents() {
                   <TableRow>
                     <TableHead>이름</TableHead>
                     <TableHead>반려견</TableHead>
+                    <TableHead>기관</TableHead>
+                    <TableHead>매칭상태</TableHead>
                     <TableHead>강의</TableHead>
                     <TableHead>진도율</TableHead>
                     <TableHead>출석률</TableHead>
@@ -240,6 +300,28 @@ export default function TrainerStudents() {
                       <TableRow key={student.id}>
                         <TableCell className="font-medium">{student.name}</TableCell>
                         <TableCell>{student.petName} ({student.petBreed})</TableCell>
+                        <TableCell>
+                          {student.instituteName || (student.instituteCode ? 
+                            <Badge variant="warning">코드: {student.instituteCode}</Badge> : 
+                            <Badge variant="outline">미소속</Badge>)}
+                        </TableCell>
+                        <TableCell>
+                          {student.matchStatus ? (
+                            <Badge
+                              variant={
+                                student.matchStatus === '매치완료' ? 'success' :
+                                student.matchStatus === '대기중' ? 'warning' :
+                                'outline'
+                              }
+                            >
+                              {student.matchStatus}
+                              {student.matchStatus === '매치완료' && student.matchedTrainerName && 
+                                ` (${student.matchedTrainerName})`}
+                            </Badge>
+                          ) : (
+                            <Badge variant="outline">미지정</Badge>
+                          )}
+                        </TableCell>
                         <TableCell>{student.courseName}</TableCell>
                         <TableCell>
                           <div className="flex items-center gap-2">
@@ -348,6 +430,41 @@ export default function TrainerStudents() {
                           </Badge>
                         </dd>
                       </div>
+                      <div className="flex justify-between">
+                        <dt className="text-sm font-medium text-gray-500">소속기관:</dt>
+                        <dd>
+                          {selectedStudent.instituteName || 
+                            (selectedStudent.instituteCode ? 
+                              <Badge variant="warning">코드: {selectedStudent.instituteCode}</Badge> : 
+                              <Badge variant="outline">미소속</Badge>
+                            )
+                          }
+                        </dd>
+                      </div>
+                      <div className="flex justify-between">
+                        <dt className="text-sm font-medium text-gray-500">매칭상태:</dt>
+                        <dd>
+                          {selectedStudent.matchStatus ? (
+                            <Badge
+                              variant={
+                                selectedStudent.matchStatus === '매치완료' ? 'success' :
+                                selectedStudent.matchStatus === '대기중' ? 'warning' :
+                                'outline'
+                              }
+                            >
+                              {selectedStudent.matchStatus}
+                            </Badge>
+                          ) : (
+                            <Badge variant="outline">미지정</Badge>
+                          )}
+                        </dd>
+                      </div>
+                      {selectedStudent.matchedTrainerName && (
+                        <div className="flex justify-between">
+                          <dt className="text-sm font-medium text-gray-500">매칭된 훈련사:</dt>
+                          <dd>{selectedStudent.matchedTrainerName}</dd>
+                        </div>
+                      )}
                     </dl>
                   </CardContent>
                 </Card>
@@ -595,6 +712,142 @@ export default function TrainerStudents() {
           <DialogFooter>
             <Button variant="outline" onClick={closeModal}>취소</Button>
             <Button onClick={closeModal}>저장</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* 기관 코드 등록 모달 */}
+      <Dialog open={activeModal === 'register'} onOpenChange={() => activeModal === 'register' && closeModal()}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>기관 코드 등록</DialogTitle>
+            <DialogDescription>
+              기관 코드를 등록하여 소속 기관에 연결하세요.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <label htmlFor="institute-code" className="text-sm font-medium">기관 코드</label>
+              <div className="flex space-x-2">
+                <input
+                  id="institute-code"
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  placeholder="기관에서 제공받은 코드를 입력하세요"
+                />
+                <Button variant="outline">확인</Button>
+              </div>
+              <p className="text-sm text-gray-500">
+                기관 코드는 소속 기관의 관리자에게 받을 수 있습니다.
+              </p>
+            </div>
+
+            <div className="border rounded-md p-4">
+              <h3 className="font-medium mb-2">기관 코드 등록 절차</h3>
+              <ol className="space-y-2 list-decimal list-inside text-sm text-gray-600">
+                <li>반려동물 소유자는 기관 코드를 입력하여 등록합니다.</li>
+                <li>기관 관리자가 등록 요청을 검토하고 승인합니다.</li>
+                <li>승인이 완료되면 기관 소속 견주로 등록됩니다.</li>
+                <li>기관 관리자가 적합한 훈련사와 매칭을 진행합니다.</li>
+                <li>매칭이 완료되면 훈련 과정을 시작할 수 있습니다.</li>
+              </ol>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={closeModal}>취소</Button>
+            <Button onClick={() => {
+              console.log('기관 코드 등록 요청');
+              closeModal();
+            }}>등록 요청</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* 훈련사 매칭 모달 */}
+      <Dialog open={activeModal === 'match'} onOpenChange={() => activeModal === 'match' && closeModal()}>
+        <DialogContent className="sm:max-w-[700px]">
+          <DialogHeader>
+            <DialogTitle>훈련사 매칭 관리</DialogTitle>
+            <DialogDescription>
+              견주와 훈련사를 매칭하여 훈련 과정을 시작하세요.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            <div className="border rounded-md p-4 bg-gray-50 dark:bg-gray-800">
+              <h3 className="font-medium mb-2">매칭 대기 중인 견주</h3>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>이름</TableHead>
+                    <TableHead>반려견</TableHead>
+                    <TableHead>기관</TableHead>
+                    <TableHead>액션</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {students.filter(s => s.matchStatus === '대기중').map(student => (
+                    <TableRow key={`match-${student.id}`}>
+                      <TableCell className="font-medium">{student.name}</TableCell>
+                      <TableCell>{student.petName} ({student.petBreed})</TableCell>
+                      <TableCell>{student.instituteName}</TableCell>
+                      <TableCell>
+                        <Button size="sm" variant="outline">매칭하기</Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                  {students.filter(s => s.matchStatus === '대기중').length === 0 && (
+                    <TableRow>
+                      <TableCell colSpan={4} className="text-center py-4">
+                        매칭 대기 중인 견주가 없습니다.
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+
+            <div className="space-y-2">
+              <h3 className="font-medium">수동 매칭</h3>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label htmlFor="student-select" className="text-sm font-medium block mb-1">견주 선택</label>
+                  <select
+                    id="student-select"
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  >
+                    <option value="">선택하세요</option>
+                    {students.filter(s => !s.matchStatus || s.matchStatus !== '매치완료')
+                      .map(s => (
+                        <option key={`select-${s.id}`} value={s.id}>
+                          {s.name} ({s.petName})
+                        </option>
+                      ))}
+                  </select>
+                </div>
+                <div>
+                  <label htmlFor="trainer-select" className="text-sm font-medium block mb-1">훈련사 선택</label>
+                  <select
+                    id="trainer-select"
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  >
+                    <option value="">선택하세요</option>
+                    <option value="101">김훈련</option>
+                    <option value="102">이트레이너</option>
+                    <option value="103">박트레이너</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={closeModal}>취소</Button>
+            <Button onClick={() => {
+              console.log('수동 매칭 요청');
+              closeModal();
+            }}>매칭 완료</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
