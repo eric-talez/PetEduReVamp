@@ -311,7 +311,7 @@ export function Sidebar({
                   </div>
                 ) : (
                   <div className="flex justify-center py-2">
-                    <Menu className="h-4 w-4 text-gray-500" />
+                    <ChevronRight className="h-4 w-4 text-gray-500" />
                   </div>
                 )}
 
@@ -497,7 +497,7 @@ export function Sidebar({
                   </div>
                 ) : (
                   <div className="flex justify-center py-2">
-                    <Home className="h-4 w-4 text-gray-500" />
+                    <ChevronRight className="h-4 w-4 text-gray-500" />
                   </div>
                 )}
 
@@ -552,7 +552,7 @@ export function Sidebar({
                   </div>
                 ) : (
                   <div className="flex justify-center py-2 mt-4">
-                    <Video className="h-4 w-4 text-gray-500" />
+                    <ChevronRight className="h-4 w-4 text-gray-500" />
                   </div>
                 )}
 
