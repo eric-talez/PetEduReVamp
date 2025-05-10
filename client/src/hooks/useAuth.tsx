@@ -19,22 +19,27 @@ const AuthContext = createContext<AuthState | null>(null);
  * 인증 상태 제공 컴포넌트
  */
 export function AuthProvider({ children }: { children: ReactNode }) {
-  // 인증 상태 관리 - 간소화된 버전
+  // 인증 상태 관리 - 로그인 필요한 상태로 변경
   const [authState, setAuthState] = useState<AuthState>({
-    isAuthenticated: true,  // 항상 인증된 상태로 유지 (개발 편의성)
-    isLoading: false,
-    userRole: 'trainer',    // 기본적으로 훈련사 권한 부여
-    userName: '박훈련',
+    isAuthenticated: false,  // 로그인 필요한 상태로 초기화
+    isLoading: true,
+    userRole: null,         // 기본 권한 없음
+    userName: null,
     logout: () => {
       console.log("로그아웃 실행");
+      // 로컬 스토리지 데이터 삭제
       localStorage.removeItem('petedu_auth');
+      // 전역 변수 초기화
+      (window as any).__peteduAuthState = null;
+      // 인증 상태 초기화
       setAuthState(prev => ({
         ...prev,
         isAuthenticated: false,
         userRole: null,
         userName: null
       }));
-      
+      // 커스텀 이벤트 발생
+      window.dispatchEvent(new CustomEvent('clear-auth'));
       // 로그아웃 후 인증 페이지로 리다이렉트
       window.location.href = "/auth";
     }
