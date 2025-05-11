@@ -5,8 +5,9 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
-import { Sparkles, Clock, Calendar, LineChart, AlertCircle, Check, Brain, Lightbulb } from 'lucide-react';
+import { Sparkles, Clock, Calendar, LineChart, AlertCircle, Check, Brain, Lightbulb, ChevronRight, Book } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 // 로컬 스토리지에 저장할 분석 정보 인터페이스
 interface AnalysisData {
@@ -142,12 +143,73 @@ const CompatibilityStars = ({ score }: { score: number }) => {
   );
 };
 
+// 샘플 반려견 목록
+const samplePets = [
+  {
+    id: 1,
+    name: "토리",
+    breed: "골든 리트리버",
+    photo: "https://images.unsplash.com/photo-1600077106724-946750eeaf3c?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=400",
+  },
+  {
+    id: 2,
+    name: "몽이",
+    breed: "포메라니안",
+    photo: "https://images.unsplash.com/photo-1537151608828-ea2b11777ee8?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=400",
+  },
+  {
+    id: 3,
+    name: "별이",
+    breed: "말티즈",
+    photo: "https://images.unsplash.com/photo-1583512603805-3cc6b41f3edb?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=400",
+  }
+];
+
+// 알림장 샘플 데이터
+interface DiaryEntry {
+  id: number;
+  date: string;
+  content: string;
+  trainer: string;
+  tags: string[];
+}
+
+const sampleDiaryEntries: DiaryEntry[] = [
+  {
+    id: 1,
+    date: "2025-05-11",
+    content: "오늘 토리는 기본 명령어 훈련에서 탁월한 성과를 보였습니다. '앉아', '기다려' 명령에 즉각 반응했고, 특히 다른 반려견과의 상호작용에서 긍정적인 모습을 보였습니다. 다만 집중력이 중간에 떨어지는 경향이 있어 짧은 세션으로 나누어 훈련하는 것이 좋을 것 같습니다.",
+    trainer: "김훈련",
+    tags: ["기본훈련", "사회화", "집중력"]
+  },
+  {
+    id: 2,
+    date: "2025-05-10",
+    content: "몽이는 오늘 처음으로 어질리티 코스를 완주했습니다. 특히 높은 점프에서의 자신감이 향상되었습니다. 새로운 장애물에 대한 두려움도 줄어든 것으로 보입니다. 다음 세션에서는 속도와 정확성을 더 향상시키는 데 집중하겠습니다.",
+    trainer: "박코치",
+    tags: ["어질리티", "자신감", "신체활동"]
+  },
+  {
+    id: 3,
+    date: "2025-05-09",
+    content: "별이는 오늘 특별히 사회화 훈련에 중점을 두었습니다. 다른 중형견들과의 만남에서 처음에는 약간의 불안함을 보였으나, 점차 적응하며 긍정적인 상호작용을 보였습니다. 특히 낯선 환경에서의 적응력이 이전보다 향상되었습니다.",
+    trainer: "이트레이너",
+    tags: ["사회화", "적응력", "스트레스관리"]
+  }
+];
+
 export default function AIAnalysisPage() {
   const [analysis, setAnalysis] = useState<AnalysisData | null>(null);
   const [isAnalysisAvailable, setIsAnalysisAvailable] = useState(true);
   const [timeUntilNextAnalysis, setTimeUntilNextAnalysis] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [selectedPetId, setSelectedPetId] = useState<number>(1); // 기본값으로 첫 번째 반려견 선택
+  const [selectedDiaryEntry, setSelectedDiaryEntry] = useState<DiaryEntry | null>(null);
+  const [showDiarySelection, setShowDiarySelection] = useState(false);
   const { toast } = useToast();
+  
+  // 선택된 반려견 정보
+  const selectedPet = samplePets.find(pet => pet.id === selectedPetId) || samplePets[0];
 
   // 분석 데이터 로드 및 다음 분석 가능 시간 체크
   useEffect(() => {
