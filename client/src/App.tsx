@@ -3,6 +3,7 @@ import { Switch, Route, useLocation } from "wouter";
 import { AppLayout } from "./layout/AppLayout";
 import { useAuth } from "./hooks/useAuth";
 import { CartProvider } from "./context/cart-context";
+import { AIAnalysisProvider } from "./hooks/useAIAnalysis";
 import { RedirectHandler } from "./components/RedirectHandler";
 import { Chatbot } from "./components/features/Chatbot";
 
@@ -27,6 +28,7 @@ import ShopIndex from "./pages/shop/index"; // 쇼핑 페이지 메인 컴포넌
 import ProductDetailPage from "./pages/shop/product"; // 상품 상세 페이지
 
 import VideoTrainingPage from "./pages/video-training/index";
+import PetAnalysisPage from "./pages/pet-analysis/index";
 import VideoTrainingDetailPage from "./pages/video-training/video";
 import ProfilePage from "./pages/profile/index";
 import SettingsPage from "./pages/settings/index";
@@ -197,8 +199,8 @@ function AuthenticatedRoutesContent() {
       <Route path="/settings" component={SettingsPage} />
       <Route path="/events" component={EventsPage} />
       <Route path="/events/calendar" component={EventCalendarPage} />
-      <Route path="/ai-analysis">
-        {() => checkAccess(['pet-owner', 'admin']) ? <AIAnalysisPage /> : window.location.href = '/'}
+      <Route path="/pet-analysis">
+        {() => checkAccess(['pet-owner', 'admin']) ? <PetAnalysisPage /> : window.location.href = '/'}
       </Route>
       <Route path="/events/:id">
         {() => (
