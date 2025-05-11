@@ -225,3 +225,90 @@ export type InsertAchievement = z.infer<typeof createAchievementSchema>;
 
 export type Post = typeof posts.$inferSelect;
 export type InsertPost = z.infer<typeof createPostSchema>;
+
+// Commission Policy types
+export const commissionPolicies = pgTable("commission_policies", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  type: text("type").notNull(),
+  baseRate: integer("base_rate").notNull(),
+  status: text("status").notNull().default('active'),
+  description: text("description"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export const createCommissionPolicySchema = createInsertSchema(commissionPolicies).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true
+});
+
+// Commission Tier types
+export const commissionTiers = pgTable("commission_tiers", {
+  id: serial("id").primaryKey(),
+  policyId: integer("policy_id").notNull().references(() => commissionPolicies.id, { onDelete: 'cascade' }),
+  name: text("name").notNull(),
+  minSales: integer("min_sales").notNull(),
+  rate: integer("rate").notNull(),
+});
+
+export const createCommissionTierSchema = createInsertSchema(commissionTiers).omit({
+  id: true
+});
+
+// Commission Transaction types
+export const commissionTransactions = pgTable("commission_transactions", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  orderNumber: text("order_number").notNull(),
+  productName: text("product_name").notNull(),
+  orderAmount: integer("order_amount").notNull(),
+  commissionAmount: integer("commission_amount").notNull(),
+  commissionRate: integer("commission_rate").notNull(),
+  status: text("status").notNull().default('pending'),
+  referralCode: text("referral_code"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  paidAt: timestamp("paid_at"),
+});
+
+export const createCommissionTransactionSchema = createInsertSchema(commissionTransactions).omit({
+  id: true,
+  createdAt: true,
+  paidAt: true
+});
+
+// Settlement Report types
+export const settlementReports = pgTable("settlement_reports", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  periodStart: timestamp("period_start").notNull(),
+  periodEnd: timestamp("period_end").notNull(),
+  totalCommission: integer("total_commission").notNull(),
+  transactionCount: integer("transaction_count").notNull(),
+  status: text("status").notNull().default('pending'),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at"),
+  paidAt: timestamp("paid_at"),
+  paymentMethod: text("payment_method"),
+  bankInfo: text("bank_info"),
+});
+
+export const createSettlementReportSchema = createInsertSchema(settlementReports).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+  paidAt: true
+});
+
+export type CommissionPolicy = typeof commissionPolicies.$inferSelect;
+export type InsertCommissionPolicy = z.infer<typeof createCommissionPolicySchema>;
+
+export type CommissionTier = typeof commissionTiers.$inferSelect;
+export type InsertCommissionTier = z.infer<typeof createCommissionTierSchema>;
+
+export type CommissionTransaction = typeof commissionTransactions.$inferSelect;
+export type InsertCommissionTransaction = z.infer<typeof createCommissionTransactionSchema>;
+
+export type SettlementReport = typeof settlementReports.$inferSelect;
+export type InsertSettlementReport = z.infer<typeof createSettlementReportSchema>;

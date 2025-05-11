@@ -1,12 +1,4 @@
-import { users, type User, type InsertUser } from "@shared/schema";
-
-// modify the interface with any CRUD methods
-// you might need
-enum UserRole {
-  USER = 'user',
-  TRAINER = 'trainer',
-  INSTITUTE_ADMIN = 'institute_admin',
-}
+import { users, type User, type InsertUser, type UserRole } from "@shared/schema";
 
 export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
@@ -37,19 +29,37 @@ export class MemStorage implements IStorage {
 
   async createUser(insertUser: InsertUser): Promise<User> {
     const id = this.currentId++;
-    const user: User = { ...insertUser, id, role: UserRole.USER }; // Default role
+    
+    // 필수 기본값 설정
+    const user: User = { 
+      ...insertUser, 
+      id, 
+      role: 'user', // 기본 역할
+      avatar: insertUser.avatar || null,
+      bio: insertUser.bio || null,
+      location: insertUser.location || null,
+      specialty: insertUser.specialty || null,
+      isVerified: insertUser.isVerified || false,
+      instituteId: null,
+      createdAt: new Date()
+    };
+    
     this.users.set(id, user);
     return user;
   }
 
-  // Added method implementation
+  // Temporary implementation for institute code lookup
   async getInstituteByCode(code: string): Promise<any> {
-    // Replace with your actual database query
-    // This is a placeholder and requires a proper database connection and query mechanism.
-    // Assuming 'db' is a database client and 'institutes' is a table with a 'code' column.
-    return await db.query.institutes.findFirst({
-      where: eq(institutes.code, code)
-    });
+    // Mock implementation until proper database is connected
+    if (code === "PETEDU") {
+      return {
+        id: 1,
+        name: "PetEdu Institute",
+        code: "PETEDU",
+        description: "Main pet training institute"
+      };
+    }
+    return null;
   }
 
   async updateUserRole(userId: number, role: UserRole, trainerId?: number): Promise<User> {
@@ -57,7 +67,14 @@ export class MemStorage implements IStorage {
     if (!user) {
       throw new Error("User not found");
     }
-    const updatedUser = { ...user, role, trainerId };
+    
+    // 사용자 업데이트 시 타입 보존
+    const updatedUser: User = { 
+      ...user, 
+      role,  // UserRole 타입 사용
+      // trainerId는 User 타입에 없으므로 포함하지 않음
+    };
+    
     this.users.set(userId, updatedUser);
     return updatedUser;
   }
