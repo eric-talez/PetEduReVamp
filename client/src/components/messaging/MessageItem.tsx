@@ -1,12 +1,16 @@
 import { memo } from 'react';
 import { Message } from '@/hooks/useMessaging';
-import { format } from 'date-fns';
+import { format, isToday, isYesterday, isSameDay } from 'date-fns';
+import { ko } from 'date-fns/locale';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 interface MessageItemProps {
   message: Message;
   isCurrentUser: boolean;
+  showAvatar?: boolean;
+  showSender?: boolean;
   showDate?: boolean;
+  previousMessage?: Message | null;
 }
 
 // 아바타 색상 생성 (이름 기반)
@@ -32,6 +36,17 @@ const getInitials = (name: string) => {
     .join('')
     .toUpperCase()
     .slice(0, 2);
+};
+
+// 날짜 포맷팅 (오늘, 어제, 그 외)
+const formatMessageDate = (date: Date) => {
+  if (isToday(date)) {
+    return '오늘';
+  } else if (isYesterday(date)) {
+    return '어제';
+  } else {
+    return format(date, 'yyyy년 M월 d일', { locale: ko });
+  }
 };
 
 function MessageItemComponent({ message, isCurrentUser }: MessageItemProps) {
