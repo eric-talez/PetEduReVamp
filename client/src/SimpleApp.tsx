@@ -18,6 +18,9 @@ import Login from "@/pages/auth/login";
 import NotFound from "@/pages/not-found";
 import VideoTrainingPage from "@/pages/video-training";
 import LocationsPage from "./pages/locations";
+import { PetAIChatBox } from "./components/PetAIChatBox";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Dog } from "lucide-react";
 import VideoCallPage from "./pages/video-call";
 import MessagesPage from "./pages/messages";
 import AdminCommissionPage from "./pages/admin/commission";
@@ -405,17 +408,43 @@ function AuthenticatedRoutes() {
           )}
         </Route>
         <Route path="/pet-ai-chat">
-          {() => {
-            const PublicAIPage = lazy(() => import('./pages/public-ai'));
-            return (
-              <Suspense fallback={<div className="p-8 flex justify-center items-center">
-                <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
-              </div>}>
-                {/* 로그인 여부에 관계없이 모든 사용자가 접근 가능한 AI 채팅 페이지 */}
-                <PublicAIPage />
-              </Suspense>
-            );
-          }}
+          {() => (
+            <div className="container mx-auto py-6">
+              <div className="flex flex-col items-start mb-8">
+                <h1 className="text-3xl font-bold">반려동물 AI 도우미</h1>
+                <p className="text-gray-600 dark:text-gray-400">
+                  반려동물에 대한 질문이나 관리 방법에 대해 AI에게 물어보세요
+                </p>
+              </div>
+              
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div className="lg:col-span-2">
+                  <PetAIChatBox isFullPage={true} />
+                </div>
+                
+                <div className="lg:col-span-1 space-y-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center">
+                        <Dog className="mr-2 h-5 w-5 text-primary" />
+                        반려동물 이해하기
+                      </CardTitle>
+                      <CardDescription>
+                        반려견의 행동과 건강에 대한 질문을 해보세요
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-2 text-sm">
+                        <p className="bg-slate-100 dark:bg-slate-800 p-2 rounded">우리 강아지가 계속 짖는데 어떻게 해야 할까요?</p>
+                        <p className="bg-slate-100 dark:bg-slate-800 p-2 rounded">강아지 사료 선택은 어떻게 하나요?</p>
+                        <p className="bg-slate-100 dark:bg-slate-800 p-2 rounded">반려견 기본 훈련은 어떻게 시작하나요?</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+            </div>
+          )}
         </Route>
         <Route path="/messages">
           {() => (
