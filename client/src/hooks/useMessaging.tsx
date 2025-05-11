@@ -13,6 +13,8 @@ export interface Message {
   receiver: {
     id: number;
     name: string;
+    role?: string;
+    avatar?: string | null;
   };
   content: string;
   timestamp: Date;
@@ -202,7 +204,15 @@ export function MessagingProvider({ children }: { children: ReactNode }) {
     
     // 상대방 정보 (발신자 또는 수신자)
     const isReceiver = message.sender.id !== currentUserId;
-    const otherParty = isReceiver ? message.sender : message.receiver;
+    
+    // 메시지 수신자 정보가 제한적일 수 있으므로 기본값 확장
+    const receiver = {
+      ...message.receiver,
+      role: (message.receiver as any).role || 'user',
+      avatar: (message.receiver as any).avatar || null
+    };
+    
+    const otherParty = isReceiver ? message.sender : receiver;
     
     setConversations(prev => {
       // 이미 대화 목록에 있는지 확인

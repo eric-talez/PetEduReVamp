@@ -14,6 +14,8 @@ export interface Message {
   receiver: {
     id: number;
     name: string;
+    role?: UserRole;
+    avatar?: string | null;
   };
   content: string;
   timestamp: Date;
