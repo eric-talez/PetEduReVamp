@@ -177,6 +177,143 @@ export class MemStorage implements IStorage {
     this.commissionPolicies.set(institutePolicy.id, institutePolicy);
     this.commissionTiers.set(instituteTier1.id, instituteTier1);
     this.commissionTiers.set(instituteTier2.id, instituteTier2);
+    
+    // 트레이너 샘플 데이터
+    const trainer1 = {
+      id: this.trainerId++,
+      name: "김훈련",
+      email: "trainer1@example.com",
+      specialty: "반려견 기본 훈련",
+      experience: 5,
+      bio: "5년 경력의 전문 반려견 훈련사입니다.",
+      status: "active"
+    };
+    
+    const trainer2 = {
+      id: this.trainerId++,
+      name: "이교육",
+      email: "trainer2@example.com",
+      specialty: "고양이 행동 교정",
+      experience: 3,
+      bio: "고양이 행동 전문가입니다.",
+      status: "active"
+    };
+    
+    this.trainers.set(trainer1.id, trainer1);
+    this.trainers.set(trainer2.id, trainer2);
+    
+    // 기관 샘플 데이터
+    const institute1 = {
+      id: this.instituteId++,
+      name: "행복한 펫 아카데미",
+      code: "HAPPY",
+      address: "서울시 강남구 역삼동 123",
+      email: "happy@petacademy.com",
+      phone: "02-1234-5678",
+      status: "active",
+      description: "반려동물 교육 전문 기관입니다."
+    };
+    
+    const institute2 = {
+      id: this.instituteId++,
+      name: "스마트 펫 스쿨",
+      code: "SMART",
+      address: "서울시 서초구 서초동 456",
+      email: "info@smartpet.com",
+      phone: "02-9876-5432",
+      status: "active",
+      description: "최신 교육 방법론을 적용한 반려동물 교육 기관입니다."
+    };
+    
+    this.institutes.set(institute1.id, institute1);
+    this.institutes.set(institute2.id, institute2);
+    
+    // 수수료 거래 샘플 데이터
+    const transaction1 = {
+      id: this.transactionId++,
+      type: "trainer",
+      referenceId: trainer1.id,
+      amount: 125000,
+      commissionAmount: 12500,
+      status: "completed",
+      orderDetails: {
+        productId: 101,
+        productName: "프리미엄 강아지 사료",
+        quantity: 5,
+        unitPrice: 25000
+      },
+      createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), // 7일 전
+      updatedAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+    };
+    
+    const transaction2 = {
+      id: this.transactionId++,
+      type: "institute",
+      referenceId: institute1.id,
+      amount: 200000,
+      commissionAmount: 16000,
+      status: "completed",
+      orderDetails: {
+        productId: 202,
+        productName: "반려동물 행동 교정 키트",
+        quantity: 2,
+        unitPrice: 100000
+      },
+      createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000), // 5일 전
+      updatedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000)
+    };
+    
+    const transaction3 = {
+      id: this.transactionId++,
+      type: "trainer",
+      referenceId: trainer2.id,
+      amount: 85000,
+      commissionAmount: 8500,
+      status: "completed",
+      orderDetails: {
+        productId: 303,
+        productName: "고양이 장난감 세트",
+        quantity: 1,
+        unitPrice: 85000
+      },
+      createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000), // 3일 전
+      updatedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000)
+    };
+    
+    this.commissionTransactions.set(transaction1.id, transaction1);
+    this.commissionTransactions.set(transaction2.id, transaction2);
+    this.commissionTransactions.set(transaction3.id, transaction3);
+    
+    // 정산 보고서 샘플 데이터
+    const settlementReport1 = {
+      id: this.reportId++,
+      type: "trainer",
+      referenceId: trainer1.id,
+      period: "2025-04",
+      totalSales: 450000,
+      totalCommission: 45000,
+      transactionCount: 18,
+      status: "completed",
+      paymentDate: new Date(2025, 4, 5), // 2025년 5월 5일
+      createdAt: new Date(2025, 4, 1),
+      updatedAt: new Date(2025, 4, 5)
+    };
+    
+    const settlementReport2 = {
+      id: this.reportId++,
+      type: "institute",
+      referenceId: institute1.id,
+      period: "2025-04",
+      totalSales: 1250000,
+      totalCommission: 100000,
+      transactionCount: 25,
+      status: "pending",
+      createdAt: new Date(2025, 4, 1),
+      updatedAt: new Date(2025, 4, 1)
+    };
+    
+    this.settlementReports.set(settlementReport1.id, settlementReport1);
+    this.settlementReports.set(settlementReport2.id, settlementReport2);
   }
 
   async getUser(id: number): Promise<User | undefined> {
