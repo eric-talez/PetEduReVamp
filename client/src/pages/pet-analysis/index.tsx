@@ -5,6 +5,7 @@ import { PetBehaviorAnalysis } from '@/components/PetBehaviorAnalysis';
 import { TrainingProgressChart } from '@/components/TrainingProgressChart';
 import { Loader2 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
+import { AIAnalysisProvider } from '@/hooks/useAIAnalysis';
 
 export default function PetAnalysisPage() {
   const [selectedPetId, setSelectedPetId] = useState<number | undefined>(undefined);
@@ -117,26 +118,28 @@ export default function PetAnalysisPage() {
       </div>
       
       {selectedPet && (
-        <Tabs defaultValue="behavior" className="w-full">
-          <TabsList className="mb-8 w-full justify-start">
-            <TabsTrigger value="behavior">행동 분석</TabsTrigger>
-            <TabsTrigger value="training">훈련 그래프</TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="behavior">
-            <PetBehaviorAnalysis 
-              petId={selectedPet.id} 
-              petName={selectedPet.name} 
-            />
-          </TabsContent>
-          
-          <TabsContent value="training">
-            <TrainingProgressChart 
-              petId={selectedPet.id} 
-              petName={selectedPet.name} 
-            />
-          </TabsContent>
-        </Tabs>
+        <AIAnalysisProvider>
+          <Tabs defaultValue="behavior" className="w-full">
+            <TabsList className="mb-8 w-full justify-start">
+              <TabsTrigger value="behavior">행동 분석</TabsTrigger>
+              <TabsTrigger value="training">훈련 그래프</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="behavior">
+              <PetBehaviorAnalysis 
+                petId={selectedPet.id} 
+                petName={selectedPet.name} 
+              />
+            </TabsContent>
+            
+            <TabsContent value="training">
+              <TrainingProgressChart 
+                petId={selectedPet.id} 
+                petName={selectedPet.name} 
+              />
+            </TabsContent>
+          </Tabs>
+        </AIAnalysisProvider>
       )}
     </div>
   );
