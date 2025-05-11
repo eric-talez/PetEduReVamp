@@ -197,9 +197,8 @@ function AuthenticatedRoutesContent() {
       <Route path="/settings" component={SettingsPage} />
       <Route path="/events" component={EventsPage} />
       <Route path="/events/calendar" component={EventCalendarPage} />
-      <Route path="/ai-analysis">
-        {() => checkAccess(['pet-owner', 'admin']) ? <AIAnalysisPage /> : window.location.href = '/'}
-      </Route>
+      <Route path="/ai-analysis" component={AIAnalysisPage} />
+      
       <Route path="/events/:id">
         {() => (
           <Suspense fallback={<div className="p-8 text-center">이벤트 상세 페이지 로딩 중...</div>}>
