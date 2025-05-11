@@ -1,11 +1,21 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { ChevronRight, Users, FileText, Award, AlertTriangle, CheckCircle2, Zap, Calendar, Info, TrendingUp, ArrowUpRight } from 'lucide-react';
-import { Link } from 'wouter';
+import { ChevronRight, Users, FileText, Award, AlertTriangle, CheckCircle2, Zap, Calendar, Info, TrendingUp, ArrowUpRight, Check, X } from 'lucide-react';
+import { Link, useLocation } from 'wouter';
 import { useAuth } from '@/lib/auth-compat';
 import { Button } from '@/components/ui/Button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useToast } from '@/hooks/use-toast';
+import { 
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 // 차트 컴포넌트
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, PieChart, Pie, Cell, TooltipProps } from 'recharts';
@@ -57,7 +67,71 @@ const keyMetrics = [
 
 export default function InstituteAdminHome() {
   const { userName } = useAuth();
+  const { toast } = useToast();
+  const [location, setLocation] = useLocation();
   const [isLoaded, setIsLoaded] = useState(false);
+  const [activeTab, setActiveTab] = useState('overview');
+  
+  // 일정 알림 상태
+  const [showNotificationBadge, setShowNotificationBadge] = useState(true);
+  // 승인 요청 대화상자 상태
+  const [approvalDialogOpen, setApprovalDialogOpen] = useState(false);
+  // 현재 선택된 승인 요청
+  const [selectedApproval, setSelectedApproval] = useState<any>(null);
+  
+  // 일정 관리 버튼 클릭 핸들러
+  const handleScheduleClick = () => {
+    toast({
+      title: "일정 관리 페이지로 이동합니다",
+      description: "일정 및 캘린더를 관리할 수 있는 페이지로 이동합니다.",
+    });
+    setLocation("/institute/calendar");
+  };
+  
+  // 탭 변경 핸들러
+  const handleTabChange = (value: string) => {
+    console.log("탭 변경:", value);
+    setActiveTab(value);
+  };
+  
+  // 승인 요청 검토 핸들러
+  const handleApprovalReview = (approval: any) => {
+    console.log("승인 요청 검토:", approval);
+    setSelectedApproval(approval);
+    setApprovalDialogOpen(true);
+  };
+  
+  // 승인 처리 핸들러
+  const handleApproveRequest = () => {
+    console.log("승인 요청 승인:", selectedApproval);
+    toast({
+      title: "승인 완료",
+      description: `${selectedApproval.title} ${selectedApproval.type === '코스' ? '코스가' : '수료증이'} 승인되었습니다.`,
+      variant: "default",
+    });
+    setApprovalDialogOpen(false);
+  };
+  
+  // 거부 처리 핸들러
+  const handleRejectRequest = () => {
+    console.log("승인 요청 거부:", selectedApproval);
+    toast({
+      title: "승인 거부",
+      description: `${selectedApproval.title} ${selectedApproval.type === '코스' ? '코스가' : '수료증이'} 거부되었습니다.`,
+      variant: "destructive",
+    });
+    setApprovalDialogOpen(false);
+  };
+  
+  // 훈련사 상세 정보 보기 핸들러
+  const handleViewTrainerDetails = (trainerId: number) => {
+    console.log("훈련사 상세 정보 보기:", trainerId);
+    toast({
+      title: "훈련사 정보",
+      description: `훈련사 ${trainerId}의 상세 정보 페이지로 이동합니다.`,
+    });
+    setLocation(`/trainers/${trainerId}`);
+  };
   
   useEffect(() => {
     // 데이터 로딩 시뮬레이션
@@ -82,11 +156,20 @@ export default function InstituteAdminHome() {
   return (
     <div className="container px-4 py-6 mx-auto">
       {/* 인사말 헤더 */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold tracking-tight mb-1">안녕하세요, {userName}님!</h1>
-        <p className="text-muted-foreground">
-          금일 운영 현황과 관리가 필요한 항목을 확인하세요.
-        </p>
+      <div className="flex justify-between items-center mb-8">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight mb-1">안녕하세요, {userName}님!</h1>
+          <p className="text-muted-foreground">
+            금일 운영 현황과 관리가 필요한 항목을 확인하세요.
+          </p>
+        </div>
+        <Button onClick={handleScheduleClick} className="relative">
+          <Calendar className="h-4 w-4 mr-2" />
+          일정 관리
+          {showNotificationBadge && (
+            <span className="w-2 h-2 bg-red-500 rounded-full absolute -top-1 -right-1"></span>
+          )}
+        </Button>
       </div>
       
       {/* 주요 지표 카드 - 4칸 그리드 */}
@@ -113,7 +196,7 @@ export default function InstituteAdminHome() {
       </div>
       
       {/* 탭 컴포넌트 */}
-      <Tabs defaultValue="overview" className="mb-6">
+      <Tabs defaultValue="overview" className="mb-6" value={activeTab} onValueChange={handleTabChange}>
         <TabsList className="grid w-full md:w-auto grid-cols-3 mb-6">
           <TabsTrigger value="overview">운영 현황</TabsTrigger>
           <TabsTrigger value="approvals">승인 요청</TabsTrigger>
@@ -217,7 +300,13 @@ export default function InstituteAdminHome() {
                     </div>
                     <div className="flex items-center gap-3">
                       <span className="text-sm text-muted-foreground">{approval.date}</span>
-                      <Button variant="outline" size="sm">검토</Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={() => handleApprovalReview(approval)}
+                      >
+                        검토
+                      </Button>
                     </div>
                   </div>
                 ))}
@@ -245,7 +334,11 @@ export default function InstituteAdminHome() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {/* 훈련사 카드 샘플 */}
                   {[1, 2, 3, 4, 5, 6].map((trainer) => (
-                    <div key={trainer} className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg flex items-center gap-3">
+                    <div 
+                      key={trainer} 
+                      className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg flex items-center gap-3 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                      onClick={() => handleViewTrainerDetails(trainer)}
+                    >
                       <div className="w-12 h-12 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-lg font-semibold">
                         {`T${trainer}`}
                       </div>
@@ -321,31 +414,75 @@ export default function InstituteAdminHome() {
       
       {/* 바로가기 버튼 */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Link href="/institute/courses">
-          <Button variant="outline" className="w-full justify-start">
-            <FileText className="h-5 w-5 mr-2" />
-            코스 관리
-          </Button>
-        </Link>
-        <Link href="/institute/trainers">
-          <Button variant="outline" className="w-full justify-start">
-            <Users className="h-5 w-5 mr-2" />
-            훈련사 관리
-          </Button>
-        </Link>
-        <Link href="/institute/certificates">
-          <Button variant="outline" className="w-full justify-start">
-            <Award className="h-5 w-5 mr-2" />
-            수료증 발급
-          </Button>
-        </Link>
-        <Link href="/institute/calendar">
-          <Button variant="outline" className="w-full justify-start">
-            <Calendar className="h-5 w-5 mr-2" />
-            일정 관리
-          </Button>
-        </Link>
+        <Button variant="outline" className="w-full justify-start" onClick={() => setLocation("/institute/courses")}>
+          <FileText className="h-5 w-5 mr-2" />
+          코스 관리
+        </Button>
+        <Button variant="outline" className="w-full justify-start" onClick={() => setLocation("/institute/trainers")}>
+          <Users className="h-5 w-5 mr-2" />
+          훈련사 관리
+        </Button>
+        <Button variant="outline" className="w-full justify-start" onClick={() => setLocation("/institute/certificates")}>
+          <Award className="h-5 w-5 mr-2" />
+          수료증 발급
+        </Button>
+        <Button variant="outline" className="w-full justify-start" onClick={() => setLocation("/institute/calendar")}>
+          <Calendar className="h-5 w-5 mr-2" />
+          일정 관리
+        </Button>
       </div>
+      
+      {/* 승인 요청 검토 대화상자 */}
+      <Dialog open={approvalDialogOpen} onOpenChange={setApprovalDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>승인 요청 검토</DialogTitle>
+            <DialogDescription>
+              {selectedApproval?.type === '코스' 
+                ? `${selectedApproval?.trainer} 훈련사의 "${selectedApproval?.title}" 코스 승인 요청을 검토합니다.`
+                : `"${selectedApproval?.title}" 과정의 수료증 발급 요청 (${selectedApproval?.students}명)을 검토합니다.`
+              }
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="py-4">
+            <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg mb-4">
+              <div className="flex items-start gap-3">
+                <div className={`p-2 rounded-full ${selectedApproval?.type === '코스' ? 'bg-blue-100 dark:bg-blue-900/30' : 'bg-amber-100 dark:bg-amber-900/30'}`}>
+                  {selectedApproval?.type === '코스' 
+                    ? <FileText className="h-5 w-5 text-blue-500" /> 
+                    : <Award className="h-5 w-5 text-amber-500" />
+                  }
+                </div>
+                <div>
+                  <h4 className="font-medium">{selectedApproval?.title}</h4>
+                  <p className="text-sm text-muted-foreground">요청일: {selectedApproval?.date}</p>
+                  {selectedApproval?.type === '코스' ? (
+                    <p className="text-sm mt-2">
+                      코스 승인 시 소속 훈련사인 {selectedApproval?.trainer}님이 해당 코스를 운영할 수 있게 됩니다.
+                    </p>
+                  ) : (
+                    <p className="text-sm mt-2">
+                      수료증 발급 승인 시 {selectedApproval?.students}명의 학생에게 수료증이 발급됩니다.
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <DialogFooter className="flex justify-between sm:justify-between">
+            <Button variant="destructive" onClick={handleRejectRequest} className="flex items-center">
+              <X className="h-4 w-4 mr-2" />
+              거부
+            </Button>
+            <Button onClick={handleApproveRequest} className="flex items-center">
+              <Check className="h-4 w-4 mr-2" />
+              승인
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
