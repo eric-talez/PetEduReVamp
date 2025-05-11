@@ -26,6 +26,7 @@ const banners = [
 
 export function BannerSlider() {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const slideLiveRegionId = "banner-live-region";
 
   const nextSlide = () => {
     setCurrentIndex((prev) => (prev + 1) % banners.length);
@@ -36,7 +37,11 @@ export function BannerSlider() {
   };
 
   return (
-    <div className="relative overflow-hidden rounded-xl">
+    <div 
+      className="relative overflow-hidden rounded-xl"
+      role="region"
+      aria-label="배너 슬라이더" 
+      aria-roledescription="carousel">
       <Card className="relative h-[400px] overflow-hidden">
         <img
           src={banners[currentIndex].image}
@@ -59,6 +64,7 @@ export function BannerSlider() {
         size="icon"
         className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white"
         onClick={prevSlide}
+        aria-label="이전 배너"
       >
         <ChevronLeft className="h-4 w-4" />
       </Button>
@@ -68,18 +74,22 @@ export function BannerSlider() {
         size="icon"
         className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white"
         onClick={nextSlide}
+        aria-label="다음 배너"
       >
         <ChevronRight className="h-4 w-4" />
       </Button>
 
-      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
-        {banners.map((_, index) => (
+      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2" role="tablist">
+        {banners.map((banner, index) => (
           <button
             key={index}
             className={`w-2 h-2 rounded-full transition-colors ${
               index === currentIndex ? "bg-white" : "bg-white/50"
             }`}
             onClick={() => setCurrentIndex(index)}
+            aria-label={`${banner.title} 배너로 이동`}
+            aria-selected={index === currentIndex}
+            role="tab"
           />
         ))}
       </div>
