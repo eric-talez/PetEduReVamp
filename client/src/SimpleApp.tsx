@@ -411,16 +411,30 @@ function AuthenticatedRoutes() {
           {() => (
             <div className="container mx-auto py-6">
               <div className="flex flex-col items-start mb-8">
-                <h1 className="text-3xl font-bold">반려동물 AI 도우미</h1>
-                <p className="text-gray-600 dark:text-gray-400">
-                  반려동물에 대한 질문이나 관리 방법에 대해 AI에게 물어보세요
+                <h1 className="text-3xl font-bold">AI 반려동물 분석</h1>
+                <p className="text-gray-600 dark:text-gray-400 max-w-3xl">
+                  AI를 활용하여 반려동물의 행동을 분석하고 건강 상태를 관리하세요. 반려동물 돌봄에 관한 질문에 AI가 답변해드립니다.
                 </p>
               </div>
               
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <div className="lg:col-span-2">
-                  <div className="w-full h-full">
-                    <PetAIChatBox isFullPage={true} />
+                  <div className="w-full bg-white dark:bg-slate-800 rounded-lg shadow-md overflow-hidden mb-6">
+                    <div className="p-4 border-b dark:border-slate-700">
+                      <h2 className="text-xl font-bold flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="mr-2 h-5 w-5 text-primary" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <circle cx="12" cy="12" r="10"></circle>
+                          <line x1="12" y1="16" x2="12" y2="12"></line>
+                          <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                        </svg>
+                        AI 분석 도우미
+                      </h2>
+                    </div>
+                    <div className="p-6">
+                      <div className="w-full h-full">
+                        <PetAIChatBox isFullPage={true} />
+                      </div>
+                    </div>
                   </div>
                 </div>
                 
@@ -429,10 +443,7 @@ function AuthenticatedRoutes() {
                     <div className="p-4 border-b dark:border-slate-700">
                       <div className="flex items-center font-medium text-lg mb-1">
                         <svg xmlns="http://www.w3.org/2000/svg" className="mr-2 h-5 w-5 text-primary" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10 5.172C10 3.12 12.5 1.65 15 3.5c2.5 1.85 2.5 5.15 0 7-1.65 1.22-5.96 3.43-6.5 3.5a.5.5 0 0 1-.5-.5c.07-.54 2.28-4.85 3.5-6.5.86-1.16 1.24-2 0-3-1.24-1-2.5-.5-3 .5C8 5.172 10 5.172 10 5.172z"/><path d="M8.5 8.5c-.4.94-1.5 3.5-2 5.5-.5 2 .5 3 1.5 3s2-1 2-2-.5-2-2.5-2c-2 0-4.5 3-5.5 5"/></svg>
-                        반려동물 이해하기
-                      </div>
-                      <div className="text-sm text-slate-500 dark:text-slate-400">
-                        반려견의 행동과 건강에 대한 질문을 해보세요
+                        자주 묻는 질문
                       </div>
                     </div>
                     <div className="p-4">
@@ -443,10 +454,61 @@ function AuthenticatedRoutes() {
                       </div>
                     </div>
                   </div>
+                  
+                  <div className="bg-white dark:bg-slate-800 rounded-lg shadow-md overflow-hidden">
+                    <div className="p-4 border-b dark:border-slate-700">
+                      <div className="flex items-center font-medium text-lg mb-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="mr-2 h-5 w-5 text-primary" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
+                          <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                        회원 전용 기능
+                      </div>
+                    </div>
+                    <div className="p-4">
+                      <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
+                        로그인하시면 다음과 같은 추가 기능을 이용하실 수 있습니다:
+                      </p>
+                      <ul className="space-y-2 text-sm list-disc pl-5">
+                        <li>반려견 건강 데이터 분석</li>
+                        <li>행동 패턴 트래킹</li>
+                        <li>맞춤형 훈련 추천</li>
+                        <li>영양 상태 모니터링</li>
+                      </ul>
+                      <div className="mt-4">
+                        <a href="/auth" className="text-primary hover:text-primary-dark text-sm font-medium">
+                          로그인/회원가입 →
+                        </a>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
           )}
+        </Route>
+        
+        {/* 이전 경로에서 리다이렉트 */}
+        <Route path="/pet-ai">
+          {() => {
+            console.log("리다이렉트: /pet-ai → /ai-chat");
+            window.location.href = '/ai-chat';
+            return <div>리다이렉트 중...</div>;
+          }}
+        </Route>
+        <Route path="/pet-analysis">
+          {() => {
+            console.log("리다이렉트: /pet-analysis → /ai-chat");
+            window.location.href = '/ai-chat';
+            return <div>리다이렉트 중...</div>;
+          }}
+        </Route>
+        <Route path="/ai-analysis">
+          {() => {
+            console.log("리다이렉트: /ai-analysis → /ai-chat");
+            window.location.href = '/ai-chat';
+            return <div>리다이렉트 중...</div>;
+          }}
         </Route>
         <Route path="/messages">
           {() => (

@@ -252,9 +252,7 @@ export function Sidebar({
     const specialRoutes: Record<string, string> = {
       '/video-training': '영상 훈련',
       '/video-call': '화상 수업',
-      '/pet-analysis': 'AI 분석',
-      '/ai-analysis': 'AI 분석',
-      '/ai-chat': 'AI 챗봇',
+      '/ai-chat': 'AI 반려동물 분석',
       '/my-pets': '반려견 관리',
       '/notebook': '알림장',
       '/calendar': '교육 일정'
