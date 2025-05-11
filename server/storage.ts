@@ -314,6 +314,94 @@ export class MemStorage implements IStorage {
     
     this.settlementReports.set(settlementReport1.id, settlementReport1);
     this.settlementReports.set(settlementReport2.id, settlementReport2);
+    
+    // 강좌 샘플 데이터
+    const course1 = {
+      id: this.courseId++,
+      title: "반려견 기본 훈련 과정",
+      description: "반려견의 기본 훈련과 사회화에 대해 배우는 과정입니다.",
+      category: "반려견 훈련",
+      level: "입문",
+      price: 150000,
+      duration: "4주",
+      image: "https://example.com/images/dog-training.jpg",
+      trainerId: trainer1.id,
+      instituteId: institute1.id,
+      isPopular: true,
+      isCertified: true,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    
+    const course2 = {
+      id: this.courseId++,
+      title: "고양이 행동 교정 마스터",
+      description: "문제 행동을 보이는 고양이의 행동을 이해하고 교정하는 방법을 배웁니다.",
+      category: "고양이 훈련",
+      level: "중급",
+      price: 180000,
+      duration: "6주",
+      image: "https://example.com/images/cat-behavior.jpg",
+      trainerId: trainer2.id,
+      instituteId: institute2.id,
+      isPopular: false,
+      isCertified: true,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    
+    this.courses.set(course1.id, course1);
+    this.courses.set(course2.id, course2);
+    
+    // 사용자 샘플 데이터
+    const user1 = {
+      id: this.currentId++,
+      username: "petowner1",
+      email: "petowner1@example.com",
+      password: "password123",
+      name: "김반려",
+      role: "pet-owner" as UserRole,
+      avatar: null,
+      bio: "반려견을 사랑하는 견주입니다.",
+      location: "서울시 강남구",
+      specialty: null,
+      isVerified: true,
+      instituteId: null,
+      createdAt: new Date()
+    };
+    
+    const user2 = {
+      id: this.currentId++,
+      username: "petowner2",
+      email: "petowner2@example.com",
+      password: "password123",
+      name: "이고양",
+      role: "pet-owner" as UserRole,
+      avatar: null,
+      bio: "고양이 2마리를 키우고 있습니다.",
+      location: "서울시 서초구",
+      specialty: null,
+      isVerified: true,
+      instituteId: null,
+      createdAt: new Date()
+    };
+    
+    this.users.set(user1.id, user1);
+    this.users.set(user2.id, user2);
+    
+    // 등록 샘플 데이터
+    const enrollment1 = {
+      id: this.enrollmentId++,
+      userId: user1.id,
+      courseId: course1.id,
+      progress: 25,
+      status: 'inProgress',
+      startDate: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000), // 2주 전
+      completed: false,
+      certificateIssued: false
+    };
+    
+    this.enrollments.set(enrollment1.id, enrollment1);
   }
 
   async getUser(id: number): Promise<User | undefined> {
