@@ -17,6 +17,23 @@ export default function PetAnalysisPage() {
   } = useQuery<any[]>({
     queryKey: ['/api/pets'],
     staleTime: 5 * 60 * 1000, // 5분
+    queryFn: async () => {
+      const response = await fetch('/api/pets', {
+        method: 'GET',
+        credentials: 'include', // 중요: 쿠키를 포함
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.text();
+        console.error('반려동물 정보 요청 실패:', response.status, errorData);
+        throw new Error(`반려동물 정보를 불러오는데 실패했습니다: ${response.status}`);
+      }
+      
+      return response.json();
+    }
   });
   
   // 첫 번째 반려동물을 기본 선택
