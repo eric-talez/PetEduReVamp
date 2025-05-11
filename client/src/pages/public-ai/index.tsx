@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { AIAnalysisProvider } from '@/hooks/useAIAnalysis';
 import { Dog, Brain, Lock, ChevronRight, Upload } from 'lucide-react';
 import { Link } from 'wouter';
-import useAuth from '@/hooks/useAuth';
+import { useAuth } from '@/hooks/useAuth';
 
 export default function PublicAIPage() {
   const { isAuthenticated } = useAuth();

@@ -210,7 +210,8 @@ export function Sidebar({
     const publicPaths = [
       "/", "/courses", "/trainers", "/video-training", "/video-call", "/community",
       "/institutes", "/institutes/register", "/events", "/events/calendar",
-      "/help/faq", "/help/guide", "/help/about", "/help/contact", "/shop"
+      "/help/faq", "/help/guide", "/help/about", "/help/contact", "/shop",
+      "/pet-ai-chat" // AI 챗봇은 비로그인 사용자도 접근 가능
     ];
 
     // 로그인 필요한 페이지 접근 시
@@ -252,6 +253,8 @@ export function Sidebar({
       '/video-training': '영상 훈련',
       '/video-call': '화상 수업',
       '/pet-analysis': 'AI 분석',
+      '/ai-analysis': 'AI 분석',
+      '/pet-ai-chat': 'AI 챗봇',
       '/my-pets': '반려견 관리',
       '/notebook': '알림장',
       '/calendar': '교육 일정'
@@ -420,15 +423,25 @@ export function Sidebar({
                       show={true}
                     >화상 수업</NavItem>
                     <NavItem 
-                      href="/ai-analysis" 
+                      href="/pet-ai-chat" 
                       icon={<Brain className="w-5 h-5 mr-2" />} 
+                      active={isActive("/pet-ai-chat")} 
+                      onClick={(path) => {
+                        console.log("AI 챗봇 메뉴 클릭", path);
+                        handleItemClick(path);
+                      }} 
+                      show={true}
+                    >AI 챗봇</NavItem>
+                    <NavItem 
+                      href="/ai-analysis" 
+                      icon={<Activity className="w-5 h-5 mr-2" />} 
                       active={isActive("/ai-analysis") || isActive("/pet-analysis")} 
                       onClick={(path) => {
                         console.log("AI 분석 메뉴 클릭", path);
                         handleItemClick(path);
                       }} 
                       show={true}
-                    >AI 분석</NavItem>
+                    >반려견 분석</NavItem>
                     <NavItem 
                       href="/community" 
                       icon={<MessageSquare className="w-5 h-5 mr-2" />} 
