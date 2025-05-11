@@ -61,6 +61,9 @@ export function registerLocationRoutes(app: Express) {
         distance: number;
         photo: string | null;
         description: string;
+        isCertified?: boolean;
+        certificationDate?: string;
+        certificationLevel?: 'standard' | 'premium' | 'exclusive';
       }> = [];
       
       if (type === 'institute') {
@@ -79,6 +82,9 @@ export function registerLocationRoutes(app: Express) {
           distance: calculateDistance(lat, lng, institute.latitude || 37.5665, institute.longitude || 126.9780),
           photo: institute.logo || null,
           description: institute.description || '',
+          isCertified: institute.isVerified || false,
+          certificationDate: institute.verifiedAt ? new Date(institute.verifiedAt).toLocaleDateString() : undefined,
+          certificationLevel: institute.certLevel || 'standard',
         }));
       } else if (type === 'trainer') {
         // 트레이너 데이터 가져오기
@@ -96,6 +102,9 @@ export function registerLocationRoutes(app: Express) {
           distance: calculateDistance(lat, lng, trainer.latitude || 37.5665, trainer.longitude || 126.9780),
           photo: trainer.photo || null,
           description: trainer.bio || '',
+          isCertified: trainer.isVerified || false,
+          certificationDate: trainer.verifiedAt ? new Date(trainer.verifiedAt).toLocaleDateString() : undefined,
+          certificationLevel: trainer.certLevel || 'standard',
         }));
       } else {
         // 그 외의 경우 샘플 데이터 반환

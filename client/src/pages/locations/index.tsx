@@ -321,11 +321,26 @@ function PlaceCard({ place }: { place: Place }) {
       <CardHeader className="pb-2">
         <div className="flex justify-between items-start">
           <div>
-            <CardTitle className="text-base">{place.name}</CardTitle>
+            <div className="flex items-center">
+              <CardTitle className="text-base mr-2">{place.name}</CardTitle>
+              {place.isCertified && (
+                <Badge className="bg-blue-500 text-white text-xs">
+                  테일즈 인증
+                </Badge>
+              )}
+            </div>
             <CardDescription>
               {place.location.address || "주소 정보 없음"}
             </CardDescription>
             {place.rating && renderStars(place.rating)}
+            {place.isCertified && place.certificationLevel && (
+              <div className="mt-1 text-xs text-blue-600">
+                {place.certificationLevel === 'standard' ? '표준 인증' :
+                 place.certificationLevel === 'premium' ? '프리미엄 인증' :
+                 place.certificationLevel === 'exclusive' ? '특별 인증' : '인증됨'} 
+                {place.certificationDate && `(${place.certificationDate})`}
+              </div>
+            )}
           </div>
           <div className="flex items-center text-xs text-muted-foreground">
             <MapPin className="h-3 w-3 mr-1" />
