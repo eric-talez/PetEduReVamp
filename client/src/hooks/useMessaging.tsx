@@ -363,6 +363,111 @@ export function MessagingProvider({ children }: { children: ReactNode }) {
     });
   };
   
+  // 전체 대화 목록 업데이트 함수
+  const updateConversationList = useCallback(() => {
+    const userId = user?.id;
+    if (!userId) return;
+    
+    // 현재 메시지 기록에서 모든 대화 가져오기
+    const updatedConversations: Conversation[] = [];
+    
+    // 메시지 기록에서 대화 정보 추출
+    Object.entries(messageHistoryRef.current).forEach(([conversationId, messages]) => {
+      // 대화 ID 파싱하여 사용자가 포함된 대화만 처리
+      const [id1, id2] = parseConversationId(conversationId);
+      const otherUserId = id1 === userId ? id2 : (id2 === userId ? id1 : null);
+      
+      if (otherUserId !== null && messages.length > 0) {
+        // 마지막 메시지 가져오기
+        const lastMessage = messages[messages.length - 1];
+        
+        // 상대방 정보 가져오기
+        const otherParty = lastMessage.sender.id === otherUserId 
+          ? lastMessage.sender 
+          : lastMessage.receiver;
+        
+        // 읽지 않은 메시지 개수 계산
+        const unreadCount = messages.filter(
+          msg => msg.receiver.id === userId && !msg.isRead
+        ).length;
+        
+        // 기존 대화가 있는지 확인
+        const existingIndex = updatedConversations.findIndex(c => c.userId === otherUserId);
+        
+        if (existingIndex !== -1) {
+          // 기존 대화 업데이트
+          updatedConversations[existingIndex].lastMessage = lastMessage;
+          updatedConversations[existingIndex].unreadCount = unreadCount;
+        } else {
+          // 새 대화 추가
+          updatedConversations.push({
+            userId: otherUserId,
+            userName: otherParty.name,
+            userRole: (otherParty as any).role || 'user',
+            userAvatar: (otherParty as any).avatar,
+            lastMessage,
+            unreadCount,
+            isOnline: false // 기본값
+          });
+        }
+      }
+    });
+    
+    // 대화 목록 업데이트
+    setConversations(updatedConversations);
+  }, [user]);
+  
+  // 대화 기록 처리 (재연결 시)
+  const handleConversationHistory = (conversations: Record<string, Message[]>) => {
+    if (!conversations || Object.keys(conversations).length === 0) return;
+    
+    console.log(`대화 기록 수신: ${Object.keys(conversations).length}개 대화`);
+    
+    // 대화 기록 메모리에 저장
+    Object.entries(conversations).forEach(([conversationId, messages]) => {
+      // 기존 메시지 히스토리에 추가
+      if (!messageHistoryRef.current[conversationId]) {
+        messageHistoryRef.current[conversationId] = [];
+      }
+      
+      // 중복 메시지 방지를 위해 ID 기반으로 필터링하여 병합
+      const existingMessageIds = new Set(
+        messageHistoryRef.current[conversationId].map(msg => msg.id)
+      );
+      
+      const newMessages = messages.filter(msg => !existingMessageIds.has(msg.id));
+      
+      // 타임스탬프를 Date 객체로 변환
+      newMessages.forEach(msg => {
+        msg.timestamp = new Date(msg.timestamp);
+      });
+      
+      // 기존 메시지와 새 메시지 병합
+      messageHistoryRef.current[conversationId] = [
+        ...messageHistoryRef.current[conversationId],
+        ...newMessages
+      ];
+      
+      // 타임스탬프 기준 정렬
+      messageHistoryRef.current[conversationId].sort((a, b) => {
+        return a.timestamp.getTime() - b.timestamp.getTime();
+      });
+    });
+    
+    // 활성 대화가 있는 경우 메시지 업데이트
+    if (activeConversation) {
+      const userId = user?.id;
+      if (!userId) return;
+      
+      const conversationId = getConversationId(userId, activeConversation.userId);
+      const conversationMessages = messageHistoryRef.current[conversationId] || [];
+      setMessages(conversationMessages);
+    }
+    
+    // 대화 목록 업데이트
+    updateConversationList();
+  };
+  
   // 사용자 상태 변경 처리
   const handleUserStatusChange = (userId: number, status: 'online' | 'offline') => {
     setConversations(prev => 
@@ -479,15 +584,15 @@ export function MessagingProvider({ children }: { children: ReactNode }) {
   }, [user]);
   
   // 대화 ID 생성 (작은 ID가 항상 앞에 오도록)
-  const getConversationId = (id1: number, id2: number): string => {
+  const getConversationId = useCallback((id1: number, id2: number): string => {
     return id1 < id2 ? `${id1}-${id2}` : `${id2}-${id1}`;
-  };
+  }, []);
   
   // 대화 ID 파싱
-  const parseConversationId = (conversationId: string): [number, number] => {
+  const parseConversationId = useCallback((conversationId: string): [number, number] => {
     const [id1Str, id2Str] = conversationId.split('-');
     return [parseInt(id1Str), parseInt(id2Str)];
-  };
+  }, []);
   
   // 컨텍스트 값
   const contextValue: MessagingContextType = {
