@@ -124,3 +124,49 @@
 .theme-toggle-icon {
   @apply transition-all duration-150 ease-out;
 }
+
+/* 메시징 타이핑 애니메이션 */
+.typing-dots {
+  @apply inline-flex justify-center items-center space-x-1;
+}
+
+.typing-dots .dot {
+  @apply h-1.5 w-1.5 rounded-full bg-gray-400 dark:bg-gray-500;
+  animation: typingDot 1.4s infinite;
+}
+
+.typing-dots .dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.typing-dots .dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes typingDot {
+  0%, 60%, 100% { transform: translateY(0); }
+  30% { transform: translateY(-4px); }
+}
+
+/* 메시지 타임라인 스타일 */
+.message-timeline::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 24px; /* 아바타 중앙 정렬 */
+  width: 2px;
+  @apply bg-muted/50 dark:bg-muted/30;
+  z-index: 0;
+}
+
+/* 메시지 읽음 표시 효과 */
+.message-read-tick {
+  @apply inline-flex text-blue-500;
+  animation: readTickFadeIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes readTickFadeIn {
+  from { opacity: 0; transform: scale(0.8); }
+  to { opacity: 1; transform: scale(1); }
+}

@@ -147,8 +147,21 @@ function MessageInputComponent() {
     return null;
   }
 
+  // 대화 상대 사용자 이름
+  const receiverName = activeConversation.userName;
+  
   return (
     <div className="p-4 border-t dark:border-gray-700">
+      {/* 상대방 타이핑 표시 (추후 WebSocket으로 구현) */}
+      {/* <div className="mb-2">
+        <div className="typing-dots inline-flex justify-center items-center space-x-1">
+          <span className="dot"></span>
+          <span className="dot"></span>
+          <span className="dot"></span>
+        </div>
+        <span className="text-xs text-muted-foreground ml-2">{receiverName}님이 입력 중...</span>
+      </div> */}
+      
       <form onSubmit={handleSendMessage} className="flex items-end gap-2">
         <input
           type="file"

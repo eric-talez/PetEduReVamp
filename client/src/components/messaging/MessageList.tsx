@@ -72,7 +72,7 @@ export function MessageList() {
   }
 
   return (
-    <div className="flex-1 overflow-y-auto p-4">
+    <div className="flex-1 overflow-y-auto p-4 relative message-timeline">
       {processedMessages.map(({ 
         message, 
         showDate, 
@@ -92,7 +92,7 @@ export function MessageList() {
           previousMessage={previousMessage}
         />
       ))}
-      <div ref={messagesEndRef} />
+      <div ref={messagesEndRef} className="h-4" /> {/* 스크롤 여백 확보 */}
     </div>
   );
 }

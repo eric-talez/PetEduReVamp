@@ -132,7 +132,7 @@ function MessageItemComponent({
                   <div className="text-xs text-gray-500 dark:text-gray-400 mr-2">
                     {format(timestamp, 'HH:mm')}
                     {message.isRead && (
-                      <span className="ml-1 text-blue-500">✓</span>
+                      <span className="ml-1 message-read-tick">✓</span>
                     )}
                   </div>
                 )}
