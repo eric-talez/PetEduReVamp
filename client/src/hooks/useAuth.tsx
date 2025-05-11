@@ -101,6 +101,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       userName: name,
     };
     
+    // 글로벌 이벤트 발행 - 모든 페이지에서 인증 상태 변경 감지
+    const globalEvent = new CustomEvent('petedu-auth-changed', {
+      detail: { isAuthenticated, userRole: role, userName: name }
+    });
+    window.dispatchEvent(globalEvent);
+    
     logAuthEvent('상태 업데이트', { isAuthenticated, role, name });
   };
 
@@ -126,13 +132,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const parsedAuth = JSON.parse(storedAuth);
         logAuthEvent('저장된 인증 정보 발견', parsedAuth);
         
+        // 모든 가능한 키 이름 접근 방법 (역호환성 유지)
+        const role = parsedAuth.role || parsedAuth.userRole || null;
+        const name = parsedAuth.name || parsedAuth.userName || null;
+        
         // 객체가 비어있지 않은지 확인
-        if (parsedAuth && (parsedAuth.role || parsedAuth.userRole)) {
-          updateAuthState(
-            true, 
-            parsedAuth.role || parsedAuth.userRole, 
-            parsedAuth.name || parsedAuth.userName
-          );
+        if (parsedAuth && role) {
+          // 모든 컴포넌트가 같은 정보를 사용하도록 표준화된 데이터 저장
+          const standardAuthData = { 
+            role, 
+            name,
+            userRole: role, // 역호환성을 위해 둘 다 저장
+            userName: name  // 역호환성을 위해 둘 다 저장
+          };
+          
+          // 로컬 스토리지에 표준화된 형식으로 다시 저장
+          localStorage.setItem('petedu_auth', JSON.stringify(standardAuthData));
+          
+          // 인증 상태 업데이트
+          updateAuthState(true, role, name);
         } else {
           logAuthEvent('저장된 인증 정보가 유효하지 않음', parsedAuth);
           localStorage.removeItem('petedu_auth');

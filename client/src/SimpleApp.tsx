@@ -92,6 +92,24 @@ function AppLayout({ children }: { children: ReactNode }) {
   const [sidebarExpanded, setSidebarExpanded] = useState(true);
   const auth = useAuth();
   
+  // 인증 상태가 변경될 때마다 윈도우 객체에 저장된 상태를 확인하고 동기화
+  useEffect(() => {
+    if (window.__peteduAuthState && window.__peteduAuthState.isAuthenticated) {
+      // 전역 상태가 있고 인증되었는데 로컬 상태와 다르다면 동기화
+      if (!auth.isAuthenticated || auth.userRole !== window.__peteduAuthState.userRole) {
+        console.log("인증 상태 불일치 감지 - 전역:", window.__peteduAuthState, "로컬:", auth);
+        // 인증 이벤트를 발생시켜 상태 동기화
+        const loginEvent = new CustomEvent('login', {
+          detail: {
+            userRole: window.__peteduAuthState.userRole,
+            userName: window.__peteduAuthState.userName
+          }
+        });
+        window.dispatchEvent(loginEvent);
+      }
+    }
+  }, [auth.isAuthenticated, auth.userRole, auth.userName]);
+  
   // 사이드바 크기 토글 핸들러
   const toggleSidebarSize = () => {
     setSidebarExpanded(!sidebarExpanded);
