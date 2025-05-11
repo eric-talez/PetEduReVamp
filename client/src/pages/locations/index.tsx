@@ -136,6 +136,7 @@ function PlaceSearch() {
  */
 function NearbyPlaces() {
   const [activeTab, setActiveTab] = useState<'institute' | 'trainer' | 'clinic' | 'shop'>('trainer');
+  const [certifiedOnly, setCertifiedOnly] = useState(false);
   const { 
     currentLocation, 
     nearbyPlaces, 
@@ -145,6 +146,11 @@ function NearbyPlaces() {
     searchNearbyPlaces 
   } = useMapService();
   const { toast } = useToast();
+  
+  // 인증 필터링된 장소 목록
+  const filteredPlaces = certifiedOnly 
+    ? nearbyPlaces.filter(place => place.isCertified)
+    : nearbyPlaces;
 
   // 근처 장소 검색
   const handleSearchNearby = async () => {

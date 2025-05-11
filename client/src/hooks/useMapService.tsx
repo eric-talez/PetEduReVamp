@@ -23,6 +23,9 @@ export interface Place {
   contact?: string;
   openingHours?: string;
   description?: string;
+  isCertified?: boolean; // 테일즈 인증 여부
+  certificationDate?: string; // 인증 날짜
+  certificationLevel?: 'standard' | 'premium' | 'exclusive'; // 인증 레벨
 }
 
 // 지도 서비스 컨텍스트 타입 정의
