@@ -420,12 +420,12 @@ export function Sidebar({
                       show={true}
                     >화상 수업</NavItem>
                     <NavItem 
-                      href="/pet-analysis" 
+                      href="/ai-analysis" 
                       icon={<Brain className="w-5 h-5 mr-2" />} 
-                      active={isActive("/pet-analysis")} 
-                      onClick={() => {
-                        console.log("AI 분석 메뉴 직접 이동");
-                        window.location.href = "/pet-analysis"; // 하드코딩하여 직접 URL로 이동
+                      active={isActive("/ai-analysis") || isActive("/pet-analysis")} 
+                      onClick={(path) => {
+                        console.log("AI 분석 메뉴 클릭", path);
+                        handleItemClick(path);
                       }} 
                       show={true}
                     >AI 분석</NavItem>

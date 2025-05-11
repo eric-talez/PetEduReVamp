@@ -370,6 +370,14 @@ function AuthenticatedRoutes() {
             />
           )}
         </Route>
+        <Route path="/ai-analysis">
+          {() => (
+            <ProtectedRoute 
+              component={PetAnalysisPage}
+              requiredRoles={['pet-owner', 'trainer', 'admin']}
+            />
+          )}
+        </Route>
         <Route path="/messages">
           {() => (
             <ProtectedRoute 
