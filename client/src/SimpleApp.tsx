@@ -1,6 +1,7 @@
 import { Switch, Route } from "wouter";
 import { RedirectHandler } from './components/RedirectHandler';
 import React, { ReactNode, useState, useEffect, lazy, Suspense } from "react";
+import { AIAnalysisProvider } from './hooks/useAIAnalysis';
 
 // 페이지 컴포넌트 임포트
 import Home from "./pages/Home";
@@ -25,6 +26,7 @@ import AdminSettlementPage from "./pages/admin/settlement";
 import EventsPage from "./pages/events";
 import EventDetailPage from "./pages/events/event-detail";
 import EventCalendarPage from "./pages/events/calendar";
+import PetAnalysisPage from "./pages/pet-analysis";
 
 // 레이아웃 및 컴포넌트 임포트
 import { TopBar } from "@/components/TopBar";
