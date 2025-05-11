@@ -617,32 +617,29 @@ function DebugButton() {
   
   const handleLoginAs = (role: 'user' | 'pet-owner' | 'trainer' | 'institute-admin' | 'admin') => {
     console.log(`Login as ${role}`);
-    const authData = { user: `demo-${role}`, role: role };
+    
+    // 표준화된 인증 데이터 형식 사용
+    const displayName = role === 'admin' ? '관리자' 
+               : role === 'trainer' ? '훈련사' 
+               : role === 'institute-admin' ? '기관 관리자' 
+               : role === 'pet-owner' ? '반려인' 
+               : '일반 사용자';
+    
+    const authData = { 
+      role: role, 
+      name: displayName,
+      userRole: role, // 역호환성을 위해 둘 다 저장
+      userName: displayName  // 역호환성을 위해 둘 다 저장
+    };
+    
+    // 로컬 스토리지에 저장
     localStorage.setItem('petedu_auth', JSON.stringify(authData));
     
-    // 사용자 역할에 따라 이벤트 발생
-    const loginEvent = new CustomEvent('petedu-login', { 
-      detail: { userName: `demo-${role}`, userRole: role } 
-    });
+    // 로그인 이벤트 발생 - 최신 이벤트 형식을 사용
+    const loginEvent = new CustomEvent('login', { detail: authData });
     window.dispatchEvent(loginEvent);
     
-    // 역할에 맞는 페이지로 리디렉션
-    switch (role) {
-      case 'pet-owner':
-        window.location.href = '/dashboard';
-        break;
-      case 'trainer':
-        window.location.href = '/trainer/dashboard';
-        break;
-      case 'institute-admin':
-        window.location.href = '/institute/dashboard';
-        break;
-      case 'admin':
-        window.location.href = '/admin/dashboard';
-        break;
-      default:
-        window.location.href = '/';
-    }
+    // 페이지 새로고침 없이 이벤트만 발생시키고 페이지 이동은 AuthProvider에서 처리
   };
 
   return (
