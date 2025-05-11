@@ -4,6 +4,7 @@ import { NewSidebar } from "@/components/NewSidebar"; // 새로운 사이드바 
 import { TopBar } from "@/components/TopBar";
 import { Chatbot } from "@/components/features/Chatbot";
 import { useAuth } from "@/hooks/useAuth";
+import SkipLink from "@/components/accessibility/SkipLink";
 
 interface AppLayoutProps {
   children: ReactNode;
@@ -39,6 +40,9 @@ export function AppLayout({ children }: AppLayoutProps) {
   
   return (
     <div className="min-h-screen bg-background">
+      {/* 키보드 사용자를 위한 스킵 링크 추가 */}
+      <SkipLink contentId="main-content" />
+      
       <TopBar
         sidebarOpen={sidebarOpen}
         onToggleSidebar={toggleSidebar}
@@ -54,7 +58,10 @@ export function AppLayout({ children }: AppLayoutProps) {
       
       {/* 컨텐츠 영역: 화면 크기와 인증 여부에 따라 여백 조정 */}
       <main 
-        className={`pt-16 transition-all duration-300 ${
+        id="main-content" // 스킵 링크 대상 ID 추가
+        aria-label="메인 콘텐츠" // 스크린 리더용 레이블
+        tabIndex={-1} // 포커스 가능하게 만들기
+        className={`pt-16 transition-all duration-300 outline-none ${
           isAuthenticated && !isMobile ? 'lg:ml-64' : ''
         } ${
           isAuthenticated && isMobile && sidebarOpen ? 'ml-0' : ''
