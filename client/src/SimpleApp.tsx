@@ -592,6 +592,18 @@ function AuthenticatedRoutes() {
             );
           }}
         </Route>
+        <Route path="/admin/banners">
+          {() => {
+            const AdminBanners = lazy(() => import('./pages/admin/AdminBanners'));
+            return (
+              <Suspense fallback={<div className="p-8 flex justify-center items-center">
+                <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
+              </div>}>
+                <ProtectedAdminRoute component={AdminBanners} />
+              </Suspense>
+            );
+          }}
+        </Route>
         <Route path="/admin/menu-config">
           {() => (
             <ProtectedAdminRoute 

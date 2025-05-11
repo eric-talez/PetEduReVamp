@@ -945,9 +945,18 @@ export function Sidebar({
                           쇼핑몰 관리
                         </NavItem>
                         <NavItem
-                          href="/admin/commission-settings"
+                          href="/admin/banners"
+                          icon={<Image className="w-5 h-5 mr-2" />}
+                          active={isActive("/admin/banners")}
+                          onClick={handleItemClick}
+                          show={true}
+                        >
+                          배너 관리
+                        </NavItem>
+                        <NavItem
+                          href="/admin/commission"
                           icon={<DollarSign className="w-5 h-5 mr-2" />}
-                          active={isActive("/admin/commission-settings")}
+                          active={isActive("/admin/commission")}
                           onClick={handleItemClick}
                           show={true}
                         >
