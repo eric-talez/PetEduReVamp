@@ -269,7 +269,14 @@ export function Sidebar({
 
     if (path in specialRoutes) {
       console.log(`${specialRoutes[path]} 페이지로 이동 중...`);
-      window.location.href = path;
+      
+      // AI 페이지는 이동할 때 확실히 확인하기 위해 디버그 정보 추가
+      if (path === '/ai-chat') {
+        console.log('AI 반려동물 분석 페이지로 직접 이동 시도', window.location.origin + path);
+      }
+      
+      // URL을 확실하게 지정해서 이동
+      window.location.href = window.location.origin + path;
       if (onClose) onClose();
       return;
     }
@@ -426,7 +433,8 @@ export function Sidebar({
                       active={isActive("/ai-chat") || isActive("/pet-ai-chat") || isActive("/ai-analysis") || isActive("/pet-analysis")} 
                       onClick={(path) => {
                         console.log("AI 반려동물 분석 메뉴 클릭", path);
-                        handleItemClick(path);
+                        // 특별 처리: 직접 URL 설정
+                        window.location.href = "/ai-chat";
                       }} 
                       show={true}
                     >AI 반려동물 분석</NavItem>
@@ -630,7 +638,11 @@ export function Sidebar({
                       href="/ai-chat"
                       icon={<Brain className="w-5 h-5 mr-2" />}
                       active={isActive("/ai-chat") || isActive("/pet-ai-chat") || isActive("/ai-analysis") || isActive("/pet-analysis")}
-                      onClick={handleItemClick}
+                      onClick={(path) => {
+                        console.log("AI 반려동물 분석 메뉴 클릭(로그인)", path);
+                        // 특별 처리: 직접 URL 설정
+                        window.location.href = "/ai-chat";
+                      }}
                       show={true}
                     >
                       AI 반려동물 분석

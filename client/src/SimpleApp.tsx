@@ -492,22 +492,34 @@ function AuthenticatedRoutes() {
         <Route path="/pet-ai">
           {() => {
             console.log("리다이렉트: /pet-ai → /ai-chat");
-            window.location.href = '/ai-chat';
-            return <div>리다이렉트 중...</div>;
+            // 리다이렉트 직접 처리
+            window.location.replace('/ai-chat');
+            return <div className="flex justify-center items-center h-screen">
+              <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full mr-2"></div>
+              <span>AI 반려동물 분석 페이지로 이동 중...</span>
+            </div>;
           }}
         </Route>
         <Route path="/pet-analysis">
           {() => {
             console.log("리다이렉트: /pet-analysis → /ai-chat");
-            window.location.href = '/ai-chat';
-            return <div>리다이렉트 중...</div>;
+            // 리다이렉트 직접 처리
+            window.location.replace('/ai-chat');
+            return <div className="flex justify-center items-center h-screen">
+              <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full mr-2"></div>
+              <span>AI 반려동물 분석 페이지로 이동 중...</span>
+            </div>;
           }}
         </Route>
         <Route path="/ai-analysis">
           {() => {
             console.log("리다이렉트: /ai-analysis → /ai-chat");
-            window.location.href = '/ai-chat';
-            return <div>리다이렉트 중...</div>;
+            // 리다이렉트 직접 처리
+            window.location.replace('/ai-chat');
+            return <div className="flex justify-center items-center h-screen">
+              <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full mr-2"></div>
+              <span>AI 반려동물 분석 페이지로 이동 중...</span>
+            </div>;
           }}
         </Route>
         <Route path="/messages">
