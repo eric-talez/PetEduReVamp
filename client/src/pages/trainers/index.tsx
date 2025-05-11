@@ -486,11 +486,10 @@ export default function Trainers() {
             <div className="p-6">
               {/* 기본 정보 섹션 */}
               <div className="flex flex-col sm:flex-row mb-6 -mt-16 relative">
-                <Avatar
-                  src={selectedTrainer.avatar}
-                  alt={selectedTrainer.name}
-                  className="w-24 h-24 border-4 border-white dark:border-gray-900 rounded-full"
-                />
+                <Avatar className="w-24 h-24 border-4 border-white dark:border-gray-900 rounded-full">
+                  <AvatarImage src={selectedTrainer.avatar} alt={selectedTrainer.name} />
+                  <AvatarFallback>{selectedTrainer.name.charAt(0)}</AvatarFallback>
+                </Avatar>
                 
                 <div className="mt-4 sm:mt-6 sm:ml-4">
                   <h2 className="text-2xl font-bold text-gray-900 dark:text-white">

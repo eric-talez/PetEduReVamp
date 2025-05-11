@@ -104,101 +104,75 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     logAuthEvent('상태 업데이트', { isAuthenticated, role, name });
   };
 
-  // 컴포넌트 마운트 시 즉시 로컬 스토리지에서 인증 상태 확인
+  /**
+   * 인증 상태 관리 관련 
+   * - 로컬 스토리지에서 인증 정보 로드 
+   * - 이벤트 리스너 등록 및 해제
+   */
   useEffect(() => {
     logAuthEvent('컴포넌트 마운트');
     
-    // 인증 상태 초기화 함수
+    // 인증 상태 초기화 함수 - 로컬 스토리지에서 데이터 로드
     const initAuthState = () => {
       const storedAuth = localStorage.getItem('petedu_auth');
       
-      if (storedAuth) {
-        try {
-          const parsedAuth = JSON.parse(storedAuth);
-          logAuthEvent('저장된 인증 정보 발견', parsedAuth);
-          
-          updateAuthState(
-            true, 
-            parsedAuth.role, 
-            parsedAuth.name || parsedAuth.userName
-          );
-        } catch (error) {
-          // JSON 파싱 오류 시 인증 상태 초기화
-          console.error("인증 상태 파싱 오류:", error);
-          localStorage.removeItem('petedu_auth');
-          updateAuthState(false, null, null);
-          
-          // 오류 알림
-          toast({
-            title: "인증 오류",
-            description: "인증 정보가 손상되었습니다. 다시 로그인해주세요.",
-            variant: "destructive",
-          });
-        }
-      } else {
+      if (!storedAuth) {
         logAuthEvent('저장된 인증 정보 없음');
         updateAuthState(false, null, null);
+        return;
+      }
+      
+      try {
+        const parsedAuth = JSON.parse(storedAuth);
+        logAuthEvent('저장된 인증 정보 발견', parsedAuth);
+        
+        updateAuthState(
+          true, 
+          parsedAuth.role, 
+          parsedAuth.name || parsedAuth.userName
+        );
+      } catch (error) {
+        // JSON 파싱 오류 시 인증 상태 초기화 및 알림
+        console.error("인증 상태 파싱 오류:", error);
+        localStorage.removeItem('petedu_auth');
+        updateAuthState(false, null, null);
+        
+        toast({
+          title: "인증 오류",
+          description: "인증 정보가 손상되었습니다. 다시 로그인해주세요.",
+          variant: "destructive",
+        });
       }
     };
     
     // 즉시 초기화 실행
     initAuthState();
     
-    // 메시지 이벤트 리스너 등록
-    const handleMessage = (event: MessageEvent) => {
-      if (event.data && event.data.type === 'petedu-auth') {
-        try {
-          logAuthEvent('petedu-auth 메시지 수신', event.data);
-          const { role, name } = event.data.data;
-          
-          // 로컬 스토리지 업데이트
-          const authData = { role, name };
-          localStorage.setItem('petedu_auth', JSON.stringify(authData));
-          
-          // 인증 상태 업데이트
-          updateAuthState(true, role, name);
-          
-          // 로그인 성공 알림
-          toast({
-            title: "로그인 성공",
-            description: `${name}님, 환영합니다!`,
-            variant: "default",
-          });
-        } catch (error) {
-          console.error("메시지 처리 오류:", error);
-          toast({
-            title: "인증 오류",
-            description: "메시지 처리 중 오류가 발생했습니다.",
-            variant: "destructive",
-          });
-        }
-      }
-    };
-    
-    // 커스텀 이벤트 핸들러 등록
-    const handleLogin = (e: Event) => {
-      const customEvent = e as CustomEvent;
-      logAuthEvent('login 이벤트 수신', customEvent.detail);
-      
-      if (customEvent.detail) {
-        try {
-          const { role, name } = customEvent.detail;
-          
-          // 로컬 스토리지 업데이트
-          const authData = { role, name };
-          localStorage.setItem('petedu_auth', JSON.stringify(authData));
-          
-          // 인증 상태 업데이트
-          updateAuthState(true, role, name);
-          
-          // 로그인 성공 알림
-          toast({
-            title: "로그인 성공",
-            description: `${name}님, 환영합니다!`,
-            variant: "default",
-          });
-          
-          // 역할에 따른 redirect 처리
+    /**
+     * 로그인 처리를 위한 공통 함수
+     * - 로컬 스토리지 업데이트
+     * - 인증 상태 업데이트
+     * - 성공 알림 표시
+     * - 필요시 리다이렉션
+     */
+    const processLogin = (role: UserRole, name: string, shouldRedirect = false) => {
+      try {
+        // 로컬 스토리지 업데이트
+        const authData = { role, name };
+        localStorage.setItem('petedu_auth', JSON.stringify(authData));
+        
+        // 인증 상태 업데이트
+        updateAuthState(true, role, name);
+        
+        // 로그인 성공 알림
+        toast({
+          title: "로그인 성공",
+          description: `${name}님, 환영합니다!`,
+          variant: "default",
+        });
+        
+        // 리다이렉션이 필요한 경우에만 수행
+        if (shouldRedirect) {
           setTimeout(() => {
             let redirectPath = '/';
             
@@ -220,14 +194,46 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             logAuthEvent('역할 기반 리다이렉션', { role, redirectPath });
             window.location.href = redirectPath;
           }, 300);
+        }
+        
+        return true;
+      } catch (error) {
+        console.error("로그인 처리 오류:", error);
+        toast({
+          title: "로그인 오류",
+          description: "로그인 처리 중 오류가 발생했습니다.",
+          variant: "destructive",
+        });
+        return false;
+      }
+    };
+    
+    // 메시지 이벤트 리스너 등록
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data && event.data.type === 'petedu-auth') {
+        try {
+          logAuthEvent('petedu-auth 메시지 수신', event.data);
+          const { role, name } = event.data.data;
+          processLogin(role, name);
         } catch (error) {
-          console.error("로그인 처리 오류:", error);
+          console.error("메시지 처리 오류:", error);
           toast({
-            title: "로그인 오류",
-            description: "로그인 처리 중 오류가 발생했습니다.",
+            title: "인증 오류",
+            description: "메시지 처리 중 오류가 발생했습니다.",
             variant: "destructive",
           });
         }
+      }
+    };
+    
+    // 커스텀 이벤트 핸들러 등록
+    const handleLogin = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      logAuthEvent('login 이벤트 수신', customEvent.detail);
+      
+      if (customEvent.detail) {
+        const { role, name } = customEvent.detail;
+        processLogin(role, name, true); // 리다이렉션 필요
       }
     };
     
