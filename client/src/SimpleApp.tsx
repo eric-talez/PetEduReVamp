@@ -545,32 +545,52 @@ function AuthenticatedRoutes() {
           }}
         </Route>
         <Route path="/admin/reports">
-          {() => (
-            <ProtectedAdminRoute 
-              component={() => <div className="p-8"><h1 className="text-2xl font-bold mb-4">신고 관리</h1><p>사용자 신고를 관리하는 페이지입니다.</p></div>}
-            />
-          )}
+          {() => {
+            const AdminReports = lazy(() => import('./pages/admin/AdminReports'));
+            return (
+              <Suspense fallback={<div className="p-8 flex justify-center items-center">
+                <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
+              </div>}>
+                <ProtectedAdminRoute component={AdminReports} />
+              </Suspense>
+            );
+          }}
         </Route>
         <Route path="/admin/settings">
-          {() => (
-            <ProtectedAdminRoute 
-              component={() => <div className="p-8"><h1 className="text-2xl font-bold mb-4">시스템 설정</h1><p>시스템 설정을 관리하는 페이지입니다.</p></div>}
-            />
-          )}
+          {() => {
+            const AdminSettings = lazy(() => import('./pages/admin/AdminSettings'));
+            return (
+              <Suspense fallback={<div className="p-8 flex justify-center items-center">
+                <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
+              </div>}>
+                <ProtectedAdminRoute component={AdminSettings} />
+              </Suspense>
+            );
+          }}
         </Route>
         <Route path="/admin/shop">
-          {() => (
-            <ProtectedAdminRoute 
-              component={() => <div className="p-8"><h1 className="text-2xl font-bold mb-4">쇼핑몰 관리</h1><p>쇼핑몰을 관리하는 페이지입니다.</p></div>}
-            />
-          )}
+          {() => {
+            const AdminShop = lazy(() => import('./pages/admin/AdminShop'));
+            return (
+              <Suspense fallback={<div className="p-8 flex justify-center items-center">
+                <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
+              </div>}>
+                <ProtectedAdminRoute component={AdminShop} />
+              </Suspense>
+            );
+          }}
         </Route>
         <Route path="/admin/commission">
-          {() => (
-            <ProtectedAdminRoute 
-              component={AdminCommissionPage}
-            />
-          )}
+          {() => {
+            const AdminCommission = lazy(() => import('./pages/admin/AdminCommission'));
+            return (
+              <Suspense fallback={<div className="p-8 flex justify-center items-center">
+                <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
+              </div>}>
+                <ProtectedAdminRoute component={AdminCommission} />
+              </Suspense>
+            );
+          }}
         </Route>
         <Route path="/admin/menu-config">
           {() => (
