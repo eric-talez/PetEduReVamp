@@ -202,6 +202,34 @@ function AuthenticatedRoutesContent() {
       <Route path="/pet-analysis">
         {() => checkAccess(['pet-owner', 'admin']) ? <PetAnalysisPage /> : window.location.href = '/'}
       </Route>
+      <Route path="/pet-ai-chat">
+        {() => <div className="container mx-auto py-6">
+          <div className="flex flex-col items-start mb-8">
+            <h1 className="text-3xl font-bold">반려동물 AI 도우미</h1>
+            <p className="text-gray-600 dark:text-gray-400">
+              반려동물에 대한 질문이나 관리 방법에 대해 AI에게 물어보세요
+            </p>
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-2">
+              <Chatbot isFullscreen={true} />
+            </div>
+            <div className="lg:col-span-1">
+              <div className="bg-white dark:bg-slate-800 rounded-lg shadow-md p-4">
+                <h3 className="text-lg font-medium mb-2">반려동물 도움말</h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                  다음과 같은 질문을 해보세요:
+                </p>
+                <ul className="space-y-2 text-sm">
+                  <li className="bg-slate-100 dark:bg-slate-700 p-2 rounded">우리 강아지가 계속 짖는데 어떻게 해야 할까요?</li>
+                  <li className="bg-slate-100 dark:bg-slate-700 p-2 rounded">강아지 사료 선택은 어떻게 하나요?</li>
+                  <li className="bg-slate-100 dark:bg-slate-700 p-2 rounded">반려견 기본 훈련은 어떻게 시작하나요?</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>}
+      </Route>
       <Route path="/events/:id">
         {() => (
           <Suspense fallback={<div className="p-8 text-center">이벤트 상세 페이지 로딩 중...</div>}>
@@ -371,6 +399,34 @@ function UnauthenticatedRoutesContent() {
       <Route path="/video-call" component={VideoCallPage} />
       <Route path="/course-reservation" component={CourseReservationPage} />
       <Route path="/locations" component={LocationsPage} />
+      <Route path="/pet-ai-chat">
+        {() => <div className="container mx-auto py-6">
+          <div className="flex flex-col items-start mb-8">
+            <h1 className="text-3xl font-bold">반려동물 AI 도우미</h1>
+            <p className="text-gray-600 dark:text-gray-400">
+              반려동물에 대한 질문이나 관리 방법에 대해 AI에게 물어보세요
+            </p>
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-2">
+              <Chatbot isFullscreen={true} />
+            </div>
+            <div className="lg:col-span-1">
+              <div className="bg-white dark:bg-slate-800 rounded-lg shadow-md p-4">
+                <h3 className="text-lg font-medium mb-2">반려동물 도움말</h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                  다음과 같은 질문을 해보세요:
+                </p>
+                <ul className="space-y-2 text-sm">
+                  <li className="bg-slate-100 dark:bg-slate-700 p-2 rounded">우리 강아지가 계속 짖는데 어떻게 해야 할까요?</li>
+                  <li className="bg-slate-100 dark:bg-slate-700 p-2 rounded">강아지 사료 선택은 어떻게 하나요?</li>
+                  <li className="bg-slate-100 dark:bg-slate-700 p-2 rounded">반려견 기본 훈련은 어떻게 시작하나요?</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>}
+      </Route>
       <Route path="/modal-test" component={TrainerTest} />
 
       {/* 매칭되는 경로가 없는 경우 */}
