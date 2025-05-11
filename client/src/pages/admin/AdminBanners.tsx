@@ -64,6 +64,7 @@ import {
   Home,
   MonitorSmartphone,
   X,
+
 } from 'lucide-react';
 import { 
   DropdownMenu,
@@ -735,7 +736,7 @@ export default function AdminBanners() {
                               <DropdownMenuItem onClick={() => handleToggleStatus(banner.id)}>
                                 {banner.status === 'active' ? (
                                   <>
-                                    <X className="h-4 w-4 mr-2" />
+                                    <Trash2 className="h-4 w-4 mr-2" />
                                     비활성화
                                   </>
                                 ) : (
@@ -948,7 +949,7 @@ export default function AdminBanners() {
                 >
                   {selectedBanner.status === 'active' ? (
                     <>
-                      <X className="h-4 w-4 mr-2" />
+                      <Trash2 className="h-4 w-4 mr-2" />
                       비활성화
                     </>
                   ) : (
@@ -1012,7 +1013,7 @@ export default function AdminBanners() {
                           className="absolute top-2 right-2"
                           onClick={() => setPreviewImage(null)}
                         >
-                          <X className="h-4 w-4" />
+                          <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
                     ) : (

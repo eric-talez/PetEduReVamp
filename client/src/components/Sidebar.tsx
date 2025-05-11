@@ -947,7 +947,7 @@ export function Sidebar({
                         </NavItem>
                         <NavItem
                           href="/admin/banners"
-                          icon={<ImageIcon className="w-5 h-5 mr-2" />}
+                          icon={<BarChart2 className="w-5 h-5 mr-2" />}
                           active={isActive("/admin/banners")}
                           onClick={handleItemClick}
                           show={true}
