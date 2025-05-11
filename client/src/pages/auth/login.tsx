@@ -42,12 +42,16 @@ export default function Login() {
       // 테스트를 위해 로그인 시 역할 선택
       if (loginUsername === 'admin') {
         mockUser.role = 'admin';
+        mockUser.name = '관리자';
       } else if (loginUsername === 'trainer') {
         mockUser.role = 'trainer';
+        mockUser.name = '훈련사';
       } else if (loginUsername === 'institute') {
         mockUser.role = 'institute-admin';
+        mockUser.name = '기관 관리자';
       } else if (loginUsername === 'pet-owner') {
         mockUser.role = 'pet-owner';
+        mockUser.name = '반려인';
       }
       
       const loginEvent = new CustomEvent('login', {
@@ -103,12 +107,16 @@ export default function Login() {
       // 테스트를 위해 회원가입 시 사용자명에 따라 역할 결정
       if (registerUsername.includes('admin')) {
         mockUser.role = 'admin';
+        mockUser.name = '관리자 ' + registerName;
       } else if (registerUsername.includes('trainer')) {
         mockUser.role = 'trainer';
+        mockUser.name = '훈련사 ' + registerName;
       } else if (registerUsername.includes('institute')) {
         mockUser.role = 'institute-admin';
+        mockUser.name = '기관 관리자 ' + registerName;
       } else if (registerUsername.includes('pet') || registerUsername.includes('owner')) {
         mockUser.role = 'pet-owner';
+        mockUser.name = '반려인 ' + registerName;
       }
       
       const loginEvent = new CustomEvent('login', {

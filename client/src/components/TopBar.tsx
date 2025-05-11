@@ -701,6 +701,12 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
                     onClick={() => setUserMenuOpen(!userMenuOpen)}
                   >
                     <Avatar className="h-8 w-8">
+                      {userRole && (
+                        <AvatarImage 
+                          src={`https://ui-avatars.com/api/?name=${encodeURIComponent(userName || '')}&background=random&color=fff`} 
+                          alt={userName || '사용자'} 
+                        />
+                      )}
                       <AvatarFallback>{userName ? userName.substring(0, 1).toUpperCase() : "U"}</AvatarFallback>
                     </Avatar>
                     <span className="hidden lg:flex items-center space-x-1">
