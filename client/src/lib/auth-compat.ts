@@ -6,14 +6,25 @@
  * 모듈화된 버전으로 대체하기 위한 호환성 레이어
  */
 
-// 새 모듈에서 필요한 모든 항목 가져오기
-import { useAuth, USER_ROLES } from '@/hooks/useAuth';
-import type { AuthState, UserRole } from '@/hooks/useAuth';
+// 전역 인증 상태 관리 기능 사용
+import { useGlobalAuth, initGlobalAuthListener } from '@/hooks/useGlobalAuth';
+import type { AuthState, UserRole } from '@/lib/global-auth-store';
+
+// 초기화 함수 호출
+initGlobalAuthListener();
+
+// 역호환성을 위한 상수
+export const USER_ROLES = {
+  USER: 'user' as UserRole,
+  PET_OWNER: 'pet-owner' as UserRole,
+  TRAINER: 'trainer' as UserRole,
+  INSTITUTE_ADMIN: 'institute-admin' as UserRole,
+  ADMIN: 'admin' as UserRole
+};
 
 // 모든 항목 재노출
 export { 
-  useAuth, 
-  USER_ROLES,
+  useGlobalAuth as useAuth,
   // 타입
   type AuthState,
   type UserRole
