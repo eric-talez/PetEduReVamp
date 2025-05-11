@@ -282,7 +282,11 @@ function AuthenticatedRoutes() {
           <InstituteAdminHome />
         </Suspense>;
       case 'admin':
-        return <div className="p-8"><h1 className="text-2xl font-bold mb-4">시스템 관리자 홈</h1><p>시스템 관리자 전용 홈 페이지입니다.</p></div>;
+        // 관리자는 관리자 대시보드로 리디렉션
+        const AdminHome = lazy(() => import('./pages/admin/AdminHome'));
+        return <Suspense fallback={<div className="flex items-center justify-center min-h-screen"><div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full"></div></div>}>
+          <AdminHome />
+        </Suspense>;
       default:
         return <Home />;
     }
@@ -305,9 +309,6 @@ function AuthenticatedRoutes() {
         </Route>
         <Route path="/institute/dashboard">
           {() => <Dashboard type="institute-admin" />}
-        </Route>
-        <Route path="/admin/dashboard">
-          {() => <Dashboard type="admin" />}
         </Route>
         
         {/* 일반 메뉴 */}
