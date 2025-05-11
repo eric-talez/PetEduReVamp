@@ -3,8 +3,10 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Avatar } from '@/components/ui/avatar';
-import { Send, Search, Phone, Video, MoreVertical, Clock, CheckCheck } from 'lucide-react';
+import { Send, Search, Phone, Video, MoreVertical, Clock, CheckCheck, Loader2 } from 'lucide-react';
 import { useLocation } from 'wouter';
+import { useAuth } from '@/hooks/useAuth';
+import { MessagingProvider } from '@/hooks/useMessaging';
 
 interface Message {
   id: number;
@@ -27,13 +29,17 @@ interface Contact {
   isOnline: boolean;
 }
 
-export default function Messages() {
+function MessagesContent() {
   const [location] = useLocation();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [currentMessage, setCurrentMessage] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
+  const { user } = useAuth();
+  const [isConnected, setIsConnected] = useState(false);
+  const [isConnecting, setIsConnecting] = useState(true);
+  const wsRef = useRef<WebSocket | null>(null);
 
   // 초기 데이터 설정 - 실제로는 API에서 가져와야 함
   const [contacts, setContacts] = useState<Contact[]>([
@@ -83,6 +89,169 @@ export default function Messages() {
     }
   }, []);
 
+  // WebSocket 연결 설정
+  useEffect(() => {
+    if (!user) {
+      setIsConnected(false);
+      setIsConnecting(false);
+      return;
+    }
+    
+    // 이미 연결된 경우 스킵
+    if (wsRef.current && isConnected) return;
+
+    // WebSocket 프로토콜 결정 (HTTPS인 경우 WSS)
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const wsUrl = `${protocol}//${window.location.host}/ws`;
+    
+    console.log('WebSocket 연결 시도:', wsUrl);
+    
+    wsRef.current = new WebSocket(wsUrl);
+    
+    // 연결 이벤트 핸들러
+    wsRef.current.onopen = () => {
+      console.log('WebSocket 연결 성공');
+      setIsConnected(true);
+      setIsConnecting(false);
+      
+      // 인증 메시지 전송
+      if (wsRef.current) {
+        wsRef.current.send(JSON.stringify({
+          type: 'authenticate',
+          userId: user.id,
+          token: 'dummy-token' // 실제 구현에서는 JWT 토큰 사용
+        }));
+      }
+    };
+    
+    // 메시지 수신 핸들러
+    wsRef.current.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        handleIncomingMessage(data);
+      } catch (error) {
+        console.error('WebSocket 메시지 처리 오류:', error);
+      }
+    };
+    
+    // 연결 종료 핸들러
+    wsRef.current.onclose = () => {
+      console.log('WebSocket 연결 종료');
+      setIsConnected(false);
+      setIsConnecting(false);
+    };
+    
+    // 오류 핸들러
+    wsRef.current.onerror = (error) => {
+      console.error('WebSocket 오류:', error);
+      setIsConnected(false);
+      setIsConnecting(false);
+    };
+    
+    // 컴포넌트 언마운트시 연결 종료
+    return () => {
+      if (wsRef.current) {
+        wsRef.current.close();
+      }
+    };
+  }, [user]);
+
+  // 수신 메시지 처리 함수
+  const handleIncomingMessage = (data: any) => {
+    console.log('수신 메시지:', data);
+    
+    switch (data.type) {
+      case 'authentication_success':
+        console.log('인증 성공:', data.user);
+        // 실시간 상태 업데이트를 위해 온라인 상태 추적 로직 추가 가능
+        break;
+        
+      case 'new_message':
+        // 새 메시지를 기존 메시지 형식으로 변환하여 추가
+        addNewRealTimeMessage(data.message);
+        break;
+        
+      case 'message_sent':
+        // 발신 확인 처리
+        break;
+        
+      case 'user_status':
+        // 사용자 온라인 상태 업데이트
+        updateContactStatus(data.userId, data.status === 'online');
+        break;
+        
+      case 'read_receipt':
+        // 읽음 확인 처리
+        break;
+    }
+  };
+  
+  // 새 메시지 추가 함수
+  const addNewRealTimeMessage = (rtMessage: any) => {
+    if (!rtMessage) return;
+    
+    // 현재 선택된 대화상대가 발신자인지 확인
+    if (selectedContact && (rtMessage.sender.id === selectedContact.id || rtMessage.receiver.id === selectedContact.id)) {
+      const newMessage: Message = {
+        id: messages.length + 1,
+        sender: rtMessage.sender.name,
+        senderId: rtMessage.sender.id,
+        content: rtMessage.content,
+        timestamp: '방금 전',
+        isRead: false,
+        isMine: rtMessage.sender.id === user?.id
+      };
+      
+      setMessages(prev => [...prev, newMessage]);
+      
+      // 연락처 목록 업데이트
+      if (rtMessage.sender.id !== user?.id) {
+        updateContactWithMessage(rtMessage.sender.id, rtMessage.content, '방금 전');
+      }
+    } else {
+      // 다른 대화상대의 메시지인 경우 알림만 업데이트
+      if (rtMessage.sender.id !== user?.id) {
+        updateContactWithMessage(rtMessage.sender.id, rtMessage.content, '방금 전', true);
+      }
+    }
+  };
+  
+  // 연락처 상태 업데이트
+  const updateContactStatus = (userId: number, isOnline: boolean) => {
+    setContacts(prev => 
+      prev.map(contact => 
+        contact.id === userId
+          ? { ...contact, isOnline }
+          : contact
+      )
+    );
+  };
+  
+  // 연락처 메시지 업데이트
+  const updateContactWithMessage = (userId: number, content: string, time: string, increaseUnread = false) => {
+    setContacts(prev => {
+      const contactIndex = prev.findIndex(c => c.id === userId);
+      
+      if (contactIndex === -1) {
+        // 새 연락처 추가 로직 (필요시 구현)
+        return prev;
+      }
+      
+      const updatedContacts = [...prev];
+      const contact = { ...updatedContacts[contactIndex] };
+      
+      contact.lastMessage = content;
+      contact.lastMessageTime = time;
+      
+      if (increaseUnread) {
+        contact.unreadCount = (contact.unreadCount || 0) + 1;
+      }
+      
+      updatedContacts[contactIndex] = contact;
+      return updatedContacts;
+    });
+  };
+  
   // 메시지 스크롤 자동 이동
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -218,12 +387,13 @@ export default function Messages() {
 
   // 메시지 전송 함수
   const sendMessage = () => {
-    if (!currentMessage.trim() || !selectedContact) return;
+    if (!currentMessage.trim() || !selectedContact || !user) return;
 
+    // 기존 UI에 메시지 추가
     const newMessage: Message = {
       id: messages.length + 1,
       sender: '나',
-      senderId: 0,
+      senderId: user.id,
       content: currentMessage,
       timestamp: '방금 전',
       isRead: false,
@@ -246,6 +416,20 @@ export default function Messages() {
     });
 
     setContacts(updatedContacts);
+    
+    // WebSocket을 통해 메시지 전송
+    if (wsRef.current && isConnected) {
+      wsRef.current.send(JSON.stringify({
+        type: 'message',
+        receiverId: selectedContact.id,
+        content: currentMessage,
+        type: 'text'
+      }));
+      
+      console.log('WebSocket으로 메시지 전송:', selectedContact.id, currentMessage);
+    } else {
+      console.warn('WebSocket 연결이 없거나 연결되지 않음');
+    }
   };
 
   // 연락처 선택 핸들러
@@ -290,7 +474,11 @@ export default function Messages() {
                 onClick={() => handleContactSelect(contact)}
               >
                 <div className="relative">
-                  <Avatar src={contact.avatar} alt={contact.name} className="h-12 w-12" />
+                  <Avatar className="h-12 w-12">
+                    <div className="h-full w-full rounded-full overflow-hidden">
+                      <img src={contact.avatar} alt={contact.name} className="h-full w-full object-cover" />
+                    </div>
+                  </Avatar>
                   {contact.isOnline && (
                     <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white dark:border-gray-800"></span>
                   )}
@@ -338,7 +526,11 @@ export default function Messages() {
             {/* 메시지 헤더 */}
             <div className="p-3 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between bg-white dark:bg-gray-900">
               <div className="flex items-center">
-                <Avatar src={selectedContact.avatar} alt={selectedContact.name} className="h-10 w-10" />
+                <Avatar className="h-10 w-10">
+                  <div className="h-full w-full rounded-full overflow-hidden">
+                    <img src={selectedContact.avatar} className="h-full w-full object-cover" />
+                  </div>
+                </Avatar>
                 <div className="ml-3">
                   <h3 className="font-medium">{selectedContact.name}</h3>
                   <div className="flex items-center">
@@ -368,11 +560,11 @@ export default function Messages() {
               {messages.map((message) => (
                 <div key={message.id} className={`flex ${message.isMine ? 'justify-end' : 'justify-start'} mb-4`}>
                   {!message.isMine && (
-                    <Avatar 
-                      src={selectedContact.avatar} 
-                      alt={selectedContact.name} 
-                      className="h-8 w-8 mr-2 mt-1"
-                    />
+                    <Avatar className="h-8 w-8 mr-2 mt-1">
+                      <div className="h-full w-full rounded-full overflow-hidden">
+                        <img src={selectedContact.avatar} className="h-full w-full object-cover" />
+                      </div>
+                    </Avatar>
                   )}
                   
                   <div className={`max-w-[70%] ${message.isMine ? 'bg-primary text-white' : 'bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200'} p-3 rounded-lg shadow-sm`}>
