@@ -51,8 +51,14 @@ export default function Login() {
       }
       
       const loginEvent = new CustomEvent('login', {
-        detail: { user: mockUser }
+        detail: { 
+          role: mockUser.role,
+          name: mockUser.name
+        }
       });
+      
+      // 디버깅용 로그
+      console.log("Login as " + mockUser.role);
       
       window.dispatchEvent(loginEvent);
       
@@ -106,8 +112,14 @@ export default function Login() {
       }
       
       const loginEvent = new CustomEvent('login', {
-        detail: { user: mockUser }
+        detail: { 
+          role: mockUser.role,
+          name: mockUser.name
+        }
       });
+      
+      // 디버깅용 로그
+      console.log("Register and login as " + mockUser.role);
       
       window.dispatchEvent(loginEvent);
       
