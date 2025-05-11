@@ -1,54 +1,81 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Wifi, WifiOff } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+
+interface OfflineDetectorProps {
+  children: React.ReactNode;
+  messageOnline?: string;
+  messageOffline?: string;
+  showOnlineStatus?: boolean;
+}
 
 /**
- * 네트워크 연결 상태를 감지하고 오프라인 상태일 때 알림을 표시하는 컴포넌트
+ * 온라인/오프라인 상태를 감지하고 표시하는 컴포넌트
+ * 
+ * 오프라인 상태일 때 경고 메시지를 표시하고, 선택적으로 온라인 상태 메시지를 표시합니다.
+ * 네트워크 상태 변경을 실시간으로 감지합니다.
  */
-export function OfflineDetector() {
-  const [isOffline, setIsOffline] = useState(!navigator.onLine);
-  const { toast } = useToast();
+const OfflineDetector: React.FC<OfflineDetectorProps> = ({
+  children,
+  messageOnline = '인터넷 연결이 복구되었습니다.',
+  messageOffline = '인터넷 연결이 끊겼습니다. 일부 기능이 제한될 수 있습니다.',
+  showOnlineStatus = false,
+}) => {
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
+  const [showOnlineMessage, setShowOnlineMessage] = useState(false);
 
   useEffect(() => {
     const handleOnline = () => {
-      setIsOffline(false);
-      toast({
-        title: "온라인 상태로 전환되었습니다",
-        description: "인터넷 연결이 복구되었습니다.",
-        variant: "default",
-      });
+      setIsOnline(true);
+      setShowOnlineMessage(true);
+      // 온라인 상태 메시지를 잠시 후 자동으로 숨김
+      const timer = setTimeout(() => {
+        setShowOnlineMessage(false);
+      }, 5000); // 5초 후 자동으로 사라짐
+      
+      return () => clearTimeout(timer);
     };
 
     const handleOffline = () => {
-      setIsOffline(true);
-      toast({
-        title: "오프라인 상태입니다",
-        description: "인터넷 연결을 확인해 주세요.",
-        variant: "destructive",
-        duration: Infinity, // 수동으로 닫을 때까지 유지
-      });
+      setIsOnline(false);
+      setShowOnlineMessage(false);
     };
 
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
 
+    // 컴포넌트 언마운트 시 이벤트 리스너 제거
     return () => {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
     };
-  }, [toast]);
-
-  if (!isOffline) return null;
+  }, []);
 
   return (
-    <div className="fixed bottom-4 right-4 z-50 bg-red-100 dark:bg-red-900/50 text-red-800 dark:text-red-200 p-4 rounded-lg shadow-lg flex items-center space-x-3">
-      <WifiOff className="h-5 w-5" />
-      <div>
-        <p className="font-medium">오프라인 상태입니다</p>
-        <p className="text-sm">인터넷 연결을 확인해 주세요</p>
-      </div>
-    </div>
+    <>
+      {!isOnline && (
+        <Alert variant="destructive" className="mb-4 animate-in fade-in duration-500">
+          <WifiOff className="h-4 w-4" />
+          <AlertTitle>오프라인 모드</AlertTitle>
+          <AlertDescription>
+            {messageOffline}
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {isOnline && showOnlineMessage && showOnlineStatus && (
+        <Alert variant="default" className="mb-4 animate-in fade-in slide-in-from-top duration-300 bg-green-50 dark:bg-green-900/10 border-green-200 dark:border-green-800">
+          <Wifi className="h-4 w-4 text-green-600 dark:text-green-400" />
+          <AlertTitle className="text-green-800 dark:text-green-400">온라인 상태</AlertTitle>
+          <AlertDescription className="text-green-700 dark:text-green-300">
+            {messageOnline}
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {children}
+    </>
   );
-}
+};
 
 export default OfflineDetector;
