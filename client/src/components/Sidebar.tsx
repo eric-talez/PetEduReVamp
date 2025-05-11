@@ -425,7 +425,7 @@ export function Sidebar({
                       active={isActive("/pet-analysis")} 
                       onClick={(path) => {
                         console.log("AI 분석 메뉴 클릭:", path);
-                        handleItemClick(path);
+                        window.location.href = path; // 직접 URL로 이동
                       }} 
                       show={true}
                     >AI 분석</NavItem>
