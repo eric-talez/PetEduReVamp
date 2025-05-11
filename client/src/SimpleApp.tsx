@@ -29,6 +29,7 @@ import EventCalendarPage from "./pages/events/calendar";
 // 레이아웃 및 컴포넌트 임포트
 import { TopBar } from "@/components/TopBar";
 import { Sidebar } from "@/components/Sidebar";
+import { NewSidebar } from "@/components/NewSidebar";
 import { Toaster } from "@/components/ui/toaster";
 
 // 인증 관련 임포트 - 호환성 레이어 사용
