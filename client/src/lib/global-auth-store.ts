@@ -6,8 +6,8 @@
  * - 이벤트 발행/구독 패턴으로 실시간 상태 공유
  */
 
-// 사용자 역할 타입 (역호환성을 위해 타입만 참조)
-export type UserRole = 'user' | 'pet-owner' | 'trainer' | 'institute-admin' | 'admin';
+// shared/schema.ts의 UserRole 타입 사용 (타입 일관성 유지)
+import { UserRole } from '@shared/schema';
 
 // 인증 상태 인터페이스
 export interface AuthState {

@@ -5,8 +5,8 @@
 import { createContext, ReactNode, useContext, useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 
-// 사용자 역할 타입 (역호환성을 위해 타입과 const enum 모두 제공)
-export type UserRole = 'user' | 'pet-owner' | 'trainer' | 'institute-admin' | 'admin';
+// shared/schema.ts의 UserRole 타입 사용 (타입 일관성 유지)
+import { UserRole } from '@shared/schema';
 
 // 상수로도 제공 (상호 참조 문제 해결)
 export const USER_ROLES = {

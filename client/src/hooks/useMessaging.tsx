@@ -1,5 +1,5 @@
 import { createContext, ReactNode, useCallback, useContext, useEffect, useRef, useState } from 'react';
-import { useAuth } from './useAuth';
+import { useGlobalAuth } from './useGlobalAuth';
 
 // 메시지 타입 정의
 export interface Message {
@@ -50,7 +50,9 @@ const MessagingContext = createContext<MessagingContextType | null>(null);
 
 // 메시징 제공자 컴포넌트
 export function MessagingProvider({ children }: { children: ReactNode }) {
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated, userName, userRole } = useGlobalAuth();
+  // userName을 user 정보로 활용
+  const user = isAuthenticated ? { id: 1, name: userName || '사용자', role: userRole || 'user' } : null;
   const [isConnected, setIsConnected] = useState(false);
   const wsRef = useRef<WebSocket | null>(null);
   const [conversations, setConversations] = useState<Conversation[]>([]);
