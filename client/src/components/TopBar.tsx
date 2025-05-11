@@ -81,6 +81,11 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
   const logout = auth?.logout;
   const [location, setLocation] = useLocation();
   
+  // 검색 상태
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  
   // 팝업 메뉴 상태
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [messagePopupOpen, setMessagePopupOpen] = useState(false);
@@ -249,6 +254,39 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
     ));
   };
   
+  // 검색 기능
+  const handleSearch = () => {
+    if (!searchQuery.trim()) return;
+    
+    setIsSearching(true);
+    
+    // API 호출 (실제로는 여기서 API 호출)
+    console.log('검색 실행:', searchQuery);
+    
+    // 샘플 검색 결과 - 실제로는 API 응답으로 대체
+    setTimeout(() => {
+      const mockResults = [
+        { id: 1, type: 'course', title: '기초 복종 훈련', trainer: '김훈련', link: '/courses/1' },
+        { id: 2, type: 'trainer', title: '박코치', specialty: '행동 교정 전문', link: '/trainers/2' },
+        { id: 3, type: 'institute', title: '바우멍 훈련소', location: '서울 강남', link: '/institutes/3' },
+        { id: 4, type: 'course', title: '어질리티 중급 과정', trainer: '이트레이너', link: '/courses/4' }
+      ].filter(item => 
+        item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (item.trainer && item.trainer.toLowerCase().includes(searchQuery.toLowerCase()))
+      );
+      
+      setSearchResults(mockResults);
+      setIsSearching(false);
+    }, 500);
+  };
+  
+  // 엔터 키 처리
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleSearch();
+    }
+  };
+  
   // 디버깅용 로그 (개발 완료 후 제거)
   useEffect(() => {
     console.log('TopBar rendered with auth state:', {
@@ -291,8 +329,57 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
               <input 
                 type="text" 
                 className="block w-full pl-10 pr-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-primary focus:border-primary" 
-                placeholder="강의, 훈련사, 기관 검색" 
+                placeholder="강의, 훈련사, 기관 검색"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={handleKeyPress}
               />
+              {searchQuery.length > 0 && (
+                <div className="absolute right-0 top-0 h-full flex items-center pr-3">
+                  {isSearching ? (
+                    <div className="animate-spin w-4 h-4 border-2 border-primary border-t-transparent rounded-full"></div>
+                  ) : (
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={() => setSearchQuery('')}
+                      className="h-6 w-6 p-0"
+                    >
+                      <X className="h-3 w-3" />
+                    </Button>
+                  )}
+                </div>
+              )}
+              
+              {/* 검색 결과 드롭다운 */}
+              {searchQuery.length > 0 && searchResults.length > 0 && (
+                <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg z-50 max-h-64 overflow-y-auto">
+                  <div className="p-2">
+                    {searchResults.map(result => (
+                      <Link
+                        key={`${result.type}-${result.id}`}
+                        href={result.link}
+                        className="block p-2 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-md"
+                        onClick={() => setSearchQuery('')}
+                      >
+                        <div className="flex items-center">
+                          {result.type === 'course' && <Calendar className="h-4 w-4 mr-2 text-blue-500" />}
+                          {result.type === 'trainer' && <MessageSquare className="h-4 w-4 mr-2 text-green-500" />}
+                          {result.type === 'institute' && <DollarSign className="h-4 w-4 mr-2 text-amber-500" />}
+                          <div>
+                            <div className="font-medium">{result.title}</div>
+                            <div className="text-xs text-gray-500 dark:text-gray-400">
+                              {result.type === 'course' && result.trainer && `훈련사: ${result.trainer}`}
+                              {result.type === 'trainer' && result.specialty && `${result.specialty}`}
+                              {result.type === 'institute' && result.location && `${result.location}`}
+                            </div>
+                          </div>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
