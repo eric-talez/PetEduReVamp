@@ -5,6 +5,9 @@ import { useAuth } from "./hooks/useAuth";
 import { CartProvider } from "./context/cart-context";
 import { RedirectHandler } from "./components/RedirectHandler";
 import { Chatbot } from "./components/features/Chatbot";
+import ErrorBoundary from "./components/ErrorBoundary";
+import OfflineDetector from "./components/OfflineDetector";
+import NotFoundPage from "./components/NotFoundPage";
 
 // Pages
 import Home from "./pages/Home";
