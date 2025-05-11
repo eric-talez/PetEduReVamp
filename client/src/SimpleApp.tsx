@@ -496,19 +496,41 @@ function AuthenticatedRoutes() {
         </Route>
         
         {/* 관리자 메뉴 */}
+        <Route path="/admin/dashboard">
+          {() => {
+            const AdminHome = lazy(() => import('./pages/admin/AdminHome'));
+            return (
+              <Suspense fallback={<div className="p-8 flex justify-center items-center">
+                <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
+              </div>}>
+                <ProtectedAdminRoute component={AdminHome} />
+              </Suspense>
+            );
+          }}
+        </Route>
         <Route path="/admin/users">
-          {() => (
-            <ProtectedAdminRoute 
-              component={() => <div className="p-8"><h1 className="text-2xl font-bold mb-4">사용자 관리</h1><p>시스템 사용자를 관리하는 페이지입니다.</p></div>}
-            />
-          )}
+          {() => {
+            const AdminUsers = lazy(() => import('./pages/admin/AdminUsers'));
+            return (
+              <Suspense fallback={<div className="p-8 flex justify-center items-center">
+                <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
+              </div>}>
+                <ProtectedAdminRoute component={AdminUsers} />
+              </Suspense>
+            );
+          }}
         </Route>
         <Route path="/admin/institutes">
-          {() => (
-            <ProtectedAdminRoute 
-              component={() => <div className="p-8"><h1 className="text-2xl font-bold mb-4">기관 관리</h1><p>교육 기관을 관리하는 페이지입니다.</p></div>}
-            />
-          )}
+          {() => {
+            const AdminInstitutes = lazy(() => import('./pages/admin/AdminInstitutes'));
+            return (
+              <Suspense fallback={<div className="p-8 flex justify-center items-center">
+                <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
+              </div>}>
+                <ProtectedAdminRoute component={AdminInstitutes} />
+              </Suspense>
+            );
+          }}
         </Route>
         <Route path="/admin/courses">
           {() => (
