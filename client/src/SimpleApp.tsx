@@ -620,6 +620,24 @@ function AuthenticatedRoutes() {
           )}
         </Route>
         
+        {/* AI 분석 페이지 */}
+        <Route path="/ai-analysis">
+          {() => {
+            console.log("회원 AI 분석 페이지 로딩");
+            const AIAnalysisPage = lazy(() => import('./pages/ai-analysis'));
+            return (
+              <Suspense fallback={
+                <div className="flex justify-center items-center h-screen">
+                  <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full mr-2"></div>
+                  <span>AI 반려동물 분석 페이지 로딩 중...</span>
+                </div>
+              }>
+                <AIAnalysisPage />
+              </Suspense>
+            );
+          }}
+        </Route>
+        
         {/* 404 페이지 */}
         <Route component={NotFound} />
       </Switch>
