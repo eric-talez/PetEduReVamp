@@ -4,15 +4,21 @@ import { storage } from "./storage";
 import { z } from "zod";
 import { createUserSchema, createPetSchema, createCourseSchema } from "@shared/schema";
 import { registerCommissionRoutes } from "./commission/routes";
+import { registerTrainerRoutes } from "./trainers/routes";
+import { registerCourseRoutes } from "./courses/routes";
+import { registerInstituteRoutes } from "./institutes/routes";
 
 // 타입은 server/types.d.ts에 정의되어 있습니다.
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // 수수료 관련 라우트 등록
+  // Register all modular routes
   registerCommissionRoutes(app);
+  registerTrainerRoutes(app);
+  registerCourseRoutes(app);
+  registerInstituteRoutes(app);
   
   // 로그 메시지
-  console.log('[server] Commission routes registered');
+  console.log('[server] API routes registered');
   // ===== Auth Routes =====
   
   // Login
@@ -357,82 +363,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // ===== Institute Routes =====
-  
-  // Get all institutes
-  app.get("/api/institutes", async (req, res) => {
-    try {
-      const institutes = await storage.getAllInstitutes();
-      return res.status(200).json(institutes);
-    } catch (error) {
-      console.error("Get institutes error:", error);
-      return res.status(500).json({ message: "Internal server error" });
-    }
-  });
-  
-  // Get institute by ID
-  app.get("/api/institutes/:id", async (req, res) => {
-    try {
-      const instituteId = parseInt(req.params.id);
-      const institute = await storage.getInstitute(instituteId);
-      
-      if (!institute) {
-        return res.status(404).json({ message: "Institute not found" });
-      }
-      
-      return res.status(200).json(institute);
-    } catch (error) {
-      console.error("Get institute error:", error);
-      return res.status(500).json({ message: "Internal server error" });
-    }
-  });
-  
-  // Get institute by code
-  app.get("/api/institute/code/:code", async (req, res) => {
-    try {
-      const instituteCode = req.params.code;
-      const institute = await storage.getInstituteByCode(instituteCode);
-      
-      if (!institute) {
-        return res.status(404).json({ message: "Institute not found with provided code" });
-      }
-      
-      return res.status(200).json(institute);
-    } catch (error) {
-      console.error("Get institute by code error:", error);
-      return res.status(500).json({ message: "Internal server error" });
-    }
-  });
-  
-  // ===== Trainer Routes =====
-  
-  // Get all trainers
-  app.get("/api/trainers", async (req, res) => {
-    try {
-      const trainers = await storage.getAllTrainers();
-      return res.status(200).json(trainers);
-    } catch (error) {
-      console.error("Get trainers error:", error);
-      return res.status(500).json({ message: "Internal server error" });
-    }
-  });
-  
-  // Get trainer by ID
-  app.get("/api/trainers/:id", async (req, res) => {
-    try {
-      const trainerId = parseInt(req.params.id);
-      const trainer = await storage.getTrainer(trainerId);
-      
-      if (!trainer) {
-        return res.status(404).json({ message: "Trainer not found" });
-      }
-      
-      return res.status(200).json(trainer);
-    } catch (error) {
-      console.error("Get trainer error:", error);
-      return res.status(500).json({ message: "Internal server error" });
-    }
-  });
+  // Institute and trainer routes are now in separate modules
   
   // ===== 쇼핑 API 엔드포인트 =====
   
