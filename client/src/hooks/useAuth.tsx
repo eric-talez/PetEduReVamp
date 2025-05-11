@@ -244,8 +244,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       logAuthEvent('login 이벤트 수신', customEvent.detail);
       
       if (customEvent.detail) {
-        const { role, name } = customEvent.detail;
-        processLogin(role, name, true); // 리다이렉션 필요
+        // 로그에서 확인된 데이터 구조에 맞게 처리
+        const role = customEvent.detail.role || customEvent.detail.userRole;
+        const name = customEvent.detail.name || customEvent.detail.userName;
+        
+        // 디버그 로그 추가
+        console.log("로그인 처리 중:", { role, name });
+        
+        if (role && name) {
+          processLogin(role, name, true); // 리다이렉션 필요
+        } else {
+          console.error("로그인 데이터 부족:", customEvent.detail);
+        }
       }
     };
     
