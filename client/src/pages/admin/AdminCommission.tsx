@@ -74,7 +74,9 @@ import {
   CreditCard,
   BadgeDollarSign,
   Landmark,
-  Calculator
+  Calculator,
+  Eye,
+  X
 } from 'lucide-react';
 import { 
   DropdownMenu,
@@ -1592,7 +1594,7 @@ export default function AdminCommission() {
                     >
                       {selectedPolicy.status === 'active' ? (
                         <>
-                          <XCircle className="h-4 w-4 mr-2" />
+                          <X className="h-4 w-4 mr-2" />
                           비활성화
                         </>
                       ) : (

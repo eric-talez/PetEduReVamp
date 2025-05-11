@@ -1745,7 +1745,6 @@ export default function AdminCourses() {
                 <Label htmlFor="itemType">콘텐츠 유형</Label>
                 <Select
                   defaultValue="video"
-                  id="itemType"
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="콘텐츠 유형 선택" />
