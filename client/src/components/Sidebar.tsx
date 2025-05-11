@@ -432,9 +432,9 @@ export function Sidebar({
                       icon={<Brain className="w-5 h-5 mr-2" />} 
                       active={isActive("/ai-chat") || isActive("/pet-ai-chat") || isActive("/ai-analysis") || isActive("/pet-analysis")} 
                       onClick={(path) => {
-                        console.log("AI 반려동물 분석 메뉴 클릭", path);
-                        // 특별 처리: 직접 URL 설정
-                        window.location.href = "/ai-chat";
+                        console.log("비회원이 AI 반려동물 분석 클릭");
+                        // 비회원도 AI 분석 페이지로 이동
+                        window.location.href = path;
                       }} 
                       show={true}
                     >AI 반려동물 분석</NavItem>
@@ -638,11 +638,7 @@ export function Sidebar({
                       href="/ai-chat"
                       icon={<Brain className="w-5 h-5 mr-2" />}
                       active={isActive("/ai-chat") || isActive("/pet-ai-chat") || isActive("/ai-analysis") || isActive("/pet-analysis")}
-                      onClick={(path) => {
-                        console.log("AI 반려동물 분석 메뉴 클릭(로그인)", path);
-                        // 특별 처리: 직접 URL 설정
-                        window.location.href = "/ai-chat";
-                      }}
+                      onClick={handleItemClick}
                       show={true}
                     >
                       AI 반려동물 분석
