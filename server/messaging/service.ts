@@ -149,13 +149,14 @@ export class MessagingService {
       // 접속 상태 브로드캐스트
       this.broadcastUserStatus(userId, 'online');
       
-      // 미읽은 메시지 전송
-      this.sendUnreadMessages(userId);
-      
-      // 대화 기록 전송 (재접속이나 페이지 새로고침 시에도 기존 대화 복원)
+      // 재연결일 경우 대화 기록 전송
       if (reconnect) {
+        console.log(`User ${userId} reconnected, sending conversation history`);
         this.sendConversationHistory(userId);
       }
+      
+      // 읽지 않은 메시지 전송
+      this.sendUnreadMessages(userId);
       
       console.log(`Client ${userId} (${user.name}) ${reconnect ? 're-' : ''}authenticated`);
     } catch (error) {
