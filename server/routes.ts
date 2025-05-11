@@ -7,6 +7,8 @@ import { registerCommissionRoutes } from "./commission/routes";
 import { registerTrainerRoutes } from "./trainers/routes";
 import { registerCourseRoutes } from "./courses/routes";
 import { registerInstituteRoutes } from "./institutes/routes";
+import { WebSocketServer } from 'ws';
+import { MessagingService } from './messaging/service';
 
 // 타입은 server/types.d.ts에 정의되어 있습니다.
 
@@ -669,5 +671,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   const httpServer = createServer(app);
+  
+  // WebSocket 서버 초기화
+  const wss = new WebSocketServer({
+    server: httpServer,
+    path: '/ws'  // WebSocket 연결 경로 (클라이언트에서도 같은 경로 사용)
+  });
+
+  // 메시징 서비스 초기화
+  const messagingService = new MessagingService(wss, storage);
+
+  console.log('[server] WebSocket server initialized at /ws');
+  
   return httpServer;
 }
