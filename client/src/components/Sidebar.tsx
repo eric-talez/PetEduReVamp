@@ -421,25 +421,15 @@ export function Sidebar({
                       show={true}
                     >화상 수업</NavItem>
                     <NavItem 
-                      href="/pet-ai-chat" 
+                      href="/ai-chat" 
                       icon={<Brain className="w-5 h-5 mr-2" />} 
-                      active={isActive("/pet-ai-chat")} 
+                      active={isActive("/ai-chat") || isActive("/pet-ai-chat") || isActive("/ai-analysis") || isActive("/pet-analysis")} 
                       onClick={(path) => {
-                        console.log("AI 챗봇 메뉴 클릭", path);
+                        console.log("AI 반려동물 분석 메뉴 클릭", path);
                         handleItemClick(path);
                       }} 
                       show={true}
-                    >AI 챗봇</NavItem>
-                    <NavItem 
-                      href="/ai-analysis" 
-                      icon={<Activity className="w-5 h-5 mr-2" />} 
-                      active={isActive("/ai-analysis") || isActive("/pet-analysis")} 
-                      onClick={(path) => {
-                        console.log("AI 분석 메뉴 클릭", path);
-                        handleItemClick(path);
-                      }} 
-                      show={true}
-                    >반려견 분석</NavItem>
+                    >AI 반려동물 분석</NavItem>
                     <NavItem 
                       href="/community" 
                       icon={<MessageSquare className="w-5 h-5 mr-2" />} 
@@ -637,13 +627,13 @@ export function Sidebar({
                     </NavItem>
                     
                     <NavItem
-                      href="/ai-analysis"
-                      icon={<Sparkles className="w-5 h-5 mr-2" />}
-                      active={isActive("/ai-analysis")}
+                      href="/ai-chat"
+                      icon={<Brain className="w-5 h-5 mr-2" />}
+                      active={isActive("/ai-chat") || isActive("/pet-ai-chat") || isActive("/ai-analysis") || isActive("/pet-analysis")}
                       onClick={handleItemClick}
                       show={true}
                     >
-                      AI 분석
+                      AI 반려동물 분석
                     </NavItem>
                     <NavItem
                       href="/messages"
