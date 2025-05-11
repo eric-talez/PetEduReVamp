@@ -126,11 +126,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const parsedAuth = JSON.parse(storedAuth);
         logAuthEvent('저장된 인증 정보 발견', parsedAuth);
         
-        updateAuthState(
-          true, 
-          parsedAuth.role, 
-          parsedAuth.name || parsedAuth.userName
-        );
+        // 객체가 비어있지 않은지 확인
+        if (parsedAuth && (parsedAuth.role || parsedAuth.userRole)) {
+          updateAuthState(
+            true, 
+            parsedAuth.role || parsedAuth.userRole, 
+            parsedAuth.name || parsedAuth.userName
+          );
+        } else {
+          logAuthEvent('저장된 인증 정보가 유효하지 않음', parsedAuth);
+          localStorage.removeItem('petedu_auth');
+          updateAuthState(false, null, null);
+        }
       } catch (error) {
         // JSON 파싱 오류 시 인증 상태 초기화 및 알림
         console.error("인증 상태 파싱 오류:", error);
@@ -157,8 +164,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
      */
     const processLogin = (role: UserRole, name: string, shouldRedirect = false) => {
       try {
-        // 로컬 스토리지 업데이트
-        const authData = { role, name };
+        // 로컬 스토리지 업데이트 - userRole과 userName 키도 동시에 저장하여 호환성 유지
+        const authData = { 
+          role, 
+          name,
+          userRole: role, // 역호환성을 위해 둘 다 저장
+          userName: name  // 역호환성을 위해 둘 다 저장
+        };
         localStorage.setItem('petedu_auth', JSON.stringify(authData));
         
         // 인증 상태 업데이트
