@@ -128,7 +128,7 @@ export default function SimpleShopPage() {
           </div>
           <div className="flex gap-2">
             <select className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent dark:bg-gray-700 dark:text-white">
-              <option value="">모든 카테고리</option>
+              <option value="all">모든 카테고리</option>
               <option value="food">사료/간식</option>
               <option value="toy">장난감</option>
               <option value="fashion">의류/패션</option>

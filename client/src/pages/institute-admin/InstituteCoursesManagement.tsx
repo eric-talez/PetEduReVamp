@@ -389,7 +389,7 @@ export default function InstituteCoursesManagement() {
                 <SelectValue placeholder="과정 유형" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">모든 유형</SelectItem>
+                <SelectItem value="all">모든 유형</SelectItem>
                 <SelectItem value="기초 훈련">기초 훈련</SelectItem>
                 <SelectItem value="문제행동 교정">문제행동 교정</SelectItem>
                 <SelectItem value="사회화">사회화</SelectItem>

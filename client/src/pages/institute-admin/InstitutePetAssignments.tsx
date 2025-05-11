@@ -612,7 +612,7 @@ export default function InstitutePetAssignments() {
                 <SelectValue placeholder="견종 선택" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">모든 견종</SelectItem>
+                <SelectItem value="all">모든 견종</SelectItem>
                 <SelectItem value="푸들">푸들</SelectItem>
                 <SelectItem value="말티즈">말티즈</SelectItem>
                 <SelectItem value="비숑">비숑</SelectItem>
@@ -949,7 +949,7 @@ export default function InstitutePetAssignments() {
                         <SelectValue placeholder="전문 분야 선택" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">모든 분야</SelectItem>
+                        <SelectItem value="all">모든 분야</SelectItem>
                         <SelectItem value="기초 훈련">기초 훈련</SelectItem>
                         <SelectItem value="문제행동 교정">문제행동 교정</SelectItem>
                         <SelectItem value="사회화">사회화</SelectItem>

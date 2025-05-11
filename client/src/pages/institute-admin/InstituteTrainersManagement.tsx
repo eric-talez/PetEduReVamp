@@ -377,7 +377,7 @@ export default function InstituteTrainersManagement() {
                 <SelectValue placeholder="전문 분야" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">모든 분야</SelectItem>
+                <SelectItem value="all">모든 분야</SelectItem>
                 <SelectItem value="기초 훈련">기초 훈련</SelectItem>
                 <SelectItem value="고급 훈련">고급 훈련</SelectItem>
                 <SelectItem value="문제행동 교정">문제행동 교정</SelectItem>
