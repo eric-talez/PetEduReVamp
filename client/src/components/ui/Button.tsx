@@ -4,7 +4,7 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none",
+  "inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none disabled:cursor-not-allowed",
   {
     variants: {
       variant: {
@@ -43,10 +43,32 @@ export interface ButtonProps
 const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant, size, asChild = false, ...props }, ref) => {
     const Comp = asChild ? Slot : "button";
+    
+    // 접근성 향상을 위한 aria-disabled 속성 추가
+    const ariaProps: Record<string, any> = {};
+    
+    // 버튼이 비활성화된 경우, 접근성을 위한 ARIA 속성 추가
+    if (props.disabled) {
+      ariaProps['aria-disabled'] = true;
+    }
+    
+    // 아이콘 버튼인 경우 ARIA 레이블 필요함을 확인
+    const isIconButton = size === 'icon' && !props['aria-label'] && !props['aria-labelledby'];
+    
+    // 개발 모드에서 아이콘 버튼에 접근성 경고 (콘솔 경고만 출력)
+    if (process.env.NODE_ENV === 'development' && isIconButton) {
+      console.warn(
+        'Accessibility warning: Icon button is missing aria-label or aria-labelledby attribute. ' +
+        'Add an aria-label describing the button\'s action.'
+      );
+    }
+    
     return (
       <Comp
         className={cn(buttonVariants({ variant, size, className }))}
         ref={ref}
+        type={Comp === 'button' && !props.type ? 'button' : props.type} // 명시적 type 속성 추가
+        {...ariaProps}
         {...props}
       />
     );
