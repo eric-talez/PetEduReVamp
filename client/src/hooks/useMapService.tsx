@@ -2,7 +2,7 @@ import { createContext, useContext, useState, useEffect, useCallback, ReactNode 
 import { useToast } from '@/hooks/use-toast';
 
 // 지도 서비스 API 키가 있는지 확인
-const KAKAO_MAPS_API_KEY = process.env.KAKAO_MAPS_API_KEY;
+const KAKAO_MAPS_API_KEY = import.meta.env.VITE_KAKAO_MAPS_API_KEY;
 
 // 위치 타입 정의
 export interface Location {

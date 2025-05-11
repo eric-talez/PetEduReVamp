@@ -356,7 +356,7 @@ function KakaoMap() {
   useEffect(() => {
     const mapScript = document.createElement("script");
     mapScript.async = true;
-    mapScript.src = `//dapi.kakao.com/v2/maps/sdk.js?appkey=${import.meta.env.KAKAO_MAPS_API_KEY}&autoload=false&libraries=services,clusterer`;
+    mapScript.src = `//dapi.kakao.com/v2/maps/sdk.js?appkey=${import.meta.env.VITE_KAKAO_MAPS_API_KEY}&autoload=false&libraries=services,clusterer`;
     document.head.appendChild(mapScript);
 
     const onLoadKakaoMap = () => {
