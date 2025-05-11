@@ -5,9 +5,21 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
-import { Sparkles, Clock, Calendar, LineChart, AlertCircle, Check, Brain, Lightbulb, ChevronRight, Book } from 'lucide-react';
+import { 
+  Sparkles, Clock, Calendar, LineChart, AlertCircle, Check, Brain, 
+  Lightbulb, ChevronRight, Book, X, Crown, Zap, Star, Shield, RefreshCw, PackageCheck
+} from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogClose,
+} from "@/components/ui/dialog";
 
 // 로컬 스토리지에 저장할 분석 정보 인터페이스
 interface AnalysisData {
@@ -32,6 +44,16 @@ interface AnalysisData {
     children: number;
     cats: number;
   };
+}
+
+// 구독 정보 인터페이스
+interface SubscriptionInfo {
+  isSubscribed: boolean;
+  plan: 'free' | 'basic' | 'premium' | 'unlimited';
+  remainingAnalyses: number;
+  maxAnalysesPerDay: number;
+  startDate: string;
+  endDate: string | null;
 }
 
 // 기본 분석 데이터
@@ -198,6 +220,46 @@ const sampleDiaryEntries: DiaryEntry[] = [
   }
 ];
 
+// 샘플 구독 상품들
+const subscriptionPlans = [
+  {
+    id: 'free',
+    name: '무료',
+    price: 0,
+    description: '하루 1회 AI 분석 (기본)',
+    features: ['기본 성격 분석', '훈련 진도 확인', '일일 추천 사항'],
+    maxAnalysesPerDay: 1,
+    badge: null
+  },
+  {
+    id: 'basic',
+    name: '베이직',
+    price: 4900,
+    description: '하루 3회 AI 분석 + 고급 기능',
+    features: ['모든 무료 기능 포함', '고급 성격 분석', '상세 훈련 통계', '맞춤형 훈련 계획'],
+    maxAnalysesPerDay: 3,
+    badge: '인기'
+  },
+  {
+    id: 'premium',
+    name: '프리미엄',
+    price: 9900,
+    description: '하루 5회 AI 분석 + 전문가 기능',
+    features: ['모든 베이직 기능 포함', '전문가 수준 분석', '행동 예측', '문제 행동 해결 가이드', '훈련사 상담 1회'],
+    maxAnalysesPerDay: 5,
+    badge: null
+  },
+  {
+    id: 'unlimited',
+    name: '언리미티드',
+    price: 19900,
+    description: '무제한 AI 분석 + 전문가 상담',
+    features: ['모든 프리미엄 기능 포함', '무제한 AI 분석', '우선 분석 지원', '훈련사 상담 3회', 'VIP 지원'],
+    maxAnalysesPerDay: 999,
+    badge: '최고급'
+  }
+];
+
 export default function AIAnalysisPage() {
   const [analysis, setAnalysis] = useState<AnalysisData | null>(null);
   const [isAnalysisAvailable, setIsAnalysisAvailable] = useState(true);
@@ -206,10 +268,32 @@ export default function AIAnalysisPage() {
   const [selectedPetId, setSelectedPetId] = useState<number>(1); // 기본값으로 첫 번째 반려견 선택
   const [selectedDiaryEntry, setSelectedDiaryEntry] = useState<DiaryEntry | null>(null);
   const [showDiarySelection, setShowDiarySelection] = useState(false);
+  const [showSubscriptionModal, setShowSubscriptionModal] = useState(false);
+  const [subscription, setSubscription] = useState<SubscriptionInfo>({
+    isSubscribed: false,
+    plan: 'free',
+    remainingAnalyses: 1,
+    maxAnalysesPerDay: 1,
+    startDate: new Date().toISOString(),
+    endDate: null
+  });
   const { toast } = useToast();
   
   // 선택된 반려견 정보
   const selectedPet = samplePets.find(pet => pet.id === selectedPetId);
+
+  // 구독 정보 로드
+  useEffect(() => {
+    const savedSubscription = localStorage.getItem('petAnalysisSubscription');
+    if (savedSubscription) {
+      try {
+        const parsedSubscription = JSON.parse(savedSubscription) as SubscriptionInfo;
+        setSubscription(parsedSubscription);
+      } catch (e) {
+        console.error('Failed to parse subscription data', e);
+      }
+    }
+  }, []);
 
   // 분석 데이터 로드 및 다음 분석 가능 시간 체크
   useEffect(() => {
@@ -218,26 +302,46 @@ export default function AIAnalysisPage() {
       const parsedAnalysis = JSON.parse(savedAnalysis) as AnalysisData;
       setAnalysis(parsedAnalysis);
       
-      // 마지막 분석 시간으로부터 24시간이 지났는지 확인
+      // 마지막 분석 시간으로부터 지난 시간 확인
       const lastAnalysisDate = new Date(parsedAnalysis.lastAnalysisDate);
       const now = new Date();
-      const timeDiff = now.getTime() - lastAnalysisDate.getTime();
-      const hoursPassed = timeDiff / (1000 * 60 * 60);
       
-      if (hoursPassed < 24) {
+      // 날짜가 바뀌었는지 확인 (자정이 지났는지)
+      const isNewDay = lastAnalysisDate.getDate() !== now.getDate() || 
+                       lastAnalysisDate.getMonth() !== now.getMonth() || 
+                       lastAnalysisDate.getFullYear() !== now.getFullYear();
+      
+      // 새로운 날이면 분석 횟수 리셋
+      if (isNewDay) {
+        setSubscription(prev => ({
+          ...prev,
+          remainingAnalyses: prev.maxAnalysesPerDay
+        }));
+        setIsAnalysisAvailable(true);
+        return;
+      }
+      
+      // 당일 남은 분석 횟수 확인
+      if (subscription.remainingAnalyses <= 0) {
         setIsAnalysisAvailable(false);
         
-        // 다음 분석 가능 시간 계산
-        const hoursRemaining = Math.floor(24 - hoursPassed);
-        const minutesRemaining = Math.floor((24 - hoursPassed - hoursRemaining) * 60);
-        setTimeUntilNextAnalysis(`${hoursRemaining}시간 ${minutesRemaining}분`);
+        // 다음 분석 가능 시간 계산 (자정까지 남은 시간)
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        tomorrow.setHours(0, 0, 0, 0);
+        
+        const timeToMidnight = tomorrow.getTime() - now.getTime();
+        const hoursToMidnight = Math.floor(timeToMidnight / (1000 * 60 * 60));
+        const minutesToMidnight = Math.floor((timeToMidnight % (1000 * 60 * 60)) / (1000 * 60));
+        
+        setTimeUntilNextAnalysis(`${hoursToMidnight}시간 ${minutesToMidnight}분`);
       } else {
         setIsAnalysisAvailable(true);
       }
     } else {
       setIsAnalysisAvailable(true);
     }
-  }, []);
+  }, [subscription.maxAnalysesPerDay, subscription.remainingAnalyses]);
   
   // 1초마다 남은 시간 업데이트
   useEffect(() => {
@@ -265,6 +369,11 @@ export default function AIAnalysisPage() {
 
   // 새 분석 수행
   const performAnalysis = () => {
+    if (subscription.remainingAnalyses <= 0) {
+      setShowSubscriptionModal(true);
+      return;
+    }
+    
     setIsLoading(true);
     
     // API 호출 모의 (실제로는 여기서 API 호출)
@@ -272,15 +381,50 @@ export default function AIAnalysisPage() {
       const newAnalysis = generateMockAnalysis();
       setAnalysis(newAnalysis);
       localStorage.setItem('petAnalysisData', JSON.stringify(newAnalysis));
-      setIsAnalysisAvailable(false);
+      
+      // 남은 분석 횟수 차감
+      const updatedSubscription = {
+        ...subscription,
+        remainingAnalyses: subscription.remainingAnalyses - 1
+      };
+      setSubscription(updatedSubscription);
+      localStorage.setItem('petAnalysisSubscription', JSON.stringify(updatedSubscription));
+      
       setIsLoading(false);
       
       toast({
         title: "분석이 완료되었습니다",
-        description: "AI가 반려견의 상태를 분석했습니다. 24시간 후에 다시 분석할 수 있습니다.",
+        description: `AI가 반려견의 상태를 분석했습니다. 오늘 ${updatedSubscription.remainingAnalyses}회 더 분석할 수 있습니다.`,
         variant: "default",
       });
     }, 2000);
+  };
+  
+  // 구독 플랜 변경
+  const changePlan = (planId: 'free' | 'basic' | 'premium' | 'unlimited') => {
+    const selectedPlan = subscriptionPlans.find(plan => plan.id === planId);
+    if (!selectedPlan) return;
+    
+    const updatedSubscription: SubscriptionInfo = {
+      isSubscribed: planId !== 'free',
+      plan: planId,
+      remainingAnalyses: selectedPlan.maxAnalysesPerDay,
+      maxAnalysesPerDay: selectedPlan.maxAnalysesPerDay,
+      startDate: new Date().toISOString(),
+      endDate: planId === 'free' ? null : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() // 30일
+    };
+    
+    setSubscription(updatedSubscription);
+    localStorage.setItem('petAnalysisSubscription', JSON.stringify(updatedSubscription));
+    setShowSubscriptionModal(false);
+    
+    if (planId !== 'free') {
+      toast({
+        title: `${selectedPlan.name} 구독이 시작되었습니다`,
+        description: `이제 하루 ${selectedPlan.maxAnalysesPerDay}회 AI 분석을 사용할 수 있습니다.`,
+        variant: "default",
+      });
+    }
   };
 
   // 분석 초기화 (개발 중 테스트용, 실제 서비스에서는 제거)
@@ -298,6 +442,89 @@ export default function AIAnalysisPage() {
 
   return (
     <div className="container mx-auto py-8">
+      {/* 구독 모달 */}
+      <Dialog open={showSubscriptionModal} onOpenChange={setShowSubscriptionModal}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle className="text-2xl">AI 분석 구독 서비스</DialogTitle>
+            <DialogDescription>
+              AI 분석 사용 횟수를 늘리려면 아래 구독 플랜 중 하나를 선택하세요.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 my-4">
+            {subscriptionPlans.map((plan) => (
+              <Card 
+                key={plan.id} 
+                className={`flex flex-col h-full overflow-hidden transition-all ${subscription.plan === plan.id ? 'border-primary ring-2 ring-primary' : 'hover:border-primary/50'}`}
+              >
+                <CardHeader className="relative pb-2">
+                  {plan.badge && (
+                    <Badge className="absolute right-2 top-2 bg-primary">
+                      {plan.badge}
+                    </Badge>
+                  )}
+                  
+                  <CardTitle className="flex items-center">
+                    {plan.id === 'free' && <RefreshCw className="w-5 h-5 mr-2 text-blue-500" />}
+                    {plan.id === 'basic' && <Zap className="w-5 h-5 mr-2 text-green-500" />}
+                    {plan.id === 'premium' && <Star className="w-5 h-5 mr-2 text-amber-500" />}
+                    {plan.id === 'unlimited' && <Crown className="w-5 h-5 mr-2 text-purple-500" />}
+                    {plan.name}
+                  </CardTitle>
+                  
+                  <div className="flex items-end">
+                    <span className="text-2xl font-bold">
+                      {plan.price.toLocaleString()}
+                    </span>
+                    {plan.price > 0 && (
+                      <span className="text-sm text-gray-500 dark:text-gray-400 ml-1">원/월</span>
+                    )}
+                  </div>
+                  
+                  <CardDescription>
+                    {plan.description}
+                  </CardDescription>
+                </CardHeader>
+                
+                <CardContent className="flex-grow pb-2">
+                  <ul className="space-y-2">
+                    {plan.features.map((feature, i) => (
+                      <li key={i} className="flex items-start">
+                        <Check className="w-4 h-4 text-green-500 mr-2 mt-0.5" />
+                        <span className="text-sm">{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+                
+                <CardFooter className="pt-2">
+                  <Button 
+                    onClick={() => changePlan(plan.id as 'free' | 'basic' | 'premium' | 'unlimited')}
+                    variant={subscription.plan === plan.id ? "default" : "outline"}
+                    className="w-full"
+                  >
+                    {subscription.plan === plan.id ? (
+                      <><Check className="w-4 h-4 mr-2" /> 현재 플랜</>
+                    ) : plan.price === 0 ? (
+                      "무료로 계속하기"
+                    ) : (
+                      "선택하기"
+                    )}
+                  </Button>
+                </CardFooter>
+              </Card>
+            ))}
+          </div>
+          
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button variant="outline">취소</Button>
+            </DialogClose>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    
       {/* Banner */}
       <div className="relative rounded-xl overflow-hidden h-48 md:h-64 mb-8 bg-gradient-to-r from-primary/80 to-accent/80 shadow-lg">
         <img 
@@ -309,9 +536,19 @@ export default function AIAnalysisPage() {
         <div className="absolute inset-0 bg-gradient-to-r from-blue-600/70 to-purple-700/70 mix-blend-multiply"></div>
 
         <div className="relative h-full flex flex-col justify-center px-6 md:px-10">
-          <h1 className="text-white text-xl md:text-3xl font-bold mb-2 md:mb-4 max-w-xl">
-            반려견 AI 분석
-          </h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-white text-xl md:text-3xl font-bold mb-2 md:mb-4 max-w-xl">
+              반려견 AI 분석
+            </h1>
+            
+            {subscription.isSubscribed && (
+              <Badge variant="outline" className="bg-amber-500/50 border-amber-400 text-white">
+                <Crown className="w-3 h-3 mr-1" />
+                {subscriptionPlans.find(p => p.id === subscription.plan)?.name || ''} 구독 중
+              </Badge>
+            )}
+          </div>
+          
           <p className="text-white text-sm md:text-base max-w-xl mb-4">
             AI가 반려견의 성격, 훈련 진도, 그리고 앞으로의 방향을 분석합니다.
           </p>
@@ -319,7 +556,7 @@ export default function AIAnalysisPage() {
           <div className="flex items-center mt-2">
             <Button 
               onClick={performAnalysis}
-              disabled={!isAnalysisAvailable || isLoading || !selectedPet}
+              disabled={!isAnalysisAvailable && subscription.remainingAnalyses <= 0 || isLoading || !selectedPet}
               className="flex items-center"
               size="lg"
             >
@@ -327,12 +564,27 @@ export default function AIAnalysisPage() {
               {isLoading ? '분석 중...' : '지금 분석하기'}
             </Button>
             
-            {!isAnalysisAvailable && (
+            {subscription.remainingAnalyses > 0 ? (
+              <div className="flex items-center text-white ml-4">
+                <RefreshCw className="w-5 h-5 mr-2" />
+                <span>오늘 남은 분석: {subscription.remainingAnalyses}회</span>
+              </div>
+            ) : !isAnalysisAvailable && (
               <div className="flex items-center text-amber-300 ml-4">
                 <Clock className="w-5 h-5 mr-2" />
                 <span>다음 분석까지: {timeUntilNextAnalysis}</span>
               </div>
             )}
+            
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowSubscriptionModal(true)}
+              className="ml-auto text-white border-white hover:bg-white/20 hover:text-white"
+            >
+              <Zap className="w-4 h-4 mr-2" />
+              구독 상품 보기
+            </Button>
           </div>
         </div>
       </div>
