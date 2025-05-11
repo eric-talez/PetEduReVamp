@@ -277,7 +277,10 @@ function AuthenticatedRoutes() {
           <TrainerHome />
         </Suspense>;
       case 'institute-admin':
-        return <div className="p-8"><h1 className="text-2xl font-bold mb-4">기관 관리자 홈</h1><p>기관 관리자 전용 홈 페이지입니다.</p></div>;
+        const InstituteAdminHome = lazy(() => import('./pages/institute-admin/InstituteAdminHome'));
+        return <Suspense fallback={<div className="flex items-center justify-center min-h-screen"><div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full"></div></div>}>
+          <InstituteAdminHome />
+        </Suspense>;
       case 'admin':
         return <div className="p-8"><h1 className="text-2xl font-bold mb-4">시스템 관리자 홈</h1><p>시스템 관리자 전용 홈 페이지입니다.</p></div>;
       default:
@@ -289,7 +292,7 @@ function AuthenticatedRoutes() {
     <AppLayout>
       <Switch>
         {/* 역할별 메인 페이지 */}
-        <Route path="/">
+        <Route path="/" exact={true}>
           {() => getHomeComponent()}
         </Route>
         
