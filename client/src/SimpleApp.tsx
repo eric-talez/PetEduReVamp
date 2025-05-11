@@ -413,7 +413,12 @@ function AuthenticatedRoutes() {
         <Route path="/institute/trainers">
           {() => (
             <ProtectedInstituteRoute 
-              component={() => <div className="p-8"><h1 className="text-2xl font-bold mb-4">훈련사 관리</h1><p>기관의 훈련사를 관리하는 페이지입니다.</p></div>}
+              component={lazy(() => import('./pages/institute-admin/InstituteTrainersManagement'))}
+              fallback={
+                <div className="p-8 flex justify-center items-center">
+                  <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
+                </div>
+              }
             />
           )}
         </Route>
@@ -435,6 +440,13 @@ function AuthenticatedRoutes() {
           {() => (
             <ProtectedInstituteRoute 
               component={() => <div className="p-8"><h1 className="text-2xl font-bold mb-4">통계 및 수익</h1><p>기관의 통계와 수익을 확인하는 페이지입니다.</p></div>}
+            />
+          )}
+        </Route>
+        <Route path="/institute/pet-assignments">
+          {() => (
+            <ProtectedInstituteRoute 
+              component={() => <div className="p-8"><h1 className="text-2xl font-bold mb-4">반려견-훈련사 매칭</h1><p>반려견과 훈련사를 매칭하는 페이지입니다.</p></div>}
             />
           )}
         </Route>

@@ -298,7 +298,7 @@ export default function InstituteTrainersManagement() {
     toast({
       title: "훈련사 상태 업데이트",
       description: `훈련사 상태가 ${newStatus === 'active' ? '활성화' : newStatus === 'pending' ? '대기 중' : '비활성화'}로 변경되었습니다.`,
-      variant: newStatus === 'active' ? 'default' : newStatus === 'pending' ? 'warning' : 'destructive',
+      variant: newStatus === 'active' ? 'default' : 'destructive',
     });
   };
   
