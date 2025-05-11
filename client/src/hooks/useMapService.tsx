@@ -16,7 +16,7 @@ export interface Place {
   id: string;
   name: string;
   location: Location;
-  type: 'institute' | 'trainer' | 'clinic' | 'shop';
+  type: 'institute' | 'trainer' | 'clinic' | 'shop' | 'pension' | 'cafe' | 'camping' | 'park' | 'pethotel';
   rating?: number;
   distance?: number; // 미터 단위
   photo?: string;
@@ -39,7 +39,7 @@ interface MapServiceContextType {
   isSearching: boolean;
   searchError: string | null;
   getUserLocation: () => Promise<Location | null>;
-  searchNearbyPlaces: (type: 'institute' | 'trainer' | 'clinic' | 'shop', radius?: number) => Promise<void>;
+  searchNearbyPlaces: (type: 'institute' | 'trainer' | 'clinic' | 'shop' | 'pension' | 'cafe' | 'camping' | 'park' | 'pethotel', radius?: number) => Promise<void>;
   setSelectedPlace: (place: Place | null) => void;
   setSearchRadius: (radius: number) => void;
   getDirections: (destination: Location) => Promise<any>;
@@ -155,7 +155,7 @@ export function MapServiceProvider({ children }: { children: ReactNode }) {
 
   // 주변 장소 검색
   const searchNearbyPlaces = useCallback(async (
-    type: 'institute' | 'trainer' | 'clinic' | 'shop',
+    type: 'institute' | 'trainer' | 'clinic' | 'shop' | 'pension' | 'cafe' | 'camping' | 'park' | 'pethotel',
     radius: number = searchRadius
   ) => {
     if (!isMapLoaded || !currentLocation) {
