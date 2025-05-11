@@ -408,84 +408,17 @@ function AuthenticatedRoutes() {
           )}
         </Route>
         <Route path="/ai-chat">
-          {() => (
-            <div className="container mx-auto py-6">
-              <div className="flex flex-col items-start mb-8">
-                <h1 className="text-3xl font-bold">AI 반려동물 분석</h1>
-                <p className="text-gray-600 dark:text-gray-400 max-w-3xl">
-                  AI를 활용하여 반려동물의 행동을 분석하고 건강 상태를 관리하세요. 반려동물 돌봄에 관한 질문에 AI가 답변해드립니다.
-                </p>
+          {() => {
+            console.log("리다이렉트: SimpleApp에서 App으로 라우팅");
+            // App.tsx의 라우팅만 사용하도록 함
+            window.location.href = '/ai-chat';
+            return (
+              <div className="flex justify-center items-center h-screen">
+                <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full mr-2"></div>
+                <span>AI 반려동물 분석 페이지로 이동 중...</span>
               </div>
-              
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <div className="lg:col-span-2">
-                  <div className="w-full bg-white dark:bg-slate-800 rounded-lg shadow-md overflow-hidden mb-6">
-                    <div className="p-4 border-b dark:border-slate-700">
-                      <h2 className="text-xl font-bold flex items-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="mr-2 h-5 w-5 text-primary" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <circle cx="12" cy="12" r="10"></circle>
-                          <line x1="12" y1="16" x2="12" y2="12"></line>
-                          <line x1="12" y1="8" x2="12.01" y2="8"></line>
-                        </svg>
-                        AI 분석 도우미
-                      </h2>
-                    </div>
-                    <div className="p-6">
-                      <div className="w-full h-full">
-                        <PetAIChatBox isFullPage={true} />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="lg:col-span-1 space-y-6">
-                  <div className="bg-white dark:bg-slate-800 rounded-lg shadow-md overflow-hidden">
-                    <div className="p-4 border-b dark:border-slate-700">
-                      <div className="flex items-center font-medium text-lg mb-1">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="mr-2 h-5 w-5 text-primary" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10 5.172C10 3.12 12.5 1.65 15 3.5c2.5 1.85 2.5 5.15 0 7-1.65 1.22-5.96 3.43-6.5 3.5a.5.5 0 0 1-.5-.5c.07-.54 2.28-4.85 3.5-6.5.86-1.16 1.24-2 0-3-1.24-1-2.5-.5-3 .5C8 5.172 10 5.172 10 5.172z"/><path d="M8.5 8.5c-.4.94-1.5 3.5-2 5.5-.5 2 .5 3 1.5 3s2-1 2-2-.5-2-2.5-2c-2 0-4.5 3-5.5 5"/></svg>
-                        자주 묻는 질문
-                      </div>
-                    </div>
-                    <div className="p-4">
-                      <div className="space-y-2 text-sm">
-                        <p className="bg-slate-100 dark:bg-slate-700 p-2 rounded">우리 강아지가 계속 짖는데 어떻게 해야 할까요?</p>
-                        <p className="bg-slate-100 dark:bg-slate-700 p-2 rounded">강아지 사료 선택은 어떻게 하나요?</p>
-                        <p className="bg-slate-100 dark:bg-slate-700 p-2 rounded">반려견 기본 훈련은 어떻게 시작하나요?</p>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="bg-white dark:bg-slate-800 rounded-lg shadow-md overflow-hidden">
-                    <div className="p-4 border-b dark:border-slate-700">
-                      <div className="flex items-center font-medium text-lg mb-1">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="mr-2 h-5 w-5 text-primary" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
-                          <circle cx="12" cy="7" r="4"></circle>
-                        </svg>
-                        회원 전용 기능
-                      </div>
-                    </div>
-                    <div className="p-4">
-                      <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
-                        로그인하시면 다음과 같은 추가 기능을 이용하실 수 있습니다:
-                      </p>
-                      <ul className="space-y-2 text-sm list-disc pl-5">
-                        <li>반려견 건강 데이터 분석</li>
-                        <li>행동 패턴 트래킹</li>
-                        <li>맞춤형 훈련 추천</li>
-                        <li>영양 상태 모니터링</li>
-                      </ul>
-                      <div className="mt-4">
-                        <a href="/auth" className="text-primary hover:text-primary-dark text-sm font-medium">
-                          로그인/회원가입 →
-                        </a>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
+            );
+          }}
         </Route>
         
         {/* 이전 경로에서 리다이렉트 */}
