@@ -407,7 +407,7 @@ function AuthenticatedRoutes() {
             />
           )}
         </Route>
-        <Route path="/pet-ai-chat">
+        <Route path="/ai-chat">
           {() => (
             <div className="container mx-auto py-6">
               <div className="flex flex-col items-start mb-8">
