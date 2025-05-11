@@ -30,18 +30,37 @@ export function MessageList() {
   }, [messages, markAsRead, user]);
 
   // 메시지 그룹화 (메모이제이션 적용)
-  const messageGroups = useMemo(() => {
-    const groups: { [key: string]: Message[] } = {};
+  // 날짜별 그룹화에서 발신자 기준 세부 그룹화로 변경
+  const processedMessages = useMemo(() => {
+    if (!messages.length) return [];
     
-    messages.forEach(message => {
-      const date = format(new Date(message.timestamp), 'yyyy-MM-dd');
-      if (!groups[date]) {
-        groups[date] = [];
-      }
-      groups[date].push(message);
+    // 날짜 및 발신자 변경 여부에 따라 메시지 처리
+    return messages.map((message, index) => {
+      const prevMessage = index > 0 ? messages[index - 1] : null;
+      const nextMessage = index < messages.length - 1 ? messages[index + 1] : null;
+      
+      // 날짜 변경 여부 확인
+      const messageDate = new Date(message.timestamp).toDateString();
+      const prevMessageDate = prevMessage ? new Date(prevMessage.timestamp).toDateString() : null;
+      const showDate = !prevMessageDate || messageDate !== prevMessageDate;
+      
+      // 발신자 변경 여부 확인
+      const sameSenderAsPrev = prevMessage && prevMessage.sender.id === message.sender.id;
+      const sameSenderAsNext = nextMessage && nextMessage.sender.id === message.sender.id;
+      
+      // 시스템 메시지는 항상 분리
+      const isSystemMessage = message.type === 'notification';
+      
+      return {
+        message,
+        showDate,
+        showAvatar: !sameSenderAsPrev || isSystemMessage,
+        showSender: !sameSenderAsPrev || isSystemMessage,
+        isFirstInGroup: !sameSenderAsPrev || isSystemMessage,
+        isLastInGroup: !sameSenderAsNext || isSystemMessage,
+        previousMessage: prevMessage
+      };
     });
-    
-    return groups;
   }, [messages]);
   
   if (!activeConversation) {
@@ -54,22 +73,24 @@ export function MessageList() {
 
   return (
     <div className="flex-1 overflow-y-auto p-4">
-      {Object.entries(messageGroups).map(([date, groupMessages]) => (
-        <div key={date} className="mb-4">
-          <div className="flex justify-center mb-4">
-            <div className="bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 px-3 py-1 rounded-full text-xs">
-              {format(new Date(date), 'yyyy년 M월 d일 EEEE', { locale: ko })}
-            </div>
-          </div>
-          
-          {groupMessages.map((message) => (
-            <MessageItem 
-              key={message.id}
-              message={message}
-              isCurrentUser={message.sender.id === user?.id}
-            />
-          ))}
-        </div>
+      {processedMessages.map(({ 
+        message, 
+        showDate, 
+        showAvatar, 
+        showSender, 
+        isFirstInGroup, 
+        isLastInGroup,
+        previousMessage 
+      }) => (
+        <MessageItem 
+          key={message.id}
+          message={message}
+          isCurrentUser={message.sender.id === user?.id}
+          showAvatar={showAvatar}
+          showSender={showSender}
+          showDate={showDate}
+          previousMessage={previousMessage}
+        />
       ))}
       <div ref={messagesEndRef} />
     </div>
