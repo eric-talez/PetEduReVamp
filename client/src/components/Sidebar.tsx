@@ -283,6 +283,7 @@ export function Sidebar({
     toggleSidebar
   };
 
+  // 사용자 권한에 따른 메뉴 표시 여부 결정 - 문자열 비교로 명확하게 처리
   const showDashboardLink = userRole !== null;
   const showTrainerMenu = userRole === 'trainer' || userRole === 'admin';
   const showInstituteMenu = userRole === 'institute-admin' || userRole === 'admin';
@@ -290,6 +291,21 @@ export function Sidebar({
   const showPetOwnerMenu = userRole === 'pet-owner' || userRole === 'admin';
   const showBasicMenu = true; // 모든 사용자가 접근 가능한 메뉴
   const isPetOwner = userRole === 'pet-owner';
+  
+  // 명시적으로 메뉴 그룹 상태 업데이트 - 사용자 역할 변경 시
+  useEffect(() => {
+    if (userRole) {
+      const updatedGroups = {
+        ...menuGroups,
+        trainer: userRole === 'trainer' || userRole === 'admin',
+        institute: userRole === 'institute-admin' || userRole === 'admin', 
+        admin: userRole === 'admin'
+      };
+      
+      console.log('사용자 역할에 따른 메뉴 그룹 업데이트:', updatedGroups);
+      setMenuGroups(updatedGroups);
+    }
+  }, [userRole]);
   
   console.log('메뉴 표시 상태 - 기관 관리자 메뉴:', showInstituteMenu, '(역할:', userRole, ')');
   console.log('메뉴 그룹 상태:', menuGroups);

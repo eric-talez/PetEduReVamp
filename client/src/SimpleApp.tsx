@@ -29,7 +29,6 @@ import EventCalendarPage from "./pages/events/calendar";
 // 레이아웃 및 컴포넌트 임포트
 import { TopBar } from "@/components/TopBar";
 import { Sidebar } from "@/components/Sidebar";
-import { NewSidebar } from "@/components/NewSidebar";
 import { Toaster } from "@/components/ui/toaster";
 
 // 인증 관련 임포트 - 호환성 레이어 사용
@@ -134,6 +133,13 @@ function AppLayout({ children }: { children: ReactNode }) {
             expanded={sidebarExpanded}
             onToggleExpand={toggleSidebarSize}
           />
+          {/* 디버그 정보 표시 - 개발 모드에서만 표시 */}
+          {process.env.NODE_ENV === 'development' && (
+            <div className="fixed bottom-4 right-4 p-2 bg-slate-900 text-white text-xs rounded z-50">
+              역할: {auth.userRole || '미로그인'} / 
+              인증: {auth.isAuthenticated ? 'true' : 'false'}
+            </div>
+          )}
         </aside>
         
         {/* 모바일 오버레이 - 사이드바가 열리면 본문 위에 표시 */}
