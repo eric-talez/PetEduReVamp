@@ -387,6 +387,53 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Get institute by code
+  app.get("/api/institute/code/:code", async (req, res) => {
+    try {
+      const instituteCode = req.params.code;
+      const institute = await storage.getInstituteByCode(instituteCode);
+      
+      if (!institute) {
+        return res.status(404).json({ message: "Institute not found with provided code" });
+      }
+      
+      return res.status(200).json(institute);
+    } catch (error) {
+      console.error("Get institute by code error:", error);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+  });
+  
+  // ===== Trainer Routes =====
+  
+  // Get all trainers
+  app.get("/api/trainers", async (req, res) => {
+    try {
+      const trainers = await storage.getAllTrainers();
+      return res.status(200).json(trainers);
+    } catch (error) {
+      console.error("Get trainers error:", error);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+  });
+  
+  // Get trainer by ID
+  app.get("/api/trainers/:id", async (req, res) => {
+    try {
+      const trainerId = parseInt(req.params.id);
+      const trainer = await storage.getTrainer(trainerId);
+      
+      if (!trainer) {
+        return res.status(404).json({ message: "Trainer not found" });
+      }
+      
+      return res.status(200).json(trainer);
+    } catch (error) {
+      console.error("Get trainer error:", error);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+  });
+  
   // ===== 쇼핑 API 엔드포인트 =====
   
   // 상품 카테고리 목록 가져오기

@@ -347,18 +347,10 @@ export class MemStorage implements IStorage {
     return user;
   }
 
-  // Temporary implementation for institute code lookup
   async getInstituteByCode(code: string): Promise<any> {
-    // Mock implementation until proper database is connected
-    if (code === "PETEDU") {
-      return {
-        id: 1,
-        name: "PetEdu Institute",
-        code: "PETEDU",
-        description: "Main pet training institute"
-      };
-    }
-    return null;
+    return Array.from(this.institutes.values()).find(
+      (institute) => institute.code === code
+    );
   }
 
   async updateUserRole(userId: number, role: UserRole, trainerId?: number): Promise<User> {
