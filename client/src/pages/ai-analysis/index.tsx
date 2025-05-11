@@ -209,7 +209,7 @@ export default function AIAnalysisPage() {
   const { toast } = useToast();
   
   // 선택된 반려견 정보
-  const selectedPet = samplePets.find(pet => pet.id === selectedPetId) || samplePets[0];
+  const selectedPet = samplePets.find(pet => pet.id === selectedPetId);
 
   // 분석 데이터 로드 및 다음 분석 가능 시간 체크
   useEffect(() => {
@@ -319,7 +319,7 @@ export default function AIAnalysisPage() {
           <div className="flex items-center mt-2">
             <Button 
               onClick={performAnalysis}
-              disabled={!isAnalysisAvailable || isLoading}
+              disabled={!isAnalysisAvailable || isLoading || !selectedPet}
               className="flex items-center"
               size="lg"
             >
@@ -335,6 +335,105 @@ export default function AIAnalysisPage() {
             )}
           </div>
         </div>
+      </div>
+      
+      {/* 반려견 선택 섹션 */}
+      <div className="mb-8">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-bold">분석할 반려견 선택</h2>
+          {selectedDiaryEntry && (
+            <Badge variant="outline" className="flex items-center bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400">
+              <Book className="w-3 h-3 mr-1" />
+              알림장 기반 분석
+            </Badge>
+          )}
+        </div>
+        
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+          {samplePets.map(pet => (
+            <div 
+              key={pet.id}
+              onClick={() => setSelectedPetId(pet.id)}
+              className={`
+                relative cursor-pointer rounded-lg overflow-hidden border-2 transition-all
+                ${selectedPetId === pet.id ? 'border-primary shadow-md' : 'border-transparent'}
+              `}
+            >
+              <div className="aspect-square">
+                <img 
+                  src={pet.photo} 
+                  alt={pet.name}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div className={`
+                absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/80 to-transparent
+                ${selectedPetId === pet.id ? 'from-primary/80' : ''}
+              `}>
+                <p className="text-white font-medium">{pet.name}</p>
+                <p className="text-white/80 text-xs">{pet.breed}</p>
+              </div>
+              {selectedPetId === pet.id && (
+                <div className="absolute top-2 right-2 bg-primary text-white rounded-full p-1">
+                  <Check className="w-4 h-4" />
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+        
+        {/* 알림장 선택 섹션 */}
+        {selectedPetId && (
+          <div className="mt-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-medium">알림장 내용 선택 (선택사항)</h3>
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => setShowDiarySelection(!showDiarySelection)}
+                className="flex items-center"
+              >
+                {showDiarySelection ? '접기' : '알림장 선택'}
+                <ChevronRight className={`ml-1 w-4 h-4 transition-transform ${showDiarySelection ? 'rotate-90' : ''}`} />
+              </Button>
+            </div>
+            
+            {showDiarySelection && (
+              <div className="space-y-3 mt-2">
+                {sampleDiaryEntries.map(entry => (
+                  <div 
+                    key={entry.id}
+                    className={`
+                      p-4 rounded-lg border cursor-pointer transition-all
+                      ${selectedDiaryEntry?.id === entry.id 
+                        ? 'border-primary bg-primary/5 dark:bg-primary/10' 
+                        : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'}
+                    `}
+                    onClick={() => setSelectedDiaryEntry(selectedDiaryEntry?.id === entry.id ? null : entry)}
+                  >
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <div className="font-medium">{new Date(entry.date).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })}</div>
+                        <div className="text-sm text-gray-500 dark:text-gray-400">훈련사: {entry.trainer}</div>
+                      </div>
+                      {selectedDiaryEntry?.id === entry.id && (
+                        <Badge variant="default">선택됨</Badge>
+                      )}
+                    </div>
+                    <p className="mt-2 text-sm line-clamp-2">{entry.content}</p>
+                    {entry.tags.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mt-2">
+                        {entry.tags.map((tag, i) => (
+                          <Badge key={i} variant="outline" className="text-xs">{tag}</Badge>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
       </div>
       
       <div className="flex items-center justify-between mb-8">
