@@ -41,11 +41,13 @@ interface MessagingContextType {
   messages: Message[];
   isConnected: boolean;
   isLoadingMessages: boolean;
+  typingUsers: Record<number, { name: string; timestamp: Date }>;
   sendMessage: (receiverId: number, content: string, type?: 'text' | 'image') => void;
   markAsRead: (messageId: string) => void;
   startConversation: (userId: number) => void;
   getMessages: (conversationId: number) => Message[];
   setActiveConversation: (conversation: Conversation | null) => void;
+  sendTypingIndicator: (receiverId: number) => void;
 }
 
 const MessagingContext = createContext<MessagingContextType | null>(null);
@@ -61,7 +63,9 @@ export function MessagingProvider({ children }: { children: ReactNode }) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [activeConversation, setActiveConversation] = useState<Conversation | null>(null);
   const [isLoadingMessages, setIsLoadingMessages] = useState(false);
+  const [typingUsers, setTypingUsers] = useState<Record<number, { name: string; timestamp: Date }>>({});
   const messageHistoryRef = useRef<Record<string, Message[]>>({});
+  const typingTimeoutRef = useRef<Record<number, NodeJS.Timeout>>({});
   
   // 재연결 시도 횟수 및 타이머 참조
   const reconnectAttemptsRef = useRef(0);
@@ -229,7 +233,7 @@ export function MessagingProvider({ children }: { children: ReactNode }) {
         break;
         
       case 'typing_indicator':
-        // 필요하면 타이핑 표시기 구현
+        handleTypingIndicator(data.userId, data.userName);
         break;
         
       case 'system_notification':
