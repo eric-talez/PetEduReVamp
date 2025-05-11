@@ -292,8 +292,8 @@ function AuthenticatedRoutes() {
     <AppLayout>
       <Switch>
         {/* 역할별 메인 페이지 */}
-        <Route path="/" exact={true}>
-          {() => getHomeComponent()}
+        <Route path="/">
+          {getHomeComponent()}
         </Route>
         
         {/* 대시보드 */}

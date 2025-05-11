@@ -55,19 +55,24 @@ export default function Home() {
   
   // 사용자 역할에 따라 적절한 홈페이지 컴포넌트를 반환
   if (isAuthenticated) {
+    console.log("Home 컴포넌트: 인증된 사용자, 역할:", userRole);
     let HomeComponent;
     
     switch(userRole) {
       case 'trainer':
+        console.log("Home 컴포넌트: 훈련사 홈 렌더링");
         HomeComponent = TrainerHome;
         break;
       case 'pet-owner':
+        console.log("Home 컴포넌트: 반려인 홈 렌더링");
         HomeComponent = PetOwnerHome;
         break;
       case 'institute-admin':
+        console.log("Home 컴포넌트: 기관 관리자 홈 렌더링");
         HomeComponent = InstituteAdminHome;
         break;
       default:
+        console.log("Home 컴포넌트: 기본 홈페이지로 폴백");
         // 기본 홈페이지(아래 정의됨)로 폴백
         return renderDefaultHome();
     }
@@ -76,6 +81,7 @@ export default function Home() {
       <Suspense fallback={
         <div className="flex items-center justify-center min-h-screen">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <div className="ml-2">사용자 역할에 맞는 대시보드 로딩 중...</div>
         </div>
       }>
         <HomeComponent />
