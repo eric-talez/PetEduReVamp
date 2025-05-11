@@ -404,6 +404,19 @@ function AuthenticatedRoutes() {
             />
           )}
         </Route>
+        <Route path="/pet-ai-chat">
+          {() => {
+            const PublicAIPage = lazy(() => import('./pages/public-ai'));
+            return (
+              <Suspense fallback={<div className="p-8 flex justify-center items-center">
+                <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
+              </div>}>
+                {/* 로그인 여부에 관계없이 모든 사용자가 접근 가능한 AI 채팅 페이지 */}
+                <PublicAIPage />
+              </Suspense>
+            );
+          }}
+        </Route>
         <Route path="/messages">
           {() => (
             <ProtectedRoute 
