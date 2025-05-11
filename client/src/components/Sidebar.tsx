@@ -118,6 +118,7 @@ export function Sidebar({
   expanded: externalExpanded,
   onToggleExpand
 }: SidebarProps) {
+  console.log('Sidebar render - userRole:', userRole, 'isAuthenticated:', isAuthenticated);
   const [location, setLocation] = useLocation();
   const [internalExpanded, setInternalExpanded] = useState(true);
   
@@ -152,14 +153,27 @@ export function Sidebar({
   });
   
   useEffect(() => {
-    if (userRole) {
-      setMenuGroups(prev => ({
-        ...prev,
-        trainer: userRole === 'trainer' || userRole === 'admin',
-        institute: userRole === 'institute-admin' || userRole === 'admin',
-        admin: userRole === 'admin'
-      }));
-    }
+    console.log('Sidebar useEffect - userRole:', userRole);
+    
+    // 기관 관리자 및 관리자 권한 확인
+    const isInstituteAdmin = userRole === 'institute-admin';
+    const isAdmin = userRole === 'admin';
+    const isTrainer = userRole === 'trainer';
+    
+    console.log('권한 체크 - 기관 관리자:', isInstituteAdmin, '관리자:', isAdmin, '훈련사:', isTrainer);
+    
+    // 명시적으로 모든 값 설정
+    const updatedMenuGroups = {
+      main: true,
+      features: true,
+      myLearning: true,
+      trainer: isTrainer || isAdmin,
+      institute: isInstituteAdmin || isAdmin,
+      admin: isAdmin
+    };
+    
+    console.log('메뉴 그룹 업데이트:', updatedMenuGroups);
+    setMenuGroups(updatedMenuGroups);
   }, [userRole]);
 
   const toggleSidebar = () => {
@@ -276,6 +290,9 @@ export function Sidebar({
   const showPetOwnerMenu = userRole === 'pet-owner' || userRole === 'admin';
   const showBasicMenu = true; // 모든 사용자가 접근 가능한 메뉴
   const isPetOwner = userRole === 'pet-owner';
+  
+  console.log('메뉴 표시 상태 - 기관 관리자 메뉴:', showInstituteMenu, '(역할:', userRole, ')');
+  console.log('메뉴 그룹 상태:', menuGroups);
 
 
   return (
