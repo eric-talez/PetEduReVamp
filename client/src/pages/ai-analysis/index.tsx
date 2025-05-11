@@ -239,12 +239,12 @@ export default function AIAnalysisPage() {
       {/* Banner */}
       <div className="relative rounded-xl overflow-hidden h-48 md:h-64 mb-8 bg-gradient-to-r from-primary/80 to-accent/80 shadow-lg">
         <img 
-          src="https://images.unsplash.com/photo-1553284965-83fd3e82fa5a?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=400" 
+          src="https://images.unsplash.com/photo-1589652717521-10c0d092dea9?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=400" 
           alt="반려견 AI 분석"
           className="w-full h-full object-cover absolute mix-blend-overlay"
         />
 
-        <div className="absolute inset-0 bg-gradient-to-r from-primary/80 to-cyan-700/50 mix-blend-multiply"></div>
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-600/70 to-purple-700/70 mix-blend-multiply"></div>
 
         <div className="relative h-full flex flex-col justify-center px-6 md:px-10">
           <h1 className="text-white text-xl md:text-3xl font-bold mb-2 md:mb-4 max-w-xl">
