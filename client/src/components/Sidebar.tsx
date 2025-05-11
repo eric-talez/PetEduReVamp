@@ -210,8 +210,7 @@ export function Sidebar({
     const publicPaths = [
       "/", "/courses", "/trainers", "/video-training", "/video-call", "/community",
       "/institutes", "/institutes/register", "/events", "/events/calendar",
-      "/help/faq", "/help/guide", "/help/about", "/help/contact", "/shop",
-      "/ai-chat", "/pet-ai-chat", "/pet-analysis", "/ai-analysis" // AI 페이지들은 비로그인 사용자도 접근 가능
+      "/help/faq", "/help/guide", "/help/about", "/help/contact", "/shop"
     ];
 
     // 로그인 필요한 페이지 접근 시
@@ -252,7 +251,7 @@ export function Sidebar({
     const specialRoutes: Record<string, string> = {
       '/video-training': '영상 훈련',
       '/video-call': '화상 수업',
-      '/ai-chat': 'AI 반려동물 분석',
+      '/ai-analysis': 'AI 분석',
       '/my-pets': '반려견 관리',
       '/notebook': '알림장',
       '/calendar': '교육 일정'
@@ -269,7 +268,6 @@ export function Sidebar({
 
     if (path in specialRoutes) {
       console.log(`${specialRoutes[path]} 페이지로 이동 중...`);
-      // 단순하게 처리 
       window.location.href = path;
       if (onClose) onClose();
       return;
@@ -421,17 +419,6 @@ export function Sidebar({
                       }} 
                       show={true}
                     >화상 수업</NavItem>
-                    <NavItem 
-                      href="/ai-chat" 
-                      icon={<Brain className="w-5 h-5 mr-2" />} 
-                      active={isActive("/ai-chat") || isActive("/pet-ai-chat") || isActive("/ai-analysis") || isActive("/pet-analysis")} 
-                      onClick={(path) => {
-                        console.log("비회원이 AI 반려동물 분석 클릭");
-                        // 비회원도 AI 분석 페이지로 이동
-                        window.location.href = path;
-                      }} 
-                      show={true}
-                    >AI 반려동물 분석</NavItem>
                     <NavItem 
                       href="/community" 
                       icon={<MessageSquare className="w-5 h-5 mr-2" />} 
@@ -629,13 +616,13 @@ export function Sidebar({
                     </NavItem>
                     
                     <NavItem
-                      href="/ai-chat"
-                      icon={<Brain className="w-5 h-5 mr-2" />}
-                      active={isActive("/ai-chat") || isActive("/pet-ai-chat") || isActive("/ai-analysis") || isActive("/pet-analysis")}
+                      href="/ai-analysis"
+                      icon={<Sparkles className="w-5 h-5 mr-2" />}
+                      active={isActive("/ai-analysis")}
                       onClick={handleItemClick}
                       show={true}
                     >
-                      AI 반려동물 분석
+                      AI 분석
                     </NavItem>
                     <NavItem
                       href="/messages"

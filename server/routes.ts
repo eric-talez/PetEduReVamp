@@ -8,7 +8,6 @@ import { registerTrainerRoutes } from "./trainers/routes";
 import { registerCourseRoutes } from "./courses/routes";
 import { registerInstituteRoutes } from "./institutes/routes";
 import { registerLocationRoutes } from "./location/routes";
-import { registerAIRoutes } from "./ai/routes";
 import { WebSocketServer } from 'ws';
 import { MessagingService } from './messaging/service';
 
@@ -21,7 +20,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   registerCourseRoutes(app);
   registerInstituteRoutes(app);
   registerLocationRoutes(app);
-  registerAIRoutes(app);
   
   // 로그 메시지
   console.log('[server] API routes registered');
@@ -142,63 +140,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get user's pets
   app.get("/api/pets", async (req, res) => {
     try {
-      console.log("[Server] /api/pets 호출됨, 세션 상태:", !!req.session, "인증 상태:", !!req.session?.user);
-      
-      // 개발 편의를 위한 기본 샘플 데이터 (인증 여부와 관계없이 항상 제공)
-      const samplePets = [
-        { 
-          id: 1, 
-          name: "몽실이", 
-          userId: 1, 
-          breed: "말티즈", 
-          age: 3, 
-          weight: 4.5,
-          description: "활발하고 장난기 많은 성격",
-          imageUrl: "https://images.dog.ceo/breeds/maltese/n02085936_3435.jpg"
-        },
-        { 
-          id: 2, 
-          name: "초코", 
-          userId: 1, 
-          breed: "푸들", 
-          age: 2, 
-          weight: 3.8,
-          description: "조용하고 온순한 성격",
-          imageUrl: "https://images.dog.ceo/breeds/poodle-miniature/n02113712_919.jpg"
-        },
-        { 
-          id: 3, 
-          name: "마루", 
-          userId: 1, 
-          breed: "시츄", 
-          age: 4, 
-          weight: 5.2,
-          description: "호기심이 많고 활동적",
-          imageUrl: "https://images.dog.ceo/breeds/shihtzu/n02086240_6394.jpg"
-        }
-      ];
-          
-      // 인증된 사용자인 경우 실제 데이터 사용 (실제 환경에서는 이 부분만 활성화)
-      if (req.session && req.session.user) {
-        try {
-          const userId = req.session.user.id;
-          console.log("[Server] 인증된 사용자의 반려동물 조회:", userId);
-          
-          const userPets = await storage.getPetsByUserId(userId);
-          console.log("[Server] 반려동물 조회 결과:", userPets.length, "개");
-          
-          if (userPets.length > 0) {
-            return res.status(200).json(userPets);
-          }
-        } catch (e) {
-          console.log("[Server] 사용자 반려동물 조회 실패, 샘플 데이터 사용:", e);
-        }
-      } else {
-        console.log("[Server] 인증되지 않은 요청, 샘플 데이터 반환");
+      if (!req.session.user) {
+        return res.status(401).json({ message: "Not authenticated" });
       }
       
-      // 인증되지 않았거나 사용자 반려동물이 없는 경우 샘플 데이터 반환
-      return res.status(200).json(samplePets);
+      const userId = req.session.user.id;
+      const pets = await storage.getPetsByUserId(userId);
+      
+      return res.status(200).json(pets);
     } catch (error) {
       console.error("Get pets error:", error);
       return res.status(500).json({ message: "Internal server error" });

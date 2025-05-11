@@ -1,7 +1,6 @@
-import { Switch, Route, Link } from "wouter";
+import { Switch, Route } from "wouter";
 import { RedirectHandler } from './components/RedirectHandler';
 import React, { ReactNode, useState, useEffect, lazy, Suspense } from "react";
-import { AIAnalysisProvider } from './hooks/useAIAnalysis';
 
 // 페이지 컴포넌트 임포트
 import Home from "./pages/Home";
@@ -18,9 +17,6 @@ import Login from "@/pages/auth/login";
 import NotFound from "@/pages/not-found";
 import VideoTrainingPage from "@/pages/video-training";
 import LocationsPage from "./pages/locations";
-import { PetAIChatBox } from "./components/PetAIChatBox";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dog } from "lucide-react";
 import VideoCallPage from "./pages/video-call";
 import MessagesPage from "./pages/messages";
 import AdminCommissionPage from "./pages/admin/commission";
@@ -29,7 +25,6 @@ import AdminSettlementPage from "./pages/admin/settlement";
 import EventsPage from "./pages/events";
 import EventDetailPage from "./pages/events/event-detail";
 import EventCalendarPage from "./pages/events/calendar";
-import PetAnalysisPage from "./pages/pet-analysis";
 
 // 레이아웃 및 컴포넌트 임포트
 import { TopBar } from "@/components/TopBar";
@@ -203,35 +198,9 @@ function ProtectedRoute({ component: Component, requiredRoles = null, fallback =
   fallback?: React.ReactNode;
 }) {
   const { isAuthenticated, userRole } = useAuth();
-  // window.location.pathname으로 현재 경로 확인
-  const currentPath = window.location.pathname;
   
   // 로그인 여부 체크
   if (!isAuthenticated) {
-    // AI 분석 페이지인 경우 특별한 안내 메시지 표시
-    if (currentPath === '/pet-analysis' || currentPath === '/ai-analysis') {
-      return (
-        <div className="flex flex-col items-center justify-center p-8 h-[80vh]">
-          <div className="text-center max-w-md p-8 bg-white dark:bg-slate-800 rounded-lg shadow-lg">
-            <div className="text-primary text-5xl mb-4">🐾</div>
-            <h2 className="text-2xl font-bold mb-4">반려동물 AI 분석 서비스</h2>
-            <p className="mb-6 text-slate-600 dark:text-slate-300">
-              이 서비스를 이용하기 위해서는 로그인이 필요합니다. 회원가입 후 반려동물 정보를 등록하면 AI 기반 분석 서비스를 이용하실 수 있습니다.
-            </p>
-            <div className="space-y-3">
-              <Link to="/auth" className="block w-full py-2 bg-primary text-white rounded hover:bg-primary/90 transition-colors">
-                로그인 / 회원가입
-              </Link>
-              <Link to="/" className="block w-full py-2 border border-slate-300 dark:border-slate-600 rounded hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
-                홈으로 돌아가기
-              </Link>
-            </div>
-          </div>
-        </div>
-      );
-    }
-    
-    // 그 외 페이지는 기본 로그인 페이지로 리디렉션
     return <RedirectHandler to="/auth" />;
   }
   
@@ -390,137 +359,6 @@ function AuthenticatedRoutes() {
               component={() => <div className="p-8"><h1 className="text-2xl font-bold mb-4">맞춤 추천</h1><p>반려견 프로필과 사용자 선호도 기반 맞춤형 추천 서비스 페이지입니다.</p></div>}
             />
           )}
-        </Route>
-        <Route path="/pet-analysis">
-          {() => (
-            <ProtectedRoute 
-              component={PetAnalysisPage}
-              requiredRoles={['pet-owner', 'trainer', 'admin']}
-            />
-          )}
-        </Route>
-        <Route path="/ai-analysis">
-          {() => (
-            <ProtectedRoute 
-              component={PetAnalysisPage}
-              requiredRoles={['pet-owner', 'trainer', 'admin']}
-            />
-          )}
-        </Route>
-        <Route path="/ai-chat">
-          {() => (
-            <div className="container mx-auto py-6">
-              <div className="flex flex-col items-start mb-8">
-                <h1 className="text-3xl font-bold">AI 반려동물 분석</h1>
-                <p className="text-gray-600 dark:text-gray-400 max-w-3xl">
-                  AI를 활용하여 반려동물의 행동을 분석하고 건강 상태를 관리하세요. 반려동물 돌봄에 관한 질문에 AI가 답변해드립니다.
-                </p>
-              </div>
-              
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <div className="lg:col-span-2">
-                  <div className="w-full bg-white dark:bg-slate-800 rounded-lg shadow-md overflow-hidden mb-6">
-                    <div className="p-4 border-b dark:border-slate-700">
-                      <h2 className="text-xl font-bold flex items-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="mr-2 h-5 w-5 text-primary" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <circle cx="12" cy="12" r="10"></circle>
-                          <line x1="12" y1="16" x2="12" y2="12"></line>
-                          <line x1="12" y1="8" x2="12.01" y2="8"></line>
-                        </svg>
-                        AI 분석 도우미
-                      </h2>
-                    </div>
-                    <div className="p-6">
-                      <div className="w-full h-full">
-                        <PetAIChatBox isFullPage={true} />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="lg:col-span-1 space-y-6">
-                  <div className="bg-white dark:bg-slate-800 rounded-lg shadow-md overflow-hidden">
-                    <div className="p-4 border-b dark:border-slate-700">
-                      <div className="flex items-center font-medium text-lg mb-1">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="mr-2 h-5 w-5 text-primary" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10 5.172C10 3.12 12.5 1.65 15 3.5c2.5 1.85 2.5 5.15 0 7-1.65 1.22-5.96 3.43-6.5 3.5a.5.5 0 0 1-.5-.5c.07-.54 2.28-4.85 3.5-6.5.86-1.16 1.24-2 0-3-1.24-1-2.5-.5-3 .5C8 5.172 10 5.172 10 5.172z"/><path d="M8.5 8.5c-.4.94-1.5 3.5-2 5.5-.5 2 .5 3 1.5 3s2-1 2-2-.5-2-2.5-2c-2 0-4.5 3-5.5 5"/></svg>
-                        자주 묻는 질문
-                      </div>
-                    </div>
-                    <div className="p-4">
-                      <div className="space-y-2 text-sm">
-                        <p className="bg-slate-100 dark:bg-slate-700 p-2 rounded">우리 강아지가 계속 짖는데 어떻게 해야 할까요?</p>
-                        <p className="bg-slate-100 dark:bg-slate-700 p-2 rounded">강아지 사료 선택은 어떻게 하나요?</p>
-                        <p className="bg-slate-100 dark:bg-slate-700 p-2 rounded">반려견 기본 훈련은 어떻게 시작하나요?</p>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="bg-white dark:bg-slate-800 rounded-lg shadow-md overflow-hidden">
-                    <div className="p-4 border-b dark:border-slate-700">
-                      <div className="flex items-center font-medium text-lg mb-1">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="mr-2 h-5 w-5 text-primary" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
-                          <circle cx="12" cy="7" r="4"></circle>
-                        </svg>
-                        회원 전용 기능
-                      </div>
-                    </div>
-                    <div className="p-4">
-                      <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
-                        로그인하시면 다음과 같은 추가 기능을 이용하실 수 있습니다:
-                      </p>
-                      <ul className="space-y-2 text-sm list-disc pl-5">
-                        <li>반려견 건강 데이터 분석</li>
-                        <li>행동 패턴 트래킹</li>
-                        <li>맞춤형 훈련 추천</li>
-                        <li>영양 상태 모니터링</li>
-                      </ul>
-                      <div className="mt-4">
-                        <a href="/auth" className="text-primary hover:text-primary-dark text-sm font-medium">
-                          로그인/회원가입 →
-                        </a>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-        </Route>
-        
-        {/* 이전 경로에서 리다이렉트 */}
-        <Route path="/pet-ai">
-          {() => {
-            console.log("리다이렉트: /pet-ai → /ai-chat");
-            // 리다이렉트 직접 처리
-            window.location.replace('/ai-chat');
-            return <div className="flex justify-center items-center h-screen">
-              <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full mr-2"></div>
-              <span>AI 반려동물 분석 페이지로 이동 중...</span>
-            </div>;
-          }}
-        </Route>
-        <Route path="/pet-analysis">
-          {() => {
-            console.log("리다이렉트: /pet-analysis → /ai-chat");
-            // 리다이렉트 직접 처리
-            window.location.replace('/ai-chat');
-            return <div className="flex justify-center items-center h-screen">
-              <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full mr-2"></div>
-              <span>AI 반려동물 분석 페이지로 이동 중...</span>
-            </div>;
-          }}
-        </Route>
-        <Route path="/ai-analysis">
-          {() => {
-            console.log("리다이렉트: /ai-analysis → /ai-chat");
-            // 리다이렉트 직접 처리
-            window.location.replace('/ai-chat');
-            return <div className="flex justify-center items-center h-screen">
-              <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full mr-2"></div>
-              <span>AI 반려동물 분석 페이지로 이동 중...</span>
-            </div>;
-          }}
         </Route>
         <Route path="/messages">
           {() => (
