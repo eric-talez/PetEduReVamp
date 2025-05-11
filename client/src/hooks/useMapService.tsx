@@ -124,7 +124,7 @@ export function MapServiceProvider({ children }: { children: ReactNode }) {
           
           if (result && result[0]) {
             const address = result[0].address?.address_name || '';
-            userLocation.address = address;
+            (userLocation as Location).address = address;
           }
         } catch (error) {
           console.error('주소 변환 중 오류:', error);

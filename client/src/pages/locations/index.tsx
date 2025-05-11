@@ -1,9 +1,14 @@
-import { useEffect, useRef, useState } from "react";
-import { Building, Search, Map, MapPin, Phone, ChevronRight, Star } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+import { useState, useEffect } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Loader2, Search, MapPin, Navigation, Building, Phone, ChevronRight, Star, Map } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { useMapService, MapServiceProvider, Place } from '@/hooks/useMapService';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from "@/components/ui/badge";
-import { Card } from "@/components/ui/card";
+import { useRef } from 'react';
 
 // 카카오맵 타입 정의
 declare global {
@@ -12,110 +17,251 @@ declare global {
   }
 }
 
-interface Place {
-  id: string;
-  place_name: string;
-  address_name: string;
-  category_name: string;
-  phone: string;
-  distance: string;
-  place_url: string;
-  rating: number;
-  x: string;
-  y: string;
+/**
+ * 위치 마커 컴포넌트
+ */
+function LocationMarker() {
+  return (
+    <div className="absolute transform -translate-x-1/2 -translate-y-1/2 text-red-500 animate-bounce">
+      <MapPin className="h-8 w-8" />
+    </div>
+  );
 }
 
-export default function Locations() {
-  const mapRef = useRef<HTMLDivElement>(null);
-  const [keyword, setKeyword] = useState("");
-  const [map, setMap] = useState<any>(null);
-  const [places, setPlaces] = useState<Place[]>([]);
-  const [selectedPlace, setSelectedPlace] = useState<Place | null>(null);
-  const [loading, setLoading] = useState(false);
+/**
+ * 장소 검색 컴포넌트
+ */
+function PlaceSearch() {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [searchResults, setSearchResults] = useState<Place[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const { searchPlacesByKeyword } = useMapService();
+  const { toast } = useToast();
 
-  useEffect(() => {
-    const mapScript = document.createElement("script");
-    mapScript.async = true;
-    mapScript.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${import.meta.env.VITE_KAKAO_MAPS_API_KEY}&autoload=false&libraries=services,clusterer`;
-    document.head.appendChild(mapScript);
-
-    const onLoadKakaoMap = () => {
-      window.kakao.maps.load(() => {
-        if (mapRef.current) {
-          const options = {
-            center: new window.kakao.maps.LatLng(37.5665, 126.9780), // 서울 중심점
-            level: 5,
-          };
-          const kakaoMap = new window.kakao.maps.Map(mapRef.current, options);
-          setMap(kakaoMap);
-        }
+  const handleSearch = async () => {
+    if (!searchTerm.trim()) {
+      toast({
+        title: "검색어를 입력해주세요",
+        variant: "destructive"
       });
-    };
+      return;
+    }
 
-    mapScript.addEventListener("load", onLoadKakaoMap);
-
-    return () => {
-      mapScript.removeEventListener("load", onLoadKakaoMap);
-    };
-  }, []);
-
-  const searchPlaces = () => {
-    if (!map || !keyword.trim()) return;
-
-    setLoading(true);
-    const ps = new window.kakao.maps.services.Places();
-    
-    ps.keywordSearch(keyword + " 애견", (data: any, status: any) => {
-      if (status === window.kakao.maps.services.Status.OK) {
-        // 검색 결과를 처리하고 마커 생성
-        const bounds = new window.kakao.maps.LatLngBounds();
-        const mockPlaces: Place[] = data.map((item: any) => {
-          bounds.extend(new window.kakao.maps.LatLng(item.y, item.x));
-          
-          // 실제 API에서는 평점 데이터가 없을 수 있으므로 테스트용 랜덤 평점 생성
-          return {
-            ...item,
-            rating: parseFloat((3 + Math.random() * 2).toFixed(1)), // 3.0 ~ 5.0 사이 랜덤 평점
-          };
-        });
-        
-        setPlaces(mockPlaces);
-        map.setBounds(bounds);
-
-        // 마커 생성
-        mockPlaces.forEach((place: Place) => {
-          const marker = new window.kakao.maps.Marker({
-            map: map,
-            position: new window.kakao.maps.LatLng(place.y, place.x),
-          });
-
-          // 마커 클릭 이벤트
-          window.kakao.maps.event.addListener(marker, "click", () => {
-            setSelectedPlace(place);
-          });
-        });
-      } else {
-        setPlaces([]);
-      }
-      setLoading(false);
-    });
-  };
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    searchPlaces();
-  };
-
-  const handlePlaceClick = (place: Place) => {
-    setSelectedPlace(place);
-    if (map) {
-      const moveLatLng = new window.kakao.maps.LatLng(place.y, place.x);
-      map.setCenter(moveLatLng);
-      map.setLevel(3);
+    setIsSearching(true);
+    try {
+      const results = await searchPlacesByKeyword(searchTerm);
+      setSearchResults(results);
+    } catch (error) {
+      console.error("검색 오류:", error);
+      toast({
+        title: "검색 실패",
+        description: "장소를 검색하는데 실패했습니다. 다시 시도해주세요.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSearching(false);
     }
   };
 
-  const renderStars = (rating: number) => {
+  const handleBadgeClick = (keyword: string) => {
+    setSearchTerm(keyword);
+    setTimeout(() => {
+      handleSearch();
+    }, 100);
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex space-x-2">
+        <Input
+          placeholder="위치 또는 장소 검색..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+          className="flex-1"
+        />
+        <Button onClick={handleSearch} disabled={isSearching}>
+          {isSearching ? (
+            <Loader2 className="h-4 w-4 animate-spin mr-2" />
+          ) : (
+            <Search className="h-4 w-4 mr-2" />
+          )}
+          검색
+        </Button>
+      </div>
+
+      <div className="flex flex-wrap gap-2 mt-2">
+        <Badge variant="outline" className="cursor-pointer hover:bg-primary/10" onClick={() => handleBadgeClick("애견카페")}>
+          애견카페
+        </Badge>
+        <Badge variant="outline" className="cursor-pointer hover:bg-primary/10" onClick={() => handleBadgeClick("애견호텔")}>
+          애견호텔
+        </Badge>
+        <Badge variant="outline" className="cursor-pointer hover:bg-primary/10" onClick={() => handleBadgeClick("동물병원")}>
+          동물병원
+        </Badge>
+        <Badge variant="outline" className="cursor-pointer hover:bg-primary/10" onClick={() => handleBadgeClick("애견유치원")}>
+          애견유치원
+        </Badge>
+        <Badge variant="outline" className="cursor-pointer hover:bg-primary/10" onClick={() => handleBadgeClick("애견훈련소")}>
+          애견훈련소
+        </Badge>
+      </div>
+
+      {isSearching ? (
+        <div className="py-8 flex justify-center">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      ) : searchResults.length > 0 ? (
+        <div className="space-y-2 max-h-96 overflow-y-auto pr-2">
+          {searchResults.map(place => (
+            <PlaceCard key={place.id} place={place} />
+          ))}
+        </div>
+      ) : (
+        searchTerm && !isSearching && (
+          <Alert variant="default">
+            <AlertDescription>
+              "{searchTerm}"에 대한 검색 결과가 없습니다.
+            </AlertDescription>
+          </Alert>
+        )
+      )}
+    </div>
+  );
+}
+
+/**
+ * 근처 장소 찾기 컴포넌트
+ */
+function NearbyPlaces() {
+  const [activeTab, setActiveTab] = useState<'institute' | 'trainer' | 'clinic' | 'shop'>('trainer');
+  const { 
+    currentLocation, 
+    nearbyPlaces, 
+    isLoadingLocation, 
+    isSearching, 
+    getUserLocation, 
+    searchNearbyPlaces 
+  } = useMapService();
+  const { toast } = useToast();
+
+  // 근처 장소 검색
+  const handleSearchNearby = async () => {
+    // 현재 위치가 없으면 위치 가져오기
+    if (!currentLocation) {
+      const location = await getUserLocation();
+      if (!location) {
+        toast({
+          title: "위치 정보 필요",
+          description: "주변 검색을 위해 위치 정보를 허용해주세요.",
+          variant: "destructive"
+        });
+        return;
+      }
+    }
+
+    // 선택된 유형의 장소 검색
+    searchNearbyPlaces(activeTab);
+  };
+
+  // 탭 변경 시 자동 검색
+  useEffect(() => {
+    if (currentLocation) {
+      searchNearbyPlaces(activeTab);
+    }
+  }, [activeTab, currentLocation, searchNearbyPlaces]);
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center space-x-2">
+        <Button 
+          onClick={handleSearchNearby} 
+          variant="default" 
+          disabled={isLoadingLocation || isSearching}
+        >
+          {isLoadingLocation ? (
+            <Loader2 className="h-4 w-4 animate-spin mr-2" />
+          ) : (
+            <Navigation className="h-4 w-4 mr-2" />
+          )}
+          {currentLocation ? '현재 위치에서 검색' : '위치 확인 후 검색'}
+        </Button>
+
+        {currentLocation && (
+          <div className="text-xs text-muted-foreground">
+            위도: {currentLocation.latitude.toFixed(4)}, 
+            경도: {currentLocation.longitude.toFixed(4)}
+          </div>
+        )}
+      </div>
+
+      <Tabs defaultValue="trainer" value={activeTab} onValueChange={(v) => setActiveTab(v as any)}>
+        <TabsList className="grid grid-cols-4">
+          <TabsTrigger value="trainer">훈련사</TabsTrigger>
+          <TabsTrigger value="institute">훈련소</TabsTrigger>
+          <TabsTrigger value="clinic">동물병원</TabsTrigger>
+          <TabsTrigger value="shop">용품점</TabsTrigger>
+        </TabsList>
+      </Tabs>
+
+      {isSearching ? (
+        <div className="py-8 flex justify-center">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      ) : nearbyPlaces.length > 0 ? (
+        <div className="space-y-2 max-h-96 overflow-y-auto pr-2">
+          {nearbyPlaces.map(place => (
+            <PlaceCard key={place.id} place={place} />
+          ))}
+        </div>
+      ) : (
+        (!isSearching && currentLocation) && (
+          <Alert variant="default">
+            <AlertDescription>
+              주변에 {getTypeLabel(activeTab)}이(가) 없습니다.
+            </AlertDescription>
+          </Alert>
+        )
+      )}
+    </div>
+  );
+}
+
+/**
+ * 장소 카드 컴포넌트
+ */
+function PlaceCard({ place }: { place: Place }) {
+  const { getDirections } = useMapService();
+  const { toast } = useToast();
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleGetDirections = async () => {
+    setIsLoading(true);
+    try {
+      const directions = await getDirections(place.location);
+      
+      if (directions) {
+        toast({
+          title: "길찾기 완료",
+          description: `예상 소요 시간: ${directions.duration.text}, 거리: ${directions.distance.text}`,
+        });
+      }
+    } catch (error) {
+      console.error("길찾기 오류:", error);
+      toast({
+        title: "길찾기 실패",
+        description: "길찾기 정보를 가져오는데 실패했습니다.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const renderStars = (rating?: number) => {
+    if (!rating) return null;
+    
     const fullStars = Math.floor(rating);
     const hasHalfStar = rating % 1 >= 0.5;
     
@@ -141,163 +287,174 @@ export default function Locations() {
   };
 
   return (
-    <div className="p-6">
-      <div className="flex flex-col md:flex-row gap-6">
-        {/* 왼쪽 지도 섹션 */}
-        <div className="w-full md:w-7/12 lg:w-8/12">
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">
-            <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-              <h2 className="text-xl font-semibold flex items-center">
-                <Map className="mr-2 h-5 w-5 text-primary" />
-                위치 기반 서비스
-              </h2>
-              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                가까운 반려견 시설을 찾아보세요.
-              </p>
-              
-              <form onSubmit={handleSearch} className="mt-4 flex">
-                <div className="relative flex-grow">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                  <Input
-                    type="text"
-                    placeholder="지역명 또는 시설명 검색..."
-                    className="pl-10 pr-4 py-2 w-full"
-                    value={keyword}
-                    onChange={(e) => setKeyword(e.target.value)}
-                  />
-                </div>
-                <Button type="submit" className="ml-2" disabled={loading}>
-                  {loading ? "검색 중..." : "검색"}
-                </Button>
-              </form>
-              
-              <div className="flex flex-wrap gap-2 mt-3">
-                <Badge variant="outline" className="cursor-pointer hover:bg-primary/10" onClick={() => setKeyword("애견카페")}>
-                  애견카페
-                </Badge>
-                <Badge variant="outline" className="cursor-pointer hover:bg-primary/10" onClick={() => setKeyword("애견호텔")}>
-                  애견호텔
-                </Badge>
-                <Badge variant="outline" className="cursor-pointer hover:bg-primary/10" onClick={() => setKeyword("동물병원")}>
-                  동물병원
-                </Badge>
-                <Badge variant="outline" className="cursor-pointer hover:bg-primary/10" onClick={() => setKeyword("애견유치원")}>
-                  애견유치원
-                </Badge>
-                <Badge variant="outline" className="cursor-pointer hover:bg-primary/10" onClick={() => setKeyword("애견훈련소")}>
-                  애견훈련소
-                </Badge>
+    <Card>
+      <CardHeader className="pb-2">
+        <div className="flex justify-between items-start">
+          <div>
+            <CardTitle className="text-base">{place.name}</CardTitle>
+            <CardDescription>
+              {place.location.address || "주소 정보 없음"}
+            </CardDescription>
+            {place.rating && renderStars(place.rating)}
+          </div>
+          <div className="flex items-center text-xs text-muted-foreground">
+            <MapPin className="h-3 w-3 mr-1" />
+            {place.distance ? `${(place.distance / 1000).toFixed(1)}km` : "거리 정보 없음"}
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <div className="flex justify-between items-center">
+          <div className="text-sm">
+            {place.description || getTypeLabel(place.type)}
+            {place.contact && (
+              <div className="text-xs text-muted-foreground mt-1">
+                <Phone className="h-3 w-3 inline mr-1" />
+                {place.contact}
               </div>
-            </div>
-            
-            {/* 지도 표시 영역 */}
-            <div ref={mapRef} className="w-full h-[500px]"></div>
+            )}
+          </div>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={handleGetDirections}
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <Loader2 className="h-3 w-3 animate-spin mr-1" />
+            ) : (
+              <Navigation className="h-3 w-3 mr-1" />
+            )}
+            길찾기
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+/**
+ * 장소 유형에 따른 레이블 반환
+ */
+function getTypeLabel(type: string): string {
+  switch (type) {
+    case 'institute': return '훈련소';
+    case 'trainer': return '훈련사';
+    case 'clinic': return '동물병원';
+    case 'shop': return '용품점';
+    default: return '장소';
+  }
+}
+
+/**
+ * 카카오맵 컴포넌트
+ */
+function KakaoMap() {
+  const mapRef = useRef<HTMLDivElement>(null);
+  const [mapLoaded, setMapLoaded] = useState(false);
+  
+  useEffect(() => {
+    const mapScript = document.createElement("script");
+    mapScript.async = true;
+    mapScript.src = `//dapi.kakao.com/v2/maps/sdk.js?appkey=${import.meta.env.KAKAO_MAPS_API_KEY}&autoload=false&libraries=services,clusterer`;
+    document.head.appendChild(mapScript);
+
+    const onLoadKakaoMap = () => {
+      window.kakao.maps.load(() => {
+        if (mapRef.current) {
+          const options = {
+            center: new window.kakao.maps.LatLng(37.5665, 126.9780), // 서울 중심점
+            level: 5,
+          };
+          const kakaoMap = new window.kakao.maps.Map(mapRef.current, options);
+          setMapLoaded(true);
+        }
+      });
+    };
+
+    mapScript.addEventListener("load", onLoadKakaoMap);
+
+    return () => {
+      mapScript.removeEventListener("load", onLoadKakaoMap);
+      document.head.removeChild(mapScript);
+    };
+  }, []);
+
+  return (
+    <div className="relative h-64 bg-muted rounded-md overflow-hidden">
+      <div ref={mapRef} className="w-full h-full"></div>
+      {!mapLoaded && (
+        <div className="absolute inset-0 flex items-center justify-center bg-muted/50">
+          <div className="text-center p-4">
+            <Loader2 className="h-8 w-8 animate-spin mx-auto mb-2" />
+            <p>지도를 불러오는 중...</p>
           </div>
         </div>
-        
-        {/* 오른쪽 검색 결과 및 상세 정보 섹션 */}
-        <div className="w-full md:w-5/12 lg:w-4/12">
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md h-full flex flex-col">
-            <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-              <h3 className="text-lg font-semibold flex items-center">
-                <Building className="mr-2 h-5 w-5 text-primary" />
-                {selectedPlace ? "상세 정보" : "검색 결과"}
-              </h3>
-            </div>
-            
-            <div className="flex-grow overflow-y-auto p-2">
-              {selectedPlace ? (
-                <div className="p-3">
-                  <div className="mb-4">
-                    <h4 className="text-xl font-semibold">{selectedPlace.place_name}</h4>
-                    {renderStars(selectedPlace.rating)}
-                  </div>
-                  
-                  <div className="space-y-3">
-                    <div className="flex">
-                      <MapPin className="w-5 h-5 mr-2 text-gray-500" />
-                      <span className="text-sm">{selectedPlace.address_name}</span>
-                    </div>
-                    
-                    {selectedPlace.phone && (
-                      <div className="flex">
-                        <Phone className="w-5 h-5 mr-2 text-gray-500" />
-                        <span className="text-sm">{selectedPlace.phone}</span>
-                      </div>
-                    )}
-                    
-                    <div className="flex">
-                      <Map className="w-5 h-5 mr-2 text-gray-500" />
-                      <span className="text-sm">{selectedPlace.category_name}</span>
-                    </div>
-                    
-                    {selectedPlace.distance && (
-                      <div className="flex items-center">
-                        <span className="text-sm text-gray-500">거리: 약 {(parseInt(selectedPlace.distance) / 1000).toFixed(1)}km</span>
-                      </div>
-                    )}
-                  </div>
-                  
-                  <div className="mt-4">
-                    <a
-                      href={selectedPlace.place_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-primary flex items-center text-sm hover:underline"
-                    >
-                      카카오맵에서 보기 <ChevronRight className="w-4 h-4 ml-1" />
-                    </a>
-                  </div>
-                  
-                  <Button variant="outline" className="w-full mt-4" onClick={() => setSelectedPlace(null)}>
-                    목록으로 돌아가기
-                  </Button>
-                </div>
-              ) : (
-                <div>
-                  {places.length > 0 ? (
-                    <div className="space-y-2 p-2">
-                      {places.map((place) => (
-                        <Card
-                          key={place.id}
-                          className="p-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-                          onClick={() => handlePlaceClick(place)}
-                        >
-                          <h4 className="font-medium">{place.place_name}</h4>
-                          {renderStars(place.rating)}
-                          <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                            {place.address_name}
-                          </div>
-                          <div className="flex justify-between mt-2">
-                            <span className="text-xs text-gray-500">{place.category_name}</span>
-                            {place.distance && (
-                              <span className="text-xs text-gray-500">{(parseInt(place.distance) / 1000).toFixed(1)}km</span>
-                            )}
-                          </div>
-                        </Card>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="flex flex-col items-center justify-center h-full p-6 text-center">
-                      <MapPin className="h-12 w-12 text-gray-300 mb-4" />
-                      <h3 className="text-lg font-medium text-gray-700 dark:text-gray-300">
-                        {loading ? "검색 중..." : "검색 결과가 없습니다"}
-                      </h3>
-                      <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
-                        {loading
-                          ? "잠시만 기다려주세요..."
-                          : keyword
-                          ? "다른 검색어로 다시 시도해보세요"
-                          : "위의 검색창에 키워드를 입력해주세요"}
-                      </p>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
+      )}
+    </div>
+  );
+}
+
+/**
+ * 메인 위치 검색 페이지 컨텐츠
+ */
+function LocationPageContent() {
+  return (
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center">
+            <Map className="mr-2 h-5 w-5 text-primary" />
+            위치 기반 서비스
+          </CardTitle>
+          <CardDescription>
+            위치 기반으로 주변 훈련사, 훈련소, 동물병원, 용품점을 찾아보세요
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Tabs defaultValue="nearby">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="nearby">주변 검색</TabsTrigger>
+              <TabsTrigger value="search">키워드 검색</TabsTrigger>
+            </TabsList>
+            <TabsContent value="nearby" className="pt-4">
+              <NearbyPlaces />
+            </TabsContent>
+            <TabsContent value="search" className="pt-4">
+              <PlaceSearch />
+            </TabsContent>
+          </Tabs>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center">
+            <Map className="mr-2 h-5 w-5 text-primary" />
+            지도 보기
+          </CardTitle>
+          <CardDescription>
+            주변 지역의 지도를 확인하세요
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <KakaoMap />
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+/**
+ * 위치 검색 페이지
+ */
+export default function Locations() {
+  return (
+    <div className="container mx-auto py-6 max-w-4xl">
+      <h1 className="text-3xl font-bold mb-6">위치 서비스</h1>
+      <MapServiceProvider>
+        <LocationPageContent />
+      </MapServiceProvider>
     </div>
   );
 }
