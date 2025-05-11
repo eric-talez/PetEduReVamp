@@ -211,7 +211,7 @@ export function Sidebar({
       "/", "/courses", "/trainers", "/video-training", "/video-call", "/community",
       "/institutes", "/institutes/register", "/events", "/events/calendar",
       "/help/faq", "/help/guide", "/help/about", "/help/contact", "/shop",
-      "/pet-ai-chat" // AI 챗봇은 비로그인 사용자도 접근 가능
+      "/ai-chat", "/pet-ai-chat", "/pet-analysis", "/ai-analysis" // AI 페이지들은 비로그인 사용자도 접근 가능
     ];
 
     // 로그인 필요한 페이지 접근 시
