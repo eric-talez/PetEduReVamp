@@ -874,7 +874,7 @@ export default function TrainerStudents() {
                       className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                       disabled
                     >
-                      <option value="">기관 관리자 권한 필요</option>
+                      <option value="admin-only">기관 관리자 권한 필요</option>
                     </select>
                   </div>
                   <div>
@@ -884,7 +884,7 @@ export default function TrainerStudents() {
                       className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                       disabled
                     >
-                      <option value="">기관 관리자 권한 필요</option>
+                      <option value="admin-only">기관 관리자 권한 필요</option>
                     </select>
                   </div>
                 </div>

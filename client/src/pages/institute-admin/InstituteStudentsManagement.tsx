@@ -645,7 +645,7 @@ export default function InstituteStudentsManagement() {
                           <span>{selectedStudent.email}</span>
                         </div>
                         <div className="flex items-center text-sm">
-                          <Phone className="h-4 w-4 mr-2 text-muted-foreground" />
+                          <MessageSquare className="h-4 w-4 mr-2 text-muted-foreground" />
                           <span>{selectedStudent.phone}</span>
                         </div>
                         <div className="flex items-center text-sm">
