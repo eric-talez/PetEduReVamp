@@ -141,6 +141,7 @@ interface SettlementReport {
   transactionCount: number;
   status: 'pending' | 'processed' | 'paid';
   createdAt: string;
+  updatedAt?: string;
   paidAt?: string;
   paymentMethod?: string;
   bankInfo?: string;
@@ -586,7 +587,7 @@ export default function AdminCommission() {
         ...selectedSettlement, 
         status: 'processed',
         updatedAt: new Date().toISOString().slice(0, 19).replace('T', ' ')
-      });
+      } as SettlementReport);
     }
   };
   
@@ -616,7 +617,7 @@ export default function AdminCommission() {
         status: 'paid',
         paidAt: now,
         updatedAt: now
-      });
+      } as SettlementReport);
     }
   };
   
