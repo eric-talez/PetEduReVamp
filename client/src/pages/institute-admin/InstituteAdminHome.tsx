@@ -21,13 +21,22 @@ import {
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, PieChart, Pie, Cell, TooltipProps } from 'recharts';
 import { ValueType } from 'recharts/types/component/DefaultTooltipContent';
 
-// 바 차트 데이터
-const courseData = [
-  { name: '기초 훈련', 수료: 75, 진행중: 25 },
-  { name: '중급 훈련', 수료: 60, 진행중: 40 },
-  { name: '고급 훈련', 수료: 45, 진행중: 55 },
-  { name: '행동 교정', 수료: 70, 진행중: 30 },
-  { name: '특수 훈련', 수료: 35, 진행중: 65 },
+// API에서 가져올 코스 진행 상태 타입 정의
+interface CourseProgressData {
+  name: string;
+  수료: number;
+  진행중: number;
+  trainers?: number;
+  total?: number;
+}
+
+// 초기 차트 데이터
+const initialCourseData: CourseProgressData[] = [
+  { name: '기초 훈련', 수료: 0, 진행중: 0 },
+  { name: '중급 훈련', 수료: 0, 진행중: 0 },
+  { name: '고급 훈련', 수료: 0, 진행중: 0 },
+  { name: '행동 교정', 수료: 0, 진행중: 0 },
+  { name: '특수 훈련', 수료: 0, 진행중: 0 },
 ];
 
 // 파이 차트 데이터
@@ -71,6 +80,9 @@ export default function InstituteAdminHome() {
   const [location, setLocation] = useLocation();
   const [isLoaded, setIsLoaded] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
+  const [isLoadingCourseData, setIsLoadingCourseData] = useState(false);
+  const [courseData, setCourseData] = useState<CourseProgressData[]>(initialCourseData);
+  const [courseError, setCourseError] = useState<string | null>(null);
   
   // 일정 알림 상태
   const [showNotificationBadge, setShowNotificationBadge] = useState(true);
@@ -133,14 +145,80 @@ export default function InstituteAdminHome() {
     setLocation(`/trainers/${trainerId}`);
   };
   
+  // 코스 진행 상태 데이터 가져오기
+  const fetchCourseProgressData = async () => {
+    setIsLoadingCourseData(true);
+    setCourseError(null);
+    
+    try {
+      // API 호출 시뮬레이션
+      console.log("코스 진행 상태 데이터 요청 중...");
+      
+      // 실제 API 구현 전 임시 데이터 로딩 시뮬레이션
+      // 실제 구현 시 아래 코드를 실제 API 호출로 대체
+      await new Promise(resolve => setTimeout(resolve, 1200));
+      
+      // 실제 API 호출 코드는 다음과 같이 구현 (현재는 주석 처리)
+      /*
+      const response = await fetch('/api/institute/course-progress', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (!response.ok) {
+        throw new Error('코스 진행 상태 데이터를 가져오는데 실패했습니다.');
+      }
+      
+      const data = await response.json();
+      setCourseData(data);
+      */
+      
+      // 임시 데이터로 설정 (API 연동 전)
+      const mockData: CourseProgressData[] = [
+        { name: '기초 훈련', 수료: 75, 진행중: 25, trainers: 4, total: 100 },
+        { name: '중급 훈련', 수료: 60, 진행중: 40, trainers: 3, total: 100 },
+        { name: '고급 훈련', 수료: 45, 진행중: 55, trainers: 2, total: 100 },
+        { name: '행동 교정', 수료: 70, 진행중: 30, trainers: 5, total: 100 },
+        { name: '특수 훈련', 수료: 35, 진행중: 65, trainers: 1, total: 100 },
+      ];
+      
+      setCourseData(mockData);
+      console.log("코스 진행 상태 데이터 로드 완료:", mockData);
+      
+    } catch (error) {
+      console.error("코스 진행 상태 데이터 로딩 오류:", error);
+      setCourseError(error instanceof Error ? error.message : '데이터 로딩 중 오류가 발생했습니다.');
+      toast({
+        title: "데이터 로딩 오류",
+        description: "코스 진행 상태 데이터를 불러오는 중 문제가 발생했습니다.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoadingCourseData(false);
+    }
+  };
+  
   useEffect(() => {
     // 데이터 로딩 시뮬레이션
     const timer = setTimeout(() => {
       setIsLoaded(true);
+      // 컴포넌트가 로드된 후 코스 데이터 가져오기
+      fetchCourseProgressData();
     }, 800);
     
     return () => clearTimeout(timer);
   }, []);
+  
+  // 데이터 새로고침 핸들러
+  const handleRefreshCourseData = () => {
+    toast({
+      title: "데이터 새로고침",
+      description: "코스 진행 상태 데이터를 새로고침합니다.",
+    });
+    fetchCourseProgressData();
+  };
   
   if (!isLoaded) {
     return (
@@ -209,22 +287,102 @@ export default function InstituteAdminHome() {
             {/* 현재 운영 중인 과정 */}
             <Card className="shadow-sm">
               <CardHeader className="pb-2">
-                <CardTitle className="text-xl">과정별 수료 현황</CardTitle>
-                <CardDescription>각 과정별 수료 및 진행 현황</CardDescription>
+                <div className="flex justify-between items-center">
+                  <div>
+                    <CardTitle className="text-xl">과정별 수료 현황</CardTitle>
+                    <CardDescription>기관 소속 훈련사와 견주 간 교육 현황</CardDescription>
+                  </div>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={handleRefreshCourseData}
+                    disabled={isLoadingCourseData}
+                  >
+                    {isLoadingCourseData ? (
+                      <>
+                        <div className="w-4 h-4 mr-2 rounded-full border-2 border-primary border-t-transparent animate-spin"></div>
+                        새로고침
+                      </>
+                    ) : (
+                      <>
+                        <TrendingUp className="h-4 w-4 mr-2" />
+                        새로고침
+                      </>
+                    )}
+                  </Button>
+                </div>
               </CardHeader>
               <CardContent className="pt-0">
-                <div className="h-64 w-full">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={courseData} margin={{ top: 10, right: 30, left: 0, bottom: 10 }}>
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                      <XAxis dataKey="name" fontSize={12} />
-                      <YAxis fontSize={12} />
-                      <Tooltip />
-                      <Legend />
-                      <Bar dataKey="수료" fill="#8884d8" stackId="a" />
-                      <Bar dataKey="진행중" fill="#82ca9d" stackId="a" />
-                    </BarChart>
-                  </ResponsiveContainer>
+                {courseError ? (
+                  <div className="flex flex-col items-center justify-center h-64 text-center p-4">
+                    <AlertTriangle className="h-10 w-10 text-amber-500 mb-2" />
+                    <p className="text-lg font-medium">데이터 로딩 오류</p>
+                    <p className="text-sm text-muted-foreground">{courseError}</p>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="mt-4"
+                      onClick={handleRefreshCourseData}
+                    >
+                      다시 시도
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="h-64 w-full">
+                    {isLoadingCourseData && (
+                      <div className="absolute inset-0 bg-background/50 flex items-center justify-center z-10">
+                        <div className="flex flex-col items-center gap-2">
+                          <div className="w-10 h-10 rounded-full border-4 border-primary border-t-transparent animate-spin"></div>
+                          <p className="text-sm text-muted-foreground">데이터 로딩 중...</p>
+                        </div>
+                      </div>
+                    )}
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={courseData} margin={{ top: 10, right: 30, left: 0, bottom: 10 }}>
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                        <XAxis dataKey="name" fontSize={12} />
+                        <YAxis fontSize={12} />
+                        <Tooltip 
+                          formatter={(value, name) => {
+                            return [`${value}명`, name === '수료' ? '수료 완료' : '진행 중'];
+                          }}
+                        />
+                        <Legend 
+                          formatter={(value) => {
+                            return value === '수료' ? '수료 완료' : '진행 중';
+                          }}
+                        />
+                        <Bar 
+                          dataKey="수료" 
+                          fill="#8884d8" 
+                          stackId="a" 
+                          name="수료" 
+                        />
+                        <Bar 
+                          dataKey="진행중" 
+                          fill="#82ca9d" 
+                          stackId="a" 
+                          name="진행중" 
+                        />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                )}
+                <div className="mt-4 space-y-2">
+                  <div className="grid grid-cols-3 gap-2 text-sm">
+                    <div className="flex items-center gap-1">
+                      <span className="w-3 h-3 bg-[#8884d8] rounded"></span>
+                      <span>수료 완료</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <span className="w-3 h-3 bg-[#82ca9d] rounded"></span>
+                      <span>진행 중</span>
+                    </div>
+                    <div className="flex items-center gap-1 justify-self-end">
+                      <Users className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-muted-foreground">총 {courseData.reduce((acc, curr) => acc + (curr.trainers || 0), 0)}명 훈련사</span>
+                    </div>
+                  </div>
                 </div>
               </CardContent>
             </Card>
