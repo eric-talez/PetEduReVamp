@@ -18,7 +18,8 @@ import {
   Database,
   Server,
   HelpCircle,
-  FileText
+  FileText,
+  Check
 } from 'lucide-react';
 import { useLocation } from 'wouter';
 import { Progress } from '@/components/ui/progress';
