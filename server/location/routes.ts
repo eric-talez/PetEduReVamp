@@ -17,7 +17,7 @@ const locationSchema = z.object({
 const nearbySearchParamsSchema = z.object({
   lat: z.string().transform(Number),
   lng: z.string().transform(Number),
-  type: z.enum(['institute', 'trainer', 'clinic', 'shop']),
+  type: z.enum(['institute', 'trainer', 'clinic', 'shop', 'pension', 'cafe', 'camping', 'park', 'pethotel']),
   radius: z.string().transform(Number).optional().default('3000'),
 });
 

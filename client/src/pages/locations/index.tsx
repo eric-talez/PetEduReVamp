@@ -135,7 +135,7 @@ function PlaceSearch() {
  * 근처 장소 찾기 컴포넌트
  */
 function NearbyPlaces() {
-  const [activeTab, setActiveTab] = useState<'institute' | 'trainer' | 'clinic' | 'shop'>('trainer');
+  const [activeTab, setActiveTab] = useState<'institute' | 'trainer' | 'clinic' | 'shop' | 'pension' | 'cafe' | 'camping' | 'park' | 'pethotel'>('trainer');
   const [certifiedOnly, setCertifiedOnly] = useState(false);
   const { 
     currentLocation, 
@@ -221,11 +221,16 @@ function NearbyPlaces() {
       </div>
 
       <Tabs defaultValue="trainer" value={activeTab} onValueChange={(v) => setActiveTab(v as any)}>
-        <TabsList className="grid grid-cols-4">
+        <TabsList className="grid grid-cols-9 overflow-x-auto min-w-full">
           <TabsTrigger value="trainer">훈련사</TabsTrigger>
           <TabsTrigger value="institute">훈련소</TabsTrigger>
           <TabsTrigger value="clinic">동물병원</TabsTrigger>
           <TabsTrigger value="shop">용품점</TabsTrigger>
+          <TabsTrigger value="pension">펜션</TabsTrigger>
+          <TabsTrigger value="cafe">애견카페</TabsTrigger>
+          <TabsTrigger value="camping">캠핑장</TabsTrigger>
+          <TabsTrigger value="park">애견공원</TabsTrigger>
+          <TabsTrigger value="pethotel">애견호텔</TabsTrigger>
         </TabsList>
       </Tabs>
 
@@ -387,6 +392,11 @@ function getTypeLabel(type: string): string {
     case 'trainer': return '훈련사';
     case 'clinic': return '동물병원';
     case 'shop': return '용품점';
+    case 'pension': return '펜션';
+    case 'cafe': return '애견카페';
+    case 'camping': return '캠핑장';
+    case 'park': return '애견공원';
+    case 'pethotel': return '애견호텔';
     default: return '장소';
   }
 }
