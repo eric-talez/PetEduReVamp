@@ -1742,7 +1742,7 @@ export default function AdminCourses() {
             {/* 항목 유형 선택 (추가 모드, 부모 섹션이 있을 때만) */}
             {curriculumItemMode === 'add' && curriculumItemParent && (
               <div className="space-y-2">
-                <Label htmlFor="itemType">콘텐츠 유형</Label>
+                <Label>콘텐츠 유형</Label>
                 <Select
                   defaultValue="video"
                 >
