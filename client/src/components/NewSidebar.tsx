@@ -94,6 +94,7 @@ export function NewSidebar({
   expanded: externalExpanded,
   onToggleExpand
 }: SidebarProps) {
+  console.log('NewSidebar render - userRole:', userRole, 'isAuthenticated:', isAuthenticated);
   const [location, setLocation] = useLocation();
   const [internalExpanded, setInternalExpanded] = useState(true);
   
@@ -119,13 +120,16 @@ export function NewSidebar({
 
   // 역할에 따라 메뉴 그룹 상태 업데이트
   useEffect(() => {
+    console.log('NewSidebar userRole changed:', userRole);
     if (userRole) {
-      setMenuGroups(prev => ({
-        ...prev,
+      const updatedMenuGroups = {
+        ...menuGroups,
         trainer: userRole === 'trainer' || userRole === 'admin',
         institute: userRole === 'institute-admin' || userRole === 'admin',
         admin: userRole === 'admin'
-      }));
+      };
+      console.log('NewSidebar menuGroups updated:', updatedMenuGroups);
+      setMenuGroups(updatedMenuGroups);
     }
   }, [userRole]);
 
