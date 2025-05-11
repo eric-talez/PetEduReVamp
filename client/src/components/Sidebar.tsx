@@ -420,6 +420,16 @@ export function Sidebar({
                       show={true}
                     >화상 수업</NavItem>
                     <NavItem 
+                      href="/pet-analysis" 
+                      icon={<Brain className="w-5 h-5 mr-2" />} 
+                      active={isActive("/pet-analysis")} 
+                      onClick={(path) => {
+                        console.log("AI 분석 메뉴 클릭:", path);
+                        handleItemClick(path);
+                      }} 
+                      show={true}
+                    >AI 분석</NavItem>
+                    <NavItem 
                       href="/community" 
                       icon={<MessageSquare className="w-5 h-5 mr-2" />} 
                       active={isActive("/community")} 
