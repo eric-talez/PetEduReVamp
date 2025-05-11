@@ -101,7 +101,7 @@ export class MessagingService {
   // 클라이언트 인증 처리
   private async handleAuthentication(ws: WebSocket, data: any): Promise<void> {
     try {
-      const { userId, token } = data;
+      const { userId, token, reconnect } = data;
       
       // 실제 구현에서는 토큰 검증 필요
       // 지금은 유저 ID로 사용자 정보 조회로 대체
@@ -113,6 +113,18 @@ export class MessagingService {
           message: 'Authentication failed'
         }));
         return;
+      }
+      
+      // 기존 연결이 있는 경우 처리
+      const existingClient = this.clients.get(userId);
+      if (existingClient) {
+        // 이전 연결 종료 처리
+        try {
+          console.log(`Closing previous connection for user ${userId}`);
+          existingClient.connection.close();
+        } catch (e) {
+          console.error(`Error closing previous connection for user ${userId}:`, e);
+        }
       }
       
       // 클라이언트 정보 저장
@@ -130,7 +142,8 @@ export class MessagingService {
           id: user.id,
           name: user.name,
           role: user.role
-        }
+        },
+        reconnected: !!reconnect
       }));
       
       // 접속 상태 브로드캐스트
@@ -139,13 +152,50 @@ export class MessagingService {
       // 미읽은 메시지 전송
       this.sendUnreadMessages(userId);
       
-      console.log(`Client ${userId} (${user.name}) authenticated`);
+      // 대화 기록 전송 (재접속이나 페이지 새로고침 시에도 기존 대화 복원)
+      if (reconnect) {
+        this.sendConversationHistory(userId);
+      }
+      
+      console.log(`Client ${userId} (${user.name}) ${reconnect ? 're-' : ''}authenticated`);
     } catch (error) {
       console.error('Authentication error:', error);
       ws.send(JSON.stringify({
         type: 'error',
         message: 'Authentication failed'
       }));
+    }
+  }
+  
+  // 대화 기록 전송 (재연결 시 필요)
+  private sendConversationHistory(userId: number): void {
+    try {
+      const client = this.clients.get(userId);
+      if (!client) return;
+      
+      // 이 사용자가 포함된 모든 대화 찾기
+      const userConversations: Record<string, Message[]> = {};
+      
+      this.messageHistory.forEach((messages, conversationId) => {
+        // 이 대화에 이 사용자가 포함되는지 확인
+        const [id1, id2] = this.parseConversationId(conversationId);
+        if (id1 === userId || id2 === userId) {
+          // 최근 50개 메시지만 전송 (성능 최적화)
+          userConversations[conversationId] = messages.slice(-50);
+        }
+      });
+      
+      // 대화 기록이 있으면 전송
+      if (Object.keys(userConversations).length > 0) {
+        client.connection.send(JSON.stringify({
+          type: 'conversation_history',
+          conversations: userConversations
+        }));
+        
+        console.log(`Sent conversation history to user ${userId} (${Object.keys(userConversations).length} conversations)`);
+      }
+    } catch (error) {
+      console.error('Error sending conversation history:', error);
     }
   }
 

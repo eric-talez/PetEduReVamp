@@ -63,39 +63,47 @@ export function MessagingProvider({ children }: { children: ReactNode }) {
   const [isLoadingMessages, setIsLoadingMessages] = useState(false);
   const messageHistoryRef = useRef<Record<string, Message[]>>({});
   
-  // WebSocket 연결 설정
-  useEffect(() => {
-    if (!isAuthenticated || !user) {
-      setIsConnected(false);
-      if (wsRef.current) {
-        wsRef.current.close();
-        wsRef.current = null;
-      }
-      return;
-    }
-    
-    // 이미 연결된 경우 스킵
-    if (wsRef.current && isConnected) return;
+  // 재연결 시도 횟수 및 타이머 참조
+  const reconnectAttemptsRef = useRef(0);
+  const reconnectTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const MAX_RECONNECT_ATTEMPTS = 5;
+  const RECONNECT_INTERVAL = 3000; // 3초마다 재시도
+  
+  // WebSocket 연결 함수
+  const connectWebSocket = useCallback((isReconnect = false) => {
+    if (!user || !isAuthenticated) return false;
     
     // WebSocket 프로토콜 결정 (HTTPS인 경우 WSS)
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     const wsUrl = `${protocol}//${window.location.host}/ws`;
     
-    console.log('WebSocket 연결 시도:', wsUrl);
+    console.log(`WebSocket ${isReconnect ? '재' : ''}연결 시도:`, wsUrl);
     
+    // 기존 연결이 있으면 닫기
+    if (wsRef.current) {
+      try {
+        wsRef.current.close();
+      } catch (err) {
+        console.error('이전 WebSocket 연결 종료 중 오류:', err);
+      }
+    }
+    
+    // 새 연결 생성
     wsRef.current = new WebSocket(wsUrl);
     
     // 연결 이벤트 핸들러
     wsRef.current.onopen = () => {
       console.log('WebSocket 연결 성공');
       setIsConnected(true);
+      reconnectAttemptsRef.current = 0; // 연결 성공 시 재시도 카운터 초기화
       
       // 인증 메시지 전송
       if (wsRef.current && user) {
         wsRef.current.send(JSON.stringify({
           type: 'authenticate',
           userId: user.id,
-          token: 'dummy-token' // 실제 구현에서는 JWT 토큰 사용
+          token: 'dummy-token', // 실제 구현에서는 JWT 토큰 사용
+          reconnect: isReconnect // 재연결 여부 전달
         }));
       }
     };
@@ -111,9 +119,22 @@ export function MessagingProvider({ children }: { children: ReactNode }) {
     };
     
     // 연결 종료 핸들러
-    wsRef.current.onclose = () => {
-      console.log('WebSocket 연결 종료');
+    wsRef.current.onclose = (event) => {
+      console.log(`WebSocket 연결 종료: ${event.code} ${event.reason}`);
       setIsConnected(false);
+      
+      // 비정상적인 종료인 경우에만 재연결 시도
+      // 1000: 정상 종료, 1001: 페이지 이동, 1005: 특별한 상태 코드 없음
+      if (event.code !== 1000 && event.code !== 1001) {
+        // 재연결 시도
+        if (reconnectTimerRef.current) {
+          clearTimeout(reconnectTimerRef.current);
+        }
+        
+        reconnectTimerRef.current = setTimeout(() => {
+          attemptReconnect();
+        }, RECONNECT_INTERVAL);
+      }
     };
     
     // 오류 핸들러
@@ -122,19 +143,65 @@ export function MessagingProvider({ children }: { children: ReactNode }) {
       setIsConnected(false);
     };
     
-    // 컴포넌트 언마운트시 연결 종료
+    return true;
+  }, [isAuthenticated, user]);
+  
+  // 재연결 함수
+  const attemptReconnect = useCallback(() => {
+    if (reconnectAttemptsRef.current >= MAX_RECONNECT_ATTEMPTS) {
+      console.error(`최대 재연결 시도 횟수(${MAX_RECONNECT_ATTEMPTS})를 초과했습니다.`);
+      setIsConnected(false);
+      return;
+    }
+    
+    reconnectAttemptsRef.current++;
+    console.log(`WebSocket 재연결 시도 ${reconnectAttemptsRef.current}/${MAX_RECONNECT_ATTEMPTS}...`);
+    
+    connectWebSocket(true);
+  }, [connectWebSocket]);
+  
+  // WebSocket 연결 설정
+  useEffect(() => {
+    if (!isAuthenticated || !user) {
+      setIsConnected(false);
+      if (wsRef.current) {
+        wsRef.current.close();
+        wsRef.current = null;
+      }
+      
+      // 재연결 타이머 정리
+      if (reconnectTimerRef.current) {
+        clearTimeout(reconnectTimerRef.current);
+        reconnectTimerRef.current = null;
+      }
+      return;
+    }
+    
+    // 최초 연결 시도
+    connectWebSocket(false);
+    
+    // 컴포넌트 언마운트시 연결 종료 및 타이머 정리
     return () => {
       if (wsRef.current) {
         wsRef.current.close();
+        wsRef.current = null;
+      }
+      
+      if (reconnectTimerRef.current) {
+        clearTimeout(reconnectTimerRef.current);
+        reconnectTimerRef.current = null;
       }
     };
-  }, [isAuthenticated, user]);
+  }, [isAuthenticated, user, connectWebSocket]);
   
   // 수신 메시지 처리 함수
   const handleIncomingMessage = (data: any) => {
     switch (data.type) {
       case 'authentication_success':
         console.log('인증 성공:', data.user);
+        if (data.reconnected) {
+          console.log('재연결 성공 - 대화 기록 복원됨');
+        }
         break;
         
       case 'new_message':
@@ -147,6 +214,10 @@ export function MessagingProvider({ children }: { children: ReactNode }) {
         
       case 'unread_messages':
         handleUnreadMessages(data.messages);
+        break;
+        
+      case 'conversation_history':
+        handleConversationHistory(data.conversations);
         break;
         
       case 'user_status':
