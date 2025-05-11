@@ -388,9 +388,9 @@ export function Sidebar({
                       show={true}
                     >훈련사 찾기</NavItem>
                     <NavItem 
-                      href="/institutes" 
+                      href="/location" 
                       icon={<MapPin className="w-5 h-5 mr-2" />} 
-                      active={isActive("/institutes")} 
+                      active={isActive("/location")} 
                       onClick={(path) => {
                         console.log("비회원이 위치 서비스 클릭");
                         // 위치 서비스 메뉴는 비회원도 접근 가능
@@ -545,7 +545,7 @@ export function Sidebar({
                     <NavItem href="/dashboard" icon={<LineChart className="w-5 h-5 mr-2" />} active={isActive("/dashboard")} onClick={handleItemClick} show={showDashboardLink}>대시보드</NavItem>
                     <NavItem href="/courses" icon={<GraduationCap className="w-5 h-5 mr-2" />} active={isActive("/courses")} onClick={handleItemClick} show={true}>강의 탐색</NavItem>
                     <NavItem href="/trainers" icon={<UserRoundCheck className="w-5 h-5 mr-2" />} active={isActive("/trainers")} onClick={handleItemClick} show={true}>훈련사 찾기</NavItem>
-                    <NavItem href="/institutes" icon={<MapPin className="w-5 h-5 mr-2" />} active={isActive("/institutes")} onClick={handleItemClick} show={true}>위치 서비스</NavItem>
+                    <NavItem href="/location" icon={<MapPin className="w-5 h-5 mr-2" />} active={isActive("/location")} onClick={handleItemClick} show={true}>위치 서비스</NavItem>
                     <NavItem href="/community" icon={<MessageSquare className="w-5 h-5 mr-2" />} active={isActive("/community")} onClick={handleItemClick} show={true}>커뮤니티</NavItem>
                     <NavItem href="/events" icon={<Calendar className="w-5 h-5 mr-2" />} active={isActive("/events")} onClick={handleItemClick} show={true}>이벤트</NavItem>
                     <li className="relative">

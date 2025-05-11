@@ -48,7 +48,20 @@ export function registerLocationRoutes(app: Express) {
       const { lat, lng, type, radius } = nearbySearchParamsSchema.parse(req.query);
       
       // 데이터베이스에서 데이터 가져오기 시도
-      let results = [];
+      let results: Array<{
+        id: string;
+        name: string;
+        type: string;
+        location: {
+          latitude: number;
+          longitude: number;
+          address: string;
+        };
+        contact: string | null;
+        distance: number;
+        photo: string | null;
+        description: string;
+      }> = [];
       
       if (type === 'institute') {
         // 기관 데이터 가져오기
@@ -110,7 +123,19 @@ export function registerLocationRoutes(app: Express) {
       const { keyword, page, size } = keywordSearchParamsSchema.parse(req.query);
       
       // 검색 구현 - 트레이너와 기관 데이터에서 검색
-      let results = [];
+      let results: Array<{
+        id: string;
+        name: string;
+        type: string;
+        location: {
+          latitude: number;
+          longitude: number;
+          address: string;
+        };
+        contact: string | null;
+        photo: string | null;
+        description: string;
+      }> = [];
       
       // 트레이너 데이터 검색
       const trainers = await storage.getAllTrainers();
