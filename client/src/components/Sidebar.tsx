@@ -261,7 +261,7 @@ export function Sidebar({
     // 쇼핑 페이지는 새 창에서 열기
     if (path === '/shop') {
       console.log('쇼핑 페이지를 새 창에서 열기');
-      window.open(path, '_blank', 'noopener,noreferrer');
+      window.open('https://replit.com/join/wshpfpjewg-hnblgkjw', '_blank', 'noopener,noreferrer');
       if (onClose) onClose();
       return;
     }
@@ -444,7 +444,7 @@ export function Sidebar({
 
                     <li className="relative">
                       <a 
-                        href="/shop" 
+                        href="https://replit.com/join/wshpfpjewg-hnblgkjw" 
                         target="_blank"
                         rel="noopener noreferrer"
                         className={cn(
@@ -550,7 +550,7 @@ export function Sidebar({
                     <NavItem href="/events" icon={<Calendar className="w-5 h-5 mr-2" />} active={isActive("/events")} onClick={handleItemClick} show={true}>이벤트</NavItem>
                     <li className="relative">
                       <a 
-                        href="/shop" 
+                        href="https://replit.com/join/wshpfpjewg-hnblgkjw" 
                         target="_blank"
                         rel="noopener noreferrer"
                         className={cn(
