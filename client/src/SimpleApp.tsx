@@ -1,4 +1,4 @@
-import { Switch, Route } from "wouter";
+import { Switch, Route, Link } from "wouter";
 import { RedirectHandler } from './components/RedirectHandler';
 import React, { ReactNode, useState, useEffect, lazy, Suspense } from "react";
 import { AIAnalysisProvider } from './hooks/useAIAnalysis';
@@ -200,9 +200,35 @@ function ProtectedRoute({ component: Component, requiredRoles = null, fallback =
   fallback?: React.ReactNode;
 }) {
   const { isAuthenticated, userRole } = useAuth();
+  // window.location.pathname으로 현재 경로 확인
+  const currentPath = window.location.pathname;
   
   // 로그인 여부 체크
   if (!isAuthenticated) {
+    // AI 분석 페이지인 경우 특별한 안내 메시지 표시
+    if (currentPath === '/pet-analysis' || currentPath === '/ai-analysis') {
+      return (
+        <div className="flex flex-col items-center justify-center p-8 h-[80vh]">
+          <div className="text-center max-w-md p-8 bg-white dark:bg-slate-800 rounded-lg shadow-lg">
+            <div className="text-primary text-5xl mb-4">🐾</div>
+            <h2 className="text-2xl font-bold mb-4">반려동물 AI 분석 서비스</h2>
+            <p className="mb-6 text-slate-600 dark:text-slate-300">
+              이 서비스를 이용하기 위해서는 로그인이 필요합니다. 회원가입 후 반려동물 정보를 등록하면 AI 기반 분석 서비스를 이용하실 수 있습니다.
+            </p>
+            <div className="space-y-3">
+              <Link to="/auth" className="block w-full py-2 bg-primary text-white rounded hover:bg-primary/90 transition-colors">
+                로그인 / 회원가입
+              </Link>
+              <Link to="/" className="block w-full py-2 border border-slate-300 dark:border-slate-600 rounded hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+                홈으로 돌아가기
+              </Link>
+            </div>
+          </div>
+        </div>
+      );
+    }
+    
+    // 그 외 페이지는 기본 로그인 페이지로 리디렉션
     return <RedirectHandler to="/auth" />;
   }
   
