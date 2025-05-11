@@ -25,6 +25,34 @@ export default function Home() {
     setIsServiceStatsOpen(prev => !prev);
   };
   
+  // 빠른 로그인 처리 함수
+  const handleQuickLogin = (role: string) => {
+    // 로그인 시뮬레이션을 위한 함수
+    let mockUser = {
+      id: 1,
+      username: `demo-${role}`,
+      name: role === 'pet-owner' ? '반려인' : 
+            role === 'trainer' ? '훈련사' : 
+            role === 'institute-admin' ? '기관 관리자' : 
+            role === 'admin' ? '관리자' : `데모 사용자`,
+      email: "test@example.com",
+      role: role
+    };
+    
+    // 로그인 이벤트 발생 (hooks/useAuth.tsx에서 이 이벤트를 감지함)
+    const loginEvent = new CustomEvent('login', {
+      detail: { 
+        role: mockUser.role,
+        name: mockUser.name,
+        userName: mockUser.name,
+        userRole: mockUser.role
+      }
+    });
+    
+    console.log('Login event dispatched as:', role);
+    window.dispatchEvent(loginEvent);
+  };
+  
   // 사용자 역할에 따라 적절한 홈페이지 컴포넌트를 반환
   if (isAuthenticated) {
     let HomeComponent;
@@ -58,7 +86,9 @@ export default function Home() {
   // 기본 홈페이지 렌더링 함수
   return renderDefaultHome();
   
+  // 기본 홈페이지 렌더링 함수
   function renderDefaultHome() {
+    console.log('Home - renderDefaultHome() - auth state:', { isAuthenticated, userRole, userName });
     return (
       <div className="container mx-auto px-4 py-8">
         {/* 서비스 현황 및 날씨 - 배너 위 영역 - 토글 가능한 섹션 */}
@@ -364,21 +394,21 @@ export default function Home() {
               <Button 
                 variant="success" 
                 className="w-full"
-                onClick={() => window.location.href = '/auth/login?role=pet-owner'}
+                onClick={() => handleQuickLogin('pet-owner')}
               >
                 반려인으로 로그인
               </Button>
               <Button 
                 variant="info" 
                 className="w-full"
-                onClick={() => window.location.href = '/auth/login?role=trainer'}
+                onClick={() => handleQuickLogin('trainer')}
               >
                 훈련사로 로그인
               </Button>
               <Button 
                 variant="warning" 
                 className="w-full"
-                onClick={() => window.location.href = '/auth/login?role=institute'}
+                onClick={() => handleQuickLogin('institute-admin')}
               >
                 기관으로 로그인
               </Button>
