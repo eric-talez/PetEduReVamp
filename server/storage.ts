@@ -9,6 +9,24 @@ export interface IStorage {
   
   // 기관 관련
   getInstituteByCode(code: string): Promise<any>;
+  getInstitute(id: number): Promise<any>;
+  getAllInstitutes(): Promise<any[]>;
+  
+  // 훈련사 관련
+  getTrainer(id: number): Promise<any>;
+  getAllTrainers(): Promise<any[]>;
+  
+  // 반려동물 관련
+  getPet(id: number): Promise<any>;
+  getPetsByUserId(userId: number): Promise<any[]>;
+  createPet(pet: any): Promise<any>;
+  
+  // 강좌 관련
+  getCourse(id: number): Promise<any>;
+  getAllCourses(): Promise<any[]>;
+  getCoursesByUserId(userId: number): Promise<any[]>;
+  createCourse(course: any): Promise<any>;
+  enrollUserInCourse(userId: number, courseId: number): Promise<any>;
   
   // 수수료 정책 관련
   getCommissionPolicies(): Promise<any[]>;
@@ -35,12 +53,22 @@ export class MemStorage implements IStorage {
   private commissionTransactions: Map<number, any>;
   private settlementReports: Map<number, any>;
   private commissionTiers: Map<number, any>;
+  private pets: Map<number, any>;
+  private courses: Map<number, any>;
+  private institutes: Map<number, any>;
+  private trainers: Map<number, any>;
+  private enrollments: Map<number, any>;
   
   currentId: number;
   private policyId: number;
   private transactionId: number;
   private reportId: number;
   private tierId: number;
+  private petId: number;
+  private courseId: number;
+  private instituteId: number;
+  private trainerId: number;
+  private enrollmentId: number;
 
   constructor() {
     this.users = new Map();
@@ -48,14 +76,24 @@ export class MemStorage implements IStorage {
     this.commissionTransactions = new Map();
     this.settlementReports = new Map();
     this.commissionTiers = new Map();
+    this.pets = new Map();
+    this.courses = new Map();
+    this.institutes = new Map();
+    this.trainers = new Map();
+    this.enrollments = new Map();
     
     this.currentId = 1;
     this.policyId = 1;
     this.transactionId = 1;
     this.reportId = 1;
     this.tierId = 1;
+    this.petId = 1;
+    this.courseId = 1;
+    this.instituteId = 1;
+    this.trainerId = 1;
+    this.enrollmentId = 1;
     
-    // 샘플 수수료 정책 초기 데이터
+    // 샘플 데이터 초기화
     this.initSampleData();
   }
   
@@ -200,6 +238,98 @@ export class MemStorage implements IStorage {
     
     this.users.set(userId, updatedUser);
     return updatedUser;
+  }
+  
+  // 기관 관련 메서드
+  async getInstitute(id: number): Promise<any> {
+    return this.institutes.get(id);
+  }
+  
+  async getAllInstitutes(): Promise<any[]> {
+    return Array.from(this.institutes.values());
+  }
+  
+  // 훈련사 관련 메서드
+  async getTrainer(id: number): Promise<any> {
+    return this.trainers.get(id);
+  }
+  
+  async getAllTrainers(): Promise<any[]> {
+    return Array.from(this.trainers.values());
+  }
+  
+  // 반려동물 관련 메서드
+  async getPet(id: number): Promise<any> {
+    return this.pets.get(id);
+  }
+  
+  async getPetsByUserId(userId: number): Promise<any[]> {
+    return Array.from(this.pets.values()).filter(pet => pet.userId === userId);
+  }
+  
+  async createPet(pet: any): Promise<any> {
+    const id = this.petId++;
+    const newPet = { ...pet, id, createdAt: new Date(), updatedAt: new Date() };
+    this.pets.set(id, newPet);
+    return newPet;
+  }
+  
+  // 강좌 관련 메서드
+  async getCourse(id: number): Promise<any> {
+    return this.courses.get(id);
+  }
+  
+  async getAllCourses(): Promise<any[]> {
+    return Array.from(this.courses.values());
+  }
+  
+  async getCoursesByUserId(userId: number): Promise<any[]> {
+    // 사용자가 등록한 강좌 찾기
+    const userEnrollments = Array.from(this.enrollments.values())
+      .filter(enrollment => enrollment.userId === userId);
+    
+    // 등록된 강좌 ID 목록
+    const enrolledCourseIds = userEnrollments.map(enrollment => enrollment.courseId);
+    
+    // 해당 강좌들 반환
+    return Array.from(this.courses.values())
+      .filter(course => enrolledCourseIds.includes(course.id));
+  }
+  
+  async createCourse(course: any): Promise<any> {
+    const id = this.courseId++;
+    const newCourse = { ...course, id, createdAt: new Date(), updatedAt: new Date() };
+    this.courses.set(id, newCourse);
+    return newCourse;
+  }
+  
+  async enrollUserInCourse(userId: number, courseId: number): Promise<any> {
+    // 사용자와 강좌 존재 확인
+    const user = await this.getUser(userId);
+    const course = await this.getCourse(courseId);
+    
+    if (!user) {
+      throw new Error("User not found");
+    }
+    if (!course) {
+      throw new Error("Course not found");
+    }
+    
+    // 등록 생성
+    const id = this.enrollmentId++;
+    const enrollment = {
+      id,
+      userId,
+      courseId,
+      progress: 0,
+      status: 'inProgress',
+      startDate: new Date(),
+      completed: false,
+      certificateIssued: false
+    };
+    
+    this.enrollments.set(id, enrollment);
+    return enrollment;
   }
 
   // 수수료 정책 관련 메서드

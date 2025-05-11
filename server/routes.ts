@@ -5,7 +5,14 @@ import { z } from "zod";
 import { createUserSchema, createPetSchema, createCourseSchema } from "@shared/schema";
 import { registerCommissionRoutes } from "./commission/routes";
 
+// 타입은 server/types.d.ts에 정의되어 있습니다.
+
 export async function registerRoutes(app: Express): Promise<Server> {
+  // 수수료 관련 라우트 등록
+  registerCommissionRoutes(app);
+  
+  // 로그 메시지
+  console.log('[server] Commission routes registered');
   // ===== Auth Routes =====
   
   // Login
