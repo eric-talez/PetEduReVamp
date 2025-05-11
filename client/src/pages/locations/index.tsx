@@ -354,30 +354,63 @@ function KakaoMap() {
   const [mapLoaded, setMapLoaded] = useState(false);
   
   useEffect(() => {
-    const mapScript = document.createElement("script");
-    mapScript.async = true;
-    mapScript.src = `//dapi.kakao.com/v2/maps/sdk.js?appkey=${import.meta.env.VITE_KAKAO_MAPS_API_KEY}&autoload=false&libraries=services,clusterer`;
-    document.head.appendChild(mapScript);
-
-    const onLoadKakaoMap = () => {
-      window.kakao.maps.load(() => {
-        if (mapRef.current) {
-          const options = {
-            center: new window.kakao.maps.LatLng(37.5665, 126.9780), // 서울 중심점
-            level: 5,
-          };
-          const kakaoMap = new window.kakao.maps.Map(mapRef.current, options);
-          setMapLoaded(true);
+    // API 키 확인 및 디버깅 로그
+    const apiKey = import.meta.env.VITE_KAKAO_MAPS_API_KEY;
+    console.log('Kakao Maps API Key in component:', apiKey);
+    
+    if (!apiKey) {
+      console.error('Kakao Maps API 키가 없습니다');
+      return;
+    }
+    
+    try {
+      const mapScript = document.createElement("script");
+      mapScript.async = true;
+      mapScript.src = `//dapi.kakao.com/v2/maps/sdk.js?appkey=${apiKey}&autoload=false&libraries=services,clusterer`;
+      
+      const onLoadKakaoMap = () => {
+        console.log('카카오맵 스크립트 로드 성공');
+        try {
+          window.kakao.maps.load(() => {
+            console.log('카카오맵 API 초기화 성공');
+            try {
+              if (mapRef.current) {
+                const options = {
+                  center: new window.kakao.maps.LatLng(37.5665, 126.9780), // 서울 중심점
+                  level: 5,
+                };
+                const kakaoMap = new window.kakao.maps.Map(mapRef.current, options);
+                console.log('카카오맵 생성 성공');
+                setMapLoaded(true);
+              }
+            } catch (error) {
+              console.error('지도 렌더링 중 오류:', error);
+            }
+          });
+        } catch (error) {
+          console.error('카카오맵 로드 중 오류:', error);
         }
+      };
+      
+      // 로드 성공 및 실패 처리
+      mapScript.addEventListener("load", onLoadKakaoMap);
+      mapScript.addEventListener("error", (e) => {
+        console.error('카카오맵 스크립트 로드 실패:', e);
       });
-    };
-
-    mapScript.addEventListener("load", onLoadKakaoMap);
-
-    return () => {
-      mapScript.removeEventListener("load", onLoadKakaoMap);
-      document.head.removeChild(mapScript);
-    };
+      
+      document.head.appendChild(mapScript);
+      
+      return () => {
+        mapScript.removeEventListener("load", onLoadKakaoMap);
+        try {
+          document.head.removeChild(mapScript);
+        } catch (e) {
+          console.error('스크립트 제거 중 오류:', e);
+        }
+      };
+    } catch (error) {
+      console.error('카카오맵 초기화 중 오류:', error);
+    }
   }, []);
 
   return (
