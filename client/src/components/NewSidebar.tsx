@@ -121,16 +121,32 @@ export function NewSidebar({
   // 역할에 따라 메뉴 그룹 상태 업데이트
   useEffect(() => {
     console.log('NewSidebar userRole changed:', userRole);
-    if (userRole) {
-      const updatedMenuGroups = {
-        ...menuGroups,
-        trainer: userRole === 'trainer' || userRole === 'admin',
-        institute: userRole === 'institute-admin' || userRole === 'admin',
-        admin: userRole === 'admin'
-      };
-      console.log('NewSidebar menuGroups updated:', updatedMenuGroups);
-      setMenuGroups(updatedMenuGroups);
+    // 명시적으로 모든 권한 그룹 완전 초기화
+    const updatedMenuGroups = {
+      main: true,
+      features: true,
+      myLearning: true,
+      help: true,
+      trainer: false,
+      institute: false,
+      admin: false
+    };
+    
+    // 권한에 따라 선택적으로 활성화
+    if (userRole === 'trainer' || userRole === 'admin') {
+      updatedMenuGroups.trainer = true;
     }
+    
+    if (userRole === 'institute-admin' || userRole === 'admin') {
+      updatedMenuGroups.institute = true;
+    }
+    
+    if (userRole === 'admin') {
+      updatedMenuGroups.admin = true;
+    }
+    
+    console.log('NewSidebar menuGroups updated:', updatedMenuGroups);
+    setMenuGroups(updatedMenuGroups);
   }, [userRole]);
 
   // 화면 크기 변경 시 반응형 처리
@@ -546,6 +562,12 @@ export function NewSidebar({
                 )}
 
                 {/* Institute Admin Menu Group - only for institute admins and admins */}
+                {/* 디버그 메시지 */}
+                <div className="px-3 py-1 text-xs text-gray-400">
+                  유저 역할: {userRole || '미로그인'} / 
+                  메뉴 상태: {menuGroups.institute ? '표시' : '숨김'}
+                </div>
+                
                 {(userRole === 'institute-admin' || userRole === 'admin') && expanded ? (
                   <div
                     className="px-3 py-2 mt-6 flex items-center justify-between cursor-pointer"
