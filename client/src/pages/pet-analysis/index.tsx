@@ -11,23 +11,23 @@ export default function PetAnalysisPage() {
   
   // 사용자의 반려동물 목록 가져오기
   const { 
-    data: pets,
+    data: pets = [],
     isLoading,
     error 
-  } = useQuery({
+  } = useQuery<any[]>({
     queryKey: ['/api/pets'],
     staleTime: 5 * 60 * 1000, // 5분
   });
   
   // 첫 번째 반려동물을 기본 선택
   useEffect(() => {
-    if (pets && pets.length > 0 && !selectedPetId) {
+    if (pets.length > 0 && !selectedPetId) {
       setSelectedPetId(pets[0].id);
     }
   }, [pets, selectedPetId]);
   
   // 현재 선택된 반려동물 정보
-  const selectedPet = pets?.find(pet => pet.id === selectedPetId);
+  const selectedPet = pets.find(pet => pet.id === selectedPetId);
   
   if (isLoading) {
     return (
@@ -49,7 +49,7 @@ export default function PetAnalysisPage() {
     );
   }
   
-  if (!pets || pets.length === 0) {
+  if (pets.length === 0) {
     return (
       <div className="container mx-auto py-12 text-center">
         <h2 className="text-2xl font-bold mb-4">등록된 반려동물이 없습니다</h2>
@@ -79,7 +79,7 @@ export default function PetAnalysisPage() {
               <SelectValue placeholder="반려동물 선택" />
             </SelectTrigger>
             <SelectContent>
-              {pets.map((pet) => (
+              {pets.map((pet: any) => (
                 <SelectItem key={pet.id} value={pet.id.toString()}>
                   {pet.name} ({pet.breed})
                 </SelectItem>
