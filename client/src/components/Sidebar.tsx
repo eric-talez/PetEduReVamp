@@ -45,7 +45,8 @@ import {
   DollarSign,
   Gift,
   Percent,
-  Tag
+  Tag,
+  Image as ImageIcon
 } from "lucide-react";
 
 // 사이드바 컨텍스트 생성
@@ -946,7 +947,7 @@ export function Sidebar({
                         </NavItem>
                         <NavItem
                           href="/admin/banners"
-                          icon={<Image className="w-5 h-5 mr-2" />}
+                          icon={<ImageIcon className="w-5 h-5 mr-2" />}
                           active={isActive("/admin/banners")}
                           onClick={handleItemClick}
                           show={true}
