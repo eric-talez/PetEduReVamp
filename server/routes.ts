@@ -365,6 +365,56 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // 사용자 검색 API 엔드포인트
+  app.get("/api/users/search", async (req, res) => {
+    try {
+      if (!req.session.user) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+      
+      const { query } = req.query;
+      
+      if (!query || typeof query !== 'string') {
+        return res.status(400).json({
+          success: false,
+          message: '검색어가 필요합니다.'
+        });
+      }
+      
+      // 검색 로직 구현 (이름, 이메일, 역할 등으로 검색)
+      // 실제 구현에서는 데이터베이스 쿼리를 사용하여 검색
+      // 예시: const users = await db.select().from(users).where(like(users.name, `%${query}%`));
+      
+      // 임시 구현 (메모리 스토리지에서 필터링)
+      const sampleUsers = [
+        { id: 2, name: '김훈련', role: 'trainer', avatar: null, email: 'trainer@example.com' },
+        { id: 3, name: '이반려', role: 'pet-owner', avatar: null, email: 'pet-owner@example.com' },
+        { id: 4, name: '박기관', role: 'institute-admin', avatar: null, email: 'institute@example.com' },
+        { id: 5, name: '최관리', role: 'admin', avatar: null, email: 'admin2@example.com' },
+        { id: 6, name: '홍길동', role: 'pet-owner', avatar: null, email: 'hong@example.com' },
+        { id: 7, name: '김철수', role: 'trainer', avatar: null, email: 'kim@example.com' },
+        { id: 8, name: '이영희', role: 'pet-owner', avatar: null, email: 'lee@example.com' },
+      ];
+      
+      const searchResults = sampleUsers.filter(user => 
+        user.name.includes(query) || 
+        user.role.includes(query) ||
+        user.email.includes(query)
+      );
+      
+      return res.status(200).json({
+        success: true,
+        users: searchResults
+      });
+    } catch (error) {
+      console.error('사용자 검색 오류:', error);
+      return res.status(500).json({
+        success: false,
+        message: '사용자 검색 중 오류가 발생했습니다.'
+      });
+    }
+  });
+  
   // Institute and trainer routes are now in separate modules
   
   // ===== 쇼핑 API 엔드포인트 =====

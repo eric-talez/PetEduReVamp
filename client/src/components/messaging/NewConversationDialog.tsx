@@ -46,13 +46,14 @@ const getRoleLabel = (role: string) => {
   }
 };
 
-// 임시 사용자 데이터 (실제로는 API에서 가져와야 함)
-const mockUsers = [
-  { id: 2, name: '김훈련', role: 'trainer', avatar: null },
-  { id: 3, name: '이반려', role: 'pet-owner', avatar: null },
-  { id: 4, name: '박기관', role: 'institute-admin', avatar: null },
-  { id: 5, name: '최관리', role: 'admin', avatar: null },
-];
+// 사용자 타입 정의
+interface User {
+  id: number;
+  name: string;
+  role: string;
+  avatar: string | null;
+  email?: string;
+}
 
 export function NewConversationButton() {
   const [open, setOpen] = useState(false);
@@ -81,7 +82,7 @@ interface NewConversationDialogProps {
 export function NewConversationDialog({ open, onOpenChange }: NewConversationDialogProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [isSearching, setIsSearching] = useState(false);
-  const [searchResults, setSearchResults] = useState<typeof mockUsers>([]);
+  const [searchResults, setSearchResults] = useState<User[]>([]);
   const { startConversation } = useMessaging();
   const { toast } = useToast();
 
@@ -92,23 +93,28 @@ export function NewConversationDialog({ open, onOpenChange }: NewConversationDia
     try {
       setIsSearching(true);
       
-      // 실제 구현에서는 서버 API 호출
-      // 임시로 모의 검색 구현
-      await new Promise(resolve => setTimeout(resolve, 500));
+      // 서버 API 호출
+      const response = await fetch(`/api/users/search?query=${encodeURIComponent(searchTerm)}`);
       
-      const results = mockUsers.filter(user => 
-        user.name.includes(searchTerm) || 
-        getRoleLabel(user.role).includes(searchTerm)
-      );
+      if (!response.ok) {
+        throw new Error(`서버 오류: ${response.status}`);
+      }
       
-      setSearchResults(results);
+      const data = await response.json();
+      
+      if (data.success && data.users) {
+        setSearchResults(data.users);
+      } else {
+        throw new Error(data.message || '검색 결과를 가져오는데 실패했습니다.');
+      }
     } catch (error) {
       console.error("사용자 검색 오류:", error);
       toast({
         title: "검색 실패",
-        description: "사용자 검색 중 오류가 발생했습니다.",
+        description: error instanceof Error ? error.message : "사용자 검색 중 오류가 발생했습니다.",
         variant: "destructive"
       });
+      setSearchResults([]);
     } finally {
       setIsSearching(false);
     }
@@ -190,7 +196,7 @@ export function NewConversationDialog({ open, onOpenChange }: NewConversationDia
             </div>
           ) : (
             <ul className="divide-y">
-              {searchResults.map((user) => (
+              {searchResults.map((user: User) => (
                 <li key={user.id} className="p-3 hover:bg-secondary transition-colors">
                   <button
                     className="w-full flex items-center justify-between"
@@ -204,7 +210,14 @@ export function NewConversationDialog({ open, onOpenChange }: NewConversationDia
                           <span>{user.name.substring(0, 1)}</span>
                         )}
                       </div>
-                      <span>{user.name}</span>
+                      <div className="flex flex-col text-left">
+                        <span className="font-medium">{user.name}</span>
+                        {user.email && (
+                          <span className="text-xs text-muted-foreground">
+                            {user.email}
+                          </span>
+                        )}
+                      </div>
                     </div>
                     <span className={`text-xs ${getRoleColor(user.role)}`}>
                       {getRoleLabel(user.role)}
