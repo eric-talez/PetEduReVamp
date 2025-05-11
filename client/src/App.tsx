@@ -392,42 +392,7 @@ function UnauthenticatedRoutesContent() {
       <Route path="/locations" component={LocationsPage} />
       
       {/* AI 반려동물 분석 페이지 */}
-      <Route path="/ai-chat">
-        {() => (
-          <AIAnalysisProvider>
-            <div className="container mx-auto py-6">
-              <div className="flex flex-col items-start mb-8">
-                <h1 className="text-3xl font-bold">AI 반려동물 분석</h1>
-                <p className="text-gray-600 dark:text-gray-400 max-w-3xl">
-                  AI를 활용하여 반려동물의 행동을 분석하고 건강 상태를 관리하세요. 반려동물 돌봄에 관한 질문에 AI가 답변해드립니다.
-                </p>
-              </div>
-              
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <div className="lg:col-span-2">
-                  <div className="w-full bg-white dark:bg-slate-800 rounded-lg shadow-md overflow-hidden mb-6">
-                    <div className="p-4 border-b dark:border-slate-700">
-                      <h2 className="text-xl font-bold flex items-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="mr-2 h-5 w-5 text-primary" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <circle cx="12" cy="12" r="10"></circle>
-                          <line x1="12" y1="16" x2="12" y2="12"></line>
-                          <line x1="12" y1="8" x2="12.01" y2="8"></line>
-                        </svg>
-                        AI 분석 도우미
-                      </h2>
-                    </div>
-                    <div className="p-6">
-                      <div className="w-full h-full">
-                        <Chatbot isFullPage={true} />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </AIAnalysisProvider>
-        )}
-      </Route>
+      <Route path="/ai-chat" component={PetAnalysisPage} />
       
       <Route path="/ai-analysis">
         {() => {

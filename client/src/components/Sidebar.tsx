@@ -267,9 +267,10 @@ export function Sidebar({
       return;
     }
 
-    if (path in specialRoutes) {
+    // AI 경로는 앞에서 버튼으로 처리하고 있으므로 여기서는 제외
+    if (path !== '/ai-chat' && path in specialRoutes) {
       console.log(`${specialRoutes[path]} 페이지로 이동 중...`);
-      // 단순하게 처리
+      // 단순하게 처리 
       window.location.href = path;
       if (onClose) onClose();
       return;
@@ -421,16 +422,32 @@ export function Sidebar({
                       }} 
                       show={true}
                     >화상 수업</NavItem>
-                    <NavItem 
-                      href="/ai-chat" 
-                      icon={<Brain className="w-5 h-5 mr-2" />} 
-                      active={isActive("/ai-chat") || isActive("/pet-ai-chat") || isActive("/ai-analysis") || isActive("/pet-analysis")} 
-                      onClick={(path) => {
-                        console.log("비회원이 AI 반려동물 분석 클릭 -", path);
-                        window.location.href = '/ai-chat';
-                      }} 
-                      show={true}
-                    >AI 반려동물 분석</NavItem>
+                    {/* 특수 경로 처리를 위한 별도 컴포넌트 */}
+                    <button 
+                      className={`flex items-center w-full py-2 px-3 text-sm rounded-md transition-colors
+                      ${isActive("/ai-chat") || isActive("/pet-ai-chat") || isActive("/ai-analysis") || isActive("/pet-analysis")
+                        ? "bg-primary/10 text-primary font-medium dark:bg-primary/20"
+                        : "hover:bg-muted/50 dark:hover:bg-muted/30"}`}
+                      onClick={() => {
+                        console.log("AI 페이지 이동 - 하드코딩 방식");
+                        
+                        // URL을 직접 변경하는 대신 iframe 로드 방식 시도
+                        const iframe = document.createElement('iframe');
+                        iframe.style.display = 'none';
+                        iframe.src = window.location.origin + '/ai-chat';
+                        
+                        document.body.appendChild(iframe);
+                        setTimeout(() => {
+                          window.location.href = window.location.origin + '/ai-chat';
+                          document.body.removeChild(iframe);
+                        }, 100);
+                        
+                        if (onClose) onClose();
+                      }}
+                    >
+                      <Brain className="w-5 h-5 mr-2" />
+                      <span>AI 반려동물 분석</span>
+                    </button>
                     <NavItem 
                       href="/community" 
                       icon={<MessageSquare className="w-5 h-5 mr-2" />} 
@@ -627,15 +644,33 @@ export function Sidebar({
                       화상 훈련
                     </NavItem>
                     
-                    <NavItem
-                      href="/ai-chat"
-                      icon={<Brain className="w-5 h-5 mr-2" />}
-                      active={isActive("/ai-chat") || isActive("/pet-ai-chat") || isActive("/ai-analysis") || isActive("/pet-analysis")}
-                      onClick={handleItemClick}
-                      show={true}
+                    <button 
+                      className={`flex items-center w-full py-2 px-3 text-sm rounded-md transition-colors
+                      ${isActive("/ai-chat") || isActive("/pet-ai-chat") || isActive("/ai-analysis") || isActive("/pet-analysis") 
+                        ? "bg-primary/10 text-primary font-medium dark:bg-primary/20" 
+                        : "hover:bg-muted/50 dark:hover:bg-muted/30"}`}
+                      onClick={() => {
+                        console.log("모바일 메뉴: AI 페이지 이동 - 하드코딩 방식");
+                        
+                        // URL을 직접 변경하는 대신 iframe 로드 방식 시도
+                        const iframe = document.createElement('iframe');
+                        iframe.style.display = 'none';
+                        iframe.src = window.location.origin + '/ai-chat';
+                        
+                        document.body.appendChild(iframe);
+                        setTimeout(() => {
+                          window.location.href = window.location.origin + '/ai-chat';
+                          document.body.removeChild(iframe);
+                        }, 100);
+                        
+                        if (onClose) onClose();
+                      }}
                     >
-                      AI 반려동물 분석
-                    </NavItem>
+                      <div className="flex items-center">
+                        <Brain className="w-5 h-5 mr-2" />
+                        <span>AI 반려동물 분석</span>
+                      </div>
+                    </button>
                     <NavItem
                       href="/messages"
                       icon={<MessageSquare className="w-5 h-5 mr-2" />}
