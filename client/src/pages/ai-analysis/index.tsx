@@ -236,28 +236,53 @@ export default function AIAnalysisPage() {
 
   return (
     <div className="container mx-auto py-8">
+      {/* Banner */}
+      <div className="relative rounded-xl overflow-hidden h-48 md:h-64 mb-8 bg-gradient-to-r from-primary/80 to-accent/80 shadow-lg">
+        <img 
+          src="https://images.unsplash.com/photo-1553284965-83fd3e82fa5a?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=400" 
+          alt="반려견 AI 분석"
+          className="w-full h-full object-cover absolute mix-blend-overlay"
+        />
+
+        <div className="absolute inset-0 bg-gradient-to-r from-primary/80 to-cyan-700/50 mix-blend-multiply"></div>
+
+        <div className="relative h-full flex flex-col justify-center px-6 md:px-10">
+          <h1 className="text-white text-xl md:text-3xl font-bold mb-2 md:mb-4 max-w-xl">
+            반려견 AI 분석
+          </h1>
+          <p className="text-white text-sm md:text-base max-w-xl mb-4">
+            AI가 반려견의 성격, 훈련 진도, 그리고 앞으로의 방향을 분석합니다.
+          </p>
+
+          <div className="flex items-center mt-2">
+            <Button 
+              onClick={performAnalysis}
+              disabled={!isAnalysisAvailable || isLoading}
+              className="flex items-center"
+              size="lg"
+            >
+              <Sparkles className="w-5 h-5 mr-2" />
+              {isLoading ? '분석 중...' : '지금 분석하기'}
+            </Button>
+            
+            {!isAnalysisAvailable && (
+              <div className="flex items-center text-amber-300 ml-4">
+                <Clock className="w-5 h-5 mr-2" />
+                <span>다음 분석까지: {timeUntilNextAnalysis}</span>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+      
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-3xl font-bold">반려견 AI 분석</h1>
+          <h2 className="text-2xl font-bold">분석 대시보드</h2>
           <p className="text-gray-600 dark:text-gray-400 mt-1">
-            AI가 반려견의 성격, 훈련 진도, 그리고 앞으로의 방향을 분석합니다.
+            반려견의 종합적인 분석 데이터를 확인해보세요.
           </p>
         </div>
         <div className="flex items-center space-x-4">
-          {!isAnalysisAvailable && (
-            <div className="flex items-center text-amber-500 dark:text-amber-400">
-              <Clock className="w-5 h-5 mr-2" />
-              <span>다음 분석까지: {timeUntilNextAnalysis}</span>
-            </div>
-          )}
-          <Button 
-            onClick={performAnalysis}
-            disabled={!isAnalysisAvailable || isLoading}
-            className="flex items-center"
-          >
-            <Sparkles className="w-5 h-5 mr-2" />
-            {isLoading ? '분석 중...' : '지금 분석하기'}
-          </Button>
           {process.env.NODE_ENV === 'development' && (
             <Button 
               variant="outline" 
