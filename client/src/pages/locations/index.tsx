@@ -180,26 +180,44 @@ function NearbyPlaces() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center space-x-2">
-        <Button 
-          onClick={handleSearchNearby} 
-          variant="default" 
-          disabled={isLoadingLocation || isSearching}
-        >
-          {isLoadingLocation ? (
-            <Loader2 className="h-4 w-4 animate-spin mr-2" />
-          ) : (
-            <Navigation className="h-4 w-4 mr-2" />
-          )}
-          {currentLocation ? '현재 위치에서 검색' : '위치 확인 후 검색'}
-        </Button>
+      <div className="flex flex-col space-y-3">
+        <div className="flex items-center space-x-2">
+          <Button 
+            onClick={handleSearchNearby} 
+            variant="default" 
+            disabled={isLoadingLocation || isSearching}
+          >
+            {isLoadingLocation ? (
+              <Loader2 className="h-4 w-4 animate-spin mr-2" />
+            ) : (
+              <Navigation className="h-4 w-4 mr-2" />
+            )}
+            {currentLocation ? '현재 위치에서 검색' : '위치 확인 후 검색'}
+          </Button>
 
-        {currentLocation && (
-          <div className="text-xs text-muted-foreground">
-            위도: {currentLocation.latitude.toFixed(4)}, 
-            경도: {currentLocation.longitude.toFixed(4)}
+          {currentLocation && (
+            <div className="text-xs text-muted-foreground">
+              위도: {currentLocation.latitude.toFixed(4)}, 
+              경도: {currentLocation.longitude.toFixed(4)}
+            </div>
+          )}
+        </div>
+        
+        <div className="flex items-center space-x-2">
+          <div className="flex items-center">
+            <input
+              type="checkbox"
+              id="certified-only"
+              checked={certifiedOnly}
+              onChange={(e) => setCertifiedOnly(e.target.checked)}
+              className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+            />
+            <label htmlFor="certified-only" className="ml-2 text-sm font-medium">
+              테일즈 인증 업체만 보기
+            </label>
           </div>
-        )}
+          <Badge className="bg-blue-500 text-white">인증</Badge>
+        </div>
       </div>
 
       <Tabs defaultValue="trainer" value={activeTab} onValueChange={(v) => setActiveTab(v as any)}>
@@ -215,12 +233,18 @@ function NearbyPlaces() {
         <div className="py-8 flex justify-center">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
-      ) : nearbyPlaces.length > 0 ? (
+      ) : filteredPlaces.length > 0 ? (
         <div className="space-y-2 max-h-96 overflow-y-auto pr-2">
-          {nearbyPlaces.map(place => (
+          {filteredPlaces.map(place => (
             <PlaceCard key={place.id} place={place} />
           ))}
         </div>
+      ) : nearbyPlaces.length > 0 && filteredPlaces.length === 0 ? (
+        <Alert variant="default">
+          <AlertDescription>
+            인증된 {getTypeLabel(activeTab)}이(가) 없습니다. 모든 결과를 보려면 인증 필터를 해제하세요.
+          </AlertDescription>
+        </Alert>
       ) : (
         (!isSearching && currentLocation) && (
           <Alert variant="default">
