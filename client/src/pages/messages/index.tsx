@@ -423,7 +423,7 @@ function MessagesContent() {
         type: 'message',
         receiverId: selectedContact.id,
         content: currentMessage,
-        type: 'text'
+        messageType: 'text'
       }));
       
       console.log('WebSocket으로 메시지 전송:', selectedContact.id, currentMessage);
@@ -476,7 +476,7 @@ function MessagesContent() {
                 <div className="relative">
                   <Avatar className="h-12 w-12">
                     <div className="h-full w-full rounded-full overflow-hidden">
-                      <img src={contact.avatar} alt={contact.name} className="h-full w-full object-cover" />
+                      <img src={contact.avatar} className="h-full w-full object-cover" />
                     </div>
                   </Avatar>
                   {contact.isOnline && (
@@ -650,5 +650,14 @@ function MessageSquare(props: any) {
     >
       <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
     </svg>
+  );
+}
+
+// 메인 내보내기 컴포넌트
+export default function Messages() {
+  return (
+    <MessagingProvider>
+      <MessagesContent />
+    </MessagingProvider>
   );
 }
