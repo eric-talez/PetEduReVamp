@@ -419,28 +419,30 @@ function AuthenticatedRoutes() {
               
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <div className="lg:col-span-2">
-                  <PetAIChatBox isFullPage={true} />
+                  <div className="w-full h-full">
+                    <PetAIChatBox isFullPage={true} />
+                  </div>
                 </div>
                 
                 <div className="lg:col-span-1 space-y-6">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center">
-                        <Dog className="mr-2 h-5 w-5 text-primary" />
+                  <div className="bg-white dark:bg-slate-800 rounded-lg shadow-md overflow-hidden">
+                    <div className="p-4 border-b dark:border-slate-700">
+                      <div className="flex items-center font-medium text-lg mb-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="mr-2 h-5 w-5 text-primary" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10 5.172C10 3.12 12.5 1.65 15 3.5c2.5 1.85 2.5 5.15 0 7-1.65 1.22-5.96 3.43-6.5 3.5a.5.5 0 0 1-.5-.5c.07-.54 2.28-4.85 3.5-6.5.86-1.16 1.24-2 0-3-1.24-1-2.5-.5-3 .5C8 5.172 10 5.172 10 5.172z"/><path d="M8.5 8.5c-.4.94-1.5 3.5-2 5.5-.5 2 .5 3 1.5 3s2-1 2-2-.5-2-2.5-2c-2 0-4.5 3-5.5 5"/></svg>
                         반려동물 이해하기
-                      </CardTitle>
-                      <CardDescription>
-                        반려견의 행동과 건강에 대한 질문을 해보세요
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-2 text-sm">
-                        <p className="bg-slate-100 dark:bg-slate-800 p-2 rounded">우리 강아지가 계속 짖는데 어떻게 해야 할까요?</p>
-                        <p className="bg-slate-100 dark:bg-slate-800 p-2 rounded">강아지 사료 선택은 어떻게 하나요?</p>
-                        <p className="bg-slate-100 dark:bg-slate-800 p-2 rounded">반려견 기본 훈련은 어떻게 시작하나요?</p>
                       </div>
-                    </CardContent>
-                  </Card>
+                      <div className="text-sm text-slate-500 dark:text-slate-400">
+                        반려견의 행동과 건강에 대한 질문을 해보세요
+                      </div>
+                    </div>
+                    <div className="p-4">
+                      <div className="space-y-2 text-sm">
+                        <p className="bg-slate-100 dark:bg-slate-700 p-2 rounded">우리 강아지가 계속 짖는데 어떻게 해야 할까요?</p>
+                        <p className="bg-slate-100 dark:bg-slate-700 p-2 rounded">강아지 사료 선택은 어떻게 하나요?</p>
+                        <p className="bg-slate-100 dark:bg-slate-700 p-2 rounded">반려견 기본 훈련은 어떻게 시작하나요?</p>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
