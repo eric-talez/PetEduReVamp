@@ -326,7 +326,7 @@ export function MessagingProvider({ children }: { children: ReactNode }) {
       type: 'message',
       receiverId,
       content,
-      type
+      messageType: type
     }));
   }, [isConnected, user]);
   
