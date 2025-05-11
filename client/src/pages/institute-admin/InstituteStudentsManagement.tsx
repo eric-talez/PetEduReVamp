@@ -430,7 +430,7 @@ export default function InstituteStudentsManagement() {
                 <SelectValue placeholder="수업 상태" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">모든 수강생</SelectItem>
+                <SelectItem value="all">모든 수강생</SelectItem>
                 <SelectItem value="active">활성 수업 있음</SelectItem>
               </SelectContent>
             </Select>

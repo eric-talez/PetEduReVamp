@@ -410,6 +410,18 @@ function AuthenticatedRoutes() {
         </Route>
         
         {/* 기관 관리자 메뉴 */}
+        <Route path="/institute/dashboard">
+          {() => {
+            const InstituteAdminHome = lazy(() => import('./pages/institute-admin/InstituteAdminHome'));
+            return (
+              <Suspense fallback={<div className="p-8 flex justify-center items-center">
+                <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
+              </div>}>
+                <ProtectedInstituteRoute component={InstituteAdminHome} />
+              </Suspense>
+            );
+          }}
+        </Route>
         <Route path="/institute/trainers">
           {() => {
             const InstituteTrainersManagement = lazy(() => import('./pages/institute-admin/InstituteTrainersManagement'));
