@@ -80,6 +80,8 @@ interface User {
   phone?: string;
   permissions?: string[];
   twoFactorEnabled?: boolean;
+  instituteName?: string;
+  instituteId?: number;
 }
 
 export default function AdminUsers() {
@@ -134,7 +136,9 @@ export default function AdminUsers() {
             lastLogin: '2024-05-09 15:30:12',
             phone: '010-2345-6789',
             permissions: ['institute-manage', 'trainer-manage', 'course-manage'],
-            twoFactorEnabled: false
+            twoFactorEnabled: false,
+            instituteName: '알파 트레이닝 센터',
+            instituteId: 1
           },
           {
             id: 3,
@@ -147,7 +151,9 @@ export default function AdminUsers() {
             lastLogin: '2024-05-10 11:45:30',
             phone: '010-3456-7890',
             permissions: ['course-teach', 'student-manage'],
-            twoFactorEnabled: false
+            twoFactorEnabled: false,
+            instituteName: '알파 트레이닝 센터',
+            instituteId: 1
           },
           {
             id: 4,
@@ -159,7 +165,23 @@ export default function AdminUsers() {
             joinDate: '2023-04-05',
             lastLogin: '2024-05-08 18:20:15',
             phone: '010-4567-8901',
-            twoFactorEnabled: false
+            twoFactorEnabled: false,
+            instituteName: '알파 트레이닝 센터',
+            instituteId: 1
+          },
+          {
+            id: 5,
+            name: '김슬기',
+            username: 'petowner2',
+            email: 'seulgi@example.com',
+            role: 'pet-owner',
+            status: 'active',
+            joinDate: '2023-05-01',
+            lastLogin: '2024-05-09 14:05:22',
+            phone: '010-5678-9012',
+            twoFactorEnabled: false,
+            instituteName: '베타 애견 학교',
+            instituteId: 2
           },
           {
             id: 5,

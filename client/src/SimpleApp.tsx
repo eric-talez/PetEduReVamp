@@ -533,11 +533,16 @@ function AuthenticatedRoutes() {
           }}
         </Route>
         <Route path="/admin/courses">
-          {() => (
-            <ProtectedAdminRoute 
-              component={() => <div className="p-8"><h1 className="text-2xl font-bold mb-4">강의 관리</h1><p>전체 강의를 관리하는 페이지입니다.</p></div>}
-            />
-          )}
+          {() => {
+            const AdminCourses = lazy(() => import('./pages/admin/AdminCourses'));
+            return (
+              <Suspense fallback={<div className="p-8 flex justify-center items-center">
+                <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
+              </div>}>
+                <ProtectedAdminRoute component={AdminCourses} />
+              </Suspense>
+            );
+          }}
         </Route>
         <Route path="/admin/reports">
           {() => (
