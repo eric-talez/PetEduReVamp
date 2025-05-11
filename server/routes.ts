@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { z } from "zod";
 import { createUserSchema, createPetSchema, createCourseSchema } from "@shared/schema";
+import { registerCommissionRoutes } from "./commission/routes";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // ===== Auth Routes =====
