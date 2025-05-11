@@ -423,9 +423,9 @@ export function Sidebar({
                       href="/pet-analysis" 
                       icon={<Brain className="w-5 h-5 mr-2" />} 
                       active={isActive("/pet-analysis")} 
-                      onClick={(path) => {
-                        console.log("AI 분석 메뉴 클릭:", path);
-                        window.location.href = path; // 직접 URL로 이동
+                      onClick={() => {
+                        console.log("AI 분석 메뉴 직접 이동");
+                        window.location.href = "/pet-analysis"; // 하드코딩하여 직접 URL로 이동
                       }} 
                       show={true}
                     >AI 분석</NavItem>
