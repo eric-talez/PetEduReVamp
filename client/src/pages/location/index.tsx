@@ -1,0 +1,351 @@
+import { useState, useEffect } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Loader2, Search, MapPin, Navigation } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { useMapService, MapServiceProvider, Place } from '@/hooks/useMapService';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+
+/**
+ * 위치 마커 컴포넌트
+ */
+function LocationMarker() {
+  return (
+    <div className="absolute transform -translate-x-1/2 -translate-y-1/2 text-red-500 animate-bounce">
+      <MapPin className="h-8 w-8" />
+    </div>
+  );
+}
+
+/**
+ * 장소 검색 컴포넌트
+ */
+function PlaceSearch() {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [searchResults, setSearchResults] = useState<Place[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const { searchPlacesByKeyword } = useMapService();
+  const { toast } = useToast();
+
+  const handleSearch = async () => {
+    if (!searchTerm.trim()) {
+      toast({
+        title: "검색어를 입력해주세요",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsSearching(true);
+    try {
+      const results = await searchPlacesByKeyword(searchTerm);
+      setSearchResults(results);
+    } catch (error) {
+      console.error("검색 오류:", error);
+      toast({
+        title: "검색 실패",
+        description: "장소를 검색하는데 실패했습니다. 다시 시도해주세요.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex space-x-2">
+        <Input
+          placeholder="위치 또는 장소 검색..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+          className="flex-1"
+        />
+        <Button onClick={handleSearch} disabled={isSearching}>
+          {isSearching ? (
+            <Loader2 className="h-4 w-4 animate-spin mr-2" />
+          ) : (
+            <Search className="h-4 w-4 mr-2" />
+          )}
+          검색
+        </Button>
+      </div>
+
+      {isSearching ? (
+        <div className="py-8 flex justify-center">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      ) : searchResults.length > 0 ? (
+        <div className="space-y-2 max-h-96 overflow-y-auto pr-2">
+          {searchResults.map(place => (
+            <PlaceCard key={place.id} place={place} />
+          ))}
+        </div>
+      ) : (
+        searchTerm && !isSearching && (
+          <Alert variant="default">
+            <AlertDescription>
+              "{searchTerm}"에 대한 검색 결과가 없습니다.
+            </AlertDescription>
+          </Alert>
+        )
+      )}
+    </div>
+  );
+}
+
+/**
+ * 근처 장소 찾기 컴포넌트
+ */
+function NearbyPlaces() {
+  const [activeTab, setActiveTab] = useState<'institute' | 'trainer' | 'clinic' | 'shop'>('trainer');
+  const { 
+    currentLocation, 
+    nearbyPlaces, 
+    isLoadingLocation, 
+    isSearching, 
+    getUserLocation, 
+    searchNearbyPlaces 
+  } = useMapService();
+  const { toast } = useToast();
+
+  // 근처 장소 검색
+  const handleSearchNearby = async () => {
+    // 현재 위치가 없으면 위치 가져오기
+    if (!currentLocation) {
+      const location = await getUserLocation();
+      if (!location) {
+        toast({
+          title: "위치 정보 필요",
+          description: "주변 검색을 위해 위치 정보를 허용해주세요.",
+          variant: "destructive"
+        });
+        return;
+      }
+    }
+
+    // 선택된 유형의 장소 검색
+    searchNearbyPlaces(activeTab);
+  };
+
+  // 탭 변경 시 자동 검색
+  useEffect(() => {
+    if (currentLocation) {
+      searchNearbyPlaces(activeTab);
+    }
+  }, [activeTab, currentLocation, searchNearbyPlaces]);
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center space-x-2">
+        <Button 
+          onClick={handleSearchNearby} 
+          variant="default" 
+          disabled={isLoadingLocation || isSearching}
+        >
+          {isLoadingLocation ? (
+            <Loader2 className="h-4 w-4 animate-spin mr-2" />
+          ) : (
+            <Navigation className="h-4 w-4 mr-2" />
+          )}
+          {currentLocation ? '현재 위치에서 검색' : '위치 확인 후 검색'}
+        </Button>
+
+        {currentLocation && (
+          <div className="text-xs text-muted-foreground">
+            위도: {currentLocation.latitude.toFixed(4)}, 
+            경도: {currentLocation.longitude.toFixed(4)}
+          </div>
+        )}
+      </div>
+
+      <Tabs defaultValue="trainer" value={activeTab} onValueChange={(v) => setActiveTab(v as any)}>
+        <TabsList className="grid grid-cols-4">
+          <TabsTrigger value="trainer">훈련사</TabsTrigger>
+          <TabsTrigger value="institute">훈련소</TabsTrigger>
+          <TabsTrigger value="clinic">동물병원</TabsTrigger>
+          <TabsTrigger value="shop">용품점</TabsTrigger>
+        </TabsList>
+      </Tabs>
+
+      {isSearching ? (
+        <div className="py-8 flex justify-center">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      ) : nearbyPlaces.length > 0 ? (
+        <div className="space-y-2 max-h-96 overflow-y-auto pr-2">
+          {nearbyPlaces.map(place => (
+            <PlaceCard key={place.id} place={place} />
+          ))}
+        </div>
+      ) : (
+        (!isSearching && currentLocation) && (
+          <Alert variant="default">
+            <AlertDescription>
+              주변에 {getTypeLabel(activeTab)}이(가) 없습니다.
+            </AlertDescription>
+          </Alert>
+        )
+      )}
+    </div>
+  );
+}
+
+/**
+ * 장소 카드 컴포넌트
+ */
+function PlaceCard({ place }: { place: Place }) {
+  const { getDirections } = useMapService();
+  const { toast } = useToast();
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleGetDirections = async () => {
+    setIsLoading(true);
+    try {
+      const directions = await getDirections(place.location);
+      
+      if (directions) {
+        toast({
+          title: "길찾기 완료",
+          description: `예상 소요 시간: ${directions.duration.text}, 거리: ${directions.distance.text}`,
+        });
+      }
+    } catch (error) {
+      console.error("길찾기 오류:", error);
+      toast({
+        title: "길찾기 실패",
+        description: "길찾기 정보를 가져오는데 실패했습니다.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <Card>
+      <CardHeader className="pb-2">
+        <div className="flex justify-between items-start">
+          <div>
+            <CardTitle className="text-base">{place.name}</CardTitle>
+            <CardDescription>
+              {place.location.address || "주소 정보 없음"}
+            </CardDescription>
+          </div>
+          <div className="flex items-center text-xs text-muted-foreground">
+            <MapPin className="h-3 w-3 mr-1" />
+            {place.distance ? `${(place.distance / 1000).toFixed(1)}km` : "거리 정보 없음"}
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <div className="flex justify-between items-center">
+          <div className="text-sm">
+            {place.description || getTypeLabel(place.type)}
+            {place.contact && (
+              <div className="text-xs text-muted-foreground mt-1">
+                {place.contact}
+              </div>
+            )}
+          </div>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={handleGetDirections}
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <Loader2 className="h-3 w-3 animate-spin mr-1" />
+            ) : (
+              <Navigation className="h-3 w-3 mr-1" />
+            )}
+            길찾기
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+/**
+ * 장소 유형에 따른 레이블 반환
+ */
+function getTypeLabel(type: string): string {
+  switch (type) {
+    case 'institute': return '훈련소';
+    case 'trainer': return '훈련사';
+    case 'clinic': return '동물병원';
+    case 'shop': return '용품점';
+    default: return '장소';
+  }
+}
+
+/**
+ * 메인 위치 검색 페이지 컨텐츠
+ */
+function LocationPageContent() {
+  return (
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle>위치 기반 서비스</CardTitle>
+          <CardDescription>
+            위치 기반으로 주변 훈련사, 훈련소, 동물병원, 용품점을 찾아보세요
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Tabs defaultValue="nearby">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="nearby">주변 검색</TabsTrigger>
+              <TabsTrigger value="search">키워드 검색</TabsTrigger>
+            </TabsList>
+            <TabsContent value="nearby" className="pt-4">
+              <NearbyPlaces />
+            </TabsContent>
+            <TabsContent value="search" className="pt-4">
+              <PlaceSearch />
+            </TabsContent>
+          </Tabs>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>지도 보기</CardTitle>
+          <CardDescription>
+            주변 지역의 지도를 확인하세요
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="h-64 bg-muted rounded-md relative flex items-center justify-center">
+            <div className="text-center p-4">
+              <p className="mb-4">카카오맵이 로드됩니다</p>
+              <Button variant="outline">지도 불러오기</Button>
+            </div>
+            <LocationMarker />
+          </div>
+          <div className="mt-4 text-sm text-muted-foreground">
+            참고: 지도는 실제 기능 구현 시 카카오맵 API를 통해 로드됩니다.
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+/**
+ * 위치 검색 페이지
+ */
+export default function LocationPage() {
+  return (
+    <div className="container mx-auto py-6 max-w-4xl">
+      <h1 className="text-3xl font-bold mb-6">위치 서비스</h1>
+      <MapServiceProvider>
+        <LocationPageContent />
+      </MapServiceProvider>
+    </div>
+  );
+}

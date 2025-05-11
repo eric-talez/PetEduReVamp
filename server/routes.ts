@@ -7,6 +7,7 @@ import { registerCommissionRoutes } from "./commission/routes";
 import { registerTrainerRoutes } from "./trainers/routes";
 import { registerCourseRoutes } from "./courses/routes";
 import { registerInstituteRoutes } from "./institutes/routes";
+import { registerLocationRoutes } from "./location/routes";
 import { WebSocketServer } from 'ws';
 import { MessagingService } from './messaging/service';
 
@@ -18,6 +19,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   registerTrainerRoutes(app);
   registerCourseRoutes(app);
   registerInstituteRoutes(app);
+  registerLocationRoutes(app);
   
   // 로그 메시지
   console.log('[server] API routes registered');
