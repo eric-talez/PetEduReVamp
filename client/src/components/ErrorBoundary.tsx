@@ -1,77 +1,78 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
+import { Button } from '@/components/ui/Button';
 import { AlertTriangle } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 
 interface Props {
   children: ReactNode;
   fallback?: ReactNode;
+  onError?: (error: Error, errorInfo: ErrorInfo) => void;
 }
 
 interface State {
   hasError: boolean;
   error: Error | null;
-  errorInfo: ErrorInfo | null;
 }
 
 /**
- * 컴포넌트 에러를 우아하게 처리하는 ErrorBoundary
- * 자식 컴포넌트에서 발생하는 JavaScript 에러를 캐치하고 사용자 친화적인 대체 UI를 표시
+ * 에러 바운더리 컴포넌트
+ * 
+ * React 컴포넌트 트리에서 발생하는 JavaScript 에러를 캐치하고,
+ * 에러 발생 시 폴백 UI를 렌더링하여 전체 애플리케이션이 중단되는 것을 방지
  */
 class ErrorBoundary extends Component<Props, State> {
-  public state: State = {
-    hasError: false,
-    error: null,
-    errorInfo: null
-  };
+  constructor(props: Props) {
+    super(props);
+    this.state = { 
+      hasError: false,
+      error: null
+    };
+  }
 
   static getDerivedStateFromError(error: Error): State {
-    // 다음 렌더링에서 대체 UI가 보이도록 상태를 업데이트 합니다.
-    return { hasError: true, error, errorInfo: null };
+    // 다음 렌더링에서 폴백 UI가 보이도록 상태를 업데이트
+    return { hasError: true, error };
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
-    // 에러 정보를 상태에 저장하고 필요시 에러 로깅 서비스에 보고할 수 있습니다.
-    this.setState({ error, errorInfo });
+    // 에러 로깅 또는 에러 보고 서비스에 에러 정보 전송
     console.error('ErrorBoundary caught an error:', error, errorInfo);
     
-    // 여기에 에러 로깅 서비스 호출 코드를 추가할 수 있습니다.
-    // 예: logErrorToService(error, errorInfo);
+    // 상위 컴포넌트에 에러 전달 (선택적)
+    this.props.onError?.(error, errorInfo);
   }
 
-  handleReset = (): void => {
-    this.setState({ hasError: false, error: null, errorInfo: null });
+  resetErrorBoundary = (): void => {
+    this.setState({ hasError: false, error: null });
   }
 
   render(): ReactNode {
     if (this.state.hasError) {
-      // 커스텀 대체 UI
-      return this.props.fallback || (
-        <div className="flex flex-col items-center justify-center min-h-[50vh] p-8 text-center">
-          <div className="w-20 h-20 bg-red-50 dark:bg-red-900/20 text-red-500 rounded-full flex items-center justify-center mb-6">
-            <AlertTriangle size={40} />
+      // 사용자 정의 폴백이 제공된 경우 사용
+      if (this.props.fallback) {
+        return this.props.fallback;
+      }
+
+      // 기본 에러 UI
+      return (
+        <div className="flex flex-col items-center justify-center min-h-[200px] p-6 space-y-4 border border-red-200 rounded-lg bg-red-50 dark:bg-red-900/10 dark:border-red-800">
+          <div className="flex items-center justify-center w-16 h-16 rounded-full bg-red-100 dark:bg-red-900/20">
+            <AlertTriangle className="h-8 w-8 text-red-600 dark:text-red-400" />
           </div>
-          <h2 className="text-2xl font-bold mb-3">문제가 발생했습니다</h2>
-          <p className="mb-6 text-gray-600 dark:text-gray-400 max-w-md">
-            죄송합니다. 페이지를 로드하는 중에 오류가 발생했습니다. 개발팀에 자동으로 알림이 전송되었습니다.
-          </p>
-          <div className="space-x-4">
-            <Button onClick={this.handleReset} variant="outline">
-              다시 시도
-            </Button>
-            <Button onClick={() => window.location.href = '/'}>
-              홈으로 이동
-            </Button>
+          <div className="text-center">
+            <h3 className="text-lg font-semibold text-red-800 dark:text-red-400">
+              문제가 발생했습니다
+            </h3>
+            <p className="mt-2 text-sm text-red-700 dark:text-red-300">
+              {this.state.error?.message || '알 수 없는 오류가 발생했습니다. 다시 시도해 주세요.'}
+            </p>
           </div>
-          {process.env.NODE_ENV === 'development' && this.state.error && (
-            <div className="mt-8 p-4 bg-gray-100 dark:bg-gray-800 rounded-md text-left overflow-auto max-w-2xl w-full">
-              <p className="font-mono text-sm text-red-500 mb-2">{this.state.error.toString()}</p>
-              {this.state.errorInfo && (
-                <pre className="font-mono text-xs text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
-                  {this.state.errorInfo.componentStack}
-                </pre>
-              )}
-            </div>
-          )}
+          <Button 
+            variant="outline"
+            className="border-red-300 text-red-700 hover:bg-red-100 dark:border-red-700 dark:text-red-300 dark:hover:bg-red-900/30"
+            onClick={this.resetErrorBoundary}
+          >
+            다시 시도
+          </Button>
         </div>
       );
     }
