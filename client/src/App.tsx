@@ -137,13 +137,7 @@ function AuthenticatedRoutesContent() {
       <Route path="/trainer/reservations">
         {() => checkAccess(['trainer', 'admin']) ? <TrainerReservationsPage /> : window.location.href = '/'}
       </Route>
-      <Route path="/trainer/profile">
-        {() => (
-          <ErrorBoundary>
-            <ProfilePage userType="trainer" />
-          </ErrorBoundary>
-        )}
-      </Route>
+      {/* 훈련사 프로필 경로는 SimpleApp.tsx에서 처리 */}
       <Route path="/trainer/schedule">
         <TrainerReservationsPage />
       </Route>
@@ -170,27 +164,9 @@ function AuthenticatedRoutesContent() {
           </ErrorBoundary>
         )}
       </Route>
-      <Route path="/trainer/settings">
-        {() => (
-          <ErrorBoundary>
-            <SettingsPage userRole="trainer" />
-          </ErrorBoundary>
-        )}
-      </Route>
-      <Route path="/institute/profile">
-        {() => (
-          <ErrorBoundary>
-            <ProfilePage userType="institute-admin" />
-          </ErrorBoundary>
-        )}
-      </Route>
-      <Route path="/institute/settings">
-        {() => (
-          <ErrorBoundary>
-            <SettingsPage userRole="institute-admin" />
-          </ErrorBoundary>
-        )}
-      </Route>
+      {/* 훈련사 설정 경로는 SimpleApp.tsx에서 처리 */}
+      {/* 기관 관리자 프로필 경로는 SimpleApp.tsx에서 처리 */}
+      {/* 기관 관리자 설정 경로는 SimpleApp.tsx에서 처리 */}
       <Route path="/institute/course-approvals">
         {() => checkAccess(['institute-admin', 'admin']) ? <InstituteCourseApprovalsPage /> : window.location.href = '/'}
       </Route>
