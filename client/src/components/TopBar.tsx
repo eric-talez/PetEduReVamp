@@ -625,6 +625,7 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
                       setMessagePopupOpen(false);
                       setNotificationPopupOpen(false);
                     }}
+                    aria-label="장바구니"
                   >
                     <ShoppingCart className="h-5 w-5" />
                     {cartItemsCount > 0 && (
