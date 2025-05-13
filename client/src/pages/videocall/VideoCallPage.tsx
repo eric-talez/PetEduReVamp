@@ -210,6 +210,9 @@ export default function VideoCallPage() {
         toast({
           title: '복사 완료',
           description: '미팅 정보가 클립보드에 복사되었습니다.',
+          variant: 'default',
+          role: 'status',
+          ariaLive: 'assertive',
         });
       })
       .catch((err) => {
@@ -345,6 +348,8 @@ export default function VideoCallPage() {
                   value={meetingData.topic}
                   onChange={handleInputChange}
                   required
+                  aria-required="true"
+                  aria-label="미팅 제목 입력"
                 />
               </div>
               
