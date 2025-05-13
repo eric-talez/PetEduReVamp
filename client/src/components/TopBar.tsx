@@ -828,54 +828,40 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
                           {userRole === 'user' && '일반 회원'}
                         </div>
                       </div>
-                      <Link 
+                      <a 
                         href={
                           userRole === 'trainer' ? '/trainer/profile' :
                           userRole === 'institute-admin' ? '/institute/profile' :
                           '/profile'
                         } 
                         className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
-                        onClick={(e) => {
-                          e.preventDefault();
+                        onClick={() => {
                           setUserMenuOpen(false);
                           console.log('내 프로필 메뉴 클릭:', userRole);
-                          
-                          // 직접 경로 이동
-                          const path = userRole === 'trainer' ? '/trainer/profile' :
-                                      userRole === 'institute-admin' ? '/institute/profile' :
-                                      '/profile';
-                          window.location.href = path;
                         }}
                       >
                         내 프로필
-                      </Link>
+                      </a>
                       <Link href="/my-courses" className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800">
                         내 강의실
                       </Link>
                       <Link href="/my-pets" className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800">
                         내 반려견
                       </Link>
-                      <Link 
+                      <a 
                         href={
                           userRole === 'trainer' ? '/trainer/settings' :
                           userRole === 'institute-admin' ? '/institute/settings' :
                           '/settings'
                         }
                         className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
-                        onClick={(e) => {
-                          e.preventDefault();
+                        onClick={() => {
                           setUserMenuOpen(false);
                           console.log('설정 메뉴 클릭:', userRole);
-                          
-                          // 직접 경로 이동
-                          const path = userRole === 'trainer' ? '/trainer/settings' :
-                                      userRole === 'institute-admin' ? '/institute/settings' :
-                                      '/settings';
-                          window.location.href = path;
                         }}
                       >
                         설정
-                      </Link>
+                      </a>
                       <div className="border-t border-gray-200 dark:border-gray-700"></div>
                       <button 
                         onClick={handleLogout}
