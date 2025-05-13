@@ -481,7 +481,7 @@ export default function MenuManagement() {
   // 그룹 삭제
   const deleteGroup = (groupId: string) => {
     // 해당 그룹에 속한 아이템이 있는지 확인
-    const itemsInGroup = menuConfig.items.filter(item => item.category === groupId);
+    const itemsInGroup = menuConfig.items.filter((item: MenuItem) => item.category === groupId);
     
     if (itemsInGroup.length > 0) {
       toast({
@@ -492,7 +492,7 @@ export default function MenuManagement() {
       return;
     }
     
-    const updatedGroups = menuConfig.groups.filter(group => group.id !== groupId);
+    const updatedGroups = menuConfig.groups.filter((group: MenuGroup) => group.id !== groupId);
     
     const updatedConfig = {
       ...menuConfig,
@@ -506,7 +506,7 @@ export default function MenuManagement() {
 
   // 아이템 삭제
   const deleteItem = (itemId: string) => {
-    const updatedItems = menuConfig.items.filter(item => item.id !== itemId);
+    const updatedItems = menuConfig.items.filter((item: MenuItem) => item.id !== itemId);
     
     const updatedConfig = {
       ...menuConfig,
@@ -841,7 +841,7 @@ export default function MenuManagement() {
                           {item.path}
                         </TableCell>
                         <TableCell>
-                          {menuConfig.groups.find(g => g.id === item.category)?.title || item.category}
+                          {menuConfig.groups.find((g: MenuGroup) => g.id === item.category)?.title || item.category}
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center space-x-2">
@@ -1188,7 +1188,7 @@ export default function MenuManagement() {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {menuConfig.groups.map(group => (
+                        {menuConfig.groups.map((group: MenuGroup) => (
                           <SelectItem key={group.id} value={group.id}>
                             {group.title}
                           </SelectItem>
