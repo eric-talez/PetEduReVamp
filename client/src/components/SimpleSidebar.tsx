@@ -163,6 +163,33 @@ export function SimpleSidebar({ onToggleExpand }: SidebarProps) {
     return () => window.removeEventListener('resize', handleResize);
   }, [onToggleExpand, expanded]);
 
+  // 메뉴 그룹 렌더링 헬퍼 함수
+  const renderMenuGroupHeader = (group: keyof typeof menuGroups, title: string, icon: React.ReactNode) => {
+    if (expanded) {
+      return (
+        <div className="px-3 py-2 flex items-center justify-between cursor-pointer" onClick={() => toggleMenuGroup(group)}>
+          <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{title}</h3>
+          {menuGroups[group] ? <ChevronDown className="h-4 w-4 text-gray-500" /> : <ChevronRight className="h-4 w-4 text-gray-500" />}
+        </div>
+      );
+    } else {
+      return (
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className={`py-2 flex justify-center cursor-pointer ${group !== 'main' ? 'mt-4' : ''}`} onClick={() => toggleMenuGroup(group)}>
+                {icon}
+              </div>
+            </TooltipTrigger>
+            <TooltipContent side="right">
+              <p>{title}</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      );
+    }
+  };
+
   return (
     <SidebarContext.Provider value={contextValue}>
       <div
@@ -197,16 +224,7 @@ export function SimpleSidebar({ onToggleExpand }: SidebarProps) {
           <div className="space-y-1">
             {isAuthenticated && (
               <>
-                {expanded ? (
-                  <div className="px-3 py-2 flex items-center justify-between cursor-pointer" onClick={() => toggleMenuGroup('main')}>
-                    <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">메인 메뉴</h3>
-                    {menuGroups.main ? <ChevronDown className="h-4 w-4 text-gray-500" /> : <ChevronRight className="h-4 w-4 text-gray-500" />}
-                  </div>
-                ) : (
-                  <div className="py-2 flex justify-center cursor-pointer" onClick={() => toggleMenuGroup('main')}>
-                    <Home className="h-5 w-5 text-gray-500" />
-                  </div>
-                )}
+                {renderMenuGroupHeader('main', '메인 메뉴', <Home className="h-5 w-5 text-gray-500 hover:text-gray-900 dark:hover:text-gray-50" />)}
 
                 {menuGroups.main && (
                   <>
@@ -241,25 +259,7 @@ export function SimpleSidebar({ onToggleExpand }: SidebarProps) {
                   </>
                 )}
                 
-                {expanded ? (
-                  <div className="px-3 py-2 flex items-center justify-between cursor-pointer mt-4" onClick={() => toggleMenuGroup('features')}>
-                    <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">주요 기능</h3>
-                    {menuGroups.features ? <ChevronDown className="h-4 w-4 text-gray-500" /> : <ChevronRight className="h-4 w-4 text-gray-500" />}
-                  </div>
-                ) : (
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <div className="py-2 flex justify-center cursor-pointer mt-4" onClick={() => toggleMenuGroup('features')}>
-                          <Star className="h-5 w-5 text-gray-500 hover:text-gray-900 dark:hover:text-gray-50" />
-                        </div>
-                      </TooltipTrigger>
-                      <TooltipContent side="right">
-                        <p>주요 기능</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                )}
+                {renderMenuGroupHeader('features', '주요 기능', <Star className="h-5 w-5 text-gray-500 hover:text-gray-900 dark:hover:text-gray-50" />)}
                 
                 {menuGroups.features && (
                   <>
@@ -315,16 +315,7 @@ export function SimpleSidebar({ onToggleExpand }: SidebarProps) {
                   </>
                 )}
                 
-                {expanded ? (
-                  <div className="px-3 py-2 flex items-center justify-between cursor-pointer mt-4" onClick={() => toggleMenuGroup('myLearning')}>
-                    <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">내 학습</h3>
-                    {menuGroups.myLearning ? <ChevronDown className="h-4 w-4 text-gray-500" /> : <ChevronRight className="h-4 w-4 text-gray-500" />}
-                  </div>
-                ) : (
-                  <div className="py-2 flex justify-center cursor-pointer mt-4" onClick={() => toggleMenuGroup('myLearning')}>
-                    <BookOpen className="h-5 w-5 text-gray-500" />
-                  </div>
-                )}
+                {renderMenuGroupHeader('myLearning', '내 학습', <BookOpen className="h-5 w-5 text-gray-500 hover:text-gray-900 dark:hover:text-gray-50" />)}
                 
                 {menuGroups.myLearning && (
                   <>
@@ -356,16 +347,7 @@ export function SimpleSidebar({ onToggleExpand }: SidebarProps) {
             
             {!isAuthenticated && (
               <>
-                {expanded ? (
-                  <div className="px-3 py-2 flex items-center justify-between cursor-pointer" onClick={() => toggleMenuGroup('main')}>
-                    <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">메인 메뉴</h3>
-                    {menuGroups.main ? <ChevronDown className="h-4 w-4 text-gray-500" /> : <ChevronRight className="h-4 w-4 text-gray-500" />}
-                  </div>
-                ) : (
-                  <div className="py-2 flex justify-center cursor-pointer" onClick={() => toggleMenuGroup('main')}>
-                    <Home className="h-5 w-5 text-gray-500" />
-                  </div>
-                )}
+                {renderMenuGroupHeader('main', '메인 메뉴', <Home className="h-5 w-5 text-gray-500 hover:text-gray-900 dark:hover:text-gray-50" />)}
 
                 {menuGroups.main && (
                   <>
