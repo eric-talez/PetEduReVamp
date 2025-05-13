@@ -412,11 +412,18 @@ function AuthenticatedRoutes() {
           }}
         </Route>
         <Route path="/notifications">
-          {() => (
-            <ProtectedRoute 
-              component={() => <div className="p-8"><h1 className="text-2xl font-bold mb-4">알림장</h1><p>훈련사와 소통하고 훈련 진행상황을 확인할 수 있는 알림장 페이지입니다.</p></div>}
-            />
-          )}
+          {() => {
+            console.log("알림장 페이지 접근");
+            const NotebookPage = lazy(() => import('./pages/notifications'));
+            return (
+              <Suspense fallback={<div className="p-8 flex justify-center items-center">
+                <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
+                <span className="ml-2">알림장 로딩 중...</span>
+              </div>}>
+                <ProtectedRoute component={NotebookPage} />
+              </Suspense>
+            );
+          }}
         </Route>
         <Route path="/locations">
           {() => (
