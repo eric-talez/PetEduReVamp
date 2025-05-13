@@ -798,44 +798,44 @@ export function Sidebar({
                           show={true}
                         >훈련사 대시보드</AccessibleNavItem>
                         <AccessibleNavItem 
-                          href="/trainer-students" 
+                          href="/trainer/students" 
                           icon={<Users className="w-5 h-5 mr-2" />} 
-                          active={isActive("/trainer-students")} 
+                          active={isActive("/trainer/students")} 
                           onClick={handleItemClick} 
                           show={true}
                         >교육생 관리</AccessibleNavItem>
                         <AccessibleNavItem 
-                          href="/trainer-courses" 
+                          href="/trainer/courses" 
                           icon={<Presentation className="w-5 h-5 mr-2" />} 
-                          active={isActive("/trainer-courses")} 
+                          active={isActive("/trainer/courses")} 
                           onClick={handleItemClick} 
                           show={true}
                         >강의 관리</AccessibleNavItem>
                         <AccessibleNavItem 
-                          href="/trainer-schedule" 
+                          href="/trainer/stats" 
                           icon={<Calendar className="w-5 h-5 mr-2" />} 
-                          active={isActive("/trainer-schedule")} 
+                          active={isActive("/trainer/stats")} 
                           onClick={handleItemClick} 
                           show={true}
                         >수업 일정</AccessibleNavItem>
                         <AccessibleNavItem 
-                          href="/trainer-reviews" 
+                          href="/trainer/reviews" 
                           icon={<ThumbsUp className="w-5 h-5 mr-2" />} 
-                          active={isActive("/trainer-reviews")} 
+                          active={isActive("/trainer/reviews")} 
                           onClick={handleItemClick} 
                           show={true}
                         >리뷰 관리</AccessibleNavItem>
                         <AccessibleNavItem 
-                          href="/trainer-earnings" 
+                          href="/trainer/earnings" 
                           icon={<DollarSign className="w-5 h-5 mr-2" />} 
-                          active={isActive("/trainer-earnings")} 
+                          active={isActive("/trainer/earnings")} 
                           onClick={handleItemClick} 
                           show={true}
                         >수익 관리</AccessibleNavItem>
                         <AccessibleNavItem 
-                          href="/trainer-referrals" 
+                          href="/trainer/referrals" 
                           icon={<Tag className="w-5 h-5 mr-2" />} 
-                          active={isActive("/trainer-referrals")} 
+                          active={isActive("/trainer/referrals")} 
                           onClick={handleItemClick} 
                           show={true}
                         >추천 코드 관리</AccessibleNavItem>
