@@ -26,11 +26,18 @@ export function AccessibleMenuToggle({
     // 사이드바 확장 상태
     return (
       <div 
-        className="px-3 py-2 flex items-center justify-between cursor-pointer"
+        className="px-3 py-2 flex items-center justify-between cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md"
         onClick={onClick}
         role="button"
         aria-expanded={isOpen}
         aria-label={`${title} 메뉴 ${isOpen ? '접기' : '펼치기'}`}
+        tabIndex={0}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            onClick();
+          }
+        }}
       >
         <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
           {title}

@@ -381,8 +381,10 @@ export function Sidebar({
           )}
           <button
             onClick={toggleSidebar}
-            className="hidden lg:flex items-center justify-center w-6 h-6 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400 focus:outline-none"
+            className="hidden lg:flex items-center justify-center w-6 h-6 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
             aria-label={expanded ? "사이드바 접기" : "사이드바 펼치기"}
+            aria-expanded={expanded}
+            title={expanded ? "사이드바 접기" : "사이드바 펼치기"}
           >
             {expanded ? <ChevronsLeft size={16} /> : <ChevronsRight size={16} />}
           </button>
