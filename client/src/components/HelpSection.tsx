@@ -98,13 +98,8 @@ const MenuGroup: React.FC<MenuGroupProps> = ({ title, icon, children, defaultOpe
 
 // 도움말 섹션 주 컴포넌트
 export function HelpSection({ expanded, handleItemClick }: HelpSectionProps) {
-  // 사이드바 확장 상태가 변경될 때마다 도움말 섹션도 닫힘
+  // 도움말 섹션 열림/닫힘 상태 (독립적으로 유지)
   const [isOpen, setIsOpen] = useState(false);
-  
-  // 사이드바 확장 상태가 변경될 때 도움말 섹션도 닫기
-  useEffect(() => {
-    setIsOpen(false);
-  }, [expanded]);
   
   // 사이드바가 축소되었을 때는 아이콘만 표시 (다른 메뉴와 일관된 스타일 적용)
   if (!expanded) {

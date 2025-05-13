@@ -160,7 +160,7 @@ export function Sidebar({
   // 외부에서 제어되는 상태 또는 내부 상태 사용
   const expanded = externalExpanded !== undefined ? externalExpanded : internalExpanded;
 
-  // 사이드바가 접히거나 펴질 때마다 메뉴 그룹 상태도 초기화
+  // 기본 메뉴 그룹 상태 (처음에는 닫힌 상태로 시작)
   const defaultMenuGroupsState = {
     main: false,
     features: false,
@@ -170,13 +170,8 @@ export function Sidebar({
     admin: false
   };
 
-  // 기본 메뉴 그룹 (모두 닫힌 상태로 시작)
+  // 메뉴 그룹 상태 (사이드바 축소/확장과 독립적으로 유지)
   const [menuGroups, setMenuGroups] = useState(defaultMenuGroupsState);
-  
-  // 사이드바 확장 상태가 바뀔 때마다 메뉴 그룹 상태 초기화
-  useEffect(() => {
-    setMenuGroups(defaultMenuGroupsState);
-  }, [expanded]);
 
   useEffect(() => {
     const handleResize = () => {
