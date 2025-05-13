@@ -175,6 +175,17 @@ export function Sidebar({ onToggleExpand }: SidebarProps) {
       onToggleExpand(!expanded);
     }
   };
+  
+  // 메뉴 그룹 토글 함수
+  const toggleMenuGroup = (group: keyof typeof menuGroups) => {
+    console.log(`토글 메뉴 그룹: ${group}, 현재 상태: ${menuGroups[group]}`);
+    const newState = !menuGroups[group];
+    console.log(`메뉴 상태 변경 후: ${group} = ${newState}`);
+    setMenuGroups({
+      ...menuGroups,
+      [group]: newState
+    });
+  };
 
   // 컨텍스트 값 설정
   const contextValue: SidebarContextType = {
@@ -731,13 +742,4 @@ export function Sidebar({ onToggleExpand }: SidebarProps) {
   );
 }
 
-// 토글 메뉴 그룹
-function toggleMenuGroup(group: string) {
-  console.log(`토글 메뉴 그룹: ${group}, 현재 상태: ${menuGroups[group]}`);
-  const newState = !menuGroups[group];
-  console.log(`메뉴 상태 변경 후: ${group} = ${newState}`);
-  setMenuGroups({
-    ...menuGroups,
-    [group]: newState
-  });
-}
+// 메뉴 그룹 토글 함수는 Sidebar 컴포넌트 내부로 이동
