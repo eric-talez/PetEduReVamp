@@ -1,0 +1,509 @@
+import { useState, useEffect } from 'react';
+import { useLocation } from 'wouter';
+import { useAuth } from '@/hooks/useAuth';
+import { useQueryClient } from '@tanstack/react-query';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Separator } from '@/components/ui/separator';
+import { useToast } from '@/hooks/use-toast';
+import { 
+  Calendar as CalendarIcon, 
+  Clock, 
+  Users, 
+  Video, 
+  Plus, 
+  Monitor, 
+  UserPlus,
+  Copy,
+  Share2
+} from 'lucide-react';
+import { apiRequest } from '@/lib/queryClient';
+import { format } from 'date-fns';
+import { ko } from 'date-fns/locale';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { cn } from '@/lib/utils';
+
+interface Meeting {
+  id: string;
+  topic: string;
+  start_time: string;
+  duration: number;
+  join_url: string;
+  password: string;
+  host_key: string;
+}
+
+export default function VideoCallPage() {
+  const navigate = useNavigate();
+  const { user, isLoading } = useAuth();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const [activeTab, setActiveTab] = useState('scheduled');
+  const [meetings, setMeetings] = useState<Meeting[]>([]);
+  const [isCreating, setIsCreating] = useState(false);
+  const [isJoining, setIsJoining] = useState(false);
+  const [meetingData, setMeetingData] = useState({
+    topic: '',
+    date: new Date(),
+    time: format(new Date(), 'HH:mm'),
+    duration: 30,
+    agenda: ''
+  });
+  const [meetingId, setMeetingId] = useState('');
+
+  useEffect(() => {
+    if (!isLoading && !user) {
+      toast({
+        title: "로그인 필요",
+        description: "화상 통화 기능을 사용하려면 로그인이 필요합니다.",
+        variant: "destructive"
+      });
+      navigate('/auth/login');
+    } else if (user) {
+      // 미팅 목록 가져오기
+      fetchMeetings();
+    }
+  }, [isLoading, user, navigate, toast]);
+
+  const fetchMeetings = async () => {
+    try {
+      const response = await apiRequest('GET', '/api/videocall/my-meetings');
+      const data = await response.json();
+      
+      if (data && data.meetings) {
+        setMeetings(data.meetings);
+      }
+    } catch (error) {
+      console.error('Error fetching meetings:', error);
+      toast({
+        title: '미팅 목록 가져오기 실패',
+        description: '미팅 목록을 가져오는 중 오류가 발생했습니다. 나중에 다시 시도해주세요.',
+        variant: 'destructive'
+      });
+    }
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setMeetingData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleDateChange = (date: Date | undefined) => {
+    if (date) {
+      setMeetingData(prev => ({ ...prev, date }));
+    }
+  };
+
+  const createMeeting = async () => {
+    try {
+      setIsCreating(true);
+
+      // 날짜와 시간 조합
+      const [hours, minutes] = meetingData.time.split(':').map(Number);
+      const startTime = new Date(meetingData.date);
+      startTime.setHours(hours, minutes, 0, 0);
+
+      const response = await apiRequest('POST', '/api/videocall/create-meeting', {
+        topic: meetingData.topic,
+        start_time: startTime.toISOString(),
+        duration: meetingData.duration,
+        agenda: meetingData.agenda
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        toast({
+          title: '미팅 생성 완료',
+          description: '화상 미팅이 성공적으로 생성되었습니다.',
+        });
+        
+        // 폼 초기화
+        setMeetingData({
+          topic: '',
+          date: new Date(),
+          time: format(new Date(), 'HH:mm'),
+          duration: 30,
+          agenda: ''
+        });
+        
+        // 미팅 목록 갱신
+        fetchMeetings();
+        
+        // 스케줄된 미팅 탭으로 이동
+        setActiveTab('scheduled');
+      } else {
+        throw new Error(data.error || '미팅 생성 실패');
+      }
+    } catch (error: any) {
+      console.error('Error creating meeting:', error);
+      toast({
+        title: '미팅 생성 실패',
+        description: error.message || '미팅을 생성하는 중 오류가 발생했습니다.',
+        variant: 'destructive'
+      });
+    } finally {
+      setIsCreating(false);
+    }
+  };
+
+  const joinMeeting = async () => {
+    try {
+      setIsJoining(true);
+
+      if (!meetingId) {
+        toast({
+          title: '미팅 ID 필요',
+          description: '미팅에 참여하려면 미팅 ID를 입력해주세요.',
+          variant: 'destructive'
+        });
+        return;
+      }
+
+      // 토큰 생성 요청
+      const response = await apiRequest('POST', '/api/videocall/join-token', {
+        meetingNumber: meetingId,
+        role: 'participant' // 참가자로 참여
+      });
+
+      const data = await response.json();
+
+      if (data.signature) {
+        // 실제 구현에서는 Zoom Web SDK를 사용하여 미팅에 참여
+        window.open(`https://zoom.us/wc/${meetingId}/join?pwd=&uname=${encodeURIComponent(user?.name || '게스트')}`, '_blank');
+        
+        toast({
+          title: '미팅 참여 중',
+          description: '새 창에서 미팅에 참여합니다.',
+        });
+      } else {
+        throw new Error(data.error || '미팅 참여 실패');
+      }
+    } catch (error: any) {
+      console.error('Error joining meeting:', error);
+      toast({
+        title: '미팅 참여 실패',
+        description: error.message || '미팅에 참여하는 중 오류가 발생했습니다.',
+        variant: 'destructive'
+      });
+    } finally {
+      setIsJoining(false);
+    }
+  };
+
+  const copyMeetingInfo = (meeting: Meeting) => {
+    const meetingInfo = `
+미팅 주제: ${meeting.topic}
+시간: ${format(new Date(meeting.start_time), 'PPP p', { locale: ko })}
+소요 시간: ${meeting.duration}분
+미팅 ID: ${meeting.id}
+비밀번호: ${meeting.password}
+참여 링크: ${meeting.join_url}
+    `.trim();
+
+    navigator.clipboard.writeText(meetingInfo)
+      .then(() => {
+        toast({
+          title: '복사 완료',
+          description: '미팅 정보가 클립보드에 복사되었습니다.',
+        });
+      })
+      .catch((err) => {
+        console.error('클립보드 복사 오류:', err);
+        toast({
+          title: '복사 실패',
+          description: '미팅 정보를 복사하는 중 오류가 발생했습니다.',
+          variant: 'destructive'
+        });
+      });
+  };
+
+  const startMeeting = (meeting: Meeting) => {
+    window.open(meeting.join_url, '_blank');
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="container mx-auto py-8">
+      <h1 className="text-3xl font-bold mb-6">화상 훈련 서비스</h1>
+      
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="w-full grid grid-cols-3">
+          <TabsTrigger value="scheduled">예정된 미팅</TabsTrigger>
+          <TabsTrigger value="create">미팅 생성</TabsTrigger>
+          <TabsTrigger value="join">미팅 참여</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="scheduled" className="mt-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>예정된 미팅</CardTitle>
+              <CardDescription>귀하의 예정된 화상 훈련 세션 목록입니다.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {meetings.length > 0 ? (
+                <div className="space-y-4">
+                  {meetings.map((meeting) => (
+                    <Card key={meeting.id} className="overflow-hidden">
+                      <CardHeader className="bg-muted/50">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <CardTitle>{meeting.topic}</CardTitle>
+                            <CardDescription className="mt-1">
+                              <div className="flex items-center"><CalendarIcon className="w-4 h-4 mr-1" /> {format(new Date(meeting.start_time), 'PPP', { locale: ko })}</div>
+                              <div className="flex items-center mt-1"><Clock className="w-4 h-4 mr-1" /> {format(new Date(meeting.start_time), 'p', { locale: ko })} ({meeting.duration}분)</div>
+                            </CardDescription>
+                          </div>
+                          <Button variant="outline" size="sm" onClick={() => startMeeting(meeting)}>
+                            <Video className="w-4 h-4 mr-2" /> 시작
+                          </Button>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="pt-4 pb-2">
+                        <div className="grid grid-cols-2 gap-2 text-sm">
+                          <div>
+                            <p className="font-medium text-muted-foreground">미팅 ID:</p>
+                            <p>{meeting.id}</p>
+                          </div>
+                          <div>
+                            <p className="font-medium text-muted-foreground">비밀번호:</p>
+                            <p>{meeting.password}</p>
+                          </div>
+                        </div>
+                      </CardContent>
+                      <CardFooter className="flex justify-end gap-2 border-t bg-muted/30 py-2">
+                        <Button variant="ghost" size="sm" onClick={() => copyMeetingInfo(meeting)}>
+                          <Copy className="w-4 h-4 mr-1" /> 정보 복사
+                        </Button>
+                        <Button variant="ghost" size="sm">
+                          <Share2 className="w-4 h-4 mr-1" /> 공유
+                        </Button>
+                      </CardFooter>
+                    </Card>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <Video className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+                  <h3 className="text-lg font-medium mb-2">예정된 미팅이 없습니다</h3>
+                  <p className="text-muted-foreground mb-4">새 화상 훈련 세션을 생성하여 시작하세요.</p>
+                  <Button onClick={() => setActiveTab('create')}>
+                    <Plus className="w-4 h-4 mr-2" /> 미팅 생성
+                  </Button>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="create" className="mt-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>미팅 생성</CardTitle>
+              <CardDescription>새로운 화상 훈련 세션을 생성합니다.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="topic">미팅 제목</Label>
+                <Input 
+                  id="topic" 
+                  name="topic" 
+                  placeholder="반려견 기본 훈련 세션" 
+                  value={meetingData.topic}
+                  onChange={handleInputChange}
+                  required
+                />
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>날짜</Label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant={"outline"}
+                        className={cn(
+                          "w-full justify-start text-left font-normal",
+                          !meetingData.date && "text-muted-foreground"
+                        )}
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {meetingData.date ? format(meetingData.date, 'PPP', { locale: ko }) : <span>날짜 선택</span>}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0">
+                      <Calendar
+                        mode="single"
+                        selected={meetingData.date}
+                        onSelect={handleDateChange}
+                        initialFocus
+                        locale={ko}
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="time">시간</Label>
+                  <Input 
+                    id="time" 
+                    name="time" 
+                    type="time" 
+                    value={meetingData.time}
+                    onChange={handleInputChange}
+                  />
+                </div>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="duration">소요 시간 (분)</Label>
+                <Input 
+                  id="duration" 
+                  name="duration" 
+                  type="number" 
+                  min="15"
+                  max="300"
+                  step="5"
+                  value={meetingData.duration}
+                  onChange={handleInputChange}
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="agenda">안건 (선택사항)</Label>
+                <Input 
+                  id="agenda" 
+                  name="agenda" 
+                  placeholder="이번 세션에서 다룰 내용을 간략히 설명해주세요."
+                  value={meetingData.agenda}
+                  onChange={handleInputChange}
+                />
+              </div>
+            </CardContent>
+            <CardFooter className="flex justify-between">
+              <Button variant="outline" onClick={() => setActiveTab('scheduled')}>취소</Button>
+              <Button onClick={createMeeting} disabled={isCreating || !meetingData.topic}>
+                {isCreating ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                    처리 중...
+                  </>
+                ) : (
+                  <>
+                    <Plus className="w-4 h-4 mr-2" /> 미팅 생성
+                  </>
+                )}
+              </Button>
+            </CardFooter>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="join" className="mt-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>미팅 참여</CardTitle>
+              <CardDescription>미팅 ID를 입력하여 기존 화상 훈련 세션에 참여합니다.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="meetingId">미팅 ID</Label>
+                <Input 
+                  id="meetingId" 
+                  placeholder="예: 123 456 7890" 
+                  value={meetingId}
+                  onChange={(e) => setMeetingId(e.target.value)}
+                />
+              </div>
+              
+              <div className="bg-muted/50 p-4 rounded-md">
+                <h3 className="text-sm font-medium mb-2 flex items-center">
+                  <Monitor className="w-4 h-4 mr-2" />
+                  미팅 참여 전 확인사항
+                </h3>
+                <ul className="text-sm text-muted-foreground space-y-1">
+                  <li>• 카메라와 마이크가 정상적으로 작동하는지 확인해주세요.</li>
+                  <li>• 조용한 환경에서 참여하는 것이 좋습니다.</li>
+                  <li>• 반려견이 편안한 상태에서 참여할 수 있도록 준비해주세요.</li>
+                </ul>
+              </div>
+            </CardContent>
+            <CardFooter>
+              <Button className="w-full" onClick={joinMeeting} disabled={isJoining || !meetingId}>
+                {isJoining ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                    참여 중...
+                  </>
+                ) : (
+                  <>
+                    <UserPlus className="w-4 h-4 mr-2" /> 미팅 참여
+                  </>
+                )}
+              </Button>
+            </CardFooter>
+          </Card>
+        </TabsContent>
+      </Tabs>
+      
+      <div className="mt-12">
+        <h2 className="text-xl font-semibold mb-4">화상 훈련 이용 가이드</h2>
+        <Separator className="mb-6" />
+        
+        <div className="grid md:grid-cols-3 gap-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">1. 미팅 준비</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ul className="space-y-2 text-sm">
+                <li>• 조용하고 밝은 환경을 준비하세요.</li>
+                <li>• 반려견이 편안하게 있을 수 있는 공간을 확보하세요.</li>
+                <li>• 카메라와 마이크가 정상 작동하는지 확인하세요.</li>
+                <li>• 미리 간식이나 장난감을 준비해 두세요.</li>
+              </ul>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">2. 훈련 진행</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ul className="space-y-2 text-sm">
+                <li>• 훈련사의 지시에 따라 천천히 진행하세요.</li>
+                <li>• 반려견이 불안해하면 잠시 휴식을 취하세요.</li>
+                <li>• 질문이 있을 때는 언제든지 물어보세요.</li>
+                <li>• 훈련 후 복습을 위해 세션을 녹화할 수 있습니다.</li>
+              </ul>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">3. 문제 해결</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ul className="space-y-2 text-sm">
+                <li>• 연결 문제: 브라우저를 재시작하거나 다른 브라우저를 사용해보세요.</li>
+                <li>• 오디오 문제: 볼륨 설정과 마이크 권한을 확인하세요.</li>
+                <li>• 비디오 문제: 카메라 권한과 연결 상태를 확인하세요.</li>
+                <li>• 기술적 도움이 필요하면 고객센터로 연락주세요.</li>
+              </ul>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    </div>
+  );
+}

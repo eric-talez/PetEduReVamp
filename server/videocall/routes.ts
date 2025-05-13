@@ -1,8 +1,15 @@
-import { Request, Response } from 'express';
-import { Express } from 'express';
+import { Request as ExpressRequest, Response, Express } from 'express';
 import axios from 'axios';
 import crypto from 'crypto';
 import { IStorage } from '../storage';
+import { z } from 'zod';
+import 'express-session';
+
+// Request 인터페이스 확장
+interface Request extends ExpressRequest {
+  isAuthenticated(): boolean;
+  user?: any;
+}
 
 // Zoom API 연동 관련 상수
 const ZOOM_API_BASE = 'https://api.zoom.us/v2';
