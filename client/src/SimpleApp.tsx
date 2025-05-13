@@ -676,6 +676,11 @@ function UnauthenticatedRoutes() {
             );
           }}
         </Route>
+        <Route path="/help">
+          {() => {
+            return <RedirectHandler to="/help/faq" />;
+          }}
+        </Route>
         <Route path="/help/faq">
           {() => {
             const FAQPage = lazy(() => import('./pages/help/faq'));
