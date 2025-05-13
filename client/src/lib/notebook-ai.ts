@@ -85,7 +85,8 @@ export const generateNotebookEntry = async (
       response_format: { type: "json_object" }
     });
 
-    const result = JSON.parse(response.choices[0].message.content);
+    const resultContent = response.choices[0].message.content || '';
+    const result = JSON.parse(resultContent);
     return result;
   } catch (error) {
     console.error('AI 알림장 생성 오류:', error);
@@ -153,7 +154,8 @@ export const generateTemplateContent = async (
       response_format: { type: "json_object" }
     });
 
-    const result = JSON.parse(response.choices[0].message.content);
+    const resultContent = response.choices[0].message.content || '';
+    const result = JSON.parse(resultContent);
     
     // JSON 응답이 없을 경우를 대비한 기본값 설정
     const title = result.title || `${petName}의 ${getTemplateTitle(templateType)}`;
