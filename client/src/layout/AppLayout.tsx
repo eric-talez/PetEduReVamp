@@ -75,6 +75,8 @@ export function AppLayout({ children }: AppLayoutProps) {
         <div 
           className="fixed inset-0 bg-black bg-opacity-50 z-10"
           onClick={() => setSidebarOpen(false)}
+          aria-hidden="true"
+          role="presentation"
         />
       )}
 
