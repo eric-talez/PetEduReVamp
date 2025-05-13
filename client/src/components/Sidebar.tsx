@@ -175,14 +175,27 @@ export function Sidebar({
     return () => window.removeEventListener('resize', handleResize);
   }, [onToggleExpand]);
 
-  // 기본 메뉴 그룹 (모두 닫힌 상태로 시작)
-  const [menuGroups, setMenuGroups] = useState({
-    main: false,
-    features: false,
-    myLearning: false,
-    trainer: false,
-    institute: false,
-    admin: false
+  // 메뉴 그룹 상태 초기화 - localStorage에서 이전 상태 불러오기
+  const [menuGroups, setMenuGroups] = useState(() => {
+    // localStorage에서 저장된 메뉴 그룹 상태 가져오기
+    const savedMenuGroups = localStorage.getItem('menuGroups');
+    if (savedMenuGroups) {
+      try {
+        return JSON.parse(savedMenuGroups);
+      } catch (e) {
+        console.error('저장된 메뉴 그룹 상태 파싱 오류:', e);
+      }
+    }
+    
+    // 기본값 (모두 닫힌 상태로 시작)
+    return {
+      main: false,
+      features: false,
+      myLearning: false,
+      trainer: false,
+      institute: false,
+      admin: false
+    };
   });
   
   useEffect(() => {
@@ -218,13 +231,21 @@ export function Sidebar({
   };
 
   const toggleMenuGroup = (group: keyof typeof menuGroups) => {
-    console.log(`토글 메뉴 그룹: ${group}, 현재 상태: ${menuGroups[group]}`);
-    setMenuGroups(prev => {
+    console.log(`토글 메뉴 그룹: ${String(group)}, 현재 상태: ${menuGroups[group]}`);
+    setMenuGroups((prev: Record<string, boolean>) => {
       const newState = {
         ...prev,
         [group]: !prev[group]
       };
-      console.log(`메뉴 상태 변경 후: ${group} = ${!prev[group]}`);
+      
+      // localStorage에 저장
+      try {
+        localStorage.setItem('menuGroups', JSON.stringify(newState));
+      } catch (e) {
+        console.error('메뉴 그룹 상태 저장 오류:', e);
+      }
+      
+      console.log(`메뉴 상태 변경 후: ${String(group)} = ${!prev[group]}`);
       return newState;
     });
   };
