@@ -367,12 +367,12 @@ export default function InstituteCoursesPage() {
           id="courseCreateButton"
           onClick={(e) => {
             e.preventDefault();
-            console.log('새 교육 과정 버튼 직접 클릭됨', new Date().toISOString());
+            console.log('강의 추가 버튼 직접 클릭됨', new Date().toISOString());
             handleCreateCourse();
           }}
         >
           <PlusCircle className="mr-2 h-4 w-4" />
-          새 교육 과정
+          강의 추가
         </Button>
         
         {/* 디버깅용 요소 */}

@@ -74,9 +74,9 @@ export function NewCourseDialog({ open, onOpenChange, onSuccess }: NewCourseDial
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle>새 교육 과정 생성</DialogTitle>
+          <DialogTitle>강의 추가</DialogTitle>
           <DialogDescription>
-            새로운 교육 과정 정보를 입력하세요. 나중에 수정할 수 있습니다.
+            새로운 강의 정보를 입력하세요. 나중에 수정할 수 있습니다.
           </DialogDescription>
         </DialogHeader>
         
@@ -184,7 +184,7 @@ export function NewCourseDialog({ open, onOpenChange, onSuccess }: NewCourseDial
           <Button 
             onClick={handleSubmit}
           >
-            과정 생성
+            강의 추가
           </Button>
         </DialogFooter>
       </DialogContent>
