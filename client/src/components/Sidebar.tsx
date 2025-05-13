@@ -8,6 +8,7 @@ import { HelpSection } from "./HelpSection";
 import { StatisticsSection } from "./StatisticsSection";
 import { AccessibleIconButton } from "./AccessibleIconButton";
 import { AccessibleMenuToggle } from "./AccessibleMenuToggle";
+import { AccessibleNavItem } from "./AccessibleNavItem";
 import {
   ChevronDown,
   ChevronRight,
@@ -53,12 +54,12 @@ import {
 } from "lucide-react";
 
 // 사이드바 컨텍스트 생성
-interface SidebarContextType {
+export interface SidebarContextType {
   expanded: boolean;
   toggleSidebar: () => void;
 }
 
-const SidebarContext = createContext<SidebarContextType>({
+export const SidebarContext = createContext<SidebarContextType>({
   expanded: true,
   toggleSidebar: () => {}
 });
@@ -387,7 +388,7 @@ export function Sidebar({
 
                 {menuGroups.main && (
                   <>
-                    <NavItem 
+                    <AccessibleNavItem 
                       href="/" 
                       icon={<Home className="w-5 h-5 mr-2" />} 
                       active={isActive("/")} 
@@ -396,8 +397,8 @@ export function Sidebar({
                         handleItemClick(path);
                       }} 
                       show={true}
-                    >홈</NavItem>
-                    <NavItem 
+                    >홈</AccessibleNavItem>
+                    <AccessibleNavItem 
                       href="/courses" 
                       icon={<GraduationCap className="w-5 h-5 mr-2" />} 
                       active={isActive("/courses")} 
@@ -406,8 +407,8 @@ export function Sidebar({
                         handleItemClick(path);
                       }} 
                       show={true}
-                    >강의 탐색</NavItem>
-                    <NavItem 
+                    >강의 탐색</AccessibleNavItem>
+                    <AccessibleNavItem 
                       href="/trainers" 
                       icon={<UserRoundCheck className="w-5 h-5 mr-2" />} 
                       active={isActive("/trainers")} 
@@ -416,7 +417,7 @@ export function Sidebar({
                         handleItemClick(path);
                       }} 
                       show={true}
-                    >훈련사 찾기</NavItem>
+                    >훈련사 찾기</AccessibleNavItem>
                     <NavItem 
                       href="/locations" 
                       icon={<MapPin className="w-5 h-5 mr-2" />} 
