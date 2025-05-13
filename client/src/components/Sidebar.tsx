@@ -418,7 +418,7 @@ export function Sidebar({
                       }} 
                       show={true}
                     >훈련사 찾기</AccessibleNavItem>
-                    <NavItem 
+                    <AccessibleNavItem 
                       href="/locations" 
                       icon={<MapPin className="w-5 h-5 mr-2" />} 
                       active={isActive("/locations")} 
@@ -428,8 +428,8 @@ export function Sidebar({
                         window.location.href = path;
                       }} 
                       show={true}
-                    >위치 서비스</NavItem>
-                    <NavItem 
+                    >위치 서비스</AccessibleNavItem>
+                    <AccessibleNavItem 
                       href="/video-training" 
                       icon={<Video className="w-5 h-5 mr-2" />} 
                       active={isActive("/video-training")} 
@@ -438,8 +438,8 @@ export function Sidebar({
                         handleItemClick(path);
                       }} 
                       show={true}
-                    >영상 훈련</NavItem>
-                    <NavItem 
+                    >영상 훈련</AccessibleNavItem>
+                    <AccessibleNavItem 
                       href="/video-call" 
                       icon={<VideoIcon className="w-5 h-5 mr-2" />} 
                       active={isActive("/video-call")} 
@@ -449,8 +449,8 @@ export function Sidebar({
                         window.location.href = path;
                       }} 
                       show={true}
-                    >화상 수업</NavItem>
-                    <NavItem 
+                    >화상 수업</AccessibleNavItem>
+                    <AccessibleNavItem 
                       href="/community" 
                       icon={<MessageSquare className="w-5 h-5 mr-2" />} 
                       active={isActive("/community")} 
@@ -460,8 +460,8 @@ export function Sidebar({
                         window.location.href = path;
                       }} 
                       show={true}
-                    >커뮤니티</NavItem>
-                    <NavItem 
+                    >커뮤니티</AccessibleNavItem>
+                    <AccessibleNavItem 
                       href="/events" 
                       icon={<Calendar className="w-5 h-5 mr-2" />} 
                       active={isActive("/events")} 
@@ -471,7 +471,7 @@ export function Sidebar({
                         window.location.href = path;
                       }} 
                       show={true}
-                    >이벤트</NavItem>
+                    >이벤트</AccessibleNavItem>
 
                     <li className="relative">
                       <a 
