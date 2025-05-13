@@ -538,7 +538,7 @@ function LocationPageContent() {
  */
 export default function Locations() {
   return (
-    <div className="container mx-auto py-6 max-w-4xl">
+    <div className="p-6 container mx-auto">
       <h1 className="text-3xl font-bold mb-6">위치 서비스</h1>
       <MapServiceProvider>
         <LocationPageContent />
