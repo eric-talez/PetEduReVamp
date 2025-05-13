@@ -575,7 +575,7 @@ function AuthenticatedRoutes() {
         </Route>
         
         {/* 기관 관리자 메뉴 */}
-        <Route path="/institute/dashboard">
+        <Route path="/institute-dashboard">
           {() => {
             const InstituteAdminHome = lazy(() => import('./pages/institute-admin/InstituteAdminHome'));
             return (
