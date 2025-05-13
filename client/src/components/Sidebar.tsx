@@ -33,7 +33,6 @@ import {
   Bell,
   MapPin,
   ThumbsUp,
-  Puzzle,
   Store,
   LogIn,
   ChevronsLeft,
@@ -757,7 +756,7 @@ export function Sidebar({
                 {/* Trainer Menu - remains largely unchanged */}
                 {showTrainerMenu && (
                   <>
-                    {expanded && (
+                    {expanded ? (
                       <div
                         className="px-3 py-2 mt-6 flex items-center justify-between cursor-pointer"
                         onClick={() => toggleMenuGroup('trainer')}
@@ -766,6 +765,16 @@ export function Sidebar({
                           훈련사 메뉴
                         </h3>
                         {menuGroups.trainer ? <ChevronDown className="h-4 w-4 text-gray-500" /> : <ChevronRight className="h-4 w-4 text-gray-500" />}
+                      </div>
+                    ) : (
+                      <div className="flex justify-center py-2 mt-4">
+                        <button
+                          onClick={() => toggleMenuGroup('trainer')}
+                          className="w-8 h-8 flex items-center justify-center rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                          aria-label="훈련사 메뉴 토글"
+                        >
+                          <UserRoundCheck className="w-5 h-5 text-primary" />
+                        </button>
                       </div>
                     )}
 
@@ -809,7 +818,7 @@ export function Sidebar({
                         </NavItem>
                         <NavItem
                           href="/trainer/referrals"
-                          icon={<Gift className="w-5 h-5 mr-2" />}
+                          icon={<ThumbsUp className="w-5 h-5 mr-2" />}
                           active={isActive("/trainer/referrals")}
                           onClick={handleItemClick}
                           show={true}
@@ -824,7 +833,7 @@ export function Sidebar({
                 {/* Institute Admin Menu - remains largely unchanged */}
                 {showInstituteMenu && (
                   <>
-                    {expanded && (
+                    {expanded ? (
                       <div
                         className="px-3 py-2 mt-6 flex items-center justify-between cursor-pointer"
                         onClick={() => toggleMenuGroup('institute')}
@@ -833,6 +842,16 @@ export function Sidebar({
                           기관 관리자
                         </h3>
                         {menuGroups.institute ? <ChevronDown className="h-4 w-4 text-gray-500" /> : <ChevronRight className="h-4 w-4 text-gray-500" />}
+                      </div>
+                    ) : (
+                      <div className="flex justify-center py-2 mt-4">
+                        <button
+                          onClick={() => toggleMenuGroup('institute')}
+                          className="w-8 h-8 flex items-center justify-center rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                          aria-label="기관 관리자 메뉴 토글"
+                        >
+                          <Building className="w-5 h-5 text-primary" />
+                        </button>
                       </div>
                     )}
 
