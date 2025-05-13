@@ -374,8 +374,8 @@ export function Sidebar({
           </button>
         </div>
 
-        <ScrollArea className={cn("py-4 flex-1 max-h-[calc(100vh-4rem)]", expanded ? "px-3" : "px-2")}>
-          <div className="space-y-1 w-full min-h-min">
+        <ScrollArea className={cn("flex-1", expanded ? "px-3" : "px-2")}>
+          <div className="py-4 space-y-1 w-full min-h-min">
             {!isAuthenticated && (
               <>
                 {expanded ? (
@@ -482,569 +482,85 @@ export function Sidebar({
                         className={cn(
                           "sidebar-link flex items-center py-2 text-sm font-medium rounded-md transition-all duration-200 ease-in-out",
                           expanded ? "px-3" : "px-2 justify-center",
-                          isActive("/shop") ? "bg-primary/10 text-primary" : "text-gray-700 dark:text-gray-200 hover:text-primary dark:hover:text-primary"
+                          "bg-primary/10 text-primary"
                         )}
-                        onClick={(e) => {
-                          // 기본 a 태그 동작(새 창 열기)은 유지하고 추가 로직만 실행
-                          console.log("비인증 사용자가 쇼핑 메뉴 클릭 - 새 창으로 열기");
-                          
-                          // 디버깅 정보
-                          console.log("쇼핑 페이지 새 창 열기:", new Date().toISOString());
-                          console.log("현재 경로:", window.location.pathname);
-                          
-                          if (onClose) onClose();
-                        }}
                       >
-                        <ShoppingBag className="w-5 h-5 mr-2" />
-                        {expanded && <span>쇼핑</span>}
+                        {expanded ? (
+                          <>
+                            <ShoppingBag className="w-5 h-5 mr-2" />
+                            <span>반려견 쇼핑몰</span>
+                          </>
+                        ) : (
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <span>
+                                  <ShoppingBag className="w-5 h-5" aria-label="반려견 쇼핑몰" />
+                                </span>
+                              </TooltipTrigger>
+                              <TooltipContent side="right">
+                                <p>반려견 쇼핑몰</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        )}
                       </a>
                     </li>
 
-                    {/* 도움말 그룹 추가 */}
-                    {expanded && (
-                      <div className="mt-4 px-3 py-2">
-                        <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                          도움말
-                        </h3>
-                      </div>
-                    )}
-
-                    <NavItem 
-                      href="/help/faq" 
-                      icon={<HelpCircle className="w-5 h-5 mr-2" />} 
-                      active={isActive("/help/faq")} 
+                    <AccessibleNavItem 
+                      href="/ai-chatbot" 
+                      icon={<Brain className="w-5 h-5 mr-2" />} 
+                      active={isActive("/ai-chatbot")} 
                       onClick={(path) => {
-                        console.log("비회원이 FAQ 클릭");
-                        window.location.href = path;
+                        console.log("AI 챗봇 메뉴 클릭:", path);
+                        handleItemClick(path);
                       }} 
                       show={true}
-                    >자주 묻는 질문</NavItem>
-
-                    <NavItem 
-                      href="/help/guide" 
-                      icon={<BookOpen className="w-5 h-5 mr-2" />} 
-                      active={isActive("/help/guide")} 
-                      onClick={(path) => {
-                        console.log("비회원이 이용 가이드 클릭");
-                        window.location.href = path;
-                      }} 
-                      show={true}
-                    >이용 가이드</NavItem>
-
-                    <NavItem 
-                      href="/help/about" 
-                      icon={<Users className="w-5 h-5 mr-2" />} 
-                      active={isActive("/help/about")} 
-                      onClick={(path) => {
-                        console.log("비회원이 소개 페이지 클릭");
-                        window.location.href = path;
-                      }} 
-                      show={true}
-                    >소개</NavItem>
-
-                    <NavItem 
-                      href="/help/contact" 
-                      icon={<MessageSquare className="w-5 h-5 mr-2" />} 
-                      active={isActive("/help/contact")} 
-                      onClick={(path) => {
-                        console.log("비회원이 문의하기 클릭");
-                        window.location.href = path;
-                      }} 
-                      show={true}
-                    >문의하기</NavItem>
-
+                    >AI 챗봇</AccessibleNavItem>
                   </>
                 )}
 
-
-              </>
-            )}
-
-            {isAuthenticated && (
-              <>
+                {/* 로그인 버튼 - 비로그인 상태에서만 */}
                 {expanded ? (
-                  <div className="px-3 py-2 flex items-center justify-between cursor-pointer" onClick={() => toggleMenuGroup('main')}>
-                    <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">메인 메뉴</h3>
-                    {menuGroups.main ? <ChevronDown className="h-4 w-4 text-gray-500" /> : <ChevronRight className="h-4 w-4 text-gray-500" />}
+                  <div className="mt-6 px-3">
+                    <a
+                      href="/auth/login"
+                      className="flex items-center justify-center py-2 px-4 bg-primary hover:bg-primary/90 text-white rounded-lg"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        window.location.href = "/auth/login";
+                      }}
+                    >
+                      <LogIn className="w-4 h-4 mr-2" />
+                      <span>로그인</span>
+                    </a>
                   </div>
                 ) : (
-                  <div className="py-2"></div>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <a
+                          href="/auth/login"
+                          className="flex items-center justify-center py-2 px-2 mt-4 bg-primary hover:bg-primary/90 text-white rounded-lg mx-auto w-[48px]"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            window.location.href = "/auth/login";
+                          }}
+                          aria-label="로그인"
+                        >
+                          <LogIn className="w-5 h-5" />
+                        </a>
+                      </TooltipTrigger>
+                      <TooltipContent side="right">
+                        <p>로그인</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 )}
 
-                {menuGroups.main && (
-                  <>
-                    <NavItem href="/" icon={<Home className="w-5 h-5 mr-2" />} active={isActive("/")} onClick={handleItemClick} show={true}>홈</NavItem>
-                    <NavItem href="/dashboard" icon={<LineChart className="w-5 h-5 mr-2" />} active={isActive("/dashboard")} onClick={handleItemClick} show={showDashboardLink}>대시보드</NavItem>
-                    <NavItem href="/courses" icon={<GraduationCap className="w-5 h-5 mr-2" />} active={isActive("/courses")} onClick={handleItemClick} show={true}>강의 탐색</NavItem>
-                    <NavItem href="/trainers" icon={<UserRoundCheck className="w-5 h-5 mr-2" />} active={isActive("/trainers")} onClick={handleItemClick} show={true}>훈련사 찾기</NavItem>
-                    <NavItem href="/locations" icon={<MapPin className="w-5 h-5 mr-2" />} active={isActive("/locations")} onClick={handleItemClick} show={true}>위치 서비스</NavItem>
-                    <NavItem href="/community" icon={<MessageSquare className="w-5 h-5 mr-2" />} active={isActive("/community")} onClick={handleItemClick} show={true}>커뮤니티</NavItem>
-                    <NavItem href="/events" icon={<Calendar className="w-5 h-5 mr-2" />} active={isActive("/events")} onClick={handleItemClick} show={true}>이벤트</NavItem>
-                    <li className="relative">
-                      <a 
-                        href="https://replit.com/join/wshpfpjewg-hnblgkjw" 
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className={cn(
-                          "sidebar-link flex items-center py-2 text-sm font-medium rounded-md transition-all duration-200 ease-in-out",
-                          expanded ? "px-3" : "px-2 justify-center",
-                          isActive("/shop") ? "bg-primary/10 text-primary" : "text-gray-700 dark:text-gray-200 hover:text-primary dark:hover:text-primary"
-                        )}
-                        onClick={(e) => {
-                          // 기본 a 태그 동작(새 창 열기)은 유지하고 추가 로직만 실행
-                          console.log("인증된 사용자가 쇼핑 메뉴 클릭 - 새 창으로 열기");
-                          
-                          // 디버깅 정보
-                          console.log("쇼핑 페이지 새 창으로 열기 (인증사용자):", new Date().toISOString());
-                          console.log("현재 경로:", window.location.pathname);
-                          
-                          if (onClose) onClose();
-                        }}
-                      >
-                        <ShoppingBag className="w-5 h-5 mr-2" />
-                        {expanded && <span>쇼핑</span>}
-                      </a>
-                    </li>
-                  </>
-                )}
-
-
-                {/*  Features Menu -  remains largely unchanged */}
-                {expanded ? (
-                  <div
-                    className="px-3 py-2 mt-6 flex items-center justify-between cursor-pointer"
-                    onClick={() => toggleMenuGroup('features')}
-                  >
-                    <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                      주요 기능
-                    </h3>
-                    {menuGroups.features ? <ChevronDown className="h-4 w-4 text-gray-500" /> : <ChevronRight className="h-4 w-4 text-gray-500" />}
-                  </div>
-                ) : (
-                  <div className="flex justify-center py-2 mt-4">
-                    <button 
-                      onClick={() => toggleMenuGroup('features')}
-                      className="w-8 h-8 flex items-center justify-center rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-                      aria-label="주요 기능 메뉴 토글"
-                    >
-                      <GraduationCap className="w-5 h-5 text-primary" />
-                    </button>
-                  </div>
-                )}
-
-                {menuGroups.features && (
-                  <>
-                    <NavItem
-                      href="/video-training"
-                      icon={<Video className="w-5 h-5 mr-2" />}
-                      active={isActive("/video-training")}
-                      onClick={handleItemClick}
-                      show={true}
-                    >
-                      영상 훈련
-                    </NavItem>
-                    <NavItem
-                      href="/video-call"
-                      icon={<VideoIcon className="w-5 h-5 mr-2" />}
-                      active={isActive("/video-call")}
-                      onClick={handleItemClick}
-                      show={true}
-                    >
-                      화상 훈련
-                    </NavItem>
-                    
-                    <NavItem
-                      href="/ai-analysis"
-                      icon={<Sparkles className="w-5 h-5 mr-2" />}
-                      active={isActive("/ai-analysis")}
-                      onClick={handleItemClick}
-                      show={true}
-                    >
-                      AI 분석
-                    </NavItem>
-                    <NavItem
-                      href="/messages"
-                      icon={<MessageSquare className="w-5 h-5 mr-2" />}
-                      active={isActive("/messages")}
-                      onClick={handleItemClick}
-                      show={true}
-                    >
-                      메시지
-                    </NavItem>
-                    <NavItem
-                      href="/notifications"
-                      icon={<Bell className="w-5 h-5 mr-2" />}
-                      active={isActive("/notifications") || isActive("/notifications/system") || isActive("/notifications/training") || isActive("/notifications/payment") || isActive("/notifications/event")}
-                      onClick={handleItemClick}
-                      show={true}
-                    >
-                      알림장
-                    </NavItem>
-
-                  </>
-                )}
-
-                {/* My Learning Menu - remains largely unchanged */}
-                {expanded ? (
-                  <div
-                    className="px-3 py-2 mt-6 flex items-center justify-between cursor-pointer"
-                    onClick={() => toggleMenuGroup('myLearning')}
-                  >
-                    <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                      내 학습
-                    </h3>
-                    {menuGroups.myLearning ? <ChevronDown className="h-4 w-4 text-gray-500" /> : <ChevronRight className="h-4 w-4 text-gray-500" />}
-                  </div>
-                ) : (
-                  <div className="flex justify-center py-2 mt-4">
-                    <button
-                      onClick={() => toggleMenuGroup('myLearning')}
-                      className="w-8 h-8 flex items-center justify-center rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-                      aria-label="내 학습 메뉴 토글"
-                    >
-                      <BookOpen className="w-5 h-5 text-primary" />
-                    </button>
-                  </div>
-                )}
-
-                {menuGroups.myLearning && (
-                  <>
-                    <NavItem
-                      href="/my-courses"
-                      icon={<BookOpen className="w-5 h-5 mr-2" />}
-                      active={isActive("/my-courses")}
-                      onClick={handleItemClick}
-                      show={true}
-                    >
-                      내 강의실
-                    </NavItem>
-                    <NavItem
-                      href="/my-pets"
-                      icon={<PawPrint className="w-5 h-5 mr-2" />}
-                      active={isActive("/my-pets")}
-                      onClick={handleItemClick}
-                      show={true}
-                    >
-                      내 반려견
-                    </NavItem>
-                    <NavItem
-                      href="/notebook/1"
-                      icon={<Edit className="w-5 h-5 mr-2" />}
-                      active={isActive("/notebook")}
-                      onClick={handleItemClick}
-                      show={showPetOwnerMenu}
-                    >
-                      알림장
-                    </NavItem>
-                    <NavItem
-                      href="/calendar"
-                      icon={<Calendar className="w-5 h-5 mr-2" />}
-                      active={isActive("/calendar")}
-                      onClick={handleItemClick}
-                      show={true}
-                    >
-                      교육 일정
-                    </NavItem>
-                    <NavItem
-                      href="/certificates"
-                      icon={<Award className="w-5 h-5 mr-2" />}
-                      active={isActive("/certificates")}
-                      onClick={handleItemClick}
-                      show={true}
-                    >
-                      자격증 및 수료증
-                    </NavItem>
-                  </>
-                )}
-
-                {/* Trainer Menu - remains largely unchanged */}
-                {showTrainerMenu && (
-                  <>
-                    {expanded ? (
-                      <div
-                        className="px-3 py-2 mt-6 flex items-center justify-between cursor-pointer"
-                        onClick={() => toggleMenuGroup('trainer')}
-                      >
-                        <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                          훈련사 메뉴
-                        </h3>
-                        {menuGroups.trainer ? <ChevronDown className="h-4 w-4 text-gray-500" /> : <ChevronRight className="h-4 w-4 text-gray-500" />}
-                      </div>
-                    ) : (
-                      <div className="flex justify-center py-2 mt-4">
-                        <button
-                          onClick={() => toggleMenuGroup('trainer')}
-                          className="w-8 h-8 flex items-center justify-center rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-                          aria-label="훈련사 메뉴 토글"
-                        >
-                          <UserRoundCheck className="w-5 h-5 text-primary" />
-                        </button>
-                      </div>
-                    )}
-
-                    {menuGroups.trainer && (
-                      <>
-                        <NavItem
-                          href="/trainer/dashboard"
-                          icon={<Presentation className="w-5 h-5 mr-2" />}
-                          active={isActive("/trainer/dashboard")}
-                          onClick={handleItemClick}
-                          show={true}
-                        >
-                          훈련사 대시보드
-                        </NavItem>
-                        <NavItem
-                          href="/trainer/courses"
-                          icon={<Edit className="w-5 h-5 mr-2" />}
-                          active={isActive("/trainer/courses")}
-                          onClick={handleItemClick}
-                          show={true}
-                        >
-                          강의 관리
-                        </NavItem>
-                        <NavItem
-                          href="/trainer/students"
-                          icon={<Users className="w-5 h-5 mr-2" />}
-                          active={isActive("/trainer/students")}
-                          onClick={handleItemClick}
-                          show={true}
-                        >
-                          수강생 관리
-                        </NavItem>
-                        <NavItem
-                          href="/trainer/stats"
-                          icon={<LineChart className="w-5 h-5 mr-2" />}
-                          active={isActive("/trainer/stats")}
-                          onClick={handleItemClick}
-                          show={true}
-                        >
-                          통계 및 수익
-                        </NavItem>
-                        <NavItem
-                          href="/trainer/referrals"
-                          icon={<ThumbsUp className="w-5 h-5 mr-2" />}
-                          active={isActive("/trainer/referrals")}
-                          onClick={handleItemClick}
-                          show={true}
-                        >
-                          추천 관리
-                        </NavItem>
-                      </>
-                    )}
-                  </>
-                )}
-
-                {/* Institute Admin Menu - remains largely unchanged */}
-                {showInstituteMenu && (
-                  <>
-                    {expanded ? (
-                      <div
-                        className="px-3 py-2 mt-6 flex items-center justify-between cursor-pointer"
-                        onClick={() => toggleMenuGroup('institute')}
-                      >
-                        <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                          기관 관리자
-                        </h3>
-                        {menuGroups.institute ? <ChevronDown className="h-4 w-4 text-gray-500" /> : <ChevronRight className="h-4 w-4 text-gray-500" />}
-                      </div>
-                    ) : (
-                      <div className="flex justify-center py-2 mt-4">
-                        <button
-                          onClick={() => toggleMenuGroup('institute')}
-                          className="w-8 h-8 flex items-center justify-center rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-                          aria-label="기관 관리자 메뉴 토글"
-                        >
-                          <Building className="w-5 h-5 text-primary" />
-                        </button>
-                      </div>
-                    )}
-
-                    {menuGroups.institute && (
-                      <>
-                        <NavItem
-                          href="/institute/dashboard"
-                          icon={<Presentation className="w-5 h-5 mr-2" />}
-                          active={isActive("/institute/dashboard")}
-                          onClick={handleItemClick}
-                          show={true}
-                        >
-                          기관 대시보드
-                        </NavItem>
-                        <NavItem
-                          href="/institute/trainers"
-                          icon={<UserRoundCheck className="w-5 h-5 mr-2" />}
-                          active={isActive("/institute/trainers")}
-                          onClick={handleItemClick}
-                          show={true}
-                        >
-                          훈련사 관리
-                        </NavItem>
-                        <NavItem
-                          href="/institute/courses"
-                          icon={<Edit className="w-5 h-5 mr-2" />}
-                          active={isActive("/institute/courses")}
-                          onClick={handleItemClick}
-                          show={true}
-                        >
-                          교육과정 관리
-                        </NavItem>
-                        <NavItem
-                          href="/institute/students"
-                          icon={<Users className="w-5 h-5 mr-2" />}
-                          active={isActive("/institute/students")}
-                          onClick={handleItemClick}
-                          show={true}
-                        >
-                          수강생 관리
-                        </NavItem>
-                        <NavItem
-                          href="/institute/stats"
-                          icon={<AreaChart className="w-5 h-5 mr-2" />}
-                          active={isActive("/institute/stats")}
-                          onClick={handleItemClick}
-                          show={true}
-                        >
-                          통계 및 수익
-                        </NavItem>
-                        <NavItem
-                          href="/institute/pet-assignments"
-                          icon={<PawPrint className="w-5 h-5 mr-2" />}
-                          active={isActive("/institute/pet-assignments")}
-                          onClick={handleItemClick}
-                          show={true}
-                        >
-                          반려견-훈련사 매칭
-                        </NavItem>
-                        <NavItem
-                          href="/institute/settings"
-                          icon={<Cog className="w-5 h-5 mr-2" />}
-                          active={isActive("/institute/settings")}
-                          onClick={handleItemClick}
-                          show={true}
-                        >
-                          기관 설정
-                        </NavItem>
-                      </>
-                    )}
-                  </>
-                )}
-
-                {/* Admin Menu - remains largely unchanged */}
-                {showAdminMenu && (
-                  <>
-                    {expanded ? (
-                      <div
-                        className="px-3 py-2 mt-6 flex items-center justify-between cursor-pointer"
-                        onClick={() => toggleMenuGroup('admin')}
-                      >
-                        <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                          시스템 관리자
-                        </h3>
-                        {menuGroups.admin ? <ChevronDown className="h-4 w-4 text-gray-500" /> : <ChevronRight className="h-4 w-4 text-gray-500" />}
-                      </div>
-                    ) : (
-                      <div className="flex justify-center py-2 mt-4">
-                        <button
-                          onClick={() => toggleMenuGroup('admin')}
-                          className="w-8 h-8 flex items-center justify-center rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-                          aria-label="시스템 관리자 메뉴 토글"
-                        >
-                          <UserCog className="w-5 h-5 text-primary" />
-                        </button>
-                      </div>
-                    )}
-
-                    {menuGroups.admin && (
-                      <>
-                        <NavItem
-                          href="/admin/dashboard"
-                          icon={<Presentation className="w-5 h-5 mr-2" />}
-                          active={isActive("/admin/dashboard")}
-                          onClick={handleItemClick}
-                          show={true}
-                        >
-                          관리자 대시보드
-                        </NavItem>
-                        <NavItem
-                          href="/admin/users"
-                          icon={<UserCog className="w-5 h-5 mr-2" />}
-                          active={isActive("/admin/users")}
-                          onClick={handleItemClick}
-                          show={true}
-                        >
-                          사용자 관리
-                        </NavItem>
-                        <NavItem
-                          href="/admin/institutes"
-                          icon={<Building className="w-5 h-5 mr-2" />}
-                          active={isActive("/admin/institutes")}
-                          onClick={handleItemClick}
-                          show={true}
-                        >
-                          기관 관리
-                        </NavItem>
-                        <NavItem
-                          href="/admin/courses"
-                          icon={<Edit className="w-5 h-5 mr-2" />}
-                          active={isActive("/admin/courses")}
-                          onClick={handleItemClick}
-                          show={true}
-                        >
-                          강의 관리
-                        </NavItem>
-                        <NavItem
-                          href="/admin/reports"
-                          icon={<CheckSquare className="w-5 h-5 mr-2" />}
-                          active={isActive("/admin/reports")}
-                          onClick={handleItemClick}
-                          show={true}
-                        >
-                          신고 관리
-                        </NavItem>
-                        <NavItem
-                          href="/admin/settings"
-                          icon={<Wrench className="w-5 h-5 mr-2" />}
-                          active={isActive("/admin/settings")}
-                          onClick={handleItemClick}
-                          show={true}
-                        >
-                          시스템 설정
-                        </NavItem>
-                        <NavItem
-                          href="/admin/shop"
-                          icon={<Store className="w-5 h-5 mr-2" />}
-                          active={isActive("/admin/shop")}
-                          onClick={handleItemClick}
-                          show={true}
-                        >
-                          쇼핑몰 관리
-                        </NavItem>
-                        <NavItem
-                          href="/admin/banners"
-                          icon={<BarChart2 className="w-5 h-5 mr-2" />}
-                          active={isActive("/admin/banners")}
-                          onClick={handleItemClick}
-                          show={true}
-                        >
-                          배너 관리
-                        </NavItem>
-                        <NavItem
-                          href="/admin/commission"
-                          icon={<DollarSign className="w-5 h-5 mr-2" />}
-                          active={isActive("/admin/commission")}
-                          onClick={handleItemClick}
-                          show={true}
-                        >
-                          커미션 설정
-                        </NavItem>
-                      </>
-                    )}
-                  </>
-                )}
-
-                {/* 축소된 상태에서는 물음표 아이콘에 툴팁 적용 */}
+                {/* Help Section 컴포넌트 통합 */}
                 {!expanded ? (
-                  <div className="mt-6 px-2">
+                  <div className="mt-4 flex flex-col items-center space-y-4">
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger asChild>
@@ -1079,27 +595,27 @@ export function Sidebar({
             <div className="mt-auto mb-4 px-3">
               <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3 text-xs">
                 <div className="flex items-center justify-between">
-                    <span className="text-gray-600 dark:text-gray-300">실시간 이용자</span>
-                    <span className="font-semibold text-primary">2,458명</span>
-                  </div>
-                  <div className="flex items-center justify-between mt-2">
-                    <span className="text-gray-600 dark:text-gray-300">사용자 분포</span>
-                    <span className="font-semibold text-blue-500">반려인 75%</span>
-                  </div>
-                  <div className="flex items-center justify-between mt-2">
-                    <span className="text-gray-600 dark:text-gray-300">평균 체류시간</span>
-                    <span className="font-semibold text-green-500">32분</span>
-                  </div>
+                  <span className="text-gray-600 dark:text-gray-300">실시간 이용자</span>
+                  <span className="font-semibold text-primary">2,458명</span>
+                </div>
+                <div className="flex items-center justify-between mt-2">
+                  <span className="text-gray-600 dark:text-gray-300">총 반려견</span>
+                  <span className="font-semibold text-primary">12,672마리</span>
+                </div>
+                <div className="flex items-center justify-between mt-2">
+                  <span className="text-gray-600 dark:text-gray-300">총 수료증</span>
+                  <span className="font-semibold text-primary">8,945개</span>
                 </div>
               </div>
-            ) : (
-              <div className="mt-auto mb-4 px-2">
-                <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-2 flex justify-center">
-                  <Activity className="w-5 h-5 text-primary" aria-label="서비스 현황" />
-                </div>
+            </div>
+          ) : (
+            <div className="mt-auto mb-4 px-2">
+              <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-2 flex justify-center">
+                <Activity className="w-5 h-5 text-primary" aria-label="서비스 현황" />
               </div>
-            )
-          )}
+            </div>
+          )
+        )}
       </div>
     </SidebarContext.Provider>
   );
