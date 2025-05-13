@@ -109,10 +109,11 @@ export function HelpSection({ expanded, handleItemClick }: HelpSectionProps) {
             <TooltipTrigger asChild>
               <a 
                 href="/help/faq"
-                className="bg-gray-100 dark:bg-gray-800 rounded-lg p-2 flex justify-center cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                className="sidebar-link bg-gray-100 dark:bg-gray-800 rounded-lg p-2 flex justify-center cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
                 onClick={(e) => {
                   e.preventDefault();
                   console.log("접힌 상태에서 도움말 아이콘 클릭 - 개선된 버전");
+                  // 중요: setLocation을 직접 호출하지 않고 항상 전달받은 handleItemClick 사용
                   handleItemClick('/help/faq');
                 }}
                 aria-label="도움말"
