@@ -136,20 +136,9 @@ export default function Notebook() {
   const [selectedEntry, setSelectedEntry] = useState<NotebookEntry | null>(null);
   const [showEntryDetail, setShowEntryDetail] = useState(false);
   const [showNewEntryDialog, setShowNewEntryDialog] = useState(false);
-  const [newEntryForm, setNewEntryForm] = useState({
-    title: '',
-    content: '',
-    petId: 0,
-    mood: 'happy' as 'happy' | 'sad' | 'neutral' | 'excited' | 'tired',
-    taggedItems: [] as string[],
-    photos: [] as string[],
-    videos: [] as string[],
-    activities: {} as Activity
-  });
-  const [mediaPreview, setMediaPreview] = useState<{photos: string[], videos: string[]}>({photos: [], videos: []});
   const [showTemplateDialog, setShowTemplateDialog] = useState(false);
-  const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [selectedTemplate, setSelectedTemplate] = useState<TemplateType | null>(null);
+  const [tagInput, setTagInput] = useState('');
   const [commentText, setCommentText] = useState('');
   const [pets, setPets] = useState<Pet[]>([]);
   const [isEditMode, setIsEditMode] = useState(false);
@@ -158,7 +147,6 @@ export default function Notebook() {
   const [showMediaViewer, setShowMediaViewer] = useState(false);
   const [mediaViewerIndex, setMediaViewerIndex] = useState(0);
   const [mediaViewerFiles, setMediaViewerFiles] = useState<{type: 'photo' | 'video', url: string}[]>([]);
-  const [useAIMode, setUseAIMode] = useState(false);
   
   useEffect(() => {
     const loadData = async () => {
