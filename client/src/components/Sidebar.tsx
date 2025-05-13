@@ -208,18 +208,19 @@ export function Sidebar({
     
     console.log('권한 체크 - 기관 관리자:', isInstituteAdmin, '관리자:', isAdmin, '훈련사:', isTrainer);
     
-    // 명시적으로 모든 값 설정
-    const updatedMenuGroups = {
-      main: true,
-      features: true,
-      myLearning: true,
-      trainer: isTrainer || isAdmin,
-      institute: isInstituteAdmin || isAdmin,
-      admin: isAdmin
-    };
-    
-    console.log('메뉴 그룹 업데이트:', updatedMenuGroups);
-    setMenuGroups(updatedMenuGroups);
+    // 기존 menuGroups 값 가져오기
+    setMenuGroups((prevGroups: Record<string, boolean>) => {
+      // 권한에 따른 값만 업데이트
+      const updatedMenuGroups = {
+        ...prevGroups,
+        trainer: isTrainer || isAdmin,
+        institute: isInstituteAdmin || isAdmin,
+        admin: isAdmin
+      };
+      
+      console.log('메뉴 그룹 업데이트:', updatedMenuGroups);
+      return updatedMenuGroups;
+    });
   }, [userRole]);
 
   const toggleSidebar = () => {
@@ -315,21 +316,24 @@ export function Sidebar({
     if (path === '/shop') {
       console.log('쇼핑 페이지를 새 창에서 열기');
       window.open('https://replit.com/join/wshpfpjewg-hnblgkjw', '_blank', 'noopener,noreferrer');
-      if (onClose) onClose();
+      // 모바일 화면에서만 사이드바 닫기
+      if (onClose && window.innerWidth < 768) onClose();
       return;
     }
 
     if (path in specialRoutes) {
       console.log(`${specialRoutes[path]} 페이지로 이동 중...`);
       window.location.href = path;
-      if (onClose) onClose();
+      // 모바일 화면에서만 사이드바 닫기
+      if (onClose && window.innerWidth < 768) onClose();
       return;
     }
 
-    // 일반 페이지 라우팅
+    // 일반 페이지 라우팅 - 모바일 화면에서만 사이드바 닫기
     console.log('페이지 이동:', path);
     window.location.href = path;
-    if (onClose) onClose();
+    // 모바일 화면에서만 사이드바 닫기 (창 크기가 작을 때)
+    if (onClose && window.innerWidth < 768) onClose();
   };
 
   const contextValue = {
@@ -346,20 +350,7 @@ export function Sidebar({
   const showBasicMenu = true; // 모든 사용자가 접근 가능한 메뉴
   const isPetOwner = userRole === 'pet-owner';
   
-  // 명시적으로 메뉴 그룹 상태 업데이트 - 사용자 역할 변경 시
-  useEffect(() => {
-    if (userRole) {
-      const updatedGroups = {
-        ...menuGroups,
-        trainer: userRole === 'trainer' || userRole === 'admin',
-        institute: userRole === 'institute-admin' || userRole === 'admin', 
-        admin: userRole === 'admin'
-      };
-      
-      console.log('사용자 역할에 따른 메뉴 그룹 업데이트:', updatedGroups);
-      setMenuGroups(updatedGroups);
-    }
-  }, [userRole]);
+  // 이 useEffect는 중복되므로 제거 (위에서 이미 처리됨)
   
   console.log('메뉴 표시 상태 - 기관 관리자 메뉴:', showInstituteMenu, '(역할:', userRole, ')');
   console.log('메뉴 그룹 상태:', menuGroups);
