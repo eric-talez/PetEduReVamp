@@ -171,7 +171,17 @@ export function Sidebar({
   };
 
   // 메뉴 그룹 상태 (사이드바 축소/확장과 독립적으로 유지)
-  const [menuGroups, setMenuGroups] = useState(defaultMenuGroupsState);
+  // 로컬 스토리지에서 메뉴 그룹 상태 복원 또는 기본값 사용
+  const [menuGroups, setMenuGroups] = useState(() => {
+    try {
+      // 로컬 스토리지에서 저장된 메뉴 상태 가져오기
+      const savedState = localStorage.getItem('menuGroupsState');
+      return savedState ? JSON.parse(savedState) : defaultMenuGroupsState;
+    } catch (e) {
+      console.error('로컬 스토리지에서 메뉴 상태 복원 실패:', e);
+      return defaultMenuGroupsState;
+    }
+  });
 
   useEffect(() => {
     const handleResize = () => {
@@ -239,12 +249,21 @@ export function Sidebar({
 
   const toggleMenuGroup = (group: keyof typeof menuGroups) => {
     console.log(`토글 메뉴 그룹: ${group}, 현재 상태: ${menuGroups[group]}`);
+    
     setMenuGroups(prev => {
       const newState = {
         ...prev,
         [group]: !prev[group]
       };
-      console.log(`메뉴 상태 변경 후: ${group} = ${!prev[group]}`);
+      
+      // 로컬 스토리지에 메뉴 그룹 상태 저장
+      try {
+        localStorage.setItem('menuGroupsState', JSON.stringify(newState));
+        console.log(`메뉴 상태 변경 후 저장: ${group} = ${!prev[group]}`);
+      } catch (e) {
+        console.error('로컬 스토리지에 메뉴 상태 저장 실패:', e);
+      }
+      
       return newState;
     });
   };
