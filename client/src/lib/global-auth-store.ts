@@ -6,8 +6,9 @@
  * - 이벤트 발행/구독 패턴으로 실시간 상태 공유
  */
 
-// shared/schema.ts의 UserRole 타입 사용 (타입 일관성 유지)
-import { UserRole } from '@shared/schema';
+// UserRole 타입을 직접 가져오는 대신 형식만 재정의
+// 실제 타입은 shared/schema.ts에서 가져와서 사용
+import type { UserRole } from '@shared/schema';
 
 // 인증 상태 인터페이스
 export interface AuthState {

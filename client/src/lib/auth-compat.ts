@@ -8,7 +8,8 @@
 
 // 전역 인증 상태 관리 기능 사용
 import { useGlobalAuth, initGlobalAuthListener } from '@/hooks/useGlobalAuth';
-import type { AuthState, UserRole } from '@/lib/global-auth-store';
+import type { AuthState } from '@/lib/global-auth-store';
+import type { UserRole } from '@shared/schema';
 
 // 초기화 함수 호출
 initGlobalAuthListener();
