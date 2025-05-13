@@ -33,9 +33,18 @@ interface Pet {
   avatar?: string;
   breed: string;
 }
+
+interface PetOwner {
+  id: number;
+  name: string;
+  email?: string;
+  petIds?: number[]; // 소유한 반려동물 ID 목록
+}
+
 import { useToast } from '@/hooks/use-toast';
 import ActivityRecorder, { Activity } from './ActivityRecorder';
 import { TemplateType } from './TemplateSelector';
+import { useAuth } from '@/lib/auth';
 
 interface NotebookDialogProps {
   open: boolean;

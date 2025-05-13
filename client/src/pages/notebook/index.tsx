@@ -88,6 +88,12 @@ interface NotebookEntry {
   comments: Comment[];
   taggedItems: string[];
   activities?: Activity;
+  authorId?: number;      // 작성자 ID
+  authorName?: string;    // 작성자 이름 (훈련사 또는 견주 이름)
+  authorRole?: string;    // 작성자 역할 (trainer, pet-owner 등)
+  ownerId?: number;       // 견주 ID (훈련사가 작성한 경우)
+  ownerName?: string;     // 견주 이름 (훈련사가 작성한 경우)
+  isShared?: boolean;     // 공유된 알림장인지 여부
 }
 
 interface Comment {
