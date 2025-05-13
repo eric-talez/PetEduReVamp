@@ -59,7 +59,7 @@ export default function ActivityRecorder({
 }: ActivityRecorderProps) {
   const [activeTab, setActiveTab] = useState<string>('meal');
 
-  const handleMealChange = (field: keyof typeof value.meal, checked: boolean | string) => {
+  const handleMealChange = (field: string, checked: boolean | string) => {
     if (readOnly) return;
     
     const newValue = { ...value };
@@ -68,15 +68,15 @@ export default function ActivityRecorder({
     }
     
     if (field === 'custom') {
-      newValue.meal!.custom = checked as string;
-    } else {
-      newValue.meal![field] = checked as boolean;
+      newValue.meal.custom = checked as string;
+    } else if (field === 'breakfast' || field === 'lunch' || field === 'dinner' || field === 'snack' || field === 'water') {
+      (newValue.meal as any)[field] = checked as boolean;
     }
     
     onChange(newValue);
   };
   
-  const handlePottyChange = (field: keyof typeof value.potty, checked: boolean | string | number) => {
+  const handlePottyChange = (field: string, checked: boolean | string | number) => {
     if (readOnly) return;
     
     const newValue = { ...value };
@@ -88,14 +88,14 @@ export default function ActivityRecorder({
       newValue.potty.quality = checked as 'good' | 'normal' | 'bad';
     } else if (field === 'count') {
       newValue.potty.count = checked as number;
-    } else {
-      newValue.potty[field] = checked as boolean;
+    } else if (field === 'pee' || field === 'poop') {
+      (newValue.potty as any)[field] = checked as boolean;
     }
     
     onChange(newValue);
   };
   
-  const handleWalkChange = (field: keyof typeof value.walk, checked: boolean | number) => {
+  const handleWalkChange = (field: string, checked: boolean | number) => {
     if (readOnly) return;
     
     const newValue = { ...value };
@@ -104,15 +104,15 @@ export default function ActivityRecorder({
     }
     
     if (field === 'duration' || field === 'distance') {
-      newValue.walk[field] = checked as number;
-    } else {
-      newValue.walk[field] = checked as boolean;
+      (newValue.walk as any)[field] = checked as number;
+    } else if (field === 'morning' || field === 'afternoon' || field === 'evening') {
+      (newValue.walk as any)[field] = checked as boolean;
     }
     
     onChange(newValue);
   };
   
-  const handleTrainingChange = (field: keyof typeof value.training, checked: boolean | string) => {
+  const handleTrainingChange = (field: string, checked: boolean | string) => {
     if (readOnly) return;
     
     const newValue = { ...value };
@@ -122,14 +122,14 @@ export default function ActivityRecorder({
     
     if (field === 'custom') {
       newValue.training.custom = checked as string;
-    } else {
-      newValue.training[field] = checked as boolean;
+    } else if (field === 'sit' || field === 'stay' || field === 'come' || field === 'down' || field === 'paw') {
+      (newValue.training as any)[field] = checked as boolean;
     }
     
     onChange(newValue);
   };
   
-  const handlePlayChange = (field: keyof typeof value.play, checked: boolean | string) => {
+  const handlePlayChange = (field: string, checked: boolean | string) => {
     if (readOnly) return;
     
     const newValue = { ...value };
@@ -139,8 +139,8 @@ export default function ActivityRecorder({
     
     if (field === 'custom') {
       newValue.play.custom = checked as string;
-    } else {
-      newValue.play[field] = checked as boolean;
+    } else if (field === 'fetch' || field === 'tug' || field === 'chase' || field === 'puzzle') {
+      (newValue.play as any)[field] = checked as boolean;
     }
     
     onChange(newValue);

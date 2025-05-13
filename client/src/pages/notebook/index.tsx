@@ -517,7 +517,10 @@ export default function Notebook() {
                     <Calendar
                       mode="single"
                       selected={filterDate ?? undefined}
-                      onSelect={(date) => setFilterDate(date ?? null)}
+                      onSelect={(date: Date | undefined) => {
+                        if (date instanceof Date) setFilterDate(date);
+                        else setFilterDate(null);
+                      }}
                       locale={ko}
                     />
                   </PopoverContent>
