@@ -383,7 +383,7 @@ export default function MenuManagement() {
 
   // 그룹 활성화 토글
   const toggleGroupActive = (groupId: string, currentState: boolean) => {
-    const updatedGroups = menuConfig.groups.map(group => 
+    const updatedGroups = menuConfig.groups.map((group: MenuGroup) => 
       group.id === groupId ? { ...group, isActive: !currentState } : group
     );
     
@@ -399,7 +399,7 @@ export default function MenuManagement() {
 
   // 아이템 활성화 토글
   const toggleItemActive = (itemId: string, currentState: boolean) => {
-    const updatedItems = menuConfig.items.map(item => 
+    const updatedItems = menuConfig.items.map((item: MenuItem) => 
       item.id === itemId ? { ...item, isActive: !currentState } : item
     );
     
@@ -670,7 +670,7 @@ export default function MenuManagement() {
                         <TableCell className="font-medium">{group.title}</TableCell>
                         <TableCell>{group.icon}</TableCell>
                         <TableCell>
-                          {group.roles.map(role => {
+                          {group.roles.map((role: string) => {
                             const roleOption = roleOptions.find(r => r.value === role);
                             return (
                               <span 
