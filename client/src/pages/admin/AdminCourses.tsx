@@ -592,9 +592,11 @@ export default function AdminCourses() {
   
   // 새 강의 추가 모드
   const handleAddCourse = () => {
+    console.log('관리자 페이지 - 강의 추가 버튼 클릭됨', new Date().toISOString());
     setSelectedCourse(null);
     setModalMode('add');
     setShowCourseModal(true);
+    console.log('Modal 상태 변경됨:', modalMode, showCourseModal);
   };
   
   // 커리큘럼 편집 모드
@@ -990,7 +992,15 @@ export default function AdminCourses() {
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold tracking-tight">강의 관리</h1>
         <div className="flex items-center space-x-2">
-          <Button onClick={handleAddCourse} variant="default">
+          <Button 
+            id="adminCourseAddButton"
+            onClick={(e) => {
+              e.preventDefault();
+              console.log('관리자 강의추가 버튼 직접 클릭됨');
+              handleAddCourse();
+            }} 
+            variant="default"
+          >
             <PlusCircle className="mr-2 h-4 w-4" />
             강의 추가
           </Button>
