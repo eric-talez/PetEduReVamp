@@ -1032,7 +1032,7 @@ export function Sidebar({
                   <HelpSection expanded={expanded} handleItemClick={handleItemClick} />
                 )}
                 
-                {/* 로그인하지 않은 사용자를 위한 도움말 아이콘 */}
+                {/* 로그인하지 않은 사용자를 위한 도움말 아이콘 - 일관된 스타일 적용 */}
                 {!isAuthenticated && (
                   expanded ? (
                     <div className="mt-4 px-3 py-2">
@@ -1050,13 +1050,13 @@ export function Sidebar({
                       </NavItem>
                     </div>
                   ) : (
-                    <div className="mt-2 px-2">
+                    <div className="mt-2">
                       <TooltipProvider>
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <a
                               href="/help/faq"
-                              className="sidebar-link bg-gray-100 dark:bg-gray-800 rounded-lg p-2 flex justify-center cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                              className="sidebar-link flex items-center justify-center py-2 text-sm font-medium rounded-lg transition-colors duration-200 ease-in-out px-2 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-primary dark:hover:text-primary"
                               onClick={(e) => {
                                 e.preventDefault();
                                 console.log("비인증 사용자가 접힌 상태에서 도움말 아이콘 클릭");
@@ -1064,7 +1064,9 @@ export function Sidebar({
                               }}
                               aria-label="도움말"
                             >
-                              <HelpCircle className="w-5 h-5 text-primary" />
+                              <div className="w-5 h-5 flex items-center justify-center">
+                                <HelpCircle className="w-5 h-5" />
+                              </div>
                             </a>
                           </TooltipTrigger>
                           <TooltipContent side="right">

@@ -17,7 +17,11 @@ interface GuideSection {
   steps: GuideStep[];
 }
 
-export default function GuidePage() {
+interface GuidePageProps {
+  initialGuide?: string;
+}
+
+export default function GuidePage({ initialGuide }: GuidePageProps) {
   const bannerStyle = {
     backgroundImage: 'linear-gradient(to right, rgba(22, 163, 74, 0.8), rgba(5, 150, 105, 0.8))',
     backgroundSize: 'cover',
