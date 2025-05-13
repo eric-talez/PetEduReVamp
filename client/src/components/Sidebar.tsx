@@ -1027,8 +1027,54 @@ export function Sidebar({
                   </>
                 )}
 
-                {/* 도움말 섹션 - 직접 처리하지 않고 HelpSection 컴포넌트로 통일 */}
-                <HelpSection expanded={expanded} handleItemClick={handleItemClick} />
+                {/* 도움말 섹션 - 접힌 상태일 때와 확장된 상태일 때 모두 HelpSection 컴포넌트 사용 */}
+                {isAuthenticated && (
+                  <HelpSection expanded={expanded} handleItemClick={handleItemClick} />
+                )}
+                
+                {/* 로그인하지 않은 사용자를 위한 도움말 아이콘 */}
+                {!isAuthenticated && (
+                  expanded ? (
+                    <div className="mt-4 px-3 py-2">
+                      <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                        도움말
+                      </h3>
+                      <NavItem
+                        href="/help/faq"
+                        icon={<HelpCircle className="w-5 h-5 mr-2" />}
+                        active={isActive("/help/faq")}
+                        onClick={handleItemClick}
+                        show={true}
+                      >
+                        자주 묻는 질문
+                      </NavItem>
+                    </div>
+                  ) : (
+                    <div className="mt-2 px-2">
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <a
+                              href="/help/faq"
+                              className="sidebar-link bg-gray-100 dark:bg-gray-800 rounded-lg p-2 flex justify-center cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                console.log("비인증 사용자가 접힌 상태에서 도움말 아이콘 클릭");
+                                handleItemClick('/help/faq');
+                              }}
+                              aria-label="도움말"
+                            >
+                              <HelpCircle className="w-5 h-5 text-primary" />
+                            </a>
+                          </TooltipTrigger>
+                          <TooltipContent side="right">
+                            <p>도움말 및 지원</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </div>
+                  )
+                )}
 
                 {/* 독립적인 StatisticsSection 컴포넌트 사용 */}
                 <StatisticsSection expanded={expanded} />
