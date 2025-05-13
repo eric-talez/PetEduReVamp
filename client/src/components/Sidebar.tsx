@@ -928,7 +928,7 @@ export function Sidebar({
                 {/* Admin Menu - remains largely unchanged */}
                 {showAdminMenu && (
                   <>
-                    {expanded && (
+                    {expanded ? (
                       <div
                         className="px-3 py-2 mt-6 flex items-center justify-between cursor-pointer"
                         onClick={() => toggleMenuGroup('admin')}
@@ -937,6 +937,16 @@ export function Sidebar({
                           시스템 관리자
                         </h3>
                         {menuGroups.admin ? <ChevronDown className="h-4 w-4 text-gray-500" /> : <ChevronRight className="h-4 w-4 text-gray-500" />}
+                      </div>
+                    ) : (
+                      <div className="flex justify-center py-2 mt-4">
+                        <button
+                          onClick={() => toggleMenuGroup('admin')}
+                          className="w-8 h-8 flex items-center justify-center rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                          aria-label="시스템 관리자 메뉴 토글"
+                        >
+                          <UserCog className="w-5 h-5 text-primary" />
+                        </button>
                       </div>
                     )}
 
