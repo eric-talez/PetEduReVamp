@@ -214,20 +214,8 @@ function AuthenticatedRoutesContent() {
         }}
       </Route>
 
-      <Route path="/profile">
-        {() => (
-          <ErrorBoundary>
-            <ProfilePage userType="user" />
-          </ErrorBoundary>
-        )}
-      </Route>
-      <Route path="/settings">
-        {() => (
-          <ErrorBoundary>
-            <SettingsPage userRole="user" />
-          </ErrorBoundary>
-        )}
-      </Route>
+      {/* 사용자 프로필 경로는 SimpleApp.tsx에서 처리 */}
+      {/* 사용자 설정 경로는 SimpleApp.tsx에서 처리 */}
       <Route path="/events" component={EventsPage} />
       <Route path="/events/calendar" component={EventCalendarPage} />
       <Route path="/ai-analysis" component={AIAnalysisPage} />
