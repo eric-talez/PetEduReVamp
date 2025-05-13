@@ -88,7 +88,7 @@ function NavItem({ href, icon, children, active, onClick, show }: NavItemProps) 
 
   if (!show) return null;
 
-  // 접힌 상태에서는 툴팁으로 표시
+  // 접힌 상태에서는 아이콘만 표시하고 툴팁으로 텍스트 제공
   if (!expanded) {
     return (
       <TooltipProvider>
@@ -101,8 +101,11 @@ function NavItem({ href, icon, children, active, onClick, show }: NavItemProps) 
                 active ? "bg-primary/10 text-primary" : "text-gray-700 dark:text-gray-200 hover:text-primary dark:hover:text-primary"
               )}
               onClick={handleClick}
+              aria-label={children?.toString()}
             >
-              {icon}
+              <div className="w-5 h-5 flex items-center justify-center">
+                {icon}
+              </div>
             </a>
           </TooltipTrigger>
           <TooltipContent side="right">
