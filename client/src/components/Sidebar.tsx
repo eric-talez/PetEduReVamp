@@ -1010,12 +1010,12 @@ export function Sidebar({
 
                 {/* 축소된 상태에서는 물음표 아이콘에 툴팁 적용 */}
                 {!expanded ? (
-                  <div className="mt-6 px-2">
+                  <div className="mt-2 px-2">
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <div 
-                            className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-2 flex justify-center cursor-pointer" 
+                            className="bg-gray-100 dark:bg-gray-800 rounded-lg p-2 flex justify-center cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors" 
                             onClick={() => handleItemClick('/help/faq')}
                           >
                             <HelpCircle className="w-5 h-5 text-primary" aria-label="도움말" />
