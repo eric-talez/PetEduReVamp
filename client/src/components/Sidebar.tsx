@@ -373,8 +373,8 @@ export function Sidebar({
           </button>
         </div>
 
-        <div className={cn("py-4 overflow-y-auto h-[calc(100vh-4rem)] flex flex-col", expanded ? "px-3" : "px-2")}>
-          <div className="space-y-1">
+        <div className={cn("py-4 overflow-y-auto overflow-x-hidden h-[calc(100vh-4rem)] flex flex-col", expanded ? "px-3" : "px-2")}>
+          <div className="space-y-1 w-full min-h-min">
             {!isAuthenticated && (
               <>
                 {expanded ? (
