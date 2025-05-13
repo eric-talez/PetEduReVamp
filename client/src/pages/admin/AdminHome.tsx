@@ -189,6 +189,10 @@ export default function AdminHome() {
   const handleDetailedAnalysis = () => {
     setShowDetailedAnalysis(true);
   };
+  
+  const handleViewAllNotifications = () => {
+    setLocation('/admin/notifications');
+  };
 
   return (
     <div className="p-6 space-y-6">
@@ -536,7 +540,12 @@ export default function AdminHome() {
               </div>
             </CardContent>
             <CardFooter>
-              <Button variant="outline" size="sm" className="w-full">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="w-full"
+                onClick={handleViewAllNotifications}
+              >
                 <Bell className="h-4 w-4 mr-2" />
                 모든 알림 보기
               </Button>
