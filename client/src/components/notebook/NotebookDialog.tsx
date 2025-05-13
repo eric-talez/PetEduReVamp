@@ -46,6 +46,94 @@ interface NotebookDialogProps {
   initialData?: any;
 }
 
+// 활동 데이터를 텍스트로 변환하는 함수
+const generateActivityText = (activities: Activity): string => {
+  const parts: string[] = [];
+  
+  // 식사 활동 텍스트 생성
+  if (activities.meal) {
+    const mealParts = [];
+    if (activities.meal.breakfast) mealParts.push('아침');
+    if (activities.meal.lunch) mealParts.push('점심');
+    if (activities.meal.dinner) mealParts.push('저녁');
+    if (activities.meal.snack) mealParts.push('간식');
+    if (activities.meal.water) mealParts.push('물');
+    
+    if (mealParts.length > 0) {
+      parts.push(`[식사] ${mealParts.join(', ')} 식사를 했습니다.`);
+      if (activities.meal.custom) parts.push(`특이사항: ${activities.meal.custom}`);
+    }
+  }
+  
+  // 배변 활동 텍스트 생성
+  if (activities.potty) {
+    const pottyParts = [];
+    if (activities.potty.pee) pottyParts.push('소변');
+    if (activities.potty.poop) pottyParts.push('대변');
+    
+    if (pottyParts.length > 0) {
+      let text = `[배변] ${pottyParts.join(', ')}`;
+      if (activities.potty.count) text += `, ${activities.potty.count}회`;
+      if (activities.potty.quality) {
+        const qualityText = {
+          'good': '좋음',
+          'normal': '보통',
+          'bad': '나쁨'
+        }[activities.potty.quality];
+        text += `, 상태: ${qualityText}`;
+      }
+      parts.push(text);
+    }
+  }
+  
+  // 산책 활동 텍스트 생성
+  if (activities.walk) {
+    const walkParts = [];
+    if (activities.walk.morning) walkParts.push('아침');
+    if (activities.walk.afternoon) walkParts.push('오후');
+    if (activities.walk.evening) walkParts.push('저녁');
+    
+    if (walkParts.length > 0 || activities.walk.duration || activities.walk.distance) {
+      let text = '[산책]';
+      if (walkParts.length > 0) text += ` ${walkParts.join(', ')} 산책했습니다.`;
+      if (activities.walk.duration) text += ` 시간: ${activities.walk.duration}분`;
+      if (activities.walk.distance) text += ` 거리: ${(activities.walk.distance / 1000).toFixed(1)}km`;
+      parts.push(text);
+    }
+  }
+  
+  // 훈련 활동 텍스트 생성
+  if (activities.training) {
+    const trainingParts = [];
+    if (activities.training.sit) trainingParts.push('앉아');
+    if (activities.training.stay) trainingParts.push('기다려');
+    if (activities.training.come) trainingParts.push('이리와');
+    if (activities.training.down) trainingParts.push('엎드려');
+    if (activities.training.paw) trainingParts.push('손');
+    
+    if (trainingParts.length > 0) {
+      parts.push(`[훈련] ${trainingParts.join(', ')} 훈련을 했습니다.`);
+      if (activities.training.custom) parts.push(`추가 훈련: ${activities.training.custom}`);
+    }
+  }
+  
+  // 놀이 활동 텍스트 생성
+  if (activities.play) {
+    const playParts = [];
+    if (activities.play.fetch) playParts.push('물건 가져오기');
+    if (activities.play.tug) playParts.push('터그놀이');
+    if (activities.play.chase) playParts.push('쫓기 놀이');
+    if (activities.play.puzzle) playParts.push('퍼즐 장난감');
+    
+    if (playParts.length > 0) {
+      parts.push(`[놀이] ${playParts.join(', ')} 놀이를 했습니다.`);
+      if (activities.play.custom) parts.push(`기타 놀이: ${activities.play.custom}`);
+    }
+  }
+  
+  return parts.join('\n');
+};
+
 export default function NotebookDialog({
   open,
   onOpenChange,
