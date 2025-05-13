@@ -131,14 +131,25 @@ const getInstitutes = async () => {
 // 현재 메뉴 설정 가져오기
 const getMenuConfiguration = async (instituteId: number | null = null) => {
   try {
+    console.log('[DEBUG] 메뉴 설정 가져오기 시작');
     const url = instituteId 
       ? `/api/menu-configuration?instituteId=${instituteId}` 
       : '/api/menu-configuration';
-    const res = await apiRequest('GET', url);
-    const data = await res.json();
-    return data;
+    console.log('[DEBUG] 요청 URL:', url);
+    
+    try {
+      const res = await apiRequest('GET', url);
+      console.log('[DEBUG] API 응답 성공');
+      const data = await res.json();
+      console.log('[DEBUG] 메뉴 설정 데이터 받음:', data ? '데이터 있음' : '데이터 없음');
+      return data;
+    } catch (apiError) {
+      console.error('[DEBUG] API 요청 실패:', apiError);
+      throw apiError;
+    }
   } catch (error) {
-    console.error('메뉴 설정 가져오기 오류:', error);
+    console.error('[DEBUG] 메뉴 설정 가져오기 오류:', error);
+    console.log('[DEBUG] 기본 메뉴 설정으로 폴백');
     return DEFAULT_MENU_CONFIGURATION;
   }
 };

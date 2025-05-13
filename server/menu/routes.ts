@@ -32,12 +32,18 @@ export function registerMenuRoutes(app: Express) {
   // 메뉴 설정 가져오기
   app.get('/api/menu-configuration', async (req: Request, res: Response) => {
     try {
+      console.log('[DEBUG] GET /api/menu-configuration 요청 받음');
+      console.log('[DEBUG] 쿼리 파라미터:', req.query);
+      
       const instituteId = req.query.instituteId 
         ? parseInt(req.query.instituteId as string) 
         : null;
       
+      console.log('[DEBUG] Institute ID:', instituteId);
+      
       // 기관별 설정이 요청된 경우
       if (instituteId) {
+        console.log('[DEBUG] 기관별 메뉴 설정 조회 시도');
         const [config] = await db
           .select()
           .from(menuConfigurations)
@@ -46,11 +52,14 @@ export function registerMenuRoutes(app: Express) {
             eq(menuConfigurations.isActive, true)
           ));
         
+        console.log('[DEBUG] 기관별 설정 조회 결과:', config ? '설정 있음' : '설정 없음');
+        
         if (config) {
           return res.json(config.configuration);
         }
       }
       
+      console.log('[DEBUG] 전체 시스템 메뉴 설정 조회 시도');
       // 전체 시스템 메뉴 설정 가져오기
       const [config] = await db
         .select()
@@ -60,10 +69,13 @@ export function registerMenuRoutes(app: Express) {
           eq(menuConfigurations.isActive, true)
         ));
       
+      console.log('[DEBUG] 전체 설정 조회 결과:', config ? '설정 있음' : '설정 없음');
+      
       if (config) {
         return res.json(config.configuration);
       }
       
+      console.log('[DEBUG] 기본 메뉴 구성 반환');
       // 기본 메뉴 구성 반환
       return res.json(DEFAULT_MENU_CONFIGURATION);
     } catch (error) {
