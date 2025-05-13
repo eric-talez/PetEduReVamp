@@ -138,38 +138,38 @@ function AuthenticatedRoutesContent() {
         {() => checkAccess(['trainer', 'admin']) ? <TrainerReservationsPage /> : window.location.href = '/'}
       </Route>
       <Route path="/trainer/profile">
-        {() => checkAccess(['trainer', 'admin']) ? <ProfilePage userType="trainer" /> : window.location.href = '/'}
+        <ProfilePage userType="trainer" />
       </Route>
       <Route path="/trainer/schedule">
-        {() => checkAccess(['trainer', 'admin']) ? <TrainerReservationsPage /> : window.location.href = '/'}
+        <TrainerReservationsPage />
       </Route>
       {/* 훈련사 관련 라우트 */}
       <Route path="/trainer/courses">
-        {() => checkAccess(['trainer', 'admin']) ? <TrainerCoursesPage /> : window.location.href = '/'}
+        <TrainerCoursesPage />
       </Route>
       <Route path="/trainer/students">
-        {() => checkAccess(['trainer', 'admin']) ? <TrainerStudentsPage /> : window.location.href = '/'}
+        <TrainerStudentsPage />
       </Route>
       <Route path="/trainer/stats">
-        {() => checkAccess(['trainer', 'admin']) ? <TrainerStatsPage /> : window.location.href = '/'}
+        <TrainerStatsPage />
       </Route>
       <Route path="/trainer/courses/new">
-        {() => checkAccess(['trainer', 'admin']) ? <CoursesPage mode="create" userType="trainer" /> : window.location.href = '/'}
+        <CoursesPage mode="create" userType="trainer" />
       </Route>
       <Route path="/trainer/schedule/new">
-        {() => checkAccess(['trainer', 'admin']) ? <TrainerReservationsPage mode="create" /> : window.location.href = '/'}
+        <TrainerReservationsPage mode="create" />
       </Route>
       <Route path="/trainer/profile/certificates">
-        {() => checkAccess(['trainer', 'admin']) ? <ProfilePage userType="trainer" section="certificates" /> : window.location.href = '/'}
+        <ProfilePage userType="trainer" section="certificates" />
       </Route>
       <Route path="/trainer/settings">
-        {() => checkAccess(['trainer', 'admin']) ? <SettingsPage userRole="trainer" /> : window.location.href = '/'}
+        <SettingsPage userRole="trainer" />
       </Route>
       <Route path="/institute/profile">
-        {() => checkAccess(['institute-admin', 'admin']) ? <ProfilePage userType="institute-admin" /> : window.location.href = '/'}
+        <ProfilePage userType="institute-admin" />
       </Route>
       <Route path="/institute/settings">
-        {() => checkAccess(['institute-admin', 'admin']) ? <SettingsPage userRole="institute-admin" /> : window.location.href = '/'}
+        <SettingsPage userRole="institute-admin" />
       </Route>
       <Route path="/institute/course-approvals">
         {() => checkAccess(['institute-admin', 'admin']) ? <InstituteCourseApprovalsPage /> : window.location.href = '/'}

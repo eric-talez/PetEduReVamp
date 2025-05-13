@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useAuth } from "../../SimpleApp";
+import { Redirect } from "wouter";
 
 interface SettingsPageProps {
   userRole?: string;
@@ -7,6 +8,22 @@ interface SettingsPageProps {
 
 export default function SettingsPage({ userRole: propUserRole }: SettingsPageProps = {}) {
   const auth = useAuth();
+  
+  // 권한 체크
+  const checkAccess = (allowedRoles: string[]) => {
+    return auth.isAuthenticated && auth.userRole && allowedRoles.includes(auth.userRole);
+  };
+  
+  // 훈련사 설정 접근은 훈련사와 관리자만 가능
+  if (propUserRole === "trainer" && !checkAccess(['trainer', 'admin'])) {
+    return <Redirect to="/" />;
+  }
+  
+  // 기관 관리자 설정 접근은 기관 관리자와 관리자만 가능
+  if (propUserRole === "institute-admin" && !checkAccess(['institute-admin', 'admin'])) {
+    return <Redirect to="/" />;
+  }
+  
   // props로 전달된 userRole이 있으면 그것을 사용하고, 없으면 auth에서 가져옴
   const userRole = propUserRole || auth.userRole;
   const userName = auth.userName;
