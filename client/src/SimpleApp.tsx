@@ -386,6 +386,22 @@ function AuthenticatedRoutes() {
             />
           )}
         </Route>
+
+        {/* 나의 학습 메뉴 서브 페이지들 */}
+        <Route path="/my-trainers">
+          {() => (
+            <ProtectedRoute 
+              component={() => <div className="container p-6"><h1 className="text-2xl font-bold mb-4">담당 훈련사</h1><p>현재 나의 반려견을 담당하고 있는 훈련사 목록과 연락 정보를 확인할 수 있습니다.</p></div>}
+            />
+          )}
+        </Route>
+        <Route path="/achievements">
+          {() => (
+            <ProtectedRoute 
+              component={() => <div className="container p-6"><h1 className="text-2xl font-bold mb-4">훈련 성과</h1><p>반려견의 훈련 성과와 달성한 목표를 확인할 수 있는 페이지입니다.</p></div>}
+            />
+          )}
+        </Route>
         
         {/* 훈련사 메뉴 - 권한 검증 적용 */}
         <Route path="/trainer/courses">
