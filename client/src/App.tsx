@@ -48,6 +48,7 @@ import NotebookPage from "./pages/notebook/index";
 import EventsPage from "./pages/events/index";
 import EventCalendarPage from "./pages/events/calendar";
 import AIAnalysisPage from "./pages/ai-analysis/index";
+import MenuManagement from "./pages/admin/menu-management";
 
 // 지연 로딩되는 컴포넌트들
 const EventDetailPage = lazy(() => import('./pages/events/event-detail'));

@@ -23,6 +23,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   registerInstituteRoutes(app);
   registerLocationRoutes(app);
   registerVideoCallRoutes(app);
+  registerMenuRoutes(app);
   
   // 로그 메시지
   console.log('[server] API routes registered');

@@ -1,8 +1,32 @@
-import { type Express, Request, Response } from "express";
+import { type Express, Request as ExpressRequest, Response } from "express";
 import { db } from "../db";
 import { menuConfigurations } from "@shared/schema";
-import { eq, isNull } from "drizzle-orm";
+import { eq, isNull, and } from "drizzle-orm";
 import { DEFAULT_MENU_CONFIGURATION } from "@shared/menu-config";
+
+// Express 타입 확장 및 세션 타입 확장
+declare module 'express-session' {
+  interface SessionData {
+    user?: {
+      id: number;
+      username: string;
+      role: string;
+      [key: string]: any;
+    };
+  }
+}
+
+// 세션 포함된 요청 타입 정의
+interface Request extends ExpressRequest {
+  session: any;
+  isAuthenticated(): boolean;
+  user?: {
+    id: number;
+    username: string;
+    role: string;
+    [key: string]: any;
+  };
+}
 
 export function registerMenuRoutes(app: Express) {
   // 메뉴 설정 가져오기
@@ -17,8 +41,10 @@ export function registerMenuRoutes(app: Express) {
         const [config] = await db
           .select()
           .from(menuConfigurations)
-          .where(eq(menuConfigurations.instituteId, instituteId))
-          .where(eq(menuConfigurations.isActive, true));
+          .where(and(
+            eq(menuConfigurations.instituteId, instituteId),
+            eq(menuConfigurations.isActive, true)
+          ));
         
         if (config) {
           return res.json(config.configuration);
@@ -29,8 +55,10 @@ export function registerMenuRoutes(app: Express) {
       const [config] = await db
         .select()
         .from(menuConfigurations)
-        .where(isNull(menuConfigurations.instituteId))
-        .where(eq(menuConfigurations.isActive, true));
+        .where(and(
+          isNull(menuConfigurations.instituteId),
+          eq(menuConfigurations.isActive, true)
+        ));
       
       if (config) {
         return res.json(config.configuration);
