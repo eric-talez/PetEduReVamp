@@ -88,9 +88,18 @@ function NavigationMessageListener({ children }: { children: ReactNode }) {
  * 응용 프로그램 레이아웃 컴포넌트
  */
 function AppLayout({ children }: { children: ReactNode }) {
+  // localStorage에서 사이드바 상태 불러오기
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isDesktop, setIsDesktop] = useState(false);
-  const [sidebarExpanded, setSidebarExpanded] = useState(false);
+  const [sidebarExpanded, setSidebarExpanded] = useState(() => {
+    // localStorage에서 저장된 사이드바 확장 상태 가져오기
+    const savedState = localStorage.getItem('sidebarExpanded');
+    if (savedState !== null) {
+      return savedState === 'true';
+    }
+    // 기본값은 확장된 상태 (데스크톱에서)
+    return true;
+  });
   const auth = useAuth();
   
   // 인증 상태가 변경될 때마다 윈도우 객체에 저장된 상태를 확인하고 동기화
@@ -113,7 +122,16 @@ function AppLayout({ children }: { children: ReactNode }) {
   
   // 사이드바 크기 토글 핸들러
   const toggleSidebarSize = () => {
-    setSidebarExpanded(!sidebarExpanded);
+    const newState = !sidebarExpanded;
+    setSidebarExpanded(newState);
+    
+    // 사이드바 상태를 localStorage에 저장
+    try {
+      localStorage.setItem('sidebarExpanded', String(newState));
+      console.log('사이드바 확장 상태 저장:', newState);
+    } catch (e) {
+      console.error('사이드바 상태 저장 오류:', e);
+    }
   };
   
   // 화면 크기 변경 감지

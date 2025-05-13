@@ -234,9 +234,11 @@ export function Sidebar({
   const toggleMenuGroup = (group: string) => {
     console.log(`토글 메뉴 그룹: ${group}, 현재 상태: ${menuGroups[group as keyof typeof menuGroups]}`);
     setMenuGroups((prev: Record<string, boolean>) => {
+      // 타입 안전성 보장을 위한 접근 방식
+      const currentState = group in prev ? prev[group] : false;
       const newState = {
         ...prev,
-        [group]: !prev[group as keyof typeof menuGroups]
+        [group]: !currentState
       };
       
       // localStorage에 저장
@@ -246,7 +248,7 @@ export function Sidebar({
         console.error('메뉴 그룹 상태 저장 오류:', e);
       }
       
-      console.log(`메뉴 상태 변경 후: ${group} = ${!prev[group as keyof typeof menuGroups]}`);
+      console.log(`메뉴 상태 변경 후: ${group} = ${!currentState}`);
       return newState;
     });
   };
