@@ -75,8 +75,14 @@ function AuthenticatedRoutesContent() {
   const { userRole } = useAuth();
 
   const checkAccess = (allowedRoles: string[]) => {
-    if (!userRole) return false;
-    return allowedRoles.includes(userRole);
+    console.log('[권한 검사]', '요청 역할:', userRole, '허용 역할:', allowedRoles);
+    if (!userRole) {
+      console.log('[권한 검사] 사용자 역할이 없음');
+      return false;
+    }
+    const hasAccess = allowedRoles.includes(userRole);
+    console.log('[권한 검사] 결과:', hasAccess);
+    return hasAccess;
   };
 
   return (
