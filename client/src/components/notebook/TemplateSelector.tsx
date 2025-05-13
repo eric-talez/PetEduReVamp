@@ -1,6 +1,7 @@
+import React, { useState } from "react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { FileText, FileBarChart, UtensilsCrossed, Shield, Footprints, Play } from "lucide-react";
+import { FileText, FileBarChart, UtensilsCrossed, Shield, Footprints, Play, CheckCircle2 } from "lucide-react";
 
 export type TemplateType = 'daily-report' | 'behavior-analysis' | 'meal-record' | 'health-check' | 'walk-record' | 'play-record';
 
@@ -9,12 +10,14 @@ interface TemplateSelectorProps {
 }
 
 export default function TemplateSelector({ onSelectTemplate }: TemplateSelectorProps) {
+  const [selectedTemplateId, setSelectedTemplateId] = useState<TemplateType | null>(null);
+  
   const templates = [
     {
       id: 'daily-report',
       title: '일일 보고서',
       description: '반려동물의 하루 전체 활동을 기록하는 템플릿입니다.',
-      icon: <FileText className="h-10 w-10 text-primary" />,
+      icon: <FileText className="h-10 w-10" />,
       data: {
         title: '오늘의 일일 보고서',
         content: `안녕하세요! 오늘 하루 반려동물의 모습을 알려드립니다.
@@ -29,7 +32,7 @@ export default function TemplateSelector({ onSelectTemplate }: TemplateSelectorP
       id: 'behavior-analysis',
       title: '행동 분석',
       description: '반려동물의 특정 행동을 분석하는 템플릿입니다.',
-      icon: <FileBarChart className="h-10 w-10 text-primary" />,
+      icon: <FileBarChart className="h-10 w-10" />,
       data: {
         title: '행동 분석 보고서',
         content: `오늘 집중적으로 관찰한 행동에 대해 분석해보았습니다.
@@ -58,7 +61,7 @@ export default function TemplateSelector({ onSelectTemplate }: TemplateSelectorP
       id: 'meal-record',
       title: '식사 기록',
       description: '반려동물의 식사량과 반응을 기록하는 템플릿입니다.',
-      icon: <UtensilsCrossed className="h-10 w-10 text-primary" />,
+      icon: <UtensilsCrossed className="h-10 w-10" />,
       data: {
         title: '오늘의 식사 기록',
         content: `오늘의 식사 기록을 공유드립니다.
@@ -92,7 +95,7 @@ export default function TemplateSelector({ onSelectTemplate }: TemplateSelectorP
       id: 'health-check',
       title: '건강 체크',
       description: '반려동물의 건강 상태를 체크하는 템플릿입니다.',
-      icon: <Shield className="h-10 w-10 text-primary" />,
+      icon: <Shield className="h-10 w-10" />,
       data: {
         title: '건강 상태 체크',
         content: `오늘의 건강 상태 체크 결과를 공유드립니다.
@@ -123,7 +126,7 @@ export default function TemplateSelector({ onSelectTemplate }: TemplateSelectorP
       id: 'walk-record',
       title: '산책 기록',
       description: '반려동물의 산책 활동을 기록하는 템플릿입니다.',
-      icon: <Footprints className="h-10 w-10 text-primary" />,
+      icon: <Footprints className="h-10 w-10" />,
       data: {
         title: '오늘의 산책 기록',
         content: `오늘의 산책 활동을 공유드립니다.
@@ -151,7 +154,7 @@ export default function TemplateSelector({ onSelectTemplate }: TemplateSelectorP
       id: 'play-record',
       title: '놀이 기록',
       description: '반려동물의 놀이 활동을 기록하는 템플릿입니다.',
-      icon: <Play className="h-10 w-10 text-primary" />,
+      icon: <Play className="h-10 w-10" />,
       data: {
         title: '오늘의 놀이 활동',
         content: `오늘의 놀이 활동을 공유드립니다.
@@ -175,32 +178,70 @@ export default function TemplateSelector({ onSelectTemplate }: TemplateSelectorP
     }
   ];
 
+  // 템플릿 선택 핸들러
+  const handleSelectTemplate = (template: TemplateType, data: any) => {
+    setSelectedTemplateId(template);
+    onSelectTemplate(template, data);
+  };
+  
+  // 선택된 템플릿 내용 미리보기
+  const selectedTemplate = templates.find(t => t.id === selectedTemplateId);
+
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-      {templates.map((template) => (
-        <Card key={template.id} className="cursor-pointer hover:border-primary transition-colors">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+    <div className="space-y-6">
+      {/* 템플릿 선택 버튼 그룹 */}
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+        {templates.map((template) => (
+          <button
+            key={template.id}
+            onClick={() => setSelectedTemplateId(template.id as TemplateType)}
+            className={`
+              flex flex-col items-center justify-center p-4 rounded-lg border-2 transition-all
+              ${selectedTemplateId === template.id 
+                ? 'border-primary bg-primary/10' 
+                : 'border-border hover:border-primary/50'
+              }
+            `}
+          >
+            <div className={`p-3 rounded-full mb-2 ${selectedTemplateId === template.id ? 'bg-primary/20 text-primary' : 'bg-muted'}`}>
               {template.icon}
-              <span>{template.title}</span>
-            </CardTitle>
-            <CardDescription>{template.description}</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="text-sm text-muted-foreground line-clamp-3">
-              {template.data.content.substring(0, 150)}...
             </div>
-          </CardContent>
-          <CardFooter>
-            <Button 
-              className="w-full" 
-              onClick={() => onSelectTemplate(template.id as TemplateType, template.data)}
+            <h3 className="font-medium text-center">{template.title}</h3>
+            <p className="text-xs text-muted-foreground text-center mt-1">{template.description}</p>
+          </button>
+        ))}
+      </div>
+      
+      {/* 선택된 템플릿 미리보기 */}
+      {selectedTemplate && (
+        <div className="border rounded-lg p-4">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-medium">{selectedTemplate.data.title}</h3>
+            <div className="flex gap-1">
+              {selectedTemplate.data.tags.map((tag, index) => (
+                <span key={index} className="text-xs bg-secondary px-2 py-1 rounded-full">
+                  {tag}
+                </span>
+              ))}
+            </div>
+          </div>
+          
+          <div className="bg-muted p-3 rounded max-h-40 overflow-auto">
+            <pre className="text-sm whitespace-pre-wrap">{selectedTemplate.data.content}</pre>
+          </div>
+          
+          <div className="mt-4 flex justify-end">
+            <Button
+              onClick={() => handleSelectTemplate(selectedTemplate.id as TemplateType, selectedTemplate.data)}
+              size="lg"
+              className="gap-2"
             >
+              <CheckCircle2 className="h-5 w-5" />
               이 템플릿 사용하기
             </Button>
-          </CardFooter>
-        </Card>
-      ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

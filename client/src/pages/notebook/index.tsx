@@ -434,42 +434,45 @@ export default function Notebook() {
   
   // 템플릿 적용
   const handleApplyTemplate = (template: TemplateType, data: any) => {
+    console.log('템플릿 선택됨:', template, data); // 디버깅 로그 추가
+    
+    // 템플릿 다이얼로그 닫기
     setShowTemplateDialog(false);
     setSelectedTemplate(template);
     
     // 선택된 템플릿 데이터를 현재 편집 중인 알림장에 반영
     if (data) {
-      setSelectedTemplateData(data);
-      
-      // NotebookDialog는 initialData를 통해 데이터를 받으므로,
-      // 다이얼로그를 닫았다가 다시 열어 데이터 갱신
+      // 새 알림장 다이얼로그를 잠시 닫고 데이터 준비 후 다시 열기
       setShowNewEntryDialog(false);
+      
+      // 새 알림장 객체 생성
+      const newEntry = {
+        id: isEditMode && selectedEntry ? selectedEntry.id : 0, 
+        date: new Date().toISOString(),
+        petId: isEditMode && selectedEntry ? selectedEntry.petId : (pets.length > 0 ? pets[0].id : 0),
+        petName: isEditMode && selectedEntry ? selectedEntry.petName : (pets.length > 0 ? pets[0].name : ''),
+        title: data.title || '',
+        content: data.content || '',
+        mood: isEditMode && selectedEntry ? selectedEntry.mood : 'happy',
+        photos: isEditMode && selectedEntry ? selectedEntry.photos || [] : [],
+        videos: isEditMode && selectedEntry ? selectedEntry.videos || [] : [],
+        comments: isEditMode && selectedEntry ? selectedEntry.comments : [],
+        taggedItems: data.tags || [],
+        activities: isEditMode && selectedEntry ? selectedEntry.activities || {} : {}
+      };
+      
+      // 새 알림장 데이터 설정
+      setSelectedEntry(newEntry);
+      
+      // 약간의 지연 후 다시 다이얼로그 열기
       setTimeout(() => {
-        if (isEditMode && selectedEntry) {
-          // 수정 모드인 경우 기존 엔트리에 템플릿 데이터 병합
-          const updatedEntry = {
-            ...selectedEntry,
-            title: data.title,
-            content: data.content,
-            taggedItems: data.tags || selectedEntry.taggedItems
-          };
-          setSelectedEntry(updatedEntry);
-        } else {
-          // 새 알림장인 경우 템플릿 데이터로 초기화
-          setSelectedEntry({
-            id: 0,
-            date: new Date().toISOString(),
-            petId: pets.length > 0 ? pets[0].id : 0,
-            petName: pets.length > 0 ? pets[0].name : '',
-            title: data.title,
-            content: data.content,
-            mood: 'happy',
-            comments: [],
-            taggedItems: data.tags || []
-          });
-        }
         setShowNewEntryDialog(true);
-      }, 100);
+      }, 50);
+      
+      toast({
+        title: "템플릿 적용됨",
+        description: `"${data.title}" 템플릿이 적용되었습니다.`
+      });
     }
   };
   
