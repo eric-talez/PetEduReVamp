@@ -287,14 +287,14 @@ export function Sidebar({
     // 역할별 접근 제한
     if (isAuthenticated) {
       // 훈련사 전용 페이지
-      if (path.startsWith('/trainer-dashboard') && userRole !== 'trainer' && userRole !== 'admin') {
+      if ((path.startsWith('/trainer-dashboard') || path.startsWith('/trainer/')) && userRole !== 'trainer' && userRole !== 'admin') {
         console.log('훈련사 권한 필요');
         window.location.href = "/";
         return;
       }
 
       // 기관 관리자 전용 페이지
-      if (path.startsWith('/institute-dashboard') && userRole !== 'institute-admin' && userRole !== 'admin') {
+      if ((path.startsWith('/institute-dashboard') || path.startsWith('/institute/')) && userRole !== 'institute-admin' && userRole !== 'admin') {
         console.log('기관 관리자 권한 필요');
         window.location.href = "/";
         return;
@@ -791,9 +791,9 @@ export function Sidebar({
                     {menuGroups.trainer && (
                       <>
                         <AccessibleNavItem 
-                          href="/trainer-dashboard" 
+                          href="/trainer/dashboard" 
                           icon={<BarChart2 className="w-5 h-5 mr-2" />} 
-                          active={isActive("/trainer-dashboard")} 
+                          active={isActive("/trainer/dashboard")} 
                           onClick={handleItemClick} 
                           show={true}
                         >훈련사 대시보드</AccessibleNavItem>
@@ -859,9 +859,9 @@ export function Sidebar({
                     {menuGroups.institute && (
                       <>
                         <AccessibleNavItem 
-                          href="/institute-dashboard" 
+                          href="/institute/dashboard" 
                           icon={<LineChart className="w-5 h-5 mr-2" />} 
-                          active={isActive("/institute-dashboard")} 
+                          active={isActive("/institute/dashboard")} 
                           onClick={handleItemClick} 
                           show={true}
                         >기관 대시보드</AccessibleNavItem>
@@ -908,12 +908,12 @@ export function Sidebar({
                           show={true}
                         >기관 설정</AccessibleNavItem>
                         <AccessibleNavItem 
-                          href="/institute-referrals" 
-                          icon={<Percent className="w-5 h-5 mr-2" />} 
-                          active={isActive("/institute-referrals")} 
+                          href="/institute/pet-assignments" 
+                          icon={<PawPrint className="w-5 h-5 mr-2" />} 
+                          active={isActive("/institute/pet-assignments")} 
                           onClick={handleItemClick} 
                           show={true}
-                        >수수료 정책</AccessibleNavItem>
+                        >반려견 배정</AccessibleNavItem>
                       </>
                     )}
                   </>
