@@ -691,6 +691,15 @@ function UnauthenticatedRoutes() {
             );
           }}
         </Route>
+        <Route path="/help/faq/:category">
+          {(params) => {
+            return (
+              <div className="p-8">
+                <FAQPage initialCategory={params.category} />
+              </div>
+            );
+          }}
+        </Route>
         <Route path="/help/guide">
           {() => {
             const GuidePage = lazy(() => import('./pages/help/guide'));

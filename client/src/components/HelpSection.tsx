@@ -102,7 +102,7 @@ export function HelpSection({ expanded, handleItemClick }: HelpSectionProps) {
             <TooltipTrigger asChild>
               <div 
                 className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-2 flex justify-center cursor-pointer" 
-                onClick={() => handleItemClick('/help')}
+                onClick={() => handleItemClick('/help/faq')}
               >
                 <HelpCircle className="w-5 h-5 text-primary" aria-label="도움말" />
               </div>
