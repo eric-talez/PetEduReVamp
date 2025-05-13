@@ -66,7 +66,9 @@ import {
   FileVideo,
   Clipboard,
   ClipboardList,
-  ClipboardCheck
+  ClipboardCheck,
+  Sparkles,
+  Brain
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -76,9 +78,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { format } from 'date-fns';
+import { format, isSameDay, parseISO } from 'date-fns';
 import { ko } from 'date-fns/locale';
-import { Calendar } from '@/components/ui/calendar';
+
+// 커스텀 컴포넌트 가져오기
+import NotebookCalendar from '@/components/notebook/NotebookCalendar';
+import ActivityRecorder, { Activity } from '@/components/notebook/ActivityRecorder';
+import TemplateSelector from '@/components/notebook/TemplateSelector';
+import MediaViewer from '@/components/notebook/MediaViewer';
 
 interface NotebookEntry {
   id: number;
@@ -93,6 +100,7 @@ interface NotebookEntry {
   videos?: string[];
   comments: Comment[];
   taggedItems: string[];
+  activities?: Activity;
 }
 
 interface Comment {
@@ -134,7 +142,8 @@ export default function Notebook() {
     mood: 'happy' as 'happy' | 'sad' | 'neutral' | 'excited' | 'tired',
     taggedItems: [] as string[],
     photos: [] as string[],
-    videos: [] as string[]
+    videos: [] as string[],
+    activities: {} as Activity
   });
   const [mediaPreview, setMediaPreview] = useState<{photos: string[], videos: string[]}>({photos: [], videos: []});
   const [showTemplateDialog, setShowTemplateDialog] = useState(false);
@@ -144,6 +153,11 @@ export default function Notebook() {
   const [pets, setPets] = useState<Pet[]>([]);
   const [isEditMode, setIsEditMode] = useState(false);
   const commentInputRef = useRef<HTMLTextAreaElement>(null);
+  const [selectedDay, setSelectedDay] = useState<Date | null>(new Date());
+  const [showMediaViewer, setShowMediaViewer] = useState(false);
+  const [mediaViewerIndex, setMediaViewerIndex] = useState(0);
+  const [mediaViewerFiles, setMediaViewerFiles] = useState<{type: 'photo' | 'video', url: string}[]>([]);
+  const [useAIMode, setUseAIMode] = useState(false);
   
   useEffect(() => {
     const loadData = async () => {

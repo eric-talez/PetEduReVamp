@@ -91,7 +91,7 @@ export const generateNotebookEntry = async (
     console.error('AI 알림장 생성 오류:', error);
     return {
       title: `${petName}의 오늘 하루`,
-      content: `오늘 ${petName}의 하루 활동 기록입니다.\n\n${activitiesText}\n\n${additionalNotes || ''}` 
+      content: `오늘 ${petName}의 하루 활동 기록입니다.\n\n${additionalNotes || ''}` 
     };
   }
 };
@@ -103,10 +103,11 @@ export const generateTemplateContent = async (
   petBreed: string,
   additionalContext?: string
 ): Promise<{ title: string; content: string; tags: string[] }> => {
+  let defaultTags: string[] = ['알림장', '기록', '반려견'];
+  
   try {
     let systemPrompt = "당신은 전문 애견 훈련사입니다.";
     let userPrompt = "";
-    let defaultTags: string[] = [];
 
     switch (templateType) {
       case 'daily-progress':
@@ -141,7 +142,6 @@ export const generateTemplateContent = async (
         
       default:
         userPrompt = `${petName}(${petBreed})의 알림장 템플릿을 작성해주세요. 빈칸은 '___'로 표시하고, 훈련사가 채울 수 있도록 해주세요. ${additionalContext || ''}`;
-        defaultTags = ['알림장', '기록', '반려견'];
     }
 
     const response = await openai.chat.completions.create({

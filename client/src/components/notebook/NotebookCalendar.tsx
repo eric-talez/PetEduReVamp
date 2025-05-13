@@ -32,12 +32,15 @@ export default function NotebookCalendar({ entries, onSelectDate, selectedDate }
   }, [entries]);
   
   // 날짜 셀 렌더링 사용자 정의
-  const renderDay = (day: Date, mods: Record<string, boolean>) => {
-    const hasEntry = entryDates.some(date => isSameDay(date, day));
+  const renderDay = (props: any) => {
+    const { date, ...rest } = props;
+    const day = date;
+    const hasEntry = entryDates.some(entryDate => isSameDay(entryDate, day));
     const isSelectedDate = selectedDate && isSameDay(selectedDate, day);
     
     return (
       <div
+        {...rest}
         className={cn(
           'w-full h-full p-0 flex items-center justify-center relative',
           hasEntry && 'font-bold',
