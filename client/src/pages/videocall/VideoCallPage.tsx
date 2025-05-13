@@ -265,7 +265,12 @@ export default function VideoCallPage() {
                               <div className="flex items-center mt-1"><Clock className="w-4 h-4 mr-1" /> {format(new Date(meeting.start_time), 'p', { locale: ko })} ({meeting.duration}분)</div>
                             </CardDescription>
                           </div>
-                          <Button variant="outline" size="sm" onClick={() => startMeeting(meeting)}>
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            onClick={() => startMeeting(meeting)}
+                            aria-label={`${meeting.topic} 미팅 시작하기`}
+                          >
                             <Video className="w-4 h-4 mr-2" /> 시작
                           </Button>
                         </div>
@@ -283,10 +288,19 @@ export default function VideoCallPage() {
                         </div>
                       </CardContent>
                       <CardFooter className="flex justify-end gap-2 border-t bg-muted/30 py-2">
-                        <Button variant="ghost" size="sm" onClick={() => copyMeetingInfo(meeting)}>
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          onClick={() => copyMeetingInfo(meeting)}
+                          aria-label={`${meeting.topic} 미팅 정보 복사하기`}
+                        >
                           <Copy className="w-4 h-4 mr-1" /> 정보 복사
                         </Button>
-                        <Button variant="ghost" size="sm">
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          aria-label={`${meeting.topic} 미팅 정보 공유하기`}
+                        >
                           <Share2 className="w-4 h-4 mr-1" /> 공유
                         </Button>
                       </CardFooter>
@@ -298,7 +312,10 @@ export default function VideoCallPage() {
                   <Video className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
                   <h3 className="text-lg font-medium mb-2">예정된 미팅이 없습니다</h3>
                   <p className="text-muted-foreground mb-4">새 화상 훈련 세션을 생성하여 시작하세요.</p>
-                  <Button onClick={() => setActiveTab('create')}>
+                  <Button 
+                    onClick={() => setActiveTab('create')}
+                    aria-label="새 화상 미팅 생성 페이지로 이동"
+                  >
                     <Plus className="w-4 h-4 mr-2" /> 미팅 생성
                   </Button>
                 </div>
@@ -392,16 +409,26 @@ export default function VideoCallPage() {
               </div>
             </CardContent>
             <CardFooter className="flex justify-between">
-              <Button variant="outline" onClick={() => setActiveTab('scheduled')}>취소</Button>
-              <Button onClick={createMeeting} disabled={isCreating || !meetingData.topic}>
+              <Button 
+                variant="outline" 
+                onClick={() => setActiveTab('scheduled')}
+                aria-label="미팅 생성 취소하고 예정된 미팅 목록으로 돌아가기"
+              >
+                취소
+              </Button>
+              <Button 
+                onClick={createMeeting} 
+                disabled={isCreating || !meetingData.topic}
+                aria-label="새 화상 미팅 생성하기"
+              >
                 {isCreating ? (
                   <>
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" aria-hidden="true"></div>
                     처리 중...
                   </>
                 ) : (
                   <>
-                    <Plus className="w-4 h-4 mr-2" /> 미팅 생성
+                    <Plus className="w-4 h-4 mr-2" aria-hidden="true" /> 미팅 생성
                   </>
                 )}
               </Button>
