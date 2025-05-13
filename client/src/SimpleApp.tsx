@@ -406,7 +406,7 @@ function AuthenticatedRoutes() {
         {/* 훈련사 메뉴 - 권한 검증 적용 */}
         <Route path="/trainer-dashboard">
           {() => {
-            const TrainerDashboard = lazy(() => import('./pages/trainer/dashboard'));
+            const TrainerDashboard = lazy(() => import('./pages/TrainerDashboard'));
             return (
               <Suspense fallback={<div className="p-8 text-center">페이지 로딩 중...</div>}>
                 <ProtectedTrainerRoute component={TrainerDashboard} />
@@ -436,7 +436,7 @@ function AuthenticatedRoutes() {
         </Route>
         <Route path="/trainer-schedule">
           {() => {
-            const ScheduleManagement = lazy(() => import('./pages/trainer/schedule'));
+            const ScheduleManagement = lazy(() => import('./pages/trainer-dashboard/reservations'));
             return (
               <Suspense fallback={<div className="p-8 text-center">페이지 로딩 중...</div>}>
                 <ProtectedTrainerRoute component={ScheduleManagement} />
