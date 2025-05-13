@@ -238,14 +238,19 @@ export default function VideoCallPage() {
     <div className="container mx-auto py-8">
       <h1 className="text-3xl font-bold mb-6">화상 훈련 서비스</h1>
       
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="w-full grid grid-cols-3">
-          <TabsTrigger value="scheduled">예정된 미팅</TabsTrigger>
-          <TabsTrigger value="create">미팅 생성</TabsTrigger>
-          <TabsTrigger value="join">미팅 참여</TabsTrigger>
+      <Tabs 
+        value={activeTab} 
+        onValueChange={setActiveTab} 
+        className="w-full"
+        aria-label="화상 미팅 관리 탭"
+      >
+        <TabsList className="w-full grid grid-cols-3" aria-label="화상 미팅 관리 옵션">
+          <TabsTrigger value="scheduled" aria-controls="scheduled-tab-content">예정된 미팅</TabsTrigger>
+          <TabsTrigger value="create" aria-controls="create-tab-content">미팅 생성</TabsTrigger>
+          <TabsTrigger value="join" aria-controls="join-tab-content">미팅 참여</TabsTrigger>
         </TabsList>
         
-        <TabsContent value="scheduled" className="mt-6">
+        <TabsContent value="scheduled" id="scheduled-tab-content" className="mt-6">
           <Card>
             <CardHeader>
               <CardTitle>예정된 미팅</CardTitle>
@@ -324,7 +329,7 @@ export default function VideoCallPage() {
           </Card>
         </TabsContent>
         
-        <TabsContent value="create" className="mt-6">
+        <TabsContent value="create" id="create-tab-content" className="mt-6">
           <Card>
             <CardHeader>
               <CardTitle>미팅 생성</CardTitle>
@@ -436,7 +441,7 @@ export default function VideoCallPage() {
           </Card>
         </TabsContent>
         
-        <TabsContent value="join" className="mt-6">
+        <TabsContent value="join" id="join-tab-content" className="mt-6">
           <Card>
             <CardHeader>
               <CardTitle>미팅 참여</CardTitle>
@@ -450,6 +455,8 @@ export default function VideoCallPage() {
                   placeholder="예: 123 456 7890" 
                   value={meetingId}
                   onChange={(e) => setMeetingId(e.target.value)}
+                  aria-label="미팅 ID 입력"
+                  aria-required="true"
                 />
               </div>
               
@@ -466,15 +473,23 @@ export default function VideoCallPage() {
               </div>
             </CardContent>
             <CardFooter>
-              <Button className="w-full" onClick={joinMeeting} disabled={isJoining || !meetingId}>
+              <Button 
+                className="w-full" 
+                onClick={joinMeeting} 
+                disabled={isJoining || !meetingId}
+                aria-label="입력한 미팅 ID로 화상 미팅에 참여하기"
+              >
                 {isJoining ? (
                   <>
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                    <div 
+                      className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" 
+                      aria-hidden="true"
+                    ></div>
                     참여 중...
                   </>
                 ) : (
                   <>
-                    <UserPlus className="w-4 h-4 mr-2" /> 미팅 참여
+                    <UserPlus className="w-4 h-4 mr-2" aria-hidden="true" /> 미팅 참여
                   </>
                 )}
               </Button>
