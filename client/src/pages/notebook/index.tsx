@@ -80,6 +80,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { format, isSameDay, parseISO } from 'date-fns';
 import { ko } from 'date-fns/locale';
+import { Calendar } from '@/components/ui/calendar';
 
 // 커스텀 컴포넌트 가져오기
 import NotebookCalendar from '@/components/notebook/NotebookCalendar';
@@ -416,7 +417,8 @@ export default function Notebook() {
       mood: 'happy',
       taggedItems: [],
       photos: [],
-      videos: []
+      videos: [],
+      activities: {}
     });
     
     // 미디어 미리보기 초기화
@@ -442,7 +444,8 @@ export default function Notebook() {
       mood: selectedEntry.mood,
       taggedItems: selectedEntry.taggedItems,
       photos: selectedEntry.photos || [],
-      videos: selectedEntry.videos || []
+      videos: selectedEntry.videos || [],
+      activities: selectedEntry.activities || {}
     });
     
     // 미디어 미리보기 설정
