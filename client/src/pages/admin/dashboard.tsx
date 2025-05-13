@@ -642,7 +642,7 @@ const AdminDashboard = () => {
             <FileText className="mr-2 h-4 w-4" />
             보고서 다운로드
           </Button>
-          <Button size="sm">
+          <Button size="sm" onClick={() => window.location.href = '/admin/analytics'}>
             <BarChart3 className="mr-2 h-4 w-4" />
             상세 분석
           </Button>

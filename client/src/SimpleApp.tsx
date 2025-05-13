@@ -818,6 +818,20 @@ function AuthenticatedRoutes() {
             );
           }}
         </Route>
+        
+        <Route path="/admin/analytics">
+          {() => {
+            const AnalyticsPage = lazy(() => import('./pages/admin/analytics'));
+            return (
+              <Suspense fallback={<div className="p-8 flex justify-center items-center">
+                <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
+                <span className="ml-2">심층 분석 대시보드 로딩 중...</span>
+              </div>}>
+                <ProtectedAdminRoute component={AnalyticsPage} />
+              </Suspense>
+            );
+          }}
+        </Route>
         <Route path="/admin/notifications">
           {() => {
             const AdminNotifications = lazy(() => import('./pages/admin/AdminNotifications'));
