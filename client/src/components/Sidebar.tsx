@@ -865,16 +865,16 @@ export function Sidebar({
                           show={true}
                         >기관 대시보드</AccessibleNavItem>
                         <AccessibleNavItem 
-                          href="/institute-trainers" 
+                          href="/institute/trainers" 
                           icon={<UserCog className="w-5 h-5 mr-2" />} 
-                          active={isActive("/institute-trainers")} 
+                          active={isActive("/institute/trainers")} 
                           onClick={handleItemClick} 
                           show={true}
                         >훈련사 관리</AccessibleNavItem>
                         <AccessibleNavItem 
-                          href="/institute-courses" 
+                          href="/institute/courses" 
                           icon={<BookOpen className="w-5 h-5 mr-2" />} 
-                          active={isActive("/institute-courses")} 
+                          active={isActive("/institute/courses")} 
                           onClick={handleItemClick} 
                           show={true}
                         >강좌 관리</AccessibleNavItem>
