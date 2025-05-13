@@ -54,11 +54,21 @@ export function AccessibleMenuToggle({
       <div className="flex justify-center py-2">
         <button
           onClick={onClick}
-          className="w-8 h-8 flex items-center justify-center rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-          aria-label={`${title} 메뉴 토글`}
+          className="w-8 h-8 flex items-center justify-center rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors focus:outline-none focus:ring-2 focus:ring-primary/30"
+          aria-label={`${title} 메뉴 ${isOpen ? '접기' : '펼치기'}`}
           aria-expanded={isOpen}
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              onClick();
+            }
+          }}
         >
-          {icon || <ChevronRight className="w-5 h-5 text-primary" />}
+          {React.isValidElement(icon) 
+            ? React.cloneElement(icon, { 'aria-hidden': true }) 
+            : (icon || <ChevronRight className="w-5 h-5 text-primary" aria-hidden="true" />)
+          }
         </button>
       </div>
     );

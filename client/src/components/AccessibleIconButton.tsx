@@ -33,13 +33,22 @@ export function AccessibleIconButton({
       type="button"
       onClick={onClick}
       className={cn(
-        "w-8 h-8 flex items-center justify-center rounded-md transition-colors",
+        "w-8 h-8 flex items-center justify-center rounded-md transition-colors focus:outline-none",
         variantClasses[variant],
         className
       )}
       aria-label={label}
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onClick();
+        }
+      }}
     >
-      {icon}
+      {React.isValidElement(icon) 
+        ? React.cloneElement(icon as React.ReactElement, { 'aria-hidden': 'true' }) 
+        : icon}
     </button>
   );
 }
