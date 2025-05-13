@@ -404,6 +404,9 @@ export default function VideoCallPage() {
                     type="time" 
                     value={meetingData.time}
                     onChange={handleInputChange}
+                    aria-label="미팅 시간 선택"
+                    aria-required="true"
+                    required
                   />
                 </div>
               </div>
@@ -419,6 +422,11 @@ export default function VideoCallPage() {
                   step="5"
                   value={meetingData.duration}
                   onChange={handleInputChange}
+                  aria-label="미팅 소요 시간(분) 입력"
+                  aria-valuemin={15}
+                  aria-valuemax={300}
+                  aria-required="true"
+                  required
                 />
               </div>
               
@@ -430,6 +438,7 @@ export default function VideoCallPage() {
                   placeholder="이번 세션에서 다룰 내용을 간략히 설명해주세요."
                   value={meetingData.agenda}
                   onChange={handleInputChange}
+                  aria-label="미팅 안건 입력 (선택사항)"
                 />
               </div>
             </CardContent>
