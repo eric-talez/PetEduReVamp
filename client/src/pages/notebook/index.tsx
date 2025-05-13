@@ -1,51 +1,32 @@
-import React, { useState, useEffect } from 'react';
-import { useLocation, useRoute } from 'wouter';
-import { useAuth } from '../../SimpleApp';
-import {
-  PawPrint,
-  Calendar,
-  User,
-  FileText,
-  Award,
-  Edit,
-  Plus,
-  ChevronRight,
-  Trash2,
-  ChevronLeft,
-  ChevronDown,
-  ArrowLeft,
-  ArrowRight,
-  Check,
-  Filter,
-  Clock,
-  AlertCircle,
-  Camera,
-  Send,
-  StickyNote,
-  X,
-  MessageSquare,
-  Bell,
-} from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
-import { format, subDays, addDays, isSameDay } from 'date-fns';
-import { ko } from 'date-fns/locale';
-
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
-import { Avatar } from '@/components/ui/Avatar';
-import { Badge } from '@/components/ui/Badge';
-import { Separator } from '@/components/ui/separator';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/Tabs';
-import { Input } from '@/components/ui/Input';
-import { Textarea } from '@/components/ui/Textarea';
-import { Label } from '@/components/ui/label';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from '@/components/ui/tabs';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/Select';
+} from '@/components/ui/select';
 import {
   Dialog,
   DialogContent,
@@ -53,1438 +34,983 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
+  DialogClose,
+  DialogTrigger
 } from '@/components/ui/dialog';
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from '@/components/ui/alert-dialog';
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
+import {
+  Calendar as CalendarIcon,
+  Search,
+  Check,
+  Plus,
+  X,
+  ChevronDown,
+  Edit,
+  Trash2,
+  Filter,
+  Send,
+  Image,
+  RefreshCw,
+  Paperclip,
+  BookOpen,
+  MessageSquare,
+  MoreVertical,
+  Smile
+} from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { format } from 'date-fns';
+import { ko } from 'date-fns/locale';
 
-// 반려견 정보 타입
-interface Pet {
-  id: string;
-  name: string;
-  breed: string;
-  age: number;
-  image?: string;
-  gender: 'male' | 'female';
-  weight: number;
-  birthdate: string;
-  ownerId: number;
-  ownerName: string;
-  trainerId?: number;
-  trainerName?: string;
-}
-
-// 알림장 항목 타입
 interface NotebookEntry {
   id: number;
-  petId: string;
   date: string;
-  authorId: number;
-  authorName: string;
-  authorRole: 'trainer' | 'owner';
-  authorAvatar?: string;
+  title: string;
   content: string;
-  category: 'training' | 'meal' | 'health' | 'behavior' | 'etc';
+  petId: number;
+  petName: string;
+  petAvatar?: string;
+  mood: 'happy' | 'sad' | 'neutral' | 'excited' | 'tired';
   photos?: string[];
-  mood?: 'good' | 'normal' | 'bad';
-  tags?: string[];
-  comments?: NotebookComment[];
-  trainingDetails?: {
-    focus: string;
-    duration: number;
-    progress: number;
-    exercises: string[];
-  };
-  mealDetails?: {
-    breakfast?: string;
-    lunch?: string;
-    dinner?: string;
-    snacks?: string;
-    amount: number;
-  };
-  healthDetails?: {
-    weight?: number;
-    symptoms?: string[];
-    medication?: string;
-    notes?: string;
-  };
+  comments: Comment[];
+  taggedItems: string[];
 }
 
-// 알림장 댓글 타입
-interface NotebookComment {
+interface Comment {
   id: number;
   authorId: number;
   authorName: string;
-  authorRole: 'trainer' | 'owner';
   authorAvatar?: string;
+  authorRole: 'trainer' | 'pet-owner' | 'institute-admin';
   content: string;
-  date: string;
+  timestamp: string;
 }
 
-export default function NotebookPage() {
-  const [match, params] = useRoute<{ id: string }>('/notebook/:id');
-  const [location, navigate] = useLocation();
-  const { isAuthenticated, userRole } = useAuth();
+interface Pet {
+  id: number;
+  name: string;
+  avatar?: string;
+  breed: string;
+}
+
+export default function Notebook() {
+  const { userName, userRole } = useAuth();
   const { toast } = useToast();
-
-  // 인증되지 않은 사용자 리디렉션
-  useEffect(() => {
-    if (!isAuthenticated) {
-      toast({
-        title: "로그인 필요",
-        description: "알림장 기능을 이용하려면 로그인이 필요합니다.",
-        variant: "destructive",
-      });
-      navigate('/auth/login');
-    }
-  }, [isAuthenticated, navigate, toast]);
-
-  // 상태 관리
-  const [pet, setPet] = useState<Pet | null>(null);
   const [entries, setEntries] = useState<NotebookEntry[]>([]);
-  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-  const [isAddEntryDialogOpen, setIsAddEntryDialogOpen] = useState(false);
+  const [filteredEntries, setFilteredEntries] = useState<NotebookEntry[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [activeTab, setActiveTab] = useState('all');
+  const [filterPet, setFilterPet] = useState<number | null>(null);
+  const [filterDate, setFilterDate] = useState<Date | null>(null);
+  const [filterMood, setFilterMood] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [selectedEntry, setSelectedEntry] = useState<NotebookEntry | null>(null);
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [isCommentDialogOpen, setIsCommentDialogOpen] = useState(false);
-  const [commentText, setCommentText] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<string>('all');
-  const [newEntry, setNewEntry] = useState<Partial<NotebookEntry>>({
-    category: 'training',
+  const [showEntryDetail, setShowEntryDetail] = useState(false);
+  const [showNewEntryDialog, setShowNewEntryDialog] = useState(false);
+  const [newEntryForm, setNewEntryForm] = useState({
+    title: '',
     content: '',
-    mood: 'normal',
-    tags: [],
-    photos: [],
-    trainingDetails: {
-      focus: '',
-      duration: 30,
-      progress: 50,
-      exercises: []
-    },
-    mealDetails: {
-      breakfast: '',
-      lunch: '',
-      dinner: '',
-      snacks: '',
-      amount: 0
-    },
-    healthDetails: {
-      weight: 0,
-      symptoms: [],
-      medication: '',
-      notes: ''
-    }
+    petId: 0,
+    mood: 'happy' as 'happy' | 'sad' | 'neutral' | 'excited' | 'tired',
+    taggedItems: [] as string[]
   });
-
-  // 데모 데이터 로드
+  const [commentText, setCommentText] = useState('');
+  const [pets, setPets] = useState<Pet[]>([]);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const commentInputRef = useRef<HTMLTextAreaElement>(null);
+  
   useEffect(() => {
-    if (params?.id) {
-      // 반려견 정보 샘플 데이터
-      const mockPet: Pet = {
-        id: params.id,
-        name: "몽이",
-        breed: "골든리트리버",
-        age: 2,
-        image: "https://images.unsplash.com/photo-1537151608828-ea2b11777ee8?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
-        gender: 'male',
-        weight: 25.5,
-        birthdate: "2021-05-15",
-        ownerId: 1,
-        ownerName: "홍길동",
-        trainerId: 2,
-        trainerName: "김훈련"
-      };
-
-      // 알림장 항목 샘플 데이터
-      const mockEntries: NotebookEntry[] = [
-        {
-          id: 1,
-          petId: params.id,
-          date: format(subDays(new Date(), 2), 'yyyy-MM-dd'),
-          authorId: 2,
-          authorName: "김훈련",
-          authorRole: 'trainer',
-          authorAvatar: "https://images.unsplash.com/photo-1607990281513-2c110a25bd8c?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
-          content: "오늘 몽이의 기본 복종 훈련을 진행했습니다. 앉아, 엎드려 명령에 대한 반응이 점점 좋아지고 있습니다. 특히 '기다려' 명령에 대한 집중력이 향상되었습니다.",
-          category: 'training',
-          mood: 'good',
-          tags: ['기본훈련', '복종훈련'],
-          trainingDetails: {
-            focus: '기본 복종 훈련',
-            duration: 45,
-            progress: 70,
-            exercises: ['앉아', '엎드려', '기다려', '이리와']
+    const loadData = async () => {
+      setIsLoading(true);
+      try {
+        // 실제 구현 시 API 호출로 대체
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        // 임시 반려동물 데이터
+        const mockPets: Pet[] = [
+          {
+            id: 1,
+            name: '초코',
+            breed: '푸들',
+            avatar: ''
           },
-          comments: [
-            {
-              id: 101,
-              authorId: 1,
-              authorName: "홍길동",
-              authorRole: 'owner',
-              content: "감사합니다! 집에서도 연습해보겠습니다. 특별히 주의해야 할 점이 있을까요?",
-              date: format(subDays(new Date(), 2), 'yyyy-MM-dd HH:mm')
-            },
-            {
-              id: 102,
-              authorId: 2,
-              authorName: "김훈련",
-              authorRole: 'trainer',
-              authorAvatar: "https://images.unsplash.com/photo-1607990281513-2c110a25bd8c?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
-              content: "네, 기다려 명령은 조금씩 시간을 늘려가며 훈련하시는 것이 좋습니다. 처음에는 10초, 그다음에는 20초 식으로 늘려가세요.",
-              date: format(subDays(new Date(), 2), 'yyyy-MM-dd HH:mm')
-            }
-          ]
-        },
-        {
-          id: 2,
-          petId: params.id,
-          date: format(subDays(new Date(), 1), 'yyyy-MM-dd'),
-          authorId: 1,
-          authorName: "홍길동",
-          authorRole: 'owner',
-          content: "오늘 몽이가 아침에 식사를 잘 하지 않았습니다. 점심에는 평소보다 적게 먹었고, 저녁에는 정상적으로 식사했습니다. 특별한 이상 증세는 보이지 않습니다.",
-          category: 'meal',
-          mood: 'normal',
-          mealDetails: {
-            breakfast: '드라이 푸드 100g (절반만 섭취)',
-            lunch: '드라이 푸드 150g + 닭가슴살 소량',
-            dinner: '드라이 푸드 200g + 영양제',
-            snacks: '덴탈껌 1개',
-            amount: 300
+          {
+            id: 2,
+            name: '루시',
+            breed: '말티즈',
+            avatar: ''
+          },
+          {
+            id: 3,
+            name: '콩이',
+            breed: '웰시코기',
+            avatar: ''
           }
-        },
-        {
-          id: 3,
-          petId: params.id,
-          date: format(new Date(), 'yyyy-MM-dd'),
-          authorId: 2,
-          authorName: "김훈련",
-          authorRole: 'trainer',
-          authorAvatar: "https://images.unsplash.com/photo-1607990281513-2c110a25bd8c?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
-          content: "오늘은 산책 중 다른 강아지를 만났을 때의 사회화 훈련을 진행했습니다. 처음에는 약간 긴장했지만, 점차 적응하여 좋은 모습을 보여주었습니다. 특히 작은 강아지들에게 온순한 태도를 보여 칭찬해주었습니다.",
-          category: 'training',
-          photos: [
-            "https://images.unsplash.com/photo-1558929996-da64ba858215?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
-            "https://images.unsplash.com/photo-1562176566-e9afd27531d4?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3"
-          ],
-          mood: 'good',
-          tags: ['사회화', '산책훈련'],
-          trainingDetails: {
-            focus: '사회화 훈련',
-            duration: 60,
-            progress: 75,
-            exercises: ['다른 강아지 만나기', '차분하게 인사하기', '리드줄 착용 상태에서 걷기']
+        ];
+        
+        // 임시 알림장 데이터
+        const mockEntries: NotebookEntry[] = [
+          {
+            id: 1,
+            date: '2024-05-12',
+            title: '초코의 첫 훈련 수업',
+            content: '오늘 초코가 첫 훈련 수업을 시작했어요! 처음에는 조금 긴장한 모습이었지만, 수업이 진행되면서 점점 적응하는 모습을 보였습니다. 특히 기본 복종 훈련에서 생각보다 빠르게 배우는 모습이 인상적이었어요. 앉기와 엎드리기를 훈련했고, 집에서도 꾸준히 연습하면 더 좋은 결과가 있을 것 같습니다.',
+            petId: 1,
+            petName: '초코',
+            petAvatar: '',
+            mood: 'excited',
+            comments: [
+              {
+                id: 1,
+                authorId: 101,
+                authorName: '김훈련사',
+                authorRole: 'trainer',
+                content: '초코가 정말 똑똑하네요! 다음 수업도 기대됩니다. 집에서 복습할 때는 간식을 활용하면 더 효과적일 거예요.',
+                timestamp: '2024-05-12T14:30:00'
+              }
+            ],
+            taggedItems: ['훈련', '첫 수업', '복종 훈련']
+          },
+          {
+            id: 2,
+            date: '2024-05-10',
+            title: '루시의 산책 시간',
+            content: '오늘은 루시와 함께 한강공원에 다녀왔어요. 날씨가 정말 좋아서 오랜만에 긴 산책을 했습니다. 루시가 다른 강아지들과도 잘 어울리고, 특히 물가에서 놀 때 정말 즐거워했어요. 다만 리드줄 훈련이 아직 완벽하지 않아서 가끔 강하게 당기는 모습이 있었습니다. 이 부분은 좀 더 연습이 필요할 것 같아요.',
+            petId: 2,
+            petName: '루시',
+            petAvatar: '',
+            mood: 'happy',
+            comments: [],
+            taggedItems: ['산책', '한강', '사회화']
+          },
+          {
+            id: 3,
+            date: '2024-05-08',
+            title: '콩이 건강 체크',
+            content: '콩이가 어제부터 식욕이 조금 떨어진 것 같아 병원에 다녀왔습니다. 다행히 큰 문제는 없고, 일시적인 소화 불량으로 진단받았어요. 소화를 돕는 약을 처방받았고, 당분간은 소화가 잘 되는 음식으로 식단을 조절하라는 조언을 받았습니다. 오늘 저녁부터는 조금씩 식욕이 돌아오는 것 같아 다행입니다.',
+            petId: 3,
+            petName: '콩이',
+            petAvatar: '',
+            mood: 'tired',
+            comments: [
+              {
+                id: 2,
+                authorId: 102,
+                authorName: '박수의사',
+                authorRole: 'trainer',
+                content: '식단 조절 잘 하고 계신 것 같네요. 약은 꼭 정해진 시간에 복용하시고, 상태가 계속 좋아지는지 지켜봐 주세요.',
+                timestamp: '2024-05-08T18:45:00'
+              },
+              {
+                id: 3,
+                authorId: 103,
+                authorName: '이반려인',
+                authorRole: 'pet-owner',
+                content: '우리 콩이 빨리 나아서 다행이에요. 건강이 최우선이죠!',
+                timestamp: '2024-05-09T09:15:00'
+              }
+            ],
+            taggedItems: ['건강', '병원', '식단']
+          },
+          {
+            id: 4,
+            date: '2024-05-15',
+            title: '초코 훈련 2주차',
+            content: '초코의 훈련 2주차가 지났습니다. 처음보다 훨씬 더 집중력이 좋아졌고, 기본 명령어에 대한 반응도 빨라졌어요. 특히 앉아와 기다려 명령에 대한 반응이 훨씬 안정적이 되었습니다. 이번 주에는 손 훈련을 새롭게 시작했는데, 조금 더 연습이 필요할 것 같아요. 전반적으로 초코의 발전 속도가 빠른 편이라 매우 만족스럽습니다.',
+            petId: 1,
+            petName: '초코',
+            petAvatar: '',
+            mood: 'happy',
+            comments: [],
+            taggedItems: ['훈련', '2주차', '발전']
+          },
+          {
+            id: 5,
+            date: '2024-05-14',
+            title: '루시 미용하는 날',
+            content: '오늘 루시를 미용샵에 데려갔어요. 여름이 다가와서 좀 더 시원하게 짧은 스타일로 미용을 했습니다. 처음에는 미용을 무서워했지만, 미용사 선생님이 차분하게 대해주셔서 나중에는 꽤 편안해 했어요. 미용 후에는 평소보다 활발하게 움직이는 모습을 보여서 시원함을 느끼는 것 같습니다. 미용 후 특별히 간식도 사줬어요!',
+            petId: 2,
+            petName: '루시',
+            petAvatar: '',
+            mood: 'neutral',
+            comments: [],
+            taggedItems: ['미용', '여름준비', '털관리']
           }
-        },
-        {
-          id: 4,
-          petId: params.id,
-          date: format(new Date(), 'yyyy-MM-dd'),
-          authorId: 1,
-          authorName: "홍길동",
-          authorRole: 'owner',
-          content: "오늘 아침 몽이의 체중을 측정했습니다. 지난주보다 약간 증가했네요. 적절한 운동과 식이 조절이 필요할 것 같습니다.",
-          category: 'health',
-          mood: 'normal',
-          healthDetails: {
-            weight: 26.2,
-            notes: '지난주 측정 시 25.5kg였음, 약간의 체중 증가'
-          }
+        ];
+        
+        setPets(mockPets);
+        setEntries(mockEntries);
+        
+        // 새 입력 폼의 기본 반려동물 설정
+        if (mockPets.length > 0) {
+          setNewEntryForm(prev => ({ ...prev, petId: mockPets[0].id }));
         }
-      ];
-
-      setPet(mockPet);
-      setEntries(mockEntries);
-    }
-  }, [params]);
-
-  // 선택된 날짜의 알림장 항목 필터링
-  const entriesForSelectedDate = entries.filter(entry => {
-    const sameDay = isSameDay(new Date(entry.date), selectedDate);
-    const matchesCategory = selectedCategory === 'all' || entry.category === selectedCategory;
-    return sameDay && matchesCategory;
-  });
-
-  // 알림장 항목 추가
-  const addEntry = () => {
-    if (!pet || !newEntry.content) {
-      toast({
-        title: "내용을 입력해주세요",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    const entryToAdd: NotebookEntry = {
-      id: Date.now(),
-      petId: pet.id,
-      date: format(selectedDate, 'yyyy-MM-dd'),
-      authorId: userRole === 'trainer' ? (pet.trainerId || 0) : pet.ownerId,
-      authorName: userRole === 'trainer' ? (pet.trainerName || '') : pet.ownerName,
-      authorRole: userRole === 'trainer' ? 'trainer' : 'owner',
-      content: newEntry.content || '',
-      category: (newEntry.category as NotebookEntry['category']) || 'etc',
-      mood: (newEntry.mood as NotebookEntry['mood']) || 'normal',
-      tags: newEntry.tags || [],
-      photos: newEntry.photos || [],
-      comments: [],
-      ...(newEntry.category === 'training' && {
-        trainingDetails: newEntry.trainingDetails
-      }),
-      ...(newEntry.category === 'meal' && {
-        mealDetails: newEntry.mealDetails
-      }),
-      ...(newEntry.category === 'health' && {
-        healthDetails: newEntry.healthDetails
-      })
-    };
-
-    setEntries([...entries, entryToAdd]);
-    setIsAddEntryDialogOpen(false);
-
-    // 입력 폼 초기화
-    setNewEntry({
-      category: 'training',
-      content: '',
-      mood: 'normal',
-      tags: [],
-      photos: [],
-      trainingDetails: {
-        focus: '',
-        duration: 30,
-        progress: 50,
-        exercises: []
-      },
-      mealDetails: {
-        breakfast: '',
-        lunch: '',
-        dinner: '',
-        snacks: '',
-        amount: 0
-      },
-      healthDetails: {
-        weight: 0,
-        symptoms: [],
-        medication: '',
-        notes: ''
+      } catch (error) {
+        console.error('데이터 로딩 오류:', error);
+        toast({
+          title: '데이터 로딩 오류',
+          description: '알림장 정보를 불러오는 중 오류가 발생했습니다.',
+          variant: 'destructive',
+        });
+      } finally {
+        setIsLoading(false);
       }
+    };
+    
+    loadData();
+  }, [toast]);
+  
+  // 필터링된 항목 업데이트
+  useEffect(() => {
+    let result = [...entries];
+    
+    // 검색어 필터링
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      result = result.filter(
+        entry => 
+          entry.title.toLowerCase().includes(query) ||
+          entry.content.toLowerCase().includes(query) ||
+          entry.petName.toLowerCase().includes(query) ||
+          entry.taggedItems.some(tag => tag.toLowerCase().includes(query))
+      );
+    }
+    
+    // 반려동물 필터링
+    if (filterPet !== null) {
+      result = result.filter(entry => entry.petId === filterPet);
+    }
+    
+    // 날짜 필터링
+    if (filterDate) {
+      const dateStr = format(filterDate, 'yyyy-MM-dd');
+      result = result.filter(entry => entry.date === dateStr);
+    }
+    
+    // 기분 필터링
+    if (filterMood) {
+      result = result.filter(entry => entry.mood === filterMood);
+    }
+    
+    // 날짜 기준 내림차순 정렬 (최신순)
+    result.sort((a, b) => {
+      return new Date(b.date).getTime() - new Date(a.date).getTime();
     });
-
-    toast({
-      title: "알림장 작성 완료",
-      description: "새로운 알림장 항목이 추가되었습니다.",
-    });
+    
+    setFilteredEntries(result);
+  }, [entries, searchQuery, filterPet, filterDate, filterMood]);
+  
+  // 항목 상세 보기
+  const handleViewEntry = (entry: NotebookEntry) => {
+    setSelectedEntry(entry);
+    setShowEntryDetail(true);
   };
-
-  // 알림장 항목 삭제
-  const deleteEntry = () => {
-    if (!selectedEntry) return;
-
-    setEntries(entries.filter(entry => entry.id !== selectedEntry.id));
-    setIsDeleteDialogOpen(false);
-    setSelectedEntry(null);
-
-    toast({
-      title: "알림장 항목 삭제 완료",
-      description: "선택한 항목이 삭제되었습니다.",
-    });
-  };
-
+  
   // 댓글 추가
-  const addComment = () => {
-    if (!selectedEntry || !commentText.trim()) {
+  const handleAddComment = () => {
+    if (!selectedEntry || !commentText.trim()) return;
+    
+    const newComment: Comment = {
+      id: Date.now(),
+      authorId: 104,
+      authorName: userName || '사용자',
+      authorRole: userRole as 'pet-owner' | 'trainer' | 'institute-admin',
+      content: commentText,
+      timestamp: new Date().toISOString()
+    };
+    
+    const updatedEntry = {
+      ...selectedEntry,
+      comments: [...selectedEntry.comments, newComment]
+    };
+    
+    setEntries(prev => prev.map(e => 
+      e.id === selectedEntry.id ? updatedEntry : e
+    ));
+    
+    setSelectedEntry(updatedEntry);
+    setCommentText('');
+    
+    toast({
+      title: '댓글 추가됨',
+      description: '댓글이 성공적으로 추가되었습니다.',
+    });
+  };
+  
+  // 새 알림장 추가
+  const handleAddEntry = () => {
+    if (!newEntryForm.title.trim() || !newEntryForm.content.trim() || !newEntryForm.petId) {
       toast({
-        title: "댓글 내용을 입력해주세요",
-        variant: "destructive",
+        title: '입력 확인',
+        description: '제목, 내용, 반려동물은 필수 입력 항목입니다.',
+        variant: 'destructive',
       });
       return;
     }
-
-    const newComment: NotebookComment = {
+    
+    const pet = pets.find(p => p.id === newEntryForm.petId);
+    if (!pet) return;
+    
+    const newEntry: NotebookEntry = {
       id: Date.now(),
-      authorId: userRole === 'trainer' ? (pet?.trainerId || 0) : (pet?.ownerId || 0),
-      authorName: userRole === 'trainer' ? (pet?.trainerName || '') : (pet?.ownerName || ''),
-      authorRole: userRole === 'trainer' ? 'trainer' : 'owner',
-      content: commentText,
-      date: format(new Date(), 'yyyy-MM-dd HH:mm')
+      date: format(new Date(), 'yyyy-MM-dd'),
+      title: newEntryForm.title,
+      content: newEntryForm.content,
+      petId: newEntryForm.petId,
+      petName: pet.name,
+      petAvatar: pet.avatar,
+      mood: newEntryForm.mood,
+      comments: [],
+      taggedItems: newEntryForm.taggedItems
     };
-
-    const updatedEntries = entries.map(entry => {
-      if (entry.id === selectedEntry.id) {
-        return {
-          ...entry,
-          comments: [...(entry.comments || []), newComment]
-        };
-      }
-      return entry;
+    
+    setEntries(prev => [newEntry, ...prev]);
+    
+    setShowNewEntryDialog(false);
+    setNewEntryForm({
+      title: '',
+      content: '',
+      petId: pet.id,
+      mood: 'happy',
+      taggedItems: []
     });
-
-    setEntries(updatedEntries);
-    setCommentText('');
-    setIsCommentDialogOpen(false);
-
+    
     toast({
-      title: "댓글 추가 완료",
-      description: "댓글이 추가되었습니다.",
+      title: '알림장 추가됨',
+      description: '새 알림장이 성공적으로 추가되었습니다.',
     });
   };
-
-  // 이전 날짜로 이동
-  const goToPreviousDay = () => {
-    setSelectedDate(prev => subDays(prev, 1));
+  
+  // 알림장 수정
+  const handleEditEntry = () => {
+    if (!selectedEntry) return;
+    
+    setNewEntryForm({
+      title: selectedEntry.title,
+      content: selectedEntry.content,
+      petId: selectedEntry.petId,
+      mood: selectedEntry.mood,
+      taggedItems: selectedEntry.taggedItems
+    });
+    
+    setIsEditMode(true);
+    setShowEntryDetail(false);
+    setShowNewEntryDialog(true);
   };
-
-  // 다음 날짜로 이동
-  const goToNextDay = () => {
-    setSelectedDate(prev => addDays(prev, 1));
+  
+  // 알림장 수정 저장
+  const handleSaveEdit = () => {
+    if (!selectedEntry || !newEntryForm.title.trim() || !newEntryForm.content.trim()) return;
+    
+    const pet = pets.find(p => p.id === newEntryForm.petId);
+    if (!pet) return;
+    
+    const updatedEntry: NotebookEntry = {
+      ...selectedEntry,
+      title: newEntryForm.title,
+      content: newEntryForm.content,
+      petId: newEntryForm.petId,
+      petName: pet.name,
+      petAvatar: pet.avatar,
+      mood: newEntryForm.mood,
+      taggedItems: newEntryForm.taggedItems
+    };
+    
+    setEntries(prev => prev.map(e => 
+      e.id === selectedEntry.id ? updatedEntry : e
+    ));
+    
+    setShowNewEntryDialog(false);
+    setIsEditMode(false);
+    setSelectedEntry(updatedEntry);
+    setShowEntryDetail(true);
+    
+    toast({
+      title: '알림장 수정됨',
+      description: '알림장이 성공적으로 수정되었습니다.',
+    });
   };
-
-  // 로딩 중이거나 반려견 정보가 없을 때
-  if (!pet) {
-    return (
-      <div className="container mx-auto py-10 px-4">
-        <div className="flex items-center justify-center h-[60vh]">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-        </div>
-      </div>
-    );
-  }
-
+  
+  // 알림장 삭제
+  const handleDeleteEntry = () => {
+    if (!selectedEntry) return;
+    
+    setEntries(prev => prev.filter(e => e.id !== selectedEntry.id));
+    setShowEntryDetail(false);
+    
+    toast({
+      title: '알림장 삭제됨',
+      description: '알림장이 성공적으로 삭제되었습니다.',
+    });
+  };
+  
+  // 태그 추가
+  const handleAddTag = (tag: string) => {
+    if (!tag.trim()) return;
+    
+    setNewEntryForm(prev => ({
+      ...prev,
+      taggedItems: [...prev.taggedItems, tag]
+    }));
+  };
+  
+  // 태그 제거
+  const handleRemoveTag = (tag: string) => {
+    setNewEntryForm(prev => ({
+      ...prev,
+      taggedItems: prev.taggedItems.filter(t => t !== tag)
+    }));
+  };
+  
+  // 필터 초기화
+  const handleResetFilters = () => {
+    setSearchQuery('');
+    setFilterPet(null);
+    setFilterDate(null);
+    setFilterMood(null);
+  };
+  
+  // 기분 아이콘 렌더링
+  const renderMoodIcon = (mood: string) => {
+    switch (mood) {
+      case 'happy':
+        return <div className="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center text-green-500">😊</div>;
+      case 'sad':
+        return <div className="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center text-blue-500">😢</div>;
+      case 'neutral':
+        return <div className="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center text-gray-500">😐</div>;
+      case 'excited':
+        return <div className="w-6 h-6 rounded-full bg-yellow-100 flex items-center justify-center text-yellow-500">😃</div>;
+      case 'tired':
+        return <div className="w-6 h-6 rounded-full bg-purple-100 flex items-center justify-center text-purple-500">😴</div>;
+      default:
+        return <div className="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center text-gray-500">😐</div>;
+    }
+  };
+  
+  // 기분 텍스트
+  const getMoodText = (mood: string) => {
+    switch (mood) {
+      case 'happy': return '행복';
+      case 'sad': return '슬픔';
+      case 'neutral': return '보통';
+      case 'excited': return '신남';
+      case 'tired': return '피곤';
+      default: return '보통';
+    }
+  };
+  
   return (
-    <div className="container mx-auto py-8 px-4">
-      <div className="flex items-center text-sm text-gray-500 mb-6">
-        <a href="/" className="hover:text-primary">홈</a>
-        <ChevronRight className="w-4 h-4 mx-1" />
-        <span className="text-gray-700 font-medium">알림장</span>
-      </div>
-
-      {/* 반려견 정보 및 날짜 네비게이션 */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-        <div className="flex items-center">
-          <Avatar
-            src={pet.image}
-            fallback={pet.name[0]}
-            alt={pet.name}
-            className="w-16 h-16 mr-4"
-          />
-          <div>
-            <h1 className="text-2xl font-bold flex items-center">
-              {pet.name}의 알림장
-              <Badge className="ml-2 text-xs">{pet.breed}</Badge>
-            </h1>
-            <div className="flex items-center text-sm text-gray-600 mt-1">
-              <span className="mr-3">나이: {pet.age}세</span>
-              <span className="mr-3">성별: {pet.gender === 'male' ? '남아' : '여아'}</span>
-              <span>몸무게: {pet.weight}kg</span>
+    <div className="p-6 space-y-6">
+      {/* 알림장 상세 모달 */}
+      <Dialog open={showEntryDetail} onOpenChange={setShowEntryDetail}>
+        <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+          {selectedEntry && (
+            <>
+              <DialogHeader>
+                <div className="flex items-center justify-between">
+                  <DialogTitle className="text-xl">{selectedEntry.title}</DialogTitle>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon">
+                        <MoreVertical className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={handleEditEntry}>
+                        <Edit className="mr-2 h-4 w-4" />
+                        수정하기
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={handleDeleteEntry} className="text-red-500">
+                        <Trash2 className="mr-2 h-4 w-4" />
+                        삭제하기
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+                <DialogDescription>
+                  {format(new Date(selectedEntry.date), 'PPP', { locale: ko })} · {selectedEntry.petName}
+                </DialogDescription>
+              </DialogHeader>
+              
+              <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <Avatar className="h-8 w-8">
+                    <AvatarImage src={selectedEntry.petAvatar} alt={selectedEntry.petName} />
+                    <AvatarFallback>{selectedEntry.petName.substring(0, 2)}</AvatarFallback>
+                  </Avatar>
+                  <span className="font-medium">{selectedEntry.petName}</span>
+                  <div className="flex items-center gap-1 ml-auto">
+                    <span className="text-sm text-muted-foreground">기분:</span>
+                    {renderMoodIcon(selectedEntry.mood)}
+                    <span className="text-sm">{getMoodText(selectedEntry.mood)}</span>
+                  </div>
+                </div>
+                
+                <div className="whitespace-pre-wrap text-base mt-2">
+                  {selectedEntry.content}
+                </div>
+                
+                {selectedEntry.taggedItems.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mt-4">
+                    {selectedEntry.taggedItems.map((tag, index) => (
+                      <Badge key={index} variant="outline">
+                        #{tag}
+                      </Badge>
+                    ))}
+                  </div>
+                )}
+                
+                <div className="mt-6">
+                  <h3 className="text-lg font-medium mb-2">댓글 {selectedEntry.comments.length}개</h3>
+                  <div className="space-y-4">
+                    {selectedEntry.comments.map((comment) => (
+                      <div key={comment.id} className="flex gap-3">
+                        <Avatar className="h-8 w-8">
+                          <AvatarImage src={comment.authorAvatar} alt={comment.authorName} />
+                          <AvatarFallback>{comment.authorName.substring(0, 2)}</AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium">{comment.authorName}</span>
+                            <Badge variant="outline" className="text-xs">
+                              {comment.authorRole === 'trainer' ? '훈련사' : 
+                               comment.authorRole === 'institute-admin' ? '기관관리자' : '반려인'}
+                            </Badge>
+                            <span className="text-xs text-muted-foreground">
+                              {format(new Date(comment.timestamp), 'PPp', { locale: ko })}
+                            </span>
+                          </div>
+                          <p className="text-sm mt-1">{comment.content}</p>
+                        </div>
+                      </div>
+                    ))}
+                    
+                    {selectedEntry.comments.length === 0 && (
+                      <div className="text-center py-4 text-muted-foreground">
+                        아직 댓글이 없습니다. 첫 댓글을 남겨보세요!
+                      </div>
+                    )}
+                    
+                    <div className="flex gap-2 mt-4">
+                      <Avatar className="h-8 w-8">
+                        <AvatarFallback>{userName?.substring(0, 2) || '사용자'}</AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1">
+                        <Textarea
+                          ref={commentInputRef}
+                          placeholder="댓글을 입력하세요..."
+                          value={commentText}
+                          onChange={(e) => setCommentText(e.target.value)}
+                          className="min-h-[80px]"
+                        />
+                        <div className="flex justify-end mt-2">
+                          <Button 
+                            onClick={handleAddComment}
+                            disabled={!commentText.trim()}
+                          >
+                            <Send className="mr-2 h-4 w-4" />
+                            댓글 추가
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
+      
+      {/* 새 알림장 작성 모달 */}
+      <Dialog open={showNewEntryDialog} onOpenChange={(open) => {
+        setShowNewEntryDialog(open);
+        if (!open) setIsEditMode(false);
+      }}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>{isEditMode ? '알림장 수정' : '새 알림장 작성'}</DialogTitle>
+            <DialogDescription>
+              {isEditMode ? '알림장 내용을 수정합니다.' : '오늘의 반려동물 활동을 기록해보세요.'}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            <div>
+              <label htmlFor="title" className="block text-sm font-medium mb-1">
+                제목
+              </label>
+              <Input
+                id="title"
+                placeholder="알림장 제목을 입력하세요"
+                value={newEntryForm.title}
+                onChange={(e) => setNewEntryForm(prev => ({ ...prev, title: e.target.value }))}
+              />
+            </div>
+            
+            <div>
+              <label htmlFor="pet" className="block text-sm font-medium mb-1">
+                반려동물
+              </label>
+              <Select
+                value={newEntryForm.petId.toString()}
+                onValueChange={(value) => setNewEntryForm(prev => ({ ...prev, petId: parseInt(value) }))}
+              >
+                <SelectTrigger id="pet">
+                  <SelectValue placeholder="반려동물을 선택하세요" />
+                </SelectTrigger>
+                <SelectContent>
+                  {pets.map((pet) => (
+                    <SelectItem key={pet.id} value={pet.id.toString()}>
+                      {pet.name} ({pet.breed})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div>
+              <label htmlFor="mood" className="block text-sm font-medium mb-1">
+                오늘의 기분
+              </label>
+              <Select
+                value={newEntryForm.mood}
+                onValueChange={(value: any) => setNewEntryForm(prev => ({ ...prev, mood: value }))}
+              >
+                <SelectTrigger id="mood">
+                  <SelectValue placeholder="기분을 선택하세요" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="happy">
+                    <div className="flex items-center">
+                      <span className="mr-2">😊</span> 행복해요
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="sad">
+                    <div className="flex items-center">
+                      <span className="mr-2">😢</span> 슬퍼요
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="neutral">
+                    <div className="flex items-center">
+                      <span className="mr-2">😐</span> 보통이에요
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="excited">
+                    <div className="flex items-center">
+                      <span className="mr-2">😃</span> 신나요
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="tired">
+                    <div className="flex items-center">
+                      <span className="mr-2">😴</span> 피곤해요
+                    </div>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div>
+              <label htmlFor="content" className="block text-sm font-medium mb-1">
+                내용
+              </label>
+              <Textarea
+                id="content"
+                placeholder="알림장 내용을 입력하세요"
+                value={newEntryForm.content}
+                onChange={(e) => setNewEntryForm(prev => ({ ...prev, content: e.target.value }))}
+                className="min-h-[150px]"
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium mb-1">
+                태그
+              </label>
+              <div className="flex flex-wrap gap-2 mb-2">
+                {newEntryForm.taggedItems.map((tag, index) => (
+                  <Badge key={index} variant="secondary" className="px-2 py-1">
+                    #{tag}
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-4 w-4 ml-1"
+                      onClick={() => handleRemoveTag(tag)}
+                    >
+                      <X className="h-3 w-3" />
+                    </Button>
+                  </Badge>
+                ))}
+              </div>
+              <div className="flex gap-2">
+                <Input
+                  placeholder="태그 입력 후 추가 버튼 클릭"
+                  value={(newEntryForm as any).tagInput || ''}
+                  onChange={(e) => setNewEntryForm(prev => ({ ...prev, tagInput: e.target.value }))}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      handleAddTag((newEntryForm as any).tagInput);
+                      setNewEntryForm(prev => ({ ...prev, tagInput: '' }));
+                    }
+                  }}
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    handleAddTag((newEntryForm as any).tagInput);
+                    setNewEntryForm(prev => ({ ...prev, tagInput: '' }));
+                  }}
+                  disabled={!((newEntryForm as any).tagInput || '').trim()}
+                >
+                  추가
+                </Button>
+              </div>
             </div>
           </div>
-        </div>
-
+          
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setShowNewEntryDialog(false);
+                setIsEditMode(false);
+              }}
+            >
+              취소
+            </Button>
+            <Button onClick={isEditMode ? handleSaveEdit : handleAddEntry}>
+              {isEditMode ? '수정하기' : '등록하기'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
+      <div className="flex justify-between items-center">
+        <h1 className="text-3xl font-bold tracking-tight">알림장</h1>
         <div className="flex items-center space-x-2">
           <Button
             variant="outline"
-            size="icon"
-            onClick={goToPreviousDay}
+            size="sm"
+            onClick={() => setViewMode(prev => prev === 'grid' ? 'list' : 'grid')}
           >
-            <ChevronLeft className="h-4 w-4" />
+            {viewMode === 'grid' ? (
+              <>
+                <MessageSquare className="mr-2 h-4 w-4" />
+                리스트 보기
+              </>
+            ) : (
+              <>
+                <BookOpen className="mr-2 h-4 w-4" />
+                그리드 보기
+              </>
+            )}
           </Button>
-
-          <div className="bg-white dark:bg-gray-800 px-4 py-2 rounded-md border text-center min-w-[140px]">
-            <div className="text-sm font-medium">
-              {format(selectedDate, 'PPP', { locale: ko })}
-            </div>
-            <div className="text-xs text-gray-500">
-              {format(selectedDate, 'EEEE', { locale: ko })}
-            </div>
-          </div>
-
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={goToNextDay}
-          >
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-
-          <Button onClick={() => setIsAddEntryDialogOpen(true)}>
-            <Plus className="h-4 w-4 mr-1" />
-            작성하기
+          <Button onClick={() => setShowNewEntryDialog(true)}>
+            <Plus className="mr-2 h-4 w-4" />
+            새 알림장
           </Button>
         </div>
       </div>
-
-      {/* 담당자 정보 */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center">
-              <div className="bg-blue-100 dark:bg-blue-800 p-2 rounded-full mr-4">
-                <User className="h-5 w-5 text-blue-600 dark:text-blue-300" />
-              </div>
-              <div>
-                <div className="text-sm text-gray-500">보호자</div>
-                <div className="font-medium">{pet.ownerName}</div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center">
-              <div className="bg-green-100 dark:bg-green-800 p-2 rounded-full mr-4">
-                <Award className="h-5 w-5 text-green-600 dark:text-green-300" />
-              </div>
-              <div>
-                <div className="text-sm text-gray-500">담당 훈련사</div>
-                <div className="font-medium">{pet.trainerName || '미지정'}</div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center">
-              <div className="bg-amber-100 dark:bg-amber-800 p-2 rounded-full mr-4">
-                <FileText className="h-5 w-5 text-amber-600 dark:text-amber-300" />
-              </div>
-              <div>
-                <div className="text-sm text-gray-500">총 기록 수</div>
-                <div className="font-medium">{entries.length}개</div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* 추가된 카드 컴포넌트 */}
-      <div className="grid md:grid-cols-2 gap-6 mb-8">
-        <Card className="p-4">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <Bell className="w-5 h-5 text-primary" />
-              <h2 className="text-xl font-semibold">오늘의 알림</h2>
-            </div>
-            <button className="text-primary hover:text-primary/80">
-              <Edit className="w-5 h-5" />
-            </button>
-          </div>
-          <div className="space-y-4">
-            <div className="p-3 bg-gray-50 rounded-lg">
-              <h3 className="font-medium">산책 기록</h3>
-              <p className="text-sm text-gray-600 mt-1">오전 30분 산책 완료</p>
-            </div>
-            <div className="p-3 bg-gray-50 rounded-lg">
-              <h3 className="font-medium">식사량</h3>
-              <p className="text-sm text-gray-600 mt-1">아침, 점심 식사 완료</p>
-            </div>
-          </div>
-        </Card>
-
-        <Card className="p-4">
-          <div className="flex items-center gap-2 mb-4">
-            <MessageSquare className="w-5 h-5 text-primary" />
-            <h2 className="text-xl font-semibold">훈련사 피드백</h2>
-          </div>
-          <div className="space-y-4">
-            <div className="p-3 bg-gray-50 rounded-lg">
-              <div className="flex items-center justify-between">
-                <h3 className="font-medium">기본 훈련 진행상황</h3>
-                <span className="text-sm text-green-600">양호</span>
-              </div>
-              <p className="text-sm text-gray-600 mt-2">
-                기본 명령어 습득이 잘 되고 있습니다.
-                지속적인 보상 훈련을 추천드립니다.
-              </p>
-            </div>
-          </div>
-        </Card>
-      </div>
-
-
-      {/* 알림장 내용 */}
-      <div className="mb-8">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-semibold">알림장 내용</h2>
-
-          <div className="flex items-center gap-2">
-            <Select
-              value={selectedCategory}
-              onValueChange={setSelectedCategory}
-            >
-              <SelectTrigger className="w-[150px]">
-                <SelectValue placeholder="모든 카테고리" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">모든 카테고리</SelectItem>
-                <SelectItem value="training">훈련</SelectItem>
-                <SelectItem value="meal">식사</SelectItem>
-                <SelectItem value="health">건강</SelectItem>
-                <SelectItem value="behavior">행동</SelectItem>
-                <SelectItem value="etc">기타</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+      
+      {/* 필터링 도구 */}
+      <div className="flex flex-col md:flex-row gap-4 md:items-center">
+        <div className="relative md:w-[300px]">
+          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Input
+            type="search"
+            placeholder="알림장 검색..."
+            className="pl-8"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
         </div>
-
-        {entriesForSelectedDate.length > 0 ? (
-          <div className="space-y-6">
-            {entriesForSelectedDate.map((entry) => (
-              <Card key={entry.id} className="overflow-hidden">
-                <CardHeader className="pb-3 bg-gray-50 dark:bg-gray-800">
-                  <div className="flex justify-between items-start">
-                    <div className="flex items-center">
-                      <Avatar
-                        src={entry.authorAvatar}
-                        fallback={entry.authorName[0]}
-                        alt={entry.authorName}
-                        className="mr-3"
-                      />
-                      <div>
-                        <div className="font-medium flex items-center">
-                          {entry.authorName}
-                          <Badge variant="outline" className="ml-2 text-xs">
-                            {entry.authorRole === 'trainer' ? '훈련사' : '보호자'}
-                          </Badge>
-                        </div>
-                        <div className="text-xs text-gray-500">
-                          {format(new Date(entry.date), 'PPP', { locale: ko })} {' '}
-                          {format(new Date(entry.date), 'a h:mm', { locale: ko })}
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center">
-                      <Badge
-                        variant="outline"
-                        className={`
-                          ${entry.category === 'training' ? 'bg-blue-50 text-blue-600 border-blue-200' : ''}
-                          ${entry.category === 'meal' ? 'bg-green-50 text-green-600 border-green-200' : ''}
-                          ${entry.category === 'health' ? 'bg-red-50 text-red-600 border-red-200' : ''}
-                          ${entry.category === 'behavior' ? 'bg-purple-50 text-purple-600 border-purple-200' : ''}
-                          ${entry.category === 'etc' ? 'bg-gray-50 text-gray-600 border-gray-200' : ''}
-                        `}
-                      >
-                        {entry.category === 'training' && '훈련'}
-                        {entry.category === 'meal' && '식사'}
-                        {entry.category === 'health' && '건강'}
-                        {entry.category === 'behavior' && '행동'}
-                        {entry.category === 'etc' && '기타'}
-                      </Badge>
-
-                      <div className="flex ml-2">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8"
-                          onClick={() => {
-                            setSelectedEntry(entry);
-                            setIsCommentDialogOpen(true);
-                          }}
-                        >
-                          <MessageSquare className="h-4 w-4" />
-                        </Button>
-                        {(userRole === 'trainer' && entry.authorRole === 'trainer') ||
-                          (userRole === 'pet-owner' && entry.authorRole === 'owner') && (
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8 text-red-500 hover:text-red-600"
-                              onClick={() => {
-                                setSelectedEntry(entry);
-                                setIsDeleteDialogOpen(true);
-                              }}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          )}
-                      </div>
-                    </div>
+        
+        <Select value={filterPet?.toString() || 'all'} onValueChange={(value) => setFilterPet(value === 'all' ? null : parseInt(value))}>
+          <SelectTrigger className="md:w-[180px]">
+            <SelectValue placeholder="반려동물" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">모든 반려동물</SelectItem>
+            {pets.map((pet) => (
+              <SelectItem key={pet.id} value={pet.id.toString()}>
+                {pet.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="outline" className={filterDate ? '' : 'text-muted-foreground'}>
+              <CalendarIcon className="mr-2 h-4 w-4" />
+              {filterDate ? format(filterDate, 'PPP', { locale: ko }) : '날짜 선택'}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0">
+            <Calendar
+              mode="single"
+              selected={filterDate || undefined}
+              onSelect={(date) => setFilterDate(date)}
+              locale={ko}
+            />
+          </PopoverContent>
+        </Popover>
+        
+        <Select value={filterMood || 'all'} onValueChange={(value) => setFilterMood(value === 'all' ? null : value)}>
+          <SelectTrigger className="md:w-[150px]">
+            <SelectValue placeholder="기분" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">모든 기분</SelectItem>
+            <SelectItem value="happy">행복해요 😊</SelectItem>
+            <SelectItem value="sad">슬퍼요 😢</SelectItem>
+            <SelectItem value="neutral">보통이에요 😐</SelectItem>
+            <SelectItem value="excited">신나요 😃</SelectItem>
+            <SelectItem value="tired">피곤해요 😴</SelectItem>
+          </SelectContent>
+        </Select>
+        
+        <Button variant="ghost" size="sm" onClick={handleResetFilters}>
+          필터 초기화
+        </Button>
+      </div>
+      
+      {/* 알림장 목록 */}
+      {isLoading ? (
+        <div className="flex justify-center items-center p-12">
+          <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
+        </div>
+      ) : filteredEntries.length === 0 ? (
+        <div className="text-center p-12">
+          <BookOpen className="mx-auto h-12 w-12 text-muted-foreground" />
+          <h3 className="mt-4 text-lg font-medium">알림장이 없습니다</h3>
+          <p className="mt-2 text-sm text-muted-foreground">
+            새 알림장을 작성하거나 검색 필터를 조정해보세요.
+          </p>
+          <Button onClick={() => setShowNewEntryDialog(true)} className="mt-4">
+            <Plus className="mr-2 h-4 w-4" />
+            새 알림장 작성
+          </Button>
+        </div>
+      ) : viewMode === 'grid' ? (
+        // 그리드 뷰
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {filteredEntries.map((entry) => (
+            <Card key={entry.id} className="overflow-hidden hover:shadow-md transition-shadow">
+              <CardHeader className="pb-2">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <CardTitle className="text-lg">{entry.title}</CardTitle>
+                    <CardDescription>
+                      {format(new Date(entry.date), 'PPP', { locale: ko })}
+                    </CardDescription>
                   </div>
-                </CardHeader>
-
-                <CardContent className="pt-4">
-                  {/* 내용 */}
-                  <div className="mb-4">
-                    <p className="whitespace-pre-line">{entry.content}</p>
-                  </div>
-
-                  {/* 사진 */}
-                  {entry.photos && entry.photos.length > 0 && (
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mb-4">
-                      {entry.photos.map((photo, index) => (
-                        <div key={index} className="aspect-square rounded-md overflow-hidden">
-                          <img
-                            src={photo}
-                            alt={`Photo ${index + 1}`}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* 기분 */}
-                  {entry.mood && (
-                    <div className="flex items-center mb-3">
-                      <span className="text-sm font-medium mr-2">기분:</span>
-                      <Badge
-                        variant="outline"
-                        className={`
-                          ${entry.mood === 'good' ? 'bg-green-50 text-green-600 border-green-200' : ''}
-                          ${entry.mood === 'normal' ? 'bg-blue-50 text-blue-600 border-blue-200' : ''}
-                          ${entry.mood === 'bad' ? 'bg-red-50 text-red-600 border-red-200' : ''}
-                        `}
-                      >
-                        {entry.mood === 'good' && '좋음'}
-                        {entry.mood === 'normal' && '보통'}
-                        {entry.mood === 'bad' && '나쁨'}
+                  {renderMoodIcon(entry.mood)}
+                </div>
+              </CardHeader>
+              <CardContent className="pt-0">
+                <div className="flex items-center mb-2">
+                  <Avatar className="h-6 w-6 mr-2">
+                    <AvatarImage src={entry.petAvatar} alt={entry.petName} />
+                    <AvatarFallback>{entry.petName.substring(0, 2)}</AvatarFallback>
+                  </Avatar>
+                  <span className="text-sm font-medium">{entry.petName}</span>
+                </div>
+                <p className="text-sm line-clamp-3">{entry.content}</p>
+                {entry.taggedItems.length > 0 && (
+                  <div className="flex flex-wrap gap-1 mt-2">
+                    {entry.taggedItems.slice(0, 3).map((tag, index) => (
+                      <Badge key={index} variant="outline" className="text-xs">
+                        #{tag}
                       </Badge>
+                    ))}
+                    {entry.taggedItems.length > 3 && (
+                      <Badge variant="outline" className="text-xs">
+                        +{entry.taggedItems.length - 3}
+                      </Badge>
+                    )}
+                  </div>
+                )}
+              </CardContent>
+              <CardFooter className="flex justify-between pt-2 border-t">
+                <div className="flex items-center text-sm text-muted-foreground">
+                  <MessageSquare className="h-4 w-4 mr-1" />
+                  {entry.comments.length}
+                </div>
+                <Button variant="ghost" size="sm" onClick={() => handleViewEntry(entry)}>
+                  상세 보기
+                </Button>
+              </CardFooter>
+            </Card>
+          ))}
+        </div>
+      ) : (
+        // 리스트 뷰
+        <div className="divide-y">
+          {filteredEntries.map((entry) => (
+            <div key={entry.id} className="py-4 hover:bg-muted/50 px-2 transition-colors">
+              <div className="flex items-start gap-4">
+                <div className="flex-1">
+                  <div className="flex items-center justify-between mb-1">
+                    <div className="flex items-center">
+                      <h3 className="font-medium text-base">{entry.title}</h3>
+                      {renderMoodIcon(entry.mood)}
                     </div>
-                  )}
-
-                  {/* 태그 */}
-                  {entry.tags && entry.tags.length > 0 && (
-                    <div className="flex flex-wrap gap-1 mb-3">
-                      {entry.tags.map((tag, index) => (
-                        <Badge key={index} variant="secondary" className="bg-gray-100">
+                    <span className="text-sm text-muted-foreground">
+                      {format(new Date(entry.date), 'PPP', { locale: ko })}
+                    </span>
+                  </div>
+                  
+                  <div className="flex items-center mb-2">
+                    <Avatar className="h-5 w-5 mr-1">
+                      <AvatarImage src={entry.petAvatar} alt={entry.petName} />
+                      <AvatarFallback>{entry.petName.substring(0, 2)}</AvatarFallback>
+                    </Avatar>
+                    <span className="text-sm">{entry.petName}</span>
+                  </div>
+                  
+                  <p className="text-sm line-clamp-2 mb-2">{entry.content}</p>
+                  
+                  {entry.taggedItems.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mb-2">
+                      {entry.taggedItems.map((tag, index) => (
+                        <Badge key={index} variant="outline" className="text-xs">
                           #{tag}
                         </Badge>
                       ))}
                     </div>
                   )}
-
-                  {/* 훈련 상세 */}
-                  {entry.category === 'training' && entry.trainingDetails && (
-                    <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-md mb-3">
-                      <div className="text-sm font-medium mb-2 text-blue-700 dark:text-blue-300">
-                        훈련 세부 정보
-                      </div>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
-                        <div className="flex items-center">
-                          <span className="text-gray-500 mr-2">훈련 주제:</span>
-                          <span>{entry.trainingDetails.focus}</span>
-                        </div>
-                        <div className="flex items-center">
-                          <span className="text-gray-500 mr-2">훈련 시간:</span>
-                          <span>{entry.trainingDetails.duration}분</span>
-                        </div>
-                        <div className="flex items-center">
-                          <span className="text-gray-500 mr-2">진행도:</span>
-                          <div className="w-24 h-2 bg-gray-200 rounded-full overflow-hidden">
-                            <div
-                              className="h-full bg-blue-500"
-                              style={{ width: `${entry.trainingDetails.progress}%` }}
-                            ></div>
-                          </div>
-                          <span className="ml-2">{entry.trainingDetails.progress}%</span>
-                        </div>
-                        <div className="flex items-center col-span-full">
-                          <span className="text-gray-500 mr-2">훈련 항목:</span>
-                          <div className="flex flex-wrap gap-1">
-                            {entry.trainingDetails.exercises.map((exercise, index) => (
-                              <Badge key={index}                              variant="outline" className="bg-white">
-                                {exercise}
-                              </Badge>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
+                  
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center text-sm text-muted-foreground">
+                      <MessageSquare className="h-4 w-4 mr-1" />
+                      {entry.comments.length} 댓글
                     </div>
-                  )}
-
-                  {/* 식사 상세 */}
-                  {entry.category === 'meal' && entry.mealDetails && (
-                    <div className="bg-green-50 dark:bg-green-900/20 p-3 rounded-md mb-3">
-                      <div className="text-sm font-medium mb-2 text-green-700 dark:text-green-300">
-                        식사 세부 정보
-                      </div>
-                      <div className="grid grid-cols-1 gap-2 text-sm">
-                        {entry.mealDetails.breakfast && (
-                          <div className="flex items-start">
-                            <span className="text-gray-500 mr-2 w-16">아침:</span>
-                            <span>{entry.mealDetails.breakfast}</span>
-                          </div>
-                        )}
-                        {entry.mealDetails.lunch && (
-                          <div className="flex items-start">
-                            <span className="text-gray-500 mr-2 w-16">점심:</span>
-                            <span>{entry.mealDetails.lunch}</span>
-                          </div>
-                        )}
-                        {entry.mealDetails.dinner && (
-                          <div className="flex items-start">
-                            <span className="text-gray-500 mr-2 w-16">저녁:</span>
-                            <span>{entry.mealDetails.dinner}</span>
-                          </div>
-                        )}
-                        {entry.mealDetails.snacks && (
-                          <div className="flex items-start">
-                            <span className="text-gray-500 mr-2 w-16">간식:</span>
-                            <span>{entry.mealDetails.snacks}</span>
-                          </div>
-                        )}
-                        <div className="flex items-center">
-                          <span className="text-gray-500 mr-2 w-16">총량:</span>
-                          <span>{entry.mealDetails.amount}g</span>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* 건강 상세 */}
-                  {entry.category === 'health' && entry.healthDetails && (
-                    <div className="bg-red-50 dark:bg-red-900/20 p-3 rounded-md mb-3">
-                      <div className="text-sm font-medium mb-2 text-red-700 dark:text-red-300">
-                        건강 세부 정보
-                      </div>
-                      <div className="grid grid-cols-1 gap-2 text-sm">
-                        {entry.healthDetails.weight && (
-                          <div className="flex items-center">
-                            <span className="text-gray-500 mr-2 w-16">체중:</span>
-                            <span>{entry.healthDetails.weight}kg</span>
-                          </div>
-                        )}
-                        {entry.healthDetails.symptoms && entry.healthDetails.symptoms.length > 0 && (
-                          <div className="flex items-start">
-                            <span className="text-gray-500 mr-2 w-16">증상:</span>
-                            <div className="flex flex-wrap gap-1">
-                              {entry.healthDetails.symptoms.map((symptom, index) => (
-                                <Badge key={index} variant="outline" className="bg-white">
-                                  {symptom}
-                                </Badge>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-                        {entry.healthDetails.medication && (
-                          <div className="flex items-start">
-                            <span className="text-gray-500 mr-2 w-16">약물:</span>
-                            <span>{entry.healthDetails.medication}</span>
-                          </div>
-                        )}
-                        {entry.healthDetails.notes && (
-                          <div className="flex items-start">
-                            <span className="text-gray-500 mr-2 w-16">메모:</span>
-                            <span>{entry.healthDetails.notes}</span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* 댓글 */}
-                  {entry.comments && entry.comments.length > 0 && (
-                    <div className="mt-4 pt-4 border-t">
-                      <div className="text-sm font-medium mb-2">댓글 ({entry.comments.length})</div>
-                      <div className="space-y-3">
-                        {entry.comments.map((comment) => (
-                          <div key={comment.id} className="flex">
-                            <Avatar
-                              src={comment.authorAvatar}
-                              fallback={comment.authorName[0]}
-                              alt={comment.authorName}
-                              className="w-8 h-8 mr-3 flex-shrink-0"
-                            />
-                            <div className="flex-1">
-                              <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3">
-                                <div className="flex justify-between items-center mb-1">
-                                  <div className="font-medium text-sm flex items-center">
-                                    {comment.authorName}
-                                    <Badge variant="outline" className="ml-2 text-xs">
-                                      {comment.authorRole === 'trainer' ? '훈련사' : '보호자'}
-                                    </Badge>
-                                  </div>
-                                  <div className="text-xs text-gray-500">{comment.date}</div>
-                                </div>
-                                <p className="text-sm">{comment.content}</p>
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </CardContent>
-
-                <CardFooter className="pt-0">
-                  <Button
-                    variant="ghost"
-                    className="w-full justify-center"
-                    onClick={() => {
-                      setSelectedEntry(entry);
-                      setIsCommentDialogOpen(true);
-                    }}
-                  >
-                    댓글 작성
-                  </Button>
-                </CardFooter>
-              </Card>
-            ))}
-          </div>
-        ) : (
-          <Card>
-            <CardContent className="flex flex-col items-center justify-center py-12">
-              <StickyNote className="h-12 w-12 text-gray-300 mb-4" />
-              <h3 className="text-lg font-medium text-gray-700 dark:text-gray-300 mb-1">
-                오늘의 기록이 없습니다
-              </h3>
-              <p className="text-gray-500 dark:text-gray-400 text-center max-w-md mb-4">
-                오늘의 훈련, 식사, 건강 상태 등을 기록해보세요.
-                반려견의 성장 과정을 함께 공유할 수 있습니다.
-              </p>
-              <Button onClick={() => setIsAddEntryDialogOpen(true)}>
-                <Plus className="mr-2 h-4 w-4" />
-                알림장 작성하기
-              </Button>
-            </CardContent>
-          </Card>
-        )}
-      </div>
-
-      {/* 알림장 작성 다이얼로그 */}
-      <Dialog open={isAddEntryDialogOpen} onOpenChange={setIsAddEntryDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>알림장 작성</DialogTitle>
-            <DialogDescription>
-              {pet.name}의 {format(selectedDate, 'PPP', { locale: ko })} 알림장을 작성합니다.
-            </DialogDescription>
-          </DialogHeader>
-
-          <Tabs
-            defaultValue="training"
-            value={newEntry.category}
-            onValueChange={(value) => setNewEntry({ ...newEntry, category: value })}
-          >
-            <TabsList className="grid grid-cols-5 mb-4">
-              <TabsTrigger value="training">훈련</TabsTrigger>
-              <TabsTrigger value="meal">식사</TabsTrigger>
-              <TabsTrigger value="health">건강</TabsTrigger>
-              <TabsTrigger value="behavior">행동</TabsTrigger>
-              <TabsTrigger value="etc">기타</TabsTrigger>
-            </TabsList>
-
-            <div className="space-y-4 mb-4">
-              <div>
-                <Label htmlFor="content">내용</Label>
-                <Textarea
-                  id="content"
-                  value={newEntry.content}
-                  onChange={(e) => setNewEntry({ ...newEntry, content: e.target.value })}
-                  placeholder="오늘의 활동, 특이사항 등을 자세히 기록해주세요."
-                  className="mt-1"
-                  rows={5}
-                />
-              </div>
-
-              <div>
-                <Label>기분</Label>
-                <div className="flex space-x-2 mt-1">
-                  <Button
-                    type="button"
-                    variant={newEntry.mood === 'good' ? 'default' : 'outline'}
-                    className={newEntry.mood === 'good' ? 'bg-green-500 hover:bg-green-600' : ''}
-                    onClick={() => setNewEntry({ ...newEntry, mood: 'good' })}
-                  >
-                    좋음
-                  </Button>
-                  <Button
-                    type="button"
-                    variant={newEntry.mood === 'normal' ? 'default' : 'outline'}
-                    className={newEntry.mood === 'normal' ? 'bg-blue-500 hover:bg-blue-600' : ''}
-                    onClick={() => setNewEntry({ ...newEntry, mood: 'normal' })}
-                  >
-                    보통
-                  </Button>
-                  <Button
-                    type="button"
-                    variant={newEntry.mood === 'bad' ? 'default' : 'outline'}
-                    className={newEntry.mood === 'bad' ? 'bg-red-500 hover:bg-red-600' : ''}
-                    onClick={() => setNewEntry({ ...newEntry, mood: 'bad' })}
-                  >
-                    나쁨
-                  </Button>
+                    <Button variant="ghost" size="sm" onClick={() => handleViewEntry(entry)}>
+                      상세 보기
+                    </Button>
+                  </div>
                 </div>
               </div>
-
-              <div>
-                <Label>태그 (선택사항)</Label>
-                <Input
-                  placeholder="태그를 입력하고 엔터를 누르세요 (예: 기본훈련, 산책, 식사거부)"
-                  className="mt-1"
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      e.preventDefault();
-                      const inputElement = e.target as HTMLInputElement;
-                      const value = inputElement.value.trim();
-                      if (value && !newEntry.tags?.includes(value)) {
-                        setNewEntry({
-                          ...newEntry,
-                          tags: [...(newEntry.tags || []), value]
-                        });
-                        inputElement.value = '';
-                      }
-                    }
-                  }}
-                />
-                {newEntry.tags && newEntry.tags.length > 0 && (
-                  <div className="flex flex-wrap gap-1 mt-2">
-                    {newEntry.tags.map((tag, index) => (
-                      <Badge
-                        key={index}
-                        variant="secondary"
-                        className="bg-gray-100 cursor-pointer"
-                        onClick={() => {
-                          setNewEntry({
-                            ...newEntry,
-                            tags: newEntry.tags?.filter((_, i) => i !== index)
-                          });
-                        }}
-                      >
-                        #{tag} <X className="ml-1 h-3 w-3" />
-                      </Badge>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              <div>
-                <Label>사진 (선택사항)</Label>
-                <div className="mt-1">
-                  <Label
-                    htmlFor="photo-upload"
-                    className="flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-md p-6 cursor-pointer hover:border-primary"
-                  >
-                    <Camera className="h-8 w-8 text-gray-400 mb-2" />
-                    <span className="text-sm text-gray-500">사진을 추가하려면 클릭하세요</span>
-                    <span className="text-xs text-gray-400 mt-1">최대 3장까지 업로드 가능합니다</span>
-                  </Label>
-                  <Input
-                    id="photo-upload"
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    disabled={newEntry.photos && newEntry.photos.length >= 3}
-                    onChange={(e) => {
-                      // 실제로는 파일 업로드 API를 호출해야 합니다.
-                      // 여기서는 간단히 URL을 추가하는 방식으로 구현합니다.
-                      if (e.target.files && e.target.files.length > 0) {
-                        const mockUrls = [
-                          "https://images.unsplash.com/photo-1558929996-da64ba858215?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
-                          "https://images.unsplash.com/photo-1562176566-e9afd27531d4?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
-                          "https://images.unsplash.com/photo-1598875384021-4a23470c7997?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3"
-                        ];
-
-                        const randomUrl = mockUrls[Math.floor(Math.random() * mockUrls.length)];
-                        setNewEntry({
-                          ...newEntry,
-                          photos: [...(newEntry.photos || []), randomUrl]
-                        });
-                      }
-                    }}
-                  />
-                </div>
-
-                {newEntry.photos && newEntry.photos.length > 0 && (
-                  <div className="grid grid-cols-3 gap-2 mt-2">
-                    {newEntry.photos.map((photo, index) => (
-                      <div key={index} className="relative aspect-square rounded-md overflow-hidden">
-                        <img
-                          src={photo}
-                          alt={`Photo ${index + 1}`}
-                          className="w-full h-full object-cover"
-                        />
-                        <button
-                          type="button"
-                          className="absolute top-1 right-1 bg-black bg-opacity-50 rounded-full p-1"
-                          onClick={() => {
-                            setNewEntry({
-                              ...newEntry,
-                              photos: newEntry.photos?.filter((_, i) => i !== index)
-                            });
-                          }}
-                        >
-                          <X className="h-3 w-3 text-white" />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* 카테고리별 추가 필드 */}
-              {newEntry.category === 'training' && (
-                <div className="border p-4 rounded-md bg-blue-50 dark:bg-blue-900/20">
-                  <h3 className="font-medium mb-3">훈련 세부 정보</h3>
-                  <div className="space-y-3">
-                    <div>
-                      <Label htmlFor="training-focus">훈련 주제</Label>
-                      <Input
-                        id="training-focus"
-                        placeholder="예: 기본 복종 훈련, 사회화 훈련"
-                        className="mt-1"
-                        value={newEntry.trainingDetails?.focus || ''}
-                        onChange={(e) => setNewEntry({
-                          ...newEntry,
-                          trainingDetails: {
-                            ...newEntry.trainingDetails!,
-                            focus: e.target.value
-                          }
-                        })}
-                      />
-                    </div>
-
-                    <div>
-                      <Label htmlFor="training-duration">훈련 시간 (분)</Label>
-                      <Input
-                        id="training-duration"
-                        type="number"
-                        min="5"
-                        max="180"
-                        className="mt-1"
-                        value={newEntry.trainingDetails?.duration || 30}
-                        onChange={(e) => setNewEntry({
-                          ...newEntry,
-                          trainingDetails: {
-                            ...newEntry.trainingDetails!,
-                            duration: parseInt(e.target.value) || 30
-                          }
-                        })}
-                      />
-                    </div>
-
-                    <div>
-                      <Label htmlFor="training-progress">진행도 (%)</Label>
-                      <Input
-                        id="training-progress"
-                        type="number"
-                        min="0"
-                        max="100"
-                        className="mt-1"
-                        value={newEntry.trainingDetails?.progress || 50}
-                        onChange={(e) => setNewEntry({
-                          ...newEntry,
-                          trainingDetails: {
-                            ...newEntry.trainingDetails!,
-                            progress: parseInt(e.target.value) || 50
-                          }
-                        })}
-                      />
-                    </div>
-
-                    <div>
-                      <Label>훈련 항목</Label>
-                      <Input
-                        placeholder="항목을 입력하고 엔터를 누르세요 (예: 앉아, 엎드려, 기다려)"
-                        className="mt-1"
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') {
-                            e.preventDefault();
-                            const inputElement = e.target as HTMLInputElement;
-                            const value = inputElement.value.trim();
-                            if (value && !newEntry.trainingDetails?.exercises.includes(value)) {
-                              setNewEntry({
-                                ...newEntry,
-                                trainingDetails: {
-                                  ...newEntry.trainingDetails!,
-                                  exercises: [...(newEntry.trainingDetails?.exercises || []), value]
-                                }
-                              });
-                              inputElement.value = '';
-                            }
-                          }
-                        }}
-                      />
-                      {newEntry.trainingDetails?.exercises && newEntry.trainingDetails.exercises.length > 0 && (
-                        <div className="flex flex-wrap gap-1 mt-2">
-                          {newEntry.trainingDetails.exercises.map((exercise, index) => (
-                            <Badge
-                              key={index}
-                              variant="outline"
-                              className="bg-white cursor-pointer"
-                              onClick={() => {
-                                setNewEntry({
-                                  ...newEntry,
-                                  trainingDetails: {
-                                    ...newEntry.trainingDetails!,
-                                    exercises: newEntry.trainingDetails?.exercises.filter((_, i) => i !== index)
-                                  }
-                                });
-                              }}
-                            >
-                              {exercise} <X className="ml-1 h-3 w-3" />
-                            </Badge>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {newEntry.category === 'meal' && (
-                <div className="border p-4 rounded-md bg-green-50 dark:bg-green-900/20">
-                  <h3 className="font-medium mb-3">식사 세부 정보</h3>
-                  <div className="space-y-3">
-                    <div>
-                      <Label htmlFor="meal-breakfast">아침</Label>
-                      <Input
-                        id="meal-breakfast"
-                        placeholder="예: 드라이 푸드 200g"
-                        className="mt-1"
-                        value={newEntry.mealDetails?.breakfast || ''}
-                        onChange={(e) => setNewEntry({
-                          ...newEntry,
-                          mealDetails: {
-                            ...newEntry.mealDetails!,
-                            breakfast: e.target.value
-                          }
-                        })}
-                      />
-                    </div>
-
-                    <div>
-                      <Label htmlFor="meal-lunch">점심</Label>
-                      <Input
-                        id="meal-lunch"
-                        placeholder="예: 드라이 푸드 150g, 닭가슴살 소량"
-                        className="mt-1"
-                        value={newEntry.mealDetails?.lunch || ''}
-                        onChange={(e) => setNewEntry({
-                          ...newEntry,
-                          mealDetails: {
-                            ...newEntry.mealDetails!,
-                            lunch: e.target.value
-                          }
-                        })}
-                      />
-                    </div>
-
-                    <div>
-                      <Label htmlFor="meal-dinner">저녁</Label>
-                      <Input
-                        id="meal-dinner"
-                        placeholder="예: 드라이 푸드 200g, 영양제"
-                        className="mt-1"
-                        value={newEntry.mealDetails?.dinner || ''}
-                        onChange={(e) => setNewEntry({
-                          ...newEntry,
-                          mealDetails: {
-                            ...newEntry.mealDetails!,
-                            dinner: e.target.value
-                          }
-                        })}
-                      />
-                    </div>
-
-                    <div>
-                      <Label htmlFor="meal-snacks">간식</Label>
-                      <Input
-                        id="meal-snacks"
-                        placeholder="예: 덴탈껌 1개, 트릿 소량"
-                        className="mt-1"
-                        value={newEntry.mealDetails?.snacks || ''}
-                        onChange={(e) => setNewEntry({
-                          ...newEntry,
-                          mealDetails: {
-                            ...newEntry.mealDetails!,
-                            snacks: e.target.value
-                          }
-                        })}
-                      />
-                    </div>
-
-                    <div>
-                      <Label htmlFor="meal-amount">총 식사량 (g)</Label>
-                      <Input
-                        id="meal-amount"
-                        type="number"
-                        min="0"
-                        className="mt-1"
-                        value={newEntry.mealDetails?.amount || 0}
-                        onChange={(e) => setNewEntry({
-                          ...newEntry,
-                          mealDetails: {
-                            ...newEntry.mealDetails!,
-                            amount: parseInt(e.target.value) || 0
-                          }
-                        })}
-                      />
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {newEntry.category === 'health' && (
-                <div className="border p-4 rounded-md bg-red-50 dark:bg-red-900/20">
-                  <h3 className="font-medium mb-3">건강 세부 정보</h3>
-                  <div className="space-y-3">
-                    <div>
-                      <Label htmlFor="health-weight">체중 (kg)</Label>
-                      <Input
-                        id="health-weight"
-                        type="number"
-                        step="0.1"
-                        min="0"
-                        className="mt-1"
-                        value={newEntry.healthDetails?.weight || 0}
-                        onChange={(e) => setNewEntry({
-                          ...newEntry,
-                          healthDetails: {
-                            ...newEntry.healthDetails!,
-                            weight: parseFloat(e.target.value) || 0
-                          }
-                        })}
-                      />
-                    </div>
-
-                    <div>
-                      <Label>증상</Label>
-                      <Input
-                        placeholder="증상을 입력하고 엔터를 누르세요 (예: 설사, 구토, 식욕부진)"
-                        className="mt-1"
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') {
-                            e.preventDefault();
-                            const inputElement = e.target as HTMLInputElement;
-                            const value = inputElement.value.trim();
-                            if (value && !newEntry.healthDetails?.symptoms?.includes(value)) {
-                              setNewEntry({
-                                ...newEntry,
-                                healthDetails: {
-                                  ...newEntry.healthDetails!,
-                                  symptoms: [...(newEntry.healthDetails?.symptoms || []), value]
-                                }
-                              });
-                              inputElement.value = '';
-                            }
-                          }
-                        }}
-                      />
-                      {newEntry.healthDetails?.symptoms && newEntry.healthDetails.symptoms.length > 0 && (
-                        <div className="flex flex-wrap gap-1 mt-2">
-                          {newEntry.healthDetails.symptoms.map((symptom, index) => (
-                            <Badge
-                              key={index}
-                              variant="outline"
-                              className="bg-white cursor-pointer"
-                              onClick={() => {
-                                setNewEntry({
-                                  ...newEntry,
-                                  healthDetails: {
-                                    ...newEntry.healthDetails!,
-                                    symptoms: newEntry.healthDetails?.symptoms?.filter((_, i) => i !== index)
-                                  }
-                                });
-                              }}
-                            >
-                              {symptom} <X className="ml-1 h-3 w-3" />
-                            </Badge>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-
-                    <div>
-                      <Label htmlFor="health-medication">약물/처치</Label>
-                      <Input
-                        id="health-medication"
-                        placeholder="예: 정장제 1정, 항생제 처방"
-                        className="mt-1"
-                        value={newEntry.healthDetails?.medication || ''}
-                        onChange={(e) => setNewEntry({
-                          ...newEntry,
-                          healthDetails: {
-                            ...newEntry.healthDetails!,
-                            medication: e.target.value
-                          }
-                        })}
-                      />
-                    </div>
-
-                    <div>
-                      <Label htmlFor="health-notes">특이사항</Label>
-                      <Textarea
-                        id="health-notes"
-                        placeholder="기타 건강 관련 특이사항을 입력해주세요"
-                        className="mt-1"
-                        value={newEntry.healthDetails?.notes || ''}
-                        onChange={(e) => setNewEntry({
-                          ...newEntry,
-                          healthDetails: {
-                            ...newEntry.healthDetails!,
-                            notes: e.target.value
-                          }
-                        })}
-                      />
-                    </div>
-                  </div>
-                </div>
-              )}
             </div>
-          </Tabs>
-
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsAddEntryDialogOpen(false)}>취소</Button>
-            <Button onClick={addEntry}>작성 완료</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* 댓글 작성 다이얼로그 */}
-      <Dialog open={isCommentDialogOpen} onOpenChange={setIsCommentDialogOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>댓글 작성</DialogTitle>
-            <DialogDescription>
-              {selectedEntry?.authorName}님의 알림장에 댓글을 작성합니다.
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-4 py-4">
-            <Textarea
-              placeholder="댓글 내용을 입력하세요..."
-              value={commentText}
-              onChange={(e) => setCommentText(e.target.value)}
-              rows={4}
-            />
-          </div>
-
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsCommentDialogOpen(false)}>취소</Button>
-            <Button onClick={addComment}>댓글 작성</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* 삭제 확인 다이얼로그 */}
-      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>알림장 항목 삭제</AlertDialogTitle>
-            <AlertDialogDescription>
-              이 알림장 항목을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>취소</AlertDialogCancel>
-            <AlertDialogAction onClick={deleteEntry} className="bg-red-500 hover:bg-red-600">
-              삭제
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
