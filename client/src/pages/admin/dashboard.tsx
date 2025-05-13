@@ -41,7 +41,8 @@ import { Progress } from "@/components/ui/progress";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { format } from 'date-fns';
 import { ko } from 'date-fns/locale';
-import { Badge } from "@/components/ui/badge";
+// 커스텀 Badge 컴포넌트를 사용하기 위해 shadcn Badge는 사용하지 않음
+// import { Badge } from "@/components/ui/badge";
 import { 
   LineChart, 
   Line, 
@@ -687,7 +688,13 @@ const AdminDashboard = () => {
 };
 
 // 스타일 있는 뱃지 컴포넌트
-const Badge = ({ children, variant = 'default', className }) => {
+interface BadgeProps {
+  children: React.ReactNode;
+  variant?: 'default' | 'success' | 'warning' | 'destructive' | 'outline';
+  className?: string;
+}
+
+const Badge: React.FC<BadgeProps> = ({ children, variant = 'default', className = '' }) => {
   let variantClasses = '';
   
   switch (variant) {
@@ -708,14 +715,16 @@ const Badge = ({ children, variant = 'default', className }) => {
   }
   
   return (
-    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${variantClasses} ${className || ''}`}>
+    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${variantClasses} ${className}`}>
       {children}
     </span>
   );
 };
 
 // 강아지 발바닥 아이콘
-const PawPrint = (props) => (
+interface IconProps extends React.SVGProps<SVGSVGElement> {}
+
+const PawPrint: React.FC<IconProps> = (props) => (
   <svg
     {...props}
     xmlns="http://www.w3.org/2000/svg"
@@ -737,7 +746,7 @@ const PawPrint = (props) => (
 );
 
 // 설정 아이콘
-const Settings = (props) => (
+const Settings: React.FC<IconProps> = (props) => (
   <svg
     {...props}
     xmlns="http://www.w3.org/2000/svg"
@@ -756,13 +765,13 @@ const Settings = (props) => (
 );
 
 // 날짜 함수
-const subMinutes = (date, minutes) => {
+const subMinutes = (date: Date, minutes: number): Date => {
   const result = new Date(date);
   result.setMinutes(result.getMinutes() - minutes);
   return result;
 };
 
-const subHours = (date, hours) => {
+const subHours = (date: Date, hours: number): Date => {
   const result = new Date(date);
   result.setHours(result.getHours() - hours);
   return result;

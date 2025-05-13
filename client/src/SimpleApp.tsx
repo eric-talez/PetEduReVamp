@@ -747,12 +747,13 @@ function AuthenticatedRoutes() {
         {/* 관리자 메뉴 */}
         <Route path="/admin/dashboard">
           {() => {
-            const AdminHome = lazy(() => import('./pages/admin/AdminHome'));
+            const AdminDashboard = lazy(() => import('./pages/admin/dashboard'));
             return (
               <Suspense fallback={<div className="p-8 flex justify-center items-center">
                 <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
+                <span className="ml-2">관리자 대시보드 로딩 중...</span>
               </div>}>
-                <ProtectedAdminRoute component={AdminHome} />
+                <ProtectedAdminRoute component={AdminDashboard} />
               </Suspense>
             );
           }}
