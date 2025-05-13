@@ -6,6 +6,8 @@ import React, { useState, useEffect, createContext, useContext } from "react";
 import { SpecialShopLink } from "./SpecialShopLink";
 import { HelpSection } from "./HelpSection";
 import { StatisticsSection } from "./StatisticsSection";
+import { AccessibleIconButton } from "./AccessibleIconButton";
+import { AccessibleMenuToggle } from "./AccessibleMenuToggle";
 import {
   ChevronDown,
   ChevronRight,
