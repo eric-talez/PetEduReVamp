@@ -124,6 +124,7 @@ export default function Notebook() {
   const [showNewEntryDialog, setShowNewEntryDialog] = useState(false);
   const [showTemplateDialog, setShowTemplateDialog] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState<TemplateType | null>(null);
+  const [selectedTemplateData, setSelectedTemplateData] = useState<any>(null);
   const [commentText, setCommentText] = useState('');
   const [pets, setPets] = useState<Pet[]>([]);
   const [isEditMode, setIsEditMode] = useState(false);
@@ -436,7 +437,41 @@ export default function Notebook() {
     setShowTemplateDialog(false);
     setSelectedTemplate(template);
     
-    // 선택된 템플릿을 기존 폼에 적용하는 로직은 NotebookDialog에서 처리합니다
+    // 선택된 템플릿 데이터를 현재 편집 중인 알림장에 반영
+    if (data) {
+      setSelectedTemplateData(data);
+      
+      // NotebookDialog는 initialData를 통해 데이터를 받으므로,
+      // 다이얼로그를 닫았다가 다시 열어 데이터 갱신
+      setShowNewEntryDialog(false);
+      setTimeout(() => {
+        if (isEditMode && selectedEntry) {
+          // 수정 모드인 경우 기존 엔트리에 템플릿 데이터 병합
+          const updatedEntry = {
+            ...selectedEntry,
+            title: data.title,
+            content: data.content,
+            taggedItems: data.tags || selectedEntry.taggedItems
+          };
+          setSelectedEntry(updatedEntry);
+        } else {
+          // 새 알림장인 경우 템플릿 데이터로 초기화
+          setSelectedEntry({
+            id: 0,
+            date: new Date().toISOString(),
+            petId: pets.length > 0 ? pets[0].id : 0,
+            petName: pets.length > 0 ? pets[0].name : '',
+            title: data.title,
+            content: data.content,
+            mood: 'happy',
+            comments: [],
+            taggedItems: data.tags || []
+          });
+        }
+        setShowNewEntryDialog(true);
+      }, 100);
+      }
+    }
   };
   
   // 알림장 수정 시작
@@ -896,7 +931,7 @@ export default function Notebook() {
         pets={pets}
         onSubmit={isEditMode ? handleUpdateEntry : handleAddEntry}
         onShowTemplateDialog={() => setShowTemplateDialog(true)}
-        initialData={isEditMode ? selectedEntry : undefined}
+        initialData={selectedEntry || undefined}
       />
       
       {/* 템플릿 선택 다이얼로그 */}
