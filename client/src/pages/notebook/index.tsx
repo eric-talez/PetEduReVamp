@@ -601,7 +601,7 @@ export default function Notebook() {
   };
   
   // 미디어 파일 제거
-  const handleRemoveMedia = (type: 'photo' | 'video', index: number) => {
+  const handleDeleteMedia = (type: 'photo' | 'video', index: number) => {
     if (type === 'photo') {
       setNewEntryForm(prev => ({
         ...prev,
