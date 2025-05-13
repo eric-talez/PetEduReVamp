@@ -2,6 +2,8 @@ import React, { useState, useEffect, createContext, useContext } from 'react';
 import { useLocation } from 'wouter';
 import { cn } from '@/lib/utils';
 import { useAuth } from '../SimpleApp';
+import { Tooltip } from '@/components/ui/tooltip';
+import { TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import {
   ChevronsLeft,
   ChevronsRight,
@@ -245,9 +247,18 @@ export function SimpleSidebar({ onToggleExpand }: SidebarProps) {
                     {menuGroups.features ? <ChevronDown className="h-4 w-4 text-gray-500" /> : <ChevronRight className="h-4 w-4 text-gray-500" />}
                   </div>
                 ) : (
-                  <div className="py-2 flex justify-center cursor-pointer mt-4" onClick={() => toggleMenuGroup('features')}>
-                    <Star className="h-5 w-5 text-gray-500" />
-                  </div>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div className="py-2 flex justify-center cursor-pointer mt-4" onClick={() => toggleMenuGroup('features')}>
+                          <Star className="h-5 w-5 text-gray-500 hover:text-gray-900 dark:hover:text-gray-50" />
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent side="right">
+                        <p>주요 기능</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 )}
                 
                 {menuGroups.features && (

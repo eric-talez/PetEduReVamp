@@ -28,7 +28,7 @@ import EventCalendarPage from "./pages/events/calendar";
 
 // 레이아웃 및 컴포넌트 임포트
 import { TopBar } from "@/components/TopBar";
-import { SimpleSidebar } from "@/components/SimpleSidebar";
+import { SimpleSidebar } from "./components/SimpleSidebar";
 import { Toaster } from "@/components/ui/toaster";
 
 // 인증 관련 임포트 - 호환성 레이어 사용
@@ -143,12 +143,7 @@ function AppLayout({ children }: { children: ReactNode }) {
             ${sidebarOpen || isDesktop ? 'translate-x-0' : '-translate-x-full'}
           `}
         >
-          <Sidebar 
-            open={sidebarOpen} 
-            onClose={() => setSidebarOpen(false)} 
-            userRole={auth.userRole} 
-            isAuthenticated={auth.isAuthenticated}
-            expanded={sidebarExpanded}
+          <SimpleSidebar 
             onToggleExpand={toggleSidebarSize}
           />
           {/* 디버그 정보 표시 - 개발 모드에서만 표시 */}
