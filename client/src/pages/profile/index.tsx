@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { FileUpload } from "@/components/ui/file-upload";
 
 interface ProfilePageProps {
   userType?: string;
@@ -186,7 +187,7 @@ export default function ProfilePage({ userType, section }: ProfilePageProps = {}
             <div className="flex flex-col md:flex-row gap-6">
               <div className="flex-shrink-0">
                 <Avatar className="w-32 h-32">
-                  <AvatarImage src="" />
+                  <AvatarImage src={auth.user?.avatar || ""} />
                   <AvatarFallback className="text-3xl font-bold text-primary bg-primary/10">
                     {userName ? userName.substring(0, 1).toUpperCase() : "U"}
                   </AvatarFallback>
@@ -250,7 +251,7 @@ export default function ProfilePage({ userType, section }: ProfilePageProps = {}
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               <div className="flex flex-col md:flex-row gap-6">
                 <div className="flex-shrink-0">
-                  <Avatar className="w-32 h-32">
+                  <Avatar className="w-32 h-32 mb-4">
                     <AvatarImage src={form.getValues("avatar") || ""} />
                     <AvatarFallback className="text-3xl font-bold text-primary bg-primary/10">
                       {form.getValues("name").substring(0, 1).toUpperCase()}
@@ -262,9 +263,23 @@ export default function ProfilePage({ userType, section }: ProfilePageProps = {}
                       name="avatar"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>프로필 이미지 URL</FormLabel>
+                          <FormLabel>프로필 이미지</FormLabel>
                           <FormControl>
-                            <Input placeholder="이미지 URL을 입력하세요" {...field} />
+                            <div className="flex flex-col gap-2">
+                              <FileUpload
+                                value={field.value || ""}
+                                onChange={field.onChange}
+                                onBlur={field.onBlur}
+                                disabled={isSubmitting}
+                                accept="image/*"
+                                maxSizeMB={2}
+                                previewWidth={150}
+                                previewHeight={150}
+                              />
+                              <p className="text-xs text-muted-foreground">
+                                이미지를 직접 업로드하거나 드래그하세요
+                              </p>
+                            </div>
                           </FormControl>
                           <FormMessage />
                         </FormItem>
