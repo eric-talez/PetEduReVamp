@@ -525,9 +525,22 @@ export function Sidebar({
                   icon={<Gift className="w-5 h-5 text-gray-500" />}
                 />
 
+                {/* 쇼핑몰 메뉴는 항상 표시 (별도 메뉴 그룹) */}
+                <div className="mt-2 mb-2">
+                  <h2 className={cn(
+                    "px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider",
+                    !expanded && "sr-only"
+                  )}>
+                    쇼핑
+                  </h2>
+                  <div className="mt-1 mb-1">
+                    <SpecialShopLink expanded={expanded}>쇼핑몰</SpecialShopLink>
+                  </div>
+                </div>
+                
                 {menuGroups.features && (
                   <>
-                    <SpecialShopLink>쇼핑몰</SpecialShopLink>
+                    {/* features 메뉴 그룹 내용 */}
                   </>
                 )}
 
