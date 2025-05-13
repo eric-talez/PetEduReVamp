@@ -116,6 +116,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // ===== User Routes =====
   
+  // 프로필 업데이트
+  app.patch("/api/users/profile", async (req, res) => {
+    try {
+      if (!req.session.user) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+      
+      const userId = req.session.user.id;
+      const { name, email, phone, bio, location, avatar } = req.body;
+      
+      // 프로필 정보 업데이트
+      const updatedUser = await storage.updateUserProfile(userId, {
+        name,
+        email,
+        phone,
+        bio,
+        location,
+        avatar
+      });
+      
+      // 세션 업데이트
+      req.session.user = {
+        ...req.session.user,
+        name: updatedUser.name,
+        email: updatedUser.email
+      };
+      
+      // 비밀번호는 응답에서 제외
+      const { password: _, ...userWithoutPassword } = updatedUser;
+      return res.status(200).json(userWithoutPassword);
+    } catch (error) {
+      console.error("Error updating user profile:", error);
+      return res.status(500).json({ message: "Server error" });
+    }
+  });
+  
   // Get user profile
   app.get("/api/users/:id", async (req, res) => {
     try {

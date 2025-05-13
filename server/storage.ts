@@ -1,11 +1,22 @@
 import { users, type User, type InsertUser, type UserRole } from "@shared/schema";
 
+// 프로필 업데이트를 위한 인터페이스
+export interface ProfileUpdateData {
+  name?: string;
+  email?: string;
+  phone?: string;
+  bio?: string;
+  location?: string; 
+  avatar?: string;
+}
+
 export interface IStorage {
   // 사용자 관련
   getUser(id: number): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   updateUserRole(userId: number, role: UserRole, trainerId?: number): Promise<User>;
+  updateUserProfile(userId: number, profileData: ProfileUpdateData): Promise<User>;
   
   // 기관 관련
   getInstituteByCode(code: string): Promise<any>;
@@ -462,6 +473,31 @@ export class MemStorage implements IStorage {
       ...user, 
       role  // UserRole 타입 사용
     };
+    
+    this.users.set(userId, updatedUser);
+    return updatedUser;
+  }
+  
+  async updateUserProfile(userId: number, profileData: ProfileUpdateData): Promise<User> {
+    const user = this.users.get(userId);
+    if (!user) {
+      throw new Error(`User with ID ${userId} not found`);
+    }
+    
+    // 수정할 필드만 업데이트
+    const updatedUser: User = {
+      ...user,
+      name: profileData.name !== undefined ? profileData.name : user.name,
+      email: profileData.email !== undefined ? profileData.email : user.email,
+      bio: profileData.bio !== undefined ? profileData.bio : user.bio,
+      location: profileData.location !== undefined ? profileData.location : user.location,
+      avatar: profileData.avatar !== undefined ? profileData.avatar : user.avatar
+    };
+    
+    // phone이 User 인터페이스에 없으므로 별도로 처리 (실제 구현에서는 스키마에 추가 필요)
+    if (profileData.phone !== undefined) {
+      (updatedUser as any).phone = profileData.phone;
+    }
     
     this.users.set(userId, updatedUser);
     return updatedUser;
