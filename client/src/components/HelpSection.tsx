@@ -41,21 +41,14 @@ const NavItem: React.FC<NavItemProps> = ({ href, icon, children, active, onClick
   return (
     <a
       href={href}
-      className={cn(
-        "flex items-center gap-3 px-4 py-2 text-sm rounded-lg transition-colors duration-200",
-        isActive 
-          ? "bg-primary/10 text-primary font-medium" 
-          : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-primary dark:hover:text-primary"
-      )}
+      className={`
+        flex items-center gap-3 px-4 py-2 text-sm 
+        transition-colors duration-200
+        ${isActive ? 'text-primary font-medium' : 'text-gray-700 hover:text-primary dark:text-gray-300 dark:hover:text-primary'}
+      `}
       onClick={(e) => {
         e.preventDefault();
-        console.log("도움말 메뉴 항목 클릭:", href);
-        if (onClick) {
-          onClick(href);
-        } else {
-          // 직접 setLocation 사용하지 않고 항상 onClick prop 통해 부모 컴포넌트의 handleItemClick 사용
-          console.log("onClick prop이 제공되지 않음", href);
-        }
+        if (onClick) onClick(href);
       }}
     >
       {icon}
@@ -78,17 +71,17 @@ const MenuGroup: React.FC<MenuGroupProps> = ({ title, icon, children, defaultOpe
   return (
     <div className="mb-2">
       <div
-        className="flex items-center justify-between cursor-pointer px-3 py-2 rounded-lg transition-colors hover:bg-gray-100 dark:hover:bg-gray-800"
+        className="flex items-center justify-between cursor-pointer px-3 py-2 rounded-md transition-colors hover:bg-gray-100 dark:hover:bg-gray-800/50"
         onClick={() => setIsOpen(!isOpen)}
       >
         <div className="flex items-center">
           {icon}
-          <span className="ml-2 text-sm font-medium text-gray-700 dark:text-gray-300">{title}</span>
+          <span className="ml-2 text-sm font-medium">{title}</span>
         </div>
         {isOpen ? (
-          <ChevronDown className="h-4 w-4 text-gray-500" />
+          <ChevronDown className="h-4 w-4" />
         ) : (
-          <ChevronRight className="h-4 w-4 text-gray-500" />
+          <ChevronRight className="h-4 w-4" />
         )}
       </div>
       {isOpen && <div className="ml-2">{children}</div>}
@@ -98,31 +91,21 @@ const MenuGroup: React.FC<MenuGroupProps> = ({ title, icon, children, defaultOpe
 
 // 도움말 섹션 주 컴포넌트
 export function HelpSection({ expanded, handleItemClick }: HelpSectionProps) {
-  // 도움말 섹션 열림/닫힘 상태 (독립적으로 유지)
   const [isOpen, setIsOpen] = useState(false);
   
-  // 사이드바가 축소되었을 때는 아이콘만 표시 (다른 메뉴와 일관된 스타일 적용)
+  // 사이드바가 축소되었을 때는 아이콘만 표시
   if (!expanded) {
     return (
-      <div className="mt-2">
+      <div className="mt-6 px-2">
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
-              <a 
-                href="/help/faq"
-                className="sidebar-link flex items-center justify-center py-2 text-sm font-medium rounded-lg transition-colors duration-200 ease-in-out px-2 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-primary dark:hover:text-primary"
-                onClick={(e) => {
-                  e.preventDefault();
-                  console.log("접힌 상태에서 도움말 아이콘 클릭 - 개선된 버전");
-                  // 중요: setLocation을 직접 호출하지 않고 항상 전달받은 handleItemClick 사용
-                  handleItemClick('/help/faq');
-                }}
-                aria-label="도움말"
+              <div 
+                className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-2 flex justify-center cursor-pointer" 
+                onClick={() => handleItemClick('/help')}
               >
-                <div className="w-5 h-5 flex items-center justify-center">
-                  <HelpCircle className="w-5 h-5" />
-                </div>
-              </a>
+                <HelpCircle className="w-5 h-5 text-primary" aria-label="도움말" />
+              </div>
             </TooltipTrigger>
             <TooltipContent side="right">
               <p>도움말 및 지원</p>
@@ -137,22 +120,19 @@ export function HelpSection({ expanded, handleItemClick }: HelpSectionProps) {
     <div>
       {/* 도움말 섹션 헤더 */}
       <div
-        className="px-3 py-2 mt-2 flex items-center justify-between cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 mx-2 rounded-lg"
+        className="px-3 py-2 mt-6 flex items-center justify-between cursor-pointer bg-gray-100 dark:bg-gray-700 mx-2 rounded"
         onClick={() => {
           console.log('도움말 섹션 토글:', !isOpen);
           setIsOpen(!isOpen);
         }}
       >
-        <div className="flex items-center">
-          <HelpCircle className="w-5 h-5 text-primary mr-2" />
-          <h3 className="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
-            도움말
-          </h3>
-        </div>
+        <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+          도움말
+        </h3>
         {isOpen ? (
-          <ChevronDown className="h-4 w-4 text-gray-500" />
+          <ChevronDown className="h-4 w-4 text-primary" />
         ) : (
-          <ChevronRight className="h-4 w-4 text-gray-500" />
+          <ChevronRight className="h-4 w-4 text-primary" />
         )}
       </div>
 

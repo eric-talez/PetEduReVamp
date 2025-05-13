@@ -3,11 +3,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { Button } from '@/components/ui/button';
 import { Search } from 'lucide-react';
 
-interface FAQPageProps {
-  initialCategory?: string;
-}
-
-export default function FAQPage({ initialCategory = 'general' }: FAQPageProps = {}) {
+export default function FAQPage() {
   const bannerStyle = {
     backgroundImage: 'linear-gradient(to right, rgba(59, 130, 246, 0.8), rgba(37, 99, 235, 0.8))',
     backgroundSize: 'cover',
@@ -86,7 +82,7 @@ export default function FAQPage({ initialCategory = 'general' }: FAQPageProps = 
     }
   ];
 
-  const [activeCategory, setActiveCategory] = React.useState(initialCategory);
+  const [activeCategory, setActiveCategory] = React.useState('general');
   const [searchQuery, setSearchQuery] = React.useState('');
 
   const filteredFaqs = faqs.filter(faq => {

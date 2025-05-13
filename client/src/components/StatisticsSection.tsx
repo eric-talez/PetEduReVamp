@@ -24,7 +24,7 @@ export function StatisticsSection({ expanded }: StatisticsSectionProps) {
           <Tooltip>
             <TooltipTrigger asChild>
               <div 
-                className="bg-gray-100 dark:bg-gray-800 rounded-lg p-2 flex justify-center cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-2 flex justify-center cursor-pointer"
                 onClick={toggleSection}
               >
                 <Activity className="w-5 h-5 text-primary" aria-label="서비스 정보" />

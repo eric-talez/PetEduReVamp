@@ -33,6 +33,7 @@ import {
   Bell,
   MapPin,
   ThumbsUp,
+  Puzzle,
   Store,
   LogIn,
   ChevronsLeft,
@@ -88,7 +89,7 @@ function NavItem({ href, icon, children, active, onClick, show }: NavItemProps) 
 
   if (!show) return null;
 
-  // 접힌 상태에서는 아이콘만 표시하고 툴팁으로 텍스트 제공
+  // 접힌 상태에서는 툴팁으로 표시
   if (!expanded) {
     return (
       <TooltipProvider>
@@ -97,17 +98,13 @@ function NavItem({ href, icon, children, active, onClick, show }: NavItemProps) 
             <a
               href={href}
               className={cn(
-                "sidebar-link flex items-center justify-center py-2 text-sm font-medium rounded-lg transition-colors duration-200 ease-in-out px-2",
-                active 
-                  ? "bg-primary/10 text-primary" 
-                  : "text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-primary dark:hover:text-primary"
+                "sidebar-link flex items-center justify-center py-2 text-sm font-medium rounded-md transition-all duration-200 ease-in-out px-2",
+                active ? "bg-primary/10 text-primary" : "text-gray-700 dark:text-gray-200 hover:text-primary dark:hover:text-primary"
               )}
               onClick={handleClick}
               aria-label={children?.toString()}
             >
-              <div className="w-5 h-5 flex items-center justify-center">
-                {icon}
-              </div>
+              {icon}
             </a>
           </TooltipTrigger>
           <TooltipContent side="right">
@@ -123,10 +120,8 @@ function NavItem({ href, icon, children, active, onClick, show }: NavItemProps) 
     <a
       href={href}
       className={cn(
-        "sidebar-link flex items-center py-2 text-sm font-medium rounded-lg transition-colors duration-200 ease-in-out px-3",
-        active 
-          ? "bg-primary/10 text-primary" 
-          : "text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-primary dark:hover:text-primary"
+        "sidebar-link flex items-center py-2 text-sm font-medium rounded-md transition-all duration-200 ease-in-out px-3",
+        active ? "bg-primary/10 text-primary" : "text-gray-700 dark:text-gray-200 hover:text-primary dark:hover:text-primary"
       )}
       onClick={handleClick}
     >
@@ -160,29 +155,6 @@ export function Sidebar({
   // 외부에서 제어되는 상태 또는 내부 상태 사용
   const expanded = externalExpanded !== undefined ? externalExpanded : internalExpanded;
 
-  // 기본 메뉴 그룹 상태 (처음에는 닫힌 상태로 시작)
-  const defaultMenuGroupsState = {
-    main: false,
-    features: false,
-    myLearning: false,
-    trainer: false,
-    institute: false,
-    admin: false
-  };
-
-  // 메뉴 그룹 상태 (사이드바 축소/확장과 독립적으로 유지)
-  // 로컬 스토리지에서 메뉴 그룹 상태 복원 또는 기본값 사용
-  const [menuGroups, setMenuGroups] = useState(() => {
-    try {
-      // 로컬 스토리지에서 저장된 메뉴 상태 가져오기
-      const savedState = localStorage.getItem('menuGroupsState');
-      return savedState ? JSON.parse(savedState) : defaultMenuGroupsState;
-    } catch (e) {
-      console.error('로컬 스토리지에서 메뉴 상태 복원 실패:', e);
-      return defaultMenuGroupsState;
-    }
-  });
-
   useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth < 1024) {
@@ -199,6 +171,16 @@ export function Sidebar({
 
     return () => window.removeEventListener('resize', handleResize);
   }, [onToggleExpand]);
+
+  // 기본 메뉴 그룹 (모두 닫힌 상태로 시작)
+  const [menuGroups, setMenuGroups] = useState({
+    main: false,
+    features: false,
+    myLearning: false,
+    trainer: false,
+    institute: false,
+    admin: false
+  });
   
   useEffect(() => {
     console.log('Sidebar useEffect - userRole:', userRole);
@@ -230,40 +212,16 @@ export function Sidebar({
     } else {
       setInternalExpanded(!internalExpanded);
     }
-    
-    // 사이드바가 접힐 때 메뉴 그룹을 모두 보이게 설정
-    if (expanded) {
-      setMenuGroups(prev => {
-        return {
-          ...prev,
-          main: false,
-          features: false,
-          myLearning: false,
-          trainer: false,
-          institute: false,
-          admin: false
-        };
-      });
-    }
   };
 
   const toggleMenuGroup = (group: keyof typeof menuGroups) => {
     console.log(`토글 메뉴 그룹: ${group}, 현재 상태: ${menuGroups[group]}`);
-    
     setMenuGroups(prev => {
       const newState = {
         ...prev,
         [group]: !prev[group]
       };
-      
-      // 로컬 스토리지에 메뉴 그룹 상태 저장
-      try {
-        localStorage.setItem('menuGroupsState', JSON.stringify(newState));
-        console.log(`메뉴 상태 변경 후 저장: ${group} = ${!prev[group]}`);
-      } catch (e) {
-        console.error('로컬 스토리지에 메뉴 상태 저장 실패:', e);
-      }
-      
+      console.log(`메뉴 상태 변경 후: ${group} = ${!prev[group]}`);
       return newState;
     });
   };
@@ -274,8 +232,6 @@ export function Sidebar({
     return false;
   };
 
-  // useLocation은 이미 위에서 선언되어 있으므로 재사용
-  
   const handleItemClick = (path: string) => {
     console.log(`메뉴 클릭: ${path} (사용자 역할: ${userRole || '비로그인'})`);
 
@@ -292,7 +248,7 @@ export function Sidebar({
         !path.startsWith('/events/') && 
         !path.startsWith('/help/')) {
       console.log('로그인 필요: ', path);
-      setLocation("/auth/login");
+      window.location.href = "/auth/login";
       return;
     }
 
@@ -339,24 +295,16 @@ export function Sidebar({
       return;
     }
 
-    // 도움말 페이지 특별 처리
-    if (path.startsWith('/help/')) {
-      console.log('도움말 페이지로 이동 중:', path);
-      setLocation(path);
-      if (onClose) onClose();
-      return;
-    }
-
     if (path in specialRoutes) {
       console.log(`${specialRoutes[path]} 페이지로 이동 중...`);
-      setLocation(path);
+      window.location.href = path;
       if (onClose) onClose();
       return;
     }
 
     // 일반 페이지 라우팅
     console.log('페이지 이동:', path);
-    setLocation(path);
+    window.location.href = path;
     if (onClose) onClose();
   };
 
@@ -671,7 +619,13 @@ export function Sidebar({
                   </div>
                 ) : (
                   <div className="flex justify-center py-2 mt-4">
-                    
+                    <button 
+                      onClick={() => toggleMenuGroup('features')}
+                      className="w-8 h-8 flex items-center justify-center rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                      aria-label="주요 기능 메뉴 토글"
+                    >
+                      <GraduationCap className="w-5 h-5 text-primary" />
+                    </button>
                   </div>
                 )}
 
@@ -740,7 +694,13 @@ export function Sidebar({
                   </div>
                 ) : (
                   <div className="flex justify-center py-2 mt-4">
-                    <ChevronRight className="h-4 w-4 text-gray-500" />
+                    <button
+                      onClick={() => toggleMenuGroup('myLearning')}
+                      className="w-8 h-8 flex items-center justify-center rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                      aria-label="내 학습 메뉴 토글"
+                    >
+                      <BookOpen className="w-5 h-5 text-primary" />
+                    </button>
                   </div>
                 )}
 
@@ -1049,55 +1009,28 @@ export function Sidebar({
                   </>
                 )}
 
-                {/* 도움말 섹션 - 접힌 상태일 때와 확장된 상태일 때 모두 HelpSection 컴포넌트 사용 */}
-                {isAuthenticated && (
+                {/* 축소된 상태에서는 물음표 아이콘에 툴팁 적용 */}
+                {!expanded ? (
+                  <div className="mt-6 px-2">
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div 
+                            className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-2 flex justify-center cursor-pointer" 
+                            onClick={() => handleItemClick('/help/faq')}
+                          >
+                            <HelpCircle className="w-5 h-5 text-primary" aria-label="도움말" />
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent side="right">
+                          <p>도움말 및 지원</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </div>
+                ) : (
+                  /* 확장된 상태에서는 기존 HelpSection 컴포넌트 사용 */
                   <HelpSection expanded={expanded} handleItemClick={handleItemClick} />
-                )}
-                
-                {/* 로그인하지 않은 사용자를 위한 도움말 아이콘 - 일관된 스타일 적용 */}
-                {!isAuthenticated && (
-                  expanded ? (
-                    <div className="mt-4 px-3 py-2">
-                      <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                        도움말
-                      </h3>
-                      <NavItem
-                        href="/help/faq"
-                        icon={<HelpCircle className="w-5 h-5 mr-2" />}
-                        active={isActive("/help/faq")}
-                        onClick={handleItemClick}
-                        show={true}
-                      >
-                        자주 묻는 질문
-                      </NavItem>
-                    </div>
-                  ) : (
-                    <div className="mt-2">
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <a
-                              href="/help/faq"
-                              className="sidebar-link flex items-center justify-center py-2 text-sm font-medium rounded-lg transition-colors duration-200 ease-in-out px-2 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-primary dark:hover:text-primary"
-                              onClick={(e) => {
-                                e.preventDefault();
-                                console.log("비인증 사용자가 접힌 상태에서 도움말 아이콘 클릭");
-                                handleItemClick('/help/faq');
-                              }}
-                              aria-label="도움말"
-                            >
-                              <div className="w-5 h-5 flex items-center justify-center">
-                                <HelpCircle className="w-5 h-5" />
-                              </div>
-                            </a>
-                          </TooltipTrigger>
-                          <TooltipContent side="right">
-                            <p>도움말 및 지원</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                    </div>
-                  )
                 )}
 
                 {/* 독립적인 StatisticsSection 컴포넌트 사용 */}

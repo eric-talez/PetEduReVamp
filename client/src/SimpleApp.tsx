@@ -691,15 +691,6 @@ function UnauthenticatedRoutes() {
             );
           }}
         </Route>
-        <Route path="/help/faq/:category">
-          {(params) => {
-            return (
-              <div className="p-8">
-                <FAQPage initialCategory={params.category} />
-              </div>
-            );
-          }}
-        </Route>
         <Route path="/help/guide">
           {() => {
             const GuidePage = lazy(() => import('./pages/help/guide'));
@@ -727,47 +718,6 @@ function UnauthenticatedRoutes() {
               <Suspense fallback={<div className="p-8 text-center">문의하기 페이지 로딩 중...</div>}>
                 <ContactPage />
               </Suspense>
-            );
-          }}
-        </Route>
-        {/* 도움말 섹션의 다른 메뉴 항목에 대한 라우트 추가 */}
-        <Route path="/help/getting-started">
-          {() => {
-            const GuidePage = lazy(() => import('./pages/help/guide'));
-            return (
-              <Suspense fallback={<div className="p-8 text-center">시작하기 가이드 로딩 중...</div>}>
-                <GuidePage initialGuide="getting-started" />
-              </Suspense>
-            );
-          }}
-        </Route>
-        <Route path="/help/trainer-guides">
-          {() => {
-            const GuidePage = lazy(() => import('./pages/help/guide'));
-            return (
-              <Suspense fallback={<div className="p-8 text-center">훈련사 가이드 로딩 중...</div>}>
-                <GuidePage initialGuide="trainer" />
-              </Suspense>
-            );
-          }}
-        </Route>
-        <Route path="/help/institute-guides">
-          {() => {
-            const GuidePage = lazy(() => import('./pages/help/guide'));
-            return (
-              <Suspense fallback={<div className="p-8 text-center">기관 가이드 로딩 중...</div>}>
-                <GuidePage initialGuide="institute" />
-              </Suspense>
-            );
-          }}
-        </Route>
-        <Route path="/help/settings">
-          {() => {
-            return (
-              <div className="p-8">
-                <h1 className="text-2xl font-bold mb-6">도움말 설정</h1>
-                <p className="text-lg">도움말 설정 페이지입니다. 현재 개발 중입니다.</p>
-              </div>
             );
           }}
         </Route>
