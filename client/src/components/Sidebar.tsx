@@ -143,11 +143,11 @@ export function Sidebar({
     return () => window.removeEventListener('resize', handleResize);
   }, [onToggleExpand]);
 
-  // 기본 메뉴 그룹
+  // 기본 메뉴 그룹 (모두 닫힌 상태로 시작)
   const [menuGroups, setMenuGroups] = useState({
-    main: true,
-    features: true,
-    myLearning: true,
+    main: false,
+    features: false,
+    myLearning: false,
     trainer: false,
     institute: false,
     admin: false

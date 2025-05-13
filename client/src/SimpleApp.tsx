@@ -89,7 +89,7 @@ function NavigationMessageListener({ children }: { children: ReactNode }) {
 function AppLayout({ children }: { children: ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isDesktop, setIsDesktop] = useState(false);
-  const [sidebarExpanded, setSidebarExpanded] = useState(true);
+  const [sidebarExpanded, setSidebarExpanded] = useState(false);
   const auth = useAuth();
   
   // 인증 상태가 변경될 때마다 윈도우 객체에 저장된 상태를 확인하고 동기화
