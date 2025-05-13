@@ -211,8 +211,6 @@ export default function VideoCallPage() {
           title: '복사 완료',
           description: '미팅 정보가 클립보드에 복사되었습니다.',
           variant: 'default',
-          role: 'status',
-          ariaLive: 'assertive',
         });
       })
       .catch((err) => {
@@ -231,14 +229,28 @@ export default function VideoCallPage() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+      <div className="flex items-center justify-center min-h-screen" role="status">
+        <div 
+          className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin"
+          aria-hidden="true"
+        ></div>
+        <span className="sr-only">화상 미팅 데이터를 불러오는 중입니다. 잠시만 기다려주세요.</span>
       </div>
     );
   }
 
   return (
     <div className="container mx-auto py-8">
+      {/* 스크린 리더 사용자를 위한 실시간 알림 영역 */}
+      <div 
+        className="sr-only" 
+        aria-live="polite" 
+        id="screen-reader-announcements"
+      >
+        {isCreating && "화상 미팅 생성 중입니다. 잠시만 기다려주세요."}
+        {isJoining && "화상 미팅 입장 중입니다. 잠시만 기다려주세요."}
+      </div>
+      
       <h1 className="text-3xl font-bold mb-6">화상 훈련 서비스</h1>
       
       <Tabs 
@@ -355,17 +367,20 @@ export default function VideoCallPage() {
               
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>날짜</Label>
+                  <Label htmlFor="date-picker">날짜</Label>
                   <Popover>
                     <PopoverTrigger asChild>
                       <Button
+                        id="date-picker"
                         variant={"outline"}
                         className={cn(
                           "w-full justify-start text-left font-normal",
                           !meetingData.date && "text-muted-foreground"
                         )}
+                        aria-label="화상 미팅 날짜 선택"
+                        aria-haspopup="dialog"
                       >
-                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        <CalendarIcon className="mr-2 h-4 w-4" aria-hidden="true" />
                         {meetingData.date ? format(meetingData.date, 'PPP', { locale: ko }) : <span>날짜 선택</span>}
                       </Button>
                     </PopoverTrigger>
