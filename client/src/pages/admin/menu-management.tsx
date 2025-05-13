@@ -35,7 +35,7 @@ import {
   MenuGroup, 
   MenuItem, 
   DEFAULT_MENU_CONFIGURATION,
-  UserRole
+  MenuCategory
 } from '@shared/menu-config';
 import { GripVertical, Edit, Save, ArrowUp, ArrowDown, Plus, Trash2 } from 'lucide-react';
 
@@ -291,8 +291,9 @@ export default function MenuManagement() {
       ? Math.max(...menuConfig.groups.map(g => g.orderIndex)) + 10
       : 10;
     
+    // 새 그룹 ID는 기존 MenuCategory 중 하나를 사용
     const newGroup: MenuGroup = {
-      id: `group-${Date.now()}`,
+      id: 'admin', // 기본값으로 admin 사용
       title: '새 메뉴 그룹',
       icon: 'list',
       orderIndex: maxOrderIndex,
@@ -319,7 +320,7 @@ export default function MenuManagement() {
       path: '/new-path',
       icon: 'link',
       type: 'internal',
-      category: 'main',
+      category: 'main' as MenuCategory, // 명시적으로 MenuCategory 타입 지정
       roles: ['admin'],
       orderIndex: maxOrderIndex,
       isActive: true,
@@ -385,14 +386,14 @@ export default function MenuManagement() {
             <div className="flex gap-2 items-center">
               <Label htmlFor="institute-select">기관 선택:</Label>
               <Select
-                value={selectedInstituteId?.toString() || ''} 
-                onValueChange={(val) => setSelectedInstituteId(val ? parseInt(val) : null)}
+                value={selectedInstituteId?.toString() || 'system'} 
+                onValueChange={(val) => setSelectedInstituteId(val === 'system' ? null : parseInt(val))}
               >
                 <SelectTrigger className="w-[220px]">
                   <SelectValue placeholder="전체 시스템 메뉴" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">전체 시스템 메뉴</SelectItem>
+                  <SelectItem value="system">전체 시스템 메뉴</SelectItem>
                   {institutes.map(institute => (
                     <SelectItem 
                       key={institute.id} 
@@ -716,7 +717,7 @@ export default function MenuManagement() {
                 <Label htmlFor="item-group" className="text-right">그룹</Label>
                 <Select
                   value={editItem.category}
-                  onValueChange={(val) => setEditItem({...editItem, category: val})}
+                  onValueChange={(val) => setEditItem({...editItem, category: val as MenuCategory})}
                 >
                   <SelectTrigger className="col-span-3 w-full">
                     <SelectValue placeholder="그룹 선택" />
