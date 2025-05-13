@@ -995,8 +995,29 @@ export function Sidebar({
                   </>
                 )}
 
-                {/* 독립적인 HelpSection 컴포넌트 사용 */}
-                <HelpSection expanded={expanded} handleItemClick={handleItemClick} />
+                {/* 축소된 상태에서는 물음표 아이콘에 툴팁 적용 */}
+                {!expanded ? (
+                  <div className="mt-6 px-2">
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div 
+                            className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-2 flex justify-center cursor-pointer" 
+                            onClick={() => handleItemClick('/help')}
+                          >
+                            <HelpCircle className="w-5 h-5 text-primary" aria-label="도움말" />
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent side="right">
+                          <p>도움말 및 지원</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </div>
+                ) : (
+                  /* 확장된 상태에서는 기존 HelpSection 컴포넌트 사용 */
+                  <HelpSection expanded={expanded} handleItemClick={handleItemClick} />
+                )}
 
                 {/* 독립적인 StatisticsSection 컴포넌트 사용 */}
                 <StatisticsSection expanded={expanded} />
