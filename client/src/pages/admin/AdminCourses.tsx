@@ -1268,7 +1268,100 @@ export default function AdminCourses() {
               </DialogDescription>
             </DialogHeader>
             
-            {selectedCourse && (
+            {modalMode === 'add' ? (
+              // 새 강의 추가 폼
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="addCourseTitle">강의 제목</Label>
+                    <Input id="addCourseTitle" placeholder="강의 제목을 입력하세요" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="addCourseCategory">카테고리</Label>
+                    <Select>
+                      <SelectTrigger id="addCourseCategory">
+                        <SelectValue placeholder="카테고리 선택" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="basic">기본 훈련</SelectItem>
+                        <SelectItem value="advanced">고급 훈련</SelectItem>
+                        <SelectItem value="behavior">행동 교정</SelectItem>
+                        <SelectItem value="tricks">재주 훈련</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="addCourseDescription">강의 설명</Label>
+                  <Textarea 
+                    id="addCourseDescription" 
+                    placeholder="강의에 대한 상세 설명을 입력하세요" 
+                    rows={4}
+                  />
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="addCourseDuration">강의 기간 (주)</Label>
+                    <Input id="addCourseDuration" type="number" min="1" placeholder="4" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="addCoursePrice">가격 (₩)</Label>
+                    <Input id="addCoursePrice" type="number" min="0" placeholder="50000" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="addCourseTrainer">담당 훈련사</Label>
+                    <Select>
+                      <SelectTrigger id="addCourseTrainer">
+                        <SelectValue placeholder="훈련사 선택" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="1">김훈련</SelectItem>
+                        <SelectItem value="2">이교육</SelectItem>
+                        <SelectItem value="3">박지도</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="addCourseThumbnail">썸네일 이미지</Label>
+                  <div className="grid grid-cols-1 place-items-center border-2 border-dashed border-border rounded-md p-4 cursor-pointer hover:bg-secondary/50 transition-colors">
+                    <div className="text-center py-4">
+                      <Upload className="h-8 w-8 mx-auto text-muted-foreground" />
+                      <p className="mt-2 text-sm text-muted-foreground">
+                        클릭하여 이미지 업로드
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setShowCourseModal(false)}>
+                    취소
+                  </Button>
+                  <Button onClick={() => {
+                    toast({
+                      title: "강의 생성 중",
+                      description: "새 강의를 생성하고 있습니다...",
+                    });
+                    
+                    // TODO: 새 강의 생성 API 호출
+                    
+                    setTimeout(() => {
+                      toast({
+                        title: "강의 생성 완료",
+                        description: "새 강의가 성공적으로 생성되었습니다.",
+                      });
+                      setShowCourseModal(false);
+                    }, 1000);
+                  }}>
+                    강의 추가
+                  </Button>
+                </DialogFooter>
+              </div>
+            ) : selectedCourse && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-6">
                   {selectedCourse.thumbnail ? (
