@@ -470,7 +470,6 @@ export default function Notebook() {
         }
         setShowNewEntryDialog(true);
       }, 100);
-      }
     }
   };
   
