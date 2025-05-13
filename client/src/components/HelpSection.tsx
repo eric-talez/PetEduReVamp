@@ -49,7 +49,13 @@ const NavItem: React.FC<NavItemProps> = ({ href, icon, children, active, onClick
       )}
       onClick={(e) => {
         e.preventDefault();
-        if (onClick) onClick(href);
+        console.log("도움말 메뉴 항목 클릭:", href);
+        if (onClick) {
+          onClick(href);
+        } else {
+          // 직접 setLocation 사용하지 않고 항상 onClick prop 통해 부모 컴포넌트의 handleItemClick 사용
+          console.log("onClick prop이 제공되지 않음", href);
+        }
       }}
     >
       {icon}
@@ -103,7 +109,10 @@ export function HelpSection({ expanded, handleItemClick }: HelpSectionProps) {
             <TooltipTrigger asChild>
               <div 
                 className="bg-gray-100 dark:bg-gray-800 rounded-lg p-2 flex justify-center cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors" 
-                onClick={() => handleItemClick('/help/faq')}
+                onClick={() => {
+                  console.log("접힌 상태에서 도움말 아이콘 클릭");
+                  handleItemClick('/help/faq');
+                }}
               >
                 <HelpCircle className="w-5 h-5 text-primary" aria-label="도움말" />
               </div>
