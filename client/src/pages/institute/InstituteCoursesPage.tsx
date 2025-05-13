@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useLocation } from 'wouter';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
+import { NewCourseDialog } from '@/components/NewCourseDialog';
 import {
   Card,
   CardContent,
@@ -673,121 +674,15 @@ export default function InstituteCoursesPage() {
         </DialogContent>
       </Dialog>
       
-      {/* 새 교육 과정 생성 다이얼로그 */}
-      <Dialog open={showNewCourseDialog} onOpenChange={setShowNewCourseDialog}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle>새 교육 과정 생성</DialogTitle>
-            <DialogDescription>
-              새로운 교육 과정 정보를 입력하세요. 나중에 수정할 수 있습니다.
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="title" className="text-right">
-                과정명
-              </Label>
-              <Input
-                id="title"
-                placeholder="교육 과정 이름"
-                className="col-span-3"
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="description" className="text-right">
-                설명
-              </Label>
-              <Input
-                id="description"
-                placeholder="교육 과정에 대한 설명"
-                className="col-span-3"
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="type" className="text-right">
-                유형
-              </Label>
-              <Select>
-                <SelectTrigger id="type" className="col-span-3">
-                  <SelectValue placeholder="교육 과정 유형 선택" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="기초 훈련">기초 훈련</SelectItem>
-                  <SelectItem value="문제행동 교정">문제행동 교정</SelectItem>
-                  <SelectItem value="사회화">사회화</SelectItem>
-                  <SelectItem value="특수 훈련">특수 훈련</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="level" className="text-right">
-                난이도
-              </Label>
-              <Select>
-                <SelectTrigger id="level" className="col-span-3">
-                  <SelectValue placeholder="난이도 선택" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="beginner">초급</SelectItem>
-                  <SelectItem value="intermediate">중급</SelectItem>
-                  <SelectItem value="advanced">고급</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="duration" className="text-right">
-                기간 (주)
-              </Label>
-              <Input
-                id="duration"
-                type="number"
-                min="1"
-                placeholder="8"
-                className="col-span-3"
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="maxStudents" className="text-right">
-                최대 수강생
-              </Label>
-              <Input
-                id="maxStudents"
-                type="number"
-                min="1"
-                placeholder="20"
-                className="col-span-3"
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="price" className="text-right">
-                수강료
-              </Label>
-              <Input
-                id="price"
-                type="number"
-                min="0"
-                placeholder="350000"
-                className="col-span-3"
-              />
-            </div>
-          </div>
-          
-          <DialogFooter>
-            <Button 
-              onClick={() => {
-                toast({
-                  title: "교육 과정 생성",
-                  description: "새 교육 과정이 초안으로 생성되었습니다.",
-                });
-                setShowNewCourseDialog(false);
-              }}
-            >
-              과정 생성
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {/* 새 교육 과정 생성 다이얼로그 - 외부 컴포넌트 사용 */}
+      <NewCourseDialog 
+        open={showNewCourseDialog} 
+        onOpenChange={setShowNewCourseDialog} 
+        onSuccess={() => {
+          console.log('교육 과정 생성 성공');
+          // 여기서 필요한 추가 작업 수행
+        }}
+      />
     </div>
   );
 }
