@@ -312,3 +312,23 @@ export type InsertCommissionTransaction = z.infer<typeof createCommissionTransac
 
 export type SettlementReport = typeof settlementReports.$inferSelect;
 export type InsertSettlementReport = z.infer<typeof createSettlementReportSchema>;
+
+// 메뉴 관리 테이블 정의
+export const menuConfigurations = pgTable("menu_configurations", {
+  id: serial("id").primaryKey(),
+  configuration: json("configuration").notNull().$type<any>(), // JSON 타입 데이터로 메뉴 구성 저장
+  instituteId: integer("institute_id").references(() => institutes.id), // null이면 전체 시스템 메뉴 구성
+  isActive: boolean("is_active").default(true).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  updatedBy: integer("updated_by").references(() => users.id)
+});
+
+// 메뉴 구성 스키마
+export const createMenuConfigurationSchema = createInsertSchema(menuConfigurations).omit({
+  id: true,
+  createdAt: true
+});
+
+export type MenuConfiguration = typeof menuConfigurations.$inferSelect;
+export type InsertMenuConfiguration = z.infer<typeof createMenuConfigurationSchema>;
