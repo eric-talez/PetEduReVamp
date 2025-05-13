@@ -234,6 +234,7 @@ export function Sidebar({ onToggleExpand }: SidebarProps) {
     }
   }, [userRole]);
   
+  console.log('메뉴 표시 상태 - 기관 관리자 메뉴:', showInstituteMenu, '(역할:', userRole, ')');
   console.log('메뉴 그룹 상태:', menuGroups);
 
 
