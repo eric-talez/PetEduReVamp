@@ -768,8 +768,8 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
                               onClick={() => {
                                 setCartPopupOpen(false);
                                 console.log("카트 팝업에서 장바구니 버튼 클릭");
-                                // 장바구니는 직접 이동해야 함 (리다이렉트 사용하지 않음)
-                                window.location.href = window.location.origin + "/shop/cart";
+                                // 장바구니로 이동
+                                window.location.href = "/shop";
                               }}
                             >
                               장바구니 보기
