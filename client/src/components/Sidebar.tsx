@@ -230,6 +230,8 @@ export function Sidebar({
     return false;
   };
 
+  // useLocation은 이미 위에서 선언되어 있으므로 재사용
+  
   const handleItemClick = (path: string) => {
     console.log(`메뉴 클릭: ${path} (사용자 역할: ${userRole || '비로그인'})`);
 
@@ -246,7 +248,7 @@ export function Sidebar({
         !path.startsWith('/events/') && 
         !path.startsWith('/help/')) {
       console.log('로그인 필요: ', path);
-      window.location.href = "/auth/login";
+      setLocation("/auth/login");
       return;
     }
 
@@ -293,16 +295,24 @@ export function Sidebar({
       return;
     }
 
+    // 도움말 페이지 특별 처리
+    if (path.startsWith('/help/')) {
+      console.log('도움말 페이지로 이동 중:', path);
+      setLocation(path);
+      if (onClose) onClose();
+      return;
+    }
+
     if (path in specialRoutes) {
       console.log(`${specialRoutes[path]} 페이지로 이동 중...`);
-      window.location.href = path;
+      setLocation(path);
       if (onClose) onClose();
       return;
     }
 
     // 일반 페이지 라우팅
     console.log('페이지 이동:', path);
-    window.location.href = path;
+    setLocation(path);
     if (onClose) onClose();
   };
 
