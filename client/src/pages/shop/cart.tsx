@@ -1,325 +1,463 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'wouter';
-import { useAuth } from '../../SimpleApp';
-import { ShoppingBag, Trash2, Plus, Minus, ChevronRight, RefreshCw, CreditCard, Check, Info } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
-import { useCart } from '@/context/cart-context';
-
-import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
-import { Separator } from '@/components/ui/separator';
 import { 
-  Table, 
-  TableBody, 
-  TableCaption, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
-} from '@/components/ui/table';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/Card';
+  ChevronRight, 
+  Trash2, 
+  ShoppingBag, 
+  ShoppingCart, 
+  CreditCard, 
+  Shield, 
+  Check, 
+  ChevronDown, 
+  ChevronUp,
+  Info
+} from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Label } from '@/components/ui/label';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { 
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { Badge } from '@/components/ui/badge';
+import { useToast } from '@/hooks/use-toast';
 
-// 추천인 코드 타입 정의
-interface ReferralCode {
-  code: string;
-  discount: number;
-  valid: boolean;
-}
-
-export default function CartPage() {
-  const [location, navigate] = useLocation();
-  const { isAuthenticated } = useAuth();
+export default function Cart() {
+  const [, navigate] = useLocation();
   const { toast } = useToast();
-  const { 
-    cartItems, 
-    updateQuantity, 
-    removeFromCart, 
-    toggleItemSelection, 
-    toggleAllSelection, 
-    calculateSubtotal, 
-    calculateTotal, 
-    selectedItemCount 
-  } = useCart();
-
-  const [referralCode, setReferralCode] = useState('');
-  const [appliedReferral, setAppliedReferral] = useState<ReferralCode | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [allSelected, setAllSelected] = useState(true);
-
-  // 초기에 장바구니 모든 아이템 선택 상태 확인
+  
+  // 장바구니 상태
+  const [cartItems, setCartItems] = useState<any[]>([]);
+  const [selectedItems, setSelectedItems] = useState<number[]>([]);
+  const [itemCounts, setItemCounts] = useState<Record<number, number>>({});
+  
+  // 가격 계산 상태
+  const [subtotal, setSubtotal] = useState(0);
+  const [shippingFee, setShippingFee] = useState(0);
+  const [total, setTotal] = useState(0);
+  const [discountTotal, setDiscountTotal] = useState(0);
+  
+  // 수수료 합계 상태
+  const [commissionSummary, setCommissionSummary] = useState<Record<string, any>>({});
+  
+  // 페이지 로드 시 장바구니 데이터 로드
   useEffect(() => {
-    setAllSelected(cartItems.length > 0 && cartItems.every(item => item.isSelected));
-  }, [cartItems]);
-
-  // 모든 아이템 선택/해제
-  const handleSelectAll = (checked: boolean) => {
-    setAllSelected(checked);
-    toggleAllSelection(checked);
-  };
-
-  // 개별 아이템 선택/해제
-  const handleSelectItem = (itemId: number, checked: boolean) => {
-    toggleItemSelection(itemId, checked);
-  };
-
-  // 추천인 코드 적용
-  const applyReferralCode = () => {
-    if (!referralCode.trim()) {
+    try {
+      const cartItemsString = localStorage.getItem('petedu_cart') || '[]';
+      const items = JSON.parse(cartItemsString);
+      setCartItems(items);
+      
+      // 기본적으로 모든 아이템 선택
+      setSelectedItems(items.map((item: any) => item.id));
+      
+      // 수량 상태 초기화
+      const counts: Record<number, number> = {};
+      items.forEach((item: any) => {
+        counts[item.id] = item.quantity || 1;
+      });
+      setItemCounts(counts);
+      
+    } catch (err) {
+      console.error('장바구니 데이터 로드 오류:', err);
       toast({
-        title: "추천인 코드를 입력해주세요",
+        title: "장바구니 데이터 로드 실패",
         variant: "destructive",
       });
-      return;
     }
-
-    setIsLoading(true);
-
-    // 실제로는 API 호출을 통해 추천인 코드 검증을 해야 함
-    setTimeout(() => {
-      // 예시: 모든 코드가 유효하다고 가정
-      setAppliedReferral({
-        code: referralCode,
-        discount: 10, // 10% 할인
-        valid: true
-      });
-      setIsLoading(false);
-      toast({
-        title: "추천인 코드가 적용되었습니다",
-        description: "10% 할인이 적용됩니다",
-      });
-    }, 1000);
+  }, [toast]);
+  
+  // 선택된 항목이나 수량이 변경될 때 가격 계산
+  useEffect(() => {
+    const selected = cartItems.filter(item => 
+      selectedItems.includes(item.id)
+    );
+    
+    let subtotalPrice = 0;
+    let discountAmount = 0;
+    
+    // 수수료 집계를 위한 객체
+    const commissions: Record<string, {
+      source: 'institute' | 'trainer';
+      name: string;
+      code: string;
+      items: any[];
+      totalAmount: number;
+      commissionRate: number;
+      commissionAmount: number;
+    }> = {};
+    
+    selected.forEach(item => {
+      const quantity = itemCounts[item.id] || 1;
+      const itemPrice = (item.price + (item.extraPrice || 0)) * quantity;
+      
+      subtotalPrice += itemPrice;
+      
+      // 추천 코드가 있는 경우 수수료 정보 수집
+      if (item.referralCode && item.referralInfo && item.commissionRate) {
+        const referralCode = item.referralCode;
+        
+        if (!commissions[referralCode]) {
+          commissions[referralCode] = {
+            source: item.referralSource,
+            name: item.referralInfo.name,
+            code: referralCode,
+            items: [],
+            totalAmount: 0,
+            commissionRate: item.commissionRate,
+            commissionAmount: 0
+          };
+        }
+        
+        commissions[referralCode].items.push({
+          id: item.id,
+          name: item.name,
+          price: item.price,
+          quantity,
+          totalPrice: itemPrice
+        });
+        
+        commissions[referralCode].totalAmount += itemPrice;
+        commissions[referralCode].commissionAmount += (itemPrice * (item.commissionRate / 100));
+      }
+    });
+    
+    // 배송비 계산 (3만원 이상 무료)
+    const calculatedShippingFee = subtotalPrice >= 30000 ? 0 : 3000;
+    
+    setSubtotal(subtotalPrice);
+    setShippingFee(calculatedShippingFee);
+    setTotal(subtotalPrice + calculatedShippingFee - discountAmount);
+    setDiscountTotal(discountAmount);
+    
+    // 수수료 정보 업데이트
+    setCommissionSummary(commissions);
+    
+  }, [cartItems, selectedItems, itemCounts]);
+  
+  // 항목 선택 상태 변경
+  const toggleSelectItem = (id: number) => {
+    if (selectedItems.includes(id)) {
+      setSelectedItems(selectedItems.filter(itemId => itemId !== id));
+    } else {
+      setSelectedItems([...selectedItems, id]);
+    }
   };
-
-  // 추천인 코드 제거
-  const removeReferralCode = () => {
-    setAppliedReferral(null);
-    setReferralCode('');
+  
+  // 전체 선택 토글
+  const toggleSelectAll = () => {
+    if (selectedItems.length === cartItems.length) {
+      setSelectedItems([]);
+    } else {
+      setSelectedItems(cartItems.map(item => item.id));
+    }
+  };
+  
+  // 수량 증가
+  const increaseQuantity = (id: number) => {
+    setItemCounts({
+      ...itemCounts,
+      [id]: (itemCounts[id] || 1) + 1
+    });
+    
+    // 로컬 스토리지에도 반영
+    updateStorageQuantity(id, (itemCounts[id] || 1) + 1);
+  };
+  
+  // 수량 감소
+  const decreaseQuantity = (id: number) => {
+    if (itemCounts[id] > 1) {
+      setItemCounts({
+        ...itemCounts,
+        [id]: itemCounts[id] - 1
+      });
+      
+      // 로컬 스토리지에도 반영
+      updateStorageQuantity(id, itemCounts[id] - 1);
+    }
+  };
+  
+  // 아이템 삭제
+  const removeItem = (id: number) => {
+    const newCartItems = cartItems.filter(item => item.id !== id);
+    setCartItems(newCartItems);
+    setSelectedItems(selectedItems.filter(itemId => itemId !== id));
+    
+    // 로컬 스토리지에서도 삭제
+    localStorage.setItem('petedu_cart', JSON.stringify(newCartItems));
+    
+    // 이벤트 발생 (장바구니 아이콘 카운트 업데이트를 위함)
+    window.dispatchEvent(new CustomEvent('cartUpdated', { detail: { cartItems: newCartItems } }));
+    
     toast({
-      title: "추천인 코드가 제거되었습니다",
+      title: "상품이 장바구니에서 제거되었습니다",
     });
   };
-
-  // 결제 처리
-  const handleCheckout = () => {
-    if (!isAuthenticated) {
+  
+  // 선택된 항목 삭제
+  const removeSelectedItems = () => {
+    if (selectedItems.length === 0) return;
+    
+    const newCartItems = cartItems.filter(item => !selectedItems.includes(item.id));
+    setCartItems(newCartItems);
+    setSelectedItems([]);
+    
+    // 로컬 스토리지에서도 삭제
+    localStorage.setItem('petedu_cart', JSON.stringify(newCartItems));
+    
+    // 이벤트 발생 (장바구니 아이콘 카운트 업데이트를 위함)
+    window.dispatchEvent(new CustomEvent('cartUpdated', { detail: { cartItems: newCartItems } }));
+    
+    toast({
+      title: `${selectedItems.length}개 상품이 장바구니에서 제거되었습니다`,
+    });
+  };
+  
+  // 로컬 스토리지의 수량 업데이트
+  const updateStorageQuantity = (id: number, quantity: number) => {
+    try {
+      const cartItemsString = localStorage.getItem('petedu_cart') || '[]';
+      const items = JSON.parse(cartItemsString);
+      
+      const updatedItems = items.map((item: any) => 
+        item.id === id ? { ...item, quantity } : item
+      );
+      
+      localStorage.setItem('petedu_cart', JSON.stringify(updatedItems));
+      
+      // 이벤트 발생 (장바구니 아이콘 카운트는 변경 안됨)
+      window.dispatchEvent(new CustomEvent('cartUpdated', { detail: { cartItems: updatedItems, skipCountUpdate: true } }));
+      
+    } catch (err) {
+      console.error('장바구니 수량 업데이트 오류:', err);
+    }
+  };
+  
+  // 결제 진행
+  const proceedToCheckout = () => {
+    if (selectedItems.length === 0) {
       toast({
-        title: "로그인이 필요합니다",
-        description: "결제를 진행하려면 로그인해주세요",
+        title: "선택된 상품이 없습니다",
+        description: "결제할 상품을 선택해주세요.",
         variant: "destructive",
       });
       return;
     }
-
-    if (selectedItemCount === 0) {
-      toast({
-        title: "상품을 선택해주세요",
-        variant: "destructive",
-      });
-      return;
-    }
-
+    
+    // 선택된 항목만 결제 진행
+    const checkoutItems = cartItems.filter(item => selectedItems.includes(item.id));
+    
+    // 수량 적용
+    const itemsWithUpdatedQuantity = checkoutItems.map(item => ({
+      ...item,
+      quantity: itemCounts[item.id] || 1
+    }));
+    
+    // 결제 정보를 세션 스토리지에 저장 (새로고침해도 유지되어야 함)
+    sessionStorage.setItem('checkout_items', JSON.stringify({
+      items: itemsWithUpdatedQuantity,
+      subtotal,
+      shippingFee,
+      total,
+      discountTotal,
+      commissionSummary
+    }));
+    
     // 결제 페이지로 이동
     navigate('/shop/checkout');
   };
-
-  // 배송비 계산 (3만원 이상 무료, 그 이하는 3,000원)
-  const calculateShipping = () => {
-    const subtotal = calculateSubtotal();
-    return subtotal >= 30000 ? 0 : 3000;
+  
+  // 쇼핑 계속하기
+  const continueShopping = () => {
+    navigate('/shop');
   };
-
-  // 추천인 코드 할인 계산
-  const calculateReferralDiscount = () => {
-    if (!appliedReferral) return 0;
-    return Math.round(calculateSubtotal() * (appliedReferral.discount / 100));
-  };
-
-  // 최종 결제 금액 계산 (추천인 코드 적용)
-  const calculateFinalTotal = () => {
-    return calculateSubtotal() + calculateShipping() - calculateReferralDiscount();
-  };
-
-  // 로그인이 필요하면 안내 표시
-  if (!isAuthenticated) {
-    return (
-      <div className="container mx-auto py-10 px-4">
-        <div className="max-w-3xl mx-auto text-center py-12">
-          <Info className="w-12 h-12 mx-auto text-primary mb-4" />
-          <h1 className="text-2xl font-bold mb-2">로그인이 필요합니다</h1>
-          <p className="text-gray-600 dark:text-gray-400 mb-6">
-            장바구니 이용 및 구매를 위해 로그인해주세요.
-          </p>
-          <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <Button onClick={() => navigate('/auth/login')}>
-              로그인하기
-            </Button>
-            <Button variant="outline" onClick={() => navigate('/shop')}>
-              쇼핑 계속하기
-            </Button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // 장바구니가 비어있을 때
+  
+  // 장바구니가 비어있는 경우
   if (cartItems.length === 0) {
     return (
-      <div className="container mx-auto py-10 px-4">
-        <div className="max-w-3xl mx-auto text-center py-12">
-          <ShoppingBag className="w-12 h-12 mx-auto text-gray-400 mb-4" />
-          <h1 className="text-2xl font-bold mb-2">장바구니가 비어있습니다</h1>
-          <p className="text-gray-600 mb-6">
-            장바구니에 상품을 추가하고 반려견과 함께 행복한 시간을 보내세요!
+      <div className="container mx-auto px-4 py-12">
+        <div className="text-center py-16">
+          <ShoppingCart className="h-20 w-20 mx-auto mb-6 text-gray-300" />
+          <h2 className="text-2xl font-bold mb-4">장바구니가 비어있습니다</h2>
+          <p className="text-gray-600 dark:text-gray-400 mb-8">
+            장바구니에 상품을 담고 쇼핑을 계속해보세요.
           </p>
-          <Button onClick={() => navigate('/shop')}>
+          <Button 
+            onClick={continueShopping}
+            className="bg-[#03c75a] hover:bg-[#02b04a] text-white"
+          >
+            <ShoppingBag className="mr-2 h-5 w-5" />
             쇼핑 계속하기
           </Button>
         </div>
       </div>
     );
   }
-
+  
   return (
-    <div className="container mx-auto py-8 px-4">
-      <div className="flex items-center text-sm text-gray-500 mb-6">
-        <a href="/shop" className="hover:text-primary">쇼핑</a>
-        <ChevronRight className="w-4 h-4 mx-1" />
-        <span className="text-gray-700 font-medium">장바구니</span>
-      </div>
-
-      <h1 className="text-2xl font-bold mb-6">장바구니</h1>
-
-      <div className="flex flex-col lg:flex-row gap-8">
-        {/* 장바구니 목록 */}
-        <div className="lg:w-2/3">
+    <div className="container mx-auto px-4 py-8">
+      <h1 className="text-2xl font-bold mb-8">장바구니</h1>
+      
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* 왼쪽: 장바구니 아이템 목록 */}
+        <div className="lg:col-span-2">
           <Card>
-            <CardHeader className="pb-3">
-              <div className="flex items-center">
+            <CardHeader className="pb-4">
+              <div className="flex items-center justify-between">
                 <div className="flex items-center">
-                  <Checkbox
+                  <Checkbox 
                     id="select-all"
-                    checked={allSelected && cartItems.length > 0}
-                    onCheckedChange={handleSelectAll}
+                    checked={selectedItems.length === cartItems.length}
+                    onCheckedChange={toggleSelectAll}
                   />
-                  <Label htmlFor="select-all" className="ml-2">
-                    전체 선택 ({selectedItemCount}/{cartItems.length})
-                  </Label>
+                  <label htmlFor="select-all" className="ml-2 text-sm font-medium">
+                    전체 선택 ({selectedItems.length}/{cartItems.length})
+                  </label>
                 </div>
-                <Button
-                  variant="ghost"
-                  className="ml-auto text-sm"
-                  onClick={() => {
-                    const selectedItems = cartItems.filter(item => item.isSelected);
-                    selectedItems.forEach(item => removeFromCart(item.id));
-                    toast({
-                      title: `${selectedItems.length}개 상품이 장바구니에서 삭제되었습니다`,
-                    });
-                  }}
-                  disabled={selectedItemCount === 0}
+                
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={removeSelectedItems}
+                  disabled={selectedItems.length === 0}
                 >
-                  <Trash2 className="w-4 h-4 mr-1" />
+                  <Trash2 className="h-4 w-4 mr-1" />
                   선택 삭제
                 </Button>
               </div>
             </CardHeader>
+            
             <CardContent>
-              {cartItems.map((item) => (
-                <div
-                  key={item.id}
-                  className="flex py-4 border-b last:border-0"
+              {cartItems.map(item => (
+                <div 
+                  key={`${item.id}-${item.option}`}
+                  className="py-4 border-b last:border-b-0 flex items-start"
                 >
-                  <div className="flex items-center mr-4">
-                    <Checkbox
-                      checked={item.isSelected}
-                      onCheckedChange={(checked) => handleSelectItem(item.id, checked as boolean)}
-                    />
-                  </div>
-
-                  <div className="flex-shrink-0 mr-4">
-                    <a href={`/shop/product/${item.productId}`}>
-                      <div className="w-20 h-20 rounded-md overflow-hidden">
-                        <img
-                          src={item.imageUrl}
-                          alt={item.name}
-                          className="w-full h-full object-cover"
-                        />
+                  <Checkbox 
+                    className="mt-6 mr-4"
+                    checked={selectedItems.includes(item.id)}
+                    onCheckedChange={() => toggleSelectItem(item.id)}
+                  />
+                  
+                  <div className="w-20 h-20 rounded overflow-hidden bg-gray-100 dark:bg-gray-800 flex-shrink-0">
+                    {item.image ? (
+                      <img 
+                        src={item.image} 
+                        alt={item.name} 
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-gray-200 dark:bg-gray-700">
+                        <ShoppingBag className="h-8 w-8 text-gray-400" />
                       </div>
-                    </a>
+                    )}
                   </div>
-
-                  <div className="flex-1">
+                  
+                  <div className="ml-4 flex-1">
                     <div className="flex flex-col md:flex-row md:justify-between">
                       <div>
-                        <a
-                          href={`/shop/product/${item.productId}`}
-                          className="font-medium hover:text-primary transition-colors"
-                        >
-                          {item.name}
-                        </a>
+                        <h3 className="font-medium text-base">{item.name}</h3>
                         
-                        {(item.color || item.size) && (
-                          <div className="text-sm text-gray-500 mt-1">
-                            {item.color && <span>색상: {item.color}</span>}
-                            {item.color && item.size && <span> / </span>}
-                            {item.size && <span>사이즈: {item.size}</span>}
+                        {item.option && (
+                          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                            옵션: {item.option}
+                            {item.extraPrice > 0 && ` (+${item.extraPrice.toLocaleString()}원)`}
+                          </p>
+                        )}
+                        
+                        {/* 추천 코드 표시 */}
+                        {item.referralCode && item.referralInfo && (
+                          <div className="mt-2 flex items-center">
+                            <Badge variant="outline" className="text-xs py-1">
+                              {item.referralSource === 'institute' ? '기관' : '트레이너'} 추천: {item.referralInfo.name}
+                            </Badge>
+                            
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Info className="h-3.5 w-3.5 ml-1 text-gray-400" />
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p className="text-xs">
+                                    구매 시 {item.commissionRate}%의 수수료가 
+                                    {item.referralSource === 'institute' ? ' 기관' : ' 트레이너'}에게 적립됩니다.
+                                  </p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
                           </div>
                         )}
                       </div>
-
-                      <div className="flex flex-col items-end mt-2 md:mt-0">
-                        <div className="flex items-center">
-                          {item.discountedPrice ? (
-                            <>
-                              <span className="font-medium">
-                                {(item.discountedPrice * item.quantity).toLocaleString()}원
-                              </span>
-                              <span className="ml-1 text-sm text-gray-500 line-through">
-                                {(item.price * item.quantity).toLocaleString()}원
-                              </span>
-                            </>
-                          ) : (
-                            <span className="font-medium">
-                              {(item.price * item.quantity).toLocaleString()}원
-                            </span>
-                          )}
+                      
+                      <div className="mt-3 md:mt-0 flex items-center">
+                        <div className="flex items-center mr-6">
+                          <Button 
+                            variant="outline" 
+                            size="icon" 
+                            className="h-7 w-7 rounded-md"
+                            onClick={() => decreaseQuantity(item.id)}
+                            disabled={itemCounts[item.id] <= 1}
+                          >
+                            <ChevronDown className="h-3 w-3" />
+                          </Button>
+                          
+                          <span className="w-8 text-center text-sm mx-1">
+                            {itemCounts[item.id] || 1}
+                          </span>
+                          
+                          <Button 
+                            variant="outline" 
+                            size="icon" 
+                            className="h-7 w-7 rounded-md"
+                            onClick={() => increaseQuantity(item.id)}
+                          >
+                            <ChevronUp className="h-3 w-3" />
+                          </Button>
+                        </div>
+                        
+                        <div className="text-right">
+                          <div className="font-semibold">
+                            {(
+                              (item.price + (item.extraPrice || 0)) * 
+                              (itemCounts[item.id] || 1)
+                            ).toLocaleString()}원
+                          </div>
                         </div>
                       </div>
                     </div>
-
-                    <div className="flex justify-between items-end mt-3">
-                      <div className="flex items-center border rounded-md">
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 p-0 rounded-none"
-                          onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                          disabled={item.quantity <= 1}
-                        >
-                          <Minus className="h-3 w-3" />
-                        </Button>
-                        <div className="w-10 text-center">{item.quantity}</div>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 p-0 rounded-none"
-                          onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                        >
-                          <Plus className="h-3 w-3" />
-                        </Button>
-                      </div>
-
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="text-gray-500 hover:text-gray-700"
-                        onClick={() => removeFromCart(item.id)}
+                    
+                    <div className="mt-3 flex justify-end">
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="h-7 text-xs text-gray-500"
+                        onClick={() => removeItem(item.id)}
                       >
-                        <Trash2 className="h-4 w-4" />
+                        <Trash2 className="h-3 w-3 mr-1" />
+                        삭제
                       </Button>
                     </div>
                   </div>
@@ -327,100 +465,166 @@ export default function CartPage() {
               ))}
             </CardContent>
           </Card>
+          
+          {/* 수수료 정보 카드 */}
+          {Object.keys(commissionSummary).length > 0 && (
+            <Card className="mt-6">
+              <CardHeader>
+                <CardTitle className="text-lg">추천 수수료 정보</CardTitle>
+                <CardDescription>
+                  구매 시 적용되는 추천 수수료 정보입니다.
+                </CardDescription>
+              </CardHeader>
+              
+              <CardContent>
+                <Accordion type="single" collapsible className="w-full">
+                  {Object.entries(commissionSummary).map(([code, data]: [string, any]) => (
+                    <AccordionItem key={code} value={code}>
+                      <AccordionTrigger className="hover:no-underline">
+                        <div className="flex items-center">
+                          <Badge variant="outline" className="mr-2">
+                            {data.source === 'institute' ? '기관' : '트레이너'}
+                          </Badge>
+                          <span className="font-medium">{data.name}</span>
+                          <span className="text-sm text-gray-500 ml-4">{data.code}</span>
+                        </div>
+                      </AccordionTrigger>
+                      <AccordionContent>
+                        <div className="text-sm">
+                          <Table>
+                            <TableHeader>
+                              <TableRow>
+                                <TableHead>상품명</TableHead>
+                                <TableHead className="text-right">수량</TableHead>
+                                <TableHead className="text-right">금액</TableHead>
+                                <TableHead className="text-right">수수료</TableHead>
+                              </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                              {data.items.map((item: any) => (
+                                <TableRow key={item.id}>
+                                  <TableCell className="font-medium">{item.name}</TableCell>
+                                  <TableCell className="text-right">{item.quantity}</TableCell>
+                                  <TableCell className="text-right">{item.totalPrice.toLocaleString()}원</TableCell>
+                                  <TableCell className="text-right">
+                                    {Math.round(item.totalPrice * (data.commissionRate / 100)).toLocaleString()}원
+                                  </TableCell>
+                                </TableRow>
+                              ))}
+                            </TableBody>
+                          </Table>
+                          
+                          <div className="mt-4 p-3 bg-gray-50 dark:bg-gray-800 rounded">
+                            <div className="flex justify-between font-medium">
+                              <span>추천 수수료 합계 ({data.commissionRate}%)</span>
+                              <span>{Math.round(data.commissionAmount).toLocaleString()}원</span>
+                            </div>
+                          </div>
+                        </div>
+                      </AccordionContent>
+                    </AccordionItem>
+                  ))}
+                </Accordion>
+              </CardContent>
+            </Card>
+          )}
         </div>
-
-        {/* 주문 요약 */}
-        <div className="lg:w-1/3">
-          <Card>
+        
+        {/* 오른쪽: 주문 요약 */}
+        <div>
+          <Card className="sticky top-20">
             <CardHeader>
               <CardTitle>주문 요약</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex justify-between">
-                <span className="text-gray-600">상품 금액</span>
-                <span>{calculateSubtotal().toLocaleString()}원</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600">배송비</span>
-                <span>
-                  {calculateShipping() === 0 ? (
-                    <span className="text-green-600">무료</span>
-                  ) : (
-                    `${calculateShipping().toLocaleString()}원`
-                  )}
-                </span>
-              </div>
-
-              {appliedReferral && (
-                <div className="flex justify-between text-primary">
-                  <span className="flex items-center">
-                    <Check className="mr-1 h-4 w-4" />
-                    추천인 할인 ({appliedReferral.discount}%)
-                  </span>
-                  <span>-{calculateReferralDiscount().toLocaleString()}원</span>
+            
+            <CardContent>
+              <div className="space-y-4">
+                <div className="flex justify-between">
+                  <span className="text-gray-600 dark:text-gray-400">상품 금액</span>
+                  <span>{subtotal.toLocaleString()}원</span>
                 </div>
-              )}
-
-              <Separator />
-
-              <div className="flex justify-between font-bold text-lg">
-                <span>총 결제 금액</span>
-                <span>{calculateFinalTotal().toLocaleString()}원</span>
-              </div>
-
-              <div className="mt-6">
-                <div className="flex gap-2 mb-4">
-                  <Input
-                    type="text"
-                    placeholder="추천인 코드 입력"
-                    value={referralCode}
-                    onChange={(e) => setReferralCode(e.target.value)}
-                    disabled={!!appliedReferral}
-                    className="flex-1"
-                  />
-                  {appliedReferral ? (
-                    <Button
-                      variant="outline"
-                      onClick={removeReferralCode}
-                    >
-                      제거
-                    </Button>
-                  ) : (
-                    <Button
-                      onClick={applyReferralCode}
-                      disabled={isLoading}
-                    >
-                      {isLoading ? '확인 중...' : '적용'}
-                    </Button>
-                  )}
-                </div>
-
-                <Button
-                  className="w-full"
-                  size="lg"
-                  onClick={handleCheckout}
-                  disabled={selectedItemCount === 0}
-                >
-                  <CreditCard className="mr-2 h-5 w-5" />
-                  {selectedItemCount > 0 ? '결제하기' : '상품을 선택해주세요'}
-                </Button>
                 
-                <Button
-                  variant="outline"
-                  className="w-full mt-3"
-                  onClick={() => navigate('/shop')}
-                >
-                  <ShoppingBag className="mr-2 h-5 w-5" />
-                  쇼핑 계속하기
-                </Button>
+                <div className="flex justify-between">
+                  <span className="text-gray-600 dark:text-gray-400">배송비</span>
+                  <span>
+                    {shippingFee > 0 
+                      ? `${shippingFee.toLocaleString()}원` 
+                      : '무료'}
+                  </span>
+                </div>
+                
+                {discountTotal > 0 && (
+                  <div className="flex justify-between">
+                    <span className="text-gray-600 dark:text-gray-400">할인 금액</span>
+                    <span className="text-red-600">-{discountTotal.toLocaleString()}원</span>
+                  </div>
+                )}
+                
+                <div className="border-t pt-4 mt-4">
+                  <div className="flex justify-between items-center font-bold">
+                    <span>결제 금액</span>
+                    <span className="text-xl">{total.toLocaleString()}원</span>
+                  </div>
+                  
+                  {Object.keys(commissionSummary).length > 0 && (
+                    <div className="mt-2 text-xs text-gray-500 flex items-start">
+                      <Info className="h-3.5 w-3.5 mr-1.5 mt-0.5 flex-shrink-0" />
+                      <span>
+                        구매 시 추천인에게 총 
+                        {Object.values(commissionSummary).reduce((sum: number, data: any) => 
+                          sum + Math.round(data.commissionAmount), 0
+                        ).toLocaleString()}원의 
+                        수수료가 적립됩니다.
+                      </span>
+                    </div>
+                  )}
+                </div>
               </div>
             </CardContent>
+            
+            <CardFooter className="flex-col gap-4">
+              <Button 
+                className="w-full bg-[#03c75a] hover:bg-[#02b04a] text-white"
+                onClick={proceedToCheckout}
+                disabled={selectedItems.length === 0}
+              >
+                <CreditCard className="mr-2 h-5 w-5" />
+                결제하기 ({selectedItems.length}개)
+              </Button>
+              
+              <Button 
+                variant="outline" 
+                className="w-full"
+                onClick={continueShopping}
+              >
+                <ShoppingBag className="mr-2 h-5 w-5" />
+                쇼핑 계속하기
+              </Button>
+            </CardFooter>
           </Card>
-
-          <div className="mt-4 text-sm text-gray-500">
-            <p>· 30,000원 이상 구매 시 무료 배송</p>
-            <p>· 추천인 코드는 해당 코드를 발급한 트레이너에게 수수료가 지급됩니다.</p>
-            <p>· 결제 완료 후 취소는 마이페이지 {'>'} 주문내역에서 가능합니다.</p>
+          
+          {/* 안내사항 */}
+          <div className="mt-6 text-sm space-y-4">
+            <div className="flex items-start">
+              <Shield className="h-4 w-4 text-[#03c75a] mr-2 mt-0.5" />
+              <span className="text-gray-700 dark:text-gray-300">
+                안전 결제: SSL 보안 통신을 이용한 안전한 결제 시스템을 이용합니다.
+              </span>
+            </div>
+            
+            <div className="flex items-start">
+              <Check className="h-4 w-4 text-[#03c75a] mr-2 mt-0.5" />
+              <span className="text-gray-700 dark:text-gray-300">
+                3만원 이상 구매 시 무료 배송입니다 (일부 지역 및 상품 제외).
+              </span>
+            </div>
+            
+            <div className="flex items-start">
+              <Check className="h-4 w-4 text-[#03c75a] mr-2 mt-0.5" />
+              <span className="text-gray-700 dark:text-gray-300">
+                배송 완료 후 7일 이내 교환/반품이 가능합니다.
+              </span>
+            </div>
           </div>
         </div>
       </div>
