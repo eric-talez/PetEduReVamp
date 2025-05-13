@@ -419,9 +419,9 @@ export default function Notebook() {
     const mediaFiles: {type: 'photo' | 'video', url: string}[] = [];
     
     if (type === 'photo' && entry.photos) {
-      mediaFiles.push(...entry.photos.map(url => ({ type: 'photo', url })));
+      mediaFiles.push(...entry.photos.map(url => ({ type: 'photo' as const, url })));
     } else if (type === 'video' && entry.videos) {
-      mediaFiles.push(...entry.videos.map(url => ({ type: 'video', url })));
+      mediaFiles.push(...entry.videos.map(url => ({ type: 'video' as const, url })));
     }
     
     if (mediaFiles.length > 0) {
@@ -480,14 +480,14 @@ export default function Notebook() {
               <div>
                 <label className="block text-sm font-medium mb-1">반려동물</label>
                 <Select
-                  value={filterPet?.toString() || ''}
-                  onValueChange={(value) => setFilterPet(value ? parseInt(value) : null)}
+                  value={filterPet?.toString() || 'all'}
+                  onValueChange={(value) => setFilterPet(value === 'all' ? null : parseInt(value))}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="모든 반려동물" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">모든 반려동물</SelectItem>
+                    <SelectItem value="all">모든 반려동물</SelectItem>
                     {pets.map(pet => (
                       <SelectItem key={pet.id} value={pet.id.toString()}>
                         {pet.name}
@@ -516,8 +516,8 @@ export default function Notebook() {
                   <PopoverContent className="w-auto p-0">
                     <Calendar
                       mode="single"
-                      selected={filterDate}
-                      onSelect={setFilterDate}
+                      selected={filterDate ?? undefined}
+                      onSelect={(date) => setFilterDate(date ?? null)}
                       locale={ko}
                     />
                   </PopoverContent>
@@ -527,14 +527,14 @@ export default function Notebook() {
               <div>
                 <label className="block text-sm font-medium mb-1">기분</label>
                 <Select
-                  value={filterMood || ''}
-                  onValueChange={(value) => setFilterMood(value || null)}
+                  value={filterMood || 'all'}
+                  onValueChange={(value) => setFilterMood(value === 'all' ? null : value)}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="모든 기분" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">모든 기분</SelectItem>
+                    <SelectItem value="all">모든 기분</SelectItem>
                     <SelectItem value="happy">행복해요 😊</SelectItem>
                     <SelectItem value="sad">슬퍼요 😢</SelectItem>
                     <SelectItem value="neutral">보통이에요 😐</SelectItem>
