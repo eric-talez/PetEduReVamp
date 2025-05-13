@@ -26,6 +26,7 @@ interface NewCourseDialogProps {
 }
 
 export function NewCourseDialog({ open, onOpenChange, onSuccess }: NewCourseDialogProps) {
+  console.log('NewCourseDialog render - open 상태:', open);
   const { toast } = useToast();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');

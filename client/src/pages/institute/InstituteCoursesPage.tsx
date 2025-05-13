@@ -326,8 +326,11 @@ export default function InstituteCoursesPage() {
   
   // 새 교육 과정 생성 핸들러
   const handleCreateCourse = () => {
-    console.log('새 교육 과정 생성 버튼 클릭됨');
+    console.log('새 교육 과정 생성 버튼 클릭됨', new Date().toISOString());
+    // 직접 DOM 엘리먼트에 접근하는 방식으로 버튼 클릭 확인
+    document.getElementById('courseCreateDebug')?.setAttribute('data-clicked', 'true');
     setShowNewCourseDialog(true);
+    console.log('Dialog 상태 변경 요청됨:', !showNewCourseDialog);
   };
   
   // 새로고침 핸들러
@@ -361,14 +364,19 @@ export default function InstituteCoursesPage() {
           <p className="text-muted-foreground mt-1">기관의 교육 과정을 관리하고 새로운 과정을 개설합니다.</p>
         </div>
         <Button 
-          onClick={() => {
-            console.log('새 교육 과정 버튼 클릭됨');
+          id="courseCreateButton"
+          onClick={(e) => {
+            e.preventDefault();
+            console.log('새 교육 과정 버튼 직접 클릭됨', new Date().toISOString());
             handleCreateCourse();
           }}
         >
           <PlusCircle className="mr-2 h-4 w-4" />
           새 교육 과정
         </Button>
+        
+        {/* 디버깅용 요소 */}
+        <div id="courseCreateDebug" className="hidden" data-clicked="false"></div>
       </div>
       
       <Tabs defaultValue="all" value={activeTab} onValueChange={setActiveTab} className="mb-6">
