@@ -38,8 +38,8 @@ interface Meeting {
 }
 
 export default function VideoCallPage() {
-  const navigate = useNavigate();
-  const { user, isLoading } = useAuth();
+  const [, setLocation] = useLocation();
+  const { isAuthenticated, isLoading, userName } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState('scheduled');
@@ -56,18 +56,18 @@ export default function VideoCallPage() {
   const [meetingId, setMeetingId] = useState('');
 
   useEffect(() => {
-    if (!isLoading && !user) {
+    if (!isLoading && !isAuthenticated) {
       toast({
         title: "로그인 필요",
         description: "화상 통화 기능을 사용하려면 로그인이 필요합니다.",
         variant: "destructive"
       });
-      navigate('/auth/login');
-    } else if (user) {
+      setLocation('/auth/login');
+    } else if (isAuthenticated) {
       // 미팅 목록 가져오기
       fetchMeetings();
     }
-  }, [isLoading, user, navigate, toast]);
+  }, [isLoading, isAuthenticated, setLocation, toast]);
 
   const fetchMeetings = async () => {
     try {
@@ -174,7 +174,7 @@ export default function VideoCallPage() {
 
       if (data.signature) {
         // 실제 구현에서는 Zoom Web SDK를 사용하여 미팅에 참여
-        window.open(`https://zoom.us/wc/${meetingId}/join?pwd=&uname=${encodeURIComponent(user?.name || '게스트')}`, '_blank');
+        window.open(`https://zoom.us/wc/${meetingId}/join?pwd=&uname=${encodeURIComponent(userName || '게스트')}`, '_blank');
         
         toast({
           title: '미팅 참여 중',

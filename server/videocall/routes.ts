@@ -5,11 +5,8 @@ import { IStorage } from '../storage';
 import { z } from 'zod';
 import 'express-session';
 
-// Request 인터페이스 확장
-interface Request extends ExpressRequest {
-  isAuthenticated(): boolean;
-  user?: any;
-}
+// Express의 Request 타입을 확장하는 대신 Express 모듈의 Request 타입을 사용
+type Request = ExpressRequest;
 
 // Zoom API 연동 관련 상수
 const ZOOM_API_BASE = 'https://api.zoom.us/v2';
@@ -22,7 +19,7 @@ export function registerVideoCallRoutes(app: Express) {
   app.post('/api/videocall/create-meeting', async (req: Request, res: Response) => {
     try {
       // 인증 확인
-      if (!req.isAuthenticated()) {
+      if (!req.session || !req.session.user) {
         return res.status(401).json({ error: '로그인이 필요합니다.' });
       }
 
@@ -82,7 +79,7 @@ export function registerVideoCallRoutes(app: Express) {
   app.get('/api/videocall/meetings/:meetingId', async (req: Request, res: Response) => {
     try {
       // 인증 확인
-      if (!req.isAuthenticated()) {
+      if (!req.session || !req.session.user) {
         return res.status(401).json({ error: '로그인이 필요합니다.' });
       }
 
@@ -113,7 +110,7 @@ export function registerVideoCallRoutes(app: Express) {
   app.get('/api/videocall/my-meetings', async (req: Request, res: Response) => {
     try {
       // 인증 확인
-      if (!req.isAuthenticated()) {
+      if (!req.session || !req.session.user) {
         return res.status(401).json({ error: '로그인이 필요합니다.' });
       }
 
@@ -143,7 +140,7 @@ export function registerVideoCallRoutes(app: Express) {
   app.delete('/api/videocall/meetings/:meetingId', async (req: Request, res: Response) => {
     try {
       // 인증 확인
-      if (!req.isAuthenticated()) {
+      if (!req.session || !req.session.user) {
         return res.status(401).json({ error: '로그인이 필요합니다.' });
       }
 
@@ -178,7 +175,7 @@ export function registerVideoCallRoutes(app: Express) {
   app.post('/api/videocall/join-token', (req: Request, res: Response) => {
     try {
       // 인증 확인
-      if (!req.isAuthenticated()) {
+      if (!req.session || !req.session.user) {
         return res.status(401).json({ error: '로그인이 필요합니다.' });
       }
 
@@ -211,7 +208,7 @@ export function registerVideoCallRoutes(app: Express) {
   app.post('/api/videocall/schedule', async (req: Request, res: Response) => {
     try {
       // 인증 확인
-      if (!req.isAuthenticated()) {
+      if (!req.session || !req.session.user) {
         return res.status(401).json({ error: '로그인이 필요합니다.' });
       }
       
