@@ -450,12 +450,12 @@ function AuthenticatedRoutes() {
         </Route>
         <Route path="/institute/students">
           {() => {
-            const InstituteStudentsManagement = lazy(() => import('./pages/institute-admin/InstituteStudentsManagement'));
+            const InstituteStudentsPage = lazy(() => import('./pages/institute/InstituteStudentsPage'));
             return (
               <Suspense fallback={<div className="p-8 flex justify-center items-center">
                 <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
               </div>}>
-                <ProtectedInstituteRoute component={InstituteStudentsManagement} />
+                <ProtectedInstituteRoute component={InstituteStudentsPage} />
               </Suspense>
             );
           }}

@@ -919,25 +919,25 @@ export function Sidebar({
                         >수강생 관리</AccessibleNavItem>
                         
                         <AccessibleNavItem 
-                          href="/institute-facility" 
+                          href="/institute/facility" 
                           icon={<Wrench className="w-5 h-5 mr-2" />} 
-                          active={isActive("/institute-facility")} 
+                          active={isActive("/institute/facility")} 
                           onClick={handleItemClick} 
                           show={true}
                         >시설 관리</AccessibleNavItem>
                         
                         <AccessibleNavItem 
-                          href="/institute-reports" 
+                          href="/institute/reports" 
                           icon={<LineChart className="w-5 h-5 mr-2" />} 
-                          active={isActive("/institute-reports")} 
+                          active={isActive("/institute/reports")} 
                           onClick={handleItemClick} 
                           show={true}
                         >데이터 분석</AccessibleNavItem>
                         
                         <AccessibleNavItem 
-                          href="/institute-commission" 
+                          href="/institute/commission" 
                           icon={<Percent className="w-5 h-5 mr-2" />} 
-                          active={isActive("/institute-commission")} 
+                          active={isActive("/institute/commission")} 
                           onClick={handleItemClick} 
                           show={true}
                         >수수료 관리</AccessibleNavItem>
