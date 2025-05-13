@@ -836,6 +836,20 @@ function AuthenticatedRoutes() {
             />
           )}
         </Route>
+        <Route path="/admin/menu-management">
+          {() => {
+            console.log("[DEBUG] admin/menu-management 라우트 접근");
+            // 메뉴 관리 컴포넌트 lazy 로딩
+            const MenuManagement = lazy(() => import('./pages/admin/menu-management'));
+            return (
+              <Suspense fallback={<div className="p-8 flex justify-center items-center">
+                <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
+              </div>}>
+                <ProtectedAdminRoute component={MenuManagement} />
+              </Suspense>
+            );
+          }}
+        </Route>
         <Route path="/admin/settlement">
           {() => (
             <ProtectedAdminRoute 
