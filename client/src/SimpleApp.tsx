@@ -346,6 +346,7 @@ function AuthenticatedRoutes() {
         <Route path="/certificates" component={() => <div className="p-8"><h1 className="text-2xl font-bold mb-4">자격증 및 수료증</h1><p>자격증 및 수료증을 확인할 수 있는 페이지입니다.</p></div>} />
         <Route path="/video-training" component={VideoTrainingPage} />
         <Route path="/video-call" component={VideoCallPage} />
+        {/* 쇼핑몰 메인 */}
         <Route path="/shop">
           {() => {
             console.log("인증된 사용자 /shop 경로 접근");
@@ -354,6 +355,58 @@ function AuthenticatedRoutes() {
             return (
               <Suspense fallback={<div className="p-8 text-center">쇼핑 페이지 로딩 중...</div>}>
                 <ShopIndex />
+              </Suspense>
+            );
+          }}
+        </Route>
+        
+        {/* 상품 상세 페이지 */}
+        <Route path="/shop/product/:id">
+          {() => {
+            console.log("상품 상세 페이지 접근");
+            const ProductDetail = lazy(() => import('./pages/shop/product-detail'));
+            return (
+              <Suspense fallback={<div className="p-8 text-center">상품 정보 로딩 중...</div>}>
+                <ProductDetail />
+              </Suspense>
+            );
+          }}
+        </Route>
+        
+        {/* 장바구니 페이지 */}
+        <Route path="/shop/cart">
+          {() => {
+            console.log("장바구니 페이지 접근");
+            const Cart = lazy(() => import('./pages/shop/cart'));
+            return (
+              <Suspense fallback={<div className="p-8 text-center">장바구니 로딩 중...</div>}>
+                <Cart />
+              </Suspense>
+            );
+          }}
+        </Route>
+        
+        {/* 결제 페이지 */}
+        <Route path="/shop/checkout">
+          {() => {
+            console.log("결제 페이지 접근");
+            const Checkout = lazy(() => import('./pages/shop/checkout'));
+            return (
+              <Suspense fallback={<div className="p-8 text-center">결제 페이지 로딩 중...</div>}>
+                <Checkout />
+              </Suspense>
+            );
+          }}
+        </Route>
+        
+        {/* 주문 완료 페이지 */}
+        <Route path="/shop/order-complete">
+          {() => {
+            console.log("주문 완료 페이지 접근");
+            const OrderComplete = lazy(() => import('./pages/shop/order-complete'));
+            return (
+              <Suspense fallback={<div className="p-8 text-center">주문 완료 정보 로딩 중...</div>}>
+                <OrderComplete />
               </Suspense>
             );
           }}
@@ -902,6 +955,7 @@ function UnauthenticatedRoutes() {
         <Route path="/events" component={EventsPage} />
         <Route path="/events/calendar" component={EventCalendarPage} />
         <Route path="/events/:id" component={EventDetailPage} />
+        {/* 쇼핑몰 메인 */}
         <Route path="/shop">
           {() => {
             console.log("비인증 사용자 /shop 경로 접근");
@@ -910,6 +964,58 @@ function UnauthenticatedRoutes() {
             return (
               <Suspense fallback={<div className="p-8 text-center">쇼핑 페이지 로딩 중...</div>}>
                 <ShopIndex />
+              </Suspense>
+            );
+          }}
+        </Route>
+        
+        {/* 상품 상세 페이지 */}
+        <Route path="/shop/product/:id">
+          {() => {
+            console.log("상품 상세 페이지 접근");
+            const ProductDetail = lazy(() => import('./pages/shop/product-detail'));
+            return (
+              <Suspense fallback={<div className="p-8 text-center">상품 정보 로딩 중...</div>}>
+                <ProductDetail />
+              </Suspense>
+            );
+          }}
+        </Route>
+        
+        {/* 장바구니 페이지 */}
+        <Route path="/shop/cart">
+          {() => {
+            console.log("장바구니 페이지 접근");
+            const Cart = lazy(() => import('./pages/shop/cart'));
+            return (
+              <Suspense fallback={<div className="p-8 text-center">장바구니 로딩 중...</div>}>
+                <Cart />
+              </Suspense>
+            );
+          }}
+        </Route>
+        
+        {/* 결제 페이지 */}
+        <Route path="/shop/checkout">
+          {() => {
+            console.log("결제 페이지 접근");
+            const Checkout = lazy(() => import('./pages/shop/checkout'));
+            return (
+              <Suspense fallback={<div className="p-8 text-center">결제 페이지 로딩 중...</div>}>
+                <Checkout />
+              </Suspense>
+            );
+          }}
+        </Route>
+        
+        {/* 주문 완료 페이지 */}
+        <Route path="/shop/order-complete">
+          {() => {
+            console.log("주문 완료 페이지 접근");
+            const OrderComplete = lazy(() => import('./pages/shop/order-complete'));
+            return (
+              <Suspense fallback={<div className="p-8 text-center">주문 완료 정보 로딩 중...</div>}>
+                <OrderComplete />
               </Suspense>
             );
           }}

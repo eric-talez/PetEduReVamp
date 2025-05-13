@@ -108,7 +108,7 @@ export default function Checkout() {
         setOrderInfo(prev => ({
           ...prev,
           recipientName: windowAuth.userName || '',
-          email: windowAuth.userEmail || ''
+          email: windowAuth.userName ? `${windowAuth.userName.replace(/\s+/g, '').toLowerCase()}@example.com` : '' // 임시 이메일 생성
         }));
       }
       

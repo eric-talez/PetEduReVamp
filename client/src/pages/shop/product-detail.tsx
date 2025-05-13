@@ -204,13 +204,26 @@ export default function ProductDetail() {
   useEffect(() => {
     const windowAuth = window.__peteduAuthState;
     if (windowAuth) {
-      setAuthState({
+      // LSP 오류 방지 및 추가 필드 설정
+      const enhancedAuth = {
         isAuthenticated: windowAuth.isAuthenticated || false,
         userRole: windowAuth.userRole || null,
         userName: windowAuth.userName || null,
-        instituteId: windowAuth.instituteId || null,
-        trainerId: windowAuth.trainerId || null
-      });
+        instituteId: null as number | null,
+        trainerId: null as number | null
+      };
+      
+      // 기관 관리자인 경우 instituteId 설정
+      if (enhancedAuth.userRole === 'institute-admin') {
+        enhancedAuth.instituteId = 1; // 예시 ID (실제론 API로 가져옴)
+      }
+      
+      // 트레이너인 경우 trainerId 설정
+      if (enhancedAuth.userRole === 'trainer') {
+        enhancedAuth.trainerId = 1; // 예시 ID (실제론 API로 가져옴)
+      }
+      
+      setAuthState(enhancedAuth);
     }
   }, []);
 
