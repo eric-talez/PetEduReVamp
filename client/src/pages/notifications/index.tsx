@@ -82,7 +82,7 @@ interface NotebookEntry {
   reactions?: {
     likes: number;
     hasLiked: boolean;
-    comments: number;
+    comments: number | undefined;
   };
   createdAt: string;
   updatedAt?: string;
@@ -175,7 +175,7 @@ export default function NotebookPage() {
       setUserInfo({
         id: 1,
         name: windowAuth.userName || '사용자',
-        role: (windowAuth.userRole === 'trainer' ? 'trainer' : 'pet-owner') as 'trainer' | 'pet-owner',
+        role: (windowAuth.userRole === 'trainer' ? 'trainer' : windowAuth.userRole === 'admin' ? 'admin' : 'pet-owner') as 'trainer' | 'pet-owner' | 'admin',
         avatar: ''
       });
     }
