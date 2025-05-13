@@ -156,11 +156,12 @@ export default function AdminCourses() {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState('all');
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
+  const [modalMode, setModalMode] = useState<'view' | 'edit' | 'add' | 'curriculum'>('view');
   const [showCourseModal, setShowCourseModal] = useState(false);
+  
   useEffect(() => {
     console.log('모달 상태 변경 감지됨:', showCourseModal, modalMode);
   }, [showCourseModal, modalMode]);
-  const [modalMode, setModalMode] = useState<'view' | 'edit' | 'add' | 'curriculum'>('view');
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [sortBy, setSortBy] = useState('title');
@@ -1246,18 +1247,24 @@ export default function AdminCourses() {
         </Card>
       </Tabs>
       
-      {/* 강의 상세 정보 / 편집 모달 */}
-      {(modalMode === 'view' || modalMode === 'edit') && (
+      {/* 강의 상세 정보 / 편집 / 추가 모달 */}
+      {(modalMode === 'view' || modalMode === 'edit' || modalMode === 'add') && (
         <Dialog open={showCourseModal} onOpenChange={setShowCourseModal}>
           <DialogContent className="sm:max-w-[800px]">
             <DialogHeader>
               <DialogTitle>
-                {modalMode === 'view' ? '강의 상세 정보' : '강의 정보 편집'}
+                {modalMode === 'view' 
+                  ? '강의 상세 정보' 
+                  : modalMode === 'edit' 
+                    ? '강의 정보 편집'
+                    : '새 강의 추가'}
               </DialogTitle>
               <DialogDescription>
                 {modalMode === 'view' 
                   ? selectedCourse ? `${selectedCourse.title} 강의의 상세 정보입니다.` : ''
-                  : '강의 정보를 수정합니다.'}
+                  : modalMode === 'edit'
+                    ? '강의 정보를 수정합니다.'
+                    : '새 강의를 추가합니다.'}
               </DialogDescription>
             </DialogHeader>
             
