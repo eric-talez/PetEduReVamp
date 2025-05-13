@@ -107,15 +107,18 @@ export function HelpSection({ expanded, handleItemClick }: HelpSectionProps) {
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
-              <div 
-                className="bg-gray-100 dark:bg-gray-800 rounded-lg p-2 flex justify-center cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors" 
-                onClick={() => {
-                  console.log("접힌 상태에서 도움말 아이콘 클릭");
+              <a 
+                href="/help/faq"
+                className="bg-gray-100 dark:bg-gray-800 rounded-lg p-2 flex justify-center cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                onClick={(e) => {
+                  e.preventDefault();
+                  console.log("접힌 상태에서 도움말 아이콘 클릭 - 개선된 버전");
                   handleItemClick('/help/faq');
                 }}
+                aria-label="도움말"
               >
-                <HelpCircle className="w-5 h-5 text-primary" aria-label="도움말" />
-              </div>
+                <HelpCircle className="w-5 h-5 text-primary" />
+              </a>
             </TooltipTrigger>
             <TooltipContent side="right">
               <p>도움말 및 지원</p>
