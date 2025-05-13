@@ -401,6 +401,23 @@ export function Sidebar({
             {/* 비로그인 상태 메뉴 */}
             {!isAuthenticated ? (
               <>
+                {/* 쇼핑몰 메뉴 그룹 (항상 표시) */}
+                <SidebarMenuGroup
+                  expanded={expanded}
+                  title="쇼핑"
+                  groupName="shopping"
+                  isOpen={menuGroups.shopping}
+                  toggleGroup={toggleMenuGroup}
+                  icon={<ShoppingBag className="w-5 h-5 text-gray-500" />}
+                />
+                
+                {/* 쇼핑몰 메뉴 그룹 내용 */}
+                {menuGroups.shopping && (
+                  <div className={cn("mt-1 pl-2", !expanded && "pl-0")}>
+                    <SpecialShopLink expanded={expanded}>쇼핑몰</SpecialShopLink>
+                  </div>
+                )}
+                
                 <SidebarMenuGroup
                   expanded={expanded}
                   title="메인 메뉴"
@@ -526,18 +543,22 @@ export function Sidebar({
                   icon={<Gift className="w-5 h-5 text-gray-500" />}
                 />
 
-                {/* 쇼핑몰 메뉴는 항상 표시 (별도 메뉴 그룹) */}
-                <div className="mt-2 mb-2">
-                  <h2 className={cn(
-                    "px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider",
-                    !expanded && "sr-only"
-                  )}>
-                    쇼핑
-                  </h2>
-                  <div className="mt-1 mb-1">
+                {/* 쇼핑몰 메뉴 그룹 (항상 표시) */}
+                <SidebarMenuGroup
+                  expanded={expanded}
+                  title="쇼핑"
+                  groupName="shopping"
+                  isOpen={menuGroups.shopping}
+                  toggleGroup={toggleMenuGroup}
+                  icon={<ShoppingBag className="w-5 h-5 text-gray-500" />}
+                />
+                
+                {/* 쇼핑몰 메뉴 그룹 내용 */}
+                {menuGroups.shopping && (
+                  <div className={cn("mt-1 pl-2", !expanded && "pl-0")}>
                     <SpecialShopLink expanded={expanded}>쇼핑몰</SpecialShopLink>
                   </div>
-                </div>
+                )}
                 
                 {menuGroups.features && (
                   <>
