@@ -332,10 +332,22 @@ export default function NotebookDialog({
             <ActivityRecorder 
               value={form.activities} 
               onChange={(activities) => {
+                // 활동 정보를 텍스트로 변환
+                const activityText = generateActivityText(activities);
+                
+                // 폼 업데이트
                 setForm(prev => ({
                   ...prev,
-                  activities
+                  activities,
+                  // 기존 내용의 끝에 활동 텍스트 추가
+                  content: activityText ? `${prev.content}\n\n${activityText}` : prev.content
                 }));
+                
+                // 알림 표시
+                toast({
+                  title: "활동 정보가 추가되었습니다",
+                  description: "선택한 활동이 알림장 내용에 추가되었습니다."
+                });
               }}
             />
           )}
