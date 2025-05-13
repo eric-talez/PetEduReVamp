@@ -828,7 +828,14 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
                           {userRole === 'user' && '일반 회원'}
                         </div>
                       </div>
-                      <Link href="/profile" className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800">
+                      <Link 
+                        href={
+                          userRole === 'trainer' ? '/trainer/profile' :
+                          userRole === 'institute-admin' ? '/institute/profile' :
+                          '/profile'
+                        } 
+                        className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
+                      >
                         내 프로필
                       </Link>
                       <Link href="/my-courses" className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800">
@@ -837,7 +844,14 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
                       <Link href="/my-pets" className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800">
                         내 반려견
                       </Link>
-                      <Link href="/settings" className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800">
+                      <Link 
+                        href={
+                          userRole === 'trainer' ? '/trainer/settings' :
+                          userRole === 'institute-admin' ? '/institute/settings' :
+                          '/settings'
+                        }
+                        className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
+                      >
                         설정
                       </Link>
                       <div className="border-t border-gray-200 dark:border-gray-700"></div>
