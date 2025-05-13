@@ -199,7 +199,8 @@ export function Sidebar({
       myLearning: false,
       trainer: false,
       institute: false,
-      admin: false
+      admin: false,
+      shopping: false
     };
   });
   
@@ -724,7 +725,7 @@ export function Sidebar({
                       show={true}
                     >알림</AccessibleNavItem>
                     
-                    <SpecialShopLink>쇼핑몰</SpecialShopLink>
+                    {/* SpecialShopLink removed from here - now a standalone menu item */}
                   </>
                 )}
 
