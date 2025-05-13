@@ -106,6 +106,11 @@ export default function InstituteCoursesManagement() {
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
   const [showCourseDetailsDialog, setShowCourseDetailsDialog] = useState(false);
   const [showNewCourseDialog, setShowNewCourseDialog] = useState(false);
+  
+  // Dialog 상태 변경 디버깅용
+  useEffect(() => {
+    console.log('showNewCourseDialog 상태 변경:', showNewCourseDialog);
+  }, [showNewCourseDialog]);
   const [sortBy, setSortBy] = useState('title');
   const [sortOrder, setSortOrder] = useState('asc');
   const [currentPage, setCurrentPage] = useState(1);
@@ -966,7 +971,12 @@ export default function InstituteCoursesManagement() {
       </Dialog>
       
       {/* 새 교육 과정 생성 다이얼로그 */}
-      <Dialog open={showNewCourseDialog} onOpenChange={setShowNewCourseDialog}>
+      <Dialog 
+        open={showNewCourseDialog} 
+        onOpenChange={(open) => {
+          console.log('Dialog onOpenChange:', open);
+          setShowNewCourseDialog(open);
+        }}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle>새 교육 과정 생성</DialogTitle>
