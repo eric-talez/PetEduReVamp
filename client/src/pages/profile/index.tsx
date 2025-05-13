@@ -70,45 +70,25 @@ export default function ProfilePage({ userType, section }: ProfilePageProps = {}
     try {
       setIsSubmitting(true);
       
-      // API 요청을 통해 프로필 정보를 업데이트
-      const response = await fetch('/api/users/profile', {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(values),
+      // auth 컨텍스트의 updateUserInfo 함수를 사용하여 API 처리 일원화
+      const result = await auth.updateUserInfo({
+        name: values.name,
+        email: values.email,
+        phone: values.phone,
+        bio: values.bio,
+        location: values.location,
+        avatar: values.avatar
       });
       
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || '프로필 업데이트 중 오류가 발생했습니다.');
+      // 업데이트 성공 시 편집 모드 종료
+      if (result) {
+        // 성공 메시지는 이미 updateUserInfo 내부에서 처리됨
+        setIsEditing(false);
       }
-      
-      const updatedUser = await response.json();
-      
-      // 사용자 정보 업데이트 (auth 컨텍스트 업데이트)
-      if (auth.updateUserInfo) {
-        auth.updateUserInfo({
-          name: updatedUser.name,
-          email: updatedUser.email
-        });
-      }
-      
-      // 성공 메시지 표시
-      toast({
-        title: "프로필 업데이트 완료",
-        description: "프로필 정보가 성공적으로 업데이트되었습니다.",
-      });
-      
-      // 편집 모드 종료
-      setIsEditing(false);
+      // 실패 시 메시지도 이미 updateUserInfo 내부에서 처리됨
     } catch (error) {
       console.error('프로필 업데이트 오류:', error);
-      toast({
-        title: "업데이트 실패",
-        description: error instanceof Error ? error.message : "프로필을 업데이트하는 중 오류가 발생했습니다.",
-        variant: "destructive",
-      });
+      // 중복 에러 메시지 방지를 위해 여기서는 표시하지 않음
     } finally {
       setIsSubmitting(false);
     }

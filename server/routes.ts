@@ -25,6 +25,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
   registerVideoCallRoutes(app);
   registerMenuRoutes(app);
   
+  // 프로필 업데이트 API
+  app.put("/api/user/profile", async (req, res) => {
+    try {
+      if (!req.session.user) {
+        return res.status(401).json({ message: "인증되지 않은 사용자입니다" });
+      }
+      
+      const userId = req.session.user.id;
+      const { name, email, phone, bio, location, avatar } = req.body;
+      
+      // 업데이트할 프로필 데이터 준비
+      const profileData = {
+        name: name || undefined,
+        email: email || undefined,
+        phone: phone || undefined,
+        bio: bio || undefined,
+        location: location || undefined,
+        avatar: avatar || undefined
+      };
+      
+      // 빈 객체인지 확인 (모든 값이 undefined면 업데이트할 내용이 없음)
+      const hasUpdates = Object.values(profileData).some(value => value !== undefined);
+      if (!hasUpdates) {
+        return res.status(400).json({ message: "업데이트할 내용이 없습니다" });
+      }
+      
+      // 프로필 업데이트
+      const updatedUser = await storage.updateUserProfile(userId, profileData);
+      
+      // 세션 업데이트
+      if (updatedUser) {
+        const { password: _, ...userWithoutPassword } = updatedUser;
+        req.session.user = userWithoutPassword;
+      }
+      
+      return res.status(200).json(updatedUser);
+    } catch (error) {
+      console.error("프로필 업데이트 오류:", error);
+      return res.status(500).json({ message: "서버 오류가 발생했습니다" });
+    }
+  });
+  
   // 로그 메시지
   console.log('[server] API routes registered');
   // ===== Auth Routes =====
