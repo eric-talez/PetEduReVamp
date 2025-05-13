@@ -41,11 +41,12 @@ const NavItem: React.FC<NavItemProps> = ({ href, icon, children, active, onClick
   return (
     <a
       href={href}
-      className={`
-        flex items-center gap-3 px-4 py-2 text-sm 
-        transition-colors duration-200
-        ${isActive ? 'text-primary font-medium' : 'text-gray-700 hover:text-primary dark:text-gray-300 dark:hover:text-primary'}
-      `}
+      className={cn(
+        "flex items-center gap-3 px-4 py-2 text-sm rounded-lg transition-colors duration-200",
+        isActive 
+          ? "bg-primary/10 text-primary font-medium" 
+          : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-primary dark:hover:text-primary"
+      )}
       onClick={(e) => {
         e.preventDefault();
         if (onClick) onClick(href);
@@ -71,17 +72,17 @@ const MenuGroup: React.FC<MenuGroupProps> = ({ title, icon, children, defaultOpe
   return (
     <div className="mb-2">
       <div
-        className="flex items-center justify-between cursor-pointer px-3 py-2 rounded-md transition-colors hover:bg-gray-100 dark:hover:bg-gray-800/50"
+        className="flex items-center justify-between cursor-pointer px-3 py-2 rounded-lg transition-colors hover:bg-gray-100 dark:hover:bg-gray-800"
         onClick={() => setIsOpen(!isOpen)}
       >
         <div className="flex items-center">
           {icon}
-          <span className="ml-2 text-sm font-medium">{title}</span>
+          <span className="ml-2 text-sm font-medium text-gray-700 dark:text-gray-300">{title}</span>
         </div>
         {isOpen ? (
-          <ChevronDown className="h-4 w-4" />
+          <ChevronDown className="h-4 w-4 text-gray-500" />
         ) : (
-          <ChevronRight className="h-4 w-4" />
+          <ChevronRight className="h-4 w-4 text-gray-500" />
         )}
       </div>
       {isOpen && <div className="ml-2">{children}</div>}
@@ -120,19 +121,22 @@ export function HelpSection({ expanded, handleItemClick }: HelpSectionProps) {
     <div>
       {/* 도움말 섹션 헤더 */}
       <div
-        className="px-3 py-2 mt-6 flex items-center justify-between cursor-pointer bg-gray-100 dark:bg-gray-700 mx-2 rounded"
+        className="px-3 py-2 mt-2 flex items-center justify-between cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 mx-2 rounded-lg"
         onClick={() => {
           console.log('도움말 섹션 토글:', !isOpen);
           setIsOpen(!isOpen);
         }}
       >
-        <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-          도움말
-        </h3>
+        <div className="flex items-center">
+          <HelpCircle className="w-5 h-5 text-primary mr-2" />
+          <h3 className="text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+            도움말
+          </h3>
+        </div>
         {isOpen ? (
-          <ChevronDown className="h-4 w-4 text-primary" />
+          <ChevronDown className="h-4 w-4 text-gray-500" />
         ) : (
-          <ChevronRight className="h-4 w-4 text-primary" />
+          <ChevronRight className="h-4 w-4 text-gray-500" />
         )}
       </div>
 
