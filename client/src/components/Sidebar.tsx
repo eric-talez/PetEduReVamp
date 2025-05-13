@@ -52,7 +52,8 @@ import {
   Gift,
   Percent,
   Tag,
-  Image as ImageIcon
+  Image as ImageIcon,
+  Settings
 } from "lucide-react";
 
 // 사이드바 컨텍스트 생성
@@ -512,7 +513,7 @@ export function Sidebar({
 
                 {menuGroups.features && (
                   <>
-                    <SpecialShopLink />
+                    <SpecialShopLink>쇼핑몰</SpecialShopLink>
                   </>
                 )}
 
@@ -696,7 +697,7 @@ export function Sidebar({
                       show={true}
                     >알림</AccessibleNavItem>
                     
-                    <SpecialShopLink />
+                    <SpecialShopLink>쇼핑몰</SpecialShopLink>
                   </>
                 )}
 
