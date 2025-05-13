@@ -62,19 +62,56 @@ export default function ProfilePage({ userType, section }: ProfilePageProps = {}
     },
   });
 
+  // API 호출을 위한 상태
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   // 프로필 수정 제출 핸들러
-  function onSubmit(values: z.infer<typeof profileFormSchema>) {
-    // 여기서 API 요청을 통해 프로필 정보를 업데이트합니다
-    console.log(values);
-    
-    // 성공 메시지 표시
-    toast({
-      title: "프로필 업데이트 완료",
-      description: "프로필 정보가 성공적으로 업데이트되었습니다.",
-    });
-    
-    // 편집 모드 종료
-    setIsEditing(false);
+  async function onSubmit(values: z.infer<typeof profileFormSchema>) {
+    try {
+      setIsSubmitting(true);
+      
+      // API 요청을 통해 프로필 정보를 업데이트
+      const response = await fetch('/api/users/profile', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(values),
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || '프로필 업데이트 중 오류가 발생했습니다.');
+      }
+      
+      const updatedUser = await response.json();
+      
+      // 사용자 정보 업데이트 (auth 컨텍스트 업데이트)
+      if (auth.updateUserInfo) {
+        auth.updateUserInfo({
+          name: updatedUser.name,
+          email: updatedUser.email
+        });
+      }
+      
+      // 성공 메시지 표시
+      toast({
+        title: "프로필 업데이트 완료",
+        description: "프로필 정보가 성공적으로 업데이트되었습니다.",
+      });
+      
+      // 편집 모드 종료
+      setIsEditing(false);
+    } catch (error) {
+      console.error('프로필 업데이트 오류:', error);
+      toast({
+        title: "업데이트 실패",
+        description: error instanceof Error ? error.message : "프로필을 업데이트하는 중 오류가 발생했습니다.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   // section이 certificates인 경우 자격증 페이지를 보여줌
@@ -333,11 +370,26 @@ export default function ProfilePage({ userType, section }: ProfilePageProps = {}
               />
               
               <div className="flex justify-end gap-2">
-                <Button variant="outline" type="button" onClick={() => setIsEditing(false)}>
+                <Button 
+                  variant="outline" 
+                  type="button" 
+                  onClick={() => setIsEditing(false)}
+                  disabled={isSubmitting}
+                >
                   취소
                 </Button>
-                <Button type="submit">
-                  저장
+                <Button 
+                  type="submit"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? (
+                    <>
+                      <span className="mr-2">저장 중</span>
+                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent"></div>
+                    </>
+                  ) : (
+                    '저장'
+                  )}
                 </Button>
               </div>
             </form>
