@@ -138,7 +138,11 @@ function AuthenticatedRoutesContent() {
         {() => checkAccess(['trainer', 'admin']) ? <TrainerReservationsPage /> : window.location.href = '/'}
       </Route>
       <Route path="/trainer/profile">
-        <ProfilePage userType="trainer" />
+        {() => (
+          <ErrorBoundary>
+            <ProfilePage userType="trainer" />
+          </ErrorBoundary>
+        )}
       </Route>
       <Route path="/trainer/schedule">
         <TrainerReservationsPage />
@@ -160,16 +164,32 @@ function AuthenticatedRoutesContent() {
         <TrainerReservationsPage mode="create" />
       </Route>
       <Route path="/trainer/profile/certificates">
-        <ProfilePage userType="trainer" section="certificates" />
+        {() => (
+          <ErrorBoundary>
+            <ProfilePage userType="trainer" section="certificates" />
+          </ErrorBoundary>
+        )}
       </Route>
       <Route path="/trainer/settings">
-        <SettingsPage userRole="trainer" />
+        {() => (
+          <ErrorBoundary>
+            <SettingsPage userRole="trainer" />
+          </ErrorBoundary>
+        )}
       </Route>
       <Route path="/institute/profile">
-        <ProfilePage userType="institute-admin" />
+        {() => (
+          <ErrorBoundary>
+            <ProfilePage userType="institute-admin" />
+          </ErrorBoundary>
+        )}
       </Route>
       <Route path="/institute/settings">
-        <SettingsPage userRole="institute-admin" />
+        {() => (
+          <ErrorBoundary>
+            <SettingsPage userRole="institute-admin" />
+          </ErrorBoundary>
+        )}
       </Route>
       <Route path="/institute/course-approvals">
         {() => checkAccess(['institute-admin', 'admin']) ? <InstituteCourseApprovalsPage /> : window.location.href = '/'}
@@ -218,8 +238,20 @@ function AuthenticatedRoutesContent() {
         }}
       </Route>
 
-      <Route path="/profile" component={ProfilePage} />
-      <Route path="/settings" component={SettingsPage} />
+      <Route path="/profile">
+        {() => (
+          <ErrorBoundary>
+            <ProfilePage userType="user" />
+          </ErrorBoundary>
+        )}
+      </Route>
+      <Route path="/settings">
+        {() => (
+          <ErrorBoundary>
+            <SettingsPage userRole="user" />
+          </ErrorBoundary>
+        )}
+      </Route>
       <Route path="/events" component={EventsPage} />
       <Route path="/events/calendar" component={EventCalendarPage} />
       <Route path="/ai-analysis" component={AIAnalysisPage} />
