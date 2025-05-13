@@ -101,7 +101,7 @@ function NavItem({ href, icon, children, active, onClick, show }: NavItemProps) 
                 active ? "bg-primary/10 text-primary" : "text-gray-700 dark:text-gray-200 hover:text-primary dark:hover:text-primary"
               )}
               onClick={handleClick}
-              aria-label={children?.toString()}
+              aria-label={typeof children === 'string' ? children : children?.toString()}
             >
               {icon}
             </a>
