@@ -2,6 +2,7 @@ import { Link, useLocation, useRoute } from "wouter";
 import { BarChart } from "@/components/ui/chart";
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { ScrollArea } from "@/components/ui/scroll-area";
 import React, { useState, useEffect, createContext, useContext } from "react";
 import { SpecialShopLink } from "./SpecialShopLink";
 import { HelpSection } from "./HelpSection";
@@ -373,7 +374,7 @@ export function Sidebar({
           </button>
         </div>
 
-        <div className={cn("py-4 overflow-y-auto overflow-x-hidden flex-1 flex flex-col max-h-[calc(100vh-4rem)]", expanded ? "px-3" : "px-2")}>
+        <ScrollArea className={cn("py-4 flex-1 max-h-[calc(100vh-4rem)]", expanded ? "px-3" : "px-2")}>
           <div className="space-y-1 w-full min-h-min">
             {!isAuthenticated && (
               <>
@@ -1070,13 +1071,14 @@ export function Sidebar({
               </>
             )}
           </div>
+        </ScrollArea>
 
-          {/* Service Statistics for non-authenticated users at bottom */}
-          {!isAuthenticated && (
-            expanded ? (
-              <div className="mt-auto mb-4 px-3">
-                <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3 text-xs">
-                  <div className="flex items-center justify-between">
+        {/* Service Statistics for non-authenticated users at bottom */}
+        {!isAuthenticated && (
+          expanded ? (
+            <div className="mt-auto mb-4 px-3">
+              <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3 text-xs">
+                <div className="flex items-center justify-between">
                     <span className="text-gray-600 dark:text-gray-300">실시간 이용자</span>
                     <span className="font-semibold text-primary">2,458명</span>
                   </div>
@@ -1098,7 +1100,6 @@ export function Sidebar({
               </div>
             )
           )}
-        </div>
       </div>
     </SidebarContext.Provider>
   );
