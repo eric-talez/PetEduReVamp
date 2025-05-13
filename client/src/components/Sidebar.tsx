@@ -636,6 +636,23 @@ export function Sidebar({
             ) : (
               /* 로그인 상태 메뉴 */
               <>
+                {/* 쇼핑몰 메뉴 그룹 (항상 표시) */}
+                <SidebarMenuGroup
+                  expanded={expanded}
+                  title="쇼핑"
+                  groupName="shopping"
+                  isOpen={menuGroups.shopping}
+                  toggleGroup={toggleMenuGroup}
+                  icon={<ShoppingBag className="w-5 h-5 text-gray-500" />}
+                />
+                
+                {/* 쇼핑몰 메뉴 그룹 내용 */}
+                {menuGroups.shopping && (
+                  <div className={cn("mt-1 pl-2", !expanded && "pl-0")}>
+                    <SpecialShopLink expanded={expanded}>쇼핑몰</SpecialShopLink>
+                  </div>
+                )}
+                
                 {/* 모든 사용자 공통 메뉴 */}
                 <SidebarMenuGroup
                   expanded={expanded}
