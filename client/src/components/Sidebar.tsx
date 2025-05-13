@@ -48,6 +48,7 @@ import {
   Brain,
   BarChart2,
   Sparkles,
+  ShoppingCart,
   DollarSign,
   Gift,
   Percent,
@@ -500,6 +501,17 @@ export function Sidebar({
                       }} 
                       show={true}
                     >AI 챗봇</AccessibleNavItem>
+                    <AccessibleNavItem 
+                      href="/shop" 
+                      icon={<Store className="w-5 h-5 mr-2" />} 
+                      active={isActive("/shop")} 
+                      onClick={(path) => {
+                        console.log("쇼핑몰 메뉴 클릭");
+                        // 새 창에서 쇼핑몰 열기
+                        window.open("https://replit.com/join/wshpfpjewg-hnblgkjw", "_blank");
+                      }} 
+                      show={true}
+                    >쇼핑몰</AccessibleNavItem>
                   </>
                 )}
                 

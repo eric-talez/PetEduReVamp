@@ -473,6 +473,51 @@ function AuthenticatedRoutes() {
           }}
         </Route>
         
+        <Route path="/ai-chatbot">
+          {() => {
+            const AIChatbot = lazy(() => import('./pages/ai-chatbot'));
+            return (
+              <Suspense fallback={
+                <div className="p-8 flex justify-center items-center">
+                  <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
+                </div>
+              }>
+                <ProtectedRoute component={AIChatbot} requiredRoles={null} />
+              </Suspense>
+            );
+          }}
+        </Route>
+        
+        <Route path="/trainer-referrals">
+          {() => {
+            const TrainerReferrals = lazy(() => import('./pages/trainer-referrals'));
+            return (
+              <Suspense fallback={
+                <div className="p-8 flex justify-center items-center">
+                  <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
+                </div>
+              }>
+                <ProtectedTrainerRoute component={TrainerReferrals} />
+              </Suspense>
+            );
+          }}
+        </Route>
+        
+        <Route path="/shop">
+          {() => (
+            <Suspense fallback={
+              <div className="p-8 flex justify-center items-center">
+                <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
+              </div>
+            }>
+              <div className="hidden">
+                {/* 새 창에서 열리는 쇼핑몰은 이 라우트에서 실제로 렌더링되지 않고 
+                    사이드바에서 클릭 시 window.open()을 통해 새 창을 엽니다 */}
+              </div>
+            </Suspense>
+          )}
+        </Route>
+        
         {/* 기관 관리자 메뉴 */}
         <Route path="/institute/dashboard">
           {() => {

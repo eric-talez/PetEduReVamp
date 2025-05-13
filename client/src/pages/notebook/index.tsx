@@ -71,6 +71,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { format } from 'date-fns';
 import { ko } from 'date-fns/locale';
+import { Calendar } from '@/components/ui/calendar';
 
 interface NotebookEntry {
   id: number;
@@ -865,7 +866,7 @@ export default function Notebook() {
             <Calendar
               mode="single"
               selected={filterDate || undefined}
-              onSelect={(date) => setFilterDate(date)}
+              onSelect={(date: Date | undefined) => setFilterDate(date || null)}
               locale={ko}
             />
           </PopoverContent>
