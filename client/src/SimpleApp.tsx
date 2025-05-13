@@ -404,6 +404,46 @@ function AuthenticatedRoutes() {
         </Route>
         
         {/* 훈련사 메뉴 - 권한 검증 적용 */}
+        <Route path="/trainer-dashboard">
+          {() => {
+            const TrainerDashboard = lazy(() => import('./pages/trainer/dashboard'));
+            return (
+              <Suspense fallback={<div className="p-8 text-center">페이지 로딩 중...</div>}>
+                <ProtectedTrainerRoute component={TrainerDashboard} />
+              </Suspense>
+            );
+          }}
+        </Route>
+        <Route path="/trainer-students">
+          {() => {
+            const StudentManagement = lazy(() => import('./pages/trainer/students'));
+            return (
+              <Suspense fallback={<div className="p-8 text-center">페이지 로딩 중...</div>}>
+                <ProtectedTrainerRoute component={StudentManagement} />
+              </Suspense>
+            );
+          }}
+        </Route>
+        <Route path="/trainer-courses">
+          {() => {
+            const CourseManagement = lazy(() => import('./pages/trainer/courses'));
+            return (
+              <Suspense fallback={<div className="p-8 text-center">페이지 로딩 중...</div>}>
+                <ProtectedTrainerRoute component={CourseManagement} />
+              </Suspense>
+            );
+          }}
+        </Route>
+        <Route path="/trainer-schedule">
+          {() => {
+            const ScheduleManagement = lazy(() => import('./pages/trainer/schedule'));
+            return (
+              <Suspense fallback={<div className="p-8 text-center">페이지 로딩 중...</div>}>
+                <ProtectedTrainerRoute component={ScheduleManagement} />
+              </Suspense>
+            );
+          }}
+        </Route>
         <Route path="/trainer/courses">
           {() => {
             const CourseManagement = lazy(() => import('./pages/trainer/courses'));
