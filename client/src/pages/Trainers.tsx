@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { Avatar } from '@/components/ui/Avatar';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/Avatar';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Star, MapPin, Search, Filter, Briefcase, Award, Sparkles } from 'lucide-react';
@@ -318,12 +318,18 @@ export default function Trainers() {
               <div className="flex flex-col">
                 <div className="flex items-end -mt-10 mb-4">
                   <Avatar 
-                    src={trainer.image} 
-                    alt={trainer.name} 
                     size="lg"
                     bordered
                     className="border-4 border-white dark:border-gray-800"
-                  />
+                  >
+                    <AvatarImage 
+                      src={trainer.image} 
+                      alt={trainer.name}
+                    />
+                    <AvatarFallback>
+                      {trainer.name.substring(0, 2)}
+                    </AvatarFallback>
+                  </Avatar>
                   <div className="ml-4 pb-1">
                     <h3 className="text-lg font-semibold text-gray-800 dark:text-white">{trainer.name}</h3>
                     <p className="text-sm text-primary">{trainer.specialty}</p>
