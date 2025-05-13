@@ -1008,8 +1008,12 @@ export function Sidebar({
                   </>
                 )}
 
-                {/* 축소된 상태에서는 물음표 아이콘에 툴팁 적용 */}
-                {!expanded ? (
+                {/* 도움말 섹션 - 축소 상태에서는 아이콘만, 확장 상태에서는 전체 메뉴 */}
+                {expanded ? (
+                  /* 확장된 상태에서는 기존 HelpSection 컴포넌트 사용 */
+                  <HelpSection expanded={expanded} handleItemClick={handleItemClick} />
+                ) : (
+                  /* 축소된 상태에서는 물음표 아이콘에 툴팁 적용 */
                   <div className="mt-2 px-2">
                     <TooltipProvider>
                       <Tooltip>
@@ -1027,9 +1031,6 @@ export function Sidebar({
                       </Tooltip>
                     </TooltipProvider>
                   </div>
-                ) : (
-                  /* 확장된 상태에서는 기존 HelpSection 컴포넌트 사용 */
-                  <HelpSection expanded={expanded} handleItemClick={handleItemClick} />
                 )}
 
                 {/* 독립적인 StatisticsSection 컴포넌트 사용 */}
