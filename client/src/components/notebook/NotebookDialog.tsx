@@ -423,18 +423,40 @@ export default function NotebookDialog({
                 // 활동 정보를 텍스트로 변환
                 const activityText = generateActivityText(activities);
                 
+                // 기존 내용에서 활동 관련 텍스트 제거 (중복 방지)
+                let cleanContent = form.content;
+                
+                // [식사], [배변], [산책], [훈련], [놀이] 태그로 시작하는 줄 제거
+                const activityLabels = ['[식사]', '[배변]', '[산책]', '[훈련]', '[놀이]'];
+                const contentLines = cleanContent.split('\n');
+                const filteredLines = contentLines.filter(line => {
+                  // 특이사항, 추가 훈련, 기타 놀이와 같은 부가 설명 줄도 제거
+                  const isActivityRelated = line.trim().startsWith('특이사항:') 
+                    || line.trim().startsWith('추가 훈련:') 
+                    || line.trim().startsWith('기타 놀이:');
+                    
+                  // 활동 라벨로 시작하거나 부가 설명인 경우 제거
+                  return !activityLabels.some(label => line.trim().startsWith(label)) && !isActivityRelated;
+                });
+                
+                // 정제된 내용 사용
+                cleanContent = filteredLines.join('\n');
+                
                 // 폼 업데이트
                 setForm(prev => ({
                   ...prev,
                   activities,
-                  // 기존 내용의 끝에 활동 텍스트 추가
-                  content: activityText ? `${prev.content}\n\n${activityText}` : prev.content
+                  // 정제된 내용 끝에 새 활동 텍스트 추가
+                  content: activityText ? 
+                    // 내용이 있으면 줄바꿈 후 추가, 없으면 그대로 추가
+                    (cleanContent.trim() ? `${cleanContent.trim()}\n\n${activityText}` : activityText) : 
+                    cleanContent
                 }));
                 
                 // 알림 표시
                 toast({
                   title: "활동 정보가 추가되었습니다",
-                  description: "선택한 활동이 알림장 내용에 추가되었습니다."
+                  description: "선택한 활동이 알림장 내용에 반영되었습니다."
                 });
               }}
             />
