@@ -54,7 +54,7 @@ export default function AnalyticsReportPage() {
   }, [timeRange]);
   
   const handleGoBack = () => {
-    setLocation('/admin');
+    setLocation('/admin/dashboard');
   };
   
   const handleDownloadReport = () => {
