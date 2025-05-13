@@ -887,9 +887,9 @@ export function Sidebar({
                     {menuGroups.institute && (
                       <>
                         <AccessibleNavItem 
-                          href="/institute-dashboard" 
+                          href="/institute/dashboard" 
                           icon={<Building className="w-5 h-5 mr-2" />} 
-                          active={isActive("/institute-dashboard")} 
+                          active={isActive("/institute/dashboard")} 
                           onClick={handleItemClick} 
                           show={true}
                         >기관 대시보드</AccessibleNavItem>
@@ -903,9 +903,9 @@ export function Sidebar({
                         >훈련사 관리</AccessibleNavItem>
                         
                         <AccessibleNavItem 
-                          href="/institute-courses" 
+                          href="/institute/courses" 
                           icon={<GraduationCap className="w-5 h-5 mr-2" />} 
-                          active={isActive("/institute-courses")} 
+                          active={isActive("/institute/courses")} 
                           onClick={handleItemClick} 
                           show={true}
                         >강의 관리</AccessibleNavItem>
