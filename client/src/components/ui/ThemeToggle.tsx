@@ -52,6 +52,7 @@ export function ThemeToggle() {
       type="button"
       onClick={handleClick}
       className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none"
+      aria-label={isDarkMode ? "라이트 모드로 전환" : "다크 모드로 전환"}
     >
       {isDarkMode ? (
         <Moon className="h-5 w-5 text-indigo-400" />

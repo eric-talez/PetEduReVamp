@@ -344,8 +344,9 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
                       size="sm" 
                       onClick={() => setSearchQuery('')}
                       className="h-6 w-6 p-0"
+                      aria-label="검색어 지우기"
                     >
-                      <X className="h-3 w-3" />
+                      <X className="h-3 w-3" aria-hidden="true" />
                     </Button>
                   )}
                 </div>
@@ -424,6 +425,7 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
                             size="sm" 
                             onClick={markAllMessagesAsRead}
                             className="text-xs h-7 px-2"
+                            aria-label="모든 메시지 읽음 표시하기"
                           >
                             모두 읽음 표시
                           </Button>
@@ -525,6 +527,7 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
                             size="sm" 
                             onClick={markAllNotificationsAsRead}
                             className="text-xs h-7 px-2"
+                            aria-label="모든 알림 읽음 표시하기"
                           >
                             모두 읽음 표시
                           </Button>
@@ -840,10 +843,10 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
               </>
             ) : (
               <div className="flex space-x-2">
-                <Button variant="ghost" size="sm">
+                <Button variant="ghost" size="sm" aria-label="로그인 페이지로 이동">
                   <Link href="/auth">로그인</Link>
                 </Button>
-                <Button variant="default" size="sm">
+                <Button variant="default" size="sm" aria-label="회원가입 페이지로 이동">
                   <Link href="/auth?tab=register">회원가입</Link>
                 </Button>
               </div>
