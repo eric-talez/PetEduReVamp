@@ -213,6 +213,21 @@ export function Sidebar({
     } else {
       setInternalExpanded(!internalExpanded);
     }
+    
+    // 사이드바가 접힐 때 메뉴 그룹을 모두 보이게 설정
+    if (expanded) {
+      setMenuGroups(prev => {
+        return {
+          ...prev,
+          main: false,
+          features: false,
+          myLearning: false,
+          trainer: false,
+          institute: false,
+          admin: false
+        };
+      });
+    }
   };
 
   const toggleMenuGroup = (group: keyof typeof menuGroups) => {
