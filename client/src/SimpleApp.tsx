@@ -406,7 +406,7 @@ function AuthenticatedRoutes() {
         {/* 훈련사 메뉴 - 권한 검증 적용 */}
         <Route path="/trainer-dashboard">
           {() => {
-            const TrainerDashboard = lazy(() => import('./pages/TrainerDashboard'));
+            const TrainerDashboard = lazy(() => import('./pages/trainer/TrainerHome'));
             return (
               <Suspense fallback={<div className="p-8 text-center">페이지 로딩 중...</div>}>
                 <ProtectedTrainerRoute component={TrainerDashboard} />
