@@ -347,7 +347,7 @@ export function Sidebar({
     <SidebarContext.Provider value={contextValue}>
       <div
         className={cn(
-          "h-full bg-white dark:bg-gray-900 transform transition-all duration-300 ease-in-out shadow-md flex-shrink-0",
+          "h-full bg-white dark:bg-gray-900 transform transition-all duration-300 ease-in-out shadow-md flex-shrink-0 flex flex-col",
           expanded ? "w-64" : "w-[70px]"
         )}
       >
@@ -373,7 +373,7 @@ export function Sidebar({
           </button>
         </div>
 
-        <div className={cn("py-4 overflow-y-auto overflow-x-hidden h-[calc(100vh-4rem)] flex flex-col", expanded ? "px-3" : "px-2")}>
+        <div className={cn("py-4 overflow-y-auto overflow-x-hidden flex-1 flex flex-col", expanded ? "px-3" : "px-2")}>
           <div className="space-y-1 w-full min-h-min">
             {!isAuthenticated && (
               <>
