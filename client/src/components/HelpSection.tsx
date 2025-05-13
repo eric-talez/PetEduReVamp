@@ -16,6 +16,8 @@ import {
   Users
 } from 'lucide-react';
 import { useLocation } from 'wouter';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { cn } from '@/lib/utils';
 
 interface HelpSectionProps {
   expanded: boolean;
@@ -30,24 +32,20 @@ interface NavItemProps {
   onClick?: (path: string) => void;
 }
 
-// 서브메뉴 항목 컴포넌트
-interface SubMenuItemProps {
-  href: string;
-  icon: React.ReactNode;
-  children: React.ReactNode;
-  active?: boolean;
-  onClick?: (path: string) => void;
-}
+// 내비게이션 아이템 컴포넌트
+const NavItem: React.FC<NavItemProps> = ({ href, icon, children, active, onClick }) => {
+  const [location] = useLocation();
 
-const SubMenuItem: React.FC<SubMenuItemProps> = ({ href, icon, children, active, onClick }) => {
+  const isActive = active !== undefined ? active : location === href;
+  
   return (
     <a
       href={href}
-      className={`flex items-center px-3 py-2 rounded-md text-sm font-medium transition-colors ml-5 ${
-        active
-          ? 'bg-primary/10 text-primary'
-          : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800/50'
-      }`}
+      className={`
+        flex items-center gap-3 px-4 py-2 text-sm 
+        transition-colors duration-200
+        ${isActive ? 'text-primary font-medium' : 'text-gray-700 hover:text-primary dark:text-gray-300 dark:hover:text-primary'}
+      `}
       onClick={(e) => {
         e.preventDefault();
         if (onClick) onClick(href);
@@ -80,28 +78,40 @@ const MenuGroup: React.FC<MenuGroupProps> = ({ title, icon, children, defaultOpe
           {icon}
           <span className="ml-2 text-sm font-medium">{title}</span>
         </div>
-        {isOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+        {isOpen ? (
+          <ChevronDown className="h-4 w-4" />
+        ) : (
+          <ChevronRight className="h-4 w-4" />
+        )}
       </div>
-      {isOpen && <div className="mt-1">{children}</div>}
+      {isOpen && <div className="ml-2">{children}</div>}
     </div>
   );
 };
 
+// 도움말 섹션 주 컴포넌트
 export function HelpSection({ expanded, handleItemClick }: HelpSectionProps) {
-  const [isOpen, setIsOpen] = useState(true);
-  const [location] = useLocation();
-
-  const isActive = (path: string) => {
-    if (path !== '/' && location.startsWith(path)) return true;
-    return false;
-  };
-
+  const [isOpen, setIsOpen] = useState(false);
+  
+  // 사이드바가 축소되었을 때는 아이콘만 표시
   if (!expanded) {
     return (
       <div className="mt-6 px-2">
-        <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-2 flex justify-center">
-          <HelpCircle className="w-5 h-5 text-primary" aria-label="도움말" />
-        </div>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div 
+                className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-2 flex justify-center cursor-pointer" 
+                onClick={() => handleItemClick('/help')}
+              >
+                <HelpCircle className="w-5 h-5 text-primary" aria-label="도움말" />
+              </div>
+            </TooltipTrigger>
+            <TooltipContent side="right">
+              <p>도움말 및 지원</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       </div>
     );
   }
@@ -128,121 +138,64 @@ export function HelpSection({ expanded, handleItemClick }: HelpSectionProps) {
 
       {/* 도움말 메뉴 컨텐츠 */}
       {isOpen && (
-        <div className="mt-2 ml-2">
-          {/* FAQ 메뉴 그룹 */}
-          <MenuGroup 
-            title="자주 묻는 질문" 
-            icon={<HelpCircle className="w-4 h-4 text-primary" />}
-            defaultOpen={isActive('/help/faq')}
-          >
-            <SubMenuItem
-              href="/help/faq/pet-training"
-              icon={<Star className="w-4 h-4 mr-2 text-gray-400" />}
-              active={isActive('/help/faq/pet-training')}
-              onClick={handleItemClick}
-            >
-              반려동물 훈련
-            </SubMenuItem>
-            <SubMenuItem
-              href="/help/faq/account"
-              icon={<Settings className="w-4 h-4 mr-2 text-gray-400" />}
-              active={isActive('/help/faq/account')}
-              onClick={handleItemClick}
-            >
-              계정 관리
-            </SubMenuItem>
-            <SubMenuItem
-              href="/help/faq/payment"
-              icon={<CreditCard className="w-4 h-4 mr-2 text-gray-400" />}
-              active={isActive('/help/faq/payment')}
-              onClick={handleItemClick}
-            >
-              결제 관련
-            </SubMenuItem>
-          </MenuGroup>
-
-          {/* 이용 가이드 메뉴 그룹 */}
-          <MenuGroup 
-            title="이용 가이드" 
-            icon={<BookOpen className="w-4 h-4 text-blue-500" />}
-            defaultOpen={isActive('/help/guide')}
-          >
-            <SubMenuItem
-              href="/help/guide/getting-started"
-              icon={<Star className="w-4 h-4 mr-2 text-gray-400" />}
-              active={isActive('/help/guide/getting-started')}
+        <div className="px-2 pt-2 pb-4">
+          <MenuGroup title="사용자 가이드" icon={<BookOpen className="h-4 w-4 text-primary" />} defaultOpen={true}>
+            <NavItem
+              href="/help/getting-started"
+              icon={<Rocket className="h-4 w-4 text-blue-500" />}
               onClick={handleItemClick}
             >
               시작하기
-            </SubMenuItem>
-            <SubMenuItem
-              href="/help/guide/features"
-              icon={<Rocket className="w-4 h-4 mr-2 text-gray-400" />}
-              active={isActive('/help/guide/features')}
+            </NavItem>
+            <NavItem
+              href="/help/trainer-guides"
+              icon={<UserCheck className="h-4 w-4 text-green-500" />}
               onClick={handleItemClick}
             >
-              주요 기능
-            </SubMenuItem>
-            <SubMenuItem
-              href="/help/guide/trainers"
-              icon={<UserCheck className="w-4 h-4 mr-2 text-gray-400" />}
-              active={isActive('/help/guide/trainers')}
+              훈련사 가이드
+            </NavItem>
+            <NavItem
+              href="/help/institute-guides"
+              icon={<Building className="h-4 w-4 text-amber-500" />}
               onClick={handleItemClick}
             >
-              훈련사 활용하기
-            </SubMenuItem>
+              기관 가이드
+            </NavItem>
           </MenuGroup>
 
-          {/* 소개 메뉴 */}
-          <MenuGroup 
-            title="소개" 
-            icon={<Users className="w-4 h-4 text-green-500" />}
-            defaultOpen={isActive('/help/about')}
-          >
-            <SubMenuItem
-              href="/help/about/company"
-              icon={<Building className="w-4 h-4 mr-2 text-gray-400" />}
-              active={isActive('/help/about/company')}
+          <MenuGroup title="자주 묻는 질문" icon={<Target className="h-4 w-4 text-primary" />}>
+            <NavItem
+              href="/help/faq/general"
+              icon={<Star className="h-4 w-4 text-purple-500" />}
               onClick={handleItemClick}
             >
-              회사 소개
-            </SubMenuItem>
-            <SubMenuItem
-              href="/help/about/mission"
-              icon={<Target className="w-4 h-4 mr-2 text-gray-400" />}
-              active={isActive('/help/about/mission')}
+              일반 질문
+            </NavItem>
+            <NavItem
+              href="/help/faq/payment"
+              icon={<CreditCard className="h-4 w-4 text-red-500" />}
               onClick={handleItemClick}
             >
-              미션과 비전
-            </SubMenuItem>
-            <SubMenuItem
-              href="/help/about/team"
-              icon={<Users className="w-4 h-4 mr-2 text-gray-400" />}
-              active={isActive('/help/about/team')}
-              onClick={handleItemClick}
-            >
-              팀원 소개
-            </SubMenuItem>
+              결제 관련
+            </NavItem>
           </MenuGroup>
 
-          {/* 문의하기 메뉴 */}
-          <div className="px-3 py-2">
-            <a
+          <MenuGroup title="지원 받기" icon={<Users className="h-4 w-4 text-primary" />}>
+            <NavItem
               href="/help/contact"
-              className={`flex items-center rounded-md text-sm font-medium transition-colors ${
-                isActive('/help/contact')
-                  ? 'text-primary'
-                  : 'text-gray-700 dark:text-gray-300 hover:text-primary'
-              }`}
-              onClick={(e) => {
-                e.preventDefault();
-                handleItemClick('/help/contact');
-              }}
+              icon={<MessageSquare className="h-4 w-4 text-indigo-500" />}
+              onClick={handleItemClick}
             >
-              <MessageSquare className="w-4 h-4 mr-2" />
-              <span>문의하기</span>
-            </a>
-          </div>
+              문의하기
+            </NavItem>
+            <NavItem
+              href="/help/settings"
+              icon={<Settings className="h-4 w-4 text-gray-500" />}
+              onClick={handleItemClick}
+            >
+              설정
+            </NavItem>
+          </MenuGroup>
         </div>
       )}
     </div>
