@@ -186,7 +186,12 @@ export class MemStorage implements IStorage {
       specialty: "반려견 기본 훈련",
       experience: 5,
       bio: "5년 경력의 전문 반려견 훈련사입니다.",
-      status: "active"
+      status: "active",
+      image: "https://images.unsplash.com/photo-1607990281513-2c110a25bd8c?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&h=200",
+      certifications: ["KKF 공인 훈련사", "국제 반려동물 관리사"],
+      location: "서울 강남구",
+      rating: 4.9,
+      reviewCount: 128
     };
     
     const trainer2 = {
@@ -196,7 +201,12 @@ export class MemStorage implements IStorage {
       specialty: "고양이 행동 교정",
       experience: 3,
       bio: "고양이 행동 전문가입니다.",
-      status: "active"
+      status: "active",
+      image: "https://images.unsplash.com/photo-1548535537-3cfaf1fc327c?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&h=200",
+      certifications: ["반려동물행동교정사", "고양이 전문 행동 상담사"],
+      location: "서울 서초구",
+      rating: 4.7,
+      reviewCount: 86
     };
     
     this.trainers.set(trainer1.id, trainer1);

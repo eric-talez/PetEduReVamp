@@ -3,8 +3,9 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Star, MapPin, Search, Filter, Briefcase, Award, Sparkles } from 'lucide-react';
+import { Star, MapPin, Search, Filter, Briefcase, Award, Sparkles, Loader2 } from 'lucide-react';
 import { NewTrainerProfileModal, type Trainer } from '@/components/NewTrainerProfileModal';
+import { useQuery } from '@tanstack/react-query';
 
 export default function Trainers() {
   const [selectedTrainer, setSelectedTrainer] = useState<Trainer | null>(null);
@@ -12,12 +13,17 @@ export default function Trainers() {
   const [filter, setFilter] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   
+  // API로부터 트레이너 데이터 가져오기
+  const { data: trainersData, isLoading, error } = useQuery<Trainer[]>({
+    queryKey: ['/api/trainers'],
+  });
+  
   // 상태 변경 감지
   useEffect(() => {
     console.log("Trainers - 상태 변경:", { selectedTrainer: selectedTrainer?.name, isProfileOpen });
   }, [selectedTrainer, isProfileOpen]);
 
-  // Mock trainers data
+  // 서버에서 가져온 데이터 또는 필요할 경우 대체할 mock 데이터
   const trainers: Trainer[] = [
     {
       id: 1,
