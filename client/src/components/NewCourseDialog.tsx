@@ -83,11 +83,11 @@ export function NewCourseDialog({ open, onOpenChange, onSuccess }: NewCourseDial
         <div className="grid gap-4 py-4">
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="title" className="text-right">
-              과정명
+              강의명
             </Label>
             <Input
               id="title"
-              placeholder="교육 과정 이름"
+              placeholder="강의 이름"
               className="col-span-3"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
@@ -99,7 +99,7 @@ export function NewCourseDialog({ open, onOpenChange, onSuccess }: NewCourseDial
             </Label>
             <Input
               id="description"
-              placeholder="교육 과정에 대한 설명"
+              placeholder="강의에 대한 설명"
               className="col-span-3"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
@@ -111,7 +111,7 @@ export function NewCourseDialog({ open, onOpenChange, onSuccess }: NewCourseDial
             </Label>
             <Select value={type} onValueChange={setType}>
               <SelectTrigger id="type" className="col-span-3">
-                <SelectValue placeholder="교육 과정 유형 선택" />
+                <SelectValue placeholder="강의 유형 선택" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="기초 훈련">기초 훈련</SelectItem>
