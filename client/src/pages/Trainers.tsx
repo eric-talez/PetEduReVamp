@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/Avatar';
-import { Badge } from '@/components/ui/Badge';
-import { Button } from '@/components/ui/Button';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Star, MapPin, Search, Filter, Briefcase, Award, Sparkles } from 'lucide-react';
 import { NewTrainerProfileModal, type Trainer } from '@/components/NewTrainerProfileModal';
 
@@ -317,19 +317,17 @@ export default function Trainers() {
             <CardContent className="pt-0 p-5">
               <div className="flex flex-col">
                 <div className="flex items-end -mt-10 mb-4">
-                  <Avatar 
-                    size="lg"
-                    bordered
-                    className="border-4 border-white dark:border-gray-800"
-                  >
-                    <AvatarImage 
-                      src={trainer.image} 
-                      alt={trainer.name}
-                    />
-                    <AvatarFallback>
-                      {trainer.name.substring(0, 2)}
-                    </AvatarFallback>
-                  </Avatar>
+                  <div className="h-14 w-14 border-4 border-white dark:border-gray-800 rounded-full">
+                    <Avatar className="h-full w-full">
+                      <AvatarImage 
+                        src={trainer.image} 
+                        alt={trainer.name}
+                      />
+                      <AvatarFallback>
+                        {trainer.name.substring(0, 2)}
+                      </AvatarFallback>
+                    </Avatar>
+                  </div>
                   <div className="ml-4 pb-1">
                     <h3 className="text-lg font-semibold text-gray-800 dark:text-white">{trainer.name}</h3>
                     <p className="text-sm text-primary">{trainer.specialty}</p>
@@ -359,13 +357,13 @@ export default function Trainers() {
                 
                 <div className="flex flex-wrap gap-2 mb-4">
                   {trainer.certifications.slice(0, 2).map((cert, idx) => (
-                    <Badge key={idx} variant="outline" size="sm" className="bg-primary/10 dark:bg-primary/5">
+                    <Badge key={idx} variant="outline" className="bg-primary/10 dark:bg-primary/5 text-xs">
                       {cert.length > 15 ? `${cert.substring(0, 15)}...` : cert}
                     </Badge>
                   ))}
                   
                   {trainer.certifications.length > 2 && (
-                    <Badge variant="outline" size="sm">+{trainer.certifications.length - 2}</Badge>
+                    <Badge variant="outline" className="text-xs">+{trainer.certifications.length - 2}</Badge>
                   )}
                 </div>
                 
