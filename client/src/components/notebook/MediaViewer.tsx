@@ -2,154 +2,155 @@ import { useState } from 'react';
 import {
   Dialog,
   DialogContent,
-  DialogTitle,
-  DialogHeader,
   DialogFooter,
-  DialogClose
+  DialogHeader,
+  DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft, ChevronRight, X, Share, Download } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { ChevronLeft, ChevronRight, X, Download, Maximize, Minimize } from 'lucide-react';
+
+interface MediaFile {
+  type: 'photo' | 'video';
+  url: string;
+}
 
 interface MediaViewerProps {
-  media: {
-    type: 'photo' | 'video';
-    url: string;
-  }[];
-  initialIndex?: number;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  files: MediaFile[];
+  initialIndex?: number;
 }
 
 export default function MediaViewer({
-  media,
-  initialIndex = 0,
   open,
-  onOpenChange
+  onOpenChange,
+  files,
+  initialIndex = 0
 }: MediaViewerProps) {
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
-  const currentMedia = media[currentIndex];
+  const [isFullscreen, setIsFullscreen] = useState(false);
   
-  // 이전 미디어로 이동
-  const handlePrevious = () => {
-    setCurrentIndex((prev) => (prev - 1 + media.length) % media.length);
+  if (!files || files.length === 0) {
+    return null;
+  }
+  
+  const currentFile = files[currentIndex];
+  
+  const goToPrevious = () => {
+    setCurrentIndex((prev) => (prev > 0 ? prev - 1 : files.length - 1));
   };
   
-  // 다음 미디어로 이동
-  const handleNext = () => {
-    setCurrentIndex((prev) => (prev + 1) % media.length);
+  const goToNext = () => {
+    setCurrentIndex((prev) => (prev < files.length - 1 ? prev + 1 : 0));
   };
   
-  // 키보드 이벤트 처리
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'ArrowLeft') {
-      handlePrevious();
-    } else if (e.key === 'ArrowRight') {
-      handleNext();
-    } else if (e.key === 'Escape') {
-      onOpenChange(false);
+  const toggleFullscreen = () => {
+    if (document.fullscreenElement) {
+      document.exitFullscreen();
+      setIsFullscreen(false);
+    } else {
+      const mediaElement = document.getElementById('mediaViewer');
+      if (mediaElement) {
+        mediaElement.requestFullscreen();
+        setIsFullscreen(true);
+      }
     }
   };
   
-  // 썸네일 클릭
-  const handleThumbnailClick = (index: number) => {
-    setCurrentIndex(index);
+  const handleDownload = () => {
+    const a = document.createElement('a');
+    a.href = currentFile.url;
+    a.download = `media-${currentIndex}.${currentFile.type === 'photo' ? 'jpg' : 'mp4'}`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
   };
   
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent
-        className="max-w-[95vw] max-h-[90vh] p-2 md:p-6 flex flex-col"
-        onKeyDown={handleKeyDown}
-      >
-        <DialogHeader className="flex justify-between items-center">
-          <DialogTitle>
-            미디어 보기 ({currentIndex + 1} / {media.length})
-          </DialogTitle>
-          <DialogClose asChild>
-            <Button variant="ghost" size="icon">
-              <X className="h-5 w-5" />
-            </Button>
-          </DialogClose>
+      <DialogContent className="max-w-4xl max-h-[90vh] p-0 overflow-hidden" id="mediaViewer">
+        <DialogHeader className="p-4 absolute top-0 left-0 right-0 z-10 bg-gradient-to-b from-black/80 to-transparent">
+          <div className="flex justify-between items-center">
+            <DialogTitle className="text-white">
+              {currentIndex + 1} / {files.length}
+            </DialogTitle>
+            <div className="flex space-x-2">
+              <Button variant="ghost" size="icon" onClick={handleDownload} className="text-white hover:bg-black/20">
+                <Download className="h-5 w-5" />
+              </Button>
+              <Button variant="ghost" size="icon" onClick={toggleFullscreen} className="text-white hover:bg-black/20">
+                {isFullscreen ? <Minimize className="h-5 w-5" /> : <Maximize className="h-5 w-5" />}
+              </Button>
+              <Button variant="ghost" size="icon" onClick={() => onOpenChange(false)} className="text-white hover:bg-black/20">
+                <X className="h-5 w-5" />
+              </Button>
+            </div>
+          </div>
         </DialogHeader>
         
-        <div className="relative flex-1 flex items-center justify-center my-4 overflow-hidden">
-          {currentMedia.type === 'photo' ? (
+        <div className="relative h-[80vh] flex items-center justify-center bg-black">
+          {currentFile.type === 'photo' ? (
             <img
-              src={currentMedia.url}
+              src={currentFile.url}
               alt={`미디어 ${currentIndex + 1}`}
-              className="max-h-[60vh] max-w-full object-contain"
+              className="max-h-full max-w-full object-contain"
             />
           ) : (
             <video
-              src={currentMedia.url}
+              src={currentFile.url}
               controls
-              className="max-h-[60vh] max-w-full"
+              autoPlay
+              className="max-h-full max-w-full"
             />
           )}
           
-          {media.length > 1 && (
-            <>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="absolute left-0 top-1/2 transform -translate-y-1/2 bg-background/80 hover:bg-background/90"
-                onClick={handlePrevious}
-              >
-                <ChevronLeft className="h-8 w-8" />
-              </Button>
-              
-              <Button
-                variant="ghost"
-                size="icon"
-                className="absolute right-0 top-1/2 transform -translate-y-1/2 bg-background/80 hover:bg-background/90"
-                onClick={handleNext}
-              >
-                <ChevronRight className="h-8 w-8" />
-              </Button>
-            </>
-          )}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-black/30 hover:bg-black/50 text-white rounded-full"
+            onClick={goToPrevious}
+          >
+            <ChevronLeft className="h-8 w-8" />
+          </Button>
+          
+          <Button
+            variant="ghost"
+            size="icon"
+            className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-black/30 hover:bg-black/50 text-white rounded-full"
+            onClick={goToNext}
+          >
+            <ChevronRight className="h-8 w-8" />
+          </Button>
         </div>
         
-        {media.length > 1 && (
-          <div className="flex justify-center gap-2 mt-2 p-2 overflow-x-auto">
-            {media.map((item, index) => (
-              <div
-                key={index}
-                className={cn(
-                  "w-16 h-16 rounded-md overflow-hidden cursor-pointer border-2",
-                  currentIndex === index ? "border-primary" : "border-transparent"
-                )}
-                onClick={() => handleThumbnailClick(index)}
-              >
-                {item.type === 'photo' ? (
-                  <img
-                    src={item.url}
-                    alt={`썸네일 ${index + 1}`}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
+        <DialogFooter className="p-4 gap-2 flex-row flex-wrap justify-center">
+          {files.map((file, index) => (
+            <Button
+              key={index}
+              variant={currentIndex === index ? "default" : "outline"}
+              size="sm"
+              className="p-0 h-12 w-12 aspect-square overflow-hidden"
+              onClick={() => setCurrentIndex(index)}
+            >
+              {file.type === 'photo' ? (
+                <img
+                  src={file.url}
+                  alt={`썸네일 ${index + 1}`}
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                <div className="relative h-full w-full">
                   <video
-                    src={item.url}
-                    className="w-full h-full object-cover"
+                    src={file.url}
+                    className="h-full w-full object-cover"
                   />
-                )}
-              </div>
-            ))}
-          </div>
-        )}
-        
-        <DialogFooter className="mt-4">
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm">
-              <Share className="h-4 w-4 mr-2" />
-              공유
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+                    <span className="text-white text-xs">▶</span>
+                  </div>
+                </div>
+              )}
             </Button>
-            <Button variant="outline" size="sm">
-              <Download className="h-4 w-4 mr-2" />
-              다운로드
-            </Button>
-          </div>
+          ))}
         </DialogFooter>
       </DialogContent>
     </Dialog>
