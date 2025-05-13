@@ -16,7 +16,17 @@ import {
   BookmarkCheck,
   ThumbsUp,
   X,
-  Search
+  Search,
+  Copy,
+  Share2,
+  Printer,
+  Download,
+  Save,
+  Sparkles,
+  Wand2,
+  Settings,
+  HelpCircle,
+  Info
 } from 'lucide-react';
 import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval, isSameMonth, isSameDay, isToday, addMonths, subMonths } from 'date-fns';
 import { ko } from 'date-fns/locale';
@@ -138,6 +148,10 @@ export default function NotebookPage() {
   const [activities, setActivities] = useState<Activity[]>([]);
   const [templates, setTemplates] = useState<Template[]>([]);
   const [showNewEntryDialog, setShowNewEntryDialog] = useState(false);
+  const [showAIHelper, setShowAIHelper] = useState(false);
+  const [aiGenerating, setAiGenerating] = useState(false);
+  const [aiSuggestion, setAiSuggestion] = useState('');
+  const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list');
   const [viewEntry, setViewEntry] = useState<NotebookEntry | null>(null);
   const [filter, setFilter] = useState('all');
   const [sort, setSort] = useState('newest');
@@ -1214,12 +1228,33 @@ export default function NotebookPage() {
   // 메인 렌더링
   return (
     <div className="container mx-auto py-6 max-w-7xl">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">알림장</h1>
-        <Button onClick={() => setShowNewEntryDialog(true)}>
-          <MessageSquare className="mr-2 h-4 w-4" />
-          알림장 작성하기
-        </Button>
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+        <div>
+          <h1 className="text-2xl font-bold">알림장</h1>
+          <p className="text-sm text-gray-500 mt-1">훈련사와 소통하고 반려동물의 훈련 기록을 관리하세요</p>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <Button variant="outline" onClick={() => window.print()}>
+            <Printer className="mr-2 h-4 w-4" />
+            인쇄
+          </Button>
+          <Button variant="outline" onClick={() => handleExportData()}>
+            <Download className="mr-2 h-4 w-4" />
+            내보내기
+          </Button>
+          <Button 
+            variant="outline" 
+            className="bg-blue-50 text-blue-600 hover:bg-blue-100 dark:bg-blue-900/20 dark:text-blue-400 dark:hover:bg-blue-900/30 border-blue-200 dark:border-blue-800"
+            onClick={() => handleShowAIHelp()}
+          >
+            <Sparkles className="mr-2 h-4 w-4" />
+            AI 도우미
+          </Button>
+          <Button onClick={() => setShowNewEntryDialog(true)}>
+            <MessageSquare className="mr-2 h-4 w-4" />
+            알림장 작성하기
+          </Button>
+        </div>
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
