@@ -320,6 +320,16 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
     <header className="bg-white dark:bg-gray-900 shadow-sm z-10 transition-colors">
       <div className="w-full mx-auto px-0">
         <div className="flex justify-between items-center h-16 px-4">
+          {/* Mobile Menu Button */}
+          <button
+            type="button"
+            onClick={onToggleSidebar}
+            className="lg:hidden p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none"
+            aria-label={sidebarOpen ? "사이드바 닫기" : "사이드바 열기"}
+          >
+            <Menu className="h-5 w-5" aria-hidden="true" />
+          </button>
+          
           {/* Search */}
           <div className="hidden lg:flex flex-1 max-w-xl ml-0">
             <div className="w-full relative">
