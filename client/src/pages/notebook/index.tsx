@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, ChangeEvent } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import {
@@ -59,7 +59,14 @@ import {
   BookOpen,
   MessageSquare,
   MoreVertical,
-  Smile
+  Smile,
+  Video,
+  FileUp,
+  FileImage,
+  FileVideo,
+  Clipboard,
+  ClipboardList,
+  ClipboardCheck
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -83,6 +90,7 @@ interface NotebookEntry {
   petAvatar?: string;
   mood: 'happy' | 'sad' | 'neutral' | 'excited' | 'tired';
   photos?: string[];
+  videos?: string[];
   comments: Comment[];
   taggedItems: string[];
 }
@@ -124,8 +132,14 @@ export default function Notebook() {
     content: '',
     petId: 0,
     mood: 'happy' as 'happy' | 'sad' | 'neutral' | 'excited' | 'tired',
-    taggedItems: [] as string[]
+    taggedItems: [] as string[],
+    photos: [] as string[],
+    videos: [] as string[]
   });
+  const [mediaPreview, setMediaPreview] = useState<{photos: string[], videos: string[]}>({photos: [], videos: []});
+  const [showTemplateDialog, setShowTemplateDialog] = useState(false);
+  const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [commentText, setCommentText] = useState('');
   const [pets, setPets] = useState<Pet[]>([]);
   const [isEditMode, setIsEditMode] = useState(false);
@@ -373,7 +387,9 @@ export default function Notebook() {
       petAvatar: pet.avatar,
       mood: newEntryForm.mood,
       comments: [],
-      taggedItems: newEntryForm.taggedItems
+      taggedItems: newEntryForm.taggedItems,
+      photos: newEntryForm.photos,
+      videos: newEntryForm.videos
     };
     
     setEntries(prev => [newEntry, ...prev]);
@@ -384,8 +400,16 @@ export default function Notebook() {
       content: '',
       petId: pet.id,
       mood: 'happy',
-      taggedItems: []
+      taggedItems: [],
+      photos: [],
+      videos: []
     });
+    
+    // 미디어 미리보기 초기화
+    setMediaPreview({photos: [], videos: []});
+    
+    // 템플릿 선택 상태 초기화
+    setSelectedTemplate(null);
     
     toast({
       title: '알림장 추가됨',
@@ -402,7 +426,15 @@ export default function Notebook() {
       content: selectedEntry.content,
       petId: selectedEntry.petId,
       mood: selectedEntry.mood,
-      taggedItems: selectedEntry.taggedItems
+      taggedItems: selectedEntry.taggedItems,
+      photos: selectedEntry.photos || [],
+      videos: selectedEntry.videos || []
+    });
+    
+    // 미디어 미리보기 설정
+    setMediaPreview({
+      photos: selectedEntry.photos || [],
+      videos: selectedEntry.videos || []
     });
     
     setIsEditMode(true);
@@ -425,7 +457,9 @@ export default function Notebook() {
       petName: pet.name,
       petAvatar: pet.avatar,
       mood: newEntryForm.mood,
-      taggedItems: newEntryForm.taggedItems
+      taggedItems: newEntryForm.taggedItems,
+      photos: newEntryForm.photos,
+      videos: newEntryForm.videos
     };
     
     setEntries(prev => prev.map(e => 
@@ -436,6 +470,9 @@ export default function Notebook() {
     setIsEditMode(false);
     setSelectedEntry(updatedEntry);
     setShowEntryDetail(true);
+    
+    // 미디어 미리보기 초기화
+    setMediaPreview({photos: [], videos: []});
     
     toast({
       title: '알림장 수정됨',
@@ -480,6 +517,186 @@ export default function Notebook() {
     setFilterPet(null);
     setFilterDate(null);
     setFilterMood(null);
+  };
+  
+  // 미디어 파일 처리 (사진)
+  const handlePhotoUpload = (e: ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
+    
+    const photoUrls: string[] = [];
+    const photoPreviewUrls: string[] = [];
+    
+    files.forEach(file => {
+      if (file.type.startsWith('image/')) {
+        const fileUrl = URL.createObjectURL(file);
+        photoUrls.push(fileUrl); // 실제 구현 시 서버에 업로드하고 URL 받아옴
+        photoPreviewUrls.push(fileUrl);
+      }
+    });
+    
+    setNewEntryForm(prev => ({
+      ...prev,
+      photos: [...prev.photos, ...photoUrls]
+    }));
+    
+    setMediaPreview(prev => ({
+      ...prev,
+      photos: [...prev.photos, ...photoPreviewUrls]
+    }));
+    
+    // 파일 입력 초기화
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+  
+  // 미디어 파일 처리 (동영상)
+  const handleVideoUpload = (e: ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
+    
+    const videoUrls: string[] = [];
+    const videoPreviewUrls: string[] = [];
+    
+    files.forEach(file => {
+      if (file.type.startsWith('video/')) {
+        const fileUrl = URL.createObjectURL(file);
+        videoUrls.push(fileUrl); // 실제 구현 시 서버에 업로드하고 URL 받아옴
+        videoPreviewUrls.push(fileUrl);
+      }
+    });
+    
+    setNewEntryForm(prev => ({
+      ...prev,
+      videos: [...prev.videos, ...videoUrls]
+    }));
+    
+    setMediaPreview(prev => ({
+      ...prev,
+      videos: [...prev.videos, ...videoPreviewUrls]
+    }));
+    
+    // 파일 입력 초기화
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+  
+  // 미디어 파일 제거
+  const handleRemoveMedia = (type: 'photo' | 'video', index: number) => {
+    if (type === 'photo') {
+      setNewEntryForm(prev => ({
+        ...prev,
+        photos: prev.photos.filter((_, i) => i !== index)
+      }));
+      
+      setMediaPreview(prev => ({
+        ...prev,
+        photos: prev.photos.filter((_, i) => i !== index)
+      }));
+    } else {
+      setNewEntryForm(prev => ({
+        ...prev,
+        videos: prev.videos.filter((_, i) => i !== index)
+      }));
+      
+      setMediaPreview(prev => ({
+        ...prev,
+        videos: prev.videos.filter((_, i) => i !== index)
+      }));
+    }
+  };
+  
+  // 훈련사 템플릿 적용
+  const applyTemplate = (templateType: string) => {
+    let title = '';
+    let content = '';
+    let tags: string[] = [];
+    
+    switch (templateType) {
+      case 'daily-progress':
+        title = '일일 훈련 보고서';
+        content = `오늘의 훈련 내용:
+1. 훈련 목표: 
+2. 실행한 훈련: 
+3. 반려견 반응: 
+4. 특이사항: 
+5. 다음 훈련 계획: 
+
+집에서 연습하면 좋을 포인트:
+- 
+- 
+- 
+
+추가 코멘트:
+`;
+        tags = ['일일보고', '훈련', '진행상황'];
+        break;
+        
+      case 'behavior-analysis':
+        title = '행동 분석 보고서';
+        content = `행동 분석:
+1. 관찰된 행동: 
+2. 행동 원인 분석: 
+3. 개선 방안: 
+4. 훈련 추천: 
+5. 주의 사항: 
+
+보호자 피드백:
+- 
+
+장기 훈련 계획:
+- 
+- 
+`;
+        tags = ['행동분석', '관찰', '개선방안'];
+        break;
+        
+      case 'training-milestone':
+        title = '훈련 마일스톤 달성';
+        content = `축하합니다! 반려견이 다음 훈련 마일스톤을 달성했습니다:
+
+1. 달성한 마일스톤: 
+2. 향상된 점: 
+3. 계속해서 연습이 필요한 부분: 
+4. 다음 목표: 
+
+이 성과를 유지하기 위한 팁:
+- 
+- 
+`;
+        tags = ['마일스톤', '성과', '축하'];
+        break;
+        
+      case 'health-check':
+        title = '건강 상태 체크';
+        content = `건강 체크 내용:
+1. 전반적인 건강 상태: 
+2. 체중: 
+3. 식욕: 
+4. 활동량: 
+5. 특이사항: 
+
+관리 권장사항:
+- 
+- 
+
+다음 건강 체크 일정:
+`;
+        tags = ['건강체크', '관리', '상태확인'];
+        break;
+    }
+    
+    setNewEntryForm(prev => ({
+      ...prev,
+      title,
+      content,
+      taggedItems: tags
+    }));
+    
+    setShowTemplateDialog(false);
+    setSelectedTemplate(templateType);
   };
   
   // 기분 아이콘 렌더링

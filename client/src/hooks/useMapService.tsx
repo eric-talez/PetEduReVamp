@@ -155,7 +155,7 @@ export function MapServiceProvider({ children }: { children: ReactNode }) {
 
   // 주변 장소 검색
   const searchNearbyPlaces = useCallback(async (
-    type: 'institute' | 'trainer' | 'clinic' | 'shop',
+    type: 'institute' | 'trainer' | 'clinic' | 'shop' | 'pension' | 'cafe' | 'camping' | 'park' | 'pethotel',
     radius: number = searchRadius
   ) => {
     if (!isMapLoaded || !currentLocation) {
