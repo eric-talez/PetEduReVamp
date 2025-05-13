@@ -1,870 +1,468 @@
 import { useState } from 'react';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from '@/components/ui/tabs';
-import {
-  Plus,
-  Trash2,
-  UtensilsCrossed,
-  Bone,
-  Footprints,
-  Wine,
-  Dumbbell,
-  Moon,
-  Timer,
-  Clock,
-  Edit3,
-} from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
-import { cn } from '@/lib/utils';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Slider } from '@/components/ui/slider';
+import { CheckCircle2, Coffee, Footprints, UtensilsCrossed, Play } from 'lucide-react';
 
 export interface Activity {
-  meal?: { time: string; description: string }[];
-  potty?: { time: string; status: string }[];
-  walk?: { duration: string; description: string }[];
-  training?: string[];
-  play?: string[];
-  rest?: string[];
-  other?: string[];
+  meal?: {
+    breakfast?: boolean;
+    lunch?: boolean;
+    dinner?: boolean;
+    snack?: boolean;
+    water?: boolean;
+    custom?: string;
+  };
+  potty?: {
+    pee?: boolean;
+    poop?: boolean;
+    quality?: 'good' | 'normal' | 'bad';
+    count?: number;
+  };
+  walk?: {
+    morning?: boolean;
+    afternoon?: boolean;
+    evening?: boolean;
+    duration?: number; // 분 단위
+    distance?: number; // 미터 단위
+  };
+  training?: {
+    sit?: boolean;
+    stay?: boolean;
+    come?: boolean;
+    down?: boolean;
+    paw?: boolean;
+    custom?: string;
+  };
+  play?: {
+    fetch?: boolean;
+    tug?: boolean;
+    chase?: boolean;
+    puzzle?: boolean;
+    custom?: string;
+  };
 }
 
 interface ActivityRecorderProps {
   value: Activity;
   onChange: (value: Activity) => void;
+  readOnly?: boolean;
 }
 
-export default function ActivityRecorder({ value, onChange }: ActivityRecorderProps) {
+export default function ActivityRecorder({
+  value,
+  onChange,
+  readOnly = false
+}: ActivityRecorderProps) {
   const [activeTab, setActiveTab] = useState<string>('meal');
-  
-  // 식사 입력 상태
-  const [mealTime, setMealTime] = useState<string>('');
-  const [mealDesc, setMealDesc] = useState<string>('');
-  
-  // 배변 입력 상태
-  const [pottyTime, setPottyTime] = useState<string>('');
-  const [pottyStatus, setPottyStatus] = useState<string>('');
-  
-  // 산책 입력 상태
-  const [walkDuration, setWalkDuration] = useState<string>('');
-  const [walkDesc, setWalkDesc] = useState<string>('');
-  
-  // 훈련, 놀이, 휴식, 기타 입력 상태
-  const [simpleActivity, setSimpleActivity] = useState<string>('');
-  
-  // 간편 입력 메뉴 선택
-  const handleQuickAdd = (type: string, content: string) => {
-    const now = new Date();
-    const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+
+  const handleMealChange = (field: keyof typeof value.meal, checked: boolean | string) => {
+    if (readOnly) return;
     
-    switch (type) {
-      case 'meal':
-        addMeal({ time: timeStr, description: content });
-        break;
-      case 'potty':
-        addPotty({ time: timeStr, status: content });
-        break;
-      case 'walk':
-        addWalk({ duration: '30분', description: content });
-        break;
-      case 'training':
-        addSimpleActivity('training', content);
-        break;
-      case 'play':
-        addSimpleActivity('play', content);
-        break;
-      case 'rest':
-        addSimpleActivity('rest', content);
-        break;
-      case 'other':
-        addSimpleActivity('other', content);
-        break;
+    const newValue = { ...value };
+    if (!newValue.meal) {
+      newValue.meal = {};
     }
-  };
-
-  // 식사 추가
-  const addMeal = (item: { time: string; description: string }) => {
-    if (!item.time || !item.description) return;
     
-    const newValue = { ...value };
-    newValue.meal = [...(newValue.meal || []), item];
-    onChange(newValue);
+    if (field === 'custom') {
+      newValue.meal!.custom = checked as string;
+    } else {
+      newValue.meal![field] = checked as boolean;
+    }
     
-    // 입력 필드 초기화
-    setMealTime('');
-    setMealDesc('');
-  };
-  
-  // 식사 제거
-  const removeMeal = (index: number) => {
-    if (!value.meal) return;
-    
-    const newValue = { ...value };
-    newValue.meal = newValue.meal.filter((_, i) => i !== index);
     onChange(newValue);
   };
   
-  // 배변 추가
-  const addPotty = (item: { time: string; status: string }) => {
-    if (!item.time || !item.status) return;
+  const handlePottyChange = (field: keyof typeof value.potty, checked: boolean | string | number) => {
+    if (readOnly) return;
     
     const newValue = { ...value };
-    newValue.potty = [...(newValue.potty || []), item];
-    onChange(newValue);
+    if (!newValue.potty) {
+      newValue.potty = {};
+    }
     
-    // 입력 필드 초기화
-    setPottyTime('');
-    setPottyStatus('');
-  };
-  
-  // 배변 제거
-  const removePotty = (index: number) => {
-    if (!value.potty) return;
+    if (field === 'quality') {
+      newValue.potty.quality = checked as 'good' | 'normal' | 'bad';
+    } else if (field === 'count') {
+      newValue.potty.count = checked as number;
+    } else {
+      newValue.potty[field] = checked as boolean;
+    }
     
-    const newValue = { ...value };
-    newValue.potty = newValue.potty.filter((_, i) => i !== index);
     onChange(newValue);
   };
   
-  // 산책 추가
-  const addWalk = (item: { duration: string; description: string }) => {
-    if (!item.duration || !item.description) return;
+  const handleWalkChange = (field: keyof typeof value.walk, checked: boolean | number) => {
+    if (readOnly) return;
     
     const newValue = { ...value };
-    newValue.walk = [...(newValue.walk || []), item];
-    onChange(newValue);
+    if (!newValue.walk) {
+      newValue.walk = {};
+    }
     
-    // 입력 필드 초기화
-    setWalkDuration('');
-    setWalkDesc('');
-  };
-  
-  // 산책 제거
-  const removeWalk = (index: number) => {
-    if (!value.walk) return;
+    if (field === 'duration' || field === 'distance') {
+      newValue.walk[field] = checked as number;
+    } else {
+      newValue.walk[field] = checked as boolean;
+    }
     
-    const newValue = { ...value };
-    newValue.walk = newValue.walk.filter((_, i) => i !== index);
     onChange(newValue);
   };
   
-  // 단순 활동 추가 (훈련, 놀이, 휴식, 기타)
-  const addSimpleActivity = (type: 'training' | 'play' | 'rest' | 'other', text: string) => {
-    if (!text) return;
+  const handleTrainingChange = (field: keyof typeof value.training, checked: boolean | string) => {
+    if (readOnly) return;
     
     const newValue = { ...value };
-    newValue[type] = [...(newValue[type] || []), text];
-    onChange(newValue);
+    if (!newValue.training) {
+      newValue.training = {};
+    }
     
-    // 입력 필드 초기화
-    setSimpleActivity('');
+    if (field === 'custom') {
+      newValue.training.custom = checked as string;
+    } else {
+      newValue.training[field] = checked as boolean;
+    }
+    
+    onChange(newValue);
   };
   
-  // 단순 활동 제거
-  const removeSimpleActivity = (type: 'training' | 'play' | 'rest' | 'other', index: number) => {
-    if (!value[type]) return;
+  const handlePlayChange = (field: keyof typeof value.play, checked: boolean | string) => {
+    if (readOnly) return;
     
     const newValue = { ...value };
-    newValue[type] = newValue[type]?.filter((_, i) => i !== index);
+    if (!newValue.play) {
+      newValue.play = {};
+    }
+    
+    if (field === 'custom') {
+      newValue.play.custom = checked as string;
+    } else {
+      newValue.play[field] = checked as boolean;
+    }
+    
     onChange(newValue);
-  };
-
-  // 현재 시간 설정
-  const setCurrentTime = (setter: React.Dispatch<React.SetStateAction<string>>) => {
-    const now = new Date();
-    const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
-    setter(timeStr);
   };
 
   return (
-    <Card className="w-full">
-      <CardHeader>
-        <CardTitle className="text-lg font-medium flex items-center">
-          <Edit3 className="w-5 h-5 mr-2" /> 활동 기록
-        </CardTitle>
-        <CardDescription>오늘 반려견의 활동을 기록해주세요.</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid grid-cols-4 mb-4">
-            <TabsTrigger value="meal" className="flex items-center">
-              <UtensilsCrossed className="w-4 h-4 mr-2" /> 식사
-            </TabsTrigger>
-            <TabsTrigger value="potty" className="flex items-center">
-              <Bone className="w-4 h-4 mr-2" /> 배변
-            </TabsTrigger>
-            <TabsTrigger value="walk" className="flex items-center">
-              <Footprints className="w-4 h-4 mr-2" /> 산책
-            </TabsTrigger>
-            <TabsTrigger value="other" className="flex items-center">
-              <Plus className="w-4 h-4 mr-2" /> 기타
-            </TabsTrigger>
-          </TabsList>
-          
-          {/* 식사 탭 */}
-          <TabsContent value="meal" className="space-y-4">
-            <div className="grid grid-cols-1 gap-4">
-              <div className="flex space-x-2">
-                <div className="flex flex-1 flex-col space-y-1">
-                  <Label htmlFor="meal-time">시간</Label>
-                  <div className="flex space-x-2">
-                    <Input
-                      id="meal-time"
-                      value={mealTime}
-                      onChange={(e) => setMealTime(e.target.value)}
-                      placeholder="09:00"
-                      className="flex-1"
-                    />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="icon"
-                      onClick={() => setCurrentTime(setMealTime)}
-                      title="현재 시간"
-                    >
-                      <Clock className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-                <div className="flex-1 flex flex-col space-y-1">
-                  <Label htmlFor="meal-desc">내용</Label>
-                  <div className="flex space-x-2">
-                    <Input
-                      id="meal-desc"
-                      value={mealDesc}
-                      onChange={(e) => setMealDesc(e.target.value)}
-                      placeholder="사료 100g"
-                      className="flex-1"
-                    />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => addMeal({time: mealTime, description: mealDesc})}
-                      disabled={!mealTime || !mealDesc}
-                    >
-                      <Plus className="h-4 w-4 mr-1" /> 추가
-                    </Button>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="flex flex-wrap gap-2 mt-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleQuickAdd('meal', '건사료 100g')}
-                >
-                  건사료 100g
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleQuickAdd('meal', '생식 100g')}
-                >
-                  생식 100g
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleQuickAdd('meal', '습식 캔 1/2개')}
-                >
-                  습식 캔 1/2개
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleQuickAdd('meal', '간식')}
-                >
-                  간식
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleQuickAdd('meal', '물')}
-                >
-                  물
-                </Button>
-              </div>
-              
-              {/* 추가된 식사 목록 */}
-              {value.meal && value.meal.length > 0 && (
-                <div className="mt-4">
-                  <h4 className="text-sm font-medium mb-2">추가된 식사</h4>
-                  <div className="space-y-2">
-                    {value.meal.map((item, index) => (
-                      <div key={index} className="flex items-center justify-between bg-secondary/50 p-2 rounded-md">
-                        <div>
-                          <span className="font-medium">{item.time}</span> - {item.description}
-                        </div>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => removeMeal(index)}
-                          className="h-6 w-6 text-destructive"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
+    <div className="border rounded-md p-4">
+      <h3 className="font-medium mb-4">오늘의 활동</h3>
+      
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList className="grid grid-cols-5 mb-4">
+          <TabsTrigger value="meal" className="flex flex-col items-center gap-1">
+            <UtensilsCrossed className="h-4 w-4" />
+            <span className="text-xs">식사</span>
+          </TabsTrigger>
+          <TabsTrigger value="potty" className="flex flex-col items-center gap-1">
+            <CheckCircle2 className="h-4 w-4" />
+            <span className="text-xs">배변</span>
+          </TabsTrigger>
+          <TabsTrigger value="walk" className="flex flex-col items-center gap-1">
+            <Footprints className="h-4 w-4" />
+            <span className="text-xs">산책</span>
+          </TabsTrigger>
+          <TabsTrigger value="training" className="flex flex-col items-center gap-1">
+            <Coffee className="h-4 w-4" />
+            <span className="text-xs">훈련</span>
+          </TabsTrigger>
+          <TabsTrigger value="play" className="flex flex-col items-center gap-1">
+            <Play className="h-4 w-4" />
+            <span className="text-xs">놀이</span>
+          </TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="meal" className="mt-0">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+            <div className="flex items-center space-x-2">
+              <Checkbox 
+                id="meal-breakfast"
+                checked={value.meal?.breakfast || false}
+                onCheckedChange={(checked) => handleMealChange('breakfast', !!checked)}
+                disabled={readOnly}
+              />
+              <Label htmlFor="meal-breakfast">아침</Label>
             </div>
-          </TabsContent>
-          
-          {/* 배변 탭 */}
-          <TabsContent value="potty" className="space-y-4">
-            <div className="grid grid-cols-1 gap-4">
-              <div className="flex space-x-2">
-                <div className="flex-1 flex flex-col space-y-1">
-                  <Label htmlFor="potty-time">시간</Label>
-                  <div className="flex space-x-2">
-                    <Input
-                      id="potty-time"
-                      value={pottyTime}
-                      onChange={(e) => setPottyTime(e.target.value)}
-                      placeholder="09:00"
-                      className="flex-1"
-                    />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="icon"
-                      onClick={() => setCurrentTime(setPottyTime)}
-                      title="현재 시간"
-                    >
-                      <Clock className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-                <div className="flex-1 flex flex-col space-y-1">
-                  <Label htmlFor="potty-status">상태</Label>
-                  <div className="flex space-x-2">
-                    <Input
-                      id="potty-status"
-                      value={pottyStatus}
-                      onChange={(e) => setPottyStatus(e.target.value)}
-                      placeholder="대변"
-                      className="flex-1"
-                    />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => addPotty({time: pottyTime, status: pottyStatus})}
-                      disabled={!pottyTime || !pottyStatus}
-                    >
-                      <Plus className="h-4 w-4 mr-1" /> 추가
-                    </Button>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="flex flex-wrap gap-2 mt-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleQuickAdd('potty', '대변 (정상)')}
-                >
-                  대변 (정상)
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleQuickAdd('potty', '대변 (이상)')}
-                >
-                  대변 (이상)
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleQuickAdd('potty', '소변 (정상)')}
-                >
-                  소변 (정상)
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleQuickAdd('potty', '소변 (이상)')}
-                >
-                  소변 (이상)
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleQuickAdd('potty', '실내 배변')}
-                >
-                  실내 배변
-                </Button>
-              </div>
-              
-              {/* 추가된 배변 목록 */}
-              {value.potty && value.potty.length > 0 && (
-                <div className="mt-4">
-                  <h4 className="text-sm font-medium mb-2">추가된 배변 기록</h4>
-                  <div className="space-y-2">
-                    {value.potty.map((item, index) => (
-                      <div key={index} className="flex items-center justify-between bg-secondary/50 p-2 rounded-md">
-                        <div>
-                          <span className="font-medium">{item.time}</span> - {item.status}
-                        </div>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => removePotty(index)}
-                          className="h-6 w-6 text-destructive"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
+            <div className="flex items-center space-x-2">
+              <Checkbox 
+                id="meal-lunch"
+                checked={value.meal?.lunch || false}
+                onCheckedChange={(checked) => handleMealChange('lunch', !!checked)}
+                disabled={readOnly}
+              />
+              <Label htmlFor="meal-lunch">점심</Label>
             </div>
-          </TabsContent>
-          
-          {/* 산책 탭 */}
-          <TabsContent value="walk" className="space-y-4">
-            <div className="grid grid-cols-1 gap-4">
-              <div className="flex space-x-2">
-                <div className="flex-1 flex flex-col space-y-1">
-                  <Label htmlFor="walk-duration">시간</Label>
-                  <Input
-                    id="walk-duration"
-                    value={walkDuration}
-                    onChange={(e) => setWalkDuration(e.target.value)}
-                    placeholder="30분"
-                    className="flex-1"
-                  />
-                </div>
-                <div className="flex-1 flex flex-col space-y-1">
-                  <Label htmlFor="walk-desc">내용</Label>
-                  <div className="flex space-x-2">
-                    <Input
-                      id="walk-desc"
-                      value={walkDesc}
-                      onChange={(e) => setWalkDesc(e.target.value)}
-                      placeholder="공원 산책"
-                      className="flex-1"
-                    />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => addWalk({duration: walkDuration, description: walkDesc})}
-                      disabled={!walkDuration || !walkDesc}
-                    >
-                      <Plus className="h-4 w-4 mr-1" /> 추가
-                    </Button>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="flex flex-wrap gap-2 mt-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleQuickAdd('walk', '공원 산책')}
-                >
-                  공원 산책
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleQuickAdd('walk', '주변 간단 산책')}
-                >
-                  주변 간단 산책
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleQuickAdd('walk', '강가 산책')}
-                >
-                  강가 산책
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleQuickAdd('walk', '도그 카페 방문')}
-                >
-                  도그 카페 방문
-                </Button>
-              </div>
-              
-              {/* 추가된 산책 목록 */}
-              {value.walk && value.walk.length > 0 && (
-                <div className="mt-4">
-                  <h4 className="text-sm font-medium mb-2">추가된 산책 기록</h4>
-                  <div className="space-y-2">
-                    {value.walk.map((item, index) => (
-                      <div key={index} className="flex items-center justify-between bg-secondary/50 p-2 rounded-md">
-                        <div>
-                          <span className="font-medium">{item.duration}</span> - {item.description}
-                        </div>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => removeWalk(index)}
-                          className="h-6 w-6 text-destructive"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
+            <div className="flex items-center space-x-2">
+              <Checkbox 
+                id="meal-dinner"
+                checked={value.meal?.dinner || false}
+                onCheckedChange={(checked) => handleMealChange('dinner', !!checked)}
+                disabled={readOnly}
+              />
+              <Label htmlFor="meal-dinner">저녁</Label>
             </div>
-          </TabsContent>
-          
-          {/* 기타 활동 탭 */}
-          <TabsContent value="other" className="space-y-4">
-            <div className="grid grid-cols-1 gap-4">
-              <Tabs defaultValue="training" className="w-full">
-                <TabsList className="grid grid-cols-4 mb-4">
-                  <TabsTrigger value="training" className="flex items-center">
-                    <Dumbbell className="w-4 h-4 mr-2" /> 훈련
-                  </TabsTrigger>
-                  <TabsTrigger value="play" className="flex items-center">
-                    <Wine className="w-4 h-4 mr-2" /> 놀이
-                  </TabsTrigger>
-                  <TabsTrigger value="rest" className="flex items-center">
-                    <Moon className="w-4 h-4 mr-2" /> 휴식
-                  </TabsTrigger>
-                  <TabsTrigger value="other-misc" className="flex items-center">
-                    <Plus className="w-4 h-4 mr-2" /> 기타
-                  </TabsTrigger>
-                </TabsList>
-                
-                {/* 훈련 탭 내용 */}
-                <TabsContent value="training" className="space-y-4">
-                  <div className="flex space-x-2">
-                    <Input
-                      value={simpleActivity}
-                      onChange={(e) => setSimpleActivity(e.target.value)}
-                      placeholder="앉아 훈련"
-                      className="flex-1"
-                    />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => addSimpleActivity('training', simpleActivity)}
-                      disabled={!simpleActivity}
-                    >
-                      <Plus className="h-4 w-4 mr-1" /> 추가
-                    </Button>
-                  </div>
-                  
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleQuickAdd('training', '앉아 훈련')}
-                    >
-                      앉아 훈련
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleQuickAdd('training', '기다려 훈련')}
-                    >
-                      기다려 훈련
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleQuickAdd('training', '손 훈련')}
-                    >
-                      손 훈련
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleQuickAdd('training', '집중력 훈련')}
-                    >
-                      집중력 훈련
-                    </Button>
-                  </div>
-                  
-                  {/* 추가된 훈련 목록 */}
-                  {value.training && value.training.length > 0 && (
-                    <div className="mt-4">
-                      <h4 className="text-sm font-medium mb-2">추가된 훈련</h4>
-                      <div className="flex flex-wrap gap-2">
-                        {value.training.map((item, index) => (
-                          <Badge key={index} variant="secondary" className="flex items-center gap-1">
-                            {item}
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => removeSimpleActivity('training', index)}
-                              className="h-4 w-4 ml-1 p-0 text-destructive"
-                            >
-                              <Trash2 className="h-3 w-3" />
-                            </Button>
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </TabsContent>
-                
-                {/* 놀이 탭 내용 */}
-                <TabsContent value="play" className="space-y-4">
-                  <div className="flex space-x-2">
-                    <Input
-                      value={simpleActivity}
-                      onChange={(e) => setSimpleActivity(e.target.value)}
-                      placeholder="공 놀이"
-                      className="flex-1"
-                    />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => addSimpleActivity('play', simpleActivity)}
-                      disabled={!simpleActivity}
-                    >
-                      <Plus className="h-4 w-4 mr-1" /> 추가
-                    </Button>
-                  </div>
-                  
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleQuickAdd('play', '공 놀이')}
-                    >
-                      공 놀이
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleQuickAdd('play', '터그 놀이')}
-                    >
-                      터그 놀이
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleQuickAdd('play', '인형 놀이')}
-                    >
-                      인형 놀이
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleQuickAdd('play', '사회성 놀이')}
-                    >
-                      사회성 놀이
-                    </Button>
-                  </div>
-                  
-                  {/* 추가된 놀이 목록 */}
-                  {value.play && value.play.length > 0 && (
-                    <div className="mt-4">
-                      <h4 className="text-sm font-medium mb-2">추가된 놀이</h4>
-                      <div className="flex flex-wrap gap-2">
-                        {value.play.map((item, index) => (
-                          <Badge key={index} variant="secondary" className="flex items-center gap-1">
-                            {item}
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => removeSimpleActivity('play', index)}
-                              className="h-4 w-4 ml-1 p-0 text-destructive"
-                            >
-                              <Trash2 className="h-3 w-3" />
-                            </Button>
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </TabsContent>
-                
-                {/* 휴식 탭 내용 */}
-                <TabsContent value="rest" className="space-y-4">
-                  <div className="flex space-x-2">
-                    <Input
-                      value={simpleActivity}
-                      onChange={(e) => setSimpleActivity(e.target.value)}
-                      placeholder="오전 낮잠"
-                      className="flex-1"
-                    />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => addSimpleActivity('rest', simpleActivity)}
-                      disabled={!simpleActivity}
-                    >
-                      <Plus className="h-4 w-4 mr-1" /> 추가
-                    </Button>
-                  </div>
-                  
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleQuickAdd('rest', '오전 낮잠')}
-                    >
-                      오전 낮잠
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleQuickAdd('rest', '오후 낮잠')}
-                    >
-                      오후 낮잠
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleQuickAdd('rest', '밤 취침')}
-                    >
-                      밤 취침
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleQuickAdd('rest', '휴식시간')}
-                    >
-                      휴식시간
-                    </Button>
-                  </div>
-                  
-                  {/* 추가된 휴식 목록 */}
-                  {value.rest && value.rest.length > 0 && (
-                    <div className="mt-4">
-                      <h4 className="text-sm font-medium mb-2">추가된 휴식</h4>
-                      <div className="flex flex-wrap gap-2">
-                        {value.rest.map((item, index) => (
-                          <Badge key={index} variant="secondary" className="flex items-center gap-1">
-                            {item}
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => removeSimpleActivity('rest', index)}
-                              className="h-4 w-4 ml-1 p-0 text-destructive"
-                            >
-                              <Trash2 className="h-3 w-3" />
-                            </Button>
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </TabsContent>
-                
-                {/* 기타 세부 탭 내용 */}
-                <TabsContent value="other-misc" className="space-y-4">
-                  <div className="flex space-x-2">
-                    <Input
-                      value={simpleActivity}
-                      onChange={(e) => setSimpleActivity(e.target.value)}
-                      placeholder="특이사항 또는 기타 활동"
-                      className="flex-1"
-                    />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => addSimpleActivity('other', simpleActivity)}
-                      disabled={!simpleActivity}
-                    >
-                      <Plus className="h-4 w-4 mr-1" /> 추가
-                    </Button>
-                  </div>
-                  
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleQuickAdd('other', '목욕')}
-                    >
-                      목욕
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleQuickAdd('other', '약물 복용')}
-                    >
-                      약물 복용
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleQuickAdd('other', '미용')}
-                    >
-                      미용
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleQuickAdd('other', '건강 체크')}
-                    >
-                      건강 체크
-                    </Button>
-                  </div>
-                  
-                  {/* 추가된 기타 목록 */}
-                  {value.other && value.other.length > 0 && (
-                    <div className="mt-4">
-                      <h4 className="text-sm font-medium mb-2">추가된 기타 활동</h4>
-                      <div className="flex flex-wrap gap-2">
-                        {value.other.map((item, index) => (
-                          <Badge key={index} variant="secondary" className="flex items-center gap-1">
-                            {item}
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => removeSimpleActivity('other', index)}
-                              className="h-4 w-4 ml-1 p-0 text-destructive"
-                            >
-                              <Trash2 className="h-3 w-3" />
-                            </Button>
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </TabsContent>
-              </Tabs>
+            <div className="flex items-center space-x-2">
+              <Checkbox 
+                id="meal-snack"
+                checked={value.meal?.snack || false}
+                onCheckedChange={(checked) => handleMealChange('snack', !!checked)}
+                disabled={readOnly}
+              />
+              <Label htmlFor="meal-snack">간식</Label>
             </div>
-          </TabsContent>
-        </Tabs>
-      </CardContent>
-      <CardFooter className="flex justify-between">
-        <div className="text-sm text-muted-foreground">
-          총 활동 수: {(
-            (value.meal?.length || 0) +
-            (value.potty?.length || 0) +
-            (value.walk?.length || 0) +
-            (value.training?.length || 0) +
-            (value.play?.length || 0) +
-            (value.rest?.length || 0) +
-            (value.other?.length || 0)
-          )}
-        </div>
-      </CardFooter>
-    </Card>
+            <div className="flex items-center space-x-2">
+              <Checkbox 
+                id="meal-water"
+                checked={value.meal?.water || false}
+                onCheckedChange={(checked) => handleMealChange('water', !!checked)}
+                disabled={readOnly}
+              />
+              <Label htmlFor="meal-water">물</Label>
+            </div>
+          </div>
+          
+          <div className="mt-4">
+            <Label htmlFor="meal-custom">기타 식사 내용</Label>
+            <Input 
+              id="meal-custom"
+              placeholder="특별한 식사 내용이 있다면 입력하세요"
+              value={value.meal?.custom || ''}
+              onChange={(e) => handleMealChange('custom', e.target.value)}
+              className="mt-1"
+              disabled={readOnly}
+            />
+          </div>
+        </TabsContent>
+        
+        <TabsContent value="potty" className="mt-0">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="flex items-center space-x-2">
+              <Checkbox 
+                id="potty-pee"
+                checked={value.potty?.pee || false}
+                onCheckedChange={(checked) => handlePottyChange('pee', !!checked)}
+                disabled={readOnly}
+              />
+              <Label htmlFor="potty-pee">소변</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Checkbox 
+                id="potty-poop"
+                checked={value.potty?.poop || false}
+                onCheckedChange={(checked) => handlePottyChange('poop', !!checked)}
+                disabled={readOnly}
+              />
+              <Label htmlFor="potty-poop">대변</Label>
+            </div>
+          </div>
+          
+          <div className="mt-4">
+            <Label htmlFor="potty-quality">상태</Label>
+            <Select
+              value={value.potty?.quality || 'normal'}
+              onValueChange={(val) => handlePottyChange('quality', val)}
+              disabled={readOnly}
+            >
+              <SelectTrigger id="potty-quality" className="mt-1">
+                <SelectValue placeholder="상태 선택" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="good">좋음</SelectItem>
+                <SelectItem value="normal">보통</SelectItem>
+                <SelectItem value="bad">나쁨</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          
+          <div className="mt-4">
+            <Label>횟수: {value.potty?.count || 0}회</Label>
+            <Slider
+              value={[value.potty?.count || 0]}
+              min={0}
+              max={10}
+              step={1}
+              onValueChange={(val) => handlePottyChange('count', val[0])}
+              className="mt-2"
+              disabled={readOnly}
+            />
+          </div>
+        </TabsContent>
+        
+        <TabsContent value="walk" className="mt-0">
+          <div className="grid grid-cols-3 gap-4">
+            <div className="flex items-center space-x-2">
+              <Checkbox 
+                id="walk-morning"
+                checked={value.walk?.morning || false}
+                onCheckedChange={(checked) => handleWalkChange('morning', !!checked)}
+                disabled={readOnly}
+              />
+              <Label htmlFor="walk-morning">아침</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Checkbox 
+                id="walk-afternoon"
+                checked={value.walk?.afternoon || false}
+                onCheckedChange={(checked) => handleWalkChange('afternoon', !!checked)}
+                disabled={readOnly}
+              />
+              <Label htmlFor="walk-afternoon">오후</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Checkbox 
+                id="walk-evening"
+                checked={value.walk?.evening || false}
+                onCheckedChange={(checked) => handleWalkChange('evening', !!checked)}
+                disabled={readOnly}
+              />
+              <Label htmlFor="walk-evening">저녁</Label>
+            </div>
+          </div>
+          
+          <div className="mt-4">
+            <Label>시간: {value.walk?.duration || 0}분</Label>
+            <Slider
+              value={[value.walk?.duration || 0]}
+              min={0}
+              max={120}
+              step={5}
+              onValueChange={(val) => handleWalkChange('duration', val[0])}
+              className="mt-2"
+              disabled={readOnly}
+            />
+          </div>
+          
+          <div className="mt-4">
+            <Label>거리: {value.walk?.distance ? (value.walk.distance / 1000).toFixed(1) : 0}km</Label>
+            <Slider
+              value={[value.walk?.distance || 0]}
+              min={0}
+              max={5000}
+              step={100}
+              onValueChange={(val) => handleWalkChange('distance', val[0])}
+              className="mt-2"
+              disabled={readOnly}
+            />
+          </div>
+        </TabsContent>
+        
+        <TabsContent value="training" className="mt-0">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+            <div className="flex items-center space-x-2">
+              <Checkbox 
+                id="training-sit"
+                checked={value.training?.sit || false}
+                onCheckedChange={(checked) => handleTrainingChange('sit', !!checked)}
+                disabled={readOnly}
+              />
+              <Label htmlFor="training-sit">앉아</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Checkbox 
+                id="training-stay"
+                checked={value.training?.stay || false}
+                onCheckedChange={(checked) => handleTrainingChange('stay', !!checked)}
+                disabled={readOnly}
+              />
+              <Label htmlFor="training-stay">기다려</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Checkbox 
+                id="training-come"
+                checked={value.training?.come || false}
+                onCheckedChange={(checked) => handleTrainingChange('come', !!checked)}
+                disabled={readOnly}
+              />
+              <Label htmlFor="training-come">이리와</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Checkbox 
+                id="training-down"
+                checked={value.training?.down || false}
+                onCheckedChange={(checked) => handleTrainingChange('down', !!checked)}
+                disabled={readOnly}
+              />
+              <Label htmlFor="training-down">엎드려</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Checkbox 
+                id="training-paw"
+                checked={value.training?.paw || false}
+                onCheckedChange={(checked) => handleTrainingChange('paw', !!checked)}
+                disabled={readOnly}
+              />
+              <Label htmlFor="training-paw">손</Label>
+            </div>
+          </div>
+          
+          <div className="mt-4">
+            <Label htmlFor="training-custom">기타 훈련 내용</Label>
+            <Input 
+              id="training-custom"
+              placeholder="추가 훈련 내용이 있다면 입력하세요"
+              value={value.training?.custom || ''}
+              onChange={(e) => handleTrainingChange('custom', e.target.value)}
+              className="mt-1"
+              disabled={readOnly}
+            />
+          </div>
+        </TabsContent>
+        
+        <TabsContent value="play" className="mt-0">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="flex items-center space-x-2">
+              <Checkbox 
+                id="play-fetch"
+                checked={value.play?.fetch || false}
+                onCheckedChange={(checked) => handlePlayChange('fetch', !!checked)}
+                disabled={readOnly}
+              />
+              <Label htmlFor="play-fetch">물건 가져오기</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Checkbox 
+                id="play-tug"
+                checked={value.play?.tug || false}
+                onCheckedChange={(checked) => handlePlayChange('tug', !!checked)}
+                disabled={readOnly}
+              />
+              <Label htmlFor="play-tug">터그놀이</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Checkbox 
+                id="play-chase"
+                checked={value.play?.chase || false}
+                onCheckedChange={(checked) => handlePlayChange('chase', !!checked)}
+                disabled={readOnly}
+              />
+              <Label htmlFor="play-chase">쫓기 놀이</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Checkbox 
+                id="play-puzzle"
+                checked={value.play?.puzzle || false}
+                onCheckedChange={(checked) => handlePlayChange('puzzle', !!checked)}
+                disabled={readOnly}
+              />
+              <Label htmlFor="play-puzzle">퍼즐 장난감</Label>
+            </div>
+          </div>
+          
+          <div className="mt-4">
+            <Label htmlFor="play-custom">기타 놀이 내용</Label>
+            <Input 
+              id="play-custom"
+              placeholder="추가 놀이 내용이 있다면 입력하세요"
+              value={value.play?.custom || ''}
+              onChange={(e) => handlePlayChange('custom', e.target.value)}
+              className="mt-1"
+              disabled={readOnly}
+            />
+          </div>
+        </TabsContent>
+      </Tabs>
+    </div>
   );
 }
