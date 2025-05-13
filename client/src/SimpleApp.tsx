@@ -6,6 +6,7 @@ import React, { ReactNode, useState, useEffect, lazy, Suspense } from "react";
 import Home from "./pages/Home";
 import Dashboard from "@/pages/dashboard";
 import Courses from "@/pages/courses";
+import FAQPage from "@/pages/help/faq";
 import CourseDetail from "@/pages/course-detail";
 import Trainers from "@/pages/trainers";
 import Institutes from "@/pages/institutes";
@@ -683,11 +684,10 @@ function UnauthenticatedRoutes() {
         </Route>
         <Route path="/help/faq">
           {() => {
-            const FAQPage = lazy(() => import('./pages/help/faq'));
             return (
-              <Suspense fallback={<div className="p-8 text-center">FAQ 페이지 로딩 중...</div>}>
+              <div className="p-8">
                 <FAQPage />
-              </Suspense>
+              </div>
             );
           }}
         </Route>
