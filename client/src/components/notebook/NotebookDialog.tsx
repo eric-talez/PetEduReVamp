@@ -44,7 +44,6 @@ interface PetOwner {
 import { useToast } from '@/hooks/use-toast';
 import ActivityRecorder, { Activity } from './ActivityRecorder';
 import { TemplateType } from './TemplateSelector';
-import { useAuth } from '@/lib/auth';
 
 interface NotebookDialogProps {
   open: boolean;
@@ -53,6 +52,7 @@ interface NotebookDialogProps {
   onSubmit: (data: any) => void;
   onShowTemplateDialog: () => void;
   initialData?: any;
+  petOwners?: PetOwner[]; // 견주 목록 (훈련사 권한일 때 사용)
 }
 
 // 활동 데이터를 텍스트로 변환하는 함수
@@ -149,7 +149,8 @@ export default function NotebookDialog({
   pets,
   onSubmit,
   onShowTemplateDialog,
-  initialData
+  initialData,
+  petOwners = []  // 기본값은 빈 배열
 }: NotebookDialogProps) {
   const { toast } = useToast();
   const [form, setForm] = useState({
@@ -160,7 +161,10 @@ export default function NotebookDialog({
     taggedItems: [] as string[],
     photos: [] as string[],
     videos: [] as string[],
-    activities: {} as Activity
+    activities: {} as Activity,
+    isShared: false,      // 알림장 공유 여부
+    ownerId: null as number | null,  // 공유 대상 견주 ID
+    ownerName: '' as string // 공유 대상 견주 이름
   });
   
   const [tagInput, setTagInput] = useState('');
@@ -193,7 +197,10 @@ export default function NotebookDialog({
       taggedItems: [],
       photos: [],
       videos: [],
-      activities: {}
+      activities: {},
+      isShared: false,
+      ownerId: null,
+      ownerName: ''
     });
     setMediaPreview({photos: [], videos: []});
     setTagInput('');
