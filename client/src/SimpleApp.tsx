@@ -428,6 +428,20 @@ function AuthenticatedRoutes() {
             );
           }}
         </Route>
+        <Route path="/trainer-reviews">
+          {() => {
+            const TrainerReviews = lazy(() => import('./pages/trainer/reviews'));
+            return (
+              <Suspense fallback={
+                <div className="p-8 flex justify-center items-center">
+                  <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
+                </div>
+              }>
+                <ProtectedTrainerRoute component={TrainerReviews} />
+              </Suspense>
+            );
+          }}
+        </Route>
         
         {/* 기관 관리자 메뉴 */}
         <Route path="/institute/dashboard">
