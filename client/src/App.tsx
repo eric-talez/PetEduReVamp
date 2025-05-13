@@ -162,6 +162,15 @@ function AuthenticatedRoutesContent() {
       <Route path="/trainer/profile/certificates">
         {() => checkAccess(['trainer', 'admin']) ? <ProfilePage userType="trainer" section="certificates" /> : window.location.href = '/'}
       </Route>
+      <Route path="/trainer/settings">
+        {() => checkAccess(['trainer', 'admin']) ? <SettingsPage userRole="trainer" /> : window.location.href = '/'}
+      </Route>
+      <Route path="/institute/profile">
+        {() => checkAccess(['institute-admin', 'admin']) ? <ProfilePage userType="institute-admin" /> : window.location.href = '/'}
+      </Route>
+      <Route path="/institute/settings">
+        {() => checkAccess(['institute-admin', 'admin']) ? <SettingsPage userRole="institute-admin" /> : window.location.href = '/'}
+      </Route>
       <Route path="/institute/course-approvals">
         {() => checkAccess(['institute-admin', 'admin']) ? <InstituteCourseApprovalsPage /> : window.location.href = '/'}
       </Route>

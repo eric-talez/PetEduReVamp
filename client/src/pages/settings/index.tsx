@@ -1,8 +1,15 @@
 import { useState } from "react";
 import { useAuth } from "../../SimpleApp";
 
-export default function SettingsPage() {
-  const { userName, userRole } = useAuth();
+interface SettingsPageProps {
+  userRole?: string;
+}
+
+export default function SettingsPage({ userRole: propUserRole }: SettingsPageProps = {}) {
+  const auth = useAuth();
+  // props로 전달된 userRole이 있으면 그것을 사용하고, 없으면 auth에서 가져옴
+  const userRole = propUserRole || auth.userRole;
+  const userName = auth.userName;
   const [activeTab, setActiveTab] = useState("account");
 
   return (

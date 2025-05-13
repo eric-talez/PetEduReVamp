@@ -1,7 +1,97 @@
 import { useAuth } from "../../SimpleApp";
 
-export default function ProfilePage() {
-  const { userName, userRole } = useAuth();
+interface ProfilePageProps {
+  userType?: string;
+  section?: string;
+}
+
+export default function ProfilePage({ userType, section }: ProfilePageProps = {}) {
+  const auth = useAuth();
+  // props로 전달된 userType이 있으면 그것을 사용하고, 없으면 auth에서 가져옴
+  const userRole = userType || auth.userRole;
+  const userName = auth.userName;
+
+  // section이 certificates인 경우 자격증 페이지를 보여줌
+  if (section === "certificates") {
+    return (
+      <div className="container mx-auto p-6">
+        <h1 className="text-2xl font-bold mb-6">훈련사 자격증</h1>
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="border dark:border-gray-700 rounded-lg p-4">
+              <h2 className="text-lg font-semibold mb-2">반려동물 훈련사 자격증</h2>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">발급: 한국반려동물관리협회</p>
+              <div className="flex justify-between items-center">
+                <div>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">자격증 번호</p>
+                  <p>PT-2023-0001</p>
+                </div>
+                <div>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">취득일</p>
+                  <p>2023-01-15</p>
+                </div>
+              </div>
+            </div>
+            <div className="border dark:border-gray-700 rounded-lg p-4">
+              <h2 className="text-lg font-semibold mb-2">동물행동 전문가 자격증</h2>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">발급: 국제동물행동학회</p>
+              <div className="flex justify-between items-center">
+                <div>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">자격증 번호</p>
+                  <p>AB-2023-1234</p>
+                </div>
+                <div>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">취득일</p>
+                  <p>2023-03-22</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="mt-6">
+            <h3 className="text-lg font-semibold mb-4">자격증 추가</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium mb-1">자격증 이름</label>
+                <input 
+                  type="text" 
+                  className="w-full p-2 border dark:border-gray-600 rounded-lg"
+                  placeholder="자격증 이름을 입력하세요"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">발급 기관</label>
+                <input 
+                  type="text" 
+                  className="w-full p-2 border dark:border-gray-600 rounded-lg"
+                  placeholder="발급 기관명을 입력하세요"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">자격증 번호</label>
+                <input 
+                  type="text" 
+                  className="w-full p-2 border dark:border-gray-600 rounded-lg"
+                  placeholder="자격증 번호를 입력하세요"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">취득일</label>
+                <input 
+                  type="date" 
+                  className="w-full p-2 border dark:border-gray-600 rounded-lg"
+                />
+              </div>
+            </div>
+            <div className="mt-4 flex justify-end">
+              <button className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90">
+                자격증 추가
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto p-6">
