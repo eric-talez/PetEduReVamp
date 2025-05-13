@@ -48,13 +48,14 @@ import {
   Brain,
   BarChart2,
   Sparkles,
-  ShoppingCart,
-  DollarSign,
-  Gift,
+  Settings,
   Percent,
+  DollarSign,
+  TrendingUp,
+  ShoppingCart,
+  Gift,
   Tag,
-  Image as ImageIcon,
-  Settings
+  Image as ImageIcon
 } from "lucide-react";
 
 // 사이드바 컨텍스트 생성
@@ -879,30 +880,30 @@ export function Sidebar({
                           show={true}
                         >강좌 관리</AccessibleNavItem>
                         <AccessibleNavItem 
-                          href="/institute-students" 
+                          href="/institute/students" 
                           icon={<Users className="w-5 h-5 mr-2" />} 
-                          active={isActive("/institute-students")} 
+                          active={isActive("/institute/students")} 
                           onClick={handleItemClick} 
                           show={true}
                         >회원 관리</AccessibleNavItem>
                         <AccessibleNavItem 
-                          href="/institute-schedule" 
+                          href="/institute/facility" 
                           icon={<Calendar className="w-5 h-5 mr-2" />} 
-                          active={isActive("/institute-schedule")} 
+                          active={isActive("/institute/facility")} 
                           onClick={handleItemClick} 
                           show={true}
-                        >일정 관리</AccessibleNavItem>
+                        >시설 관리</AccessibleNavItem>
                         <AccessibleNavItem 
-                          href="/institute-finances" 
-                          icon={<DollarSign className="w-5 h-5 mr-2" />} 
-                          active={isActive("/institute-finances")} 
+                          href="/institute/stats" 
+                          icon={<TrendingUp className="w-5 h-5 mr-2" />} 
+                          active={isActive("/institute/stats")} 
                           onClick={handleItemClick} 
                           show={true}
                         >매출 관리</AccessibleNavItem>
                         <AccessibleNavItem 
-                          href="/institute-settings" 
+                          href="/institute/settings" 
                           icon={<Settings className="w-5 h-5 mr-2" />} 
-                          active={isActive("/institute-settings")} 
+                          active={isActive("/institute/settings")} 
                           onClick={handleItemClick} 
                           show={true}
                         >기관 설정</AccessibleNavItem>
