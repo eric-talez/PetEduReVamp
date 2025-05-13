@@ -109,6 +109,9 @@ function AuthenticatedRoutesContent() {
       <Route path="/admin/dashboard">
         {() => checkAccess(['admin']) ? <Dashboard typeProps="admin" /> : window.location.href = '/'}
       </Route>
+      <Route path="/admin/menu-management">
+        {() => checkAccess(['admin']) ? <MenuManagement /> : window.location.href = '/'}
+      </Route>
       <Route path="/community" component={CommunityPage} />
       <Route path="/community/post/:id">
         {() => (

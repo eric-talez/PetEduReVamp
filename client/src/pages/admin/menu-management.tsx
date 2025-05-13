@@ -347,7 +347,7 @@ export default function MenuManagement() {
 
   // 그룹 저장 처리
   const onGroupSubmit = (values: z.infer<typeof menuGroupSchema>) => {
-    const updatedGroups = menuConfig.groups.map(group => 
+    const updatedGroups = menuConfig.groups.map((group: MenuGroup) => 
       group.id === values.id ? { ...values } : group
     );
     
@@ -365,7 +365,7 @@ export default function MenuManagement() {
 
   // 아이템 저장 처리
   const onItemSubmit = (values: z.infer<typeof menuItemSchema>) => {
-    const updatedItems = menuConfig.items.map(item => 
+    const updatedItems = menuConfig.items.map((item: MenuItem) => 
       item.id === values.id ? { ...values } : item
     );
     

@@ -1014,6 +1014,13 @@ export function Sidebar({
                           show={true}
                         >기관 관리</AccessibleNavItem>
                         <AccessibleNavItem 
+                          href="/admin/menu-management" 
+                          icon={<Menu className="w-5 h-5 mr-2" />} 
+                          active={isActive("/admin/menu-management")} 
+                          onClick={handleItemClick} 
+                          show={true}
+                        >메뉴 관리</AccessibleNavItem>
+                        <AccessibleNavItem 
                           href="/admin/courses" 
                           icon={<BookOpen className="w-5 h-5 mr-2" />} 
                           active={isActive("/admin/courses")} 
