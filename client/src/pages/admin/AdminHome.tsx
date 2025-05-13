@@ -19,10 +19,20 @@ import {
   Server,
   HelpCircle,
   FileText,
-  Check
+  Check,
+  X
 } from 'lucide-react';
 import { useLocation } from 'wouter';
 import { Progress } from '@/components/ui/progress';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogClose
+} from '@/components/ui/dialog';
 
 interface SystemStatusItem {
   name: string;
@@ -45,6 +55,7 @@ export default function AdminHome() {
   const [systemStatus, setSystemStatus] = useState<SystemStatusItem[]>([]);
   const [platformStats, setPlatformStats] = useState<PlatformStatsItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [showDetailedAnalysis, setShowDetailedAnalysis] = useState(false);
 
   // 시스템 상태 및 플랫폼 통계 데이터 로드 (임시 데이터)
   useEffect(() => {
@@ -174,6 +185,10 @@ export default function AdminHome() {
   const handleSystemSettings = () => {
     setLocation('/admin/settings');
   };
+  
+  const handleDetailedAnalysis = () => {
+    setShowDetailedAnalysis(true);
+  };
 
   return (
     <div className="p-6 space-y-6">
@@ -271,7 +286,14 @@ export default function AdminHome() {
                 </div>
               </CardContent>
               <CardFooter>
-                <Button variant="outline" size="sm" className="w-full">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="w-full"
+                  onClick={handleDetailedAnalysis}
+                  aria-label="플랫폼 통계 상세 분석 보기"
+                >
+                  <PieChart className="h-4 w-4 mr-2" />
                   상세 분석 보기
                 </Button>
               </CardFooter>
