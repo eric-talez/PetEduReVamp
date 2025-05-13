@@ -192,6 +192,161 @@ export default function AdminHome() {
 
   return (
     <div className="p-6 space-y-6">
+      {/* 상세 분석 모달 */}
+      <Dialog open={showDetailedAnalysis} onOpenChange={setShowDetailedAnalysis}>
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>플랫폼 통계 상세 분석</DialogTitle>
+            <DialogDescription>
+              최근 30일 동안의 플랫폼 지표 및 추세 분석입니다.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="mt-6 space-y-6">
+            {/* 그래프 및 차트 섹션 */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-base">사용자 증가 추세</CardTitle>
+                  <CardDescription>최근 30일간 신규 가입자 수</CardDescription>
+                </CardHeader>
+                <CardContent className="h-64 flex flex-col justify-center items-center">
+                  <BarChart className="h-8 w-8 mb-2 text-primary" />
+                  <p className="text-sm text-center text-muted-foreground">사용자 증가 그래프가 표시됩니다.</p>
+                  <div className="mt-4 w-full space-y-1">
+                    <div className="flex justify-between text-xs">
+                      <span>이번 주 신규 가입</span>
+                      <span className="font-medium">187명</span>
+                    </div>
+                    <Progress value={65} className="h-2" />
+                    <div className="flex justify-between text-xs">
+                      <span>지난 주 대비</span>
+                      <span className="text-green-500">+7.6%</span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-base">사용자 유형 분포</CardTitle>
+                  <CardDescription>역할별 사용자 비율</CardDescription>
+                </CardHeader>
+                <CardContent className="h-64 flex flex-col justify-center items-center">
+                  <PieChart className="h-8 w-8 mb-2 text-primary" />
+                  <p className="text-sm text-center text-muted-foreground">사용자 역할 분포 차트가 표시됩니다.</p>
+                  <div className="mt-4 w-full space-y-2">
+                    <div className="flex items-center">
+                      <div className="w-3 h-3 rounded-full bg-blue-500 mr-2"></div>
+                      <span className="text-xs flex-1">반려인</span>
+                      <span className="text-xs font-medium">78%</span>
+                    </div>
+                    <div className="flex items-center">
+                      <div className="w-3 h-3 rounded-full bg-green-500 mr-2"></div>
+                      <span className="text-xs flex-1">훈련사</span>
+                      <span className="text-xs font-medium">12%</span>
+                    </div>
+                    <div className="flex items-center">
+                      <div className="w-3 h-3 rounded-full bg-purple-500 mr-2"></div>
+                      <span className="text-xs flex-1">기관 관리자</span>
+                      <span className="text-xs font-medium">8%</span>
+                    </div>
+                    <div className="flex items-center">
+                      <div className="w-3 h-3 rounded-full bg-amber-500 mr-2"></div>
+                      <span className="text-xs flex-1">기타</span>
+                      <span className="text-xs font-medium">2%</span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+            
+            {/* 주요 지표 표 */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">주요 성장 지표 분석</CardTitle>
+                <CardDescription>최근 6개월 동안의 핵심 성과 지표</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b">
+                        <th className="py-2 px-2 text-left font-medium">지표</th>
+                        <th className="py-2 px-2 text-right font-medium">현재</th>
+                        <th className="py-2 px-2 text-right font-medium">전월 대비</th>
+                        <th className="py-2 px-2 text-right font-medium">전년 동기 대비</th>
+                        <th className="py-2 px-2 text-right font-medium">추세</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr className="border-b">
+                        <td className="py-2 px-2">총 사용자</td>
+                        <td className="py-2 px-2 text-right">12,483명</td>
+                        <td className="py-2 px-2 text-right text-green-500">+5.2%</td>
+                        <td className="py-2 px-2 text-right text-green-500">+32.7%</td>
+                        <td className="py-2 px-2 text-right">
+                          <TrendingUp className="h-4 w-4 text-green-500 inline" />
+                        </td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="py-2 px-2">월 활성 사용자</td>
+                        <td className="py-2 px-2 text-right">8,712명</td>
+                        <td className="py-2 px-2 text-right text-green-500">+3.8%</td>
+                        <td className="py-2 px-2 text-right text-green-500">+28.4%</td>
+                        <td className="py-2 px-2 text-right">
+                          <TrendingUp className="h-4 w-4 text-green-500 inline" />
+                        </td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="py-2 px-2">신규 강의 등록</td>
+                        <td className="py-2 px-2 text-right">126개</td>
+                        <td className="py-2 px-2 text-right text-red-500">-2.3%</td>
+                        <td className="py-2 px-2 text-right text-green-500">+18.9%</td>
+                        <td className="py-2 px-2 text-right">
+                          <TrendingUp className="h-4 w-4 text-amber-500 inline transform rotate-45" />
+                        </td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="py-2 px-2">평균 체류 시간</td>
+                        <td className="py-2 px-2 text-right">24.7분</td>
+                        <td className="py-2 px-2 text-right text-green-500">+8.1%</td>
+                        <td className="py-2 px-2 text-right text-green-500">+42.3%</td>
+                        <td className="py-2 px-2 text-right">
+                          <TrendingUp className="h-4 w-4 text-green-500 inline" />
+                        </td>
+                      </tr>
+                      <tr>
+                        <td className="py-2 px-2">수료율</td>
+                        <td className="py-2 px-2 text-right">68.2%</td>
+                        <td className="py-2 px-2 text-right text-green-500">+1.5%</td>
+                        <td className="py-2 px-2 text-right text-green-500">+5.7%</td>
+                        <td className="py-2 px-2 text-right">
+                          <TrendingUp className="h-4 w-4 text-green-500 inline" />
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+          
+          <DialogFooter className="flex justify-between items-center mt-6">
+            <Button variant="outline" onClick={() => setLocation('/admin/reports/analytics')}>
+              <FileText className="h-4 w-4 mr-2" />
+              전체 분석 보고서
+            </Button>
+            <DialogClose asChild>
+              <Button type="button" variant="default">
+                <Check className="h-4 w-4 mr-2" />
+                확인
+              </Button>
+            </DialogClose>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold tracking-tight">관리자 대시보드</h1>
         <div className="flex items-center space-x-4">
