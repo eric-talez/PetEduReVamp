@@ -157,6 +157,9 @@ export default function AdminCourses() {
   const [activeTab, setActiveTab] = useState('all');
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
   const [showCourseModal, setShowCourseModal] = useState(false);
+  useEffect(() => {
+    console.log('모달 상태 변경 감지됨:', showCourseModal, modalMode);
+  }, [showCourseModal, modalMode]);
   const [modalMode, setModalMode] = useState<'view' | 'edit' | 'add' | 'curriculum'>('view');
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
