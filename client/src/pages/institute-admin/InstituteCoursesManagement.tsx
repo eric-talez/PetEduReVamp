@@ -325,7 +325,9 @@ export default function InstituteCoursesManagement() {
   
   // 새 교육 과정 생성 핸들러
   const handleCreateCourse = () => {
+    console.log('handleCreateCourse 함수 실행됨');
     setShowNewCourseDialog(true);
+    console.log('Dialog 표시 요청됨:', showNewCourseDialog);
   };
   
   // 새로고침 핸들러
@@ -358,7 +360,13 @@ export default function InstituteCoursesManagement() {
           <h1 className="text-3xl font-bold tracking-tight">교육 과정 관리</h1>
           <p className="text-muted-foreground mt-1">기관의 교육 과정을 관리하고 새로운 과정을 개설합니다.</p>
         </div>
-        <Button onClick={handleCreateCourse}>
+        <Button 
+          onClick={(e) => {
+            console.log('새 교육 과정 버튼 클릭됨');
+            e.preventDefault();
+            handleCreateCourse();
+          }}
+        >
           <PlusCircle className="mr-2 h-4 w-4" />
           새 교육 과정
         </Button>
