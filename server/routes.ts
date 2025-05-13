@@ -8,6 +8,7 @@ import { registerTrainerRoutes } from "./trainers/routes";
 import { registerCourseRoutes } from "./courses/routes";
 import { registerInstituteRoutes } from "./institutes/routes";
 import { registerLocationRoutes } from "./location/routes";
+import { registerVideoCallRoutes } from "./videocall/routes";
 import { WebSocketServer } from 'ws';
 import { MessagingService } from './messaging/service';
 
