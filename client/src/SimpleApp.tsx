@@ -464,46 +464,6 @@ function AuthenticatedRoutes() {
         </Route>
         
         {/* 훈련사 메뉴 - 권한 검증 적용 */}
-        <Route path="/trainer-dashboard">
-          {() => {
-            const TrainerDashboard = lazy(() => import('./pages/trainer/TrainerHome'));
-            return (
-              <Suspense fallback={<div className="p-8 text-center">페이지 로딩 중...</div>}>
-                <ProtectedTrainerRoute component={TrainerDashboard} />
-              </Suspense>
-            );
-          }}
-        </Route>
-        <Route path="/trainer-students">
-          {() => {
-            const StudentManagement = lazy(() => import('./pages/trainer/students'));
-            return (
-              <Suspense fallback={<div className="p-8 text-center">페이지 로딩 중...</div>}>
-                <ProtectedTrainerRoute component={StudentManagement} />
-              </Suspense>
-            );
-          }}
-        </Route>
-        <Route path="/trainer-courses">
-          {() => {
-            const CourseManagement = lazy(() => import('./pages/trainer/courses'));
-            return (
-              <Suspense fallback={<div className="p-8 text-center">페이지 로딩 중...</div>}>
-                <ProtectedTrainerRoute component={CourseManagement} />
-              </Suspense>
-            );
-          }}
-        </Route>
-        <Route path="/trainer-schedule">
-          {() => {
-            const ScheduleManagement = lazy(() => import('./pages/trainer-dashboard/reservations'));
-            return (
-              <Suspense fallback={<div className="p-8 text-center">페이지 로딩 중...</div>}>
-                <ProtectedTrainerRoute component={ScheduleManagement} />
-              </Suspense>
-            );
-          }}
-        </Route>
         <Route path="/trainer/courses">
           {() => {
             const CourseManagement = lazy(() => import('./pages/trainer/courses'));
@@ -681,20 +641,7 @@ function AuthenticatedRoutes() {
           }}
         </Route>
         
-        <Route path="/trainer-earnings">
-          {() => {
-            const TrainerEarnings = lazy(() => import('./pages/trainer/earnings'));
-            return (
-              <Suspense fallback={
-                <div className="p-8 flex justify-center items-center">
-                  <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
-                </div>
-              }>
-                <ProtectedTrainerRoute component={TrainerEarnings} />
-              </Suspense>
-            );
-          }}
-        </Route>
+        {/* 중복 경로 제거: /trainer-earnings는 /trainer/earnings로 통합되었습니다 */}
         
         <Route path="/notebook">
           {() => {

@@ -675,7 +675,7 @@ export default function TrainerIncome() {
                     <SelectValue placeholder="유형 필터" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">모든 유형</SelectItem>
+                    <SelectItem value="all">모든 유형</SelectItem>
                     <SelectItem value="course">수업</SelectItem>
                     <SelectItem value="referral">추천</SelectItem>
                     <SelectItem value="payout">출금</SelectItem>
@@ -690,7 +690,7 @@ export default function TrainerIncome() {
                     <SelectValue placeholder="상태 필터" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">모든 상태</SelectItem>
+                    <SelectItem value="all">모든 상태</SelectItem>
                     <SelectItem value="completed">완료</SelectItem>
                     <SelectItem value="pending">대기 중</SelectItem>
                     <SelectItem value="failed">실패</SelectItem>
