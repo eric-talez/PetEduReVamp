@@ -5,7 +5,19 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
-import { CheckCircle2, Coffee, Footprints, UtensilsCrossed, Play } from 'lucide-react';
+import { 
+  CheckCircle2, 
+  Coffee, 
+  Footprints, 
+  UtensilsCrossed, 
+  Play, 
+  Activity as ActivityIcon, 
+  Heart, 
+  Brain, 
+  Users, 
+  ThumbsUp
+} from 'lucide-react';
+import { Textarea } from '@/components/ui/textarea';
 
 export interface Activity {
   meal?: {
@@ -15,12 +27,16 @@ export interface Activity {
     snack?: boolean;
     water?: boolean;
     custom?: string;
+    appetite?: 'excellent' | 'good' | 'normal' | 'poor' | 'none';
+    foodType?: string;
   };
   potty?: {
     pee?: boolean;
     poop?: boolean;
     quality?: 'good' | 'normal' | 'bad';
     count?: number;
+    color?: string;
+    consistency?: 'firm' | 'normal' | 'soft' | 'loose' | 'watery';
   };
   walk?: {
     morning?: boolean;
@@ -28,14 +44,29 @@ export interface Activity {
     evening?: boolean;
     duration?: number; // 분 단위
     distance?: number; // 미터 단위
+    leashBehavior?: 'excellent' | 'good' | 'normal' | 'poor';
+    environment?: string[];
   };
   training?: {
+    // 기본 명령어
     sit?: boolean;
     stay?: boolean;
     come?: boolean;
     down?: boolean;
     paw?: boolean;
+    // 추가 명령어
+    heel?: boolean;
+    leave?: boolean;
+    wait?: boolean;
+    focus?: boolean;
+    quiet?: boolean;
+    stand?: boolean;
+    roll?: boolean;
     custom?: string;
+    // 훈련 평가
+    concentration?: number;
+    progress?: number; // 0-10
+    notes?: string;
   };
   play?: {
     fetch?: boolean;
@@ -43,6 +74,39 @@ export interface Activity {
     chase?: boolean;
     puzzle?: boolean;
     custom?: string;
+    duration?: number;
+    enjoyment?: number; // 0-10
+    intensity?: 'low' | 'medium' | 'high';
+  };
+  health?: {
+    weight?: number;
+    temperature?: number;
+    appetite?: 'excellent' | 'good' | 'normal' | 'poor' | 'none';
+    energy?: 'high' | 'normal' | 'low' | 'lethargic';
+    hydration?: 'good' | 'normal' | 'concerning';
+    coat?: 'shiny' | 'normal' | 'dull' | 'shedding';
+    issues?: string[];
+    notes?: string;
+  };
+  behavior?: {
+    socialization?: {
+      humanAdults?: number; // 0-10
+      humanChildren?: number; // 0-10
+      maleDogs?: number; // 0-10
+      femaleDogs?: number; // 0-10
+      otherAnimals?: number; // 0-10
+    };
+    reactivity?: 'none' | 'mild' | 'moderate' | 'severe';
+    fearfulness?: 'none' | 'mild' | 'moderate' | 'severe';
+    confidence?: number; // 0-10
+    environSensitivity?: number; // 0-10
+    notes?: string;
+  };
+  mood?: {
+    overall?: 'extremely_happy' | 'happy' | 'content' | 'neutral' | 'anxious' | 'stressed' | 'tired' | 'excited'; 
+    focus?: number; // 0-10
+    calmness?: number; // 0-10
+    notes?: string;
   };
 }
 
@@ -67,8 +131,10 @@ export default function ActivityRecorder({
       newValue.meal = {};
     }
     
-    if (field === 'custom') {
-      newValue.meal.custom = checked as string;
+    if (field === 'custom' || field === 'foodType') {
+      (newValue.meal as any)[field] = checked as string;
+    } else if (field === 'appetite') {
+      newValue.meal.appetite = checked as 'excellent' | 'good' | 'normal' | 'poor' | 'none';
     } else if (field === 'breakfast' || field === 'lunch' || field === 'dinner' || field === 'snack' || field === 'water') {
       (newValue.meal as any)[field] = checked as boolean;
     }
@@ -86,6 +152,10 @@ export default function ActivityRecorder({
     
     if (field === 'quality') {
       newValue.potty.quality = checked as 'good' | 'normal' | 'bad';
+    } else if (field === 'consistency') {
+      newValue.potty.consistency = checked as 'firm' | 'normal' | 'soft' | 'loose' | 'watery';
+    } else if (field === 'color') {
+      newValue.potty.color = checked as string;
     } else if (field === 'count') {
       newValue.potty.count = checked as number;
     } else if (field === 'pee' || field === 'poop') {
@@ -95,7 +165,7 @@ export default function ActivityRecorder({
     onChange(newValue);
   };
   
-  const handleWalkChange = (field: string, checked: boolean | number) => {
+  const handleWalkChange = (field: string, checked: boolean | number | string | string[]) => {
     if (readOnly) return;
     
     const newValue = { ...value };
@@ -105,6 +175,10 @@ export default function ActivityRecorder({
     
     if (field === 'duration' || field === 'distance') {
       (newValue.walk as any)[field] = checked as number;
+    } else if (field === 'leashBehavior') {
+      newValue.walk.leashBehavior = checked as 'excellent' | 'good' | 'normal' | 'poor';
+    } else if (field === 'environment') {
+      newValue.walk.environment = checked as string[];
     } else if (field === 'morning' || field === 'afternoon' || field === 'evening') {
       (newValue.walk as any)[field] = checked as boolean;
     }
@@ -112,7 +186,7 @@ export default function ActivityRecorder({
     onChange(newValue);
   };
   
-  const handleTrainingChange = (field: string, checked: boolean | string) => {
+  const handleTrainingChange = (field: string, checked: boolean | string | number) => {
     if (readOnly) return;
     
     const newValue = { ...value };
@@ -120,16 +194,23 @@ export default function ActivityRecorder({
       newValue.training = {};
     }
     
-    if (field === 'custom') {
-      newValue.training.custom = checked as string;
-    } else if (field === 'sit' || field === 'stay' || field === 'come' || field === 'down' || field === 'paw') {
+    if (field === 'custom' || field === 'notes') {
+      (newValue.training as any)[field] = checked as string;
+    } else if (field === 'concentration' || field === 'progress') {
+      (newValue.training as any)[field] = checked as number;
+    } else if (
+      field === 'sit' || field === 'stay' || field === 'come' || 
+      field === 'down' || field === 'paw' || field === 'heel' || 
+      field === 'leave' || field === 'wait' || field === 'focus' || 
+      field === 'quiet' || field === 'stand' || field === 'roll'
+    ) {
       (newValue.training as any)[field] = checked as boolean;
     }
     
     onChange(newValue);
   };
   
-  const handlePlayChange = (field: string, checked: boolean | string) => {
+  const handlePlayChange = (field: string, checked: boolean | string | number) => {
     if (readOnly) return;
     
     const newValue = { ...value };
@@ -139,8 +220,86 @@ export default function ActivityRecorder({
     
     if (field === 'custom') {
       newValue.play.custom = checked as string;
+    } else if (field === 'duration' || field === 'enjoyment') {
+      (newValue.play as any)[field] = checked as number;
+    } else if (field === 'intensity') {
+      newValue.play.intensity = checked as 'low' | 'medium' | 'high';
     } else if (field === 'fetch' || field === 'tug' || field === 'chase' || field === 'puzzle') {
       (newValue.play as any)[field] = checked as boolean;
+    }
+    
+    onChange(newValue);
+  };
+  
+  const handleHealthChange = (field: string, checked: number | string | string[]) => {
+    if (readOnly) return;
+    
+    const newValue = { ...value };
+    if (!newValue.health) {
+      newValue.health = {};
+    }
+    
+    if (field === 'weight' || field === 'temperature') {
+      (newValue.health as any)[field] = Number(checked);
+    } else if (field === 'appetite') {
+      newValue.health.appetite = checked as 'excellent' | 'good' | 'normal' | 'poor' | 'none';
+    } else if (field === 'energy') {
+      newValue.health.energy = checked as 'high' | 'normal' | 'low' | 'lethargic';
+    } else if (field === 'hydration') {
+      newValue.health.hydration = checked as 'good' | 'normal' | 'concerning';
+    } else if (field === 'coat') {
+      newValue.health.coat = checked as 'shiny' | 'normal' | 'dull' | 'shedding';
+    } else if (field === 'issues') {
+      newValue.health.issues = checked as string[];
+    } else if (field === 'notes') {
+      newValue.health.notes = checked as string;
+    }
+    
+    onChange(newValue);
+  };
+  
+  const handleBehaviorChange = (field: string, checked: string | number) => {
+    if (readOnly) return;
+    
+    const newValue = { ...value };
+    if (!newValue.behavior) {
+      newValue.behavior = {};
+    }
+    
+    if (field === 'reactivity') {
+      newValue.behavior.reactivity = checked as 'none' | 'mild' | 'moderate' | 'severe';
+    } else if (field === 'fearfulness') {
+      newValue.behavior.fearfulness = checked as 'none' | 'mild' | 'moderate' | 'severe';
+    } else if (field === 'confidence' || field === 'environSensitivity') {
+      (newValue.behavior as any)[field] = Number(checked);
+    } else if (field === 'notes') {
+      newValue.behavior.notes = checked as string;
+    } else if (field.startsWith('social-')) {
+      // 사회성 하위 항목 처리
+      const socialField = field.replace('social-', '');
+      if (!newValue.behavior.socialization) {
+        newValue.behavior.socialization = {};
+      }
+      (newValue.behavior.socialization as any)[socialField] = Number(checked);
+    }
+    
+    onChange(newValue);
+  };
+  
+  const handleMoodChange = (field: string, checked: string | number) => {
+    if (readOnly) return;
+    
+    const newValue = { ...value };
+    if (!newValue.mood) {
+      newValue.mood = {};
+    }
+    
+    if (field === 'overall') {
+      newValue.mood.overall = checked as 'extremely_happy' | 'happy' | 'content' | 'neutral' | 'anxious' | 'stressed' | 'tired' | 'excited';
+    } else if (field === 'focus' || field === 'calmness') {
+      (newValue.mood as any)[field] = Number(checked);
+    } else if (field === 'notes') {
+      newValue.mood.notes = checked as string;
     }
     
     onChange(newValue);
