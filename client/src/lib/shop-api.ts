@@ -53,6 +53,35 @@ export interface OrderItem {
   referralCode?: string;
 }
 
+// 훈련사 정보 타입 정의
+export interface TrainerInfo {
+  id: number;
+  name: string;
+  profileImage?: string;
+  bio?: string;
+  specialty?: string[];
+  experience?: number; // 경력 연수
+  rating?: number;
+  reviewCount?: number;
+  instituteId?: number;
+  instituteName?: string;
+}
+
+// 상품 추천 정보 타입 정의
+export interface ProductRecommendationInfo {
+  trainerId: number;
+  trainerName: string;
+  instituteId?: number;
+  instituteName?: string;
+  referralCode: string;
+  commissionRate: number; // 수수료 비율 (%)
+  totalSales: number; // 총 판매액
+  totalCommission: number; // 총 수수료
+  salesCount: number; // 판매 건수
+  recommendedAt: string; // 추천 일자
+  reason?: string; // 추천 이유
+}
+
 // 주문 타입 정의
 export interface Order {
   id: string;
@@ -359,6 +388,38 @@ export class ShopApiService {
     ordersCount: number;
   }> {
     return this.fetchApi(`/referral/stats/${referralCode}`, {
+      method: 'GET',
+      headers: this.getHeaders(true)
+    });
+  }
+  
+  // 훈련사 정보 조회
+  async getTrainerInfo(trainerId: number): Promise<TrainerInfo> {
+    return this.fetchApi(`/trainers/${trainerId}`, {
+      method: 'GET',
+      headers: this.getHeaders(false)
+    });
+  }
+  
+  // 상품 추천 정보 조회
+  async getProductRecommendationInfo(productId: string, trainerId: number): Promise<ProductRecommendationInfo> {
+    return this.fetchApi(`/products/${productId}/recommendations/${trainerId}`, {
+      method: 'GET',
+      headers: this.getHeaders(true)
+    });
+  }
+  
+  // 훈련사별 추천 상품 목록 및 정산 정보 조회
+  async getTrainerRecommendations(trainerId: number): Promise<{
+    products: Product[],
+    commissionInfo: {
+      totalSales: number;
+      totalCommission: number;
+      salesCount: number;
+      averageCommissionRate: number;
+    }
+  }> {
+    return this.fetchApi(`/trainers/${trainerId}/recommendations`, {
       method: 'GET',
       headers: this.getHeaders(true)
     });
