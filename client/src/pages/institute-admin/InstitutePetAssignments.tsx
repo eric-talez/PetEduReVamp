@@ -658,10 +658,19 @@ export default function InstitutePetAssignments() {
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-3">
-                            <Avatar>
-                              <AvatarImage src={pet.owner.image} alt={pet.owner.name} />
-                              <AvatarFallback>{pet.owner.name.charAt(0)}</AvatarFallback>
-                            </Avatar>
+                            <div className="relative h-8 w-8 overflow-hidden rounded-full border border-gray-200 dark:border-gray-800 shadow-sm">
+                              {pet.owner.image ? (
+                                <img 
+                                  src={pet.owner.image} 
+                                  alt={pet.owner.name} 
+                                  className="h-full w-full object-cover filter brightness-110 contrast-110"
+                                />
+                              ) : (
+                                <div className="h-full w-full flex items-center justify-center bg-primary/10 text-primary text-sm font-bold">
+                                  {pet.owner.name.charAt(0)}
+                                </div>
+                              )}
+                            </div>
                             <div className="font-medium">{pet.owner.name}</div>
                           </div>
                         </TableCell>
@@ -775,12 +784,19 @@ export default function InstitutePetAssignments() {
                           <TableCell className="font-medium w-[50px]">{(currentPage - 1) * itemsPerPage + index + 1}</TableCell>
                           <TableCell>
                             <div className="flex items-center gap-3">
-                              <Avatar>
-                                <AvatarImage src={pet.image} alt={pet.name} />
-                                <AvatarFallback>
-                                  <PawPrint className="h-4 w-4" />
-                                </AvatarFallback>
-                              </Avatar>
+                              <div className="relative h-10 w-10 overflow-hidden rounded-full border border-gray-200 dark:border-gray-800 shadow-sm">
+                                {pet.image ? (
+                                  <img 
+                                    src={pet.image} 
+                                    alt={pet.name} 
+                                    className="h-full w-full object-cover filter brightness-110 contrast-110"
+                                  />
+                                ) : (
+                                  <div className="h-full w-full flex items-center justify-center bg-primary/10 text-primary">
+                                    <PawPrint className="h-5 w-5" />
+                                  </div>
+                                )}
+                              </div>
                               <div>
                                 <div className="font-medium">{pet.name}</div>
                                 <div className="text-sm text-muted-foreground">{pet.breed}, {pet.age}세</div>
@@ -789,10 +805,19 @@ export default function InstitutePetAssignments() {
                           </TableCell>
                           <TableCell>
                             <div className="flex items-center gap-3">
-                              <Avatar>
-                                <AvatarImage src={trainer.image} alt={trainer.name} />
-                                <AvatarFallback>{trainer.name.charAt(0)}</AvatarFallback>
-                              </Avatar>
+                              <div className="relative h-10 w-10 overflow-hidden rounded-full border border-gray-200 dark:border-gray-800 shadow-sm">
+                                {trainer.image ? (
+                                  <img 
+                                    src={trainer.image} 
+                                    alt={trainer.name} 
+                                    className="h-full w-full object-cover filter brightness-110 contrast-110"
+                                  />
+                                ) : (
+                                  <div className="h-full w-full flex items-center justify-center bg-primary/10 text-primary text-sm font-bold">
+                                    {trainer.name.charAt(0)}
+                                  </div>
+                                )}
+                              </div>
                               <div>
                                 <div className="font-medium">{trainer.name}</div>
                                 <div className="text-sm text-muted-foreground">{trainer.specialty}</div>
