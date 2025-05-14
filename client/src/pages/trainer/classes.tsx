@@ -494,12 +494,26 @@ export default function TrainerClasses() {
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold tracking-tight">수업 일정</h1>
         <div className="flex items-center space-x-2">
-          <DialogTrigger asChild>
-            <Button size="sm">
-              <Plus className="mr-2 h-4 w-4" />
-              새 수업 일정
-            </Button>
-          </DialogTrigger>
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button size="sm">
+                <Plus className="mr-2 h-4 w-4" />
+                새 수업 일정
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>새 수업 일정 추가</DialogTitle>
+                <DialogDescription>
+                  새로운 수업 일정 정보를 입력하세요.
+                </DialogDescription>
+              </DialogHeader>
+              {/* 여기에 폼 내용 추가 */}
+              <DialogFooter>
+                <Button type="submit">저장</Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
           <Button onClick={handleRefresh} variant="outline" size="sm">
             <RefreshCw className="mr-2 h-4 w-4" />
             새로고침
