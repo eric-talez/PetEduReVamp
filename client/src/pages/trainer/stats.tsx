@@ -435,36 +435,36 @@ export default function TrainerStats() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Card>
                 <CardHeader>
-                  <CardTitle>신규 등록 경로</CardTitle>
+                  <CardTitle>반려견 품종 분포</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="h-60 bg-gray-100 dark:bg-gray-800 rounded-md flex items-center justify-center">
                     <div className="text-center text-gray-500">
                       <PieChart className="h-10 w-10 mx-auto mb-2" />
-                      <p>여기에 등록 경로 차트가 표시됩니다.</p>
+                      <p>여기에 수강생 반려견 품종 분포가 표시됩니다.</p>
                     </div>
                   </div>
                   <div className="mt-4 space-y-2">
                     <div className="flex justify-between">
                       <span className="flex items-center">
                         <span className="w-3 h-3 bg-blue-500 rounded-full mr-2"></span>
-                        직접 검색
+                        말티즈
                       </span>
-                      <span>40% (32명)</span>
+                      <span>28% (22마리)</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="flex items-center">
                         <span className="w-3 h-3 bg-green-500 rounded-full mr-2"></span>
-                        추천인
+                        포메라니안
                       </span>
-                      <span>25% (20명)</span>
+                      <span>18% (14마리)</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="flex items-center">
                         <span className="w-3 h-3 bg-purple-500 rounded-full mr-2"></span>
-                        플랫폼 검색
+                        비숑 프리제
                       </span>
-                      <span>35% (26명)</span>
+                      <span>15% (12마리)</span>
                     </div>
                   </div>
                 </CardContent>
