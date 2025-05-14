@@ -34,7 +34,7 @@ export function SpecialShopLink({ children, className = "", expanded = true }: S
     console.log('특별 쇼핑 링크 클릭됨 - 새 창으로 열기');
     
     // 쇼핑 페이지를 새 창에서 열기
-    window.open('https://replit.com/join/wshpfpjewg-hnblgkjw', '_blank', 'noopener,noreferrer');
+    window.open('https://store.funnytalez.com/', '_blank', 'noopener,noreferrer');
     
     // 디버깅 정보
     console.log("SpecialShopLink에서 쇼핑 페이지 새 창으로 열기:", new Date().toISOString());
@@ -51,7 +51,7 @@ export function SpecialShopLink({ children, className = "", expanded = true }: S
         <Tooltip>
           <TooltipTrigger asChild>
             <a
-              href="https://replit.com/join/wshpfpjewg-hnblgkjw"
+              href="https://store.funnytalez.com/"
               className={cn(
                 "sidebar-link relative flex items-center justify-center py-2 text-sm font-medium rounded-md transition-all duration-200 ease-in-out px-2",
                 "text-gray-700 dark:text-gray-200 hover:text-primary dark:hover:text-primary",
