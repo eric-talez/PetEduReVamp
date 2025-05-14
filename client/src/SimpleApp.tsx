@@ -1,6 +1,7 @@
 import { Switch, Route } from "wouter";
 import { RedirectHandler } from './components/RedirectHandler';
 import React, { ReactNode, useState, useEffect, lazy, Suspense } from "react";
+import SimpleChatbot from './components/SimpleChatbot';
 
 // 페이지 컴포넌트 임포트
 import Home from "./pages/Home";
@@ -1253,6 +1254,8 @@ function UnauthenticatedRoutes() {
           }}
         </Route>
       </Switch>
+      {/* 비로그인 사용자를 위한 AI 챗봇 */}
+      <SimpleChatbot />
     </AppLayout>
   );
 }
