@@ -201,6 +201,18 @@ export const DEFAULT_MENU_ITEMS: MenuItem[] = [
     openInNewWindow: true
   },
   {
+    id: 'trainer-recommended-products',
+    title: '훈련사 추천 상품',
+    path: '/shop/trainer-recommendations',
+    icon: 'ThumbsUp',
+    type: 'internal',
+    category: 'shopping',
+    roles: ['pet-owner', 'trainer', 'institute-admin', 'admin'],
+    orderIndex: 1,
+    isActive: true,
+    isPublic: false
+  },
+  {
     id: 'dashboard',
     title: '대시보드',
     path: '/dashboard',

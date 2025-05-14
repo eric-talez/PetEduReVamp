@@ -28,6 +28,7 @@ import NotificationsPage from "./pages/notifications/index";
 import CartPage from "@/pages/Cart"; // 장바구니 페이지
 import ShopIndex from "./pages/shop/index"; // 쇼핑 페이지 메인 컴포넌트 (단일 진입점)
 import ProductDetailPage from "./pages/shop/product"; // 상품 상세 페이지
+import TrainerRecommendationsPage from "./pages/shop/trainer-recommendations"; // 훈련사 추천 상품 페이지
 
 import VideoTrainingPage from "./pages/video-training/index";
 import VideoTrainingDetailPage from "./pages/video-training/video";
@@ -195,6 +196,14 @@ function AuthenticatedRoutesContent() {
         {(params) => {
           console.log("인증된 사용자가 상품 상세 페이지 접근:", params.id);
           return <ProductDetailPage />;
+        }}
+      </Route>
+      
+      {/* 훈련사 추천 상품 페이지 */}
+      <Route path="/shop/trainer-recommendations">
+        {() => {
+          console.log("인증된 사용자가 훈련사 추천 상품 페이지 접근");
+          return <TrainerRecommendationsPage />;
         }}
       </Route>
       
@@ -373,6 +382,13 @@ function UnauthenticatedRoutesContent() {
         {(params) => {
           console.log("비인증 사용자가 상품 상세 페이지 접근:", params.id);
           return <ProductDetailPage />;
+        }}
+      </Route>
+      
+      <Route path="/shop/trainer-recommendations">
+        {() => {
+          console.log("비인증 사용자가 훈련사 추천 상품 페이지 접근");
+          return <TrainerRecommendationsPage />;
         }}
       </Route>
       
