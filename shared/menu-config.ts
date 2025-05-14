@@ -275,7 +275,7 @@ export const DEFAULT_MENU_ITEMS: MenuItem[] = [
   {
     id: 'trainer-dashboard',
     title: '훈련사 대시보드',
-    path: '/trainer-dashboard',
+    path: '/trainer/dashboard',
     icon: 'BarChart2',
     type: 'internal',
     category: 'trainer',
@@ -298,8 +298,8 @@ export const DEFAULT_MENU_ITEMS: MenuItem[] = [
   },
   {
     id: 'create-course',
-    title: '강의 생성',
-    path: '/trainer/create-course',
+    title: '강의 관리',
+    path: '/trainer/courses',
     icon: 'Presentation',
     type: 'internal',
     category: 'trainer',
@@ -322,8 +322,8 @@ export const DEFAULT_MENU_ITEMS: MenuItem[] = [
   },
   {
     id: 'create-notebook',
-    title: '알림장 작성',
-    path: '/trainer/create-notebook',
+    title: '알림장 관리',
+    path: '/notebook',
     icon: 'Edit',
     type: 'internal',
     category: 'trainer',
