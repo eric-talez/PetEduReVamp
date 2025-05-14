@@ -20,7 +20,7 @@ import {
   SelectTrigger,
   SelectValue, 
 } from '@/components/ui/select';
-import { useAuth } from '@/lib/auth-compat';
+import { useAuth } from '../../hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 
 // 데이터 타입 정의
