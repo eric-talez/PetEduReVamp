@@ -13,16 +13,19 @@ app.use(express.urlencoded({ extended: false, limit: '50mb' }));
 // 세션 설정
 app.use(session({
   secret: 'peteduplatform-secret-key',
-  resave: false,
-  saveUninitialized: false,
+  resave: true, // 세션 변경이 없어도 항상 저장
+  saveUninitialized: true, // 초기화되지 않은 세션도 저장
   store: new MemoryStore({
     checkPeriod: 86400000 // 24시간마다 만료된 세션 정리
   }),
   cookie: {
     maxAge: 24 * 60 * 60 * 1000, // 24시간
-    secure: false,
-    sameSite: 'lax'
-  }
+    secure: false, // 개발 환경에서는 false, 프로덕션에서는 true로 설정
+    httpOnly: false, // 개발 중에는 false로 설정하여 디버깅 용이하게
+    sameSite: 'lax',
+    path: '/' // 모든 경로에서 쿠키 사용 가능
+  },
+  name: 'petedu.sid' // 명시적인 세션 쿠키 이름 설정
 }));
 
 app.use((req, res, next) => {

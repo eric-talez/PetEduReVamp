@@ -73,13 +73,38 @@ export default function ProfilePage({ userType, section }: ProfilePageProps = {}
     try {
       setIsLoading(true);
       
+      // 인증 상태가 준비되지 않았으면 일단 사용자 정보가 없는 상태로 초기화
+      if (!auth.isAuthenticated) {
+        console.log('인증되지 않은 상태입니다');
+        // 기본 사용자 정보로 초기화
+        const defaultData = {
+          name: userName || "",
+          email: "",
+          phone: "",
+          bio: "",
+          location: "",
+          avatar: ""
+        };
+        
+        setUserData({
+          id: 0,
+          ...defaultData
+        });
+        
+        // 폼 기본값 설정
+        form.reset(defaultData);
+        return;
+      }
+      
+      // 인증 상태가 준비되었을 때만 API 호출
+      console.log('인증 상태로 사용자 정보 로드 시도');
       const response = await fetch('/api/auth/me', {
         credentials: 'include',
       });
       
       if (response.ok) {
         const data = await response.json();
-        console.log('프로필 정보 로드:', data);
+        console.log('프로필 정보 로드 성공:', data);
         setUserData(data);
         
         // 폼 기본값 설정
@@ -92,12 +117,33 @@ export default function ProfilePage({ userType, section }: ProfilePageProps = {}
           avatar: data.avatar || ""
         });
       } else {
-        console.error('사용자 정보를 가져오는데 실패했습니다');
-        toast({
-          title: "프로필 정보 로드 실패",
-          description: "사용자 정보를 가져오는데 실패했습니다.",
-          variant: "destructive",
-        });
+        console.error('사용자 정보를 가져오는데 실패했습니다', response.status);
+        if (response.status === 401) {
+          // 인증 오류가 발생한 경우, 기본 정보 사용
+          console.log('인증 오류, 기본 정보 사용');
+          const defaultData = {
+            name: userName || "",
+            email: "",
+            phone: "",
+            bio: "",
+            location: "",
+            avatar: ""
+          };
+          
+          setUserData({
+            id: 0,
+            ...defaultData
+          });
+          
+          // 폼 기본값 설정
+          form.reset(defaultData);
+        } else {
+          toast({
+            title: "프로필 정보 로드 실패",
+            description: "사용자 정보를 가져오는데 실패했습니다.",
+            variant: "destructive",
+          });
+        }
       }
     } catch (error) {
       console.error('프로필 정보 로드 오류:', error);
