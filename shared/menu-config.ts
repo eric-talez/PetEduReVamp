@@ -359,7 +359,7 @@ export const DEFAULT_MENU_ITEMS: MenuItem[] = [
   {
     id: 'institute-dashboard',
     title: '기관 대시보드',
-    path: '/institute-dashboard',
+    path: '/institute/dashboard',
     icon: 'BarChart2',
     type: 'internal',
     category: 'institute',
@@ -407,7 +407,7 @@ export const DEFAULT_MENU_ITEMS: MenuItem[] = [
   {
     id: 'admin-dashboard',
     title: '관리자 대시보드',
-    path: '/admin-dashboard',
+    path: '/admin/dashboard',
     icon: 'BarChart2',
     type: 'internal',
     category: 'admin',
