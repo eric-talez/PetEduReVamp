@@ -136,7 +136,14 @@ function AuthenticatedRoutesContent() {
       <Route path="/admin/trainers">
         {() => {
           console.log('[DEBUG] /admin/trainers 라우트 접근');
-          return checkAccess(['admin']) ? <AdminTrainers /> : window.location.href = '/';
+          // 직접 컴포넌트 출력으로 테스트
+          return (
+            <div className="p-8">
+              <h1 className="text-2xl font-bold mb-4">훈련사 관리 페이지 (테스트)</h1>
+              <p>이 페이지는 테스트를 위한 임시 페이지입니다.</p>
+            </div>
+          );
+          // return checkAccess(['admin']) ? <AdminTrainers /> : window.location.href = '/';
         }}
       </Route>
       <Route path="/community" component={CommunityPage} />
