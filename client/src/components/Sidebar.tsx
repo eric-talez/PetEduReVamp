@@ -338,7 +338,17 @@ export function Sidebar({
       return;
     }
 
-    // 이 부분은 제거하여 원래 상태로 복원
+    // /admin/ 경로 확인 - 모든 관리자 메뉴 항목 처리
+    if (path.startsWith('/admin/')) {
+      console.log(`관리자 메뉴 - ${path} 페이지로 이동 중...`);
+      
+      // 관리자 페이지로 직접 이동 (window.location.href 사용)
+      window.location.href = path;
+      
+      // 모바일 화면에서만 사이드바 닫기
+      if (onClose && window.innerWidth < 768) onClose();
+      return;
+    }
     
     if (path in specialRoutes) {
       console.log(`${specialRoutes[path]} 페이지로 이동 중...`);

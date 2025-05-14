@@ -136,9 +136,8 @@ function AuthenticatedRoutesContent() {
       <Route path="/admin/trainers">
         {() => {
           console.log('[DEBUG] /admin/trainers 라우트 접근');
-          // 이 경로는 trainers.tsx에서 중계되도록 수정
-          const TrainersPage = require('./pages/admin/trainers').default;
-          return checkAccess(['admin']) ? <TrainersPage /> : window.location.href = '/';
+          // 원래 방식으로 복원
+          return checkAccess(['admin']) ? <AdminTrainers /> : window.location.href = '/';
         }}
       </Route>
       <Route path="/community" component={CommunityPage} />
