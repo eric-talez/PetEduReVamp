@@ -380,10 +380,10 @@ export default function TrainerStats() {
                       <TableHead>강의명</TableHead>
                       <TableHead>유형</TableHead>
                       <TableHead>수강생 수</TableHead>
-                      <TableHead>수강료</TableHead>
-                      <TableHead>월 수익</TableHead>
-                      <TableHead>비율</TableHead>
-                      <TableHead>이전 달 대비</TableHead>
+                      <TableHead>주간 수업</TableHead>
+                      <TableHead>다음 수업</TableHead>
+                      <TableHead>진행률</TableHead>
+                      <TableHead>액션</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -391,10 +391,12 @@ export default function TrainerStats() {
                       <TableCell className="font-medium">반려견 기초 훈련 마스터하기</TableCell>
                       <TableCell>그룹</TableCell>
                       <TableCell>12명</TableCell>
-                      <TableCell>₩240,000</TableCell>
-                      <TableCell>₩1,200,000</TableCell>
-                      <TableCell>49%</TableCell>
-                      <TableCell className="text-green-600">+25%</TableCell>
+                      <TableCell>월/수/금</TableCell>
+                      <TableCell>오늘 14:30</TableCell>
+                      <TableCell>65%</TableCell>
+                      <TableCell>
+                        <Button variant="outline" size="sm">상세 보기</Button>
+                      </TableCell>
                     </TableRow>
                     <TableRow>
                       <TableCell className="font-medium">문제행동 교정 과정</TableCell>
