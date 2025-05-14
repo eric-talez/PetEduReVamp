@@ -225,6 +225,18 @@ export const DEFAULT_MENU_ITEMS: MenuItem[] = [
     isPublic: false
   },
   {
+    id: 'my-trainers',
+    title: '담당 훈련사',
+    path: '/my-trainers',
+    icon: 'UserRoundCheck',
+    type: 'internal',
+    category: 'myLearning',
+    roles: ['pet-owner', 'admin'],
+    orderIndex: 2,
+    isActive: true,
+    isPublic: false
+  },
+  {
     id: 'my-pets',
     title: '내 반려견',
     path: '/my-pets',
@@ -232,7 +244,7 @@ export const DEFAULT_MENU_ITEMS: MenuItem[] = [
     type: 'internal',
     category: 'myLearning',
     roles: ['pet-owner', 'admin'],
-    orderIndex: 2,
+    orderIndex: 3,
     isActive: true,
     isPublic: false
   },
@@ -244,7 +256,7 @@ export const DEFAULT_MENU_ITEMS: MenuItem[] = [
     type: 'internal',
     category: 'myLearning',
     roles: ['pet-owner', 'trainer', 'admin'],
-    orderIndex: 3,
+    orderIndex: 4,
     isActive: true,
     isPublic: false
   },
@@ -256,7 +268,7 @@ export const DEFAULT_MENU_ITEMS: MenuItem[] = [
     type: 'internal',
     category: 'myLearning',
     roles: ['pet-owner', 'trainer', 'admin'],
-    orderIndex: 4,
+    orderIndex: 5,
     isActive: true,
     isPublic: false
   },
@@ -268,7 +280,7 @@ export const DEFAULT_MENU_ITEMS: MenuItem[] = [
     type: 'internal',
     category: 'myLearning',
     roles: ['pet-owner', 'admin'],
-    orderIndex: 5,
+    orderIndex: 6,
     isActive: true,
     isPublic: false
   },
