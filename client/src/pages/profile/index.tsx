@@ -324,7 +324,7 @@ export default function ProfilePage({ userType, section }: ProfilePageProps = {}
             <div className="flex flex-col md:flex-row gap-6">
               <div className="flex-shrink-0">
                 <Avatar className="w-32 h-32">
-                  <AvatarImage src={form.getValues("avatar") || ""} />
+                  <AvatarImage src={userData?.avatar || ""} />
                   <AvatarFallback className="text-3xl font-bold text-primary bg-primary/10">
                     {userName ? userName.substring(0, 1).toUpperCase() : "U"}
                   </AvatarFallback>
@@ -438,7 +438,7 @@ export default function ProfilePage({ userType, section }: ProfilePageProps = {}
               <div className="flex flex-col md:flex-row gap-6">
                 <div className="flex-shrink-0">
                   <Avatar className="w-32 h-32 mb-4">
-                    <AvatarImage src={form.getValues("avatar") || ""} />
+                    <AvatarImage src={userData?.avatar || form.getValues("avatar") || ""} />
                     <AvatarFallback className="text-3xl font-bold text-primary bg-primary/10">
                       {form.getValues("name").substring(0, 1).toUpperCase()}
                     </AvatarFallback>
