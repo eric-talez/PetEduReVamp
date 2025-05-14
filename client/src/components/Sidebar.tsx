@@ -338,6 +338,15 @@ export function Sidebar({
       return;
     }
 
+    // /admin/ 경로 확인
+    if (path.startsWith('/admin/')) {
+      console.log(`관리자 메뉴 - ${path} 페이지로 이동 중...`);
+      window.location.href = path;
+      // 모바일 화면에서만 사이드바 닫기
+      if (onClose && window.innerWidth < 768) onClose();
+      return;
+    }
+    
     if (path in specialRoutes) {
       console.log(`${specialRoutes[path]} 페이지로 이동 중...`);
       window.location.href = path;
