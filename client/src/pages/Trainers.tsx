@@ -225,7 +225,7 @@ export default function Trainers() {
                   <div className="h-14 w-14 border-4 border-white dark:border-gray-800 rounded-full">
                     <Avatar className="h-full w-full">
                       <AvatarImage 
-                        src={trainer.image} 
+                        src="https://images.unsplash.com/photo-1543466835-00a7907e9de1?q=80&w=300&auto=format&fit=crop" 
                         alt={trainer.name}
                       />
                       <AvatarFallback>

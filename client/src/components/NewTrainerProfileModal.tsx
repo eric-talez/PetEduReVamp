@@ -48,7 +48,7 @@ export function NewTrainerProfileModal({ trainer, isOpen, onClose }: TrainerProf
         {/* 프로필 헤더 */}
         <div className="flex items-start gap-4">
           <Avatar 
-            src={trainer.image} 
+            src="https://images.unsplash.com/photo-1543466835-00a7907e9de1?q=80&w=300&auto=format&fit=crop" 
             alt={trainer.name}
             size="xl"
             bordered
