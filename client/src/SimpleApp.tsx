@@ -768,6 +768,20 @@ function AuthenticatedRoutes() {
             );
           }}
         </Route>
+        <Route path="/institute/facility">
+          {() => {
+            return (
+              <Suspense fallback={<div className="p-8 flex justify-center items-center">
+                <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
+              </div>}>
+                <ProtectedInstituteRoute component={() => <div className="p-8">
+                  <h1 className="text-2xl font-bold mb-4">시설 관리</h1>
+                  <p>기관의 시설 및 공간을 관리할 수 있는 페이지입니다.</p>
+                </div>} />
+              </Suspense>
+            );
+          }}
+        </Route>
         <Route path="/institute/stats">
           {() => {
             const InstituteStatsAndRevenue = lazy(() => import('./pages/institute-admin/InstituteStatsAndRevenue'));

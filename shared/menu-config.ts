@@ -405,14 +405,38 @@ export const DEFAULT_MENU_ITEMS: MenuItem[] = [
     isPublic: false
   },
   {
-    id: 'institute-stats',
-    title: '기관 통계',
-    path: '/institute/stats',
-    icon: 'AreaChart',
+    id: 'institute-students',
+    title: '회원 관리',
+    path: '/institute/students',
+    icon: 'Users',
     type: 'internal',
     category: 'institute',
     roles: ['institute-admin', 'admin'],
     orderIndex: 3,
+    isActive: true,
+    isPublic: false
+  },
+  {
+    id: 'institute-facility',
+    title: '시설 관리',
+    path: '/institute/facility',
+    icon: 'Calendar',
+    type: 'internal',
+    category: 'institute',
+    roles: ['institute-admin', 'admin'],
+    orderIndex: 4,
+    isActive: true,
+    isPublic: false
+  },
+  {
+    id: 'institute-stats',
+    title: '매출 관리',
+    path: '/institute/stats',
+    icon: 'TrendingUp',
+    type: 'internal',
+    category: 'institute',
+    roles: ['institute-admin', 'admin'],
+    orderIndex: 5,
     isActive: true,
     isPublic: false
   },
