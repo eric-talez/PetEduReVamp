@@ -112,7 +112,7 @@ interface EarningsReport {
   };
 }
 
-export default function TrainerStats() {
+export default function TrainerIncome() {
   const { userName } = useAuth();
   const { toast } = useToast();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -507,7 +507,7 @@ export default function TrainerStats() {
       </Dialog>
       
       <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold tracking-tight">수익 관리</h1>
+        <h1 className="text-3xl font-bold tracking-tight">수익 통계</h1>
         <div className="flex items-center space-x-2">
           <Button onClick={handleDownloadCSV} variant="outline" size="sm">
             <Download className="mr-2 h-4 w-4" />
@@ -541,130 +541,102 @@ export default function TrainerStats() {
                       <HelpCircle className="h-4 w-4 text-muted-foreground" />
                     </TooltipTrigger>
                     <TooltipContent>
-                      <p>모든 강좌 수익과 추천 수수료의 합계</p>
+                      <p>모든 수업 및 추천 수수료에서 발생한 총 수익</p>
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold mb-2">{formatCurrency(earningsSummary.totalEarnings)}</div>
-              <div className="text-sm text-muted-foreground flex justify-between">
-                <span>대기 중</span>
-                <span>{formatCurrency(earningsSummary.pendingEarnings)}</span>
+              <div className="text-2xl font-bold">{formatCurrency(earningsSummary.totalEarnings)}</div>
+              <div className="flex items-center mt-4 text-xs text-muted-foreground">
+                <ArrowUpRight className="mr-1 h-4 w-4 text-green-500" />
+                <span className="text-green-500 font-medium">+{earningsSummary.monthlyGrowth.toFixed(1)}%</span>
+                <span className="ml-1">전월 대비</span>
               </div>
             </CardContent>
           </Card>
-
+          
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-base font-medium">이번 달 수익</CardTitle>
+              <CardTitle className="text-base font-medium flex justify-between">
+                <span>이번 달 수익</span>
+              </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold mb-2">{formatCurrency(earningsSummary.thisMonthEarnings)}</div>
-              <div className="text-sm flex items-center">
-                {earningsSummary.monthlyGrowth > 0 ? (
-                  <>
-                    <ArrowUpRight className="h-4 w-4 text-green-500 mr-1" />
-                    <span className="text-green-500">{earningsSummary.monthlyGrowth}% 증가</span>
-                  </>
-                ) : (
-                  <>
-                    <ArrowDownRight className="h-4 w-4 text-red-500 mr-1" />
-                    <span className="text-red-500">{Math.abs(earningsSummary.monthlyGrowth)}% 감소</span>
-                  </>
-                )}
-                <span className="text-muted-foreground ml-1">(전월 대비)</span>
+              <div className="text-2xl font-bold">{formatCurrency(earningsSummary.thisMonthEarnings)}</div>
+              <div className="flex items-center mt-4 text-xs text-muted-foreground">
+                <div className="flex justify-between w-full">
+                  <div className="flex flex-col">
+                    <span>수업</span>
+                    <span className="font-medium text-sm">{formatCurrency(earningsSummary.courseEarnings)}</span>
+                  </div>
+                  <div className="flex flex-col">
+                    <span>추천</span>
+                    <span className="font-medium text-sm">{formatCurrency(earningsSummary.referralEarnings)}</span>
+                  </div>
+                </div>
               </div>
             </CardContent>
           </Card>
-
+          
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-base font-medium">수익 분석</CardTitle>
+              <CardTitle className="text-base font-medium flex justify-between">
+                <span>대기 수익</span>
+              </CardTitle>
             </CardHeader>
-            <CardContent className="pt-1">
-              <div className="space-y-2">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm">강좌 수익</span>
-                  <div className="flex items-center">
-                    <span className="text-sm font-medium">{formatCurrency(earningsSummary.courseEarnings)}</span>
-                    <span className="text-xs text-muted-foreground ml-1">
-                      ({Math.round(earningsSummary.courseEarnings / earningsSummary.totalEarnings * 100)}%)
-                    </span>
-                  </div>
-                </div>
-                <div className="w-full bg-muted rounded-full h-2">
-                  <div 
-                    className="bg-primary rounded-full h-2" 
-                    style={{ width: `${Math.round(earningsSummary.courseEarnings / earningsSummary.totalEarnings * 100)}%` }}
-                  ></div>
-                </div>
-                
-                <div className="flex justify-between items-center">
-                  <span className="text-sm">추천 수수료</span>
-                  <div className="flex items-center">
-                    <span className="text-sm font-medium">{formatCurrency(earningsSummary.referralEarnings)}</span>
-                    <span className="text-xs text-muted-foreground ml-1">
-                      ({Math.round(earningsSummary.referralEarnings / earningsSummary.totalEarnings * 100)}%)
-                    </span>
-                  </div>
-                </div>
-                <div className="w-full bg-muted rounded-full h-2">
-                  <div 
-                    className="bg-blue-500 rounded-full h-2" 
-                    style={{ width: `${Math.round(earningsSummary.referralEarnings / earningsSummary.totalEarnings * 100)}%` }}
-                  ></div>
-                </div>
+            <CardContent>
+              <div className="text-2xl font-bold">{formatCurrency(earningsSummary.pendingEarnings)}</div>
+              <div className="flex items-center mt-4 text-xs text-muted-foreground">
+                <Calendar className="mr-1 h-4 w-4" />
+                <span>다음 정산 예정일: 2024-05-25</span>
               </div>
             </CardContent>
           </Card>
         </div>
       )}
       
-      {/* 월간 추세 */}
+      {/* 월별 수익 차트 */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">월간 수익 추세</CardTitle>
-          <CardDescription>최근 5개월 수익 추세 차트</CardDescription>
+          <CardTitle>월별 수익 추이</CardTitle>
         </CardHeader>
         <CardContent>
           {isLoading ? (
-            <div className="h-64 flex justify-center items-center">
-              <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
-            </div>
+            <div className="h-64 w-full animate-pulse bg-muted/50 rounded"></div>
           ) : (
-            <div className="h-64 relative">
-              {/* 실제 구현 시 Recharts와 같은 차트 라이브러리로 대체 */}
-              <div className="absolute inset-0 flex items-end justify-between p-4">
+            <div className="h-64 w-full">
+              <div className="flex justify-between items-end h-full">
                 {monthlyReports.map((report, index) => (
-                  <div key={index} className="flex flex-col items-center">
-                    <div className="flex h-40 items-end space-x-1">
+                  <div key={index} className="flex flex-col items-center w-16">
+                    <div className="relative h-52 w-12 flex flex-col justify-end bg-muted/10 rounded">
                       <div 
-                        className="w-4 bg-primary rounded-t-sm" 
-                        style={{ height: `${report.earnings.course / 3000}px` }}
+                        className="absolute bottom-0 w-full bg-primary/70 rounded-sm"
+                        style={{ height: `${(report.earnings.referral / report.earnings.total) * 100}%` }}
                       ></div>
                       <div 
-                        className="w-4 bg-blue-500 rounded-t-sm" 
-                        style={{ height: `${report.earnings.referral / 3000}px` }}
+                        className="w-full bg-primary rounded-sm"
+                        style={{ height: `${(report.earnings.course / report.earnings.total) * 100}%` }}
                       ></div>
                     </div>
-                    <div className="mt-2 text-xs text-muted-foreground">
-                      {report.year}/{String(report.month).padStart(2, '0')}
+                    <div className="mt-2 text-xs font-medium">
+                      {report.month}월
+                    </div>
+                    <div className="text-xs text-muted-foreground mt-1">
+                      {formatCurrency(report.earnings.total).replace('₩', '')}
                     </div>
                   </div>
                 ))}
               </div>
-              <div className="absolute top-0 left-0 h-full border-r border-dashed border-muted-foreground/20"></div>
-              
-              <div className="absolute bottom-14 left-0 right-0 flex justify-between px-6">
+              <div className="flex justify-center mt-4 space-x-4 text-xs">
                 <div className="flex items-center">
                   <div className="w-3 h-3 bg-primary rounded-sm mr-1"></div>
-                  <span className="text-xs">강좌</span>
+                  <span>수업 수익</span>
                 </div>
                 <div className="flex items-center">
-                  <div className="w-3 h-3 bg-blue-500 rounded-sm mr-1"></div>
-                  <span className="text-xs">추천</span>
+                  <div className="w-3 h-3 bg-primary/70 rounded-sm mr-1"></div>
+                  <span>추천 수익</span>
                 </div>
               </div>
             </div>
@@ -672,230 +644,213 @@ export default function TrainerStats() {
         </CardContent>
       </Card>
       
-      {/* 거래 내역 테이블 */}
-      <Tabs defaultValue="all" value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <TabsList>
-            <TabsTrigger value="all">전체</TabsTrigger>
-            <TabsTrigger value="course">강좌</TabsTrigger>
-            <TabsTrigger value="referral">추천</TabsTrigger>
-            <TabsTrigger value="payout">출금</TabsTrigger>
-            <TabsTrigger value="pending">대기 중</TabsTrigger>
-          </TabsList>
-          
-          <div className="flex flex-wrap gap-2">
-            <div className="relative">
-              <Input
-                type="search"
-                placeholder="거래 내역 검색..."
-                className="pl-8 h-9 w-full sm:w-[200px]"
+      {/* 거래 내역 탭 */}
+      <Card>
+        <CardHeader>
+          <CardTitle>거래 내역</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Tabs defaultValue="all" value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+            <TabsList className="grid grid-cols-5">
+              <TabsTrigger value="all">전체</TabsTrigger>
+              <TabsTrigger value="course">수업</TabsTrigger>
+              <TabsTrigger value="referral">추천</TabsTrigger>
+              <TabsTrigger value="payout">출금</TabsTrigger>
+              <TabsTrigger value="pending">대기 중</TabsTrigger>
+            </TabsList>
+            
+            <div className="flex justify-between items-center">
+              <Input 
+                className="max-w-xs"
+                placeholder="거래 검색..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
-              <Filter className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+              <div className="flex items-center space-x-2">
+                <Select 
+                  value={filterType || ''} 
+                  onValueChange={(value) => setFilterType(value || null)}
+                >
+                  <SelectTrigger className="w-[160px]">
+                    <SelectValue placeholder="유형 필터" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">모든 유형</SelectItem>
+                    <SelectItem value="course">수업</SelectItem>
+                    <SelectItem value="referral">추천</SelectItem>
+                    <SelectItem value="payout">출금</SelectItem>
+                  </SelectContent>
+                </Select>
+                
+                <Select 
+                  value={filterStatus || ''} 
+                  onValueChange={(value) => setFilterStatus(value || null)}
+                >
+                  <SelectTrigger className="w-[160px]">
+                    <SelectValue placeholder="상태 필터" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">모든 상태</SelectItem>
+                    <SelectItem value="completed">완료</SelectItem>
+                    <SelectItem value="pending">대기 중</SelectItem>
+                    <SelectItem value="failed">실패</SelectItem>
+                  </SelectContent>
+                </Select>
+                
+                <Button variant="outline" size="sm" onClick={handleResetFilters}>
+                  <Filter className="mr-2 h-4 w-4" />
+                  초기화
+                </Button>
+              </div>
             </div>
             
-            <Select value={filterType || 'all'} onValueChange={setFilterType}>
-              <SelectTrigger className="w-[120px] h-9">
-                <SelectValue placeholder="유형" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">모든 유형</SelectItem>
-                <SelectItem value="course">강좌</SelectItem>
-                <SelectItem value="referral">추천</SelectItem>
-                <SelectItem value="payout">출금</SelectItem>
-              </SelectContent>
-            </Select>
-            
-            <Select value={filterStatus || 'all'} onValueChange={setFilterStatus}>
-              <SelectTrigger className="w-[120px] h-9">
-                <SelectValue placeholder="상태" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">모든 상태</SelectItem>
-                <SelectItem value="completed">완료</SelectItem>
-                <SelectItem value="pending">대기 중</SelectItem>
-                <SelectItem value="failed">실패</SelectItem>
-              </SelectContent>
-            </Select>
-            
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button variant="outline" size="sm" className="h-9">
-                  <Calendar className="mr-2 h-4 w-4" />
-                  날짜 범위
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-80">
-                <div className="grid gap-4">
-                  <div className="space-y-2">
-                    <h4 className="font-medium leading-none">시작 날짜</h4>
-                    <Input
-                      type="date"
-                      value={dateRange.start || ''}
-                      onChange={(e) => setDateRange(prev => ({ ...prev, start: e.target.value }))}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <h4 className="font-medium leading-none">종료 날짜</h4>
-                    <Input
-                      type="date"
-                      value={dateRange.end || ''}
-                      onChange={(e) => setDateRange(prev => ({ ...prev, end: e.target.value }))}
-                    />
-                  </div>
-                  <Button onClick={handleResetFilters} variant="outline">필터 초기화</Button>
-                </div>
-              </PopoverContent>
-            </Popover>
-          </div>
-        </div>
-        
-        <Card>
-          <CardContent className="p-0">
-            {isLoading ? (
-              <div className="flex justify-center items-center p-8">
-                <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
-              </div>
-            ) : paginatedTransactions.length === 0 ? (
-              <div className="text-center p-8 text-muted-foreground">
-                조건에 맞는 거래 내역이 없습니다
-              </div>
-            ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>날짜</TableHead>
-                    <TableHead>유형</TableHead>
-                    <TableHead>설명</TableHead>
-                    <TableHead className="text-right">금액</TableHead>
-                    <TableHead>상태</TableHead>
-                    <TableHead className="text-right">상세</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {paginatedTransactions.map((transaction) => (
-                    <TableRow key={transaction.id}>
-                      <TableCell className="font-medium">{transaction.date}</TableCell>
-                      <TableCell>
-                        <Badge variant="outline" className={
-                          transaction.type === 'course' ? 'border-primary text-primary' :
-                          transaction.type === 'referral' ? 'border-blue-500 text-blue-500' :
-                          'border-orange-500 text-orange-500'
-                        }>
-                          {transaction.type === 'course' ? '강좌' : 
-                           transaction.type === 'referral' ? '추천' : '출금'}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="max-w-[250px] truncate">
-                        {transaction.description}
-                      </TableCell>
-                      <TableCell className={`text-right font-medium ${transaction.amount < 0 ? 'text-red-500' : 'text-green-500'}`}>
-                        {formatCurrency(transaction.amount)}
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant={
-                          transaction.status === 'completed' ? 'default' :
-                          transaction.status === 'pending' ? 'outline' : 'destructive'
-                        } className="text-xs">
-                          {transaction.status === 'completed' ? '완료' : 
-                           transaction.status === 'pending' ? '대기 중' : '실패'}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
-                          onClick={() => handleViewTransaction(transaction)}
-                        >
-                          상세
-                        </Button>
-                      </TableCell>
-                    </TableRow>
+            <TabsContent value="all" className="space-y-4">
+              {isLoading ? (
+                <div className="animate-pulse space-y-2">
+                  {[1, 2, 3, 4, 5].map((i) => (
+                    <div key={i} className="h-12 bg-muted/50 rounded"></div>
                   ))}
-                </TableBody>
-              </Table>
-            )}
-            
-            {/* 페이지네이션 */}
-            {totalPages > 1 && (
-              <div className="flex justify-center p-4 border-t">
-                <div className="flex space-x-1">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                    disabled={currentPage === 1}
-                  >
-                    이전
-                  </Button>
-                  <div className="flex space-x-1">
-                    {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
-                      let pageNum;
-                      if (totalPages <= 5) {
-                        pageNum = i + 1;
-                      } else if (currentPage <= 3) {
-                        pageNum = i + 1;
-                      } else if (currentPage >= totalPages - 2) {
-                        pageNum = totalPages - 4 + i;
-                      } else {
-                        pageNum = currentPage - 2 + i;
-                      }
-                      
-                      return (
-                        <Button
-                          key={pageNum}
-                          variant={currentPage === pageNum ? "default" : "outline"}
-                          size="sm"
-                          onClick={() => setCurrentPage(pageNum)}
-                        >
-                          {pageNum}
-                        </Button>
-                      );
-                    })}
-                  </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                    disabled={currentPage === totalPages}
-                  >
-                    다음
-                  </Button>
                 </div>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-32">날짜</TableHead>
+                      <TableHead>설명</TableHead>
+                      <TableHead>참조 ID</TableHead>
+                      <TableHead>유형</TableHead>
+                      <TableHead>상태</TableHead>
+                      <TableHead className="text-right">금액</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {paginatedTransactions.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={6} className="h-24 text-center">
+                          거래 내역이 없습니다
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      paginatedTransactions.map((transaction) => (
+                        <TableRow key={transaction.id} onClick={() => handleViewTransaction(transaction)} className="cursor-pointer hover:bg-muted/50">
+                          <TableCell>{transaction.date}</TableCell>
+                          <TableCell>{transaction.description}</TableCell>
+                          <TableCell>{transaction.referenceId}</TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className="capitalize">
+                              {transaction.type === 'course' ? '수업' : 
+                               transaction.type === 'referral' ? '추천' : '출금'}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <Badge 
+                              variant={transaction.status === 'completed' ? 'default' : 
+                                      transaction.status === 'pending' ? 'outline' : 'destructive'}
+                            >
+                              {transaction.status === 'completed' ? '완료' : 
+                               transaction.status === 'pending' ? '대기 중' : '실패'}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className={`text-right font-medium ${transaction.amount < 0 ? 'text-red-500' : 'text-green-500'}`}>
+                            {formatCurrency(transaction.amount)}
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
+              )}
+              
+              {!isLoading && totalPages > 1 && (
+                <div className="flex justify-center mt-4">
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                      disabled={currentPage === 1}
+                    >
+                      이전
+                    </Button>
+                    <div className="text-sm font-medium">
+                      {currentPage} / {totalPages}
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                      disabled={currentPage === totalPages}
+                    >
+                      다음
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </TabsContent>
+            
+            {/* 다른 탭 컨텐츠는 'all' 탭과 동일한 내용 */}
+            <TabsContent value="course">
+              <div className="text-center p-4 text-muted-foreground">
+                '모든' 탭과 동일한 내용이지만, 수업 유형으로 필터링된 내역입니다
               </div>
-            )}
-          </CardContent>
-        </Card>
-      </Tabs>
+            </TabsContent>
+            <TabsContent value="referral">
+              <div className="text-center p-4 text-muted-foreground">
+                '모든' 탭과 동일한 내용이지만, 추천 유형으로 필터링된 내역입니다
+              </div>
+            </TabsContent>
+            <TabsContent value="payout">
+              <div className="text-center p-4 text-muted-foreground">
+                '모든' 탭과 동일한 내용이지만, 출금 유형으로 필터링된 내역입니다
+              </div>
+            </TabsContent>
+            <TabsContent value="pending">
+              <div className="text-center p-4 text-muted-foreground">
+                '모든' 탭과 동일한 내용이지만, 대기 중인 상태로 필터링된 내역입니다
+              </div>
+            </TabsContent>
+          </Tabs>
+        </CardContent>
+      </Card>
       
-      {/* FAQ 섹션 */}
+      {/* 정보 아코디언 */}
       <Card>
         <CardHeader>
-          <CardTitle>자주 묻는 질문</CardTitle>
-          <CardDescription>수익 관리에 관한 질문과 답변</CardDescription>
+          <CardTitle>정산 정보</CardTitle>
         </CardHeader>
         <CardContent>
           <Accordion type="single" collapsible className="w-full">
             <AccordionItem value="item-1">
-              <AccordionTrigger>수익은 어떻게 계산되나요?</AccordionTrigger>
+              <AccordionTrigger>정산 주기 및 방식</AccordionTrigger>
               <AccordionContent>
-                수업 수익은 수강생이 지불한 수강료에서 플랫폼 수수료(15%)를 제외한 금액입니다. 
-                추천 수수료는 훈련사가 추천한 제품이 판매될 때 제품 가격의 일정 비율(5-10%)로 계산됩니다.
+                <div className="space-y-2">
+                  <p>정산은 매월 1일과 15일에 진행됩니다. 정산일 기준 5영업일 이내에 등록된 계좌로 입금됩니다.</p>
+                  <p>수업 수익은 수업 완료 후 7일 이내에 정산 대상이 되며, 추천 수수료는 상품 배송 완료 후 14일 이내에 정산 대상이 됩니다.</p>
+                </div>
               </AccordionContent>
             </AccordionItem>
             <AccordionItem value="item-2">
-              <AccordionTrigger>정산은 언제 이루어지나요?</AccordionTrigger>
+              <AccordionTrigger>수수료 정책</AccordionTrigger>
               <AccordionContent>
-                정산은 매월 15일과 말일에 이루어집니다. 누적된 수익이 50,000원 이상일 경우 자동으로 등록된 계좌로 
-                입금됩니다. 50,000원 미만인 경우는 다음 정산일로 이월됩니다.
+                <div className="space-y-2">
+                  <p>수업 수수료: 수업 가격의 20%가 플랫폼 수수료로 차감됩니다.</p>
+                  <p>추천 수수료: 상품 가격의 5~10%가 추천 수수료로 지급됩니다.</p>
+                  <p>소득세 및 주민세: 관련 세금은 정산 시 자동으로 원천징수됩니다.</p>
+                </div>
               </AccordionContent>
             </AccordionItem>
             <AccordionItem value="item-3">
-              <AccordionTrigger>세금 계산서는 어떻게 발행받나요?</AccordionTrigger>
+              <AccordionTrigger>정산 계좌 정보</AccordionTrigger>
               <AccordionContent>
-                세금 계산서는 매출 발생 시 시스템에서 자동으로 발행됩니다. '설정 &gt; 세금계산서' 메뉴에서 
-                사업자등록번호와 이메일 주소를 등록하면 세금계산서가 이메일로 발송됩니다.
+                <div className="space-y-4">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">현재 등록된 계좌</p>
+                    <p className="font-medium">신한은행 110-123-456789 (홍길동)</p>
+                  </div>
+                  <Button variant="outline" size="sm">
+                    계좌 정보 변경
+                  </Button>
+                </div>
               </AccordionContent>
             </AccordionItem>
           </Accordion>

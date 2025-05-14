@@ -335,7 +335,7 @@ export const DEFAULT_MENU_ITEMS: MenuItem[] = [
   {
     id: 'income-stats',
     title: '수익 통계',
-    path: '/trainer/income',
+    path: '/trainer/earnings',
     icon: 'LineChart',
     type: 'internal',
     category: 'trainer',

@@ -544,6 +544,26 @@ function AuthenticatedRoutes() {
             );
           }}
         </Route>
+        <Route path="/trainer/classes">
+          {() => {
+            const TrainerClasses = lazy(() => import('./pages/trainer/classes'));
+            return (
+              <Suspense fallback={<div className="p-8 text-center">페이지 로딩 중...</div>}>
+                <ProtectedTrainerRoute component={TrainerClasses} />
+              </Suspense>
+            );
+          }}
+        </Route>
+        <Route path="/trainer/earnings">
+          {() => {
+            const TrainerEarnings = lazy(() => import('./pages/trainer/earnings'));
+            return (
+              <Suspense fallback={<div className="p-8 text-center">페이지 로딩 중...</div>}>
+                <ProtectedTrainerRoute component={TrainerEarnings} />
+              </Suspense>
+            );
+          }}
+        </Route>
         <Route path="/trainer-reviews">
           {() => {
             const TrainerReviews = lazy(() => import('./pages/trainer/reviews'));
