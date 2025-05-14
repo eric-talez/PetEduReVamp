@@ -104,6 +104,8 @@ export function useGlobalAuth(): UseGlobalAuthReturn {
     avatar?: string;
   }): Promise<boolean> => {
     try {
+      console.log('프로필 업데이트 요청:', userInfo);
+      
       // API로 사용자 정보 업데이트 요청
       const response = await fetch('/api/user/profile', {
         method: 'PUT',
@@ -115,6 +117,7 @@ export function useGlobalAuth(): UseGlobalAuthReturn {
       });
 
       if (!response.ok) {
+        console.error('프로필 업데이트 오류:', await response.text());
         throw new Error('프로필 정보 업데이트에 실패했습니다');
       }
 
