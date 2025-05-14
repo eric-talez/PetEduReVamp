@@ -309,6 +309,18 @@ export const DEFAULT_MENU_ITEMS: MenuItem[] = [
     isPublic: false
   },
   {
+    id: 'class-schedule',
+    title: '수업 일정',
+    path: '/trainer/classes',
+    icon: 'Calendar',
+    type: 'internal',
+    category: 'trainer',
+    roles: ['trainer', 'admin'],
+    orderIndex: 3,
+    isActive: true,
+    isPublic: false
+  },
+  {
     id: 'create-notebook',
     title: '알림장 작성',
     path: '/trainer/create-notebook',
@@ -316,7 +328,7 @@ export const DEFAULT_MENU_ITEMS: MenuItem[] = [
     type: 'internal',
     category: 'trainer',
     roles: ['trainer', 'admin'],
-    orderIndex: 3,
+    orderIndex: 4,
     isActive: true,
     isPublic: false
   },
@@ -328,7 +340,7 @@ export const DEFAULT_MENU_ITEMS: MenuItem[] = [
     type: 'internal',
     category: 'trainer',
     roles: ['trainer', 'admin'],
-    orderIndex: 4,
+    orderIndex: 5,
     isActive: true,
     isPublic: false
   },
