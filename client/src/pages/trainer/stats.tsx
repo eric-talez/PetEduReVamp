@@ -166,28 +166,28 @@ export default function TrainerStats() {
             <Card>
               <CardHeader>
                 <div className="flex justify-between items-center">
-                  <CardTitle>월별 수익 추이</CardTitle>
+                  <CardTitle>주간 수업 일정</CardTitle>
                   <div className="flex space-x-2">
                     <Button
                       variant={selectedDateRange === 'month' ? 'default' : 'outline'}
                       size="sm"
                       onClick={() => setSelectedDateRange('month')}
                     >
-                      월별
+                      월간 보기
                     </Button>
                     <Button
                       variant={selectedDateRange === 'quarter' ? 'default' : 'outline'}
                       size="sm"
                       onClick={() => setSelectedDateRange('quarter')}
                     >
-                      분기별
+                      주간 보기
                     </Button>
                     <Button
                       variant={selectedDateRange === 'year' ? 'default' : 'outline'}
                       size="sm"
                       onClick={() => setSelectedDateRange('year')}
                     >
-                      연간
+                      일간 보기
                     </Button>
                   </div>
                 </div>
@@ -195,8 +195,8 @@ export default function TrainerStats() {
               <CardContent>
                 <div className="h-80 bg-gray-100 dark:bg-gray-800 rounded-md flex items-center justify-center">
                   <div className="text-center text-gray-500">
-                    <LineChart className="h-10 w-10 mx-auto mb-2" />
-                    <p>여기에 수익 차트가 표시됩니다.</p>
+                    <Calendar className="h-10 w-10 mx-auto mb-2" />
+                    <p>여기에 주간 수업 일정 달력이 표시됩니다.</p>
                   </div>
                 </div>
               </CardContent>
@@ -205,13 +205,13 @@ export default function TrainerStats() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Card>
                 <CardHeader>
-                  <CardTitle>수익원 분석</CardTitle>
+                  <CardTitle>수업 유형별 분포</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="h-60 bg-gray-100 dark:bg-gray-800 rounded-md flex items-center justify-center">
                     <div className="text-center text-gray-500">
                       <PieChart className="h-10 w-10 mx-auto mb-2" />
-                      <p>여기에 수익원 분포 차트가 표시됩니다.</p>
+                      <p>여기에 수업 유형 분포 차트가 표시됩니다.</p>
                     </div>
                   </div>
                   <div className="mt-4 space-y-2">
@@ -220,21 +220,21 @@ export default function TrainerStats() {
                         <span className="w-3 h-3 bg-blue-500 rounded-full mr-2"></span>
                         그룹 강의
                       </span>
-                      <span>60% (₩1,470,000)</span>
+                      <span>60% (18개)</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="flex items-center">
                         <span className="w-3 h-3 bg-green-500 rounded-full mr-2"></span>
                         1:1 강의
                       </span>
-                      <span>35% (₩857,500)</span>
+                      <span>35% (11개)</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="flex items-center">
                         <span className="w-3 h-3 bg-purple-500 rounded-full mr-2"></span>
                         온라인 강의
                       </span>
-                      <span>5% (₩122,500)</span>
+                      <span>5% (2개)</span>
                     </div>
                   </div>
                 </CardContent>
@@ -242,40 +242,46 @@ export default function TrainerStats() {
 
               <Card>
                 <CardHeader>
-                  <CardTitle>월별 상세 분석</CardTitle>
+                  <CardTitle>오늘의 수업 일정</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>월</TableHead>
-                        <TableHead>총 수익</TableHead>
-                        <TableHead>수수료</TableHead>
-                        <TableHead>순 수익</TableHead>
-                        <TableHead>증감률</TableHead>
+                        <TableHead>시간</TableHead>
+                        <TableHead>수업명</TableHead>
+                        <TableHead>유형</TableHead>
+                        <TableHead>인원</TableHead>
+                        <TableHead>상태</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       <TableRow>
-                        <TableCell>2025년 5월</TableCell>
-                        <TableCell>₩2,450,000</TableCell>
-                        <TableCell>₩245,000</TableCell>
-                        <TableCell>₩2,205,000</TableCell>
-                        <TableCell className="text-green-600">+15%</TableCell>
+                        <TableCell>09:30</TableCell>
+                        <TableCell>반려견 기초 훈련</TableCell>
+                        <TableCell>그룹</TableCell>
+                        <TableCell>8명</TableCell>
+                        <TableCell>
+                          <Badge className="bg-green-500">완료</Badge>
+                        </TableCell>
                       </TableRow>
                       <TableRow>
-                        <TableCell>2025년 4월</TableCell>
-                        <TableCell>₩2,130,000</TableCell>
-                        <TableCell>₩213,000</TableCell>
-                        <TableCell>₩1,917,000</TableCell>
-                        <TableCell className="text-green-600">+18%</TableCell>
+                        <TableCell>14:30</TableCell>
+                        <TableCell>문제행동 교정 A반</TableCell>
+                        <TableCell>그룹</TableCell>
+                        <TableCell>6명</TableCell>
+                        <TableCell>
+                          <Badge className="bg-blue-500">예정</Badge>
+                        </TableCell>
                       </TableRow>
                       <TableRow>
-                        <TableCell>2025년 3월</TableCell>
-                        <TableCell>₩1,800,000</TableCell>
-                        <TableCell>₩180,000</TableCell>
-                        <TableCell>₩1,620,000</TableCell>
-                        <TableCell className="text-green-600">+3%</TableCell>
+                        <TableCell>16:00</TableCell>
+                        <TableCell>고급 훈련 과정</TableCell>
+                        <TableCell>1:1</TableCell>
+                        <TableCell>1명</TableCell>
+                        <TableCell>
+                          <Badge className="bg-blue-500">예정</Badge>
+                        </TableCell>
                       </TableRow>
                     </TableBody>
                   </Table>
@@ -285,67 +291,66 @@ export default function TrainerStats() {
           </div>
         </TabsContent>
 
-        <TabsContent value="payments">
+        <TabsContent value="monthly">
           <Card>
             <CardHeader>
-              <CardTitle>정산 내역</CardTitle>
-              <CardDescription>월별 정산 내역 및 예정된 정산을 확인하세요.</CardDescription>
+              <CardTitle>월간 수업 일정</CardTitle>
+              <CardDescription>월간 수업 일정을 확인하고 관리하세요.</CardDescription>
             </CardHeader>
             <CardContent>
+              <div className="h-80 bg-gray-100 dark:bg-gray-800 rounded-md flex items-center justify-center mb-6">
+                <div className="text-center text-gray-500">
+                  <Calendar className="h-10 w-10 mx-auto mb-2" />
+                  <p>여기에 월간 수업 일정 달력이 표시됩니다.</p>
+                </div>
+              </div>
+              
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>정산월</TableHead>
-                    <TableHead>정산일</TableHead>
-                    <TableHead>총액</TableHead>
-                    <TableHead>수수료</TableHead>
-                    <TableHead>순액</TableHead>
-                    <TableHead>계좌</TableHead>
+                    <TableHead>날짜</TableHead>
+                    <TableHead>요일</TableHead>
+                    <TableHead>수업 수</TableHead>
+                    <TableHead>수강생 수</TableHead>
                     <TableHead>상태</TableHead>
                     <TableHead>액션</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   <TableRow>
-                    <TableCell>2025년 5월</TableCell>
-                    <TableCell>2025.05.25</TableCell>
-                    <TableCell>₩2,450,000</TableCell>
-                    <TableCell>₩245,000</TableCell>
-                    <TableCell>₩2,205,000</TableCell>
-                    <TableCell>신한은행 (1234)</TableCell>
+                    <TableCell>2025년 5월 15일</TableCell>
+                    <TableCell>목요일</TableCell>
+                    <TableCell>3개</TableCell>
+                    <TableCell>15명</TableCell>
                     <TableCell>
-                      <Badge variant="warning">예정</Badge>
+                      <Badge className="bg-green-500">진행 중</Badge>
                     </TableCell>
                     <TableCell>
-                      <Button variant="outline" size="sm" onClick={() => openModal('paymentHistory')}>상세</Button>
+                      <Button variant="outline" size="sm">세부 일정</Button>
                     </TableCell>
                   </TableRow>
                   <TableRow>
-                    <TableCell>2025년 4월</TableCell>
-                    <TableCell>2025.04.25</TableCell>
-                    <TableCell>₩2,130,000</TableCell>
-                    <TableCell>₩213,000</TableCell>
-                    <TableCell>₩1,917,000</TableCell>
-                    <TableCell>신한은행 (1234)</TableCell>
+                    <TableCell>2025년 5월 16일</TableCell>
+                    <TableCell>금요일</TableCell>
+                    <TableCell>4개</TableCell>
+                    <TableCell>18명</TableCell>
                     <TableCell>
-                      <Badge variant="success">완료</Badge>
+                      <Badge className="bg-blue-500">예정</Badge>
                     </TableCell>
                     <TableCell>
-                      <Button variant="outline" size="sm" onClick={() => openModal('paymentHistory')}>상세</Button>
+                      <Button variant="outline" size="sm">세부 일정</Button>
                     </TableCell>
                   </TableRow>
                   <TableRow>
-                    <TableCell>2025년 3월</TableCell>
-                    <TableCell>2025.03.25</TableCell>
-                    <TableCell>₩1,800,000</TableCell>
-                    <TableCell>₩180,000</TableCell>
-                    <TableCell>₩1,620,000</TableCell>
-                    <TableCell>신한은행 (1234)</TableCell>
+                    <TableCell>2025년 5월 17일</TableCell>
+                    <TableCell>토요일</TableCell>
+                    <TableCell>5개</TableCell>
+                    <TableCell>22명</TableCell>
                     <TableCell>
-                      <Badge variant="success">완료</Badge>
+                      <Badge className="bg-blue-500">예정</Badge>
                     </TableCell>
                     <TableCell>
-                      <Button variant="outline" size="sm" onClick={() => openModal('paymentHistory')}>상세</Button>
+                      <Button variant="outline" size="sm">세부 일정</Button>
                     </TableCell>
                   </TableRow>
                 </TableBody>
@@ -357,15 +362,15 @@ export default function TrainerStats() {
         <TabsContent value="courses">
           <Card>
             <CardHeader>
-              <CardTitle>강의별 수익</CardTitle>
-              <CardDescription>각 강의별 수익 현황을 확인하세요.</CardDescription>
+              <CardTitle>강의별 일정</CardTitle>
+              <CardDescription>강의별 수업 일정을 확인하세요.</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-6">
                 <div className="h-60 bg-gray-100 dark:bg-gray-800 rounded-md flex items-center justify-center">
                   <div className="text-center text-gray-500">
                     <BarChart2 className="h-10 w-10 mx-auto mb-2" />
-                    <p>여기에 강의별 수익 차트가 표시됩니다.</p>
+                    <p>여기에 강의별 일정 분포 차트가 표시됩니다.</p>
                   </div>
                 </div>
 
