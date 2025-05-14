@@ -338,10 +338,11 @@ export function Sidebar({
       return;
     }
 
-    // 관리자 메뉴 처리 - 정적 HTML 파일로 처리되도록 window.location.href 사용
+    // 관리자 메뉴 처리 - SPA 라우팅으로 처리 (해시 기반)
     if (path.startsWith('/admin/')) {
       console.log(`관리자 메뉴: ${path} 페이지로 이동 중...`);
-      window.location.href = path;
+      // 해시 라우팅으로 변경
+      window.location.href = '/#' + path;
       // 모바일 화면에서만 사이드바 닫기
       if (onClose && window.innerWidth < 768) onClose();
       return;

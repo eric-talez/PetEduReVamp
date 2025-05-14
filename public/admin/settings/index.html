@@ -79,8 +79,8 @@
         const isLoggedIn = getCookie('petedu.sid');
         
         if (isLoggedIn) {
-          // 로그인된 경우 홈페이지로 이동 후 SPA가 라우팅 처리
-          window.location.href = '/#/admin/settings';
+          // 로그인된 경우 SPA 라우팅으로 처리
+          window.location.href = '/#admin/settings';
         } else {
           // 로그인되지 않은 경우 로그인 페이지로
           window.location.href = '/';
