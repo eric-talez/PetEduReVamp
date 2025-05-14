@@ -544,11 +544,11 @@ export default function AdminShop() {
             productId: 2,
             productName: '소형견 치석 제거 간식',
             recommendationDate: '2024-05-01',
-            status: 'active',
+            status: 'pending',
             customMessage: '치아 건강에 탁월한 효과가 있어요. 모든 치과 클리닉에서 추천하는 제품입니다.',
             commissionRate: 8,
-            totalSales: 180000,
-            totalCommission: 14400
+            totalSales: 0,
+            totalCommission: 0
           },
           {
             id: 4,
@@ -560,6 +560,19 @@ export default function AdminShop() {
             status: 'pending',
             customMessage: '산책 시 반려견의 건강을 생각한다면 꼭 필요한 제품입니다. 목 부담을 줄여줍니다.',
             commissionRate: 15,
+            totalSales: 0,
+            totalCommission: 0
+          },
+          {
+            id: 5,
+            trainerId: 2,
+            trainerName: '김지수',
+            productId: 5,
+            productName: '습식 사료 멀티팩 (중소형견용)',
+            recommendationDate: '2024-05-10',
+            status: 'pending',
+            customMessage: '편식하는 강아지들에게 추천합니다. 여러 맛을 시도해볼 수 있어요.',
+            commissionRate: 10,
             totalSales: 0,
             totalCommission: 0
           }
