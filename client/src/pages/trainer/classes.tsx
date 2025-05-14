@@ -545,14 +545,14 @@ export default function TrainerClasses() {
           </div>
           
           <Select 
-            value={filterType || ''} 
-            onValueChange={(value) => setFilterType(value || null)}
+            value={filterType || 'all'} 
+            onValueChange={(value) => setFilterType(value === 'all' ? null : value)}
           >
             <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="유형 필터" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">모든 유형</SelectItem>
+              <SelectItem value="all">모든 유형</SelectItem>
               <SelectItem value="online">온라인</SelectItem>
               <SelectItem value="offline">오프라인</SelectItem>
             </SelectContent>
