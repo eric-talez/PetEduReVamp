@@ -50,6 +50,7 @@ import EventsPage from "./pages/events/index";
 import EventCalendarPage from "./pages/events/calendar";
 import AIAnalysisPage from "./pages/ai-analysis/index";
 import MenuManagement from "./pages/admin/menu-management";
+import AdminShop from "./pages/admin/shop";
 
 // 지연 로딩되는 컴포넌트들
 const EventDetailPage = lazy(() => import('./pages/events/event-detail'));
@@ -120,6 +121,12 @@ function AuthenticatedRoutesContent() {
         {() => {
           console.log('[DEBUG] /admin/menu-management 라우트 접근');
           return checkAccess(['admin']) ? <MenuManagement /> : window.location.href = '/';
+        }}
+      </Route>
+      <Route path="/admin/shop">
+        {() => {
+          console.log('[DEBUG] /admin/shop 라우트 접근');
+          return checkAccess(['admin']) ? <AdminShop /> : window.location.href = '/';
         }}
       </Route>
       <Route path="/community" component={CommunityPage} />
