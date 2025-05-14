@@ -439,9 +439,24 @@ function UnauthenticatedRoutesContent() {
 
 export default function App() {
   const auth = useAuth();
-
+  const [location] = useLocation();
+  
   if (auth.isLoading) {
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+  }
+  
+  // 현재 URL이 /admin/trainers인 경우 직접 컴포넌트 렌더링
+  if (location === '/admin/trainers') {
+    console.log('[DEBUG] /admin/trainers 직접 경로 매칭 - App.tsx');
+    // 임시 테스트 UI
+    return (
+      <CartProvider>
+        <div className="p-8">
+          <h1 className="text-2xl font-bold mb-4">훈련사 관리 페이지 (직접 렌더링)</h1>
+          <p>이 페이지는 App.tsx에서 직접 렌더링된 페이지입니다.</p>
+        </div>
+      </CartProvider>
+    );
   }
 
   // 라우트 설정 - 중요: 인증 여부에 관계 없이 쇼핑 페이지는 접근 가능해야 함
