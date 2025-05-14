@@ -478,9 +478,99 @@ export default function AdminShop() {
           }
         ];
         
+        // 임시 훈련사 데이터
+        const mockTrainers: Trainer[] = [
+          {
+            id: 1,
+            name: '박훈련',
+            email: 'park.trainer@example.com',
+            profileImage: 'https://randomuser.me/api/portraits/men/32.jpg',
+            specialty: '행동 교정',
+            totalSales: 450000,
+            activeRecommendations: 3
+          },
+          {
+            id: 2,
+            name: '김지수',
+            email: 'jisoo.kim@example.com',
+            profileImage: 'https://randomuser.me/api/portraits/women/44.jpg',
+            specialty: '기본 복종훈련',
+            totalSales: 325000,
+            activeRecommendations: 2
+          },
+          {
+            id: 3,
+            name: '이하은',
+            email: 'haeun.lee@example.com',
+            profileImage: 'https://randomuser.me/api/portraits/women/68.jpg',
+            specialty: '어질리티 트레이닝',
+            totalSales: 580000,
+            activeRecommendations: 4
+          }
+        ];
+        
+        // 임시 훈련사 추천 데이터
+        const mockRecommendations: TrainerRecommendation[] = [
+          {
+            id: 1,
+            trainerId: 1,
+            trainerName: '박훈련',
+            productId: 1,
+            productName: '프리미엄 강아지 사료 (대형견용)',
+            recommendationDate: '2024-04-15',
+            status: 'active',
+            customMessage: '대형견에게 매우 추천하는 고품질 사료입니다. 관절 건강에 좋은 성분이 포함되어 있어요.',
+            commissionRate: 10,
+            totalSales: 250000,
+            totalCommission: 25000
+          },
+          {
+            id: 2,
+            trainerId: 1,
+            trainerName: '박훈련',
+            productId: 3,
+            productName: '프로 트레이닝 클리커 세트',
+            recommendationDate: '2024-04-20',
+            status: 'active',
+            customMessage: '제가 직접 수업에서 사용하는 제품입니다. 반응이 좋고 내구성이 뛰어납니다.',
+            commissionRate: 12,
+            totalSales: 120000,
+            totalCommission: 14400
+          },
+          {
+            id: 3,
+            trainerId: 2,
+            trainerName: '김지수',
+            productId: 2,
+            productName: '소형견 치석 제거 간식',
+            recommendationDate: '2024-05-01',
+            status: 'active',
+            customMessage: '치아 건강에 탁월한 효과가 있어요. 모든 치과 클리닉에서 추천하는 제품입니다.',
+            commissionRate: 8,
+            totalSales: 180000,
+            totalCommission: 14400
+          },
+          {
+            id: 4,
+            trainerId: 3,
+            trainerName: '이하은',
+            productId: 4,
+            productName: '울트라 컴포트 하네스 (중형견)',
+            recommendationDate: '2024-05-05',
+            status: 'pending',
+            customMessage: '산책 시 반려견의 건강을 생각한다면 꼭 필요한 제품입니다. 목 부담을 줄여줍니다.',
+            commissionRate: 15,
+            totalSales: 0,
+            totalCommission: 0
+          }
+        ];
+        
         setCategories(mockCategories);
         setProducts(mockProducts);
         setOrders(mockOrders);
+        setTrainers(mockTrainers);
+        setTrainerRecommendations(mockRecommendations);
+        setFilteredRecommendations(mockRecommendations);
       } catch (error) {
         console.error('데이터 로딩 오류:', error);
         toast({
@@ -571,6 +661,31 @@ export default function AdminShop() {
     
     setFilteredOrders(filtered);
   }, [orders, searchQuery, filterStatus]);
+  
+  // 훈련사 추천 필터링
+  useEffect(() => {
+    if (!trainerRecommendations.length) return;
+    
+    let filtered = [...trainerRecommendations];
+    
+    // 검색어 필터링
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(
+        rec => 
+          rec.trainerName.toLowerCase().includes(query) ||
+          rec.productName.toLowerCase().includes(query) ||
+          (rec.customMessage && rec.customMessage.toLowerCase().includes(query))
+      );
+    }
+    
+    // 훈련사 필터링
+    if (filterTrainer) {
+      filtered = filtered.filter(rec => rec.trainerId === filterTrainer);
+    }
+    
+    setFilteredRecommendations(filtered);
+  }, [trainerRecommendations, searchQuery, filterTrainer]);
   
   // 페이지네이션 처리 (상품)
   const totalProductPages = Math.ceil(filteredProducts.length / itemsPerPage);
