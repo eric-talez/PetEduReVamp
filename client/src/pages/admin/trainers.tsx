@@ -1,27 +1,14 @@
-import React, { useState, useEffect } from 'react';
-import { Plus, Pencil, Trash2, Eye, Users, Award, Star, Filter, ChevronRight, Check, X } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
-} from '@/components/ui/table';
-import { 
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue, 
-} from '@/components/ui/select';
-import { useAuth } from '../../hooks/useAuth';
-import { useToast } from '@/hooks/use-toast';
+import React from 'react';
+import AdminTrainersComponent from './AdminTrainers';
+
+/**
+ * 훈련사 관리 페이지
+ * - 기존 AdminTrainers 컴포넌트를 사용
+ * - URL 경로 처리를 위한 매퍼 컴포넌트
+ * 
+ * 이 파일은 URL 경로 '/admin/trainers'와 실제 컴포넌트 이름 'AdminTrainers.tsx' 사이의
+ * 매핑을 제공합니다. Sidebar에서 window.location.href로 이동할 때 이 파일이 처리합니다.
+ */
 
 // 데이터 타입 정의
 interface Trainer {
@@ -105,23 +92,11 @@ const SAMPLE_TRAINERS: Trainer[] = [
 ];
 
 export default function AdminTrainersPage() {
-  const { userRole } = useAuth();
-  const { toast } = useToast();
-  const [trainers, setTrainers] = useState<Trainer[]>([]);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [instituteFilter, setInstituteFilter] = useState<string>('all');
-  const [sortBy, setSortBy] = useState<string>('name');
-  const [isLoading, setIsLoading] = useState(true);
-  
-  // 기관 목록 (중복 제거)
-  const institutes = Array.from(
-    new Set(
-      SAMPLE_TRAINERS
-        .filter(trainer => trainer.instituteName)
-        .map(trainer => trainer.instituteName)
-    )
-  );
+  // 이 컴포넌트는 단순히 AdminTrainers 컴포넌트를 렌더링합니다
+  console.log('[DEBUG] 라우팅 매퍼 컴포넌트 trainers.tsx 렌더링');
+
+  return <AdminTrainersComponent />;
+}
 
   // 데이터 로드
   useEffect(() => {
