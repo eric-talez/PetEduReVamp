@@ -441,6 +441,18 @@ export const DEFAULT_MENU_ITEMS: MenuItem[] = [
     isPublic: false
   },
   {
+    id: 'shop-management',
+    title: '쇼핑몰 관리',
+    path: '/admin/shop',
+    icon: 'ShoppingBag',
+    type: 'internal',
+    category: 'admin',
+    roles: ['admin'],
+    orderIndex: 5,
+    isActive: true,
+    isPublic: false
+  },
+  {
     id: 'menu-management',
     title: '메뉴 관리',
     path: '/admin/menu-management',
@@ -448,7 +460,7 @@ export const DEFAULT_MENU_ITEMS: MenuItem[] = [
     type: 'internal',
     category: 'admin',
     roles: ['admin'],
-    orderIndex: 5,
+    orderIndex: 6,
     isActive: true,
     isPublic: false
   }
