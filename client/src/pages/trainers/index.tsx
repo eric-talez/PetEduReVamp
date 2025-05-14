@@ -345,8 +345,12 @@ export default function Trainers() {
             
             <div className="pt-0 p-5">
               <div className="flex items-end -mt-12 mb-4">
-                <div className="w-20 h-20 border-4 border-white dark:border-gray-800 rounded-full overflow-hidden">
-                  <img src="https://images.unsplash.com/photo-1543466835-00a7907e9de1?q=80&w=300&auto=format&fit=crop" alt={trainer.name} className="w-full h-full object-cover" />
+                <div className="w-20 h-20 border-4 border-white dark:border-gray-800 rounded-full overflow-hidden shadow-lg">
+                  <img 
+                    src="https://images.unsplash.com/photo-1543466835-00a7907e9de1?q=80&w=300&auto=format&fit=crop&sharp=100" 
+                    alt={trainer.name} 
+                    className="w-full h-full object-cover brightness-105 contrast-105" 
+                  />
                 </div>
                 <div className="ml-4 pb-1">
                   <h3 className="text-lg font-semibold text-gray-800 dark:text-white">{trainer.name}</h3>
@@ -485,8 +489,12 @@ export default function Trainers() {
             <div className="p-6">
               {/* 기본 정보 섹션 */}
               <div className="flex flex-col sm:flex-row mb-6 -mt-16 relative">
-                <div className="w-24 h-24 border-4 border-white dark:border-gray-900 rounded-full overflow-hidden">
-                  <img src="https://images.unsplash.com/photo-1543466835-00a7907e9de1?q=80&w=300&auto=format&fit=crop" alt={selectedTrainer.name} className="w-full h-full object-cover" />
+                <div className="w-24 h-24 border-4 border-white dark:border-gray-900 rounded-full overflow-hidden shadow-lg">
+                  <img 
+                    src="https://images.unsplash.com/photo-1543466835-00a7907e9de1?q=80&w=300&auto=format&fit=crop&sharp=100" 
+                    alt={selectedTrainer.name} 
+                    className="w-full h-full object-cover brightness-110 contrast-110" 
+                  />
                 </div>
                 
                 <div className="mt-4 sm:mt-6 sm:ml-4">
