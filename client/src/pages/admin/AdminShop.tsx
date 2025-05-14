@@ -2735,7 +2735,7 @@ export default function AdminShop() {
                       <AvatarFallback>{selectedRecommendation.trainerName.substring(0, 2)}</AvatarFallback>
                     </Avatar>
                     <div>
-                      <div className="font-medium">{selectedRecommendation.trainerName}</div>
+                      <div className="font-medium text-foreground">{selectedRecommendation.trainerName}</div>
                       <div className="text-xs text-muted-foreground">
                         {trainers.find(t => t.id === selectedRecommendation.trainerId)?.specialty || ''}
                       </div>
@@ -2745,7 +2745,7 @@ export default function AdminShop() {
                 <div className="col-span-3 space-y-2">
                   <Label>추천 상품</Label>
                   <div className="p-2 border rounded-md">
-                    <div className="font-medium">{selectedRecommendation.productName}</div>
+                    <div className="font-medium text-foreground">{selectedRecommendation.productName}</div>
                     <div className="text-sm text-muted-foreground">
                       ID: {selectedRecommendation.productId}
                     </div>
@@ -2755,7 +2755,7 @@ export default function AdminShop() {
 
               <div className="space-y-2">
                 <Label>추천 메시지</Label>
-                <div className="p-3 bg-muted rounded-md">
+                <div className="p-3 bg-muted rounded-md text-foreground">
                   {selectedRecommendation.customMessage || '추천 메시지가 없습니다.'}
                 </div>
               </div>
@@ -2763,19 +2763,19 @@ export default function AdminShop() {
               <div className="grid grid-cols-3 gap-4">
                 <div className="space-y-2">
                   <Label>추천 등록일</Label>
-                  <div className="p-2 border rounded-md">
+                  <div className="p-2 border rounded-md text-foreground">
                     {selectedRecommendation.recommendationDate}
                   </div>
                 </div>
                 <div className="space-y-2">
                   <Label>수수료 비율</Label>
-                  <div className="p-2 border rounded-md font-medium">
+                  <div className="p-2 border rounded-md font-medium text-primary">
                     {selectedRecommendation.commissionRate}%
                   </div>
                 </div>
                 <div className="space-y-2">
                   <Label>상태</Label>
-                  <div className="p-2 border rounded-md">
+                  <div className="p-2 border rounded-md text-foreground">
                     {selectedRecommendation.status === 'active' && (
                       <Badge className="bg-green-500">활성</Badge>
                     )}
@@ -2792,7 +2792,7 @@ export default function AdminShop() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>총 판매액</Label>
-                  <div className="p-2 border rounded-md font-medium">
+                  <div className="p-2 border rounded-md font-medium text-foreground">
                     ￦{selectedRecommendation.totalSales.toLocaleString()}
                   </div>
                 </div>
