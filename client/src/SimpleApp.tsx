@@ -524,7 +524,7 @@ function AuthenticatedRoutes() {
             );
           }}
         </Route>
-        <Route path="/trainer-reviews">
+        <Route path="/trainer/reviews">
           {() => {
             const TrainerReviews = lazy(() => import('./pages/trainer/reviews'));
             return (

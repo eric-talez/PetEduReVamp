@@ -345,6 +345,18 @@ export const DEFAULT_MENU_ITEMS: MenuItem[] = [
     isPublic: false
   },
   {
+    id: 'reviews-management',
+    title: '리뷰 관리',
+    path: '/trainer/reviews',
+    icon: 'Star',
+    type: 'internal',
+    category: 'trainer',
+    roles: ['trainer', 'admin'],
+    orderIndex: 6,
+    isActive: true,
+    isPublic: false
+  },
+  {
     id: 'institute-dashboard',
     title: '기관 대시보드',
     path: '/institute-dashboard',
