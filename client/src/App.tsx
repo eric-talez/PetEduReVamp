@@ -51,7 +51,7 @@ import EventCalendarPage from "./pages/events/calendar";
 import AIAnalysisPage from "./pages/ai-analysis/index";
 import MenuManagement from "./pages/admin/menu-management";
 import AdminShop from "./pages/admin/shop";
-import AdminTrainers from "./pages/admin/trainers";
+import AdminTrainers from "./pages/admin/AdminTrainers";
 
 // 컴포넌트가 제대로 로드되었는지 확인
 console.log('[DEBUG] AdminTrainers 컴포넌트 로드 여부:', !!AdminTrainers);
@@ -136,14 +136,7 @@ function AuthenticatedRoutesContent() {
       <Route path="/admin/trainers">
         {() => {
           console.log('[DEBUG] /admin/trainers 라우트 접근');
-          // 직접 컴포넌트 출력으로 테스트
-          return (
-            <div className="p-8">
-              <h1 className="text-2xl font-bold mb-4">훈련사 관리 페이지 (테스트)</h1>
-              <p>이 페이지는 테스트를 위한 임시 페이지입니다.</p>
-            </div>
-          );
-          // return checkAccess(['admin']) ? <AdminTrainers /> : window.location.href = '/';
+          return checkAccess(['admin']) ? <AdminTrainers /> : window.location.href = '/';
         }}
       </Route>
       <Route path="/community" component={CommunityPage} />
@@ -439,24 +432,9 @@ function UnauthenticatedRoutesContent() {
 
 export default function App() {
   const auth = useAuth();
-  const [location] = useLocation();
   
   if (auth.isLoading) {
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
-  }
-  
-  // 현재 URL이 /admin/trainers인 경우 직접 컴포넌트 렌더링
-  if (location === '/admin/trainers') {
-    console.log('[DEBUG] /admin/trainers 직접 경로 매칭 - App.tsx');
-    // 임시 테스트 UI
-    return (
-      <CartProvider>
-        <div className="p-8">
-          <h1 className="text-2xl font-bold mb-4">훈련사 관리 페이지 (직접 렌더링)</h1>
-          <p>이 페이지는 App.tsx에서 직접 렌더링된 페이지입니다.</p>
-        </div>
-      </CartProvider>
-    );
   }
 
   // 라우트 설정 - 중요: 인증 여부에 관계 없이 쇼핑 페이지는 접근 가능해야 함
