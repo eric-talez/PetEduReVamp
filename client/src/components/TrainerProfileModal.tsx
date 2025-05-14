@@ -55,12 +55,13 @@ export function TrainerProfileModal({ trainer, open, onOpenChange }: TrainerProf
       <DialogContent className="sm:max-w-[600px] max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <div className="flex items-start gap-4">
-            <Avatar 
-              src={trainer.image} 
-              alt={trainer.name}
-              size="xl"
-              bordered
-            />
+            <div className="h-20 w-20 rounded-full overflow-hidden border-4 border-primary/20 shadow-lg">
+              <img 
+                src={trainer.image}
+                alt={trainer.name}
+                className="w-full h-full object-cover brightness-110 contrast-110" 
+              />
+            </div>
             <div>
               <DialogTitle className="text-xl">{trainer.name} 트레이너</DialogTitle>
               <DialogDescription className="text-primary mt-1">

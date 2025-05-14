@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Avatar } from '@/components/ui/Avatar';
-import { Badge } from '@/components/ui/Badge';
-import { Button } from '@/components/ui/Button';
+import { Avatar } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Calendar, Clock, MapPin, MessageSquare, Phone, Star, VideoIcon } from 'lucide-react';
 import {
   Dialog,
@@ -69,12 +69,13 @@ export function TrainerProfileDialog({ trainer, open, onOpenChange }: TrainerPro
       <DialogContent className="sm:max-w-[600px] max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <div className="flex items-start gap-4">
-            <Avatar 
-              src={trainer.image} 
-              alt={trainer.name}
-              size="xl"
-              bordered
-            />
+            <div className="h-20 w-20 rounded-full overflow-hidden border-4 border-primary/20 shadow-lg">
+              <img 
+                src={trainer.image}
+                alt={trainer.name}
+                className="w-full h-full object-cover brightness-110 contrast-110" 
+              />
+            </div>
             <div>
               <DialogTitle className="text-xl">{trainer.name} 트레이너</DialogTitle>
               <DialogDescription className="text-primary mt-1">

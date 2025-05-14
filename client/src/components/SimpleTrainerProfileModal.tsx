@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Avatar } from '@/components/ui/Avatar';
-import { Badge } from '@/components/ui/Badge';
-import { Button } from '@/components/ui/Button';
+import { Avatar } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Calendar, Clock, MapPin, MessageSquare, Phone, Star, VideoIcon, X, Award, Briefcase, Sparkles } from 'lucide-react';
 
 // 훈련사 정보 타입 정의
@@ -65,12 +65,13 @@ export function SimpleTrainerProfileModal({ trainer, isOpen, onClose }: SimpleTr
         {/* 헤더 */}
         <div className="p-6 border-b border-gray-100 dark:border-gray-800 relative">
           <div className="flex items-start gap-4">
-            <Avatar 
-              src={trainer.image} 
-              alt={trainer.name}
-              size="xl"
-              bordered
-            />
+            <div className="h-20 w-20 rounded-full overflow-hidden border-4 border-primary/20 shadow-lg">
+              <img 
+                src={trainer.image}
+                alt={trainer.name}
+                className="w-full h-full object-cover brightness-110 contrast-110" 
+              />
+            </div>
             <div>
               <h2 className="text-xl font-bold">{trainer.name} 트레이너</h2>
               <p className="text-primary mt-1">{trainer.specialty}</p>
