@@ -187,7 +187,7 @@ export default function ProfilePage({ userType, section }: ProfilePageProps = {}
             <div className="flex flex-col md:flex-row gap-6">
               <div className="flex-shrink-0">
                 <Avatar className="w-32 h-32">
-                  <AvatarImage src={auth.avatarUrl || ""} />
+                  <AvatarImage src={form.getValues("avatar") || ""} />
                   <AvatarFallback className="text-3xl font-bold text-primary bg-primary/10">
                     {userName ? userName.substring(0, 1).toUpperCase() : "U"}
                   </AvatarFallback>
@@ -220,7 +220,7 @@ export default function ProfilePage({ userType, section }: ProfilePageProps = {}
                   >
                     <p className="text-sm text-gray-500 dark:text-gray-400">연락처</p>
                     <p className="flex items-center">
-                      {auth.user?.phone || "010-1234-5678"}
+                      {form.getValues("phone") || "010-1234-5678"}
                     </p>
                   </div>
                   <div 

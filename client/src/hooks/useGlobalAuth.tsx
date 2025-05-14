@@ -110,6 +110,7 @@ export function useGlobalAuth(): UseGlobalAuthReturn {
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include', // 쿠키를 포함하여 인증 세션 유지
         body: JSON.stringify(userInfo),
       });
 
