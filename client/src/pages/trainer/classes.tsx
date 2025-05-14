@@ -508,7 +508,74 @@ export default function TrainerClasses() {
                   새로운 수업 일정 정보를 입력하세요.
                 </DialogDescription>
               </DialogHeader>
-              {/* 여기에 폼 내용 추가 */}
+              <div className="grid gap-4 py-4">
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <label htmlFor="title" className="text-right text-sm">수업 제목</label>
+                  <Input id="title" placeholder="수업 제목을 입력하세요" className="col-span-3" />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <label htmlFor="date" className="text-right text-sm">수업 일자</label>
+                  <Input id="date" type="date" className="col-span-3" />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <label htmlFor="startTime" className="text-right text-sm">시작 시간</label>
+                  <Input id="startTime" type="time" className="col-span-3" />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <label htmlFor="endTime" className="text-right text-sm">종료 시간</label>
+                  <Input id="endTime" type="time" className="col-span-3" />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <label htmlFor="course" className="text-right text-sm">강좌</label>
+                  <Select>
+                    <SelectTrigger className="col-span-3">
+                      <SelectValue placeholder="강좌 선택" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="course1">기초 훈련 101</SelectItem>
+                      <SelectItem value="course2">고급 훈련 심화</SelectItem>
+                      <SelectItem value="course3">문제 행동 교정</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <label htmlFor="student" className="text-right text-sm">학생</label>
+                  <Select>
+                    <SelectTrigger className="col-span-3">
+                      <SelectValue placeholder="학생 선택" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="student1">김철수 (루키)</SelectItem>
+                      <SelectItem value="student2">이영희 (해피)</SelectItem>
+                      <SelectItem value="student3">박민수 (초코)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <label htmlFor="type" className="text-right text-sm">수업 유형</label>
+                  <Select defaultValue="offline">
+                    <SelectTrigger className="col-span-3">
+                      <SelectValue placeholder="수업 유형 선택" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="online">온라인</SelectItem>
+                      <SelectItem value="offline">오프라인</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <label htmlFor="location" className="text-right text-sm">위치</label>
+                  <Input id="location" placeholder="오프라인 수업 위치" className="col-span-3" />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <label htmlFor="zoom" className="text-right text-sm">Zoom URL</label>
+                  <Input id="zoom" placeholder="온라인 수업 Zoom URL" className="col-span-3" />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <label htmlFor="description" className="text-right text-sm">설명</label>
+                  <Input id="description" placeholder="수업에 대한 추가 설명" className="col-span-3" />
+                </div>
+              </div>
               <DialogFooter>
                 <Button type="submit">저장</Button>
               </DialogFooter>
