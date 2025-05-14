@@ -557,7 +557,7 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
                               if (notification.link) {
                                 setLocation(notification.link);
                               } else {
-                                setLocation("/notifications");
+                                setLocation("/alerts");
                               }
                             }}
                           >
@@ -611,7 +611,7 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
                         className="w-full justify-center" 
                         onClick={() => {
                           setNotificationPopupOpen(false);
-                          setLocation("/notifications");
+                          setLocation("/alerts");
                         }}
                       >
                         모든 알림 보기
