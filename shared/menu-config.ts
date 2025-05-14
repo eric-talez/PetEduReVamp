@@ -178,7 +178,7 @@ export const DEFAULT_MENU_ITEMS: MenuItem[] = [
   {
     id: 'notifications',
     title: '알림',
-    path: '/notifications',
+    path: '/alerts',
     icon: 'Bell',
     type: 'internal',
     category: 'features',

@@ -426,6 +426,20 @@ function AuthenticatedRoutes() {
             );
           }}
         </Route>
+        <Route path="/alerts">
+          {() => {
+            console.log("알림 페이지 접근");
+            const AlertsPage = lazy(() => import('./pages/alerts'));
+            return (
+              <Suspense fallback={<div className="p-8 flex justify-center items-center">
+                <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
+                <span className="ml-2">알림 로딩 중...</span>
+              </div>}>
+                <ProtectedRoute component={AlertsPage} />
+              </Suspense>
+            );
+          }}
+        </Route>
         <Route path="/locations">
           {() => (
             <ProtectedRoute 
