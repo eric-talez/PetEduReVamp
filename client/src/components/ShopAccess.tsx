@@ -47,7 +47,7 @@ export function ShopAccess() {
                 console.log("ShopAccess에서 쇼핑몰 바로가기 클릭 - 새 창으로 열기");
                 
                 // 쇼핑 페이지를 새 창에서 열기
-                window.open('/shop', '_blank', 'noopener,noreferrer');
+                window.open('https://replit.com/join/wshpfpjewg-hnblgkjw', '_blank', 'noopener,noreferrer');
                 
                 // 디버깅 정보
                 console.log("ShopAccess에서 쇼핑 페이지 새 창으로 열기:", new Date().toISOString());
@@ -72,7 +72,7 @@ export function ShopAccess() {
                 console.log("ShopAccess에서 카테고리 클릭 - 새 창으로 열기");
                 
                 // 쇼핑 페이지를 새 창에서 열기
-                window.open('/shop', '_blank', 'noopener,noreferrer');
+                window.open('https://replit.com/join/wshpfpjewg-hnblgkjw', '_blank', 'noopener,noreferrer');
                 
                 // 디버깅 정보
                 console.log("ShopAccess 카테고리에서 새 창으로 열기:", new Date().toISOString());

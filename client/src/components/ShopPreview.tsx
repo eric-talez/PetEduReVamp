@@ -71,7 +71,7 @@ export function ShopPreview() {
           {Array.from({ length: 4 }).map((_, index) => (
             <a 
               key={index} 
-              href="/shop" 
+              href="https://replit.com/join/wshpfpjewg-hnblgkjw" 
               className="bg-gray-50 dark:bg-gray-700 rounded-lg overflow-hidden transition-transform duration-300 hover:transform hover:scale-105 shadow-sm"
               onClick={(e) => {
                 e.preventDefault();
