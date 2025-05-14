@@ -68,6 +68,8 @@ import {
   MoreVertical,
   ShoppingCart,
   Store,
+  X,
+  Check,
   Truck,
   CircleDollarSign,
   HeartHandshake,
