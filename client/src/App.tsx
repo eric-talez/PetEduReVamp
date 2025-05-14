@@ -28,7 +28,6 @@ import NotificationsPage from "./pages/notifications/index";
 import CartPage from "@/pages/Cart"; // 장바구니 페이지
 import ShopIndex from "./pages/shop/index"; // 쇼핑 페이지 메인 컴포넌트 (단일 진입점)
 import ProductDetailPage from "./pages/shop/product"; // 상품 상세 페이지
-import TrainerRecommendationsPage from "./pages/shop/trainer-recommendations"; // 훈련사 추천 상품 페이지
 
 import VideoTrainingPage from "./pages/video-training/index";
 import VideoTrainingDetailPage from "./pages/video-training/video";
@@ -50,11 +49,6 @@ import EventsPage from "./pages/events/index";
 import EventCalendarPage from "./pages/events/calendar";
 import AIAnalysisPage from "./pages/ai-analysis/index";
 import MenuManagement from "./pages/admin/menu-management";
-import AdminShop from "./pages/admin/shop";
-import AdminTrainers from "./pages/admin/trainers";
-
-// 컴포넌트가 제대로 로드되었는지 확인
-console.log('[DEBUG] AdminTrainers 컴포넌트 로드 여부:', !!AdminTrainers);
 
 // 지연 로딩되는 컴포넌트들
 const EventDetailPage = lazy(() => import('./pages/events/event-detail'));
@@ -125,19 +119,6 @@ function AuthenticatedRoutesContent() {
         {() => {
           console.log('[DEBUG] /admin/menu-management 라우트 접근');
           return checkAccess(['admin']) ? <MenuManagement /> : window.location.href = '/';
-        }}
-      </Route>
-      <Route path="/admin/shop">
-        {() => {
-          console.log('[DEBUG] /admin/shop 라우트 접근');
-          return checkAccess(['admin']) ? <AdminShop /> : window.location.href = '/';
-        }}
-      </Route>
-      <Route path="/admin/trainers">
-        {() => {
-          console.log('[DEBUG] /admin/trainers 라우트 접근');
-          const AdminTrainersComponent = require('./pages/admin/AdminTrainers').default;
-          return checkAccess(['admin']) ? <AdminTrainersComponent /> : window.location.href = '/';
         }}
       </Route>
       <Route path="/community" component={CommunityPage} />
@@ -214,14 +195,6 @@ function AuthenticatedRoutesContent() {
         {(params) => {
           console.log("인증된 사용자가 상품 상세 페이지 접근:", params.id);
           return <ProductDetailPage />;
-        }}
-      </Route>
-      
-      {/* 훈련사 추천 상품 페이지 */}
-      <Route path="/shop/trainer-recommendations">
-        {() => {
-          console.log("인증된 사용자가 훈련사 추천 상품 페이지 접근");
-          return <TrainerRecommendationsPage />;
         }}
       </Route>
       
@@ -403,13 +376,6 @@ function UnauthenticatedRoutesContent() {
         }}
       </Route>
       
-      <Route path="/shop/trainer-recommendations">
-        {() => {
-          console.log("비인증 사용자가 훈련사 추천 상품 페이지 접근");
-          return <TrainerRecommendationsPage />;
-        }}
-      </Route>
-      
       {/* 모든 쇼핑 관련 URL 통합 처리 */}
       <Route path="/shop/*">
         {() => {
@@ -433,7 +399,7 @@ function UnauthenticatedRoutesContent() {
 
 export default function App() {
   const auth = useAuth();
-  
+
   if (auth.isLoading) {
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   }

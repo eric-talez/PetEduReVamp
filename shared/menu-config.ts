@@ -190,7 +190,7 @@ export const DEFAULT_MENU_ITEMS: MenuItem[] = [
   {
     id: 'shopping',
     title: '쇼핑몰',
-    path: 'https://store.funnytalez.com/',
+    path: 'https://replit.com/join/wshpfpjewg-hnblgkjw',
     icon: 'ShoppingBag',
     type: 'external',
     category: 'shopping',
@@ -199,18 +199,6 @@ export const DEFAULT_MENU_ITEMS: MenuItem[] = [
     isActive: true,
     isPublic: true,
     openInNewWindow: true
-  },
-  {
-    id: 'trainer-recommended-products',
-    title: '훈련사 추천 상품',
-    path: '/shop/trainer-recommendations',
-    icon: 'ThumbsUp',
-    type: 'internal',
-    category: 'shopping',
-    roles: ['pet-owner', 'trainer', 'institute-admin', 'admin'],
-    orderIndex: 1,
-    isActive: true,
-    isPublic: false
   },
   {
     id: 'dashboard',
@@ -461,18 +449,6 @@ export const DEFAULT_MENU_ITEMS: MenuItem[] = [
     category: 'admin',
     roles: ['admin'],
     orderIndex: 5,
-    isActive: true,
-    isPublic: false
-  },
-  {
-    id: 'shop-management',
-    title: '쇼핑몰 관리',
-    path: '/admin/shop',
-    icon: 'ShoppingCart',
-    type: 'internal',
-    category: 'admin',
-    roles: ['admin'],
-    orderIndex: 6,
     isActive: true,
     isPublic: false
   }

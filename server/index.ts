@@ -3,17 +3,12 @@ import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import session from "express-session";
 import memorystore from "memorystore";
-import path from "path";
 
 const MemoryStore = memorystore(session);
 const app = express();
 // 이미지 업로드를 위해 JSON 요청 크기 제한 증가 (50MB)
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: false, limit: '50mb' }));
-
-// 관리자 페이지를 위한 정적 파일 처리 (public/admin 디렉토리)
-const adminStaticPath = path.join(process.cwd(), 'public', 'admin');
-app.use('/admin', express.static(adminStaticPath, { index: 'index.html' }));
 
 // 세션 설정
 app.use(session({
