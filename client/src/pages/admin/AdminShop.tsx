@@ -2014,9 +2014,11 @@ export default function AdminShop() {
                                 variant="ghost"
                                 size="icon"
                                 onClick={() => {
+                                  console.log('클릭한 추천:', recommendation);
                                   setSelectedRecommendation(recommendation);
                                   setModalMode('view');
                                   setShowRecommendationModal(true);
+                                  console.log('모달 열림, 상태:', recommendation.status);
                                 }}
                               >
                                 <Eye className="h-4 w-4" />
@@ -2778,7 +2780,7 @@ export default function AdminShop() {
                       수정
                     </Button>
 
-                    {selectedRecommendation.status === 'pending' && (
+                    {(selectedRecommendation.status === 'pending') && (
                       <>
                         <Button
                           variant="default"
