@@ -1,6 +1,6 @@
 import { useAuth } from '@/lib/auth-compat';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+// Avatar 컴포넌트 대신 직접 이미지 태그 사용
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/Button';
 import { Progress } from '@/components/ui/progress';
@@ -300,10 +300,19 @@ export default function TrainerHome() {
               {recentStudents.map((student) => (
                 <div key={student.id} className="pb-4 border-b border-gray-100 dark:border-gray-800 last:border-none last:pb-0">
                   <div className="flex items-center mb-2">
-                    <Avatar className="h-8 w-8">
-                      <AvatarImage src={student.image || undefined} alt={student.name} />
-                      <AvatarFallback>{student.name.substring(0, 1)}</AvatarFallback>
-                    </Avatar>
+                    <div className="relative h-8 w-8 overflow-hidden rounded-full border border-gray-200 dark:border-gray-800 shadow-sm">
+                      {student.image ? (
+                        <img 
+                          src={student.image} 
+                          alt={student.name} 
+                          className="h-full w-full object-cover filter brightness-110 contrast-110"
+                        />
+                      ) : (
+                        <div className="h-full w-full flex items-center justify-center bg-primary/10 text-primary text-sm font-bold">
+                          {student.name.substring(0, 1)}
+                        </div>
+                      )}
+                    </div>
                     <div className="ml-2">
                       <div className="font-medium text-sm">{student.name}</div>
                       <div className="text-xs text-gray-600 dark:text-gray-400">
