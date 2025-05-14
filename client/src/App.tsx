@@ -51,7 +51,10 @@ import EventCalendarPage from "./pages/events/calendar";
 import AIAnalysisPage from "./pages/ai-analysis/index";
 import MenuManagement from "./pages/admin/menu-management";
 import AdminShop from "./pages/admin/shop";
-import AdminTrainers from "./pages/admin/trainers";
+import AdminTrainers from "./pages/admin/AdminTrainers";
+
+// 컴포넌트가 제대로 로드되었는지 확인
+console.log('[DEBUG] AdminTrainers 컴포넌트 로드 여부:', !!AdminTrainers);
 
 // 지연 로딩되는 컴포넌트들
 const EventDetailPage = lazy(() => import('./pages/events/event-detail'));
