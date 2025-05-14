@@ -1055,6 +1055,13 @@ export function Sidebar({
                           onClick={handleItemClick} 
                           show={true}
                         >시스템 설정</AccessibleNavItem>
+                        <AccessibleNavItem 
+                          href="/admin/shop" 
+                          icon={<ShoppingBag className="w-5 h-5 mr-2" />} 
+                          active={isActive("/admin/shop")} 
+                          onClick={handleItemClick} 
+                          show={true}
+                        >쇼핑몰 관리</AccessibleNavItem>
                       </>
                     )}
                   </>

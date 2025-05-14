@@ -1919,7 +1919,7 @@ export default function AdminShop() {
                                           // 승인 로직
                                           const updatedRecs = trainerRecommendations.map(rec => 
                                             rec.id === recommendation.id 
-                                              ? {...rec, status: 'active'} 
+                                              ? {...rec, status: 'active' as const} 
                                               : rec
                                           );
                                           setTrainerRecommendations(updatedRecs);
@@ -1938,7 +1938,7 @@ export default function AdminShop() {
                                           // 거절 로직
                                           const updatedRecs = trainerRecommendations.map(rec => 
                                             rec.id === recommendation.id 
-                                              ? {...rec, status: 'rejected'} 
+                                              ? {...rec, status: 'rejected' as const} 
                                               : rec
                                           );
                                           setTrainerRecommendations(updatedRecs);
@@ -1949,7 +1949,7 @@ export default function AdminShop() {
                                           });
                                         }}
                                       >
-                                        <X className="mr-2 h-4 w-4" />
+                                        <XCircle className="mr-2 h-4 w-4" />
                                         <span>거절</span>
                                       </DropdownMenuItem>
                                     </>
