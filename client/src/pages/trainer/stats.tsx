@@ -15,7 +15,8 @@ import {
   DollarSign,
   Users,
   TrendingUp,
-  BookOpen
+  BookOpen,
+  Clock
 } from 'lucide-react';
 
 // 모달 타입 정의
@@ -93,25 +94,37 @@ export default function TrainerStats() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-md text-gray-500">이번 달 수익</CardTitle>
+            <CardTitle className="text-md text-gray-500">오늘의 수업</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex items-center">
-              <DollarSign className="h-5 w-5 text-primary mr-2" />
-              <span className="text-2xl font-bold">₩2,450,000</span>
+              <Calendar className="h-5 w-5 text-primary mr-2" />
+              <span className="text-2xl font-bold">3개</span>
             </div>
             <div className="mt-1 flex items-center text-sm">
-              <TrendingUp className={`h-4 w-4 ${growth.isPositive ? 'text-green-500' : 'text-red-500'} mr-1`} />
-              <span className={growth.isPositive ? 'text-green-500' : 'text-red-500'}>
-                {growth.isPositive ? '+' : ''}{growth.rate}% 지난달 대비
-              </span>
+              <span className="text-gray-500">다음 수업: 14:30</span>
             </div>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-md text-gray-500">수강생 수</CardTitle>
+            <CardTitle className="text-md text-gray-500">이번 주 수업</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center">
+              <BookOpen className="h-5 w-5 text-primary mr-2" />
+              <span className="text-2xl font-bold">12개</span>
+            </div>
+            <div className="mt-1 flex items-center text-sm">
+              <span className="text-gray-500">남은 수업: 8개</span>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-md text-gray-500">활성 수강생</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex items-center">
@@ -119,52 +132,36 @@ export default function TrainerStats() {
               <span className="text-2xl font-bold">78명</span>
             </div>
             <div className="mt-1 flex items-center text-sm">
-              <TrendingUp className="h-4 w-4 text-green-500 mr-1" />
-              <span className="text-green-500">+11% 지난달 대비</span>
+              <span className="text-gray-500">오늘 참석: 24명</span>
             </div>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-md text-gray-500">운영 중인 강의</CardTitle>
+            <CardTitle className="text-md text-gray-500">다음 예약</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex items-center">
-              <BookOpen className="h-5 w-5 text-primary mr-2" />
-              <span className="text-2xl font-bold">5개</span>
+              <Clock className="h-5 w-5 text-primary mr-2" />
+              <span className="text-2xl font-bold">내일 10:00</span>
             </div>
             <div className="mt-1 flex items-center text-sm">
-              <span className="text-gray-500">그룹 3개, 1:1 2개</span>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-md text-gray-500">다음 정산</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center">
-              <Calendar className="h-5 w-5 text-primary mr-2" />
-              <span className="text-2xl font-bold">5월 25일</span>
-            </div>
-            <div className="mt-1 flex items-center text-sm">
-              <span className="text-gray-500">₩2,205,000 예상</span>
+              <span className="text-gray-500">그룹 강의: 기초 훈련반</span>
             </div>
           </CardContent>
         </Card>
       </div>
 
-      <Tabs defaultValue="earnings" value={activeTab} onValueChange={setActiveTab}>
+      <Tabs defaultValue="schedule" value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="mb-4">
-          <TabsTrigger value="earnings">수익 분석</TabsTrigger>
-          <TabsTrigger value="payments">정산 내역</TabsTrigger>
-          <TabsTrigger value="courses">강의별 수익</TabsTrigger>
-          <TabsTrigger value="students">수강생 통계</TabsTrigger>
+          <TabsTrigger value="schedule">주간 일정</TabsTrigger>
+          <TabsTrigger value="monthly">월간 일정</TabsTrigger>
+          <TabsTrigger value="courses">강의별 일정</TabsTrigger>
+          <TabsTrigger value="students">수강생 관리</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="earnings">
+        <TabsContent value="schedule">
           <div className="space-y-4">
             <Card>
               <CardHeader>
