@@ -202,6 +202,15 @@ export default function AdminShop() {
   const [selectedRecommendation, setSelectedRecommendation] = useState<TrainerRecommendation | null>(null);
   const [filterTrainer, setFilterTrainer] = useState<number | null>(null);
   
+  // 모달 상태 로깅
+  useEffect(() => {
+    if (showRecommendationModal && selectedRecommendation) {
+      console.log('모달 열림, 선택된 추천:', selectedRecommendation);
+      console.log('상태:', selectedRecommendation.status, '타입:', typeof selectedRecommendation.status);
+      console.log('pending 체크:', selectedRecommendation.status === 'pending');
+    }
+  }, [showRecommendationModal, selectedRecommendation]);
+  
   // 데이터 로드
   useEffect(() => {
     const loadData = async () => {
