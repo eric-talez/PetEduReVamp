@@ -335,7 +335,7 @@ export const DEFAULT_MENU_ITEMS: MenuItem[] = [
   {
     id: 'create-notebook',
     title: '알림장 관리',
-    path: '/notebook',
+    path: '/trainer/notebook',
     icon: 'Edit',
     type: 'internal',
     category: 'trainer',

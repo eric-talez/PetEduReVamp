@@ -324,10 +324,10 @@ function AuthenticatedRoutes() {
           {() => <Dashboard />}
         </Route>
         <Route path="/trainer/dashboard">
-          {() => <Dashboard type="trainer" />}
+          {() => <ProtectedTrainerRoute component={() => <Dashboard type="trainer" />} />}
         </Route>
         <Route path="/institute/dashboard">
-          {() => <Dashboard type="institute-admin" />}
+          {() => <ProtectedInstituteRoute component={() => <Dashboard type="institute-admin" />} />}
         </Route>
         
         {/* 일반 메뉴 */}
@@ -535,6 +535,21 @@ function AuthenticatedRoutes() {
                 </div>
               }>
                 <ProtectedTrainerRoute component={TrainerReviews} />
+              </Suspense>
+            );
+          }}
+        </Route>
+        
+        <Route path="/trainer/notebook">
+          {() => {
+            const NotebookPage = lazy(() => import('./pages/notebook'));
+            return (
+              <Suspense fallback={
+                <div className="p-8 flex justify-center items-center">
+                  <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
+                </div>
+              }>
+                <ProtectedTrainerRoute component={NotebookPage} />
               </Suspense>
             );
           }}

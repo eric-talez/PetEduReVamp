@@ -850,9 +850,9 @@ export function Sidebar({
                           show={true}
                         >훈련사 대시보드</AccessibleNavItem>
                         <AccessibleNavItem 
-                          href="/notebook" 
+                          href="/trainer/notebook" 
                           icon={<BookOpen className="w-5 h-5 mr-2" />} 
-                          active={isActive("/notebook")} 
+                          active={isActive("/trainer/notebook")} 
                           onClick={handleItemClick} 
                           show={true}
                         >알림장 관리</AccessibleNavItem>
