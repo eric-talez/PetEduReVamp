@@ -1977,7 +1977,6 @@ export default function AdminShop() {
                           </TableCell>
                           <TableCell className="text-center">
                             <Badge variant="outline" className="bg-amber-50 text-amber-900 border-amber-200">
-                              <Percent className="h-3 w-3 mr-1" />
                               {recommendation.commissionRate}%
                             </Badge>
                           </TableCell>
