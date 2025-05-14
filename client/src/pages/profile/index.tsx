@@ -155,7 +155,10 @@ export default function ProfilePage({ userType, section }: ProfilePageProps = {}
   // 컴포넌트 마운트 시 사용자 정보 로드
   useEffect(() => {
     loadUserProfile();
-  }, []);
+    
+    // 디버깅용 - 나중에 제거
+    console.log('현재 프로필 이미지 URL:', userData?.avatar);
+  }, [userData?.avatar]);
 
   // API 호출을 위한 상태
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -324,7 +327,7 @@ export default function ProfilePage({ userType, section }: ProfilePageProps = {}
             <div className="flex flex-col md:flex-row gap-6">
               <div className="flex-shrink-0">
                 <Avatar className="w-32 h-32">
-                  <AvatarImage src={userData?.avatar || ""} />
+                  <AvatarImage src="https://images.unsplash.com/photo-1543466835-00a7907e9de1?q=80&w=300&auto=format&fit=crop" />
                   <AvatarFallback className="text-3xl font-bold text-primary bg-primary/10">
                     {userName ? userName.substring(0, 1).toUpperCase() : "U"}
                   </AvatarFallback>
@@ -438,7 +441,7 @@ export default function ProfilePage({ userType, section }: ProfilePageProps = {}
               <div className="flex flex-col md:flex-row gap-6">
                 <div className="flex-shrink-0">
                   <Avatar className="w-32 h-32 mb-4">
-                    <AvatarImage src={userData?.avatar || form.getValues("avatar") || ""} />
+                    <AvatarImage src="https://images.unsplash.com/photo-1543466835-00a7907e9de1?q=80&w=300&auto=format&fit=crop" />
                     <AvatarFallback className="text-3xl font-bold text-primary bg-primary/10">
                       {form.getValues("name").substring(0, 1).toUpperCase()}
                     </AvatarFallback>
