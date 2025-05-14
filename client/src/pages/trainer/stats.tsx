@@ -48,7 +48,7 @@ export default function TrainerStats() {
   const auth = useAuth();
   const isAuthenticated = auth.isAuthenticated;
   const user = { name: auth.userName };
-  const [activeTab, setActiveTab] = useState<string>('earnings');
+  const [activeTab, setActiveTab] = useState<string>('schedule');
   const [activeModal, setActiveModal] = useState<ModalType>(null);
   const [selectedDateRange, setSelectedDateRange] = useState<string>('month');
 
@@ -77,15 +77,15 @@ export default function TrainerStats() {
     <div className="container py-8">
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-2xl font-bold">수익 및 통계</h1>
-          <p className="text-gray-500 mt-1">수익 현황을 확인하고 정산 관리를 할 수 있습니다.</p>
+          <h1 className="text-2xl font-bold">수업 일정</h1>
+          <p className="text-gray-500 mt-1">강의 일정을 확인하고 관리할 수 있습니다.</p>
         </div>
         <div className="flex space-x-2">
           <Button variant="outline" onClick={() => openModal('settings')}>
-            정산 계좌 설정
+            일정 설정
           </Button>
           <Button variant="outline" onClick={() => openModal('export')}>
-            <Download className="mr-2 h-4 w-4" /> 보고서 내보내기
+            <Download className="mr-2 h-4 w-4" /> 일정 내보내기
           </Button>
         </div>
       </div>
