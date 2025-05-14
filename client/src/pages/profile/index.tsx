@@ -326,12 +326,13 @@ export default function ProfilePage({ userType, section }: ProfilePageProps = {}
           <>
             <div className="flex flex-col md:flex-row gap-6">
               <div className="flex-shrink-0">
-                <Avatar className="w-32 h-32">
-                  <AvatarImage src="https://images.unsplash.com/photo-1543466835-00a7907e9de1?q=80&w=300&auto=format&fit=crop" />
-                  <AvatarFallback className="text-3xl font-bold text-primary bg-primary/10">
-                    {userName ? userName.substring(0, 1).toUpperCase() : "U"}
-                  </AvatarFallback>
-                </Avatar>
+                <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-white dark:border-gray-800 shadow-lg">
+                  <img 
+                    src="https://images.unsplash.com/photo-1543466835-00a7907e9de1?q=80&w=300&auto=format&fit=crop&sharp=100" 
+                    alt={userName || "프로필 이미지"} 
+                    className="w-full h-full object-cover brightness-110 contrast-110" 
+                  />
+                </div>
               </div>
               <div className="flex-grow">
                 <h2 className="text-xl font-semibold">{userName || "사용자"}</h2>
@@ -440,12 +441,13 @@ export default function ProfilePage({ userType, section }: ProfilePageProps = {}
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               <div className="flex flex-col md:flex-row gap-6">
                 <div className="flex-shrink-0">
-                  <Avatar className="w-32 h-32 mb-4">
-                    <AvatarImage src="https://images.unsplash.com/photo-1543466835-00a7907e9de1?q=80&w=300&auto=format&fit=crop" />
-                    <AvatarFallback className="text-3xl font-bold text-primary bg-primary/10">
-                      {form.getValues("name").substring(0, 1).toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
+                  <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-white dark:border-gray-800 shadow-lg mb-4">
+                    <img 
+                      src="https://images.unsplash.com/photo-1543466835-00a7907e9de1?q=80&w=300&auto=format&fit=crop&sharp=100" 
+                      alt={form.getValues("name") || "프로필 이미지"} 
+                      className="w-full h-full object-cover brightness-110 contrast-110" 
+                    />
+                  </div>
                   <div className="mt-2">
                     <FormField
                       control={form.control}
