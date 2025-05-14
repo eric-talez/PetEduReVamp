@@ -190,7 +190,7 @@ export const DEFAULT_MENU_ITEMS: MenuItem[] = [
   {
     id: 'shopping',
     title: '쇼핑몰',
-    path: '/shop',
+    path: 'https://replit.com/join/wshpfpjewg-hnblgkjw',
     icon: 'ShoppingBag',
     type: 'external',
     category: 'shopping',
