@@ -31,43 +31,42 @@ export default function Login() {
     setIsLoginLoading(true);
 
     try {
-      // 로그인 성공 이벤트 발생 (이벤트 시스템 사용)
-      const mockUser = {
-        username: loginUsername,
-        name: "테스트 사용자",
-        email: "test@example.com",
-        role: "user"
-      };
+      // 실제 서버 로그인 API 호출
+      console.log('로그인 시도:', { username: loginUsername });
       
-      // 테스트를 위해 로그인 시 역할 선택
-      if (loginUsername === 'admin') {
-        mockUser.role = 'admin';
-        mockUser.name = '관리자';
-      } else if (loginUsername === 'trainer') {
-        mockUser.role = 'trainer';
-        mockUser.name = '훈련사';
-      } else if (loginUsername === 'institute') {
-        mockUser.role = 'institute-admin';
-        mockUser.name = '기관 관리자';
-      } else if (loginUsername === 'pet-owner') {
-        mockUser.role = 'pet-owner';
-        mockUser.name = '반려인';
-      }
-      
-      const loginEvent = new CustomEvent('login', {
-        detail: { 
-          role: mockUser.role,
-          name: mockUser.name
-        }
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include', // 쿠키를 포함하여 인증 세션 유지
+        body: JSON.stringify({ 
+          username: loginUsername, 
+          password: loginPassword 
+        }),
       });
       
-      // 디버깅용 로그
-      console.log("Login as " + mockUser.role);
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || '로그인에 실패했습니다');
+      }
+      
+      // 서버에서 반환한 사용자 정보 처리
+      const userData = await response.json();
+      console.log('로그인 성공:', userData);
+      
+      // 글로벌 인증 상태 업데이트를 위한 이벤트 발생
+      const loginEvent = new CustomEvent('login', {
+        detail: { 
+          role: userData.role,
+          name: userData.name
+        }
+      });
       
       window.dispatchEvent(loginEvent);
       
       // 역할에 따라 다른 페이지로 리디렉션
-      switch(mockUser.role) {
+      switch(userData.role) {
         case 'pet-owner':
           navigate("/dashboard");
           break;
@@ -84,7 +83,8 @@ export default function Login() {
           navigate("/"); // 일반 회원은 홈페이지로
       }
     } catch (err) {
-      setLoginError("로그인에 실패했습니다. 아이디와 비밀번호를 확인해주세요.");
+      console.error('로그인 오류:', err);
+      setLoginError(err instanceof Error ? err.message : "로그인에 실패했습니다. 아이디와 비밀번호를 확인해주세요.");
     } finally {
       setIsLoginLoading(false);
     }
@@ -96,60 +96,55 @@ export default function Login() {
     setIsRegisterLoading(true);
     
     try {
-      // 회원가입 후 로그인 성공 이벤트 발생 (시연용)
-      const mockUser = {
+      // 실제 서버 회원가입 API 호출
+      console.log('회원가입 시도:', { 
         username: registerUsername,
         name: registerName,
-        email: registerEmail,
-        role: "user"
-      };
-      
-      // 테스트를 위해 회원가입 시 사용자명에 따라 역할 결정
-      if (registerUsername.includes('admin')) {
-        mockUser.role = 'admin';
-        mockUser.name = '관리자 ' + registerName;
-      } else if (registerUsername.includes('trainer')) {
-        mockUser.role = 'trainer';
-        mockUser.name = '훈련사 ' + registerName;
-      } else if (registerUsername.includes('institute')) {
-        mockUser.role = 'institute-admin';
-        mockUser.name = '기관 관리자 ' + registerName;
-      } else if (registerUsername.includes('pet') || registerUsername.includes('owner')) {
-        mockUser.role = 'pet-owner';
-        mockUser.name = '반려인 ' + registerName;
-      }
-      
-      const loginEvent = new CustomEvent('login', {
-        detail: { 
-          role: mockUser.role,
-          name: mockUser.name
-        }
+        email: registerEmail 
       });
       
-      // 디버깅용 로그
-      console.log("Register and login as " + mockUser.role);
+      // 기본 역할은 pet-owner로 설정
+      const registerRole = 'pet-owner';
+      
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username: registerUsername,
+          password: registerPassword,
+          email: registerEmail,
+          name: registerName,
+          role: registerRole
+        }),
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || '회원가입에 실패했습니다');
+      }
+      
+      // 서버에서 반환한 사용자 정보 처리
+      const userData = await response.json();
+      console.log('회원가입 성공:', userData);
+      
+      // 글로벌 인증 상태 업데이트를 위한 이벤트 발생
+      const loginEvent = new CustomEvent('login', {
+        detail: { 
+          role: userData.role,
+          name: userData.name
+        }
+      });
       
       window.dispatchEvent(loginEvent);
       
       // 역할에 따라 다른 페이지로 리디렉션
-      switch(mockUser.role) {
-        case 'pet-owner':
-          navigate("/dashboard");
-          break;
-        case 'trainer':
-          navigate("/trainer/dashboard");
-          break;
-        case 'institute-admin':
-          navigate("/institute/dashboard");
-          break;
-        case 'admin':
-          navigate("/admin/dashboard");
-          break;
-        default:
-          navigate("/"); // 일반 회원은 홈페이지로
-      }
+      navigate("/dashboard");
+      
     } catch (err) {
-      setRegisterError("회원가입에 실패했습니다. 다시 시도해주세요.");
+      console.error('회원가입 오류:', err);
+      setRegisterError(err instanceof Error ? err.message : "회원가입에 실패했습니다. 다시 시도해주세요.");
     } finally {
       setIsRegisterLoading(false);
     }
