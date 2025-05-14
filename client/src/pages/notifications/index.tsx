@@ -682,7 +682,7 @@ export default function NotebookPage() {
                   <SelectValue placeholder="템플릿 선택 (선택사항)" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">직접 작성</SelectItem>
+                  <SelectItem value="custom">직접 작성</SelectItem>
                   {templates.map(template => (
                     <SelectItem key={template.id} value={template.id}>
                       {template.title}
@@ -1282,7 +1282,7 @@ export default function NotebookPage() {
                     <SelectValue placeholder="모든 반려동물" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">모든 반려동물</SelectItem>
+                    <SelectItem value="all">모든 반려동물</SelectItem>
                     {pets.map(pet => (
                       <SelectItem key={pet.id} value={pet.id.toString()}>
                         {pet.name}

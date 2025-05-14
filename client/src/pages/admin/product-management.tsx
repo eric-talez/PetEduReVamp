@@ -292,7 +292,7 @@ export default function ProductManagement() {
                     <SelectValue placeholder="모든 카테고리" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">모든 카테고리</SelectItem>
+                    <SelectItem value="all">모든 카테고리</SelectItem>
                     <SelectItem value="pet-food">반려동물 사료</SelectItem>
                     <SelectItem value="pet-snack">반려동물 간식</SelectItem>
                     <SelectItem value="pet-toys">장난감</SelectItem>
