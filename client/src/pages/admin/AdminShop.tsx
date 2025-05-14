@@ -2654,6 +2654,282 @@ export default function AdminShop() {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* 훈련사 추천 모달 */}
+      <Dialog open={showRecommendationModal} onOpenChange={setShowRecommendationModal}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>
+              {modalMode === 'view' && '추천 상품 상세 정보'}
+              {modalMode === 'edit' && '추천 상품 수정'}
+              {modalMode === 'add' && '새 추천 상품 등록'}
+            </DialogTitle>
+            <DialogDescription>
+              {modalMode === 'view' && '훈련사가 추천한 상품 정보입니다.'}
+              {modalMode === 'edit' && '추천 상품 정보를 수정합니다.'}
+              {modalMode === 'add' && '새로운 훈련사 추천 상품을 등록합니다.'}
+            </DialogDescription>
+          </DialogHeader>
+
+          {selectedRecommendation ? (
+            <div className="grid gap-6 py-4">
+              <div className="grid grid-cols-4 gap-4">
+                <div className="space-y-2">
+                  <Label>훈련사</Label>
+                  <div className="flex items-center gap-2 p-2 border rounded-md">
+                    <Avatar className="h-10 w-10">
+                      <AvatarImage src={trainers.find(t => t.id === selectedRecommendation.trainerId)?.profileImage} />
+                      <AvatarFallback>{selectedRecommendation.trainerName.substring(0, 2)}</AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <div className="font-medium">{selectedRecommendation.trainerName}</div>
+                      <div className="text-xs text-muted-foreground">
+                        {trainers.find(t => t.id === selectedRecommendation.trainerId)?.specialty || ''}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div className="col-span-3 space-y-2">
+                  <Label>추천 상품</Label>
+                  <div className="p-2 border rounded-md">
+                    <div className="font-medium">{selectedRecommendation.productName}</div>
+                    <div className="text-sm text-muted-foreground">
+                      ID: {selectedRecommendation.productId}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label>추천 메시지</Label>
+                <div className="p-3 bg-muted rounded-md">
+                  {selectedRecommendation.customMessage || '추천 메시지가 없습니다.'}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Label>추천 등록일</Label>
+                  <div className="p-2 border rounded-md">
+                    {selectedRecommendation.recommendationDate}
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label>수수료 비율</Label>
+                  <div className="p-2 border rounded-md font-medium">
+                    {selectedRecommendation.commissionRate}%
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label>상태</Label>
+                  <div className="p-2 border rounded-md">
+                    {selectedRecommendation.status === 'active' && (
+                      <Badge className="bg-green-500">활성</Badge>
+                    )}
+                    {selectedRecommendation.status === 'pending' && (
+                      <Badge className="bg-amber-500">대기</Badge>
+                    )}
+                    {selectedRecommendation.status === 'rejected' && (
+                      <Badge variant="outline" className="text-red-500 border-red-500">거절</Badge>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>총 판매액</Label>
+                  <div className="p-2 border rounded-md font-medium">
+                    ￦{selectedRecommendation.totalSales.toLocaleString()}
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label>총 수수료</Label>
+                  <div className="p-2 border rounded-md font-medium text-green-600">
+                    ￦{selectedRecommendation.totalCommission.toLocaleString()}
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-2 pt-4">
+                {modalMode === 'view' && (
+                  <>
+                    <Button 
+                      variant="outline" 
+                      onClick={() => {
+                        setModalMode('edit');
+                      }}
+                    >
+                      <Pencil className="h-4 w-4 mr-2" />
+                      수정
+                    </Button>
+
+                    {selectedRecommendation.status === 'pending' && (
+                      <>
+                        <Button
+                          variant="default"
+                          onClick={() => {
+                            const updatedRecs = trainerRecommendations.map(rec => 
+                              rec.id === selectedRecommendation.id 
+                                ? {...rec, status: 'active' as const} 
+                                : rec
+                            );
+                            setTrainerRecommendations(updatedRecs);
+                            setFilteredRecommendations(updatedRecs);
+                            setSelectedRecommendation({...selectedRecommendation, status: 'active' as const});
+                            toast({
+                              title: "추천 승인 완료",
+                              description: "해당 추천이 승인되었습니다.",
+                            });
+                          }}
+                        >
+                          <Check className="h-4 w-4 mr-2" />
+                          승인
+                        </Button>
+                        <Button
+                          variant="destructive"
+                          onClick={() => {
+                            const updatedRecs = trainerRecommendations.map(rec => 
+                              rec.id === selectedRecommendation.id 
+                                ? {...rec, status: 'rejected' as const} 
+                                : rec
+                            );
+                            setTrainerRecommendations(updatedRecs);
+                            setFilteredRecommendations(updatedRecs);
+                            setSelectedRecommendation({...selectedRecommendation, status: 'rejected' as const});
+                            toast({
+                              title: "추천 거절 완료",
+                              description: "해당 추천이 거절되었습니다.",
+                            });
+                          }}
+                        >
+                          <X className="h-4 w-4 mr-2" />
+                          거절
+                        </Button>
+                      </>
+                    )}
+                  </>
+                )}
+
+                {modalMode === 'edit' && (
+                  <>
+                    <Button 
+                      variant="outline" 
+                      onClick={() => {
+                        setModalMode('view');
+                      }}
+                    >
+                      취소
+                    </Button>
+                    <Button 
+                      onClick={() => {
+                        // 추천 업데이트 로직
+                        toast({
+                          title: "추천 수정 완료",
+                          description: "추천 정보가 업데이트되었습니다.",
+                        });
+                        setModalMode('view');
+                      }}
+                    >
+                      저장
+                    </Button>
+                  </>
+                )}
+
+                {modalMode === 'add' && (
+                  <>
+                    <Button 
+                      variant="outline" 
+                      onClick={() => {
+                        setShowRecommendationModal(false);
+                      }}
+                    >
+                      취소
+                    </Button>
+                    <Button 
+                      onClick={() => {
+                        // 추천 추가 로직
+                        toast({
+                          title: "추천 등록 완료",
+                          description: "새 추천이 등록되었습니다.",
+                        });
+                        setShowRecommendationModal(false);
+                      }}
+                    >
+                      등록
+                    </Button>
+                  </>
+                )}
+              </div>
+            </div>
+          ) : (
+            modalMode === 'add' && (
+              <div className="grid gap-6 py-4">
+                <div className="space-y-2">
+                  <Label htmlFor="trainer">훈련사 선택</Label>
+                  <Select>
+                    <SelectTrigger>
+                      <SelectValue placeholder="훈련사를 선택하세요" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {trainers.map(trainer => (
+                        <SelectItem key={trainer.id} value={String(trainer.id)}>
+                          {trainer.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="product">상품 선택</Label>
+                  <Select>
+                    <SelectTrigger>
+                      <SelectValue placeholder="상품을 선택하세요" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {products.map(product => (
+                        <SelectItem key={product.id} value={String(product.id)}>
+                          {product.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="message">추천 메시지</Label>
+                  <Textarea placeholder="훈련사의 추천 메시지를 입력하세요" />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="commission">수수료 비율 (%)</Label>
+                  <Input type="number" min="0" max="100" defaultValue="10" />
+                </div>
+                <div className="flex justify-end gap-2 pt-4">
+                  <Button 
+                    variant="outline" 
+                    onClick={() => {
+                      setShowRecommendationModal(false);
+                    }}
+                  >
+                    취소
+                  </Button>
+                  <Button 
+                    onClick={() => {
+                      // 추천 추가 로직
+                      toast({
+                        title: "추천 등록 완료",
+                        description: "새 추천이 등록되었습니다.",
+                      });
+                      setShowRecommendationModal(false);
+                    }}
+                  >
+                    등록
+                  </Button>
+                </div>
+              </div>
+            )
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
