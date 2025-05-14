@@ -949,6 +949,245 @@ export default function ActivityRecorder({
             </div>
           </div>
         </TabsContent>
+        
+        <TabsContent value="behavior" className="mt-0">
+          <div className="space-y-5">
+            <div>
+              <h4 className="text-sm font-semibold mb-3">사회성 평가</h4>
+              <div className="space-y-3">
+                <div>
+                  <div className="flex justify-between">
+                    <Label>성인과의 상호작용: {value.behavior?.socialization?.humanAdults || 0}/10</Label>
+                  </div>
+                  <Slider
+                    value={[value.behavior?.socialization?.humanAdults || 0]}
+                    min={0}
+                    max={10}
+                    step={1}
+                    onValueChange={(val) => handleBehaviorChange('social-humanAdults', val[0])}
+                    className="mt-2"
+                    disabled={readOnly}
+                  />
+                </div>
+                
+                <div>
+                  <div className="flex justify-between">
+                    <Label>아이들과의 상호작용: {value.behavior?.socialization?.humanChildren || 0}/10</Label>
+                  </div>
+                  <Slider
+                    value={[value.behavior?.socialization?.humanChildren || 0]}
+                    min={0}
+                    max={10}
+                    step={1}
+                    onValueChange={(val) => handleBehaviorChange('social-humanChildren', val[0])}
+                    className="mt-2"
+                    disabled={readOnly}
+                  />
+                </div>
+                
+                <div>
+                  <div className="flex justify-between">
+                    <Label>수컷 강아지와의 상호작용: {value.behavior?.socialization?.maleDogs || 0}/10</Label>
+                  </div>
+                  <Slider
+                    value={[value.behavior?.socialization?.maleDogs || 0]}
+                    min={0}
+                    max={10}
+                    step={1}
+                    onValueChange={(val) => handleBehaviorChange('social-maleDogs', val[0])}
+                    className="mt-2"
+                    disabled={readOnly}
+                  />
+                </div>
+                
+                <div>
+                  <div className="flex justify-between">
+                    <Label>암컷 강아지와의 상호작용: {value.behavior?.socialization?.femaleDogs || 0}/10</Label>
+                  </div>
+                  <Slider
+                    value={[value.behavior?.socialization?.femaleDogs || 0]}
+                    min={0}
+                    max={10}
+                    step={1}
+                    onValueChange={(val) => handleBehaviorChange('social-femaleDogs', val[0])}
+                    className="mt-2"
+                    disabled={readOnly}
+                  />
+                </div>
+                
+                <div>
+                  <div className="flex justify-between">
+                    <Label>다른 동물과의 상호작용: {value.behavior?.socialization?.otherAnimals || 0}/10</Label>
+                  </div>
+                  <Slider
+                    value={[value.behavior?.socialization?.otherAnimals || 0]}
+                    min={0}
+                    max={10}
+                    step={1}
+                    onValueChange={(val) => handleBehaviorChange('social-otherAnimals', val[0])}
+                    className="mt-2"
+                    disabled={readOnly}
+                  />
+                </div>
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="behavior-reactivity">반응성</Label>
+                <Select
+                  value={value.behavior?.reactivity || 'none'}
+                  onValueChange={(val) => handleBehaviorChange('reactivity', val)}
+                  disabled={readOnly}
+                >
+                  <SelectTrigger id="behavior-reactivity" className="mt-1">
+                    <SelectValue placeholder="반응성 선택" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">없음 (대부분의 자극에 침착)</SelectItem>
+                    <SelectItem value="mild">약함 (일부 자극에 약간 반응)</SelectItem>
+                    <SelectItem value="moderate">중간 (여러 자극에 뚜렷한 반응)</SelectItem>
+                    <SelectItem value="severe">강함 (많은 자극에 강한 반응)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div>
+                <Label htmlFor="behavior-fearfulness">두려움</Label>
+                <Select
+                  value={value.behavior?.fearfulness || 'none'}
+                  onValueChange={(val) => handleBehaviorChange('fearfulness', val)}
+                  disabled={readOnly}
+                >
+                  <SelectTrigger id="behavior-fearfulness" className="mt-1">
+                    <SelectValue placeholder="두려움 선택" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">없음 (자신감 있고 대담함)</SelectItem>
+                    <SelectItem value="mild">약함 (간혹 신중하게 행동)</SelectItem>
+                    <SelectItem value="moderate">중간 (새로운 환경에서 뚜렷한 불안)</SelectItem>
+                    <SelectItem value="severe">강함 (대부분의 상황에서 두려워함)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            
+            <div className="space-y-4">
+              <div>
+                <div className="flex justify-between">
+                  <Label>자신감: {value.behavior?.confidence || 0}/10</Label>
+                </div>
+                <Slider
+                  value={[value.behavior?.confidence || 0]}
+                  min={0}
+                  max={10}
+                  step={1}
+                  onValueChange={(val) => handleBehaviorChange('confidence', val[0])}
+                  className="mt-2"
+                  disabled={readOnly}
+                />
+              </div>
+              
+              <div>
+                <div className="flex justify-between">
+                  <Label>환경 민감도: {value.behavior?.environSensitivity || 0}/10</Label>
+                </div>
+                <Slider
+                  value={[value.behavior?.environSensitivity || 0]}
+                  min={0}
+                  max={10}
+                  step={1}
+                  onValueChange={(val) => handleBehaviorChange('environSensitivity', val[0])}
+                  className="mt-2"
+                  disabled={readOnly}
+                />
+              </div>
+            </div>
+            
+            <div>
+              <Label htmlFor="behavior-notes">행동 관찰 기록</Label>
+              <Textarea 
+                id="behavior-notes"
+                placeholder="반려견의 행동 특성, 주목할 만한 행동 패턴 등을 기록하세요"
+                value={value.behavior?.notes || ''}
+                onChange={(e) => handleBehaviorChange('notes', e.target.value)}
+                className="mt-1 min-h-[80px]"
+                disabled={readOnly}
+              />
+            </div>
+          </div>
+        </TabsContent>
+        
+        <TabsContent value="mood" className="mt-0">
+          <div className="space-y-5">
+            <div>
+              <Label htmlFor="mood-overall">전반적인 기분</Label>
+              <Select
+                value={value.mood?.overall || 'neutral'}
+                onValueChange={(val) => handleMoodChange('overall', val)}
+                disabled={readOnly}
+              >
+                <SelectTrigger id="mood-overall" className="mt-1">
+                  <SelectValue placeholder="기분 상태 선택" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="extremely_happy">매우 행복 (활기차고 열정적)</SelectItem>
+                  <SelectItem value="happy">행복 (긍정적이고 반응 좋음)</SelectItem>
+                  <SelectItem value="content">만족 (편안하고 평온함)</SelectItem>
+                  <SelectItem value="neutral">보통 (특별한 감정 표현 없음)</SelectItem>
+                  <SelectItem value="anxious">불안 (약간의 걱정이나 경계)</SelectItem>
+                  <SelectItem value="stressed">스트레스 (뚜렷한 불안 징후)</SelectItem>
+                  <SelectItem value="tired">피곤 (에너지가 낮고 졸려함)</SelectItem>
+                  <SelectItem value="excited">흥분 (매우 활동적이고 주의력 산만)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="space-y-4">
+              <div>
+                <div className="flex justify-between">
+                  <Label>집중력: {value.mood?.focus || 0}/10</Label>
+                </div>
+                <Slider
+                  value={[value.mood?.focus || 0]}
+                  min={0}
+                  max={10}
+                  step={1}
+                  onValueChange={(val) => handleMoodChange('focus', val[0])}
+                  className="mt-2"
+                  disabled={readOnly}
+                />
+              </div>
+              
+              <div>
+                <div className="flex justify-between">
+                  <Label>차분함: {value.mood?.calmness || 0}/10</Label>
+                </div>
+                <Slider
+                  value={[value.mood?.calmness || 0]}
+                  min={0}
+                  max={10}
+                  step={1}
+                  onValueChange={(val) => handleMoodChange('calmness', val[0])}
+                  className="mt-2"
+                  disabled={readOnly}
+                />
+              </div>
+            </div>
+            
+            <div>
+              <Label htmlFor="mood-notes">감정 상태 관찰</Label>
+              <Textarea 
+                id="mood-notes"
+                placeholder="오늘의 감정 상태와 특이사항을 기록하세요"
+                value={value.mood?.notes || ''}
+                onChange={(e) => handleMoodChange('notes', e.target.value)}
+                className="mt-1 min-h-[80px]"
+                disabled={readOnly}
+              />
+            </div>
+          </div>
+        </TabsContent>
       </Tabs>
     </div>
   );
