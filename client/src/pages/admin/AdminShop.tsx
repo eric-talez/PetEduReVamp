@@ -1869,9 +1869,9 @@ export default function AdminShop() {
                     />
                   </div>
                   <Select 
-                    value={filterTrainer ? String(filterTrainer) : ''} 
+                    value={filterTrainer ? String(filterTrainer) : "all"} 
                     onValueChange={(val) => {
-                      const trainerId = val ? parseInt(val) : null;
+                      const trainerId = val !== "all" ? parseInt(val) : null;
                       setFilterTrainer(trainerId);
                       if (trainerId) {
                         setFilteredRecommendations(
@@ -1886,7 +1886,7 @@ export default function AdminShop() {
                       <SelectValue placeholder="훈련사 선택" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">모든 훈련사</SelectItem>
+                      <SelectItem value="all">모든 훈련사</SelectItem>
                       {trainers.map((trainer) => (
                         <SelectItem key={trainer.id} value={String(trainer.id)}>
                           {trainer.name}
@@ -1895,10 +1895,10 @@ export default function AdminShop() {
                     </SelectContent>
                   </Select>
                   <Select 
-                    value={filterStatus || ''} 
+                    value={filterStatus || "all"} 
                     onValueChange={(val) => {
-                      setFilterStatus(val || null);
-                      if (val) {
+                      setFilterStatus(val !== "all" ? val : null);
+                      if (val && val !== "all") {
                         setFilteredRecommendations(
                           trainerRecommendations.filter(rec => rec.status === val)
                         );
@@ -1911,7 +1911,7 @@ export default function AdminShop() {
                       <SelectValue placeholder="상태 선택" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">모든 상태</SelectItem>
+                      <SelectItem value="all">모든 상태</SelectItem>
                       <SelectItem value="active">활성</SelectItem>
                       <SelectItem value="pending">대기</SelectItem>
                       <SelectItem value="rejected">거절</SelectItem>
