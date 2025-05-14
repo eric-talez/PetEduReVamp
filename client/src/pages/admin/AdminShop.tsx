@@ -1655,18 +1655,18 @@ export default function AdminShop() {
                         <div className="h-10 w-10 bg-muted rounded overflow-hidden">
                           <img src="https://placedog.net/500/280?id=1" alt="Product" className="h-full w-full object-cover" />
                         </div>
-                        <div>프리미엄 건식 사료 1kg</div>
+                        <div className="text-foreground font-medium">프리미엄 건식 사료 1kg</div>
                       </div>
-                      <div className="font-medium">126개</div>
+                      <div className="font-medium text-primary">126개</div>
                     </div>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-2">
                         <div className="h-10 w-10 bg-muted rounded overflow-hidden">
                           <img src="https://placedog.net/500/280?id=3" alt="Product" className="h-full w-full object-cover" />
                         </div>
-                        <div>올인원 훈련 클리커 세트</div>
+                        <div className="text-foreground font-medium">올인원 훈련 클리커 세트</div>
                       </div>
-                      <div className="font-medium">98개</div>
+                      <div className="font-medium text-primary">98개</div>
                     </div>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-2">
