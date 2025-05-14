@@ -1699,6 +1699,309 @@ export default function AdminShop() {
             </Card>
           </div>
         </TabsContent>
+        
+        {/* 훈련사 추천 상품 관리 탭 */}
+        <TabsContent value="recommendations" className="space-y-4">
+          <Card>
+            <CardHeader className="flex flex-row justify-between items-center">
+              <div>
+                <CardTitle>훈련사 추천 상품 관리</CardTitle>
+                <CardDescription>
+                  훈련사들이 추천하는 상품과 수수료 현황을 관리합니다.
+                </CardDescription>
+              </div>
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm" onClick={() => {
+                  // 추천 현황 동기화 로직
+                  toast({
+                    title: "추천 현황 동기화 완료",
+                    description: "최신 추천 정보로 업데이트되었습니다.",
+                  });
+                }}>
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  동기화
+                </Button>
+                <Button size="sm" onClick={() => {
+                  setModalMode('add');
+                  setShowRecommendationModal(true);
+                }}>
+                  <PlusCircle className="h-4 w-4 mr-2" />
+                  추천 등록
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="flex justify-between items-center mb-4">
+                <div className="flex gap-2">
+                  <div className="relative w-64">
+                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      type="search"
+                      placeholder="훈련사 또는 상품명 검색..."
+                      className="pl-8"
+                      value={searchQuery}
+                      onChange={(e) => {
+                        setSearchQuery(e.target.value);
+                        const query = e.target.value.toLowerCase();
+                        setFilteredRecommendations(
+                          trainerRecommendations.filter(
+                            (rec) =>
+                              rec.trainerName.toLowerCase().includes(query) ||
+                              rec.productName.toLowerCase().includes(query)
+                          )
+                        );
+                      }}
+                    />
+                  </div>
+                  <Select 
+                    value={filterTrainer ? String(filterTrainer) : ''} 
+                    onValueChange={(val) => {
+                      const trainerId = val ? parseInt(val) : null;
+                      setFilterTrainer(trainerId);
+                      if (trainerId) {
+                        setFilteredRecommendations(
+                          trainerRecommendations.filter(rec => rec.trainerId === trainerId)
+                        );
+                      } else {
+                        setFilteredRecommendations(trainerRecommendations);
+                      }
+                    }}
+                  >
+                    <SelectTrigger className="w-[180px]">
+                      <SelectValue placeholder="훈련사 선택" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">모든 훈련사</SelectItem>
+                      {trainers.map((trainer) => (
+                        <SelectItem key={trainer.id} value={String(trainer.id)}>
+                          {trainer.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Select 
+                    value={filterStatus || ''} 
+                    onValueChange={(val) => {
+                      setFilterStatus(val || null);
+                      if (val) {
+                        setFilteredRecommendations(
+                          trainerRecommendations.filter(rec => rec.status === val)
+                        );
+                      } else {
+                        setFilteredRecommendations(trainerRecommendations);
+                      }
+                    }}
+                  >
+                    <SelectTrigger className="w-[150px]">
+                      <SelectValue placeholder="상태 선택" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">모든 상태</SelectItem>
+                      <SelectItem value="active">활성</SelectItem>
+                      <SelectItem value="pending">대기</SelectItem>
+                      <SelectItem value="rejected">거절</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              
+              <div className="rounded-md border">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-[50px]">ID</TableHead>
+                      <TableHead className="w-[180px]">훈련사</TableHead>
+                      <TableHead>상품명</TableHead>
+                      <TableHead className="w-[100px] text-center">수수료</TableHead>
+                      <TableHead className="w-[120px] text-center">상태</TableHead>
+                      <TableHead className="w-[140px] text-right">총 수익</TableHead>
+                      <TableHead className="w-[120px] text-right">액션</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {isLoading ? (
+                      <TableRow>
+                        <TableCell colSpan={7} className="h-24 text-center">
+                          <div className="flex items-center justify-center">
+                            <div className="animate-spin w-6 h-6 border-2 border-primary border-t-transparent rounded-full"></div>
+                            <span className="ml-2">데이터 로딩 중...</span>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ) : filteredRecommendations.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={7} className="h-24 text-center">
+                          {searchQuery
+                            ? "검색 결과가 없습니다."
+                            : "등록된 추천 상품이 없습니다."}
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      filteredRecommendations.map((recommendation) => (
+                        <TableRow key={recommendation.id}>
+                          <TableCell>{recommendation.id}</TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-2">
+                              <Avatar className="h-8 w-8">
+                                <AvatarImage src={trainers.find(t => t.id === recommendation.trainerId)?.profileImage} />
+                                <AvatarFallback>{recommendation.trainerName.substring(0, 2)}</AvatarFallback>
+                              </Avatar>
+                              <div>
+                                <div className="font-medium">{recommendation.trainerName}</div>
+                                <div className="text-xs text-muted-foreground">
+                                  {trainers.find(t => t.id === recommendation.trainerId)?.specialty || ''}
+                                </div>
+                              </div>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="font-medium">{recommendation.productName}</div>
+                            <div className="text-xs text-muted-foreground">
+                              {recommendation.recommendationDate} 등록
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-center">
+                            <Badge variant="outline" className="bg-amber-50">
+                              <Percent className="h-3 w-3 mr-1" />
+                              {recommendation.commissionRate}%
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-center">
+                            {recommendation.status === 'active' && (
+                              <Badge className="bg-green-500">활성</Badge>
+                            )}
+                            {recommendation.status === 'pending' && (
+                              <Badge className="bg-amber-500">대기</Badge>
+                            )}
+                            {recommendation.status === 'rejected' && (
+                              <Badge variant="outline" className="text-red-500 border-red-500">거절</Badge>
+                            )}
+                          </TableCell>
+                          <TableCell className="text-right font-medium">
+                            {recommendation.totalCommission.toLocaleString()}원
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex justify-end gap-1">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => {
+                                  setSelectedRecommendation(recommendation);
+                                  setModalMode('view');
+                                  setShowRecommendationModal(true);
+                                }}
+                              >
+                                <Eye className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => {
+                                  setSelectedRecommendation(recommendation);
+                                  setModalMode('edit');
+                                  setShowRecommendationModal(true);
+                                }}
+                              >
+                                <Pencil className="h-4 w-4" />
+                              </Button>
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button variant="ghost" size="icon">
+                                    <MoreVertical className="h-4 w-4" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  <DropdownMenuLabel>작업</DropdownMenuLabel>
+                                  {recommendation.status === 'pending' && (
+                                    <>
+                                      <DropdownMenuItem
+                                        onClick={() => {
+                                          // 승인 로직
+                                          const updatedRecs = trainerRecommendations.map(rec => 
+                                            rec.id === recommendation.id 
+                                              ? {...rec, status: 'active'} 
+                                              : rec
+                                          );
+                                          setTrainerRecommendations(updatedRecs);
+                                          setFilteredRecommendations(updatedRecs);
+                                          toast({
+                                            title: "추천 승인 완료",
+                                            description: "해당 추천이 승인되었습니다.",
+                                          });
+                                        }}
+                                      >
+                                        <Check className="mr-2 h-4 w-4" />
+                                        <span>승인</span>
+                                      </DropdownMenuItem>
+                                      <DropdownMenuItem
+                                        onClick={() => {
+                                          // 거절 로직
+                                          const updatedRecs = trainerRecommendations.map(rec => 
+                                            rec.id === recommendation.id 
+                                              ? {...rec, status: 'rejected'} 
+                                              : rec
+                                          );
+                                          setTrainerRecommendations(updatedRecs);
+                                          setFilteredRecommendations(updatedRecs);
+                                          toast({
+                                            title: "추천 거절 완료",
+                                            description: "해당 추천이 거절되었습니다.",
+                                          });
+                                        }}
+                                      >
+                                        <X className="mr-2 h-4 w-4" />
+                                        <span>거절</span>
+                                      </DropdownMenuItem>
+                                    </>
+                                  )}
+                                  <DropdownMenuSeparator />
+                                  <DropdownMenuItem
+                                    onClick={() => {
+                                      if (confirm('이 추천을 삭제하시겠습니까?')) {
+                                        const updatedRecs = trainerRecommendations.filter(
+                                          (rec) => rec.id !== recommendation.id
+                                        );
+                                        setTrainerRecommendations(updatedRecs);
+                                        setFilteredRecommendations(updatedRecs);
+                                        toast({
+                                          title: "추천 삭제 완료",
+                                          description: "해당 추천이 삭제되었습니다.",
+                                        });
+                                      }
+                                    }}
+                                    className="text-red-600"
+                                  >
+                                    <Trash2 className="mr-2 h-4 w-4" />
+                                    <span>삭제</span>
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        {/* 추천 관리 탭 */}
+        <TabsContent value="referrals" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>추천 관리</CardTitle>
+              <CardDescription>
+                추천 코드 및 현황을 관리합니다.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {/* 여기에 관련 컨텐츠 추가 */}
+            </CardContent>
+          </Card>
+        </TabsContent>
       </Tabs>
       
       {/* 상품 상세/편집 모달 */}
