@@ -939,12 +939,21 @@ function AuthenticatedRoutes() {
             );
           }}
         </Route>
+        {/* /admin/notifications를 /admin/alerts로 리디렉션 */}
         <Route path="/admin/notifications">
+          {() => {
+            console.log("관리자 알림 페이지 리디렉션: /admin/notifications → /admin/alerts");
+            window.location.href = '/admin/alerts';
+            return null;
+          }}
+        </Route>
+        <Route path="/admin/alerts">
           {() => {
             const AdminNotifications = lazy(() => import('./pages/admin/AdminNotifications'));
             return (
               <Suspense fallback={<div className="p-8 flex justify-center items-center">
                 <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
+                <span className="ml-2">관리자 알림 로딩 중...</span>
               </div>}>
                 <ProtectedAdminRoute component={AdminNotifications} />
               </Suspense>
