@@ -58,6 +58,11 @@ import {
   DollarSign,
   AlignLeft,
   Image as ImageIcon,
+  Award,
+  Medal,
+  UserCheck,
+  MessageSquare,
+  Percent,
   Upload,
   Eye,
   MoreVertical,
@@ -807,6 +812,10 @@ export default function AdminShop() {
             <TabsTrigger value="categories">
               <Tag className="h-4 w-4 mr-2" />
               카테고리
+            </TabsTrigger>
+            <TabsTrigger value="recommendations">
+              <Award className="h-4 w-4 mr-2" />
+              훈련사 추천
             </TabsTrigger>
             <TabsTrigger value="referrals">
               <HeartHandshake className="h-4 w-4 mr-2" />
