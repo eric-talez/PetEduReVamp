@@ -140,6 +140,32 @@ interface Category {
   subcategories?: { id: number; name: string }[];
 }
 
+// 훈련사 타입 정의
+interface Trainer {
+  id: number;
+  name: string;
+  email: string;
+  profileImage?: string;
+  specialty: string;
+  totalSales: number;
+  activeRecommendations: number;
+}
+
+// 훈련사 추천 상품 타입 정의
+interface TrainerRecommendation {
+  id: number;
+  trainerId: number;
+  trainerName: string;
+  productId: number;
+  productName: string;
+  recommendationDate: string;
+  status: 'active' | 'pending' | 'rejected';
+  customMessage?: string;
+  commissionRate: number;
+  totalSales: number;
+  totalCommission: number;
+}
+
 export default function AdminShop() {
   const { userName } = useAuth();
   const { toast } = useToast();
@@ -162,6 +188,13 @@ export default function AdminShop() {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [showOrderModal, setShowOrderModal] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  // 훈련사 추천 상품 관련 상태
+  const [trainers, setTrainers] = useState<Trainer[]>([]);
+  const [trainerRecommendations, setTrainerRecommendations] = useState<TrainerRecommendation[]>([]);
+  const [filteredRecommendations, setFilteredRecommendations] = useState<TrainerRecommendation[]>([]);
+  const [showRecommendationModal, setShowRecommendationModal] = useState(false);
+  const [selectedRecommendation, setSelectedRecommendation] = useState<TrainerRecommendation | null>(null);
+  const [filterTrainer, setFilterTrainer] = useState<number | null>(null);
   
   // 데이터 로드
   useEffect(() => {
