@@ -402,10 +402,12 @@ export default function TrainerStats() {
                       <TableCell className="font-medium">문제행동 교정 과정</TableCell>
                       <TableCell>1:1</TableCell>
                       <TableCell>5명</TableCell>
-                      <TableCell>₩280,000</TableCell>
-                      <TableCell>₩1,250,000</TableCell>
-                      <TableCell>51%</TableCell>
-                      <TableCell className="text-green-600">+5%</TableCell>
+                      <TableCell>화/목</TableCell>
+                      <TableCell>내일 10:00</TableCell>
+                      <TableCell>42%</TableCell>
+                      <TableCell>
+                        <Button variant="outline" size="sm">상세 보기</Button>
+                      </TableCell>
                     </TableRow>
                   </TableBody>
                 </Table>
@@ -418,13 +420,13 @@ export default function TrainerStats() {
           <div className="space-y-4">
             <Card>
               <CardHeader>
-                <CardTitle>수강생 변화 추이</CardTitle>
+                <CardTitle>수강생 관리</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="h-80 bg-gray-100 dark:bg-gray-800 rounded-md flex items-center justify-center">
                   <div className="text-center text-gray-500">
-                    <LineChart className="h-10 w-10 mx-auto mb-2" />
-                    <p>여기에 수강생 추이 차트가 표시됩니다.</p>
+                    <Users className="h-10 w-10 mx-auto mb-2" />
+                    <p>여기에 수강생 목록과 출석 현황이 표시됩니다.</p>
                   </div>
                 </div>
               </CardContent>
