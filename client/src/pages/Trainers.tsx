@@ -222,16 +222,12 @@ export default function Trainers() {
             <CardContent className="pt-0 p-5">
               <div className="flex flex-col">
                 <div className="flex items-end -mt-10 mb-4">
-                  <div className="h-14 w-14 border-4 border-white dark:border-gray-800 rounded-full">
-                    <Avatar className="h-full w-full">
-                      <AvatarImage 
-                        src="https://images.unsplash.com/photo-1543466835-00a7907e9de1?q=80&w=300&auto=format&fit=crop" 
-                        alt={trainer.name}
-                      />
-                      <AvatarFallback>
-                        {trainer.name.substring(0, 2)}
-                      </AvatarFallback>
-                    </Avatar>
+                  <div className="h-14 w-14 border-4 border-white dark:border-gray-800 rounded-full overflow-hidden">
+                    <img 
+                      src="https://images.unsplash.com/photo-1543466835-00a7907e9de1?q=80&w=300&auto=format&fit=crop" 
+                      alt={trainer.name}
+                      className="w-full h-full object-cover"
+                    />
                   </div>
                   <div className="ml-4 pb-1">
                     <h3 className="text-lg font-semibold text-gray-800 dark:text-white">{trainer.name}</h3>

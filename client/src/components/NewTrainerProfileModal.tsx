@@ -1,5 +1,4 @@
 import React from 'react';
-import { Avatar } from '@/components/ui/Avatar';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Calendar, Clock, MapPin, MessageSquare, Phone, Star, VideoIcon } from 'lucide-react';
@@ -47,12 +46,13 @@ export function NewTrainerProfileModal({ trainer, isOpen, onClose }: TrainerProf
       <div className="space-y-6">
         {/* 프로필 헤더 */}
         <div className="flex items-start gap-4">
-          <Avatar 
-            src="https://images.unsplash.com/photo-1543466835-00a7907e9de1?q=80&w=300&auto=format&fit=crop" 
-            alt={trainer.name}
-            size="xl"
-            bordered
-          />
+          <div className="h-20 w-20 rounded-full overflow-hidden border-2 border-primary">
+            <img 
+              src="https://images.unsplash.com/photo-1543466835-00a7907e9de1?q=80&w=300&auto=format&fit=crop" 
+              alt={trainer.name}
+              className="w-full h-full object-cover"
+            />
+          </div>
           <div>
             <p className="text-primary mt-1">{trainer.specialty}</p>
             <div className="flex items-center mt-2">
