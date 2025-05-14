@@ -19,6 +19,24 @@ import {
 } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
 
+// 집중력 평가 텍스트
+const getConcentrationText = (value: number): string => {
+  if (value >= 9) return '탁월함';
+  if (value >= 7) return '우수함';
+  if (value >= 5) return '양호함';
+  if (value >= 3) return '산만함';
+  return '매우 산만함';
+};
+
+// 훈련 진도 평가 텍스트
+const getProgressText = (value: number): string => {
+  if (value >= 9) return '완벽함';
+  if (value >= 7) return '빠른 진전';
+  if (value >= 5) return '진전 있음';
+  if (value >= 3) return '느린 진전';
+  return '진전 미미';
+};
+
 export interface Activity {
   meal?: {
     breakfast?: boolean;
@@ -310,28 +328,45 @@ export default function ActivityRecorder({
       <h3 className="font-medium mb-4">오늘의 활동</h3>
       
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid grid-cols-5 mb-4">
-          <TabsTrigger value="meal" className="flex flex-col items-center gap-1">
-            <UtensilsCrossed className="h-4 w-4" />
-            <span className="text-xs">식사</span>
-          </TabsTrigger>
-          <TabsTrigger value="potty" className="flex flex-col items-center gap-1">
-            <CheckCircle2 className="h-4 w-4" />
-            <span className="text-xs">배변</span>
-          </TabsTrigger>
-          <TabsTrigger value="walk" className="flex flex-col items-center gap-1">
-            <Footprints className="h-4 w-4" />
-            <span className="text-xs">산책</span>
-          </TabsTrigger>
-          <TabsTrigger value="training" className="flex flex-col items-center gap-1">
-            <Coffee className="h-4 w-4" />
-            <span className="text-xs">훈련</span>
-          </TabsTrigger>
-          <TabsTrigger value="play" className="flex flex-col items-center gap-1">
-            <Play className="h-4 w-4" />
-            <span className="text-xs">놀이</span>
-          </TabsTrigger>
-        </TabsList>
+        <div className="grid grid-cols-2 gap-2 mb-4">
+          <TabsList className="grid grid-cols-4">
+            <TabsTrigger value="meal" className="flex flex-col items-center gap-1">
+              <UtensilsCrossed className="h-4 w-4" />
+              <span className="text-xs">식사</span>
+            </TabsTrigger>
+            <TabsTrigger value="potty" className="flex flex-col items-center gap-1">
+              <CheckCircle2 className="h-4 w-4" />
+              <span className="text-xs">배변</span>
+            </TabsTrigger>
+            <TabsTrigger value="walk" className="flex flex-col items-center gap-1">
+              <Footprints className="h-4 w-4" />
+              <span className="text-xs">산책</span>
+            </TabsTrigger>
+            <TabsTrigger value="training" className="flex flex-col items-center gap-1">
+              <Brain className="h-4 w-4" />
+              <span className="text-xs">훈련</span>
+            </TabsTrigger>
+          </TabsList>
+          
+          <TabsList className="grid grid-cols-4">
+            <TabsTrigger value="play" className="flex flex-col items-center gap-1">
+              <Play className="h-4 w-4" />
+              <span className="text-xs">놀이</span>
+            </TabsTrigger>
+            <TabsTrigger value="health" className="flex flex-col items-center gap-1">
+              <Heart className="h-4 w-4" />
+              <span className="text-xs">건강</span>
+            </TabsTrigger>
+            <TabsTrigger value="behavior" className="flex flex-col items-center gap-1">
+              <Users className="h-4 w-4" />
+              <span className="text-xs">행동</span>
+            </TabsTrigger>
+            <TabsTrigger value="mood" className="flex flex-col items-center gap-1">
+              <ThumbsUp className="h-4 w-4" />
+              <span className="text-xs">감정</span>
+            </TabsTrigger>
+          </TabsList>
+        </div>
         
         <TabsContent value="meal" className="mt-0">
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
@@ -508,51 +543,160 @@ export default function ActivityRecorder({
         </TabsContent>
         
         <TabsContent value="training" className="mt-0">
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-            <div className="flex items-center space-x-2">
-              <Checkbox 
-                id="training-sit"
-                checked={value.training?.sit || false}
-                onCheckedChange={(checked) => handleTrainingChange('sit', !!checked)}
-                disabled={readOnly}
-              />
-              <Label htmlFor="training-sit">앉아</Label>
+          <div className="mb-4">
+            <h4 className="text-sm font-semibold mb-2">기본 명령어</h4>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+              <div className="flex items-center space-x-2">
+                <Checkbox 
+                  id="training-sit"
+                  checked={value.training?.sit || false}
+                  onCheckedChange={(checked) => handleTrainingChange('sit', !!checked)}
+                  disabled={readOnly}
+                />
+                <Label htmlFor="training-sit">앉아</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Checkbox 
+                  id="training-stay"
+                  checked={value.training?.stay || false}
+                  onCheckedChange={(checked) => handleTrainingChange('stay', !!checked)}
+                  disabled={readOnly}
+                />
+                <Label htmlFor="training-stay">기다려</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Checkbox 
+                  id="training-come"
+                  checked={value.training?.come || false}
+                  onCheckedChange={(checked) => handleTrainingChange('come', !!checked)}
+                  disabled={readOnly}
+                />
+                <Label htmlFor="training-come">이리와</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Checkbox 
+                  id="training-down"
+                  checked={value.training?.down || false}
+                  onCheckedChange={(checked) => handleTrainingChange('down', !!checked)}
+                  disabled={readOnly}
+                />
+                <Label htmlFor="training-down">엎드려</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Checkbox 
+                  id="training-paw"
+                  checked={value.training?.paw || false}
+                  onCheckedChange={(checked) => handleTrainingChange('paw', !!checked)}
+                  disabled={readOnly}
+                />
+                <Label htmlFor="training-paw">손</Label>
+              </div>
             </div>
-            <div className="flex items-center space-x-2">
-              <Checkbox 
-                id="training-stay"
-                checked={value.training?.stay || false}
-                onCheckedChange={(checked) => handleTrainingChange('stay', !!checked)}
-                disabled={readOnly}
-              />
-              <Label htmlFor="training-stay">기다려</Label>
+          </div>
+          
+          <div className="mb-4">
+            <h4 className="text-sm font-semibold mb-2">고급 명령어</h4>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+              <div className="flex items-center space-x-2">
+                <Checkbox 
+                  id="training-heel"
+                  checked={value.training?.heel || false}
+                  onCheckedChange={(checked) => handleTrainingChange('heel', !!checked)}
+                  disabled={readOnly}
+                />
+                <Label htmlFor="training-heel">발 따라</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Checkbox 
+                  id="training-leave"
+                  checked={value.training?.leave || false}
+                  onCheckedChange={(checked) => handleTrainingChange('leave', !!checked)}
+                  disabled={readOnly}
+                />
+                <Label htmlFor="training-leave">놔줘</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Checkbox 
+                  id="training-wait"
+                  checked={value.training?.wait || false}
+                  onCheckedChange={(checked) => handleTrainingChange('wait', !!checked)}
+                  disabled={readOnly}
+                />
+                <Label htmlFor="training-wait">기다려</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Checkbox 
+                  id="training-focus"
+                  checked={value.training?.focus || false}
+                  onCheckedChange={(checked) => handleTrainingChange('focus', !!checked)}
+                  disabled={readOnly}
+                />
+                <Label htmlFor="training-focus">집중</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Checkbox 
+                  id="training-quiet"
+                  checked={value.training?.quiet || false}
+                  onCheckedChange={(checked) => handleTrainingChange('quiet', !!checked)}
+                  disabled={readOnly}
+                />
+                <Label htmlFor="training-quiet">조용히</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Checkbox 
+                  id="training-stand"
+                  checked={value.training?.stand || false}
+                  onCheckedChange={(checked) => handleTrainingChange('stand', !!checked)}
+                  disabled={readOnly}
+                />
+                <Label htmlFor="training-stand">서</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Checkbox 
+                  id="training-roll"
+                  checked={value.training?.roll || false}
+                  onCheckedChange={(checked) => handleTrainingChange('roll', !!checked)}
+                  disabled={readOnly}
+                />
+                <Label htmlFor="training-roll">구르기</Label>
+              </div>
             </div>
-            <div className="flex items-center space-x-2">
-              <Checkbox 
-                id="training-come"
-                checked={value.training?.come || false}
-                onCheckedChange={(checked) => handleTrainingChange('come', !!checked)}
-                disabled={readOnly}
-              />
-              <Label htmlFor="training-come">이리와</Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Checkbox 
-                id="training-down"
-                checked={value.training?.down || false}
-                onCheckedChange={(checked) => handleTrainingChange('down', !!checked)}
-                disabled={readOnly}
-              />
-              <Label htmlFor="training-down">엎드려</Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Checkbox 
-                id="training-paw"
-                checked={value.training?.paw || false}
-                onCheckedChange={(checked) => handleTrainingChange('paw', !!checked)}
-                disabled={readOnly}
-              />
-              <Label htmlFor="training-paw">손</Label>
+          </div>
+          
+          <div className="mb-4">
+            <h4 className="text-sm font-semibold mb-2">훈련 평가</h4>
+            <div className="space-y-3">
+              <div>
+                <div className="flex justify-between">
+                  <Label>집중력: {value.training?.concentration || 0}/10</Label>
+                  <span className="text-xs text-muted-foreground">{getConcentrationText(value.training?.concentration || 0)}</span>
+                </div>
+                <Slider
+                  value={[value.training?.concentration || 0]}
+                  min={0}
+                  max={10}
+                  step={1}
+                  onValueChange={(val) => handleTrainingChange('concentration', val[0])}
+                  className="mt-2"
+                  disabled={readOnly}
+                />
+              </div>
+              
+              <div>
+                <div className="flex justify-between">
+                  <Label>훈련 진도: {value.training?.progress || 0}/10</Label>
+                  <span className="text-xs text-muted-foreground">{getProgressText(value.training?.progress || 0)}</span>
+                </div>
+                <Slider
+                  value={[value.training?.progress || 0]}
+                  min={0}
+                  max={10}
+                  step={1}
+                  onValueChange={(val) => handleTrainingChange('progress', val[0])}
+                  className="mt-2"
+                  disabled={readOnly}
+                />
+              </div>
             </div>
           </div>
           
@@ -563,7 +707,19 @@ export default function ActivityRecorder({
               placeholder="추가 훈련 내용이 있다면 입력하세요"
               value={value.training?.custom || ''}
               onChange={(e) => handleTrainingChange('custom', e.target.value)}
-              className="mt-1"
+              className="mt-1 mb-2"
+              disabled={readOnly}
+            />
+          </div>
+          
+          <div>
+            <Label htmlFor="training-notes">훈련 관찰 기록</Label>
+            <Textarea 
+              id="training-notes"
+              placeholder="훈련 중 개의 행동, 학습 상태, 문제점 등을 적어주세요"
+              value={value.training?.notes || ''}
+              onChange={(e) => handleTrainingChange('notes', e.target.value)}
+              className="mt-1 min-h-[80px]"
               disabled={readOnly}
             />
           </div>
@@ -609,6 +765,52 @@ export default function ActivityRecorder({
             </div>
           </div>
           
+          <div className="mt-4 space-y-4">
+            <div>
+              <Label>놀이 시간: {value.play?.duration || 0}분</Label>
+              <Slider
+                value={[value.play?.duration || 0]}
+                min={0}
+                max={60}
+                step={5}
+                onValueChange={(val) => handlePlayChange('duration', val[0])}
+                className="mt-2"
+                disabled={readOnly}
+              />
+            </div>
+            
+            <div>
+              <Label>즐거움 정도: {value.play?.enjoyment || 0}/10</Label>
+              <Slider
+                value={[value.play?.enjoyment || 0]}
+                min={0}
+                max={10}
+                step={1}
+                onValueChange={(val) => handlePlayChange('enjoyment', val[0])}
+                className="mt-2"
+                disabled={readOnly}
+              />
+            </div>
+            
+            <div className="mt-4">
+              <Label htmlFor="play-intensity">활동 강도</Label>
+              <Select
+                value={value.play?.intensity || 'medium'}
+                onValueChange={(val) => handlePlayChange('intensity', val)}
+                disabled={readOnly}
+              >
+                <SelectTrigger id="play-intensity" className="mt-1">
+                  <SelectValue placeholder="활동 강도 선택" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="low">낮음 (편안한 활동)</SelectItem>
+                  <SelectItem value="medium">중간 (일반적인 활동)</SelectItem>
+                  <SelectItem value="high">높음 (격렬한 활동)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          
           <div className="mt-4">
             <Label htmlFor="play-custom">기타 놀이 내용</Label>
             <Input 
@@ -619,6 +821,132 @@ export default function ActivityRecorder({
               className="mt-1"
               disabled={readOnly}
             />
+          </div>
+        </TabsContent>
+        
+        <TabsContent value="health" className="mt-0">
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="health-weight">체중 (kg)</Label>
+                <Input 
+                  id="health-weight"
+                  type="number"
+                  value={value.health?.weight || ''}
+                  onChange={(e) => handleHealthChange('weight', e.target.value)}
+                  className="mt-1"
+                  disabled={readOnly}
+                  min={0}
+                  step={0.1}
+                />
+              </div>
+              <div>
+                <Label htmlFor="health-temperature">체온 (°C)</Label>
+                <Input 
+                  id="health-temperature"
+                  type="number"
+                  value={value.health?.temperature || ''}
+                  onChange={(e) => handleHealthChange('temperature', e.target.value)}
+                  className="mt-1"
+                  disabled={readOnly}
+                  min={35}
+                  max={42}
+                  step={0.1}
+                />
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="health-appetite">식욕</Label>
+                <Select
+                  value={value.health?.appetite || 'normal'}
+                  onValueChange={(val) => handleHealthChange('appetite', val)}
+                  disabled={readOnly}
+                >
+                  <SelectTrigger id="health-appetite" className="mt-1">
+                    <SelectValue placeholder="식욕 상태 선택" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="excellent">매우 좋음 (평소보다 적극적)</SelectItem>
+                    <SelectItem value="good">좋음 (건강한 식욕)</SelectItem>
+                    <SelectItem value="normal">보통 (일반적인 식사량)</SelectItem>
+                    <SelectItem value="poor">저하됨 (식사량 감소)</SelectItem>
+                    <SelectItem value="none">매우 저하됨 (거의 먹지 않음)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div>
+                <Label htmlFor="health-energy">에너지 수준</Label>
+                <Select
+                  value={value.health?.energy || 'normal'}
+                  onValueChange={(val) => handleHealthChange('energy', val)}
+                  disabled={readOnly}
+                >
+                  <SelectTrigger id="health-energy" className="mt-1">
+                    <SelectValue placeholder="에너지 수준 선택" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="high">높음 (매우 활동적)</SelectItem>
+                    <SelectItem value="normal">보통 (적절한 활동량)</SelectItem>
+                    <SelectItem value="low">낮음 (평소보다 활동 감소)</SelectItem>
+                    <SelectItem value="lethargic">기력 없음 (거의 움직이지 않음)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="health-hydration">수분 상태</Label>
+                <Select
+                  value={value.health?.hydration || 'normal'}
+                  onValueChange={(val) => handleHealthChange('hydration', val)}
+                  disabled={readOnly}
+                >
+                  <SelectTrigger id="health-hydration" className="mt-1">
+                    <SelectValue placeholder="수분 상태 선택" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="good">좋음 (충분히 수분 섭취)</SelectItem>
+                    <SelectItem value="normal">보통 (적절한 수분 상태)</SelectItem>
+                    <SelectItem value="concerning">걱정됨 (탈수 징후)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div>
+                <Label htmlFor="health-coat">모발 상태</Label>
+                <Select
+                  value={value.health?.coat || 'normal'}
+                  onValueChange={(val) => handleHealthChange('coat', val)}
+                  disabled={readOnly}
+                >
+                  <SelectTrigger id="health-coat" className="mt-1">
+                    <SelectValue placeholder="모발 상태 선택" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="shiny">윤기 있음 (매우 건강)</SelectItem>
+                    <SelectItem value="normal">정상 (건강한 상태)</SelectItem>
+                    <SelectItem value="dull">칙칙함 (윤기 없음)</SelectItem>
+                    <SelectItem value="shedding">과도한 탈모</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            
+            <div>
+              <Label htmlFor="health-notes">건강 관찰 사항</Label>
+              <Textarea 
+                id="health-notes"
+                placeholder="건강 상태 관련 관찰 사항을 적어주세요"
+                value={value.health?.notes || ''}
+                onChange={(e) => handleHealthChange('notes', e.target.value)}
+                className="mt-1 min-h-[80px]"
+                disabled={readOnly}
+              />
+            </div>
           </div>
         </TabsContent>
       </Tabs>
