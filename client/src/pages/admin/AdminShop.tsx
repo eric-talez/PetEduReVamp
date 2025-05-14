@@ -1870,8 +1870,34 @@ export default function AdminShop() {
             </CardHeader>
             <CardContent>
               <div className="flex justify-between items-center mb-4">
-                <div className="flex gap-2">
-                  <div className="relative w-64">
+                <div className="flex gap-2 items-center">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    className="bg-amber-50 hover:bg-amber-100 border-amber-200"
+                    onClick={() => {
+                      const pendingRecs = trainerRecommendations.filter(rec => rec.status === 'pending');
+                      setFilteredRecommendations(pendingRecs);
+                      toast({
+                        title: "대기 중인 추천만 표시합니다",
+                        description: `${pendingRecs.length}개의 대기 중인 추천이 있습니다.`
+                      });
+                    }}
+                  >
+                    <Badge className="bg-amber-500 mr-2">대기</Badge>
+                    승인 필요한 항목만
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => {
+                      setFilteredRecommendations(trainerRecommendations);
+                    }}
+                  >
+                    <RefreshCw className="h-3 w-3 mr-2" />
+                    모든 추천 보기
+                  </Button>
+                  <div className="relative w-64 ml-2">
                     <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                     <Input
                       type="search"
@@ -2023,14 +2049,15 @@ export default function AdminShop() {
                                 variant="ghost"
                                 size="icon"
                                 onClick={() => {
-                                  console.log('클릭한 추천:', recommendation);
                                   setSelectedRecommendation(recommendation);
                                   setModalMode('view');
                                   setShowRecommendationModal(true);
-                                  console.log('모달 열림, 상태:', recommendation.status);
                                 }}
                               >
                                 <Eye className="h-4 w-4" />
+                                {recommendation.status === 'pending' && (
+                                  <span className="absolute -top-1 -right-1 h-3 w-3 bg-amber-500 rounded-full"></span>
+                                )}
                               </Button>
                               <Button
                                 variant="ghost"
@@ -2788,51 +2815,84 @@ export default function AdminShop() {
                       <Pencil className="h-4 w-4 mr-2" />
                       수정
                     </Button>
-
-                    {(selectedRecommendation.status === 'pending') && (
-                      <>
-                        <Button
-                          variant="default"
-                          onClick={() => {
-                            const updatedRecs = trainerRecommendations.map(rec => 
-                              rec.id === selectedRecommendation.id 
-                                ? {...rec, status: 'active' as const} 
-                                : rec
-                            );
-                            setTrainerRecommendations(updatedRecs);
-                            setFilteredRecommendations(updatedRecs);
-                            setSelectedRecommendation({...selectedRecommendation, status: 'active' as const});
-                            toast({
-                              title: "추천 승인 완료",
-                              description: "해당 추천이 승인되었습니다.",
-                            });
-                          }}
-                        >
-                          <Check className="h-4 w-4 mr-2" />
-                          승인
-                        </Button>
-                        <Button
-                          variant="destructive"
-                          onClick={() => {
-                            const updatedRecs = trainerRecommendations.map(rec => 
-                              rec.id === selectedRecommendation.id 
-                                ? {...rec, status: 'rejected' as const} 
-                                : rec
-                            );
-                            setTrainerRecommendations(updatedRecs);
-                            setFilteredRecommendations(updatedRecs);
-                            setSelectedRecommendation({...selectedRecommendation, status: 'rejected' as const});
-                            toast({
-                              title: "추천 거절 완료",
-                              description: "해당 추천이 거절되었습니다.",
-                            });
-                          }}
-                        >
-                          <X className="h-4 w-4 mr-2" />
-                          거절
-                        </Button>
-                      </>
+                      
+                    {(selectedRecommendation.status === 'active' || selectedRecommendation.status === 'rejected') && (
+                      <Button
+                        variant="outline"
+                        className="bg-amber-50 hover:bg-amber-100 border-amber-200"
+                        onClick={() => {
+                          const updatedRecs = trainerRecommendations.map(rec => 
+                            rec.id === selectedRecommendation.id 
+                              ? {...rec, status: 'pending' as const} 
+                              : rec
+                          );
+                          setTrainerRecommendations(updatedRecs);
+                          setFilteredRecommendations(updatedRecs);
+                          setSelectedRecommendation({...selectedRecommendation, status: 'pending' as const});
+                          toast({
+                            title: "상태 초기화 완료",
+                            description: "해당 추천이 대기 상태로 초기화되었습니다.",
+                          });
+                        }}
+                      >
+                        <RotateCcw className="h-4 w-4 mr-2" />
+                        대기 상태로 초기화
+                      </Button>
                     )}
+
+                    {(selectedRecommendation.status === 'pending') ? (
+                      <>
+                        <div className="fixed left-0 right-0 bottom-0 bg-amber-50 p-4 border-t border-amber-200 flex justify-center gap-4 shadow-md">
+                          <div className="flex items-center mr-4">
+                            <Badge className="bg-amber-500 mr-2">대기</Badge>
+                            <span className="font-medium">이 추천에 대한 승인 여부를 결정해주세요</span>
+                          </div>
+                          <Button
+                            variant="default"
+                            size="lg"
+                            className="bg-green-600 hover:bg-green-700"
+                            onClick={() => {
+                              const updatedRecs = trainerRecommendations.map(rec => 
+                                rec.id === selectedRecommendation.id 
+                                  ? {...rec, status: 'active' as const} 
+                                  : rec
+                              );
+                              setTrainerRecommendations(updatedRecs);
+                              setFilteredRecommendations(updatedRecs);
+                              setSelectedRecommendation({...selectedRecommendation, status: 'active' as const});
+                              toast({
+                                title: "추천 승인 완료",
+                                description: "해당 추천이 승인되었습니다.",
+                              });
+                            }}
+                          >
+                            <Check className="h-5 w-5 mr-2" />
+                            승인하기
+                          </Button>
+                          <Button
+                            variant="destructive"
+                            size="lg"
+                            onClick={() => {
+                              const updatedRecs = trainerRecommendations.map(rec => 
+                                rec.id === selectedRecommendation.id 
+                                  ? {...rec, status: 'rejected' as const} 
+                                  : rec
+                              );
+                              setTrainerRecommendations(updatedRecs);
+                              setFilteredRecommendations(updatedRecs);
+                              setSelectedRecommendation({...selectedRecommendation, status: 'rejected' as const});
+                              toast({
+                                title: "추천 거절 완료",
+                                description: "해당 추천이 거절되었습니다.",
+                              });
+                            }}
+                          >
+                            <X className="h-5 w-5 mr-2" />
+                            거절하기
+                          </Button>
+                        </div>
+                      </>
+                    ) : null}
                   </>
                 )}
 
