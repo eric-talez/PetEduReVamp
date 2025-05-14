@@ -764,9 +764,9 @@ export function Sidebar({
                     >메시지</AccessibleNavItem>
                     
                     <AccessibleNavItem 
-                      href="/notifications" 
+                      href="/alerts" 
                       icon={<Bell className="w-5 h-5 mr-2" />} 
-                      active={isActive("/notifications")} 
+                      active={isActive("/alerts")} 
                       onClick={handleItemClick} 
                       show={true}
                     >알림</AccessibleNavItem>

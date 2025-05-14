@@ -176,7 +176,7 @@ export const DEFAULT_MENU_ITEMS: MenuItem[] = [
     isPublic: false
   },
   {
-    id: 'notifications',
+    id: 'alerts',
     title: '알림',
     path: '/alerts',
     icon: 'Bell',
