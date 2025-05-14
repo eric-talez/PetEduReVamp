@@ -136,8 +136,8 @@ function AuthenticatedRoutesContent() {
       <Route path="/admin/trainers">
         {() => {
           console.log('[DEBUG] /admin/trainers 라우트 접근');
-          // 원래 방식으로 복원
-          return checkAccess(['admin']) ? <AdminTrainers /> : window.location.href = '/';
+          const AdminTrainersComponent = require('./pages/admin/AdminTrainers').default;
+          return checkAccess(['admin']) ? <AdminTrainersComponent /> : window.location.href = '/';
         }}
       </Route>
       <Route path="/community" component={CommunityPage} />
