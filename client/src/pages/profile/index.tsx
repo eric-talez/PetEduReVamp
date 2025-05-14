@@ -1,6 +1,6 @@
 import { useAuth } from "../../SimpleApp";
 import { Redirect } from "wouter";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -50,18 +50,65 @@ export default function ProfilePage({ userType, section }: ProfilePageProps = {}
   const userRole = userType || auth.userRole;
   const userName = auth.userName;
 
+  // 상태 관리
+  const [isLoading, setIsLoading] = useState(true);
+  const [userData, setUserData] = useState<any>(null);
+
   // 프로필 수정 폼
   const form = useForm<z.infer<typeof profileFormSchema>>({
     resolver: zodResolver(profileFormSchema),
     defaultValues: {
       name: userName || "",
-      email: "user@example.com", // 실제로는 서버에서 가져온 데이터 사용
-      phone: "010-1234-5678",    // 실제로는 서버에서 가져온 데이터 사용
+      email: "",
+      phone: "", 
       bio: "",
       location: "",
       avatar: ""
     },
   });
+  
+  // 사용자 정보 로드 함수
+  const loadUserProfile = async () => {
+    try {
+      setIsLoading(true);
+      
+      const response = await fetch('/api/auth/me', {
+        credentials: 'include',
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        console.log('프로필 정보 로드:', data);
+        setUserData(data);
+        
+        // 폼 기본값 설정
+        form.reset({
+          name: data.name || "",
+          email: data.email || "",
+          phone: data.phone || "",
+          bio: data.bio || "",
+          location: data.location || "",
+          avatar: data.avatar || ""
+        });
+      } else {
+        console.error('사용자 정보를 가져오는데 실패했습니다');
+        toast({
+          title: "프로필 정보 로드 실패",
+          description: "사용자 정보를 가져오는데 실패했습니다.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error('프로필 정보 로드 오류:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // 컴포넌트 마운트 시 사용자 정보 로드
+  useEffect(() => {
+    loadUserProfile();
+  }, []);
 
   // API 호출을 위한 상태
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -71,28 +118,72 @@ export default function ProfilePage({ userType, section }: ProfilePageProps = {}
     try {
       setIsSubmitting(true);
       
-      // auth 컨텍스트의 updateUserInfo 함수를 사용하여 API 처리 일원화
-      const result = await auth.updateUserInfo({
-        name: values.name,
-        email: values.email,
-        phone: values.phone,
-        bio: values.bio,
-        location: values.location,
-        avatar: values.avatar
+      console.log('제출할 프로필 정보:', values);
+      
+      // 직접 API 호출로 변경하여 로그 확인 용이하게
+      const response = await fetch('/api/user/profile', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include', // 쿠키를 포함하여 인증 세션 유지
+        body: JSON.stringify({
+          name: values.name,
+          email: values.email,
+          phone: values.phone,
+          bio: values.bio,
+          location: values.location,
+          avatar: values.avatar
+        }),
       });
       
-      // 업데이트 성공 시 편집 모드 종료
-      if (result) {
-        // 성공 메시지는 이미 updateUserInfo 내부에서 처리됨
-        setIsEditing(false);
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || '프로필 업데이트에 실패했습니다');
       }
-      // 실패 시 메시지도 이미 updateUserInfo 내부에서 처리됨
+      
+      const updatedUser = await response.json();
+      console.log('프로필 업데이트 성공:', updatedUser);
+      
+      // 업데이트된 사용자 정보로 상태 갱신
+      setUserData(updatedUser);
+      
+      // 전역 인증 상태의 사용자 이름 업데이트
+      if (auth.userRole && values.name !== auth.userName) {
+        // 인증 컨텍스트의 login 함수 사용하여 이름만 업데이트
+        auth.login(auth.userRole, values.name);
+      }
+      
+      toast({
+        title: "프로필 업데이트 완료",
+        description: "프로필 정보가 성공적으로 업데이트되었습니다.",
+      });
+      
+      // 편집 모드 종료
+      setIsEditing(false);
+      
     } catch (error) {
       console.error('프로필 업데이트 오류:', error);
-      // 중복 에러 메시지 방지를 위해 여기서는 표시하지 않음
+      toast({
+        title: "프로필 업데이트 실패",
+        description: error instanceof Error ? error.message : "알 수 없는 오류가 발생했습니다.",
+        variant: "destructive",
+      });
     } finally {
       setIsSubmitting(false);
     }
+  }
+
+  // 로딩 상태 표시
+  if (isLoading) {
+    return (
+      <div className="container mx-auto p-6 flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin w-12 h-12 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
+          <p className="text-lg">프로필 정보를 불러오는 중...</p>
+        </div>
+      </div>
+    );
   }
 
   // section이 certificates인 경우 자격증 페이지를 보여줌
