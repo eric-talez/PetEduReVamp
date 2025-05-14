@@ -1,6 +1,6 @@
-import { Avatar } from '@/components/ui/Avatar';
-import { Badge } from '@/components/ui/Badge';
-import { Button } from '@/components/ui/Button';
+import { Avatar } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Calendar, Clock, MapPin, MessageSquare, Phone, Star, VideoIcon } from 'lucide-react';
 import {
   Dialog,

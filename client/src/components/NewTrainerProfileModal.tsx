@@ -1,6 +1,6 @@
 import React from 'react';
-import { Badge } from '@/components/ui/Badge';
-import { Button } from '@/components/ui/Button';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Calendar, Clock, MapPin, MessageSquare, Phone, Star, VideoIcon } from 'lucide-react';
 import { BasicModalDialog } from './BasicModalDialog';
 
