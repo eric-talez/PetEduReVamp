@@ -871,9 +871,9 @@ export function Sidebar({
                           show={true}
                         >강의 관리</AccessibleNavItem>
                         <AccessibleNavItem 
-                          href="/trainer/stats" 
+                          href="/trainer/classes" 
                           icon={<Calendar className="w-5 h-5 mr-2" />} 
-                          active={isActive("/trainer/stats")} 
+                          active={isActive("/trainer/classes")} 
                           onClick={handleItemClick} 
                           show={true}
                         >수업 일정</AccessibleNavItem>
