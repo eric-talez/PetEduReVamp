@@ -190,7 +190,7 @@ export const DEFAULT_MENU_ITEMS: MenuItem[] = [
   {
     id: 'shopping',
     title: '쇼핑몰',
-    path: 'https://replit.com/join/wshpfpjewg-hnblgkjw',
+    path: 'https://store.funnytalez.com/',
     icon: 'ShoppingBag',
     type: 'external',
     category: 'shopping',
@@ -449,6 +449,18 @@ export const DEFAULT_MENU_ITEMS: MenuItem[] = [
     category: 'admin',
     roles: ['admin'],
     orderIndex: 5,
+    isActive: true,
+    isPublic: false
+  },
+  {
+    id: 'shop-management',
+    title: '쇼핑몰 관리',
+    path: '/admin/shop',
+    icon: 'ShoppingCart',
+    type: 'internal',
+    category: 'admin',
+    roles: ['admin'],
+    orderIndex: 6,
     isActive: true,
     isPublic: false
   }

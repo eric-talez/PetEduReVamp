@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useLocation } from 'wouter';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@/lib/auth-compat';
 import { useToast } from '@/hooks/use-toast';
 import {
   Card,
@@ -415,10 +415,19 @@ export default function InstituteTrainersManagement() {
                         <TableCell className="font-medium w-[50px]">{(currentPage - 1) * itemsPerPage + index + 1}</TableCell>
                         <TableCell>
                           <div className="flex items-center gap-3">
-                            <Avatar>
-                              <AvatarImage src={trainer.image} alt={trainer.name} />
-                              <AvatarFallback>{trainer.name.charAt(0)}</AvatarFallback>
-                            </Avatar>
+                            <div className="relative h-10 w-10 overflow-hidden rounded-full border border-gray-200 dark:border-gray-800 shadow-sm">
+                              {trainer.image ? (
+                                <img 
+                                  src={trainer.image} 
+                                  alt={trainer.name} 
+                                  className="h-full w-full object-cover filter brightness-110 contrast-110"
+                                />
+                              ) : (
+                                <div className="h-full w-full flex items-center justify-center bg-primary/10 text-primary text-sm font-bold">
+                                  {trainer.name.charAt(0)}
+                                </div>
+                              )}
+                            </div>
                             <div>
                               <div className="font-medium">{trainer.name}</div>
                               <div className="text-sm text-muted-foreground">{trainer.email}</div>
