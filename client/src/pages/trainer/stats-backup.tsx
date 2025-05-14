@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useAuth } from '../../SimpleApp';
+import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import {
   Card,
@@ -112,7 +112,7 @@ interface EarningsReport {
   };
 }
 
-export default function TrainerStats() {
+export default function TrainerEarnings() {
   const { userName } = useAuth();
   const { toast } = useToast();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
