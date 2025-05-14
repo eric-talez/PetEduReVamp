@@ -316,6 +316,7 @@ export function Sidebar({
       '/ai-analysis': 'AI 분석',
       '/my-pets': '반려견 관리',
       '/notebook': '알림장',
+      '/admin/trainers': '훈련사 관리',
       '/calendar': '교육 일정'
       // '/shop' 항목은 제거 - 사이드바에서 직접 새 창으로 열기 처리
     };
