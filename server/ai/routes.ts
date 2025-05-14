@@ -1,6 +1,18 @@
 import { Express, Request, Response } from "express";
 import OpenAI from "openai";
 
+// Express 세션 타입 선언
+declare module 'express-session' {
+  interface SessionData {
+    user?: {
+      id: number;
+      username: string;
+      role: string;
+      [key: string]: any;
+    };
+  }
+}
+
 // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
 // OPENAI_API_KEY 환경 변수 사용
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
@@ -90,7 +102,7 @@ export function registerAiRoutes(app: Express) {
   app.post("/api/ai-analysis", async (req: Request, res: Response) => {
     try {
       // 인증 확인
-      if (!req.isAuthenticated()) {
+      if (!req.session?.user) {
         return res.status(401).json({ error: "인증이 필요합니다" });
       }
       

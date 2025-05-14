@@ -10,6 +10,7 @@ import { registerInstituteRoutes } from "./institutes/routes";
 import { registerLocationRoutes } from "./location/routes";
 import { registerVideoCallRoutes } from "./videocall/routes";
 import { registerMenuRoutes } from "./menu/routes";
+import { registerAiRoutes } from "./ai/routes";
 import { WebSocketServer } from 'ws';
 import { MessagingService } from './messaging/service';
 
@@ -24,6 +25,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   registerLocationRoutes(app);
   registerVideoCallRoutes(app);
   registerMenuRoutes(app);
+  registerAiRoutes(app);
   
   // 프로필 업데이트 API
   app.put("/api/user/profile", async (req, res) => {
