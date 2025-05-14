@@ -316,8 +316,16 @@ export function Sidebar({
       '/ai-analysis': 'AI 분석',
       '/my-pets': '반려견 관리',
       '/notebook': '알림장',
+      '/calendar': '교육 일정',
+      // 관리자 메뉴 전체를 specialRoutes에 추가하여 직접 경로 처리
       '/admin/trainers': '훈련사 관리',
-      '/calendar': '교육 일정'
+      '/admin/courses': '강좌 관리',
+      '/admin/users': '사용자 관리',
+      '/admin/institutes': '기관 관리',
+      '/admin/contents': '콘텐츠 관리',
+      '/admin/commissions': '수수료 관리',
+      '/admin/settings': '시스템 설정',
+      '/admin/dashboard': '관리자 대시보드'
       // '/shop' 항목은 제거 - 사이드바에서 직접 새 창으로 열기 처리
     };
 
