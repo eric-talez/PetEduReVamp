@@ -191,7 +191,7 @@ export default function AdminHome() {
   };
   
   const handleViewAllNotifications = () => {
-    setLocation('/admin/notifications');
+    setLocation('/admin/alerts');
   };
 
   return (

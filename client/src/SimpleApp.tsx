@@ -414,16 +414,10 @@ function AuthenticatedRoutes() {
         </Route>
         <Route path="/notifications">
           {() => {
-            console.log("알림장 페이지 접근");
-            const NotebookPage = lazy(() => import('./pages/notifications'));
-            return (
-              <Suspense fallback={<div className="p-8 flex justify-center items-center">
-                <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
-                <span className="ml-2">알림장 로딩 중...</span>
-              </div>}>
-                <ProtectedRoute component={NotebookPage} />
-              </Suspense>
-            );
+            console.log("알림 페이지 리디렉션: /notifications → /alerts");
+            // 이전 코드와의 호환성을 위해 /alerts로 리디렉션
+            window.location.href = '/alerts';
+            return null;
           }}
         </Route>
         <Route path="/alerts">
