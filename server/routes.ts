@@ -56,11 +56,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // 세션 업데이트
       if (updatedUser) {
-        const { password: _, ...userWithoutPassword } = updatedUser;
-        req.session.user = userWithoutPassword;
+        const { password: _, instituteId, ...userWithoutSensitiveData } = updatedUser;
+        
+        // 세션에 저장할 사용자 정보 (타입에 맞게 조정)
+        req.session.user = {
+          ...userWithoutSensitiveData,
+          instituteId: instituteId || undefined // null을 undefined로 변환
+        };
+        
+        // 비밀번호를 제외한 사용자 정보만 반환
+        return res.status(200).json(userWithoutSensitiveData);
       }
       
-      return res.status(200).json(updatedUser);
+      return res.status(500).json({ message: "사용자 정보 업데이트에 실패했습니다" });
     } catch (error) {
       console.error("프로필 업데이트 오류:", error);
       return res.status(500).json({ message: "서버 오류가 발생했습니다" });
@@ -91,11 +99,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: "Invalid credentials" });
       }
       
-      // Set user in session (removing password field)
-      const { password: _, ...userWithoutPassword } = user;
-      req.session.user = userWithoutPassword;
+      // Set user in session (removing password field and handling instituteId)
+      const { password: _, instituteId, ...userWithoutSensitiveData } = user;
       
-      return res.status(200).json(userWithoutPassword);
+      // 세션에 저장할 사용자 정보 (타입에 맞게 조정)
+      req.session.user = {
+        ...userWithoutSensitiveData,
+        instituteId: instituteId || undefined // null을 undefined로 변환
+      };
+      
+      return res.status(200).json(userWithoutSensitiveData);
     } catch (error) {
       console.error("Login error:", error);
       return res.status(500).json({ message: "Internal server error" });
