@@ -994,6 +994,18 @@ function AuthenticatedRoutes() {
             );
           }}
         </Route>
+        <Route path="/admin/trainers">
+          {() => {
+            const AdminTrainers = lazy(() => import('./pages/admin/AdminTrainers'));
+            return (
+              <Suspense fallback={<div className="p-8 flex justify-center items-center">
+                <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
+              </div>}>
+                <ProtectedAdminRoute component={AdminTrainers} />
+              </Suspense>
+            );
+          }}
+        </Route>
         <Route path="/admin/banners">
           {() => {
             const AdminBanners = lazy(() => import('./pages/admin/AdminBanners'));
