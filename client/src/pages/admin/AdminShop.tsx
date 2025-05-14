@@ -80,7 +80,8 @@ import {
   XCircle,
   Layers,
   Copy,
-  Save
+  Save,
+  RotateCcw
 } from 'lucide-react';
 import { 
   DropdownMenu,
