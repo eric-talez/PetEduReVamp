@@ -155,7 +155,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           email: "test@example.com",
           role: "trainer",
           bio: "개발 중 테스트용 사용자입니다.",
-          location: "서울시 강남구"
+          location: "서울시 강남구",
+          avatar: "https://images.unsplash.com/photo-1543466835-00a7907e9de1?q=80&w=300&auto=format&fit=crop"
         };
         console.log("개발 환경 - 가상 사용자 정보 반환:", mockUser);
         return res.status(200).json(mockUser);
