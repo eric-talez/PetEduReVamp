@@ -994,6 +994,18 @@ function AuthenticatedRoutes() {
             );
           }}
         </Route>
+        <Route path="/admin/commissions">
+          {() => {
+            const AdminCommission = lazy(() => import('./pages/admin/AdminCommission'));
+            return (
+              <Suspense fallback={<div className="p-8 flex justify-center items-center">
+                <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
+              </div>}>
+                <ProtectedAdminRoute component={AdminCommission} />
+              </Suspense>
+            );
+          }}
+        </Route>
         <Route path="/admin/trainers">
           {() => {
             const AdminTrainers = lazy(() => import('./pages/admin/AdminTrainers'));
@@ -1014,6 +1026,18 @@ function AuthenticatedRoutes() {
                 <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
               </div>}>
                 <ProtectedAdminRoute component={AdminBanners} />
+              </Suspense>
+            );
+          }}
+        </Route>
+        <Route path="/admin/contents">
+          {() => {
+            const AdminContents = lazy(() => import('./pages/admin/AdminContents'));
+            return (
+              <Suspense fallback={<div className="p-8 flex justify-center items-center">
+                <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
+              </div>}>
+                <ProtectedAdminRoute component={AdminContents} />
               </Suspense>
             );
           }}
