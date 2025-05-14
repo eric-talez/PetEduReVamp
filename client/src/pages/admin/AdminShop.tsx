@@ -1976,7 +1976,7 @@ export default function AdminShop() {
                             </div>
                           </TableCell>
                           <TableCell className="text-center">
-                            <Badge variant="outline" className="bg-amber-50">
+                            <Badge variant="outline" className="bg-amber-50 text-amber-900 border-amber-200">
                               <Percent className="h-3 w-3 mr-1" />
                               {recommendation.commissionRate}%
                             </Badge>
@@ -1992,8 +1992,8 @@ export default function AdminShop() {
                               <Badge variant="outline" className="text-red-500 border-red-500">거절</Badge>
                             )}
                           </TableCell>
-                          <TableCell className="text-right font-medium">
-                            {recommendation.totalCommission.toLocaleString()}원
+                          <TableCell className="text-right font-medium text-green-600">
+                            ￦{recommendation.totalCommission.toLocaleString()}
                           </TableCell>
                           <TableCell>
                             <div className="flex justify-end gap-1">
