@@ -316,7 +316,9 @@ export function Sidebar({
       '/ai-analysis': 'AI 분석',
       '/my-pets': '반려견 관리',
       '/notebook': '알림장',
-      '/calendar': '교육 일정'
+      '/calendar': '교육 일정',
+      '/alerts': '알림',
+      '/notifications': '알림'  // /notifications를 요청하면 /alerts로 처리
       // '/shop' 항목은 제거 - 사이드바에서 직접 새 창으로 열기 처리
     };
 
@@ -331,7 +333,13 @@ export function Sidebar({
 
     if (path in specialRoutes) {
       console.log(`${specialRoutes[path]} 페이지로 이동 중...`);
-      window.location.href = path;
+      // /notifications를 /alerts로 리다이렉션
+      if (path === '/notifications') {
+        console.log('알림 페이지로 리다이렉션: /alerts');
+        window.location.href = '/alerts';
+      } else {
+        window.location.href = path;
+      }
       // 모바일 화면에서만 사이드바 닫기
       if (onClose && window.innerWidth < 768) onClose();
       return;
