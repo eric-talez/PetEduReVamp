@@ -1,5 +1,4 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardFooter, CardTitle } from '@/components/ui/card';
@@ -7,6 +6,17 @@ import { ChevronUp, X, Send, Maximize2, Minimize2, MessageCircle, PawPrint, Refr
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useTheme } from '../hooks/use-theme';
+
+// 전역 인증 상태 타입 확장
+declare global {
+  interface Window {
+    __peteduAuthState?: {
+      isAuthenticated: boolean;
+      userRole: string | null;
+      userName: string | null;
+    };
+  }
+}
 
 type Message = {
   id: string;
@@ -30,8 +40,46 @@ const SimpleChatbot: React.FC = () => {
   const [input, setInput] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const auth = useAuth();
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const { theme } = useTheme();
+  
+  // 전역 인증 상태 확인
+  useEffect(() => {
+    const checkAuthStatus = () => {
+      // window.__peteduAuthState가 있으면 해당 정보 사용
+      if (window.__peteduAuthState && window.__peteduAuthState.isAuthenticated) {
+        setIsAuthenticated(window.__peteduAuthState.isAuthenticated);
+      } else {
+        // 로컬 스토리지에서 확인
+        const storedAuth = localStorage.getItem('petedu_auth');
+        if (storedAuth) {
+          try {
+            const parsedAuth = JSON.parse(storedAuth);
+            setIsAuthenticated(true);
+          } catch (e) {
+            setIsAuthenticated(false);
+          }
+        } else {
+          setIsAuthenticated(false);
+        }
+      }
+    };
+    
+    checkAuthStatus();
+    
+    // 로그인/로그아웃 이벤트 리스너
+    const handleAuthChange = () => {
+      checkAuthStatus();
+    };
+    
+    window.addEventListener('login', handleAuthChange);
+    window.addEventListener('logout', handleAuthChange);
+    
+    return () => {
+      window.removeEventListener('login', handleAuthChange);
+      window.removeEventListener('logout', handleAuthChange);
+    };
+  }, []);
   
   // 자동 스크롤
   useEffect(() => {
@@ -91,7 +139,7 @@ const SimpleChatbot: React.FC = () => {
             role: msg.type === 'user' ? 'user' : 'assistant',
             content: msg.text
           })),
-          isAuthenticated: auth.isAuthenticated
+          isAuthenticated: isAuthenticated
         }),
       });
       
@@ -147,7 +195,7 @@ const SimpleChatbot: React.FC = () => {
         window.location.pathname.includes('/ai-analysis')) return true;
     
     // 인증된 사용자이고 AI 관련 경로에 있는 경우 숨김
-    if (auth.isAuthenticated && (
+    if (isAuthenticated && (
       window.location.pathname.includes('/ai-') ||
       window.location.pathname.includes('/trainer/notebook')
     )) return true;
@@ -162,7 +210,7 @@ const SimpleChatbot: React.FC = () => {
 
   // 전체 Pet AI 분석으로 이동
   const handleGoToFullAnalysis = () => {
-    if (auth.isAuthenticated) {
+    if (isAuthenticated) {
       window.location.href = "/ai-analysis";
     } else {
       window.location.href = "/auth/login?redirect=/ai-analysis";
@@ -289,9 +337,9 @@ const SimpleChatbot: React.FC = () => {
             <div className="flex justify-between w-full text-xs text-muted-foreground">
               <button 
                 className="hover:underline" 
-                onClick={auth.isAuthenticated ? handleGoToFullAnalysis : handleGoToLogin}
+                onClick={isAuthenticated ? handleGoToFullAnalysis : handleGoToLogin}
               >
-                {auth.isAuthenticated ? '고급 AI 분석 사용하기 →' : '로그인하여 더 많은 기능 사용하기 →'}
+                {isAuthenticated ? '고급 AI 분석 사용하기 →' : '로그인하여 더 많은 기능 사용하기 →'}
               </button>
             </div>
           </CardFooter>
