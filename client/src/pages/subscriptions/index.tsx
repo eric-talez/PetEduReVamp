@@ -150,6 +150,7 @@ export default function SubscriptionManagement() {
   const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [activeTab, setActiveTab] = useState('overview');
+  const [hasSubscription, setHasSubscription] = useState(false);
   const { toast } = useToast();
   const { userRole, userName } = useAuth();
 
@@ -160,9 +161,20 @@ export default function SubscriptionManagement() {
         // API 호출을 시뮬레이션하기 위한 지연
         await new Promise(resolve => setTimeout(resolve, 1000));
         
-        setSubscription(CURRENT_SUBSCRIPTION);
+        // 테스트를 위해 localStorage에서 구독 상태를 확인
+        const hasActiveSubscription = localStorage.getItem('petedu_has_subscription') === 'true';
+        
+        if (hasActiveSubscription) {
+          setSubscription(CURRENT_SUBSCRIPTION);
+          setTransactions(TRANSACTION_HISTORY);
+          setHasSubscription(true);
+        } else {
+          setSubscription(null);
+          setTransactions([]);
+          setHasSubscription(false);
+        }
+        
         setPlans(SUBSCRIPTION_PLANS);
-        setTransactions(TRANSACTION_HISTORY);
         setIsLoading(false);
       } catch (error) {
         console.error('구독 정보를 불러오는 중 오류 발생:', error);
@@ -219,10 +231,70 @@ export default function SubscriptionManagement() {
     });
   };
 
+  const handleToggleSubscription = () => {
+    // 테스트를 위한 토글 함수
+    const currentStatus = localStorage.getItem('petedu_has_subscription') === 'true';
+    localStorage.setItem('petedu_has_subscription', (!currentStatus).toString());
+    
+    // 페이지 새로고침
+    window.location.reload();
+  };
+
   if (isLoading) {
     return (
       <div className="container mx-auto p-6 flex justify-center items-center min-h-screen">
         <DogLoading size="lg" message="구독 정보를 불러오는 중..." />
+      </div>
+    );
+  }
+  
+  // 구독이 없는 경우 안내 화면 표시
+  if (!hasSubscription) {
+    return (
+      <div className="container mx-auto p-6">
+        <h1 className="text-3xl font-bold mb-2">구독 관리</h1>
+        <p className="text-muted-foreground mb-6">멤버십 구독 정보 확인 및 관리</p>
+        
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-8 text-center">
+          <div className="flex flex-col items-center justify-center">
+            <CreditCard className="h-16 w-16 text-muted-foreground mb-4" />
+            <h2 className="text-xl font-semibold mb-2">활성화된 구독이 없습니다</h2>
+            <p className="text-muted-foreground mb-6">
+              멤버십에 가입하면 프리미엄 기능, 콘텐츠 및 서비스를 이용하실 수 있습니다.
+            </p>
+            
+            <div className="grid gap-4 md:grid-cols-3 mb-8">
+              {plans.map((plan) => (
+                <div key={plan.id} className={`border rounded-lg p-4 ${plan.isPopular ? 'border-primary' : ''}`}>
+                  <h3 className="font-medium mb-1">{plan.name}</h3>
+                  <p className="text-2xl font-bold mb-2">{formatCurrency(plan.price)}<span className="text-sm font-normal">/월</span></p>
+                  <ul className="text-sm space-y-1">
+                    {plan.features.slice(0, 3).map((feature, i) => (
+                      <li key={i} className="flex items-start">
+                        <CheckCircle className="h-4 w-4 text-green-500 mr-2 mt-0.5 flex-shrink-0" />
+                        <span>{feature}</span>
+                      </li>
+                    ))}
+                    {plan.features.length > 3 && (
+                      <li className="text-sm text-muted-foreground">+ {plan.features.length - 3}개 더 보기</li>
+                    )}
+                  </ul>
+                </div>
+              ))}
+            </div>
+            
+            <Button 
+              size="lg" 
+              onClick={handleToggleSubscription}
+              className="px-8"
+            >
+              멤버십 가입하기
+            </Button>
+            <p className="text-xs text-muted-foreground mt-4">
+              가입 시 서비스 이용약관 및 개인정보 처리방침에 동의하게 됩니다.
+            </p>
+          </div>
+        </div>
       </div>
     );
   }
@@ -231,8 +303,20 @@ export default function SubscriptionManagement() {
 
   return (
     <div className="container mx-auto p-6">
-      <h1 className="text-3xl font-bold mb-2">구독 관리</h1>
-      <p className="text-muted-foreground mb-6">멤버십 구독 정보 확인 및 관리</p>
+      <div className="flex justify-between items-center mb-6">
+        <div>
+          <h1 className="text-3xl font-bold mb-2">구독 관리</h1>
+          <p className="text-muted-foreground">멤버십 구독 정보 확인 및 관리</p>
+        </div>
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={handleToggleSubscription}
+          className="ml-auto"
+        >
+          테스트용: 구독 취소
+        </Button>
+      </div>
 
       <Tabs defaultValue={activeTab} onValueChange={setActiveTab} className="space-y-4">
         <TabsList>
