@@ -438,13 +438,13 @@ function AuthenticatedRoutes() {
         <Route path="/locations">
           {() => {
             console.log("위치 서비스 페이지 접근");
-            const LocationsPage = lazy(() => import('./pages/locations'));
+            const Locations = lazy(() => import('./pages/locations'));
             return (
               <Suspense fallback={<div className="p-8 flex justify-center items-center">
                 <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
                 <span className="ml-2">위치 서비스 로딩 중...</span>
               </div>}>
-                <LocationsPage />
+                <Locations />
               </Suspense>
             );
           }}
@@ -651,6 +651,22 @@ function AuthenticatedRoutes() {
                 <ProtectedRoute 
                   component={() => <ProfilePage userType="user" />} 
                 />
+              </Suspense>
+            );
+          }}
+        </Route>
+        
+        <Route path="/subscriptions">
+          {() => {
+            const SubscriptionManagement = lazy(() => import('./pages/subscriptions'));
+            return (
+              <Suspense fallback={
+                <div className="p-8 flex justify-center items-center">
+                  <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
+                  <span className="ml-2">구독 정보 로딩 중...</span>
+                </div>
+              }>
+                <ProtectedRoute component={SubscriptionManagement} />
               </Suspense>
             );
           }}
