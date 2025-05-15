@@ -692,14 +692,16 @@ function AuthenticatedRoutes() {
         
         <Route path="/ai-chatbot">
           {() => {
+            console.log("AI 챗봇 페이지 접근");
             const AIChatbot = lazy(() => import('./pages/ai-chatbot'));
             return (
               <Suspense fallback={
                 <div className="p-8 flex justify-center items-center">
                   <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
+                  <span className="ml-2">AI 챗봇 로딩 중...</span>
                 </div>
               }>
-                <ProtectedRoute component={AIChatbot} requiredRoles={null} />
+                <AIChatbot />
               </Suspense>
             );
           }}
