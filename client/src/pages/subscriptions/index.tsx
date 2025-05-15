@@ -7,7 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
 import { CreditCard, CheckCircle, Package, Gift, AlertCircle, Clock, Calendar, ChevronRight, Info, Star, Tag, Zap } from 'lucide-react';
-import { useAuth } from '../../hooks/use-auth';
+import { useAuth } from '../../hooks/useAuth';
 import { DogLoading } from '../../components/DogLoading';
 
 interface SubscriptionPlan {
@@ -151,7 +151,7 @@ export default function SubscriptionManagement() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [activeTab, setActiveTab] = useState('overview');
   const { toast } = useToast();
-  const auth = useAuth();
+  const { userRole, userName } = useAuth();
 
   useEffect(() => {
     // 실제 구현에서는 API에서 데이터를 가져와야 함
@@ -624,7 +624,7 @@ export default function SubscriptionManagement() {
             <CardContent className="space-y-2">
               <div className="flex justify-between items-center">
                 <span className="text-sm">사용자 이름</span>
-                <span className="text-sm font-medium">{auth.userName || '사용자'}</span>
+                <span className="text-sm font-medium">{userName || '사용자'}</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-sm">이메일</span>

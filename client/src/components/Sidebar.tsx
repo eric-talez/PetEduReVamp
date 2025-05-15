@@ -48,6 +48,7 @@ import {
   Brain,
   BarChart2,
   Sparkles,
+  CreditCard,
   Settings,
   Percent,
   DollarSign,
