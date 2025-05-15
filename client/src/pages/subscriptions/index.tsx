@@ -7,7 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
 import { CreditCard, CheckCircle, Package, Gift, AlertCircle, Clock, Calendar, ChevronRight, Info, Star, Tag, Zap } from 'lucide-react';
-import { useAuth } from '@/lib/auth-compat';
+import { useAuth } from '../../hooks/use-auth';
 import { DogLoading } from '../../components/DogLoading';
 
 interface SubscriptionPlan {

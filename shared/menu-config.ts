@@ -285,6 +285,18 @@ export const DEFAULT_MENU_ITEMS: MenuItem[] = [
     isPublic: false
   },
   {
+    id: 'subscriptions',
+    title: '구독 관리',
+    path: '/subscriptions',
+    icon: 'CreditCard',
+    type: 'internal',
+    category: 'myLearning',
+    roles: ['user', 'pet-owner', 'trainer', 'institute-admin', 'admin'],
+    orderIndex: 7,
+    isActive: true,
+    isPublic: false
+  },
+  {
     id: 'trainer-dashboard',
     title: '훈련사 대시보드',
     path: '/trainer/dashboard',
