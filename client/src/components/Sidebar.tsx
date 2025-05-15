@@ -832,6 +832,13 @@ export function Sidebar({
                           onClick={handleItemClick} 
                           show={true}
                         >훈련 성과</AccessibleNavItem>
+                        <AccessibleNavItem 
+                          href="/subscriptions" 
+                          icon={<CreditCard className="w-5 h-5 mr-2" />} 
+                          active={isActive("/subscriptions")} 
+                          onClick={handleItemClick} 
+                          show={true}
+                        >구독 관리</AccessibleNavItem>
                       </>
                     )}
                   </>
