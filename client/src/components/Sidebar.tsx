@@ -474,7 +474,7 @@ export function Sidebar({
                       onClick={(path) => {
                         console.log("비회원이 위치 서비스 클릭");
                         // 위치 서비스 메뉴는 비회원도 접근 가능
-                        window.location.href = path;
+                        handleItemClick(path);
                       }} 
                       show={true}
                     >위치 서비스</AccessibleNavItem>
