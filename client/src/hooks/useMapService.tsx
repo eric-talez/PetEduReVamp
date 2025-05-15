@@ -26,6 +26,15 @@ export interface Place {
   isCertified?: boolean; // 테일즈 인증 여부
   certificationDate?: string; // 인증 날짜
   certificationLevel?: 'standard' | 'premium' | 'exclusive'; // 인증 레벨
+  petFriendlyLevel?: 'low' | 'medium' | 'high'; // 반려동물 친화도 (낮음, 중간, 높음)
+  features?: string[]; // 장소 특징 (예: 야외좌석, 반려동물 전용공간, 반려동물 음료 등)
+}
+
+// 필터링 옵션 타입 정의
+export interface FilterOptions {
+  certifiedOnly?: boolean;
+  petFriendlyLevel?: 'low' | 'medium' | 'high' | null;
+  features?: string[];
 }
 
 // 지도 서비스 컨텍스트 타입 정의
@@ -38,13 +47,16 @@ interface MapServiceContextType {
   searchRadius: number;
   isSearching: boolean;
   searchError: string | null;
+  filterOptions: FilterOptions;
   getUserLocation: () => Promise<Location | null>;
   searchNearbyPlaces: (type: 'institute' | 'trainer' | 'clinic' | 'shop' | 'pension' | 'cafe' | 'camping' | 'park' | 'pethotel', radius?: number) => Promise<void>;
   setSelectedPlace: (place: Place | null) => void;
   setSearchRadius: (radius: number) => void;
+  setFilterOptions: (options: FilterOptions) => void;
   getDirections: (destination: Location) => Promise<any>;
   searchPlacesByKeyword: (keyword: string) => Promise<Place[]>;
   geocodeAddress: (address: string) => Promise<Location | null>;
+  getFilteredPlaces: () => Place[];
 }
 
 // 기본 컨텍스트 생성
@@ -61,6 +73,11 @@ export function MapServiceProvider({ children }: { children: ReactNode }) {
   const [searchRadius, setSearchRadius] = useState(3000); // 기본 검색 반경 3km
   const [isSearching, setIsSearching] = useState(false);
   const [searchError, setSearchError] = useState<string | null>(null);
+  const [filterOptions, setFilterOptions] = useState<FilterOptions>({
+    certifiedOnly: false,
+    petFriendlyLevel: null,
+    features: []
+  });
 
   // Kakao Maps API 로드
   useEffect(() => {
@@ -356,6 +373,35 @@ export function MapServiceProvider({ children }: { children: ReactNode }) {
     }
   }, [currentLocation, isMapLoaded, toast]);
 
+  // 필터링된 장소 목록 반환
+  const getFilteredPlaces = useCallback(() => {
+    if (!filterOptions.certifiedOnly && !filterOptions.petFriendlyLevel && filterOptions.features?.length === 0) {
+      return nearbyPlaces; // 필터링 옵션이 없으면 모든 장소 반환
+    }
+    
+    return nearbyPlaces.filter(place => {
+      // 인증 필터
+      if (filterOptions.certifiedOnly && !place.isCertified) {
+        return false;
+      }
+      
+      // 반려동물 친화도 필터
+      if (filterOptions.petFriendlyLevel && place.petFriendlyLevel !== filterOptions.petFriendlyLevel) {
+        return false;
+      }
+      
+      // 특징 필터
+      if (filterOptions.features && filterOptions.features.length > 0) {
+        // 장소에 특징이 없거나, 선택한 특징 중 하나라도 없으면 필터링
+        if (!place.features || !filterOptions.features.some(feature => place.features?.includes(feature))) {
+          return false;
+        }
+      }
+      
+      return true;
+    });
+  }, [nearbyPlaces, filterOptions]);
+  
   return (
     <MapServiceContext.Provider
       value={{
@@ -367,13 +413,16 @@ export function MapServiceProvider({ children }: { children: ReactNode }) {
         searchRadius,
         isSearching,
         searchError,
+        filterOptions,
         getUserLocation,
         searchNearbyPlaces,
         setSelectedPlace,
         setSearchRadius,
+        setFilterOptions,
         getDirections,
         searchPlacesByKeyword,
-        geocodeAddress
+        geocodeAddress,
+        getFilteredPlaces
       }}
     >
       {children}

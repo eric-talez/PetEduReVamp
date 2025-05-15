@@ -132,25 +132,151 @@ function PlaceSearch() {
 }
 
 /**
+ * 필터 메뉴 컴포넌트
+ */
+function FilterMenu() {
+  const { filterOptions, setFilterOptions } = useMapService();
+  const [isOpen, setIsOpen] = useState(false);
+  
+  // 필터 값 변경 핸들러
+  const handleFilterChange = (key: keyof FilterOptions, value: any) => {
+    setFilterOptions({ ...filterOptions, [key]: value });
+  };
+  
+  // 특징 토글 핸들러
+  const toggleFeature = (feature: string) => {
+    const features = [...(filterOptions.features || [])];
+    const index = features.indexOf(feature);
+    
+    if (index > -1) {
+      features.splice(index, 1);
+    } else {
+      features.push(feature);
+    }
+    
+    setFilterOptions({ ...filterOptions, features });
+  };
+  
+  return (
+    <div className="mb-4">
+      <div className="flex justify-between items-center mb-2">
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={() => setIsOpen(!isOpen)}
+          className="flex items-center"
+        >
+          <Filter className="h-4 w-4 mr-2" />
+          필터 {isOpen ? '닫기' : '열기'}
+          {filterOptions.certifiedOnly || filterOptions.petFriendlyLevel || (filterOptions.features && filterOptions.features.length > 0) ? (
+            <Badge className="ml-2 bg-primary" variant="default">활성</Badge>
+          ) : null}
+        </Button>
+        
+        {(filterOptions.certifiedOnly || filterOptions.petFriendlyLevel || (filterOptions.features && filterOptions.features.length > 0)) && (
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={() => setFilterOptions({ certifiedOnly: false, petFriendlyLevel: null, features: [] })}
+          >
+            필터 초기화
+          </Button>
+        )}
+      </div>
+      
+      {isOpen && (
+        <div className="bg-card rounded-md p-4 mb-4 border">
+          <div className="space-y-4">
+            {/* 인증 필터 */}
+            <div>
+              <div className="flex items-center mb-2">
+                <input
+                  type="checkbox"
+                  id="certified-only"
+                  checked={filterOptions.certifiedOnly}
+                  onChange={(e) => handleFilterChange('certifiedOnly', e.target.checked)}
+                  className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                />
+                <label htmlFor="certified-only" className="ml-2 text-sm font-medium">
+                  테일즈 인증 업체만 보기
+                </label>
+                <Badge className="ml-2 bg-blue-500 text-white">인증</Badge>
+              </div>
+            </div>
+            
+            {/* 반려동물 친화도 필터 */}
+            <div>
+              <h4 className="text-sm font-medium mb-2">반려동물 친화도</h4>
+              <div className="flex flex-wrap gap-2">
+                <Badge 
+                  variant={filterOptions.petFriendlyLevel === 'high' ? 'default' : 'outline'} 
+                  className={`cursor-pointer ${filterOptions.petFriendlyLevel === 'high' ? 'bg-green-500' : 'hover:bg-primary/10'}`}
+                  onClick={() => handleFilterChange('petFriendlyLevel', filterOptions.petFriendlyLevel === 'high' ? null : 'high')}
+                >
+                  높음
+                </Badge>
+                <Badge 
+                  variant={filterOptions.petFriendlyLevel === 'medium' ? 'default' : 'outline'} 
+                  className={`cursor-pointer ${filterOptions.petFriendlyLevel === 'medium' ? 'bg-yellow-500' : 'hover:bg-primary/10'}`}
+                  onClick={() => handleFilterChange('petFriendlyLevel', filterOptions.petFriendlyLevel === 'medium' ? null : 'medium')}
+                >
+                  중간
+                </Badge>
+                <Badge 
+                  variant={filterOptions.petFriendlyLevel === 'low' ? 'default' : 'outline'} 
+                  className={`cursor-pointer ${filterOptions.petFriendlyLevel === 'low' ? 'bg-orange-500' : 'hover:bg-primary/10'}`}
+                  onClick={() => handleFilterChange('petFriendlyLevel', filterOptions.petFriendlyLevel === 'low' ? null : 'low')}
+                >
+                  낮음
+                </Badge>
+              </div>
+            </div>
+            
+            {/* 특징 필터 */}
+            <div>
+              <h4 className="text-sm font-medium mb-2">특징</h4>
+              <div className="grid grid-cols-2 gap-2">
+                {['야외좌석', '실내좌석', '반려동물 전용공간', '반려동물 음료', '반려동물 간식', '반려동물 용품', '넓은 공간', '주차장'].map(feature => (
+                  <div key={feature} className="flex items-center">
+                    <input
+                      type="checkbox"
+                      id={`feature-${feature}`}
+                      checked={filterOptions.features?.includes(feature) || false}
+                      onChange={() => toggleFeature(feature)}
+                      className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                    />
+                    <label htmlFor={`feature-${feature}`} className="ml-2 text-sm">
+                      {feature}
+                    </label>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/**
  * 근처 장소 찾기 컴포넌트
  */
 function NearbyPlaces() {
   const [activeTab, setActiveTab] = useState<'institute' | 'trainer' | 'clinic' | 'shop' | 'pension' | 'cafe' | 'camping' | 'park' | 'pethotel'>('trainer');
-  const [certifiedOnly, setCertifiedOnly] = useState(false);
   const { 
     currentLocation, 
-    nearbyPlaces, 
+    nearbyPlaces,
     isLoadingLocation, 
     isSearching, 
     getUserLocation, 
-    searchNearbyPlaces 
+    searchNearbyPlaces,
+    getFilteredPlaces
   } = useMapService();
   const { toast } = useToast();
   
-  // 인증 필터링된 장소 목록
-  const filteredPlaces = certifiedOnly 
-    ? nearbyPlaces.filter(place => place.isCertified)
-    : nearbyPlaces;
+  // 필터링된 장소 목록
+  const filteredPlaces = getFilteredPlaces();
 
   // 근처 장소 검색
   const handleSearchNearby = async () => {
@@ -203,21 +329,8 @@ function NearbyPlaces() {
           )}
         </div>
         
-        <div className="flex items-center space-x-2">
-          <div className="flex items-center">
-            <input
-              type="checkbox"
-              id="certified-only"
-              checked={certifiedOnly}
-              onChange={(e) => setCertifiedOnly(e.target.checked)}
-              className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
-            />
-            <label htmlFor="certified-only" className="ml-2 text-sm font-medium">
-              테일즈 인증 업체만 보기
-            </label>
-          </div>
-          <Badge className="bg-blue-500 text-white">인증</Badge>
-        </div>
+        {/* 필터 메뉴 */}
+        <FilterMenu />
       </div>
 
       <Tabs defaultValue="trainer" value={activeTab} onValueChange={(v) => setActiveTab(v as any)}>
