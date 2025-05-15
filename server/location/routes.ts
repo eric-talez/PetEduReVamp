@@ -13,12 +13,22 @@ const locationSchema = z.object({
   longitude: z.number().min(-180).max(180),
 });
 
+// 필터 옵션 스키마
+const filterOptionsSchema = z.object({
+  certifiedOnly: z.string().optional().transform(val => val === 'true'),
+  petFriendlyLevel: z.enum(['low', 'medium', 'high']).optional().nullable(),
+  features: z.string().optional().transform(val => val ? val.split(',') : []),
+});
+
 // 근처 장소 검색 파라미터 스키마
 const nearbySearchParamsSchema = z.object({
   lat: z.string().transform(Number),
   lng: z.string().transform(Number),
   type: z.enum(['institute', 'trainer', 'clinic', 'shop', 'pension', 'cafe', 'camping', 'park', 'pethotel']),
   radius: z.string().transform(Number).optional().default('3000'),
+  certifiedOnly: z.string().optional().transform(val => val === 'true'),
+  petFriendlyLevel: z.enum(['low', 'medium', 'high']).optional().nullable(),
+  features: z.string().optional().transform(val => val ? val.split(',') : []),
 });
 
 // 키워드 검색 파라미터 스키마
@@ -47,6 +57,9 @@ export function registerLocationRoutes(app: Express) {
     try {
       const { lat, lng, type, radius } = nearbySearchParamsSchema.parse(req.query);
       
+      // 파라미터에서 필터 옵션 추출
+      const { certifiedOnly, petFriendlyLevel, features } = req.query;
+      
       // 데이터베이스에서 데이터 가져오기 시도
       let results: Array<{
         id: string;
@@ -64,6 +77,8 @@ export function registerLocationRoutes(app: Express) {
         isCertified?: boolean;
         certificationDate?: string;
         certificationLevel?: 'standard' | 'premium' | 'exclusive';
+        petFriendlyLevel?: 'low' | 'medium' | 'high';
+        features?: string[];
       }> = [];
       
       if (type === 'institute') {
@@ -113,9 +128,43 @@ export function registerLocationRoutes(app: Express) {
         results = [];
       }
       
-      // 반경 필터링 및 거리 기준 정렬
+      // 샘플 데이터를 위한 장소별 특징과 반려동물 친화도 추가
+      results.forEach(place => {
+        // 장소 유형에 따라 적절한 특징과 친화도 할당
+        if (place.type === 'cafe') {
+          place.features = ['야외좌석', '반려동물 음료', '반려동물 간식'].filter(() => Math.random() > 0.3);
+          place.petFriendlyLevel = Math.random() > 0.7 ? 'high' : Math.random() > 0.5 ? 'medium' : 'low';
+        } else if (place.type === 'pension' || place.type === 'camping') {
+          place.features = ['넓은 공간', '반려동물 전용공간', '주차장'].filter(() => Math.random() > 0.3);
+          place.petFriendlyLevel = Math.random() > 0.6 ? 'high' : Math.random() > 0.3 ? 'medium' : 'low';
+        } else if (place.type === 'shop') {
+          place.features = ['반려동물 용품', '반려동물 간식', '주차장'].filter(() => Math.random() > 0.3);
+          place.petFriendlyLevel = Math.random() > 0.5 ? 'high' : Math.random() > 0.3 ? 'medium' : 'low';
+        } else {
+          place.features = ['주차장', '실내좌석'].filter(() => Math.random() > 0.4);
+          place.petFriendlyLevel = Math.random() > 0.5 ? 'medium' : Math.random() > 0.3 ? 'low' : 'high';
+        }
+      });
+      
+      // 필터링 추가
       results = results
+        // 거리 필터
         .filter(place => place.distance <= radius)
+        // 인증 필터
+        .filter(place => certifiedOnly === 'true' ? place.isCertified === true : true)
+        // 반려동물 친화도 필터
+        .filter(place => {
+          if (!petFriendlyLevel) return true;
+          return place.petFriendlyLevel === petFriendlyLevel;
+        })
+        // 특징 필터
+        .filter(place => {
+          if (!features || (features as string).length === 0) return true;
+          const featureList = (features as string).split(',');
+          if (featureList.length === 0) return true;
+          return featureList.some(feature => place.features?.includes(feature));
+        })
+        // 거리 기준 정렬
         .sort((a, b) => a.distance - b.distance);
       
       // 결과 반환

@@ -2,9 +2,9 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Loader2, Search, MapPin, Navigation, Building, Phone, ChevronRight, Star, Map } from 'lucide-react';
+import { Loader2, Search, MapPin, Navigation, Building, Phone, ChevronRight, Star, Map, Filter, PawPrint } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { useMapService, MapServiceProvider, Place } from '@/hooks/useMapService';
+import { useMapService, MapServiceProvider, Place, FilterOptions } from '@/hooks/useMapService';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from "@/components/ui/badge";
@@ -407,6 +407,50 @@ function PlaceCard({ place }: { place: Place }) {
     }
   };
 
+  // 반려동물 친화도 표시 함수
+  const renderPetFriendlyLevel = (level?: 'low' | 'medium' | 'high') => {
+    if (!level) return null;
+    
+    const colors = {
+      high: 'bg-green-100 text-green-800 border-green-300',
+      medium: 'bg-yellow-100 text-yellow-800 border-yellow-300',
+      low: 'bg-orange-100 text-orange-800 border-orange-300'
+    };
+    
+    const labels = {
+      high: '반려동물 친화도: 높음',
+      medium: '반려동물 친화도: 중간',
+      low: '반려동물 친화도: 낮음'
+    };
+    
+    return (
+      <div className={`text-xs py-1 px-2 rounded-md inline-flex items-center mt-1 ${colors[level]} border`}>
+        <PawPrint className="h-3 w-3 mr-1" />
+        {labels[level]}
+      </div>
+    );
+  };
+  
+  // 특징 태그 표시 함수
+  const renderFeatureTags = (features?: string[]) => {
+    if (!features || features.length === 0) return null;
+    
+    return (
+      <div className="flex flex-wrap gap-1 mt-2">
+        {features.slice(0, 3).map((feature, index) => (
+          <div key={index} className="text-xs py-0.5 px-2 bg-gray-100 text-gray-800 rounded-full border border-gray-200">
+            {feature}
+          </div>
+        ))}
+        {features.length > 3 && (
+          <div className="text-xs py-0.5 px-2 bg-gray-100 text-gray-800 rounded-full border border-gray-200">
+            +{features.length - 3}
+          </div>
+        )}
+      </div>
+    );
+  };
+
   const renderStars = (rating?: number) => {
     if (!rating) return null;
     
@@ -459,6 +503,7 @@ function PlaceCard({ place }: { place: Place }) {
                 {place.certificationDate && `(${place.certificationDate})`}
               </div>
             )}
+            {place.petFriendlyLevel && renderPetFriendlyLevel(place.petFriendlyLevel)}
           </div>
           <div className="flex items-center text-xs text-muted-foreground">
             <MapPin className="h-3 w-3 mr-1" />
@@ -467,29 +512,32 @@ function PlaceCard({ place }: { place: Place }) {
         </div>
       </CardHeader>
       <CardContent>
-        <div className="flex justify-between items-center">
-          <div className="text-sm">
-            {place.description || getTypeLabel(place.type)}
-            {place.contact && (
-              <div className="text-xs text-muted-foreground mt-1">
-                <Phone className="h-3 w-3 inline mr-1" />
-                {place.contact}
-              </div>
-            )}
+        <div className="flex flex-col">
+          <div className="flex justify-between items-center">
+            <div className="text-sm">
+              {place.description || getTypeLabel(place.type)}
+              {place.contact && (
+                <div className="text-xs text-muted-foreground mt-1">
+                  <Phone className="h-3 w-3 inline mr-1" />
+                  {place.contact}
+                </div>
+              )}
+            </div>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={handleGetDirections}
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <Loader2 className="h-3 w-3 animate-spin mr-1" />
+              ) : (
+                <Navigation className="h-3 w-3 mr-1" />
+              )}
+              길찾기
+            </Button>
           </div>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={handleGetDirections}
-            disabled={isLoading}
-          >
-            {isLoading ? (
-              <Loader2 className="h-3 w-3 animate-spin mr-1" />
-            ) : (
-              <Navigation className="h-3 w-3 mr-1" />
-            )}
-            길찾기
-          </Button>
+          {place.features && renderFeatureTags(place.features)}
         </div>
       </CardContent>
     </Card>
