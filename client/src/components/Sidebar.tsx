@@ -272,7 +272,7 @@ export function Sidebar({
     const publicPaths = [
       "/", "/courses", "/trainers", "/video-training", "/video-call", "/community",
       "/institutes", "/institutes/register", "/events", "/events/calendar",
-      "/help/faq", "/help/guide", "/help/about", "/help/contact", "/shop"
+      "/help/faq", "/help/guide", "/help/about", "/help/contact", "/shop", "/locations"
     ];
 
     // 로그인 필요한 페이지 접근 시
@@ -494,7 +494,7 @@ export function Sidebar({
                       active={isActive("/video-call")} 
                       onClick={(path) => {
                         console.log("화상 수업 메뉴 클릭:", path);
-                        window.location.href = path;
+                        handleItemClick(path);
                       }} 
                       show={true}
                     >화상 수업</AccessibleNavItem>
