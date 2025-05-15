@@ -1139,6 +1139,39 @@ function UnauthenticatedRoutes() {
         <Route path="/events" component={EventsPage} />
         <Route path="/events/calendar" component={EventCalendarPage} />
         <Route path="/events/:id" component={EventDetailPage} />
+        
+        {/* 위치 서비스 */}
+        <Route path="/locations">
+          {() => {
+            console.log("비회원이 위치 서비스 클릭");
+            const LocationsPage = lazy(() => import('./pages/locations'));
+            return (
+              <Suspense fallback={<div className="p-8 flex justify-center items-center">
+                <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
+                <span className="ml-2">위치 서비스 로딩 중...</span>
+              </div>}>
+                <LocationsPage />
+              </Suspense>
+            );
+          }}
+        </Route>
+        
+        {/* AI 챗봇 */}
+        <Route path="/ai-chatbot">
+          {() => {
+            console.log("비회원이 AI 챗봇 클릭");
+            const AIChatbot = lazy(() => import('./pages/ai-chatbot'));
+            return (
+              <Suspense fallback={<div className="p-8 flex justify-center items-center">
+                <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
+                <span className="ml-2">AI 챗봇 로딩 중...</span>
+              </div>}>
+                <AIChatbot />
+              </Suspense>
+            );
+          }}
+        </Route>
+        
         {/* 쇼핑몰 메인 */}
         <Route path="/shop">
           {() => {
