@@ -437,6 +437,7 @@ function AuthenticatedRoutes() {
         </Route>
         <Route path="/locations">
           {() => {
+            console.log("위치 서비스 페이지 접근");
             const LocationsPage = lazy(() => import('./pages/locations'));
             return (
               <Suspense fallback={<div className="p-8 flex justify-center items-center">

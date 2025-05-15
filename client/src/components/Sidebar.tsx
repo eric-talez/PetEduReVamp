@@ -504,7 +504,7 @@ export function Sidebar({
                       active={isActive("/community")} 
                       onClick={(path) => {
                         console.log("비회원이 커뮤니티 클릭");
-                        window.location.href = path;
+                        handleItemClick(path);
                       }} 
                       show={true}
                     >커뮤니티</AccessibleNavItem>
@@ -514,7 +514,7 @@ export function Sidebar({
                       active={isActive("/events")} 
                       onClick={(path) => {
                         console.log("비회원이 이벤트 메뉴 클릭");
-                        window.location.href = path;
+                        handleItemClick(path);
                       }} 
                       show={true}
                     >이벤트</AccessibleNavItem>
@@ -524,7 +524,7 @@ export function Sidebar({
                       active={isActive("/ai-chatbot")} 
                       onClick={(path) => {
                         console.log("비회원이 AI 챗봇 메뉴 클릭");
-                        window.location.href = path;
+                        handleItemClick(path);
                       }} 
                       show={true}
                     >AI 챗봇</AccessibleNavItem>
