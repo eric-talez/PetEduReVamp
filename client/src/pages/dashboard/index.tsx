@@ -5,6 +5,7 @@ import PetOwnerDashboard from "./pet-owner";
 import TrainerDashboard from "./trainer";
 import InstituteAdminDashboard from "./institute-admin";
 import AdminDashboard from "./admin";
+import { DogLoading } from "../../components/DogLoading";
 
 interface DashboardProps {
   type?: 'pet-owner' | 'trainer' | 'institute-admin' | 'admin';
@@ -37,10 +38,7 @@ export default function Dashboard({ type }: DashboardProps) {
   // 인증 상태 체크 (로딩 상태도 확인)
   if (!isAuthenticated) {
     return <div className="flex items-center justify-center min-h-screen">
-      <div className="flex flex-col items-center">
-        <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4"></div>
-        <p>대시보드 로딩 중...</p>
-      </div>
+      <DogLoading message="대시보드 로딩 중..." size="large" />
     </div>;
   }
 
