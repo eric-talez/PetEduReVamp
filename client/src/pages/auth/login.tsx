@@ -154,7 +154,7 @@ export default function Login() {
     <div className="flex flex-col items-center justify-center py-12">
       <div className="mb-8 text-center">
         <h1 className="text-3xl font-bold">
-          PetEdu<span className="text-primary">Platform</span>
+          <span className="text-primary">Talez</span>
         </h1>
         <p className="mt-2 text-muted-foreground">반려견과 함께하는 특별한 교육 여정</p>
       </div>
@@ -162,7 +162,7 @@ export default function Login() {
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle>로그인 / 회원가입</CardTitle>
-          <CardDescription>PetEdu 플랫폼 서비스를 이용하세요</CardDescription>
+          <CardDescription>Talez 서비스를 이용하세요</CardDescription>
         </CardHeader>
         
         <CardContent>

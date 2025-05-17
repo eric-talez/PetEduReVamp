@@ -36,7 +36,7 @@ export const PawprintLoading = ({ size = "medium", color = "primary" }: { size?:
 /**
  * 강아지 모티프 페이지 타이틀 컴포넌트
  */
-export const PetEduPageTitle = ({ 
+export const TalezPageTitle = ({ 
   title, 
   subtitle,
   icon

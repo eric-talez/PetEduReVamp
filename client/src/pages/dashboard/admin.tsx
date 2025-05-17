@@ -39,7 +39,7 @@ export default function AdminDashboard({ onAction }: AdminDashboardProps) {
             시스템 관리자 대시보드
           </h1>
           <p className="text-white text-sm md:text-lg max-w-xl mb-6">
-            PetEduPlatform의 모든 활동을 모니터링하고 관리하여 최상의 서비스 품질을 유지하세요.
+            Talez의 모든 활동을 모니터링하고 관리하여 최상의 서비스 품질을 유지하세요.
           </p>
           <div>
             <Button

@@ -1129,7 +1129,7 @@ export function Sidebar({
             {expanded ? (
               <>
                 <div className="flex items-center justify-between">
-                  <span>© 2025 PetEduPlatform</span>
+                  <span>© 2025 Talez</span>
                   <span className="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded text-xs">
                     {userRole || '비로그인'}
                   </span>
