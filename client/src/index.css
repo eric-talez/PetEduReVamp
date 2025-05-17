@@ -571,68 +571,35 @@ body {
   will-change: transform, opacity; /* 브라우저에게 최적화 힌트 제공 */
 }
 
-/* 모든 이미지에 대한 기본 설정 */
+/* 모든 이미지에 대한 기본 설정 - 완전 원본 유지 */
 img {
-  /* 원본 색상 유지하면서 약간의 선명도만 강화 */
-  filter: none;
+  filter: none !important; /* 절대 어떤 필터도 적용하지 않음 */
   max-width: 100%;
   height: auto;
 }
 
-/* 배너 이미지 최적화 */
+/* 이미지 기본 스타일 - 필터 없음 */
 .banner-image, 
 .hero-banner, 
 img[class*="banner"], 
 .header-image,
 .trainer-card-image,
 .trainer-profile-image,
-.course-banner {
-  /* 배너 이미지는 선명도와 생동감 향상 */
-  filter: saturate(1.05) brightness(1.02);
-  transition: transform 0.3s ease, filter 0.3s ease;
-  object-fit: cover;
-}
-
-/* 다크 모드에서는 모든 이미지 원본 그대로 표시 */
-.dark img {
-  /* 필터 제거 */
-  filter: none;
-}
-
-/* 다크 모드에서 아이콘 이미지만 약간 밝게 */
-.dark .icon-image,
-.dark svg {
-  filter: brightness(1.1);
-}
-
-/* 다크 모드에서 카드 이미지에 미세한 테두리 */
-.dark .card img:not(.no-border) {
-  outline: 1px solid rgba(255, 255, 255, 0.07);
-  outline-offset: -1px;
-}
-
-/* 훈련사 찾기 메뉴의 이미지 최적화 */
+.course-banner,
+.dark img,
+.card img,
 .trainer-card img,
 .trainer-profile img,
 .trainer-list-item img {
-  filter: none; /* 원본 그대로 표시 */
-  transition: transform 0.2s ease;
+  filter: none !important; /* 모든 필터 강제 제거 */
 }
 
+/* 호버 시 확대 효과만 유지 */
+img.interactive:hover,
 .trainer-card:hover img,
 .trainer-profile:hover img,
 .trainer-list-item:hover img {
   transform: scale(1.03);
-}
-
-/* 호버 효과가 있는 이미지 */
-img.interactive {
-  transition: transform 0.2s ease, filter 0.2s ease;
-}
-
-img.interactive:hover {
-  transform: scale(1.03);
-  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1));
 }
 
 /* 테마 전환 시 부드러운 애니메이션 */
