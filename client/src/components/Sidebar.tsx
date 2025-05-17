@@ -384,17 +384,21 @@ export function Sidebar({
           expanded ? "w-64" : "w-[70px]"
         )}
       >
-        <div className="h-16 flex items-center justify-between border-b border-gray-200 dark:border-gray-800 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-900 px-3">
+        <div className="h-16 flex items-center justify-between border-b border-gray-200 dark:border-gray-800 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-900 px-3 transition-all duration-300">
           {expanded ? (
-            <a href="/" className="flex flex-col items-center w-full">
-              <span className="text-2xl font-bold text-gray-800 dark:text-white">
-                PetEdu<span className="text-primary">Platform</span>
-              </span>
-              <span className="text-xs text-gray-500 dark:text-gray-400 mt-1">반려견 전문 교육 플랫폼</span>
-            </a>
+            <ScrollReveal direction="left" delay={100}>
+              <a href="/" className="flex flex-col items-center w-full group">
+                <span className="text-2xl font-bold text-gray-800 dark:text-white flex items-center">
+                  PetEdu<span className="text-primary transition-all duration-300 group-hover:scale-110">Platform</span>
+                  <span className="ml-1 opacity-80">{useSeasonalTheme().getSeasonEmoji()}</span>
+                </span>
+                <span className="text-xs text-gray-500 dark:text-gray-400 mt-1">반려견 전문 교육 플랫폼</span>
+              </a>
+            </ScrollReveal>
           ) : (
-            <a href="/" className="flex items-center justify-center w-full">
+            <a href="/" className="flex items-center justify-center w-full transition-all duration-300 hover:scale-110">
               <span className="text-2xl font-bold text-primary">P</span>
+              <span className="absolute -top-1 -right-1 text-xs">{useSeasonalTheme().getSeasonEmoji()}</span>
             </a>
           )}
           <button
@@ -409,7 +413,11 @@ export function Sidebar({
         </div>
 
         <ScrollArea className={cn("flex-1", expanded ? "px-3" : "px-2")}>
-          <div className="py-4 space-y-1 w-full min-h-min">
+          <div className="py-4 space-y-1 w-full min-h-min relative">
+            {/* 계절 효과 표시 */}
+            <span className="absolute top-2 right-0 text-xs opacity-70 pointer-events-none">
+              {useSeasonalTheme().getSeasonEmoji()}
+            </span>
             {/* 비로그인 상태 메뉴 */}
             {!isAuthenticated ? (
               <>
