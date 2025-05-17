@@ -11,6 +11,9 @@ import { AccessibleIconButton } from "./AccessibleIconButton";
 import { AccessibleMenuToggle } from "./AccessibleMenuToggle";
 import { AccessibleNavItem } from "./AccessibleNavItem";
 import { SidebarMenuGroup } from "./SidebarMenuGroup";
+import { ScrollReveal } from "@/components/ui/AnimatedContent";
+import { useSeasonalTheme } from "@/hooks/use-seasonal-theme";
+import { AccessibilityFloatingButton } from "@/components/ui/AccessibilityControls";
 import {
   ChevronDown,
   ChevronRight,
