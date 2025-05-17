@@ -14,9 +14,18 @@ export interface IStorage {
   // 사용자 관련
   getUser(id: number): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
+  getUserByCi(ci: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   updateUserRole(userId: number, role: UserRole, trainerId?: number): Promise<User>;
   updateUserProfile(userId: number, profileData: ProfileUpdateData): Promise<User>;
+  updateUserVerification(userId: number, verificationData: {
+    ci: string;
+    verified: boolean;
+    verifiedAt: Date;
+    verificationName?: string;
+    verificationBirth?: string;
+    verificationPhone?: string;
+  }): Promise<User>;
   
   // 기관 관련
   getInstituteByCode(code: string): Promise<any>;
@@ -60,6 +69,7 @@ export interface IStorage {
 
 export class MemStorage implements IStorage {
   private users: Map<number, User>;
+  private userCiMap: Map<string, number>; // CI 값으로 사용자 ID를 찾기 위한 맵
   private commissionPolicies: Map<number, any>;
   private commissionTransactions: Map<number, any>;
   private settlementReports: Map<number, any>;
@@ -83,6 +93,7 @@ export class MemStorage implements IStorage {
 
   constructor() {
     this.users = new Map();
+    this.userCiMap = new Map(); // CI 맵 초기화
     this.commissionPolicies = new Map();
     this.commissionTransactions = new Map();
     this.settlementReports = new Map();

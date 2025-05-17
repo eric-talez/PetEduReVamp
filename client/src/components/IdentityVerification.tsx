@@ -51,7 +51,8 @@ export function IdentityVerification({
   const [error, setError] = useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const { toast } = useToast();
-  const { user } = useAuth();
+  const auth = useAuth();
+  const userName = auth?.user?.name || '사용자';
   
   const verificationSuccess = (data: VerificationData) => {
     setIsVerifying(false);
@@ -60,7 +61,7 @@ export function IdentityVerification({
     toast({
       title: '본인인증 완료',
       description: '성공적으로 본인인증이 완료되었습니다.',
-      variant: 'success',
+      variant: 'default',
     });
     onVerified && onVerified(data);
   };
