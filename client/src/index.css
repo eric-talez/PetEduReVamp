@@ -409,64 +409,35 @@
   body {
     @apply bg-background text-foreground font-sans transition-colors duration-300;
   }
-  
-  /* 개선된 타이포그래피 스타일 - 더 명확한 시각적 계층 구조 */
+  /* 타이포그래피 스타일 향상 */
   h1 {
-    @apply text-3xl font-bold tracking-tight md:text-4xl lg:text-5xl mb-5 leading-tight;
+    @apply text-3xl font-bold tracking-tight md:text-4xl lg:text-5xl mb-4;
   }
   h2 {
-    @apply text-2xl font-semibold tracking-tight md:text-3xl mb-4 leading-tight;
+    @apply text-2xl font-semibold tracking-tight md:text-3xl mb-3;
   }
   h3 {
-    @apply text-xl font-semibold tracking-tight md:text-2xl mb-3 leading-tight;
+    @apply text-xl font-semibold tracking-tight md:text-2xl mb-2;
   }
   h4 {
-    @apply text-lg font-medium md:text-xl mb-2 leading-tight;
+    @apply text-lg font-medium md:text-xl mb-2;
   }
   p {
-    @apply leading-relaxed mb-4 text-base md:text-base;
+    @apply leading-relaxed mb-4;
   }
   
-  /* 글로벌 텍스트 가독성 향상 */
-  .text-muted {
-    @apply text-muted-foreground font-normal;
-  }
-  
-  .text-enhanced {
-    @apply font-medium;
-  }
-  
-  /* 다크 모드 텍스트 대비 강화 */
-  .dark .text-muted-foreground {
-    @apply text-opacity-80; /* 투명도 감소로 대비 증가 */
-  }
-  
-  /* 개선된 접근성을 위한 포커스 스타일 */
+  /* 접근성 개선을 위한 포커스 스타일 */
   *:focus-visible {
     @apply outline-none ring-2 ring-primary ring-offset-2 ring-offset-background transition-shadow;
   }
-  
-  /* 링크 스타일 개선 */
-  a:not(.unstyled) {
-    @apply text-primary hover:text-primary/80 transition-colors duration-200;
-  }
-  
-  /* 텍스트 선택 스타일 */
-  ::selection {
-    @apply bg-primary/20 text-foreground;
-  }
 }
 
-/* 개선된 카드 디자인 및 호버 효과 */
-.card {
-  @apply bg-card text-card-foreground rounded-lg border border-border/60 shadow-sm p-4 relative overflow-hidden transition-all duration-300;
-}
-
+/* 카드 호버 효과 - 부드러운 변환과 그림자 */
 .card-hover {
-  @apply transition-all duration-300 hover:translate-y-[-3px] hover:shadow-md relative overflow-hidden;
+  @apply transition-all duration-300 hover:translate-y-[-4px] hover:shadow-lg relative overflow-hidden;
 }
 
-/* 커스텀 카드 태두리 효과 */
+/* 카드 호버 시 반려동물 테마 효과 추가 */
 .card-hover::after {
   content: "";
   @apply absolute bottom-0 left-0 w-full h-1 bg-primary scale-x-0 origin-left transition-transform duration-300;
@@ -476,177 +447,28 @@
   @apply scale-x-100;
 }
 
-/* 카드 내 여백 최적화 */
-.card-header {
-  @apply mb-3 space-y-1.5;
-}
-
-.card-title {
-  @apply text-lg font-semibold leading-none tracking-tight;
-}
-
-.card-description {
-  @apply text-sm text-muted-foreground;
-}
-
-.card-content {
-  @apply py-2;
-}
-
-.card-footer {
-  @apply mt-4 flex items-center pt-2 border-t border-border/30;
-}
-
-/* 모바일에서 카드 크기 최적화 */
-@media (max-width: 640px) {
-  .card {
-    @apply p-3;
-  }
-  
-  .card-grid {
-    @apply grid-cols-1;
-  }
-}
-
-/* 레이아웃 개선 - 균일한 여백과 반응형 레이아웃 */
-.container-fluid {
-  @apply w-full px-4 sm:px-6 md:px-8 mx-auto max-w-7xl;
-}
-
-.container-narrow {
-  @apply w-full px-4 sm:px-6 mx-auto max-w-5xl;
-}
-
-/* 그리드 레이아웃 최적화 */
-.grid-layout {
-  @apply grid gap-4 sm:gap-6 md:gap-8;
-}
-
-.grid-cols-auto-fit {
-  @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6;
-}
-
-/* 섹션 여백 균일화 */
-.section {
-  @apply py-6 sm:py-8 md:py-10;
-}
-
-.section-header {
-  @apply mb-4 sm:mb-6 md:mb-8;
-}
-
-/* 콘텐츠 영역 패딩 최적화 */
-.content-padding {
-  @apply p-4 sm:p-6 md:p-8;
-}
-
-/* 버튼 개선 */
-.btn {
-  @apply inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-10 px-4 py-2;
-}
-
-.btn-primary {
-  @apply bg-primary text-primary-foreground hover:bg-primary/90;
-}
-
-.btn-secondary {
-  @apply bg-secondary text-secondary-foreground hover:bg-secondary/90;
-}
-
-.btn-outline {
-  @apply border border-input bg-background hover:bg-accent hover:text-accent-foreground;
-}
-
-.btn-ghost {
-  @apply hover:bg-accent hover:text-accent-foreground;
-}
-
-.btn-link {
-  @apply text-primary underline-offset-4 hover:underline;
-}
-
-/* 사이즈 변형 */
-.btn-sm {
-  @apply h-9 rounded-md px-3;
-}
-
-.btn-lg {
-  @apply h-11 rounded-md px-8;
-}
-
-.btn-icon {
-  @apply h-10 w-10 p-0 flex items-center justify-center;
-}
-
-/* 아이콘 버튼 크기 최적화 */
-.btn-icon-sm {
-  @apply h-8 w-8;
-}
-
-.btn-icon-lg {
-  @apply h-12 w-12;
-}
-
-/* 향상된 네비게이션 스타일 */
+/* 사이드바 링크 호버 효과 개선 */
 .sidebar-link {
-  @apply transition-all duration-200 relative overflow-hidden rounded-md flex items-center gap-2 py-2 px-3;
+  @apply transition-all duration-200 relative overflow-hidden;
 }
 
 .sidebar-link:hover {
-  @apply bg-primary/10 text-foreground;
+  @apply bg-primary/10;
 }
 
-/* 사이드바 활성 링크 표시 - 더 명확한 시각적 표시 */
+/* 사이드바 활성 링크 표시 */
 .sidebar-link.active {
-  @apply bg-primary/15 font-medium text-primary;
+  @apply bg-primary/20 font-medium;
 }
 
 .sidebar-link.active::before {
   content: "";
-  @apply absolute left-0 top-0 h-full w-1.5 bg-primary rounded-r;
+  @apply absolute left-0 top-0 h-full w-1 bg-primary;
 }
 
-/* 메뉴 그룹 스타일 개선 */
-.menu-group {
-  @apply mb-1.5 rounded-md overflow-hidden;
-}
-
-.menu-group-header {
-  @apply flex items-center justify-between px-3 py-2 text-sm font-medium cursor-pointer hover:bg-accent/50 rounded-md;
-}
-
-.menu-group-items {
-  @apply pl-2 mt-1 space-y-0.5;
-}
-
-/* 네비게이션 상태 표시자 */
-.nav-indicator {
-  @apply inline-flex h-5 items-center justify-center rounded-full px-2 text-xs font-medium;
-}
-
-.nav-indicator-primary {
-  @apply bg-primary/20 text-primary;
-}
-
-.nav-indicator-secondary {
-  @apply bg-secondary/20 text-secondary;
-}
-
-.nav-indicator-info {
-  @apply bg-blue-500/20 text-blue-500;
-}
-
-.nav-indicator-success {
-  @apply bg-green-500/20 text-green-500;
-}
-
-.nav-indicator-warning {
-  @apply bg-amber-500/20 text-amber-500;
-}
-
-/* 터치 친화적인 버튼과 링크 */
-.touch-target {
-  @apply min-h-[44px] min-w-[44px] flex items-center justify-center;
+/* 버튼 호버 효과 */
+.btn {
+  @apply transition-all duration-200 hover:brightness-110 active:scale-95;
 }
 
 /* 텍스트 그림자 효과 */
@@ -654,9 +476,14 @@
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
 }
 
-/* 버튼 호버 효과 */
-.btn {
-  @apply transition-all duration-200 hover:brightness-110 active:scale-95;
+/* 이미지 필터 초기화 - 블루 필터 문제 해결 */
+.filter-none {
+  filter: none !important;
+}
+
+/* 이미지 컨트라스트 및 밝기 개선 */
+.img-enhance {
+  filter: brightness(1.05) contrast(1.05) !important;
 }
 
 /* 부드러운 페이드인 애니메이션 */
@@ -757,72 +584,6 @@ body {
 .animation-optimized {
   backface-visibility: hidden; /* 더 부드러운 애니메이션 */
   will-change: transform, opacity; /* 브라우저에게 최적화 힌트 제공 */
-}
-
-/* 이미지 최적화 - 원본 색상 유지 */
-img {
-  filter: none !important; /* 필터 없음 */
-  max-width: 100%;
-  height: auto;
-  object-fit: cover; /* 이미지 비율 일관성 */
-}
-
-/* 이미지 기본 스타일 - 모든 이미지 타입 */
-.banner-image, 
-.hero-banner, 
-img[class*="banner"], 
-.header-image,
-.trainer-card-image,
-.trainer-profile-image,
-.course-banner,
-.dark img,
-.card img,
-.trainer-card img,
-.trainer-profile img,
-.trainer-list-item img {
-  filter: none !important; /* 필터 제거 */
-}
-
-/* 이미지 컨테이너 최적화 */
-.img-container {
-  @apply relative overflow-hidden rounded-md;
-}
-
-/* 이미지 대체 텍스트 및 접근성 스타일 */
-.img-container::before {
-  @apply absolute inset-0 flex items-center justify-center text-sm text-muted-foreground bg-muted/50 opacity-0 transition-opacity duration-200;
-  content: attr(data-alt);
-}
-
-.img-container:not(:has(img[src])):before,
-.img-container.img-error:before {
-  @apply opacity-100;
-}
-
-/* 이미지 로딩 애니메이션 (스켈레톤) */
-.img-skeleton {
-  @apply relative overflow-hidden bg-muted rounded-md;
-}
-
-.img-skeleton::after {
-  @apply absolute inset-0 bg-gradient-to-r from-transparent via-muted-foreground/10 to-transparent;
-  content: "";
-  animation: shimmer 1.5s infinite;
-}
-
-@keyframes shimmer {
-  0% { transform: translateX(-100%); }
-  100% { transform: translateX(100%); }
-}
-
-/* 호버 시 확대 효과만 유지 - 성능 최적화 */
-img.interactive:hover,
-.trainer-card:hover img,
-.trainer-profile:hover img,
-.trainer-list-item:hover img {
-  transform: scale(1.03);
-  transition: transform 0.2s ease;
-  will-change: transform;
 }
 
 /* 테마 전환 시 부드러운 애니메이션 */
