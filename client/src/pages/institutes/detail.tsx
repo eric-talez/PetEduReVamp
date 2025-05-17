@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { useToast } from "@/hooks/use-toast";
+import { DogLoading } from "../../components/DogLoading";
 import { KakaoMapView } from "@/components/KakaoMapView";
 import { 
   Star, MapPin, Calendar, Building, Users, 
@@ -163,7 +164,7 @@ export default function InstituteDetail() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
+        <DogLoading message="기관 정보 로딩 중..." size="large" />
       </div>
     );
   }
