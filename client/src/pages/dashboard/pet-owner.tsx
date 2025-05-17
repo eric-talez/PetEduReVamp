@@ -149,7 +149,7 @@ export default function PetOwnerDashboard({ onAction }: PetOwnerDashboardProps) 
             반려견과 함께하는 특별한 교육 여정
           </h1>
           <p className="text-white text-sm md:text-lg max-w-xl mb-6">
-            PetEduPlatform과 함께 전문 훈련사의 체계적인 교육으로 더 행복한 반려생활을 시작하세요.
+            Talez와 함께 전문 훈련사의 체계적인 교육으로 더 행복한 반려생활을 시작하세요.
           </p>
           <div>
             <Button

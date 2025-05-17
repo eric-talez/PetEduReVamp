@@ -29,7 +29,7 @@ export default function TrainerDashboard({ onAction }: TrainerDashboardProps) {
             반려견 교육의 전문가, {userName || '훈련사'}님
           </h1>
           <p className="text-white text-sm md:text-lg max-w-xl mb-6">
-            PetEduPlatform에서 귀하의 전문성을 공유하고 더 많은 반려견 가족에게 최고의 교육을 제공하세요.
+            Talez에서 귀하의 전문성을 공유하고 더 많은 반려견 가족에게 최고의 교육을 제공하세요.
           </p>
           <div>
             <Button

@@ -804,7 +804,7 @@ export default function LocationServices() {
           <div>
             <h2 className="text-xl font-bold mb-2 text-gray-900 dark:text-white">위치 서비스 등록 요청</h2>
             <p className="text-gray-600 dark:text-gray-300 max-w-2xl">
-              반려견 교육 기관이나 서비스를 운영하고 계신가요? PetEdu 플랫폼에 등록하여 더 많은 반려인에게 서비스를 제공해보세요.
+              반려견 교육 기관이나 서비스를 운영하고 계신가요? Talez에 등록하여 더 많은 반려인에게 서비스를 제공해보세요.
             </p>
           </div>
           <Button 

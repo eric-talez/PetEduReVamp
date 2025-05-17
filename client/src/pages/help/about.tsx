@@ -14,13 +14,13 @@ export default function AboutPage() {
     {
       name: '김민준',
       role: 'CEO & 창립자',
-      bio: '반려동물 훈련 전문가이자 PetEdu의 비전을 이끄는 CEO입니다. 10년 이상의 동물 행동 연구 경험을 바탕으로 반려인과 반려동물이 더 행복한 사회를 꿈꿉니다.',
+      bio: '반려동물 훈련 전문가이자 Talez의 비전을 이끄는 CEO입니다. 10년 이상의 동물 행동 연구 경험을 바탕으로 반려인과 반려동물이 더 행복한 사회를 꿈꿉니다.',
       image: 'https://via.placeholder.com/150'
     },
     {
       name: '이지은',
       role: '수석 훈련사',
-      bio: '국내 최고의 반려견 행동 전문가로, 2,000건 이상의 문제행동 교정 성공 사례를 보유하고 있습니다. PetEdu의 교육 프로그램 개발을 총괄하고 있습니다.',
+      bio: '국내 최고의 반려견 행동 전문가로, 2,000건 이상의 문제행동 교정 성공 사례를 보유하고 있습니다. Talez의 교육 프로그램 개발을 총괄하고 있습니다.',
       image: 'https://via.placeholder.com/150'
     },
     {
@@ -32,7 +32,7 @@ export default function AboutPage() {
     {
       name: '최서연',
       role: '마케팅 책임자',
-      bio: '디지털 마케팅 전문가로, 반려동물 산업에서의 풍부한 경험을 바탕으로 PetEdu의 브랜드 전략과 커뮤니티 구축을 담당하고 있습니다.',
+      bio: '디지털 마케팅 전문가로, 반려동물 산업에서의 풍부한 경험을 바탕으로 Talez의 브랜드 전략과 커뮤니티 구축을 담당하고 있습니다.',
       image: 'https://via.placeholder.com/150'
     }
   ];
@@ -64,7 +64,7 @@ export default function AboutPage() {
     {
       year: 2018,
       title: '회사 설립',
-      description: '반려동물 교육의 접근성을 높이기 위한 비전으로 PetEdu 설립'
+      description: '반려동물 교육의 접근성을 높이기 위한 비전으로 Talez 설립'
     },
     {
       year: 2019,
@@ -103,7 +103,7 @@ export default function AboutPage() {
       {/* Banner 영역 */}
       <div className="relative">
         <div className="w-full py-20 px-4 sm:px-6 lg:px-8 flex flex-col items-center justify-center text-center" style={bannerStyle}>
-          <Badge className="mb-4 bg-white/20 text-white hover:bg-white/30">Pet Edu Platform</Badge>
+          <Badge className="mb-4 bg-white/20 text-white hover:bg-white/30">Talez</Badge>
           <h1 className="text-3xl md:text-4xl font-bold text-white mb-6">About Us</h1>
           <p className="text-lg text-white/90 max-w-3xl mx-auto mb-8">
             반려동물과 반려인의 행복한 공존을 위한<br />더 나은 교육 경험을 만들어갑니다.
@@ -192,7 +192,7 @@ export default function AboutPage() {
 
         {/* 통계 영역 */}
         <div className="bg-gray-50 dark:bg-gray-800/50 rounded-2xl p-8 max-w-6xl mx-auto mt-20">
-          <h2 className="text-2xl font-bold text-center mb-10">숫자로 보는 PetEdu</h2>
+          <h2 className="text-2xl font-bold text-center mb-10">숫자로 보는 Talez</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
             <div>
               <p className="text-4xl font-bold text-primary mb-2">50,000+</p>
