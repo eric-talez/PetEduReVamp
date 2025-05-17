@@ -62,8 +62,8 @@ export function SpecialShopLink({ children, className = "", expanded = true }: S
               rel="noopener noreferrer"
               aria-label="장바구니 (새 창에서 열림)"
             >
-              <ShoppingCart className="w-5 h-5" />
-              <ExternalLink className="absolute top-0 right-0 w-3 h-3 text-blue-500" />
+              <ShoppingCart className="w-5 h-5 text-primary transition-all duration-200 hover:scale-110" />
+              <ExternalLink className="absolute top-0 right-0 w-3 h-3 text-blue-500 animate-pulse" />
             </a>
           </TooltipTrigger>
           <TooltipContent side="right">
@@ -81,15 +81,17 @@ export function SpecialShopLink({ children, className = "", expanded = true }: S
       onClick={handleClick}
       className={cn(
         "sidebar-link flex items-center py-2 text-sm font-medium rounded-md transition-all duration-200 ease-in-out px-3",
-        "text-gray-700 dark:text-gray-200 hover:text-primary dark:hover:text-primary group",
+        "text-gray-700 dark:text-gray-200 hover:text-primary dark:hover:text-primary group relative",
         className
       )}
       target="_blank"
       rel="noopener noreferrer"
     >
-      <ShoppingCart className="w-5 h-5 mr-2" />
+      <ShoppingCart className="w-5 h-5 mr-2 text-primary transition-all duration-200 group-hover:scale-110" />
       <span className="flex-1">{children}</span>
-      <ExternalLink className="w-4 h-4 text-blue-500 ml-1" aria-label="새 창에서 열림" />
+      <div className="flex items-center">
+        <ExternalLink className="w-4 h-4 text-blue-500 ml-1 transition-all duration-200 group-hover:text-primary" aria-label="새 창에서 열림" />
+      </div>
     </a>
   );
 }

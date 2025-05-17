@@ -18,7 +18,8 @@ import {
   Calendar,
   ShoppingBag,
   CreditCard,
-  DollarSign
+  DollarSign,
+  ExternalLink
 } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { useClickAway } from "@/hooks/use-mobile";
