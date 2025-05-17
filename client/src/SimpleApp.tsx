@@ -1131,8 +1131,7 @@ function AuthenticatedRoutes() {
             return (
               <Suspense fallback={
                 <div className="flex justify-center items-center h-screen">
-                  <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full mr-2"></div>
-                  <span>AI 반려동물 분석 페이지 로딩 중...</span>
+                  <DogLoading message="AI 반려동물 분석 페이지 로딩 중..." size="medium" showTips={true} />
                 </div>
               }>
                 <AIAnalysisPage />
