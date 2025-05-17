@@ -3,7 +3,6 @@ import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { BannerImage } from "@/components/ui/BannerImage";
 import { Search, Filter, MapPin, Star, Briefcase, Award, Sparkles, X, AlertCircle } from "lucide-react";
 import {
   AlertDialog,
@@ -228,22 +227,21 @@ export default function Trainers() {
 
   return (
     <div className="py-8 px-4 sm:px-6 lg:px-8">
-      {/* Banner */}
-      <div className="relative rounded-xl overflow-hidden h-48 md:h-64 mb-8 bg-gradient-to-r from-primary/80 to-accent/80 shadow-lg">
+      {/* Banner - 개선된 이미지 렌더링 */}
+      <div className="relative rounded-xl overflow-hidden h-48 md:h-64 mb-8 shadow-lg">
         <img 
           src="https://images.unsplash.com/photo-1518155317743-a8ff43ea6a5f?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=400" 
           alt="훈련사 찾기"
           className="w-full h-full object-cover"
-          style={{ filter: 'none' }} // 필터 제거 강제 적용
         />
         
-        <div className="absolute inset-0 bg-gradient-to-r from-primary/50 to-accent/20"></div>
+        <div className="absolute inset-0 bg-gradient-to-r from-primary/40 to-accent/20"></div>
         
         <div className="relative h-full flex flex-col justify-center px-6 md:px-10">
-          <h1 className="text-white text-xl md:text-3xl font-bold mb-2 md:mb-4 max-w-xl bg-black/30 p-3 rounded-lg">
+          <h1 className="text-white text-xl md:text-3xl font-bold mb-2 md:mb-4 max-w-xl bg-black/30 p-3 rounded-lg shadow-lg">
             전문 반려견 훈련사를 만나보세요
           </h1>
-          <p className="text-white text-sm md:text-base max-w-xl mb-4 bg-black/20 p-2 rounded-lg">
+          <p className="text-white text-sm md:text-base max-w-xl mb-4 bg-black/20 p-2 rounded-lg shadow-md">
             경험이 풍부한 훈련사들이 당신과 반려견의 행복한 생활을 도와드립니다.
           </p>
           
