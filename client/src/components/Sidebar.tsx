@@ -389,7 +389,7 @@ export function Sidebar({
             <ScrollReveal direction="left" delay={100}>
               <a href="/" className="flex flex-col items-center w-full group">
                 <span className="text-2xl font-bold text-gray-800 dark:text-white flex items-center">
-                  PetEdu<span className="text-primary transition-all duration-300 group-hover:scale-110">Platform</span>
+                  <span className="text-primary transition-all duration-300 group-hover:scale-110">Talez</span>
                   <span className="ml-1 opacity-80">{useSeasonalTheme().getSeasonEmoji()}</span>
                 </span>
                 <span className="text-xs text-gray-500 dark:text-gray-400 mt-1">반려견 전문 교육 플랫폼</span>
@@ -397,7 +397,7 @@ export function Sidebar({
             </ScrollReveal>
           ) : (
             <a href="/" className="flex items-center justify-center w-full transition-all duration-300 hover:scale-110">
-              <span className="text-2xl font-bold text-primary">P</span>
+              <span className="text-2xl font-bold text-primary">T</span>
               <span className="absolute -top-1 -right-1 text-xs">{useSeasonalTheme().getSeasonEmoji()}</span>
             </a>
           )}
