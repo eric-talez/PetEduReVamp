@@ -1,45 +1,82 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState } from "react";
 
-type Theme = 'light' | 'dark' | 'system';
+type Theme = "dark" | "light" | "system";
+
+function getSystemTheme(): Theme {
+  if (typeof window !== "undefined" && window.matchMedia) {
+    return window.matchMedia("(prefers-color-scheme: dark)").matches
+      ? "dark"
+      : "light";
+  }
+  return "light";
+}
 
 export function useTheme() {
   const [theme, setTheme] = useState<Theme>(() => {
-    // 로컬 스토리지에서 테마 가져오기
-    if (typeof window !== 'undefined') {
-      const storedTheme = localStorage.getItem('pet-edu-theme') as Theme;
-      if (storedTheme) {
-        return storedTheme;
-      }
-
-      // 시스템 선호 테마 확인
-      const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      return systemPrefersDark ? 'dark' : 'light';
+    if (typeof window !== "undefined") {
+      const storedTheme = localStorage.getItem("theme") as Theme | null;
+      return storedTheme || "system";
     }
+    return "system";
+  });
 
-    return 'light';
+  const [resolvedTheme, setResolvedTheme] = useState<"dark" | "light">(() => {
+    if (theme === "system") {
+      return getSystemTheme();
+    }
+    return theme;
   });
 
   useEffect(() => {
     const root = window.document.documentElement;
-    
-    // 이전 테마 클래스 제거
-    root.classList.remove('light', 'dark');
-    
-    // 현재 테마 적용
-    if (theme === 'system') {
-      const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      root.classList.add(systemPrefersDark ? 'dark' : 'light');
+
+    if (theme === "system") {
+      const systemTheme = getSystemTheme();
+      setResolvedTheme(systemTheme);
+      root.classList.remove("light", "dark");
+      root.classList.add(systemTheme);
     } else {
+      setResolvedTheme(theme);
+      root.classList.remove("light", "dark");
       root.classList.add(theme);
     }
-    
-    // 로컬 스토리지에 테마 저장
-    localStorage.setItem('pet-edu-theme', theme);
+
+    // 로컬 스토리지에 테마 설정 저장
+    localStorage.setItem("theme", theme);
   }, [theme]);
 
-  const setThemeValue = (newTheme: Theme) => {
-    setTheme(newTheme);
-  };
+  // 시스템 테마 변경 감지
+  useEffect(() => {
+    if (theme !== "system") return;
 
-  return { theme, setTheme: setThemeValue };
+    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+    
+    const handleChange = () => {
+      const newTheme = getSystemTheme();
+      setResolvedTheme(newTheme);
+      document.documentElement.classList.remove("light", "dark");
+      document.documentElement.classList.add(newTheme);
+    };
+
+    mediaQuery.addEventListener("change", handleChange);
+    return () => mediaQuery.removeEventListener("change", handleChange);
+  }, [theme]);
+
+  return {
+    theme,
+    resolvedTheme,
+    setTheme: (newTheme: Theme) => {
+      setTheme(newTheme);
+    },
+    toggleTheme: () => {
+      setTheme((prevTheme) => {
+        // 시스템 테마를 명시적인 테마로 변환
+        if (prevTheme === "system") {
+          return resolvedTheme === "dark" ? "light" : "dark";
+        }
+        // 라이트/다크 모드 토글
+        return prevTheme === "dark" ? "light" : "dark";
+      });
+    },
+  };
 }
