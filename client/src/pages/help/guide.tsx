@@ -181,7 +181,7 @@ export default function GuidePage() {
         <div className="w-full py-20 px-4 sm:px-6 lg:px-8 flex flex-col items-center justify-center text-center" style={bannerStyle}>
           <h1 className="text-3xl md:text-4xl font-bold text-white mb-6">이용 가이드</h1>
           <p className="text-lg text-white/90 max-w-3xl mx-auto mb-8">
-            PetEdu 플랫폼의 다양한 기능을 더 효과적으로 활용하는 방법을 안내해 드립니다.
+            Talez의 다양한 기능을 더 효과적으로 활용하는 방법을 안내해 드립니다.
           </p>
           <div className="relative w-full max-w-md">
             <input
@@ -215,7 +215,7 @@ export default function GuidePage() {
               <div className="text-center">
                 <h2 className="text-2xl font-bold mb-4">{guide.title} 가이드</h2>
                 <p className="text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-                  {guide.id === 'getting-started' && 'PetEdu 플랫폼을 시작하는 데 필요한 기본 단계를 안내합니다.'}
+                  {guide.id === 'getting-started' && 'Talez를 시작하는 데 필요한 기본 단계를 안내합니다.'}
                   {guide.id === 'courses' && '온라인 강의를 찾고, 구매하고, 수강하는 방법을 알아보세요.'}
                   {guide.id === 'consultations' && '전문 훈련사와의 1:1 화상 상담 예약 및 진행 방법을 안내합니다.'}
                   {guide.id === 'events' && '오프라인 교육 이벤트 참가 방법에 대해 알아보세요.'}

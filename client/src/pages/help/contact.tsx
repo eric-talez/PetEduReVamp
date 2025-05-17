@@ -73,7 +73,7 @@ export default function ContactPage() {
         <div className="w-full py-20 px-4 sm:px-6 lg:px-8 flex flex-col items-center justify-center text-center" style={bannerStyle}>
           <h1 className="text-3xl md:text-4xl font-bold text-white mb-6">문의하기</h1>
           <p className="text-lg text-white/90 max-w-3xl mx-auto mb-8">
-            PetEdu 플랫폼 이용 중 궁금한 점이나 도움이 필요하신가요?<br />
+            Talez 이용 중 궁금한 점이나 도움이 필요하신가요?<br />
             저희 고객센터가 신속하게 도와드리겠습니다.
           </p>
           <div className="relative w-full max-w-md">

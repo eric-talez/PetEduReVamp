@@ -22,8 +22,8 @@ export default function FAQPage() {
   const faqs = [
     {
       category: 'general',
-      question: 'PetEdu 플랫폼이란 무엇인가요?',
-      answer: 'PetEdu 플랫폼은 반려동물 교육을 위한 종합 플랫폼입니다. 전문 훈련사의 강의, 1:1 화상 상담, 오프라인 교육 예약, 커뮤니티 활동 등 다양한 기능을 제공합니다.'
+      question: 'Talez란 무엇인가요?',
+      answer: 'Talez는 반려동물 교육을 위한 종합 플랫폼입니다. 전문 훈련사의 강의, 1:1 화상 상담, 오프라인 교육 예약, 커뮤니티 활동 등 다양한 기능을 제공합니다.'
     },
     {
       category: 'general',
@@ -100,7 +100,7 @@ export default function FAQPage() {
         <div className="w-full py-20 px-4 sm:px-6 lg:px-8 flex flex-col items-center justify-center text-center" style={bannerStyle}>
           <h1 className="text-3xl md:text-4xl font-bold text-white mb-6">자주 묻는 질문</h1>
           <p className="text-lg text-white/90 max-w-3xl mx-auto mb-8">
-            PetEdu 플랫폼에 대한 궁금증을 해결해 드립니다. 원하는 답변을 찾지 못하셨다면 문의하기를 이용해 주세요.
+            Talez에 대한 궁금증을 해결해 드립니다. 원하는 답변을 찾지 못하셨다면 문의하기를 이용해 주세요.
           </p>
           <div className="relative w-full max-w-md">
             <input
