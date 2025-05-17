@@ -31,13 +31,21 @@ interface SpecialShopLinkProps {
 export function SpecialShopLink({ children, className = "", expanded = true }: SpecialShopLinkProps) {
   const handleClick = (e: React.MouseEvent) => {
     e.preventDefault();
-    console.log('특별 쇼핑 링크 클릭됨 - 장바구니 페이지를 새 창으로 열기');
+    console.log('특별 쇼핑 링크 클릭됨 - 쇼핑몰 페이지를 새 창으로 열기');
     
-    // 장바구니 페이지를 새 창에서 열기 (쇼핑몰과 동일한 URL 사용)
-    window.open('https://store.funnytalez.com/', '_blank', 'noopener,noreferrer');
+    // 마이크로 인터랙션을 위한 효과
+    const target = e.currentTarget as HTMLElement;
+    target.classList.add('animate-bounce');
+    
+    // 애니메이션 후 클래스 제거를 위한 타이머
+    setTimeout(() => {
+      target.classList.remove('animate-bounce');
+      // 쇼핑몰 페이지를 새 창에서 열기
+      window.open('https://store.funnytalez.com/', '_blank', 'noopener,noreferrer');
+    }, 300);
     
     // 디버깅 정보
-    console.log("SpecialShopLink에서 장바구니 페이지 새 창으로 열기:", new Date().toISOString());
+    console.log("SpecialShopLink에서 쇼핑몰 페이지 새 창으로 열기:", new Date().toISOString());
     console.log("현재 경로:", window.location.pathname);
   };
   
@@ -60,14 +68,15 @@ export function SpecialShopLink({ children, className = "", expanded = true }: S
               onClick={handleClick}
               target="_blank"
               rel="noopener noreferrer"
-              aria-label="장바구니 (새 창에서 열림)"
+              aria-label="쇼핑몰 (새 창에서 열림)"
+              tabIndex={0}
             >
               <ShoppingCart className="w-5 h-5 text-primary transition-all duration-200 hover:scale-110" />
               <ExternalLink className="absolute top-0 right-0 w-3 h-3 text-blue-500 animate-pulse" />
             </a>
           </TooltipTrigger>
-          <TooltipContent side="right">
-            <p>장바구니 (새 창에서 열림)</p>
+          <TooltipContent side="right" className="bg-white dark:bg-gray-900 p-2 rounded border border-gray-200 dark:border-gray-700 shadow-lg">
+            <p>쇼핑몰 (새 창에서 열림)</p>
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>
@@ -82,6 +91,7 @@ export function SpecialShopLink({ children, className = "", expanded = true }: S
       className={cn(
         "sidebar-link flex items-center py-2 text-sm font-medium rounded-md transition-all duration-200 ease-in-out px-3",
         "text-gray-700 dark:text-gray-200 hover:text-primary dark:hover:text-primary group relative",
+        "focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:focus:ring-offset-gray-900",
         className
       )}
       target="_blank"

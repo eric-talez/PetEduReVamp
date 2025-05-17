@@ -633,15 +633,20 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
                   <Button 
                     variant="ghost" 
                     size="icon" 
-                    className="relative transition-all duration-200 hover:scale-110 hover:text-primary"
+                    className="relative transition-all duration-200 hover:scale-110 hover:text-primary focus:ring-2 focus:ring-primary focus:ring-offset-1 dark:focus:ring-offset-gray-900"
                     onClick={() => {
                       setCartPopupOpen(!cartPopupOpen);
                       setMessagePopupOpen(false);
                       setNotificationPopupOpen(false);
+                      // 마이크로 인터랙션을 위한 상태 변화
+                      if (!cartPopupOpen) {
+                        console.log("장바구니 아이콘 애니메이션 활성화");
+                      }
                     }}
-                    aria-label="장바구니"
+                    aria-label="쇼핑몰 장바구니 보기"
+                    tabIndex={0}
                   >
-                    <ShoppingCart className="h-5 w-5" />
+                    <ShoppingCart className={`h-5 w-5 ${cartItemsCount > 0 ? 'text-primary' : ''}`} />
                     {cartItemsCount > 0 && (
                       <span className="absolute -top-1 -right-1 bg-primary text-white rounded-full w-4 h-4 text-xs flex items-center justify-center animate-pulse">
                         {cartItemsCount}
