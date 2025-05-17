@@ -571,31 +571,22 @@ body {
   will-change: transform, opacity; /* 브라우저에게 최적화 힌트 제공 */
 }
 
-/* 다크/라이트 모드에서 이미지 가시성 개선 */
-.dark img:not([class*="invert-none"]) {
-  filter: brightness(0.9) contrast(1.1);
+/* 다크/라이트 모드에서 이미지 가시성 개선 - 원본 색상 유지 */
+.dark img.icon-image {
+  filter: brightness(1.2); /* 아이콘만 약간 밝게 */
 }
 
-.dark img[class*="dark-invert"] {
-  filter: invert(1) hue-rotate(180deg);
-}
-
-.dark img[class*="dark-enhance"] {
-  filter: brightness(1.2) contrast(1.2);
-}
-
-/* 다크 모드 이미지 테두리 */
-.dark img:not([class*="border-none"]) {
+/* 경계선이 필요한 특정 이미지에만 적용 */
+.dark img.with-border {
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-/* 이미지 타입별 최적화 */
-img.pet-avatar {
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+/* 호버 효과가 있는 이미지 */
+img.interactive {
   transition: transform 0.2s ease, filter 0.2s ease;
 }
 
-img.pet-avatar:hover {
+img.interactive:hover {
   transform: scale(1.05);
   filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.15));
 }
