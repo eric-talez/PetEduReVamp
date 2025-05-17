@@ -349,7 +349,7 @@ export default function Trainers() {
                   <img 
                     src="https://images.unsplash.com/photo-1543466835-00a7907e9de1?q=80&w=300&auto=format&fit=crop&sharp=100" 
                     alt={trainer.name} 
-                    className="w-full h-full object-cover filter-none img-enhance" 
+                    className="w-full h-full object-cover brightness-105 contrast-105" 
                   />
                 </div>
                 <div className="ml-4 pb-1">

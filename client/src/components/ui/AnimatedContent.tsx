@@ -1,6 +1,7 @@
-import React, { useState, useEffect, ReactNode } from 'react';
+import React, { useState, useEffect, ReactNode, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from '@/hooks/use-theme';
+import { useInView } from 'framer-motion';
 
 interface AnimatedContentProps {
   children: ReactNode;
@@ -183,5 +184,75 @@ export function AnimatedText({
         </motion.span>
       </AnimatePresence>
     </Tag>
+  );
+}
+
+/**
+ * 스크롤 시 요소가 나타나는 애니메이션 컴포넌트
+ * 사용자가 스크롤할 때 요소가 부드럽게 나타나는 효과를 제공합니다.
+ */
+export function ScrollReveal({
+  children,
+  threshold = 0.2,
+  animation = "fade-up", // fade-up, fade-down, fade-left, fade-right
+  duration = 0.6,
+  delay = 0,
+  className = "",
+  once = true
+}: {
+  children: ReactNode;
+  threshold?: number;
+  animation?: "fade-up" | "fade-down" | "fade-left" | "fade-right";
+  duration?: number;
+  delay?: number;
+  className?: string;
+  once?: boolean;
+}) {
+  const ref = useRef(null);
+  const isInView = useInView(ref, { once, amount: threshold });
+  
+  // 애니메이션 유형에 따른 초기 및 애니메이션 상태 정의
+  const getAnimationProps = () => {
+    switch (animation) {
+      case "fade-up":
+        return {
+          initial: { opacity: 0, y: 40 },
+          animate: isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 40 }
+        };
+      case "fade-down":
+        return {
+          initial: { opacity: 0, y: -40 },
+          animate: isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: -40 }
+        };
+      case "fade-left":
+        return {
+          initial: { opacity: 0, x: -40 },
+          animate: isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: -40 }
+        };
+      case "fade-right":
+        return {
+          initial: { opacity: 0, x: 40 },
+          animate: isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: 40 }
+        };
+      default:
+        return {
+          initial: { opacity: 0, y: 20 },
+          animate: isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }
+        };
+    }
+  };
+  
+  const { initial, animate } = getAnimationProps();
+  
+  return (
+    <motion.div
+      ref={ref}
+      className={className}
+      initial={initial}
+      animate={animate}
+      transition={{ duration, delay, ease: "easeOut" }}
+    >
+      {children}
+    </motion.div>
   );
 }

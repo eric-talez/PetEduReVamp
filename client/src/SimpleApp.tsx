@@ -34,7 +34,7 @@ import { Sidebar } from "@/components/Sidebar";
 import { Toaster } from "@/components/ui/toaster";
 import { FloatingCartButton } from "@/components/FloatingCartButton";
 import { ThemeManager } from "@/components/ThemeManager";
-import { AccessibilityControls } from "@/components/ui/AccessibilityControls";
+import { AccessibilityFloatingButton, AccessibilityHelpTrigger } from "@/components/ui/AccessibilityControls";
 
 // 인증 관련 임포트 - 호환성 레이어 사용
 import { useAuth, USER_ROLES, type UserRole, type AuthState, UserRoleEnum } from "@/lib/auth-compat";
@@ -1458,7 +1458,6 @@ function SimpleApp() {
       {auth.isAuthenticated ? <AuthenticatedRoutes /> : <UnauthenticatedRoutes />}
       <DebugButton />
       <Toaster />
-      <AccessibilityControls />
     </>
   );
 }
