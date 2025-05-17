@@ -16,7 +16,12 @@ import { MessagingService } from './messaging/service';
 
 // 타입은 server/types.d.ts에 정의되어 있습니다.
 
+// 본인인증 관련 로직 임포트
+import { verifyIdentity } from './auth/verify';
+
 export async function registerRoutes(app: Express): Promise<Server> {
+  // 본인인증 API 엔드포인트
+  app.post('/api/auth/verify-identity', verifyIdentity);
   // Register all modular routes
   registerCommissionRoutes(app);
   registerTrainerRoutes(app);

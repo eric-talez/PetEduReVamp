@@ -513,6 +513,62 @@ export class MemStorage implements IStorage {
     this.users.set(userId, updatedUser);
     return updatedUser;
   }
+
+  // 본인인증 관련 메서드
+  async getUserByCi(ci: string): Promise<User | undefined> {
+    const userId = this.userCiMap.get(ci);
+    if (userId) {
+      return this.users.get(userId);
+    }
+    return undefined;
+  }
+
+  async updateUserVerification(userId: number, verificationData: {
+    ci: string;
+    verified: boolean;
+    verifiedAt: Date;
+    verificationName?: string;
+    verificationBirth?: string;
+    verificationPhone?: string;
+  }): Promise<User> {
+    const user = this.users.get(userId);
+    if (!user) {
+      throw new Error(`User with ID ${userId} not found`);
+    }
+    
+    // 기존 CI 매핑이 있다면 제거 (사용자가 CI를 변경하는 경우)
+    if ((user as any).ci) {
+      this.userCiMap.delete((user as any).ci);
+    }
+    
+    // 새 CI 매핑 추가
+    this.userCiMap.set(verificationData.ci, userId);
+    
+    // 사용자 정보 업데이트
+    const updatedUser: User = {
+      ...user,
+      isVerified: verificationData.verified
+    };
+    
+    // User 인터페이스에 직접 포함되지 않은 필드들 처리
+    (updatedUser as any).ci = verificationData.ci;
+    (updatedUser as any).verifiedAt = verificationData.verifiedAt;
+    
+    if (verificationData.verificationName) {
+      (updatedUser as any).verificationName = verificationData.verificationName;
+    }
+    
+    if (verificationData.verificationBirth) {
+      (updatedUser as any).verificationBirth = verificationData.verificationBirth;
+    }
+    
+    if (verificationData.verificationPhone) {
+      (updatedUser as any).verificationPhone = verificationData.verificationPhone;
+    }
+    
+    this.users.set(userId, updatedUser);
+    return updatedUser;
+  }
   
   // 기관 관련 메서드
   async getInstitute(id: number): Promise<any> {

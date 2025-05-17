@@ -130,11 +130,11 @@ export function IdentityVerification({
   return (
     <>
       {isCompleted ? (
-        <Alert variant="success" className="mb-4">
+        <Alert className="mb-4 border-green-500 bg-green-50 text-green-800 dark:bg-green-950 dark:text-green-300 dark:border-green-800">
           <CheckCircle className="h-4 w-4" />
           <AlertTitle>본인인증 완료</AlertTitle>
           <AlertDescription>
-            {user?.name || '사용자'}님의 본인인증이 완료되었습니다.
+            {userName}님의 본인인증이 완료되었습니다.
           </AlertDescription>
         </Alert>
       ) : (
