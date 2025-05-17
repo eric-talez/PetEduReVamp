@@ -494,6 +494,79 @@
 /* 테마 전환 최적화 */
 .theme-toggle-button {
   transform: translateZ(0); /* 하드웨어 가속 활성화 */
+}
+
+/* 접근성 기능 관련 CSS */
+:root {
+  --accessibility-font-scale: 1;
+  --accessibility-contrast: 1;
+  --accessibility-cursor-scale: 1;
+}
+
+/* 글꼴 크기 접근성 적용 */
+body {
+  font-size: calc(1rem * var(--accessibility-font-scale));
+}
+
+/* 대비 접근성 적용 */
+.enhance-contrast {
+  filter: contrast(var(--accessibility-contrast));
+}
+
+/* 모션 감소 접근성 적용 */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0s !important;
+    transition-duration: 0s !important;
+  }
+}
+
+.reduce-motion *, .reduce-motion *::before, .reduce-motion *::after {
+  animation-duration: 0s !important;
+  transition-duration: 0s !important;
+}
+
+/* 포커스 표시 강화 */
+.enhance-focus :focus,
+.enhance-focus :focus-visible {
+  outline: 3px solid hsl(var(--primary)) !important;
+  outline-offset: 3px !important;
+}
+
+/* 커서 크기 조정 */
+.cursor-enlarge {
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m3 3 7.07 16.97 2.51-7.39 7.39-2.51L3 3z'/%3E%3Cpath d='m13 13 6 6'/%3E%3C/svg%3E"), auto;
+}
+
+/* 반응형 스케일링 */
+.responsive-scale {
+  transform-origin: center;
+  transition: transform 0.3s ease;
+}
+
+@media (max-width: 640px) {
+  .responsive-scale {
+    transform: scale(0.9);
+  }
+}
+
+/* 반려동물 테마 애니메이션 */
+.pet-animation {
+  animation: pet-bounce 2s ease-in-out infinite;
+  transform-origin: center bottom;
+}
+
+@keyframes pet-bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+/* 성능 최적화 스타일 */
+.animation-optimized {
   backface-visibility: hidden; /* 더 부드러운 애니메이션 */
   will-change: transform, opacity; /* 브라우저에게 최적화 힌트 제공 */
 }

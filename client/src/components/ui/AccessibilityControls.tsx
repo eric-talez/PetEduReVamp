@@ -1,331 +1,236 @@
-import React, { useEffect, useState } from 'react';
-import { Button } from './Button';
-import { Slider } from './slider';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from './dialog';
-import { Switch } from './switch';
-import { Label } from './label';
-import { Popover, PopoverContent, PopoverTrigger } from './popover';
-import { Settings, ZoomIn, Type, PanelLeft, MousePointer, Monitor } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Slider } from "@/components/ui/slider";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { Button } from "@/components/ui/button";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Accessibility, ZoomIn, ZoomOut, PanelTop, Contrast, MousePointer2 } from 'lucide-react';
 
-// 접근성 설정 상태 인터페이스
+/**
+ * 접근성 설정을 저장하는 로컬 스토리지 키
+ */
+const ACCESSIBILITY_STORAGE_KEY = 'petedu-accessibility-settings';
+
+/**
+ * 접근성 설정 타입 정의
+ */
 interface AccessibilitySettings {
-  fontSize: number; // 100 = 기본 크기, 200 = 2배 크기
-  contrastMode: 'normal' | 'high' | 'inverted';
-  reduceMotion: boolean;
-  focusIndicator: boolean;
-  keyboardMode: boolean;
+  fontSize: number;        // 글꼴 크기 배율 (1.0 = 100%)
+  contrast: number;        // 대비 설정 (1.0 = 기본)
+  reduceMotion: boolean;   // 모션 감소 설정
+  focusOutline: boolean;   // 포커스 아웃라인 강화 설정
+  cursorSize: number;      // 커서 크기 설정 (1.0 = 기본)
 }
 
-// 기본 접근성 설정
+/**
+ * 기본 접근성 설정
+ */
 const defaultSettings: AccessibilitySettings = {
-  fontSize: 100,
-  contrastMode: 'normal',
+  fontSize: 1.0,
+  contrast: 1.0,
   reduceMotion: false,
-  focusIndicator: true,
-  keyboardMode: false,
+  focusOutline: false,
+  cursorSize: 1.0
 };
 
-// 접근성 설정을 로컬 스토리지에 저장/로드하는 함수
-const STORAGE_KEY = 'petedu-accessibility-settings';
-
-const saveSettings = (settings: AccessibilitySettings) => {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
-  } catch (e) {
-    console.error('접근성 설정 저장 실패:', e);
-  }
-};
-
-const loadSettings = (): AccessibilitySettings => {
-  try {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) {
-      return JSON.parse(saved);
-    }
-  } catch (e) {
-    console.error('접근성 설정 로드 실패:', e);
-  }
-  return defaultSettings;
-};
-
-// 접근성 설정 플로팅 버튼
-export const AccessibilityFloatingButton = () => {
-  return (
-    <Dialog>
-      <DialogTrigger asChild>
-        <Button
-          variant="outline"
-          size="icon"
-          className="fixed left-4 bottom-20 z-50 rounded-full bg-white dark:bg-gray-800 shadow-md border border-gray-200 dark:border-gray-700 h-10 w-10 md:h-12 md:w-12"
-          aria-label="접근성 설정"
-        >
-          <Settings className="h-5 w-5 text-primary" />
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle className="flex items-center">
-            <Settings className="mr-2 h-5 w-5 text-primary" />
-            접근성 설정
-          </DialogTitle>
-        </DialogHeader>
-        <AccessibilityPanel />
-      </DialogContent>
-    </Dialog>
-  );
-};
-
-// 접근성 설정 패널 컴포넌트
-export const AccessibilityPanel = () => {
+/**
+ * 접근성 컨트롤 컴포넌트
+ * 사용자가 접근성 설정을 조정할 수 있는 팝오버 UI를 제공
+ */
+export function AccessibilityControls() {
   const [settings, setSettings] = useState<AccessibilitySettings>(defaultSettings);
-  
-  // 컴포넌트 마운트 시 저장된 설정 로드
+  const [isOpen, setIsOpen] = useState(false);
+
+  // 컴포넌트 마운트 시 로컬 스토리지에서 설정 불러오기
   useEffect(() => {
-    setSettings(loadSettings());
-  }, []);
-  
-  // 설정이 변경될 때마다 적용 및 저장
-  useEffect(() => {
-    applySettings(settings);
-    saveSettings(settings);
-  }, [settings]);
-  
-  // 설정을 실제 페이지에 적용하는 함수
-  const applySettings = (settings: AccessibilitySettings) => {
-    // 폰트 크기 적용
-    document.documentElement.style.fontSize = `${settings.fontSize}%`;
-    
-    // 색상 대비 모드 적용
-    document.body.classList.remove('contrast-high', 'contrast-inverted');
-    if (settings.contrastMode === 'high') {
-      document.body.classList.add('contrast-high');
-    } else if (settings.contrastMode === 'inverted') {
-      document.body.classList.add('contrast-inverted');
+    const savedSettings = localStorage.getItem(ACCESSIBILITY_STORAGE_KEY);
+    if (savedSettings) {
+      try {
+        const parsedSettings = JSON.parse(savedSettings);
+        setSettings(parsedSettings);
+        applySettings(parsedSettings);
+      } catch (e) {
+        console.error('접근성 설정을 로드하는데 실패했습니다:', e);
+        // 오류 발생 시 기본 설정 적용
+        applySettings(defaultSettings);
+      }
     }
+  }, []);
+
+  // 설정 변경 사항을 HTML/CSS에 적용
+  const applySettings = (newSettings: AccessibilitySettings) => {
+    // 글꼴 크기 적용
+    document.documentElement.style.setProperty('--accessibility-font-scale', newSettings.fontSize.toString());
+    
+    // 대비 적용
+    document.documentElement.style.setProperty('--accessibility-contrast', newSettings.contrast.toString());
     
     // 모션 감소 적용
-    if (settings.reduceMotion) {
-      document.body.classList.add('reduce-motion');
+    if (newSettings.reduceMotion) {
+      document.documentElement.classList.add('reduce-motion');
     } else {
-      document.body.classList.remove('reduce-motion');
+      document.documentElement.classList.remove('reduce-motion');
     }
     
-    // 포커스 표시기 강화 적용
-    if (settings.focusIndicator) {
-      document.body.classList.add('focus-enhanced');
+    // 포커스 아웃라인 강화 적용
+    if (newSettings.focusOutline) {
+      document.documentElement.classList.add('enhance-focus');
     } else {
-      document.body.classList.remove('focus-enhanced');
+      document.documentElement.classList.remove('enhance-focus');
     }
     
-    // 키보드 모드 적용
-    if (settings.keyboardMode) {
-      document.body.classList.add('keyboard-mode');
-    } else {
-      document.body.classList.remove('keyboard-mode');
-    }
+    // 커서 크기 적용
+    document.documentElement.style.setProperty('--accessibility-cursor-scale', newSettings.cursorSize.toString());
+    
+    // 로컬 스토리지에 설정 저장
+    localStorage.setItem(ACCESSIBILITY_STORAGE_KEY, JSON.stringify(newSettings));
   };
-  
+
   // 설정 변경 핸들러
-  const updateSettings = (newSettings: Partial<AccessibilitySettings>) => {
-    setSettings(prev => ({ ...prev, ...newSettings }));
+  const handleSettingChange = (key: keyof AccessibilitySettings, value: any) => {
+    const newSettings = { ...settings, [key]: value };
+    setSettings(newSettings);
+    applySettings(newSettings);
   };
-  
-  // 설정 초기화 핸들러
-  const resetSettings = () => {
+
+  // 기본 설정으로 재설정
+  const resetToDefaults = () => {
     setSettings(defaultSettings);
+    applySettings(defaultSettings);
   };
-  
-  return (
-    <div className="space-y-4 py-2">
-      {/* 글꼴 크기 설정 */}
-      <div className="space-y-2">
-        <div className="flex items-center justify-between">
-          <Label className="flex items-center">
-            <Type className="h-4 w-4 mr-2 text-primary" />
-            글꼴 크기
-          </Label>
-          <span className="text-sm text-gray-500 dark:text-gray-400">{settings.fontSize}%</span>
-        </div>
-        <Slider
-          min={80}
-          max={150}
-          step={5}
-          value={[settings.fontSize]}
-          onValueChange={(value) => updateSettings({ fontSize: value[0] })}
-          aria-label="글꼴 크기 조절"
-        />
-        <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400">
-          <span>작게</span>
-          <span>보통</span>
-          <span>크게</span>
-        </div>
-      </div>
-      
-      {/* 색상 대비 설정 */}
-      <div className="space-y-2">
-        <Label className="flex items-center">
-          <Monitor className="h-4 w-4 mr-2 text-primary" />
-          색상 대비
-        </Label>
-        <div className="flex space-x-2">
-          <Button
-            variant={settings.contrastMode === 'normal' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => updateSettings({ contrastMode: 'normal' })}
-            className="flex-1"
-          >
-            기본
-          </Button>
-          <Button
-            variant={settings.contrastMode === 'high' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => updateSettings({ contrastMode: 'high' })}
-            className="flex-1"
-          >
-            고대비
-          </Button>
-          <Button
-            variant={settings.contrastMode === 'inverted' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => updateSettings({ contrastMode: 'inverted' })}
-            className="flex-1"
-          >
-            색상 반전
-          </Button>
-        </div>
-      </div>
-      
-      {/* 모션 제어 설정 */}
-      <div className="flex items-center justify-between">
-        <Label className="flex items-center cursor-pointer" htmlFor="reduce-motion">
-          <PanelLeft className="h-4 w-4 mr-2 text-primary" />
-          애니메이션 줄이기
-        </Label>
-        <Switch
-          id="reduce-motion"
-          checked={settings.reduceMotion}
-          onCheckedChange={(checked) => updateSettings({ reduceMotion: checked })}
-          aria-label="애니메이션 줄이기"
-        />
-      </div>
-      
-      {/* 포커스 표시기 설정 */}
-      <div className="flex items-center justify-between">
-        <Label className="flex items-center cursor-pointer" htmlFor="focus-indicator">
-          <MousePointer className="h-4 w-4 mr-2 text-primary" />
-          포커스 표시 강화
-        </Label>
-        <Switch
-          id="focus-indicator"
-          checked={settings.focusIndicator}
-          onCheckedChange={(checked) => updateSettings({ focusIndicator: checked })}
-          aria-label="포커스 표시 강화"
-        />
-      </div>
-      
-      {/* 키보드 모드 설정 */}
-      <div className="flex items-center justify-between">
-        <Label className="flex items-center cursor-pointer" htmlFor="keyboard-mode">
-          <svg 
-            xmlns="http://www.w3.org/2000/svg" 
-            width="16" 
-            height="16" 
-            viewBox="0 0 24 24" 
-            fill="none" 
-            stroke="currentColor" 
-            strokeWidth="2" 
-            strokeLinecap="round" 
-            strokeLinejoin="round"
-            className="mr-2 text-primary"
-          >
-            <rect x="2" y="4" width="20" height="16" rx="2" ry="2" />
-            <path d="M6 8h.001" />
-            <path d="M10 8h.001" />
-            <path d="M14 8h.001" />
-            <path d="M18 8h.001" />
-            <path d="M8 12h.001" />
-            <path d="M12 12h.001" />
-            <path d="M16 12h.001" />
-            <path d="M7 16h10" />
-          </svg>
-          키보드 네비게이션 모드
-        </Label>
-        <Switch
-          id="keyboard-mode"
-          checked={settings.keyboardMode}
-          onCheckedChange={(checked) => updateSettings({ keyboardMode: checked })}
-          aria-label="키보드 네비게이션 모드"
-        />
-      </div>
-      
-      {/* 설정 초기화 버튼 */}
-      <div className="pt-2 flex justify-end">
-        <Button variant="ghost" onClick={resetSettings} size="sm">
-          초기화
-        </Button>
-      </div>
-    </div>
-  );
-};
 
-// 접근성 단축키 설정 컴포넌트
-export const AccessibilityShortcuts = () => {
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      // Alt + A: 접근성 메뉴 토글
-      if (e.altKey && e.key === 'a') {
-        // 접근성 메뉴 버튼 찾아서 클릭
-        const accessibilityBtn = document.querySelector('[aria-label="접근성 설정"]');
-        if (accessibilityBtn instanceof HTMLElement) {
-          accessibilityBtn.click();
-        }
-      }
-    };
-    
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
-  
-  return null; // 이 컴포넌트는 UI를 렌더링하지 않음
-};
-
-// 접근성 단축키 안내 컴포넌트
-export const AccessibilityHelpTrigger = () => {
   return (
-    <Popover>
+    <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
         <Button 
-          variant="ghost" 
-          size="sm" 
-          className="fixed left-4 bottom-36 z-50 bg-white dark:bg-gray-800 shadow-sm border border-gray-200 dark:border-gray-700 h-8 w-8 rounded-full flex items-center justify-center"
-          aria-label="접근성 단축키 도움말"
+          variant="outline" 
+          size="icon" 
+          aria-label="접근성 설정"
+          className="rounded-full fixed bottom-4 left-4 z-50 bg-background/80 backdrop-blur-sm border-primary/20 hover:bg-primary/10 transition-all"
         >
-          ?
+          <Accessibility className="h-5 w-5" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-80" side="right">
-        <div className="space-y-2">
-          <h4 className="font-medium text-sm">접근성 단축키</h4>
-          <ul className="text-sm space-y-1 text-gray-700 dark:text-gray-300">
-            <li className="flex justify-between">
-              <span>접근성 메뉴 열기</span>
-              <kbd className="px-2 py-0.5 text-xs bg-gray-100 dark:bg-gray-800 rounded">Alt + A</kbd>
-            </li>
-            <li className="flex justify-between">
-              <span>탭 이동</span>
-              <kbd className="px-2 py-0.5 text-xs bg-gray-100 dark:bg-gray-800 rounded">Tab</kbd>
-            </li>
-            <li className="flex justify-between">
-              <span>이전 요소로 이동</span>
-              <kbd className="px-2 py-0.5 text-xs bg-gray-100 dark:bg-gray-800 rounded">Shift + Tab</kbd>
-            </li>
-            <li className="flex justify-between">
-              <span>선택/활성화</span>
-              <kbd className="px-2 py-0.5 text-xs bg-gray-100 dark:bg-gray-800 rounded">Enter / Space</kbd>
-            </li>
-          </ul>
+      <PopoverContent className="w-80 p-4" side="top">
+        <div className="space-y-4">
+          <h3 className="text-lg font-medium flex items-center gap-2 mb-3">
+            <Accessibility className="h-5 w-5" />
+            <span>접근성 설정</span>
+          </h3>
+          
+          {/* 글꼴 크기 설정 */}
+          <div className="space-y-2">
+            <div className="flex justify-between items-center">
+              <Label htmlFor="font-size" className="flex items-center gap-1">
+                <ZoomIn className="h-4 w-4" />
+                <span>글꼴 크기</span>
+              </Label>
+              <span className="text-xs text-muted-foreground">{Math.round(settings.fontSize * 100)}%</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <ZoomOut className="h-3 w-3 text-muted-foreground" />
+              <Slider
+                id="font-size"
+                min={0.8}
+                max={1.5}
+                step={0.05}
+                value={[settings.fontSize]}
+                onValueChange={(value) => handleSettingChange('fontSize', value[0])}
+                className="flex-1"
+              />
+              <ZoomIn className="h-4 w-4 text-muted-foreground" />
+            </div>
+          </div>
+          
+          {/* 대비 설정 */}
+          <div className="space-y-2">
+            <div className="flex justify-between items-center">
+              <Label htmlFor="contrast" className="flex items-center gap-1">
+                <Contrast className="h-4 w-4" />
+                <span>대비</span>
+              </Label>
+              <span className="text-xs text-muted-foreground">{Math.round(settings.contrast * 100)}%</span>
+            </div>
+            <Slider
+              id="contrast"
+              min={1}
+              max={1.5}
+              step={0.05}
+              value={[settings.contrast]}
+              onValueChange={(value) => handleSettingChange('contrast', value[0])}
+            />
+          </div>
+          
+          {/* 커서 크기 설정 */}
+          <div className="space-y-2">
+            <div className="flex justify-between items-center">
+              <Label htmlFor="cursor-size" className="flex items-center gap-1">
+                <MousePointer2 className="h-4 w-4" />
+                <span>커서 크기</span>
+              </Label>
+              <span className="text-xs text-muted-foreground">{Math.round(settings.cursorSize * 100)}%</span>
+            </div>
+            <Slider
+              id="cursor-size"
+              min={1}
+              max={2}
+              step={0.1}
+              value={[settings.cursorSize]}
+              onValueChange={(value) => handleSettingChange('cursorSize', value[0])}
+            />
+          </div>
+          
+          {/* 모션 감소 설정 */}
+          <div className="flex items-center justify-between">
+            <Label htmlFor="reduce-motion" className="flex items-center gap-1 cursor-pointer">
+              <PanelTop className="h-4 w-4" />
+              <span>모션 감소</span>
+            </Label>
+            <Switch
+              id="reduce-motion"
+              checked={settings.reduceMotion}
+              onCheckedChange={(checked) => handleSettingChange('reduceMotion', checked)}
+            />
+          </div>
+          
+          {/* 포커스 아웃라인 강화 설정 */}
+          <div className="flex items-center justify-between">
+            <Label htmlFor="focus-outline" className="flex items-center gap-1 cursor-pointer">
+              <svg 
+                xmlns="http://www.w3.org/2000/svg" 
+                width="16" 
+                height="16" 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                stroke="currentColor" 
+                strokeWidth="2" 
+                strokeLinecap="round" 
+                strokeLinejoin="round"
+              >
+                <path d="M3 16v-2a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"></path>
+                <path d="M12 12V2"></path>
+                <path d="M12 12v10"></path>
+              </svg>
+              <span>포커스 표시 강화</span>
+            </Label>
+            <Switch
+              id="focus-outline"
+              checked={settings.focusOutline}
+              onCheckedChange={(checked) => handleSettingChange('focusOutline', checked)}
+            />
+          </div>
+          
+          {/* 기본 설정으로 재설정 */}
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={resetToDefaults}
+            className="w-full mt-4"
+          >
+            기본 설정으로 재설정
+          </Button>
         </div>
       </PopoverContent>
     </Popover>
   );
-};
+}
