@@ -327,7 +327,10 @@ export default function Trainers() {
       {/* Trainers Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredTrainers.map((trainer) => (
-          <Card key={trainer.id} hover className="overflow-hidden border border-gray-100 dark:border-gray-700">
+          <Card 
+            key={trainer.id} 
+            hover 
+            className="overflow-hidden border border-gray-100 dark:border-gray-700 transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
             <div className="relative h-32 bg-gradient-to-r from-primary/60 to-accent/60">
               <img 
                 src={trainer.background} 

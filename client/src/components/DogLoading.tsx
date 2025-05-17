@@ -1,122 +1,121 @@
 import React from 'react';
-import { Loader2 } from 'lucide-react';
-
-type DogLoadingSize = 'sm' | 'md' | 'lg';
+import { cn } from '@/lib/utils';
+import { useTheme } from '@/hooks/use-theme';
 
 interface DogLoadingProps {
-  size?: DogLoadingSize;
+  size?: 'small' | 'medium' | 'large';
   message?: string;
+  className?: string;
+  showTips?: boolean;
 }
 
-export const DogLoading: React.FC<DogLoadingProps> = ({ size = 'md', message = '로딩 중...' }) => {
-  const sizeClasses = {
-    sm: 'w-16 h-16',
-    md: 'w-24 h-24',
-    lg: 'w-32 h-32',
-  };
+const loadingTips = [
+  "강아지가 꼬리를 흔드는 것은 대부분 기쁨의 표현이에요.",
+  "강아지는 인간의 감정을 읽을 수 있는 능력이 있어요.",
+  "강아지는 인간의 냄새를 100만 배 이상 잘 맡을 수 있어요.",
+  "규칙적인 산책은 강아지의 건강과 행복에 매우 중요해요.",
+  "강아지도 꿈을 꿔요. 발을 움직이는 모습을 본 적 있나요?",
+  "강아지는 소리보다 몸짓으로 더 많은 것을 배워요.",
+  "강아지와 눈을 맞추면 서로 간의 유대감이 깊어져요.",
+  "강아지는 하품이 전염되는 유일한 동물이에요.",
+  "강아지는 약 250단어를 이해할 수 있어요.",
+  "긍정적 강화 훈련이 처벌보다 훨씬 효과적이에요."
+];
 
-  const spinnerSizes = {
-    sm: 'w-4 h-4',
-    md: 'w-6 h-6',
-    lg: 'w-8 h-8',
+/**
+ * 강아지 발자국 로딩 애니메이션 컴포넌트
+ * 데이터 로딩 중에 귀여운 강아지 발자국 애니메이션과 팁을 표시합니다.
+ */
+export function DogLoading({ 
+  size = 'medium', 
+  message = '로딩 중...', 
+  className = '',
+  showTips = true
+}: DogLoadingProps) {
+  const { theme } = useTheme();
+  const randomTipIndex = Math.floor(Math.random() * loadingTips.length);
+  
+  // 크기에 따른 클래스 설정
+  const sizeClasses = {
+    small: 'w-4 h-4',
+    medium: 'w-6 h-6',
+    large: 'w-8 h-8'
+  };
+  
+  // 컨테이너 크기 설정
+  const containerSizeClasses = {
+    small: 'max-w-[200px]',
+    medium: 'max-w-[300px]',
+    large: 'max-w-[400px]'
   };
 
   return (
-    <div className="flex flex-col items-center justify-center">
-      <div className="relative">
-        <div className={`${sizeClasses[size]} relative`}>
-          {/* Dog silhouette with tail animation */}
-          <svg
-            width="100%"
-            height="100%"
-            viewBox="0 0 200 200"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            className="text-primary"
-          >
-            <path
-              d="M86.9,25.8c-6.9,2.1-13.9,5.3-20,9.9c-6.2,4.7-11.4,10.4-14.4,17.5c-3,7.1-3.7,15.3-1.5,22.6c1.1,3.7,2.8,7.1,5.1,10.1c2.2,3,4.9,5.5,7.7,7.9c2.9,2.4,5.8,4.6,8.8,6.6c3,2.1,6.1,4,9.2,5.9c3.1,1.9,6.1,3.8,9.1,5.8c1.5,1,3,2,4.4,3.1c1.4,1.1,2.8,2.2,4.1,3.4"
-              stroke="currentColor"
-              strokeWidth="6"
-              strokeLinecap="round"
-              className="dog-body"
+    <div className={cn(
+      'flex flex-col items-center justify-center p-4', 
+      containerSizeClasses[size],
+      className
+    )}>
+      <div className="relative flex items-center justify-center mb-4">
+        {/* 발자국 애니메이션 */}
+        <div className="flex space-x-2">
+          {[0, 1, 2, 3, 4].map((i) => (
+            <div 
+              key={i}
+              className={cn(
+                'bg-primary/80 dark:bg-primary/90 rounded-full',
+                sizeClasses[size],
+                'animate-bounce'
+              )}
+              style={{ 
+                animationDelay: `${i * 0.1}s`, 
+                maskImage: 'url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZD0iTTguNDUsMTIuNTVDNy4zNSwxMi41NSw2LjUsMTMuOTEsNi41LDE1LjIyQzYuNSwxNi41NSw3LjQxLDE3LjczLDguNSwxNy43M0M5LjUxLDE3LjczLDEwLjI0LDE2LjQxLDEwLjI2LDE1LjA2QzEwLjI3LDEzLjczLDkuNTgsMTIuNTUsOC40NSwxMi41NVpNMTIsMTAuNzhDMTIuODMsMTAuNzgsMTMuNSw5LjQ3LDEzLjUsOC40QzEzLjUsNy4zNCwxMi45MSw2LjM0LDEyLDYuMzRDMTEuMDksNi4zNCwxMC40LDcuNDEsMTAuNSw4LjQzQzEwLjYsOS40MiwxMS4xNiwxMC43OCwxMiwxMC43OE0xNS42NiwxMi41NUMxNC41MiwxMi41NSwxMy44NSwxMy43NSwxMy44NSwxNS4wNUMxMy44NSwxNi4zNSwxNC41MiwxNy43NSwxNS42NiwxNy43NUMxNi44LDE3Ljc1LDE3LjcsMTYuMzUsMTcuNywxNS4wNUMxNy43LDEzLjc1LDE2LjgsMTIuNTUsMTUuNjYsMTIuNTVNNy4xMSw5LjVDOC4wNyw5LjUsOS4yMiw4LjMsOS4xLDYuODZDOSw1LjQ2LDcuOTYsNC41LDcuMDcsNC41QzYuMjcsNC41LDUuMjUsNS41Myw1LjI1LDYuODZDNS4yNSw4LjE5LDYuMTYsOS41LDcuMTEsOS41TTIwLDEuNEE0LjYsNC42LDAsMCwwLDE1LjQsNkE0LjYsNC42LDAsMCwwLDIwLDEwLjZBNC42LDQuNiwwLDAsMCwyNC41LDZBNC42LDQuNiwwLDAsMCwyMCwxLjRaIi8+PC9zdmc+")',
+                WebkitMaskImage: 'url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZD0iTTguNDUsMTIuNTVDNy4zNSwxMi41NSw2LjUsMTMuOTEsNi41LDE1LjIyQzYuNSwxNi41NSw3LjQxLDE3LjczLDguNSwxNy43M0M5LjUxLDE3LjczLDEwLjI0LDE2LjQxLDEwLjI2LDE1LjA2QzEwLjI3LDEzLjczLDkuNTgsMTIuNTUsOC40NSwxMi41NVpNMTIsMTAuNzhDMTIuODMsMTAuNzgsMTMuNSw5LjQ3LDEzLjUsOC40QzEzLjUsNy4zNCwxMi45MSw2LjM0LDEyLDYuMzRDMTEuMDksNi4zNCwxMC40LDcuNDEsMTAuNSw4LjQzQzEwLjYsOS40MiwxMS4xNiwxMC43OCwxMiwxMC43OE0xNS42NiwxMi41NUMxNC41MiwxMi41NSwxMy44NSwxMy43NSwxMy44NSwxNS4wNUMxMy44NSwxNi4zNSwxNC41MiwxNy43NSwxNS42NiwxNy43NUMxNi44LDE3Ljc1LDE3LjcsMTYuMzUsMTcuNywxNS4wNUMxNy43LDEzLjc1LDE2LjgsMTIuNTUsMTUuNjYsMTIuNTVNNy4xMSw5LjVDOC4wNyw5LjUsOS4yMiw4LjMsOS4xLDYuODZDOSw1LjQ2LDcuOTYsNC41LDcuMDcsNC41QzYuMjcsNC41LDUuMjUsNS41Myw1LjI1LDYuODZDNS4yNSw4LjE5LDYuMTYsOS41LDcuMTEsOS41TTIwLDEuNEE0LjYsNC42LDAsMCwwLDE1LjQsNkE0LjYsNC42LDAsMCwwLDIwLDEwLjZBNC42LDQuNiwwLDAsMCwyNC41LDZBNC42LDQuNiwwLDAsMCwyMCwxLjRaIi8+PC9zdmc+")',
+                maskSize: 'contain',
+                WebkitMaskSize: 'contain',
+                maskRepeat: 'no-repeat',
+                WebkitMaskRepeat: 'no-repeat',
+                maskPosition: 'center',
+                WebkitMaskPosition: 'center',
+                transform: i % 2 === 0 ? 'rotate(15deg)' : 'rotate(-15deg)'
+              }}
             />
-            {/* Animated tail */}
-            <path
-              d="M98.5,119.6c2.6,2.3,4.9,4.8,7.5,7.5c2.6,2.7,5.4,5.5,8.9,8c3.5,2.5,7.6,4.6,12,5.1c4.4,0.5,8.9-0.6,12.6-2.9c3.6-2.3,6.4-5.8,8.1-9.6c1.7-3.8,2.3-7.9,1.9-11.9c-0.4-4-1.8-7.8-3.4-11.4c-1.6-3.6-3.4-6.9-5.1-10.3"
-              stroke="currentColor"
-              strokeWidth="6"
-              strokeLinecap="round"
-              className="dog-tail animate-wiggle"
-            />
-            {/* Head */}
-            <path
-              d="M86.9,25.8c5.5-1.8,11.7-1.5,17.2,0.2c5.6,1.7,10.6,5,14.9,8.9c4.3,3.9,8,8.3,11,13.2c3,4.9,5.2,10.1,6.4,15.6c1.2,5.5,1.4,11.2,0.4,16.8c-1,5.5-3.2,10.9-6.5,15.3c-3.3,4.4-7.8,7.9-12.7,9.8c-5,1.9-10.4,2.3-15.7,1.4"
-              stroke="currentColor"
-              strokeWidth="6"
-              strokeLinecap="round"
-              className="dog-head"
-            />
-            {/* Left ear */}
-            <path
-              d="M106.9,52.3c3.3-4.5,6.9-8.9,11.3-12.3c4.4-3.4,9.6-5.9,15.1-6.1"
-              stroke="currentColor"
-              strokeWidth="6"
-              strokeLinecap="round"
-              className="dog-ear"
-            />
-            {/* Right ear */}
-            <path
-              d="M124.1,55.6c2.5-3.1,5.2-6,8.3-8.4c3.1-2.4,6.7-4.2,10.4-4.8"
-              stroke="currentColor"
-              strokeWidth="6"
-              strokeLinecap="round"
-              className="dog-ear"
-            />
-            {/* Eye */}
-            <circle
-              cx="115"
-              cy="70"
-              r="5"
-              fill="currentColor"
-              className="dog-eye"
-            />
-            {/* Nose */}
-            <circle
-              cx="130"
-              cy="85"
-              r="6"
-              fill="currentColor"
-              className="dog-nose"
-            />
-          </svg>
-        </div>
-        <div className="absolute bottom-1 right-1">
-          <Loader2 className={`${spinnerSizes[size]} animate-spin text-primary`} />
+          ))}
         </div>
       </div>
-      {message && <p className="mt-4 text-center text-muted-foreground">{message}</p>}
+      
+      {/* 로딩 메시지 */}
+      <div className="text-center">
+        <p className="text-primary font-medium mb-2">{message}</p>
+        
+        {/* 팁 표시 (선택 사항) */}
+        {showTips && (
+          <p className="text-muted-foreground text-sm italic mt-4 text-center">
+            {loadingTips[randomTipIndex]}
+          </p>
+        )}
+      </div>
     </div>
   );
-};
+}
 
-// Add animation to global CSS
-if (typeof document !== 'undefined') {
-  if (!document.getElementById('dog-loading-style')) {
-    const style = document.createElement('style');
-    style.id = 'dog-loading-style';
-    style.innerHTML = `
-      @keyframes wiggle {
-        0%, 100% { transform: rotate(0deg); }
-        25% { transform: rotate(10deg); }
-        50% { transform: rotate(0deg); }
-        75% { transform: rotate(-10deg); }
-      }
-      .animate-wiggle {
-        animation: wiggle 1s ease-in-out infinite;
-        transform-origin: 140px 100px;
-      }
-    `;
-    document.head.appendChild(style);
-  }
+/**
+ * 전체 화면 로딩 오버레이 컴포넌트
+ */
+export function FullScreenLoading({ 
+  message = '로딩 중...', 
+  showTips = true 
+}: { 
+  message?: string, 
+  showTips?: boolean 
+}) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm">
+      <DogLoading 
+        size="large" 
+        message={message} 
+        showTips={showTips} 
+        className="p-8 rounded-lg shadow-lg bg-card/50" 
+      />
+    </div>
+  );
 }
