@@ -2,7 +2,89 @@
 @tailwind components;
 @tailwind utilities;
 
-/* 테마 전환 애니메이션 */
+/* 타이포그래피 및 접근성 향상을 위한 스타일 */
+@layer components {
+  /* 텍스트 스타일 - 제목 */
+  .text-title-large {
+    @apply text-3xl font-bold tracking-tight;
+    line-height: 1.2;
+  }
+  
+  .text-title {
+    @apply text-2xl font-bold tracking-tight;
+    line-height: 1.25;
+  }
+  
+  .text-title-small {
+    @apply text-xl font-bold tracking-tight;
+    line-height: 1.3;
+  }
+  
+  /* 텍스트 스타일 - 본문 */
+  .text-body-large {
+    @apply text-lg font-normal;
+    line-height: 1.6;
+  }
+  
+  .text-body {
+    @apply text-base font-normal;
+    line-height: 1.5;
+  }
+  
+  .text-body-small {
+    @apply text-sm font-normal;
+    line-height: 1.5;
+  }
+  
+  /* 텍스트 스타일 - 캡션 */
+  .text-caption {
+    @apply text-xs font-medium;
+    line-height: 1.4;
+  }
+  
+  /* 상태 표시 스타일 */
+  .status-success {
+    @apply bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100 px-2 py-1 rounded-md text-xs font-medium;
+  }
+  
+  .status-info {
+    @apply bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100 px-2 py-1 rounded-md text-xs font-medium;
+  }
+  
+  .status-warning {
+    @apply bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100 px-2 py-1 rounded-md text-xs font-medium;
+  }
+  
+  .status-error {
+    @apply bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100 px-2 py-1 rounded-md text-xs font-medium;
+  }
+  
+  /* 접근성 포커스 스타일 */
+  .focus-ring {
+    @apply focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:focus:ring-offset-gray-900;
+  }
+  
+  /* 카드 스타일 */
+  .pet-card {
+    @apply bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 transition-all duration-200
+      hover:shadow-md hover:border-primary dark:hover:border-primary;
+  }
+  
+  /* 그리드 및 공간 활용 스타일 */
+  .responsive-grid {
+    @apply grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4;
+  }
+  
+  .content-section {
+    @apply py-6 px-4 md:py-8 md:px-6;
+  }
+  
+  .section-divider {
+    @apply border-t border-gray-200 dark:border-gray-700 my-6;
+  }
+}
+
+/* 애니메이션 및 전환 효과 */
 @layer utilities {
   /* 페이드 인 애니메이션 */
   .animate-fade-in {
@@ -20,6 +102,52 @@
     }
   }
   
+  /* 팝 효과 애니메이션 */
+  .animate-pop {
+    animation: popEffect 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+  
+  @keyframes popEffect {
+    0% {
+      transform: scale(0.8);
+      opacity: 0.5;
+    }
+    50% {
+      transform: scale(1.05);
+    }
+    100% {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+  
+  /* 슬라이드 인 애니메이션 */
+  .animate-slide-in-right {
+    animation: slideInRight 0.3s ease-out;
+  }
+  
+  @keyframes slideInRight {
+    from {
+      transform: translateX(20px);
+      opacity: 0;
+    }
+    to {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+  
+  /* 부드러운 펄스 효과 */
+  .animate-soft-pulse {
+    animation: softPulse 2s infinite ease-in-out;
+  }
+  
+  @keyframes softPulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.7; }
+    100% { opacity: 1; }
+  }
+  
   /* 테마 전환 효과 */
   html.light, html.dark {
     transition-property: background-color, color, border-color;
@@ -30,52 +158,98 @@
 
 @layer base {
   :root {
+    /* 기본 배경 및 텍스트 색상 */
     --background: 0 0% 100%;
     --foreground: 222.2 84% 4.9%;
     
+    /* 카드 관련 색상 */
     --card: 0 0% 100%;
     --card-foreground: 222.2 84% 4.9%;
     
+    /* 팝오버 관련 색상 */
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
     
+    /* 주 색상 - 브랜드 색상 */
     --primary: 158 54% 79%;
     --primary-foreground: 160 50% 20%;
     
+    /* 보조 색상 */
     --secondary: 43 100% 72%;
     --secondary-foreground: 26 83% 14%;
     
+    /* 상태 색상 추가 */
+    --success: 142 71% 45%;  /* 성공 상태 색상 */
+    --success-foreground: 0 0% 100%;
+    
+    --info: 217 91% 60%;    /* 정보 상태 색상 */
+    --info-foreground: 0 0% 100%;
+    
+    --warning: 30 84% 53%;  /* 경고 상태 색상 */
+    --warning-foreground: 0 0% 100%;
+    
+    /* 뮤트 색상 */
     --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;
     
+    /* 액센트 색상 */
     --accent: 43 100% 72%;
     --accent-foreground: 26 83% 14%;
     
+    /* 파괴적 액션 색상 */
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
     
+    /* 경계선 및 입력 필드 관련 */
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
     --ring: 158 54% 79%;
     
+    /* 모서리 둥글기 */
     --radius: 0.5rem;
+    
+    /* 그림자 변수 */
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    
+    /* 전환 효과 타이밍 */
+    --transition-fast: 150ms;
+    --transition-normal: 300ms;
+    --transition-slow: 500ms;
   }
  
   .dark {
+    /* 다크 모드 기본 배경 및 텍스트 색상 */
     --background: 222 47% 11%;
     --foreground: 210 40% 98%;
     
+    /* 다크 모드 카드 관련 색상 */
     --card: 222 47% 11%;
     --card-foreground: 210 40% 98%;
     
+    /* 다크 모드 팝오버 관련 색상 */
     --popover: 222 47% 11%;
     --popover-foreground: 210 40% 98%;
     
+    /* 다크 모드에서도 브랜드 색상 유지 */
     --primary: 158 54% 79%;
     --primary-foreground: 160 50% 20%;
     
+    /* 다크 모드 보조 색상 */
     --secondary: 43 100% 72%;
     --secondary-foreground: 26 83% 14%;
+    
+    /* 다크 모드 상태 색상 */
+    --success: 142 70% 45%;
+    --success-foreground: 0 0% 100%;
+    
+    --info: 217 90% 60%;
+    --info-foreground: 0 0% 100%;
+    
+    --warning: 30 84% 55%;
+    --warning-foreground: 0 0% 100%;
     
     --muted: 217.2 32.6% 17.5%;
     --muted-foreground: 215 20.2% 65.1%;
