@@ -746,8 +746,8 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
                               className="mt-2"
                               onClick={() => {
                                 setCartPopupOpen(false);
-                                console.log("카트 팝업에서 쇼핑 버튼 클릭 - 직접 /shop으로 이동");
-                                window.location.href = "/shop";
+                                console.log("카트 팝업에서 쇼핑 버튼 클릭 - 외부 쇼핑몰로 이동");
+                                window.open('https://store.funnytalez.com/', '_blank', 'noopener,noreferrer');
                               }}
                             >
                               쇼핑하러 가기
@@ -781,9 +781,8 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
                               className="w-full" 
                               onClick={() => {
                                 setCartPopupOpen(false);
-                                console.log("카트 팝업에서 장바구니 버튼 클릭");
-                                // 장바구니로 이동
-                                window.location.href = "/shop";
+                                console.log("카트 팝업에서 장바구니 버튼 클릭 - 외부 쇼핑몰로 이동");
+                                window.open('https://store.funnytalez.com/', '_blank', 'noopener,noreferrer');
                               }}
                             >
                               장바구니 보기

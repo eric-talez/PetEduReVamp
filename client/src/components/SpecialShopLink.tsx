@@ -31,17 +31,17 @@ interface SpecialShopLinkProps {
 export function SpecialShopLink({ children, className = "", expanded = true }: SpecialShopLinkProps) {
   const handleClick = (e: React.MouseEvent) => {
     e.preventDefault();
-    console.log('특별 쇼핑 링크 클릭됨 - 새 창으로 열기');
+    console.log('특별 쇼핑 링크 클릭됨 - 장바구니 페이지를 새 창으로 열기');
     
-    // 쇼핑 페이지를 새 창에서 열기
+    // 장바구니 페이지를 새 창에서 열기 (쇼핑몰과 동일한 URL 사용)
     window.open('https://store.funnytalez.com/', '_blank', 'noopener,noreferrer');
     
     // 디버깅 정보
-    console.log("SpecialShopLink에서 쇼핑 페이지 새 창으로 열기:", new Date().toISOString());
+    console.log("SpecialShopLink에서 장바구니 페이지 새 창으로 열기:", new Date().toISOString());
     console.log("현재 경로:", window.location.pathname);
   };
   
-  // 아이콘 설정
+  // 아이콘 설정 (장바구니 아이콘으로 변경)
   const icon = <ShoppingCart className="w-5 h-5 mr-2" />;
   
   // 축소된 사이드바일 때 툴팁으로 표시
