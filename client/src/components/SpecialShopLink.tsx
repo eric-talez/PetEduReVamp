@@ -60,14 +60,14 @@ export function SpecialShopLink({ children, className = "", expanded = true }: S
               onClick={handleClick}
               target="_blank"
               rel="noopener noreferrer"
-              aria-label="쇼핑몰 (새 창에서 열림)"
+              aria-label="장바구니 (새 창에서 열림)"
             >
               <ShoppingCart className="w-5 h-5" />
               <ExternalLink className="absolute top-0 right-0 w-3 h-3 text-blue-500" />
             </a>
           </TooltipTrigger>
           <TooltipContent side="right">
-            <p>쇼핑몰 (새 창에서 열림)</p>
+            <p>장바구니 (새 창에서 열림)</p>
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>
@@ -77,7 +77,7 @@ export function SpecialShopLink({ children, className = "", expanded = true }: S
   // 확장된 사이드바에서는 일반 메뉴 아이템으로 표시
   return (
     <a 
-      href="https://replit.com/join/wshpfpjewg-hnblgkjw" 
+      href="https://store.funnytalez.com/" 
       onClick={handleClick}
       className={cn(
         "sidebar-link flex items-center py-2 text-sm font-medium rounded-md transition-all duration-200 ease-in-out px-3",
