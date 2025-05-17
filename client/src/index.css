@@ -290,55 +290,55 @@
 
 @layer base {
   :root {
-    /* 기본 배경 및 텍스트 색상 */
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* 기본 배경 및 텍스트 색상 - 반려동물 친화적인 색상 */
+    --background: 210 40% 99%;
+    --foreground: 215 25% 18%;
     
     /* 카드 관련 색상 */
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 215 25% 18%;
     
     /* 팝오버 관련 색상 */
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover-foreground: 215 25% 18%;
     
-    /* 주 색상 - 브랜드 색상 */
-    --primary: 158 54% 79%;
-    --primary-foreground: 160 50% 20%;
+    /* 주 색상 - 반려동물 브랜드 색상 */
+    --primary: 174 65% 73%;
+    --primary-foreground: 175 70% 15%;
     
-    /* 보조 색상 */
+    /* 보조 색상 - 따뜻한 색조 */
     --secondary: 43 100% 72%;
     --secondary-foreground: 26 83% 14%;
     
-    /* 상태 색상 추가 */
-    --success: 142 71% 45%;  /* 성공 상태 색상 */
+    /* 상태 색상 추가 - 접근성 향상을 위한 더 선명한 색상 */
+    --success: 142 75% 42%;  /* 성공 상태 색상 */
     --success-foreground: 0 0% 100%;
     
     --info: 217 91% 60%;    /* 정보 상태 색상 */
     --info-foreground: 0 0% 100%;
     
-    --warning: 30 84% 53%;  /* 경고 상태 색상 */
+    --warning: 35 90% 55%;  /* 경고 상태 색상 */
     --warning-foreground: 0 0% 100%;
     
     /* 뮤트 색상 */
     --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted-foreground: 215 25% 40%;
     
-    /* 액센트 색상 */
-    --accent: 43 100% 72%;
-    --accent-foreground: 26 83% 14%;
+    /* 액센트 색상 - 반려동물 테마에 맞는 푸른 계열 */
+    --accent: 195 85% 75%;
+    --accent-foreground: 195 90% 15%;
     
-    /* 파괴적 액션 색상 */
-    --destructive: 0 84.2% 60.2%;
+    /* 파괴적 액션 색상 - 더 명확한 대비 */
+    --destructive: 0 90% 60%;
     --destructive-foreground: 210 40% 98%;
     
     /* 경계선 및 입력 필드 관련 */
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 158 54% 79%;
+    --border: 215 25% 90%;
+    --input: 215 25% 90%;
+    --ring: 174 65% 73%;
     
-    /* 모서리 둥글기 */
-    --radius: 0.5rem;
+    /* 모서리 둥글기 - 반려동물 테마에 맞는 부드러운 모서리 */
+    --radius: 0.75rem;
     
     /* 그림자 변수 */
     --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
@@ -353,48 +353,52 @@
   }
  
   .dark {
-    /* 다크 모드 기본 배경 및 텍스트 색상 */
-    --background: 222 47% 11%;
+    /* 다크 모드 기본 배경 및 텍스트 색상 - 부드러운 대비 */
+    --background: 220 40% 10%;
     --foreground: 210 40% 98%;
     
     /* 다크 모드 카드 관련 색상 */
-    --card: 222 47% 11%;
+    --card: 220 35% 13%;
     --card-foreground: 210 40% 98%;
     
     /* 다크 모드 팝오버 관련 색상 */
-    --popover: 222 47% 11%;
+    --popover: 220 35% 13%;
     --popover-foreground: 210 40% 98%;
     
-    /* 다크 모드에서도 브랜드 색상 유지 */
-    --primary: 158 54% 79%;
-    --primary-foreground: 160 50% 20%;
+    /* 다크 모드 브랜드 색상 - 밝기 조정 */
+    --primary: 174 65% 65%;
+    --primary-foreground: 175 70% 15%;
     
-    /* 다크 모드 보조 색상 */
-    --secondary: 43 100% 72%;
-    --secondary-foreground: 26 83% 14%;
+    /* 다크 모드 보조 색상 - 따뜻한 느낌 유지 */
+    --secondary: 43 90% 65%;
+    --secondary-foreground: 26 80% 20%;
     
-    /* 다크 모드 상태 색상 */
+    /* 다크 모드 상태 색상 - 더 명확한 대비와 가독성 */
     --success: 142 70% 45%;
     --success-foreground: 0 0% 100%;
     
     --info: 217 90% 60%;
     --info-foreground: 0 0% 100%;
     
-    --warning: 30 84% 55%;
+    --warning: 35 90% 55%;
     --warning-foreground: 0 0% 100%;
     
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+    /* 다크 모드 뮤트 색상 - 부드러운 대비 */
+    --muted: 220 30% 20%;
+    --muted-foreground: 210 25% 75%;
     
-    --accent: 43 100% 72%;
-    --accent-foreground: 26 83% 14%;
+    /* 다크 모드 액센트 색상 - 반려동물 테마 */
+    --accent: 195 65% 40%;
+    --accent-foreground: 195 75% 90%;
     
-    --destructive: 0 62.8% 30.6%;
+    /* 다크 모드 파괴적 액션 색상 - 접근성 향상 */
+    --destructive: 0 75% 50%;
     --destructive-foreground: 210 40% 98%;
     
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 158 54% 79%;
+    /* 다크 모드 경계선 및 입력 필드 관련 */
+    --border: 220 30% 25%;
+    --input: 220 30% 25%;
+    --ring: 174 65% 60%;
   }
 }
 
@@ -405,18 +409,86 @@
   body {
     @apply bg-background text-foreground font-sans transition-colors duration-300;
   }
+  /* 타이포그래피 스타일 향상 */
+  h1 {
+    @apply text-3xl font-bold tracking-tight md:text-4xl lg:text-5xl mb-4;
+  }
+  h2 {
+    @apply text-2xl font-semibold tracking-tight md:text-3xl mb-3;
+  }
+  h3 {
+    @apply text-xl font-semibold tracking-tight md:text-2xl mb-2;
+  }
+  h4 {
+    @apply text-lg font-medium md:text-xl mb-2;
+  }
+  p {
+    @apply leading-relaxed mb-4;
+  }
+  
+  /* 접근성 개선을 위한 포커스 스타일 */
+  *:focus-visible {
+    @apply outline-none ring-2 ring-primary ring-offset-2 ring-offset-background transition-shadow;
+  }
 }
 
+/* 카드 호버 효과 - 부드러운 변환과 그림자 */
 .card-hover {
-  @apply transition-all duration-200 hover:translate-y-[-3px] hover:shadow-lg;
+  @apply transition-all duration-300 hover:translate-y-[-4px] hover:shadow-lg relative overflow-hidden;
 }
 
+/* 카드 호버 시 반려동물 테마 효과 추가 */
+.card-hover::after {
+  content: "";
+  @apply absolute bottom-0 left-0 w-full h-1 bg-primary scale-x-0 origin-left transition-transform duration-300;
+}
+
+.card-hover:hover::after {
+  @apply scale-x-100;
+}
+
+/* 사이드바 링크 호버 효과 개선 */
 .sidebar-link {
-  @apply transition-all duration-200;
+  @apply transition-all duration-200 relative overflow-hidden;
 }
 
 .sidebar-link:hover {
   @apply bg-primary/10;
+}
+
+/* 사이드바 활성 링크 표시 */
+.sidebar-link.active {
+  @apply bg-primary/20 font-medium;
+}
+
+.sidebar-link.active::before {
+  content: "";
+  @apply absolute left-0 top-0 h-full w-1 bg-primary;
+}
+
+/* 버튼 호버 효과 */
+.btn {
+  @apply transition-all duration-200 hover:brightness-110 active:scale-95;
+}
+
+/* 부드러운 페이드인 애니메이션 */
+.fade-in {
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* 반응형 공간 조정 */
+.responsive-container {
+  @apply w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+}
+
+/* 반려동물 테마 강화를 위한 발자국 패턴 배경 (선택적 사용) */
+.paw-pattern-bg {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60' viewBox='0 0 60 60' opacity='0.1'%3E%3Cpath d='M30 16c-2.2 0-4 1.8-4 4s1.8 4 4 4 4-1.8 4-4-1.8-4-4-4zm-9 8c-1.7 0-3 1.3-3 3s1.3 3 3 3 3-1.3 3-3-1.3-3-3-3zm18 0c-1.7 0-3 1.3-3 3s1.3 3 3 3 3-1.3 3-3-1.3-3-3-3zm-15 8c-1.7 0-3 1.3-3 3s1.3 3 3 3 3-1.3 3-3-1.3-3-3-3zm12 0c-1.7 0-3 1.3-3 3s1.3 3 3 3 3-1.3 3-3-1.3-3-3-3z' fill='currentColor'/%3E%3C/svg%3E");
 }
 
 /* 테마 전환 최적화 */
