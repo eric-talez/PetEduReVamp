@@ -32,6 +32,7 @@ import EventCalendarPage from "./pages/events/calendar";
 import { TopBar } from "@/components/TopBar";
 import { Sidebar } from "@/components/Sidebar";
 import { Toaster } from "@/components/ui/toaster";
+import { FloatingCartButton } from "@/components/FloatingCartButton";
 
 // 인증 관련 임포트 - 호환성 레이어 사용
 import { useAuth, USER_ROLES, type UserRole, type AuthState, UserRoleEnum } from "@/lib/auth-compat";
@@ -203,7 +204,15 @@ function AppLayout({ children }: { children: ReactNode }) {
           <main className="flex-grow">
             {children}
           </main>
+          
+          {/* 플로팅 장바구니 버튼 */}
+          <FloatingCartButton />
         </div>
+      </div>
+      
+      {/* 챗봇 */}
+      <div className="fixed bottom-4 right-4 z-50">
+        <SimpleChatbot />
       </div>
     </div>
   );
