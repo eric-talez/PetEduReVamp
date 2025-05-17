@@ -633,15 +633,15 @@
 }
 
 .nav-indicator-info {
-  @apply bg-info/20 text-info;
+  @apply bg-blue-500/20 text-blue-500;
 }
 
 .nav-indicator-success {
-  @apply bg-success/20 text-success;
+  @apply bg-green-500/20 text-green-500;
 }
 
 .nav-indicator-warning {
-  @apply bg-warning/20 text-warning;
+  @apply bg-amber-500/20 text-amber-500;
 }
 
 /* 터치 친화적인 버튼과 링크 */
