@@ -13,7 +13,7 @@ import { useAuth } from '@/lib/auth-compat';
 import { useLocation } from 'wouter';
 import { DogLoading } from '@/components/DogLoading';
 import { IdentityVerification, VerificationData } from '@/components/IdentityVerification';
-import { BanknotesIcon, ShieldCheck, BankIcon, UserCheck, CreditCard, CalendarIcon, LockIcon } from 'lucide-react';
+import { BanknoteIcon, ShieldCheck, Building2Icon as BankIcon, UserCheck, CreditCard, CalendarIcon, LockIcon } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 // 은행 목록
@@ -78,7 +78,8 @@ export default function AccountRegisterPage() {
   // 사용자 권한 확인
   useEffect(() => {
     // 훈련사나 기관 관리자만 접근 가능
-    if (auth?.user && auth.user.role !== 'trainer' && auth.user.role !== 'institute-admin') {
+    const currentRole = auth?.userRole;
+    if (currentRole && currentRole !== 'trainer' && currentRole !== 'institute-admin') {
       toast({
         title: '접근 권한 없음',
         description: '훈련사 또는 기관 관리자만 정산 계좌를 등록할 수 있습니다.',
@@ -93,7 +94,7 @@ export default function AccountRegisterPage() {
     
     // 이미 본인인증이 완료되었는지 확인
     checkVerificationStatus();
-  }, [auth?.user]);
+  }, [auth?.userRole]);
   
   // 본인인증 상태 확인 함수
   const checkVerificationStatus = async () => {
@@ -261,7 +262,7 @@ export default function AccountRegisterPage() {
                     개인 계좌
                   </TabsTrigger>
                   <TabsTrigger value="business" className="flex items-center">
-                    <BanknotesIcon className="h-4 w-4 mr-2" />
+                    <BanknoteIcon className="h-4 w-4 mr-2" />
                     사업자 계좌
                   </TabsTrigger>
                 </TabsList>

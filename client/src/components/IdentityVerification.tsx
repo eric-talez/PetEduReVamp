@@ -52,7 +52,7 @@ export function IdentityVerification({
   const [dialogOpen, setDialogOpen] = useState(false);
   const { toast } = useToast();
   const auth = useAuth();
-  const userName = auth?.user?.name || '사용자';
+  const userName = auth?.userName || '사용자';
   
   const verificationSuccess = (data: VerificationData) => {
     setIsVerifying(false);
