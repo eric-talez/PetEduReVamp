@@ -11,9 +11,8 @@ import { AccessibleIconButton } from "./AccessibleIconButton";
 import { AccessibleMenuToggle } from "./AccessibleMenuToggle";
 import { AccessibleNavItem } from "./AccessibleNavItem";
 import { SidebarMenuGroup } from "./SidebarMenuGroup";
-import { ScrollReveal } from "@/components/ui/AnimatedContent";
+import { AnimatedContent } from "@/components/ui/AnimatedContent";
 import { useSeasonalTheme } from "@/hooks/use-seasonal-theme";
-import { AccessibilityFloatingButton } from "@/components/ui/AccessibilityControls";
 import {
   ChevronDown,
   ChevronRight,
@@ -386,7 +385,7 @@ export function Sidebar({
       >
         <div className="h-16 flex items-center justify-between border-b border-gray-200 dark:border-gray-800 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-900 px-3 transition-all duration-300">
           {expanded ? (
-            <ScrollReveal direction="left" delay={100}>
+            <AnimatedContent type="slide" delay={0.1}>
               <a href="/" className="flex flex-col items-center w-full group">
                 <span className="text-2xl font-bold text-gray-800 dark:text-white flex items-center">
                   PetEdu<span className="text-primary transition-all duration-300 group-hover:scale-110">Platform</span>
@@ -394,7 +393,7 @@ export function Sidebar({
                 </span>
                 <span className="text-xs text-gray-500 dark:text-gray-400 mt-1">반려견 전문 교육 플랫폼</span>
               </a>
-            </ScrollReveal>
+            </AnimatedContent>
           ) : (
             <a href="/" className="flex items-center justify-center w-full transition-all duration-300 hover:scale-110">
               <span className="text-2xl font-bold text-primary">P</span>

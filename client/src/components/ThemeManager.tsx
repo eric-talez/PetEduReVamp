@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useSeasonalTheme } from '@/hooks/use-seasonal-theme';
 import { useTheme } from '@/hooks/use-theme';
-import { AccessibilityShortcuts } from '@/components/ui/AccessibilityControls';
+// import { AccessibilityShortcuts } from '@/components/ui/AccessibilityControls';
 
 // CSS 변수를 동적으로 업데이트하는 함수
 const updateCssVariable = (name: string, value: string) => {
@@ -67,8 +67,7 @@ export function ThemeManager({ children }: { children: React.ReactNode }) {
   
   return (
     <>
-      {/* 접근성 단축키 활성화 */}
-      <AccessibilityShortcuts />
+      {/* 접근성 기능은 이제 별도 컴포넌트로 관리됨 */}
       
       {/* 활성화된 계절/이벤트 효과가 있는 경우 효과 컨테이너 추가 */}
       {effectClass && (
