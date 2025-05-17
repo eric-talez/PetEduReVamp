@@ -632,7 +632,7 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
                   <Button 
                     variant="ghost" 
                     size="icon" 
-                    className="relative"
+                    className="relative transition-all duration-200 hover:scale-110 hover:text-primary"
                     onClick={() => {
                       setCartPopupOpen(!cartPopupOpen);
                       setMessagePopupOpen(false);
@@ -642,7 +642,7 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
                   >
                     <ShoppingCart className="h-5 w-5" />
                     {cartItemsCount > 0 && (
-                      <span className="absolute -top-1 -right-1 bg-primary text-white rounded-full w-4 h-4 text-xs flex items-center justify-center">
+                      <span className="absolute -top-1 -right-1 bg-primary text-white rounded-full w-4 h-4 text-xs flex items-center justify-center animate-pulse">
                         {cartItemsCount}
                       </span>
                     )}
@@ -778,14 +778,17 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
                           <div className="border-t border-gray-200 dark:border-gray-700 py-2 px-4">
                             <Button 
                               variant="outline" 
-                              className="w-full" 
+                              className="w-full transition-all duration-200 hover:bg-primary hover:text-white group" 
                               onClick={() => {
                                 setCartPopupOpen(false);
                                 console.log("카트 팝업에서 장바구니 버튼 클릭 - 외부 쇼핑몰로 이동");
                                 window.open('https://store.funnytalez.com/', '_blank', 'noopener,noreferrer');
                               }}
                             >
-                              장바구니 보기
+                              <span className="flex items-center justify-center">
+                                장바구니 보기
+                                <ExternalLink className="ml-1 h-3 w-3 text-blue-500 group-hover:text-white transition-all" />
+                              </span>
                             </Button>
                           </div>
                         </>

@@ -42,7 +42,7 @@ export function SpecialShopLink({ children, className = "", expanded = true }: S
   };
   
   // 아이콘 설정 (장바구니 아이콘으로 변경)
-  const icon = <ShoppingCart className="w-5 h-5 mr-2" />;
+  const icon = <ShoppingCart className="w-5 h-5 mr-2 text-primary" />;
   
   // 축소된 사이드바일 때 툴팁으로 표시
   if (!expanded) {
