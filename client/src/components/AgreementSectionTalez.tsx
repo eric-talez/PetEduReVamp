@@ -1,6 +1,6 @@
 import { Checkbox } from "@/components/ui/checkbox";
 import { useState, useEffect } from "react";
-import { Link } from "wouter";
+import { TermsModal, TermsType } from "./TermsModal";
 
 export interface AgreementValues {
   terms: boolean;
@@ -17,6 +17,10 @@ export default function AgreementSectionTalez({ onChange, initialValues }: Agree
   const [terms, setTerms] = useState(initialValues?.terms || false);
   const [privacy, setPrivacy] = useState(initialValues?.privacy || false);
   const [marketing, setMarketing] = useState(initialValues?.marketing || false);
+  
+  // 모달 상태 관리
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalType, setModalType] = useState<TermsType>("terms");
 
   useEffect(() => {
     // 초기값이 변경될 경우 상태 업데이트
@@ -50,6 +54,13 @@ export default function AgreementSectionTalez({ onChange, initialValues }: Agree
       isValid
     );
   };
+  
+  // 약관 보기 모달 표시
+  const showTermsModal = (type: TermsType, e: React.MouseEvent) => {
+    e.preventDefault();
+    setModalType(type);
+    setModalOpen(true);
+  };
 
   return (
     <div className="space-y-3 mt-4 py-3 border-t border-b border-gray-200 dark:border-gray-700">
@@ -62,7 +73,12 @@ export default function AgreementSectionTalez({ onChange, initialValues }: Agree
           className="data-[state=checked]:bg-primary"
         />
         <span className="text-sm group-hover:text-primary transition-colors">
-          [필수] <Link href="/terms" target="_blank" className="text-blue-500 hover:underline">TALEZ 이용약관</Link>에 동의합니다
+          [필수] <button 
+            onClick={(e) => showTermsModal("terms", e)}
+            className="text-blue-500 hover:underline"
+          >
+            TALEZ 이용약관
+          </button>에 동의합니다
         </span>
       </label>
       
@@ -73,7 +89,12 @@ export default function AgreementSectionTalez({ onChange, initialValues }: Agree
           className="data-[state=checked]:bg-primary" 
         />
         <span className="text-sm group-hover:text-primary transition-colors">
-          [필수] <Link href="/privacy" target="_blank" className="text-blue-500 hover:underline">개인정보처리방침</Link>에 동의합니다
+          [필수] <button 
+            onClick={(e) => showTermsModal("privacy", e)}
+            className="text-blue-500 hover:underline"
+          >
+            개인정보처리방침
+          </button>에 동의합니다
         </span>
       </label>
       
@@ -84,13 +105,25 @@ export default function AgreementSectionTalez({ onChange, initialValues }: Agree
           className="data-[state=checked]:bg-primary" 
         />
         <span className="text-sm group-hover:text-primary transition-colors">
-          [선택] 마케팅 정보 수신에 동의합니다
+          [선택] <button 
+            onClick={(e) => showTermsModal("marketing", e)}
+            className="text-blue-500 hover:underline"
+          >
+            마케팅 정보 수신
+          </button>에 동의합니다
         </span>
       </label>
       
       <div className="text-xs text-gray-500 dark:text-gray-400 mt-2">
         * 선택 항목에 동의하지 않아도 서비스 이용이 가능합니다.
       </div>
+      
+      {/* 약관 모달 */}
+      <TermsModal 
+        type={modalType}
+        isOpen={modalOpen}
+        onOpenChange={setModalOpen}
+      />
     </div>
   );
 }
