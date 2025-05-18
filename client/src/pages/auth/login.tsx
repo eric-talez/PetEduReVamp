@@ -102,6 +102,13 @@ export default function Login() {
   const handleRegisterSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setRegisterError("");
+    
+    // 필수 약관 동의 확인
+    if (!isAgreementValid) {
+      setRegisterError("이용약관 및 개인정보처리방침에 동의해주세요.");
+      return;
+    }
+    
     setIsRegisterLoading(true);
     
     try {
@@ -109,7 +116,8 @@ export default function Login() {
       console.log('회원가입 시도:', { 
         username: registerUsername,
         name: registerName,
-        email: registerEmail 
+        email: registerEmail,
+        agreements
       });
       
       // 기본 역할은 pet-owner로 설정
@@ -125,7 +133,10 @@ export default function Login() {
           password: registerPassword,
           email: registerEmail,
           name: registerName,
-          role: registerRole
+          role: registerRole,
+          agreedTerms: agreements.terms,
+          agreedPrivacy: agreements.privacy,
+          agreedMarketing: agreements.marketing
         }),
       });
       
@@ -290,11 +301,23 @@ export default function Login() {
                     />
                   </div>
                   
+                  {/* 이용약관 동의 섹션 */}
+                  <AgreementSectionTalez 
+                    onChange={(values, valid) => {
+                      setAgreements(values);
+                      setIsAgreementValid(valid);
+                    }}
+                  />
+                  
                   {registerError && (
                     <div className="text-destructive text-sm">{registerError}</div>
                   )}
                   
-                  <Button type="submit" className="w-full" disabled={isRegisterLoading}>
+                  <Button 
+                    type="submit" 
+                    className="w-full" 
+                    disabled={isRegisterLoading || !isAgreementValid}
+                  >
                     {isRegisterLoading ? "가입 중..." : "회원가입"}
                   </Button>
                 </div>
