@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "../../SimpleApp";
+import AgreementSectionTalez, { AgreementValues } from "@/components/AgreementSectionTalez";
 
 export default function Login() {
   const auth = useAuth();
@@ -22,6 +23,14 @@ export default function Login() {
   const [registerName, setRegisterName] = useState("");
   const [registerError, setRegisterError] = useState("");
   const [isRegisterLoading, setIsRegisterLoading] = useState(false);
+  
+  // 이용약관 동의 상태 관리
+  const [agreements, setAgreements] = useState<AgreementValues>({
+    terms: false,
+    privacy: false,
+    marketing: false
+  });
+  const [isAgreementValid, setIsAgreementValid] = useState(false);
   
   const [, navigate] = useLocation();
 
