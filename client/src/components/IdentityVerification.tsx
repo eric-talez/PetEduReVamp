@@ -3,9 +3,10 @@ import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { CheckCircle, AlertCircle, Lock, UserCheck } from 'lucide-react';
+import { CheckCircle, AlertCircle, Lock, UserCheck, ArrowRight } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/lib/auth-compat';
+import { Progress } from "@/components/ui/progress";
 
 interface IdentityVerificationProps {
   /**
@@ -127,6 +128,17 @@ export function IdentityVerification({
     onCancel && onCancel();
   };
   
+  // 인증 진행 단계 (1: 시작, 2: 인증진행, 3: 완료)
+  const [verificationStep, setVerificationStep] = useState(1);
+  
+  // 인증 진행률 계산 
+  const getProgressValue = () => {
+    if (isCompleted) return 100;
+    if (isVerifying) return 75;
+    if (dialogOpen) return 33;
+    return 0;
+  };
+  
   return (
     <>
       {isCompleted ? (
@@ -156,6 +168,43 @@ export function IdentityVerification({
               {contextMessage}
             </DialogDescription>
           </DialogHeader>
+          
+          {/* 인증 단계 표시 */}
+          <div className="my-2">
+            <div className="mb-2 flex justify-between text-xs text-gray-500 dark:text-gray-400">
+              <span>인증 요청</span>
+              <span>정보 확인</span>
+              <span>인증 완료</span>
+            </div>
+            <Progress value={getProgressValue()} className="h-2" />
+            
+            <div className="mt-3 flex justify-between items-center">
+              <div className={`flex flex-col items-center ${verificationStep >= 1 ? 'text-primary' : 'text-gray-400'}`}>
+                <div className={`w-6 h-6 rounded-full flex items-center justify-center border ${verificationStep >= 1 ? 'bg-primary text-white border-primary' : 'border-gray-300'}`}>
+                  1
+                </div>
+                <span className="text-xs mt-1">요청</span>
+              </div>
+              
+              <ArrowRight className="h-4 w-4 text-gray-300" />
+              
+              <div className={`flex flex-col items-center ${verificationStep >= 2 ? 'text-primary' : 'text-gray-400'}`}>
+                <div className={`w-6 h-6 rounded-full flex items-center justify-center border ${verificationStep >= 2 ? 'bg-primary text-white border-primary' : 'border-gray-300'}`}>
+                  2
+                </div>
+                <span className="text-xs mt-1">진행</span>
+              </div>
+              
+              <ArrowRight className="h-4 w-4 text-gray-300" />
+              
+              <div className={`flex flex-col items-center ${isCompleted ? 'text-primary' : 'text-gray-400'}`}>
+                <div className={`w-6 h-6 rounded-full flex items-center justify-center border ${isCompleted ? 'bg-primary text-white border-primary' : 'border-gray-300'}`}>
+                  3
+                </div>
+                <span className="text-xs mt-1">완료</span>
+              </div>
+            </div>
+          </div>
           
           <div className="flex flex-col gap-4 py-4">
             <Card>
@@ -194,7 +243,10 @@ export function IdentityVerification({
             </Button>
             <Button
               type="button"
-              onClick={handleTossVerification}
+              onClick={() => {
+                setVerificationStep(2);
+                handleTossVerification();
+              }}
               disabled={isVerifying}
               className="flex items-center gap-2"
             >

@@ -50,6 +50,18 @@ export default function Login() {
   const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoginError("");
+    
+    // 유효성 검사
+    if (!loginUsername.trim()) {
+      setLoginError("아이디를 입력해주세요.");
+      return;
+    }
+    
+    if (!loginPassword) {
+      setLoginError("비밀번호를 입력해주세요.");
+      return;
+    }
+    
     setIsLoginLoading(true);
 
     try {
@@ -70,6 +82,16 @@ export default function Login() {
       
       if (!response.ok) {
         const errorData = await response.json();
+        
+        // 서버에서 반환된 에러 코드에 따라 더 상세한 메시지 제공
+        if (errorData.code === 'invalid_credentials') {
+          throw new Error('아이디 또는 비밀번호가 올바르지 않습니다.');
+        } else if (errorData.code === 'account_locked') {
+          throw new Error('계정이 잠겼습니다. 고객센터에 문의해주세요.');
+        } else if (errorData.code === 'not_verified') {
+          throw new Error('이메일 인증이 필요합니다. 이메일을 확인해주세요.');
+        }
+        
         throw new Error(errorData.message || '로그인에 실패했습니다');
       }
       
@@ -267,9 +289,17 @@ export default function Login() {
                       type="text"
                       value={registerUsername}
                       onChange={(e) => setRegisterUsername(e.target.value)}
-                      className="w-full p-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-800"
+                      className={`w-full p-2 border rounded-md bg-white dark:bg-gray-800 ${
+                        registerUsername.length > 0 && registerUsername.length < 3 
+                          ? "border-red-500 dark:border-red-600" 
+                          : "border-gray-300 dark:border-gray-700"
+                      }`}
                       required
+                      minLength={3}
                     />
+                    {registerUsername.length > 0 && registerUsername.length < 3 && (
+                      <p className="text-red-500 text-xs mt-1">아이디는 3자 이상이어야 합니다</p>
+                    )}
                   </div>
                   
                   <div className="space-y-2">
@@ -281,9 +311,17 @@ export default function Login() {
                       type="text"
                       value={registerName}
                       onChange={(e) => setRegisterName(e.target.value)}
-                      className="w-full p-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-800"
+                      className={`w-full p-2 border rounded-md bg-white dark:bg-gray-800 ${
+                        registerName.length > 0 && registerName.length < 2 
+                          ? "border-red-500 dark:border-red-600" 
+                          : "border-gray-300 dark:border-gray-700"
+                      }`}
                       required
+                      minLength={2}
                     />
+                    {registerName.length > 0 && registerName.length < 2 && (
+                      <p className="text-red-500 text-xs mt-1">이름을 올바르게 입력해주세요</p>
+                    )}
                   </div>
                   
                   <div className="space-y-2">
@@ -295,9 +333,16 @@ export default function Login() {
                       type="email"
                       value={registerEmail}
                       onChange={(e) => setRegisterEmail(e.target.value)}
-                      className="w-full p-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-800"
+                      className={`w-full p-2 border rounded-md bg-white dark:bg-gray-800 ${
+                        registerEmail.length > 0 && !/^\S+@\S+\.\S+$/.test(registerEmail) 
+                          ? "border-red-500 dark:border-red-600" 
+                          : "border-gray-300 dark:border-gray-700"
+                      }`}
                       required
                     />
+                    {registerEmail.length > 0 && !/^\S+@\S+\.\S+$/.test(registerEmail) && (
+                      <p className="text-red-500 text-xs mt-1">유효한 이메일 형식이 아닙니다</p>
+                    )}
                   </div>
                   
                   <div className="space-y-2">
@@ -309,9 +354,17 @@ export default function Login() {
                       type="password"
                       value={registerPassword}
                       onChange={(e) => setRegisterPassword(e.target.value)}
-                      className="w-full p-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-800"
+                      className={`w-full p-2 border rounded-md bg-white dark:bg-gray-800 ${
+                        registerPassword.length > 0 && registerPassword.length < 6 
+                          ? "border-red-500 dark:border-red-600" 
+                          : "border-gray-300 dark:border-gray-700"
+                      }`}
                       required
+                      minLength={6}
                     />
+                    {registerPassword.length > 0 && registerPassword.length < 6 && (
+                      <p className="text-red-500 text-xs mt-1">비밀번호는 6자 이상이어야 합니다</p>
+                    )}
                   </div>
                   
                   {/* 이용약관 동의 섹션 */}
