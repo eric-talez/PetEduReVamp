@@ -1,0 +1,151 @@
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TALEZ 서비스 종합 문서</title>
+  <style>
+    html { scroll-behavior: smooth; }
+    body { font-family: sans-serif; line-height: 1.6; background: #f9f9f9; color: #333; padding: 2rem; transition: background 0.3s, color 0.3s; }
+    h1, h2, h3, h4 { color: #2c3e50; }
+    pre { background: #eef; padding: 1rem; overflow-x: auto; border-left: 4px solid #3498db; }
+    code { font-family: monospace; }
+    section { margin-bottom: 3rem; scroll-margin-top: 80px; }
+    nav { position: fixed; top: 0; left: 0; width: 250px; height: 100%; background: #2c3e50; color: white; padding: 1rem; overflow-y: auto; z-index: 1000; }
+    nav h2 { font-size: 1.2rem; margin-top: 1rem; }
+    nav a { display: block; color: #ecf0f1; margin: 0.5rem 0; text-decoration: none; }
+    nav a:hover { text-decoration: underline; }
+    main { margin-left: 270px; padding-top: 1rem; }
+    @media print {
+      nav { display: none; }
+      main { margin-left: 0; }
+    }
+    table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.9rem; }
+    table, th, td { border: 1px solid #ccc; }
+    th, td { padding: 0.5rem; text-align: left; }
+    th { background-color: #f0f0f0; }
+    .subsection { margin-left: 1rem; }
+  </style>
+</head>
+<body>
+  <nav>
+    <h1>📚 목차</h1>
+    <a href="#section-operation-guide">서비스 운영 가이드</a>
+    <a href="#section-service-features">서비스 기능 명세서</a>
+    <a href="#section-system-architecture">시스템 아키텍처</a>
+    <a href="#section-menu-structure">메뉴 구조</a>
+    <a href="#section-auth">권한 구조</a>
+    <a href="#section-main-features">주요 기능</a>
+    <a href="#section-conditions">기능별 조건값</a>
+    <a href="#section-operation-metrics">운영 지표</a>
+    <a href="#section-notifications">알림 설정</a>
+    <a href="#section-data-management">데이터 관리</a>
+  </nav>
+
+  <main>
+    <h1>🐾 TALEZ 서비스 종합 문서</h1>
+
+    <section id="section-operation-guide">
+      <h2>서비스 운영 가이드</h2>
+      <!-- operation-manual.md의 내용 -->
+      <div class="subsection">
+        <h3>1. 메뉴 구조</h3>
+        <h4>1.1 메인 메뉴 (모든 사용자)</h4>
+        <ul>
+          <li>홈</li>
+          <li>강의 탐색</li>
+          <li>훈련사 찾기</li>
+          <li>위치 서비스</li>
+          <li>커뮤니티</li>
+          <li>이벤트</li>
+          <li>영상 훈련</li>
+          <li>화상 훈련</li>
+          <li>AI 챗봇</li>
+        </ul>
+
+        <h4>1.2 특별 기능 (인증 사용자)</h4>
+        <ul>
+          <li>메시지</li>
+          <li>알림</li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="section-service-features">
+      <h2>서비스 기능 명세서</h2>
+      <!-- service-features.md의 내용 -->
+      <div class="subsection">
+        <h3>1. 사용자 여정 (User Journey)</h3>
+        <h4>1.1 반려견 주인</h4>
+        <ul>
+          <li>회원가입 및 본인인증 flow</li>
+          <li>반려견 프로필 등록 과정</li>
+          <li>훈련사 매칭 프로세스</li>
+          <li>수업 예약/결제 flow</li>
+          <li>수업 피드백 및 리뷰 작성</li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="section-system-architecture">
+      <h2>시스템 아키텍처</h2>
+      <!-- system-architecture.md의 내용 -->
+      <div class="subsection">
+        <h3>1. 시스템 구성도</h3>
+        <h4>1.1 인프라 구조</h4>
+        <ul>
+          <li>서버 구성</li>
+          <li>네트워크 구성</li>
+          <li>스토리지 구성</li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="section-menu-structure">
+      <h2>메뉴 구조</h2>
+      <!-- 메뉴 구조 내용 -->
+    </section>
+
+    <section id="section-auth">
+      <h2>권한 구조</h2>
+      <div class="subsection">
+        <h3>사용자 권한 레벨</h3>
+        <ol>
+          <li>비회원 (user)</li>
+          <li>반려견 주인 (pet-owner)</li>
+          <li>훈련사 (trainer)</li>
+          <li>기관 관리자 (institute-admin)</li>
+          <li>시스템 관리자 (admin)</li>
+        </ol>
+      </div>
+    </section>
+
+    <section id="section-main-features">
+      <h2>주요 기능</h2>
+      <!-- 주요 기능 내용 -->
+    </section>
+
+    <section id="section-conditions">
+      <h2>기능별 조건값</h2>
+      <!-- 조건값 내용 -->
+    </section>
+
+    <section id="section-operation-metrics">
+      <h2>운영 지표</h2>
+      <!-- 운영 지표 내용 -->
+    </section>
+
+    <section id="section-notifications">
+      <h2>알림 설정</h2>
+      <!-- 알림 설정 내용 -->
+    </section>
+
+    <section id="section-data-management">
+      <h2>데이터 관리</h2>
+      <!-- 데이터 관리 내용 -->
+    </section>
+
+  </main>
+</body>
+</html>
