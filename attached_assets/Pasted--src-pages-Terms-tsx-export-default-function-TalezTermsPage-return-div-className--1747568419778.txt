@@ -1,0 +1,108 @@
+// 📁 src/pages/Terms.tsx
+export default function TalezTermsPage() {
+  return (
+    <div className="p-6 max-w-3xl mx-auto text-sm text-gray-800 dark:text-gray-200">
+      <h1 className="text-xl font-bold mb-4">TALEZ 이용약관</h1>
+      <p>본 약관은 TALEZ 서비스를 이용함에 있어 회원의 권리, 의무 및 책임사항을 규정함을 목적으로 합니다.</p>
+      <h2 className="font-semibold mt-4">제1조 (목적)</h2>
+      <p>이 약관은 회사(이하 "회사")가 운영하는 반려견 훈련 플랫폼 TALEZ(이하 "서비스")의 이용조건, 절차 및 책임사항 등을 규정합니다.</p>
+      <h2 className="font-semibold mt-4">제2조 (정의)</h2>
+      <p>이 약관에서 사용하는 용어는 다음과 같습니다: ① "회원"이라 함은 서비스를 이용하는 자를 말합니다. ② "훈련사"는 회사에 등록된 전문가입니다. ③ "견주"는 반려견을 등록하고 서비스를 이용하는 일반 회원입니다.</p>
+    </div>
+  );
+}
+
+// 📁 src/pages/Privacy.tsx
+export default function TalezPrivacyPage() {
+  return (
+    <div className="p-6 max-w-3xl mx-auto text-sm text-gray-800 dark:text-gray-200">
+      <h1 className="text-xl font-bold mb-4">TALEZ 개인정보처리방침</h1>
+      <p>TALEZ는 이용자의 개인정보 보호를 중요시하며, 관련 법령에 따라 개인정보를 수집·이용합니다.</p>
+      <h2 className="font-semibold mt-4">수집하는 개인정보 항목</h2>
+      <ul className="list-disc ml-6">
+        <li>회원가입: 이름, 이메일, 비밀번호</li>
+        <li>반려견 프로필 등록: 반려견 이름, 생년월일, 사진</li>
+        <li>결제 및 본인확인: 휴대폰 번호, 생년월일, 결제정보</li>
+      </ul>
+      <h2 className="font-semibold mt-4">수집 목적</h2>
+      <ul className="list-disc ml-6">
+        <li>회원 구분 및 서비스 제공</li>
+        <li>훈련 일정 관리 및 알림 발송</li>
+        <li>고객지원 및 오류 대응</li>
+      </ul>
+    </div>
+  );
+}
+
+// 📁 src/components/AgreementSectionTalez.tsx
+import { Checkbox } from "@/components/ui/checkbox";
+import { useState } from "react";
+
+export default function AgreementSectionTalez({ onChange }: { onChange: (valid: boolean) => void }) {
+  const [terms, setTerms] = useState(false);
+  const [privacy, setPrivacy] = useState(false);
+  const [marketing, setMarketing] = useState(false);
+
+  const handleChange = (field: 'terms' | 'privacy' | 'marketing', value: boolean) => {
+    if (field === 'terms') setTerms(value);
+    if (field === 'privacy') setPrivacy(value);
+    if (field === 'marketing') setMarketing(value);
+    onChange(value && terms && privacy);
+  };
+
+  return (
+    <div className="space-y-2 mt-4">
+      <label className="flex items-center space-x-2">
+        <Checkbox checked={terms} onCheckedChange={(v) => handleChange('terms', v as boolean)} />
+        <span>[필수] <a href="/terms" target="_blank" className="underline">TALEZ 이용약관</a>에 동의합니다.</span>
+      </label>
+      <label className="flex items-center space-x-2">
+        <Checkbox checked={privacy} onCheckedChange={(v) => handleChange('privacy', v as boolean)} />
+        <span>[필수] <a href="/privacy" target="_blank" className="underline">개인정보처리방침</a>에 동의합니다.</span>
+      </label>
+      <label className="flex items-center space-x-2">
+        <Checkbox checked={marketing} onCheckedChange={(v) => handleChange('marketing', v as boolean)} />
+        <span>[선택] 푸시/이메일 마케팅 수신에 동의합니다.</span>
+      </label>
+    </div>
+  );
+}
+
+// 📁 src/pages/VerifyPhoneTalez.tsx (Toss 본인인증 예시)
+import { useEffect } from "react";
+
+export default function VerifyPhoneTalez() {
+  useEffect(() => {
+    const clientKey = "YOUR_TALEZ_TOSS_KEY";
+    const tossCertUrl = `https://cert.toss.im/api/v2/authorize?clientKey=${clientKey}&method=PASS&redirectUrl=https://funnytalez.com/verify/success`;
+    window.location.href = tossCertUrl;
+  }, []);
+
+  return (
+    <div className="p-8 text-center">
+      <p className="text-lg font-semibold">TALEZ 본인인증 페이지로 이동 중입니다...</p>
+    </div>
+  );
+}
+
+// 📁 src/components/AdminAgreementStatus.tsx
+import { Check, X } from "lucide-react";
+
+export default function AdminAgreementStatus({ user }: { user: any }) {
+  return (
+    <div className="text-sm space-y-1">
+      <div className="flex justify-between">
+        <span>이용약관 동의</span>
+        {user.agreedTerms ? <Check className="text-green-500" /> : <X className="text-red-500" />}
+      </div>
+      <div className="flex justify-between">
+        <span>개인정보처리방침 동의</span>
+        {user.agreedPrivacy ? <Check className="text-green-500" /> : <X className="text-red-500" />}
+      </div>
+      <div className="flex justify-between">
+        <span>마케팅 수신 동의</span>
+        {user.agreedMarketing ? <Check className="text-green-500" /> : <X className="text-gray-400" />}
+      </div>
+    </div>
+  );
+}
