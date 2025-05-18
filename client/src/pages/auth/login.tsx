@@ -32,7 +32,20 @@ export default function Login() {
   });
   const [isAgreementValid, setIsAgreementValid] = useState(false);
   
-  const [, navigate] = useLocation();
+  const [location, navigate] = useLocation();
+  
+  // URL 쿼리 파라미터에서 탭 정보 가져오기 (회원가입 또는 로그인)
+  const getInitialTab = () => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const tab = params.get('tab');
+      return tab === 'register' ? 'register' : 'login';
+    }
+    return 'login';
+  };
+  
+  // 초기 탭 설정
+  const [activeTab, setActiveTab] = useState(getInitialTab());
 
   const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -186,7 +199,7 @@ export default function Login() {
         </CardHeader>
         
         <CardContent>
-          <Tabs defaultValue="login" className="w-full">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="grid w-full grid-cols-2 mb-6">
               <TabsTrigger value="login">로그인</TabsTrigger>
               <TabsTrigger value="register">회원가입</TabsTrigger>
