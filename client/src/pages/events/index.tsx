@@ -299,38 +299,37 @@ export default function EventsPage() {
   
   return (
     <div className="container mx-auto px-4 py-6">
-      {/* 배너 영역 - 이미지와 동일한 스타일 */}
+      {/* 배너 영역 */}
       <div className="mb-8">
-        <div className="bg-[#EEF5F3] dark:bg-slate-800/50 p-5 rounded-lg">
-          <div className="px-3">
-            <h1 className="text-3xl font-bold mb-2">반려동물 이벤트</h1>
+        <div className="bg-gradient-to-r from-primary/10 to-accent/10 p-6 rounded-lg">
+          <div>
+            <h1 className="text-3xl font-bold mb-2 text-primary dark:text-primary">반려동물 이벤트</h1>
             <p className="text-gray-700 dark:text-gray-300 mb-4">
               다양한 반려동물 행사와 만남의 장을 찾아보세요. 지역별, 테마별 이벤트를 한눈에!
             </p>
             
             {/* 배너 내 검색 영역 */}
-            <div className="relative flex mb-4">
-              <div className="flex w-full bg-white dark:bg-gray-700 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-600">
-                <Search className="h-5 w-5 mx-3 self-center text-gray-500" />
+            <div className="relative flex mb-4 max-w-md">
+              <div className="flex-1 relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-500" />
                 <Input
-                  className="border-0 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 pl-0"
+                  className="pl-10 pr-24"
                   placeholder="이벤트 검색..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
                 <Button 
-                  className="rounded-l-none h-full min-w-[80px] bg-[#83C5BE] hover:bg-[#65A19A] text-white"
+                  className="absolute right-0 top-0 h-full rounded-l-none"
                 >
                   검색
                 </Button>
               </div>
             </div>
             
-            <div className="flex">
+            <div className="flex space-x-2">
               <Button 
                 variant="outline"
                 size="sm"
-                className="bg-white dark:bg-slate-700 border-gray-200 dark:border-gray-600 text-sm"
                 onClick={() => setLocation("/events/calendar")}
               >
                 <Calendar className="h-4 w-4 mr-2" />
