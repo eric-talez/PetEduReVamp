@@ -190,9 +190,15 @@ export default function Community() {
     }
   ];
 
+  // 컴포넌트 마운트 시 posts 데이터를 postsData 상태에 설정
+  useEffect(() => {
+    setPostsData(posts);
+  }, []);
+  
+  // postsData를 사용하여 필터링
   const filteredPosts = filter === "all" 
-    ? posts 
-    : posts.filter(post => post.tag === filter);
+    ? postsData 
+    : postsData.filter(post => post.tag === filter);
 
   const [likedPosts, setLikedPosts] = useState<Record<number, boolean>>(() => {
     const initialLikes: Record<number, boolean> = {};
@@ -422,7 +428,7 @@ export default function Community() {
                         <input 
                           type="text" 
                           placeholder="댓글을 입력하세요..." 
-                          className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-full px-4 py-1.5 text-sm"
+                          className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-full px-4 py-1.5 text-sm focus:ring-1 focus:ring-primary focus:border-primary transition-all"
                           value={commentInputs[post.id] || ''}
                           onChange={(e) => handleCommentInputChange(post.id, e.target.value)}
                           onKeyDown={(e) => {
@@ -597,9 +603,9 @@ export default function Community() {
               </div>
               <div className="flex items-center">
                 <Avatar 
-                  src="https://images.unsplash.com/photo-1548535537-3cfaf1fc327c?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100" 
-                  alt="박민첩 트레이너" 
                   className="w-9 h-9"
+                  src="https://images.unsplash.com/photo-1548535537-3cfaf1fc327c?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100"
+                  fallback="박"
                 />
                 <div className="ml-3">
                   <h4 className="text-sm font-medium text-gray-800 dark:text-white">박민첩 트레이너</h4>
