@@ -301,34 +301,31 @@ export default function EventsPage() {
     <div className="container mx-auto px-4 py-6">
       {/* 배너 영역 */}
       <div className="mb-8">
-        <div className="rounded-lg relative overflow-hidden">
-          {/* 배경 이미지 */}
-          <div className="absolute inset-0">
-            <img 
-              src="https://i.imgur.com/MGCN7Yx.jpg" 
-              alt="반려동물 이벤트 배경" 
-              className="w-full h-full object-cover"
-            />
-            <div className="absolute inset-0 bg-black/20 dark:bg-black/40"></div>
-          </div>
+        <div className="relative h-64 md:h-72 rounded-lg overflow-hidden">
+          <img 
+            src="https://i.imgur.com/MGCN7Yx.jpg" 
+            alt="반려동물 이벤트 배경" 
+            className="absolute w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-black/20 dark:bg-black/40"></div>
           
-          {/* 콘텐츠 영역 */}
-          <div className="relative z-10 p-6">
-            <h1 className="text-3xl font-bold mb-2 text-white dark:text-white bg-primary/80 dark:bg-primary/80 p-2 rounded inline-block">반려동물 이벤트</h1>
-            <p className="text-white dark:text-white mb-4 bg-black/30 dark:bg-black/50 p-2 rounded max-w-lg">
-              다양한 반려동물 행사와 만남의 장을 찾아보세요. 지역별, 테마별 이벤트를 한눈에!
-            </p>
-            
-            {/* 배너 버튼 */}
-            <div className="flex space-x-2 mt-4">
-              <Button 
-                variant="secondary"
-                className="bg-white/80 hover:bg-white text-primary"
-                onClick={() => document.getElementById('event-search')?.focus()}
-              >
-                <Search className="h-4 w-4 mr-2" />
-                이벤트 찾기
-              </Button>
+          <div className="absolute inset-0 flex items-center">
+            <div className="p-6 md:p-8">
+              <h1 className="text-3xl font-bold mb-2 text-white dark:text-white bg-primary/80 dark:bg-primary/80 p-2 rounded inline-block">반려동물 이벤트</h1>
+              <p className="text-white dark:text-white mb-4 bg-black/30 dark:bg-black/50 p-2 rounded max-w-lg">
+                다양한 반려동물 행사와 만남의 장을 찾아보세요. 지역별, 테마별 이벤트를 한눈에!
+              </p>
+              
+              <div className="flex space-x-2 mt-4">
+                <Button 
+                  variant="secondary"
+                  className="bg-white/80 hover:bg-white text-primary"
+                  onClick={() => document.getElementById('event-search')?.focus()}
+                >
+                  <Search className="h-4 w-4 mr-2" />
+                  이벤트 찾기
+                </Button>
+              </div>
             </div>
           </div>
         </div>
