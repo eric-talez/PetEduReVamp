@@ -303,7 +303,7 @@ export default function EventsPage() {
       <div className="mb-8">
         <div className="relative h-64 md:h-72 rounded-lg overflow-hidden">
           <img 
-            src="https://images.unsplash.com/photo-1450778869180-41d0601e046e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&h=750&q=80" 
+            src="https://images.unsplash.com/photo-1548199973-03cce0bbc87b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&h=750&q=80" 
             alt="반려동물 이벤트 배경"
             className="absolute inset-0 w-full h-full object-cover"
           />
