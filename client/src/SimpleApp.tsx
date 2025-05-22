@@ -1442,6 +1442,15 @@ function DebugButton() {
 }
 
 /**
+ * 전역 단축키 관리 컴포넌트
+ */
+function KeyboardShortcutsManager({ children }: { children: ReactNode }) {
+  // 글로벌 단축키 훅 사용
+  useGlobalShortcuts();
+  return <>{children}</>;
+}
+
+/**
  * 메인 애플리케이션 컴포넌트
  */
 function SimpleApp() {
@@ -1457,12 +1466,14 @@ function SimpleApp() {
   
   return (
     <UserPreferencesProvider>
-      <>
-        {auth.isAuthenticated ? <AuthenticatedRoutes /> : <UnauthenticatedRoutes />}
-        <DebugButton />
-        <Toaster />
-        <AccessibilityFloatingButton />
-      </>
+      <KeyboardShortcutsManager>
+        <>
+          {auth.isAuthenticated ? <AuthenticatedRoutes /> : <UnauthenticatedRoutes />}
+          <DebugButton />
+          <Toaster />
+          <AccessibilityFloatingButton />
+        </>
+      </KeyboardShortcutsManager>
     </UserPreferencesProvider>
   );
 }

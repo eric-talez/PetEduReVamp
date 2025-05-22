@@ -106,34 +106,86 @@ export function useGlobalShortcuts() {
       alt: true,
       description: '단축키 도움말 표시',
       action: () => {
-        const modal = document.createElement('div');
-        modal.innerHTML = `
-          <div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 9999; display: flex; justify-content: center; align-items: center;">
-            <div style="background: white; padding: 20px; border-radius: 8px; max-width: 600px; max-height: 80vh; overflow-y: auto;">
-              <h2 style="margin-top: 0; color: #333;">키보드 단축키</h2>
-              <ul style="padding-left: 20px;">
-                <li><strong>Alt + H</strong>: 홈으로 이동</li>
-                <li><strong>Alt + C</strong>: 강좌 페이지로 이동</li>
-                <li><strong>Alt + D</strong>: 대시보드로 이동</li>
-                <li><strong>Alt + P</strong>: 반려동물 관리 페이지로 이동</li>
-                <li><strong>Alt + M</strong>: 메시지 페이지로 이동</li>
-                <li><strong>Alt + S</strong>: 쇼핑몰로 이동</li>
-                <li><strong>Alt + K</strong>: 이 도움말 표시</li>
-                <li><strong>Esc</strong>: 모달 닫기</li>
-              </ul>
-              <button style="padding: 8px 16px; background: #4c6ef5; color: white; border: none; border-radius: 4px; cursor: pointer; margin-top: 10px;">닫기</button>
-            </div>
-          </div>
-        `;
-        document.body.appendChild(modal);
+        const modalWrapper = document.createElement('div');
+        modalWrapper.style.position = 'fixed';
+        modalWrapper.style.top = '0';
+        modalWrapper.style.left = '0';
+        modalWrapper.style.width = '100%';
+        modalWrapper.style.height = '100%';
+        modalWrapper.style.background = 'rgba(0,0,0,0.7)';
+        modalWrapper.style.zIndex = '9999';
+        modalWrapper.style.display = 'flex';
+        modalWrapper.style.justifyContent = 'center';
+        modalWrapper.style.alignItems = 'center';
+        
+        const modalContent = document.createElement('div');
+        modalContent.style.background = 'white';
+        modalContent.style.padding = '20px';
+        modalContent.style.borderRadius = '8px';
+        modalContent.style.maxWidth = '600px';
+        modalContent.style.maxHeight = '80vh';
+        modalContent.style.overflow = 'auto';
+        modalContent.setAttribute('role', 'dialog');
+        modalContent.setAttribute('aria-labelledby', 'shortcuts-title');
+        modalContent.setAttribute('aria-modal', 'true');
+        
+        const title = document.createElement('h2');
+        title.id = 'shortcuts-title';
+        title.style.marginTop = '0';
+        title.style.color = '#333';
+        title.textContent = '키보드 단축키';
+        
+        const list = document.createElement('ul');
+        list.style.paddingLeft = '20px';
+        
+        const shortcuts = [
+          { key: 'Alt + H', desc: '홈으로 이동' },
+          { key: 'Alt + C', desc: '강좌 페이지로 이동' },
+          { key: 'Alt + D', desc: '대시보드로 이동' },
+          { key: 'Alt + P', desc: '반려동물 관리 페이지로 이동' },
+          { key: 'Alt + M', desc: '메시지 페이지로 이동' },
+          { key: 'Alt + S', desc: '쇼핑몰로 이동' },
+          { key: 'Alt + K', desc: '이 도움말 표시' },
+          { key: 'Esc', desc: '모달 닫기' }
+        ];
+        
+        shortcuts.forEach(shortcut => {
+          const item = document.createElement('li');
+          const keySpan = document.createElement('strong');
+          keySpan.textContent = shortcut.key;
+          item.appendChild(keySpan);
+          item.appendChild(document.createTextNode(': ' + shortcut.desc));
+          list.appendChild(item);
+        });
+        
+        const closeButton = document.createElement('button');
+        closeButton.textContent = '닫기';
+        closeButton.style.padding = '8px 16px';
+        closeButton.style.background = '#4c6ef5';
+        closeButton.style.color = 'white';
+        closeButton.style.border = 'none';
+        closeButton.style.borderRadius = '4px';
+        closeButton.style.cursor = 'pointer';
+        closeButton.style.marginTop = '10px';
+        
+        modalContent.appendChild(title);
+        modalContent.appendChild(list);
+        modalContent.appendChild(closeButton);
+        modalWrapper.appendChild(modalContent);
+        
+        document.body.appendChild(modalWrapper);
+        
+        // 포커스를 모달 내부로 이동
+        closeButton.focus();
         
         const closeModal = () => {
-          document.body.removeChild(modal);
+          document.body.removeChild(modalWrapper);
         };
         
-        modal.querySelector('button').addEventListener('click', closeModal);
-        modal.addEventListener('click', (e) => {
-          if (e.target === modal) closeModal();
+        closeButton.addEventListener('click', closeModal);
+        
+        modalWrapper.addEventListener('click', (e: MouseEvent) => {
+          if (e.target === modalWrapper) closeModal();
         });
         
         // ESC 키로 닫기

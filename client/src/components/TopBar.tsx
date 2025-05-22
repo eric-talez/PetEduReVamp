@@ -1,6 +1,7 @@
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/Button";
+import { NotificationCenter } from "@/components/NotificationCenter";
 import { 
   Bell, 
   Menu, 
