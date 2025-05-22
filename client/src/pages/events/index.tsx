@@ -346,6 +346,7 @@ export default function EventsPage() {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
+          </div>
           
           <div className="flex space-x-2">
             <DropdownMenu>
