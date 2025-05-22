@@ -2,6 +2,8 @@ import { Switch, Route } from "wouter";
 import { RedirectHandler } from './components/RedirectHandler';
 import React, { ReactNode, useState, useEffect, lazy, Suspense } from "react";
 import SimpleChatbot from './components/SimpleChatbot';
+import { UserPreferencesProvider } from './hooks/use-user-preferences';
+import { useGlobalShortcuts } from './hooks/use-keyboard-shortcuts';
 
 // 페이지 컴포넌트 임포트
 import Home from "./pages/Home";
@@ -1454,11 +1456,14 @@ function SimpleApp() {
   // }
   
   return (
-    <>
-      {auth.isAuthenticated ? <AuthenticatedRoutes /> : <UnauthenticatedRoutes />}
-      <DebugButton />
-      <Toaster />
-    </>
+    <UserPreferencesProvider>
+      <>
+        {auth.isAuthenticated ? <AuthenticatedRoutes /> : <UnauthenticatedRoutes />}
+        <DebugButton />
+        <Toaster />
+        <AccessibilityFloatingButton />
+      </>
+    </UserPreferencesProvider>
   );
 }
 
