@@ -502,30 +502,21 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
                 )}
               </div>
               
-              {/* Notifications Button & Popup */}
-              <div className="relative" ref={notificationPopupRef}>
-                <Button 
-                  variant="ghost" 
-                  size="icon"
-                  onClick={() => {
-                    if (isAuthenticated) {
-                      setNotificationPopupOpen(!notificationPopupOpen);
-                      setMessagePopupOpen(false);
-                      setCartPopupOpen(false);
-                    } else {
-                      setLocation("/auth");
-                    }
-                  }}
-                  className="relative"
-                  aria-label="알림"
-                >
-                  <Bell className="h-5 w-5" />
-                  {isAuthenticated && unreadNotificationsCount > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-4 h-4 text-xs flex items-center justify-center">
-                      {unreadNotificationsCount}
-                    </span>
-                  )}
-                </Button>
+              {/* 개선된 알림 센터 */}
+              <div className="relative">
+                {isAuthenticated ? (
+                  <NotificationCenter />
+                ) : (
+                  <Button 
+                    variant="ghost" 
+                    size="icon"
+                    onClick={() => setLocation("/auth")}
+                    className="relative"
+                    aria-label="알림"
+                  >
+                    <Bell className="h-5 w-5" />
+                  </Button>
+                )}
                 
                 {/* Notifications Popup */}
                 {notificationPopupOpen && isAuthenticated && (
