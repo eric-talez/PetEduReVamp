@@ -305,7 +305,7 @@ export default function EventsPage() {
           <img 
             src="https://images.unsplash.com/photo-1508887631346-b7681bd4f933?ixlib=rb-4.0.3&auto=format&fit=crop&w=1500&h=400&q=80"
             alt="이벤트 배너" 
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover absolute"
           />
           <div className="absolute inset-0 flex items-center">
             <div className="px-6 md:px-10 max-w-xl">

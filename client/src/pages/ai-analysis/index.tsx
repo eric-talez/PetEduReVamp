@@ -526,14 +526,12 @@ export default function AIAnalysisPage() {
       </Dialog>
     
       {/* Banner */}
-      <div className="relative rounded-xl overflow-hidden h-48 md:h-64 mb-8 bg-gradient-to-r from-primary/80 to-accent/80 shadow-lg">
+      <div className="relative rounded-xl overflow-hidden h-48 md:h-64 mb-8 shadow-lg">
         <img 
           src="https://images.unsplash.com/photo-1589652717521-10c0d092dea9?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=400" 
           alt="반려견 AI 분석"
           className="w-full h-full object-cover absolute"
         />
-
-        {/* 이미지 필터 제거하여 원본 이미지 표시 */}
 
         <div className="relative h-full flex flex-col justify-center px-6 md:px-10">
           <div className="flex items-center gap-2">
