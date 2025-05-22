@@ -48,6 +48,17 @@ export interface IStorage {
   createCourse(course: any): Promise<any>;
   enrollUserInCourse(userId: number, courseId: number): Promise<any>;
   
+  // 이벤트 관련
+  getAllEvents(): Promise<Event[]>;
+  getEvent(id: number): Promise<Event | undefined>;
+  createEvent(event: InsertEvent): Promise<Event>;
+  getEventsByRegion(region: string): Promise<Event[]>;
+  getEventsByCategory(category: string): Promise<Event[]>;
+  checkEventAttendance(userId: number, eventId: number): Promise<boolean>;
+  attendEvent(userId: number, eventId: number): Promise<EventAttendance>;
+  getEventLocation(id: number): Promise<EventLocation | undefined>;
+  createEventLocation(location: InsertEventLocation): Promise<EventLocation>;
+  
   // 수수료 정책 관련
   getCommissionPolicies(): Promise<any[]>;
   getCommissionPolicy(id: number): Promise<any | undefined>;
@@ -79,6 +90,9 @@ export class MemStorage implements IStorage {
   private institutes: Map<number, any>;
   private trainers: Map<number, any>;
   private enrollments: Map<number, any>;
+  private events: Map<number, Event>;
+  private eventLocations: Map<number, EventLocation>;
+  private eventAttendances: Map<number, EventAttendance[]>;
   
   currentId: number;
   private policyId: number;

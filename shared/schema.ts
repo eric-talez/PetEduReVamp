@@ -226,6 +226,71 @@ export type InsertAchievement = z.infer<typeof createAchievementSchema>;
 export type Post = typeof posts.$inferSelect;
 export type InsertPost = z.infer<typeof createPostSchema>;
 
+// 이벤트 위치 타입
+export const eventLocations = pgTable("event_locations", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  address: text("address").notNull(),
+  lat: text("lat").notNull(),
+  lng: text("lng").notNull(),
+  region: text("region").notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow()
+});
+
+export const createEventLocationSchema = createInsertSchema(eventLocations).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true
+});
+
+// 이벤트 타입
+export const events = pgTable("events", {
+  id: serial("id").primaryKey(),
+  title: text("title").notNull(),
+  description: text("description").notNull(),
+  image: text("image"),
+  date: text("date").notNull(),
+  time: text("time").notNull(),
+  locationId: integer("location_id").notNull().references(() => eventLocations.id, { onDelete: 'cascade' }),
+  organizerId: integer("organizer_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  category: text("category").notNull(),
+  price: json("price").$type<number | '무료'>().notNull(),
+  attendees: integer("attendees").default(0),
+  maxAttendees: integer("max_attendees"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow()
+});
+
+export const createEventSchema = createInsertSchema(events).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+  attendees: true
+});
+
+// 이벤트 참가 타입
+export const eventAttendances = pgTable("event_attendances", {
+  id: serial("id").primaryKey(),
+  eventId: integer("event_id").notNull().references(() => events.id, { onDelete: 'cascade' }),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  createdAt: timestamp("created_at").notNull().defaultNow()
+});
+
+export const createEventAttendanceSchema = createInsertSchema(eventAttendances).omit({
+  id: true,
+  createdAt: true
+});
+
+export type EventLocation = typeof eventLocations.$inferSelect;
+export type InsertEventLocation = z.infer<typeof createEventLocationSchema>;
+
+export type Event = typeof events.$inferSelect;
+export type InsertEvent = z.infer<typeof createEventSchema>;
+
+export type EventAttendance = typeof eventAttendances.$inferSelect;
+export type InsertEventAttendance = z.infer<typeof createEventAttendanceSchema>;
+
 // Commission Policy types
 export const commissionPolicies = pgTable("commission_policies", {
   id: serial("id").primaryKey(),
