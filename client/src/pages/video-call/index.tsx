@@ -398,10 +398,10 @@ export default function VideoCallPage() {
         <img 
           src="https://images.unsplash.com/photo-1560250097-0b93528c311a?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=400" 
           alt="화상 수업"
-          className="w-full h-full object-cover absolute mix-blend-overlay"
+          className="w-full h-full object-cover absolute"
         />
         
-        <div className="absolute inset-0 bg-gradient-to-r from-primary/80 to-accent/30 mix-blend-multiply"></div>
+        {/* 이미지 필터 제거하여 원본 이미지 표시 */}
         
         <div className="relative h-full flex flex-col justify-center px-6 md:px-10 container mx-auto">
           <h1 className="text-white text-xl md:text-3xl font-bold mb-2 md:mb-4 max-w-xl">
