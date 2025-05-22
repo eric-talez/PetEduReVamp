@@ -530,10 +530,10 @@ export default function AIAnalysisPage() {
         <img 
           src="https://images.unsplash.com/photo-1589652717521-10c0d092dea9?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=400" 
           alt="반려견 AI 분석"
-          className="w-full h-full object-cover absolute mix-blend-overlay"
+          className="w-full h-full object-cover absolute"
         />
 
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-600/70 to-purple-700/70 mix-blend-multiply"></div>
+        {/* 이미지 필터 제거하여 원본 이미지 표시 */}
 
         <div className="relative h-full flex flex-col justify-center px-6 md:px-10">
           <div className="flex items-center gap-2">

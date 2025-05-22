@@ -19,10 +19,10 @@ export default function TrainerDashboard({ onAction }: TrainerDashboardProps) {
         <img 
           src="https://images.unsplash.com/photo-1583511655826-05700a52f8e4?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=400" 
           alt="훈련사 대시보드"
-          className="w-full h-full object-cover absolute mix-blend-overlay"
+          className="w-full h-full object-cover absolute"
         />
         
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-600/80 to-indigo-600/30 mix-blend-multiply"></div>
+        {/* 이미지 필터 제거하여 원본 이미지 표시 */}
         
         <div className="relative h-full flex flex-col justify-center px-8 md:px-12">
           <h1 className="text-white text-2xl md:text-4xl font-bold mb-2 md:mb-4 max-w-xl">
