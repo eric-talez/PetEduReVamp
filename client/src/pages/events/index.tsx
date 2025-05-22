@@ -301,8 +301,10 @@ export default function EventsPage() {
     <div className="container mx-auto px-4 py-6">
       {/* 배너 영역 */}
       <div className="mb-8">
-        <div className="bg-gradient-to-r from-primary/10 to-accent/10 p-6 rounded-lg">
-          <div>
+        <div className="bg-muted p-6 rounded-lg relative overflow-hidden">
+          {/* 배경 이미지를 배너 내부에 넣습니다 */}
+          <div className="absolute inset-0 bg-blue-50 dark:bg-slate-900"></div>
+          <div className="relative z-10">
             <h1 className="text-3xl font-bold mb-2 text-primary dark:text-primary">반려동물 이벤트</h1>
             <p className="text-gray-700 dark:text-gray-300 mb-4">
               다양한 반려동물 행사와 만남의 장을 찾아보세요. 지역별, 테마별 이벤트를 한눈에!
