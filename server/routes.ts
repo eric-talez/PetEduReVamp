@@ -80,6 +80,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       category: "축제",
       price: 20000,
       attendees: 120,
+      maxAttendees: 150,
       createdAt: new Date(),
       updatedAt: new Date()
     },

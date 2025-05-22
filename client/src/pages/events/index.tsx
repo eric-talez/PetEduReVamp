@@ -359,7 +359,12 @@ export default function EventsPage() {
                     variant="default"
                     size="sm"
                     className="mr-1"
-                    onClick={() => setSearchTerm(document.getElementById('banner-search')?.value || '')}
+                    onClick={() => {
+                      const searchInput = document.getElementById('banner-search') as HTMLInputElement;
+                      if (searchInput) {
+                        setSearchTerm(searchInput.value);
+                      }
+                    }}
                   >
                     검색
                   </Button>
@@ -460,7 +465,17 @@ export default function EventsPage() {
       <div className="flex flex-col md:flex-row gap-6">
         {/* 이벤트 목록 */}
         <div className={`${showMap ? 'md:w-7/12 lg:w-8/12' : 'w-full'}`}>
-          {filteredEvents.length === 0 ? (
+          {/* 로딩 상태 표시 */}
+          {isLoading && (
+            <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-8 text-center">
+              <div className="flex flex-col items-center justify-center space-y-4">
+                <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+                <p className="text-lg font-medium">이벤트 데이터를 불러오는 중...</p>
+              </div>
+            </div>
+          )}
+          
+          {!isLoading && filteredEvents.length === 0 ? (
             <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-8 text-center">
               <h3 className="text-lg font-medium mb-2">검색 결과가 없습니다</h3>
               <p className="text-gray-500 dark:text-gray-400 mb-4">
