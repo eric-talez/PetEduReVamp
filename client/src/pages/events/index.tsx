@@ -307,7 +307,7 @@ export default function EventsPage() {
             alt="이벤트 배너" 
             className="w-full h-full object-cover"
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-primary/80 to-transparent flex items-center">
+          <div className="absolute inset-0 flex items-center">
             <div className="px-6 md:px-10 text-white max-w-xl">
               <h1 className="text-3xl md:text-4xl font-bold mb-4">반려동물 이벤트</h1>
               <p className="text-lg mb-4">
