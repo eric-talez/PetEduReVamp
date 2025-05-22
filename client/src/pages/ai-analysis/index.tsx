@@ -534,20 +534,20 @@ export default function AIAnalysisPage() {
         />
 
         <div className="relative h-full flex flex-col justify-center px-6 md:px-10">
-          <div className="flex items-center gap-2">
-            <h1 className="text-white text-xl md:text-3xl font-bold mb-2 md:mb-4 max-w-xl">
+          <div className="flex items-center gap-2 bg-white/90 dark:bg-gray-800/90 p-2 rounded-lg inline-block">
+            <h1 className="text-primary dark:text-white text-xl md:text-3xl font-bold">
               반려견 AI 분석
             </h1>
             
             {subscription.isSubscribed && (
-              <Badge variant="outline" className="bg-amber-500/50 border-amber-400 text-white">
+              <Badge variant="outline" className="bg-amber-500 border-amber-400 text-white">
                 <Crown className="w-3 h-3 mr-1" />
                 {subscriptionPlans.find(p => p.id === subscription.plan)?.name || ''} 구독 중
               </Badge>
             )}
           </div>
           
-          <p className="text-white text-sm md:text-base max-w-xl mb-4">
+          <p className="text-gray-800 dark:text-gray-200 text-sm md:text-base max-w-xl mb-4 mt-2 bg-white/90 dark:bg-gray-800/90 p-2 rounded-lg">
             AI가 반려견의 성격, 훈련 진도, 그리고 앞으로의 방향을 분석합니다.
           </p>
 
