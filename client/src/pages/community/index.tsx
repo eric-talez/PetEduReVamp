@@ -10,6 +10,8 @@ import { useToast } from "@/hooks/use-toast";
 export default function Community() {
   const [filter, setFilter] = useState("all");
   const { toast } = useToast();
+  const [commentInputs, setCommentInputs] = useState<Record<number, string>>({});
+  const [postsData, setPostsData] = useState<any[]>([]);
   
   // 로그인 상태 확인 함수
   const isAuthenticated = (): boolean => {
@@ -31,6 +33,69 @@ export default function Community() {
     if (confirmed) {
       window.location.href = "/auth/login";
     }
+  };
+  
+  // 댓글 입력 처리
+  const handleCommentInputChange = (postId: number, value: string) => {
+    setCommentInputs(prev => ({
+      ...prev,
+      [postId]: value
+    }));
+  };
+  
+  // 댓글 등록 처리
+  const handleAddComment = (postId: number) => {
+    if (!isAuthenticated()) {
+      promptLogin();
+      return;
+    }
+    
+    const commentText = commentInputs[postId] || '';
+    
+    if (!commentText.trim()) {
+      toast({
+        title: "댓글 오류",
+        description: "댓글 내용을 입력해주세요.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // 실제 구현에서는 API 호출로 댓글 등록
+    // 여기서는 로컬 상태 업데이트로 시뮬레이션
+    
+    // 댓글 카운트 증가
+    const updatedPosts = postsData.map(post => {
+      if (post.id === postId) {
+        return {
+          ...post,
+          comments: post.comments + 1
+        };
+      }
+      return post;
+    });
+    
+    setPostsData(updatedPosts);
+    
+    // 입력창 초기화
+    setCommentInputs(prev => ({
+      ...prev,
+      [postId]: ''
+    }));
+    
+    // 성공 메시지
+    toast({
+      title: "댓글 등록 완료",
+      description: "댓글이 성공적으로 등록되었습니다.",
+    });
+    
+    // 옵션: 상세 페이지로 이동할지 확인
+    setTimeout(() => {
+      const shouldRedirect = window.confirm("등록된 댓글을 확인하기 위해 상세 페이지로 이동하시겠습니까?");
+      if (shouldRedirect) {
+        window.location.href = `/community/post/${postId}`;
+      }
+    }, 500);
   };
   
   const posts = [
@@ -358,9 +423,21 @@ export default function Community() {
                           type="text" 
                           placeholder="댓글을 입력하세요..." 
                           className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-full px-4 py-1.5 text-sm"
+                          value={commentInputs[post.id] || ''}
+                          onChange={(e) => handleCommentInputChange(post.id, e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              handleAddComment(post.id);
+                            }
+                          }}
                         />
                       </div>
-                      <Button variant="ghost" size="sm" className="ml-2">
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="ml-2"
+                        onClick={() => handleAddComment(post.id)}
+                      >
                         등록
                       </Button>
                     </div>
