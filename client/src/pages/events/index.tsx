@@ -308,9 +308,9 @@ export default function EventsPage() {
             className="w-full h-full object-cover"
           />
           <div className="absolute inset-0 flex items-center">
-            <div className="px-6 md:px-10 text-white max-w-xl">
-              <h1 className="text-3xl md:text-4xl font-bold mb-4">반려동물 이벤트</h1>
-              <p className="text-lg mb-4">
+            <div className="px-6 md:px-10 max-w-xl">
+              <h1 className="text-primary dark:text-white text-3xl md:text-4xl font-bold mb-4 bg-white/90 dark:bg-gray-800/90 p-2 rounded-lg">반려동물 이벤트</h1>
+              <p className="text-gray-800 dark:text-gray-200 text-lg mb-4 bg-white/90 dark:bg-gray-800/90 p-2 rounded-lg">
                 다양한 반려동물 행사와 만남의 장을 찾아보세요. 
                 지역별, 테마별 이벤트를 한눈에!
               </p>

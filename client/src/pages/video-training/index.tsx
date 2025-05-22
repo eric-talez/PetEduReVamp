@@ -400,20 +400,18 @@ export default function VideoTraining() {
   return (
     <div className="py-8 px-4 sm:px-6 lg:px-8">
       {/* 상단 배너 */}
-      <div className="relative rounded-xl overflow-hidden h-48 md:h-64 mb-8 bg-gradient-to-r from-primary/80 to-accent/80 shadow-lg">
+      <div className="relative rounded-xl overflow-hidden h-48 md:h-64 mb-8 shadow-lg">
         <img 
           src="https://images.unsplash.com/photo-1598134493179-51332e39cdab?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=400" 
           alt="영상 훈련"
-          className="w-full h-full object-cover absolute mix-blend-overlay"
+          className="w-full h-full object-cover absolute"
         />
         
-        <div className="absolute inset-0 bg-gradient-to-r from-primary/80 to-accent/30 mix-blend-multiply"></div>
-        
         <div className="relative h-full flex flex-col justify-center px-6 md:px-10 container mx-auto">
-          <h1 className="text-white text-xl md:text-3xl font-bold mb-2 md:mb-4 max-w-xl">
+          <h1 className="text-primary dark:text-white text-xl md:text-3xl font-bold mb-2 md:mb-4 max-w-xl bg-white/90 dark:bg-gray-800/90 p-2 rounded-lg">
             영상 훈련 라이브러리
           </h1>
-          <p className="text-white text-sm md:text-base max-w-xl mb-4">
+          <p className="text-gray-800 dark:text-gray-200 text-sm md:text-base max-w-xl mb-4 bg-white/90 dark:bg-gray-800/90 p-2 rounded-lg">
             반려견 훈련 전문가들이 제공하는 고품질 영상으로 언제 어디서나 효과적인 훈련을 경험하세요.
           </p>
           
