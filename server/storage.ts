@@ -1,4 +1,8 @@
-import { users, type User, type InsertUser, type UserRole } from "@shared/schema";
+import { 
+  users, type User, type InsertUser, type UserRole,
+  Event, InsertEvent, EventLocation, InsertEventLocation, EventAttendance, InsertEventAttendance,
+  events, eventLocations, eventAttendances
+} from "@shared/schema";
 
 // 프로필 업데이트를 위한 인터페이스
 export interface ProfileUpdateData {

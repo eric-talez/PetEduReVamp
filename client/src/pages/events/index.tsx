@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'wouter';
+import { useQuery } from '@tanstack/react-query';
 import { 
   Search, 
   Calendar, 
@@ -186,7 +187,7 @@ const PRICE_OPTIONS = ["전체", "무료", "유료"];
 
 export default function EventsPage() {
   const [, setLocation] = useLocation();
-  const [filteredEvents, setFilteredEvents] = useState<EventItem[]>(MOCK_EVENTS);
+  const [filteredEvents, setFilteredEvents] = useState<EventItem[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedRegion, setSelectedRegion] = useState("전체");
   const [selectedCategory, setSelectedCategory] = useState("전체");
@@ -194,6 +195,12 @@ export default function EventsPage() {
   const [selectedLocation, setSelectedLocation] = useState<EventLocation | null>(null);
   const [isMobile, setIsMobile] = useState(false);
   const [showMap, setShowMap] = useState(true);
+  
+  // API에서 이벤트 데이터 불러오기
+  const { data: eventsData, isLoading, error } = useQuery({
+    queryKey: ['/api/events'],
+    staleTime: 5 * 60 * 1000, // 5분간 캐시 유지
+  });
   
   // 모바일 화면 감지
   useEffect(() => {
@@ -212,9 +219,18 @@ export default function EventsPage() {
     };
   }, []);
   
+  // API에서 받아온 데이터로 상태 업데이트
+  useEffect(() => {
+    if (eventsData && Array.isArray(eventsData)) {
+      setFilteredEvents(eventsData as EventItem[]);
+    }
+  }, [eventsData]);
+  
   // 필터링 로직
   useEffect(() => {
-    let filtered = [...MOCK_EVENTS];
+    if (!eventsData || !Array.isArray(eventsData)) return;
+    
+    let filtered = [...eventsData] as EventItem[];
     
     // 검색어 필터링
     if (searchTerm) {
@@ -226,7 +242,9 @@ export default function EventsPage() {
     
     // 지역 필터링
     if (selectedRegion !== "전체") {
-      filtered = filtered.filter(event => event.location.region === selectedRegion);
+      filtered = filtered.filter(event => 
+        event.location && event.location.region === selectedRegion
+      );
     }
     
     // 카테고리 필터링
@@ -244,7 +262,7 @@ export default function EventsPage() {
     }
     
     setFilteredEvents(filtered);
-  }, [searchTerm, selectedRegion, selectedCategory, selectedPrice]);
+  }, [eventsData, searchTerm, selectedRegion, selectedCategory, selectedPrice]);
   
   // 위치 기반 정렬 (선택한 위치에 가까운 순)
   const sortByLocation = (events: EventItem[], location: EventLocation) => {
@@ -299,6 +317,14 @@ export default function EventsPage() {
   
   return (
     <div className="container mx-auto px-4 py-6">
+      {/* API 오류 메시지 표시 */}
+      {error && (
+        <div className="bg-red-50 dark:bg-red-950 border border-red-300 dark:border-red-800 text-red-700 dark:text-red-300 p-4 mb-6 rounded-lg">
+          <h3 className="text-lg font-medium mb-1">데이터를 불러오는 중 오류가 발생했습니다</h3>
+          <p>잠시 후 다시 시도해주세요. 문제가 지속되면 관리자에게 문의하세요.</p>
+        </div>
+      )}
+      
       {/* 배너 영역 */}
       <div className="mb-8">
         <div className="relative h-64 md:h-72 rounded-lg overflow-hidden">

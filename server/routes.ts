@@ -11,6 +11,7 @@ import { registerLocationRoutes } from "./location/routes";
 import { registerVideoCallRoutes } from "./videocall/routes";
 import { registerMenuRoutes } from "./menu/routes";
 import { registerAiRoutes } from "./ai/routes";
+import { Event, EventLocation } from "@shared/schema";
 import { WebSocketServer } from 'ws';
 import { MessagingService } from './messaging/service';
 
@@ -31,6 +32,295 @@ export async function registerRoutes(app: Express): Promise<Server> {
   registerVideoCallRoutes(app);
   registerMenuRoutes(app);
   registerAiRoutes(app);
+  
+  // 이벤트 API 엔드포인트
+  // 샘플 이벤트 데이터
+  const sampleEvents: Event[] = [
+    {
+      id: 1,
+      title: "강아지 사회화 모임",
+      description: "다양한 강아지들과 함께하는 사회화 모임입니다. 반려견의 사회성 향상을 위한 최고의 기회!",
+      image: "https://images.unsplash.com/photo-1548199973-03cce0bbc87b?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+      date: "2025-05-15",
+      time: "14:00 - 16:00",
+      locationId: 1,
+      organizerId: 1,
+      category: "소셜",
+      price: "무료",
+      attendees: 15,
+      maxAttendees: 20,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    },
+    {
+      id: 2,
+      title: "반려견 건강 세미나",
+      description: "반려견의 건강을 위한 영양과 운동에 대한 전문가 세미나입니다.",
+      image: "https://images.unsplash.com/photo-1597633425046-08f5110420b5?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+      date: "2025-05-20",
+      time: "19:00 - 21:00",
+      locationId: 2,
+      organizerId: 2,
+      category: "교육",
+      price: 15000,
+      attendees: 28,
+      maxAttendees: 40,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    },
+    {
+      id: 3,
+      title: "반려동물 페스티벌",
+      description: "다양한 반려동물 용품과 먹거리, 체험 부스가 준비된 대규모 페스티벌입니다.",
+      image: "https://images.unsplash.com/photo-1516734212186-a967f81ad0d7?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+      date: "2025-06-05",
+      time: "10:00 - 18:00",
+      locationId: 3,
+      organizerId: 3,
+      category: "축제",
+      price: 20000,
+      attendees: 120,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    },
+    {
+      id: 4,
+      title: "강아지 훈련 워크샵",
+      description: "기본 훈련부터 고급 훈련까지, 실전 강아지 훈련 워크샵입니다.",
+      image: "https://images.unsplash.com/photo-1583337130417-3346a1be7dee?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+      date: "2025-05-25",
+      time: "13:00 - 17:00",
+      locationId: 4,
+      organizerId: 4,
+      category: "교육",
+      price: 50000,
+      attendees: 8,
+      maxAttendees: 10,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    },
+    {
+      id: 5,
+      title: "반려동물 입양 행사",
+      description: "새로운 가족을 찾고 있는 유기동물들을 만나볼 수 있는 입양 행사입니다.",
+      image: "https://images.unsplash.com/photo-1541364983171-a8ba01e95cfc?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+      date: "2025-06-10",
+      time: "11:00 - 16:00",
+      locationId: 5,
+      organizerId: 5,
+      category: "입양",
+      price: "무료",
+      attendees: 35,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    }
+  ];
+  
+  // 샘플 이벤트 위치 데이터
+  const sampleLocations: EventLocation[] = [
+    {
+      id: 1,
+      name: "강남 애견공원",
+      address: "서울 강남구 삼성동 159",
+      lat: "37.508796",
+      lng: "127.061359",
+      region: "서울",
+      createdAt: new Date(),
+      updatedAt: new Date()
+    },
+    {
+      id: 2,
+      name: "펫케어 센터",
+      address: "서울 서초구 서초동 1445-3",
+      lat: "37.491632",
+      lng: "127.007358",
+      region: "서울",
+      createdAt: new Date(),
+      updatedAt: new Date()
+    },
+    {
+      id: 3,
+      name: "올림픽공원",
+      address: "서울 송파구 방이동 88",
+      lat: "37.520847",
+      lng: "127.121674",
+      region: "서울",
+      createdAt: new Date(),
+      updatedAt: new Date()
+    },
+    {
+      id: 4,
+      name: "부산 반려동물 교육센터",
+      address: "부산 해운대구 우동 1411",
+      lat: "35.162844",
+      lng: "129.159608",
+      region: "부산",
+      createdAt: new Date(),
+      updatedAt: new Date()
+    },
+    {
+      id: 5,
+      name: "대구 반려동물 문화센터",
+      address: "대구 수성구 범어동 178-1",
+      lat: "35.859971",
+      lng: "128.631049",
+      region: "대구",
+      createdAt: new Date(),
+      updatedAt: new Date()
+    }
+  ];
+  
+  // 모든 이벤트 가져오기
+  app.get("/api/events", (req, res) => {
+    try {
+      // 이벤트에 위치 정보 포함
+      const eventsWithLocation = sampleEvents.map(event => {
+        const location = sampleLocations.find(loc => loc.id === event.locationId);
+        
+        // 주최자 정보 (실제로는 사용자 데이터베이스에서 가져와야 함)
+        const organizer = {
+          name: `주최자 ${event.organizerId}`,
+          avatar: `https://images.unsplash.com/photo-${1600000000000 + event.organizerId}?auto=format&fit=crop&w=100&h=100`
+        };
+        
+        return {
+          ...event,
+          location,
+          organizer
+        };
+      });
+      
+      return res.status(200).json(eventsWithLocation);
+    } catch (error) {
+      console.error("이벤트 조회 오류:", error);
+      return res.status(500).json({ 
+        message: "이벤트를 불러오는 중 오류가 발생했습니다", 
+        code: "EVENT_FETCH_ERROR" 
+      });
+    }
+  });
+  
+  // 이벤트 상세 조회
+  app.get("/api/events/:id", (req, res) => {
+    try {
+      const eventId = parseInt(req.params.id);
+      const event = sampleEvents.find(e => e.id === eventId);
+      
+      if (!event) {
+        return res.status(404).json({ 
+          message: "이벤트를 찾을 수 없습니다", 
+          code: "EVENT_NOT_FOUND" 
+        });
+      }
+      
+      const location = sampleLocations.find(loc => loc.id === event.locationId);
+      
+      // 주최자 정보
+      const organizer = {
+        name: `주최자 ${event.organizerId}`,
+        avatar: `https://images.unsplash.com/photo-${1600000000000 + event.organizerId}?auto=format&fit=crop&w=100&h=100`
+      };
+      
+      return res.status(200).json({
+        ...event,
+        location,
+        organizer
+      });
+    } catch (error) {
+      console.error("이벤트 상세 조회 오류:", error);
+      return res.status(500).json({ 
+        message: "이벤트 상세 정보를 불러오는 중 오류가 발생했습니다", 
+        code: "EVENT_DETAIL_FETCH_ERROR" 
+      });
+    }
+  });
+  
+  // 지역별 이벤트 조회
+  app.get("/api/events/region/:region", (req, res) => {
+    try {
+      const { region } = req.params;
+      
+      if (!region) {
+        return res.status(400).json({ 
+          message: "지역 정보가 필요합니다", 
+          code: "REGION_REQUIRED" 
+        });
+      }
+      
+      // 지역별 이벤트 필터링
+      const filteredEvents = sampleEvents.filter(event => {
+        const location = sampleLocations.find(loc => loc.id === event.locationId);
+        return location && location.region === region;
+      });
+      
+      // 이벤트에 위치 정보 포함
+      const eventsWithLocation = filteredEvents.map(event => {
+        const location = sampleLocations.find(loc => loc.id === event.locationId);
+        
+        // 주최자 정보
+        const organizer = {
+          name: `주최자 ${event.organizerId}`,
+          avatar: `https://images.unsplash.com/photo-${1600000000000 + event.organizerId}?auto=format&fit=crop&w=100&h=100`
+        };
+        
+        return {
+          ...event,
+          location,
+          organizer
+        };
+      });
+      
+      return res.status(200).json(eventsWithLocation);
+    } catch (error) {
+      console.error("지역별 이벤트 조회 오류:", error);
+      return res.status(500).json({ 
+        message: "지역별 이벤트를 불러오는 중 오류가 발생했습니다", 
+        code: "REGION_EVENTS_FETCH_ERROR" 
+      });
+    }
+  });
+  
+  // 카테고리별 이벤트 조회
+  app.get("/api/events/category/:category", (req, res) => {
+    try {
+      const { category } = req.params;
+      
+      if (!category) {
+        return res.status(400).json({ 
+          message: "카테고리 정보가 필요합니다", 
+          code: "CATEGORY_REQUIRED" 
+        });
+      }
+      
+      // 카테고리별 이벤트 필터링
+      const filteredEvents = sampleEvents.filter(event => event.category === category);
+      
+      // 이벤트에 위치 정보 포함
+      const eventsWithLocation = filteredEvents.map(event => {
+        const location = sampleLocations.find(loc => loc.id === event.locationId);
+        
+        // 주최자 정보
+        const organizer = {
+          name: `주최자 ${event.organizerId}`,
+          avatar: `https://images.unsplash.com/photo-${1600000000000 + event.organizerId}?auto=format&fit=crop&w=100&h=100`
+        };
+        
+        return {
+          ...event,
+          location,
+          organizer
+        };
+      });
+      
+      return res.status(200).json(eventsWithLocation);
+    } catch (error) {
+      console.error("카테고리별 이벤트 조회 오류:", error);
+      return res.status(500).json({ 
+        message: "카테고리별 이벤트를 불러오는 중 오류가 발생했습니다", 
+        code: "CATEGORY_EVENTS_FETCH_ERROR" 
+      });
+    }
+  });
   
   // 프로필 업데이트 API
   app.put("/api/user/profile", async (req, res) => {
