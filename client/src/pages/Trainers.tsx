@@ -111,10 +111,10 @@ export default function Trainers() {
         {/* 이미지 필터 제거하여 원본 이미지 표시 */}
         
         <div className="relative h-full flex flex-col justify-center px-6 md:px-10">
-          <h1 className="text-white text-xl md:text-3xl font-bold mb-2 md:mb-4 max-w-xl">
+          <h1 className="text-primary dark:text-white text-xl md:text-3xl font-bold mb-2 md:mb-4 max-w-xl bg-white/90 dark:bg-gray-800/90 p-2 rounded-lg">
             전문 반려견 훈련사를 만나보세요
           </h1>
-          <p className="text-white text-sm md:text-base max-w-xl mb-4">
+          <p className="text-gray-800 dark:text-gray-200 text-sm md:text-base max-w-xl mb-4 bg-white/90 dark:bg-gray-800/90 p-2 rounded-lg">
             경험이 풍부한 훈련사들이 당신과 반려견의 행복한 생활을 도와드립니다.
           </p>
           
