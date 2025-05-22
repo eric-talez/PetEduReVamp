@@ -301,34 +301,37 @@ export default function EventsPage() {
     <div className="container mx-auto px-4 py-6">
       {/* 배너 영역 */}
       <div className="mb-8">
-        <div className="bg-muted/30 dark:bg-slate-800/30 p-6 md:p-8 rounded-lg">
-          <div className="max-w-3xl mx-auto">
-            <h1 className="text-3xl md:text-4xl font-bold mb-4 text-primary dark:text-primary-foreground">반려동물 이벤트</h1>
-            <p className="text-gray-700 dark:text-gray-300 text-lg mb-6">
+        <div className="bg-[#f1f5f4] dark:bg-slate-900 p-6 rounded-lg">
+          <div>
+            <h1 className="text-3xl font-bold mb-2 bg-slate-100/90 dark:bg-slate-800/90 p-2 rounded inline-block">반려동물 이벤트</h1>
+            <p className="text-gray-700 dark:text-gray-300 mb-4 bg-slate-100/90 dark:bg-slate-800/90 p-2 rounded">
               다양한 반려동물 행사와 만남의 장을 찾아보세요. 
               지역별, 테마별 이벤트를 한눈에!
             </p>
             
             {/* 배너 내 검색 영역 */}
-            <div className="relative flex w-full max-w-md mb-6">
-              <Input
-                className="pl-10 pr-16 py-6 text-black dark:text-white border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800"
-                placeholder="이벤트 검색..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-500" />
+            <div className="relative flex w-full max-w-md mb-4">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-500" />
+                <Input
+                  className="pl-10 pr-24 py-2"
+                  placeholder="이벤트 검색..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
               <Button 
-                className="absolute right-0 h-full rounded-l-none"
-                type="submit"
+                className="absolute right-0 h-full rounded-l-none px-4"
               >
                 검색
               </Button>
             </div>
             
-            <div className="flex space-x-4">
+            <div className="flex">
               <Button 
                 variant="outline"
+                size="sm"
+                className="bg-white dark:bg-slate-700 text-sm"
                 onClick={() => setLocation("/events/calendar")}
               >
                 <Calendar className="h-4 w-4 mr-2" />
