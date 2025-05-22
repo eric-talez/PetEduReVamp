@@ -317,24 +317,27 @@ export default function EventsPage() {
               </p>
               
               <div className="flex space-x-2 mt-4">
-                <div className="relative max-w-md w-full">
-                  <Search className="absolute left-3 top-3 h-4 w-4 text-gray-600" />
-                  <Input
+                <div className="max-w-lg bg-white dark:bg-gray-800 rounded-lg flex items-center p-1">
+                  <div className="px-2">
+                    <Search className="h-5 w-5 text-gray-400" />
+                  </div>
+                  <input
                     id="banner-search"
-                    className="pl-10 bg-white/90 border-0 focus:ring-2 focus:ring-primary"
+                    type="text"
+                    className="bg-transparent border-0 focus:ring-0 flex-1 py-2 pl-1 text-sm placeholder:text-gray-400"
                     placeholder="이벤트 검색..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                   />
+                  <Button 
+                    variant="default"
+                    size="sm"
+                    className="mr-1"
+                    onClick={() => setSearchTerm(document.getElementById('banner-search')?.value || '')}
+                  >
+                    검색
+                  </Button>
                 </div>
-                <Button 
-                  variant="default"
-                  className="bg-primary hover:bg-primary/90 text-white font-medium"
-                  onClick={() => document.getElementById('banner-search')?.focus()}
-                >
-                  <Search className="h-4 w-4 mr-2" />
-                  검색
-                </Button>
               </div>
             </div>
           </div>
