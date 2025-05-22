@@ -319,75 +319,33 @@ export default function EventsPage() {
               다양한 반려동물 행사와 만남의 장을 찾아보세요. 지역별, 테마별 이벤트를 한눈에!
             </p>
             
-            {/* 배너 내 검색 영역 */}
-            <div className="relative flex mb-4 max-w-md">
-              <div className="flex-1 relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-500" />
-                <Input
-                  className="pl-10 pr-24"
-                  placeholder="이벤트 검색..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-                <Button 
-                  className="absolute right-0 top-0 h-full rounded-l-none"
-                >
-                  검색
-                </Button>
-              </div>
-            </div>
-            
-            <div className="flex space-x-2">
+            {/* 배너 버튼 */}
+            <div className="flex space-x-2 mt-4">
               <Button 
-                variant="outline"
-                size="sm"
-                onClick={() => setLocation("/events/calendar")}
+                variant="secondary"
+                className="bg-white/80 hover:bg-white text-primary"
+                onClick={() => document.getElementById('event-search')?.focus()}
               >
-                <Calendar className="h-4 w-4 mr-2" />
-                캘린더 보기
+                <Search className="h-4 w-4 mr-2" />
+                이벤트 찾기
               </Button>
             </div>
           </div>
         </div>
       </div>
       
-      {/* 헤더 및 검색 */}
+      {/* 필터 및 검색 */}
       <div className="mb-8">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
-          <h1 className="text-3xl font-bold mb-4 md:mb-0">
-            이벤트 찾기
-          </h1>
-          <div className="flex space-x-2">
-            <Button 
-              variant="outline" 
-              className="flex items-center"
-              onClick={() => setLocation("/events/calendar")}
-            >
-              <Calendar className="h-4 w-4 mr-2" />
-              캘린더 보기
-            </Button>
-            {isMobile && (
-              <Button 
-                variant="outline"
-                onClick={() => setShowMap(!showMap)}
-              >
-                <MapPin className="h-4 w-4 mr-2" />
-                {showMap ? "지도 숨기기" : "지도 보기"}
-              </Button>
-            )}
-          </div>
-        </div>
-        
         <div className="flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-4">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
             <Input
+              id="event-search"
               className="pl-10"
               placeholder="이벤트 검색..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
-          </div>
           
           <div className="flex space-x-2">
             <DropdownMenu>
