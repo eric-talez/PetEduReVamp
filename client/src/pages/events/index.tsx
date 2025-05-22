@@ -301,13 +301,8 @@ export default function EventsPage() {
     <div className="container mx-auto px-4 py-6">
       {/* 배너 영역 */}
       <div className="mb-8">
-        <div className="relative h-64 md:h-72 rounded-lg overflow-hidden">
-          <img 
-            src="/pet_event_banner.jpg" 
-            alt="반려동물 이벤트 배경" 
-            className="absolute w-full h-full object-cover"
-          />
-          <div className="absolute inset-0 bg-black/20 dark:bg-black/40"></div>
+        <div className="relative h-64 md:h-72 rounded-lg overflow-hidden bg-gradient-to-r from-blue-100 to-green-100 dark:from-blue-900 dark:to-green-900">
+          <div className="absolute inset-0 bg-black/10 dark:bg-black/30"></div>
           
           <div className="absolute inset-0 flex items-center">
             <div className="p-6 md:p-8">
