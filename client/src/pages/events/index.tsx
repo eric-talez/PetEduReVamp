@@ -300,9 +300,14 @@ export default function EventsPage() {
   return (
     <div className="container mx-auto px-4 py-6">
       {/* 배너 영역 */}
-      <div className="w-full mb-8 rounded-lg overflow-hidden">
-        <div className="relative h-64 md:h-80 bg-cover bg-center" style={{ backgroundImage: 'url("https://images.unsplash.com/photo-1508887631346-b7681bd4f933?ixlib=rb-4.0.3&auto=format&fit=crop&w=1500&h=400&q=80")' }}>
-          <div className="absolute inset-0 flex items-center">
+      <div className="relative mb-8 rounded-lg overflow-hidden">
+        <div className="relative h-64 md:h-80">
+          <img 
+            src="https://images.unsplash.com/photo-1508887631346-b7681bd4f933?ixlib=rb-4.0.3&auto=format&fit=crop&w=1500&h=400&q=80" 
+            alt="이벤트 배너" 
+            className="absolute inset-0 w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 z-10 flex items-center">
             <div className="px-6 md:px-10 max-w-xl">
               <h1 className="text-primary dark:text-white text-3xl md:text-4xl font-bold mb-4 bg-white/90 dark:bg-gray-800/90 p-2 rounded-lg">반려동물 이벤트</h1>
               <p className="text-gray-800 dark:text-gray-200 text-lg mb-4 bg-white/90 dark:bg-gray-800/90 p-2 rounded-lg">
