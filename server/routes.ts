@@ -152,24 +152,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     console.log("세션 확인 - 사용자:", req.session.user);
     
     if (!req.session || !req.session.user) {
-      // 실제 인증이 없는 경우 샘플 데이터로 응답 (개발 중 테스트용)
-      if (process.env.NODE_ENV === 'development') {
-        // 개발 테스트용 가짜 사용자 데이터
-        const mockUser = {
-          id: 1,
-          username: "test_user",
-          name: "테스트 사용자",
-          email: "test@example.com",
-          role: "trainer",
-          bio: "개발 중 테스트용 사용자입니다.",
-          location: "서울시 강남구",
-          avatar: "https://images.unsplash.com/photo-1543466835-00a7907e9de1?q=80&w=300&auto=format&fit=crop"
-        };
-        console.log("개발 환경 - 가상 사용자 정보 반환:", mockUser);
-        return res.status(200).json(mockUser);
-      }
-      
-      return res.status(401).json({ message: "Not authenticated" });
+      // 로그인되지 않은 사용자는 401 상태 반환
+      return res.status(401).json({ 
+        message: "인증이 필요합니다. 로그인 후 다시 시도해주세요.", 
+        code: "AUTH_REQUIRED"
+      });
     }
     
     console.log("인증된 사용자 정보 반환:", req.session.user);
@@ -213,41 +200,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // ===== User Routes =====
   
-  // 프로필 업데이트
-  app.patch("/api/users/profile", async (req, res) => {
-    try {
-      if (!req.session.user) {
-        return res.status(401).json({ message: "Not authenticated" });
-      }
-      
-      const userId = req.session.user.id;
-      const { name, email, phone, bio, location, avatar } = req.body;
-      
-      // 프로필 정보 업데이트
-      const updatedUser = await storage.updateUserProfile(userId, {
-        name,
-        email,
-        phone,
-        bio,
-        location,
-        avatar
-      });
-      
-      // 세션 업데이트
-      req.session.user = {
-        ...req.session.user,
-        name: updatedUser.name,
-        email: updatedUser.email
-      };
-      
-      // 비밀번호는 응답에서 제외
-      const { password: _, ...userWithoutPassword } = updatedUser;
-      return res.status(200).json(userWithoutPassword);
-    } catch (error) {
-      console.error("Error updating user profile:", error);
-      return res.status(500).json({ message: "Server error" });
-    }
-  });
+  // 프로필 업데이트 (legacy 엔드포인트는 제거하고 `/api/user/profile`로 통합)
   
   // Get user profile
   app.get("/api/users/:id", async (req, res) => {
