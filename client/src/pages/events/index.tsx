@@ -300,43 +300,40 @@ export default function EventsPage() {
   return (
     <div className="container mx-auto px-4 py-6">
       {/* 배너 영역 */}
-      <div className="relative mb-8 rounded-lg overflow-hidden">
-        <div className="relative h-64 md:h-80 bg-slate-200">
-          <div className="absolute inset-0 bg-gradient-to-r from-primary/30 to-accent/20"></div>
-          <div className="absolute inset-0 z-10 flex items-center">
-            <div className="px-6 md:px-10 max-w-xl">
-              <h1 className="text-primary dark:text-white text-3xl md:text-4xl font-bold mb-4 bg-white/90 dark:bg-gray-800/90 p-2 rounded-lg">반려동물 이벤트</h1>
-              <p className="text-gray-800 dark:text-gray-200 text-lg mb-4 bg-white/90 dark:bg-gray-800/90 p-2 rounded-lg">
-                다양한 반려동물 행사와 만남의 장을 찾아보세요. 
-                지역별, 테마별 이벤트를 한눈에!
-              </p>
-              
-              {/* 배너 내 검색 영역 추가 */}
-              <div className="relative flex w-full max-w-md mb-6">
-                <Input
-                  className="pl-10 pr-16 py-6 text-black dark:text-white border-2 border-white dark:border-gray-700 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm"
-                  placeholder="이벤트 검색..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-500" />
-                <Button 
-                  className="absolute right-0 h-full rounded-l-none"
-                  type="submit"
-                >
-                  검색
-                </Button>
-              </div>
-              
-              <div className="flex space-x-4">
-                <Button 
-                  className="bg-white text-primary hover:bg-gray-100"
-                  onClick={() => setLocation("/events/calendar")}
-                >
-                  <Calendar className="h-4 w-4 mr-2" />
-                  캘린더 보기
-                </Button>
-              </div>
+      <div className="mb-8">
+        <div className="bg-muted/30 dark:bg-slate-800/30 p-6 md:p-8 rounded-lg">
+          <div className="max-w-3xl mx-auto">
+            <h1 className="text-3xl md:text-4xl font-bold mb-4 text-primary dark:text-primary-foreground">반려동물 이벤트</h1>
+            <p className="text-gray-700 dark:text-gray-300 text-lg mb-6">
+              다양한 반려동물 행사와 만남의 장을 찾아보세요. 
+              지역별, 테마별 이벤트를 한눈에!
+            </p>
+            
+            {/* 배너 내 검색 영역 */}
+            <div className="relative flex w-full max-w-md mb-6">
+              <Input
+                className="pl-10 pr-16 py-6 text-black dark:text-white border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800"
+                placeholder="이벤트 검색..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-500" />
+              <Button 
+                className="absolute right-0 h-full rounded-l-none"
+                type="submit"
+              >
+                검색
+              </Button>
+            </div>
+            
+            <div className="flex space-x-4">
+              <Button 
+                variant="outline"
+                onClick={() => setLocation("/events/calendar")}
+              >
+                <Calendar className="h-4 w-4 mr-2" />
+                캘린더 보기
+              </Button>
             </div>
           </div>
         </div>
