@@ -82,3 +82,49 @@ class ErrorBoundary extends Component<Props, State> {
 }
 
 export default ErrorBoundary;
+import React from 'react';
+import { DogLoading } from './DogLoading';
+
+interface Props {
+  children: React.ReactNode;
+}
+
+interface State {
+  hasError: boolean;
+  error: Error | null;
+}
+
+export class ErrorBoundary extends React.Component<Props, State> {
+  state: State = {
+    hasError: false,
+    error: null
+  };
+
+  static getDerivedStateFromError(error: Error): State {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: Error, info: React.ErrorInfo) {
+    console.error('Error caught by boundary:', error, info);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="flex flex-col items-center justify-center min-h-[400px] p-4">
+          <DogLoading />
+          <h2 className="text-xl font-bold mt-4">앗! 문제가 발생했어요</h2>
+          <p className="text-gray-600 mt-2">잠시 후 다시 시도해주세요</p>
+          <button 
+            onClick={() => window.location.reload()}
+            className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+          >
+            페이지 새로고침
+          </button>
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
+}

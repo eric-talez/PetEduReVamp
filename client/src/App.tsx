@@ -10,9 +10,10 @@ import OfflineDetector from "./components/OfflineDetector";
 import NotFoundPage from "./components/NotFoundPage";
 
 // Pages
-import Home from "./pages/Home";
-import Dashboard from "./pages/Dashboard";
-import CoursesPage from "./pages/courses/index";
+import { DogLoading } from './components/DogLoading'; // Import DogLoading
+const Home = lazy(() => import('./pages/Home'));
+const ShopIndex = lazy(() => import("./pages/shop/index")); // 쇼핑 페이지 메인 컴포넌트 (단일 진입점)
+const CoursesPage = lazy(() => import("./pages/courses/index"));
 import CourseDetail from "./pages/course/index"; // 강의 상세 페이지
 import TrainersPage from "./pages/trainers/index";
 import InstitutesPage from "./pages/institutes/index";
@@ -26,7 +27,6 @@ import MessagesPage from "./pages/messages/index";
 import NotificationsPage from "./pages/notifications/index";
 // 쇼핑 페이지 - 통합 경로 사용
 import CartPage from "@/pages/Cart"; // 장바구니 페이지
-import ShopIndex from "./pages/shop/index"; // 쇼핑 페이지 메인 컴포넌트 (단일 진입점)
 import ProductDetailPage from "./pages/shop/product"; // 상품 상세 페이지
 
 import VideoTrainingPage from "./pages/video-training/index";
@@ -66,6 +66,12 @@ const ContactPage = lazy(() => import('./pages/help/contact'));
 // Auth Pages
 import LoginPage from "./pages/auth/login";
 import RegisterPage from "./pages/auth/login"; // 임시로 로그인 페이지를 재사용
+
+const LoadingFallback = () => (
+  <div className="flex justify-center items-center min-h-[400px]">
+    <DogLoading />
+  </div>
+);
 import ShopLoginRequiredPage from "./pages/shop-login-required";
 
 console.log('App initialized - CourseDetail component:', CourseDetail);
@@ -90,7 +96,13 @@ function AuthenticatedRoutesContent() {
       <Route path="/dashboard">
         {() => checkAccess(['pet-owner', 'trainer', 'institute-admin', 'admin']) ? <Dashboard /> : window.location.href = '/'}
       </Route>
-      <Route path="/courses" component={CoursesPage} />
+      <Route path="/courses">
+        {() => (
+          <Suspense fallback={<LoadingFallback />}>
+            <CoursesPage />
+          </Suspense>
+        )}
+      </Route>
       <Route path="/course/:id" component={CourseDetail} />
       <Route path="/video-training" component={VideoTrainingPage} />
       <Route path="/video-training/:id" component={VideoTrainingDetailPage} />
@@ -178,18 +190,22 @@ function AuthenticatedRoutesContent() {
       </Route>
       <Route path="/messages" component={MessagesPage} />
       <Route path="/notifications" component={NotificationsPage} />
-      
+
       {/* 인증된 사용자의 쇼핑 관련 라우트 */}
       <Route path="/shop">
         {() => {
           console.log("인증된 사용자가 /shop 경로에 접근 - 단일 컴포넌트로 연결");
-          return <ShopIndex />;
+          return (
+            <Suspense fallback={<LoadingFallback />}>
+              <ShopIndex />
+            </Suspense>
+          );
         }}
       </Route>
-      
+
       {/* 쇼핑 카트 접근은 인증된 사용자만 가능 */}
       <Route path="/shop/cart" component={CartPage} />
-      
+
       {/* 상품 상세 페이지 */}
       <Route path="/shop/product/:id">
         {(params) => {
@@ -197,15 +213,19 @@ function AuthenticatedRoutesContent() {
           return <ProductDetailPage />;
         }}
       </Route>
-      
+
       {/* 추가 - 모든 쇼핑 관련 URL 처리 (조금 더 구체적인 경로는 위에서 처리) */}
       <Route path="/shop/*">
         {() => {
           console.log("인증된 사용자가 /shop/* 경로에 접근");
-          return <ShopIndex />;
+          return (
+            <Suspense fallback={<LoadingFallback />}>
+              <ShopIndex />
+            </Suspense>
+          );
         }}
       </Route>
-      
+
       {/* 쇼핑 로그인 요구 페이지 (인증된 사용자는 /shop으로 리다이렉트) */}
       <Route path="/shop-login-required">
         {() => {
@@ -219,7 +239,7 @@ function AuthenticatedRoutesContent() {
       <Route path="/events" component={EventsPage} />
       <Route path="/events/calendar" component={EventCalendarPage} />
       <Route path="/ai-analysis" component={AIAnalysisPage} />
-      
+
       <Route path="/events/:id">
         {() => (
           <Suspense fallback={<div className="p-8 text-center">이벤트 상세 페이지 로딩 중...</div>}>
@@ -273,7 +293,13 @@ function UnauthenticatedRoutesContent() {
       <Route path="/auth/register" component={RegisterPage} />
 
       <Route path="/course/:id" component={CourseDetail} />
-      <Route path="/courses" component={CoursesPage} />
+       <Route path="/courses">
+        {() => (
+          <Suspense fallback={<LoadingFallback />}>
+            <CoursesPage />
+          </Suspense>
+        )}
+      </Route>
       <Route path="/video-training/:id" component={VideoTrainingDetailPage} />
       <Route path="/video-training" component={VideoTrainingPage} />
 
@@ -357,7 +383,11 @@ function UnauthenticatedRoutesContent() {
       <Route path="/shop">
         {() => {
           console.log("비인증 사용자가 /shop 경로에 접근 - 단일 진입점으로 연결");
-          return <ShopIndex />;
+          return (
+            <Suspense fallback={<LoadingFallback />}>
+              <ShopIndex />
+            </Suspense>
+          );
         }}
       </Route>
 
@@ -368,19 +398,23 @@ function UnauthenticatedRoutesContent() {
           return <RedirectHandler to="/auth" />;
         }}
       </Route>
-      
+
       <Route path="/shop/product/:id">
         {(params) => {
           console.log("비인증 사용자가 상품 상세 페이지 접근:", params.id);
           return <ProductDetailPage />;
         }}
       </Route>
-      
+
       {/* 모든 쇼핑 관련 URL 통합 처리 */}
       <Route path="/shop/*">
         {() => {
           console.log("비인증 사용자가 /shop/* 경로에 접근");
-          return <ShopIndex />;
+          return (
+            <Suspense fallback={<LoadingFallback />}>
+              <ShopIndex />
+            </Suspense>
+          );
         }}
       </Route>
 
@@ -411,8 +445,14 @@ export default function App() {
       <AppLayout>
         <Switch>
           {/* 홈 페이지는 인증 상태에 관계없이 동일한 컴포넌트 사용 */}
-          <Route path="/" component={Home} />
-          
+           <Route path="/">
+            {() => (
+              <Suspense fallback={<LoadingFallback />}>
+                <Home />
+              </Suspense>
+            )}
+          </Route>
+
           {/* 다른 경로는 인증 상태에 따라 다른 컴포넌트 사용 */}
           {auth.isAuthenticated ? (
             <AuthenticatedRoutesContent />
