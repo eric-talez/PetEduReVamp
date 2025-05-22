@@ -1,10 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "wouter";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
-import { Avatar } from "@/components/ui/Avatar";
-import { Search, Heart, MessageSquare, Share2, BookmarkPlus, Filter } from "lucide-react";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/Avatar";
+import { Send, Search, Heart, MessageSquare, Share2, BookmarkPlus, Filter } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 export default function Community() {
@@ -344,11 +344,13 @@ export default function Community() {
               <Card key={post.id} hover className="overflow-hidden border border-gray-100 dark:border-gray-700">
                 <div className="p-5">
                   <div className="flex items-center mb-4">
-                    <Avatar
-                      src={post.author.avatar}
-                      alt={post.author.name}
-                      className="w-10 h-10"
-                    />
+                    <Avatar className="w-10 h-10">
+                      <AvatarImage 
+                        src={post.author.avatar}
+                        alt={post.author.name}
+                      />
+                      <AvatarFallback>{post.author.name.charAt(0)}</AvatarFallback>
+                    </Avatar>
                     
                     <div className="ml-3">
                       <div className="flex items-center">
