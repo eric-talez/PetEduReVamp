@@ -404,10 +404,10 @@ export default function VideoCallPage() {
         {/* 이미지 필터 제거하여 원본 이미지 표시 */}
         
         <div className="relative h-full flex flex-col justify-center px-6 md:px-10 container mx-auto">
-          <h1 className="text-white text-xl md:text-3xl font-bold mb-2 md:mb-4 max-w-xl">
+          <h1 className="text-primary dark:text-white text-xl md:text-3xl font-bold mb-2 md:mb-4 max-w-xl bg-white/90 dark:bg-gray-800/90 p-2 rounded-lg">
             실시간 화상 수업
           </h1>
-          <p className="text-white text-sm md:text-base max-w-xl mb-4">
+          <p className="text-gray-800 dark:text-gray-200 text-sm md:text-base max-w-xl mb-4 bg-white/90 dark:bg-gray-800/90 p-2 rounded-lg">
             자격을 갖춘 전문 훈련사와 함께 실시간으로 소통하며 맞춤형 훈련 지도를 받으세요. 1:1 또는 그룹 수업 가능합니다.
           </p>
           
