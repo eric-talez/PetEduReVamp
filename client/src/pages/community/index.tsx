@@ -3,7 +3,7 @@ import { Link } from "wouter";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar } from "@/components/ui/avatar";
 import { Send, Search, Heart, MessageSquare, Share2, BookmarkPlus, Filter } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -344,13 +344,11 @@ export default function Community() {
               <Card key={post.id} hover className="overflow-hidden border border-gray-100 dark:border-gray-700">
                 <div className="p-5">
                   <div className="flex items-center mb-4">
-                    <Avatar className="w-10 h-10">
-                      <AvatarImage 
-                        src={post.author.avatar}
-                        alt={post.author.name}
-                      />
-                      <AvatarFallback>{post.author.name.charAt(0)}</AvatarFallback>
-                    </Avatar>
+                    <Avatar 
+                      className="w-10 h-10"
+                      src={post.author.avatar}
+                      fallback={post.author.name.charAt(0)}
+                    />
                     
                     <div className="ml-3">
                       <div className="flex items-center">
@@ -570,13 +568,11 @@ export default function Community() {
             <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">활발한 훈련사</h3>
             <div className="space-y-4">
               <div className="flex items-center">
-                <Avatar className="w-9 h-9">
-                  <AvatarImage
-                    src="https://images.unsplash.com/photo-1607990281513-2c110a25bd8c?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100"
-                    alt="김훈련 트레이너"
-                  />
-                  <AvatarFallback>김</AvatarFallback>
-                </Avatar>
+                <Avatar 
+                  className="w-9 h-9"
+                  src="https://images.unsplash.com/photo-1607990281513-2c110a25bd8c?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100"
+                  fallback="김"
+                />
                 <div className="ml-3">
                   <h4 className="text-sm font-medium text-gray-800 dark:text-white">김훈련 트레이너</h4>
                   <p className="text-xs text-gray-500 dark:text-gray-400">게시물 47개, 댓글 128개</p>
@@ -587,9 +583,9 @@ export default function Community() {
               </div>
               <div className="flex items-center">
                 <Avatar 
-                  src="https://images.unsplash.com/photo-1599566150163-29194dcaad36?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100" 
-                  alt="최훈련 트레이너" 
                   className="w-9 h-9"
+                  src="https://images.unsplash.com/photo-1599566150163-29194dcaad36?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100"
+                  fallback="최"
                 />
                 <div className="ml-3">
                   <h4 className="text-sm font-medium text-gray-800 dark:text-white">최훈련 트레이너</h4>
