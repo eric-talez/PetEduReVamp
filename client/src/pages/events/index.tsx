@@ -301,12 +301,21 @@ export default function EventsPage() {
     <div className="container mx-auto px-4 py-6">
       {/* 배너 영역 */}
       <div className="mb-8">
-        <div className="bg-muted p-6 rounded-lg relative overflow-hidden">
-          {/* 배경 이미지를 배너 내부에 넣습니다 */}
-          <div className="absolute inset-0 bg-blue-50 dark:bg-slate-900"></div>
-          <div className="relative z-10">
-            <h1 className="text-3xl font-bold mb-2 text-primary dark:text-primary">반려동물 이벤트</h1>
-            <p className="text-gray-700 dark:text-gray-300 mb-4">
+        <div className="rounded-lg relative overflow-hidden">
+          {/* 배경 이미지 */}
+          <div className="absolute inset-0">
+            <img 
+              src="https://i.imgur.com/MGCN7Yx.jpg" 
+              alt="반려동물 이벤트 배경" 
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-black/20 dark:bg-black/40"></div>
+          </div>
+          
+          {/* 콘텐츠 영역 */}
+          <div className="relative z-10 p-6">
+            <h1 className="text-3xl font-bold mb-2 text-white dark:text-white bg-primary/80 dark:bg-primary/80 p-2 rounded inline-block">반려동물 이벤트</h1>
+            <p className="text-white dark:text-white mb-4 bg-black/30 dark:bg-black/50 p-2 rounded max-w-lg">
               다양한 반려동물 행사와 만남의 장을 찾아보세요. 지역별, 테마별 이벤트를 한눈에!
             </p>
             
