@@ -227,14 +227,26 @@ export default function EventsPage() {
   }
   
   // 변환된 이벤트 아이템 타입 (UI에 표시되는 형식)
-  interface TransformedEventItem extends Omit<EventResponseItem, 'maxAttendees'> {
+  interface TransformedEventItem {
+    id: number;
+    title: string;
+    description: string;
+    image: string | null;
+    date: string;
+    time: string;
     location: EventLocation;
     organizer: {
       name: string;
       avatar: string;
     };
-    maxAttendees?: number;
+    category: string;
+    price: number | '무료';
     attendees: number;
+    maxAttendees?: number;
+    createdAt: string;
+    updatedAt: string;
+    locationId: number;
+    organizerId: number;
   }
   
   interface PaginatedResponse {
@@ -248,7 +260,10 @@ export default function EventsPage() {
   }
   
   // API에서 이벤트 데이터 불러오기 (페이지네이션 지원)
-  const { data: eventsResponse, isLoading, error } = useQuery<PaginatedResponse>({
+  const { data: eventsResponse, isLoading, error } = useQuery<PaginatedResponse, Error, { 
+    items: TransformedEventItem[], 
+    meta: { totalItems: number, currentPage: number, totalPages: number, itemsPerPage: number } 
+  }>({
     queryKey: ['/api/events', { page: currentPage, limit: itemsPerPage }],
     staleTime: 5 * 60 * 1000, // 5분간 캐시 유지
     select: (data) => {
@@ -268,7 +283,7 @@ export default function EventsPage() {
       }
       
       // 이벤트 데이터 변환
-      const transformedItems = data.items.map((event: EventResponseItem) => ({
+      const transformedItems: TransformedEventItem[] = data.items.map((event: EventResponseItem) => ({
         ...event,
         // 위치 정보 형식 맞추기
         location: {
