@@ -94,9 +94,9 @@ export class MemStorage implements IStorage {
   private institutes: Map<number, any>;
   private trainers: Map<number, any>;
   private enrollments: Map<number, any>;
-  private events: Map<number, Event>;
-  private eventLocations: Map<number, EventLocation>;
-  private eventAttendances: Map<number, EventAttendance[]>;
+  private events: Map<number, Event> = new Map();
+  private eventLocations: Map<number, EventLocation> = new Map();
+  private eventAttendances: Map<number, EventAttendance[]> = new Map();
   
   currentId: number;
   private policyId: number;
@@ -108,6 +108,9 @@ export class MemStorage implements IStorage {
   private instituteId: number;
   private trainerId: number;
   private enrollmentId: number;
+  private eventId: number = 1;
+  private eventLocationId: number = 1;
+  private eventAttendanceId: number = 1;
 
   constructor() {
     this.users = new Map();
@@ -121,6 +124,9 @@ export class MemStorage implements IStorage {
     this.institutes = new Map();
     this.trainers = new Map();
     this.enrollments = new Map();
+    this.events = new Map();
+    this.eventLocations = new Map();
+    this.eventAttendances = new Map();
     
     this.currentId = 1;
     this.policyId = 1;
@@ -132,6 +138,8 @@ export class MemStorage implements IStorage {
     this.instituteId = 1;
     this.trainerId = 1;
     this.enrollmentId = 1;
+    this.eventId = 1;
+    this.eventLocationId = 1;
     
     // 샘플 데이터 초기화
     this.initSampleData();
