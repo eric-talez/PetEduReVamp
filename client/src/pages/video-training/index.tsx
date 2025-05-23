@@ -31,6 +31,15 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useLocation } from "wouter";
 
+interface CurriculumItem {
+  id: number;
+  title: string;
+  duration: string;
+  description: string;
+  price: number;
+  isPurchased: boolean;
+}
+
 interface Video {
   id: number;
   title: string;
@@ -43,11 +52,13 @@ interface Video {
   views: number;
   rating: number;
   reviews: number;
+  price: number; // 전체 강의 가격
   trainer: {
     name: string;
     avatar: string;
   };
   tags: string[];
+  curriculum: CurriculumItem[]; // 커리큘럼 항목 목록
 }
 
 export default function VideoTraining() {
