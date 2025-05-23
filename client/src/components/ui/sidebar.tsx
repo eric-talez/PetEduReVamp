@@ -71,7 +71,21 @@ const SidebarProvider = React.forwardRef<
     },
     ref
   ) => {
-    const isMobile = useIsMobile()
+    // 미디어 쿼리를 사용하여 직접 모바일 여부 확인
+    const [isMobile, setIsMobile] = React.useState(
+      typeof window !== "undefined" ? window.innerWidth < 768 : false
+    )
+    
+    React.useEffect(() => {
+      if (typeof window === "undefined") return
+      
+      const checkMobile = () => {
+        setIsMobile(window.innerWidth < 768)
+      }
+      
+      window.addEventListener("resize", checkMobile)
+      return () => window.removeEventListener("resize", checkMobile)
+    }, [])
     const [openMobile, setOpenMobile] = React.useState(false)
 
     // This is the internal state of the sidebar.
