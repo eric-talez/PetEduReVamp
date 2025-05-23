@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -84,28 +84,55 @@ export default function VideoTraining() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   
-  // 영상 구매 함수
-  const handlePurchaseItem = (videoId: number, itemId: number, price: number) => {
-    // 실제 구현에서는 API를 호출하여 결제 처리를 진행
-    const newPurchasedItems = [...purchasedItems, {videoId, itemId}];
-    setPurchasedItems(newPurchasedItems);
-    
-    // 로컬 스토리지에 구매 정보 저장
-    localStorage.setItem('purchasedVideoItems', JSON.stringify(newPurchasedItems));
-    
-    toast({
-      title: "구매 완료",
-      description: `${price.toLocaleString()}원 상당의 강의를 구매했습니다.`,
-    });
+  // 직접 함수 정의로 순환 참조 문제 해결
+  const checkItemPurchased = (videoId: number, itemId: number, items: {videoId: number, itemId: number}[]) => {
+    return items.some(item => item.videoId === videoId && item.itemId === itemId);
   };
   
-  // 구매 여부 확인 함수
+  // 영상 구매 함수 - useCallback 사용하지 않고 직접 정의
+  const handlePurchaseItem = (videoId: number, itemId: number, price: number) => {
+    console.log("구매 처리: ", videoId, itemId, price);
+    
+    try {
+      // 이미 구매한 항목인지 체크
+      if (checkItemPurchased(videoId, itemId, purchasedItems)) {
+        toast({
+          title: "이미 구매함",
+          description: "이미 구매한 강의입니다.",
+        });
+        return;
+      }
+      
+      // 실제 구현에서는 API를 호출하여 결제 처리를 진행
+      const newPurchasedItems = [...purchasedItems, {videoId, itemId}];
+      setPurchasedItems(newPurchasedItems);
+      
+      // 로컬 스토리지에 구매 정보 저장
+      localStorage.setItem('purchasedVideoItems', JSON.stringify(newPurchasedItems));
+      
+      toast({
+        title: "구매 완료",
+        description: `${price.toLocaleString()}원 상당의 강의를 구매했습니다.`,
+      });
+    } catch (error) {
+      console.error("구매 처리 중 오류:", error);
+      toast({
+        title: "구매 실패",
+        description: "강의 구매 중 오류가 발생했습니다.",
+        variant: "destructive"
+      });
+    }
+  };
+  
+  // 구매 여부 확인 함수 - useCallback 사용하지 않고 직접 정의
   const isItemPurchased = (videoId: number, itemId: number) => {
-    return purchasedItems.some(item => item.videoId === videoId && item.itemId === itemId);
+    return checkItemPurchased(videoId, itemId, purchasedItems);
   };
   
   // 로그인 상태에 따라 구매 처리
-  const handlePurchaseClick = (videoId: number, itemId: number, price: number) => {
+  const handlePurchaseClick = useCallback((videoId: number, itemId: number, price: number) => {
+    console.log("구매 버튼 클릭:", videoId, itemId, price);
+    
     // 로그인 상태 확인 (버튼에 disabled 속성이 있지만, 추가 안전장치로 처리)
     if (!isAuthenticated) {
       toast({
@@ -118,7 +145,7 @@ export default function VideoTraining() {
     
     // 구매 처리
     handlePurchaseItem(videoId, itemId, price);
-  };
+  }, [isAuthenticated, toast, handlePurchaseItem]);
   
   // 미리보기 시작 함수
   const handleStartPreview = (videoId: number, itemId: number) => {
