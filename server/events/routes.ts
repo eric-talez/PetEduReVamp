@@ -79,8 +79,7 @@ export function registerEventRoutes(app: Express) {
       
       const newEvent = await storage.createEvent({
         ...eventData,
-        organizerId,
-        attendees: 0
+        organizerId
       });
       
       return res.status(201).json(newEvent);
@@ -124,7 +123,7 @@ export function registerEventRoutes(app: Express) {
       }
       
       // 참가 인원 제한 체크
-      if (event.maxAttendees && event.attendees >= event.maxAttendees) {
+      if (event.maxAttendees && (event.attendees || 0) >= event.maxAttendees) {
         return res.status(400).json({ 
           message: "이미 참가 인원이 마감되었습니다", 
           code: "EVENT_FULL" 

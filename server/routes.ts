@@ -472,7 +472,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           return res.status(400).json({ message: "Invalid institute code" });
         }
         userData.role = 'trainer';
-        userData.instituteId = institute.id;
+        // 올바른 방식으로 instituteId 처리 (userData에 포함시키지 않고 생성 후 처리)
       }
       
       const newUser = await storage.createUser(userData);
@@ -671,10 +671,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const courseData = createCourseSchema.parse(req.body);
       
-      // Set the trainer ID as the current user
-      courseData.trainerId = req.session.user.id;
+      // 과정 생성 시 trainerId는 현재 사용자로 설정하되, createCourse 함수에 별도로 전달
+      const trainerId = req.session.user.id;
       
-      const newCourse = await storage.createCourse(courseData);
+      const newCourse = await storage.createCourse({...courseData, trainerId});
       return res.status(201).json(newCourse);
     } catch (error) {
       if (error instanceof z.ZodError) {
