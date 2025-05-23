@@ -1184,10 +1184,24 @@ export default function VideoTraining() {
                                     variant="default"
                                     className="flex items-center gap-1"
                                     onClick={() => {
-                                      console.log("구매 버튼 클릭: 직접 함수 호출");
-                                      // 직접 구매 함수 호출
+                                      console.log("구매 버튼 클릭: 직접 함수 호출", selectedVideo?.id, item.id, item.price);
+                                      
+                                      // 현재 선택된 비디오 정보가 없으면 오류 메시지 표시
+                                      if (!selectedVideo) {
+                                        toast({
+                                          title: "오류 발생",
+                                          description: "선택된 강의 정보를 찾을 수 없습니다.",
+                                          variant: "destructive",
+                                        });
+                                        return;
+                                      }
+                                      
+                                      // 로그인 상태 확인
                                       if (isAuthenticated) {
-                                        handlePurchaseItem(selectedVideo.id, item.id, item.price);
+                                        // alert로 구매 확인 메시지 표시 (개발 디버깅용)
+                                        if (confirm(`${item.title} 강의를 ${item.price.toLocaleString()}원에 구매하시겠습니까?`)) {
+                                          handlePurchaseItem(selectedVideo.id, item.id, item.price);
+                                        }
                                       } else {
                                         toast({
                                           title: "로그인 필요",
