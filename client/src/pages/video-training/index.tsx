@@ -376,11 +376,46 @@ export default function VideoTraining() {
       views: 7800,
       rating: 4.7,
       reviews: 145,
+      price: 32000, // 전체 강의 가격
       trainer: {
         name: "박민첩",
         avatar: "https://images.unsplash.com/photo-1548535537-3cfaf1fc327c?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&h=200",
       },
       tags: ["어질리티", "운동", "활동성"],
+      curriculum: [
+        {
+          id: 601,
+          title: "어질리티의 이해",
+          duration: "5:30",
+          description: "어질리티 훈련의 개념과 목적, 필요한 준비물에 대해 알아봅니다.",
+          price: 8000,
+          isPurchased: false
+        },
+        {
+          id: 602,
+          title: "기본 장비 소개",
+          duration: "6:15",
+          description: "어질리티 훈련에 사용되는 다양한 장비와 그 용도를 배웁니다.",
+          price: 7000,
+          isPurchased: false
+        },
+        {
+          id: 603,
+          title: "기초 장애물 훈련",
+          duration: "8:25",
+          description: "허들, 터널 등 기초 장애물을 통과하는 훈련 방법을 배웁니다.",
+          price: 10000,
+          isPurchased: false
+        },
+        {
+          id: 604,
+          title: "코스 완주 훈련",
+          duration: "5:30",
+          description: "여러 장애물을 연결한 간단한 코스를 완주하는 훈련 방법을 배웁니다.",
+          price: 9000,
+          isPurchased: false
+        }
+      ]
     },
     {
       id: 7,
@@ -394,11 +429,46 @@ export default function VideoTraining() {
       views: 11300,
       rating: 4.8,
       reviews: 265,
+      price: 28000, // 전체 강의 가격
       trainer: {
         name: "최행동",
         avatar: "https://images.unsplash.com/photo-1599566150163-29194dcaad36?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&h=200",
       },
       tags: ["짖음", "소음", "이웃 민원"],
+      curriculum: [
+        {
+          id: 701,
+          title: "짖음 행동의 원인",
+          duration: "5:40",
+          description: "반려견이 짖는 다양한 원인과 각 원인별 특징을 알아봅니다.",
+          price: 7000,
+          isPurchased: false
+        },
+        {
+          id: 702,
+          title: "상황별 대처 방법",
+          duration: "7:15",
+          description: "다양한 상황에서의 짖음 행동에 대한 효과적인 대처법을 배웁니다.",
+          price: 8000,
+          isPurchased: false
+        },
+        {
+          id: 703,
+          title: "긍정적 강화 훈련법",
+          duration: "5:25",
+          description: "짖음 행동을 개선하기 위한 긍정적 강화 훈련 방법을 배웁니다.",
+          price: 7000,
+          isPurchased: false
+        },
+        {
+          id: 704,
+          title: "이웃과의 관계 관리",
+          duration: "3:30",
+          description: "반려견 짖음으로 인한 이웃과의 갈등을 관리하는 방법을 알아봅니다.",
+          price: 6000,
+          isPurchased: false
+        }
+      ]
     },
     {
       id: 8,
@@ -412,11 +482,38 @@ export default function VideoTraining() {
       views: 6500,
       rating: 4.5,
       reviews: 120,
+      price: 0, // 무료 강의
       trainer: {
         name: "박후각",
         avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&h=200",
       },
       tags: ["노즈워크", "후각", "지능 발달"],
+      curriculum: [
+        {
+          id: 801,
+          title: "노즈워크의 이해",
+          duration: "4:15",
+          description: "노즈워크의 개념과 반려견에게 주는 이점에 대해 알아봅니다.",
+          price: 0,
+          isPurchased: true
+        },
+        {
+          id: 802,
+          title: "기초 노즈워크 훈련",
+          duration: "6:20",
+          description: "집에서 간단하게 시작할 수 있는 기초 노즈워크 훈련 방법을 배웁니다.",
+          price: 0,
+          isPurchased: true
+        },
+        {
+          id: 803,
+          title: "중급 노즈워크 활동",
+          duration: "6:55",
+          description: "난이도를 높인 중급 노즈워크 활동과 게임을 통해 반려견의 능력을 향상시킵니다.",
+          price: 0,
+          isPurchased: true
+        }
+      ]
     },
   ];
 
