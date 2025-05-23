@@ -95,6 +95,20 @@ export default function VideoTraining() {
     return purchasedItems.some(item => item.videoId === videoId && item.itemId === itemId);
   };
   
+  // 로그인 상태에 따라 구매 처리
+  const handlePurchaseClick = (videoId: number, itemId: number, price: number) => {
+    if (!isAuthenticated) {
+      toast({
+        title: "로그인 필요",
+        description: "강의를 구매하려면 로그인이 필요합니다.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    handlePurchaseItem(videoId, itemId, price);
+  };
+  
   // 미리보기 시작 함수
   const handleStartPreview = (videoId: number, itemId: number) => {
     setPreviewItem({videoId, itemId});
@@ -1117,8 +1131,7 @@ export default function VideoTraining() {
                                     size="sm"
                                     variant="default"
                                     className="flex items-center gap-1"
-                                    onClick={() => handlePurchaseItem(selectedVideo.id, item.id, item.price)}
-                                    disabled={!isAuthenticated}
+                                    onClick={() => handlePurchaseClick(selectedVideo.id, item.id, item.price)}
                                   >
                                     {item.price.toLocaleString()}원 구매
                                   </Button>
