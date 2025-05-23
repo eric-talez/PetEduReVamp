@@ -19,6 +19,7 @@ import {
   Subtitles
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/use-toast";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -71,8 +72,25 @@ export default function VideoTraining() {
   const [showPremiumAlert, setShowPremiumAlert] = useState(false);
   const [previewEnded, setPreviewEnded] = useState(false);
   const [elapsedTime, setElapsedTime] = useState(0);
+  const [purchasedItems, setPurchasedItems] = useState<{videoId: number, itemId: number}[]>([]);
   const { isAuthenticated } = useAuth();
   const [, setLocation] = useLocation();
+  const { toast } = useToast();
+  
+  // 영상 구매 함수
+  const handlePurchaseItem = (videoId: number, itemId: number, price: number) => {
+    // 실제 구현에서는 API를 호출하여 결제 처리를 진행
+    setPurchasedItems(prev => [...prev, {videoId, itemId}]);
+    toast({
+      title: "구매 완료",
+      description: `${price.toLocaleString()}원 상당의 강의를 구매했습니다.`,
+    });
+  };
+  
+  // 구매 여부 확인 함수
+  const isItemPurchased = (videoId: number, itemId: number) => {
+    return purchasedItems.some(item => item.videoId === videoId && item.itemId === itemId);
+  };
   
   // 비디오 플레이어 관련 상태
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -117,11 +135,38 @@ export default function VideoTraining() {
       views: 12500,
       rating: 4.8,
       reviews: 342,
+      price: 0, // 전체 강의 가격
       trainer: {
         name: "김훈련",
         avatar: "https://robohash.org/trainer-kim?set=set4&size=200x200&bgset=bg1",
       },
       tags: ["기본 명령어", "입문", "누구나"],
+      curriculum: [
+        {
+          id: 101,
+          title: "기본 원리 이해하기",
+          duration: "5:30",
+          description: "반려견 훈련의 기본 원리와 긍정적 강화 훈련법에 대해 알아봅니다.",
+          price: 0,
+          isPurchased: true
+        },
+        {
+          id: 102,
+          title: "앉아 명령 훈련하기",
+          duration: "4:45",
+          description: "반려견에게 '앉아' 명령을 효과적으로 가르치는 방법을 배웁니다.",
+          price: 0,
+          isPurchased: true
+        },
+        {
+          id: 103,
+          title: "엎드려 명령 훈련하기",
+          duration: "5:05",
+          description: "반려견에게 '엎드려' 명령을 단계적으로 가르치는 방법을 배웁니다.",
+          price: 0,
+          isPurchased: true
+        }
+      ]
     },
     {
       id: 2,
@@ -135,11 +180,46 @@ export default function VideoTraining() {
       views: 8700,
       rating: 4.7,
       reviews: 215,
+      price: 29000, // 전체 강의 가격
       trainer: {
         name: "이사회",
         avatar: "https://robohash.org/trainer-lee?set=set4&size=200x200&bgset=bg1",
       },
       tags: ["사회화", "만남", "행동 교정"],
+      curriculum: [
+        {
+          id: 201,
+          title: "사회화의 중요성 이해하기",
+          duration: "6:15",
+          description: "강아지 사회화가 중요한 이유와 적절한 시기에 대해 알아봅니다.",
+          price: 8000,
+          isPurchased: false
+        },
+        {
+          id: 202,
+          title: "첫 만남 준비하기",
+          duration: "8:30",
+          description: "다른 강아지와의 첫 만남을 위한 준비와 주의사항을 설명합니다.",
+          price: 10000,
+          isPurchased: false
+        },
+        {
+          id: 203,
+          title: "사회화 장소 선택하기",
+          duration: "5:20",
+          description: "안전하고 효과적인 사회화를 위한 장소 선택 방법에 대해 알아봅니다.",
+          price: 6000,
+          isPurchased: false
+        },
+        {
+          id: 204,
+          title: "문제 행동 대처하기",
+          duration: "8:40",
+          description: "사회화 과정에서 발생할 수 있는 문제 행동과 해결 방법을 배웁니다.",
+          price: 12000,
+          isPurchased: false
+        }
+      ]
     },
     {
       id: 3,
@@ -153,11 +233,38 @@ export default function VideoTraining() {
       views: 15800,
       rating: 4.9,
       reviews: 420,
+      price: 0, // 무료 강의
       trainer: {
         name: "이산책",
         avatar: "https://robohash.org/trainer-walk?set=set4&size=200x200&bgset=bg1",
       },
       tags: ["산책", "끌기", "리드 훈련"],
+      curriculum: [
+        {
+          id: 301,
+          title: "산책 리드 사용하기",
+          duration: "6:20",
+          description: "올바른 산책 리드 선택과 사용법에 대해 알아봅니다.",
+          price: 0,
+          isPurchased: true
+        },
+        {
+          id: 302,
+          title: "끌기 행동의 원인 이해하기",
+          duration: "5:10",
+          description: "반려견이 산책 중 끌기 행동을 하는 원인과 심리를 분석합니다.",
+          price: 0,
+          isPurchased: true
+        },
+        {
+          id: 303,
+          title: "효과적인 교정 방법",
+          duration: "7:40",
+          description: "끌기 행동을 효과적으로 교정하는 훈련 방법을 단계별로 배웁니다.",
+          price: 0,
+          isPurchased: true
+        }
+      ]
     },
     {
       id: 4,
@@ -171,11 +278,46 @@ export default function VideoTraining() {
       views: 9200,
       rating: 4.8,
       reviews: 178,
+      price: 35000, // 전체 강의 가격
       trainer: {
         name: "최행동",
         avatar: "https://images.unsplash.com/photo-1599566150163-29194dcaad36?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&h=200",
       },
       tags: ["분리불안", "심리", "행동 교정"],
+      curriculum: [
+        {
+          id: 401,
+          title: "분리불안의 이해",
+          duration: "7:15",
+          description: "반려견 분리불안의 원인과 증상에 대해 심층적으로 알아봅니다.",
+          price: 9000,
+          isPurchased: false
+        },
+        {
+          id: 402,
+          title: "분리불안 진단하기",
+          duration: "6:20",
+          description: "내 반려견의 분리불안 정도를 진단하는 방법을 배웁니다.",
+          price: 8000,
+          isPurchased: false
+        },
+        {
+          id: 403,
+          title: "단계별 치료 접근법",
+          duration: "8:50",
+          description: "분리불안 완화를 위한 효과적인 단계별 접근법을 알아봅니다.",
+          price: 10000,
+          isPurchased: false
+        },
+        {
+          id: 404,
+          title: "환경 조성과 일상 관리",
+          duration: "6:10",
+          description: "분리불안을 줄이는 환경 조성과 일상 관리 방법을 배웁니다.",
+          price: 8000,
+          isPurchased: false
+        }
+      ]
     },
     {
       id: 5,
@@ -189,11 +331,38 @@ export default function VideoTraining() {
       views: 18400,
       rating: 4.6,
       reviews: 310,
+      price: 0, // 무료 강의
       trainer: {
         name: "박재미",
         avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&h=200",
       },
       tags: ["트릭", "하이파이브", "즐거운 훈련"],
+      curriculum: [
+        {
+          id: 501,
+          title: "트릭 훈련의 중요성",
+          duration: "3:25",
+          description: "반려견과의 유대감을 강화하는 트릭 훈련의 중요성을 알아봅니다.",
+          price: 0,
+          isPurchased: true
+        },
+        {
+          id: 502,
+          title: "하이파이브 기초 훈련",
+          duration: "4:50",
+          description: "하이파이브 훈련을 위한 기초 단계와 준비 사항을 배웁니다.",
+          price: 0,
+          isPurchased: true
+        },
+        {
+          id: 503,
+          title: "하이파이브 완성하기",
+          duration: "4:00",
+          description: "하이파이브 동작을 완성하고 다양한 상황에서 활용하는 방법을 배웁니다.",
+          price: 0,
+          isPurchased: true
+        }
+      ]
     },
     {
       id: 6,
@@ -766,28 +935,105 @@ export default function VideoTraining() {
                   <div>
                     <h4 className="text-lg font-medium mb-3">커리큘럼</h4>
                     <div className="space-y-2 border rounded-lg p-3 divide-y">
-                      <div className="flex items-center py-2">
-                        <div className="bg-primary/10 text-primary rounded-full w-8 h-8 flex items-center justify-center mr-3">1</div>
-                        <div className="flex-1">
-                          <h5 className="font-medium">기본 원리 이해하기</h5>
-                          <p className="text-sm text-gray-500 dark:text-gray-400">5분</p>
+                      {selectedVideo && selectedVideo.curriculum.map((item, index) => (
+                        <div key={item.id} className="flex items-center py-3">
+                          <div className="bg-primary/10 text-primary rounded-full w-8 h-8 flex items-center justify-center mr-3">
+                            {index + 1}
+                          </div>
+                          <div className="flex-1">
+                            <div className="flex items-center justify-between">
+                              <h5 className="font-medium">{item.title}</h5>
+                              {item.isPurchased || isItemPurchased(selectedVideo.id, item.id) ? (
+                                <Badge variant="success" className="ml-2">구매 완료</Badge>
+                              ) : item.price > 0 ? (
+                                <Badge variant="secondary" className="ml-2">{item.price.toLocaleString()}원</Badge>
+                              ) : (
+                                <Badge variant="outline" className="ml-2">무료</Badge>
+                              )}
+                            </div>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">{item.duration}</p>
+                            <p className="text-sm text-gray-700 dark:text-gray-300 mt-1">{item.description}</p>
+                            
+                            {/* 구매 또는 시청 버튼 */}
+                            <div className="mt-2">
+                              {item.isPurchased || isItemPurchased(selectedVideo.id, item.id) || item.price === 0 ? (
+                                <Button 
+                                  size="sm" 
+                                  variant="outline" 
+                                  className="flex items-center gap-1"
+                                  onClick={() => {
+                                    setIsPlaying(true);
+                                    // 추가 로직: 특정 챕터부터 시작
+                                  }}
+                                >
+                                  <Play size={14} />
+                                  지금 시청하기
+                                </Button>
+                              ) : (
+                                <div className="flex gap-2">
+                                  <Button
+                                    size="sm"
+                                    variant="default"
+                                    className="flex items-center gap-1"
+                                    onClick={() => handlePurchaseItem(selectedVideo.id, item.id, item.price)}
+                                    disabled={!isAuthenticated}
+                                  >
+                                    {item.price.toLocaleString()}원 구매
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className="flex items-center gap-1"
+                                  >
+                                    미리보기
+                                  </Button>
+                                </div>
+                              )}
+                            </div>
+                          </div>
                         </div>
-                      </div>
-                      <div className="flex items-center py-2">
-                        <div className="bg-primary/10 text-primary rounded-full w-8 h-8 flex items-center justify-center mr-3">2</div>
-                        <div className="flex-1">
-                          <h5 className="font-medium">단계별 학습 방법</h5>
-                          <p className="text-sm text-gray-500 dark:text-gray-400">8분</p>
-                        </div>
-                      </div>
-                      <div className="flex items-center py-2">
-                        <div className="bg-primary/10 text-primary rounded-full w-8 h-8 flex items-center justify-center mr-3">3</div>
-                        <div className="flex-1">
-                          <h5 className="font-medium">실전 연습과 자주 발생하는 문제 해결</h5>
-                          <p className="text-sm text-gray-500 dark:text-gray-400">7분</p>
-                        </div>
-                      </div>
+                      ))}
                     </div>
+                    
+                    {/* 전체 강의 구매 옵션 */}
+                    {selectedVideo && selectedVideo.isPremium && (
+                      <div className="mt-4 p-3 bg-secondary/20 rounded-lg">
+                        <div className="flex justify-between items-center">
+                          <div>
+                            <h5 className="font-medium">전체 강의 패키지 구매</h5>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">
+                              모든 강의를 할인된 가격에 구매하세요!
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <div className="text-lg font-bold text-primary">
+                              {selectedVideo.price.toLocaleString()}원
+                            </div>
+                            <div className="text-xs line-through text-gray-500">
+                              {Math.round(selectedVideo.curriculum.reduce((sum, item) => sum + item.price, 0) * 1.2).toLocaleString()}원
+                            </div>
+                          </div>
+                        </div>
+                        <Button 
+                          className="w-full mt-2" 
+                          disabled={!isAuthenticated}
+                          onClick={() => {
+                            // 전체 강의 구매 처리
+                            selectedVideo.curriculum.forEach(item => {
+                              if (!item.isPurchased && !isItemPurchased(selectedVideo.id, item.id)) {
+                                setPurchasedItems(prev => [...prev, {videoId: selectedVideo.id, itemId: item.id}]);
+                              }
+                            });
+                            toast({
+                              title: "패키지 구매 완료",
+                              description: `${selectedVideo.price.toLocaleString()}원 상당의 전체 강의 패키지를 구매했습니다.`,
+                            });
+                          }}
+                        >
+                          전체 강의 구매하기
+                        </Button>
+                      </div>
+                    )}
                   </div>
                   
                   <div>
