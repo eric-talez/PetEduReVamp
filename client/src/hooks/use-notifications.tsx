@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useState, createContext, useContext, ReactNode } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { apiRequest } from '@/lib/queryClient';
+import { useAuth } from '@/hooks/use-auth';
 
 // 알림 타입 정의
 export interface Notification {
@@ -53,6 +55,7 @@ interface NotificationContextType {
   deleteNotification: (id: string) => void;
   clearAllNotifications: () => void;
   sendNotification: (userId: number, title: string, message: string, type?: 'info' | 'success' | 'warning' | 'error' | 'system', linkTo?: string, metadata?: any) => void;
+  sendTestNotification: any;
 }
 
 const NotificationContext = createContext<NotificationContextType | null>(null);
@@ -65,10 +68,13 @@ type WebSocketStatus = 'connecting' | 'connected' | 'disconnected' | 'reconnecti
  */
 export function NotificationProvider({ children }: { children: ReactNode }) {
   const { toast } = useToast();
-  // 사용자 정보 가져오기
+  // 사용자 정보는 직접 가져오지 않고 context를 통해 제공받도록 변경
+  // WebSocket 연결 시 인증 정보를 가져올 수 있도록 API 호출로 대체
   const { data: user } = useQuery({
     queryKey: ['/api/auth/me'],
-    retry: false
+    retry: false,
+    staleTime: 1000 * 60 * 5, // 5분 동안 데이터 유지
+    refetchOnWindowFocus: false
   });
   
   // 상태
@@ -417,6 +423,38 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
     console.log(`Notification sent to user ${userId}`);
   }, [socket]);
   
+  // API를 통한 테스트 알림 전송 (개발용)
+  const queryClient = useQueryClient();
+  const sendTestNotification = useMutation({
+    mutationFn: async (data: {
+      title: string;
+      message: string;
+      type?: 'info' | 'success' | 'warning' | 'error' | 'system';
+      linkTo?: string;
+      metadata?: any;
+    }) => {
+      const response = await apiRequest('POST', '/api/test/notifications', data);
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: '테스트 알림 전송됨',
+        description: '알림이 성공적으로 전송되었습니다',
+        variant: 'default',
+      });
+      
+      // 알림 데이터 캐시 갱신
+      queryClient.invalidateQueries({ queryKey: ['/api/notifications'] });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: '알림 전송 실패',
+        description: error.message,
+        variant: 'destructive',
+      });
+    },
+  });
+  
   // 컨텍스트 값
   const value: NotificationContextType = {
     notifications,
@@ -428,7 +466,8 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
     markAllAsRead,
     deleteNotification,
     clearAllNotifications,
-    sendNotification
+    sendNotification,
+    sendTestNotification
   };
   
   return (

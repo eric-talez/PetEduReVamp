@@ -39,12 +39,22 @@ export class NotificationService {
           
           // 인증 메시지 처리
           if (data.type === 'authenticate') {
-            userId = data.userId;
-            
-            // 현재 사용자의 클라이언트 목록 가져오기
-            const userClients = this.clients.get(userId) || [];
-            userClients.push(ws);
-            this.clients.set(userId, userClients);
+            // 유효한 userId 확인 (null이 아닌지)
+            if (data.userId) {
+              userId = data.userId;
+              
+              // 현재 사용자의 클라이언트 목록 가져오기
+              const userClients = this.clients.get(userId) || [];
+              userClients.push(ws);
+              this.clients.set(userId, userClients);
+            } else {
+              console.error('[NotificationService] Invalid userId in authentication');
+              ws.send(JSON.stringify({
+                type: 'authentication_error',
+                message: '유효하지 않은 사용자 ID입니다.'
+              }));
+              return;
+            }
             
             console.log(`[NotificationService] User ${userId} authenticated`);
             

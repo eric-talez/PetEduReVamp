@@ -1467,16 +1467,14 @@ function SimpleApp() {
   
   return (
     <UserPreferencesProvider>
-      <NotificationsProvider>
-        <KeyboardShortcutsManager>
-          <>
-            {auth.isAuthenticated ? <AuthenticatedRoutes /> : <UnauthenticatedRoutes />}
-            <DebugButton />
-            <Toaster />
-            <AccessibilityFloatingButton />
-          </>
-        </KeyboardShortcutsManager>
-      </NotificationsProvider>
+      <KeyboardShortcutsManager>
+        <>
+          {auth.isAuthenticated ? <AuthenticatedRoutes /> : <UnauthenticatedRoutes />}
+          <DebugButton />
+          <Toaster />
+          <AccessibilityFloatingButton />
+        </>
+      </KeyboardShortcutsManager>
     </UserPreferencesProvider>
   );
 }
