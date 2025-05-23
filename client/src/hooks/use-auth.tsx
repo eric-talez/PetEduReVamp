@@ -34,7 +34,27 @@ const AuthContext = createContext<AuthContextType | null>(null);
 // 인증 제공자 컴포넌트
 export function AuthProvider({ children }: { children: ReactNode }) {
   const { toast } = useToast();
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  
+  // 로컬 스토리지에서 인증 상태와 사용자 정보 초기화
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    const stored = localStorage.getItem('isAuthenticated');
+    return stored === 'true';
+  });
+  
+  // 로컬 스토리지에서 사용자 정보 불러오기 시도
+  const getInitialUserState = () => {
+    try {
+      const storedUser = localStorage.getItem('userData');
+      if (storedUser) {
+        const userData = JSON.parse(storedUser);
+        console.log('[Auth] 저장된 인증 정보 발견', userData);
+        return userData;
+      }
+    } catch (e) {
+      console.error('[Auth] 저장된 인증 정보 파싱 오류', e);
+    }
+    return null;
+  };
   
   // 현재 사용자 정보 가져오기
   const { 
@@ -46,17 +66,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     queryKey: ['/api/auth/me'],
     retry: false,
     staleTime: 5 * 60 * 1000, // 5분
+    initialData: getInitialUserState(), // 로컬 스토리지에서 초기 데이터 로드
     onSuccess: (data) => {
       if (data) {
+        // 인증 상태와 사용자 데이터 저장
         setIsAuthenticated(true);
-        console.log('User authenticated:', data);
+        localStorage.setItem('isAuthenticated', 'true');
+        localStorage.setItem('userData', JSON.stringify(data));
+        console.log('[Auth] 상태 업데이트', { isAuthenticated: true, ...data });
       }
     },
     onError: () => {
       setIsAuthenticated(false);
-      console.log('User not authenticated');
+      localStorage.removeItem('isAuthenticated');
+      localStorage.removeItem('userData');
+      console.log('[Auth] 사용자 인증 실패');
     }
   });
+  
+  // 컴포넌트 마운트 시 로컬 스토리지 확인
+  useEffect(() => {
+    console.log('[Auth] 컴포넌트 마운트', user ? user.username : '');
+  }, []);
 
   // 로그인 뮤테이션
   const loginMutation = useMutation({
@@ -110,15 +141,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       await apiRequest('POST', '/api/auth/logout');
     },
     onSuccess: () => {
+      // 인증 상태 업데이트
       setIsAuthenticated(false);
+      
+      // 로컬 스토리지에서 인증 정보 삭제
+      localStorage.removeItem('isAuthenticated');
+      localStorage.removeItem('userData');
+      
+      // 쿼리 캐시 삭제
       queryClient.setQueryData(['/api/auth/me'], null);
+      
       // 모든 쿼리 캐시 무효화 (민감한 데이터 삭제)
       queryClient.clear();
+      
       toast({
         title: '로그아웃',
         description: '성공적으로 로그아웃되었습니다',
         variant: 'default',
       });
+      
+      console.log('[Auth] 로그아웃 완료');
     },
     onError: (error: any) => {
       toast({
