@@ -177,14 +177,16 @@ function MessageInputComponent() {
           size="icon"
           onClick={handleFileSelect}
           disabled={isUploading || !isConnected}
-          className="flex-shrink-0"
+          className="flex-shrink-0 focus:ring-2 focus:ring-primary"
           title="이미지 첨부"
+          aria-label="이미지 첨부"
         >
           {isUploading ? (
-            <Loader2 className="h-5 w-5 animate-spin" />
+            <Loader2 className="h-5 w-5 animate-spin" aria-hidden="true" />
           ) : (
-            <Paperclip className="h-5 w-5" />
+            <Paperclip className="h-5 w-5" aria-hidden="true" />
           )}
+          <span className="sr-only">이미지 첨부</span>
         </Button>
         
         <AutoResizeTextarea
@@ -192,16 +194,19 @@ function MessageInputComponent() {
           onChange={handleMessageChange}
           onKeyDown={handleKeyDown}
           placeholder={isConnected ? "메시지를 입력하세요..." : "연결 중..."}
+          aria-label="메시지 입력"
         />
         
         <Button
           type="submit"
           size="icon"
           disabled={!message.trim() || isUploading || !isConnected}
-          className="flex-shrink-0"
+          className="flex-shrink-0 focus:ring-2 focus:ring-primary"
           title="메시지 보내기"
+          aria-label="메시지 보내기"
         >
-          <Send className="h-5 w-5" />
+          <Send className="h-5 w-5" aria-hidden="true" />
+          <span className="sr-only">메시지 보내기</span>
         </Button>
       </form>
 
