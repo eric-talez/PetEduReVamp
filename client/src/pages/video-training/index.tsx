@@ -12,10 +12,10 @@ import {
   Search, 
   Filter, 
   Maximize, 
-  Volume2, 
+  Volume2,
   VolumeX,
-  SkipForward,
   SkipBack,
+  SkipForward,
   Subtitles
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
@@ -52,6 +52,9 @@ interface Video {
 
 export default function VideoTraining() {
   const [videoFilter, setVideoFilter] = useState("all");
+  // 프리미엄 비디오 미리보기 시간 제한 (초)
+  const PREVIEW_TIME_LIMIT = 30; 
+  
   const [selectedVideo, setSelectedVideo] = useState<Video | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [showPremiumAlert, setShowPremiumAlert] = useState(false);
@@ -62,16 +65,32 @@ export default function VideoTraining() {
   
   // 비디오 플레이어 관련 상태
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [playerState, setPlayerState] = useState({
+  // 비디오 플레이어 상태를 위한 인터페이스
+  interface PlayerState {
+    playing: boolean;
+    currentTime: number;
+    duration: number;
+    muted: boolean;
+    volume: number;
+    subtitles: boolean;
+    playbackRate: number;
+    paused: boolean;
+    controlsVisible: boolean;
+  }
+  
+  const [playerState, setPlayerState] = useState<PlayerState>({
     playing: false,
     currentTime: 0,
     duration: 0,
     muted: false,
     volume: 1,
     subtitles: false,
-    playbackRate: 1
+    playbackRate: 1,
+    paused: true,
+    controlsVisible: true
   });
-  const [showControls, setShowControls] = useState(true);
+  const seekBarRef = useRef<HTMLDivElement>(null);
+  const playerContainerRef = useRef<HTMLDivElement>(null);
 
   // 무료 영상과 유료 영상 데이터
   const videos: Video[] = [
@@ -229,6 +248,91 @@ export default function VideoTraining() {
         ? videos.filter(video => video.isPremium)
         : videos.filter(video => video.category === videoFilter);
 
+  // 비디오 플레이어 컨트롤 함수들
+  const togglePlay = () => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    if (video.paused) {
+      video.play().catch(error => {
+        console.error('비디오 재생 실패:', error);
+      });
+    } else {
+      video.pause();
+    }
+    
+    setPlayerState(prev => ({
+      ...prev,
+      playing: !video.paused,
+      paused: video.paused
+    }));
+  };
+
+  const toggleMute = () => {
+    const video = videoRef.current;
+    if (!video) return;
+    
+    video.muted = !video.muted;
+    
+    setPlayerState(prev => ({
+      ...prev,
+      muted: video.muted
+    }));
+  };
+
+  const seekTime = (seconds: number) => {
+    const video = videoRef.current;
+    if (!video) return;
+    
+    const newTime = Math.max(0, Math.min(video.duration, video.currentTime + seconds));
+    video.currentTime = newTime;
+    
+    setPlayerState(prev => ({
+      ...prev,
+      currentTime: newTime
+    }));
+  };
+
+  const handleSeekBarClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    const video = videoRef.current;
+    const seekBar = seekBarRef.current;
+    
+    if (!video || !seekBar) return;
+    
+    const rect = seekBar.getBoundingClientRect();
+    const offsetX = e.clientX - rect.left;
+    const seekRatio = offsetX / rect.width;
+    const newTime = video.duration * seekRatio;
+    
+    video.currentTime = newTime;
+    
+    setPlayerState(prev => ({
+      ...prev,
+      currentTime: newTime
+    }));
+  };
+
+  const toggleFullscreen = () => {
+    const container = playerContainerRef.current;
+    if (!container) return;
+    
+    if (document.fullscreenElement) {
+      document.exitFullscreen();
+    } else {
+      container.requestFullscreen().catch(err => {
+        console.error('전체화면 전환 실패:', err);
+      });
+    }
+  };
+
+  // 시간 포맷팅 함수
+  const formatTime = (seconds: number): string => {
+    if (isNaN(seconds)) return '00:00';
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
+
   // 영상 플레이어 이벤트 핸들러
   useEffect(() => {
     const video = videoRef.current;
@@ -237,8 +341,15 @@ export default function VideoTraining() {
     const handleTimeUpdate = () => {
       setPlayerState(prev => ({
         ...prev,
-        currentTime: video.currentTime
+        currentTime: video.currentTime,
+        paused: video.paused
       }));
+      
+      // 미리보기 제한 체크 (비로그인 & 프리미엄 영상일 경우)
+      if (selectedVideo && selectedVideo.isPremium && !isAuthenticated && video.currentTime >= PREVIEW_TIME_LIMIT) {
+        video.pause();
+        setPreviewEnded(true);
+      }
     };
 
     const handleLoadedMetadata = () => {
@@ -283,21 +394,7 @@ export default function VideoTraining() {
     });
   };
 
-  // 재생/일시정지 토글
-  const togglePlay = () => {
-    const video = videoRef.current;
-    if (!video) return;
-    
-    if (playerState.playing) {
-      video.pause();
-    } else {
-      video.play();
-    }
-    
-    setPlayerState(prev => ({ ...prev, playing: !prev.playing }));
-  };
-
-  // 볼륨 변경
+  // 비디오 컨트롤 함수 (다른 동일한 함수와의 중복 방지를 위해 삭제함)
   const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const video = videoRef.current;
     if (!video) return;
@@ -305,28 +402,6 @@ export default function VideoTraining() {
     const volume = parseFloat(e.target.value);
     video.volume = volume;
     setPlayerState(prev => ({ ...prev, volume, muted: volume === 0 }));
-  };
-
-  // 음소거 토글
-  const toggleMute = () => {
-    const video = videoRef.current;
-    if (!video) return;
-    
-    const newMutedState = !playerState.muted;
-    video.muted = newMutedState;
-    setPlayerState(prev => ({ ...prev, muted: newMutedState }));
-  };
-
-  // 전체화면 토글
-  const toggleFullscreen = () => {
-    const videoContainer = document.querySelector('.video-container');
-    if (!videoContainer) return;
-
-    if (!document.fullscreenElement) {
-      videoContainer.requestFullscreen?.();
-    } else {
-      document.exitFullscreen?.();
-    }
   };
 
   // 영상 탐색 (시간 이동)
@@ -337,13 +412,6 @@ export default function VideoTraining() {
     const time = parseFloat(e.target.value);
     video.currentTime = time;
     setPlayerState(prev => ({ ...prev, currentTime: time }));
-  };
-
-  // 시간 포맷팅 (00:00 형식)
-  const formatTime = (timeInSeconds: number) => {
-    const minutes = Math.floor(timeInSeconds / 60);
-    const seconds = Math.floor(timeInSeconds % 60);
-    return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
   };
 
   // 영상 재생 시작
