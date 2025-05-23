@@ -180,12 +180,18 @@ export function NotificationCenter() {
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative">
-          <Bell className="h-5 w-5" />
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          className="relative focus:ring-2 focus:ring-primary"
+          aria-label={`알림 센터 열기 ${unreadCount > 0 ? `(읽지 않은 알림 ${unreadCount}개)` : ''}`}
+        >
+          <Bell className="h-5 w-5" aria-hidden="true" />
           {unreadCount > 0 && (
             <Badge 
               variant="destructive" 
               className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs"
+              aria-hidden="true"
             >
               {unreadCount > 9 ? '9+' : unreadCount}
             </Badge>
@@ -214,8 +220,14 @@ export function NotificationCenter() {
                 모두 지우기
               </Button>
               <SheetClose asChild>
-                <Button variant="ghost" size="icon">
-                  <X className="h-4 w-4" />
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  aria-label="알림 센터 닫기"
+                  className="focus:ring-2 focus:ring-primary"
+                >
+                  <X className="h-4 w-4" aria-hidden="true" />
+                  <span className="sr-only">알림 센터 닫기</span>
                 </Button>
               </SheetClose>
             </div>
