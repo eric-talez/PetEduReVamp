@@ -7,20 +7,32 @@ const banners = [
   {
     title: "반려견 전문 훈련사와 함께하는 맞춤형 교육",
     description: "1:1 전문 상담으로 반려견에게 알맞은 교육 프로그램을 찾아보세요",
-    image: "https://images.pexels.com/photos/1108099/pexels-photo-1108099.jpeg?auto=compress&cs=tinysrgb&w=1600",
+    image: "https://images.pexels.com/photos/6896140/pexels-photo-6896140.jpeg?auto=compress&cs=tinysrgb&dpr=2&w=1600&q=80",
     link: "/courses"
   },
   {
     title: "이달의 베스트 트레이너",
     description: "높은 만족도를 자랑하는 전문 훈련사를 만나보세요",
-    image: "https://images.pexels.com/photos/3198005/pexels-photo-3198005.jpeg?auto=compress&cs=tinysrgb&w=1600",
+    image: "https://images.pexels.com/photos/4498182/pexels-photo-4498182.jpeg?auto=compress&cs=tinysrgb&dpr=2&w=1600&q=80",
     link: "/trainers"
   },
   {
     title: "온라인 화상 교육으로 편리하게",
     description: "이동 시간 걱정 없이 집에서 편하게 교육받으세요",
-    image: "https://images.pexels.com/photos/163036/dog-puppy-pet-cute-163036.jpeg?auto=compress&cs=tinysrgb&w=1600",
+    image: "https://images.pexels.com/photos/4498576/pexels-photo-4498576.jpeg?auto=compress&cs=tinysrgb&dpr=2&w=1600&q=80",
     link: "/video-call"
+  },
+  {
+    title: "AI 반려동물 행동 분석",
+    description: "인공지능으로 반려동물의 행동 패턴을 분석하고 맞춤형 솔루션을 받아보세요",
+    image: "https://images.pexels.com/photos/5731866/pexels-photo-5731866.jpeg?auto=compress&cs=tinysrgb&dpr=2&w=1600&q=80",
+    link: "/ai-analysis"
+  },
+  {
+    title: "반려동물 친화 장소 찾기",
+    description: "반려동물과 함께 방문할 수 있는 다양한 장소를 확인해보세요",
+    image: "https://images.pexels.com/photos/1954524/pexels-photo-1954524.jpeg?auto=compress&cs=tinysrgb&dpr=2&w=1600&q=80",
+    link: "/places"
   }
 ];
 
