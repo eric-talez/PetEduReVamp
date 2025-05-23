@@ -537,6 +537,18 @@ export const DEFAULT_MENU_ITEMS: MenuItem[] = [
     isPublic: false
   },
   {
+    id: 'banner-management',
+    title: '배너 관리',
+    path: '/admin/banner-management',
+    icon: 'Image',
+    type: 'internal',
+    category: 'admin',
+    roles: ['admin'],
+    orderIndex: 7,
+    isActive: true,
+    isPublic: false
+  },
+  {
     id: 'course-management',
     title: '강좌 관리',
     path: '/admin/courses',

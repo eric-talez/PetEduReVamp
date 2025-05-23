@@ -445,60 +445,45 @@ export default function EventsPage() {
       )}
       
       {/* 배너 영역 */}
-      <div className="mb-8">
-        <div 
-          className="relative h-64 md:h-72 rounded-lg overflow-hidden" 
-          role="banner"
-          aria-label="이벤트 페이지 배너"
-        >
-          <img 
-            src="https://images.unsplash.com/photo-1548199973-03cce0bbc87b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&h=750&q=80" 
-            alt="반려견들이 함께 뛰어놀고 있는 모습 - 다양한 반려동물 이벤트와 행사 정보를 찾아볼 수 있는 페이지"
-            className="absolute inset-0 w-full h-full object-cover"
-            loading="eager"
-            fetchpriority="high"
-          />
-          <div className="absolute inset-0 bg-black/20 dark:bg-black/40"></div>
-          
-          <div className="absolute inset-0 flex items-center">
-            <div className="p-6 md:p-8">
-              <h1 className="text-3xl font-bold mb-2 text-white dark:text-white bg-primary/80 dark:bg-primary/80 p-2 rounded inline-block">반려동물 이벤트</h1>
-              <p className="text-white dark:text-white mb-4 bg-black/30 dark:bg-black/50 p-2 rounded max-w-lg">
-                다양한 반려동물 행사와 만남의 장을 찾아보세요. 지역별, 테마별 이벤트를 한눈에!
-              </p>
-              
-              <div className="flex space-x-2 mt-4">
-                <div className="max-w-lg bg-white dark:bg-gray-800 rounded-lg flex items-center p-1">
-                  <div className="px-2">
-                    <Search className="h-5 w-5 text-gray-400" />
-                  </div>
-                  <input
-                    id="banner-search"
-                    type="text"
-                    className="bg-transparent border-0 focus:ring-0 flex-1 py-2 pl-1 text-sm placeholder:text-gray-400"
-                    placeholder="이벤트 검색..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                  />
-                  <Button 
-                    variant="default"
-                    size="sm"
-                    className="mr-1"
-                    onClick={() => {
-                      const searchInput = document.getElementById('banner-search') as HTMLInputElement;
-                      if (searchInput) {
-                        setSearchTerm(searchInput.value);
-                      }
-                    }}
-                  >
-                    검색
-                  </Button>
-                </div>
-              </div>
+      <Banner
+        imageUrl="https://images.unsplash.com/photo-1548199973-03cce0bbc87b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&h=750&q=80"
+        title="반려동물 이벤트"
+        description="다양한 반려동물 행사와 만남의 장을 찾아보세요. 지역별, 테마별 이벤트를 한눈에!"
+        altText="반려견들이 함께 뛰어놀고 있는 모습 - 다양한 반려동물 이벤트와 행사 정보를 찾아볼 수 있는 페이지"
+        ariaLabel="이벤트 페이지 배너"
+        priority={true}
+      >
+        <div className="flex space-x-2 mt-4">
+          <div className="max-w-lg bg-white dark:bg-gray-800 rounded-lg flex items-center p-1">
+            <div className="px-2">
+              <Search className="h-5 w-5 text-gray-400" />
             </div>
+            <input
+              id="banner-search"
+              type="text"
+              className="bg-transparent border-0 focus:ring-0 flex-1 py-2 pl-1 text-sm placeholder:text-gray-400"
+              placeholder="이벤트 검색..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              aria-label="이벤트 검색"
+            />
+            <Button 
+              variant="default"
+              size="sm"
+              className="mr-1"
+              onClick={() => {
+                const searchInput = document.getElementById('banner-search') as HTMLInputElement;
+                if (searchInput) {
+                  setSearchTerm(searchInput.value);
+                }
+              }}
+              aria-label="검색 실행"
+            >
+              검색
+            </Button>
           </div>
         </div>
-      </div>
+      </Banner>
       
       {/* 필터 및 검색 */}
       <div className="mb-8">
