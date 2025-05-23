@@ -65,6 +65,8 @@ export default function VideoClassReservePage() {
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const [reservationStep, setReservationStep] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [connectionMethod, setConnectionMethod] = useState<'system' | 'personal'>('system');
+  const [zoomMeetingLink, setZoomMeetingLink] = useState<string>("");
 
   useEffect(() => {
     // URL에서 ID 파싱 (실제 구현에서는 React Router 또는 다른 라우팅 라이브러리 사용)
@@ -96,6 +98,16 @@ export default function VideoClassReservePage() {
 
   const handleTimeSelect = (time: string) => {
     setSelectedTime(time);
+  };
+
+  // 연결 방식 변경 핸들러
+  const handleConnectionMethodChange = (value: string) => {
+    setConnectionMethod(value as 'system' | 'personal');
+  };
+  
+  // 줌 링크 변경 핸들러
+  const handleZoomLinkChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setZoomMeetingLink(event.target.value);
   };
 
   const handleContinue = () => {
@@ -247,13 +259,55 @@ export default function VideoClassReservePage() {
                     </div>
                   </div>
                 )}
+                
+                <div className="mt-6 border-t pt-6">
+                  <h3 className="text-lg font-medium mb-3">연결 방식 선택</h3>
+                  <Tabs defaultValue="system" onValueChange={handleConnectionMethodChange}>
+                    <TabsList className="mb-4">
+                      <TabsTrigger value="system">시스템 화상 연결</TabsTrigger>
+                      <TabsTrigger value="personal">개인 줌 링크 사용</TabsTrigger>
+                    </TabsList>
+                    <TabsContent value="system">
+                      <div className="p-4 bg-muted/40 rounded-md">
+                        <div className="flex items-start">
+                          <Video className="h-5 w-5 text-primary mr-2 mt-0.5" />
+                          <div>
+                            <p className="text-sm font-medium">내장 화상 시스템 사용</p>
+                            <p className="text-sm text-muted-foreground">내장된 화상 회의 시스템을 통해 수업을 진행합니다. 별도의 앱 설치가 필요하지 않습니다.</p>
+                          </div>
+                        </div>
+                      </div>
+                    </TabsContent>
+                    <TabsContent value="personal">
+                      <div className="p-4 bg-muted/40 rounded-md">
+                        <div className="flex items-start mb-4">
+                          <LinkIcon className="h-5 w-5 text-primary mr-2 mt-0.5" />
+                          <div>
+                            <p className="text-sm font-medium">개인 줌 회의 링크 사용</p>
+                            <p className="text-sm text-muted-foreground">본인의 Zoom 회의 링크를 사용하여 수업을 진행합니다.</p>
+                          </div>
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="zoom-link">줌 회의 링크</Label>
+                          <Input 
+                            id="zoom-link" 
+                            placeholder="https://zoom.us/j/123456789" 
+                            value={zoomMeetingLink} 
+                            onChange={handleZoomLinkChange}
+                          />
+                          <p className="text-xs text-muted-foreground">예: https://zoom.us/j/123456789</p>
+                        </div>
+                      </div>
+                    </TabsContent>
+                  </Tabs>
+                </div>
               </CardContent>
               <CardFooter className="flex justify-between border-t pt-4">
                 <Button variant="outline" onClick={() => setLocation('/video-call')}>
                   취소
                 </Button>
                 <Button 
-                  disabled={!selectedDate || !selectedTime}
+                  disabled={!selectedDate || !selectedTime || (connectionMethod === 'personal' && !zoomMeetingLink)}
                   onClick={handleContinue}
                 >
                   다음 단계
@@ -302,6 +356,16 @@ export default function VideoClassReservePage() {
                     <p className="text-sm text-gray-500">수업 시간</p>
                     <p className="font-medium">{videoClass.duration}분</p>
                   </div>
+                  <div>
+                    <p className="text-sm text-gray-500">연결 방식</p>
+                    <p className="font-medium">{connectionMethod === 'system' ? '내장 화상 시스템' : '개인 줌 링크'}</p>
+                  </div>
+                  {connectionMethod === 'personal' && (
+                    <div className="col-span-1 sm:col-span-2">
+                      <p className="text-sm text-gray-500">입력한 줌 링크</p>
+                      <p className="font-medium break-all">{zoomMeetingLink}</p>
+                    </div>
+                  )}
                 </div>
               </div>
 
