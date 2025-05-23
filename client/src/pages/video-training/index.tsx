@@ -129,8 +129,8 @@ export default function VideoTraining() {
     return checkItemPurchased(videoId, itemId, purchasedItems);
   };
   
-  // 로그인 상태에 따라 구매 처리
-  const handlePurchaseClick = useCallback((videoId: number, itemId: number, price: number) => {
+  // 로그인 상태에 따라 구매 처리 - 모든 함수를 순수 함수로 변경
+  const handlePurchaseClick = (videoId: number, itemId: number, price: number) => {
     console.log("구매 버튼 클릭:", videoId, itemId, price);
     
     // 로그인 상태 확인 (버튼에 disabled 속성이 있지만, 추가 안전장치로 처리)
@@ -145,7 +145,7 @@ export default function VideoTraining() {
     
     // 구매 처리
     handlePurchaseItem(videoId, itemId, price);
-  }, [isAuthenticated, toast, handlePurchaseItem]);
+  };
   
   // 미리보기 시작 함수
   const handleStartPreview = (videoId: number, itemId: number) => {
@@ -1169,7 +1169,19 @@ export default function VideoTraining() {
                                     size="sm"
                                     variant="default"
                                     className="flex items-center gap-1"
-                                    onClick={() => handlePurchaseClick(selectedVideo.id, item.id, item.price)}
+                                    onClick={() => {
+                                      console.log("구매 버튼 클릭: 직접 함수 호출");
+                                      // 직접 구매 함수 호출
+                                      if (isAuthenticated) {
+                                        handlePurchaseItem(selectedVideo.id, item.id, item.price);
+                                      } else {
+                                        toast({
+                                          title: "로그인 필요",
+                                          description: "강의를 구매하려면 로그인이 필요합니다.",
+                                          variant: "destructive",
+                                        });
+                                      }
+                                    }}
                                     disabled={!isAuthenticated}
                                   >
                                     {item.price.toLocaleString()}원 구매
