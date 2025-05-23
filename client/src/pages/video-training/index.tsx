@@ -1191,12 +1191,17 @@ export default function VideoTraining() {
                     </div>
                   </div>
                   <Button 
-                    className="w-full mt-4 flex items-center justify-center gap-2" 
+                    className={`w-full mt-4 flex items-center justify-center gap-2 ${
+                      selectedVideo.isPremium && !isAuthenticated 
+                        ? 'opacity-60 cursor-not-allowed' 
+                        : 'shadow-lg hover:shadow-xl transition-all duration-300'
+                    }`}
                     onClick={handlePlayVideo}
                     disabled={selectedVideo.isPremium && !isAuthenticated}
+                    variant={selectedVideo.isPremium ? "premium" : "default"}
                   >
                     <Play size={16} />
-                    지금 시청하기
+                    {selectedVideo.isPremium ? '프리미엄 콘텐츠 시청하기' : '지금 시청하기'}
                   </Button>
                   {selectedVideo.isPremium && !isAuthenticated && (
                     <div className="mt-2 text-xs text-center text-amber-500 flex items-center justify-center">
