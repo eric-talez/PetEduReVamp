@@ -1,5 +1,5 @@
-import { Card } from "./ui/Card";
-import { Button } from "./ui/Button";
+import { Card } from "./ui/card";
+import { Button } from "./ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useState } from "react";
 
@@ -7,19 +7,19 @@ const banners = [
   {
     title: "반려견 전문 훈련사와 함께하는 맞춤형 교육",
     description: "1:1 전문 상담으로 반려견에게 알맞은 교육 프로그램을 찾아보세요",
-    image: "https://images.unsplash.com/photo-1587300003388-59208cc962cb?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2340&q=80",
+    image: "https://images.pexels.com/photos/1108099/pexels-photo-1108099.jpeg?auto=compress&cs=tinysrgb&w=1600",
     link: "/courses"
   },
   {
     title: "이달의 베스트 트레이너",
     description: "높은 만족도를 자랑하는 전문 훈련사를 만나보세요",
-    image: "https://images.unsplash.com/photo-1588943211346-0908a1fb0b01?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2340&q=80",
+    image: "https://images.pexels.com/photos/3198005/pexels-photo-3198005.jpeg?auto=compress&cs=tinysrgb&w=1600",
     link: "/trainers"
   },
   {
     title: "온라인 화상 교육으로 편리하게",
     description: "이동 시간 걱정 없이 집에서 편하게 교육받으세요",
-    image: "https://images.unsplash.com/photo-1601758228041-f3b2795255f1?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2340&q=80",
+    image: "https://images.pexels.com/photos/163036/dog-puppy-pet-cute-163036.jpeg?auto=compress&cs=tinysrgb&w=1600",
     link: "/video-call"
   }
 ];
