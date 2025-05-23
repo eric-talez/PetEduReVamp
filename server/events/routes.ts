@@ -17,11 +17,32 @@ const eventSchema = z.object({
 });
 
 export function registerEventRoutes(app: Express) {
-  // 모든 이벤트 가져오기
+  // 모든 이벤트 가져오기 (페이지네이션 지원)
   app.get("/api/events", async (req, res) => {
     try {
-      const events = await storage.getAllEvents();
-      return res.status(200).json(events);
+      // 페이지네이션 파라미터 처리
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 10;
+      const offset = (page - 1) * limit;
+      
+      // 총 이벤트 수 조회
+      const allEvents = await storage.getAllEvents();
+      const totalItems = allEvents.length;
+      const totalPages = Math.ceil(totalItems / limit);
+      
+      // 페이지네이션 적용된 이벤트 목록 가져오기
+      const events = allEvents.slice(offset, offset + limit);
+      
+      // 페이지네이션 메타데이터와 함께 응답
+      return res.status(200).json({
+        items: events,
+        meta: {
+          totalItems,
+          itemsPerPage: limit,
+          currentPage: page,
+          totalPages
+        }
+      });
     } catch (error) {
       console.error("이벤트 조회 오류:", error);
       return res.status(500).json({ 

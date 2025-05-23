@@ -196,15 +196,30 @@ export default function EventsPage() {
   const [isMobile, setIsMobile] = useState(false);
   const [showMap, setShowMap] = useState(true);
   
-  // API에서 이벤트 데이터 불러오기
-  const { data: eventsData, isLoading, error } = useQuery({
-    queryKey: ['/api/events'],
+  // 페이지네이션 상태
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [totalPages, setTotalPages] = useState(1);
+  
+  // API에서 이벤트 데이터 불러오기 (페이지네이션 지원)
+  const { data: eventsResponse, isLoading, error } = useQuery({
+    queryKey: ['/api/events', { page: currentPage, limit: itemsPerPage }],
     staleTime: 5 * 60 * 1000, // 5분간 캐시 유지
     select: (data) => {
-      // 서버에서 받은 이벤트 데이터를 UI에 맞게 변환
-      if (!data || !Array.isArray(data)) return [];
+      // 페이지네이션 메타데이터 추출
+      if (!data || !data.items || !Array.isArray(data.items)) {
+        return { items: [], meta: { totalItems: 0, currentPage: 1, totalPages: 1, itemsPerPage: 10 } };
+      }
       
-      return data.map(event => ({
+      // 페이지네이션 메타데이터 업데이트
+      if (data.meta) {
+        setTotalPages(data.meta.totalPages);
+        setCurrentPage(data.meta.currentPage);
+        setItemsPerPage(data.meta.itemsPerPage);
+      }
+      
+      // 이벤트 데이터 변환
+      const transformedItems = data.items.map(event => ({
         ...event,
         // 위치 정보 형식 맞추기
         location: {
@@ -225,8 +240,21 @@ export default function EventsPage() {
         attendees: event.attendees || 0,
         maxAttendees: event.maxAttendees === null ? undefined : event.maxAttendees
       }));
+      
+      return { 
+        items: transformedItems, 
+        meta: data.meta || { 
+          totalItems: transformedItems.length, 
+          currentPage: 1, 
+          totalPages: 1, 
+          itemsPerPage: 10 
+        } 
+      };
     }
   });
+  
+  // 변환된 이벤트 데이터
+  const eventsData = eventsResponse?.items || [];
   
   // 모바일 화면 감지
   useEffect(() => {
