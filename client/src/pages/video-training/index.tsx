@@ -414,16 +414,25 @@ export default function VideoTraining() {
     setPlayerState(prev => ({ ...prev, currentTime: time }));
   };
 
-  // 영상 재생 시작
-  const handlePlayVideo = (video: Video) => {
+  // 영상 상세 정보 표시
+  const handleShowVideoDetails = (video: Video) => {
     setSelectedVideo(video);
+    setIsPlaying(false);
+    setPreviewEnded(false);
+    setElapsedTime(0);
+  };
+  
+  // 영상 재생 시작
+  const handlePlayVideo = () => {
+    if (!selectedVideo) return;
+    
     setIsPlaying(true);
     setPreviewEnded(false);
     setElapsedTime(0);
     setPlayerState(prev => ({ ...prev, playing: true, currentTime: 0 }));
 
     // Premium 영상이고 인증되지 않은 사용자일 경우 타이머 시작
-    if (video.isPremium && !isAuthenticated) {
+    if (selectedVideo.isPremium && !isAuthenticated) {
       const timer = setInterval(() => {
         setElapsedTime(prev => {
           const newTime = prev + 1;
@@ -605,10 +614,10 @@ export default function VideoTraining() {
                       variant="default" 
                       size="sm" 
                       className="flex items-center gap-1"
-                      onClick={() => handlePlayVideo(video)}
+                      onClick={() => handleShowVideoDetails(video)}
                     >
-                      <Play size={16} />
-                      재생하기
+                      <Search size={16} />
+                      상세 보기
                     </Button>
                   </div>
                   <div className="absolute top-2 right-2 flex flex-col gap-1">
@@ -660,6 +669,131 @@ export default function VideoTraining() {
         </TabsContent>
       </Tabs>
 
+      {/* 영상 상세 정보 모달 */}
+      {selectedVideo && !isPlaying && (
+        <div className="fixed inset-0 bg-black bg-opacity-75 z-50 flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-gray-900 rounded-lg shadow-xl max-w-4xl w-full">
+            <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
+              <h3 className="text-lg font-semibold">{selectedVideo.title}</h3>
+              <Button variant="ghost" size="sm" onClick={handleCloseVideo}>
+                닫기
+              </Button>
+            </div>
+            <div className="p-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {/* 썸네일 이미지 */}
+                <div>
+                  <div className="rounded-lg overflow-hidden">
+                    <img 
+                      src={selectedVideo.thumbnail} 
+                      alt={selectedVideo.title} 
+                      className="w-full aspect-video object-cover"
+                    />
+                  </div>
+                  <div className="mt-4 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-500 dark:text-gray-400">난이도</span>
+                      <Badge>{selectedVideo.level}</Badge>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-500 dark:text-gray-400">영상 길이</span>
+                      <span>{selectedVideo.duration}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-500 dark:text-gray-400">분류</span>
+                      <Badge variant="outline">{selectedVideo.category}</Badge>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-500 dark:text-gray-400">조회수</span>
+                      <span>{selectedVideo.views.toLocaleString()}</span>
+                    </div>
+                    <div className="flex items-center mt-2">
+                      <Star size={16} className="fill-yellow-500 text-yellow-500 mr-1" />
+                      <span className="text-sm">{selectedVideo.rating} ({selectedVideo.reviews})</span>
+                    </div>
+                  </div>
+                  <Button 
+                    className="w-full mt-4 flex items-center justify-center gap-2" 
+                    onClick={handlePlayVideo}
+                    disabled={selectedVideo.isPremium && !isAuthenticated}
+                  >
+                    <Play size={16} />
+                    지금 시청하기
+                  </Button>
+                  {selectedVideo.isPremium && !isAuthenticated && (
+                    <div className="mt-2 text-xs text-center text-amber-500 flex items-center justify-center">
+                      <Lock size={12} className="mr-1" />
+                      프리미엄 강의는 로그인 후 이용 가능합니다
+                    </div>
+                  )}
+                </div>
+                
+                {/* 영상 정보 및 커리큘럼 */}
+                <div className="md:col-span-2 space-y-6">
+                  <div>
+                    <h4 className="text-lg font-medium mb-2">강의 설명</h4>
+                    <p className="text-gray-700 dark:text-gray-300">{selectedVideo.description}</p>
+                  </div>
+                  
+                  <div>
+                    <h4 className="text-lg font-medium mb-3">강사 정보</h4>
+                    <div className="flex items-center">
+                      <img 
+                        src={selectedVideo.trainer.avatar} 
+                        alt={selectedVideo.trainer.name}
+                        className="w-12 h-12 rounded-full mr-3 object-cover"
+                      />
+                      <div>
+                        <h5 className="font-medium">{selectedVideo.trainer.name} 훈련사</h5>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                          분야: {selectedVideo.category} 전문
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <h4 className="text-lg font-medium mb-3">커리큘럼</h4>
+                    <div className="space-y-2 border rounded-lg p-3 divide-y">
+                      <div className="flex items-center py-2">
+                        <div className="bg-primary/10 text-primary rounded-full w-8 h-8 flex items-center justify-center mr-3">1</div>
+                        <div className="flex-1">
+                          <h5 className="font-medium">기본 원리 이해하기</h5>
+                          <p className="text-sm text-gray-500 dark:text-gray-400">5분</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center py-2">
+                        <div className="bg-primary/10 text-primary rounded-full w-8 h-8 flex items-center justify-center mr-3">2</div>
+                        <div className="flex-1">
+                          <h5 className="font-medium">단계별 학습 방법</h5>
+                          <p className="text-sm text-gray-500 dark:text-gray-400">8분</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center py-2">
+                        <div className="bg-primary/10 text-primary rounded-full w-8 h-8 flex items-center justify-center mr-3">3</div>
+                        <div className="flex-1">
+                          <h5 className="font-medium">실전 연습과 자주 발생하는 문제 해결</h5>
+                          <p className="text-sm text-gray-500 dark:text-gray-400">7분</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <h4 className="text-lg font-medium mb-2">태그</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {selectedVideo.tags.map((tag, index) => (
+                        <Badge key={index} variant="secondary">{tag}</Badge>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      
       {/* 비디오 플레이어 모달 */}
       {isPlaying && selectedVideo && (
         <div className="fixed inset-0 bg-black bg-opacity-75 z-50 flex items-center justify-center p-4">
