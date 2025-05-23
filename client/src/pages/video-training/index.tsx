@@ -72,7 +72,11 @@ export default function VideoTraining() {
   const [showPremiumAlert, setShowPremiumAlert] = useState(false);
   const [previewEnded, setPreviewEnded] = useState(false);
   const [elapsedTime, setElapsedTime] = useState(0);
-  const [purchasedItems, setPurchasedItems] = useState<{videoId: number, itemId: number}[]>([]);
+  // 로컬 스토리지에서 구매 정보 가져오기
+  const [purchasedItems, setPurchasedItems] = useState<{videoId: number, itemId: number}[]>(() => {
+    const savedItems = localStorage.getItem('purchasedVideoItems');
+    return savedItems ? JSON.parse(savedItems) : [];
+  });
   const [previewItem, setPreviewItem] = useState<{videoId: number, itemId: number} | null>(null);
   const [previewTimeLeft, setPreviewTimeLeft] = useState<number>(30); // 미리보기 시간 (초)
   const [isPreviewMode, setIsPreviewMode] = useState<boolean>(false);
@@ -83,7 +87,12 @@ export default function VideoTraining() {
   // 영상 구매 함수
   const handlePurchaseItem = (videoId: number, itemId: number, price: number) => {
     // 실제 구현에서는 API를 호출하여 결제 처리를 진행
-    setPurchasedItems(prev => [...prev, {videoId, itemId}]);
+    const newPurchasedItems = [...purchasedItems, {videoId, itemId}];
+    setPurchasedItems(newPurchasedItems);
+    
+    // 로컬 스토리지에 구매 정보 저장
+    localStorage.setItem('purchasedVideoItems', JSON.stringify(newPurchasedItems));
+    
     toast({
       title: "구매 완료",
       description: `${price.toLocaleString()}원 상당의 강의를 구매했습니다.`,
