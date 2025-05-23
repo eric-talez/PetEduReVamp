@@ -1,8 +1,8 @@
 import { useState, useRef, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card } from "@/components/ui/Card";
-import { Badge } from "@/components/ui/Badge";
-import { Button } from "@/components/ui/Button";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { 
   AlertCircle, 
   Lock, 
@@ -97,7 +97,7 @@ export default function VideoTraining() {
       id: 2,
       title: "강아지 사회화 훈련: 다른 강아지와 만나기",
       description: "반려견이 다른 강아지들과 편안하게 어울릴 수 있도록 사회화 훈련을 시키는 방법을 알려드립니다.",
-      thumbnail: "https://images.unsplash.com/photo-1556866261-8c2924c595e6?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+      thumbnail: "https://images.pexels.com/photos/1254140/pexels-photo-1254140.jpeg?auto=compress&cs=tinysrgb&w=600&h=400",
       duration: "23:45",
       level: "중급",
       isPremium: true,
@@ -402,7 +402,7 @@ export default function VideoTraining() {
       {/* 상단 배너 */}
       <div className="relative rounded-xl overflow-hidden h-48 md:h-64 mb-8 shadow-lg">
         <img 
-          src="https://images.unsplash.com/photo-1598134493179-51332e39cdab?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=400" 
+          src="https://images.pexels.com/photos/4277088/pexels-photo-4277088.jpeg?auto=compress&cs=tinysrgb&w=1600&h=400" 
           alt="영상 훈련"
           className="w-full h-full object-cover absolute"
         />
