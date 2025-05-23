@@ -73,6 +73,9 @@ export default function VideoTraining() {
   const [previewEnded, setPreviewEnded] = useState(false);
   const [elapsedTime, setElapsedTime] = useState(0);
   const [purchasedItems, setPurchasedItems] = useState<{videoId: number, itemId: number}[]>([]);
+  const [previewItem, setPreviewItem] = useState<{videoId: number, itemId: number} | null>(null);
+  const [previewTimeLeft, setPreviewTimeLeft] = useState<number>(30); // 미리보기 시간 (초)
+  const [isPreviewMode, setIsPreviewMode] = useState<boolean>(false);
   const { isAuthenticated } = useAuth();
   const [, setLocation] = useLocation();
   const { toast } = useToast();
@@ -90,6 +93,43 @@ export default function VideoTraining() {
   // 구매 여부 확인 함수
   const isItemPurchased = (videoId: number, itemId: number) => {
     return purchasedItems.some(item => item.videoId === videoId && item.itemId === itemId);
+  };
+  
+  // 미리보기 시작 함수
+  const handleStartPreview = (videoId: number, itemId: number) => {
+    setPreviewItem({videoId, itemId});
+    setPreviewTimeLeft(30); // 미리보기 시간 초기화 (30초)
+    setIsPreviewMode(true);
+    setIsPlaying(true);
+    setPreviewEnded(false);
+    
+    // 타이머 설정
+    const timer = setInterval(() => {
+      setPreviewTimeLeft(prev => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          setPreviewEnded(true);
+          setIsPreviewMode(false);
+          
+          const videoElement = videoRef.current;
+          if (videoElement) {
+            videoElement.pause();
+            setPlayerState(prevState => ({ ...prevState, playing: false }));
+          }
+          
+          toast({
+            title: "미리보기 종료",
+            description: "30초 미리보기가 종료되었습니다. 전체 강의를 보시려면 구매하세요.",
+          });
+          
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    
+    // 클린업 함수 (비디오 상세 정보 페이지를 나가면 타이머 정리)
+    return () => clearInterval(timer);
   };
   
   // 비디오 플레이어 관련 상태
@@ -1081,7 +1121,9 @@ export default function VideoTraining() {
                                     size="sm"
                                     variant="outline"
                                     className="flex items-center gap-1"
+                                    onClick={() => handleStartPreview(selectedVideo.id, item.id)}
                                   >
+                                    <Play size={14} />
                                     미리보기
                                   </Button>
                                 </div>
