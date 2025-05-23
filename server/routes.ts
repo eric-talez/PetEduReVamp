@@ -14,6 +14,8 @@ import { registerAiRoutes } from "./ai/routes";
 import { Event, EventLocation } from "@shared/schema";
 import { WebSocketServer } from 'ws';
 import { MessagingService } from './messaging/service';
+import { NotificationService } from './notifications/service';
+import { registerNotificationRoutes } from './notifications/routes';
 
 // 타입은 server/types.d.ts에 정의되어 있습니다.
 
@@ -1114,6 +1116,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // 메시징 서비스 초기화
   const messagingService = new MessagingService(wss, storage);
+  
+  // 알림 서비스 초기화
+  const notificationService = new NotificationService(wss, storage);
+  
+  // 알림 라우트 등록
+  registerNotificationRoutes(app, notificationService);
 
   console.log('[server] WebSocket server initialized at /ws');
   
