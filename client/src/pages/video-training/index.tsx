@@ -1312,7 +1312,7 @@ export default function VideoTraining() {
                                           
                                           // 중복 제거하여 추가
                                           const updatedItems = [
-                                            ...existingItems.filter(i => 
+                                            ...existingItems.filter((i: { videoId: number; itemId: number }) => 
                                               !(i.videoId === newItem.videoId && i.itemId === newItem.itemId)
                                             ),
                                             newItem

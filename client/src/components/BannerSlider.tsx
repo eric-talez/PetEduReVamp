@@ -80,7 +80,7 @@ export function BannerSlider() {
       <Button
         variant="outline"
         size="icon"
-        className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white"
+        className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white focus:ring-2 focus:ring-primary"
         onClick={prevSlide}
         aria-label="이전 배너"
       >
@@ -90,7 +90,7 @@ export function BannerSlider() {
       <Button
         variant="outline"
         size="icon"
-        className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white"
+        className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white focus:ring-2 focus:ring-primary"
         onClick={nextSlide}
         aria-label="다음 배너"
       >
