@@ -923,9 +923,10 @@ export default function VideoTraining() {
       {/* 상단 배너 */}
       <div className="relative rounded-xl overflow-hidden h-48 md:h-64 mb-8 shadow-lg">
         <img 
-          src="https://images.pexels.com/photos/4277088/pexels-photo-4277088.jpeg?auto=compress&cs=tinysrgb&w=1600&h=400" 
+          src="https://images.pexels.com/photos/3671300/pexels-photo-3671300.jpeg?auto=compress&cs=tinysrgb&w=1600&h=400" 
           alt="영상 훈련"
           className="w-full h-full object-cover absolute"
+          loading="eager"
         />
         
         <div className="relative h-full flex flex-col justify-center px-6 md:px-10 container mx-auto">
@@ -934,6 +935,7 @@ export default function VideoTraining() {
           </h1>
           <p className="text-gray-800 dark:text-gray-200 text-sm md:text-base max-w-xl mb-4 bg-white/90 dark:bg-gray-800/90 p-2 rounded-lg">
             반려견 훈련 전문가들이 제공하는 고품질 영상으로 언제 어디서나 효과적인 훈련을 경험하세요.
+            {isAuthenticated ? " 지금 바로 프리미엄 강의를 구매하고 시청할 수 있습니다." : " 로그인하고 프리미엄 강의도 이용해보세요."}
           </p>
           
           <div className="flex flex-wrap gap-2 mb-4">
