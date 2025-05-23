@@ -445,11 +445,17 @@ export default function EventsPage() {
       
       {/* 배너 영역 */}
       <div className="mb-8">
-        <div className="relative h-64 md:h-72 rounded-lg overflow-hidden">
+        <div 
+          className="relative h-64 md:h-72 rounded-lg overflow-hidden" 
+          role="banner"
+          aria-label="이벤트 페이지 배너"
+        >
           <img 
             src="https://images.unsplash.com/photo-1548199973-03cce0bbc87b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&h=750&q=80" 
-            alt="반려동물 이벤트 배경"
+            alt="반려견들이 함께 뛰어놀고 있는 모습 - 다양한 반려동물 이벤트와 행사 정보를 찾아볼 수 있는 페이지"
             className="absolute inset-0 w-full h-full object-cover"
+            loading="eager"
+            fetchpriority="high"
           />
           <div className="absolute inset-0 bg-black/20 dark:bg-black/40"></div>
           
