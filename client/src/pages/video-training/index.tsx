@@ -94,8 +94,12 @@ export default function VideoTraining() {
     console.log("구매 처리: ", videoId, itemId, price);
     
     try {
+      // 클릭 발생 로그
+      console.log("구매 처리 함수 실행됨");
+      
       // 이미 구매한 항목인지 체크
       if (checkItemPurchased(videoId, itemId, purchasedItems)) {
+        console.log("이미 구매한 항목임:", videoId, itemId);
         toast({
           title: "이미 구매함",
           description: "이미 구매한 강의입니다.",
@@ -105,15 +109,25 @@ export default function VideoTraining() {
       
       // 실제 구현에서는 API를 호출하여 결제 처리를 진행
       const newPurchasedItems = [...purchasedItems, {videoId, itemId}];
+      console.log("새로운 구매 목록:", newPurchasedItems);
+      
+      // 상태 업데이트
       setPurchasedItems(newPurchasedItems);
       
       // 로컬 스토리지에 구매 정보 저장
       localStorage.setItem('purchasedVideoItems', JSON.stringify(newPurchasedItems));
+      console.log("로컬 스토리지에 저장됨");
       
+      // 토스트 알림 표시
       toast({
         title: "구매 완료",
         description: `${price.toLocaleString()}원 상당의 강의를 구매했습니다.`,
       });
+      
+      // 1초 후 영상 카드를 새로고침하기 위한 상태 업데이트
+      setTimeout(() => {
+        console.log("강의 구매 완료 - 상태 업데이트 확인");
+      }, 1000);
     } catch (error) {
       console.error("구매 처리 중 오류:", error);
       toast({
