@@ -51,7 +51,7 @@ const allTrainers = [
     rating: 4.8,
     reviewCount: 128,
     certifications: ["국제 반려동물 훈련사 자격증", "동물행동심리 전문가"],
-    image: "https://images.unsplash.com/photo-1568602471122-7832951cc4c5?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1770&q=80",
+    image: "https://robohash.org/trainer1?set=set4&size=250x250&bgset=bg1",
     description: "8년 경력의 전문 훈련사로, 특히 문제행동 교정과 기초 훈련에 전문성을 가지고 있습니다.",
     offersVideoClasses: true // 화상 수업 제공 여부
   },
@@ -63,7 +63,7 @@ const allTrainers = [
     rating: 4.6,
     reviewCount: 96,
     certifications: ["전문 반려동물 훈련사", "유기견 재활 전문가"],
-    image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1770&q=80",
+    image: "https://robohash.org/trainer2?set=set4&size=250x250&bgset=bg1",
     description: "그룹 수업과 사회화 훈련을 전문으로 하는 훈련사입니다. 다양한 견종의 특성을 고려한 맞춤형 훈련 방법을 제공합니다.",
     offersVideoClasses: true // 화상 수업 제공 여부
   },
@@ -75,7 +75,7 @@ const allTrainers = [
     rating: 4.9,
     reviewCount: 75,
     certifications: ["국제 도그 스포츠 코치", "고급 트릭 훈련 스페셜리스트"],
-    image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1770&q=80",
+    image: "https://robohash.org/trainer3?set=set4&size=250x250&bgset=bg1",
     description: "10년 경력의 고급 트릭 훈련 및 도그 스포츠 전문가입니다. 다수의 도그쇼 수상 경력을 보유하고 있습니다.",
     offersVideoClasses: true // 화상 수업 제공 여부
   },
@@ -87,7 +87,7 @@ const allTrainers = [
     rating: 4.7,
     reviewCount: 112,
     certifications: ["반려동물 행동 심리 전문가", "문제행동 교정 스페셜리스트"],
-    image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1770&q=80",
+    image: "https://robohash.org/trainer4?set=set4&size=250x250&bgset=bg1",
     description: "공격성, 분리불안 등 심각한 문제행동 교정에 특화된 전문가입니다. 동물병원과 협력하여 치료적 접근을 제공합니다.",
     offersVideoClasses: true // 화상 수업 제공 여부
   },
@@ -99,7 +99,7 @@ const allTrainers = [
     rating: 4.9,
     reviewCount: 64,
     certifications: ["노령견 케어 전문가", "동물 재활 치료사"],
-    image: "https://images.unsplash.com/photo-1566492031773-4f4e44671857?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1770&q=80",
+    image: "https://robohash.org/trainer5?set=set4&size=250x250&bgset=bg1",
     description: "노령견의 신체적, 정신적 건강을 고려한 맞춤형 훈련과 케어 프로그램을 제공합니다.",
     offersVideoClasses: true // 화상 수업 제공 여부
   },
@@ -111,7 +111,7 @@ const allTrainers = [
     rating: 4.8,
     reviewCount: 89,
     certifications: ["퍼피 트레이닝 전문가", "반려견 유치원 교육 자격증"],
-    image: "https://images.unsplash.com/photo-1552058544-f2b08422138a?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1770&q=80",
+    image: "https://robohash.org/trainer6?set=set4&size=250x250&bgset=bg1",
     description: "어린 반려견의 건강한 성장과 사회화를 위한 특화된 프로그램을 제공합니다.",
     offersVideoClasses: true // 화상 수업 제공 여부
   },
