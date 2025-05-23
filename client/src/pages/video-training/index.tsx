@@ -603,13 +603,85 @@ export default function VideoTraining() {
               </Button>
             </div>
             <div className="relative">
-              <div className="aspect-video bg-black">
-                {/* 실제 영상 대신 임시 이미지 사용 */}
-                <img 
-                  src={selectedVideo.thumbnail} 
-                  alt={selectedVideo.title} 
+              <div className="aspect-video bg-black relative">
+                {/* 비디오 플레이어 */}
+                <video
+                  ref={videoRef}
                   className="w-full h-full object-cover"
-                />
+                  poster={selectedVideo.thumbnail}
+                  onClick={togglePlay}
+                >
+                  {/* 영상 파일이 없는 경우를 위한 대체 소스 (실제 구현시 서버의 실제 영상 파일로 교체) */}
+                  <source src={`https://storage.googleapis.com/talez-videos/sample-${selectedVideo.id % 3 + 1}.mp4`} type="video/mp4" />
+                  
+                  {/* 자막 트랙 */}
+                  <track 
+                    label="한국어" 
+                    kind="subtitles" 
+                    srcLang="ko" 
+                    src={`/subtitles/video-${selectedVideo.id}-ko.vtt`} 
+                    default={playerState.subtitles}
+                  />
+                  <track 
+                    label="English" 
+                    kind="subtitles" 
+                    srcLang="en" 
+                    src={`/subtitles/video-${selectedVideo.id}-en.vtt`}
+                  />
+                  브라우저가 동영상 태그를 지원하지 않습니다.
+                </video>
+                
+                {/* 비디오 컨트롤 오버레이 */}
+                <div className={`absolute inset-0 flex items-center justify-center transition-opacity duration-300 ${playerState.controlsVisible ? 'opacity-100' : 'opacity-0'}`}
+                  onMouseMove={() => setPlayerState(prev => ({...prev, controlsVisible: true}))}
+                  onMouseLeave={() => !playerState.paused && setPlayerState(prev => ({...prev, controlsVisible: false}))}
+                >
+                  {/* 재생/일시정지 버튼 */}
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="bg-black/40 text-white hover:bg-black/60 rounded-full h-16 w-16"
+                    onClick={togglePlay}
+                    aria-label={playerState.paused ? "재생" : "일시정지"}
+                  >
+                    {playerState.paused ? <Play size={32} /> : <Pause size={32} />}
+                  </Button>
+                </div>
+                
+                {/* 컨트롤 바 */}
+                <div className={`absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent px-4 py-2 transition-opacity duration-300 ${playerState.controlsVisible ? 'opacity-100' : 'opacity-0'}`}>
+                  {/* 진행 바 */}
+                  <div className="relative h-1 bg-gray-600 rounded-full mb-3 cursor-pointer" onClick={handleSeekBarClick} ref={seekBarRef}>
+                    <div className="absolute left-0 top-0 h-full bg-primary rounded-full" style={{ width: `${(playerState.currentTime / playerState.duration) * 100}%` }}></div>
+                  </div>
+                  
+                  {/* 컨트롤 버튼 그룹 */}
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center gap-2">
+                      <Button variant="ghost" size="icon" className="text-white h-8 w-8" onClick={togglePlay}>
+                        {playerState.paused ? <Play size={18} /> : <Pause size={18} />}
+                      </Button>
+                      <Button variant="ghost" size="icon" className="text-white h-8 w-8" onClick={() => seekTime(-10)}>
+                        <SkipBack size={18} />
+                      </Button>
+                      <Button variant="ghost" size="icon" className="text-white h-8 w-8" onClick={() => seekTime(10)}>
+                        <SkipForward size={18} />
+                      </Button>
+                      <Button variant="ghost" size="icon" className="text-white h-8 w-8" onClick={toggleMute}>
+                        {playerState.muted ? <VolumeX size={18} /> : <Volume2 size={18} />}
+                      </Button>
+                      <Button variant="ghost" size="icon" className="text-white h-8 w-8" onClick={toggleSubtitles}>
+                        <Subtitles size={18} className={playerState.subtitles ? "text-primary" : "text-white"} />
+                      </Button>
+                      <span className="text-white text-xs ml-2">
+                        {formatTime(playerState.currentTime)} / {formatTime(playerState.duration)}
+                      </span>
+                    </div>
+                    <Button variant="ghost" size="icon" className="text-white h-8 w-8" onClick={toggleFullscreen}>
+                      <Maximize size={18} />
+                    </Button>
+                  </div>
+                </div>
                 
                 {/* 프리미엄 비로그인 시간 제한 오버레이 */}
                 {selectedVideo.isPremium && !isAuthenticated && (
