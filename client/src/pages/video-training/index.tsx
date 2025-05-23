@@ -1183,33 +1183,36 @@ export default function VideoTraining() {
                                     size="sm"
                                     variant="default"
                                     className="flex items-center gap-1"
-                                    onClick={(e) => {
-                                      // 이벤트 중지
-                                      e.preventDefault();
-                                      e.stopPropagation();
-                                      
-                                      // 간단한 가격 표시와 함께 확인 대화상자
-                                      if (!window.confirm(`${item.title} 강의를 ${item.price.toLocaleString()}원에 구매하시겠습니까?`)) {
+                                    type="button"
+                                    onClick={() => {
+                                      if (!isAuthenticated) {
+                                        alert("로그인이 필요합니다.");
                                         return;
                                       }
                                       
-                                      // 간단한 구매 처리 (기존 복잡한 로직 대신 간단하게 구현)
-                                      const newItem = { videoId: selectedVideo?.id || 0, itemId: item.id };
-                                      const updatedItems = [...purchasedItems, newItem];
-                                      
-                                      // 상태 업데이트 및 로컬스토리지 저장
-                                      setPurchasedItems(updatedItems);
-                                      localStorage.setItem('purchasedVideoItems', JSON.stringify(updatedItems));
-                                      
-                                      // 성공 알림
-                                      alert("강의 구매가 완료되었습니다.");
-                                      
-                                      // 상태 강제 리렌더링을 위한 임시 해결책
-                                      setTimeout(() => {
+                                      if (confirm(`${item.title} 강의를 ${item.price.toLocaleString()}원에 구매하시겠습니까?`)) {
+                                        // 구매 정보 저장
+                                        const existingItems = JSON.parse(localStorage.getItem('purchasedVideoItems') || '[]');
+                                        const newItem = { videoId: selectedVideo?.id || 0, itemId: item.id };
+                                        
+                                        // 중복 제거하여 추가
+                                        const updatedItems = [
+                                          ...existingItems.filter(i => 
+                                            !(i.videoId === newItem.videoId && i.itemId === newItem.itemId)
+                                          ),
+                                          newItem
+                                        ];
+                                        
+                                        // 로컬 스토리지 업데이트
+                                        localStorage.setItem('purchasedVideoItems', JSON.stringify(updatedItems));
+                                        
+                                        // 성공 메시지
+                                        alert("강의가 구매되었습니다!");
+                                        
+                                        // 페이지 새로고침
                                         window.location.reload();
-                                      }, 500);
+                                      }
                                     }}
-                                    disabled={!isAuthenticated}
                                   >
                                     {item.price.toLocaleString()}원 구매
                                   </Button>
