@@ -10,22 +10,24 @@ const app = express();
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: false, limit: '50mb' }));
 
-// 세션 설정
+// 세션 설정 - 환경 변수 활용하여 보안성 강화
+const sessionSecret = process.env.SESSION_SECRET || 'peteduplatform-secret-key';
+
 app.use(session({
-  secret: 'peteduplatform-secret-key',
-  resave: true, // 세션 변경이 없어도 항상 저장
-  saveUninitialized: true, // 초기화되지 않은 세션도 저장
+  secret: sessionSecret,
+  resave: false, // 최적화: 변경 사항이 있는 경우만 저장
+  saveUninitialized: false, // 최적화: 초기화된 세션만 저장 (빈 세션 저장 방지)
   store: new MemoryStore({
     checkPeriod: 86400000 // 24시간마다 만료된 세션 정리
   }),
   cookie: {
     maxAge: 24 * 60 * 60 * 1000, // 24시간
-    secure: false, // 개발 환경에서는 false, 프로덕션에서는 true로 설정
-    httpOnly: false, // 개발 중에는 false로 설정하여 디버깅 용이하게
+    secure: process.env.NODE_ENV === 'production', // 프로덕션에서만 보안 쿠키 사용
+    httpOnly: true, // 보안 강화: JS에서 쿠키 접근 방지
     sameSite: 'lax',
     path: '/' // 모든 경로에서 쿠키 사용 가능
   },
-  name: 'petedu.sid' // 명시적인 세션 쿠키 이름 설정
+  name: 'talez.sid' // 서비스 이름 변경 반영
 }));
 
 app.use((req, res, next) => {

@@ -378,10 +378,41 @@ export type InsertCommissionTransaction = z.infer<typeof createCommissionTransac
 export type SettlementReport = typeof settlementReports.$inferSelect;
 export type InsertSettlementReport = z.infer<typeof createSettlementReportSchema>;
 
-// 메뉴 관리 테이블 정의
+// 메뉴 구성 관련 테이블 정의
+// 메인 메뉴 구성 테이블
 export const menuConfigurations = pgTable("menu_configurations", {
   id: serial("id").primaryKey(),
-  configuration: json("configuration").notNull().$type<any>(), // JSON 타입 데이터로 메뉴 구성 저장
+  name: text("name").notNull(), // 메뉴 구성의 이름
+  description: text("description"), // 메뉴 구성에 대한 설명
+  configuration: json("configuration").notNull().$type<{
+    groups: {
+      id: string;
+      title: string;
+      icon: string;
+      orderIndex: number;
+      isActive: boolean;
+      isPublic: boolean;
+      roles: string[];
+      isOpen: boolean;
+      instituteId?: number | null;
+    }[];
+    items: {
+      id: string;
+      title: string;
+      path: string;
+      icon: string;
+      type: string;
+      category: string;
+      roles: string[];
+      orderIndex: number;
+      isActive: boolean;
+      isPublic: boolean;
+      openInNewWindow?: boolean;
+      instituteId?: number | null;
+    }[];
+    lastUpdated: string;
+    updatedBy: string;
+  }>(), // 더 구체적인 타입으로 JSON 구조화
   instituteId: integer("institute_id").references(() => institutes.id), // null이면 전체 시스템 메뉴 구성
   isActive: boolean("is_active").default(true).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),

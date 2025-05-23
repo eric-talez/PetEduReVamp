@@ -200,6 +200,32 @@ export default function EventsPage() {
   const { data: eventsData, isLoading, error } = useQuery({
     queryKey: ['/api/events'],
     staleTime: 5 * 60 * 1000, // 5분간 캐시 유지
+    select: (data) => {
+      // 서버에서 받은 이벤트 데이터를 UI에 맞게 변환
+      if (!data || !Array.isArray(data)) return [];
+      
+      return data.map(event => ({
+        ...event,
+        // 위치 정보 형식 맞추기
+        location: {
+          id: event.locationId,
+          name: event.locationName || '알 수 없는 장소',
+          address: event.locationAddress || '주소 정보 없음',
+          lat: parseFloat(event.locationLat || '0'),
+          lng: parseFloat(event.locationLng || '0'),
+          region: event.locationRegion || '지역 정보 없음'
+        },
+        // 주최자 정보 형식 맞추기
+        organizer: {
+          name: event.organizerName || '알 수 없음',
+          avatar: event.organizerAvatar || 'https://via.placeholder.com/100'
+        },
+        // 데이터 일관성 보장
+        price: event.price || '무료',
+        attendees: event.attendees || 0,
+        maxAttendees: event.maxAttendees === null ? undefined : event.maxAttendees
+      }));
+    }
   });
   
   // 모바일 화면 감지
