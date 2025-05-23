@@ -4,6 +4,7 @@ import React, { ReactNode, useState, useEffect, lazy, Suspense } from "react";
 import SimpleChatbot from './components/SimpleChatbot';
 import { UserPreferencesProvider } from './hooks/use-user-preferences';
 import { useGlobalShortcuts } from './hooks/use-keyboard-shortcuts';
+import { NotificationsProvider } from './components/NotificationsProvider';
 
 // 페이지 컴포넌트 임포트
 import Home from "./pages/Home";

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState, createContext, useContext, ReactNode } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { useAuth } from '@/hooks/use-auth';
+import { useQuery } from '@tanstack/react-query';
 
 // 알림 타입 정의
 export interface Notification {
@@ -65,7 +65,11 @@ type WebSocketStatus = 'connecting' | 'connected' | 'disconnected' | 'reconnecti
  */
 export function NotificationProvider({ children }: { children: ReactNode }) {
   const { toast } = useToast();
-  const { user } = useAuth();
+  // 사용자 정보 가져오기
+  const { data: user } = useQuery({
+    queryKey: ['/api/auth/me'],
+    retry: false
+  });
   
   // 상태
   const [notifications, setNotifications] = useState<Notification[]>([]);
