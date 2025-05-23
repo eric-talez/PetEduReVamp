@@ -1074,7 +1074,7 @@ export default function VideoTraining() {
                     alt={video.title}
                     className="w-full h-48 object-cover hover:scale-105 transition-transform duration-300"
                     loading="lazy"
-                    fetchpriority="auto"
+                    fetchPriority="auto"
                   />
                   {/* 프리미엄 배지 표시 */}
                   {video.isPremium && (
