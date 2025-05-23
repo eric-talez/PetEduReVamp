@@ -123,7 +123,7 @@ const allTrainers = [
     rating: 4.7,
     reviewCount: 58,
     certifications: ["어질리티 코치", "도그스포츠 트레이너"],
-    image: "https://images.unsplash.com/photo-1560250097-0b93528c311a?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1770&q=80",
+    image: "https://robohash.org/trainer7?set=set4&size=250x250&bgset=bg1",
     description: "활동적인 반려견과 보호자를 위한 어질리티, 플라이볼 등 다양한 도그 스포츠를 교육합니다.",
     offersVideoClasses: false // 화상 수업 제공하지 않음
   },
@@ -135,7 +135,7 @@ const allTrainers = [
     rating: 4.5,
     reviewCount: 42,
     certifications: ["가정견 훈련 전문가"],
-    image: "https://images.unsplash.com/photo-1543132220-3ec99c6094dc?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1770&q=80",
+    image: "https://robohash.org/trainer8?set=set4&size=250x250&bgset=bg1",
     description: "각 가정환경에 맞춘 실용적인 훈련 방법을 제공하여 반려견과의 조화로운 생활을 돕습니다.",
     offersVideoClasses: false // 화상 수업 제공하지 않음
   }
@@ -402,11 +402,11 @@ export default function VideoCallPage() {
         aria-label="화상 수업 안내 배너"
       >
         <img 
-          src="https://images.unsplash.com/photo-1560250097-0b93528c311a?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=400" 
+          src="https://images.pexels.com/photos/7210748/pexels-photo-7210748.jpeg?auto=compress&cs=tinysrgb&w=1600&h=400" 
           alt="전문 훈련사와 반려견이 함께하는 실시간 화상 수업 - 개인 맞춤형 및 그룹 수업 제공"
           className="w-full h-full object-cover absolute"
           loading="eager"
-          fetchpriority="high"
+          fetchPriority="high"
         />
         
         {/* 이미지 필터 제거하여 원본 이미지 표시 */}
