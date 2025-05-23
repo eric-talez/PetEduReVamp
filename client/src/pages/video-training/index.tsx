@@ -178,13 +178,50 @@ export default function VideoTraining() {
     handlePurchaseItem(videoId, itemId, price);
   };
   
-  // 미리보기 시작 함수
+  // 미리보기 시작 함수 - 권한 체크 및 타이머 설정
   const handleStartPreview = (videoId: number, itemId: number) => {
+    console.log("미리보기 시작:", videoId, itemId);
+    
+    // 로그인했거나 프리미엄 콘텐츠가 아닌 경우에만 미리보기 제공
+    const currentVideo = videos.find(v => v.id === videoId);
+    if (currentVideo?.isPremium && !isAuthenticated) {
+      toast({
+        title: "로그인 필요",
+        description: "프리미엄 콘텐츠 미리보기는 로그인이 필요합니다.",
+        variant: "destructive",
+      });
+      
+      // 로그인 페이지로 리디렉션 (1.5초 후)
+      setTimeout(() => {
+        window.location.href = '/auth';
+      }, 1500);
+      return;
+    }
+    
+    // 이미 구매한 항목인지 확인
+    if (isItemPurchased(videoId, itemId)) {
+      toast({
+        title: "구매 완료된 강의",
+        description: "이미 구매한 강의입니다. 전체 영상을 시청하실 수 있습니다.",
+      });
+      
+      // 바로 재생 시작
+      setIsPlaying(true);
+      return;
+    }
+    
+    // 미리보기 상태 초기화
     setPreviewItem({videoId, itemId});
-    setPreviewTimeLeft(30); // 미리보기 시간 초기화 (30초)
+    setPreviewTimeLeft(PREVIEW_TIME_LIMIT);
     setIsPreviewMode(true);
     setIsPlaying(true);
     setPreviewEnded(false);
+    
+    // 미리보기 시작 메시지
+    toast({
+      title: "미리보기 시작",
+      description: `${PREVIEW_TIME_LIMIT}초 동안 미리보기가 제공됩니다.`,
+    });
     
     // 타이머 설정
     const timer = setInterval(() => {
@@ -194,15 +231,17 @@ export default function VideoTraining() {
           setPreviewEnded(true);
           setIsPreviewMode(false);
           
+          // 비디오 일시정지
           const videoElement = videoRef.current;
           if (videoElement) {
             videoElement.pause();
             setPlayerState(prevState => ({ ...prevState, playing: false }));
           }
           
+          // 종료 메시지 및 구매 유도
           toast({
             title: "미리보기 종료",
-            description: "30초 미리보기가 종료되었습니다. 전체 강의를 보시려면 구매하세요.",
+            description: `${PREVIEW_TIME_LIMIT}초 미리보기가 종료되었습니다. 전체 강의를 보시려면 구매하세요.`,
           });
           
           return 0;
@@ -1204,35 +1243,65 @@ export default function VideoTraining() {
                                     onClick={() => {
                                       // 로그인 상태 확인
                                       if (!isAuthenticated) {
-                                        alert("로그인이 필요한 서비스입니다. 로그인 페이지로 이동합니다.");
-                                        // 로그인 페이지로 리디렉션
-                                        window.location.href = '/auth';
+                                        toast({
+                                          title: "로그인 필요",
+                                          description: "강의를 구매하려면 로그인이 필요합니다.",
+                                          variant: "destructive",
+                                        });
+                                        
+                                        // 로그인 페이지로 리디렉션 (1.5초 후)
+                                        setTimeout(() => {
+                                          window.location.href = '/auth';
+                                        }, 1500);
                                         return;
                                       }
                                       
-                                      console.log("인증 상태 확인:", isAuthenticated);
+                                      // 이미 구매했는지 확인
+                                      if (isItemPurchased(selectedVideo.id, item.id)) {
+                                        toast({
+                                          title: "이미 구매함",
+                                          description: "이미 구매한 강의입니다. 지금 시청하실 수 있습니다.",
+                                        });
+                                        return;
+                                      }
                                       
+                                      // 구매 확인 대화상자
                                       if (confirm(`${item.title} 강의를 ${item.price.toLocaleString()}원에 구매하시겠습니까?`)) {
-                                        // 구매 정보 저장
-                                        const existingItems = JSON.parse(localStorage.getItem('purchasedVideoItems') || '[]');
-                                        const newItem = { videoId: selectedVideo?.id || 0, itemId: item.id };
-                                        
-                                        // 중복 제거하여 추가
-                                        const updatedItems = [
-                                          ...existingItems.filter(i => 
-                                            !(i.videoId === newItem.videoId && i.itemId === newItem.itemId)
-                                          ),
-                                          newItem
-                                        ];
-                                        
-                                        // 로컬 스토리지 업데이트
-                                        localStorage.setItem('purchasedVideoItems', JSON.stringify(updatedItems));
-                                        
-                                        // 성공 메시지
-                                        alert("강의가 구매되었습니다!");
-                                        
-                                        // 페이지 새로고침
-                                        window.location.reload();
+                                        try {
+                                          // 구매 정보 저장
+                                          const existingItems = JSON.parse(localStorage.getItem('purchasedVideoItems') || '[]');
+                                          const newItem = { videoId: selectedVideo?.id || 0, itemId: item.id };
+                                          
+                                          // 중복 제거하여 추가
+                                          const updatedItems = [
+                                            ...existingItems.filter(i => 
+                                              !(i.videoId === newItem.videoId && i.itemId === newItem.itemId)
+                                            ),
+                                            newItem
+                                          ];
+                                          
+                                          // 로컬 스토리지 업데이트
+                                          localStorage.setItem('purchasedVideoItems', JSON.stringify(updatedItems));
+                                          setPurchasedItems(updatedItems);
+                                          
+                                          // 성공 메시지
+                                          toast({
+                                            title: "구매 완료",
+                                            description: "강의가 구매되었습니다. 지금 바로 시청하실 수 있습니다.",
+                                          });
+                                          
+                                          // 1초 후 페이지 새로고침
+                                          setTimeout(() => {
+                                            window.location.reload();
+                                          }, 1000);
+                                        } catch (error) {
+                                          console.error("구매 처리 중 오류:", error);
+                                          toast({
+                                            title: "구매 실패",
+                                            description: "강의 구매 중 오류가 발생했습니다. 다시 시도해주세요.",
+                                            variant: "destructive",
+                                          });
+                                        }
                                       }
                                     }}
                                   >
