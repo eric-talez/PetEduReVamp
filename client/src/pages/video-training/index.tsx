@@ -649,6 +649,11 @@ export default function VideoTraining() {
     const secs = Math.floor(seconds % 60);
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
+  
+  // 미리보기 남은 시간 포맷팅
+  const formatPreviewTimeLeft = (): string => {
+    return `${previewTimeLeft}초 남음`;
+  };
 
   // 영상 플레이어 이벤트 핸들러
   useEffect(() => {
@@ -1282,16 +1287,16 @@ export default function VideoTraining() {
                 </div>
                 
                 {/* 프리미엄 비로그인 시간 제한 오버레이 */}
-                {selectedVideo.isPremium && !isAuthenticated && (
+                {(selectedVideo.isPremium && !isAuthenticated) || isPreviewMode ? (
                   <div className="absolute top-4 right-4 bg-gray-900 bg-opacity-80 rounded px-3 py-1 text-white flex items-center">
                     {previewEnded ? (
                       <AlertCircle size={14} className="mr-1 text-amber-500" />
                     ) : (
                       <span className="mr-1">미리보기</span>
                     )}
-                    {previewEnded ? "미리보기 종료" : formatRemainingTime()}
+                    {previewEnded ? "미리보기 종료" : isPreviewMode ? formatPreviewTimeLeft() : `${PREVIEW_TIME_LIMIT}초`}
                   </div>
-                )}
+                ) : null}
                 
                 {/* 미리보기 끝났을 때 오버레이 */}
                 {selectedVideo.isPremium && !isAuthenticated && previewEnded && (
