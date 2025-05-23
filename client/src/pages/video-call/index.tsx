@@ -396,11 +396,17 @@ export default function VideoCallPage() {
       )}
       
       {/* 상단 배너 */}
-      <div className="relative rounded-xl overflow-hidden h-48 md:h-64 mb-8 bg-gradient-to-r from-primary/80 to-accent/80 shadow-lg">
+      <div 
+        className="relative rounded-xl overflow-hidden h-48 md:h-64 mb-8 bg-gradient-to-r from-primary/80 to-accent/80 shadow-lg"
+        role="banner" 
+        aria-label="화상 수업 안내 배너"
+      >
         <img 
           src="https://images.unsplash.com/photo-1560250097-0b93528c311a?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=400" 
-          alt="화상 수업"
+          alt="전문 훈련사와 반려견이 함께하는 실시간 화상 수업 - 개인 맞춤형 및 그룹 수업 제공"
           className="w-full h-full object-cover absolute"
+          loading="eager"
+          fetchpriority="high"
         />
         
         {/* 이미지 필터 제거하여 원본 이미지 표시 */}
