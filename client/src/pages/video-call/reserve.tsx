@@ -268,34 +268,36 @@ export default function VideoClassReservePage() {
                       <TabsTrigger value="personal">개인 줌 링크 사용</TabsTrigger>
                     </TabsList>
                     <TabsContent value="system">
-                      <div className="p-4 bg-muted/40 rounded-md">
+                      <div className="p-4 bg-muted/40 rounded-md border border-muted">
                         <div className="flex items-start">
                           <Video className="h-5 w-5 text-primary mr-2 mt-0.5" />
                           <div>
                             <p className="text-sm font-medium">내장 화상 시스템 사용</p>
-                            <p className="text-sm text-muted-foreground">내장된 화상 회의 시스템을 통해 수업을 진행합니다. 별도의 앱 설치가 필요하지 않습니다.</p>
+                            <p className="text-sm text-foreground">내장된 화상 회의 시스템을 통해 수업을 진행합니다. 별도의 앱 설치가 필요하지 않습니다.</p>
                           </div>
                         </div>
                       </div>
                     </TabsContent>
                     <TabsContent value="personal">
-                      <div className="p-4 bg-muted/40 rounded-md">
+                      <div className="p-4 bg-muted/40 rounded-md border border-muted">
                         <div className="flex items-start mb-4">
                           <LinkIcon className="h-5 w-5 text-primary mr-2 mt-0.5" />
                           <div>
                             <p className="text-sm font-medium">개인 줌 회의 링크 사용</p>
-                            <p className="text-sm text-muted-foreground">본인의 Zoom 회의 링크를 사용하여 수업을 진행합니다.</p>
+                            <p className="text-sm text-foreground">본인의 Zoom 회의 링크를 사용하여 수업을 진행합니다.</p>
                           </div>
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="zoom-link">줌 회의 링크</Label>
+                          <Label htmlFor="zoom-link" className="font-medium text-foreground">줌 회의 링크</Label>
                           <Input 
                             id="zoom-link" 
                             placeholder="https://zoom.us/j/123456789" 
                             value={zoomMeetingLink} 
                             onChange={handleZoomLinkChange}
+                            className="border-input bg-background"
+                            aria-label="줌 회의 링크 입력"
                           />
-                          <p className="text-xs text-muted-foreground">예: https://zoom.us/j/123456789</p>
+                          <p className="text-xs text-foreground/70">예: https://zoom.us/j/123456789</p>
                         </div>
                       </div>
                     </TabsContent>
@@ -309,6 +311,8 @@ export default function VideoClassReservePage() {
                 <Button 
                   disabled={!selectedDate || !selectedTime || (connectionMethod === 'personal' && !zoomMeetingLink)}
                   onClick={handleContinue}
+                  className="bg-primary text-primary-foreground hover:bg-primary/90"
+                  aria-label="다음 단계로 진행하기"
                 >
                   다음 단계
                 </Button>
@@ -363,7 +367,7 @@ export default function VideoClassReservePage() {
                   {connectionMethod === 'personal' && (
                     <div className="col-span-1 sm:col-span-2">
                       <p className="text-sm text-gray-500">입력한 줌 링크</p>
-                      <p className="font-medium break-all">{zoomMeetingLink}</p>
+                      <p className="font-medium break-all bg-muted/30 p-2 rounded-md border border-muted text-foreground">{zoomMeetingLink}</p>
                     </div>
                   )}
                 </div>
@@ -452,9 +456,9 @@ export default function VideoClassReservePage() {
                   {connectionMethod === 'personal' && (
                     <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-700">
                       <p className="text-gray-500 mb-1">줌 회의 링크</p>
-                      <div className="flex items-start">
+                      <div className="flex items-start p-2 bg-background rounded-md border border-muted">
                         <LinkIcon className="h-4 w-4 text-primary mr-2 mt-0.5 flex-shrink-0" />
-                        <p className="font-medium text-sm break-all">{zoomMeetingLink}</p>
+                        <p className="font-medium text-sm break-all text-foreground">{zoomMeetingLink}</p>
                       </div>
                     </div>
                   )}
