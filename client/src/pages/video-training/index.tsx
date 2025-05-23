@@ -1044,6 +1044,25 @@ export default function VideoTraining() {
 
         {/* 비디오 그리드 */}
         <TabsContent value="all" className="mt-0">
+          {/* 비로그인 사용자를 위한 안내 메시지 */}
+          {!isAuthenticated && (
+            <div className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg p-4 mb-6">
+              <h3 className="text-lg font-medium flex items-center gap-2">
+                <AlertCircle size={20} className="text-orange-500" />
+                로그인하고 더 많은 기능을 이용하세요
+              </h3>
+              <p className="text-gray-600 dark:text-gray-300 mt-1">
+                로그인하면 프리미엄 강의 미리보기, 강의 구매, 학습 진도 저장 등 다양한 기능을 이용할 수 있습니다.
+              </p>
+              <button 
+                className="mt-2 px-4 py-1.5 bg-orange-500 hover:bg-orange-600 text-white rounded-md transition-colors"
+                onClick={() => window.location.href = '/auth'}
+              >
+                로그인 / 회원가입
+              </button>
+            </div>
+          )}
+          
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {filteredVideos.map((video) => (
               <Card key={video.id} className="overflow-hidden hover:shadow-md transition-shadow">
@@ -1053,6 +1072,17 @@ export default function VideoTraining() {
                     alt={video.title}
                     className="w-full h-48 object-cover"
                   />
+                  {/* 프리미엄 배지 표시 */}
+                  {video.isPremium && (
+                    <div className="absolute top-2 right-2 bg-gradient-to-r from-amber-500 to-yellow-500 text-white text-xs font-medium px-2.5 py-1 rounded shadow">
+                      <span className="flex items-center gap-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M12 2L5 12l7 10 7-10z" />
+                        </svg>
+                        프리미엄
+                      </span>
+                    </div>
+                  )}
                   <div className="absolute inset-0 bg-black bg-opacity-20 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
                     <Button 
                       variant="default" 
