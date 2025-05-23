@@ -431,7 +431,7 @@ export default function VideoClassReservePage() {
                   예약 확인 이메일이 발송되었으니 확인해주세요.
                 </p>
                 <div className="bg-white dark:bg-gray-800 p-4 rounded-lg mb-4">
-                  <div className="grid grid-cols-2 gap-2 text-sm">
+                  <div className="grid grid-cols-2 gap-3 text-sm">
                     <div>
                       <p className="text-gray-500">수업명</p>
                       <p className="font-medium">{videoClass.title}</p>
@@ -443,11 +443,35 @@ export default function VideoClassReservePage() {
                         day: 'numeric'
                       })} {selectedTime}</p>
                     </div>
+                    <div>
+                      <p className="text-gray-500">연결 방식</p>
+                      <p className="font-medium">{connectionMethod === 'system' ? '내장 화상 시스템' : '개인 줌 링크'}</p>
+                    </div>
                   </div>
+                  
+                  {connectionMethod === 'personal' && (
+                    <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-700">
+                      <p className="text-gray-500 mb-1">줌 회의 링크</p>
+                      <div className="flex items-start">
+                        <LinkIcon className="h-4 w-4 text-primary mr-2 mt-0.5 flex-shrink-0" />
+                        <p className="font-medium text-sm break-all">{zoomMeetingLink}</p>
+                      </div>
+                    </div>
+                  )}
                 </div>
+
                 <div className="flex items-center gap-2 text-blue-600 dark:text-blue-400 mb-2">
-                  <Video className="h-4 w-4" />
-                  <span className="text-sm">화상 수업 입장 링크는 수업 시작 10분 전에 이메일과 알림으로 발송됩니다.</span>
+                  {connectionMethod === 'system' ? (
+                    <>
+                      <Video className="h-4 w-4" />
+                      <span className="text-sm">화상 수업 입장 링크는 수업 시작 10분 전에 이메일과 알림으로 발송됩니다.</span>
+                    </>
+                  ) : (
+                    <>
+                      <LinkIcon className="h-4 w-4" />
+                      <span className="text-sm">입력하신 줌 링크로 약속된 시간에 접속해 주세요. 알림도 발송됩니다.</span>
+                    </>
+                  )}
                 </div>
               </div>
             </CardContent>

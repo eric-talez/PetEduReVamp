@@ -22,7 +22,9 @@ import {
   MapPin,
   CheckCircle,
   ChevronRight,
-  Search
+  Search,
+  Link as LinkIcon,
+  ExternalLink
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import {
