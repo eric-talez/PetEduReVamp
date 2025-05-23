@@ -97,16 +97,19 @@ export default function VideoTraining() {
   
   // 로그인 상태에 따라 구매 처리
   const handlePurchaseClick = (videoId: number, itemId: number, price: number) => {
-    if (!isAuthenticated) {
-      toast({
-        title: "로그인 필요",
-        description: "강의를 구매하려면 로그인이 필요합니다.",
-        variant: "destructive",
-      });
-      return;
-    }
-    
+    // 항상 구매 허용 (로그인 체크는 버튼 자체에서 disabled 속성으로 처리)
     handlePurchaseItem(videoId, itemId, price);
+    
+    // 구매 후 상태 업데이트를 확실히 하기 위해 setTimeout 추가
+    setTimeout(() => {
+      // 구매 목록 상태가 업데이트되었는지 확인
+      if (isItemPurchased(videoId, itemId)) {
+        toast({
+          title: "구매 확인",
+          description: "강의가 성공적으로 구매되었습니다.",
+        });
+      }
+    }, 100);
   };
   
   // 미리보기 시작 함수
@@ -1132,6 +1135,7 @@ export default function VideoTraining() {
                                     variant="default"
                                     className="flex items-center gap-1"
                                     onClick={() => handlePurchaseClick(selectedVideo.id, item.id, item.price)}
+                                    disabled={!isAuthenticated}
                                   >
                                     {item.price.toLocaleString()}원 구매
                                   </Button>
