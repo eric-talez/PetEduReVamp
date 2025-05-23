@@ -112,6 +112,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       category: "입양",
       price: "무료",
       attendees: 35,
+      maxAttendees: 50,
       createdAt: new Date(),
       updatedAt: new Date()
     }

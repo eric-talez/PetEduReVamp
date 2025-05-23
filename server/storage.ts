@@ -768,6 +768,102 @@ export class MemStorage implements IStorage {
     this.settlementReports.set(id, updatedReport);
     return updatedReport;
   }
+
+  // 이벤트 관련 메서드
+  async getAllEvents(): Promise<Event[]> {
+    return Array.from(this.events.values());
+  }
+
+  async getEvent(id: number): Promise<Event | undefined> {
+    return this.events.get(id);
+  }
+
+  async createEvent(event: InsertEvent): Promise<Event> {
+    const newEvent: Event = {
+      ...event,
+      id: this.eventId++,
+      attendees: 0,
+      maxAttendees: event.maxAttendees !== undefined ? event.maxAttendees : null,
+      image: event.image || null,
+      price: typeof event.price === 'number' || event.price === '무료' 
+        ? event.price 
+        : '무료',
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    this.events.set(newEvent.id, newEvent);
+    return newEvent;
+  }
+
+  async getEventsByRegion(region: string): Promise<Event[]> {
+    const events = Array.from(this.events.values());
+    const locations = Array.from(this.eventLocations.values());
+    
+    return events.filter(event => {
+      const location = locations.find(loc => loc.id === event.locationId);
+      return location && location.region === region;
+    });
+  }
+
+  async getEventsByCategory(category: string): Promise<Event[]> {
+    const events = Array.from(this.events.values());
+    return events.filter(event => event.category === category);
+  }
+
+  async checkEventAttendance(userId: number, eventId: number): Promise<boolean> {
+    const attendances = this.eventAttendances.get(eventId) || [];
+    return attendances.some(attendance => attendance.userId === userId);
+  }
+
+  async attendEvent(userId: number, eventId: number): Promise<EventAttendance> {
+    const event = this.events.get(eventId);
+    if (!event) {
+      throw new Error('이벤트를 찾을 수 없습니다.');
+    }
+
+    const isAlreadyAttending = await this.checkEventAttendance(userId, eventId);
+    if (isAlreadyAttending) {
+      throw new Error('이미 참석 신청한 이벤트입니다.');
+    }
+
+    // 최대 참가자 수 확인
+    if (event.maxAttendees !== null && (event.attendees || 0) >= event.maxAttendees) {
+      throw new Error('이벤트 참가자 수가 최대치에 도달했습니다.');
+    }
+
+    // 참가자 수 증가
+    event.attendees = (event.attendees || 0) + 1;
+    this.events.set(eventId, event);
+
+    // 참가 정보 추가
+    const newAttendance: EventAttendance = {
+      id: this.eventAttendanceId++,
+      eventId,
+      userId,
+      createdAt: new Date()
+    };
+
+    const attendances = this.eventAttendances.get(eventId) || [];
+    attendances.push(newAttendance);
+    this.eventAttendances.set(eventId, attendances);
+
+    return newAttendance;
+  }
+
+  async getEventLocation(id: number): Promise<EventLocation | undefined> {
+    return this.eventLocations.get(id);
+  }
+
+  async createEventLocation(location: InsertEventLocation): Promise<EventLocation> {
+    const newLocation: EventLocation = {
+      ...location,
+      id: this.eventLocationId++,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    this.eventLocations.set(newLocation.id, newLocation);
+    return newLocation;
+  }
 }
 
 export const storage = new MemStorage();
