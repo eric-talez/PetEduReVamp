@@ -47,10 +47,22 @@ export async function apiRequest(
     console.log('[DEBUG] Request payload:', data);
   }
   
+  // 로컬 스토리지에서 인증 정보 가져오기
+  const authHeaders: Record<string, string> = {};
+  const userRole = localStorage.getItem('userRole');
+  
+  // 인증 정보가 있으면 헤더에 추가
+  if (userRole) {
+    authHeaders['X-User-Role'] = userRole;
+  }
+  
   try {
     const res = await fetch(url, {
       method,
-      headers: data ? { "Content-Type": "application/json" } : {},
+      headers: {
+        ...(data ? { "Content-Type": "application/json" } : {}),
+        ...authHeaders
+      },
       body: data ? JSON.stringify(data) : undefined,
       credentials: "include",
     });

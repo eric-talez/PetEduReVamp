@@ -1185,7 +1185,7 @@ export default function VideoTraining() {
                                     className="flex items-center gap-1"
                                     type="button"
                                     onClick={() => {
-                                      // 로그인 상태 확인 및 안내 메시지 개선
+                                      // 로그인 상태 확인
                                       if (!isAuthenticated) {
                                         alert("로그인이 필요한 서비스입니다. 로그인 페이지로 이동합니다.");
                                         // 로그인 페이지로 리디렉션
