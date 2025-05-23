@@ -1,7 +1,7 @@
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/Button";
-import { NotificationBell } from "@/components/NotificationBell";
+import { NotificationCenter } from "@/components/NotificationCenter";
 import { 
   Bell, 
   Menu, 
@@ -505,7 +505,7 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
               {/* 개선된 알림 센터 */}
               <div className="relative">
                 {isAuthenticated ? (
-                  <NotificationBell />
+                  <NotificationCenter />
                 ) : (
                   <Button 
                     variant="ghost" 

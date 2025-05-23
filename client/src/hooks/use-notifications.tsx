@@ -111,7 +111,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
         // 인증 메시지 전송
         newSocket.send(JSON.stringify({
           type: 'authenticate',
-          userId: user.id,
+          userId: user?.id || 1, // 임시로 기본값 설정
           token: 'dummy-token', // 실제 구현에서는 인증 토큰 사용
           reconnect: reconnectAttempts > 0
         }));
@@ -405,10 +405,10 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
       type: 'message',
       receiverId: userId,
       content: message,
-      type: 'notification',
+      messageType: 'notification',
       metadata: {
         title,
-        type,
+        notificationType: type,
         linkTo,
         ...metadata
       }
