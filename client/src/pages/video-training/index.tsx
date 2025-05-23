@@ -923,7 +923,7 @@ export default function VideoTraining() {
       {/* 상단 배너 */}
       <div className="relative rounded-xl overflow-hidden h-48 md:h-64 mb-8 shadow-lg">
         <img 
-          src="https://images.pexels.com/photos/3671300/pexels-photo-3671300.jpeg?auto=compress&cs=tinysrgb&w=1600&h=400" 
+          src="https://images.pexels.com/photos/3671300/pexels-photo-3671300.jpeg?auto=compress&cs=tinysrgb&dpr=2&w=1920&h=600&q=80" 
           alt="영상 훈련"
           className="w-full h-full object-cover absolute"
           loading="eager"
@@ -1072,7 +1072,9 @@ export default function VideoTraining() {
                   <img
                     src={video.thumbnail}
                     alt={video.title}
-                    className="w-full h-48 object-cover"
+                    className="w-full h-48 object-cover hover:scale-105 transition-transform duration-300"
+                    loading="lazy"
+                    fetchpriority="auto"
                   />
                   {/* 프리미엄 배지 표시 */}
                   {video.isPremium && (
