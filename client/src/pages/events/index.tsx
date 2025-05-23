@@ -201,14 +201,63 @@ export default function EventsPage() {
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [totalPages, setTotalPages] = useState(1);
   
+  // 응답 데이터 타입 정의
+  interface EventResponseItem {
+    id: number;
+    title: string;
+    description: string;
+    image: string | null;
+    date: string;
+    time: string;
+    locationId: number;
+    locationName?: string;
+    locationAddress?: string;
+    locationLat?: string;
+    locationLng?: string;
+    locationRegion?: string;
+    organizerId: number;
+    organizerName?: string;
+    organizerAvatar?: string;
+    category: string;
+    price: number | '무료';
+    attendees: number | null;
+    maxAttendees: number | null;
+    createdAt: string;
+    updatedAt: string;
+  }
+  
+  // 변환된 이벤트 아이템 타입 (UI에 표시되는 형식)
+  interface TransformedEventItem extends Omit<EventResponseItem, 'maxAttendees'> {
+    location: EventLocation;
+    organizer: {
+      name: string;
+      avatar: string;
+    };
+    maxAttendees?: number;
+    attendees: number;
+  }
+  
+  interface PaginatedResponse {
+    items: EventResponseItem[];
+    meta: {
+      totalItems: number;
+      itemsPerPage: number;
+      currentPage: number;
+      totalPages: number;
+    };
+  }
+  
   // API에서 이벤트 데이터 불러오기 (페이지네이션 지원)
-  const { data: eventsResponse, isLoading, error } = useQuery({
+  const { data: eventsResponse, isLoading, error } = useQuery<PaginatedResponse>({
     queryKey: ['/api/events', { page: currentPage, limit: itemsPerPage }],
     staleTime: 5 * 60 * 1000, // 5분간 캐시 유지
     select: (data) => {
       // 페이지네이션 메타데이터 추출
       if (!data || !data.items || !Array.isArray(data.items)) {
-        return { items: [], meta: { totalItems: 0, currentPage: 1, totalPages: 1, itemsPerPage: 10 } };
+        return { 
+          items: [], 
+          meta: { totalItems: 0, currentPage: 1, totalPages: 1, itemsPerPage: 10 } 
+        };
       }
       
       // 페이지네이션 메타데이터 업데이트
@@ -219,7 +268,7 @@ export default function EventsPage() {
       }
       
       // 이벤트 데이터 변환
-      const transformedItems = data.items.map(event => ({
+      const transformedItems = data.items.map((event: EventResponseItem) => ({
         ...event,
         // 위치 정보 형식 맞추기
         location: {
@@ -607,6 +656,94 @@ export default function EventsPage() {
                   </div>
                 </Card>
               ))}
+            </div>
+          )}
+          
+          {/* 페이지네이션 UI */}
+          {!isLoading && totalPages > 1 && (
+            <div className="flex justify-center mt-8">
+              <nav className="flex items-center space-x-2" aria-label="Pagination">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                  disabled={currentPage <= 1}
+                >
+                  이전
+                </Button>
+                
+                <div className="flex items-center space-x-1">
+                  {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                    // 현재 페이지 주변 페이지만 표시
+                    let pageNum;
+                    if (totalPages <= 5) {
+                      // 총 페이지가 5개 이하면 모두 표시
+                      pageNum = i + 1;
+                    } else if (currentPage <= 3) {
+                      // 현재 페이지가 앞쪽이면 1-5 표시
+                      pageNum = i + 1;
+                    } else if (currentPage >= totalPages - 2) {
+                      // 현재 페이지가 뒤쪽이면 끝에서 5개 표시
+                      pageNum = totalPages - 4 + i;
+                    } else {
+                      // 중간이면 현재 페이지 중심으로 표시
+                      pageNum = currentPage - 2 + i;
+                    }
+                    
+                    return (
+                      <Button
+                        key={pageNum}
+                        variant={currentPage === pageNum ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setCurrentPage(pageNum)}
+                        className="w-9 h-9"
+                      >
+                        {pageNum}
+                      </Button>
+                    );
+                  })}
+                  
+                  {/* 생략 표시 (마지막 페이지가 5 초과인 경우) */}
+                  {totalPages > 5 && currentPage < totalPages - 2 && (
+                    <span className="px-2">...</span>
+                  )}
+                  
+                  {/* 마지막 페이지 표시 (현재가 끝에서 3페이지 이상 떨어진 경우) */}
+                  {totalPages > 5 && currentPage < totalPages - 2 && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setCurrentPage(totalPages)}
+                      className="w-9 h-9"
+                    >
+                      {totalPages}
+                    </Button>
+                  )}
+                </div>
+                
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                  disabled={currentPage >= totalPages}
+                >
+                  다음
+                </Button>
+                
+                <select
+                  className="h-9 ml-4 px-2 rounded-md border border-gray-300 dark:border-gray-600 bg-background text-sm"
+                  value={itemsPerPage}
+                  onChange={(e) => {
+                    setItemsPerPage(Number(e.target.value));
+                    setCurrentPage(1); // 페이지 크기 변경 시 첫 페이지로
+                  }}
+                >
+                  <option value="5">5개씩</option>
+                  <option value="10">10개씩</option>
+                  <option value="20">20개씩</option>
+                  <option value="50">50개씩</option>
+                </select>
+              </nav>
             </div>
           )}
         </div>
