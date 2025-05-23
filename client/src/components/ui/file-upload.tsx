@@ -128,8 +128,8 @@ export function FileUpload({
           className={cn(
             "border-2 border-dashed rounded-lg p-6 flex flex-col items-center justify-center cursor-pointer transition-colors",
             dragging
-              ? "border-primary bg-primary/5"
-              : "border-gray-300 hover:border-primary/50",
+              ? "border-primary bg-primary/10"
+              : "border-gray-300 hover:border-primary/50 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/40",
             disabled && "opacity-50 cursor-not-allowed",
             error && "border-red-500"
           )}
@@ -137,6 +137,18 @@ export function FileUpload({
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
           onClick={disabled ? undefined : handleButtonClick}
+          role="button"
+          tabIndex={disabled ? -1 : 0}
+          aria-label="파일 선택 또는 드래그하여 업로드"
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              if (!disabled && fileInputRef.current) {
+                fileInputRef.current.click();
+              }
+            }
+          }}
+          aria-disabled={disabled}
         >
           <input
             type="file"
@@ -145,12 +157,14 @@ export function FileUpload({
             accept={accept}
             onChange={handleFileChange}
             disabled={disabled}
+            aria-hidden="true"
+            id="file-upload-input"
           />
-          <UploadCloud className="h-10 w-10 text-gray-400 mb-2" />
-          <p className="text-sm font-medium mb-1">
+          <UploadCloud className="h-10 w-10 text-primary mb-2" />
+          <p className="text-sm font-semibold mb-1 text-foreground">
             {dragging ? "파일을 놓으세요" : "파일을 끌어다 놓거나 클릭하세요"}
           </p>
-          <p className="text-xs text-gray-500">
+          <p className="text-xs text-foreground/80 font-medium">
             {accept === "image/*" ? "PNG, JPG, GIF" : accept} (최대 {maxSizeMB}MB)
           </p>
         </div>
@@ -162,9 +176,10 @@ export function FileUpload({
               type="button"
               variant="secondary"
               size="icon"
-              className="h-7 w-7 rounded-full bg-white text-gray-700 hover:text-gray-900 shadow-sm"
+              className="h-7 w-7 rounded-full bg-white text-primary hover:text-primary-foreground hover:bg-primary shadow-sm border border-gray-200"
               onClick={handleButtonClick}
               disabled={disabled}
+              aria-label="파일 변경"
             >
               <FilePlus size={14} />
               <span className="sr-only">파일 변경</span>
@@ -173,25 +188,28 @@ export function FileUpload({
               type="button"
               variant="destructive"
               size="icon"
-              className="h-7 w-7 rounded-full"
+              className="h-7 w-7 rounded-full shadow-sm border border-destructive"
               onClick={handleRemoveFile}
               disabled={disabled}
+              aria-label="파일 제거"
             >
               <X size={14} />
               <span className="sr-only">파일 제거</span>
             </Button>
           </div>
           <div
-            className="flex items-center justify-center bg-gray-100 dark:bg-gray-800"
+            className="flex items-center justify-center bg-muted/40 border border-border/40"
             style={{ 
               width: previewWidth, 
               height: previewHeight,
               maxWidth: '100%'
             }}
+            role="figure"
+            aria-label="업로드된 이미지 미리보기"
           >
             <img
               src={value}
-              alt="Preview"
+              alt="업로드된 이미지"
               className="object-cover"
               style={{ 
                 maxWidth: '100%', 
@@ -199,11 +217,16 @@ export function FileUpload({
                 width: 'auto',
                 height: 'auto'
               }}
+              loading="lazy"
             />
           </div>
         </div>
       )}
-      {error && <p className="text-xs text-red-500">{error}</p>}
+      {error && (
+        <p className="text-xs text-red-600 dark:text-red-400 font-medium bg-red-50 dark:bg-red-900/20 p-2 rounded-md border border-red-200 dark:border-red-800" role="alert">
+          {error}
+        </p>
+      )}
     </div>
   );
 }

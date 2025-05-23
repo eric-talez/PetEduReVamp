@@ -45,14 +45,20 @@ export function BannerSlider() {
       <Card className="relative h-[400px] overflow-hidden">
         <img
           src={banners[currentIndex].image}
-          alt={banners[currentIndex].title}
+          alt={`${banners[currentIndex].title} - ${banners[currentIndex].description}`}
           className="absolute inset-0 w-full h-full object-cover"
+          aria-hidden="true"
+          loading="lazy"
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-black/50 to-transparent">
+        <div className="absolute inset-0 bg-gradient-to-r from-black/60 to-transparent">
           <div className="absolute bottom-0 left-0 p-8 text-white">
-            <h2 className="text-3xl font-bold mb-2">{banners[currentIndex].title}</h2>
-            <p className="text-lg mb-4">{banners[currentIndex].description}</p>
-            <Button variant="default" asChild>
+            <h2 className="text-3xl font-bold mb-2 drop-shadow-md">{banners[currentIndex].title}</h2>
+            <p className="text-lg mb-4 drop-shadow-md font-medium">{banners[currentIndex].description}</p>
+            <Button 
+              variant="default" 
+              asChild
+              className="bg-white text-primary hover:bg-white/90 shadow-md border-2 border-white"
+            >
               <a href={banners[currentIndex].link}>자세히 보기</a>
             </Button>
           </div>
