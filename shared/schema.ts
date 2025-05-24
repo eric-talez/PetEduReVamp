@@ -92,6 +92,29 @@ export const createCourseSchema = createInsertSchema(courses).omit({
 });
 
 // Institute types
+export const institutePricingPlans = pgTable("institute_pricing_plans", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  monthlyPrice: integer("monthly_price").notNull(),
+  yearlyPrice: integer("yearly_price"),
+  features: json("features").$type<string[]>(),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export const instituteSubscriptions = pgTable("institute_subscriptions", {
+  id: serial("id").primaryKey(),
+  instituteId: integer("institute_id").notNull().references(() => institutes.id, { onDelete: 'cascade' }),
+  planId: integer("plan_id").notNull().references(() => institutePricingPlans.id),
+  startDate: timestamp("start_date").notNull(),
+  endDate: timestamp("end_date"),
+  status: text("status").notNull().default('active'),
+  autoRenew: boolean("auto_renew").default(true),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
 export const institutes = pgTable("institutes", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
