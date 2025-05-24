@@ -114,10 +114,11 @@ export function NotificationBell() {
             </p>
           </div>
           
-          {/* 삭제 버튼 (호버 시 표시) */}
+          {/* 삭제 버튼 (호버 시 표시) - 중복 노출 방지를 위해 aria-label 추가 */}
           <Button
             variant="ghost"
             size="icon"
+            aria-label={`알림 삭제: ${notification.title}`}
             className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity"
             onClick={(e) => {
               e.stopPropagation();
@@ -134,7 +135,12 @@ export function NotificationBell() {
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative">
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          className="relative"
+          aria-label={`알림 ${unreadCount > 0 ? `(${unreadCount}개 읽지 않음)` : ''}`}
+        >
           <Bell className="h-5 w-5" />
           {unreadCount > 0 && (
             <Badge 
@@ -156,6 +162,7 @@ export function NotificationBell() {
                   variant="ghost"
                   size="sm"
                   className="h-8 text-xs"
+                  aria-label="모든 알림 읽음으로 표시"
                   onClick={markAllAsRead}
                 >
                   <Check size={14} className="mr-1" />
@@ -167,6 +174,7 @@ export function NotificationBell() {
                   variant="ghost"
                   size="sm"
                   className="h-8 text-xs"
+                  aria-label="모든 알림 삭제"
                   onClick={clearAllNotifications}
                 >
                   <Trash2 size={14} className="mr-1" />

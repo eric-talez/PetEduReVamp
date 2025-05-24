@@ -1,0 +1,1215 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>알림 관리 - 관리자 대시보드</title>
+  <style>
+    body {
+      font-family: 'Nunito', 'Inter', sans-serif;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+      color: #333;
+    }
+    .container {
+      background-color: #f8f9fa;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    h1, h2, h3 {
+      color: #4f46e5;
+    }
+    .navbar {
+      display: flex;
+      gap: 20px;
+      margin-bottom: 20px;
+      background-color: #fff;
+      padding: 15px 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    .navbar a {
+      text-decoration: none;
+      color: #4f46e5;
+      font-weight: 600;
+      padding: 8px 12px;
+      border-radius: 4px;
+      transition: all 0.2s;
+    }
+    .navbar a:hover, .navbar a.active {
+      background-color: #f0f0ff;
+    }
+    .navbar a.active {
+      color: #4338ca;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 20px;
+    }
+    .btn {
+      background-color: #4f46e5;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 1em;
+      transition: all 0.2s;
+    }
+    .btn:hover {
+      background-color: #4338ca;
+    }
+    .btn-sm {
+      padding: 6px 12px;
+      font-size: 0.9em;
+    }
+    .btn-outline {
+      background-color: transparent;
+      color: #4f46e5;
+      border: 1px solid #4f46e5;
+    }
+    .btn-outline:hover {
+      background-color: #f0f0ff;
+    }
+    .btn-danger {
+      background-color: #ef4444;
+    }
+    .btn-danger:hover {
+      background-color: #dc2626;
+    }
+    .btn-success {
+      background-color: #22c55e;
+    }
+    .btn-success:hover {
+      background-color: #16a34a;
+    }
+    .btn-warning {
+      background-color: #f59e0b;
+    }
+    .btn-warning:hover {
+      background-color: #d97706;
+    }
+    .table-container {
+      overflow-x: auto;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    table th, table td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    table th {
+      background-color: #f3f4f6;
+      font-weight: 600;
+    }
+    tr:hover td {
+      background-color: #f9fafb;
+    }
+    .status-badge {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 9999px;
+      font-size: 0.8em;
+      font-weight: 500;
+    }
+    .status-active { background-color: #dcfce7; color: #166534; }
+    .status-inactive { background-color: #f3f4f6; color: #6b7280; }
+    .status-warning { background-color: #fef3c7; color: #92400e; }
+    .status-danger { background-color: #fee2e2; color: #b91c1c; }
+    .tab-group {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      border-bottom: 1px solid #e5e7eb;
+      padding-bottom: 10px;
+    }
+    .tab {
+      padding: 8px 16px;
+      cursor: pointer;
+      border-radius: 4px 4px 0 0;
+      font-weight: 500;
+    }
+    .tab.active {
+      border-bottom: 2px solid #4f46e5;
+      color: #4f46e5;
+      font-weight: 600;
+    }
+    .form-group {
+      margin-bottom: 20px;
+    }
+    .form-label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 500;
+    }
+    .form-input, .form-textarea, .form-select {
+      width: 100%;
+      padding: 10px 15px;
+      border: 1px solid #e5e7eb;
+      border-radius: 4px;
+      font-size: 1em;
+      margin-bottom: 10px;
+    }
+    .form-textarea {
+      min-height: 100px;
+      resize: vertical;
+    }
+    .checkbox-item {
+      display: flex;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    .checkbox-item input[type="checkbox"] {
+      margin-right: 8px;
+    }
+    .card {
+      background-color: white;
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      transition: all 0.3s;
+    }
+    .card:hover {
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      transform: translateY(-2px);
+    }
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+    .card-title {
+      font-size: 1.1em;
+      font-weight: 600;
+      color: #4f46e5;
+    }
+    .card-icon {
+      background-color: #f0f0ff;
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #4f46e5;
+      font-size: 1.5em;
+    }
+    .card-body {
+      margin-bottom: 15px;
+    }
+    .card-footer {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.9em;
+    }
+    .flex-container {
+      display: flex;
+      gap: 20px;
+    }
+    .flex-item {
+      flex: 1;
+    }
+    .search-filters {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+    .search-input {
+      flex: 1;
+      min-width: 200px;
+      padding: 10px 15px;
+      border: 1px solid #e5e7eb;
+      border-radius: 4px;
+      font-size: 1em;
+    }
+    .filter-select {
+      min-width: 150px;
+      padding: 10px 15px;
+      border: 1px solid #e5e7eb;
+      border-radius: 4px;
+      background-color: white;
+      font-size: 1em;
+    }
+    .chart-container {
+      height: 300px;
+      background-color: #fff;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    .chart-placeholder {
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: #f3f4f6;
+      border-radius: 4px;
+      color: #6b7280;
+    }
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.5);
+      z-index: 1000;
+      overflow-y: auto;
+    }
+    .modal-content {
+      background-color: white;
+      margin: 50px auto;
+      padding: 30px;
+      border-radius: 8px;
+      max-width: 600px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .modal-title {
+      font-size: 1.5em;
+      font-weight: 600;
+      color: #4f46e5;
+    }
+    .modal-close {
+      font-size: 1.5em;
+      cursor: pointer;
+      color: #6b7280;
+    }
+    .notification-template {
+      background-color: white;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 15px;
+      margin-bottom: 15px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .notification-template:hover {
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      border-color: #d1d5db;
+    }
+    .notification-template-title {
+      font-weight: 600;
+      margin-bottom: 5px;
+    }
+    .notification-template-description {
+      color: #6b7280;
+      font-size: 0.9em;
+      margin-bottom: 8px;
+    }
+    .tag {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 9999px;
+      font-size: 0.8em;
+      background-color: #f3f4f6;
+      color: #6b7280;
+      margin-right: 5px;
+    }
+    .pagination {
+      display: flex;
+      justify-content: center;
+      margin-top: 20px;
+      gap: 5px;
+    }
+    .pagination-item {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
+      border-radius: 4px;
+      background-color: #fff;
+      border: 1px solid #e5e7eb;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .pagination-item:hover {
+      background-color: #f3f4f6;
+    }
+    .pagination-item.active {
+      background-color: #4f46e5;
+      color: white;
+      border-color: #4f46e5;
+    }
+  </style>
+</head>
+<body>
+  <div class="navbar">
+    <a href="/admin-dashboard">대시보드</a>
+    <a href="/admin-users">사용자 관리</a>
+    <a href="/admin-courses">강좌 관리</a>
+    <a href="/admin-notifications" class="active">알림 관리</a>
+    <a href="/admin-settings">시스템 설정</a>
+  </div>
+
+  <h1>알림 관리</h1>
+  
+  <div class="container">
+    <div class="tab-group">
+      <div class="tab active" data-tab="send-notification">알림 발송</div>
+      <div class="tab" data-tab="templates">템플릿 관리</div>
+      <div class="tab" data-tab="history">발송 이력</div>
+      <div class="tab" data-tab="stats">통계</div>
+    </div>
+    
+    <!-- 알림 발송 탭 -->
+    <div class="tab-content" id="send-notification-content">
+      <div class="flex-container" style="align-items: flex-start;">
+        <div class="flex-item">
+          <h2>새 알림 발송</h2>
+          
+          <div class="form-group">
+            <label for="notification-template" class="form-label">템플릿 선택 (선택사항)</label>
+            <select id="notification-template" class="form-select">
+              <option value="">템플릿 없이 작성</option>
+              <option value="welcome">환영 메시지</option>
+              <option value="system-update">시스템 업데이트</option>
+              <option value="course-reminder">강좌 알림</option>
+              <option value="payment-confirm">결제 확인</option>
+              <option value="promo">프로모션</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label for="notification-title" class="form-label">제목</label>
+            <input type="text" id="notification-title" class="form-input" placeholder="알림 제목을 입력하세요">
+          </div>
+          
+          <div class="form-group">
+            <label for="notification-message" class="form-label">내용</label>
+            <textarea id="notification-message" class="form-textarea" placeholder="알림 내용을 입력하세요"></textarea>
+          </div>
+          
+          <div class="form-group">
+            <label for="notification-type" class="form-label">알림 유형</label>
+            <select id="notification-type" class="form-select">
+              <option value="info">정보</option>
+              <option value="success">성공</option>
+              <option value="warning">주의</option>
+              <option value="error">오류</option>
+              <option value="system">시스템</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label for="notification-link" class="form-label">링크 (선택사항)</label>
+            <input type="text" id="notification-link" class="form-input" placeholder="알림 클릭 시 이동할 링크">
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">발송 채널</label>
+            <div class="checkbox-item">
+              <input type="checkbox" id="channel-web" checked>
+              <label for="channel-web">웹 알림</label>
+            </div>
+            <div class="checkbox-item">
+              <input type="checkbox" id="channel-email">
+              <label for="channel-email">이메일</label>
+            </div>
+            <div class="checkbox-item">
+              <input type="checkbox" id="channel-push">
+              <label for="channel-push">푸시 알림</label>
+            </div>
+          </div>
+        </div>
+        
+        <div class="flex-item">
+          <h2>대상 선택</h2>
+          
+          <div class="form-group">
+            <label for="target-type" class="form-label">대상 유형</label>
+            <select id="target-type" class="form-select">
+              <option value="all">모든 사용자</option>
+              <option value="role">역할별</option>
+              <option value="filter">필터링</option>
+              <option value="individual">개별 사용자</option>
+            </select>
+          </div>
+          
+          <div id="role-options" class="form-group" style="display: none;">
+            <label class="form-label">역할 선택</label>
+            <div class="checkbox-item">
+              <input type="checkbox" id="role-admin">
+              <label for="role-admin">관리자</label>
+            </div>
+            <div class="checkbox-item">
+              <input type="checkbox" id="role-institute-admin">
+              <label for="role-institute-admin">기관 관리자</label>
+            </div>
+            <div class="checkbox-item">
+              <input type="checkbox" id="role-trainer">
+              <label for="role-trainer">훈련사</label>
+            </div>
+            <div class="checkbox-item">
+              <input type="checkbox" id="role-pet-owner">
+              <label for="role-pet-owner">반려인</label>
+            </div>
+            <div class="checkbox-item">
+              <input type="checkbox" id="role-user">
+              <label for="role-user">일반 사용자</label>
+            </div>
+          </div>
+          
+          <div id="filter-options" class="form-group" style="display: none;">
+            <label class="form-label">필터 조건</label>
+            
+            <label for="filter-signup-from" class="form-label">가입일 시작</label>
+            <input type="date" id="filter-signup-from" class="form-input">
+            
+            <label for="filter-signup-to" class="form-label">가입일 종료</label>
+            <input type="date" id="filter-signup-to" class="form-input">
+            
+            <label for="filter-active" class="form-label">활동 상태</label>
+            <select id="filter-active" class="form-select">
+              <option value="">모든 상태</option>
+              <option value="active">활성</option>
+              <option value="inactive">비활성</option>
+            </select>
+            
+            <label for="filter-location" class="form-label">지역</label>
+            <select id="filter-location" class="form-select">
+              <option value="">모든 지역</option>
+              <option value="서울">서울</option>
+              <option value="경기">경기</option>
+              <option value="인천">인천</option>
+              <option value="부산">부산</option>
+              <option value="대구">대구</option>
+              <option value="광주">광주</option>
+              <option value="대전">대전</option>
+              <option value="울산">울산</option>
+              <option value="강원">강원</option>
+              <option value="충북">충북</option>
+              <option value="충남">충남</option>
+              <option value="전북">전북</option>
+              <option value="전남">전남</option>
+              <option value="경북">경북</option>
+              <option value="경남">경남</option>
+              <option value="제주">제주</option>
+            </select>
+          </div>
+          
+          <div id="individual-options" class="form-group" style="display: none;">
+            <label for="individual-users" class="form-label">사용자 검색</label>
+            <input type="text" id="individual-users-search" class="form-input" placeholder="이름, 이메일 또는 사용자명으로 검색">
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th><input type="checkbox" id="select-all-users"></th>
+                    <th>이름</th>
+                    <th>이메일</th>
+                    <th>역할</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><input type="checkbox" class="select-user"></td>
+                    <td>김철수</td>
+                    <td>kim@example.com</td>
+                    <td>반려인</td>
+                  </tr>
+                  <tr>
+                    <td><input type="checkbox" class="select-user"></td>
+                    <td>이영희</td>
+                    <td>lee@example.com</td>
+                    <td>훈련사</td>
+                  </tr>
+                  <tr>
+                    <td><input type="checkbox" class="select-user"></td>
+                    <td>박지민</td>
+                    <td>park@example.com</td>
+                    <td>반려인</td>
+                  </tr>
+                  <tr>
+                    <td><input type="checkbox" class="select-user"></td>
+                    <td>최동욱</td>
+                    <td>choi@example.com</td>
+                    <td>반려인</td>
+                  </tr>
+                  <tr>
+                    <td><input type="checkbox" class="select-user"></td>
+                    <td>강민지</td>
+                    <td>kang@example.com</td>
+                    <td>기관 관리자</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label for="schedule-type" class="form-label">발송 시점</label>
+            <select id="schedule-type" class="form-select">
+              <option value="immediate">즉시 발송</option>
+              <option value="scheduled">예약 발송</option>
+            </select>
+          </div>
+          
+          <div id="schedule-options" class="form-group" style="display: none;">
+            <label for="schedule-date" class="form-label">예약 날짜</label>
+            <input type="date" id="schedule-date" class="form-input">
+            
+            <label for="schedule-time" class="form-label">예약 시간</label>
+            <input type="time" id="schedule-time" class="form-input">
+          </div>
+          
+          <div class="form-group">
+            <button class="btn" id="btn-preview">미리보기</button>
+            <button class="btn" id="btn-send">발송</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 템플릿 관리 탭 -->
+    <div class="tab-content" id="templates-content" style="display: none;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h2>알림 템플릿</h2>
+        <button class="btn" id="btn-add-template">템플릿 추가</button>
+      </div>
+      
+      <div class="search-filters">
+        <input type="text" class="search-input" placeholder="템플릿 검색">
+        <select class="filter-select">
+          <option value="">모든 카테고리</option>
+          <option value="system">시스템</option>
+          <option value="course">강좌</option>
+          <option value="payment">결제</option>
+          <option value="marketing">마케팅</option>
+        </select>
+        <button class="btn">검색</button>
+      </div>
+      
+      <div class="notification-template" data-id="1">
+        <div class="notification-template-title">환영 메시지</div>
+        <div class="notification-template-description">신규 가입 사용자를 위한 환영 메시지입니다.</div>
+        <div>
+          <span class="tag">시스템</span>
+          <span class="tag">웹</span>
+          <span class="tag">이메일</span>
+        </div>
+      </div>
+      
+      <div class="notification-template" data-id="2">
+        <div class="notification-template-title">시스템 업데이트</div>
+        <div class="notification-template-description">시스템 업데이트 및 점검 안내 메시지입니다.</div>
+        <div>
+          <span class="tag">시스템</span>
+          <span class="tag">웹</span>
+          <span class="tag">이메일</span>
+          <span class="tag">푸시</span>
+        </div>
+      </div>
+      
+      <div class="notification-template" data-id="3">
+        <div class="notification-template-title">강좌 알림</div>
+        <div class="notification-template-description">강좌 시작, 종료 및 일정 변경에 대한 알림입니다.</div>
+        <div>
+          <span class="tag">강좌</span>
+          <span class="tag">웹</span>
+          <span class="tag">이메일</span>
+        </div>
+      </div>
+      
+      <div class="notification-template" data-id="4">
+        <div class="notification-template-title">결제 확인</div>
+        <div class="notification-template-description">결제 완료 및 구독 상태 변경에 대한 알림입니다.</div>
+        <div>
+          <span class="tag">결제</span>
+          <span class="tag">웹</span>
+          <span class="tag">이메일</span>
+          <span class="tag">푸시</span>
+        </div>
+      </div>
+      
+      <div class="notification-template" data-id="5">
+        <div class="notification-template-title">프로모션</div>
+        <div class="notification-template-description">할인 및 이벤트 관련 마케팅 알림입니다.</div>
+        <div>
+          <span class="tag">마케팅</span>
+          <span class="tag">웹</span>
+          <span class="tag">이메일</span>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 발송 이력 탭 -->
+    <div class="tab-content" id="history-content" style="display: none;">
+      <h2>알림 발송 이력</h2>
+      
+      <div class="search-filters">
+        <input type="text" class="search-input" placeholder="검색어">
+        <select class="filter-select">
+          <option value="">모든 유형</option>
+          <option value="info">정보</option>
+          <option value="success">성공</option>
+          <option value="warning">주의</option>
+          <option value="error">오류</option>
+          <option value="system">시스템</option>
+        </select>
+        <select class="filter-select">
+          <option value="">모든 채널</option>
+          <option value="web">웹</option>
+          <option value="email">이메일</option>
+          <option value="push">푸시</option>
+        </select>
+        <input type="date" class="filter-select" placeholder="시작일">
+        <input type="date" class="filter-select" placeholder="종료일">
+        <button class="btn">검색</button>
+      </div>
+      
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>제목</th>
+              <th>유형</th>
+              <th>채널</th>
+              <th>대상</th>
+              <th>발송 시간</th>
+              <th>상태</th>
+              <th>관리</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>1001</td>
+              <td>5월 업데이트 안내</td>
+              <td>정보</td>
+              <td>웹, 이메일</td>
+              <td>모든 사용자 (574명)</td>
+              <td>2025-05-23 14:30</td>
+              <td><span class="status-badge status-active">완료</span></td>
+              <td>
+                <button class="btn btn-outline btn-sm">상세</button>
+              </td>
+            </tr>
+            <tr>
+              <td>1002</td>
+              <td>강좌 시작 알림</td>
+              <td>성공</td>
+              <td>웹, 이메일, 푸시</td>
+              <td>수강생 (42명)</td>
+              <td>2025-05-22 09:15</td>
+              <td><span class="status-badge status-active">완료</span></td>
+              <td>
+                <button class="btn btn-outline btn-sm">상세</button>
+              </td>
+            </tr>
+            <tr>
+              <td>1003</td>
+              <td>여름 할인 프로모션</td>
+              <td>정보</td>
+              <td>이메일</td>
+              <td>마케팅 수신 동의자 (328명)</td>
+              <td>2025-05-20 11:00</td>
+              <td><span class="status-badge status-active">완료</span></td>
+              <td>
+                <button class="btn btn-outline btn-sm">상세</button>
+              </td>
+            </tr>
+            <tr>
+              <td>1004</td>
+              <td>결제 만료 알림</td>
+              <td>주의</td>
+              <td>웹, 이메일, 푸시</td>
+              <td>구독 만료 예정자 (15명)</td>
+              <td>2025-05-19 10:00</td>
+              <td><span class="status-badge status-warning">일부 실패</span></td>
+              <td>
+                <button class="btn btn-outline btn-sm">상세</button>
+              </td>
+            </tr>
+            <tr>
+              <td>1005</td>
+              <td>서버 점검 안내</td>
+              <td>시스템</td>
+              <td>웹, 이메일</td>
+              <td>모든 사용자 (570명)</td>
+              <td>2025-05-15 08:00</td>
+              <td><span class="status-badge status-active">완료</span></td>
+              <td>
+                <button class="btn btn-outline btn-sm">상세</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      
+      <div class="pagination">
+        <div class="pagination-item">«</div>
+        <div class="pagination-item active">1</div>
+        <div class="pagination-item">2</div>
+        <div class="pagination-item">3</div>
+        <div class="pagination-item">»</div>
+      </div>
+    </div>
+    
+    <!-- 통계 탭 -->
+    <div class="tab-content" id="stats-content" style="display: none;">
+      <h2>알림 통계</h2>
+      
+      <div class="chart-container">
+        <div class="chart-placeholder">
+          [차트 영역 - 알림 발송 및 수신 추이 차트]
+        </div>
+      </div>
+      
+      <div class="grid">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">발송된 알림</div>
+            <div class="card-icon">📊</div>
+          </div>
+          <div class="card-body">
+            <div style="font-size: 2em; font-weight: 700;">1,256</div>
+            <div style="color: #6b7280; font-size: 0.9em;">지난 30일 동안</div>
+          </div>
+          <div class="card-footer">
+            <div style="color: #16a34a;">+12% ↑</div>
+            <div style="color: #6b7280;">지난 달 대비</div>
+          </div>
+        </div>
+        
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">열람률</div>
+            <div class="card-icon">👁️</div>
+          </div>
+          <div class="card-body">
+            <div style="font-size: 2em; font-weight: 700;">68%</div>
+            <div style="color: #6b7280; font-size: 0.9em;">지난 30일 동안</div>
+          </div>
+          <div class="card-footer">
+            <div style="color: #16a34a;">+5% ↑</div>
+            <div style="color: #6b7280;">지난 달 대비</div>
+          </div>
+        </div>
+        
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">클릭률</div>
+            <div class="card-icon">🖱️</div>
+          </div>
+          <div class="card-body">
+            <div style="font-size: 2em; font-weight: 700;">42%</div>
+            <div style="color: #6b7280; font-size: 0.9em;">지난 30일 동안</div>
+          </div>
+          <div class="card-footer">
+            <div style="color: #16a34a;">+3% ↑</div>
+            <div style="color: #6b7280;">지난 달 대비</div>
+          </div>
+        </div>
+        
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">평균 응답 시간</div>
+            <div class="card-icon">⏱️</div>
+          </div>
+          <div class="card-body">
+            <div style="font-size: 2em; font-weight: 700;">2.4시간</div>
+            <div style="color: #6b7280; font-size: 0.9em;">지난 30일 동안</div>
+          </div>
+          <div class="card-footer">
+            <div style="color: #dc2626;">+0.3h ↑</div>
+            <div style="color: #6b7280;">지난 달 대비</div>
+          </div>
+        </div>
+      </div>
+      
+      <h3>채널별 통계</h3>
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>채널</th>
+              <th>발송 수</th>
+              <th>열람률</th>
+              <th>클릭률</th>
+              <th>실패율</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>웹 알림</td>
+              <td>985</td>
+              <td>75%</td>
+              <td>48%</td>
+              <td>0.5%</td>
+            </tr>
+            <tr>
+              <td>이메일</td>
+              <td>756</td>
+              <td>62%</td>
+              <td>38%</td>
+              <td>2.3%</td>
+            </tr>
+            <tr>
+              <td>푸시 알림</td>
+              <td>428</td>
+              <td>58%</td>
+              <td>35%</td>
+              <td>3.1%</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      
+      <h3>알림 유형별 통계</h3>
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>유형</th>
+              <th>발송 수</th>
+              <th>열람률</th>
+              <th>클릭률</th>
+              <th>평균 응답 시간</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>정보</td>
+              <td>524</td>
+              <td>65%</td>
+              <td>40%</td>
+              <td>3.2시간</td>
+            </tr>
+            <tr>
+              <td>성공</td>
+              <td>312</td>
+              <td>78%</td>
+              <td>52%</td>
+              <td>1.5시간</td>
+            </tr>
+            <tr>
+              <td>주의</td>
+              <td>185</td>
+              <td>82%</td>
+              <td>58%</td>
+              <td>1.1시간</td>
+            </tr>
+            <tr>
+              <td>오류</td>
+              <td>42</td>
+              <td>85%</td>
+              <td>68%</td>
+              <td>0.8시간</td>
+            </tr>
+            <tr>
+              <td>시스템</td>
+              <td>193</td>
+              <td>62%</td>
+              <td>35%</td>
+              <td>4.1시간</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  
+  <!-- 템플릿 추가/수정 모달 -->
+  <div class="modal" id="template-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="modal-title">템플릿 추가</div>
+        <span class="modal-close">&times;</span>
+      </div>
+      
+      <div class="form-group">
+        <label for="template-name" class="form-label">템플릿 이름</label>
+        <input type="text" id="template-name" class="form-input" placeholder="템플릿 이름">
+      </div>
+      
+      <div class="form-group">
+        <label for="template-description" class="form-label">설명</label>
+        <textarea id="template-description" class="form-textarea" placeholder="템플릿 설명"></textarea>
+      </div>
+      
+      <div class="form-group">
+        <label for="template-category" class="form-label">카테고리</label>
+        <select id="template-category" class="form-select">
+          <option value="system">시스템</option>
+          <option value="course">강좌</option>
+          <option value="payment">결제</option>
+          <option value="marketing">마케팅</option>
+        </select>
+      </div>
+      
+      <div class="form-group">
+        <label for="template-title" class="form-label">알림 제목</label>
+        <input type="text" id="template-title" class="form-input" placeholder="알림 제목">
+        <small style="color: #6b7280;">변수 사용: {name}, {date}, {course}, 등</small>
+      </div>
+      
+      <div class="form-group">
+        <label for="template-message" class="form-label">알림 내용</label>
+        <textarea id="template-message" class="form-textarea" placeholder="알림 내용"></textarea>
+        <small style="color: #6b7280;">변수 사용: {name}, {date}, {course}, 등</small>
+      </div>
+      
+      <div class="form-group">
+        <label for="template-type" class="form-label">기본 알림 유형</label>
+        <select id="template-type" class="form-select">
+          <option value="info">정보</option>
+          <option value="success">성공</option>
+          <option value="warning">주의</option>
+          <option value="error">오류</option>
+          <option value="system">시스템</option>
+        </select>
+      </div>
+      
+      <div class="form-group">
+        <label class="form-label">지원 채널</label>
+        <div class="checkbox-item">
+          <input type="checkbox" id="template-channel-web" checked>
+          <label for="template-channel-web">웹 알림</label>
+        </div>
+        <div class="checkbox-item">
+          <input type="checkbox" id="template-channel-email" checked>
+          <label for="template-channel-email">이메일</label>
+        </div>
+        <div class="checkbox-item">
+          <input type="checkbox" id="template-channel-push">
+          <label for="template-channel-push">푸시 알림</label>
+        </div>
+      </div>
+      
+      <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
+        <button class="btn btn-outline" id="btn-cancel-template">취소</button>
+        <button class="btn" id="btn-save-template">저장</button>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    // 탭 전환 기능
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', function() {
+        // 모든 탭에서 active 클래스 제거
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        // 클릭한 탭에 active 클래스 추가
+        this.classList.add('active');
+        
+        // 모든 탭 콘텐츠 숨기기
+        document.querySelectorAll('.tab-content').forEach(content => {
+          content.style.display = 'none';
+        });
+        
+        // 선택한 탭의 콘텐츠 표시
+        const tabId = this.getAttribute('data-tab');
+        document.getElementById(`${tabId}-content`).style.display = 'block';
+      });
+    });
+    
+    // 대상 유형에 따른 옵션 표시
+    document.getElementById('target-type').addEventListener('change', function() {
+      const targetType = this.value;
+      
+      // 모든 옵션 숨기기
+      document.getElementById('role-options').style.display = 'none';
+      document.getElementById('filter-options').style.display = 'none';
+      document.getElementById('individual-options').style.display = 'none';
+      
+      // 선택한 대상 유형에 맞는 옵션 표시
+      if (targetType === 'role') {
+        document.getElementById('role-options').style.display = 'block';
+      } else if (targetType === 'filter') {
+        document.getElementById('filter-options').style.display = 'block';
+      } else if (targetType === 'individual') {
+        document.getElementById('individual-options').style.display = 'block';
+      }
+    });
+    
+    // 예약 발송 옵션 표시
+    document.getElementById('schedule-type').addEventListener('change', function() {
+      const scheduleType = this.value;
+      
+      if (scheduleType === 'scheduled') {
+        document.getElementById('schedule-options').style.display = 'block';
+      } else {
+        document.getElementById('schedule-options').style.display = 'none';
+      }
+    });
+    
+    // 템플릿 선택 시 알림 내용 채우기
+    document.getElementById('notification-template').addEventListener('change', function() {
+      const templateId = this.value;
+      
+      if (!templateId) {
+        // 템플릿 없이 작성 선택 시 필드 초기화
+        document.getElementById('notification-title').value = '';
+        document.getElementById('notification-message').value = '';
+        document.getElementById('notification-type').value = 'info';
+        return;
+      }
+      
+      // 템플릿 데이터 (실제로는 서버에서 가져와야 함)
+      const templates = {
+        'welcome': {
+          title: '환영합니다!',
+          message: '탈레즈에 가입해주셔서 감사합니다. 반려동물과 함께하는 즐거운 경험을 시작해보세요.',
+          type: 'info'
+        },
+        'system-update': {
+          title: '시스템 업데이트 안내',
+          message: '시스템 점검 및 업데이트가 예정되어 있습니다. 자세한 내용은 공지사항을 확인해주세요.',
+          type: 'system'
+        },
+        'course-reminder': {
+          title: '강좌 시작 알림',
+          message: '신청하신 강좌가 곧 시작됩니다. 참여 준비 부탁드립니다.',
+          type: 'info'
+        },
+        'payment-confirm': {
+          title: '결제 완료',
+          message: '결제가 성공적으로 완료되었습니다. 구매해주셔서 감사합니다.',
+          type: 'success'
+        },
+        'promo': {
+          title: '특별 할인 혜택',
+          message: '회원님을 위한 특별 할인 이벤트가 시작되었습니다. 지금 확인해보세요!',
+          type: 'info'
+        }
+      };
+      
+      // 선택한 템플릿 데이터로 필드 채우기
+      const template = templates[templateId];
+      if (template) {
+        document.getElementById('notification-title').value = template.title;
+        document.getElementById('notification-message').value = template.message;
+        document.getElementById('notification-type').value = template.type;
+      }
+    });
+    
+    // 전체 선택 체크박스
+    document.getElementById('select-all-users').addEventListener('change', function() {
+      const isChecked = this.checked;
+      document.querySelectorAll('.select-user').forEach(checkbox => {
+        checkbox.checked = isChecked;
+      });
+    });
+    
+    // 템플릿 추가 모달 표시
+    document.getElementById('btn-add-template').addEventListener('click', function() {
+      document.getElementById('template-modal').style.display = 'block';
+      document.querySelector('.modal-title').textContent = '템플릿 추가';
+      
+      // 폼 초기화
+      document.getElementById('template-name').value = '';
+      document.getElementById('template-description').value = '';
+      document.getElementById('template-category').value = 'system';
+      document.getElementById('template-title').value = '';
+      document.getElementById('template-message').value = '';
+      document.getElementById('template-type').value = 'info';
+      document.getElementById('template-channel-web').checked = true;
+      document.getElementById('template-channel-email').checked = true;
+      document.getElementById('template-channel-push').checked = false;
+    });
+    
+    // 템플릿 클릭 시 수정 모달 표시
+    document.querySelectorAll('.notification-template').forEach(template => {
+      template.addEventListener('click', function() {
+        const templateId = this.getAttribute('data-id');
+        console.log(`템플릿 ${templateId} 수정`);
+        
+        document.getElementById('template-modal').style.display = 'block';
+        document.querySelector('.modal-title').textContent = '템플릿 수정';
+        
+        // 실제 구현에서는 서버에서 템플릿 데이터를 가져와야 함
+        // 예시 데이터로 폼 채우기
+        if (templateId === '1') {
+          document.getElementById('template-name').value = '환영 메시지';
+          document.getElementById('template-description').value = '신규 가입 사용자를 위한 환영 메시지입니다.';
+          document.getElementById('template-category').value = 'system';
+          document.getElementById('template-title').value = '환영합니다!';
+          document.getElementById('template-message').value = '{name}님, 탈레즈에 가입해주셔서 감사합니다. 반려동물과 함께하는 즐거운 경험을 시작해보세요.';
+          document.getElementById('template-type').value = 'info';
+          document.getElementById('template-channel-web').checked = true;
+          document.getElementById('template-channel-email').checked = true;
+          document.getElementById('template-channel-push').checked = false;
+        }
+      });
+    });
+    
+    // 모달 닫기
+    document.querySelectorAll('.modal-close, #btn-cancel-template').forEach(element => {
+      element.addEventListener('click', function() {
+        document.getElementById('template-modal').style.display = 'none';
+      });
+    });
+    
+    // 모달 외부 클릭 시 닫기
+    window.addEventListener('click', function(event) {
+      if (event.target === document.getElementById('template-modal')) {
+        document.getElementById('template-modal').style.display = 'none';
+      }
+    });
+    
+    // 발송 버튼 클릭
+    document.getElementById('btn-send').addEventListener('click', function() {
+      const title = document.getElementById('notification-title').value;
+      const message = document.getElementById('notification-message').value;
+      
+      if (!title || !message) {
+        alert('제목과 내용을 입력해주세요.');
+        return;
+      }
+      
+      // 실제 구현에서는 서버로 데이터 전송
+      alert('알림이 발송되었습니다.');
+    });
+    
+    // 미리보기 버튼 클릭
+    document.getElementById('btn-preview').addEventListener('click', function() {
+      const title = document.getElementById('notification-title').value;
+      const message = document.getElementById('notification-message').value;
+      const type = document.getElementById('notification-type').value;
+      
+      if (!title || !message) {
+        alert('제목과 내용을 입력해주세요.');
+        return;
+      }
+      
+      // 실제 구현에서는 미리보기 모달 표시
+      alert(`[${type}] ${title}\n\n${message}`);
+    });
+    
+    // 템플릿 저장 버튼 클릭
+    document.getElementById('btn-save-template').addEventListener('click', function() {
+      const name = document.getElementById('template-name').value;
+      const title = document.getElementById('template-title').value;
+      const message = document.getElementById('template-message').value;
+      
+      if (!name || !title || !message) {
+        alert('템플릿 이름, 제목, 내용을 모두 입력해주세요.');
+        return;
+      }
+      
+      // 실제 구현에서는 서버로 데이터 전송
+      alert('템플릿이 저장되었습니다.');
+      document.getElementById('template-modal').style.display = 'none';
+    });
+  </script>
+</body>
+</html>
