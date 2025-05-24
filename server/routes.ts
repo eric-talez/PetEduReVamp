@@ -840,6 +840,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.sendFile(path.resolve(process.cwd(), 'public', 'notification-test.html'));
   });
   
+  // 알림 설정 페이지
+  app.get('/notification-settings', (req, res) => {
+    res.sendFile(path.resolve(process.cwd(), 'public', 'notification-settings.html'));
+  });
+  
+  // 관리자용 알림 발송 도구
+  app.get('/admin-notifications', (req, res) => {
+    // 실제 구현에서는 관리자 권한 확인 후 페이지 제공
+    // if (!req.session.user || req.session.user.role !== 'admin') {
+    //   return res.status(403).send('관리자만 접근 가능합니다');
+    // }
+    res.sendFile(path.resolve(process.cwd(), 'public', 'admin-notifications.html'));
+  });
+  
   // 루트 경로에서 알림 테스트 페이지로 리다이렉트
   app.get('/', (req, res) => {
     res.redirect('/notification-test');
