@@ -7,6 +7,31 @@ import { NotificationService } from './service';
 export function registerNotificationRoutes(app: Express, notificationService: NotificationService) {
   console.log('[NotificationRoutes] Registering notification routes');
   
+  // 관리자 페이지 라우트
+  app.get('/admin-dashboard', (req, res) => {
+    // 실제 구현에서는 관리자 권한 확인 필요
+    // if (!req.session.user || req.session.user.role !== 'admin') {
+    //   return res.status(403).send('관리자만 접근 가능합니다');
+    // }
+    res.sendFile(process.cwd() + '/public/admin-dashboard.html');
+  });
+  
+  app.get('/admin-users', (req, res) => {
+    // 실제 구현에서는 관리자 권한 확인 필요
+    // if (!req.session.user || req.session.user.role !== 'admin') {
+    //   return res.status(403).send('관리자만 접근 가능합니다');
+    // }
+    res.sendFile(process.cwd() + '/public/admin-users.html');
+  });
+  
+  app.get('/admin-notifications', (req, res) => {
+    // 실제 구현에서는 관리자 권한 확인 필요
+    // if (!req.session.user || req.session.user.role !== 'admin') {
+    //   return res.status(403).send('관리자만 접근 가능합니다');
+    // }
+    res.sendFile(process.cwd() + '/public/admin-notifications.html');
+  });
+  
   // 알림 목록 가져오기 API
   app.get('/api/notifications', async (req, res) => {
     if (!req.session.user) {
