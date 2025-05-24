@@ -188,30 +188,35 @@ export interface OnboardingGuideProps {
 
 export function OnboardingGuide({ forceShow = false, onComplete }: OnboardingGuideProps) {
   const { userRole } = useAuth();
-  const [open, setOpen] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
+  
+  // 온보딩 팝업 표시 여부 상태
+  // 이미 완료된 경우에는 초기값을 false로 설정
+  const [open, setOpen] = useState(() => {
+    // 로컬 스토리지 확인은 컴포넌트 마운트 시 한 번만 실행
+    const completed = hasCompletedOnboarding();
+    return forceShow || !completed ? false : false; // 강제 표시 옵션이 있거나 완료하지 않았을 때만 true (지금은 모든 경우 false로 설정)
+  });
   
   // 사용자 역할에 따른 온보딩 단계 가져오기
   const steps = userRole && onboardingSteps[userRole as keyof typeof onboardingSteps] 
     ? onboardingSteps[userRole as keyof typeof onboardingSteps]
     : onboardingSteps['pet-owner']; // 기본값으로 반려인용 단계 사용
   
+  // 컴포넌트가 마운트될 때 한 번만 실행되는 useEffect
   useEffect(() => {
-    // 이미 온보딩을 완료했는지 확인하고, 완료하지 않았거나 강제 표시 옵션이 있으면 표시
-    const shouldShow = forceShow || !hasCompletedOnboarding();
+    // 무조건 온보딩 완료 상태로 표시 (임시 해결책)
+    markOnboardingComplete();
     
-    if (shouldShow) {
-      // 잠시 지연 후 표시하여 페이지 로딩과 겹치지 않게 함
+    // 강제 표시 옵션이 있는 경우에만 표시
+    if (forceShow) {
       const timer = setTimeout(() => {
         setOpen(true);
       }, 1000);
       
       return () => clearTimeout(timer);
-    } else {
-      // 온보딩을 이미 완료했다면 다이얼로그를 닫은 상태로 유지
-      setOpen(false);
     }
-  }, [forceShow]);
+  }, []);
   
   const handleNext = () => {
     if (currentStep < steps.length - 1) {
