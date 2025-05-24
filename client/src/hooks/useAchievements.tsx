@@ -197,9 +197,11 @@ export function AchievementsProvider({ children }: { children: ReactNode }) {
   }, [auth]);
   
   // 컴포넌트 마운트 시 초기 데이터 로드
+  // 컴포넌트 마운트 시 한 번만 실행되도록 의존성 배열을 빈 배열로 설정
   useEffect(() => {
     fetchAchievements();
-  }, [fetchAchievements]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // ID로 성취 배지 찾기
   const getAchievementById = useCallback(
