@@ -5,6 +5,7 @@ import SimpleChatbot from './components/SimpleChatbot';
 import { UserPreferencesProvider } from './hooks/use-user-preferences';
 import { useGlobalShortcuts } from './hooks/use-keyboard-shortcuts';
 import { NotificationsProvider } from './components/NotificationsProvider';
+import { AchievementsProvider } from './hooks/useAchievements';
 
 // 페이지 컴포넌트 임포트
 import Home from "./pages/Home";
@@ -1324,6 +1325,18 @@ function UnauthenticatedRoutes() {
             );
           }}
         </Route>
+        
+        {/* 성취 배지 페이지 */}
+        <Route path="/profile/achievements">
+          {() => {
+            const AchievementsPage = lazy(() => import('./pages/profile/achievements'));
+            return (
+              <Suspense fallback={<div className="p-8 text-center">성취 배지 로딩 중...</div>}>
+                <AchievementsPage />
+              </Suspense>
+            );
+          }}
+        </Route>
         <Route path="/" component={Home} />
         <Route>
           {() => {
@@ -1480,14 +1493,18 @@ function SimpleApp() {
   
   return (
     <UserPreferencesProvider>
-      <KeyboardShortcutsManager>
-        <>
-          {auth.isAuthenticated ? <AuthenticatedRoutes /> : <UnauthenticatedRoutes />}
-          <DebugButton />
-          <Toaster />
-          <AccessibilityFloatingButton />
-        </>
-      </KeyboardShortcutsManager>
+      <NotificationsProvider>
+        <AchievementsProvider>
+          <KeyboardShortcutsManager>
+            <>
+              {auth.isAuthenticated ? <AuthenticatedRoutes /> : <UnauthenticatedRoutes />}
+              <DebugButton />
+              <Toaster />
+              <AccessibilityFloatingButton />
+            </>
+          </KeyboardShortcutsManager>
+        </AchievementsProvider>
+      </NotificationsProvider>
     </UserPreferencesProvider>
   );
 }
