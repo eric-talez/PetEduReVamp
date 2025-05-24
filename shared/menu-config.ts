@@ -549,6 +549,18 @@ export const DEFAULT_MENU_ITEMS: MenuItem[] = [
     isPublic: false
   },
   {
+    id: 'invite-management',
+    title: '초대장 관리',
+    path: '/admin/invite-management',
+    icon: 'UserPlus',
+    type: 'internal',
+    category: 'admin',
+    roles: ['admin'],
+    orderIndex: 8,
+    isActive: true,
+    isPublic: false
+  },
+  {
     id: 'course-management',
     title: '강좌 관리',
     path: '/admin/courses',
