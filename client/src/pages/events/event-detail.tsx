@@ -188,8 +188,10 @@ export default function EventDetailPage() {
     fetchEvent();
   }, [id]);
   
+  const auth = useAuth();
+  
   const handleRegister = () => {
-    if (!isAuthenticated()) {
+    if (!auth || !auth.isAuthenticated) {
       promptLogin();
       return;
     }
