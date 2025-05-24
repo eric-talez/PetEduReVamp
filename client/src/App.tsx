@@ -35,6 +35,7 @@ import ProfilePage from "./pages/profile/index";
 import SettingsPage from "./pages/settings/index";
 import NotFound from "./pages/not-found";
 import TrainerTest from "./pages/TrainerTest";
+import NotificationTestPage from "./pages/notification-test";
 
 // 훈련사 페이지 임포트
 import TrainerCoursesPage from "./pages/trainer/courses";
@@ -444,6 +445,9 @@ export default function App() {
     <CartProvider>
       <AppLayout>
         <Switch>
+          {/* 알림 시스템 테스트 페이지 */}
+          <Route path="/notification-test" component={NotificationTestPage} />
+          
           {/* 홈 페이지는 인증 상태에 관계없이 동일한 컴포넌트 사용 */}
            <Route path="/">
             {() => (
