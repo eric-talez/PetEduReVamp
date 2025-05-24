@@ -30,6 +30,7 @@ import AdminSettlementPage from "./pages/admin/settlement";
 import EventsPage from "./pages/events";
 import EventDetailPage from "./pages/events/event-detail";
 import EventCalendarPage from "./pages/events/calendar";
+import NotificationTestPage from "./pages/notification-test";
 
 // 레이아웃 및 컴포넌트 임포트
 import { TopBar } from "@/components/TopBar";
@@ -450,6 +451,19 @@ function AuthenticatedRoutes() {
             );
           }}
         </Route>
+        <Route path="/notification-test" component={NotificationTestPage} />
+        <Route path="/alert-test" component={() => {
+          const AlertTest = lazy(() => import('./pages/alert-test'));
+          return (
+            <Suspense fallback={<div className="p-8 flex justify-center items-center">
+              <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
+              <span className="ml-2">테스트 페이지 로딩 중...</span>
+            </div>}>
+              <AlertTest />
+            </Suspense>
+          );
+        }} />
+        
         <Route path="/locations">
           {() => {
             console.log("위치 서비스 페이지 접근");
