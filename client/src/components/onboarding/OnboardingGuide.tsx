@@ -67,14 +67,14 @@ const onboardingSteps = {
       description: '반려견과 함께 갈 수 있는 장소를 찾고 정보를 공유하세요.',
       icon: <MapPin className="h-16 w-16 text-primary" />,
       cta: '다음',
-      image: '/assets/onboarding/locations.png'
+      image: '/assets/onboarding/locations.svg'
     },
     {
       title: '준비 완료!',
       description: '이제 탈레즈의 다양한 기능을 활용하여 반려견과 함께 성장하는 여정을 시작하세요.',
       icon: <PawPrint className="h-16 w-16 text-primary" />,
       cta: '시작하기',
-      image: '/assets/onboarding/complete.png'
+      image: '/assets/onboarding/complete.svg'
     },
   ],
   // 훈련사용 온보딩 단계
@@ -84,7 +84,7 @@ const onboardingSteps = {
       description: '탈레즈는 전문 훈련사와 반려인을 연결하는 플랫폼입니다. 주요 기능들을 살펴보세요.',
       icon: <PawPrint className="h-16 w-16 text-primary" />,
       cta: '시작하기',
-      image: '/assets/onboarding/trainer-welcome.png'
+      image: '/assets/onboarding/trainer-welcome.svg'
     },
     {
       title: '훈련사 대시보드',
@@ -129,7 +129,7 @@ const onboardingSteps = {
       description: '탈레즈 관리자 페이지에서는 서비스의 모든 측면을 관리하고 제어할 수 있습니다.',
       icon: <PawPrint className="h-16 w-16 text-primary" />,
       cta: '시작하기',
-      image: '/assets/onboarding/admin-welcome.png'
+      image: '/assets/onboarding/admin-welcome.svg'
     },
     {
       title: '사용자 관리',
