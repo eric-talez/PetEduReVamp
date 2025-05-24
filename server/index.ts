@@ -3,9 +3,31 @@ import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import session from "express-session";
 import memorystore from "memorystore";
+import helmet from "helmet";
+import rateLimit from "express-rate-limit";
+import cors from "cors";
+
+// 보안 설정
+const securityConfig = {
+  rateLimitWindow: 15 * 60 * 1000, // 15분
+  rateLimitMax: 100, // IP당 최대 요청 수
+  corsOrigins: ['https://talez.app']
+};
 
 const MemoryStore = memorystore(session);
 const app = express();
+
+// 보안 미들웨어 적용
+app.use(helmet());
+app.use(cors({
+  origin: securityConfig.corsOrigins,
+  credentials: true
+}));
+app.use(rateLimit({
+  windowMs: securityConfig.rateLimitWindow,
+  max: securityConfig.rateLimitMax
+}));
+
 // 이미지 업로드를 위해 JSON 요청 크기 제한 증가 (50MB)
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: false, limit: '50mb' }));
