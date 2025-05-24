@@ -309,25 +309,25 @@ export default function OrderHistory() {
           </div>
         </Card>
       ) : (
-        <div className="space-y-6">
+        <div className="space-y-8">
           {filteredOrders.map((order) => (
-            <Card key={order.id} className="overflow-hidden">
-              <CardHeader className="bg-muted/30">
+            <Card key={order.id} className="overflow-hidden border-2 shadow-sm hover:shadow-md transition-shadow">
+              <CardHeader className="bg-muted/30 border-b-2 border-primary/10">
                 <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
                   <div>
                     <div className="flex items-center">
-                      <CardTitle className="text-lg">{order.id}</CardTitle>
-                      <span className="text-sm text-muted-foreground ml-4">
+                      <CardTitle className="text-lg font-bold">{order.id}</CardTitle>
+                      <span className="text-sm text-muted-foreground ml-4 bg-background px-2 py-1 rounded-md">
                         <Calendar className="h-3.5 w-3.5 inline-block mr-1" />
                         {formatDate(order.date)}
                       </span>
                     </div>
-                    <CardDescription>
+                    <CardDescription className="mt-1.5 text-sm">
                       {order.items.length}개 상품 · {formatPrice(order.totalAmount)}
                     </CardDescription>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <div className={`px-3 py-1 rounded-full flex items-center ${statusInfo[order.status].color}`}>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <div className={`px-3 py-1.5 rounded-full flex items-center shadow-sm ${statusInfo[order.status].color}`}>
                       {statusInfo[order.status].icon}
                       <span className="ml-1.5 text-sm font-medium">{statusInfo[order.status].label}</span>
                     </div>
@@ -336,6 +336,7 @@ export default function OrderHistory() {
                         variant="outline" 
                         size="sm"
                         onClick={() => trackOrder(order.trackingNumber!)}
+                        className="font-medium"
                       >
                         <Truck className="h-3.5 w-3.5 mr-1.5" />
                         배송 조회
@@ -346,6 +347,7 @@ export default function OrderHistory() {
                         variant="outline"
                         size="sm"
                         onClick={() => cancelOrder(order.id)}
+                        className="font-medium"
                       >
                         주문 취소
                       </Button>
