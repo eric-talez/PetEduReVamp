@@ -428,6 +428,19 @@ function AuthenticatedRoutes() {
             );
           }}
         </Route>
+        
+        {/* 주문 내역 페이지 */}
+        <Route path="/shop/order-history">
+          {() => {
+            console.log("주문 내역 페이지 접근");
+            const OrderHistory = lazy(() => import('./pages/shop/order-history'));
+            return (
+              <Suspense fallback={<div className="p-8 text-center">주문 내역 로딩 중...</div>}>
+                <OrderHistory />
+              </Suspense>
+            );
+          }}
+        </Route>
         <Route path="/notifications">
           {() => {
             console.log("알림 페이지 리디렉션: /notifications → /alerts");
