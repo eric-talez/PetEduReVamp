@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Bell, Check } from 'lucide-react';
+import { Bell, Check, MessageSquare, CreditCard, Gift, GraduationCap, Video, CalendarClock } from 'lucide-react';
 import { useNotification, NotificationType } from '@/hooks/useNotification';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -52,8 +52,36 @@ export function NotificationBell() {
         return 'bg-success/10';
       case NotificationType.MARKETING:
         return 'bg-warning/10';
+      case NotificationType.COURSE:
+        return 'bg-blue-100/40';
+      case NotificationType.VIDEO_CALL:
+        return 'bg-purple-100/40';
+      case NotificationType.TRAINING:
+        return 'bg-green-100/40';
       default:
         return 'bg-primary/10';
+    }
+  };
+  
+  // 알림 타입에 따른 아이콘 반환
+  const getNotificationIcon = (type: string) => {
+    switch (type) {
+      case NotificationType.SYSTEM:
+        return <Bell size={18} />;
+      case NotificationType.MESSAGE:
+        return <MessageSquare size={18} />;
+      case NotificationType.PAYMENT:
+        return <CreditCard size={18} />;
+      case NotificationType.MARKETING:
+        return <Gift size={18} />;
+      case NotificationType.COURSE:
+        return <GraduationCap size={18} />;
+      case NotificationType.VIDEO_CALL:
+        return <Video size={18} />;
+      case NotificationType.TRAINING:
+        return <CalendarClock size={18} />;
+      default:
+        return <Bell size={18} />;
     }
   };
   
@@ -116,7 +144,7 @@ export function NotificationBell() {
                           >
                             <div className="flex items-start gap-2">
                               <div className="w-10 h-10 rounded-full flex items-center justify-center text-primary bg-muted flex-shrink-0">
-                                <Bell size={18} />
+                                {getNotificationIcon(notification.type)}
                               </div>
                               <div className="flex-1 min-w-0">
                                 <h4 className="font-medium text-sm text-foreground truncate">

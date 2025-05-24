@@ -324,6 +324,8 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
   // 알림을 읽음 상태로 표시
   const markAsRead = async (notificationId: string) => {
     if (!isAuthenticated) return;
+    
+    console.log('알림 읽음 표시:', notificationId);
 
     try {
       await apiRequest('PATCH', `/api/notifications/${notificationId}/read`);
