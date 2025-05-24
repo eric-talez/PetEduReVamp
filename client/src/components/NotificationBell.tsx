@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { Bell, Check, MessageSquare, CreditCard, Gift, GraduationCap, Video, CalendarClock } from 'lucide-react';
-import { useNotification, NotificationType } from '@/hooks/useNotification';
+import { Bell, Check, Trash2 } from 'lucide-react';
+import { useNotifications, Notification } from '@/hooks/use-notifications';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -19,20 +19,22 @@ export function NotificationBell() {
     notifications, 
     unreadCount, 
     markAsRead, 
-    markAllAsRead
-  } = useNotification();
+    markAllAsRead, 
+    deleteNotification, 
+    clearAllNotifications 
+  } = useNotifications();
   
   const [open, setOpen] = useState(false);
   const [_, navigate] = useLocation();
   
   // 알림 클릭 처리
-  const handleNotificationClick = (notification: any) => {
+  const handleNotificationClick = (notification: Notification) => {
     // 읽음으로 표시
     markAsRead(notification.id);
     
-    // URL이 있으면 해당 페이지로 이동
-    if (notification.url) {
-      navigate(notification.url);
+    // 링크가 있으면 해당 페이지로 이동
+    if (notification.linkTo) {
+      navigate(notification.linkTo);
     }
     
     // 팝오버 닫기
@@ -40,49 +42,93 @@ export function NotificationBell() {
   };
   
   // 알림 타입에 따른 배경색 결정
-  const getNotificationBgColor = (type: string, isRead: boolean) => {
+  const getNotificationBgColor = (type: Notification['type'], isRead: boolean) => {
     if (isRead) return 'bg-background';
     
     switch (type) {
-      case NotificationType.SYSTEM:
-        return 'bg-secondary/20';
-      case NotificationType.MESSAGE:
-        return 'bg-primary/10';
-      case NotificationType.PAYMENT:
+      case 'success':
         return 'bg-success/10';
-      case NotificationType.MARKETING:
+      case 'warning':
         return 'bg-warning/10';
-      case NotificationType.COURSE:
-        return 'bg-blue-100/40';
-      case NotificationType.VIDEO_CALL:
-        return 'bg-purple-100/40';
-      case NotificationType.TRAINING:
-        return 'bg-green-100/40';
+      case 'error':
+        return 'bg-destructive/10';
+      case 'system':
+        return 'bg-secondary/20';
       default:
         return 'bg-primary/10';
     }
   };
   
-  // 알림 타입에 따른 아이콘 반환
-  const getNotificationIcon = (type: string) => {
+  // 알림 타입에 따른 아이콘 색상 결정
+  const getNotificationIconColor = (type: Notification['type']) => {
     switch (type) {
-      case NotificationType.SYSTEM:
-        return <Bell size={18} />;
-      case NotificationType.MESSAGE:
-        return <MessageSquare size={18} />;
-      case NotificationType.PAYMENT:
-        return <CreditCard size={18} />;
-      case NotificationType.MARKETING:
-        return <Gift size={18} />;
-      case NotificationType.COURSE:
-        return <GraduationCap size={18} />;
-      case NotificationType.VIDEO_CALL:
-        return <Video size={18} />;
-      case NotificationType.TRAINING:
-        return <CalendarClock size={18} />;
+      case 'success':
+        return 'text-success';
+      case 'warning':
+        return 'text-warning';
+      case 'error':
+        return 'text-destructive';
+      case 'system':
+        return 'text-secondary-foreground';
       default:
-        return <Bell size={18} />;
+        return 'text-primary';
     }
+  };
+  
+  // 단일 알림 렌더링
+  const renderNotification = (notification: Notification) => {
+    const bgColorClass = getNotificationBgColor(notification.type, notification.isRead);
+    const iconColorClass = getNotificationIconColor(notification.type);
+    
+    return (
+      <div
+        key={notification.id}
+        className={`p-3 ${bgColorClass} rounded-md mb-2 cursor-pointer relative group transition-all hover:bg-primary/5`}
+        onClick={() => handleNotificationClick(notification)}
+      >
+        <div className="flex items-start gap-2">
+          {/* 발신자 프로필 이미지 (있는 경우) */}
+          {notification.sender && notification.sender.avatar ? (
+            <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0">
+              <img 
+                src={notification.sender.avatar} 
+                alt={notification.sender.name} 
+                className="w-full h-full object-cover" 
+              />
+            </div>
+          ) : (
+            <div className={`w-10 h-10 rounded-full flex items-center justify-center ${iconColorClass} bg-muted flex-shrink-0`}>
+              <Bell size={18} />
+            </div>
+          )}
+          
+          <div className="flex-1 min-w-0">
+            <h4 className="font-medium text-sm text-foreground truncate">
+              {notification.title}
+            </h4>
+            <p className="text-sm text-muted-foreground line-clamp-2">
+              {notification.message}
+            </p>
+            <p className="text-xs text-muted-foreground mt-1">
+              {formatDistanceToNow(notification.timestamp, { addSuffix: true, locale: ko })}
+            </p>
+          </div>
+          
+          {/* 삭제 버튼 (호버 시 표시) */}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity"
+            onClick={(e) => {
+              e.stopPropagation();
+              deleteNotification(notification.id);
+            }}
+          >
+            <Trash2 size={16} className="text-muted-foreground" />
+          </Button>
+        </div>
+      </div>
+    );
   };
   
   return (
@@ -116,6 +162,17 @@ export function NotificationBell() {
                   모두 읽음
                 </Button>
               )}
+              {notifications.length > 0 && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 text-xs"
+                  onClick={clearAllNotifications}
+                >
+                  <Trash2 size={14} className="mr-1" />
+                  모두 삭제
+                </Button>
+              )}
             </div>
           </div>
         </div>
@@ -130,71 +187,25 @@ export function NotificationBell() {
             ) : (
               <>
                 {/* 읽지 않은 알림 */}
-                {notifications.some((n: any) => !n.isRead) && (
+                {notifications.some(n => !n.isRead) && (
                   <>
                     <div className="mb-2">
                       <h4 className="text-xs text-muted-foreground font-medium mb-2">읽지 않음</h4>
                       {notifications
-                        .filter((n: any) => !n.isRead)
-                        .map((notification: any) => (
-                          <div
-                            key={notification.id}
-                            className={`p-3 ${getNotificationBgColor(notification.type, notification.isRead)} rounded-md mb-2 cursor-pointer relative group transition-all hover:bg-primary/5`}
-                            onClick={() => handleNotificationClick(notification)}
-                          >
-                            <div className="flex items-start gap-2">
-                              <div className="w-10 h-10 rounded-full flex items-center justify-center text-primary bg-muted flex-shrink-0">
-                                {getNotificationIcon(notification.type)}
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                <h4 className="font-medium text-sm text-foreground truncate">
-                                  {notification.title}
-                                </h4>
-                                <p className="text-sm text-muted-foreground line-clamp-2">
-                                  {notification.message}
-                                </p>
-                                <p className="text-xs text-muted-foreground mt-1">
-                                  {formatDistanceToNow(new Date(notification.createdAt), { addSuffix: true, locale: ko })}
-                                </p>
-                              </div>
-                            </div>
-                          </div>
-                        ))}
+                        .filter(n => !n.isRead)
+                        .map(renderNotification)}
                     </div>
-                    {notifications.some((n: any) => n.isRead) && <Separator className="my-3" />}
+                    {notifications.some(n => n.isRead) && <Separator className="my-3" />}
                   </>
                 )}
                 
                 {/* 읽은 알림 */}
-                {notifications.some((n: any) => n.isRead) && (
+                {notifications.some(n => n.isRead) && (
                   <div>
                     <h4 className="text-xs text-muted-foreground font-medium mb-2">이전 알림</h4>
                     {notifications
-                      .filter((n: any) => n.isRead)
-                      .map((notification: any) => (
-                        <div
-                          key={notification.id}
-                          className={`p-3 ${getNotificationBgColor(notification.type, notification.isRead)} rounded-md mb-2 cursor-pointer relative group transition-all hover:bg-primary/5`}
-                          onClick={() => handleNotificationClick(notification)}
-                        >
-                          <div className="flex items-start gap-2">
-                            <div className="w-10 h-10 rounded-full flex items-center justify-center text-primary bg-muted flex-shrink-0">
-                              <Bell size={18} />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <h4 className="font-medium text-sm text-foreground truncate">
-                                {notification.title}
-                              </h4>
-                              <p className="text-sm text-muted-foreground line-clamp-2">
-                                {notification.message}
-                              </p>
-                              <p className="text-xs text-muted-foreground mt-1">
-                                {formatDistanceToNow(new Date(notification.createdAt), { addSuffix: true, locale: ko })}
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
+                      .filter(n => n.isRead)
+                      .map(renderNotification)}
                   </div>
                 )}
               </>

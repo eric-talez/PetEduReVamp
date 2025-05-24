@@ -3,7 +3,7 @@ import { Slot } from "@radix-ui/react-slot"
 import { VariantProps, cva } from "class-variance-authority"
 import { PanelLeft } from "lucide-react"
 
-// 내부에 isMobile 상태를 사용하므로 외부 훅 import 제거
+import { useIsMobile } from "@/hooks/use-mobile"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -71,21 +71,7 @@ const SidebarProvider = React.forwardRef<
     },
     ref
   ) => {
-    // 미디어 쿼리를 사용하여 직접 모바일 여부 확인
-    const [isMobile, setIsMobile] = React.useState(
-      typeof window !== "undefined" ? window.innerWidth < 768 : false
-    )
-    
-    React.useEffect(() => {
-      if (typeof window === "undefined") return
-      
-      const checkMobile = () => {
-        setIsMobile(window.innerWidth < 768)
-      }
-      
-      window.addEventListener("resize", checkMobile)
-      return () => window.removeEventListener("resize", checkMobile)
-    }, [])
+    const isMobile = useIsMobile()
     const [openMobile, setOpenMobile] = React.useState(false)
 
     // This is the internal state of the sidebar.

@@ -32,7 +32,7 @@ async function throwIfResNotOk(res: Response) {
     error.statusCode = res.status;
     error.errorCode = errorCode;
     error.fieldErrors = fieldErrors;
-
+    
     throw error;
   }
 }
@@ -46,16 +46,16 @@ export async function apiRequest(
   if (data) {
     console.log('[DEBUG] Request payload:', data);
   }
-
+  
   // 로컬 스토리지에서 인증 정보 가져오기
   const authHeaders: Record<string, string> = {};
   const userRole = localStorage.getItem('userRole');
-
+  
   // 인증 정보가 있으면 헤더에 추가
   if (userRole) {
     authHeaders['X-User-Role'] = userRole;
   }
-
+  
   try {
     const res = await fetch(url, {
       method,
@@ -66,9 +66,9 @@ export async function apiRequest(
       body: data ? JSON.stringify(data) : undefined,
       credentials: "include",
     });
-
+    
     console.log(`[DEBUG] API Response: ${res.status} ${res.statusText}`);
-
+    
     try {
       await throwIfResNotOk(res);
       return res;
@@ -135,13 +135,4 @@ const queryClientConfig: QueryClientConfig = {
   },
 };
 
-export const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 5 * 60 * 1000, // 5분
-      cacheTime: 30 * 60 * 1000, // 30분
-      retry: 3,
-      refetchOnWindowFocus: false,
-    },
-  },
-});
+export const queryClient = new QueryClient(queryClientConfig);

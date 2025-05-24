@@ -192,13 +192,8 @@ export function WeeklyWeatherModal({ isOpen, onClose, location = { name: "서울
               </DialogDescription>
             </div>
             <DialogClose asChild>
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className="h-8 w-8 focus:ring-2 focus:ring-primary" 
-                aria-label="닫기"
-              >
-                <X className="h-4 w-4" aria-hidden="true" />
+              <Button variant="ghost" size="icon" className="h-8 w-8">
+                <X className="h-4 w-4" />
                 <span className="sr-only">닫기</span>
               </Button>
             </DialogClose>

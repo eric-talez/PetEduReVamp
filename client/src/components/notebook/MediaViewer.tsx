@@ -75,31 +75,13 @@ export default function MediaViewer({
               {currentIndex + 1} / {files.length}
             </DialogTitle>
             <div className="flex space-x-2">
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                onClick={handleDownload} 
-                className="text-white hover:bg-black/20 focus:ring-2 focus:ring-white" 
-                aria-label="다운로드"
-              >
+              <Button variant="ghost" size="icon" onClick={handleDownload} className="text-white hover:bg-black/20">
                 <Download className="h-5 w-5" />
               </Button>
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                onClick={toggleFullscreen} 
-                className="text-white hover:bg-black/20 focus:ring-2 focus:ring-white" 
-                aria-label={isFullscreen ? "전체화면 종료" : "전체화면으로 보기"}
-              >
+              <Button variant="ghost" size="icon" onClick={toggleFullscreen} className="text-white hover:bg-black/20">
                 {isFullscreen ? <Minimize className="h-5 w-5" /> : <Maximize className="h-5 w-5" />}
               </Button>
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                onClick={() => onOpenChange(false)} 
-                className="text-white hover:bg-black/20 focus:ring-2 focus:ring-white" 
-                aria-label="미디어 뷰어 닫기"
-              >
+              <Button variant="ghost" size="icon" onClick={() => onOpenChange(false)} className="text-white hover:bg-black/20">
                 <X className="h-5 w-5" />
               </Button>
             </div>

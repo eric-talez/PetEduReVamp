@@ -73,22 +73,10 @@ export default function NotebookCalendar({ entries, selectedDay, onDaySelect }: 
           {format(currentMonth, 'yyyy년 MM월', { locale: ko })}
         </h3>
         <div className="flex space-x-1">
-          <Button 
-            variant="outline" 
-            size="icon" 
-            onClick={goToPreviousMonth} 
-            aria-label="이전 달"
-            className="focus:ring-2 focus:ring-primary"
-          >
+          <Button variant="outline" size="icon" onClick={goToPreviousMonth}>
             <ChevronLeft className="h-4 w-4" />
           </Button>
-          <Button 
-            variant="outline" 
-            size="icon" 
-            onClick={goToNextMonth}
-            aria-label="다음 달"
-            className="focus:ring-2 focus:ring-primary"
-          >
+          <Button variant="outline" size="icon" onClick={goToNextMonth}>
             <ChevronRight className="h-4 w-4" />
           </Button>
         </div>

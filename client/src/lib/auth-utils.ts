@@ -39,70 +39,31 @@ export function checkAndHandlePermission(
   isAuthenticated: boolean,
   userRole: UserRole | undefined,
   requiredRole: UserRole,
-  redirectPath: string = '/auth',
-  featureName?: string
+  redirectPath: string = '/auth'
 ): boolean {
-  // 기능 이름이 제공되었는지 확인
-  const feature = featureName ? `'${featureName}'` : '이 기능';
-  
   if (!isAuthenticated) {
-    // 로그인 되지 않은 경우 - 좀 더 구체적인 메시지
+    // 로그인 되지 않은 경우
     toast({
       title: "로그인 필요",
-      description: `${feature}을(를) 사용하려면 로그인이 필요합니다. 로그인 페이지로 이동합니다.`,
+      description: "이 기능을 사용하려면 로그인이 필요합니다.",
       variant: "destructive",
     });
     setTimeout(() => {
       window.location.href = redirectPath;
-    }, 2000); // 메시지를 읽을 시간 제공
+    }, 1500);
     return false;
   }
   
-  // 사용자 친화적인 역할 이름 매핑
-  const roleNames: Record<UserRole, string> = {
-    'user': '일반 사용자',
-    'pet-owner': '반려인',
-    'trainer': '훈련사',
-    'institute-admin': '기관 관리자',
-    'admin': '시스템 관리자'
-  };
-  
   if (!hasRequiredRole(userRole, requiredRole)) {
-    // 권한이 불충분한 경우 - 구체적인 권한 정보와 안내
-    const currentRoleName = userRole ? roleNames[userRole] : '알 수 없음';
-    const requiredRoleName = roleNames[requiredRole];
-    
+    // 권한이 불충분한 경우
     toast({
       title: "권한 부족",
-      description: `${feature}은(는) '${requiredRoleName}' 이상의 권한이 필요합니다. 현재 '${currentRoleName}' 권한으로 로그인되어 있습니다.`,
+      description: `이 기능은 ${requiredRole} 이상의 권한이 필요합니다.`,
       variant: "destructive",
     });
-    
-    // 역할에 따른 가이드 제공
-    if (requiredRole === 'trainer' && userRole === 'pet-owner') {
-      // 반려인이 훈련사 권한 필요 시, 훈련사 신청 안내
-      setTimeout(() => {
-        toast({
-          title: "안내",
-          description: "훈련사로 등록하시려면 '마이페이지 > 훈련사 신청'을 이용해 주세요.",
-          variant: "default",
-        });
-      }, 2000);
-    } else if (requiredRole === 'institute-admin') {
-      // 기관 관리자 권한 필요 시, 기관 신청 안내
-      setTimeout(() => {
-        toast({
-          title: "안내",
-          description: "교육 기관으로 등록하시려면 '기관 > 기관 등록'을 이용해 주세요.",
-          variant: "default",
-        });
-      }, 2000);
-    }
-    
     setTimeout(() => {
       window.location.href = '/';
-    }, 3500); // 추가 안내 메시지를 읽을 시간까지 고려
-    
+    }, 1500);
     return false;
   }
   

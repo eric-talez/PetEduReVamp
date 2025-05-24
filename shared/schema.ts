@@ -92,29 +92,6 @@ export const createCourseSchema = createInsertSchema(courses).omit({
 });
 
 // Institute types
-export const institutePricingPlans = pgTable("institute_pricing_plans", {
-  id: serial("id").primaryKey(),
-  name: text("name").notNull(),
-  monthlyPrice: integer("monthly_price").notNull(),
-  yearlyPrice: integer("yearly_price"),
-  features: json("features").$type<string[]>(),
-  isActive: boolean("is_active").default(true),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-  updatedAt: timestamp("updated_at").notNull().defaultNow(),
-});
-
-export const instituteSubscriptions = pgTable("institute_subscriptions", {
-  id: serial("id").primaryKey(),
-  instituteId: integer("institute_id").notNull().references(() => institutes.id, { onDelete: 'cascade' }),
-  planId: integer("plan_id").notNull().references(() => institutePricingPlans.id),
-  startDate: timestamp("start_date").notNull(),
-  endDate: timestamp("end_date"),
-  status: text("status").notNull().default('active'),
-  autoRenew: boolean("auto_renew").default(true),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-  updatedAt: timestamp("updated_at").notNull().defaultNow(),
-});
-
 export const institutes = pgTable("institutes", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
@@ -248,89 +225,6 @@ export type InsertAchievement = z.infer<typeof createAchievementSchema>;
 
 export type Post = typeof posts.$inferSelect;
 export type InsertPost = z.infer<typeof createPostSchema>;
-
-// 포인트 정책 테이블
-export const pointPolicies = pgTable("point_policies", {
-  id: serial("id").primaryKey(),
-  name: text("name").notNull(),
-  description: text("description").notNull(),
-  pointAmount: integer("point_amount").notNull(),
-  type: text("type").notNull(), // signup, profile, pet, review, attendance, community, subscription
-  category: text("category").notNull(), // initial, activity, subscription
-  conditions: json("conditions").$type<{
-    minPurchase?: number,
-    maxDaily?: number,
-    cooldown?: number
-  }>(),
-  isActive: boolean("is_active").default(true),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-  updatedAt: timestamp("updated_at").notNull().defaultNow(),
-});
-
-export const subscriptionPlans = pgTable("subscription_plans", {
-  id: serial("id").primaryKey(),
-  name: text("name").notNull(), // Basic, Standard, Premium
-  price: integer("price").notNull(),
-  monthlyPoints: integer("monthly_points").notNull(),
-  features: json("features").$type<{
-    videoAccess: 'basic' | 'all',
-    qaCount: number | 'unlimited',
-    videoCallCount: number,
-    communityAccess: 'basic' | 'vip'
-  }>(),
-  isActive: boolean("is_active").default(true),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-  updatedAt: timestamp("updated_at").notNull().defaultNow(),
-});
-
-// 포인트 이력 테이블
-export const pointTransactions = pgTable("point_transactions", {
-  id: serial("id").primaryKey(),
-  userId: integer("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
-  amount: integer("amount").notNull(),
-  type: text("type").notNull(),
-  description: text("description"),
-  videoId: integer("video_id").references(() => videoContents.id),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-});
-
-// 구독 플랜 테이블
-// 이미 위에서 선언되었기 때문에 여기서는 제거합니다.
-
-// 구독 정보 테이블
-export const subscriptions = pgTable("subscriptions", {
-  id: serial("id").primaryKey(),
-  userId: integer("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
-  planId: integer("plan_id").notNull().references(() => subscriptionPlans.id),
-  startDate: timestamp("start_date").notNull(),
-  endDate: timestamp("end_date"),
-  status: text("status").notNull().default('active'),
-  autoRenew: boolean("auto_renew").default(true),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-  updatedAt: timestamp("updated_at").notNull().defaultNow(),
-});
-
-// 비디오 콘텐츠 테이블
-export const videoContents = pgTable("video_contents", {
-  id: serial("id").primaryKey(),
-  title: text("title").notNull(),
-  description: text("description").notNull(),
-  pointPrice: integer("point_price").notNull(),
-  type: text("type").notNull(), // regular, premium
-  trainerId: integer("trainer_id").references(() => users.id),
-  url: text("url").notNull(),
-  thumbnail: text("thumbnail"),
-  duration: integer("duration"),
-  isActive: boolean("is_active").default(true),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-  updatedAt: timestamp("updated_at").notNull().defaultNow(),
-});
-
-export type PointPolicy = typeof pointPolicies.$inferSelect;
-export type PointTransaction = typeof pointTransactions.$inferSelect;
-export type SubscriptionPlan = typeof subscriptionPlans.$inferSelect;
-export type Subscription = typeof subscriptions.$inferSelect;
-export type VideoContent = typeof videoContents.$inferSelect;
 
 // 이벤트 위치 타입
 export const eventLocations = pgTable("event_locations", {

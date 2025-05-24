@@ -722,12 +722,11 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
                                         <Button
                                           variant="ghost"
                                           size="icon"
-                                          className="h-6 w-6 mt-1 text-gray-500 hover:text-red-500 focus:ring-2 focus:ring-primary"
+                                          className="h-6 w-6 mt-1 text-gray-500 hover:text-red-500"
                                           onClick={() => removeFromCart(item.id)}
-                                          aria-label={`${item.name} 삭제`}
                                         >
-                                          <X className="h-4 w-4" aria-hidden="true" />
-                                          <span className="sr-only">{item.name} 삭제</span>
+                                          <X className="h-4 w-4" />
+                                          <span className="sr-only">삭제</span>
                                         </Button>
                                       </div>
                                     </div>
@@ -799,11 +798,8 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
                 {/* User menu */}
                 <div className="relative" ref={userMenuRef}>
                   <button 
-                    className="flex items-center space-x-2 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:focus:ring-offset-gray-900 rounded-full"
+                    className="flex items-center space-x-2 focus:outline-none"
                     onClick={() => setUserMenuOpen(!userMenuOpen)}
-                    aria-label="사용자 메뉴"
-                    aria-expanded={userMenuOpen}
-                    aria-haspopup="true"
                   >
                     <Avatar className="h-8 w-8">
                       {userRole && (

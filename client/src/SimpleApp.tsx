@@ -4,7 +4,7 @@ import React, { ReactNode, useState, useEffect, lazy, Suspense } from "react";
 import SimpleChatbot from './components/SimpleChatbot';
 import { UserPreferencesProvider } from './hooks/use-user-preferences';
 import { useGlobalShortcuts } from './hooks/use-keyboard-shortcuts';
-// import { NotificationsProvider } from './components/NotificationsProvider';
+import { NotificationsProvider } from './components/NotificationsProvider';
 
 // 페이지 컴포넌트 임포트
 import Home from "./pages/Home";
@@ -30,7 +30,6 @@ import AdminSettlementPage from "./pages/admin/settlement";
 import EventsPage from "./pages/events";
 import EventDetailPage from "./pages/events/event-detail";
 import EventCalendarPage from "./pages/events/calendar";
-import NotificationTestPage from "./pages/notification-test";
 
 // 레이아웃 및 컴포넌트 임포트
 import { TopBar } from "@/components/TopBar";
@@ -451,19 +450,6 @@ function AuthenticatedRoutes() {
             );
           }}
         </Route>
-        <Route path="/notification-test" component={NotificationTestPage} />
-        <Route path="/alert-test" component={() => {
-          const AlertTest = lazy(() => import('./pages/alert-test'));
-          return (
-            <Suspense fallback={<div className="p-8 flex justify-center items-center">
-              <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
-              <span className="ml-2">테스트 페이지 로딩 중...</span>
-            </div>}>
-              <AlertTest />
-            </Suspense>
-          );
-        }} />
-        
         <Route path="/locations">
           {() => {
             console.log("위치 서비스 페이지 접근");
@@ -1479,7 +1465,6 @@ function SimpleApp() {
   //   return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   // }
   
-  // NotificationsProvider 사용하지 않음 - 알림 시스템은 이미 유효하게 구현됨
   return (
     <UserPreferencesProvider>
       <KeyboardShortcutsManager>
@@ -1488,8 +1473,6 @@ function SimpleApp() {
           <DebugButton />
           <Toaster />
           <AccessibilityFloatingButton />
-          {/* 알림 시스템은 서버 측에서 모두 구현됨 */}
-          {/* WebSocket을 통한 실시간 알림, 이메일 알림, 푸시 알림 모두 지원 */}
         </>
       </KeyboardShortcutsManager>
     </UserPreferencesProvider>
