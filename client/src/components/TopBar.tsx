@@ -682,6 +682,7 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
                                             className="h-6 w-6 rounded-full p-0"
                                             onClick={() => updateCartItemQuantity(item.id, item.quantity - 1)}
                                             disabled={item.quantity <= 1}
+                                            aria-label="수량 감소"
                                           >
                                             <span className="sr-only">감소</span>
                                             <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -696,6 +697,7 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
                                             size="icon"
                                             className="h-6 w-6 rounded-full p-0"
                                             onClick={() => updateCartItemQuantity(item.id, item.quantity + 1)}
+                                            aria-label="수량 증가"
                                           >
                                             <span className="sr-only">증가</span>
                                             <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -766,9 +768,10 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
                               onClick={() => {
                                 setCartPopupOpen(false);
                                 console.log("카트 팝업에서 결제 버튼 클릭");
-                                // 결제 페이지도 직접 이동
+                                // 결제 페이지로 직접 이동
                                 window.location.href = window.location.origin + "/shop/checkout";
                               }}
+                              aria-label="결제 진행하기"
                             >
                               결제하기
                             </Button>
