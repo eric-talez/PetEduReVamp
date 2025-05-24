@@ -231,6 +231,7 @@ const SimpleChatbot: React.FC = () => {
                 className="fixed bottom-6 right-6 rounded-full w-14 h-14 shadow-lg"
                 size="icon"
                 onClick={handleOpen}
+                aria-label="AI 반려동물 상담 챗봇 열기"
               >
                 <PawPrint className="h-6 w-6" />
               </Button>
@@ -257,10 +258,22 @@ const SimpleChatbot: React.FC = () => {
               반려동물 AI 어시스턴트
             </CardTitle>
             <div className="flex space-x-1">
-              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={toggleExpand}>
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="h-8 w-8" 
+                onClick={toggleExpand}
+                aria-label={isExpanded ? "창 축소하기" : "창 확대하기"}
+              >
                 {isExpanded ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
               </Button>
-              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleClose}>
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="h-8 w-8" 
+                onClick={handleClose}
+                aria-label="챗봇 닫기"
+              >
                 <X className="h-4 w-4" />
               </Button>
             </div>
