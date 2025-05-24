@@ -202,7 +202,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
 
   // 인증 상태 변경 시 데이터 로드
   useEffect(() => {
-    if (isAuthenticated && user) {
+    if (isAuthenticated) {
       refreshData();
     } else {
       // 비인증 상태에서는 데이터 초기화
@@ -211,11 +211,11 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
       setSettings(null);
       setIsLoading(false);
     }
-  }, [isAuthenticated, user?.id]);
+  }, [isAuthenticated]);
 
   // WebSocket 연결 설정
   useEffect(() => {
-    if (!isAuthenticated || !user) return;
+    if (!isAuthenticated) return;
 
     // 웹소켓 연결 생성
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
@@ -229,7 +229,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
       ws.send(JSON.stringify({
         type: 'authenticate',
         data: {
-          userId: user.id,
+          userId: 1, // 임시 사용자 ID
           token: 'dummy-token' // 실제 구현에서는 실제 인증 토큰 사용
         }
       }));

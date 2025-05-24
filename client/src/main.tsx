@@ -16,7 +16,9 @@ createRoot(document.getElementById("root")!).render(
     <ThemeProvider>
       <TooltipProvider>
         <AuthProvider>
-          <SimpleApp />
+          <NotificationProvider>
+            <SimpleApp />
+          </NotificationProvider>
         </AuthProvider>
       </TooltipProvider>
     </ThemeProvider>
