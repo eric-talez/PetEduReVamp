@@ -17,6 +17,9 @@ const securityConfig = {
 const MemoryStore = memorystore(session);
 const app = express();
 
+// Replit는 프록시 환경에서 실행되므로 trust proxy 설정 활성화
+app.set('trust proxy', 1);
+
 // 보안 미들웨어 적용
 app.use(helmet());
 app.use(cors({
