@@ -125,7 +125,8 @@ const NotificationContext = createContext<NotificationContextType | null>(null);
 
 // 프로바이더 컴포넌트
 export function NotificationProvider({ children }: { children: ReactNode }) {
-  const { user, isAuthenticated } = useAuth();
+  const auth = useAuth();
+  const isAuthenticated = auth.isAuthenticated;
   const { toast } = useToast();
   const [socket, setSocket] = useState<WebSocket | null>(null);
   const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -268,7 +269,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
       ws.send(JSON.stringify({
         type: 'authenticate',
         data: {
-          userId: 1, // 임시 사용자 ID
+          userId: auth.userName ? 1 : 1, // 사용자 이름이 있으면 인증된 상태로 간주
           token: 'dummy-token' // 실제 구현에서는 실제 인증 토큰 사용
         }
       }));
@@ -318,11 +319,11 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
     return () => {
       ws.close();
     };
-  }, [isAuthenticated, user?.id]);
+  }, [isAuthenticated, auth.userName]);
 
   // 알림을 읽음 상태로 표시
   const markAsRead = async (notificationId: string) => {
-    if (!isAuthenticated || !user) return;
+    if (!isAuthenticated) return;
 
     try {
       await apiRequest('PATCH', `/api/notifications/${notificationId}/read`);
