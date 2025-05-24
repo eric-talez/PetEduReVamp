@@ -167,7 +167,19 @@ export function NotificationCenter() {
     if (notification.link) {
       // 알림 센터를 닫고 링크로 이동
       setOpen(false);
-      window.location.href = notification.link;
+      
+      // 외부 링크인지 확인
+      if (notification.link.startsWith('http')) {
+        window.location.href = notification.link;
+      } else {
+        // 내부 링크는 현재 도메인 경로로 처리
+        const path = notification.link;
+        window.location.href = path;
+      }
+    } else {
+      // 링크가 없는 경우 기본적으로 알림 페이지로 이동
+      setOpen(false);
+      window.location.href = '/alerts';
     }
   };
   
@@ -268,6 +280,7 @@ export function NotificationCenter() {
                             variant="ghost"
                             size="icon"
                             className="h-6 w-6"
+                            aria-label={`알림 삭제: ${notification.title}`}
                             onClick={(e) => {
                               e.stopPropagation();
                               deleteNotification(notification.id);
