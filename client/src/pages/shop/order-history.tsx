@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'wouter';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/Tabs';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ShoppingBag, Package, Truck, CheckCircle, Search, FileText, ArrowLeft, Calendar } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
@@ -231,54 +231,70 @@ export default function OrderHistory() {
 
   return (
     <div className="container max-w-6xl py-8">
-      <div className="flex items-center mb-6">
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          className="mr-2"
-          onClick={() => setLocation('/shop')}
-        >
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          쇼핑몰로 돌아가기
-        </Button>
-        <h1 className="text-2xl font-bold">주문 내역</h1>
-      </div>
-      
-      <Tabs defaultValue="all" value={activeTab} onValueChange={setActiveTab} className="mb-6">
-        <TabsList className="grid w-full md:w-auto grid-cols-4 md:grid-cols-4">
-          <TabsTrigger value="all">전체 기간</TabsTrigger>
-          <TabsTrigger value="1month">1개월</TabsTrigger>
-          <TabsTrigger value="3months">3개월</TabsTrigger>
-          <TabsTrigger value="6months">6개월</TabsTrigger>
-        </TabsList>
-      </Tabs>
-      
-      <div className="flex flex-col md:flex-row justify-between gap-4 mb-6">
-        <div className="relative w-full md:w-72">
-          <Input
-            placeholder="주문 번호 또는 상품명 검색"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
-          />
-          <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-            <Search className="h-4 w-4" />
-          </div>
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8">
+        <div className="flex items-center mb-4 md:mb-0">
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="mr-3"
+            onClick={() => setLocation('/shop')}
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            쇼핑몰로 돌아가기
+          </Button>
+          <h1 className="text-2xl font-bold">주문 내역</h1>
         </div>
         
-        <Select value={filterStatus} onValueChange={setFilterStatus}>
-          <SelectTrigger className="w-full md:w-48">
-            <SelectValue placeholder="상태 필터" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">모든 상태</SelectItem>
-            <SelectItem value="pending">결제 대기</SelectItem>
-            <SelectItem value="processing">주문 처리 중</SelectItem>
-            <SelectItem value="shipped">배송 중</SelectItem>
-            <SelectItem value="delivered">배송 완료</SelectItem>
-            <SelectItem value="cancelled">주문 취소</SelectItem>
-          </SelectContent>
-        </Select>
+        <div className="flex space-x-2">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => window.print()}
+            className="hidden md:flex"
+          >
+            <FileText className="h-4 w-4 mr-2" />
+            주문 내역 인쇄
+          </Button>
+        </div>
+      </div>
+      
+      <div className="bg-muted/30 rounded-lg p-4 mb-6">
+        <Tabs defaultValue="all" value={activeTab} onValueChange={setActiveTab} className="mb-4">
+          <TabsList className="grid w-full md:w-auto grid-cols-4 md:grid-cols-4 bg-background">
+            <TabsTrigger value="all">전체 기간</TabsTrigger>
+            <TabsTrigger value="1month">1개월</TabsTrigger>
+            <TabsTrigger value="3months">3개월</TabsTrigger>
+            <TabsTrigger value="6months">6개월</TabsTrigger>
+          </TabsList>
+        </Tabs>
+        
+        <div className="flex flex-col md:flex-row justify-between gap-4">
+          <div className="relative w-full md:w-80">
+            <Input
+              placeholder="주문 번호 또는 상품명 검색"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10 bg-background"
+            />
+            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+              <Search className="h-4 w-4" />
+            </div>
+          </div>
+          
+          <Select value={filterStatus} onValueChange={setFilterStatus}>
+            <SelectTrigger className="w-full md:w-48 bg-background">
+              <SelectValue placeholder="상태 필터" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">모든 상태</SelectItem>
+              <SelectItem value="pending">결제 대기</SelectItem>
+              <SelectItem value="processing">주문 처리 중</SelectItem>
+              <SelectItem value="shipped">배송 중</SelectItem>
+              <SelectItem value="delivered">배송 완료</SelectItem>
+              <SelectItem value="cancelled">주문 취소</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       </div>
       
       {filteredOrders.length === 0 ? (
@@ -340,30 +356,35 @@ export default function OrderHistory() {
               <CardContent className="p-0">
                 <div className="divide-y">
                   {order.items.map((item) => (
-                    <div key={item.id} className="flex p-4 gap-4">
-                      <div className="w-16 h-16 rounded overflow-hidden shrink-0">
+                    <div key={item.id} className="flex p-4 gap-4 hover:bg-muted/40 transition-colors">
+                      <div className="w-20 h-20 rounded-md overflow-hidden shrink-0 border border-border">
                         <img 
                           src={item.image} 
                           alt={item.name} 
                           className="w-full h-full object-cover"
+                          loading="lazy"
                         />
                       </div>
                       <div className="flex-grow">
-                        <h4 className="font-medium mb-1">{item.name}</h4>
-                        <div className="flex justify-between">
-                          <div className="text-sm text-muted-foreground">
-                            {formatPrice(item.price)} × {item.quantity}개
+                        <h4 className="font-medium text-base mb-2">{item.name}</h4>
+                        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end">
+                          <div className="text-sm text-muted-foreground mb-2 sm:mb-0">
+                            <div className="flex items-center text-foreground">
+                              <span className="font-medium mr-1">{formatPrice(item.price)}</span> 
+                              <span className="mx-1">×</span> 
+                              <span>{item.quantity}개</span>
+                            </div>
                             {item.options && (
-                              <div className="mt-1 text-xs">
+                              <div className="mt-2 text-xs flex flex-wrap gap-2">
                                 {Object.entries(item.options).map(([key, value]) => (
-                                  <span key={key} className="mr-3">
+                                  <span key={key} className="px-2 py-1 bg-secondary text-secondary-foreground rounded-full">
                                     {key}: {value}
                                   </span>
                                 ))}
                               </div>
                             )}
                           </div>
-                          <div className="font-medium">
+                          <div className="font-medium text-lg">
                             {formatPrice(item.price * item.quantity)}
                           </div>
                         </div>
@@ -372,14 +393,20 @@ export default function OrderHistory() {
                   ))}
                 </div>
               </CardContent>
-              <CardFooter className="flex justify-between bg-muted/20 p-4">
-                <div>
-                  <span className="text-sm font-medium">주문 금액:</span>
-                  <span className="text-lg font-bold ml-2">{formatPrice(order.totalAmount)}</span>
+              <CardFooter className="flex flex-col sm:flex-row justify-between bg-muted/20 p-4 gap-3">
+                <div className="flex items-center">
+                  <span className="text-sm font-medium mr-2">주문 금액:</span>
+                  <span className="text-lg font-bold text-primary">{formatPrice(order.totalAmount)}</span>
                 </div>
-                <Button variant="default" size="sm" onClick={() => setLocation(`/shop/order-detail/${order.id}`)}>
-                  주문 상세 보기
-                </Button>
+                <div className="flex gap-2">
+                  <Button variant="outline" size="sm" onClick={() => window.open(`/shop/order-invoice/${order.id}`, '_blank')}>
+                    <FileText className="h-3.5 w-3.5 mr-1.5" />
+                    영수증
+                  </Button>
+                  <Button variant="default" size="sm" onClick={() => setLocation(`/shop/order-detail/${order.id}`)}>
+                    주문 상세 보기
+                  </Button>
+                </div>
               </CardFooter>
             </Card>
           ))}
