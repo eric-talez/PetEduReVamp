@@ -32,35 +32,35 @@ const onboardingSteps = {
       description: '탈레즈는 반려견과 함께하는 즐거운 여정을 도와드립니다. 이제 몇 가지 간단한 단계를 통해 주요 기능을 알아볼게요.',
       icon: <PawPrint className="h-16 w-16 text-primary" />,
       cta: '시작하기',
-      image: '/assets/onboarding/welcome.png'
+      image: '/assets/onboarding/welcome.svg'
     },
     {
       title: '나만의 대시보드',
       description: '홈 화면에서 반려견 정보, 추천 콘텐츠, 예정된 수업 등 중요한 정보를 한눈에 확인하세요.',
       icon: <Home className="h-16 w-16 text-primary" />,
       cta: '다음',
-      image: '/assets/onboarding/dashboard.png'
+      image: '/assets/onboarding/dashboard.svg'
     },
     {
       title: '영상 훈련 콘텐츠',
       description: '전문 훈련사가 제공하는 다양한 훈련 영상을 통해 반려견과 함께 배워보세요.',
       icon: <Video className="h-16 w-16 text-primary" />,
       cta: '다음',
-      image: '/assets/onboarding/video-training.png'
+      image: '/assets/onboarding/video-training.svg'
     },
     {
       title: '화상 훈련 수업',
       description: '실시간 화상 수업으로 전문 훈련사에게 1:1 맞춤 지도를 받아보세요.',
       icon: <BookOpen className="h-16 w-16 text-primary" />,
       cta: '다음',
-      image: '/assets/onboarding/video-call.png'
+      image: '/assets/onboarding/video-call.svg'
     },
     {
       title: '알림장 기능',
       description: '훈련사와 소통하고 반려견의 성장 과정을 기록하세요.',
       icon: <Edit className="h-16 w-16 text-primary" />,
       cta: '다음',
-      image: '/assets/onboarding/notebook.png'
+      image: '/assets/onboarding/notebook.svg'
     },
     {
       title: '위치 기반 서비스',

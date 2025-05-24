@@ -1,0 +1,19 @@
+<svg width="600" height="400" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    .bg { fill: #F3F4F6; }
+    .circle { fill: #8B5CF6; }
+    .check { stroke: white; stroke-width: 8; }
+    .text { font: bold 32px sans-serif; fill: #4C1D95; }
+    .subtext { font: 20px sans-serif; fill: #6B7280; }
+    @media (prefers-color-scheme: dark) {
+      .bg { fill: #1F2937; }
+      .text { fill: #A78BFA; }
+      .subtext { fill: #E5E7EB; }
+    }
+  </style>
+  <rect width="100%" height="100%" class="bg" />
+  <circle cx="300" cy="160" r="80" class="circle" />
+  <path d="M260,160 L290,190 L340,140" class="check" fill="none" />
+  <text x="300" y="280" text-anchor="middle" class="text">준비 완료!</text>
+  <text x="300" y="320" text-anchor="middle" class="subtext">이제 탈레즈와 함께 반려견 훈련을 시작하세요</text>
+</svg>
