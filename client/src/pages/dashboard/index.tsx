@@ -38,9 +38,11 @@ export default function Dashboard({ type }: DashboardProps) {
       console.log('Global auth state:', (window as any).__peteduAuthState);
     }
 
-    // 온보딩 상태 확인 - 여기서는 항상 표시하도록 설정 (테스트용)
-    // 실제 구현에서는 첫 로그인 여부 등의 조건 추가
-    setShowOnboarding(true);
+    // 온보딩 비활성화 - 팝업 표시 중지
+    setShowOnboarding(false);
+    
+    // 온보딩 완료 상태로 저장 (로컬 스토리지)
+    localStorage.setItem('talez_onboarding_completed', 'true');
   }, [userRole, auth]);
 
   // 인증 상태 체크 (로딩 상태도 확인)
