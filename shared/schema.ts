@@ -232,7 +232,29 @@ export const pointPolicies = pgTable("point_policies", {
   name: text("name").notNull(),
   description: text("description").notNull(),
   pointAmount: integer("point_amount").notNull(),
-  type: text("type").notNull(), // signup, attendance, review, community
+  type: text("type").notNull(), // signup, profile, pet, review, attendance, community, subscription
+  category: text("category").notNull(), // initial, activity, subscription
+  conditions: json("conditions").$type<{
+    minPurchase?: number,
+    maxDaily?: number,
+    cooldown?: number
+  }>(),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export const subscriptionPlans = pgTable("subscription_plans", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(), // Basic, Standard, Premium
+  price: integer("price").notNull(),
+  monthlyPoints: integer("monthly_points").notNull(),
+  features: json("features").$type<{
+    videoAccess: 'basic' | 'all',
+    qaCount: number | 'unlimited',
+    videoCallCount: number,
+    communityAccess: 'basic' | 'vip'
+  }>(),
   isActive: boolean("is_active").default(true),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
