@@ -9,7 +9,8 @@ import { Award, Medal, Trophy } from 'lucide-react';
 export default function AchievementsPage() {
   const auth = useAuth();
   
-  if (!auth.isAuthenticated) {
+  // 사용자 인증 확인
+  if (!auth || !auth.isAuthenticated) {
     return (
       <div className="flex items-center justify-center min-h-[70vh]">
         <Card className="w-full max-w-md">
@@ -48,7 +49,10 @@ function AchievementsPageContent() {
   
   // 역할별 타이틀 설정
   const getRoleTitle = () => {
-    switch (auth.userRole) {
+    // auth.userRole 사용
+    const userRole = auth?.userRole || 'user';
+    
+    switch (userRole) {
       case 'pet-owner':
         return '반려인';
       case 'trainer':

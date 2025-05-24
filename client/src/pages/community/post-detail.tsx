@@ -15,7 +15,8 @@ import {
   MoreHorizontal,
   AlertCircle
 } from "lucide-react";
-import { isAuthenticated, getInitials } from "@/lib/utils";
+import { getInitials } from "@/lib/utils";
+import { useAuth } from "@/SimpleApp";
 import { useToast } from "@/hooks/use-toast";
 
 // 댓글 타입 정의
@@ -136,9 +137,12 @@ export default function PostDetailPage() {
     fetchPost();
   }, [id]);
 
+  // 인증 상태 가져오기
+  const auth = useAuth();
+  
   // 게시물 좋아요 토글
   const toggleLike = () => {
-    if (isAuthenticated()) {
+    if (auth && auth.isAuthenticated) {
       setLiked(!liked);
       toast({
         title: liked ? "좋아요 취소" : "좋아요",
@@ -151,7 +155,7 @@ export default function PostDetailPage() {
 
   // 댓글 좋아요 토글
   const toggleCommentLike = (commentId: number) => {
-    if (isAuthenticated()) {
+    if (auth && auth.isAuthenticated) {
       setCommentLikes(prev => ({
         ...prev,
         [commentId]: !prev[commentId]
@@ -163,7 +167,7 @@ export default function PostDetailPage() {
 
   // 댓글 등록
   const handleAddComment = () => {
-    if (!isAuthenticated()) {
+    if (!auth || !auth.isAuthenticated) {
       promptLogin();
       return;
     }
@@ -307,7 +311,7 @@ export default function PostDetailPage() {
               <button 
                 className="flex items-center focus:outline-none"
                 onClick={() => {
-                  if (isAuthenticated()) {
+                  if (auth && auth.isAuthenticated) {
                     navigator.clipboard.writeText(window.location.href);
                     toast({
                       title: "링크 복사됨",
@@ -349,7 +353,7 @@ export default function PostDetailPage() {
           
           {/* 댓글 작성 - 모든 사용자에게 표시하되, 비로그인 사용자에게는 안내 메시지 표시 */}
           <div className="mb-8">
-            {!isAuthenticated() && (
+            {!(auth && auth.isAuthenticated) && (
               <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-md p-3 mb-3">
                 <p className="text-sm text-yellow-800 dark:text-yellow-300 flex items-center">
                   <AlertCircle className="h-4 w-4 mr-2" />

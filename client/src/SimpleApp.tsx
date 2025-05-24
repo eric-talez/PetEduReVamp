@@ -1493,8 +1493,8 @@ function SimpleApp() {
   
   return (
     <UserPreferencesProvider>
-      <NotificationsProvider>
-        <AchievementsProvider>
+      <AchievementsProvider>
+        <NotificationsProvider>
           <KeyboardShortcutsManager>
             <>
               {auth.isAuthenticated ? <AuthenticatedRoutes /> : <UnauthenticatedRoutes />}
@@ -1503,8 +1503,8 @@ function SimpleApp() {
               <AccessibilityFloatingButton />
             </>
           </KeyboardShortcutsManager>
-        </AchievementsProvider>
-      </NotificationsProvider>
+        </NotificationsProvider>
+      </AchievementsProvider>
     </UserPreferencesProvider>
   );
 }

@@ -17,7 +17,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar } from '@/components/ui/Avatar';
 import { Separator } from '@/components/ui/separator';
-import { isAuthenticated } from '@/lib/utils';
+import { useAuth } from '@/SimpleApp';
 import { useToast } from '@/hooks/use-toast';
 import { KakaoMapView } from '@/components/KakaoMapView';
 

@@ -3,6 +3,9 @@ import { useAuth } from '../SimpleApp';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
 
+// AuthState 타입은 이미 global-auth-store.ts에서 가져오므로 중복 정의 제거
+import { AuthState } from '@/lib/global-auth-store';
+
 // 성취 배지 타입 정의
 export interface Achievement {
   id: string;
@@ -160,7 +163,7 @@ export function AchievementsProvider({ children }: { children: ReactNode }) {
       setAchievements(defaultAchievements);
       
       // 사용자 성취 배지 데이터 가져오기 (인증된 사용자인 경우만)
-      if (auth.isAuthenticated) {
+      if (auth && auth.isAuthenticated) {
         try {
           // API가 아직 구현되지 않았으므로 모의 데이터 사용
           // 실제 구현 시 아래 주석을 해제하고 모의 데이터를 제거
@@ -174,7 +177,7 @@ export function AchievementsProvider({ children }: { children: ReactNode }) {
           const mockUserAchievements: UserAchievement[] = defaultAchievements.map(achievement => ({
             id: `ua-${achievement.id}`,
             achievementId: achievement.id,
-            userId: auth.user?.id || 0,
+            userId: 1, // 임시로 고정된 사용자 ID 사용
             unlocked: ['first-login', 'profile-complete', 'complete-onboarding'].includes(achievement.id),
             unlockedAt: ['first-login', 'profile-complete', 'complete-onboarding'].includes(achievement.id) ? new Date() : null,
             progress: ['first-login', 'profile-complete', 'complete-onboarding'].includes(achievement.id) ? 
@@ -191,7 +194,7 @@ export function AchievementsProvider({ children }: { children: ReactNode }) {
     } catch (error) {
       console.error('성취 배지를 가져오는 중 오류 발생:', error);
     }
-  }, [auth.isAuthenticated, auth.user?.id]);
+  }, [auth]);
   
   // 컴포넌트 마운트 시 초기 데이터 로드
   useEffect(() => {
@@ -233,7 +236,7 @@ export function AchievementsProvider({ children }: { children: ReactNode }) {
 
   // 새로운 성취 배지 확인 및 업데이트
   const checkAchievements = useCallback(() => {
-    if (!auth.isAuthenticated) return;
+    if (!auth || !auth.isAuthenticated) return;
     
     // 실제 구현에서는 API 호출로 서버에서 체크
     // 여기서는 간단한 클라이언트 체크만 수행
