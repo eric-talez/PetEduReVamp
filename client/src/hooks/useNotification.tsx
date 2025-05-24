@@ -351,7 +351,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
 
   // 모든 알림을 읽음 상태로 표시
   const markAllAsRead = async () => {
-    if (!isAuthenticated || !user) return;
+    if (!isAuthenticated) return;
 
     try {
       await apiRequest('PATCH', '/api/notifications/read-all');
@@ -390,7 +390,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
 
   // 알림 설정 업데이트
   const updateSettings = async (newSettings: Partial<NotificationSettings>) => {
-    if (!isAuthenticated || !user) return;
+    if (!isAuthenticated) return;
 
     try {
       const response = await apiRequest('PATCH', '/api/notifications/settings', newSettings);
@@ -414,7 +414,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
 
   // 테스트 알림 전송
   const sendTestNotification = async (type: NotificationType, channels: NotificationChannel[]) => {
-    if (!isAuthenticated || !user) return;
+    if (!isAuthenticated) return;
 
     try {
       const response = await apiRequest('POST', '/api/notifications/test', {
@@ -448,7 +448,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
 
   // 기기 토큰 등록 (모바일 푸시 알림용)
   const registerDeviceToken = async (token: string, platform: 'android' | 'ios' | 'web') => {
-    if (!isAuthenticated || !user) return;
+    if (!isAuthenticated) return;
 
     try {
       await apiRequest('POST', '/api/notifications/device-token', {
