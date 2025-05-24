@@ -265,7 +265,16 @@ export function OnboardingGuide({ forceShow = false, onComplete }: OnboardingGui
   const progress = ((currentStep + 1) / steps.length) * 100;
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog 
+      open={open} 
+      onOpenChange={(isOpen) => {
+        if (!isOpen) {
+          // Dialog가 닫힐 때 온보딩 완료 처리
+          handleSkip();
+        }
+        setOpen(isOpen);
+      }}
+    >
       <DialogContent className="sm:max-w-[600px] p-0">
         <div className="absolute right-4 top-4 z-10">
           <Button 
