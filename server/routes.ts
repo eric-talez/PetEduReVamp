@@ -840,6 +840,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.sendFile(path.resolve(process.cwd(), 'public', 'notification-test.html'));
   });
   
+  // 루트 경로에서 알림 테스트 페이지로 리다이렉트
+  app.get('/', (req, res) => {
+    res.redirect('/notification-test');
+  });
+  
   // 로그 메시지
   console.log('[server] API routes registered');
   // ===== Auth Routes =====
