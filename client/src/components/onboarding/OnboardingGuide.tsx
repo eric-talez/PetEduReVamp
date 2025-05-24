@@ -207,6 +207,9 @@ export function OnboardingGuide({ forceShow = false, onComplete }: OnboardingGui
       }, 1000);
       
       return () => clearTimeout(timer);
+    } else {
+      // 온보딩을 이미 완료했다면 다이얼로그를 닫은 상태로 유지
+      setOpen(false);
     }
   }, [forceShow]);
   
@@ -225,21 +228,35 @@ export function OnboardingGuide({ forceShow = false, onComplete }: OnboardingGui
   };
   
   const handleComplete = () => {
+    // 온보딩 완료 상태를 로컬 스토리지에 저장
     markOnboardingComplete();
+    // 다이얼로그 닫기
     setOpen(false);
+    // 현재 단계를 초기화하여 다음에 열릴 때 처음부터 시작
+    setCurrentStep(0);
     
+    // 완료 콜백 호출 (있는 경우)
     if (onComplete) {
       onComplete();
     }
+    
+    console.log("온보딩 완료");
   };
   
   const handleSkip = () => {
+    // 온보딩 완료 상태를 로컬 스토리지에 저장
     markOnboardingComplete();
+    // 다이얼로그 닫기
     setOpen(false);
+    // 현재 단계를 초기화하여 다음에 열릴 때 처음부터 시작
+    setCurrentStep(0);
     
+    // 완료 콜백 호출 (있는 경우)
     if (onComplete) {
       onComplete();
     }
+    
+    console.log("온보딩 완료");
   };
 
   if (!open) return null;
