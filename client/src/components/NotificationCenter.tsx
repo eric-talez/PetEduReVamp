@@ -204,7 +204,7 @@ export function NotificationCenter() {
           )}
         </Button>
       </SheetTrigger>
-      <SheetContent className="w-[380px] sm:w-[540px] p-0 overflow-hidden">
+      <SheetContent className="w-[380px] sm:w-[540px] p-0 overflow-hidden" hideCloseButton>
         <SheetHeader className="p-4 border-b">
           <div className="flex justify-between items-center">
             <SheetTitle>알림 센터</SheetTitle>
@@ -226,7 +226,7 @@ export function NotificationCenter() {
                 모두 지우기
               </Button>
               <SheetClose asChild>
-                <Button variant="ghost" size="icon">
+                <Button variant="ghost" size="icon" aria-label="알림 센터 닫기">
                   <X className="h-4 w-4" />
                 </Button>
               </SheetClose>
