@@ -206,8 +206,8 @@ function AppLayout({ children }: { children: ReactNode }) {
             onToggleSidebar={isDesktop ? toggleSidebarSize : () => setSidebarOpen(!sidebarOpen)}
           />
           
-          {/* 메인 컨텐츠 영역 */}
-          <main className="flex-grow">
+          {/* 메인 컨텐츠 영역 - 헤더 고정으로 인한 상단 패딩 추가 */}
+          <main className="flex-grow pt-16">
             {children}
           </main>
           
