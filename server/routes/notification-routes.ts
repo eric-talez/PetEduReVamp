@@ -202,6 +202,83 @@ notificationRouter.delete('/device-token', isAuthenticated, async (req: Request,
 });
 
 /**
+ * 간단한 테스트 알림 API (인증 필요 없음)
+ * POST /api/notifications/test/{channel}
+ */
+notificationRouter.post('/test/:channel', async (req: Request, res: Response) => {
+  try {
+    const { channel } = req.params;
+    const userId = req.user?.id || 1; // 비로그인 시 기본 사용자 ID 사용
+    
+    if (!['email', 'push', 'web', 'all'].includes(channel)) {
+      return res.status(400).json({ 
+        error: '유효한 알림 채널이 아닙니다. (email, push, web, all)',
+      });
+    }
+    
+    const title = '테스트 알림';
+    const message = `${channel} 채널 테스트 알림입니다. (${new Date().toLocaleTimeString()})`;
+    
+    // 채널별 테스트 알림 발송
+    if (channel === 'email') {
+      // 이메일 알림 발송
+      await emailService.send({
+        to: req.body.email || 'test@example.com', // 요청에 이메일이 없으면 기본값 사용
+        type: NotificationType.SYSTEM,
+        data: {
+          title: title,
+          message: message,
+          isTest: true,
+          timestamp: new Date().toISOString()
+        }
+      });
+    } else if (channel === 'push') {
+      // 푸시 알림 발송
+      await notificationService.send({
+        userId,
+        type: NotificationType.SYSTEM,
+        title: title,
+        message: message,
+        channels: [NotificationChannel.PUSH],
+        data: {
+          isTest: true,
+          timestamp: new Date().toISOString()
+        }
+      });
+    } else if (channel === 'web') {
+      // 웹 알림 발송
+      await webNotificationService.sendToUser(userId, {
+        type: NotificationType.SYSTEM,
+        title: title,
+        body: message,
+        data: {
+          isTest: true,
+          timestamp: new Date().toISOString()
+        }
+      });
+    } else if (channel === 'all') {
+      // 모든 채널 알림 발송
+      await notificationService.send({
+        userId,
+        type: NotificationType.SYSTEM,
+        title: title,
+        message: message,
+        channels: [NotificationChannel.EMAIL, NotificationChannel.PUSH, NotificationChannel.WEB],
+        data: {
+          isTest: true,
+          timestamp: new Date().toISOString()
+        }
+      });
+    }
+    
+    res.json({ success: true, message: `${channel} 알림이 발송되었습니다.` });
+  } catch (error) {
+    console.error(`${req.params.channel} 테스트 알림 발송 오류:`, error);
+    res.status(500).json({ error: `테스트 알림을 발송하는 중 오류가 발생했습니다: ${error.message}` });
+  }
+});
+
+/**
  * 테스트 알림 발송 API
  * POST /api/notifications/test
  */
