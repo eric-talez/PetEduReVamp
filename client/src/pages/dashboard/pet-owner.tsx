@@ -1,4 +1,5 @@
 import { useAuth } from "../../SimpleApp";
+import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/Button";
 import { Avatar } from "@/components/ui/Avatar";
@@ -13,6 +14,95 @@ interface PetOwnerDashboardProps {
 export default function PetOwnerDashboard({ onAction }: PetOwnerDashboardProps) {
   const { userName, userRole } = useAuth();
   const [, setLocation] = useLocation();
+  const [currentSlide, setCurrentSlide] = useState(0);
+
+  // 배너 슬라이드 데이터
+  const bannerSlides = [
+    {
+      id: 1,
+      title: "반려견과 함께하는 특별한 교육 여정",
+      description: "Talez와 함께 전문 훈련사의 체계적인 교육으로 더 행복한 반려생활을 시작하세요.",
+      image: "https://images.unsplash.com/photo-1548199973-03cce0bbc87b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=400",
+      primaryAction: {
+        text: "강의 둘러보기",
+        path: "/courses"
+      },
+      secondaryAction: {
+        text: "무료 웨비나 참여",
+        path: "/events"
+      }
+    },
+    {
+      id: 2,
+      title: "반려견 행동 교정 특별 과정",
+      description: "짖음, 물기 등 문제 행동을 해결하는 전문 훈련사의 맞춤형 교육 프로그램",
+      image: "https://images.unsplash.com/photo-1589923188651-268a9765e432?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=400",
+      primaryAction: {
+        text: "상담 신청하기",
+        path: "/consultations"
+      },
+      secondaryAction: {
+        text: "성공 사례 보기",
+        path: "/success-stories"
+      }
+    },
+    {
+      id: 3,
+      title: "여름 시즌 반려견 건강 관리",
+      description: "무더운 여름철 반려견 건강을 지키는 실용적인 팁과 권장 사항",
+      image: "https://images.unsplash.com/photo-1535930891776-0c2dfb7fda1a?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=400",
+      primaryAction: {
+        text: "건강 가이드 보기",
+        path: "/health-guides"
+      },
+      secondaryAction: {
+        text: "수의사 상담 예약",
+        path: "/vet-consultation"
+      }
+    },
+    {
+      id: 4,
+      title: "AI 기반 반려견 분석 서비스 출시",
+      description: "반려견의 행동과 감정을 AI로 분석하여 맞춤형 훈련 방법을 제안합니다",
+      image: "https://images.unsplash.com/photo-1529429617124-95b109e86bb8?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=400",
+      primaryAction: {
+        text: "서비스 체험하기",
+        path: "/ai-analysis"
+      },
+      secondaryAction: {
+        text: "더 알아보기",
+        path: "/ai-services"
+      }
+    },
+    {
+      id: 5,
+      title: "반려견과 함께하는 액티비티",
+      description: "반려견과 즐길 수 있는 다양한 야외 활동과 이벤트 정보",
+      image: "https://images.unsplash.com/photo-1551730459-92db2a308d6a?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=400",
+      primaryAction: {
+        text: "이벤트 확인하기",
+        path: "/pet-events"
+      },
+      secondaryAction: {
+        text: "커뮤니티 참여",
+        path: "/community"
+      }
+    }
+  ];
+
+  // 슬라이드 자동 변경 기능
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentSlide((prev: number) => (prev + 1) % bannerSlides.length);
+    }, 5000); // 5초마다 슬라이드 변경
+    
+    return () => clearInterval(timer);
+  }, [bannerSlides.length]);
+
+  // 슬라이드 변경 함수
+  const goToSlide = (index: number) => {
+    setCurrentSlide(index);
+  };
 
   const courses = [
     {
@@ -134,39 +224,84 @@ export default function PetOwnerDashboard({ onAction }: PetOwnerDashboardProps) 
 
   return (
     <div className="py-8 px-4 sm:px-6 lg:px-8">
-      {/* Banner - 높이 반으로 줄임 */}
+      {/* Banner Slider - 5개 슬라이드 */}
       <div className="relative rounded-xl overflow-hidden h-32 md:h-40 mb-8 bg-gradient-to-r from-primary/80 to-accent/80 shadow-lg">
-        <img 
-          src="https://images.unsplash.com/photo-1548199973-03cce0bbc87b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=400" 
-          alt="반려견 교육"
-          className="w-full h-full object-cover absolute mix-blend-overlay"
-        />
-        
-        <div className="absolute inset-0 bg-gradient-to-r from-primary/80 to-accent/30 mix-blend-multiply"></div>
-        
-        <div className="relative h-full flex flex-col justify-center px-8 md:px-12">
-          <h1 className="text-white text-2xl md:text-4xl font-bold mb-2 md:mb-4 max-w-xl">
-            반려견과 함께하는 특별한 교육 여정
-          </h1>
-          <p className="text-white text-sm md:text-lg max-w-xl mb-6">
-            Talez와 함께 전문 훈련사의 체계적인 교육으로 더 행복한 반려생활을 시작하세요.
-          </p>
-          <div>
-            <Button
-              className="bg-white text-primary font-semibold hover:bg-gray-50 mr-3"
-              onClick={() => setLocation("/courses")}
-            >
-              강의 둘러보기
-            </Button>
-            <Button
-              variant="outline"
-              className="border-2 border-white text-white hover:bg-white/10"
-              onClick={() => setLocation("/events")}
-            >
-              무료 웨비나 참여
-            </Button>
+        {/* 슬라이드 이미지 */}
+        {bannerSlides.map((slide, index) => (
+          <div 
+            key={slide.id}
+            className={`absolute inset-0 transition-opacity duration-500 ease-in-out ${index === currentSlide ? 'opacity-100' : 'opacity-0'}`}
+          >
+            <img 
+              src={slide.image} 
+              alt={slide.title}
+              className="w-full h-full object-cover absolute mix-blend-overlay"
+            />
+            <div className="absolute inset-0 bg-gradient-to-r from-primary/80 to-accent/30 mix-blend-multiply"></div>
           </div>
+        ))}
+        
+        {/* 슬라이드 콘텐츠 */}
+        {bannerSlides.map((slide, index) => (
+          <div 
+            key={`content-${slide.id}`}
+            className={`relative h-full flex flex-col justify-center px-8 md:px-12 transition-opacity duration-500 ease-in-out ${index === currentSlide ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+          >
+            <h1 className="text-white text-lg md:text-2xl font-bold mb-1 md:mb-2 max-w-xl">
+              {slide.title}
+            </h1>
+            <p className="text-white text-xs md:text-sm max-w-xl mb-3 md:mb-4 line-clamp-2">
+              {slide.description}
+            </p>
+            <div className="flex flex-wrap gap-2">
+              <Button
+                className="bg-white text-primary font-semibold hover:bg-gray-50 text-xs md:text-sm py-1 px-3 h-auto"
+                onClick={() => setLocation(slide.primaryAction.path)}
+              >
+                {slide.primaryAction.text}
+              </Button>
+              <Button
+                variant="outline"
+                className="border-2 border-white text-white hover:bg-white/10 text-xs md:text-sm py-1 px-3 h-auto"
+                onClick={() => setLocation(slide.secondaryAction.path)}
+              >
+                {slide.secondaryAction.text}
+              </Button>
+            </div>
+          </div>
+        ))}
+        
+        {/* 슬라이드 인디케이터 */}
+        <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-1.5">
+          {bannerSlides.map((_, index) => (
+            <button
+              key={`indicator-${index}`}
+              className={`w-2 h-2 rounded-full transition-all ${index === currentSlide ? 'bg-white scale-110' : 'bg-white/50 hover:bg-white/70'}`}
+              onClick={() => goToSlide(index)}
+              aria-label={`슬라이드 ${index + 1} 보기`}
+            />
+          ))}
         </div>
+        
+        {/* 슬라이드 컨트롤 버튼 */}
+        <button 
+          className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center rounded-full bg-black/20 text-white hover:bg-black/30"
+          onClick={() => goToSlide((currentSlide - 1 + bannerSlides.length) % bannerSlides.length)}
+          aria-label="이전 슬라이드"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" className="w-5 h-5">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
+        </button>
+        <button 
+          className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center rounded-full bg-black/20 text-white hover:bg-black/30"
+          onClick={() => goToSlide((currentSlide + 1) % bannerSlides.length)}
+          aria-label="다음 슬라이드"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" className="w-5 h-5">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+          </svg>
+        </button>
       </div>
       
       {/* Statistics */}
