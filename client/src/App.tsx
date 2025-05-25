@@ -291,6 +291,12 @@ function UnauthenticatedRoutesContent() {
       {/* 인증 관련 */}
       <Route path="/auth/login" component={LoginPage} />
       <Route path="/auth/register" component={RegisterPage} />
+      <Route path="/auth">
+        {() => {
+          console.log("기본 인증 경로 접근 - 로그인 페이지로 리다이렉트");
+          return <LoginPage />;
+        }}
+      </Route>
 
       <Route path="/course/:id" component={CourseDetail} />
        <Route path="/courses">
