@@ -202,7 +202,7 @@ export function NotificationCenter() {
           {unreadCount > 0 && (
             <Badge 
               variant="danger" 
-              className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs"
+              className="absolute -top-1 -right-1 px-1.5 py-0.5 min-w-4 h-4 flex items-center justify-center"
               aria-hidden="true"
             >
               {unreadCount > 9 ? '9+' : unreadCount}
