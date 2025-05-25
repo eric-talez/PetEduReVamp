@@ -285,8 +285,23 @@ export function Sidebar({
         !path.startsWith('/events/') && 
         !path.startsWith('/help/')) {
       console.log('로그인 필요: ', path);
-      // 로그인 페이지로 리다이렉트
-      setLocation('/auth/login');
+      
+      // 로딩 표시를 위한 오버레이 요소 생성
+      const overlay = document.createElement('div');
+      overlay.className = 'fixed inset-0 bg-black/30 z-50 flex items-center justify-center';
+      overlay.innerHTML = `
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg flex flex-col items-center">
+          <div class="animate-spin w-6 h-6 border-3 border-primary border-t-transparent rounded-full mb-3"></div>
+          <p class="mb-4">로그인이 필요한 서비스입니다</p>
+          <p class="text-sm text-gray-500 mb-4">로그인 페이지로 이동합니다...</p>
+        </div>
+      `;
+      document.body.appendChild(overlay);
+      
+      // 약간의 지연 후 페이지 이동 (로딩 표시가 보이도록)
+      setTimeout(() => {
+        window.location.href = '/auth';
+      }, 1000);
       return;
     }
 
@@ -295,21 +310,90 @@ export function Sidebar({
       // 훈련사 전용 페이지
       if ((path.startsWith('/trainer-dashboard') || path.startsWith('/trainer/')) && userRole !== 'trainer' && userRole !== 'admin') {
         console.log('훈련사 권한 필요');
-        setLocation('/');
+        
+        // 접근 제한 알림 표시
+        const overlay = document.createElement('div');
+        overlay.className = 'fixed inset-0 bg-black/30 z-50 flex items-center justify-center';
+        overlay.innerHTML = `
+          <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg flex flex-col items-center">
+            <div class="text-amber-500 mb-3"><svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg></div>
+            <p class="text-lg font-medium mb-2">접근 권한이 없습니다</p>
+            <p class="text-sm text-gray-500 mb-4">이 페이지는 훈련사 권한이 필요합니다.</p>
+            <button class="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2">확인</button>
+          </div>
+        `;
+        
+        document.body.appendChild(overlay);
+        
+        // 확인 버튼 클릭 시 오버레이 제거 및 홈으로 이동
+        const button = overlay.querySelector('button');
+        if (button) {
+          button.addEventListener('click', () => {
+            document.body.removeChild(overlay);
+            window.location.href = '/';
+          });
+        }
+        
         return;
       }
 
       // 기관 관리자 전용 페이지
       if ((path.startsWith('/institute-dashboard') || path.startsWith('/institute/')) && userRole !== 'institute-admin' && userRole !== 'admin') {
         console.log('기관 관리자 권한 필요');
-        setLocation('/');
+        
+        // 접근 제한 알림 표시
+        const overlay = document.createElement('div');
+        overlay.className = 'fixed inset-0 bg-black/30 z-50 flex items-center justify-center';
+        overlay.innerHTML = `
+          <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg flex flex-col items-center">
+            <div class="text-amber-500 mb-3"><svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg></div>
+            <p class="text-lg font-medium mb-2">접근 권한이 없습니다</p>
+            <p class="text-sm text-gray-500 mb-4">이 페이지는 기관 관리자 권한이 필요합니다.</p>
+            <button class="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2">확인</button>
+          </div>
+        `;
+        
+        document.body.appendChild(overlay);
+        
+        // 확인 버튼 클릭 시 오버레이 제거 및 홈으로 이동
+        const button = overlay.querySelector('button');
+        if (button) {
+          button.addEventListener('click', () => {
+            document.body.removeChild(overlay);
+            window.location.href = '/';
+          });
+        }
+        
         return;
       }
 
       // 시스템 관리자 전용 페이지
       if (path.startsWith('/admin') && userRole !== 'admin') {
         console.log('관리자 권한 필요');
-        setLocation('/');
+        
+        // 접근 제한 알림 표시
+        const overlay = document.createElement('div');
+        overlay.className = 'fixed inset-0 bg-black/30 z-50 flex items-center justify-center';
+        overlay.innerHTML = `
+          <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg flex flex-col items-center">
+            <div class="text-amber-500 mb-3"><svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg></div>
+            <p class="text-lg font-medium mb-2">접근 권한이 없습니다</p>
+            <p class="text-sm text-gray-500 mb-4">이 페이지는 시스템 관리자 권한이 필요합니다.</p>
+            <button class="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2">확인</button>
+          </div>
+        `;
+        
+        document.body.appendChild(overlay);
+        
+        // 확인 버튼 클릭 시 오버레이 제거 및 홈으로 이동
+        const button = overlay.querySelector('button');
+        if (button) {
+          button.addEventListener('click', () => {
+            document.body.removeChild(overlay);
+            window.location.href = '/';
+          });
+        }
+        
         return;
       }
     }
