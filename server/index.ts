@@ -8,7 +8,7 @@ import { setupAuth } from "./auth";
 import { setupMonitoring, setupErrorHandling } from "./monitoring";
 import { setupSecurity } from "./security";
 import { setupPerformance, monitorMemoryUsage } from "./performance";
-import { initializeRecoverySystem } from "./recovery";
+// 비밀번호 재설정 관련 모듈 (별도 초기화 필요 없음)
 
 const MemoryStore = memorystore(session);
 const app = express();
@@ -97,7 +97,7 @@ app.use((req, res, next) => {
   setupErrorHandling(app);
   
   // 백업 및 복구 시스템 초기화
-  initializeRecoverySystem();
+  // 초기화 필요없음
   
   // 메모리 사용량 모니터링 시작
   if (process.env.NODE_ENV === 'production') {

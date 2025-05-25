@@ -16,6 +16,7 @@ import { WebSocketServer } from 'ws';
 import { MessagingService } from './messaging/service';
 import { NotificationService } from './notifications/service';
 import { registerNotificationRoutes } from './notifications/routes';
+import { requestPasswordReset, verifyResetToken, resetPassword } from './recovery';
 
 // 타입은 server/types.d.ts에 정의되어 있습니다.
 
@@ -25,6 +26,11 @@ import { verifyIdentity } from './auth/verify';
 export async function registerRoutes(app: Express): Promise<Server> {
   // 본인인증 API 엔드포인트
   app.post('/api/auth/verify-identity', verifyIdentity);
+  
+  // 비밀번호 재설정 API 엔드포인트
+  app.post('/api/reset-password', requestPasswordReset);
+  app.get('/api/reset-password/:token', verifyResetToken);
+  app.post('/api/reset-password/confirm', resetPassword);
   // Register all modular routes
   registerCommissionRoutes(app);
   registerTrainerRoutes(app);

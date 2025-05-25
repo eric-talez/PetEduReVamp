@@ -11,6 +11,11 @@ const BasicAuthPage = () => {
     setShowPasswordReset(prev => !prev);
   }, []);
 
+  // 비밀번호 찾기 모달을 여닫는 함수 정의
+  const handleTogglePasswordReset = () => {
+    setShowPasswordReset(prev => !prev);
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 p-4">
       {/* 비밀번호 찾기 모달 */}
@@ -18,7 +23,7 @@ const BasicAuthPage = () => {
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full p-6 relative">
             <button 
-              onClick={togglePasswordReset}
+              onClick={handleTogglePasswordReset}
               className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
               aria-label="닫기"
             >
@@ -32,7 +37,7 @@ const BasicAuthPage = () => {
               가입시 등록한 아이디와 이메일을 입력하시면 비밀번호 재설정 안내를 보내드립니다.
             </p>
             
-            <PasswordResetForm onClose={togglePasswordReset} />
+            <PasswordResetForm onClose={handleTogglePasswordReset} />
           </div>
         </div>
       )}
@@ -212,7 +217,7 @@ const LoginForm = () => {
         <div className="text-sm">
           <button 
             type="button"
-            onClick={togglePasswordReset}
+            onClick={handleTogglePasswordReset}
             className="text-blue-600 hover:underline bg-transparent border-0 p-0 cursor-pointer text-left"
           >
             비밀번호를 잊으셨나요?

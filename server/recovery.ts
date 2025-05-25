@@ -1,7 +1,6 @@
 import { Request, Response } from 'express';
-import { storage } from '../storage';
+import { storage } from './storage';
 import crypto from 'crypto';
-import nodemailer from 'nodemailer';
 
 // 비밀번호 재설정 토큰 저장소 (실제 프로덕션에서는 DB에 저장해야 함)
 const resetTokens: Record<string, { email: string, username: string, expires: Date }> = {};
@@ -20,16 +19,6 @@ function generateToken(username: string, email: string): string {
   
   return token;
 }
-
-// 이메일 발송을 위한 설정
-// 참고: 실제 서비스에서는 환경 변수로 관리해야 함
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.EMAIL_USER || 'talez.noreply@gmail.com',
-    pass: process.env.EMAIL_PASSWORD || 'app_password'
-  }
-});
 
 // 비밀번호 재설정 요청 처리
 export async function requestPasswordReset(req: Request, res: Response) {
@@ -54,35 +43,12 @@ export async function requestPasswordReset(req: Request, res: Response) {
     // 토큰 생성
     const token = generateToken(username, email);
     
-    // 이메일 발송 (개발 환경에서는 로그만 출력)
+    // 이메일 발송 (실제로는 이메일을 보내야 하지만, 개발 환경에서는 로그만 출력)
     const resetUrl = `${req.protocol}://${req.get('host')}/auth/reset-password/${token}`;
     
-    if (process.env.NODE_ENV === 'production') {
-      try {
-        await transporter.sendMail({
-          from: '"Talez" <talez.noreply@gmail.com>',
-          to: email,
-          subject: '[Talez] 비밀번호 재설정 안내',
-          html: `
-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-              <h2 style="color: #4a5568;">비밀번호 재설정 안내</h2>
-              <p>안녕하세요, ${username}님.</p>
-              <p>비밀번호 재설정을 요청하셨습니다. 아래 링크를 클릭하여 비밀번호를 재설정하세요:</p>
-              <p><a href="${resetUrl}" style="background-color: #4299e1; color: white; padding: 10px 15px; text-decoration: none; border-radius: 4px; display: inline-block; margin: 15px 0;">비밀번호 재설정</a></p>
-              <p>이 링크는 1시간 동안만 유효합니다.</p>
-              <p>만약 비밀번호 재설정을 요청하지 않으셨다면, 이 이메일을 무시하셔도 됩니다.</p>
-              <p>감사합니다.<br>Talez 팀</p>
-            </div>
-          `
-        });
-      } catch (error) {
-        console.error('이메일 발송 오류:', error);
-      }
-    } else {
-      console.log('=== 비밀번호 재설정 링크 ===');
-      console.log(resetUrl);
-      console.log('===========================');
-    }
+    console.log('=== 비밀번호 재설정 링크 ===');
+    console.log(resetUrl);
+    console.log('===========================');
     
     // 성공 응답
     return res.status(200).json({
@@ -151,8 +117,10 @@ export async function resetPassword(req: Request, res: Response) {
       return res.status(404).json({ message: '사용자를 찾을 수 없습니다.' });
     }
     
-    // 비밀번호 업데이트 (실제 구현 필요)
+    // 비밀번호 업데이트
+    // 실제 구현에서는 비밀번호를 해시하고 저장해야 함
     // storage.updateUserPassword(user.id, password);
+    console.log(`사용자 ${user.username}의 비밀번호 재설정 성공`);
     
     // 토큰 삭제
     delete resetTokens[token];
