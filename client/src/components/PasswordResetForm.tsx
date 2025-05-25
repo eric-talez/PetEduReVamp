@@ -61,11 +61,13 @@ export function PasswordResetForm({ onClose, token }: PasswordResetFormProps) {
         body: JSON.stringify(data)
       });
 
+      const result = await response.json();
+      
       if (!response.ok) {
-        throw new Error('서버 오류가 발생했습니다.');
+        // 서버에서 반환된 구체적인 오류 메시지 사용
+        throw new Error(result.message || '서버 오류가 발생했습니다.');
       }
 
-      const result = await response.json();
       setStep('success');
       toast({
         title: '비밀번호 재설정 이메일 발송 완료',
@@ -73,7 +75,7 @@ export function PasswordResetForm({ onClose, token }: PasswordResetFormProps) {
       });
     } catch (error) {
       toast({
-        title: '오류 발생',
+        title: '비밀번호 재설정 요청 실패',
         description: error instanceof Error ? error.message : '알 수 없는 오류가 발생했습니다.',
         variant: 'destructive'
       });
@@ -171,6 +173,12 @@ export function PasswordResetForm({ onClose, token }: PasswordResetFormProps) {
 
   return (
     <form onSubmit={handleResetSubmit(onResetSubmit)} className="space-y-4">
+      <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
+        <p className="text-sm text-blue-700">
+          <strong>중요:</strong> 가입 시 등록한 아이디와 이메일이 정확히 일치해야 비밀번호 재설정이 가능합니다.
+        </p>
+      </div>
+
       <div>
         <label htmlFor="username" className="block text-sm font-medium mb-1">
           아이디
@@ -179,6 +187,7 @@ export function PasswordResetForm({ onClose, token }: PasswordResetFormProps) {
           id="username"
           type="text"
           disabled={isLoading}
+          placeholder="가입 시 등록한 아이디"
           {...registerReset('username')}
         />
         {resetErrors.username && (
@@ -194,6 +203,7 @@ export function PasswordResetForm({ onClose, token }: PasswordResetFormProps) {
           id="email"
           type="email"
           disabled={isLoading}
+          placeholder="가입 시 등록한 이메일"
           {...registerReset('email')}
         />
         {resetErrors.email && (
@@ -216,7 +226,7 @@ export function PasswordResetForm({ onClose, token }: PasswordResetFormProps) {
           className="flex-1"
         >
           {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-          요청
+          비밀번호 재설정 요청
         </Button>
       </div>
     </form>
