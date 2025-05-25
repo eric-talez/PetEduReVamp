@@ -4,6 +4,7 @@ import { setupVite, serveStatic, log } from "./vite";
 import session from "express-session";
 import memorystore from "memorystore";
 import cors from "cors";
+import { setupAuth } from "./auth";
 
 const MemoryStore = memorystore(session);
 const app = express();
@@ -23,13 +24,15 @@ app.use(express.urlencoded({ extended: false, limit: '50mb' }));
 // 세션 설정 - 환경 변수 활용하여 보안성 강화
 const sessionSecret = process.env.SESSION_SECRET || 'peteduplatform-secret-key';
 
+const sessionStore = new MemoryStore({
+  checkPeriod: 86400000 // 24시간마다 만료된 세션 정리
+});
+
 app.use(session({
   secret: sessionSecret,
   resave: false, // 최적화: 변경 사항이 있는 경우만 저장
   saveUninitialized: false, // 최적화: 초기화된 세션만 저장 (빈 세션 저장 방지)
-  store: new MemoryStore({
-    checkPeriod: 86400000 // 24시간마다 만료된 세션 정리
-  }),
+  store: sessionStore,
   cookie: {
     maxAge: 24 * 60 * 60 * 1000, // 24시간
     secure: process.env.NODE_ENV === 'production', // 프로덕션에서만 보안 쿠키 사용
@@ -39,6 +42,9 @@ app.use(session({
   },
   name: 'talez.sid' // 서비스 이름 변경 반영
 }));
+
+// 인증 시스템 설정
+setupAuth(app, sessionStore);
 
 app.use((req, res, next) => {
   const start = Date.now();

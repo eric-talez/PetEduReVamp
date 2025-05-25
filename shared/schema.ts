@@ -35,12 +35,26 @@ export const createUserSchema = createInsertSchema(users)
   .omit({
     id: true,
     createdAt: true,
-    instituteId: true
+    instituteId: true,
+    verified: true,
+    verifiedAt: true,
+    provider: true,
+    socialId: true
   })
   .extend({
     instituteCode: z.string().optional(),
     address: z.string().optional(),
     phoneNumber: z.string().optional(),
+    // 소셜 로그인 정보
+    ci: z.string().optional(),
+    verified: z.boolean().optional().default(false),
+    verifiedAt: z.date().optional(),
+    verificationName: z.string().optional(),
+    verificationBirth: z.string().optional(),
+    verificationPhone: z.string().optional(),
+    provider: z.string().optional(),
+    socialId: z.string().optional(),
+    // 반려동물 정보
     petInfo: z.object({
       name: z.string(),
       breed: z.string(),
