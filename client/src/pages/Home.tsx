@@ -335,9 +335,9 @@ export default function Home() {
           
           {/* 로그인 영역 - 오른쪽 1/4 */}
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 flex flex-col h-[400px] overflow-y-auto">
-            <h2 className="text-lg font-semibold mb-4">로그인</h2>
             {isAuthenticated ? (
               <>
+                <h2 className="text-lg font-semibold mb-4">환영합니다</h2>
                 <div className="flex items-center mb-4">
                   <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center mr-3">
                     <span className="text-primary font-bold">{userName?.charAt(0)}</span>
@@ -369,49 +369,33 @@ export default function Home() {
               </>
             ) : (
               <>
-                <p className="text-gray-600 dark:text-gray-300 mb-4">
-                  로그인하여 모든 서비스를 이용해보세요.
-                </p>
-                <div className="space-y-3">
-                  <Button 
-                    variant="default" 
-                    className="w-full"
-                    onClick={() => setLocation('/auth')}
-                  >
-                    로그인
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    className="w-full"
-                    onClick={() => setLocation('/auth?tab=register')}
-                  >
-                    회원가입
-                  </Button>
-                  <div className="text-center mt-2">
-                    <Button
-                      variant="link"
-                      className="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
-                      onClick={() => setShowPasswordReset(true)}
-                    >
-                      비밀번호를 잊으셨나요?
-                    </Button>
-                  </div>
+                <h2 className="text-lg font-semibold mb-4">Talez 서비스 안내</h2>
+                <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg mb-4">
+                  <h3 className="font-medium text-blue-700 dark:text-blue-400 mb-1">맞춤형 반려견 교육</h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">반려견의 특성과 수준에 맞는 교육을 전문 훈련사와 함께 시작해보세요.</p>
                 </div>
-                <div className="mt-4">
-                  <Button 
-                    variant="link" 
-                    size="sm" 
-                    className="w-full"
-                    onClick={() => setShowPasswordReset(true)}
-                  >
-                    비밀번호를 잊으셨나요?
-                  </Button>
+                <div className="bg-green-50 dark:bg-green-900/20 p-3 rounded-lg mb-4">
+                  <h3 className="font-medium text-green-700 dark:text-green-400 mb-1">AI 행동 분석</h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">인공지능을 활용한 반려견 행동 분석으로 효과적인 훈련 방법을 찾아보세요.</p>
+                </div>
+                <div className="bg-purple-50 dark:bg-purple-900/20 p-3 rounded-lg mb-4">
+                  <h3 className="font-medium text-purple-700 dark:text-purple-400 mb-1">반려견 친화 장소</h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">전국의 반려견 친화적인 장소를 찾고 즐거운 시간을 보내세요.</p>
+                </div>
+                <div className="mt-auto text-center">
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">
+                    상단의 로그인 버튼을 통해 Talez를 시작하세요.
+                  </p>
                 </div>
               </>
             )}
             <hr className="my-4 dark:border-gray-700" />
-            {/* 소셜 로그인 버튼 추가 */}
-            <SocialLoginButtons />
+            {/* 비로그인 시에만 소셜 로그인 안내 표시 */}
+            {!isAuthenticated && (
+              <div className="text-sm text-center text-gray-500 dark:text-gray-400">
+                <p>카카오, 네이버로 간편하게 시작할 수 있습니다.</p>
+              </div>
+            )}
           </div>
         </div>
         
