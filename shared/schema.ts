@@ -211,7 +211,7 @@ export const posts = pgTable("posts", {
   title: text("title").notNull(),
   content: text("content").notNull(),
   image: text("image"),
-  tags: json("tags").$type<string[]>(),
+  tag: text("tag"),
   category: text("category"),
   status: text("status").default('published'), // 'published', 'draft', 'archived'
   viewCount: integer("view_count").default(0),
