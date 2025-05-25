@@ -928,8 +928,14 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
                       </a>
                       <div className="border-t border-gray-200 dark:border-gray-700"></div>
                       <button 
-                        onClick={handleLogout}
-                        className="block w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-800"
+                        type="button"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          setUserMenuOpen(false); // 메뉴 닫기
+                          handleLogout(); // 로그아웃 처리
+                        }}
+                        className="block w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-800 font-medium"
                       >
                         로그아웃
                       </button>
