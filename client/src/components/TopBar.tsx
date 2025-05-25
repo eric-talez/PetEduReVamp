@@ -332,8 +332,8 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
       credentials: 'include' // 쿠키 포함
     }).catch(err => console.error('서버 로그아웃 API 호출 실패:', err));
     
-    // 즉시 인증 페이지로 강제 이동
-    window.location.href = "/auth";
+    // 로그아웃 후 홈페이지로 이동
+    window.location.href = "/";
   };
 
   return (
