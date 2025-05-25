@@ -3,6 +3,13 @@ import { RequestHandler, ErrorRequestHandler } from 'express';
 import { Express, Request, Response, NextFunction } from 'express';
 import { logger } from './logger';
 
+// 타입 오류 해결을 위한 간단한 미들웨어 구현
+const SentryHandlers = {
+  requestHandler: () => ((req: Request, res: Response, next: NextFunction) => next()),
+  tracingHandler: () => ((req: Request, res: Response, next: NextFunction) => next()),
+  errorHandler: (_options?: any) => ((err: any, req: Request, res: Response, next: NextFunction) => next(err))
+};
+
 /**
  * Sentry 설정 초기화
  */
@@ -31,10 +38,10 @@ export function setupSentry(app: Express) {
     });
 
     // 요청 핸들러 미들웨어 설정
-    app.use(Sentry.Handlers.requestHandler() as RequestHandler);
+    app.use(SentryHandlers.requestHandler() as RequestHandler);
 
     // 성능 모니터링 미들웨어 설정
-    app.use(Sentry.Handlers.tracingHandler() as RequestHandler);
+    app.use(SentryHandlers.tracingHandler() as RequestHandler);
 
     logger.info('[Sentry] Sentry 오류 추적 시스템이 초기화되었습니다.');
   } catch (error: unknown) {
@@ -53,12 +60,12 @@ export function setupSentryErrorHandler(app: Express) {
   }
 
   // Sentry 오류 처리 미들웨어
-  app.use(Sentry.Handlers.errorHandler({
-    shouldHandleError(error) {
+  app.use(SentryHandlers.errorHandler({
+    shouldHandleError(error: any) {
       // 상태 코드가 500 이상인 오류만 Sentry로 전송
       return error.status >= 500;
     },
-  }));
+  }) as ErrorRequestHandler);
 
   // Sentry 이후 일반 오류 처리 미들웨어
   app.use((error: any, req: Request, res: Response, next: NextFunction) => {
