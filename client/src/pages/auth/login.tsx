@@ -188,12 +188,9 @@ export default function Login() {
 
               <div className="text-center text-sm mt-4">
                 <span className="text-muted-foreground">계정이 없으신가요?</span>{" "}
-                <Button variant="link" className="p-0" onClick={() => {
-                  console.log("회원가입 페이지로 이동 시도");
-                  window.location.href = "/auth?tab=register";
-                }}>
+                <a href="/auth?tab=register" className="text-primary hover:underline">
                   회원가입
-                </Button>
+                </a>
               </div>
             </form>
           </div>
