@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useLocation } from 'wouter';
 
 // 기본 인증 페이지 컴포넌트
@@ -6,6 +6,10 @@ const BasicAuthPage = () => {
   const [activeTab, setActiveTab] = useState<'login' | 'register'>('login');
   const [showPasswordReset, setShowPasswordReset] = useState(false);
   const [, setLocation] = useLocation();
+  
+  const togglePasswordReset = useCallback(() => {
+    setShowPasswordReset(prev => !prev);
+  }, []);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 p-4">
@@ -14,7 +18,7 @@ const BasicAuthPage = () => {
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full p-6 relative">
             <button 
-              onClick={() => setShowPasswordReset(false)}
+              onClick={togglePasswordReset}
               className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
               aria-label="닫기"
             >
@@ -28,7 +32,7 @@ const BasicAuthPage = () => {
               가입시 등록한 아이디와 이메일을 입력하시면 비밀번호 재설정 안내를 보내드립니다.
             </p>
             
-            <PasswordResetForm onClose={() => setShowPasswordReset(false)} />
+            <PasswordResetForm onClose={togglePasswordReset} />
           </div>
         </div>
       )}
@@ -208,7 +212,7 @@ const LoginForm = () => {
         <div className="text-sm">
           <button 
             type="button"
-            onClick={() => setShowPasswordReset(true)}
+            onClick={togglePasswordReset}
             className="text-blue-600 hover:underline bg-transparent border-0 p-0 cursor-pointer text-left"
           >
             비밀번호를 잊으셨나요?
