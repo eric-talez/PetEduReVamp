@@ -33,6 +33,7 @@ import AdminSettlementPage from "./pages/admin/settlement";
 import EventsPage from "./pages/events";
 import EventDetailPage from "./pages/events/event-detail";
 import EventCalendarPage from "./pages/events/calendar";
+import AnalyticsPage from "./pages/analytics";
 
 // 레이아웃 및 컴포넌트 임포트
 import { TopBar } from "@/components/TopBar";
