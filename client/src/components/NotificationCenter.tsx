@@ -1,309 +1,375 @@
-import React, { useState, useEffect } from 'react';
-import { Bell, X, CheckCircle, AlertCircle, Info, Clock } from 'lucide-react';
-import { useUserPreferences } from '@/hooks/use-user-preferences';
-import { 
-  Sheet, 
-  SheetContent, 
-  SheetHeader, 
-  SheetTitle, 
-  SheetTrigger,
-  SheetClose
-} from '@/components/ui/sheet';
+import { useState, useEffect } from 'react';
+import { Bell, Info, CheckCircle, AlertTriangle, AlertCircle, X, Check } from 'lucide-react';
+import { useNotifications, Notification } from '@/hooks/use-notifications';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/Button';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/Tabs';
+import { Button } from '@/components/ui/button';
+import { 
+  Popover, 
+  PopoverContent, 
+  PopoverTrigger 
+} from '@/components/ui/popover';
+import { useAuth } from '@/hooks/useAuth';
+import { 
+  Tabs, 
+  TabsContent, 
+  TabsList, 
+  TabsTrigger 
+} from '@/components/ui/tabs';
+import { cn } from '@/lib/utils';
+import { useLocation } from 'wouter';
 
-// 알림 타입 정의
-export type NotificationType = 'info' | 'success' | 'warning' | 'error';
-
-export interface Notification {
-  id: string;
-  title: string;
-  message: string;
-  type: NotificationType;
-  timestamp: Date;
-  read: boolean;
-  link?: string;
-  category: 'system' | 'course' | 'pet' | 'social' | 'payment';
-}
-
-// 샘플 알림 데이터
-const sampleNotifications: Notification[] = [
-  {
-    id: '1',
-    title: '시스템 업데이트',
-    message: '시스템이 성공적으로 업데이트되었습니다.',
-    type: 'info',
-    timestamp: new Date(Date.now() - 1000 * 60 * 5), // 5분 전
-    read: false,
-    category: 'system'
-  },
-  {
-    id: '2',
-    title: '결제 완료',
-    message: '강아지 훈련 기초 강좌 결제가 완료되었습니다.',
-    type: 'success',
-    timestamp: new Date(Date.now() - 1000 * 60 * 30), // 30분 전
-    read: false,
-    category: 'payment',
-    link: '/shop/order-history'
-  },
-  {
-    id: '3',
-    title: '강좌 시작 예정',
-    message: '내일 오전 10시에 예약된 강좌가 있습니다.',
-    type: 'warning',
-    timestamp: new Date(Date.now() - 1000 * 60 * 60 * 3), // 3시간 전
-    read: true,
-    category: 'course',
-    link: '/my-courses'
-  },
-  {
-    id: '4',
-    title: '반려동물 건강 알림',
-    message: '뽀삐의 예방접종 일정이 다가오고 있습니다.',
-    type: 'error',
-    timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24), // 1일 전
-    read: false,
-    category: 'pet',
-    link: '/my-pets'
-  },
-  {
-    id: '5',
-    title: '새로운 메시지',
-    message: '훈련사 김철수님이 새 메시지를 보냈습니다.',
-    type: 'info',
-    timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2), // 2일 전
-    read: true,
-    category: 'social',
-    link: '/messages'
-  }
-];
-
-function formatTimeAgo(date: Date): string {
-  const now = new Date();
-  const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-  
-  if (diffInSeconds < 60) {
-    return `${diffInSeconds}초 전`;
-  }
-  
-  const diffInMinutes = Math.floor(diffInSeconds / 60);
-  if (diffInMinutes < 60) {
-    return `${diffInMinutes}분 전`;
-  }
-  
-  const diffInHours = Math.floor(diffInMinutes / 60);
-  if (diffInHours < 24) {
-    return `${diffInHours}시간 전`;
-  }
-  
-  const diffInDays = Math.floor(diffInHours / 24);
-  if (diffInDays < 7) {
-    return `${diffInDays}일 전`;
-  }
-  
-  return date.toLocaleDateString('ko-KR');
-}
-
-function getIconForType(type: NotificationType) {
+/**
+ * 알림의 아이콘을 결정하는 함수
+ */
+function getNotificationIcon(type: string) {
   switch (type) {
-    case 'success':
-      return <CheckCircle className="h-5 w-5 text-green-500" />;
-    case 'error':
-      return <AlertCircle className="h-5 w-5 text-red-500" />;
-    case 'warning':
-      return <Clock className="h-5 w-5 text-amber-500" />;
     case 'info':
+      return <Info className="h-4 w-4 text-blue-500" />;
+    case 'success':
+      return <CheckCircle className="h-4 w-4 text-green-500" />;
+    case 'warning':
+      return <AlertTriangle className="h-4 w-4 text-amber-500" />;
+    case 'error':
+      return <AlertCircle className="h-4 w-4 text-red-500" />;
+    case 'system':
+      return <Bell className="h-4 w-4 text-primary" />;
     default:
-      return <Info className="h-5 w-5 text-blue-500" />;
+      return <Info className="h-4 w-4 text-blue-500" />;
   }
 }
 
-function getCategoryLabel(category: string): string {
-  switch (category) {
-    case 'system': return '시스템';
-    case 'course': return '강좌';
-    case 'pet': return '반려동물';
-    case 'social': return '소셜';
-    case 'payment': return '결제';
-    default: return '기타';
+/**
+ * 알림 시간을 표시하는 함수
+ */
+function formatNotificationTime(timestamp: Date): string {
+  const now = new Date();
+  const diff = now.getTime() - timestamp.getTime();
+  
+  // 1분 이내
+  if (diff < 60 * 1000) {
+    return '방금 전';
   }
+  
+  // 1시간 이내
+  if (diff < 60 * 60 * 1000) {
+    const minutes = Math.floor(diff / (60 * 1000));
+    return `${minutes}분 전`;
+  }
+  
+  // 24시간 이내
+  if (diff < 24 * 60 * 60 * 1000) {
+    const hours = Math.floor(diff / (60 * 60 * 1000));
+    return `${hours}시간 전`;
+  }
+  
+  // 7일 이내
+  if (diff < 7 * 24 * 60 * 60 * 1000) {
+    const days = Math.floor(diff / (24 * 60 * 60 * 1000));
+    return `${days}일 전`;
+  }
+  
+  // 그 이상
+  const options: Intl.DateTimeFormatOptions = { 
+    month: 'short', 
+    day: 'numeric' 
+  };
+  return timestamp.toLocaleDateString('ko-KR', options);
 }
 
-export function NotificationCenter() {
-  const [notifications, setNotifications] = useState<Notification[]>(sampleNotifications);
-  const [open, setOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState('all');
-  const { preferences } = useUserPreferences();
+/**
+ * 단일 알림 컴포넌트
+ */
+const NotificationItem = ({ 
+  notification, 
+  onMarkAsRead, 
+  onDelete 
+}: { 
+  notification: Notification;
+  onMarkAsRead: (id: string) => void;
+  onDelete: (id: string) => void;
+}) => {
+  const [, setLocation] = useLocation();
   
-  const unreadCount = notifications.filter(n => !n.read).length;
-  
-  const markAsRead = (id: string) => {
-    setNotifications(prev => 
-      prev.map(notification => 
-        notification.id === id ? { ...notification, read: true } : notification
-      )
-    );
-  };
-  
-  const markAllAsRead = () => {
-    setNotifications(prev => 
-      prev.map(notification => ({ ...notification, read: true }))
-    );
-  };
-  
-  const deleteNotification = (id: string) => {
-    setNotifications(prev => prev.filter(notification => notification.id !== id));
-  };
-  
-  const clearAllNotifications = () => {
-    setNotifications([]);
-  };
-  
-  const handleNotificationClick = (notification: Notification) => {
-    markAsRead(notification.id);
-    if (notification.link) {
-      // 알림 센터를 닫고 링크로 이동
-      setOpen(false);
-      
-      // 외부 링크인지 확인
-      if (notification.link.startsWith('http')) {
-        window.location.href = notification.link;
-      } else {
-        // 내부 링크는 현재 도메인 경로로 처리
-        const path = notification.link;
-        window.location.href = path;
-      }
-    } else {
-      // 링크가 없는 경우 기본적으로 알림 페이지로 이동
-      setOpen(false);
-      window.location.href = '/alerts';
+  const handleClick = () => {
+    if (!notification.isRead) {
+      onMarkAsRead(notification.id);
+    }
+    
+    if (notification.linkTo) {
+      setLocation(notification.linkTo);
     }
   };
   
-  const filteredNotifications = activeTab === 'all' 
-    ? notifications 
-    : activeTab === 'unread' 
-      ? notifications.filter(n => !n.read)
-      : notifications.filter(n => n.category === activeTab);
+  return (
+    <div 
+      className={cn(
+        "p-3 flex gap-3 border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer relative group",
+        !notification.isRead && "bg-blue-50/50 dark:bg-blue-950/20"
+      )}
+      onClick={handleClick}
+    >
+      <div className="flex-shrink-0 mt-1">
+        {getNotificationIcon(notification.type)}
+      </div>
+      
+      <div className="flex-grow">
+        <h4 className={cn(
+          "text-sm font-medium text-gray-900 dark:text-gray-100",
+          !notification.isRead && "font-semibold"
+        )}>
+          {notification.title}
+        </h4>
+        
+        <p className="text-xs text-gray-600 dark:text-gray-400 mt-1 line-clamp-2">
+          {notification.message}
+        </p>
+        
+        <div className="flex items-center justify-between mt-1">
+          <span className="text-xs text-gray-500 dark:text-gray-500">
+            {formatNotificationTime(notification.timestamp)}
+          </span>
+          
+          {!notification.isRead && (
+            <Badge variant="secondary" className="text-xs px-1 py-0 h-5">
+              새 알림
+            </Badge>
+          )}
+        </div>
+      </div>
+      
+      <button 
+        className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity" 
+        onClick={(e) => {
+          e.stopPropagation();
+          onDelete(notification.id);
+        }}
+      >
+        <X className="h-4 w-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" />
+      </button>
+    </div>
+  );
+};
+
+/**
+ * 알림 목록 컴포넌트
+ */
+const NotificationList = ({ 
+  notifications, 
+  onMarkAsRead, 
+  onDelete,
+  emptyMessage
+}: { 
+  notifications: Notification[];
+  onMarkAsRead: (id: string) => void;
+  onDelete: (id: string) => void;
+  emptyMessage: string;
+}) => {
+  if (notifications.length === 0) {
+    return (
+      <div className="py-8 text-center">
+        <div className="mx-auto w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-3">
+          <Bell className="h-6 w-6 text-gray-400 dark:text-gray-500" />
+        </div>
+        <p className="text-gray-500 dark:text-gray-400 text-sm">
+          {emptyMessage}
+        </p>
+      </div>
+    );
+  }
   
   return (
-    <Sheet open={open} onOpenChange={setOpen}>
-      <SheetTrigger asChild>
+    <div className="overflow-y-auto max-h-[350px] divide-y divide-gray-100 dark:divide-gray-800">
+      {notifications.map(notification => (
+        <NotificationItem 
+          key={notification.id}
+          notification={notification}
+          onMarkAsRead={onMarkAsRead}
+          onDelete={onDelete}
+        />
+      ))}
+    </div>
+  );
+};
+
+/**
+ * 알림 센터 컴포넌트
+ */
+export function NotificationCenter() {
+  const { 
+    notifications, 
+    unreadCount, 
+    loading, 
+    error, 
+    connected,
+    markAsRead, 
+    markAllAsRead, 
+    deleteNotification, 
+    clearAllNotifications 
+  } = useNotifications();
+  
+  const { isAuthenticated } = useAuth();
+  const [open, setOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState('all');
+  
+  // 알림 카테고리별로 필터링
+  const allNotifications = notifications;
+  const unreadNotifications = notifications.filter(n => !n.isRead);
+  const systemNotifications = notifications.filter(n => n.type === 'system');
+  
+  // 알림 팝업이 열릴 때 연결 상태 로깅
+  useEffect(() => {
+    if (open) {
+      console.log('Notification center opened, connected:', connected);
+    }
+  }, [open, connected]);
+  
+  // 인증되지 않은 사용자는 알림 센터를 표시하지 않음
+  if (!isAuthenticated) {
+    return null;
+  }
+  
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
         <Button 
           variant="ghost" 
-          size="icon" 
+          size="icon"
           className="relative"
-          aria-label="알림 센터 열기"
+          aria-label="알림"
         >
           <Bell className="h-5 w-5" />
           {unreadCount > 0 && (
-            <Badge 
-              variant="danger" 
-              className="absolute -top-1 -right-1 px-1.5 py-0.5 min-w-4 h-4 flex items-center justify-center"
-              aria-hidden="true"
-            >
+            <span className="absolute top-0 right-0 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center text-[10px] text-white font-bold leading-none">
               {unreadCount > 9 ? '9+' : unreadCount}
-            </Badge>
+            </span>
           )}
         </Button>
-      </SheetTrigger>
-      <SheetContent className="w-[380px] sm:w-[540px] p-0 overflow-hidden" hideCloseButton>
-        <SheetHeader className="p-4 border-b">
-          <div className="flex justify-between items-center">
-            <SheetTitle>알림 센터</SheetTitle>
-            <div className="flex gap-2">
+      </PopoverTrigger>
+      
+      <PopoverContent 
+        className="w-[350px] p-0 sm:w-[380px]" 
+        align="end"
+        sideOffset={8}
+      >
+        <div className="p-4 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center">
+          <h3 className="font-semibold">알림</h3>
+          <div className="flex items-center gap-2">
+            {unreadCount > 0 && (
               <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={markAllAsRead} 
-                disabled={!unreadCount}
+                variant="ghost" 
+                size="sm"
+                className="h-8 px-2 text-xs"
+                onClick={() => markAllAsRead()}
               >
+                <Check className="h-3.5 w-3.5 mr-1" />
                 모두 읽음 표시
               </Button>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={clearAllNotifications} 
-                disabled={!notifications.length}
-              >
-                모두 지우기
-              </Button>
-              <SheetClose asChild>
-                <Button variant="ghost" size="icon" aria-label="알림 센터 닫기">
-                  <X className="h-4 w-4" />
-                </Button>
-              </SheetClose>
-            </div>
+            )}
+            <Button 
+              variant="ghost" 
+              size="sm"
+              className="h-8 px-2 text-xs"
+              onClick={() => clearAllNotifications()}
+            >
+              <X className="h-3.5 w-3.5 mr-1" />
+              모두 지우기
+            </Button>
           </div>
-        </SheetHeader>
+        </div>
         
-        <Tabs defaultValue="all" value={activeTab} onValueChange={setActiveTab} className="h-full">
-          <TabsList className="grid grid-cols-5 px-4 py-2">
-            <TabsTrigger value="all">전체</TabsTrigger>
-            <TabsTrigger value="unread">읽지 않음</TabsTrigger>
-            <TabsTrigger value="system">시스템</TabsTrigger>
-            <TabsTrigger value="course">강좌</TabsTrigger>
-            <TabsTrigger value="pet">반려동물</TabsTrigger>
-          </TabsList>
-          <TabsContent value={activeTab} className="h-[calc(100vh-13rem)]">
-            <ScrollArea className="h-full">
-              {filteredNotifications.length === 0 ? (
-                <div className="flex flex-col items-center justify-center h-full text-muted-foreground py-8">
-                  <Bell className="h-12 w-12 mb-2 opacity-20" />
-                  <p>알림이 없습니다.</p>
-                </div>
-              ) : (
-                <div>
-                  {filteredNotifications.map((notification) => (
-                    <div
-                      key={notification.id}
-                      onClick={() => handleNotificationClick(notification)}
-                      className={`
-                        flex items-start gap-3 p-4 border-b cursor-pointer transition-colors
-                        ${notification.read ? 'bg-background' : 'bg-primary/5'}
-                        hover:bg-muted
-                      `}
-                    >
-                      <div className="shrink-0 mt-1">
-                        {getIconForType(notification.type)}
-                      </div>
-                      <div className="flex-grow">
-                        <div className="flex justify-between">
-                          <h4 className="font-medium">{notification.title}</h4>
-                          <time className="text-xs text-muted-foreground">
-                            {formatTimeAgo(notification.timestamp)}
-                          </time>
-                        </div>
-                        <p className="text-sm text-muted-foreground my-1">{notification.message}</p>
-                        <div className="flex justify-between items-center mt-2">
-                          <Badge variant="outline" className="text-xs">
-                            {getCategoryLabel(notification.category)}
-                          </Badge>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-6 w-6"
-                            aria-label={`알림 삭제: ${notification.title}`}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              deleteNotification(notification.id);
-                            }}
-                          >
-                            <X className="h-3 w-3" />
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </ScrollArea>
+        <Tabs defaultValue="all" value={activeTab} onValueChange={setActiveTab}>
+          <div className="border-b border-gray-100 dark:border-gray-800">
+            <TabsList className="grid grid-cols-3 w-full bg-transparent h-auto p-0">
+              <TabsTrigger 
+                value="all" 
+                className="data-[state=active]:bg-transparent data-[state=active]:shadow-none rounded-none border-b-2 border-transparent data-[state=active]:border-primary py-3 px-4"
+              >
+                전체
+                <Badge 
+                  variant="secondary" 
+                  className="ml-1.5 px-1 py-0 h-5 min-w-[1.25rem] text-xs"
+                >
+                  {allNotifications.length}
+                </Badge>
+              </TabsTrigger>
+              
+              <TabsTrigger 
+                value="unread" 
+                className="data-[state=active]:bg-transparent data-[state=active]:shadow-none rounded-none border-b-2 border-transparent data-[state=active]:border-primary py-3 px-4"
+              >
+                읽지 않음
+                <Badge 
+                  variant="secondary" 
+                  className="ml-1.5 px-1 py-0 h-5 min-w-[1.25rem] text-xs"
+                >
+                  {unreadNotifications.length}
+                </Badge>
+              </TabsTrigger>
+              
+              <TabsTrigger 
+                value="system" 
+                className="data-[state=active]:bg-transparent data-[state=active]:shadow-none rounded-none border-b-2 border-transparent data-[state=active]:border-primary py-3 px-4"
+              >
+                시스템
+                <Badge 
+                  variant="secondary" 
+                  className="ml-1.5 px-1 py-0 h-5 min-w-[1.25rem] text-xs"
+                >
+                  {systemNotifications.length}
+                </Badge>
+              </TabsTrigger>
+            </TabsList>
+          </div>
+          
+          <TabsContent value="all" className="mt-0 focus:outline-none">
+            <NotificationList 
+              notifications={allNotifications}
+              onMarkAsRead={markAsRead}
+              onDelete={deleteNotification}
+              emptyMessage="알림이 없습니다"
+            />
+          </TabsContent>
+          
+          <TabsContent value="unread" className="mt-0 focus:outline-none">
+            <NotificationList 
+              notifications={unreadNotifications}
+              onMarkAsRead={markAsRead}
+              onDelete={deleteNotification}
+              emptyMessage="읽지 않은 알림이 없습니다"
+            />
+          </TabsContent>
+          
+          <TabsContent value="system" className="mt-0 focus:outline-none">
+            <NotificationList 
+              notifications={systemNotifications}
+              onMarkAsRead={markAsRead}
+              onDelete={deleteNotification}
+              emptyMessage="시스템 알림이 없습니다"
+            />
           </TabsContent>
         </Tabs>
-      </SheetContent>
-    </Sheet>
+        
+        {error && (
+          <div className="p-3 bg-red-50 dark:bg-red-900/20 text-red-800 dark:text-red-300 text-xs border-t border-red-100 dark:border-red-800">
+            <AlertCircle className="h-4 w-4 text-red-500 dark:text-red-400 inline-block mr-1" />
+            알림 서비스 연결 오류: {error.message}
+          </div>
+        )}
+        
+        {loading && !error && (
+          <div className="p-3 bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400 text-xs border-t border-gray-100 dark:border-gray-700 flex items-center justify-center">
+            <div className="animate-spin w-4 h-4 border-2 border-gray-300 dark:border-gray-600 border-t-gray-600 dark:border-t-gray-300 rounded-full mr-2"></div>
+            알림을 불러오는 중...
+          </div>
+        )}
+        
+        {!connected && !loading && !error && (
+          <div className="p-3 bg-amber-50 dark:bg-amber-900/20 text-amber-800 dark:text-amber-300 text-xs border-t border-amber-100 dark:border-amber-800">
+            <AlertTriangle className="h-4 w-4 text-amber-500 dark:text-amber-400 inline-block mr-1" />
+            알림 서비스에 연결되어 있지 않습니다. 실시간 알림을 받을 수 없습니다.
+          </div>
+        )}
+      </PopoverContent>
+    </Popover>
   );
 }
