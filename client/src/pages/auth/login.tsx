@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { useLocation } from "wouter";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/Card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,6 +15,7 @@ export default function Login() {
   const auth = useAuth();
   const [location, setLocation] = useLocation();
   const { toast } = useToast();
+  
   // Form states
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -74,44 +74,6 @@ export default function Login() {
     }, 1000);
   };
 
-  // 회원가입 처리 함수
-  const handleRegister = (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    
-    // 입력 검증
-    if (!registerUsername || !registerPassword || !registerConfirmPassword || !registerEmail || !registerName) {
-      toast({
-        title: "입력 오류",
-        description: "모든 필드를 입력해주세요.",
-        variant: "destructive",
-      });
-      setIsLoading(false);
-      return;
-    }
-    
-    if (registerPassword !== registerConfirmPassword) {
-      toast({
-        title: "비밀번호 불일치",
-        description: "비밀번호와 비밀번호 확인이 일치하지 않습니다.",
-        variant: "destructive",
-      });
-      setIsLoading(false);
-      return;
-    }
-    
-    // 서버에 회원가입 요청을 보내는 대신
-    // 소셜 로그인을 권장하는 메시지 표시
-    setTimeout(() => {
-      toast({
-        title: "소셜 로그인 권장",
-        description: "현재 Talez는 카카오와 네이버 소셜 로그인만 지원합니다.",
-        variant: "default",
-      });
-      setIsLoading(false);
-    }, 1000);
-  };
-
   return (
     <div className="flex min-h-screen">
       {/* 왼쪽 컬럼 - 폼 영역 */}
@@ -124,187 +86,94 @@ export default function Login() {
             <p className="mt-2 text-muted-foreground">반려견과 함께하는 특별한 교육 여정</p>
           </div>
           
-          <Tabs defaultValue={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-2 mb-6">
-              <TabsTrigger value="login">로그인</TabsTrigger>
-              <TabsTrigger value="register">회원가입</TabsTrigger>
-            </TabsList>
+          <div className="w-full">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-xl font-bold">로그인</h2>
+              <Button 
+                variant="outline" 
+                onClick={() => setLocation("/auth/register")}
+                className="flex items-center gap-2"
+              >
+                회원가입
+              </Button>
+            </div>
             
-            {/* 로그인 탭 */}
-            <TabsContent value="login" className="space-y-6">
-              {/* 소셜 로그인 버튼 */}
-              <div className="space-y-4">
-                <h2 className="text-lg font-medium text-center">소셜 계정으로 로그인</h2>
-                <SocialLoginButtons />
-              </div>
-              
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <Separator />
-                </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-white dark:bg-gray-950 px-2 text-muted-foreground">
-                    또는 아이디로 로그인
-                  </span>
-                </div>
-              </div>
-              
-              {/* 아이디 로그인 폼 */}
-              <form onSubmit={handleLogin} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="username">아이디</Label>
-                  <Input
-                    id="username"
-                    type="text"
-                    placeholder="아이디를 입력하세요"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    required
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <div className="flex justify-between items-center">
-                    <Label htmlFor="password">비밀번호</Label>
-                    <a href="#" className="text-xs text-primary hover:underline">
-                      비밀번호 찾기
-                    </a>
-                  </div>
-                  <div className="relative">
-                    <Input
-                      id="password"
-                      type={showPassword ? "text" : "password"}
-                      placeholder="비밀번호를 입력하세요"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      required
-                    />
-                    <button
-                      type="button"
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-                      onClick={() => setShowPassword(!showPassword)}
-                    >
-                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                    </button>
-                  </div>
-                </div>
-                
-                <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? (
-                    <div className="flex items-center gap-2">
-                      <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></div>
-                      <span>로그인 중...</span>
-                    </div>
-                  ) : (
-                    "로그인"
-                  )}
-                </Button>
-              </form>
-            </TabsContent>
+            {/* 소셜 로그인 버튼 */}
+            <div className="space-y-4 mb-6">
+              <h2 className="text-lg font-medium text-center">소셜 계정으로 로그인</h2>
+              <SocialLoginButtons />
+            </div>
             
-            {/* 회원가입 탭 */}
-            <TabsContent value="register" className="space-y-6">
-              {/* 소셜 회원가입 버튼 */}
-              <div className="space-y-4">
-                <h2 className="text-lg font-medium text-center">소셜 계정으로 간편 가입</h2>
-                <SocialLoginButtons />
+            <div className="relative my-6">
+              <div className="absolute inset-0 flex items-center">
+                <Separator />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-white dark:bg-gray-950 px-2 text-muted-foreground">
+                  또는 아이디로 로그인
+                </span>
+              </div>
+            </div>
+            
+            {/* 아이디 로그인 폼 */}
+            <form onSubmit={handleLogin} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="username">아이디</Label>
+                <Input
+                  id="username"
+                  type="text"
+                  placeholder="아이디를 입력하세요"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  required
+                />
               </div>
               
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <Separator />
+              <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <Label htmlFor="password">비밀번호</Label>
+                  <a href="#" className="text-xs text-primary hover:underline">
+                    비밀번호 찾기
+                  </a>
                 </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-white dark:bg-gray-950 px-2 text-muted-foreground">
-                    또는 직접 가입
-                  </span>
+                <div className="relative">
+                  <Input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    placeholder="비밀번호를 입력하세요"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                  />
+                  <button
+                    type="button"
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
                 </div>
               </div>
               
-              {/* 회원가입 폼 */}
-              <form onSubmit={handleRegister} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="register-username">아이디</Label>
-                  <Input
-                    id="register-username"
-                    type="text"
-                    placeholder="사용할 아이디를 입력하세요"
-                    value={registerUsername}
-                    onChange={(e) => setRegisterUsername(e.target.value)}
-                    required
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="register-email">이메일</Label>
-                  <Input
-                    id="register-email"
-                    type="email"
-                    placeholder="이메일 주소를 입력하세요"
-                    value={registerEmail}
-                    onChange={(e) => setRegisterEmail(e.target.value)}
-                    required
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="register-name">이름</Label>
-                  <Input
-                    id="register-name"
-                    type="text"
-                    placeholder="이름을 입력하세요"
-                    value={registerName}
-                    onChange={(e) => setRegisterName(e.target.value)}
-                    required
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="register-password">비밀번호</Label>
-                  <div className="relative">
-                    <Input
-                      id="register-password"
-                      type={showRegisterPassword ? "text" : "password"}
-                      placeholder="비밀번호를 입력하세요"
-                      value={registerPassword}
-                      onChange={(e) => setRegisterPassword(e.target.value)}
-                      required
-                    />
-                    <button
-                      type="button"
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-                      onClick={() => setShowRegisterPassword(!showRegisterPassword)}
-                    >
-                      {showRegisterPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                    </button>
+              <Button type="submit" className="w-full" disabled={isLoading}>
+                {isLoading ? (
+                  <div className="flex items-center gap-2">
+                    <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></div>
+                    <span>로그인 중...</span>
                   </div>
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="register-confirm-password">비밀번호 확인</Label>
-                  <Input
-                    id="register-confirm-password"
-                    type="password"
-                    placeholder="비밀번호를 다시 입력하세요"
-                    value={registerConfirmPassword}
-                    onChange={(e) => setRegisterConfirmPassword(e.target.value)}
-                    required
-                  />
-                </div>
-                
-                <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? (
-                    <div className="flex items-center gap-2">
-                      <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></div>
-                      <span>회원가입 중...</span>
-                    </div>
-                  ) : (
-                    "회원가입"
-                  )}
+                ) : (
+                  "로그인"
+                )}
+              </Button>
+
+              <div className="text-center text-sm mt-4">
+                <span className="text-muted-foreground">계정이 없으신가요?</span>{" "}
+                <Button variant="link" className="p-0" onClick={() => setLocation("/auth/register")}>
+                  회원가입
                 </Button>
-              </form>
-            </TabsContent>
-          </Tabs>
+              </div>
+            </form>
+          </div>
           
           {/* 약관 안내 */}
           <div className="text-xs text-center text-muted-foreground mt-6">
