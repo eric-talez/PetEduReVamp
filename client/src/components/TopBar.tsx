@@ -903,11 +903,21 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
               </>
             ) : (
               <div className="flex space-x-2">
-                <Button variant="ghost" size="sm" aria-label="로그인 페이지로 이동">
-                  <Link href="/auth">로그인</Link>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  aria-label="로그인 페이지로 이동"
+                  onClick={() => setLocation("/auth")}
+                >
+                  로그인
                 </Button>
-                <Button variant="default" size="sm" aria-label="회원가입 페이지로 이동">
-                  <Link href="/auth?tab=register">회원가입</Link>
+                <Button 
+                  variant="default" 
+                  size="sm" 
+                  aria-label="회원가입 페이지로 이동"
+                  onClick={() => setLocation("/auth?tab=register")}
+                >
+                  회원가입
                 </Button>
               </div>
             )}
