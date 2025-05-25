@@ -28,7 +28,7 @@ export default function RegisterForm() {
   const [isLoading, setIsLoading] = useState(false);
   
   // 회원가입 처리 함수
-  const handleRegister = (e: React.FormEvent) => {
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     
@@ -53,16 +53,62 @@ export default function RegisterForm() {
       return;
     }
     
-    // 서버에 회원가입 요청을 보내는 대신
-    // 소셜 로그인을 권장하는 메시지 표시
-    setTimeout(() => {
+    try {
+      // 서버에 회원가입 요청
+      const response = await fetch('/api/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          username,
+          password,
+          email,
+          name,
+          role: userRole,
+          instituteCode: (userRole === 'trainer' || userRole === 'institute-admin') ? instituteCode : undefined
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.text();
+        throw new Error(errorData || '회원가입에 실패했습니다.');
+      }
+
+      const userData = await response.json();
+      
+      // 회원가입 성공 시 로그인 이벤트 발행
+      const loginEvent = new CustomEvent('login', {
+        detail: {
+          role: userData.role,
+          name: userData.name,
+          userRole: userData.role,
+          userName: userData.name
+        }
+      });
+      window.dispatchEvent(loginEvent);
+
       toast({
-        title: "소셜 로그인 권장",
-        description: "현재 Talez는 카카오와 네이버 소셜 로그인만 지원합니다.",
+        title: "회원가입 성공",
+        description: `${userData.name}님, 환영합니다!`,
         variant: "default",
       });
+
+      // 로그인 탭으로 전환하거나 대시보드로 이동
+      setTimeout(() => {
+        window.location.href = '/dashboard';
+      }, 1000);
+
+    } catch (error) {
+      toast({
+        title: "회원가입 실패",
+        description: error instanceof Error ? error.message : '알 수 없는 오류가 발생했습니다.',
+        variant: "destructive",
+      });
+    } finally {
       setIsLoading(false);
-    }, 1000);
+    }
   };
 
   return (
