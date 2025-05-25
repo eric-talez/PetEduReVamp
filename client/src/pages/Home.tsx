@@ -373,14 +373,14 @@ export default function Home() {
                   <Button 
                     variant="default" 
                     className="w-full"
-                    onClick={() => setLocation('/auth')}
+                    onClick={() => setLocation('/auth/login')}
                   >
                     로그인
                   </Button>
                   <Button 
                     variant="outline" 
                     className="w-full"
-                    onClick={() => setLocation('/auth?tab=register')}
+                    onClick={() => setLocation('/auth/register')}
                   >
                     회원가입
                   </Button>

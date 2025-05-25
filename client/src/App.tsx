@@ -289,11 +289,21 @@ function UnauthenticatedRoutesContent() {
     <>
       {/* 더 구체적인 경로가 먼저 오도록 순서 정렬 */}
       {/* 인증 관련 */}
-      <Route path="/auth/login" component={LoginPage} />
-      <Route path="/auth/register" component={RegisterPage} />
+      <Route path="/auth/login">
+        {() => {
+          console.log("로그인 페이지 접근");
+          return <LoginPage />;
+        }}
+      </Route>
+      <Route path="/auth/register">
+        {() => {
+          console.log("회원가입 페이지 접근");
+          return <RegisterPage />;
+        }}
+      </Route>
       <Route path="/auth">
         {() => {
-          console.log("기본 인증 경로 접근 - 로그인 페이지로 리다이렉트");
+          console.log("기본 인증 페이지 접근 - 로그인으로 리다이렉트");
           return <LoginPage />;
         }}
       </Route>

@@ -188,7 +188,7 @@ export default function Login() {
 
               <div className="text-center text-sm mt-4">
                 <span className="text-muted-foreground">계정이 없으신가요?</span>{" "}
-                <Button variant="link" className="p-0" onClick={() => setLocation("/auth?tab=register")}>
+                <Button variant="link" className="p-0" onClick={() => setLocation("/auth/register")}>
                   회원가입
                 </Button>
               </div>
