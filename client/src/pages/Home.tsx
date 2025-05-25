@@ -9,6 +9,8 @@ import { ShopPreview } from '@/components/ShopPreview'; // 인증 상태에 의�
 import { SocialLoginButtons } from '@/components/SocialLoginButtons'; // 소셜 로그인 버튼
 import { useState, lazy, Suspense } from 'react';
 import { Loader2, ChevronDown, ChevronRight } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/Dialog';
+import { PasswordResetForm } from '@/components/PasswordResetForm';
 
 // 각 역할별 홈 페이지를 동적으로 임포트
 const TrainerHome = lazy(() => import('./trainer/TrainerHome'));
@@ -21,6 +23,7 @@ export default function Home() {
   const [location, setLocation] = useLocation();
   const [isWeatherModalOpen, setIsWeatherModalOpen] = useState(false);
   const [isServiceStatsOpen, setIsServiceStatsOpen] = useState(true);
+  const [showPasswordReset, setShowPasswordReset] = useState(false);
   
   // 서비스 현황 토글 함수
   const toggleServiceStats = () => {
@@ -388,7 +391,7 @@ export default function Home() {
                     <Button
                       variant="link"
                       className="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
-                      onClick={() => window.location.href = '/auth?reset=true'}
+                      onClick={() => setShowPasswordReset(true)}
                     >
                       비밀번호를 잊으셨나요?
                     </Button>
