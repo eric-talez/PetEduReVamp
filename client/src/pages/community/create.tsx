@@ -39,7 +39,7 @@ export default function CreatePostPage() {
   React.useEffect(() => {
     const checkServerAuth = async () => {
       try {
-        const response = await fetch('/api/user', {
+        const response = await fetch('/api/auth/me', {
           credentials: 'include'
         });
         
