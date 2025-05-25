@@ -272,11 +272,35 @@ function ProtectedRoute({ component: Component, requiredRoles = null, fallback =
   requiredRoles?: Array<UserRole> | null;
   fallback?: React.ReactNode;
 }) {
-  const { isAuthenticated, userRole } = useAuth();
+  const { isAuthenticated, userRole, isLoading } = useAuth();
+  
+  // 로딩 중일 때는 로딩 표시
+  if (isLoading) {
+    return <FullScreenLoading message="인증 정보 확인 중..." />;
+  }
   
   // 로그인 여부 체크
   if (!isAuthenticated) {
-    return <RedirectHandler to="/auth" />;
+    // 접근 제한 메시지와 함께 로그인 페이지로 리다이렉션
+    return (
+      <div className="p-8 text-center flex flex-col items-center justify-center min-h-[50vh]">
+        <div className="mb-4 text-amber-500">
+          <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+            <line x1="12" y1="9" x2="12" y2="13"></line>
+            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+          </svg>
+        </div>
+        <h2 className="text-xl font-semibold mb-2">로그인이 필요한 페이지입니다</h2>
+        <p className="text-gray-600 dark:text-gray-400 mb-6">이 기능을 사용하려면 로그인이 필요합니다.</p>
+        <button
+          onClick={() => window.location.href = '/auth'}
+          className="bg-primary hover:bg-primary/90 text-white py-2 px-6 rounded-md transition-colors"
+        >
+          로그인 페이지로 이동
+        </button>
+      </div>
+    );
   }
   
   // 권한 검증 (requiredRoles이 null이면 로그인만 되어 있으면 됨)
