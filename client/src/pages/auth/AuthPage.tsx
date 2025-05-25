@@ -1,7 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import LoginForm from './components/LoginForm';
-import RegisterForm from './components/RegisterForm';
+// 임시로 직접 컴포넌트 구현
+const LoginForm = () => {
+  return <div>로그인 폼</div>
+};
+
+const RegisterForm = () => {
+  return <div>회원가입 폼</div>
+};
 import { useLocation } from 'wouter';
 import { SocialLoginButtons } from '@/components/SocialLoginButtons';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
