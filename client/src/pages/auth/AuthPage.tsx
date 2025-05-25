@@ -5,7 +5,7 @@ import RegisterForm from './components/RegisterForm';
 import { useLocation } from 'wouter';
 import { SocialLoginButtons } from '@/components/SocialLoginButtons';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { useGlobalAuth } from '@/lib/global-auth-store';
+import { useAuth } from '@/SimpleApp';
 
 /**
  * 통합된 인증 페이지 컴포넌트
@@ -14,7 +14,7 @@ import { useGlobalAuth } from '@/lib/global-auth-store';
 export default function AuthPage() {
   const [activeTab, setActiveTab] = useState<string>("login");
   const [, setLocation] = useLocation();
-  const { isAuthenticated } = useGlobalAuth();
+  const { isAuthenticated } = useAuth();
   
   // URL 파라미터에 따라 탭 설정
   useEffect(() => {

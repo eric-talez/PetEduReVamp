@@ -292,7 +292,14 @@ function UnauthenticatedRoutesContent() {
       <Route path="/auth">
         {() => {
           console.log("인증 페이지 접근");
-          return <LoginPage />;
+          const AuthPage = React.lazy(() => import('./pages/auth/AuthPage'));
+          return (
+            <React.Suspense fallback={<div className="flex items-center justify-center min-h-screen">
+              <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
+            </div>}>
+              <AuthPage />
+            </React.Suspense>
+          );
         }}
       </Route>
 
