@@ -1422,119 +1422,58 @@ export default function VideoTraining() {
                 닫기
               </Button>
             </div>
-            <div className="relative">
-              <div className="aspect-video bg-black relative">
-                {/* 비디오 플레이어 */}
-                <video
-                  ref={videoRef}
-                  className="w-full h-full object-cover"
-                  poster={selectedVideo.thumbnail}
-                  onClick={togglePlay}
-                >
-                  {/* 영상 파일이 없는 경우를 위한 대체 소스 (실제 구현시 서버의 실제 영상 파일로 교체) */}
-                  <source src={`https://storage.googleapis.com/talez-videos/sample-${selectedVideo.id % 3 + 1}.mp4`} type="video/mp4" />
-                  
-                  {/* 자막 트랙 */}
-                  <track 
-                    label="한국어" 
-                    kind="subtitles" 
-                    srcLang="ko" 
-                    src={`/subtitles/video-${selectedVideo.id}-ko.vtt`} 
-                    default={playerState.subtitles}
-                  />
-                  <track 
-                    label="English" 
-                    kind="subtitles" 
-                    srcLang="en" 
-                    src={`/subtitles/video-${selectedVideo.id}-en.vtt`}
-                  />
-                  브라우저가 동영상 태그를 지원하지 않습니다.
-                </video>
-                
-                {/* 비디오 컨트롤 오버레이 */}
-                <div className={`absolute inset-0 flex items-center justify-center transition-opacity duration-300 ${playerState.controlsVisible ? 'opacity-100' : 'opacity-0'}`}
-                  onMouseMove={() => setPlayerState(prev => ({...prev, controlsVisible: true}))}
-                  onMouseLeave={() => !playerState.paused && setPlayerState(prev => ({...prev, controlsVisible: false}))}
-                >
-                  {/* 재생/일시정지 버튼 */}
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="bg-black/40 text-white hover:bg-black/60 rounded-full h-16 w-16"
-                    onClick={togglePlay}
-                    aria-label={playerState.paused ? "재생" : "일시정지"}
-                  >
-                    {playerState.paused ? <Play size={32} /> : <Pause size={32} />}
-                  </Button>
-                </div>
-                
-                {/* 컨트롤 바 */}
-                <div className={`absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent px-4 py-2 transition-opacity duration-300 ${playerState.controlsVisible ? 'opacity-100' : 'opacity-0'}`}>
-                  {/* 진행 바 */}
-                  <div className="relative h-1 bg-gray-600 rounded-full mb-3 cursor-pointer" onClick={handleSeekBarClick} ref={seekBarRef}>
-                    <div className="absolute left-0 top-0 h-full bg-primary rounded-full" style={{ width: `${(playerState.currentTime / playerState.duration) * 100}%` }}></div>
-                  </div>
-                  
-                  {/* 컨트롤 버튼 그룹 */}
-                  <div className="flex justify-between items-center">
-                    <div className="flex items-center gap-2">
-                      <Button variant="ghost" size="icon" className="text-white h-8 w-8" onClick={togglePlay}>
-                        {playerState.paused ? <Play size={18} /> : <Pause size={18} />}
-                      </Button>
-                      <Button variant="ghost" size="icon" className="text-white h-8 w-8" onClick={() => seekTime(-10)}>
-                        <SkipBack size={18} />
-                      </Button>
-                      <Button variant="ghost" size="icon" className="text-white h-8 w-8" onClick={() => seekTime(10)}>
-                        <SkipForward size={18} />
-                      </Button>
-                      <Button variant="ghost" size="icon" className="text-white h-8 w-8" onClick={toggleMute}>
-                        {playerState.muted ? <VolumeX size={18} /> : <Volume2 size={18} />}
-                      </Button>
-                      <Button variant="ghost" size="icon" className="text-white h-8 w-8" onClick={toggleSubtitles}>
-                        <Subtitles size={18} className={playerState.subtitles ? "text-primary" : "text-white"} />
-                      </Button>
-                      <span className="text-white text-xs ml-2">
-                        {formatTime(playerState.currentTime)} / {formatTime(playerState.duration)}
-                      </span>
-                    </div>
-                    <Button variant="ghost" size="icon" className="text-white h-8 w-8" onClick={toggleFullscreen}>
-                      <Maximize size={18} />
-                    </Button>
-                  </div>
-                </div>
-                
-                {/* 프리미엄 비로그인 시간 제한 오버레이 */}
-                {(selectedVideo.isPremium && !isAuthenticated) || isPreviewMode ? (
-                  <div className="absolute top-4 right-4 bg-gray-900 bg-opacity-80 rounded px-3 py-1 text-white flex items-center">
-                    {previewEnded ? (
-                      <AlertCircle size={14} className="mr-1 text-amber-500" />
-                    ) : (
-                      <span className="mr-1">미리보기</span>
-                    )}
-                    {previewEnded ? "미리보기 종료" : isPreviewMode ? formatPreviewTimeLeft() : `${PREVIEW_TIME_LIMIT}초`}
-                  </div>
-                ) : null}
-                
-                {/* 미리보기 끝났을 때 오버레이 */}
-                {selectedVideo.isPremium && !isAuthenticated && previewEnded && (
-                  <div className="absolute inset-0 bg-black bg-opacity-80 flex flex-col items-center justify-center p-6 text-center">
-                    <Lock size={40} className="text-amber-500 mb-3" />
-                    <h3 className="text-white text-xl font-bold mb-2">미리보기가 종료되었습니다</h3>
-                    <p className="text-gray-300 mb-4">
-                      이 프리미엄 영상의 전체 내용을 보려면 로그인하고<br />
-                      구독을 시작하세요.
+            <div className="p-4">
+              {/* 새로운 VideoPlayer 컴포넌트 사용 */}
+              <VideoPlayer
+                videoUrl={`https://storage.googleapis.com/talez-videos/sample-${selectedVideo.id % 3 + 1}.mp4`}
+                poster={selectedVideo.thumbnail}
+                title={selectedVideo.title}
+                isPremium={selectedVideo.isPremium}
+                isPreviewMode={isPreviewMode && selectedVideo.isPremium && !isItemPurchased(selectedVideo.id, selectedVideo.id)}
+                previewTimeLeft={previewTimeLeft}
+                onPreviewEnd={() => {
+                  setPreviewEnded(true);
+                  setIsPreviewMode(false);
+                }}
+                purchased={isItemPurchased(selectedVideo.id, selectedVideo.id)}
+                autoPlay={true}
+                onTimeUpdate={(currentTime) => setElapsedTime(Math.floor(currentTime))}
+                subtitlesUrl={`/subtitles/video-${selectedVideo.id}-ko.vtt`}
+              />
+              
+              {/* 미리보기 종료 메시지 */}
+              {previewEnded && (
+                <div className="mt-4 p-4 border border-amber-200 rounded-lg bg-amber-50 dark:bg-amber-950 dark:border-amber-800">
+                  <div className="text-center">
+                    <AlertCircle className="mx-auto h-8 w-8 text-amber-500 mb-2" />
+                    <h4 className="text-base font-semibold mb-2">미리보기가 종료되었습니다</h4>
+                    <p className="text-gray-600 dark:text-gray-400 mb-4 text-sm">
+                      전체 콘텐츠를 보시려면 강의를 구매해주세요.
                     </p>
-                    <div className="flex gap-3">
-                      <Button onClick={handleGoToLogin}>
-                        로그인하기
+                    <div className="flex gap-2 justify-center">
+                      <Button
+                        variant="default"
+                        onClick={() => handlePurchaseClick(selectedVideo.id, selectedVideo.id, selectedVideo.price)}
+                        disabled={!isAuthenticated}
+                      >
+                        지금 구매하기
                       </Button>
-                      <Button variant="outline" onClick={handleCloseVideo}>
+                      <Button
+                        variant="outline"
+                        onClick={handleCloseVideo}
+                      >
                         닫기
                       </Button>
                     </div>
+                    {!isAuthenticated && (
+                      <p className="mt-4 text-xs text-amber-500 flex items-center justify-center">
+                        <Lock size={12} className="mr-1" />
+                        구매하려면 로그인이 필요합니다
+                      </p>
+                    )}
                   </div>
-                )}
-              </div>
+                </div>
+              )}
             </div>
             <div className="p-4">
               <div className="flex items-center justify-between mb-4">
