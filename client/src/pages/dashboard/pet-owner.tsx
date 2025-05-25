@@ -250,7 +250,7 @@ export default function PetOwnerDashboard({ onAction }: PetOwnerDashboardProps) 
   return (
     <div className="py-8 px-4 sm:px-6 lg:px-8">
       {/* Banner Slider - 5개 슬라이드 */}
-      <div className="relative rounded-xl overflow-hidden h-32 md:h-40 mb-8 bg-gradient-to-r from-primary/80 to-accent/80 shadow-lg">
+      <div className="relative rounded-xl overflow-hidden h-48 md:h-60 mb-8 bg-gradient-to-r from-primary/80 to-accent/80 shadow-lg">
         {/* 슬라이드 이미지 */}
         {bannerSlides.map((slide, index) => (
           <div 
@@ -281,13 +281,13 @@ export default function PetOwnerDashboard({ onAction }: PetOwnerDashboardProps) 
             
             {/* 주요 기능 목록 */}
             {slide.features && (
-              <div className="flex flex-wrap gap-1 mb-2 md:mb-3">
+              <div className="flex flex-wrap gap-2 mb-3 md:mb-4">
                 {slide.features.map((feature, idx) => (
                   <span 
                     key={idx} 
-                    className="inline-flex items-center text-xs bg-white/20 text-white px-2 py-0.5 rounded"
+                    className="inline-flex items-center text-xs md:text-sm bg-white/30 hover:bg-white/40 transition-colors text-white px-3 py-1 rounded-full shadow-sm"
                   >
-                    <span className="mr-1 text-primary-300">✓</span> {feature}
+                    <span className="mr-1.5 text-primary-300 font-bold">✓</span> {feature}
                   </span>
                 ))}
               </div>
