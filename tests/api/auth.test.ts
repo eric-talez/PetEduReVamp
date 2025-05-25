@@ -1,5 +1,6 @@
 import request from 'supertest';
 import express from 'express';
+import session from 'express-session';
 import { setupAuth } from '../../server/auth';
 import { storage } from '../../server/storage';
 
@@ -9,7 +10,18 @@ describe('인증 API 테스트', () => {
   beforeAll(() => {
     app = express();
     app.use(express.json());
-    setupAuth(app);
+    
+    // 테스트용 간단한 세션 스토어 객체 생성
+    const testSessionStore = {
+      get: jest.fn(),
+      set: jest.fn(),
+      destroy: jest.fn(),
+      all: jest.fn(),
+      touch: jest.fn(),
+      clear: jest.fn()
+    };
+    
+    setupAuth(app, testSessionStore);
   });
 
   beforeEach(async () => {
