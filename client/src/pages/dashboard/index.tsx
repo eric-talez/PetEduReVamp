@@ -6,7 +6,7 @@ import TrainerDashboard from "./trainer";
 import InstituteAdminDashboard from "./institute-admin";
 import AdminDashboard from "./admin";
 import { DogLoading } from "../../components/DogLoading";
-import OnboardingGuide from "../../components/onboarding/OnboardingGuide";
+import { OnboardingGuide } from "../../components/ui/Onboarding";
 
 interface DashboardProps {
   type?: 'pet-owner' | 'trainer' | 'institute-admin' | 'admin';
