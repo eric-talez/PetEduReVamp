@@ -289,20 +289,6 @@ function UnauthenticatedRoutesContent() {
     <>
       {/* 더 구체적인 경로가 먼저 오도록 순서 정렬 */}
       {/* 인증 관련 */}
-      <Route path="/auth">
-        {() => {
-          console.log("인증 페이지 접근");
-          const BasicAuthPage = React.lazy(() => import('./pages/auth/BasicAuthPage'));
-          return (
-            <React.Suspense fallback={<div className="flex items-center justify-center min-h-screen">
-              <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
-            </div>}>
-              <BasicAuthPage />
-            </React.Suspense>
-          );
-        }}
-      </Route>
-      
       <Route path="/auth/reset-password">
         {() => {
           console.log("비밀번호 찾기 페이지 접근");
@@ -312,6 +298,20 @@ function UnauthenticatedRoutesContent() {
               <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
             </div>}>
               <PasswordResetPage />
+            </React.Suspense>
+          );
+        }}
+      </Route>
+      
+      <Route path="/auth">
+        {() => {
+          console.log("인증 페이지 접근");
+          const BasicAuthPage = React.lazy(() => import('./pages/auth/BasicAuthPage'));
+          return (
+            <React.Suspense fallback={<div className="flex items-center justify-center min-h-screen">
+              <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
+            </div>}>
+              <BasicAuthPage />
             </React.Suspense>
           );
         }}

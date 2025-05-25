@@ -181,16 +181,15 @@ const LoginForm = () => {
 
       <div className="flex items-center justify-between">
         <div className="text-sm">
-          <a 
-            href="/auth/reset-password" 
-            onClick={(e) => {
-              e.preventDefault();
-              window.location.href = "/auth/reset-password";
+          <button 
+            type="button"
+            onClick={() => {
+              window.location.replace("/auth/reset-password");
             }} 
-            className="text-blue-600 hover:underline"
+            className="text-blue-600 hover:underline bg-transparent border-0 p-0 cursor-pointer text-left"
           >
             비밀번호를 잊으셨나요?
-          </a>
+          </button>
         </div>
       </div>
 
