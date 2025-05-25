@@ -907,7 +907,7 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
                   variant="ghost" 
                   size="sm" 
                   aria-label="로그인 페이지로 이동"
-                  onClick={() => setLocation("/auth")}
+                  onClick={() => setLocation("/auth/login")}
                 >
                   로그인
                 </Button>
@@ -915,7 +915,7 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
                   variant="default" 
                   size="sm" 
                   aria-label="회원가입 페이지로 이동"
-                  onClick={() => setLocation("/auth?tab=register")}
+                  onClick={() => setLocation("/auth/register")}
                 >
                   회원가입
                 </Button>
