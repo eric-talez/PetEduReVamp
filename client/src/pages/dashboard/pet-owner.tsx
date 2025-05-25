@@ -270,8 +270,8 @@ export default function PetOwnerDashboard({ onAction }: PetOwnerDashboardProps) 
     <div className="py-8 px-4 sm:px-6 lg:px-8">
       {/* Banner Slider - 5개 슬라이드 */}
       <div className="relative rounded-xl overflow-hidden h-48 md:h-60 mb-8 bg-gradient-to-r from-primary/80 to-accent/80 shadow-lg">
-        {/* 현재 슬라이드만 표시 */}
-        <div className="absolute inset-0 transition-opacity duration-500 ease-in-out">
+        {/* 슬라이드 이미지 (현재 슬라이드만 표시) */}
+        <div className="absolute inset-0 transition-all duration-500 ease-in-out">
           <img 
             src={bannerSlides[currentSlide].image} 
             alt={bannerSlides[currentSlide].title}
@@ -280,8 +280,8 @@ export default function PetOwnerDashboard({ onAction }: PetOwnerDashboardProps) 
           <div className="absolute inset-0 bg-gradient-to-r from-primary/80 to-accent/30 mix-blend-multiply"></div>
         </div>
         
-        {/* 현재 슬라이드 콘텐츠 */}
-        <div className="relative h-full flex flex-col justify-center px-8 md:px-12 transition-all duration-300 ease-in-out">
+        {/* 슬라이드 콘텐츠 (현재 슬라이드만 표시) */}
+        <div className="relative h-full flex flex-col justify-center px-8 md:px-12">
           <h1 className="text-white text-lg md:text-2xl font-bold mb-1 md:mb-2 max-w-xl">
             {bannerSlides[currentSlide].title}
           </h1>
@@ -301,6 +301,7 @@ export default function PetOwnerDashboard({ onAction }: PetOwnerDashboardProps) 
             ))}
           </div>
           
+          {/* 버튼 */}
           <div className="flex flex-wrap gap-2">
             <Button
               className="bg-white text-primary font-semibold hover:bg-gray-50 text-xs md:text-sm py-1.5 px-4 h-auto rounded-full shadow-md transition-all hover:scale-105"
@@ -330,7 +331,7 @@ export default function PetOwnerDashboard({ onAction }: PetOwnerDashboardProps) 
           ))}
         </div>
         
-        {/* 슬라이드 컨트롤 버튼 */}
+        {/* 슬라이드 네비게이션 버튼 */}
         <button 
           className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center rounded-full bg-black/20 text-white hover:bg-black/30"
           onClick={() => goToSlide((currentSlide - 1 + bannerSlides.length) % bannerSlides.length)}
