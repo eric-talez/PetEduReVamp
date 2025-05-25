@@ -57,9 +57,9 @@ router.get('/posts', async (req, res) => {
       countQuery = countQuery.where(eq(posts.category, String(category)));
     }
     
-    // 임시로 태그 필터링 비활성화
+    // 태그 필터링 (구현 전 주석 처리)
     /*if (tag) {
-      countQuery = countQuery.where(sql`${posts.tags} ? ${String(tag)}`);
+      countQuery = countQuery.where(eq(posts.tag, String(tag)));
     }*/
     
     const [{ count }] = await countQuery;
