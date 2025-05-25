@@ -146,6 +146,146 @@ router.delete('/posts/:id', isAuthenticated, async (req, res) => {
   }
 });
 
+// 댓글 생성
+router.post('/posts/:id/comments', isAuthenticated, async (req, res) => {
+  try {
+    const postId = parseInt(req.params.id);
+    const userId = req.user.id;
+    const { content } = req.body;
+
+    // 게시글 존재 여부 확인
+    const [post] = await db
+      .select()
+      .from(posts)
+      .where(eq(posts.id, postId));
+
+    if (!post) {
+      return res.status(404).json({ message: '게시글을 찾을 수 없습니다.' });
+    }
+
+    // 댓글 작성
+    const [newComment] = await db
+      .insert(comments)
+      .values({
+        postId,
+        authorId: userId,
+        content,
+        parentId: null, // 대댓글 기능은 추후 구현
+        isEdited: false,
+        likes: 0,
+      })
+      .returning();
+
+    // 댓글 작성자 정보 조회
+    const [author] = await db
+      .select({
+        id: users.id,
+        name: users.name,
+        username: users.username,
+        avatar: users.avatar
+      })
+      .from(users)
+      .where(eq(users.id, userId));
+
+    // 결과 반환
+    res.status(201).json({
+      ...newComment,
+      author
+    });
+  } catch (error) {
+    console.error('댓글 작성 오류:', error);
+    res.status(500).json({ message: '댓글 작성 중 오류가 발생했습니다.' });
+  }
+});
+
+// 댓글 수정
+router.patch('/comments/:id', isAuthenticated, async (req, res) => {
+  try {
+    const commentId = parseInt(req.params.id);
+    const userId = req.user.id;
+    const { content } = req.body;
+
+    // 댓글 존재 여부 확인
+    const [comment] = await db
+      .select()
+      .from(comments)
+      .where(eq(comments.id, commentId));
+
+    if (!comment) {
+      return res.status(404).json({ message: '댓글을 찾을 수 없습니다.' });
+    }
+
+    // 작성자 확인
+    if (comment.authorId !== userId) {
+      return res.status(403).json({ message: '댓글 수정 권한이 없습니다.' });
+    }
+
+    // 댓글 수정
+    const [updatedComment] = await db
+      .update(comments)
+      .set({
+        content,
+        isEdited: true,
+        updatedAt: new Date()
+      })
+      .where(eq(comments.id, commentId))
+      .returning();
+
+    // 댓글 작성자 정보 조회
+    const [author] = await db
+      .select({
+        id: users.id,
+        name: users.name,
+        username: users.username,
+        avatar: users.avatar
+      })
+      .from(users)
+      .where(eq(users.id, userId));
+
+    // 결과 반환
+    res.status(200).json({
+      ...updatedComment,
+      author
+    });
+  } catch (error) {
+    console.error('댓글 수정 오류:', error);
+    res.status(500).json({ message: '댓글 수정 중 오류가 발생했습니다.' });
+  }
+});
+
+// 댓글 삭제
+router.delete('/comments/:id', isAuthenticated, async (req, res) => {
+  try {
+    const commentId = parseInt(req.params.id);
+    const userId = req.user.id;
+
+    // 댓글 존재 여부 확인
+    const [comment] = await db
+      .select()
+      .from(comments)
+      .where(eq(comments.id, commentId));
+
+    if (!comment) {
+      return res.status(404).json({ message: '댓글을 찾을 수 없습니다.' });
+    }
+
+    // 작성자 확인
+    if (comment.authorId !== userId) {
+      return res.status(403).json({ message: '댓글 삭제 권한이 없습니다.' });
+    }
+
+    // 댓글 삭제
+    await db
+      .delete(comments)
+      .where(eq(comments.id, commentId));
+
+    res.status(200).json({ message: '댓글이 삭제되었습니다.' });
+  } catch (error) {
+    console.error('댓글 삭제 오류:', error);
+    res.status(500).json({ message: '댓글 삭제 중 오류가 발생했습니다.' });
+  }
+});
+
 // 게시글 목록 조회
 router.get('/posts', async (req, res) => {
   try {
