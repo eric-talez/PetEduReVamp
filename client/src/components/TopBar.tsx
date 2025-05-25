@@ -419,9 +419,12 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
                 >
                   <MessageSquare className="h-5 w-5" />
                   {isAuthenticated && unreadMessagesCount > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-4 h-4 text-xs flex items-center justify-center">
+                    <Badge 
+                      variant="danger" 
+                      className="absolute -top-1 -right-1 px-1.5 py-0.5 min-w-4 h-4 flex items-center justify-center"
+                    >
                       {unreadMessagesCount}
-                    </span>
+                    </Badge>
                   )}
                 </Button>
                 
