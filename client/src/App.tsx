@@ -172,10 +172,7 @@ function AuthenticatedRoutesContent() {
         }}
       </Route>
       <Route path="/trainer/schedule/new">
-        {() => {
-          const mode = 'create';
-          return <TrainerReservationsPage mode={mode} />;
-        }}
+        {() => <TrainerReservationsPage />}
       </Route>
       <Route path="/trainer/profile/certificates">
         {() => (
