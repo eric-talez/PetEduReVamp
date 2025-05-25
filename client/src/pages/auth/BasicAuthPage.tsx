@@ -3,11 +3,34 @@ import { useLocation } from 'wouter';
 import { PasswordResetForm } from '@/components/PasswordResetForm';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
+// 비밀번호 재설정 모달 컨텍스트 생성
+interface PasswordResetContextType {
+  showPasswordReset: boolean;
+  setShowPasswordReset: (value: boolean) => void;
+}
+
+const PasswordResetContext = React.createContext<PasswordResetContextType | undefined>(undefined);
+
+// 비밀번호 재설정 모달 컨텍스트 훅
+const usePasswordReset = () => {
+  const context = React.useContext(PasswordResetContext);
+  if (!context) {
+    throw new Error('usePasswordReset must be used within a PasswordResetProvider');
+  }
+  return context;
+};
+
 // 기본 인증 페이지 컴포넌트
 const BasicAuthPage = () => {
   const [activeTab, setActiveTab] = useState<'login' | 'register'>('login');
   const [showPasswordReset, setShowPasswordReset] = useState(false);
   const [location, setLocation] = useLocation();
+  
+  // 비밀번호 재설정 컨텍스트 값 생성
+  const passwordResetContextValue = {
+    showPasswordReset,
+    setShowPasswordReset
+  };
   
   // URL 쿼리 파라미터 확인
   useEffect(() => {
@@ -30,96 +53,93 @@ const BasicAuthPage = () => {
     }
   }, []);
   
-  // 비밀번호 찾기 모달을 여닫는 함수 정의
-  const handleTogglePasswordReset = () => {
-    setShowPasswordReset(prev => !prev);
-  };
-
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 p-4">
-      {/* 비밀번호 찾기 모달 */}
-      <Dialog open={showPasswordReset} onOpenChange={setShowPasswordReset}>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>비밀번호 찾기</DialogTitle>
-          </DialogHeader>
-          <p className="text-gray-600 dark:text-gray-400 mb-4">
-            <span className="font-medium text-blue-600 dark:text-blue-400">가입시 등록한 아이디와 이메일이 정확히 일치해야 합니다.</span> 일치하는 정보가 확인되면 비밀번호 재설정 안내를 이메일로 보내드립니다.
-          </p>
-          <PasswordResetForm onClose={() => setShowPasswordReset(false)} />
-        </DialogContent>
-      </Dialog>
+    <PasswordResetContext.Provider value={passwordResetContextValue}>
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 p-4">
+        {/* 비밀번호 찾기 모달 */}
+        <Dialog open={showPasswordReset} onOpenChange={setShowPasswordReset}>
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle>비밀번호 찾기</DialogTitle>
+            </DialogHeader>
+            <p className="text-gray-600 dark:text-gray-400 mb-4">
+              <span className="font-medium text-blue-600 dark:text-blue-400">가입시 등록한 아이디와 이메일이 정확히 일치해야 합니다.</span> 일치하는 정보가 확인되면 비밀번호 재설정 안내를 이메일로 보내드립니다.
+            </p>
+            <PasswordResetForm onClose={() => setShowPasswordReset(false)} />
+          </DialogContent>
+        </Dialog>
 
-      <div className="max-w-md w-full space-y-8 bg-white dark:bg-gray-800 p-8 rounded-lg shadow-md">
-        <div className="text-center">
-          <h1 className="text-3xl font-bold mb-2">Talez</h1>
-          <p className="text-gray-600 dark:text-gray-400 mb-8">
-            반려견과 함께하는 특별한 교육 여정
-          </p>
-        </div>
-
-        {/* 탭 네비게이션 */}
-        <div className="flex border-b border-gray-200 dark:border-gray-700 mb-6">
-          <button
-            onClick={() => setActiveTab('login')}
-            className={`flex-1 py-3 font-medium text-center transition-colors ${
-              activeTab === 'login'
-                ? 'text-blue-600 border-b-2 border-blue-600'
-                : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
-            }`}
-          >
-            로그인
-          </button>
-          <button
-            onClick={() => setActiveTab('register')}
-            className={`flex-1 py-3 font-medium text-center transition-colors ${
-              activeTab === 'register'
-                ? 'text-blue-600 border-b-2 border-blue-600'
-                : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
-            }`}
-          >
-            회원가입
-          </button>
-        </div>
-
-        {/* 소셜 로그인 버튼 */}
-        <div className="space-y-3">
-          <button
-            onClick={() => { window.location.href = '/api/auth/kakao'; }}
-            className="w-full py-2 px-4 flex items-center justify-center gap-2 bg-[#FEE500] text-black font-medium rounded-md hover:bg-[#F6DC00] transition-colors"
-          >
-            <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" className="shrink-0">
-              <path d="M12 3C7.03 3 3 6.16 3 10c0 2.38 1.56 4.48 3.93 5.67.28.13.48.4.55.71l.35 1.39c.11.45.61.63.98.37l1.59-1.12c.27-.19.6-.26.92-.2.96.17 1.96.26 2.99.26 4.97 0 9-3.16 9-7s-4.03-7-9-7z"/>
-            </svg>
-            카카오 로그인
-          </button>
-          <button
-            onClick={() => { window.location.href = '/api/auth/naver'; }}
-            className="w-full py-2 px-4 flex items-center justify-center gap-2 bg-[#03C75A] text-white font-medium rounded-md hover:bg-[#02B150] transition-colors"
-          >
-            <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" className="shrink-0">
-              <path d="M16.273 12.845L7.376 0H0v24h7.727V11.155L16.624 24H24V0h-7.727v12.845z"/>
-            </svg>
-            네이버 로그인
-          </button>
-        </div>
-
-        {/* 구분선 */}
-        <div className="relative my-6">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-gray-200 dark:border-gray-700"></div>
+        <div className="max-w-md w-full space-y-8 bg-white dark:bg-gray-800 p-8 rounded-lg shadow-md">
+          <div className="text-center">
+            <h1 className="text-3xl font-bold mb-2">Talez</h1>
+            <p className="text-gray-600 dark:text-gray-400 mb-8">
+              반려견과 함께하는 특별한 교육 여정
+            </p>
           </div>
-          <div className="relative flex justify-center text-sm">
-            <span className="px-2 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400">
-              또는 {activeTab === 'login' ? '이메일로 로그인' : '이메일로 회원가입'}
-            </span>
-          </div>
-        </div>
 
-        {/* 로그인/회원가입 폼 */}
-        {activeTab === 'login' ? <LoginForm /> : <RegisterForm onSuccess={() => setActiveTab('login')} />}
+          {/* 탭 네비게이션 */}
+          <div className="flex border-b border-gray-200 dark:border-gray-700 mb-6">
+            <button
+              onClick={() => setActiveTab('login')}
+              className={`flex-1 py-3 font-medium text-center transition-colors ${
+                activeTab === 'login'
+                  ? 'text-blue-600 border-b-2 border-blue-600'
+                  : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
+              }`}
+            >
+              로그인
+            </button>
+            <button
+              onClick={() => setActiveTab('register')}
+              className={`flex-1 py-3 font-medium text-center transition-colors ${
+                activeTab === 'register'
+                  ? 'text-blue-600 border-b-2 border-blue-600'
+                  : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
+              }`}
+            >
+              회원가입
+            </button>
+          </div>
+
+          {/* 소셜 로그인 버튼 */}
+          <div className="space-y-3">
+            <button
+              onClick={() => { window.location.href = '/api/auth/kakao'; }}
+              className="w-full py-2 px-4 flex items-center justify-center gap-2 bg-[#FEE500] text-black font-medium rounded-md hover:bg-[#F6DC00] transition-colors"
+            >
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" className="shrink-0">
+                <path d="M12 3C7.03 3 3 6.16 3 10c0 2.38 1.56 4.48 3.93 5.67.28.13.48.4.55.71l.35 1.39c.11.45.61.63.98.37l1.59-1.12c.27-.19.6-.26.92-.2.96.17 1.96.26 2.99.26 4.97 0 9-3.16 9-7s-4.03-7-9-7z"/>
+              </svg>
+              카카오 로그인
+            </button>
+            <button
+              onClick={() => { window.location.href = '/api/auth/naver'; }}
+              className="w-full py-2 px-4 flex items-center justify-center gap-2 bg-[#03C75A] text-white font-medium rounded-md hover:bg-[#02B150] transition-colors"
+            >
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" className="shrink-0">
+                <path d="M16.273 12.845L7.376 0H0v24h7.727V11.155L16.624 24H24V0h-7.727v12.845z"/>
+              </svg>
+              네이버 로그인
+            </button>
+          </div>
+
+          {/* 구분선 */}
+          <div className="relative my-6">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-gray-200 dark:border-gray-700"></div>
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="px-2 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400">
+                또는 {activeTab === 'login' ? '이메일로 로그인' : '이메일로 회원가입'}
+              </span>
+            </div>
+          </div>
+
+          {/* 로그인/회원가입 폼 */}
+          {activeTab === 'login' ? <LoginForm /> : <RegisterForm onSuccess={() => setActiveTab('login')} />}
+        </div>
       </div>
-    </div>
+    </PasswordResetContext.Provider>
   );
 };
 
@@ -130,11 +150,8 @@ const LoginForm = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-  // BasicAuthPage의 상위 컴포넌트에서 setShowPasswordReset 접근
-  const setShowPasswordReset = (value: boolean) => {
-    // 이벤트를 통해 상위 컴포넌트의 상태 업데이트
-    window.dispatchEvent(new CustomEvent('togglePasswordReset', { detail: { value } }));
-  };
+  // 비밀번호 재설정 컨텍스트 사용
+  const { setShowPasswordReset } = usePasswordReset();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -248,10 +265,6 @@ const LoginForm = () => {
     </form>
   );
 };
-
-
-
-// PasswordResetForm 컴포넌트는 '@/components/PasswordResetForm'에서 가져옵니다.
 
 // 회원가입 폼 컴포넌트
 interface RegisterFormProps {
@@ -424,21 +437,23 @@ const RegisterForm = ({ onSuccess }: RegisterFormProps) => {
         <label htmlFor="reg-confirm-password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
           비밀번호 확인
         </label>
-        <input
-          id="reg-confirm-password"
-          type="password"
-          placeholder="비밀번호를 다시 입력하세요"
-          value={confirmPassword}
-          onChange={(e) => setConfirmPassword(e.target.value)}
-          required
-          disabled={isLoading}
-          className="w-full rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-        />
+        <div className="relative">
+          <input
+            id="reg-confirm-password"
+            type={showPassword ? "text" : "password"}
+            placeholder="비밀번호를 다시 입력하세요"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            required
+            disabled={isLoading}
+            className="w-full rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          />
+        </div>
       </div>
 
       <div>
         <label htmlFor="reg-role" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-          역할
+          회원 유형
         </label>
         <select
           id="reg-role"
@@ -446,7 +461,6 @@ const RegisterForm = ({ onSuccess }: RegisterFormProps) => {
           onChange={(e) => setRole(e.target.value)}
           disabled={isLoading}
           className="w-full rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-          required
         >
           <option value="pet-owner">반려인</option>
           <option value="trainer">훈련사</option>
@@ -469,9 +483,6 @@ const RegisterForm = ({ onSuccess }: RegisterFormProps) => {
             disabled={isLoading}
             className="w-full rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
           />
-          <p className="text-xs text-gray-500 mt-1">
-            * 훈련사 또는 기관 관리자는 소속 기관 코드가 필요합니다.
-          </p>
         </div>
       )}
 
@@ -480,7 +491,7 @@ const RegisterForm = ({ onSuccess }: RegisterFormProps) => {
         disabled={isLoading}
         className="w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
       >
-        {isLoading ? "회원가입 중..." : "회원가입"}
+        {isLoading ? "가입 중..." : "회원가입"}
       </button>
     </form>
   );
