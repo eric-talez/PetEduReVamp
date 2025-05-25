@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -10,11 +10,26 @@ import { useAuth } from "../../SimpleApp";
 import { SocialLoginButtons } from "@/components/SocialLoginButtons";
 import { useToast } from "@/hooks/use-toast";
 import { Eye, EyeOff } from "lucide-react";
+import RegisterPage from "./register";
 
 export default function Login() {
   const auth = useAuth();
   const [location, setLocation] = useLocation();
   const { toast } = useToast();
+  
+  // URL 파라미터에서 탭 정보 가져오기
+  const [showRegisterForm, setShowRegisterForm] = useState(false);
+  
+  useEffect(() => {
+    // URL에서 tab 파라미터 가져오기
+    const params = new URLSearchParams(window.location.search);
+    const tab = params.get('tab');
+    if (tab === 'register') {
+      setShowRegisterForm(true);
+    } else {
+      setShowRegisterForm(false);
+    }
+  }, [location]);
   
   // Form states
   const [username, setUsername] = useState("");
@@ -74,6 +89,11 @@ export default function Login() {
     }, 1000);
   };
 
+  // 회원가입 폼이 활성화된 경우 해당 컴포넌트 표시
+  if (showRegisterForm) {
+    return <RegisterPage />;
+  }
+  
   return (
     <div className="flex min-h-screen">
       {/* 왼쪽 컬럼 - 폼 영역 */}
