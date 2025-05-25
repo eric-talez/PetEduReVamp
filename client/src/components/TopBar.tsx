@@ -303,17 +303,53 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
     }
   }, [isAuthenticated, userRole, userName]);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     console.log("Logout button clicked");
-    // 기존 logout 함수가 있으면 사용, 없으면 직접 구현
-    if (logout) {
-      logout();
-    } else {
-      // 직접 로그아웃 처리
-      console.log("직접 로그아웃 처리 실행");
+    
+    try {
+      // 서버 로그아웃 API 호출
+      const response = await fetch('/api/logout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include' // 쿠키 포함
+      });
+      
+      if (!response.ok) {
+        throw new Error('서버 로그아웃 실패');
+      }
+      
+      console.log('서버 로그아웃 성공');
+      
+      // 클라이언트 측 로그아웃 처리
+      if (logout) {
+        // Auth 컨텍스트의 logout 함수 호출
+        logout();
+      } else {
+        // 직접 로그아웃 처리
+        console.log("직접 로그아웃 처리 실행");
+        // 로컬 스토리지에서 인증 관련 항목 모두 제거
+        localStorage.removeItem('petedu_auth');
+        localStorage.removeItem('isAuthenticated');
+        localStorage.removeItem('userData');
+        
+        // 로그아웃 이벤트 발생시켜 다른 컴포넌트에 알림
+        window.dispatchEvent(new CustomEvent('logout'));
+        
+        // 로그아웃 후 인증 페이지로 이동
+        setTimeout(() => {
+          window.location.href = "/auth";
+        }, 100);
+      }
+    } catch (error) {
+      console.error('로그아웃 처리 중 오류 발생:', error);
+      
+      // 오류가 발생해도 사용자를 로그아웃 상태로 만들기 위한 처리
       localStorage.removeItem('petedu_auth');
+      localStorage.removeItem('isAuthenticated');
+      localStorage.removeItem('userData');
       window.dispatchEvent(new CustomEvent('logout'));
-      // 임시적으로 window.location 사용
       window.location.href = "/auth";
     }
   };
