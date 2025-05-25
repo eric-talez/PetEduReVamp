@@ -55,7 +55,7 @@ export default function RegisterForm() {
     
     try {
       // 서버에 회원가입 요청
-      const response = await fetch('/api/register', {
+      const response = await fetch('/api/auth/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
