@@ -2,6 +2,7 @@ import { Switch, Route } from "wouter";
 import { RedirectHandler } from './components/RedirectHandler';
 import React, { ReactNode, useState, useEffect, lazy, Suspense } from "react";
 import SimpleChatbot from './components/SimpleChatbot';
+import { SimpleChatBot } from './components/ui/SimpleChatBot';
 import { UserPreferencesProvider } from './hooks/use-user-preferences';
 import { useGlobalShortcuts } from './hooks/use-keyboard-shortcuts';
 import { NotificationsProvider } from './components/NotificationsProvider';
