@@ -25,6 +25,7 @@ export interface ServerConfig {
   OPENAI_API_KEY?: string;
   KAKAO_MAPS_API_KEY?: string;
   STRIPE_SECRET_KEY?: string;
+  SENTRY_DSN?: string;
   
   // 성능 및 제한 설정
   MAX_UPLOAD_SIZE_MB: number;
