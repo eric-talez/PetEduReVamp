@@ -23,6 +23,7 @@ export interface AuthState {
   isLoading: boolean;
   userRole: UserRole | null;
   userName: string | null;
+  user: { id?: number; name: string; role: UserRole } | null;
   logout: () => void;
 }
 
@@ -32,6 +33,7 @@ const defaultAuthState: AuthState = {
   isLoading: true,
   userRole: null,
   userName: null,
+  user: null,
   logout: () => {},
 };
 
@@ -51,6 +53,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     isLoading: true,
     userRole: null,
     userName: null,
+    user: null,
     logout: () => {
       try {
         localStorage.removeItem('petedu_auth');
@@ -86,12 +89,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // 인증 상태 업데이트 유틸리티 함수
   const updateAuthState = (isAuthenticated: boolean, role: UserRole | null, name: string | null) => {
+    const user = isAuthenticated && role && name ? { name, role } : null;
+    
     setAuthState(prev => ({
       ...prev,
       isAuthenticated,
       isLoading: false,
       userRole: role, 
-      userName: name
+      userName: name,
+      user
     }));
     
     // 전역 객체에 인증 상태 저장 (웹뷰 통신용)
