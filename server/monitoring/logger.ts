@@ -1,7 +1,7 @@
 import { createLogger, format, transports } from 'winston';
 import 'winston-daily-rotate-file';
 import path from 'path';
-import { config } from '../config';
+import config from '../config';
 import fs from 'fs';
 
 // 로그 디렉토리 생성

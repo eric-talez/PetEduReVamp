@@ -1,7 +1,8 @@
 import * as Sentry from '@sentry/node';
-import { ProfilingIntegration } from '@sentry/profiling-node';
+import { nodeProfilingIntegration } from '@sentry/profiling-node';
 import { Express, Request, Response, NextFunction } from 'express';
-import { config } from '../config';
+import config from '../config';
+import * as SentryExpress from '@sentry/node';
 
 /**
  * Sentry 초기화 및 설정
@@ -24,12 +25,8 @@ export function setupSentry(app: Express) {
     dsn: process.env.SENTRY_DSN,
     environment: config.NODE_ENV,
     integrations: [
-      // HTTP 요청 추적 활성화
-      new Sentry.Integrations.Http({ tracing: true }),
-      // Express 통합 활성화
-      new Sentry.Integrations.Express({ app }),
       // 프로파일링 통합 활성화
-      new ProfilingIntegration(),
+      nodeProfilingIntegration(),
     ],
     // 성능 추적 샘플링 비율 (0.0 - 1.0)
     tracesSampleRate: config.NODE_ENV === 'production' ? 0.1 : 1.0,
@@ -39,9 +36,9 @@ export function setupSentry(app: Express) {
 
   // 미들웨어 설정
   // 모든 요청에 대해 Sentry 컨텍스트 설정
-  app.use(Sentry.Handlers.requestHandler());
+  app.use(SentryExpress.Handlers.requestHandler());
   // 성능 모니터링을 위한 트랜잭션 미들웨어
-  app.use(Sentry.Handlers.tracingHandler());
+  app.use(SentryExpress.Handlers.tracingHandler());
 
   console.log('[Monitoring] Sentry 설정이 완료되었습니다.');
 }

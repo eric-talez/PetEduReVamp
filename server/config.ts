@@ -56,6 +56,7 @@ const config: ServerConfig = {
   OPENAI_API_KEY: process.env.OPENAI_API_KEY,
   KAKAO_MAPS_API_KEY: process.env.KAKAO_MAPS_API_KEY,
   STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY,
+  SENTRY_DSN: process.env.SENTRY_DSN,
   
   // 성능 및 제한 설정
   MAX_UPLOAD_SIZE_MB: parseInt(process.env.MAX_UPLOAD_SIZE_MB || '50'),
