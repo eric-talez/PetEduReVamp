@@ -285,7 +285,8 @@ export function Sidebar({
         !path.startsWith('/events/') && 
         !path.startsWith('/help/')) {
       console.log('로그인 필요: ', path);
-      window.location.href = "/auth/login";
+      // window.location.href 대신 navigate 사용
+      navigate('/auth/login');
       return;
     }
 
@@ -294,7 +295,7 @@ export function Sidebar({
       // 훈련사 전용 페이지
       if ((path.startsWith('/trainer-dashboard') || path.startsWith('/trainer/')) && userRole !== 'trainer' && userRole !== 'admin') {
         console.log('훈련사 권한 필요');
-        window.location.href = "/";
+        navigate('/');
         return;
       }
 
