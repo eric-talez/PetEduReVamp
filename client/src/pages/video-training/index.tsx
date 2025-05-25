@@ -7,16 +7,9 @@ import {
   AlertCircle, 
   Lock, 
   Play, 
-  Pause, 
   Star, 
   Search, 
-  Filter, 
-  Maximize, 
-  Volume2,
-  VolumeX,
-  SkipBack,
-  SkipForward,
-  Subtitles
+  Filter
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
@@ -31,6 +24,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useLocation } from "wouter";
+import VideoPlayer from "@/components/VideoPlayer";
 
 interface CurriculumItem {
   id: number;
