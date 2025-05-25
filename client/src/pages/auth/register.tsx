@@ -57,7 +57,7 @@ export default function Register() {
 
   // 로그인 페이지로 이동
   const goToLogin = () => {
-    setLocation("/auth/login");
+    setLocation("/auth");
   };
 
   // 회원가입 처리 함수

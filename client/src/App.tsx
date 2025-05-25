@@ -390,8 +390,8 @@ function UnauthenticatedRoutesContent() {
       {/* 쇼핑 로그인 요구 페이지 라우트 - 카트 연결 전 페이지 */}
       <Route path="/shop-login-required">
         {() => {
-          console.log("로그인 필요 페이지 - auth/login으로 리다이렉트");
-          return <RedirectHandler to="/auth/login" />;
+          console.log("로그인 필요 페이지 - auth로 리다이렉트");
+          return <RedirectHandler to="/auth" />;
         }}
       </Route>
 
@@ -411,7 +411,7 @@ function UnauthenticatedRoutesContent() {
       <Route path="/shop/cart">
         {() => {
           console.log("비인증 사용자가 /shop/cart 경로에 접근 - 로그인 필요");
-          return <RedirectHandler to="/auth/login" />;
+          return <RedirectHandler to="/auth" />;
         }}
       </Route>
 
