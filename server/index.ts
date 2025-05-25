@@ -81,7 +81,28 @@ app.use((req, res, next) => {
 });
 
 (async () => {
+  // 보안 설정 초기화
+  setupSecurity(app);
+  
+  // 성능 최적화 설정 초기화
+  setupPerformance(app);
+  
+  // 모니터링 설정 초기화
+  setupMonitoring(app);
+  
+  // 라우트 등록
   const server = await registerRoutes(app);
+  
+  // 오류 처리 미들웨어 설정 (모든 라우트 등록 후)
+  setupErrorHandling(app);
+  
+  // 백업 및 복구 시스템 초기화
+  initializeRecoverySystem();
+  
+  // 메모리 사용량 모니터링 시작
+  if (process.env.NODE_ENV === 'production') {
+    monitorMemoryUsage();
+  }
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;

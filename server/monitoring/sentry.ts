@@ -1,125 +1,93 @@
 import * as Sentry from '@sentry/node';
-import { nodeProfilingIntegration } from '@sentry/profiling-node';
 import { Express, Request, Response, NextFunction } from 'express';
-import config from '../config';
-import * as SentryExpress from '@sentry/node';
+import { logger } from './logger';
 
 /**
- * Sentry 초기화 및 설정
+ * Sentry 설정 초기화
  */
 export function setupSentry(app: Express) {
-  // 개발 환경에서는 Sentry를 비활성화할 수 있음
-  if (config.NODE_ENV === 'test') {
-    console.log('[Monitoring] Sentry가 테스트 환경에서 비활성화되었습니다.');
-    return;
-  }
-
-  // SENTRY_DSN이 설정되지 않은 경우 경고만 출력
+  // Sentry DSN이 없으면 초기화하지 않음
   if (!process.env.SENTRY_DSN) {
-    console.warn('[Monitoring] Sentry DSN이 설정되지 않았습니다. 오류 추적이 비활성화됩니다.');
+    logger.warn('[Sentry] SENTRY_DSN 환경 변수가 설정되지 않았습니다. Sentry 통합이 비활성화됩니다.');
     return;
   }
 
-  // Sentry 초기화
-  Sentry.init({
-    dsn: process.env.SENTRY_DSN,
-    environment: config.NODE_ENV,
-    integrations: [
-      // 프로파일링 통합 활성화
-      nodeProfilingIntegration(),
-    ],
-    // 성능 추적 샘플링 비율 (0.0 - 1.0)
-    tracesSampleRate: config.NODE_ENV === 'production' ? 0.1 : 1.0,
-    // 프로파일링 샘플링 비율
-    profilesSampleRate: 0.1,
-  });
+  try {
+    // Sentry 초기화
+    Sentry.init({
+      dsn: process.env.SENTRY_DSN,
+      // 환경 설정
+      environment: process.env.NODE_ENV || 'development',
+      // 샘플링 비율 설정 (프로덕션에서는 낮게, 개발에서는 높게)
+      tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
+      // 최대 이벤트 크기 제한
+      maxValueLength: 5000,
+      // Sentry 서버로 전송되기 전에 이벤트를 수정할 수 있는 콜백
+      beforeSend: (event) => {
+        // 민감한 정보 제거 로직 추가 가능
+        return event;
+      }
+    });
 
-  // 미들웨어 설정
-  // 모든 요청에 대해 Sentry 컨텍스트 설정
-  app.use(SentryExpress.Handlers.requestHandler());
-  // 성능 모니터링을 위한 트랜잭션 미들웨어
-  app.use(SentryExpress.Handlers.tracingHandler());
+    // 요청 핸들러 미들웨어 설정
+    app.use(Sentry.requestHandler());
 
-  console.log('[Monitoring] Sentry 설정이 완료되었습니다.');
+    // 성능 모니터링 미들웨어 설정
+    app.use(Sentry.tracingHandler());
+
+    logger.info('[Sentry] Sentry 오류 추적 시스템이 초기화되었습니다.');
+  } catch (error) {
+    logger.error(`[Sentry] Sentry 초기화 중 오류 발생: ${error.message}`);
+  }
 }
 
 /**
  * Sentry 오류 처리 미들웨어 설정
- * 이 함수는 모든 라우트 등록 후에 호출되어야 함
+ * 모든 라우트 등록 후 마지막에 호출해야 함
  */
 export function setupSentryErrorHandler(app: Express) {
-  // Sentry 오류 처리 미들웨어
-  app.use(Sentry.Handlers.errorHandler());
+  if (!process.env.SENTRY_DSN) {
+    return;
+  }
 
-  // Sentry 후 폴백 오류 처리기
-  app.use((err: any, req: Request, res: Response, next: NextFunction) => {
-    // 이미 응답이 전송된 경우
-    if (res.headersSent) {
-      return next(err);
+  // Sentry 오류 처리 미들웨어
+  app.use(Sentry.Handlers.errorHandler({
+    shouldHandleError(error) {
+      // 상태 코드가 500 이상인 오류만 Sentry로 전송
+      return error.status >= 500;
+    },
+  }));
+
+  // Sentry 이후 일반 오류 처리 미들웨어
+  app.use((error: any, req: Request, res: Response, next: NextFunction) => {
+    const status = error.status || error.statusCode || 500;
+    const message = error.message || '서버 오류가 발생했습니다';
+
+    // 오류 로깅
+    if (status >= 500) {
+      logger.error(`[${req.method}] ${req.path} - ${status} ${message}`, { 
+        error: error.stack,
+        user: req.session?.user?.id,
+        ip: req.ip
+      });
+    } else {
+      logger.warn(`[${req.method}] ${req.path} - ${status} ${message}`);
     }
 
-    const statusCode = err.statusCode || 500;
-    
-    // 개발 환경에서는 자세한 오류 정보 제공
-    if (config.NODE_ENV === 'development') {
-      return res.status(statusCode).json({
+    // JSON 응답 전송
+    if (!res.headersSent) {
+      res.status(status).json({
         error: {
-          message: err.message,
-          stack: err.stack,
-          details: err
+          status,
+          message: process.env.NODE_ENV === 'production' && status >= 500 
+            ? '서버 오류가 발생했습니다' // 프로덕션에서는 일반적인 메시지
+            : message // 개발 환경에서는 상세 메시지
         }
       });
     }
-    
-    // 프로덕션 환경에서는 최소한의 정보만 제공
-    res.status(statusCode).json({
-      error: {
-        message: statusCode === 500 ? '서버 오류가 발생했습니다.' : err.message
-      }
-    });
+
+    next();
   });
-}
 
-/**
- * 사용자 정보를 Sentry 컨텍스트에 추가
- */
-export function setUserContext(userId: number, username: string, role: string) {
-  Sentry.setUser({
-    id: userId.toString(),
-    username,
-    role
-  });
-}
-
-/**
- * 사용자 컨텍스트 초기화
- */
-export function clearUserContext() {
-  Sentry.setUser(null);
-}
-
-/**
- * 추가 태그 설정
- */
-export function setTag(key: string, value: string) {
-  Sentry.setTag(key, value);
-}
-
-/**
- * 사용자 정의 오류 캡처
- */
-export function captureException(error: Error, context?: Record<string, any>) {
-  Sentry.captureException(error, {
-    extra: context
-  });
-}
-
-/**
- * 사용자 정의 메시지 캡처
- */
-export function captureMessage(message: string, level: Sentry.SeverityLevel = 'info', context?: Record<string, any>) {
-  Sentry.captureMessage(message, {
-    level,
-    extra: context
-  });
+  logger.info('[Sentry] Sentry 오류 처리 미들웨어가 설정되었습니다.');
 }
