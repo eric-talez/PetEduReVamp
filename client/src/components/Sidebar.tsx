@@ -420,25 +420,44 @@ export function Sidebar({
       return;
     }
 
+    // 로딩 표시 함수
+    const showLoadingAndNavigate = (targetPath: string) => {
+      console.log(`페이지 이동: ${targetPath}`);
+      
+      // 로딩 표시를 위한 오버레이 요소 생성
+      const overlay = document.createElement('div');
+      overlay.className = 'fixed inset-0 bg-black/30 z-50 flex items-center justify-center';
+      overlay.innerHTML = `
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg flex items-center">
+          <div class="animate-spin w-6 h-6 border-3 border-primary border-t-transparent rounded-full mr-3"></div>
+          <p>페이지 이동 중...</p>
+        </div>
+      `;
+      document.body.appendChild(overlay);
+      
+      // 약간의 지연 후 페이지 이동 (로딩 표시가 보이도록)
+      setTimeout(() => {
+        window.location.href = targetPath;
+      }, 300);
+      
+      // 모바일 화면에서만 사이드바 닫기
+      if (onClose && window.innerWidth < 768) onClose();
+    };
+
     if (path in specialRoutes) {
       console.log(`${specialRoutes[path]} 페이지로 이동 중...`);
       // /notifications를 /alerts로 리다이렉션
       if (path === '/notifications') {
         console.log('알림 페이지로 리다이렉션: /alerts');
-        window.location.href = '/alerts';
+        showLoadingAndNavigate('/alerts');
       } else {
-        window.location.href = path;
+        showLoadingAndNavigate(path);
       }
-      // 모바일 화면에서만 사이드바 닫기
-      if (onClose && window.innerWidth < 768) onClose();
       return;
     }
 
-    // 일반 페이지 라우팅 - 모바일 화면에서만 사이드바 닫기
-    console.log('페이지 이동:', path);
-    window.location.href = path;
-    // 모바일 화면에서만 사이드바 닫기 (창 크기가 작을 때)
-    if (onClose && window.innerWidth < 768) onClose();
+    // 일반 페이지 라우팅
+    showLoadingAndNavigate(path);
   };
 
   const contextValue = {
