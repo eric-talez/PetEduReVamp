@@ -69,9 +69,9 @@ export function SocialLoginButtons() {
   };
 
   return (
-    <div className="flex flex-col gap-3 w-full">
-      <SocialLoginButton provider="kakao" onClick={handleKakaoLogin} />
-      <SocialLoginButton provider="naver" onClick={handleNaverLogin} />
+    <div className="flex flex-row gap-3 w-full">
+      <SocialLoginButton provider="kakao" onClick={handleKakaoLogin} className="flex-1" />
+      <SocialLoginButton provider="naver" onClick={handleNaverLogin} className="flex-1" />
     </div>
   );
 }
