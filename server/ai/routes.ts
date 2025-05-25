@@ -1,17 +1,17 @@
 import { Express } from "express";
 import { Router } from 'express';
-import Anthropic from '@anthropic-ai/sdk';
+import OpenAI from "openai";
 
-// the newest Anthropic model is "claude-3-7-sonnet-20250219" which was released February 24, 2025
-const DEFAULT_MODEL = "claude-3-7-sonnet-20250219";
+// the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+const DEFAULT_MODEL = "gpt-4o";
 
 // AI 관련 API 라우터
 export function registerAiRoutes(app: Express) {
   const router = Router();
 
-  // Anthropic API 클라이언트 초기화
-  const anthropic = new Anthropic({
-    apiKey: process.env.ANTHROPIC_API_KEY || '',
+  // OpenAI API 클라이언트 초기화
+  const openai = new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY || '',
   });
 
   // 채팅 API 엔드포인트
@@ -24,13 +24,13 @@ export function registerAiRoutes(app: Express) {
       }
 
       // API 키 확인
-      if (!process.env.ANTHROPIC_API_KEY) {
+      if (!process.env.OPENAI_API_KEY) {
         return res.status(500).json({ error: 'API 키가 설정되지 않았습니다.' });
       }
 
       // 사용자 인증 상태에 따라 컨텍스트 제한
-      let promptTokens = 0;
       let isAuthenticated = req.session && req.session.user;
+      let messagesForApi = [...messages];
       
       // 비인증 사용자는 요청 제한
       if (!isAuthenticated) {
@@ -42,31 +42,30 @@ export function registerAiRoutes(app: Express) {
         const recentMessages = nonSystemMessages.slice(-4);
         
         // 메시지 배열 재구성
-        const limitedMessages = [...systemMessages, ...recentMessages];
-        
-        // 요청 메시지 교체
-        req.body.messages = limitedMessages;
+        messagesForApi = [...systemMessages, ...recentMessages];
         
         // 토큰 수 제한
-        req.body.maxTokens = Math.min(maxTokens, 500);
+        maxTokens = Math.min(maxTokens, 500);
       }
 
-      // Anthropic API 호출
-      const response = await anthropic.messages.create({
+      // OpenAI API 호출
+      const response = await openai.chat.completions.create({
         model: model,
-        max_tokens: req.body.maxTokens,
+        messages: messagesForApi,
+        max_tokens: maxTokens,
         temperature: temperature,
-        messages: req.body.messages,
       });
+
+      const content = response.choices[0].message.content;
 
       // 응답 반환
       return res.json({
         id: response.id,
         model: response.model,
-        content: response.content[0].text,
+        content: content,
         usage: {
-          promptTokens: response.usage?.input_tokens || 0,
-          completionTokens: response.usage?.output_tokens || 0,
+          promptTokens: response.usage?.prompt_tokens || 0,
+          completionTokens: response.usage?.completion_tokens || 0,
         }
       });
       
@@ -101,7 +100,7 @@ export function registerAiRoutes(app: Express) {
       }
       
       // API 키 확인
-      if (!process.env.ANTHROPIC_API_KEY) {
+      if (!process.env.OPENAI_API_KEY) {
         return res.status(500).json({ error: 'API 키가 설정되지 않았습니다.' });
       }
       
@@ -119,27 +118,26 @@ export function registerAiRoutes(app: Express) {
 
 결과는 과학적 근거에 기반하고, 반려동물의 복지를 최우선으로 고려해야 합니다.`;
 
-      // Anthropic API 호출
-      const response = await anthropic.messages.create({
+      // OpenAI API 호출
+      const response = await openai.chat.completions.create({
         model: DEFAULT_MODEL,
-        max_tokens: 1000,
-        temperature: 0.2, // 더 결정적인 응답을 위해 낮은 온도 사용
-        system: systemPrompt,
         messages: [
+          { role: 'system', content: systemPrompt },
           { role: 'user', content: description }
         ],
-        response_format: { type: 'json_object' }
+        temperature: 0.2, // 더 결정적인 응답을 위해 낮은 온도 사용
+        response_format: { type: "json_object" }
       });
       
       // JSON 응답 구문 분석
       try {
-        const analysisResult = JSON.parse(response.content[0].text);
+        const analysisResult = JSON.parse(response.choices[0].message.content || '{}');
         return res.json(analysisResult);
       } catch (parseError) {
         console.error('JSON 파싱 오류:', parseError);
         return res.status(500).json({ 
           error: 'AI 응답을 처리하는 중 오류가 발생했습니다.',
-          rawResponse: response.content[0].text
+          rawResponse: response.choices[0].message.content
         });
       }
       
@@ -172,7 +170,7 @@ export function registerAiRoutes(app: Express) {
       }
       
       // API 키 확인
-      if (!process.env.ANTHROPIC_API_KEY) {
+      if (!process.env.OPENAI_API_KEY) {
         return res.status(500).json({ error: 'API 키가 설정되지 않았습니다.' });
       }
       
@@ -206,11 +204,9 @@ export function registerAiRoutes(app: Express) {
           "activities": ["활동 1", "활동 2"],
           "duration": "예상 소요 시간",
           "tips": "팁과 조언"
-        },
-        ...
+        }
       ]
-    },
-    ...
+    }
   ],
   "materials": ["필요한 도구 1", "필요한 도구 2"],
   "successMetrics": ["성공 지표 1", "성공 지표 2"]
@@ -218,27 +214,26 @@ export function registerAiRoutes(app: Express) {
 
 훈련 계획은 긍정적 강화 방법을 사용하고, 과학적 근거에 기반해야 합니다.`;
 
-      // Anthropic API 호출
-      const response = await anthropic.messages.create({
+      // OpenAI API 호출
+      const response = await openai.chat.completions.create({
         model: DEFAULT_MODEL,
-        max_tokens: 2000,
-        temperature: 0.3,
-        system: systemPrompt,
         messages: [
+          { role: 'system', content: systemPrompt },
           { role: 'user', content: `${petName}를 위한 '${targetBehavior}' 훈련 계획을 생성해주세요.` }
         ],
-        response_format: { type: 'json_object' }
+        temperature: 0.3,
+        response_format: { type: "json_object" }
       });
       
       // JSON 응답 구문 분석
       try {
-        const trainingPlan = JSON.parse(response.content[0].text);
+        const trainingPlan = JSON.parse(response.choices[0].message.content || '{}');
         return res.json(trainingPlan);
       } catch (parseError) {
         console.error('JSON 파싱 오류:', parseError);
         return res.status(500).json({ 
           error: 'AI 응답을 처리하는 중 오류가 발생했습니다.',
-          rawResponse: response.content[0].text
+          rawResponse: response.choices[0].message.content
         });
       }
       

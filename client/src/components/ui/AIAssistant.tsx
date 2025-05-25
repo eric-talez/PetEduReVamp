@@ -1,17 +1,14 @@
-import { useState, useEffect, useRef } from 'react';
-import { useAuth } from '@/hooks/useAuth';
+import React, { useState, useRef, useEffect } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
+import { X, Send, Loader2, Bot, User, ChevronDown, ChevronUp } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { useAuth } from '@/lib/auth-compat';
 import { Textarea } from '@/components/ui/textarea';
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { Separator } from '@/components/ui/separator';
-import { X, Send, ChevronRight, ChevronDown, MessageSquare, Bot } from 'lucide-react';
+import { apiRequest } from '@/lib/api';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
-import { apiRequest } from '@/lib/queryClient';
-import { Badge } from '@/components/ui/badge';
-import { Skeleton } from '@/components/ui/skeleton';
-
-// the newest Anthropic model is "claude-3-7-sonnet-20250219" which was released February 24, 2025
-const DEFAULT_MODEL = "claude-3-7-sonnet-20250219";
+import ReactMarkdown from 'react-markdown';
 
 interface Message {
   id: string;
@@ -25,104 +22,152 @@ interface AIAssistantProps {
   defaultMessages?: Message[];
 }
 
+// 채팅 말풍선 컴포넌트
+const ChatBubble = ({ message, isUser }: { message: Message; isUser: boolean }) => {
+  return (
+    <div
+      className={cn(
+        'flex gap-2 mb-4',
+        isUser ? 'justify-end' : 'justify-start'
+      )}
+    >
+      {!isUser && (
+        <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground">
+          <Bot size={18} />
+        </div>
+      )}
+      <div
+        className={cn(
+          'rounded-lg px-4 py-2 max-w-[80%]',
+          isUser 
+            ? 'bg-primary text-primary-foreground rounded-tr-none' 
+            : 'bg-muted rounded-tl-none'
+        )}
+      >
+        <ReactMarkdown className="prose dark:prose-invert prose-sm break-words">
+          {message.content}
+        </ReactMarkdown>
+      </div>
+      {isUser && (
+        <div className="w-8 h-8 rounded-full bg-primary/80 flex items-center justify-center text-primary-foreground">
+          <User size={18} />
+        </div>
+      )}
+    </div>
+  );
+};
+
+// 기본 시스템 메시지
+const DEFAULT_SYSTEM_MESSAGE = {
+  id: 'system-1',
+  role: 'system',
+  content: `당신은 Talez의 AI 어시스턴트입니다. 반려동물 훈련과 교육에 관한 질문에 친절하고 전문적인 답변을 제공합니다.
+다음과 같은 내용을 돕습니다:
+- 반려동물 행동 문제 해결
+- 기본적인 훈련 방법 안내
+- 반려동물 건강 및 영양 관련 일반적인 정보
+- 반려동물과의 관계 개선 방법
+
+중요: 의료적 진단이나 치료 조언은 제공하지 않습니다. 항상 전문 수의사와 상담하도록 안내합니다.
+답변은 한국어로 간결하고 친절하게 제공합니다.`,
+  timestamp: new Date()
+};
+
 export function AIAssistant({ defaultOpen = false, defaultMessages = [] }: AIAssistantProps) {
-  const { isAuthenticated, userName } = useAuth();
   const [isOpen, setIsOpen] = useState(defaultOpen);
-  const [isMinimized, setIsMinimized] = useState(false);
-  const [messages, setMessages] = useState<Message[]>(defaultMessages);
-  const [input, setInput] = useState('');
+  const [messages, setMessages] = useState<Message[]>([
+    DEFAULT_SYSTEM_MESSAGE,
+    ...defaultMessages
+  ]);
+  const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
-  
-  const systemPrompt = `당신은 반려동물 교육 플랫폼 '털이즈'의 AI 어시스턴트입니다. 
-반려동물 훈련, 행동, 건강에 관한 질문에 친절하고 정확하게 답변해 주세요.
-항상 존중하는 태도를 유지하고, 과학적 근거에 기반한 정보를 제공하세요.
-반려동물의 복지와 안전을 최우선으로 생각하세요.
-${isAuthenticated ? `사용자 이름: ${userName}` : '비회원 사용자입니다.'} 
-답변은 한국어로 제공하세요.`;
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const { isAuthenticated } = useAuth();
 
-  // 스크롤을 최신 메시지로 이동
-  const scrollToBottom = () => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
-
-  // 메시지가 추가될 때마다 스크롤
+  // 채팅창이 열릴 때 인풋에 포커스
   useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
-
-  // 챗봇이 열릴 때 input에 포커스
-  useEffect(() => {
-    if (isOpen && !isMinimized && inputRef.current) {
+    if (isOpen && inputRef.current) {
       inputRef.current.focus();
     }
-  }, [isOpen, isMinimized]);
+  }, [isOpen]);
 
-  // 메시지 전송 핸들러
+  // 새 메시지가 추가될 때 스크롤을 아래로 이동
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
+
+  // 메시지 전송 처리
   const handleSendMessage = async () => {
-    if (!input.trim() || isLoading) return;
-    
+    if (!inputValue.trim() || isLoading) return;
+
+    // 사용자 메시지 생성
     const userMessage: Message = {
-      id: Date.now().toString(),
+      id: `user-${Date.now()}`,
       role: 'user',
-      content: input.trim(),
+      content: inputValue.trim(),
       timestamp: new Date()
     };
-    
-    setMessages(prev => [...prev, userMessage]);
-    setInput('');
-    setIsLoading(true);
-    setError(null);
-    
-    try {
-      // 시스템 메시지가 없으면 추가
-      const hasSystemMessage = messages.some(msg => msg.role === 'system');
-      const messagesWithSystem = hasSystemMessage
-        ? [...messages, userMessage]
-        : [{ id: 'system-1', role: 'system', content: systemPrompt, timestamp: new Date() }, ...messages, userMessage];
 
-      // Anthropic Claude API 호출
-      const response = await apiRequest('POST', '/api/ai/chat', {
-        messages: messagesWithSystem.map(msg => ({
-          role: msg.role,
-          content: msg.content
-        })),
-        model: DEFAULT_MODEL
+    // UI 업데이트
+    setMessages(prev => [...prev, userMessage]);
+    setInputValue('');
+    setIsLoading(true);
+
+    try {
+      // API 요청 준비
+      const apiMessages = messages.map(msg => ({
+        role: msg.role,
+        content: msg.content
+      }));
+
+      apiMessages.push({
+        role: userMessage.role,
+        content: userMessage.content
       });
-      
+
+      // AI API 호출
+      const response = await apiRequest('POST', '/api/ai/chat', {
+        messages: apiMessages,
+        temperature: 0.7,
+        maxTokens: isAuthenticated ? 1000 : 500 // 인증된 사용자는 더 긴 응답 허용
+      });
+
       if (!response.ok) {
-        throw new Error(`API 오류: ${response.status}`);
+        const errorData = await response.json();
+        throw new Error(errorData.error || '응답을 생성하는 중 오류가 발생했습니다.');
       }
-      
-      const data = await response.json();
-      
+
+      const responseData = await response.json();
+
+      // 어시스턴트 메시지 생성
       const assistantMessage: Message = {
-        id: Date.now().toString(),
+        id: `assistant-${Date.now()}`,
         role: 'assistant',
-        content: data.content,
+        content: responseData.content || '죄송합니다, 응답을 생성할 수 없습니다.',
+        timestamp: new Date()
+      };
+
+      // 메시지 목록에 어시스턴트 응답 추가
+      setMessages(prev => [...prev, assistantMessage]);
+    } catch (error) {
+      console.error('AI 응답 오류:', error);
+      
+      // 오류 메시지 추가
+      const errorMessage: Message = {
+        id: `error-${Date.now()}`,
+        role: 'assistant',
+        content: '죄송합니다, 응답을 생성하는 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.',
         timestamp: new Date()
       };
       
-      setMessages(prev => {
-        // 첫 메시지가 시스템 메시지라면 유지, 아니면 시스템 메시지 추가
-        const systemMsg = prev.find(msg => msg.role === 'system');
-        return systemMsg 
-          ? [...prev, assistantMessage]
-          : [{ id: 'system-1', role: 'system', content: systemPrompt, timestamp: new Date() }, ...prev.filter(msg => msg.role !== 'system'), assistantMessage];
-      });
-    } catch (err) {
-      console.error('AI 응답 오류:', err);
-      setError('죄송합니다. 응답을 생성하는 중 오류가 발생했습니다. 다시 시도해 주세요.');
+      setMessages(prev => [...prev, errorMessage]);
     } finally {
       setIsLoading(false);
     }
   };
 
-  // 엔터 키로 메시지 전송
+  // 엔터 키로 메시지 전송 (Shift+Enter는 줄바꿈)
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -130,263 +175,106 @@ ${isAuthenticated ? `사용자 이름: ${userName}` : '비회원 사용자입니
     }
   };
 
-  // 채팅창 열기/닫기
-  const toggleChat = () => {
-    setIsOpen(!isOpen);
-    setIsMinimized(false);
-  };
-
-  // 챗봇 최소화/복원
-  const toggleMinimize = () => {
-    setIsMinimized(!isMinimized);
-  };
-
-  // 채팅 기록 초기화
-  const resetChat = () => {
-    setMessages([]);
-    setError(null);
-  };
-
   return (
-    <div className="fixed bottom-4 right-4 z-50 flex flex-col items-end">
-      {/* 챗봇 창 */}
-      {isOpen && (
-        <div 
-          className={cn(
-            "bg-white dark:bg-gray-900 rounded-lg shadow-lg border border-gray-200 dark:border-gray-800 mb-2 transition-all duration-300 ease-in-out overflow-hidden",
-            isMinimized 
-              ? "w-72 h-14" 
-              : "w-80 sm:w-96 h-[500px] max-h-[80vh]"
-          )}
-        >
-          {/* 헤더 */}
-          <div className="p-3 border-b border-gray-200 dark:border-gray-800 flex justify-between items-center bg-primary text-white">
-            <div className="flex items-center" onClick={toggleMinimize} style={{ cursor: 'pointer' }}>
-              <Bot className="h-5 w-5 mr-2" />
-              <div>
-                <h3 className="font-medium text-sm">털이즈 AI 어시스턴트</h3>
-                {!isMinimized && (
-                  <p className="text-xs text-primary-foreground/80">반려동물 훈련 전문 AI</p>
-                )}
-              </div>
-            </div>
-            <div className="flex items-center gap-1">
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className="h-7 w-7 text-white hover:bg-primary-foreground/20"
-                onClick={toggleMinimize}
-                aria-label={isMinimized ? "챗봇 창 확장" : "챗봇 창 최소화"}
+    <>
+      {/* 접힌 상태일 때 표시되는 버튼 */}
+      {!isOpen && (
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                onClick={() => setIsOpen(true)}
+                size="icon"
+                className="fixed bottom-4 right-4 rounded-full shadow-lg z-50 h-14 w-14"
               >
-                {isMinimized ? <ChevronRight className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                <Bot size={24} />
               </Button>
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className="h-7 w-7 text-white hover:bg-primary-foreground/20"
-                onClick={toggleChat}
-                aria-label="챗봇 창 닫기"
-              >
-                <X className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-
-          {/* 최소화되지 않았을 때만 메시지 영역과 입력창 표시 */}
-          {!isMinimized && (
-            <>
-              {/* 메시지 영역 */}
-              <div className="flex-1 overflow-y-auto p-4 h-[380px]">
-                {messages.length === 0 ? (
-                  <div className="text-center flex flex-col items-center justify-center h-full text-gray-500 dark:text-gray-400">
-                    <Bot className="h-12 w-12 mb-3 text-primary opacity-50" />
-                    <h3 className="font-medium mb-1">털이즈 AI 어시스턴트</h3>
-                    <p className="text-sm max-w-[250px] mb-4">
-                      반려동물 훈련, 행동, 건강에 관한 질문에 답변해 드립니다.
-                    </p>
-                    <div className="space-y-2 w-full max-w-[250px]">
-                      {['반려견 분리불안 해결 방법', '자주 짖는 강아지 훈련법', '고양이 화장실 적응 방법'].map((suggestion, index) => (
-                        <Button 
-                          key={index}
-                          variant="outline" 
-                          className="w-full justify-start text-sm py-1 h-auto"
-                          onClick={() => {
-                            setInput(suggestion);
-                            if (inputRef.current) {
-                              inputRef.current.focus();
-                            }
-                          }}
-                        >
-                          <MessageSquare className="h-3 w-3 mr-2" />
-                          {suggestion}
-                        </Button>
-                      ))}
-                    </div>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {messages.filter(m => m.role !== 'system').map((message, index) => (
-                      <div key={message.id} className={cn(
-                        "flex",
-                        message.role === 'user' ? "justify-end" : "justify-start"
-                      )}>
-                        <div className={cn(
-                          "flex items-start max-w-[80%] space-x-2",
-                          message.role === 'user' ? "flex-row-reverse space-x-reverse" : ""
-                        )}>
-                          {message.role === 'assistant' && (
-                            <Avatar className="h-8 w-8">
-                              <AvatarImage src="/logo.png" alt="AI 어시스턴트" />
-                              <AvatarFallback className="bg-primary text-white">AI</AvatarFallback>
-                            </Avatar>
-                          )}
-                          
-                          {message.role === 'user' && (
-                            <Avatar className="h-8 w-8">
-                              <AvatarFallback className="bg-blue-500 text-white">
-                                {userName ? userName.charAt(0).toUpperCase() : '사'}
-                              </AvatarFallback>
-                            </Avatar>
-                          )}
-                          
-                          <div className={cn(
-                            "rounded-lg px-3 py-2 text-sm",
-                            message.role === 'user' 
-                              ? "bg-blue-500 text-white" 
-                              : "bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100"
-                          )}>
-                            <div className="whitespace-pre-wrap">
-                              {message.content}
-                            </div>
-                            <div className={cn(
-                              "text-[10px] mt-1",
-                              message.role === 'user' 
-                                ? "text-blue-100" 
-                                : "text-gray-500 dark:text-gray-400"
-                            )}>
-                              {new Intl.DateTimeFormat('ko-KR', {
-                                hour: '2-digit',
-                                minute: '2-digit'
-                              }).format(message.timestamp)}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                    
-                    {isLoading && (
-                      <div className="flex justify-start">
-                        <div className="flex items-start max-w-[80%] space-x-2">
-                          <Avatar className="h-8 w-8">
-                            <AvatarFallback className="bg-primary text-white">AI</AvatarFallback>
-                          </Avatar>
-                          <div className="rounded-lg px-3 py-2 text-sm bg-gray-100 dark:bg-gray-800">
-                            <div className="flex items-center space-x-2">
-                              <div className="w-2 h-2 rounded-full bg-primary animate-bounce delay-75"></div>
-                              <div className="w-2 h-2 rounded-full bg-primary animate-bounce delay-100"></div>
-                              <div className="w-2 h-2 rounded-full bg-primary animate-bounce delay-150"></div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                    
-                    {error && (
-                      <div className="flex justify-start">
-                        <div className="flex items-start max-w-[80%] space-x-2">
-                          <Avatar className="h-8 w-8">
-                            <AvatarFallback className="bg-red-500 text-white">!</AvatarFallback>
-                          </Avatar>
-                          <div className="rounded-lg px-3 py-2 text-sm bg-red-50 dark:bg-red-900/20 text-red-800 dark:text-red-200 border border-red-200 dark:border-red-800">
-                            {error}
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                    
-                    <div ref={messagesEndRef} />
-                  </div>
-                )}
-              </div>
-              
-              {/* 입력창 */}
-              <div className="p-3 border-t border-gray-200 dark:border-gray-800">
-                <div className="flex items-end space-x-2">
-                  <div className="flex-1 relative">
-                    <Textarea
-                      ref={inputRef}
-                      value={input}
-                      onChange={(e) => setInput(e.target.value)}
-                      onKeyDown={handleKeyDown}
-                      placeholder="질문을 입력하세요..."
-                      className="resize-none min-h-[60px] max-h-[120px] pr-10"
-                      disabled={isLoading}
-                      aria-label="AI 어시스턴트에게 메시지 입력"
-                    />
-                    <div className="absolute bottom-2 right-2">
-                      <Badge variant="outline" className="text-xs">
-                        {isAuthenticated ? 'Premium' : 'Basic'}
-                      </Badge>
-                    </div>
-                  </div>
-                  <Button
-                    size="icon"
-                    onClick={handleSendMessage}
-                    disabled={!input.trim() || isLoading}
-                    aria-label="메시지 보내기"
-                    className="h-10 w-10 rounded-full"
-                  >
-                    <Send className="h-5 w-5" />
-                  </Button>
-                </div>
-                
-                <div className="mt-2 flex justify-between items-center">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={resetChat}
-                    className="text-xs h-7 px-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
-                    disabled={messages.length === 0 || isLoading}
-                  >
-                    대화 초기화
-                  </Button>
-                  
-                  <div className="text-xs text-gray-500 dark:text-gray-400">
-                    {isAuthenticated ? (
-                      <span className="flex items-center">
-                        <Bot className="h-3 w-3 mr-1 text-primary" />
-                        Claude 3.7 Sonnet
-                      </span>
-                    ) : (
-                      <span className="flex items-center">
-                        <Bot className="h-3 w-3 mr-1 text-primary" />
-                        기본 모델
-                      </span>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </>
-          )}
-        </div>
+            </TooltipTrigger>
+            <TooltipContent side="left">
+              <p>AI 어시스턴트와 대화하기</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       )}
 
-      {/* 챗봇 버튼 */}
-      <Button
-        size="lg"
-        className={cn(
-          "rounded-full w-14 h-14 p-0 shadow-lg transition-all",
-          isOpen ? "bg-gray-500 hover:bg-gray-600" : "bg-primary hover:bg-primary/90"
+      {/* 채팅 인터페이스 */}
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: 100 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 100 }}
+            className="fixed bottom-4 right-4 w-[350px] sm:w-[400px] h-[500px] bg-background border rounded-lg shadow-lg z-50 flex flex-col"
+          >
+            {/* 헤더 */}
+            <div className="p-3 border-b flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Bot className="text-primary" size={20} />
+                <h3 className="font-medium">AI 어시스턴트</h3>
+              </div>
+              <div className="flex items-center gap-1">
+                <Button variant="ghost" size="icon" onClick={() => setIsOpen(false)}>
+                  <ChevronDown size={18} />
+                </Button>
+                <Button variant="ghost" size="icon" onClick={() => setIsOpen(false)}>
+                  <X size={18} />
+                </Button>
+              </div>
+            </div>
+
+            {/* 메시지 영역 */}
+            <ScrollArea className="flex-1 p-4">
+              <div className="space-y-4">
+                {messages.filter(m => m.role !== 'system').map(message => (
+                  <ChatBubble
+                    key={message.id}
+                    message={message}
+                    isUser={message.role === 'user'}
+                  />
+                ))}
+                {isLoading && (
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground">
+                      <Bot size={18} />
+                    </div>
+                    <div className="bg-muted rounded-lg rounded-tl-none px-4 py-2">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    </div>
+                  </div>
+                )}
+                <div ref={messagesEndRef} />
+              </div>
+            </ScrollArea>
+
+            {/* 입력 영역 */}
+            <div className="p-3 border-t">
+              <div className="flex gap-2">
+                <Textarea
+                  ref={inputRef}
+                  value={inputValue}
+                  onChange={(e) => setInputValue(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  placeholder="질문을 입력하세요..."
+                  className="resize-none min-h-[40px] max-h-[120px]"
+                  disabled={isLoading}
+                />
+                <Button
+                  onClick={handleSendMessage}
+                  size="icon"
+                  disabled={!inputValue.trim() || isLoading}
+                >
+                  <Send size={18} />
+                </Button>
+              </div>
+              <div className="mt-2 text-xs text-muted-foreground">
+                {isAuthenticated 
+                  ? '모든 대화 내용은 개인정보 보호 정책에 따라 처리됩니다.' 
+                  : '더 많은 기능을 사용하려면 로그인하세요.'}
+              </div>
+            </div>
+          </motion.div>
         )}
-        onClick={toggleChat}
-        aria-label={isOpen ? "AI 어시스턴트 닫기" : "AI 어시스턴트 열기"}
-      >
-        {isOpen ? (
-          <X className="h-6 w-6" />
-        ) : (
-          <MessageSquare className="h-6 w-6" />
-        )}
-      </Button>
-    </div>
+      </AnimatePresence>
+    </>
   );
 }
