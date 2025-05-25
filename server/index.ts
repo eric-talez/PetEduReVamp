@@ -3,9 +3,19 @@ import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import session from "express-session";
 import memorystore from "memorystore";
+import cors from "cors";
 
 const MemoryStore = memorystore(session);
 const app = express();
+
+// CORS 설정 - funnytalez.com과의 통신을 위해 허용
+app.use(cors({
+  origin: ['https://store.funnytalez.com', 'https://funnytalez.com'],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
 // 이미지 업로드를 위해 JSON 요청 크기 제한 증가 (50MB)
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: false, limit: '50mb' }));

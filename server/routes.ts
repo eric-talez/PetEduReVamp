@@ -1108,6 +1108,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   const httpServer = createServer(app);
   
+  // 외부 도메인 (funnytalez.com)에서의 인증 확인 API
+  app.get("/api/auth/external-verify", (req, res) => {
+    try {
+      // URL 파라미터에서 인증 정보 확인
+      const { auth, role, name } = req.query;
+      
+      // 간단한 검증 - 실제 운영에서는 더 강력한 보안 검증 필요
+      if (auth === 'true' && role && name) {
+        return res.status(200).json({
+          authenticated: true,
+          role: role,
+          name: name,
+          message: "인증이 확인되었습니다."
+        });
+      } else {
+        return res.status(401).json({
+          authenticated: false,
+          message: "인증이 필요합니다."
+        });
+      }
+    } catch (error) {
+      console.error("외부 인증 확인 오류:", error);
+      return res.status(500).json({ 
+        message: "인증 확인 중 오류가 발생했습니다", 
+        code: "AUTH_VERIFY_ERROR" 
+      });
+    }
+  });
+  
   // WebSocket 서버 초기화
   const wss = new WebSocketServer({
     server: httpServer,

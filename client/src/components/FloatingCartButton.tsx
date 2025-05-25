@@ -49,10 +49,32 @@ export function FloatingCartButton() {
     const target = e.currentTarget as HTMLElement;
     target.classList.add("scale-110");
     
+    // 현재 인증 상태 확인
+    const authState = window.__peteduAuthState || {
+      isAuthenticated: false,
+      userRole: null,
+      userName: null
+    };
+    
+    // 인증 정보를 URL 파라미터로 전달
+    let shopUrl = 'https://store.funnytalez.com/';
+    
+    // 인증된 사용자인 경우에만 정보 전달
+    if (authState.isAuthenticated && authState.userName) {
+      const params = new URLSearchParams({
+        auth: 'true',
+        role: authState.userRole || 'pet-owner',
+        name: authState.userName
+      });
+      shopUrl += '?' + params.toString();
+    }
+    
+    console.log("FloatingCartButton 쇼핑몰 URL:", shopUrl);
+    
     setTimeout(() => {
       target.classList.remove("scale-110");
       // 쇼핑몰 새 창에서 열기
-      window.open("https://store.funnytalez.com/", "_blank", "noopener,noreferrer");
+      window.open(shopUrl, "_blank", "noopener,noreferrer");
     }, 200);
   };
 
