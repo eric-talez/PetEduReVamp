@@ -22,6 +22,11 @@ export default function PetOwnerDashboard({ onAction }: PetOwnerDashboardProps) 
       id: 1,
       title: "반려견과 함께하는 특별한 교육 여정",
       description: "Talez와 함께 전문 훈련사의 체계적인 교육으로 더 행복한 반려생활을 시작하세요.",
+      features: [
+        "맞춤형 1:1 전문 상담",
+        "체계적인 단계별 훈련 프로그램",
+        "전문 훈련사의 실시간 피드백"
+      ],
       image: "https://images.unsplash.com/photo-1548199973-03cce0bbc87b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=400",
       primaryAction: {
         text: "강의 둘러보기",
@@ -36,6 +41,11 @@ export default function PetOwnerDashboard({ onAction }: PetOwnerDashboardProps) 
       id: 2,
       title: "반려견 행동 교정 특별 과정",
       description: "짖음, 물기 등 문제 행동을 해결하는 전문 훈련사의 맞춤형 교육 프로그램",
+      features: [
+        "문제 행동 원인 분석",
+        "단계별 교정 프로그램",
+        "지속적인 모니터링 및 피드백"
+      ],
       image: "https://images.unsplash.com/photo-1589923188651-268a9765e432?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=400",
       primaryAction: {
         text: "상담 신청하기",
@@ -50,6 +60,11 @@ export default function PetOwnerDashboard({ onAction }: PetOwnerDashboardProps) 
       id: 3,
       title: "여름 시즌 반려견 건강 관리",
       description: "무더운 여름철 반려견 건강을 지키는 실용적인 팁과 권장 사항",
+      features: [
+        "열사병 예방 가이드",
+        "시즌별 영양 관리법",
+        "여름철 반려견 놀이 추천"
+      ],
       image: "https://images.unsplash.com/photo-1535930891776-0c2dfb7fda1a?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=400",
       primaryAction: {
         text: "건강 가이드 보기",
@@ -64,6 +79,11 @@ export default function PetOwnerDashboard({ onAction }: PetOwnerDashboardProps) 
       id: 4,
       title: "AI 기반 반려견 분석 서비스 출시",
       description: "반려견의 행동과 감정을 AI로 분석하여 맞춤형 훈련 방법을 제안합니다",
+      features: [
+        "AI 행동 패턴 분석",
+        "맞춤형 훈련 솔루션",
+        "실시간 분석 리포트"
+      ],
       image: "https://images.unsplash.com/photo-1529429617124-95b109e86bb8?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=400",
       primaryAction: {
         text: "서비스 체험하기",
@@ -78,6 +98,11 @@ export default function PetOwnerDashboard({ onAction }: PetOwnerDashboardProps) 
       id: 5,
       title: "반려견과 함께하는 액티비티",
       description: "반려견과 즐길 수 있는 다양한 야외 활동과 이벤트 정보",
+      features: [
+        "반려견 친화 장소 추천",
+        "시즌별 이벤트 정보",
+        "소셜 모임 일정"
+      ],
       image: "https://images.unsplash.com/photo-1551730459-92db2a308d6a?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=400",
       primaryAction: {
         text: "이벤트 확인하기",
@@ -250,9 +275,24 @@ export default function PetOwnerDashboard({ onAction }: PetOwnerDashboardProps) 
             <h1 className="text-white text-lg md:text-2xl font-bold mb-1 md:mb-2 max-w-xl">
               {slide.title}
             </h1>
-            <p className="text-white text-xs md:text-sm max-w-xl mb-3 md:mb-4 line-clamp-2">
+            <p className="text-white text-xs md:text-sm max-w-xl mb-2 md:mb-3 line-clamp-2">
               {slide.description}
             </p>
+            
+            {/* 주요 기능 목록 */}
+            {slide.features && (
+              <div className="flex flex-wrap gap-1 mb-2 md:mb-3">
+                {slide.features.map((feature, idx) => (
+                  <span 
+                    key={idx} 
+                    className="inline-flex items-center text-xs bg-white/20 text-white px-2 py-0.5 rounded"
+                  >
+                    <span className="mr-1 text-primary-300">✓</span> {feature}
+                  </span>
+                ))}
+              </div>
+            )}
+            
             <div className="flex flex-wrap gap-2">
               <Button
                 className="bg-white text-primary font-semibold hover:bg-gray-50 text-xs md:text-sm py-1 px-3 h-auto"
