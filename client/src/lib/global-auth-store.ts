@@ -193,6 +193,25 @@ class AuthStore {
       userRole: this._state.userRole,
       userName: this._state.userName
     };
+    
+    // 외부 쇼핑몰 연동을 위한 인증 쿠키 설정
+    if (this._state.isAuthenticated) {
+      try {
+        // 쿠키에 인증 정보 저장 (domain 없이 설정하여 현재 도메인에서만 작동)
+        // 보안 상의 이유로 실제 운영 환경에서는 서버 측에서 쿠키를 설정하거나 JWT 토큰을 사용하는 것이 좋습니다.
+        const authData = JSON.stringify({
+          auth: true,
+          role: this._state.userRole,
+          name: this._state.userName
+        });
+        document.cookie = `talez_auth_data=${encodeURIComponent(authData)}; path=/; max-age=86400; SameSite=Lax`;
+      } catch (error) {
+        console.error('[GlobalAuth] 인증 쿠키 설정 오류:', error);
+      }
+    } else {
+      // 로그아웃 시 쿠키 제거
+      document.cookie = 'talez_auth_data=; path=/; max-age=0; SameSite=Lax';
+    }
   }
 }
 

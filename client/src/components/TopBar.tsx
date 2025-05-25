@@ -750,7 +750,29 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
                               onClick={() => {
                                 setCartPopupOpen(false);
                                 console.log("카트 팝업에서 쇼핑 버튼 클릭 - 외부 쇼핑몰로 이동");
-                                window.open('https://store.funnytalez.com/', '_blank', 'noopener,noreferrer');
+                                
+                                // 인증 정보를 URL 파라미터로 전달
+                                let shopUrl = 'https://store.funnytalez.com/';
+                                
+                                // 인증 상태 가져오기
+                                const authState = window.__peteduAuthState || {
+                                  isAuthenticated: isAuthenticated,
+                                  userRole: userRole,
+                                  userName: userName
+                                };
+                                
+                                // 인증된 사용자인 경우에만 정보 전달
+                                if (authState.isAuthenticated && authState.userName) {
+                                  const params = new URLSearchParams({
+                                    auth: 'true',
+                                    role: authState.userRole || 'pet-owner',
+                                    name: authState.userName
+                                  });
+                                  shopUrl += '?' + params.toString();
+                                }
+                                
+                                console.log("쇼핑몰 URL:", shopUrl);
+                                window.open(shopUrl, '_blank', 'noopener,noreferrer');
                               }}
                             >
                               쇼핑하러 가기

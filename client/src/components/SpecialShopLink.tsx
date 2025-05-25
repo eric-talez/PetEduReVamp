@@ -37,16 +37,40 @@ export function SpecialShopLink({ children, className = "", expanded = true }: S
     const target = e.currentTarget as HTMLElement;
     target.classList.add('animate-bounce');
     
+    // 현재 인증 상태 확인
+    const authState = window.__peteduAuthState || {
+      isAuthenticated: false,
+      userRole: null,
+      userName: null
+    };
+    
+    // 인증 정보를 URL 파라미터로 전달
+    let shopUrl = 'https://store.funnytalez.com/';
+    
+    // 인증된 사용자인 경우에만 정보 전달
+    if (authState.isAuthenticated && authState.userName) {
+      // 외부 쇼핑몰에서는 URL 파라미터를 통해 인증 상태를 전달
+      // 실제 운영 환경에서는 보다 안전한 방식(JWT 토큰 등)을 사용해야 함
+      const params = new URLSearchParams({
+        auth: 'true',
+        role: authState.userRole || 'pet-owner',
+        name: authState.userName
+      });
+      shopUrl += '?' + params.toString();
+    }
+    
     // 애니메이션 후 클래스 제거를 위한 타이머
     setTimeout(() => {
       target.classList.remove('animate-bounce');
       // 쇼핑몰 페이지를 새 창에서 열기
-      window.open('https://store.funnytalez.com/', '_blank', 'noopener,noreferrer');
+      window.open(shopUrl, '_blank', 'noopener,noreferrer');
     }, 300);
     
     // 디버깅 정보
     console.log("SpecialShopLink에서 쇼핑몰 페이지 새 창으로 열기:", new Date().toISOString());
     console.log("현재 경로:", window.location.pathname);
+    console.log("인증 상태:", authState);
+    console.log("쇼핑몰 URL:", shopUrl);
   };
   
   // 아이콘 설정 (장바구니 아이콘으로 변경)
