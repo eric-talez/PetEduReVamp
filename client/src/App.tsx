@@ -25,6 +25,7 @@ import VideoCallPage from "./pages/video-call/index";
 import CourseReservationPage from "./pages/course-reservation/index";
 import MessagesPage from "./pages/messages/index";
 import NotificationsPage from "./pages/notifications/index";
+import Dashboard from "./pages/dashboard/index"; // 대시보드 컴포넌트 임포트
 // 쇼핑 페이지 - 통합 경로 사용
 import CartPage from "@/pages/Cart"; // 장바구니 페이지
 import ProductDetailPage from "./pages/shop/product"; // 상품 상세 페이지
@@ -119,13 +120,13 @@ function AuthenticatedRoutesContent() {
         {() => checkAccess(['pet-owner']) ? <MyPetsPage /> : window.location.href = '/'}
       </Route>
       <Route path="/trainer/dashboard">
-        {() => checkAccess(['trainer', 'admin']) ? <Dashboard typeProps="trainer" /> : window.location.href = '/'}
+        {() => checkAccess(['trainer', 'admin']) ? <Dashboard type="trainer" /> : window.location.href = '/'}
       </Route>
       <Route path="/institute/dashboard">
-        {() => checkAccess(['institute-admin', 'admin']) ? <Dashboard typeProps="institute-admin" /> : window.location.href = '/'}
+        {() => checkAccess(['institute-admin', 'admin']) ? <Dashboard type="institute-admin" /> : window.location.href = '/'}
       </Route>
       <Route path="/admin/dashboard">
-        {() => checkAccess(['admin']) ? <Dashboard typeProps="admin" /> : window.location.href = '/'}
+        {() => checkAccess(['admin']) ? <Dashboard type="admin" /> : window.location.href = '/'}
       </Route>
       <Route path="/admin/menu-management">
         {() => {
