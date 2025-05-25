@@ -134,8 +134,8 @@ export default function PetOwnerDashboard({ onAction }: PetOwnerDashboardProps) 
 
   return (
     <div className="py-8 px-4 sm:px-6 lg:px-8">
-      {/* Banner */}
-      <div className="relative rounded-xl overflow-hidden h-60 md:h-80 mb-8 bg-gradient-to-r from-primary/80 to-accent/80 shadow-lg">
+      {/* Banner - 높이 반으로 줄임 */}
+      <div className="relative rounded-xl overflow-hidden h-32 md:h-40 mb-8 bg-gradient-to-r from-primary/80 to-accent/80 shadow-lg">
         <img 
           src="https://images.unsplash.com/photo-1548199973-03cce0bbc87b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=400" 
           alt="반려견 교육"
