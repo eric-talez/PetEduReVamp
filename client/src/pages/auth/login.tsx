@@ -188,7 +188,10 @@ export default function Login() {
 
               <div className="text-center text-sm mt-4">
                 <span className="text-muted-foreground">계정이 없으신가요?</span>{" "}
-                <Button variant="link" className="p-0" onClick={() => setLocation("/auth/register")}>
+                <Button variant="link" className="p-0" onClick={() => {
+                  console.log("회원가입 페이지로 이동 시도");
+                  window.location.href = "/auth?tab=register";
+                }}>
                   회원가입
                 </Button>
               </div>
