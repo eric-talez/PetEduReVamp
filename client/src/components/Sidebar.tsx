@@ -197,10 +197,11 @@ export function Sidebar({
     }
     
     // 기본값 (모두 닫힌 상태로 시작)
+    // 비로그인 상태면 myLearning 숨김 처리
     return {
       main: false,
       features: false,
-      myLearning: false,
+      myLearning: false, // 로그인 상태에 따라 이후에 변경됨
       trainer: false,
       institute: false,
       admin: false,
@@ -225,13 +226,15 @@ export function Sidebar({
         ...prevGroups,
         trainer: isTrainer || isAdmin,
         institute: isInstituteAdmin || isAdmin,
-        admin: isAdmin
+        admin: isAdmin,
+        // 로그인 상태에 따라 myLearning 메뉴 그룹 표시/숨김 처리
+        myLearning: isAuthenticated ? prevGroups.myLearning : false
       };
       
       console.log('메뉴 그룹 업데이트:', updatedMenuGroups);
       return updatedMenuGroups;
     });
-  }, [userRole]);
+  }, [userRole, isAuthenticated]);
 
   const toggleSidebar = () => {
     if (onToggleExpand) {
@@ -590,26 +593,7 @@ export function Sidebar({
                       }} 
                       show={true}
                     >위치 서비스</AccessibleNavItem>
-                    <AccessibleNavItem 
-                      href="/video-training" 
-                      icon={<Video className="w-5 h-5 mr-2" />} 
-                      active={isActive("/video-training")} 
-                      onClick={(path) => {
-                        console.log("영상 훈련 메뉴 클릭:", path);
-                        handleItemClick(path);
-                      }} 
-                      show={true}
-                    >영상 훈련</AccessibleNavItem>
-                    <AccessibleNavItem 
-                      href="/video-call" 
-                      icon={<VideoIcon className="w-5 h-5 mr-2" />} 
-                      active={isActive("/video-call")} 
-                      onClick={(path) => {
-                        console.log("화상 수업 메뉴 클릭:", path);
-                        handleItemClick(path);
-                      }} 
-                      show={true}
-                    >화상 수업</AccessibleNavItem>
+                    {/* 영상 훈련 및 화상 수업은 로그인한 사용자만 접근 가능 */}
                     <AccessibleNavItem 
                       href="/community" 
                       icon={<MessageSquare className="w-5 h-5 mr-2" />} 
