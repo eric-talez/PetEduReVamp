@@ -1,16 +1,13 @@
 import React, { useState } from 'react';
-import { useLocation } from 'wouter';
+import { Link } from 'wouter';
 
-/**
- * 비밀번호 찾기 페이지
- */
-const PasswordResetPage = () => {
-  const [email, setEmail] = useState('');
+// 비밀번호 재설정 페이지 컴포넌트
+const PasswordResetPage: React.FC = () => {
   const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
-  const [, setLocation] = useLocation();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,17 +36,13 @@ const PasswordResetPage = () => {
     }
   };
 
-  const goToLogin = () => {
-    setLocation('/auth');
-  };
-
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 p-4">
       <div className="max-w-md w-full space-y-8 bg-white dark:bg-gray-800 p-8 rounded-lg shadow-md">
         <div className="text-center">
-          <h1 className="text-2xl font-bold mb-2">비밀번호 찾기</h1>
-          <p className="text-gray-600 dark:text-gray-400 mb-8">
-            가입시 등록한 아이디와 이메일을 입력하시면 비밀번호 재설정 안내를 보내드립니다.
+          <h1 className="text-3xl font-bold mb-2">Talez</h1>
+          <p className="text-gray-600 dark:text-gray-400 mb-2">
+            비밀번호 재설정
           </p>
         </div>
 
@@ -58,12 +51,11 @@ const PasswordResetPage = () => {
             <div className="bg-green-50 border border-green-200 text-green-700 p-4 rounded-md">
               <p>비밀번호 재설정 안내 이메일이 발송되었습니다. 이메일을 확인해주세요.</p>
             </div>
-            <button
-              onClick={goToLogin}
-              className="w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
-            >
-              로그인 페이지로 돌아가기
-            </button>
+            <Link href="/auth">
+              <a className="w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors flex items-center justify-center">
+                로그인 페이지로 돌아가기
+              </a>
+            </Link>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -74,11 +66,11 @@ const PasswordResetPage = () => {
             )}
 
             <div>
-              <label htmlFor="username" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label htmlFor="reset-username" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 아이디
               </label>
               <input
-                id="username"
+                id="reset-username"
                 type="text"
                 placeholder="가입시 등록한 아이디를 입력하세요"
                 value={username}
@@ -90,11 +82,11 @@ const PasswordResetPage = () => {
             </div>
 
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label htmlFor="reset-email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 이메일
               </label>
               <input
-                id="email"
+                id="reset-email"
                 type="email"
                 placeholder="가입시 등록한 이메일을 입력하세요"
                 value={email}
@@ -114,13 +106,11 @@ const PasswordResetPage = () => {
                 {isLoading ? "처리 중..." : "비밀번호 재설정 요청"}
               </button>
               
-              <button
-                type="button"
-                onClick={goToLogin}
-                className="w-full py-2 px-4 bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 transition-colors"
-              >
-                로그인 페이지로 돌아가기
-              </button>
+              <Link href="/auth">
+                <a className="w-full py-2 px-4 bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 transition-colors text-center">
+                  취소
+                </a>
+              </Link>
             </div>
           </form>
         )}
