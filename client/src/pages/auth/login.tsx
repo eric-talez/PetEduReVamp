@@ -68,7 +68,15 @@ export default function Login() {
       // 실제 서버 로그인 API 호출
       console.log('로그인 시도:', { username: loginUsername });
       
-      const response = await fetch('/api/auth/login', {
+      // 현재 URL 확인
+      const currentUrl = window.location.origin;
+      console.log('현재 기본 URL:', currentUrl);
+      
+      // 로그인 URL 구성
+      const loginUrl = `${currentUrl}/api/auth/login`;
+      console.log('로그인 요청 URL:', loginUrl);
+      
+      const response = await fetch(loginUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -78,10 +86,22 @@ export default function Login() {
           username: loginUsername, 
           password: loginPassword 
         }),
+      }).catch(fetchError => {
+        console.error('Fetch 네트워크 오류:', fetchError);
+        throw new Error('서버 연결에 실패했습니다. 네트워크 연결을 확인해주세요.');
       });
       
       if (!response.ok) {
-        const errorData = await response.json();
+        const errorText = await response.text();
+        console.error('로그인 응답 에러:', response.status, errorText);
+        
+        let errorData;
+        try {
+          errorData = JSON.parse(errorText);
+        } catch (e) {
+          console.error('JSON 파싱 오류:', e);
+          throw new Error(`서버 오류 (${response.status}): ${errorText.substring(0, 100)}`);
+        }
         
         // 서버에서 반환된 에러 코드에 따라 더 상세한 메시지 제공
         if (errorData.code === 'invalid_credentials') {
