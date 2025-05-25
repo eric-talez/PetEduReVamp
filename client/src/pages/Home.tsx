@@ -9,7 +9,7 @@ import { ShopPreview } from '@/components/ShopPreview'; // 인증 상태에 의�
 import { SocialLoginButtons } from '@/components/SocialLoginButtons'; // 소셜 로그인 버튼
 import { useState, lazy, Suspense } from 'react';
 import { Loader2, ChevronDown, ChevronRight } from 'lucide-react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/Dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { PasswordResetForm } from '@/components/PasswordResetForm';
 
 // 각 역할별 홈 페이지를 동적으로 임포트
@@ -402,7 +402,7 @@ export default function Home() {
                     variant="link" 
                     size="sm" 
                     className="w-full"
-                    onClick={() => window.location.href = '/auth/password-reset'}
+                    onClick={() => setShowPasswordReset(true)}
                   >
                     비밀번호를 잊으셨나요?
                   </Button>
@@ -474,6 +474,16 @@ export default function Home() {
           onClose={() => setIsWeatherModalOpen(false)}
           location={{ name: "서울", region: "강남구" }}
         />
+        
+        {/* 비밀번호 찾기 모달 */}
+        <Dialog open={showPasswordReset} onOpenChange={setShowPasswordReset}>
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle>비밀번호 찾기</DialogTitle>
+            </DialogHeader>
+            <PasswordResetForm onClose={() => setShowPasswordReset(false)} />
+          </DialogContent>
+        </Dialog>
       </div>
     );
   }
