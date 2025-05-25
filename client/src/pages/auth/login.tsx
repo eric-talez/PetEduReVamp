@@ -128,7 +128,7 @@ export default function Login() {
               <h2 className="text-xl font-bold">로그인</h2>
               <Button 
                 variant="outline" 
-                onClick={() => setLocation("/auth/register")}
+                onClick={() => setShowRegisterForm(true)}
                 className="flex items-center gap-2"
               >
                 회원가입
