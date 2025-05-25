@@ -406,7 +406,7 @@ export default function VideoCallPage() {
           alt="전문 훈련사와 반려견이 함께하는 실시간 화상 수업 - 개인 맞춤형 및 그룹 수업 제공"
           className="w-full h-full object-cover absolute"
           loading="eager"
-          fetchPriority="high"
+          fetchpriority="high"
         />
         
         {/* 이미지 필터 제거하여 원본 이미지 표시 */}
