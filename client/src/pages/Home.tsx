@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/Button';
-import { Link } from 'wouter';
+import { Link, useLocation } from 'wouter';
 import { useAuth } from '@/hooks/useAuth';
 import { BannerSlider } from '@/components/BannerSlider';
 import { TrendingSection } from '@/components/TrendingSection';
@@ -18,6 +18,7 @@ const InstituteAdminHome = lazy(() => import('./institute-admin/InstituteAdminHo
 export default function Home() {
   // 불필요한 로그 제거
   const { isAuthenticated, userRole, userName, logout } = useAuth();
+  const [location, setLocation] = useLocation();
   const [isWeatherModalOpen, setIsWeatherModalOpen] = useState(false);
   const [isServiceStatsOpen, setIsServiceStatsOpen] = useState(true);
   
@@ -372,14 +373,14 @@ export default function Home() {
                   <Button 
                     variant="default" 
                     className="w-full"
-                    onClick={() => window.location.href = '/auth/login'}
+                    onClick={() => setLocation('/auth')}
                   >
                     로그인
                   </Button>
                   <Button 
                     variant="outline" 
                     className="w-full"
-                    onClick={() => window.location.href = '/auth/register'}
+                    onClick={() => setLocation('/auth/register')}
                   >
                     회원가입
                   </Button>
