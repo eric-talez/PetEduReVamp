@@ -551,6 +551,15 @@ export class MemStorage implements IStorage {
     }
     return undefined;
   }
+  
+  async getUserBySocialId(provider: string, socialId: string): Promise<User | undefined> {
+    const key = `${provider}:${socialId}`;
+    const userId = this.userSocialMap.get(key);
+    if (userId) {
+      return this.users.get(userId);
+    }
+    return undefined;
+  }
 
   async updateUserVerification(userId: number, verificationData: {
     ci: string;
