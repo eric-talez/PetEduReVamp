@@ -8,7 +8,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { apiRequest } from '@/lib/api';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
-import ReactMarkdown from 'react-markdown';
 
 interface Message {
   id: string;
@@ -44,9 +43,9 @@ const ChatBubble = ({ message, isUser }: { message: Message; isUser: boolean }) 
             : 'bg-muted rounded-tl-none'
         )}
       >
-        <ReactMarkdown className="prose dark:prose-invert prose-sm break-words">
+        <div className="prose dark:prose-invert prose-sm break-words">
           {message.content}
-        </ReactMarkdown>
+        </div>
       </div>
       {isUser && (
         <div className="w-8 h-8 rounded-full bg-primary/80 flex items-center justify-center text-primary-foreground">

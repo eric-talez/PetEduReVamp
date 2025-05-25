@@ -44,8 +44,10 @@ export function registerAiRoutes(app: Express) {
         // 메시지 배열 재구성
         messagesForApi = [...systemMessages, ...recentMessages];
         
-        // 토큰 수 제한
-        maxTokens = Math.min(maxTokens, 500);
+        // 토큰 수 제한 (지역 변수 사용)
+        const limitedTokens = Math.min(maxTokens, 500);
+        // 요청 시에는 이 제한된 토큰 수를 사용
+        req.body.maxTokens = limitedTokens;
       }
 
       // OpenAI API 호출

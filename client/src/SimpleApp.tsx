@@ -1565,6 +1565,7 @@ function SimpleApp() {
               <DebugButton />
               <Toaster />
               <AccessibilityFloatingButton />
+              <SimpleChatBot />
             </>
           </KeyboardShortcutsManager>
         </NotificationsProvider>
