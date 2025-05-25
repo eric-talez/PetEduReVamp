@@ -1,6 +1,7 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { useLocation } from 'wouter';
 import { PasswordResetForm } from '@/components/PasswordResetForm';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 // 기본 인증 페이지 컴포넌트
 const BasicAuthPage = () => {
