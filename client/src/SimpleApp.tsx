@@ -43,6 +43,7 @@ import { AccessibilityFloatingButton } from "@/components/ui/AccessibilityContro
 import { DogLoading, FullScreenLoading } from "@/components/DogLoading";
 import { SkipToContent } from "@/components/ui/skip-to-content";
 import ErrorBoundary from "@/components/ErrorBoundary";
+import { AIAssistant } from "@/components/ui/AIAssistant";
 
 // 인증 관련 임포트 - 호환성 레이어 사용
 import { useAuth, USER_ROLES, type UserRole, type AuthState, UserRoleEnum } from "@/lib/auth-compat";
