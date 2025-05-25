@@ -165,10 +165,10 @@ function AuthenticatedRoutesContent() {
         <TrainerStatsPage />
       </Route>
       <Route path="/trainer/courses/new">
-        <CoursesPage mode="create" userType="trainer" />
+        {() => <CoursesPage mode="create" userType="trainer" />}
       </Route>
       <Route path="/trainer/schedule/new">
-        <TrainerReservationsPage mode="create" />
+        {() => <TrainerReservationsPage mode="create" />}
       </Route>
       <Route path="/trainer/profile/certificates">
         {() => (

@@ -506,7 +506,7 @@ export class MemStorage implements IStorage {
       location: insertUser.location || null,
       specialty: insertUser.specialty || null,
       isVerified: insertUser.isVerified || false,
-      instituteCode: insertUser.instituteCode || null,
+      instituteId: null,
       provider: insertUser.provider || null,
       socialId: insertUser.socialId || null,
       ci: insertUser.ci || null,

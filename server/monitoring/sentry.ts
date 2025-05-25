@@ -1,4 +1,5 @@
 import * as Sentry from '@sentry/node';
+import { RequestHandler, ErrorRequestHandler } from 'express';
 import { Express, Request, Response, NextFunction } from 'express';
 import { logger } from './logger';
 
@@ -30,14 +31,15 @@ export function setupSentry(app: Express) {
     });
 
     // 요청 핸들러 미들웨어 설정
-    app.use(Sentry.requestHandler());
+    app.use(Sentry.Handlers.requestHandler() as RequestHandler);
 
     // 성능 모니터링 미들웨어 설정
-    app.use(Sentry.tracingHandler());
+    app.use(Sentry.Handlers.tracingHandler() as RequestHandler);
 
     logger.info('[Sentry] Sentry 오류 추적 시스템이 초기화되었습니다.');
-  } catch (error) {
-    logger.error(`[Sentry] Sentry 초기화 중 오류 발생: ${error.message}`);
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    logger.error(`[Sentry] Sentry 초기화 중 오류 발생: ${errorMessage}`);
   }
 }
 
