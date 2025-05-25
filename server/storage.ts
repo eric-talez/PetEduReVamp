@@ -482,17 +482,38 @@ export class MemStorage implements IStorage {
     const user: User = { 
       ...insertUser, 
       id, 
-      role: 'user', // 기본 역할
+      role: insertUser.role || 'user', // 기본 역할
       avatar: insertUser.avatar || null,
       bio: insertUser.bio || null,
       location: insertUser.location || null,
       specialty: insertUser.specialty || null,
       isVerified: insertUser.isVerified || false,
       instituteId: null,
+      provider: insertUser.provider || null,
+      socialId: insertUser.socialId || null,
+      ci: insertUser.ci || null,
+      verified: insertUser.verified || false,
+      verifiedAt: insertUser.verifiedAt || null,
+      verificationName: insertUser.verificationName || null,
+      verificationBirth: insertUser.verificationBirth || null,
+      verificationPhone: insertUser.verificationPhone || null,
       createdAt: new Date()
     };
     
     this.users.set(id, user);
+    
+    // CI 값이 있는 경우 CI 맵에 추가
+    if (user.ci) {
+      this.userCiMap.set(user.ci, id);
+    }
+    
+    // 소셜 로그인 사용자인 경우 소셜 ID 맵에 추가
+    if (user.provider && user.socialId) {
+      const key = `${user.provider}:${user.socialId}`;
+      this.userSocialMap.set(key, id);
+      console.log(`소셜 계정 맵에 추가: ${key} -> ${id}`);
+    }
+    
     return user;
   }
 

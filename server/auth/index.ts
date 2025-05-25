@@ -166,7 +166,8 @@ function setupAuthRoutes(app: Express) {
         password: hashedPassword,
         email,
         name,
-        role: 'pet-owner' as UserRole
+        role: 'pet-owner' as UserRole,
+        verified: false // 이메일 인증 등을 통해 나중에 true로 설정
       });
       
       // 자동 로그인
