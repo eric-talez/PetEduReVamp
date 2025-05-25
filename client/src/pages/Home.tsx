@@ -6,6 +6,7 @@ import { TrendingSection } from '@/components/TrendingSection';
 import { MiniChart } from '@/components/ui/mini-chart';
 import { WeeklyWeatherModal } from '@/components/WeeklyWeatherModal';
 import { ShopPreview } from '@/components/ShopPreview'; // 인증 상태에 의존하지 않는 컴포넌트
+import { SocialLoginButtons } from '@/components/SocialLoginButtons'; // 소셜 로그인 버튼
 import { useState, lazy, Suspense } from 'react';
 import { Loader2, ChevronDown, ChevronRight } from 'lucide-react';
 
@@ -396,7 +397,8 @@ export default function Home() {
               </>
             )}
             <hr className="my-4 dark:border-gray-700" />
-            {/* 강제 로그인 버튼 제거 (요청에 따라 숨김 처리) */}
+            {/* 소셜 로그인 버튼 추가 */}
+            <SocialLoginButtons />
           </div>
         </div>
         
