@@ -17,6 +17,8 @@ import { MessagingService } from './messaging/service';
 import { NotificationService } from './notifications/service';
 import { registerNotificationRoutes } from './notifications/routes';
 import { requestPasswordReset, verifyResetToken, resetPassword } from './recovery';
+import socialRouter from './routes/social';
+import analyticsRouter from './routes/analytics';
 
 // 타입은 server/types.d.ts에 정의되어 있습니다.
 
@@ -40,6 +42,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   registerVideoCallRoutes(app);
   registerMenuRoutes(app);
   registerAiRoutes(app);
+  
+  // 소셜 기능 라우터 등록
+  app.use('/api/social', socialRouter);
+  
+  // 분석 및 보고서 기능 라우터 등록
+  app.use('/api/analytics', analyticsRouter);
   
   // 이벤트 API 엔드포인트
   // 샘플 이벤트 데이터

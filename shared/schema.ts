@@ -596,3 +596,86 @@ export type InsertPayment = z.infer<typeof createPaymentSchema>;
 
 export type Subscription = typeof subscriptions.$inferSelect;
 export type InsertSubscription = z.infer<typeof createSubscriptionSchema>;
+
+// 분석 및 보고서 관련 테이블 정의
+// 사용자 활동 로그 테이블
+export const userActivityLogs = pgTable("user_activity_logs", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  activityType: text("activity_type").notNull(), // 'login', 'course_view', 'video_watch', 'post_create', etc.
+  metadata: json("metadata"), // 활동 관련 추가 정보를 JSON으로 저장
+  ipAddress: text("ip_address"),
+  userAgent: text("user_agent"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+// 반려동물 건강 로그 테이블
+export const petHealthLogs = pgTable("pet_health_logs", {
+  id: serial("id").primaryKey(),
+  petId: integer("pet_id").notNull().references(() => pets.id, { onDelete: 'cascade' }),
+  recordType: text("record_type").notNull(), // 'weight', 'meal', 'medication', 'symptom', 'exercise', etc.
+  value: text("value"), // 기록 값 (예: 무게, 약 이름 등)
+  unit: text("unit"), // 단위 (예: kg, ml 등)
+  notes: text("notes"),
+  recordedAt: timestamp("recorded_at").notNull().defaultNow(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export const createPetHealthLogSchema = createInsertSchema(petHealthLogs).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true
+});
+
+// 훈련 진행 로그 테이블
+export const trainingProgressLogs = pgTable("training_progress_logs", {
+  id: serial("id").primaryKey(),
+  enrollmentId: integer("enrollment_id").notNull().references(() => enrollments.id, { onDelete: 'cascade' }),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  courseId: integer("course_id").notNull().references(() => courses.id, { onDelete: 'cascade' }),
+  lessonId: integer("lesson_id"), // 강의 ID (별도 테이블이 필요할 수 있음)
+  progressType: text("progress_type").notNull(), // 'lesson_complete', 'quiz_complete', 'assignment_submit', etc.
+  score: integer("score"), // 점수 (있는 경우)
+  duration: integer("duration"), // 소요 시간 (초 단위)
+  metadata: json("metadata"), // 추가 정보
+  completedAt: timestamp("completed_at").notNull().defaultNow(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+// 분석 보고서 템플릿 테이블
+export const reportTemplates = pgTable("report_templates", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  description: text("description"),
+  reportType: text("report_type").notNull(), // 'user_activity', 'pet_health', 'training_progress', etc.
+  config: json("config").notNull(), // 보고서 구성 설정
+  isPublic: boolean("is_public").default(false),
+  createdById: integer("created_by_id").references(() => users.id, { onDelete: 'set null' }),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+// 생성된 보고서 테이블
+export const generatedReports = pgTable("generated_reports", {
+  id: serial("id").primaryKey(),
+  templateId: integer("template_id").references(() => reportTemplates.id, { onDelete: 'set null' }),
+  userId: integer("user_id").references(() => users.id, { onDelete: 'cascade' }),
+  petId: integer("pet_id").references(() => pets.id, { onDelete: 'set null' }),
+  name: text("name").notNull(),
+  description: text("description"),
+  reportType: text("report_type").notNull(),
+  dateRange: json("date_range").$type<{ start: Date, end: Date }>(),
+  data: json("data"), // 보고서 데이터
+  pdfUrl: text("pdf_url"), // 생성된 PDF URL (있는 경우)
+  isPublic: boolean("is_public").default(false),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  accessCount: integer("access_count").default(0),
+});
+
+export type UserActivityLog = typeof userActivityLogs.$inferSelect;
+export type PetHealthLog = typeof petHealthLogs.$inferSelect;
+export type InsertPetHealthLog = z.infer<typeof createPetHealthLogSchema>;
+export type TrainingProgressLog = typeof trainingProgressLogs.$inferSelect;
+export type ReportTemplate = typeof reportTemplates.$inferSelect;
+export type GeneratedReport = typeof generatedReports.$inferSelect;
