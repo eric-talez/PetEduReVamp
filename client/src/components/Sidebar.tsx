@@ -196,21 +196,20 @@ export function Sidebar({
       }
     }
     
-    // 기본값 (모두 닫힌 상태로 시작)
-    // 비로그인 상태면 myLearning 숨김 처리
+    // 기본값 설정 - 자주 사용하는 메뉴는 기본적으로 열어두고, 나머지는 닫힌 상태로 시작
     return {
-      main: false,
-      features: false,
-      myLearning: false, // 로그인 상태에 따라 이후에 변경됨
-      trainer: false,
-      institute: false,
-      admin: false,
-      shopping: false
+      main: true,         // 메인 메뉴는 기본적으로 열어두기
+      features: false,    // 특별 메뉴는 기본적으로 닫아두기
+      myLearning: false,  // 로그인 상태에 따라 이후에 변경됨
+      trainer: false,     // 훈련사 메뉴
+      institute: false,   // 기관 관리 메뉴
+      admin: false,       // 관리자 메뉴
+      shopping: true      // 쇼핑 메뉴는 기본적으로 열어두기
     };
   });
   
   useEffect(() => {
-    console.log('Sidebar useEffect - userRole:', userRole);
+    console.log('Sidebar useEffect - userRole:', userRole, 'isAuthenticated:', isAuthenticated);
     
     // 기관 관리자 및 관리자 권한 확인
     const isInstituteAdmin = userRole === 'institute-admin';
@@ -219,17 +218,26 @@ export function Sidebar({
     
     console.log('권한 체크 - 기관 관리자:', isInstituteAdmin, '관리자:', isAdmin, '훈련사:', isTrainer);
     
-    // 기존 menuGroups 값 가져오기
+    // 로그인 상태가 변경되면 메뉴 그룹 상태 업데이트
     setMenuGroups((prevGroups: Record<string, boolean>) => {
-      // 권한에 따른 값만 업데이트
+      // 권한에 따른 값 업데이트
       const updatedMenuGroups = {
         ...prevGroups,
         trainer: isTrainer || isAdmin,
         institute: isInstituteAdmin || isAdmin,
         admin: isAdmin,
-        // 로그인 상태에 따라 myLearning 메뉴 그룹 표시/숨김 처리
-        myLearning: isAuthenticated ? prevGroups.myLearning : false
+        // 로그인 상태에 따라 메뉴 그룹 표시/숨김 처리
+        myLearning: isAuthenticated ? prevGroups.myLearning : false,
+        features: isAuthenticated ? prevGroups.features : false
       };
+      
+      // localStorage에 업데이트된 메뉴 상태 저장
+      try {
+        localStorage.setItem('menuGroups', JSON.stringify(updatedMenuGroups));
+        console.log('메뉴 그룹 상태가 localStorage에 저장됨:', updatedMenuGroups);
+      } catch (e) {
+        console.error('메뉴 그룹 상태 저장 오류:', e);
+      }
       
       console.log('메뉴 그룹 업데이트:', updatedMenuGroups);
       return updatedMenuGroups;
