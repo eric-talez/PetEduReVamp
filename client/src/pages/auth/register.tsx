@@ -58,7 +58,7 @@ export default function Register() {
   // 로그인 페이지로 이동
   const goToLogin = () => {
     console.log("로그인 페이지로 이동 시도");
-    window.location.href = "/auth";
+    setLocation("/auth");
   };
 
   // 회원가입 처리 함수
