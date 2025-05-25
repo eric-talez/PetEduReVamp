@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, boolean, timestamp, json, varchar } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, timestamp, json, varchar, uniqueIndex } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -29,6 +29,11 @@ export const users = pgTable("users", {
   // 소셜 로그인 제공자 정보
   provider: text("provider"), // 'kakao', 'naver' 등
   socialId: text("social_id"), // 소셜 서비스에서의 ID
+  // 결제 관련 필드 추가
+  stripeCustomerId: text("stripe_customer_id"), // Stripe 고객 ID
+  stripeSubscriptionId: text("stripe_subscription_id"), // Stripe 구독 ID
+  membershipTier: text("membership_tier"), // 'free', 'basic', 'premium' 등
+  membershipExpiresAt: timestamp("membership_expires_at"), // 멤버십 만료일
 });
 
 export const createUserSchema = createInsertSchema(users)
@@ -206,9 +211,15 @@ export const posts = pgTable("posts", {
   title: text("title").notNull(),
   content: text("content").notNull(),
   image: text("image"),
-  tag: text("tag"),
+  tags: json("tags").$type<string[]>(),
+  category: text("category"),
+  status: text("status").default('published'), // 'published', 'draft', 'archived'
+  viewCount: integer("view_count").default(0),
   likes: integer("likes").default(0),
   comments: integer("comments").default(0),
+  isPinned: boolean("is_pinned").default(false),
+  isPrivate: boolean("is_private").default(false),
+  allowComments: boolean("allow_comments").default(true),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
@@ -218,8 +229,60 @@ export const createPostSchema = createInsertSchema(posts).omit({
   authorId: true,
   likes: true,
   comments: true,
+  viewCount: true,
   createdAt: true,
   updatedAt: true
+});
+
+// 게시글 댓글 테이블
+export const comments = pgTable("comments", {
+  id: serial("id").primaryKey(),
+  postId: integer("post_id").notNull().references(() => posts.id, { onDelete: 'cascade' }),
+  authorId: integer("author_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  content: text("content").notNull(),
+  likes: integer("likes").default(0),
+  parentId: integer("parent_id").references(() => comments.id), // 대댓글 지원
+  isEdited: boolean("is_edited").default(false),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export const createCommentSchema = createInsertSchema(comments).omit({
+  id: true,
+  authorId: true,
+  likes: true,
+  isEdited: true,
+  createdAt: true,
+  updatedAt: true
+});
+
+// 좋아요 테이블
+export const likes = pgTable("likes", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  postId: integer("post_id").references(() => posts.id, { onDelete: 'cascade' }),
+  commentId: integer("comment_id").references(() => comments.id, { onDelete: 'cascade' }),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+}, (table) => {
+  return {
+    // 사용자는 게시글당 한 번만 좋아요 가능
+    postUserUnique: uniqueIndex("post_user_unique").on(table.userId, table.postId),
+    // 사용자는 댓글당 한 번만 좋아요 가능
+    commentUserUnique: uniqueIndex("comment_user_unique").on(table.userId, table.commentId),
+  }
+});
+
+// 팔로우 관계 테이블
+export const follows = pgTable("follows", {
+  id: serial("id").primaryKey(),
+  followerId: integer("follower_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  followingId: integer("following_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+}, (table) => {
+  return {
+    // 팔로워와 팔로잉 조합은 고유해야 함
+    followerFollowingUnique: uniqueIndex("follower_following_unique").on(table.followerId, table.followingId),
+  }
 });
 
 // Types for TypeScript
@@ -249,6 +312,13 @@ export type InsertAchievement = z.infer<typeof createAchievementSchema>;
 
 export type Post = typeof posts.$inferSelect;
 export type InsertPost = z.infer<typeof createPostSchema>;
+
+export type Comment = typeof comments.$inferSelect;
+export type InsertComment = z.infer<typeof createCommentSchema>;
+
+export type Like = typeof likes.$inferSelect;
+
+export type Follow = typeof follows.$inferSelect;
 
 // 이벤트 위치 타입
 export const eventLocations = pgTable("event_locations", {
@@ -452,3 +522,77 @@ export const createMenuConfigurationSchema = createInsertSchema(menuConfiguratio
 
 export type MenuConfiguration = typeof menuConfigurations.$inferSelect;
 export type InsertMenuConfiguration = z.infer<typeof createMenuConfigurationSchema>;
+
+// 결제 및 구독 관련 테이블 정의
+// 결제 플랜 테이블
+export const subscriptionPlans = pgTable("subscription_plans", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  description: text("description").notNull(),
+  price: integer("price").notNull(), // 월 구독료 (원 단위)
+  interval: text("interval").notNull(), // 'month', 'year'
+  stripePriceId: text("stripe_price_id"), // Stripe의 가격 ID
+  features: json("features").$type<string[]>(), // 플랜에 포함된 기능 목록
+  isPopular: boolean("is_popular").default(false),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export const createSubscriptionPlanSchema = createInsertSchema(subscriptionPlans).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true
+});
+
+// 결제 내역 테이블
+export const payments = pgTable("payments", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  amount: integer("amount").notNull(), // 결제 금액 (원 단위)
+  status: text("status").notNull(), // 'succeeded', 'pending', 'failed'
+  paymentMethod: text("payment_method").notNull(), // 'card', 'bank_transfer', 등
+  paymentType: text("payment_type").notNull(), // 'subscription', 'one_time'
+  stripePaymentId: text("stripe_payment_id"), // Stripe 결제 ID
+  stripeCustomerId: text("stripe_customer_id"), // Stripe 고객 ID
+  description: text("description"),
+  receiptUrl: text("receipt_url"), // 영수증 URL
+  paymentDate: timestamp("payment_date").notNull().defaultNow(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const createPaymentSchema = createInsertSchema(payments).omit({
+  id: true,
+  createdAt: true
+});
+
+// 구독 테이블
+export const subscriptions = pgTable("subscriptions", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  planId: integer("plan_id").notNull().references(() => subscriptionPlans.id),
+  status: text("status").notNull(), // 'active', 'canceled', 'past_due', 'trialing'
+  currentPeriodStart: timestamp("current_period_start").notNull(),
+  currentPeriodEnd: timestamp("current_period_end").notNull(),
+  cancelAtPeriodEnd: boolean("cancel_at_period_end").default(false),
+  stripeSubscriptionId: text("stripe_subscription_id"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  canceledAt: timestamp("canceled_at"),
+});
+
+export const createSubscriptionSchema = createInsertSchema(subscriptions).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+  canceledAt: true
+});
+
+export type SubscriptionPlan = typeof subscriptionPlans.$inferSelect;
+export type InsertSubscriptionPlan = z.infer<typeof createSubscriptionPlanSchema>;
+
+export type Payment = typeof payments.$inferSelect;
+export type InsertPayment = z.infer<typeof createPaymentSchema>;
+
+export type Subscription = typeof subscriptions.$inferSelect;
+export type InsertSubscription = z.infer<typeof createSubscriptionSchema>;

@@ -63,18 +63,33 @@ export function SimpleChatBot() {
         content: userMessage.content
       });
 
-      // AI API 호출 (임시 모의 응답 사용)
-      // 실제 구현에서는 '/api/ai/chat' 엔드포인트를 호출해야 합니다
-      setTimeout(() => {
-        const assistantMessage: Message = {
-          id: `assistant-${Date.now()}`,
-          role: 'assistant',
-          content: getSimulatedResponse(userMessage.content)
-        };
+      // 실제 AI API 호출
+      const response = await fetch('/api/ai/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          messages: apiMessages,
+          model: 'gpt-4o', // 최신 모델 사용
+          maxTokens: isAuthenticated ? 1000 : 500, // 인증 여부에 따라 다른 토큰 제한
+        }),
+      });
 
-        setMessages(prev => [...prev, assistantMessage]);
-        setIsLoading(false);
-      }, 1000);
+      if (!response.ok) {
+        throw new Error(`API 요청 실패: ${response.status}`);
+      }
+
+      const data = await response.json();
+      
+      const assistantMessage: Message = {
+        id: `assistant-${Date.now()}`,
+        role: 'assistant',
+        content: data.content || '응답을 받지 못했습니다.'
+      };
+
+      setMessages(prev => [...prev, assistantMessage]);
+      setIsLoading(false);
     } catch (error) {
       console.error('AI 응답 오류:', error);
       
