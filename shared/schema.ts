@@ -212,14 +212,8 @@ export const posts = pgTable("posts", {
   content: text("content").notNull(),
   image: text("image"),
   tag: text("tag"),
-  category: text("category"),
-  status: text("status").default('published'), // 'published', 'draft', 'archived'
-  viewCount: integer("view_count").default(0),
   likes: integer("likes").default(0),
   comments: integer("comments").default(0),
-  isPinned: boolean("is_pinned").default(false),
-  isPrivate: boolean("is_private").default(false),
-  allowComments: boolean("allow_comments").default(true),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });

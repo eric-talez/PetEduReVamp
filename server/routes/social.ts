@@ -37,10 +37,10 @@ router.get('/posts', async (req, res) => {
     .limit(Number(limit))
     .offset(offset);
     
-    // 카테고리 필터링 (있는 경우)
-    if (category) {
+    // 카테고리 필터링 (데이터베이스에 category 필드가 없으므로 주석 처리)
+    /*if (category) {
       query = query.where(eq(posts.category, String(category)));
-    }
+    }*/
     
     // 태그 필터링 (있는 경우)
     // 데이터베이스에는 tag 열이 존재함 (tags가 아님)
@@ -53,9 +53,9 @@ router.get('/posts', async (req, res) => {
     // 총 게시글 수 조회를 위한 별도 쿼리
     let countQuery = db.select({ count: sql<number>`count(*)` }).from(posts);
     
-    if (category) {
+    /*if (category) {
       countQuery = countQuery.where(eq(posts.category, String(category)));
-    }
+    }*/
     
     // 태그 필터링 - 카운트 쿼리
     if (tag) {
