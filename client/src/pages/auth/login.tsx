@@ -11,6 +11,8 @@ import { SocialLoginButtons } from "@/components/SocialLoginButtons";
 import { useToast } from "@/hooks/use-toast";
 import { Eye, EyeOff } from "lucide-react";
 import RegisterPage from "./register";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { PasswordResetForm } from "@/components/PasswordResetForm";
 
 export default function Login() {
   const auth = useAuth();
@@ -19,6 +21,8 @@ export default function Login() {
   
   // URL 파라미터에서 탭 정보 가져오기
   const [showRegisterForm, setShowRegisterForm] = useState(false);
+  // 비밀번호 찾기 모달 상태
+  const [showPasswordReset, setShowPasswordReset] = useState(false);
   
   useEffect(() => {
     // URL에서 tab 파라미터 가져오기
@@ -96,6 +100,19 @@ export default function Login() {
   
   return (
     <div className="flex min-h-screen">
+      {/* 비밀번호 찾기 모달 */}
+      <Dialog open={showPasswordReset} onOpenChange={setShowPasswordReset}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>비밀번호 찾기</DialogTitle>
+          </DialogHeader>
+          <p className="text-gray-600 dark:text-gray-400 mb-4">
+            <span className="font-medium text-blue-600 dark:text-blue-400">가입시 등록한 아이디와 이메일이 정확히 일치해야 합니다.</span> 일치하는 정보가 확인되면 비밀번호 재설정 안내를 이메일로 보내드립니다.
+          </p>
+          <PasswordResetForm onClose={() => setShowPasswordReset(false)} />
+        </DialogContent>
+      </Dialog>
+      
       {/* 왼쪽 컬럼 - 폼 영역 */}
       <div className="flex-1 flex flex-col items-center justify-center p-6 bg-white dark:bg-gray-950">
         <div className="w-full max-w-md">
@@ -152,9 +169,13 @@ export default function Login() {
               <div className="space-y-2">
                 <div className="flex justify-between items-center">
                   <Label htmlFor="password">비밀번호</Label>
-                  <a href="#" className="text-xs text-primary hover:underline">
+                  <button
+                    type="button"
+                    onClick={() => setShowPasswordReset(true)}
+                    className="text-xs text-primary hover:underline bg-transparent border-0 p-0 cursor-pointer"
+                  >
                     비밀번호 찾기
-                  </a>
+                  </button>
                 </div>
                 <div className="relative">
                   <Input
