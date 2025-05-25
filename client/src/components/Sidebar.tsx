@@ -593,7 +593,26 @@ export function Sidebar({
                       }} 
                       show={true}
                     >위치 서비스</AccessibleNavItem>
-                    {/* 영상 훈련 및 화상 수업은 로그인한 사용자만 접근 가능 */}
+                    <AccessibleNavItem 
+                      href="/video-training" 
+                      icon={<Video className="w-5 h-5 mr-2" />} 
+                      active={isActive("/video-training")} 
+                      onClick={(path) => {
+                        console.log("영상 훈련 메뉴 클릭:", path);
+                        handleItemClick(path);
+                      }} 
+                      show={true}
+                    >영상 훈련</AccessibleNavItem>
+                    <AccessibleNavItem 
+                      href="/video-call" 
+                      icon={<VideoIcon className="w-5 h-5 mr-2" />} 
+                      active={isActive("/video-call")} 
+                      onClick={(path) => {
+                        console.log("화상 수업 메뉴 클릭:", path);
+                        handleItemClick(path);
+                      }} 
+                      show={true}
+                    >화상 수업</AccessibleNavItem>
                     <AccessibleNavItem 
                       href="/community" 
                       icon={<MessageSquare className="w-5 h-5 mr-2" />} 
