@@ -654,14 +654,7 @@ export function Sidebar({
                   </>
                 )}
                 
-                <SidebarMenuGroup
-                  expanded={expanded}
-                  title="특별 메뉴"
-                  groupName="features"
-                  isOpen={menuGroups.features}
-                  toggleGroup={toggleMenuGroup}
-                  icon={<Gift className="w-5 h-5 text-gray-500" />}
-                />
+                {/* 특별 메뉴는 비로그인 상태에서 숨김 처리 */}
 
                 {/* 쇼핑몰 메뉴 그룹 (항상 표시) */}
                 <SidebarMenuGroup
@@ -680,11 +673,7 @@ export function Sidebar({
                   </div>
                 )}
                 
-                {menuGroups.features && (
-                  <>
-                    {/* features 메뉴 그룹 내용 */}
-                  </>
-                )}
+                {/* 비로그인 상태에서 특별 메뉴 내용도 숨김 처리 */}
 
                 {expanded ? (
                   <div className="flex items-center mx-auto mt-4 px-6 py-3 border border-gray-200 dark:border-gray-700 rounded-lg bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 shadow-sm w-full">
