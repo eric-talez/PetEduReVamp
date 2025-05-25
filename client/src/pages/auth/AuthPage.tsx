@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from "@/hooks/use-toast";
 import { SocialLoginButtons } from '@/components/SocialLoginButtons';
-import { useAuth } from '@/SimpleApp';
+import { useAuth } from '@/hooks/useAuth';
 
 /**
  * 로그인 폼 컴포넌트
