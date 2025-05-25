@@ -10,9 +10,12 @@ const BasicAuthPage = () => {
   
   // URL 쿼리 파라미터 확인
   useEffect(() => {
-    const url = new URL(window.location.href);
-    const tab = url.searchParams.get('tab');
-    const reset = url.searchParams.get('reset');
+    // 현재 URL에서 쿼리 파라미터 가져오기
+    const params = new URLSearchParams(window.location.search);
+    const tab = params.get('tab');
+    const reset = params.get('reset');
+    
+    console.log("URL 파라미터 확인:", { tab, reset });
     
     // 탭 파라미터가 있으면 해당 탭으로 이동
     if (tab === 'register') {
@@ -21,9 +24,10 @@ const BasicAuthPage = () => {
     
     // reset 파라미터가 있으면 비밀번호 찾기 모달 표시
     if (reset === 'true') {
+      console.log("비밀번호 찾기 모달 표시");
       setShowPasswordReset(true);
     }
-  }, [location]);
+  }, []);
   
   // 비밀번호 찾기 모달을 여닫는 함수 정의
   const handleTogglePasswordReset = () => {

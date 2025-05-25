@@ -388,7 +388,7 @@ export default function Home() {
                     <Button
                       variant="link"
                       className="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
-                      onClick={() => setLocation('/auth?reset=true')}
+                      onClick={() => window.location.href = '/auth?reset=true'}
                     >
                       비밀번호를 잊으셨나요?
                     </Button>
