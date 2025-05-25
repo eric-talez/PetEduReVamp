@@ -38,28 +38,17 @@ const BasicAuthPage = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 p-4">
       {/* 비밀번호 찾기 모달 */}
-      {showPasswordReset && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full p-6 relative">
-            <button 
-              onClick={handleTogglePasswordReset}
-              className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
-              aria-label="닫기"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-            
-            <h2 className="text-2xl font-bold mb-4">비밀번호 찾기</h2>
-            <p className="text-gray-600 dark:text-gray-400 mb-6">
-              가입시 등록한 아이디와 이메일을 입력하시면 비밀번호 재설정 안내를 보내드립니다.
-            </p>
-            
-            <PasswordResetForm onClose={handleTogglePasswordReset} />
-          </div>
-        </div>
-      )}
+      <Dialog open={showPasswordReset} onOpenChange={setShowPasswordReset}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>비밀번호 찾기</DialogTitle>
+          </DialogHeader>
+          <p className="text-gray-600 dark:text-gray-400 mb-4">
+            <span className="font-medium text-blue-600 dark:text-blue-400">가입시 등록한 아이디와 이메일이 정확히 일치해야 합니다.</span> 일치하는 정보가 확인되면 비밀번호 재설정 안내를 이메일로 보내드립니다.
+          </p>
+          <PasswordResetForm onClose={() => setShowPasswordReset(false)} />
+        </DialogContent>
+      </Dialog>
 
       <div className="max-w-md w-full space-y-8 bg-white dark:bg-gray-800 p-8 rounded-lg shadow-md">
         <div className="text-center">
@@ -141,6 +130,11 @@ const LoginForm = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  // BasicAuthPage의 상위 컴포넌트에서 setShowPasswordReset 접근
+  const setShowPasswordReset = (value: boolean) => {
+    // 이벤트를 통해 상위 컴포넌트의 상태 업데이트
+    window.dispatchEvent(new CustomEvent('togglePasswordReset', { detail: { value } }));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -236,7 +230,7 @@ const LoginForm = () => {
         <div className="text-sm">
           <button 
             type="button"
-            onClick={handleTogglePasswordReset}
+            onClick={() => setShowPasswordReset(true)}
             className="text-blue-600 hover:underline bg-transparent border-0 p-0 cursor-pointer text-left"
           >
             비밀번호를 잊으셨나요?
