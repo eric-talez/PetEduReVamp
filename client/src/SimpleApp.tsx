@@ -6,6 +6,7 @@ import { UserPreferencesProvider } from './hooks/use-user-preferences';
 import { useGlobalShortcuts } from './hooks/use-keyboard-shortcuts';
 import { NotificationsProvider } from './components/NotificationsProvider';
 import { AchievementsProvider } from './hooks/useAchievements';
+import { useKeyboardAccessibility } from '@/hooks/use-keyboard-accessibility';
 
 // 페이지 컴포넌트 임포트
 import Home from "./pages/Home";
@@ -40,6 +41,8 @@ import { FloatingCartButton } from "@/components/FloatingCartButton";
 import { ThemeManager } from "@/components/ThemeManager";
 import { AccessibilityFloatingButton } from "@/components/ui/AccessibilityControls";
 import { DogLoading, FullScreenLoading } from "@/components/DogLoading";
+import { SkipToContent } from "@/components/ui/skip-to-content";
+import ErrorBoundary from "@/components/ErrorBoundary";
 
 // 인증 관련 임포트 - 호환성 레이어 사용
 import { useAuth, USER_ROLES, type UserRole, type AuthState, UserRoleEnum } from "@/lib/auth-compat";
@@ -159,69 +162,105 @@ function AppLayout({ children }: { children: ReactNode }) {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
   
+  // 키보드 접근성 설정 (전역 단축키)
+  useKeyboardAccessibility([
+    // 홈 페이지로 이동
+    { 
+      key: 'h', 
+      altKey: true, 
+      handler: () => window.location.href = '/' 
+    },
+    // 사이드바 토글
+    { 
+      key: 'b', 
+      altKey: true, 
+      handler: () => isDesktop ? toggleSidebarSize() : setSidebarOpen(!sidebarOpen) 
+    },
+    // 도움말 표시
+    { 
+      key: '/', 
+      handler: () => {
+        alert(`키보드 단축키:
+- Alt+H: 홈 페이지로 이동
+- Alt+B: 사이드바 토글
+- ESC: 모달 닫기
+- /: 도움말 표시`);
+      } 
+    }
+  ], true);
+
   return (
-    <div className="bg-background text-foreground min-h-screen font-sans flex flex-col">
-      <div className="flex flex-grow">
-        {/* 사이드바 - 항상 고정된 너비를 가짐 */}
-        <aside 
-          className={`
-            shrink-0 h-screen fixed left-0 top-0 z-20
-            transition-all duration-300
-            ${sidebarExpanded ? 'w-64' : 'w-[70px]'}
-            ${sidebarOpen || isDesktop ? 'translate-x-0' : '-translate-x-full'}
-          `}
-        >
-          <Sidebar 
-            open={sidebarOpen} 
-            onClose={() => setSidebarOpen(false)} 
-            userRole={auth.userRole} 
-            isAuthenticated={auth.isAuthenticated}
-            expanded={sidebarExpanded}
-            onToggleExpand={toggleSidebarSize}
-          />
-          {/* 디버그 정보 표시 - 개발 모드에서만 표시 */}
-          {process.env.NODE_ENV === 'development' && (
-            <div className="fixed bottom-4 right-4 p-2 bg-slate-900 text-white text-xs rounded z-50">
-              역할: {auth.userRole || '미로그인'} / 
-              인증: {auth.isAuthenticated ? 'true' : 'false'}
-            </div>
+    <ErrorBoundary showDogLoading>
+      <div className="bg-background text-foreground min-h-screen font-sans flex flex-col">
+        {/* 접근성 개선: 콘텐츠로 건너뛰기 링크 */}
+        <SkipToContent contentId="main-content" />
+        
+        <div className="flex flex-grow">
+          {/* 사이드바 - 항상 고정된 너비를 가짐 */}
+          <aside 
+            className={`
+              shrink-0 h-screen fixed left-0 top-0 z-20
+              transition-all duration-300
+              ${sidebarExpanded ? 'w-64' : 'w-[70px]'}
+              ${sidebarOpen || isDesktop ? 'translate-x-0' : '-translate-x-full'}
+            `}
+            aria-label="사이드바 메뉴"
+          >
+            <Sidebar 
+              open={sidebarOpen} 
+              onClose={() => setSidebarOpen(false)} 
+              userRole={auth.userRole} 
+              isAuthenticated={auth.isAuthenticated}
+              expanded={sidebarExpanded}
+              onToggleExpand={toggleSidebarSize}
+            />
+            {/* 디버그 정보 표시 - 개발 모드에서만 표시 */}
+            {process.env.NODE_ENV === 'development' && (
+              <div className="fixed bottom-4 right-4 p-2 bg-slate-900 text-white text-xs rounded z-50">
+                역할: {auth.userRole || '미로그인'} / 
+                인증: {auth.isAuthenticated ? 'true' : 'false'}
+              </div>
+            )}
+          </aside>
+          
+          {/* 모바일 오버레이 - 사이드바가 열리면 본문 위에 표시 */}
+          {sidebarOpen && !isDesktop && (
+            <div 
+              className="fixed inset-0 bg-black bg-opacity-50 z-10" 
+              onClick={() => setSidebarOpen(false)}
+              aria-hidden="true"
+            />
           )}
-        </aside>
-        
-        {/* 모바일 오버레이 - 사이드바가 열리면 본문 위에 표시 */}
-        {sidebarOpen && !isDesktop && (
-          <div 
-            className="fixed inset-0 bg-black bg-opacity-50 z-10" 
-            onClick={() => setSidebarOpen(false)}
-          />
-        )}
-        
-        {/* 우측 컨텐츠 영역 (헤더 + 메인) */}
-        <div className={`
-          flex-grow flex flex-col min-h-screen transition-all duration-300 w-full
-          ${isDesktop ? (sidebarExpanded ? 'ml-64' : 'ml-[70px]') : 'ml-0'}
-        `}>
-          {/* 상단바 */}
-          <TopBar
-            sidebarOpen={sidebarOpen}
-            onToggleSidebar={isDesktop ? toggleSidebarSize : () => setSidebarOpen(!sidebarOpen)}
-          />
           
-          {/* 메인 컨텐츠 영역 */}
-          <main className="flex-grow">
-            {children}
-          </main>
-          
-          {/* 플로팅 장바구니 버튼 */}
-          <FloatingCartButton />
+          {/* 우측 컨텐츠 영역 (헤더 + 메인) */}
+          <div className={`
+            flex-grow flex flex-col min-h-screen transition-all duration-300 w-full
+            ${isDesktop ? (sidebarExpanded ? 'ml-64' : 'ml-[70px]') : 'ml-0'}
+          `}>
+            {/* 상단바 */}
+            <TopBar
+              sidebarOpen={sidebarOpen}
+              onToggleSidebar={isDesktop ? toggleSidebarSize : () => setSidebarOpen(!sidebarOpen)}
+            />
+            
+            {/* 메인 컨텐츠 영역 */}
+            <main id="main-content" className="flex-grow" tabIndex={-1}>
+              <ErrorBoundary>
+                {children}
+              </ErrorBoundary>
+            </main>
+            
+            {/* 플로팅 장바구니 버튼 */}
+            <FloatingCartButton />
+          </div>
+        </div>
+        
+        {/* 챗봇 */}
+        <div className="fixed bottom-4 right-4 z-50">
+          <SimpleChatbot />
         </div>
       </div>
-      
-      {/* 챗봇 */}
-      <div className="fixed bottom-4 right-4 z-50">
-        <SimpleChatbot />
-      </div>
-    </div>
+    </ErrorBoundary>
   );
 }
 
