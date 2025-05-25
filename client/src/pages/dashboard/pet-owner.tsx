@@ -20,97 +20,97 @@ export default function PetOwnerDashboard({ onAction }: PetOwnerDashboardProps) 
   const bannerSlides = [
     {
       id: 1,
-      title: "반려견과 함께하는 특별한 교육 여정",
-      description: "Talez와 함께 전문 훈련사의 체계적인 교육으로 더 행복한 반려생활을 시작하세요.",
+      title: "반려견 맞춤형 전문 교육 서비스",
+      description: "Talez의 전문 훈련사가 제공하는 개인 맞춤형 교육으로 반려견의 성장을 돕습니다",
       features: [
-        "맞춤형 1:1 전문 상담",
-        "체계적인 단계별 훈련 프로그램",
-        "전문 훈련사의 실시간 피드백"
+        "1:1 전문가 코칭",
+        "행동 교정 프로그램",
+        "실시간 화상 교육"
       ],
       image: "https://images.unsplash.com/photo-1548199973-03cce0bbc87b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=400",
       primaryAction: {
-        text: "강의 둘러보기",
+        text: "프로그램 둘러보기",
         path: "/courses"
       },
       secondaryAction: {
-        text: "무료 웨비나 참여",
-        path: "/events"
+        text: "무료 체험 신청",
+        path: "/free-trial"
       }
     },
     {
       id: 2,
-      title: "반려견 행동 교정 특별 과정",
-      description: "짖음, 물기 등 문제 행동을 해결하는 전문 훈련사의 맞춤형 교육 프로그램",
+      title: "AI 기반 반려견 행동 분석",
+      description: "최신 인공지능 기술로 반려견의 행동과 감정을 분석하고 맞춤형 솔루션을 제공합니다",
       features: [
-        "문제 행동 원인 분석",
-        "단계별 교정 프로그램",
-        "지속적인 모니터링 및 피드백"
+        "영상 기반 행동 분석",
+        "감정 상태 모니터링",
+        "맞춤형 훈련 가이드"
       ],
       image: "https://images.unsplash.com/photo-1589923188651-268a9765e432?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=400",
       primaryAction: {
-        text: "상담 신청하기",
-        path: "/consultations"
+        text: "AI 분석 체험하기",
+        path: "/ai-analysis"
       },
       secondaryAction: {
-        text: "성공 사례 보기",
-        path: "/success-stories"
+        text: "기술 소개 보기",
+        path: "/ai-technology"
       }
     },
     {
       id: 3,
-      title: "여름 시즌 반려견 건강 관리",
-      description: "무더운 여름철 반려견 건강을 지키는 실용적인 팁과 권장 사항",
+      title: "반려견 친화적 장소 찾기",
+      description: "전국의 반려견 동반 가능 장소를 한 눈에 확인하고 실시간 리뷰와 평점을 확인하세요",
       features: [
-        "열사병 예방 가이드",
-        "시즌별 영양 관리법",
-        "여름철 반려견 놀이 추천"
+        "위치 기반 추천 시스템",
+        "사용자 실시간 리뷰",
+        "Talez 인증 장소 정보"
       ],
       image: "https://images.unsplash.com/photo-1535930891776-0c2dfb7fda1a?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=400",
       primaryAction: {
-        text: "건강 가이드 보기",
-        path: "/health-guides"
+        text: "주변 장소 찾기",
+        path: "/locations"
       },
       secondaryAction: {
-        text: "수의사 상담 예약",
-        path: "/vet-consultation"
+        text: "장소 등록하기",
+        path: "/register-location"
       }
     },
     {
       id: 4,
-      title: "AI 기반 반려견 분석 서비스 출시",
-      description: "반려견의 행동과 감정을 AI로 분석하여 맞춤형 훈련 방법을 제안합니다",
+      title: "반려견 건강 모니터링 시스템",
+      description: "일상 활동, 식이 패턴, 수면 상태를 기록하고 건강 변화를 추적하여 질병을 예방합니다",
       features: [
-        "AI 행동 패턴 분석",
-        "맞춤형 훈련 솔루션",
-        "실시간 분석 리포트"
+        "건강 데이터 대시보드",
+        "식이 관리 캘린더",
+        "건강 알림 서비스"
       ],
       image: "https://images.unsplash.com/photo-1529429617124-95b109e86bb8?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=400",
       primaryAction: {
-        text: "서비스 체험하기",
-        path: "/ai-analysis"
+        text: "건강 기록 시작하기",
+        path: "/health-tracker"
       },
       secondaryAction: {
-        text: "더 알아보기",
-        path: "/ai-services"
+        text: "건강 정보 살펴보기",
+        path: "/health-library"
       }
     },
     {
       id: 5,
-      title: "반려견과 함께하는 액티비티",
-      description: "반려견과 즐길 수 있는 다양한 야외 활동과 이벤트 정보",
+      title: "반려견 소셜 커뮤니티",
+      description: "비슷한 관심사를 가진 반려인들과 소통하고 경험을 공유하는 활발한 커뮤니티에 참여하세요",
       features: [
-        "반려견 친화 장소 추천",
-        "시즌별 이벤트 정보",
-        "소셜 모임 일정"
+        "지역별 모임 정보",
+        "실시간 Q&A",
+        "전문가 상담 서비스"
       ],
       image: "https://images.unsplash.com/photo-1551730459-92db2a308d6a?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=400",
       primaryAction: {
-        text: "이벤트 확인하기",
-        path: "/pet-events"
+        text: "커뮤니티 가입하기",
+        path: "/community"
       },
       secondaryAction: {
-        text: "커뮤니티 참여",
-        path: "/community"
+        text: "이벤트 참여하기",
+        path: "/events"
       }
     }
   ];
@@ -295,14 +295,14 @@ export default function PetOwnerDashboard({ onAction }: PetOwnerDashboardProps) 
             
             <div className="flex flex-wrap gap-2">
               <Button
-                className="bg-white text-primary font-semibold hover:bg-gray-50 text-xs md:text-sm py-1 px-3 h-auto"
+                className="bg-white text-primary font-semibold hover:bg-gray-50 text-xs md:text-sm py-1.5 px-4 h-auto rounded-full shadow-md transition-all hover:scale-105"
                 onClick={() => setLocation(slide.primaryAction.path)}
               >
-                {slide.primaryAction.text}
+                {slide.primaryAction.text} →
               </Button>
               <Button
                 variant="outline"
-                className="border-2 border-white text-white hover:bg-white/10 text-xs md:text-sm py-1 px-3 h-auto"
+                className="border-2 border-white text-white hover:bg-white/20 text-xs md:text-sm py-1.5 px-4 h-auto rounded-full shadow-md transition-all hover:scale-105"
                 onClick={() => setLocation(slide.secondaryAction.path)}
               >
                 {slide.secondaryAction.text}
