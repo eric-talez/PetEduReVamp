@@ -415,7 +415,7 @@ export class MemStorage implements IStorage {
     this.courses.set(course2.id, course2);
     
     // 사용자 샘플 데이터
-    const user1 = {
+    const user1: User = {
       id: this.currentId++,
       username: "petowner1",
       email: "petowner1@example.com",
@@ -428,10 +428,19 @@ export class MemStorage implements IStorage {
       specialty: null,
       isVerified: true,
       instituteId: null,
-      createdAt: new Date()
+      createdAt: new Date(),
+      // 추가 필수 필드
+      ci: null,
+      verified: false,
+      verifiedAt: null,
+      verificationName: null,
+      verificationBirth: null, 
+      verificationPhone: null,
+      provider: null,
+      socialId: null
     };
     
-    const user2 = {
+    const user2: User = {
       id: this.currentId++,
       username: "petowner2",
       email: "petowner2@example.com",
@@ -444,7 +453,16 @@ export class MemStorage implements IStorage {
       specialty: null,
       isVerified: true,
       instituteId: null,
-      createdAt: new Date()
+      createdAt: new Date(),
+      // 추가 필수 필드
+      ci: null,
+      verified: false,
+      verifiedAt: null,
+      verificationName: null,
+      verificationBirth: null,
+      verificationPhone: null,
+      provider: null,
+      socialId: null
     };
     
     this.users.set(user1.id, user1);
@@ -479,11 +497,20 @@ export class MemStorage implements IStorage {
     const id = this.currentId++;
     
     // 필수 기본값 설정
-    const user: User = { 
+    const user: User = {
       ...insertUser, 
       id, 
-      role: insertUser.role || 'user', // 기본 역할
+      role: (insertUser.role || 'user') as UserRole, // 기본 역할
       avatar: insertUser.avatar || null,
+      // 추가 필수 필드
+      ci: null,
+      verified: false,
+      verifiedAt: null,
+      verificationName: null,
+      verificationBirth: null,
+      verificationPhone: null,
+      provider: null,
+      socialId: null,
       bio: insertUser.bio || null,
       location: insertUser.location || null,
       specialty: insertUser.specialty || null,

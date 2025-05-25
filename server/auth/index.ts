@@ -84,7 +84,7 @@ function setupAuthRoutes(app: Express) {
   
   // 로그인 API
   router.post('/login', (req, res, next) => {
-    passport.authenticate('local', (err, user, info) => {
+    passport.authenticate('local', (err: Error, user: any, info: { message?: string }) => {
       if (err) {
         console.error('로그인 오류:', err);
         return res.status(500).json({

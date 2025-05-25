@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { Link } from "wouter";
-import { Card } from "@/components/ui/Card";
-import { Button } from "@/components/ui/Button";
-import { Badge } from "@/components/ui/Badge";
-import { Avatar } from "@/components/ui/Avatar";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Search, Filter, SlidersHorizontal, Star } from "lucide-react";
 
 interface CoursesPageProps {
@@ -294,11 +294,10 @@ export default function Courses({ mode = 'view', userType }: CoursesPageProps) {
 
               <div className="flex items-center justify-between">
                 <div className="flex items-center">
-                  <Avatar 
-                    src={course.trainer.avatar} 
-                    alt={course.trainer.name}
-                    className="w-7 h-7"
-                  />
+                  <Avatar className="w-7 h-7">
+                    <AvatarImage src={course.trainer.avatar} alt={course.trainer.name} />
+                    <AvatarFallback>{course.trainer.name.charAt(0)}</AvatarFallback>
+                  </Avatar>
                   <span className="ml-2 text-xs text-gray-700 dark:text-gray-300">{course.trainer.name}</span>
                 </div>
 
