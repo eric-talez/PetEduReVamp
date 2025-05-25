@@ -411,7 +411,7 @@ function UnauthenticatedRoutesContent() {
       <Route path="/shop/cart">
         {() => {
           console.log("비인증 사용자가 /shop/cart 경로에 접근 - 로그인 필요");
-          return <RedirectHandler to="/auth" />;
+          return <RedirectHandler to="/auth/login" />;
         }}
       </Route>
 
