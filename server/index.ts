@@ -5,6 +5,10 @@ import session from "express-session";
 import memorystore from "memorystore";
 import cors from "cors";
 import { setupAuth } from "./auth";
+import { setupMonitoring, setupErrorHandling } from "./monitoring";
+import { setupSecurity } from "./security";
+import { setupPerformance, monitorMemoryUsage } from "./performance";
+import { initializeRecoverySystem } from "./recovery";
 
 const MemoryStore = memorystore(session);
 const app = express();
