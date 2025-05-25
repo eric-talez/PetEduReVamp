@@ -43,10 +43,9 @@ router.get('/posts', async (req, res) => {
     }
     
     // 태그 필터링 (있는 경우)
-    // JSON 배열 필드에서 특정 태그를 포함하는 게시글 검색 (PostgreSQL JSONB 기능 사용)
-    // 임시로 태그 필터링을 비활성화하여 오류 방지
+    // 태그 필드가 아직 구현되지 않아 주석 처리
     /*if (tag) {
-      query = query.where(sql`${posts.tags} ? ${String(tag)}`);
+      query = query.where(eq(posts.tag, String(tag)));
     }*/
     
     const result = await query;
