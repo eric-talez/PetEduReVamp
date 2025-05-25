@@ -10,6 +10,10 @@ import { useAuth } from "../../SimpleApp";
 import { SocialLoginButtons } from "@/components/SocialLoginButtons";
 import { useToast } from "@/hooks/use-toast";
 import { Eye, EyeOff } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
+// UserRole 타입 정의
+type UserRole = 'user' | 'pet-owner' | 'trainer' | 'institute-admin' | 'admin';
 
 export default function Register() {
   const auth = useAuth();
@@ -22,6 +26,8 @@ export default function Register() {
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [userRole, setUserRole] = useState<UserRole>("pet-owner");
+  const [instituteCode, setInstituteCode] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   
@@ -191,6 +197,37 @@ export default function Register() {
                 required
               />
             </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="user-role">사용자 유형</Label>
+              <Select
+                value={userRole}
+                onValueChange={(value) => setUserRole(value as UserRole)}
+              >
+                <SelectTrigger id="user-role">
+                  <SelectValue placeholder="사용자 유형을 선택하세요" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="pet-owner">반려동물 보호자</SelectItem>
+                  <SelectItem value="trainer">훈련사</SelectItem>
+                  <SelectItem value="institute-admin">기관 관리자</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            {(userRole === 'trainer' || userRole === 'institute-admin') && (
+              <div className="space-y-2">
+                <Label htmlFor="institute-code">기관 코드</Label>
+                <Input
+                  id="institute-code"
+                  type="text"
+                  placeholder="소속 기관 코드를 입력하세요"
+                  value={instituteCode}
+                  onChange={(e) => setInstituteCode(e.target.value)}
+                  required={userRole === 'trainer' || userRole === 'institute-admin'}
+                />
+              </div>
+            )}
             
             <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading ? (
