@@ -18,7 +18,7 @@ import CourseDetail from "@/pages/course-detail";
 import Trainers from "@/pages/trainers";
 import Institutes from "@/pages/institutes";
 import Community from "@/pages/community";
-import CommunityPostDetail from "@/pages/community/post-detail";
+import CommunityPostDetail from "@/pages/community/post/[id]";
 import MyCourses from "@/pages/my-courses";
 import MyPets from "@/pages/my-pets";
 import Login from "@/pages/auth/login";
