@@ -6,7 +6,7 @@ import { Express, Router } from 'express';
 import passport from 'passport';
 import session from 'express-session';
 import { hashPassword, setupLocalAuth } from './local-auth';
-import { setupSocialAuth, setupSocialRoutes } from './social-auth';
+import { setupSocialAuth } from './social-auth';
 import { storage } from '../storage';
 import { User as SelectUser } from '@shared/schema';
 import { UserRole } from '@shared/schema';
@@ -54,7 +54,7 @@ export function setupAuth(app: Express, sessionStore: session.Store) {
   
   // 인증 전략 설정
   setupLocalAuth();
-  setupSocialAuth();
+  setupSocialAuth(app);
   
   // API 라우트 설정
   setupAuthRoutes(app);
@@ -191,8 +191,7 @@ function setupAuthRoutes(app: Express) {
     }
   });
   
-  // 소셜 로그인 라우트 설정
-  setupSocialRoutes(router);
+  // 소셜 로그인 라우트는 setupSocialAuth에서 설정됨
   
   // 라우터를 /api/auth 경로에 마운트
   app.use('/api/auth', router);

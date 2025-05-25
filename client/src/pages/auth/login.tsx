@@ -1,12 +1,8 @@
-import { useState } from "react";
+import React from "react";
 import { useLocation } from "wouter";
-import { Button } from "@/components/ui/Button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/Card";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "../../SimpleApp";
-import AgreementSectionTalez, { AgreementValues } from "@/components/AgreementSectionTalez";
-import { toast } from "@/hooks/use-toast";
 import { SocialLoginButtons } from "@/components/SocialLoginButtons";
 
 export default function Login() {
@@ -24,7 +20,7 @@ export default function Login() {
     // useEffect 내에서 리다이렉션 처리
     React.useEffect(() => {
       setLocation(dashboardPath);
-    }, []);
+    }, [dashboardPath, setLocation]);
     
     // 로딩 표시
     return (
@@ -48,191 +44,29 @@ export default function Login() {
       
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle>로그인 / 회원가입</CardTitle>
-          <CardDescription>Talez 서비스를 이용하세요</CardDescription>
+          <CardTitle>소셜 계정으로 로그인</CardTitle>
+          <CardDescription>간편하게 Talez 서비스를 이용하세요</CardDescription>
         </CardHeader>
         
         <CardContent>
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-2 mb-6">
-              <TabsTrigger value="login">로그인</TabsTrigger>
-              <TabsTrigger value="register">회원가입</TabsTrigger>
-            </TabsList>
+          <div className="space-y-6">
+            {/* 소셜 로그인 버튼 */}
+            <SocialLoginButtons />
             
-            {/* 로그인 폼 */}
-            <TabsContent value="login">
-              <form onSubmit={handleLoginSubmit}>
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <label htmlFor="loginUsername" className="text-sm font-medium">
-                      아이디
-                    </label>
-                    <input
-                      id="loginUsername"
-                      type="text"
-                      value={loginUsername}
-                      onChange={(e) => setLoginUsername(e.target.value)}
-                      className="w-full p-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-800"
-                      required
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <label htmlFor="loginPassword" className="text-sm font-medium">
-                      비밀번호
-                    </label>
-                    <input
-                      id="loginPassword"
-                      type="password"
-                      value={loginPassword}
-                      onChange={(e) => setLoginPassword(e.target.value)}
-                      className="w-full p-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-800"
-                      required
-                    />
-                  </div>
-                  
-                  {loginError && (
-                    <div className="text-destructive text-sm">{loginError}</div>
-                  )}
-                  
-                  <Button type="submit" className="w-full" disabled={isLoginLoading}>
-                    {isLoginLoading ? "로그인 중..." : "로그인"}
-                  </Button>
-                  
-                  <div className="text-center text-sm text-muted-foreground">
-                    <a href="/forgot-password" className="text-primary hover:underline">
-                      비밀번호를 잊으셨나요?
-                    </a>
-                  </div>
-                </div>
-              </form>
-            </TabsContent>
-            
-            {/* 회원가입 폼 */}
-            <TabsContent value="register">
-              <form onSubmit={handleRegisterSubmit}>
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <label htmlFor="registerUsername" className="text-sm font-medium">
-                      아이디
-                    </label>
-                    <input
-                      id="registerUsername"
-                      type="text"
-                      value={registerUsername}
-                      onChange={(e) => setRegisterUsername(e.target.value)}
-                      className={`w-full p-2 border rounded-md bg-white dark:bg-gray-800 ${
-                        registerUsername.length > 0 && registerUsername.length < 3 
-                          ? "border-red-500 dark:border-red-600" 
-                          : "border-gray-300 dark:border-gray-700"
-                      }`}
-                      required
-                      minLength={3}
-                    />
-                    {registerUsername.length > 0 && registerUsername.length < 3 && (
-                      <p className="text-red-500 text-xs mt-1">아이디는 3자 이상이어야 합니다</p>
-                    )}
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <label htmlFor="registerName" className="text-sm font-medium">
-                      이름
-                    </label>
-                    <input
-                      id="registerName"
-                      type="text"
-                      value={registerName}
-                      onChange={(e) => setRegisterName(e.target.value)}
-                      className={`w-full p-2 border rounded-md bg-white dark:bg-gray-800 ${
-                        registerName.length > 0 && registerName.length < 2 
-                          ? "border-red-500 dark:border-red-600" 
-                          : "border-gray-300 dark:border-gray-700"
-                      }`}
-                      required
-                      minLength={2}
-                    />
-                    {registerName.length > 0 && registerName.length < 2 && (
-                      <p className="text-red-500 text-xs mt-1">이름을 올바르게 입력해주세요</p>
-                    )}
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <label htmlFor="registerEmail" className="text-sm font-medium">
-                      이메일
-                    </label>
-                    <input
-                      id="registerEmail"
-                      type="email"
-                      value={registerEmail}
-                      onChange={(e) => setRegisterEmail(e.target.value)}
-                      className={`w-full p-2 border rounded-md bg-white dark:bg-gray-800 ${
-                        registerEmail.length > 0 && !/^\S+@\S+\.\S+$/.test(registerEmail) 
-                          ? "border-red-500 dark:border-red-600" 
-                          : "border-gray-300 dark:border-gray-700"
-                      }`}
-                      required
-                    />
-                    {registerEmail.length > 0 && !/^\S+@\S+\.\S+$/.test(registerEmail) && (
-                      <p className="text-red-500 text-xs mt-1">유효한 이메일 형식이 아닙니다</p>
-                    )}
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <label htmlFor="registerPassword" className="text-sm font-medium">
-                      비밀번호
-                    </label>
-                    <input
-                      id="registerPassword"
-                      type="password"
-                      value={registerPassword}
-                      onChange={(e) => setRegisterPassword(e.target.value)}
-                      className={`w-full p-2 border rounded-md bg-white dark:bg-gray-800 ${
-                        registerPassword.length > 0 && registerPassword.length < 6 
-                          ? "border-red-500 dark:border-red-600" 
-                          : "border-gray-300 dark:border-gray-700"
-                      }`}
-                      required
-                      minLength={6}
-                    />
-                    {registerPassword.length > 0 && registerPassword.length < 6 && (
-                      <p className="text-red-500 text-xs mt-1">비밀번호는 6자 이상이어야 합니다</p>
-                    )}
-                  </div>
-                  
-                  {/* 이용약관 동의 섹션 */}
-                  <AgreementSectionTalez 
-                    onChange={(values, valid) => {
-                      setAgreements(values);
-                      setIsAgreementValid(valid);
-                    }}
-                  />
-                  
-                  {registerError && (
-                    <div className="text-destructive text-sm">{registerError}</div>
-                  )}
-                  
-                  <Button 
-                    type="submit" 
-                    className="w-full" 
-                    disabled={isRegisterLoading || !isAgreementValid}
-                  >
-                    {isRegisterLoading ? "가입 중..." : "회원가입"}
-                  </Button>
-                </div>
-              </form>
-            </TabsContent>
-          </Tabs>
+            {/* 약관 안내 */}
+            <div className="text-xs text-center text-muted-foreground mt-6">
+              <p>계속 진행하면 Talez의 <a href="/terms" className="text-primary hover:underline">이용약관</a>과 <a href="/privacy" className="text-primary hover:underline">개인정보처리방침</a>에 동의하게 됩니다.</p>
+            </div>
+          </div>
         </CardContent>
+        
+        <CardFooter className="flex justify-between items-center">
+          <div className="text-sm text-muted-foreground">
+            소셜 로그인으로 시작하세요
+          </div>
+          <ThemeToggle />
+        </CardFooter>
       </Card>
-      
-      <div className="mt-6 text-center text-sm text-muted-foreground space-y-2">
-        <p>테스트 계정</p>
-        <p><strong>일반 회원: </strong><code>demo / password</code></p>
-        <p><strong>견주 회원: </strong><code>pet-owner / password</code></p>
-        <p><strong>훈련사: </strong><code>trainer / password</code></p>
-        <p><strong>기관 관리자: </strong><code>institute / password</code></p>
-        <p><strong>시스템 관리자: </strong><code>admin / password</code></p>
-      </div>
     </div>
   );
 }
