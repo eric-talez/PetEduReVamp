@@ -223,10 +223,11 @@ export const createPostSchema = createInsertSchema(posts).omit({
   authorId: true,
   likes: true,
   comments: true,
-  viewCount: true,
   createdAt: true,
   updatedAt: true
 });
+
+export const insertPostSchema = createPostSchema;
 
 // 게시글 댓글 테이블
 export const comments = pgTable("comments", {

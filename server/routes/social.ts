@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { db } from '../db';
 import { posts, comments, likes, follows, users } from '@shared/schema';
 import { eq, and, desc, isNull, sql } from 'drizzle-orm';
-import { createPostSchema, createCommentSchema } from '@shared/schema';
+import { createPostSchema, createCommentSchema, insertPostSchema } from '@shared/schema';
 import { z } from 'zod';
 
 const router = Router();
@@ -14,6 +14,137 @@ const isAuthenticated = (req, res, next) => {
   }
   next();
 };
+
+// 게시글 작성
+router.post('/posts', isAuthenticated, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const postData = insertPostSchema.parse(req.body);
+    
+    // 게시글 저장
+    const [post] = await db
+      .insert(posts)
+      .values({
+        ...postData,
+        authorId: userId
+      })
+      .returning();
+    
+    // 게시글 작성자 정보 조회
+    const [author] = await db
+      .select({
+        id: users.id,
+        username: users.username,
+        name: users.name,
+        avatar: users.avatar,
+      })
+      .from(users)
+      .where(eq(users.id, userId));
+    
+    // 응답
+    res.status(201).json({
+      ...post,
+      author
+    });
+  } catch (error) {
+    console.error('게시글 작성 오류:', error);
+    if (error.name === 'ZodError') {
+      return res.status(400).json({ message: '입력 형식이 올바르지 않습니다.', errors: error.errors });
+    }
+    res.status(500).json({ message: '게시글 작성 중 오류가 발생했습니다.' });
+  }
+});
+
+// 게시글 상세 조회
+router.get('/posts/:id', async (req, res) => {
+  try {
+    const postId = parseInt(req.params.id);
+
+    // 게시글 및 작성자 정보 조회
+    const result = await db
+      .select({
+        post: posts,
+        author: {
+          id: users.id,
+          username: users.username,
+          name: users.name,
+          avatar: users.avatar,
+        }
+      })
+      .from(posts)
+      .leftJoin(users, eq(posts.authorId, users.id))
+      .where(eq(posts.id, postId));
+
+    if (result.length === 0) {
+      return res.status(404).json({ message: '게시글을 찾을 수 없습니다.' });
+    }
+
+    // 댓글 조회
+    const commentsList = await db
+      .select({
+        comment: comments,
+        author: {
+          id: users.id,
+          username: users.username,
+          name: users.name,
+          avatar: users.avatar,
+        }
+      })
+      .from(comments)
+      .leftJoin(users, eq(comments.authorId, users.id))
+      .where(eq(comments.postId, postId))
+      .orderBy(comments.createdAt);
+
+    // 결과 데이터 구조 변환
+    const { post, author } = result[0];
+    const formattedComments = commentsList.map(({ comment, author }) => ({
+      ...comment,
+      author
+    }));
+
+    res.status(200).json({
+      ...post,
+      author,
+      comments: formattedComments
+    });
+  } catch (error) {
+    console.error('게시글 상세 조회 오류:', error);
+    res.status(500).json({ message: '게시글 조회 중 오류가 발생했습니다.' });
+  }
+});
+
+// 게시글 삭제
+router.delete('/posts/:id', isAuthenticated, async (req, res) => {
+  try {
+    const postId = parseInt(req.params.id);
+    const userId = req.user.id;
+
+    // 게시글 존재 여부 확인
+    const [post] = await db
+      .select()
+      .from(posts)
+      .where(eq(posts.id, postId));
+
+    if (!post) {
+      return res.status(404).json({ message: '게시글을 찾을 수 없습니다.' });
+    }
+
+    // 작성자 확인
+    if (post.authorId !== userId) {
+      return res.status(403).json({ message: '게시글 삭제 권한이 없습니다.' });
+    }
+
+    // 게시글 삭제 (관련 댓글은 CASCADE 옵션으로 자동 삭제됨)
+    await db
+      .delete(posts)
+      .where(eq(posts.id, postId));
+
+    res.status(200).json({ message: '게시글이 삭제되었습니다.' });
+  } catch (error) {
+    console.error('게시글 삭제 오류:', error);
+    res.status(500).json({ message: '게시글 삭제 중 오류가 발생했습니다.' });
+  }
+});
 
 // 게시글 목록 조회
 router.get('/posts', async (req, res) => {
