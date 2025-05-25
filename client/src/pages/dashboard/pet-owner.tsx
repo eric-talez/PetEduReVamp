@@ -43,7 +43,7 @@ export default function PetOwnerDashboard({ onAction }: PetOwnerDashboardProps) 
         "행동 교정 프로그램",
         "실시간 화상 교육"
       ],
-      image: "https://images.unsplash.com/photo-1548199973-03cce0bbc87b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=400",
+      image: "https://images.unsplash.com/photo-1601758124510-52d02ddb7cbd?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=400&q=80",
       primaryAction: {
         text: "프로그램 둘러보기",
         path: "/courses"
@@ -62,7 +62,7 @@ export default function PetOwnerDashboard({ onAction }: PetOwnerDashboardProps) 
         "감정 상태 모니터링",
         "맞춤형 훈련 가이드"
       ],
-      image: "https://images.unsplash.com/photo-1589923188651-268a9765e432?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=400",
+      image: "https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=400&q=80",
       primaryAction: {
         text: "AI 분석 체험하기",
         path: "/ai-analysis"
@@ -81,7 +81,7 @@ export default function PetOwnerDashboard({ onAction }: PetOwnerDashboardProps) 
         "사용자 실시간 리뷰",
         "Talez 인증 장소 정보"
       ],
-      image: "https://images.unsplash.com/photo-1535930891776-0c2dfb7fda1a?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=400",
+      image: "https://images.unsplash.com/photo-1537151608828-ea2b11777ee8?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=400&q=80",
       primaryAction: {
         text: "주변 장소 찾기",
         path: "/locations"
@@ -100,7 +100,7 @@ export default function PetOwnerDashboard({ onAction }: PetOwnerDashboardProps) 
         "식이 관리 캘린더",
         "건강 알림 서비스"
       ],
-      image: "https://images.unsplash.com/photo-1529429617124-95b109e86bb8?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=400",
+      image: "https://images.unsplash.com/photo-1544568100-847a948585b9?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=400&q=80",
       primaryAction: {
         text: "건강 기록 시작하기",
         path: "/health-tracker"
@@ -119,7 +119,7 @@ export default function PetOwnerDashboard({ onAction }: PetOwnerDashboardProps) 
         "실시간 Q&A",
         "전문가 상담 서비스"
       ],
-      image: "https://images.unsplash.com/photo-1551730459-92db2a308d6a?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=400",
+      image: "https://images.unsplash.com/photo-1548658166-136d9f6a7e76?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=400&q=80",
       primaryAction: {
         text: "커뮤니티 가입하기",
         path: "/community"
@@ -275,9 +275,9 @@ export default function PetOwnerDashboard({ onAction }: PetOwnerDashboardProps) 
           <img 
             src={bannerSlides[currentSlide].image} 
             alt={bannerSlides[currentSlide].title}
-            className="w-full h-full object-cover absolute mix-blend-overlay"
+            className="w-full h-full object-cover absolute"
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-primary/80 to-accent/30 mix-blend-multiply"></div>
+          <div className="absolute inset-0 bg-gradient-to-r from-black/60 to-transparent"></div>
         </div>
         
         {/* 슬라이드 콘텐츠 (현재 슬라이드만 표시) */}
