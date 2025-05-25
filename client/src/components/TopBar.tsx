@@ -303,55 +303,37 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
     }
   }, [isAuthenticated, userRole, userName]);
 
-  const handleLogout = async () => {
-    console.log("Logout button clicked");
+  const handleLogout = () => {
+    console.log("Logout button clicked - 강제 로그아웃 처리");
     
-    try {
-      // 서버 로그아웃 API 호출
-      const response = await fetch('/api/logout', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        credentials: 'include' // 쿠키 포함
-      });
-      
-      if (!response.ok) {
-        throw new Error('서버 로그아웃 실패');
-      }
-      
-      console.log('서버 로그아웃 성공');
-      
-      // 클라이언트 측 로그아웃 처리
-      if (logout) {
-        // Auth 컨텍스트의 logout 함수 호출
-        logout();
-      } else {
-        // 직접 로그아웃 처리
-        console.log("직접 로그아웃 처리 실행");
-        // 로컬 스토리지에서 인증 관련 항목 모두 제거
-        localStorage.removeItem('petedu_auth');
-        localStorage.removeItem('isAuthenticated');
-        localStorage.removeItem('userData');
-        
-        // 로그아웃 이벤트 발생시켜 다른 컴포넌트에 알림
-        window.dispatchEvent(new CustomEvent('logout'));
-        
-        // 로그아웃 후 인증 페이지로 이동
-        setTimeout(() => {
-          window.location.href = "/auth";
-        }, 100);
-      }
-    } catch (error) {
-      console.error('로그아웃 처리 중 오류 발생:', error);
-      
-      // 오류가 발생해도 사용자를 로그아웃 상태로 만들기 위한 처리
-      localStorage.removeItem('petedu_auth');
-      localStorage.removeItem('isAuthenticated');
-      localStorage.removeItem('userData');
-      window.dispatchEvent(new CustomEvent('logout'));
-      window.location.href = "/auth";
+    // 모든 로컬 스토리지 인증 관련 데이터 제거
+    localStorage.removeItem('petedu_auth');
+    localStorage.removeItem('isAuthenticated');
+    localStorage.removeItem('userData');
+    
+    // 전역 상태 초기화
+    if (window.__peteduAuthState) {
+      window.__peteduAuthState = {
+        isAuthenticated: false,
+        userRole: null,
+        userName: null
+      };
     }
+    
+    // 로그아웃 이벤트 발생시켜 다른 컴포넌트에 알림
+    window.dispatchEvent(new CustomEvent('logout'));
+    
+    // 서버 로그아웃 API 호출 (비동기로 처리)
+    fetch('/api/logout', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      credentials: 'include' // 쿠키 포함
+    }).catch(err => console.error('서버 로그아웃 API 호출 실패:', err));
+    
+    // 즉시 인증 페이지로 강제 이동
+    window.location.href = "/auth";
   };
 
   return (
