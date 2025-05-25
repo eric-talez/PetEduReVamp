@@ -1,359 +1,416 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '@/hooks/useAuth';
-import { Button } from '@/components/ui/Button';
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
   DialogFooter,
 } from '@/components/ui/dialog';
-import { Progress } from '@/components/ui/progress';
-import {
-  ChevronRight,
-  ChevronLeft,
-  X,
-  Home,
-  Video,
-  BookOpen,
-  PawPrint,
-  Edit,
-  MapPin,
-  ShoppingBag
-} from 'lucide-react';
+import { Button } from '@/components/ui/Button';
+import { cn } from '@/lib/utils';
+import { announceToScreenReader } from '@/components/a11y/AnnouncementRegion';
+import { useLocalStorage } from '@/hooks/use-local-storage';
+import { ChevronLeft, ChevronRight, X } from 'lucide-react';
 
-// 사용자 역할별 온보딩 가이드 내용
-const onboardingSteps = {
-  // 반려인용 온보딩 단계
-  'pet-owner': [
-    {
-      title: '탈레즈에 오신 것을 환영합니다!',
-      description: '탈레즈는 반려견과 함께하는 즐거운 여정을 도와드립니다. 이제 몇 가지 간단한 단계를 통해 주요 기능을 알아볼게요.',
-      icon: <PawPrint className="h-16 w-16 text-primary" />,
-      cta: '시작하기',
-      image: '/assets/onboarding/welcome.svg'
-    },
-    {
-      title: '나만의 대시보드',
-      description: '홈 화면에서 반려견 정보, 추천 콘텐츠, 예정된 수업 등 중요한 정보를 한눈에 확인하세요.',
-      icon: <Home className="h-16 w-16 text-primary" />,
-      cta: '다음',
-      image: '/assets/onboarding/dashboard.svg'
-    },
-    {
-      title: '영상 훈련 콘텐츠',
-      description: '전문 훈련사가 제공하는 다양한 훈련 영상을 통해 반려견과 함께 배워보세요.',
-      icon: <Video className="h-16 w-16 text-primary" />,
-      cta: '다음',
-      image: '/assets/onboarding/video-training.svg'
-    },
-    {
-      title: '화상 훈련 수업',
-      description: '실시간 화상 수업으로 전문 훈련사에게 1:1 맞춤 지도를 받아보세요.',
-      icon: <BookOpen className="h-16 w-16 text-primary" />,
-      cta: '다음',
-      image: '/assets/onboarding/video-call.svg'
-    },
-    {
-      title: '알림장 기능',
-      description: '훈련사와 소통하고 반려견의 성장 과정을 기록하세요.',
-      icon: <Edit className="h-16 w-16 text-primary" />,
-      cta: '다음',
-      image: '/assets/onboarding/notebook.svg'
-    },
-    {
-      title: '위치 기반 서비스',
-      description: '반려견과 함께 갈 수 있는 장소를 찾고 정보를 공유하세요.',
-      icon: <MapPin className="h-16 w-16 text-primary" />,
-      cta: '다음',
-      image: '/assets/onboarding/locations.svg'
-    },
-    {
-      title: '준비 완료!',
-      description: '이제 탈레즈의 다양한 기능을 활용하여 반려견과 함께 성장하는 여정을 시작하세요.',
-      icon: <PawPrint className="h-16 w-16 text-primary" />,
-      cta: '시작하기',
-      image: '/assets/onboarding/complete.svg'
-    },
-  ],
-  // 훈련사용 온보딩 단계
-  'trainer': [
-    {
-      title: '훈련사님, 환영합니다!',
-      description: '탈레즈는 전문 훈련사와 반려인을 연결하는 플랫폼입니다. 주요 기능들을 살펴보세요.',
-      icon: <PawPrint className="h-16 w-16 text-primary" />,
-      cta: '시작하기',
-      image: '/assets/onboarding/trainer-welcome.svg'
-    },
-    {
-      title: '훈련사 대시보드',
-      description: '수업 일정, 수강생 현황, 수익 정보 등을 한눈에 확인하세요.',
-      icon: <Home className="h-16 w-16 text-primary" />,
-      cta: '다음',
-      image: '/assets/onboarding/trainer-dashboard.png'
-    },
-    {
-      title: '수업 관리',
-      description: '화상 수업을 개설하고 일정을 관리하며 수강생과 소통하세요.',
-      icon: <Video className="h-16 w-16 text-primary" />,
-      cta: '다음',
-      image: '/assets/onboarding/trainer-classes.png'
-    },
-    {
-      title: '알림장 작성',
-      description: '수강생에게 상세한 피드백과 훈련 지침을 제공하세요.',
-      icon: <Edit className="h-16 w-16 text-primary" />,
-      cta: '다음',
-      image: '/assets/onboarding/trainer-notebook.png'
-    },
-    {
-      title: '제품 추천',
-      description: '수강생에게 유용한 제품을 추천하고 추가 수익을 창출하세요.',
-      icon: <ShoppingBag className="h-16 w-16 text-primary" />,
-      cta: '다음',
-      image: '/assets/onboarding/trainer-products.png'
-    },
-    {
-      title: '준비 완료!',
-      description: '이제 탈레즈에서 전문 지식을 공유하고 수강생들과 함께 성장하세요.',
-      icon: <PawPrint className="h-16 w-16 text-primary" />,
-      cta: '시작하기',
-      image: '/assets/onboarding/trainer-complete.png'
-    },
-  ],
-  // 관리자용 온보딩 단계
-  'admin': [
-    {
-      title: '관리자님, 환영합니다!',
-      description: '탈레즈 관리자 페이지에서는 서비스의 모든 측면을 관리하고 제어할 수 있습니다.',
-      icon: <PawPrint className="h-16 w-16 text-primary" />,
-      cta: '시작하기',
-      image: '/assets/onboarding/admin-welcome.svg'
-    },
-    {
-      title: '사용자 관리',
-      description: '모든 사용자 계정을 관리하고 권한을 제어하세요.',
-      icon: <Home className="h-16 w-16 text-primary" />,
-      cta: '다음',
-      image: '/assets/onboarding/admin-users.png'
-    },
-    {
-      title: '콘텐츠 관리',
-      description: '영상 콘텐츠를 업로드하고 관리하세요.',
-      icon: <Video className="h-16 w-16 text-primary" />,
-      cta: '다음',
-      image: '/assets/onboarding/admin-content.png'
-    },
-    {
-      title: '배너 및 UI 관리',
-      description: '사이트의 시각적 요소와 홍보 배너를 관리하세요.',
-      icon: <Edit className="h-16 w-16 text-primary" />,
-      cta: '다음',
-      image: '/assets/onboarding/admin-banner.png'
-    },
-    {
-      title: '초대 및 베타 관리',
-      description: '새로운 사용자 초대와 베타 프로그램을 관리하세요.',
-      icon: <ShoppingBag className="h-16 w-16 text-primary" />,
-      cta: '다음',
-      image: '/assets/onboarding/admin-invite.png'
-    },
-    {
-      title: '준비 완료!',
-      description: '이제 탈레즈 플랫폼을 효과적으로 관리하고 성장시킬 준비가 되었습니다.',
-      icon: <PawPrint className="h-16 w-16 text-primary" />,
-      cta: '시작하기',
-      image: '/assets/onboarding/admin-complete.png'
-    },
-  ],
-};
+// 컴포넌트의 기본 내보내기를 위한 객체
 
-// 온보딩 가이드가 보여질 상태를 로컬스토리지에 저장/조회하는 함수
-const ONBOARDING_STORAGE_KEY = 'talez_onboarding_completed';
-
-const hasCompletedOnboarding = () => {
-  const stored = localStorage.getItem(ONBOARDING_STORAGE_KEY);
-  return stored === 'true';
-};
-
-const markOnboardingComplete = () => {
-  localStorage.setItem(ONBOARDING_STORAGE_KEY, 'true');
-};
-
-export interface OnboardingGuideProps {
-  forceShow?: boolean;
-  onComplete?: () => void;
+interface OnboardingStep {
+  title: string;
+  description: string;
+  image?: string;
+  highlightElement?: string; // CSS 선택자
 }
 
-export function OnboardingGuide({ forceShow = false, onComplete }: OnboardingGuideProps) {
-  const { userRole } = useAuth();
+interface OnboardingGuideProps {
+  steps: OnboardingStep[];
+  onComplete?: () => void;
+  showSkip?: boolean;
+  userRole?: string;
+  forceShow?: boolean;
+}
+
+/**
+ * 사용자 온보딩 가이드 컴포넌트
+ * 
+ * 새로운 사용자에게 애플리케이션의 주요 기능을 단계별로 소개합니다.
+ * 각 사용자 역할에 맞는 맞춤형 가이드를 제공할 수 있습니다.
+ */
+export function OnboardingGuide({
+  steps,
+  onComplete,
+  showSkip = true,
+  userRole,
+  forceShow = false,
+}: OnboardingGuideProps) {
   const [currentStep, setCurrentStep] = useState(0);
+  const [isOpen, setIsOpen] = useState(false);
+  const [hasSeenOnboarding, setHasSeenOnboarding] = useLocalStorage<boolean>('hasSeenOnboarding', false);
+  const [highlightedElement, setHighlightedElement] = useState<HTMLElement | null>(null);
   
-  // 온보딩 팝업 표시 여부 상태
-  // 이미 완료된 경우에는 초기값을 false로 설정
-  const [open, setOpen] = useState(() => {
-    // 로컬 스토리지 확인은 컴포넌트 마운트 시 한 번만 실행
-    const completed = hasCompletedOnboarding();
-    return forceShow || !completed ? false : false; // 강제 표시 옵션이 있거나 완료하지 않았을 때만 true (지금은 모든 경우 false로 설정)
-  });
-  
-  // 사용자 역할에 따른 온보딩 단계 가져오기
-  const steps = userRole && onboardingSteps[userRole as keyof typeof onboardingSteps] 
-    ? onboardingSteps[userRole as keyof typeof onboardingSteps]
-    : onboardingSteps['pet-owner']; // 기본값으로 반려인용 단계 사용
-  
-  // 컴포넌트가 마운트될 때 한 번만 실행되는 useEffect
+  // 온보딩 시작 여부 결정
   useEffect(() => {
-    // 무조건 온보딩 완료 상태로 표시 (임시 해결책)
-    markOnboardingComplete();
-    
-    // 강제 표시 옵션이 있는 경우에만 표시
-    if (forceShow) {
-      const timer = setTimeout(() => {
-        setOpen(true);
-      }, 1000);
-      
-      return () => clearTimeout(timer);
+    if (forceShow || (!hasSeenOnboarding && steps.length > 0)) {
+      setIsOpen(true);
+      announceToScreenReader('온보딩 가이드가 시작되었습니다. 앱 사용법을 배워보세요.');
     }
-  }, []);
+  }, [forceShow, hasSeenOnboarding, steps.length]);
   
-  const handleNext = () => {
+  // 하이라이트할 요소 찾기
+  useEffect(() => {
+    if (isOpen && steps[currentStep]?.highlightElement) {
+      try {
+        const element = document.querySelector(steps[currentStep].highlightElement!) as HTMLElement;
+        setHighlightedElement(element);
+        
+        if (element) {
+          // 요소에 하이라이트 효과 추가
+          element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          element.setAttribute('data-highlighted', 'true');
+        }
+      } catch (error) {
+        console.error('하이라이트 요소를 찾을 수 없습니다:', error);
+      }
+    }
+    
+    return () => {
+      // 이전 하이라이트 제거
+      if (highlightedElement) {
+        highlightedElement.removeAttribute('data-highlighted');
+        setHighlightedElement(null);
+      }
+    };
+  }, [currentStep, isOpen, steps]);
+  
+  // 온보딩 완료 처리
+  const completeOnboarding = () => {
+    setIsOpen(false);
+    setHasSeenOnboarding(true);
+    if (onComplete) {
+      onComplete();
+    }
+    announceToScreenReader('온보딩 가이드가 완료되었습니다.');
+  };
+  
+  // 다음 단계로 이동
+  const goToNextStep = () => {
     if (currentStep < steps.length - 1) {
       setCurrentStep(currentStep + 1);
+      announceToScreenReader(`온보딩 단계 ${currentStep + 2}/${steps.length}: ${steps[currentStep + 1].title}`);
     } else {
-      handleComplete();
+      completeOnboarding();
     }
   };
   
-  const handlePrevious = () => {
+  // 이전 단계로 이동
+  const goToPreviousStep = () => {
     if (currentStep > 0) {
       setCurrentStep(currentStep - 1);
+      announceToScreenReader(`온보딩 단계 ${currentStep}/${steps.length}: ${steps[currentStep - 1].title}`);
     }
   };
   
-  const handleComplete = () => {
-    // 온보딩 완료 상태를 로컬 스토리지에 저장
-    markOnboardingComplete();
-    // 다이얼로그 닫기
-    setOpen(false);
-    // 현재 단계를 초기화하여 다음에 열릴 때 처음부터 시작
-    setCurrentStep(0);
-    
-    // 완료 콜백 호출 (있는 경우)
-    if (onComplete) {
-      onComplete();
-    }
-    
-    console.log("온보딩 완료");
-  };
-  
-  const handleSkip = () => {
-    // 온보딩 완료 상태를 로컬 스토리지에 저장
-    markOnboardingComplete();
-    // 다이얼로그 닫기
-    setOpen(false);
-    // 현재 단계를 초기화하여 다음에 열릴 때 처음부터 시작
-    setCurrentStep(0);
-    
-    // 완료 콜백 호출 (있는 경우)
-    if (onComplete) {
-      onComplete();
-    }
-    
-    console.log("온보딩 완료");
-  };
-
-  if (!open) return null;
-
+  // 현재 표시할 단계
   const currentStepData = steps[currentStep];
-  const progress = ((currentStep + 1) / steps.length) * 100;
-
-  return (
-    <Dialog 
-      open={open} 
-      onOpenChange={(isOpen) => {
-        if (!isOpen) {
-          // Dialog가 닫힐 때 온보딩 완료 처리
-          handleSkip();
+  
+  // CSS 스타일을 통한 하이라이트 효과
+  useEffect(() => {
+    // 하이라이트용 스타일 추가
+    const style = document.createElement('style');
+    style.innerHTML = `
+      [data-highlighted="true"] {
+        position: relative;
+        z-index: 50;
+        animation: pulse 2s infinite;
+        box-shadow: 0 0 0 10px rgba(59, 130, 246, 0.3);
+        border-radius: 4px;
+      }
+      
+      @keyframes pulse {
+        0% {
+          box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.5);
         }
-        setOpen(isOpen);
-      }}
-    >
-      <DialogContent className="sm:max-w-[600px] p-0">
-        <div className="absolute right-4 top-4 z-10">
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            onClick={handleSkip}
-            aria-label="건너뛰기"
-          >
-            <X className="h-4 w-4" />
-          </Button>
+        70% {
+          box-shadow: 0 0 0 10px rgba(59, 130, 246, 0);
+        }
+        100% {
+          box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
+        }
+      }
+    `;
+    document.head.appendChild(style);
+    
+    return () => {
+      document.head.removeChild(style);
+    };
+  }, []);
+  
+  if (!isOpen || !currentStepData) {
+    return null;
+  }
+  
+  return (
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>{currentStepData.title}</DialogTitle>
+          <DialogDescription>
+            {currentStepData.description}
+          </DialogDescription>
+        </DialogHeader>
+        
+        {currentStepData.image && (
+          <div className="my-4">
+            <img
+              src={currentStepData.image}
+              alt={`${currentStepData.title} 설명 이미지`}
+              className="w-full rounded-md"
+            />
+          </div>
+        )}
+        
+        <div className="flex items-center justify-center my-2">
+          {steps.map((_, index) => (
+            <div
+              key={index}
+              className={cn(
+                "w-2 h-2 rounded-full mx-1",
+                currentStep === index ? "bg-primary" : "bg-muted"
+              )}
+            />
+          ))}
         </div>
         
-        <div className="p-6">
-          <div className="mb-4">
-            <Progress value={progress} className="h-2" />
-            <div className="text-xs text-muted-foreground mt-1 text-right">
-              {currentStep + 1} / {steps.length}
-            </div>
-          </div>
-          
-          <div className="flex flex-col md:flex-row gap-6 items-center">
-            <div className="flex-shrink-0 flex items-center justify-center w-24 h-24 bg-primary/10 rounded-full">
-              {currentStepData.icon}
-            </div>
+        <DialogFooter className="flex justify-between items-center mt-4">
+          <div className="flex items-center space-x-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={goToPreviousStep}
+              disabled={currentStep === 0}
+            >
+              <ChevronLeft className="h-4 w-4 mr-1" />
+              이전
+            </Button>
             
-            <div className="flex-1 text-center md:text-left">
-              <DialogHeader>
-                <DialogTitle className="text-2xl">{currentStepData.title}</DialogTitle>
-                <DialogDescription className="text-base mt-2">
-                  {currentStepData.description}
-                </DialogDescription>
-              </DialogHeader>
-            </div>
+            <span className="text-sm text-muted-foreground">
+              {currentStep + 1}/{steps.length}
+            </span>
+            
+            <Button
+              variant="default"
+              size="sm"
+              onClick={goToNextStep}
+            >
+              {currentStep === steps.length - 1 ? "완료" : "다음"}
+              {currentStep !== steps.length - 1 && (
+                <ChevronRight className="h-4 w-4 ml-1" />
+              )}
+            </Button>
           </div>
           
-          {currentStepData.image && (
-            <div className="mt-6 rounded-lg overflow-hidden border">
-              <img 
-                src={currentStepData.image} 
-                alt={currentStepData.title} 
-                className="w-full h-auto object-cover"
-              />
-            </div>
+          {showSkip && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={completeOnboarding}
+            >
+              건너뛰기
+              <X className="h-4 w-4 ml-1" />
+            </Button>
           )}
-        </div>
-        
-        <DialogFooter className="p-6 pt-0 flex justify-between">
-          <div>
-            {currentStep > 0 ? (
-              <Button variant="outline" onClick={handlePrevious}>
-                <ChevronLeft className="mr-2 h-4 w-4" />
-                이전
-              </Button>
-            ) : (
-              <Button variant="outline" onClick={handleSkip}>
-                건너뛰기
-              </Button>
-            )}
-          </div>
-          
-          <Button onClick={handleNext} className="ml-auto">
-            {currentStep < steps.length - 1 ? (
-              <>
-                다음
-                <ChevronRight className="ml-2 h-4 w-4" />
-              </>
-            ) : (
-              '시작하기'
-            )}
-          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
   );
 }
 
-export default OnboardingGuide;
+/**
+ * 역할별 온보딩 단계 데이터
+ * 
+ * 각 사용자 역할에 맞는 온보딩 단계를 정의합니다.
+ * 필요에 따라 이미지와 하이라이트할 요소를 지정할 수 있습니다.
+ */
+export const onboardingStepsByRole = {
+  // 일반 사용자용 온보딩 단계
+  user: [
+    {
+      title: "탈레즈에 오신 것을 환영합니다!",
+      description: "반려동물과 함께하는 더 나은 삶을 위한 교육 플랫폼, 탈레즈를 소개합니다. 주요 기능을 알아볼까요?",
+      image: "/assets/onboarding/welcome.png"
+    },
+    {
+      title: "AI 반려동물 분석",
+      description: "인공지능을 활용해 반려동물의 행동과 감정을 분석하고 맞춤형 조언을 받아보세요.",
+      image: "/assets/onboarding/ai-analysis.png",
+      highlightElement: "#menu-ai-analysis"
+    },
+    {
+      title: "맞춤형 교육 과정",
+      description: "반려동물의 특성과 필요에 맞는 교육 과정을 추천받고 전문 훈련사와 함께 학습해보세요.",
+      image: "/assets/onboarding/courses.png",
+      highlightElement: "#menu-courses"
+    },
+    {
+      title: "반려동물 친화 장소",
+      description: "주변의 반려동물 친화적인 장소를 찾고 방문 후기를 공유해보세요.",
+      image: "/assets/onboarding/locations.png",
+      highlightElement: "#menu-locations"
+    },
+    {
+      title: "시작해볼까요?",
+      description: "이제 탈레즈의 다양한 기능을 직접 체험해보세요. 더 궁금한 점이 있으면 언제든 문의해주세요!",
+      image: "/assets/onboarding/start.png"
+    }
+  ],
+  
+  // 훈련사용 온보딩 단계
+  trainer: [
+    {
+      title: "훈련사님, 환영합니다!",
+      description: "탈레즈의 훈련사 기능을 소개합니다. 더 효과적인 교육을 위한 도구들을 알아볼까요?",
+      image: "/assets/onboarding/trainer-welcome.png"
+    },
+    {
+      title: "교육 과정 관리",
+      description: "나만의 교육 과정을 개설하고 관리할 수 있습니다. 영상, 문서 등 다양한 형태의 콘텐츠를 추가해보세요.",
+      image: "/assets/onboarding/course-management.png",
+      highlightElement: "#menu-course-management"
+    },
+    {
+      title: "수강생 관리",
+      description: "수강생의 진도와 성취도를 확인하고 개별 피드백을 제공할 수 있습니다.",
+      image: "/assets/onboarding/student-management.png",
+      highlightElement: "#menu-students"
+    },
+    {
+      title: "화상 교육",
+      description: "실시간 화상 교육을 통해 더 효과적인 지도가 가능합니다. 일정을 관리하고 알림을 보내보세요.",
+      image: "/assets/onboarding/video-education.png",
+      highlightElement: "#menu-video-calls"
+    },
+    {
+      title: "제품 추천 수익",
+      description: "교육에 필요한 제품을 추천하고 판매 수익의 일부를 얻을 수 있습니다.",
+      image: "/assets/onboarding/product-recommendation.png",
+      highlightElement: "#menu-products"
+    }
+  ],
+  
+  // 기관 관리자용 온보딩 단계
+  institute: [
+    {
+      title: "기관 관리자님, 환영합니다!",
+      description: "탈레즈의 기관 관리 기능을 소개합니다. 효율적인 운영을 위한 도구들을 알아볼까요?",
+      image: "/assets/onboarding/institute-welcome.png"
+    },
+    {
+      title: "기관 정보 관리",
+      description: "기관의 프로필과 정보를 관리하고 방문객에게 효과적으로 알릴 수 있습니다.",
+      image: "/assets/onboarding/institute-profile.png",
+      highlightElement: "#menu-institute-profile"
+    },
+    {
+      title: "훈련사 관리",
+      description: "소속 훈련사를 등록하고 관리할 수 있습니다. 각 훈련사의 활동과 성과를 확인해보세요.",
+      image: "/assets/onboarding/trainer-management.png",
+      highlightElement: "#menu-trainers"
+    },
+    {
+      title: "교육 과정 현황",
+      description: "기관에서 제공 중인 모든 교육 과정의 현황과 통계를 확인할 수 있습니다.",
+      image: "/assets/onboarding/course-statistics.png",
+      highlightElement: "#menu-course-statistics"
+    },
+    {
+      title: "수익 관리",
+      description: "교육 수익과 제품 추천 수익을 확인하고 정산 내역을 관리할 수 있습니다.",
+      image: "/assets/onboarding/revenue-management.png",
+      highlightElement: "#menu-revenue"
+    }
+  ],
+  
+  // 관리자용 온보딩 단계
+  admin: [
+    {
+      title: "관리자님, 환영합니다!",
+      description: "탈레즈의 관리자 기능을 소개합니다. 플랫폼 운영을 위한 도구들을 알아볼까요?",
+      image: "/assets/onboarding/admin-welcome.png"
+    },
+    {
+      title: "사용자 관리",
+      description: "모든 사용자의 정보와 활동을 확인하고 관리할 수 있습니다.",
+      image: "/assets/onboarding/user-management.png",
+      highlightElement: "#menu-users"
+    },
+    {
+      title: "콘텐츠 관리",
+      description: "교육 과정, 게시물 등 모든 콘텐츠를 검토하고 관리할 수 있습니다.",
+      image: "/assets/onboarding/content-management.png",
+      highlightElement: "#menu-content"
+    },
+    {
+      title: "시스템 설정",
+      description: "플랫폼의 다양한 설정을 조정하고 시스템 상태를 모니터링할 수 있습니다.",
+      image: "/assets/onboarding/system-settings.png",
+      highlightElement: "#menu-settings"
+    },
+    {
+      title: "통계 및 분석",
+      description: "플랫폼 사용 현황과 다양한 통계 데이터를 확인할 수 있습니다.",
+      image: "/assets/onboarding/statistics.png",
+      highlightElement: "#menu-statistics"
+    }
+  ]
+};
+
+/**
+ * 새 기능 안내 컴포넌트
+ * 
+ * 업데이트된 기능이나 새로운 기능을 사용자에게 소개합니다.
+ */
+export function FeatureAnnouncement({ 
+  title, 
+  description, 
+  image, 
+  onDismiss 
+}: { 
+  title: string;
+  description: string;
+  image?: string;
+  onDismiss: () => void;
+}) {
+  return (
+    <Dialog open={true} onOpenChange={(open) => !open && onDismiss()}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>
+            <span className="flex items-center">
+              <span className="bg-primary text-primary-foreground text-xs px-2 py-1 rounded-full mr-2">NEW</span>
+              {title}
+            </span>
+          </DialogTitle>
+          <DialogDescription>
+            {description}
+          </DialogDescription>
+        </DialogHeader>
+        
+        {image && (
+          <div className="my-4">
+            <img
+              src={image}
+              alt={`${title} 기능 이미지`}
+              className="w-full rounded-md"
+            />
+          </div>
+        )}
+        
+        <DialogFooter>
+          <Button onClick={onDismiss}>
+            확인했습니다
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
