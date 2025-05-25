@@ -285,8 +285,8 @@ export function Sidebar({
         !path.startsWith('/events/') && 
         !path.startsWith('/help/')) {
       console.log('로그인 필요: ', path);
-      // window.location.href 대신 navigate 사용
-      navigate('/auth/login');
+      // 로그인 페이지로 리다이렉트
+      setLocation('/auth/login');
       return;
     }
 
@@ -295,21 +295,21 @@ export function Sidebar({
       // 훈련사 전용 페이지
       if ((path.startsWith('/trainer-dashboard') || path.startsWith('/trainer/')) && userRole !== 'trainer' && userRole !== 'admin') {
         console.log('훈련사 권한 필요');
-        navigate('/');
+        setLocation('/');
         return;
       }
 
       // 기관 관리자 전용 페이지
       if ((path.startsWith('/institute-dashboard') || path.startsWith('/institute/')) && userRole !== 'institute-admin' && userRole !== 'admin') {
         console.log('기관 관리자 권한 필요');
-        window.location.href = "/";
+        setLocation('/');
         return;
       }
 
       // 시스템 관리자 전용 페이지
       if (path.startsWith('/admin') && userRole !== 'admin') {
         console.log('관리자 권한 필요');
-        window.location.href = "/";
+        setLocation('/');
         return;
       }
     }
@@ -589,32 +589,24 @@ export function Sidebar({
                       <p className="text-sm font-medium text-gray-900 dark:text-gray-100">반려견 교육 시작하기</p>
                       <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">회원가입 후 맞춤형 교육을 경험하세요.</p>
                     </div>
-                    <a
+                    <Link
                       href="/auth/login"
-                      className="bg-primary hover:bg-primary/90 text-white text-xs font-medium py-2 px-3 rounded-md transition-colors"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        window.location.href = "/auth/login";
-                      }}
+                      className="bg-primary hover:bg-primary/90 text-white text-xs font-medium py-2 px-3 rounded-md transition-colors inline-block text-center"
                     >
                       로그인
-                    </a>
+                    </Link>
                   </div>
                 ) : (
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <a
+                        <Link
                           href="/auth/login"
                           className="flex items-center justify-center py-2 px-2 mt-4 bg-primary hover:bg-primary/90 text-white rounded-lg mx-auto w-[48px]"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            window.location.href = "/auth/login";
-                          }}
                           aria-label="로그인"
                         >
                           <LogIn className="w-5 h-5" />
-                        </a>
+                        </Link>
                       </TooltipTrigger>
                       <TooltipContent side="right">
                         <p>로그인</p>
