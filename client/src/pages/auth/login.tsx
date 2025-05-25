@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "../../SimpleApp";
 import AgreementSectionTalez, { AgreementValues } from "@/components/AgreementSectionTalez";
 import { toast } from "@/hooks/use-toast";
+import { Divider } from "@/components/ui/Divider";
 
 export default function Login() {
   const auth = useAuth();
