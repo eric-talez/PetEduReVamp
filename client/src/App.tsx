@@ -65,7 +65,7 @@ const ContactPage = lazy(() => import('./pages/help/contact'));
 
 // Auth Pages
 import LoginPage from "./pages/auth/login";
-import RegisterPage from "./pages/auth/login"; // 임시로 로그인 페이지를 재사용
+import RegisterPage from "./pages/auth/register";
 
 const LoadingFallback = () => (
   <div className="flex justify-center items-center min-h-[400px]">
