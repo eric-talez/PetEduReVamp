@@ -43,10 +43,11 @@ router.get('/posts', async (req, res) => {
     }
     
     // 태그 필터링 (있는 경우)
-    // 태그 필드가 아직 구현되지 않아 주석 처리
-    /*if (tag) {
-      query = query.where(eq(posts.tag, String(tag)));
-    }*/
+    // JSON 배열 필드에서 특정 태그 검색 
+    if (tag) {
+      // PostgreSQL JSON 배열 검색을 위한 SQL
+      query = query.where(sql`${posts.tags}::jsonb ? ${String(tag)}`);
+    }
     
     const result = await query;
     
@@ -57,10 +58,11 @@ router.get('/posts', async (req, res) => {
       countQuery = countQuery.where(eq(posts.category, String(category)));
     }
     
-    // 태그 필터링 (구현 전 주석 처리)
-    /*if (tag) {
-      countQuery = countQuery.where(eq(posts.tag, String(tag)));
-    }*/
+    // 태그 필터링 - 카운트 쿼리
+    if (tag) {
+      // PostgreSQL JSON 배열 검색을 위한 SQL
+      countQuery = countQuery.where(sql`${posts.tags}::jsonb ? ${String(tag)}`);
+    }
     
     const [{ count }] = await countQuery;
     
