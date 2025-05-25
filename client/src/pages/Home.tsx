@@ -384,6 +384,15 @@ export default function Home() {
                   >
                     회원가입
                   </Button>
+                  <div className="text-center mt-2">
+                    <Button
+                      variant="link"
+                      className="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+                      onClick={() => setLocation('/auth?reset=true')}
+                    >
+                      비밀번호를 잊으셨나요?
+                    </Button>
+                  </div>
                 </div>
                 <div className="mt-4">
                   <Button 

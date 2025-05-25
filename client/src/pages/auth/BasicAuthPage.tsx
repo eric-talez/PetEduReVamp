@@ -1,16 +1,30 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { useLocation } from 'wouter';
+import { PasswordResetForm } from '@/components/PasswordResetForm';
 
 // 기본 인증 페이지 컴포넌트
 const BasicAuthPage = () => {
   const [activeTab, setActiveTab] = useState<'login' | 'register'>('login');
   const [showPasswordReset, setShowPasswordReset] = useState(false);
-  const [, setLocation] = useLocation();
+  const [location, setLocation] = useLocation();
   
-  const togglePasswordReset = useCallback(() => {
-    setShowPasswordReset(prev => !prev);
-  }, []);
-
+  // URL 쿼리 파라미터 확인
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    const tab = url.searchParams.get('tab');
+    const reset = url.searchParams.get('reset');
+    
+    // 탭 파라미터가 있으면 해당 탭으로 이동
+    if (tab === 'register') {
+      setActiveTab('register');
+    }
+    
+    // reset 파라미터가 있으면 비밀번호 찾기 모달 표시
+    if (reset === 'true') {
+      setShowPasswordReset(true);
+    }
+  }, [location]);
+  
   // 비밀번호 찾기 모달을 여닫는 함수 정의
   const handleTogglePasswordReset = () => {
     setShowPasswordReset(prev => !prev);
@@ -238,121 +252,7 @@ const LoginForm = () => {
 
 
 
-// 비밀번호 찾기 폼 컴포넌트
-interface PasswordResetFormProps {
-  onClose: () => void;
-}
-
-const PasswordResetForm = ({ onClose }: PasswordResetFormProps) => {
-  const [username, setUsername] = useState('');
-  const [email, setEmail] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [success, setSuccess] = useState(false);
-  const [error, setError] = useState('');
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    setError('');
-
-    try {
-      // 비밀번호 재설정 요청 API 호출
-      const response = await fetch('/api/reset-password', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, username }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || '비밀번호 재설정 요청에 실패했습니다.');
-      }
-
-      // 성공 상태로 변경
-      setSuccess(true);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  return (
-    <>
-      {success ? (
-        <div className="space-y-6">
-          <div className="bg-green-50 border border-green-200 text-green-700 p-4 rounded-md">
-            <p>비밀번호 재설정 안내 이메일이 발송되었습니다. 이메일을 확인해주세요.</p>
-          </div>
-          <button
-            onClick={onClose}
-            className="w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
-          >
-            로그인 페이지로 돌아가기
-          </button>
-        </div>
-      ) : (
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {error && (
-            <div className="p-3 bg-red-50 border border-red-200 text-red-600 rounded-md text-sm">
-              {error}
-            </div>
-          )}
-
-          <div>
-            <label htmlFor="reset-username" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              아이디
-            </label>
-            <input
-              id="reset-username"
-              type="text"
-              placeholder="가입시 등록한 아이디를 입력하세요"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              required
-              disabled={isLoading}
-              className="w-full rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-            />
-          </div>
-
-          <div>
-            <label htmlFor="reset-email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              이메일
-            </label>
-            <input
-              id="reset-email"
-              type="email"
-              placeholder="가입시 등록한 이메일을 입력하세요"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              disabled={isLoading}
-              className="w-full rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-            />
-          </div>
-
-          <div className="flex flex-col space-y-3">
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            >
-              {isLoading ? "처리 중..." : "비밀번호 재설정 요청"}
-            </button>
-            
-            <button
-              type="button"
-              onClick={onClose}
-              className="w-full py-2 px-4 bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 transition-colors"
-            >
-              취소
-            </button>
-          </div>
-        </form>
-      )}
-    </>
-  );
-};
+// PasswordResetForm 컴포넌트는 '@/components/PasswordResetForm'에서 가져옵니다.
 
 // 회원가입 폼 컴포넌트
 interface RegisterFormProps {
