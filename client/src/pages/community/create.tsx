@@ -31,20 +31,44 @@ type PostFormValues = z.infer<typeof postFormSchema>;
 export default function CreatePostPage() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
-  const { user, isLoading: authLoading } = useAuth();
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
   const [isUploading, setIsUploading] = useState(false);
+  const [serverAuthChecked, setServerAuthChecked] = useState(false);
 
-  // 인증 확인
+  // 서버 인증 상태 확인
   React.useEffect(() => {
-    if (!authLoading && !user) {
+    const checkServerAuth = async () => {
+      try {
+        const response = await fetch('/api/user', {
+          credentials: 'include'
+        });
+        
+        if (!response.ok) {
+          throw new Error('인증되지 않은 사용자');
+        }
+        
+        setServerAuthChecked(true);
+      } catch (error) {
+        toast({
+          title: '로그인이 필요합니다',
+          description: '게시글을 작성하려면 먼저 로그인해주세요.',
+          variant: 'destructive'
+        });
+        setLocation('/auth');
+      }
+    };
+
+    if (!authLoading && isAuthenticated) {
+      checkServerAuth();
+    } else if (!authLoading && !isAuthenticated) {
       toast({
         title: '로그인이 필요합니다',
         description: '게시글을 작성하려면 먼저 로그인해주세요.',
         variant: 'destructive'
       });
-      setLocation('/community');
+      setLocation('/auth');
     }
-  }, [user, authLoading, toast, setLocation]);
+  }, [isAuthenticated, authLoading, toast, setLocation]);
 
   // 폼 설정
   const form = useForm<PostFormValues>({
