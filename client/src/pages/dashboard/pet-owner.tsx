@@ -11,10 +11,26 @@ interface PetOwnerDashboardProps {
   onAction: (action: string, data?: any) => void;
 }
 
+interface BannerSlide {
+  id: number;
+  title: string;
+  description: string;
+  features: string[];
+  image: string;
+  primaryAction: {
+    text: string;
+    path: string;
+  };
+  secondaryAction: {
+    text: string;
+    path: string;
+  };
+}
+
 export default function PetOwnerDashboard({ onAction }: PetOwnerDashboardProps) {
   const { userName, userRole } = useAuth();
   const [, setLocation] = useLocation();
-  const [currentSlide, setCurrentSlide] = useState(0);
+  const [currentSlide, setCurrentSlide] = useState<number>(0);
 
   // 배너 슬라이드 데이터
   const bannerSlides = [
@@ -117,15 +133,18 @@ export default function PetOwnerDashboard({ onAction }: PetOwnerDashboardProps) 
 
   // 슬라이드 자동 변경 기능
   useEffect(() => {
+    // 슬라이드 타이머 설정
     const timer = setInterval(() => {
-      setCurrentSlide((prev: number) => (prev + 1) % bannerSlides.length);
+      setCurrentSlide((prev) => (prev + 1) % bannerSlides.length);
     }, 5000); // 5초마다 슬라이드 변경
     
+    // 컴포넌트 언마운트 시 타이머 정리
     return () => clearInterval(timer);
   }, [bannerSlides.length]);
 
-  // 슬라이드 변경 함수
+  // 슬라이드 수동 변경 함수
   const goToSlide = (index: number) => {
+    console.log(`슬라이드 변경: ${currentSlide} → ${index}`);
     setCurrentSlide(index);
   };
 
@@ -251,65 +270,53 @@ export default function PetOwnerDashboard({ onAction }: PetOwnerDashboardProps) 
     <div className="py-8 px-4 sm:px-6 lg:px-8">
       {/* Banner Slider - 5개 슬라이드 */}
       <div className="relative rounded-xl overflow-hidden h-48 md:h-60 mb-8 bg-gradient-to-r from-primary/80 to-accent/80 shadow-lg">
-        {/* 슬라이드 이미지 */}
-        {bannerSlides.map((slide, index) => (
-          <div 
-            key={slide.id}
-            className={`absolute inset-0 transition-opacity duration-500 ease-in-out ${index === currentSlide ? 'opacity-100' : 'opacity-0'}`}
-          >
-            <img 
-              src={slide.image} 
-              alt={slide.title}
-              className="w-full h-full object-cover absolute mix-blend-overlay"
-            />
-            <div className="absolute inset-0 bg-gradient-to-r from-primary/80 to-accent/30 mix-blend-multiply"></div>
-          </div>
-        ))}
+        {/* 현재 슬라이드만 표시 */}
+        <div className="absolute inset-0 transition-opacity duration-500 ease-in-out">
+          <img 
+            src={bannerSlides[currentSlide].image} 
+            alt={bannerSlides[currentSlide].title}
+            className="w-full h-full object-cover absolute mix-blend-overlay"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-primary/80 to-accent/30 mix-blend-multiply"></div>
+        </div>
         
-        {/* 슬라이드 콘텐츠 */}
-        {bannerSlides.map((slide, index) => (
-          <div 
-            key={`content-${slide.id}`}
-            className={`relative h-full flex flex-col justify-center px-8 md:px-12 transition-opacity duration-500 ease-in-out ${index === currentSlide ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
-          >
-            <h1 className="text-white text-lg md:text-2xl font-bold mb-1 md:mb-2 max-w-xl">
-              {slide.title}
-            </h1>
-            <p className="text-white text-xs md:text-sm max-w-xl mb-2 md:mb-3 line-clamp-2">
-              {slide.description}
-            </p>
-            
-            {/* 주요 기능 목록 */}
-            {slide.features && (
-              <div className="flex flex-wrap gap-2 mb-3 md:mb-4">
-                {slide.features.map((feature, idx) => (
-                  <span 
-                    key={idx} 
-                    className="inline-flex items-center text-xs md:text-sm bg-white/30 hover:bg-white/40 transition-colors text-white px-3 py-1 rounded-full shadow-sm"
-                  >
-                    <span className="mr-1.5 text-primary-300 font-bold">✓</span> {feature}
-                  </span>
-                ))}
-              </div>
-            )}
-            
-            <div className="flex flex-wrap gap-2">
-              <Button
-                className="bg-white text-primary font-semibold hover:bg-gray-50 text-xs md:text-sm py-1.5 px-4 h-auto rounded-full shadow-md transition-all hover:scale-105"
-                onClick={() => setLocation(slide.primaryAction.path)}
+        {/* 현재 슬라이드 콘텐츠 */}
+        <div className="relative h-full flex flex-col justify-center px-8 md:px-12 transition-all duration-300 ease-in-out">
+          <h1 className="text-white text-lg md:text-2xl font-bold mb-1 md:mb-2 max-w-xl">
+            {bannerSlides[currentSlide].title}
+          </h1>
+          <p className="text-white text-xs md:text-sm max-w-xl mb-2 md:mb-3 line-clamp-2">
+            {bannerSlides[currentSlide].description}
+          </p>
+          
+          {/* 주요 기능 목록 */}
+          <div className="flex flex-wrap gap-2 mb-3 md:mb-4">
+            {bannerSlides[currentSlide].features.map((feature: string, idx: number) => (
+              <span 
+                key={idx} 
+                className="inline-flex items-center text-xs md:text-sm bg-white/30 hover:bg-white/40 transition-colors text-white px-3 py-1 rounded-full shadow-sm"
               >
-                {slide.primaryAction.text} →
-              </Button>
-              <Button
-                variant="outline"
-                className="border-2 border-white text-white hover:bg-white/20 text-xs md:text-sm py-1.5 px-4 h-auto rounded-full shadow-md transition-all hover:scale-105"
-                onClick={() => setLocation(slide.secondaryAction.path)}
-              >
-                {slide.secondaryAction.text}
-              </Button>
-            </div>
+                <span className="mr-1.5 text-primary-300 font-bold">✓</span> {feature}
+              </span>
+            ))}
           </div>
-        ))}
+          
+          <div className="flex flex-wrap gap-2">
+            <Button
+              className="bg-white text-primary font-semibold hover:bg-gray-50 text-xs md:text-sm py-1.5 px-4 h-auto rounded-full shadow-md transition-all hover:scale-105"
+              onClick={() => setLocation(bannerSlides[currentSlide].primaryAction.path)}
+            >
+              {bannerSlides[currentSlide].primaryAction.text} →
+            </Button>
+            <Button
+              variant="outline"
+              className="border-2 border-white text-white hover:bg-white/20 text-xs md:text-sm py-1.5 px-4 h-auto rounded-full shadow-md transition-all hover:scale-105"
+              onClick={() => setLocation(bannerSlides[currentSlide].secondaryAction.path)}
+            >
+              {bannerSlides[currentSlide].secondaryAction.text}
+            </Button>
+          </div>
+        </div>
         
         {/* 슬라이드 인디케이터 */}
         <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-1.5">
