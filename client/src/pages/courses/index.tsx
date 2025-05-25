@@ -255,7 +255,7 @@ export default function Courses({ mode = 'view', userType }: CoursesPageProps) {
       {/* Course Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {filteredCourses.map((course) => (
-          <Card key={course.id} hover className="overflow-hidden border border-gray-100 dark:border-gray-700">
+          <Card key={course.id} className="overflow-hidden border border-gray-100 dark:border-gray-700 hover:shadow-md transition-shadow">
             <div className="relative h-40">
               <img 
                 src={course.image} 
