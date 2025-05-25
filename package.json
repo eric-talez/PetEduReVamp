@@ -55,6 +55,7 @@
     "@types/cookie-parser": "^1.4.8",
     "@types/cors": "^2.8.18",
     "@types/jest": "^29.5.14",
+    "@types/nodemailer": "^6.4.17",
     "@types/papaparse": "^5.3.16",
     "@types/supertest": "^6.0.3",
     "class-variance-authority": "^0.7.1",

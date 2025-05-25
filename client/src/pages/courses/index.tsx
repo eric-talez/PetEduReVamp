@@ -6,7 +6,12 @@ import { Badge } from "@/components/ui/Badge";
 import { Avatar } from "@/components/ui/Avatar";
 import { Search, Filter, SlidersHorizontal, Star } from "lucide-react";
 
-export default function Courses() {
+interface CoursesPageProps {
+  mode?: 'view' | 'create' | 'edit';
+  userType?: string;
+}
+
+export default function Courses({ mode = 'view', userType }: CoursesPageProps) {
   const [filter, setFilter] = useState("all");
 
   const courses = [
