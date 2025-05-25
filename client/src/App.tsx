@@ -302,6 +302,20 @@ function UnauthenticatedRoutesContent() {
           );
         }}
       </Route>
+      
+      <Route path="/auth/reset-password">
+        {() => {
+          console.log("비밀번호 찾기 페이지 접근");
+          const PasswordResetPage = React.lazy(() => import('./pages/auth/PasswordResetPage'));
+          return (
+            <React.Suspense fallback={<div className="flex items-center justify-center min-h-screen">
+              <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
+            </div>}>
+              <PasswordResetPage />
+            </React.Suspense>
+          );
+        }}
+      </Route>
 
       <Route path="/course/:id" component={CourseDetail} />
        <Route path="/courses">
