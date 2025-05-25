@@ -28,7 +28,7 @@ declare global {
 /**
  * 인증 관련 설정과 라우트를 등록
  */
-export function setupAuth(app: Express, sessionStore: session.Store) {
+export function setupAuth(app: Express, sessionStore?: session.Store) {
   console.log('[Auth] 인증 설정 초기화');
   
   // Passport 초기화

@@ -11,17 +11,8 @@ describe('인증 API 테스트', () => {
     app = express();
     app.use(express.json());
     
-    // 테스트용 간단한 세션 스토어 객체 생성
-    const testSessionStore = {
-      get: jest.fn(),
-      set: jest.fn(),
-      destroy: jest.fn(),
-      all: jest.fn(),
-      touch: jest.fn(),
-      clear: jest.fn()
-    };
-    
-    setupAuth(app, testSessionStore);
+    // 테스트 환경에서는 sessionStore를 선택적으로 설정
+    setupAuth(app);
   });
 
   beforeEach(async () => {
