@@ -40,6 +40,13 @@ export function QuickLoginButtons() {
     window.dispatchEvent(logoutEvent);
   };
 
+  // 개발 모드에서만 QuickLogin 버튼을 표시 (숨김 처리)
+  const isDevEnv = false; // 요청에 따라 숨김 처리를 위해 false로 설정
+  
+  if (!isDevEnv) {
+    return null; // 개발 모드가 아닌 경우 아무것도 렌더링하지 않음
+  }
+  
   return (
     <div className="flex flex-col space-y-2 mt-4">
       <Button 

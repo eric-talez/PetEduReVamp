@@ -7,283 +7,35 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "../../SimpleApp";
 import AgreementSectionTalez, { AgreementValues } from "@/components/AgreementSectionTalez";
 import { toast } from "@/hooks/use-toast";
-import { Divider } from "@/components/ui/Divider";
+import { SocialLoginButtons } from "@/components/SocialLoginButtons";
 
 export default function Login() {
   const auth = useAuth();
-  
-  // 로그인 상태 관리
-  const [loginUsername, setLoginUsername] = useState("");
-  const [loginPassword, setLoginPassword] = useState("");
-  const [loginError, setLoginError] = useState("");
-  const [isLoginLoading, setIsLoginLoading] = useState(false);
-  
-  // 회원가입 상태 관리
-  const [registerUsername, setRegisterUsername] = useState("");
-  const [registerPassword, setRegisterPassword] = useState("");
-  const [registerEmail, setRegisterEmail] = useState("");
-  const [registerName, setRegisterName] = useState("");
-  const [registerError, setRegisterError] = useState("");
-  const [isRegisterLoading, setIsRegisterLoading] = useState(false);
-  
-  // 이용약관 동의 상태 관리
-  const [agreements, setAgreements] = useState<AgreementValues>({
-    terms: false,
-    privacy: false,
-    marketing: false
-  });
-  const [isAgreementValid, setIsAgreementValid] = useState(false);
-  
   const [location, setLocation] = useLocation();
   
-  // URL 쿼리 파라미터에서 탭 정보 가져오기 (회원가입 또는 로그인)
-  const getInitialTab = () => {
-    if (typeof window !== 'undefined') {
-      const params = new URLSearchParams(window.location.search);
-      const tab = params.get('tab');
-      return tab === 'register' ? 'register' : 'login';
-    }
-    return 'login';
-  };
-  
-  // 초기 탭 설정
-  const [activeTab, setActiveTab] = useState(getInitialTab());
-
-  const handleLoginSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoginError("");
+  // 이미 인증된 경우 대시보드로 리다이렉트
+  if (auth.isAuthenticated) {
+    // 대시보드로 리다이렉트
+    const dashboardPath = auth.userRole === 'pet-owner' ? '/dashboard' : 
+                         auth.userRole === 'trainer' ? '/trainer/dashboard' : 
+                         auth.userRole === 'institute-admin' ? '/institute/dashboard' : 
+                         auth.userRole === 'admin' ? '/admin/dashboard' : '/dashboard';
     
-    // 유효성 검사
-    if (!loginUsername.trim()) {
-      setLoginError("아이디를 입력해주세요.");
-      return;
-    }
+    // useEffect 내에서 리다이렉션 처리
+    React.useEffect(() => {
+      setLocation(dashboardPath);
+    }, []);
     
-    if (!loginPassword) {
-      setLoginError("비밀번호를 입력해주세요.");
-      return;
-    }
-    
-    setIsLoginLoading(true);
-
-    try {
-      // 테스트 계정 로그인 처리
-      if (loginUsername === 'demo' && loginPassword === 'password') {
-        console.log('테스트 계정으로 로그인 시도');
-        
-        // 글로벌 인증 상태 업데이트
-        const loginEvent = new CustomEvent('login', {
-          detail: { 
-            role: 'pet-owner',
-            name: '테스트 사용자'
-          }
-        });
-        window.dispatchEvent(loginEvent);
-        
-        // 성공 메시지 표시
-        toast({
-          title: "로그인 성공",
-          description: "테스트 계정으로 로그인되었습니다.",
-        });
-        
-        // 대시보드로 이동
-        setLocation("/dashboard");
-        return;
-      }
-      
-      // 데모 계정 처리 (역할 기반)
-      const demoAccounts: Record<string, string> = {
-        'pet-owner': 'password',
-        'trainer': 'password',
-        'institute': 'password',
-        'admin': 'password'
-      };
-      
-      if (demoAccounts[loginUsername] === loginPassword) {
-        console.log(`테스트 계정 ${loginUsername}으로 로그인 시도`);
-        
-        const role = loginUsername === 'institute' ? 'institute-admin' : loginUsername;
-        const name = role === 'pet-owner' ? '반려인' : 
-                     role === 'trainer' ? '훈련사' : 
-                     role === 'institute-admin' ? '기관관리자' : '관리자';
-        
-        // 글로벌 인증 상태 업데이트
-        const loginEvent = new CustomEvent('login', {
-          detail: { role, name }
-        });
-        window.dispatchEvent(loginEvent);
-        
-        // 성공 메시지 표시
-        toast({
-          title: "로그인 성공",
-          description: `${name} 계정으로 로그인되었습니다.`,
-        });
-        
-        // 역할에 맞는 대시보드로 이동
-        const dashboardPath = role === 'pet-owner' ? '/dashboard' : 
-                             role === 'trainer' ? '/trainer/dashboard' : 
-                             role === 'institute-admin' ? '/institute/dashboard' : 
-                             '/admin/dashboard';
-        setLocation(dashboardPath);
-        return;
-      }
-      
-      // 실제 서버 로그인 API 호출 (기존 코드)
-      console.log('로그인 시도:', { username: loginUsername });
-      
-      try {
-        // 현재 URL 확인
-        const currentUrl = window.location.origin;
-        console.log('현재 기본 URL:', currentUrl);
-        
-        // 로그인 URL 구성
-        const loginUrl = `${currentUrl}/api/auth/login`;
-        console.log('로그인 요청 URL:', loginUrl);
-        
-        const response = await fetch(loginUrl, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          credentials: 'include', // 쿠키를 포함하여 인증 세션 유지
-          body: JSON.stringify({ 
-            username: loginUsername, 
-            password: loginPassword 
-          }),
-        });
-        
-        if (!response.ok) {
-          const errorText = await response.text();
-          console.error('로그인 응답 에러:', response.status, errorText);
-          
-          let errorData;
-          try {
-            errorData = JSON.parse(errorText);
-          } catch (e) {
-            console.error('JSON 파싱 오류:', e);
-            throw new Error(`서버 오류 (${response.status}): ${errorText.substring(0, 100)}`);
-          }
-          
-          // 서버에서 반환된 에러 코드에 따라 더 상세한 메시지 제공
-          if (errorData.code === 'invalid_credentials') {
-            throw new Error('아이디 또는 비밀번호가 올바르지 않습니다.');
-          } else if (errorData.code === 'account_locked') {
-            throw new Error('계정이 잠겼습니다. 고객센터에 문의해주세요.');
-          } else if (errorData.code === 'not_verified') {
-            throw new Error('이메일 인증이 필요합니다. 이메일을 확인해주세요.');
-          }
-          
-          throw new Error(errorData.message || '로그인에 실패했습니다');
-        }
-      } catch (fetchError) {
-        console.error('로그인 오류:', fetchError);
-        
-        // 테스트 계정 대체 처리 (서버 오류 발생 시)
-        console.log('서버 오류 발생, 테스트 계정으로 대체');
-        
-        const role = 'pet-owner';
-        const name = '반려인';
-        
-        // 글로벌 인증 상태 업데이트
-        const loginEvent = new CustomEvent('login', {
-          detail: { role, name }
-        });
-        window.dispatchEvent(loginEvent);
-        
-        toast({
-          title: "로그인 성공",
-          description: "반려인 계정으로 로그인되었습니다.",
-        });
-        
-        setLocation("/dashboard");
-        return;
-      }
-      
-      // 위의 try-catch 블록 내에서 서버 응답을 처리하도록 수정되었습니다
-      // 이 부분은 서버 응답이 성공적인 경우에만 실행됩니다
-
-      // 이 코드는 테스트 계정으로 로그인한 경우 실행됩니다
-      console.log('로그인 성공 - 테스트 계정으로 처리');
-      
-      // 테스트 사용자 정보
-      const testUserData = {
-        role: 'pet-owner',
-        name: '반려인'
-      };
-      
-      // 글로벌 인증 상태 업데이트를 위한 이벤트 발생
-      const loginEvent = new CustomEvent('login', {
-        detail: testUserData
-      });
-      
-      window.dispatchEvent(loginEvent);
-      
-      // 토스트 메시지로 성공 알림
-      toast({
-        title: "로그인 성공",
-        description: "반려인 계정으로 로그인되었습니다.",
-      });
-      
-      // 대시보드로 이동
-      setLocation("/dashboard");
-    } catch (err) {
-      console.error('로그인 오류:', err);
-      setLoginError(err instanceof Error ? err.message : "로그인에 실패했습니다. 아이디와 비밀번호를 확인해주세요.");
-    } finally {
-      setIsLoginLoading(false);
-    }
-  };
-  
-  const handleRegisterSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setRegisterError("");
-    
-    // 필수 약관 동의 확인
-    if (!isAgreementValid) {
-      setRegisterError("이용약관 및 개인정보처리방침에 동의해주세요.");
-      return;
-    }
-    
-    setIsRegisterLoading(true);
-    
-    try {
-      // 회원가입 시도 (테스트 계정으로 대체)
-      console.log('회원가입 시도:', { 
-        username: registerUsername,
-        name: registerName,
-        email: registerEmail,
-        agreements
-      });
-      
-      // 테스트 회원가입 성공 처리
-      console.log('회원가입 성공: 테스트 계정');
-      
-      // 글로벌 인증 상태 업데이트를 위한 이벤트 발생
-      const loginEvent = new CustomEvent('login', {
-        detail: { 
-          role: 'pet-owner', 
-          name: registerName || '반려인'
-        }
-      });
-      
-      window.dispatchEvent(loginEvent);
-      
-      // 성공 메시지 표시
-      toast({
-        title: "회원가입 성공",
-        description: "반려인 계정으로 가입되었습니다.",
-      });
-      
-      // 대시보드로 이동
-      setLocation("/dashboard");
-      
-    } catch (err) {
-      console.error('회원가입 오류:', err);
-      setRegisterError(err instanceof Error ? err.message : "회원가입에 실패했습니다. 다시 시도해주세요.");
-    } finally {
-      setIsRegisterLoading(false);
-    }
-  };
+    // 로딩 표시
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
+          <p>이미 로그인되어 있습니다. 리다이렉트 중...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col items-center justify-center py-12">
