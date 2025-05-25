@@ -396,29 +396,7 @@ export default function Home() {
               </>
             )}
             <hr className="my-4 dark:border-gray-700" />
-            <div className="space-y-2">
-              <Button 
-                variant="success" 
-                className="w-full"
-                onClick={() => handleQuickLogin('pet-owner')}
-              >
-                반려인으로 로그인
-              </Button>
-              <Button 
-                variant="info" 
-                className="w-full"
-                onClick={() => handleQuickLogin('trainer')}
-              >
-                훈련사로 로그인
-              </Button>
-              <Button 
-                variant="warning" 
-                className="w-full"
-                onClick={() => handleQuickLogin('institute-admin')}
-              >
-                기관으로 로그인
-              </Button>
-            </div>
+            {/* 강제 로그인 버튼 제거 (요청에 따라 숨김 처리) */}
           </div>
         </div>
         
