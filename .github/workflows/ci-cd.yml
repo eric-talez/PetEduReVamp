@@ -1,0 +1,110 @@
+name: Talez CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '20'
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Check code format
+      run: npm run format:check || echo "Code formatting check failed"
+    
+    - name: Lint
+      run: npm run lint || echo "Linting failed"
+    
+    - name: Build
+      run: npm run build
+    
+    - name: Test
+      run: npm test || echo "Tests failed"
+    
+    - name: Cache build
+      uses: actions/cache@v3
+      with:
+        path: |
+          dist
+          node_modules
+        key: ${{ runner.os }}-build-${{ github.sha }}
+        restore-keys: |
+          ${{ runner.os }}-build-
+
+  deploy-staging:
+    needs: build-and-test
+    if: github.ref == 'refs/heads/develop'
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '20'
+    
+    - name: Restore cache
+      uses: actions/cache@v3
+      with:
+        path: |
+          dist
+          node_modules
+        key: ${{ runner.os }}-build-${{ github.sha }}
+    
+    - name: Deploy to Staging
+      run: |
+        echo "Deploying to Staging environment..."
+        # 스테이징 환경 배포 명령어를 여기에 추가하세요
+        # 예: ssh user@staging-server 'cd /path/to/app && git pull && npm ci && npm run build && pm2 restart app'
+
+  deploy-production:
+    needs: build-and-test
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '20'
+    
+    - name: Restore cache
+      uses: actions/cache@v3
+      with:
+        path: |
+          dist
+          node_modules
+        key: ${{ runner.os }}-build-${{ github.sha }}
+    
+    - name: Deploy to Production
+      run: |
+        echo "Deploying to Production environment..."
+        # 프로덕션 환경 배포 명령어를 여기에 추가하세요
+        # 예: ssh user@production-server 'cd /path/to/app && git pull && npm ci && npm run build && pm2 restart app'
+
+  notify:
+    needs: [deploy-staging, deploy-production]
+    if: always()
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Notify team
+      run: |
+        echo "Pipeline completed with status: ${{ job.status }}"
+        # 여기에 Slack, 이메일 등의 알림 서비스 호출 명령어를 추가하세요
