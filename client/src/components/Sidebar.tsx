@@ -922,6 +922,13 @@ export function Sidebar({
                           show={true}
                         >알림장</AccessibleNavItem>
                         <AccessibleNavItem 
+                          href="/analytics" 
+                          icon={<BarChart className="w-5 h-5 mr-2" />} 
+                          active={isActive("/analytics")} 
+                          onClick={handleItemClick} 
+                          show={true}
+                        >분석 및 보고서</AccessibleNavItem>
+                        <AccessibleNavItem 
                           href="/calendar" 
                           icon={<Calendar className="w-5 h-5 mr-2" />} 
                           active={isActive("/calendar")} 

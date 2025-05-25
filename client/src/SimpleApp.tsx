@@ -1223,6 +1223,22 @@ function AuthenticatedRoutes() {
           }}
         </Route>
         
+        {/* 분석 및 보고서 페이지 */}
+        <Route path="/analytics">
+          {() => {
+            console.log("분석 및 보고서 페이지 접근");
+            return (
+              <Suspense fallback={
+                <div className="flex justify-center items-center h-screen">
+                  <DogLoading message="분석 데이터 로딩 중..." size="medium" showTips={true} />
+                </div>
+              }>
+                <AnalyticsPage />
+              </Suspense>
+            );
+          }}
+        </Route>
+        
         {/* 404 페이지 */}
         <Route component={NotFound} />
       </Switch>
