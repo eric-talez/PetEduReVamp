@@ -19,6 +19,16 @@ export const users = pgTable("users", {
   specialty: text("specialty"),
   isVerified: boolean("is_verified").default(false),
   instituteId: integer("institute_id").references(() => institutes.id, { onDelete: 'set null' }),
+  // 소셜 로그인 관련 필드
+  ci: text("ci").unique(), // 사용자 식별 정보 (소셜 ID + 제공자)
+  verified: boolean("verified").default(false),
+  verifiedAt: timestamp("verified_at"),
+  verificationName: text("verification_name"), // 실명 인증 이름
+  verificationBirth: text("verification_birth"), // 생년월일
+  verificationPhone: text("verification_phone"), // 인증 휴대폰
+  // 소셜 로그인 제공자 정보
+  provider: text("provider"), // 'kakao', 'naver' 등
+  socialId: text("social_id"), // 소셜 서비스에서의 ID
 });
 
 export const createUserSchema = createInsertSchema(users)
