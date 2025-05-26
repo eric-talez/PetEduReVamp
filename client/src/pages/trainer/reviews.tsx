@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useAuth } from '@/contexts/GlobalAuth';
+import { useGlobalAuth } from '@/hooks/useGlobalAuth';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -36,7 +36,7 @@ interface Review {
 }
 
 export default function TrainerReviews() {
-  const { userName } = useAuth();
+  const { userName } = useGlobalAuth();
   const { toast } = useToast();
   const [reviews, setReviews] = useState<Review[]>([]);
   const [filteredReviews, setFilteredReviews] = useState<Review[]>([]);

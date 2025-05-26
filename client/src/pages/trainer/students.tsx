@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useAuth } from '@/contexts/GlobalAuth';
+import { useGlobalAuth } from '@/hooks/useGlobalAuth';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -43,7 +43,7 @@ interface Student {
 }
 
 export default function TrainerStudents() {
-  const { userName } = useAuth();
+  const { userName } = useGlobalAuth();
   const { toast } = useToast();
   const [students, setStudents] = useState<Student[]>([]);
   const [filteredStudents, setFilteredStudents] = useState<Student[]>([]);
