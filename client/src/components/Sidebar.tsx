@@ -312,7 +312,7 @@ export function Sidebar({
       
       // 약간의 지연 후 페이지 이동 (로딩 표시가 보이도록)
       setTimeout(() => {
-        window.location.href = '/auth';
+        setLocation('/auth');
       }, 1000);
       return;
     }
@@ -433,25 +433,12 @@ export function Sidebar({
       return;
     }
 
-    // 로딩 표시 함수
-    const showLoadingAndNavigate = (targetPath: string) => {
+    // SPA 라우팅 함수
+    const navigateToPage = (targetPath: string) => {
       console.log(`페이지 이동: ${targetPath}`);
       
-      // 로딩 표시를 위한 오버레이 요소 생성
-      const overlay = document.createElement('div');
-      overlay.className = 'fixed inset-0 bg-black/30 z-50 flex items-center justify-center';
-      overlay.innerHTML = `
-        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg flex items-center">
-          <div class="animate-spin w-6 h-6 border-3 border-primary border-t-transparent rounded-full mr-3"></div>
-          <p>페이지 이동 중...</p>
-        </div>
-      `;
-      document.body.appendChild(overlay);
-      
-      // 약간의 지연 후 페이지 이동 (로딩 표시가 보이도록)
-      setTimeout(() => {
-        window.location.href = targetPath;
-      }, 300);
+      // wouter를 사용한 SPA 라우팅
+      setLocation(targetPath);
       
       // 모바일 화면에서만 사이드바 닫기
       if (onClose && window.innerWidth < 768) onClose();
@@ -462,15 +449,15 @@ export function Sidebar({
       // /notifications를 /alerts로 리다이렉션
       if (path === '/notifications') {
         console.log('알림 페이지로 리다이렉션: /alerts');
-        showLoadingAndNavigate('/alerts');
+        navigateToPage('/alerts');
       } else {
-        showLoadingAndNavigate(path);
+        navigateToPage(path);
       }
       return;
     }
 
     // 일반 페이지 라우팅
-    showLoadingAndNavigate(path);
+    navigateToPage(path);
   };
 
   const contextValue = {
