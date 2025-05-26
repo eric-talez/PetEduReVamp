@@ -43,6 +43,52 @@ export async function registerRoutes(app: Express): Promise<Server> {
   registerMenuRoutes(app);
   registerAiRoutes(app);
   
+  // 테스트용 게시글 작성 API (인증 없음)
+  app.post('/api/test/posts', async (req, res) => {
+    console.log('=== 테스트 게시글 작성 API 호출됨 ===');
+    console.log('요청 데이터:', req.body);
+    
+    try {
+      const { title, content, tag } = req.body;
+      
+      if (!title || !content) {
+        return res.status(400).json({ 
+          message: '제목과 내용을 입력해주세요.',
+          received: { title, content, tag }
+        });
+      }
+      
+      const responseData = {
+        post: {
+          id: Date.now(),
+          title,
+          content,
+          tag: tag || '일반',
+          authorId: 1,
+          image: null,
+          likes: 0,
+          comments: 0,
+          createdAt: new Date(),
+          updatedAt: new Date()
+        },
+        author: {
+          id: 1,
+          username: 'testuser',
+          name: '테스트 사용자'
+        }
+      };
+      
+      console.log('응답 데이터:', responseData);
+      res.status(201).json(responseData);
+    } catch (error: any) {
+      console.error('게시글 작성 오류:', error);
+      res.status(500).json({ 
+        message: '게시글 작성 중 오류가 발생했습니다.',
+        error: error.message 
+      });
+    }
+  });
+
   // 소셜 기능 라우터 등록
   app.use('/api/social', socialRouter);
   

@@ -59,7 +59,7 @@ export default function CreatePostPage() {
   // 게시글 작성 API 요청
   const createPostMutation = useMutation({
     mutationFn: async (data: PostFormValues) => {
-      const response = await fetch('/api/social/posts', {
+      const response = await fetch('/api/test/posts', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
