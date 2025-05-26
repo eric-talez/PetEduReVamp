@@ -35,21 +35,10 @@ export default function CreatePostPage() {
   const [isUploading, setIsUploading] = useState(false);
   const [serverAuthChecked, setServerAuthChecked] = useState(false);
 
-  // 간단한 인증 체크
+  // 인증 체크 제거 - 서버에서 처리
   React.useEffect(() => {
-    if (!authLoading) {
-      if (isAuthenticated) {
-        setServerAuthChecked(true);
-      } else {
-        toast({
-          title: '로그인이 필요합니다',
-          description: '게시글을 작성하려면 먼저 로그인해주세요.',
-          variant: 'destructive'
-        });
-        setLocation('/auth');
-      }
-    }
-  }, [isAuthenticated, authLoading, toast, setLocation]);
+    setServerAuthChecked(true);
+  }, []);
 
   // 폼 설정
   const form = useForm<PostFormValues>({
