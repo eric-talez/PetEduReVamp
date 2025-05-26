@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { Link, useLocation } from 'wouter';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { BoardTable } from '@/components/community/BoardTable';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -377,10 +377,11 @@ export default function CommunityPage() {
 
         <TabsContent value="latest" className="mt-0">
           {isLoading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {Array(12).fill(0).map((_, index) => (
-                <PostCardSkeleton key={index} />
-              ))}
+            <div className="bg-white dark:bg-gray-800 rounded-lg border">
+              <div className="p-8 text-center">
+                <div className="animate-spin w-8 h-8 border-2 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
+                <p className="text-gray-500">게시글을 불러오는 중...</p>
+              </div>
             </div>
           ) : isError ? (
             <div className="text-center py-12">
@@ -398,15 +399,16 @@ export default function CommunityPage() {
             </div>
           ) : (
             <>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {postsData.posts.map((post) => (
-                  <PostCard key={post.id} post={post} onPostClick={handlePostClick} />
-                ))}
-              </div>
+              <BoardTable 
+                posts={postsData.posts}
+                currentPage={currentPage}
+                itemsPerPage={12}
+                onPostClick={handlePostClick}
+              />
 
               {postsData.pagination.totalPages > 1 && (
                 <Pagination
-                  className="mt-8 flex justify-center"
+                  className="mt-6 flex justify-center"
                   currentPage={currentPage}
                   totalPages={postsData.pagination.totalPages}
                   onPageChange={handlePageChange}
@@ -418,10 +420,11 @@ export default function CommunityPage() {
 
         <TabsContent value="popular" className="mt-0">
           {isLoading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {Array(12).fill(0).map((_, index) => (
-                <PostCardSkeleton key={index} />
-              ))}
+            <div className="bg-white dark:bg-gray-800 rounded-lg border">
+              <div className="p-8 text-center">
+                <div className="animate-spin w-8 h-8 border-2 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
+                <p className="text-gray-500">인기 게시글을 불러오는 중...</p>
+              </div>
             </div>
           ) : isError ? (
             <div className="text-center py-12">
@@ -439,15 +442,16 @@ export default function CommunityPage() {
             </div>
           ) : (
             <>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {postsData.posts.map((post) => (
-                  <PostCard key={post.id} post={post} onPostClick={handlePostClick} />
-                ))}
-              </div>
+              <BoardTable 
+                posts={postsData.posts}
+                currentPage={currentPage}
+                itemsPerPage={12}
+                onPostClick={handlePostClick}
+              />
 
               {postsData.pagination.totalPages > 1 && (
                 <Pagination
-                  className="mt-8 flex justify-center"
+                  className="mt-6 flex justify-center"
                   currentPage={currentPage}
                   totalPages={postsData.pagination.totalPages}
                   onPageChange={handlePageChange}
