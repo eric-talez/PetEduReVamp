@@ -1,4 +1,4 @@
-import { ThemeToggle } from "@/components/ui/themetoggle";
+import { ThemeToggle } from "@/components/ui/ThemeSwitcher";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { NotificationCenter } from "@/components/NotificationCenter";
