@@ -197,12 +197,12 @@ export function registerEducationRoutes(app: Express) {
             title: courses.title,
             description: courses.description,
             category: courses.category,
-            level: courses.level,
+            difficulty: courses.difficulty,
             duration: courses.duration,
-            instructor: courses.instructor,
-            schedule: courses.schedule,
+            trainerId: courses.trainerId,
+            instituteId: courses.instituteId,
             image: courses.image,
-            rating: courses.rating
+            price: courses.price
           }
         })
         .from(courseEnrollments)

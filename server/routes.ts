@@ -13,6 +13,7 @@ import { registerMenuRoutes } from "./menu/routes";
 import { registerAiRoutes } from "./ai/routes";
 import { registerAnalyticsRoutes } from "./routes/analytics";
 import { registerEducationRoutes } from "./routes/education";
+import { registerShoppingRoutes } from "./routes/shopping";
 import { Event, EventLocation } from "@shared/schema";
 import { WebSocketServer } from 'ws';
 import { MessagingService } from './messaging/service';
@@ -1673,6 +1674,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // 분석 라우트 등록
   registerAnalyticsRoutes(app);
+  
+  // 교육 라우트 등록
+  registerEducationRoutes(app);
 
   console.log('[server] WebSocket server initialized at /ws');
   
