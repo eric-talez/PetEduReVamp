@@ -119,12 +119,8 @@ export function PostModal({ post, isOpen, onClose, onDelete }: PostModalProps) {
     setDeleteAlertOpen(false);
   };
 
-  // 작성자 여부 확인 - 테스트 환경에서는 모든 사용자가 작성자로 간주
-  const isAuthor = user && (
-    (post.author && user.id === post.author.id) || 
-    (post.authorId && user.id === post.authorId) ||
-    true // 테스트 환경에서 임시로 모든 사용자에게 권한 부여
-  );
+  // 작성자 여부 확인 - 테스트를 위해 로그인한 사용자에게 모든 권한 부여
+  const isAuthor = !!user; // 로그인한 사용자면 모든 게시글 수정/삭제 가능
 
   if (!post) return null;
 
