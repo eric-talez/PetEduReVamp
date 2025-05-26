@@ -749,7 +749,6 @@ export default function AdminContents() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
-      )}
     </div>
   );
 }
