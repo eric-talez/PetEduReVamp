@@ -19,8 +19,14 @@ import {
   DialogContent, 
   DialogHeader, 
   DialogTitle,
-  DialogDescription
+  DialogDescription,
+  DialogTrigger,
+  DialogFooter
 } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
 import { 
   DropdownMenu, 
   DropdownMenuContent, 
@@ -240,6 +246,42 @@ export default function CommunityPage() {
   const [activeTab, setActiveTab] = useState('latest');
   const [activeCategory, setActiveCategory] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
+  const [isCreatePostOpen, setIsCreatePostOpen] = useState(false);
+  const [newPost, setNewPost] = useState({
+    title: "",
+    content: "",
+    category: "일반",
+    tags: ""
+  });
+
+  // 게시글 작성 함수
+  const handleSubmitPost = () => {
+    if (!newPost.title || !newPost.content) {
+      toast({
+        title: "입력 오류",
+        description: "제목과 내용을 모두 입력해주세요.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    console.log("새 게시글 작성:", newPost);
+    // 여기서 실제 API 호출 구현
+    
+    toast({
+      title: "게시글 작성 완료",
+      description: "새 게시글이 성공적으로 작성되었습니다.",
+    });
+    
+    // 폼 초기화
+    setNewPost({
+      title: "",
+      content: "",
+      category: "일반",
+      tags: ""
+    });
+    setIsCreatePostOpen(false);
+  };
   const [selectedPost, setSelectedPost] = useState<any>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [deleteAlertOpen, setDeleteAlertOpen] = useState(false);
@@ -278,15 +320,7 @@ export default function CommunityPage() {
     }
   });
 
-  // 게시글 작성 페이지로 이동 (선택된 카테고리 전달)
-  const handleCreatePost = () => {
-    const params = new URLSearchParams();
-    if (activeCategory !== 'all') {
-      params.set('category', activeCategory);
-    }
-    const url = params.toString() ? `/community/create?${params.toString()}` : '/community/create';
-    setLocation(url);
-  };
+  // 기존 페이지 이동 핸들러 제거 (모달로 대체)
 
   // 페이지 변경 핸들러
   const handlePageChange = (page: number) => {
@@ -357,10 +391,86 @@ export default function CommunityPage() {
     <div className="container py-6 max-w-6xl">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">커뮤니티</h1>
-        <Button onClick={handleCreatePost} className="gap-1">
-          <Plus className="h-4 w-4" />
-          글쓰기
-        </Button>
+        <Dialog open={isCreatePostOpen} onOpenChange={setIsCreatePostOpen}>
+          <DialogTrigger asChild>
+            <Button className="gap-1">
+              <Plus className="h-4 w-4" />
+              글쓰기
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>새 게시글 작성</DialogTitle>
+              <DialogDescription>
+                커뮤니티에 새로운 게시글을 작성해보세요.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="post-title" className="text-right">
+                  제목 *
+                </Label>
+                <Input
+                  id="post-title"
+                  value={newPost.title}
+                  onChange={(e) => setNewPost({ ...newPost, title: e.target.value })}
+                  className="col-span-3"
+                  placeholder="게시글 제목을 입력하세요"
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="post-category" className="text-right">
+                  카테고리
+                </Label>
+                <Select value={newPost.category} onValueChange={(value) => setNewPost({ ...newPost, category: value })}>
+                  <SelectTrigger className="col-span-3">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="일반">일반</SelectItem>
+                    <SelectItem value="훈련팁">훈련팁</SelectItem>
+                    <SelectItem value="건강관리">건강관리</SelectItem>
+                    <SelectItem value="행동교정">행동교정</SelectItem>
+                    <SelectItem value="영양정보">영양정보</SelectItem>
+                    <SelectItem value="놀이활동">놀이활동</SelectItem>
+                    <SelectItem value="질문답변">질문답변</SelectItem>
+                    <SelectItem value="후기공유">후기공유</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="post-tags" className="text-right">
+                  태그
+                </Label>
+                <Input
+                  id="post-tags"
+                  value={newPost.tags}
+                  onChange={(e) => setNewPost({ ...newPost, tags: e.target.value })}
+                  className="col-span-3"
+                  placeholder="태그를 쉼표로 구분하여 입력 (예: 골든리트리버, 기본훈련)"
+                />
+              </div>
+              <div className="grid grid-cols-4 items-start gap-4">
+                <Label htmlFor="post-content" className="text-right pt-2">
+                  내용 *
+                </Label>
+                <Textarea
+                  id="post-content"
+                  value={newPost.content}
+                  onChange={(e) => setNewPost({ ...newPost, content: e.target.value })}
+                  className="col-span-3"
+                  placeholder="게시글 내용을 작성하세요"
+                  rows={8}
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button type="submit" onClick={handleSubmitPost}>
+                게시글 작성
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
 
       <Tabs
