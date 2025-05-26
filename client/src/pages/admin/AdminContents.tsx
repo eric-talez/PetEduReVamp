@@ -659,72 +659,73 @@ export default function AdminContents() {
                   />
                 </div>
               </div>
-            ) : selectedContent && (
+            ) : selectedContent ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <div className="text-sm font-medium mb-1">제목</div>
                   <div className="text-lg font-semibold">{selectedContent.title}</div>
                 </div>
               
-              <div>
-                <div className="text-sm font-medium mb-1">타입</div>
-                <div className="flex items-center">
-                  {getContentTypeIcon(selectedContent.type)}
-                  <span className="capitalize">
-                    {selectedContent.type === 'banner' && '배너'}
-                    {selectedContent.type === 'image' && '이미지'}
-                    {selectedContent.type === 'video' && '비디오'}
-                    {selectedContent.type === 'article' && '아티클'}
-                    {selectedContent.type === 'event' && '이벤트'}
-                  </span>
-                </div>
-              </div>
-              
-              <div>
-                <div className="text-sm font-medium mb-1">상태</div>
-                <div>{getStatusBadge(selectedContent.status)}</div>
-              </div>
-              
-              <div>
-                <div className="text-sm font-medium mb-1">위치</div>
-                <div>{selectedContent.location}</div>
-              </div>
-              
-              <div>
-                <div className="text-sm font-medium mb-1">게시일</div>
                 <div>
-                  {selectedContent.publishDate || 
-                    <span className="text-muted-foreground">미설정</span>}
+                  <div className="text-sm font-medium mb-1">타입</div>
+                  <div className="flex items-center">
+                    {getContentTypeIcon(selectedContent.type)}
+                    <span className="capitalize">
+                      {selectedContent.type === 'banner' && '배너'}
+                      {selectedContent.type === 'image' && '이미지'}
+                      {selectedContent.type === 'video' && '비디오'}
+                      {selectedContent.type === 'article' && '아티클'}
+                      {selectedContent.type === 'event' && '이벤트'}
+                    </span>
+                  </div>
                 </div>
-              </div>
-              
-              <div>
-                <div className="text-sm font-medium mb-1">작성자</div>
-                <div>{selectedContent.author}</div>
-              </div>
-              
-              <div>
-                <div className="text-sm font-medium mb-1">조회수</div>
-                <div>{selectedContent.views.toLocaleString()}</div>
-              </div>
-              
-              {selectedContent.clicks !== undefined && (
+                
                 <div>
-                  <div className="text-sm font-medium mb-1">클릭수</div>
-                  <div>{selectedContent.clicks.toLocaleString()}</div>
+                  <div className="text-sm font-medium mb-1">상태</div>
+                  <div>{getStatusBadge(selectedContent.status)}</div>
                 </div>
-              )}
-              
-              <div>
-                <div className="text-sm font-medium mb-1">생성일</div>
-                <div>{selectedContent.createdAt}</div>
+                
+                <div>
+                  <div className="text-sm font-medium mb-1">위치</div>
+                  <div>{selectedContent.location}</div>
+                </div>
+                
+                <div>
+                  <div className="text-sm font-medium mb-1">게시일</div>
+                  <div>
+                    {selectedContent.publishDate || 
+                      <span className="text-muted-foreground">미설정</span>}
+                  </div>
+                </div>
+                
+                <div>
+                  <div className="text-sm font-medium mb-1">작성자</div>
+                  <div>{selectedContent.author}</div>
+                </div>
+                
+                <div>
+                  <div className="text-sm font-medium mb-1">조회수</div>
+                  <div>{selectedContent.views.toLocaleString()}</div>
+                </div>
+                
+                {selectedContent.clicks !== undefined && (
+                  <div>
+                    <div className="text-sm font-medium mb-1">클릭수</div>
+                    <div>{selectedContent.clicks.toLocaleString()}</div>
+                  </div>
+                )}
+                
+                <div>
+                  <div className="text-sm font-medium mb-1">생성일</div>
+                  <div>{selectedContent.createdAt}</div>
+                </div>
+                
+                <div>
+                  <div className="text-sm font-medium mb-1">수정일</div>
+                  <div>{selectedContent.updatedAt}</div>
+                </div>
               </div>
-              
-              <div>
-                <div className="text-sm font-medium mb-1">수정일</div>
-                <div>{selectedContent.updatedAt}</div>
-              </div>
-            </div>
+            ) : null}
             
             <DialogFooter>
               <Button variant="outline" onClick={() => setShowContentModal(false)}>
