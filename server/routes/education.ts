@@ -7,7 +7,7 @@ export function registerEducationRoutes(app: Express) {
   // 강의 목록 가져오기 (검색 및 필터링 포함)
   app.get("/api/education/courses", async (req, res) => {
     try {
-      const { search, category, level, page = 1, limit = 10 } = req.query;
+      const { search, category, level } = req.query;
       
       let whereConditions: any[] = [];
       
@@ -31,52 +31,16 @@ export function registerEducationRoutes(app: Express) {
         whereConditions.push(eq(courses.difficulty, level as string));
       }
       
-      // 활성화된 강의만 표시
-      whereConditions.push(eq(courses.isActive, true));
-      
       const whereClause = whereConditions.length > 0 ? and(...whereConditions) : undefined;
       
-      // 전체 개수 조회
-      const totalResult = await db
-        .select({ count: count() })
-        .from(courses)
-        .where(whereClause);
-      
-      const total = totalResult[0]?.count || 0;
-      
-      // 페이지네이션과 함께 강의 목록 조회
-      const offset = (Number(page) - 1) * Number(limit);
-      
+      // 강의 목록 조회 - 기본 필드만 사용
       const courseList = await db
-        .select({
-          id: courses.id,
-          title: courses.title,
-          description: courses.description,
-          category: courses.category,
-          difficulty: courses.difficulty,
-          duration: courses.duration,
-          price: courses.price,
-          maxParticipants: courses.maxParticipants,
-          image: courses.image,
-          trainerId: courses.trainerId,
-          instituteId: courses.instituteId,
-          isPopular: courses.isPopular,
-          isCertified: courses.isCertified,
-          createdAt: courses.createdAt
-        })
+        .select()
         .from(courses)
         .where(whereClause)
-        .orderBy(desc(courses.createdAt))
-        .limit(Number(limit))
-        .offset(offset);
+        .orderBy(desc(courses.createdAt));
       
-      res.json({
-        courses: courseList,
-        total,
-        page: Number(page),
-        limit: Number(limit),
-        totalPages: Math.ceil(total / Number(limit))
-      });
+      res.json(courseList);
     } catch (error) {
       console.error('Error fetching courses:', error);
       res.status(500).json({ message: 'Internal server error' });
