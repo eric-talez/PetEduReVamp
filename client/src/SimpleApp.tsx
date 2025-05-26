@@ -1191,7 +1191,7 @@ function AuthenticatedRoutes() {
         {/* 관리자 메뉴 */}
         <Route path="/admin/dashboard">
           {() => {
-            const AdminDashboard = lazy(() => import('./pages/admin/dashboard'));
+            const AdminDashboard = lazy(() => import('./pages/admin/AdminHome'));
             return (
               <Suspense fallback={<div className="p-8 flex justify-center items-center">
                 <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
