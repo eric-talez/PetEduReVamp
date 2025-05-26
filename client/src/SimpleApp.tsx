@@ -27,7 +27,6 @@ import VideoTrainingPage from "@/pages/video-training";
 import LocationsPage from "./pages/locations";
 import VideoCallPage from "./pages/video-call";
 import MessagesPage from "./pages/messages";
-import AdminCommissionPage from "./pages/admin/commission";
 import ChatbotPage from "./pages/chatbot";
 import AdminMenuConfigPage from "./pages/admin/menu-config";
 import AdminSettlementPage from "./pages/admin/settlement";
@@ -44,6 +43,11 @@ import AdminUsers from "./pages/admin/AdminUsers";
 import AdminInstitutes from "./pages/admin/AdminInstitutes";
 import AdminTrainers from "./pages/admin/AdminTrainers";
 import AdminCourses from "./pages/admin/AdminCourses";
+import AdminMenuManagement from "./pages/admin/menu-management";
+import AdminCommissionPage from "./pages/admin/commission";
+import AdminCommissionSettings from "./pages/admin/commission-settings";
+import AdminShop from "./pages/admin/shop";
+import AdminSettings from "./pages/admin/AdminSettings";
 
 
 
@@ -272,6 +276,11 @@ function AppLayout({ children }: { children: ReactNode }) {
                   <Route path="/admin/institutes" component={AdminInstitutes} />
                   <Route path="/admin/trainers" component={AdminTrainers} />
                   <Route path="/admin/courses" component={AdminCourses} />
+                  <Route path="/admin/menu-management" component={AdminMenuManagement} />
+                  <Route path="/admin/commissions" component={AdminCommissionPage} />
+                  <Route path="/admin/commission-settings" component={AdminCommissionSettings} />
+                  <Route path="/admin/shop" component={AdminShop} />
+                  <Route path="/admin/settings" component={AdminSettings} />
                   
                   {/* 대시보드 */}
                   <Route path="/dashboard" component={Dashboard} />
