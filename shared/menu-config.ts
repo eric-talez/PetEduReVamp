@@ -261,14 +261,38 @@ export const DEFAULT_MENU_ITEMS: MenuItem[] = [
     isPublic: false
   },
   {
-    id: 'progress',
-    title: '학습 진도',
-    path: '/progress',
-    icon: 'Activity',
+    id: 'education-schedule',
+    title: '교육 일정',
+    path: '/education-schedule',
+    icon: 'Calendar',
     type: 'internal',
     category: 'myLearning',
     roles: ['pet-owner', 'trainer', 'admin'],
     orderIndex: 5,
+    isActive: true,
+    isPublic: false
+  },
+  {
+    id: 'training-performance',
+    title: '훈련 성과',
+    path: '/training-performance',
+    icon: 'TrendingUp',
+    type: 'internal',
+    category: 'myLearning',
+    roles: ['pet-owner', 'trainer', 'admin'],
+    orderIndex: 6,
+    isActive: true,
+    isPublic: false
+  },
+  {
+    id: 'analytics',
+    title: '분석 및 보고서',
+    path: '/analytics',
+    icon: 'BarChart3',
+    type: 'internal',
+    category: 'myLearning',
+    roles: ['pet-owner', 'trainer', 'admin'],
+    orderIndex: 7,
     isActive: true,
     isPublic: false
   },
