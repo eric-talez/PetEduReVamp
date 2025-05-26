@@ -259,6 +259,9 @@ function AppLayout({ children }: { children: ReactNode }) {
                   {/* 홈 페이지 */}
                   <Route path="/" component={Home} />
                   
+                  {/* 대시보드 */}
+                  <Route path="/dashboard" component={Dashboard} />
+                  
                   {/* 강의 관련 */}
                   <Route path="/courses" component={Courses} />
                   <Route path="/course/:id" component={CourseDetail} />
