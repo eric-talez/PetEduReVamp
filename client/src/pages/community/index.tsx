@@ -174,14 +174,6 @@ export default function CommunityPage() {
 
   // 게시글 작성 페이지로 이동
   const handleCreatePost = () => {
-    if (!user) {
-      toast({
-        title: '로그인이 필요합니다',
-        description: '게시글을 작성하려면 먼저 로그인해주세요.',
-        variant: 'destructive'
-      });
-      return;
-    }
     setLocation('/community/create');
   };
 
