@@ -581,13 +581,7 @@ function AuthenticatedRoutes() {
             />
           )}
         </Route>
-        <Route path="/achievements">
-          {() => (
-            <ProtectedRoute 
-              component={() => <div className="container p-6"><h1 className="text-2xl font-bold mb-4">훈련 성과</h1><p>반려견의 훈련 성과와 달성한 목표를 확인할 수 있는 페이지입니다.</p></div>}
-            />
-          )}
-        </Route>
+
         
         {/* 훈련사 메뉴 - 권한 검증 적용 */}
         <Route path="/trainer/courses">
