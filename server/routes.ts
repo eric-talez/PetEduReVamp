@@ -96,9 +96,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // 메모리에 게시글 저장
       testPosts.unshift(responseData.post);
       
-      // JSON 응답 강제 설정
-      res.status(201);
+      // Express 응답 파이프라인 우회하여 직접 응답
+      res.writeHead(201, {
+        'Content-Type': 'application/json',
+        'Cache-Control': 'no-cache'
+      });
       res.end(JSON.stringify(responseData));
+      return;
     } catch (error: any) {
       console.error('게시글 작성 오류:', error);
       res.status(500).json({ 
@@ -139,9 +143,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       console.log('응답 데이터:', responseData);
       
-      // JSON 응답 강제 설정
-      res.status(200);
+      // Express 응답 파이프라인 우회하여 직접 응답
+      res.writeHead(200, {
+        'Content-Type': 'application/json',
+        'Cache-Control': 'no-cache'
+      });
       res.end(JSON.stringify(responseData));
+      return;
     } catch (error: any) {
       console.error('게시글 목록 조회 오류:', error);
       res.status(500).json({ 
