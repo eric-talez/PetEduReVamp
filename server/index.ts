@@ -13,6 +13,9 @@ import { setupPerformance, monitorMemoryUsage } from "./performance";
 const MemoryStore = memorystore(session);
 const app = express();
 
+// 프록시 신뢰 설정 (Nginx, 로드밸런서 등을 위해 필요)
+app.set('trust proxy', 1);
+
 // CORS 설정 - funnytalez.com과의 통신을 위해 허용
 app.use(cors({
   origin: ['https://store.funnytalez.com', 'https://funnytalez.com'],
