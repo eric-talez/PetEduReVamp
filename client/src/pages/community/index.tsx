@@ -161,14 +161,27 @@ const PostCard = ({ post, onPostClick }) => {
             <Eye className="h-3.5 w-3.5" />
             <span>{post.viewCount || 0}</span>
           </div>
-          <div className="flex items-center gap-1">
+          <button 
+            className="flex items-center gap-1 hover:text-red-500 transition-colors"
+            onClick={(e) => {
+              e.stopPropagation();
+              // 좋아요 기능 구현 예정
+              console.log('좋아요 클릭:', post.id);
+            }}
+          >
             <Heart className="h-3.5 w-3.5" />
             <span>{post.likes}</span>
-          </div>
-          <div className="flex items-center gap-1">
+          </button>
+          <button 
+            className="flex items-center gap-1 hover:text-blue-500 transition-colors"
+            onClick={(e) => {
+              e.stopPropagation();
+              onPostClick(post); // 댓글을 보기 위해 모달 열기
+            }}
+          >
             <MessageSquare className="h-3.5 w-3.5" />
             <span>{post.comments}</span>
-          </div>
+          </button>
         </div>
       </CardFooter>
     </Card>

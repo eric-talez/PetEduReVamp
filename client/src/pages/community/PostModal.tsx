@@ -109,11 +109,17 @@ export function PostModal({ post, isOpen, onClose, onDelete }: PostModalProps) {
       return await response.json();
     },
     onSuccess: (data) => {
+      // 로컬 상태 즉시 업데이트
+      post.likes = data.likes;
+      
       toast({
         title: "좋아요!",
         description: "게시글에 좋아요를 표시했습니다.",
       });
+      
+      // 캐시 업데이트
       queryClient.invalidateQueries({ queryKey: ['/api/community/posts'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/community/posts', post.id] });
     },
     onError: (error: any) => {
       toast({
