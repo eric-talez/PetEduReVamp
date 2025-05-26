@@ -155,7 +155,7 @@ export default function CreatePostPage() {
     );
   }
 
-  if (!isAuthenticated || !serverAuthChecked) return null; // 인증 확인 후 리다이렉트되므로 필요 없지만 타입 안전성을 위해 추가
+  // 인증 체크 조건 제거하고 바로 렌더링
 
   return (
     <div className="container py-6 max-w-4xl">
