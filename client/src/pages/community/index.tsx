@@ -149,7 +149,7 @@ export default function CommunityPage() {
     isError,
     error
   } = useQuery({
-    queryKey: ['/api/social/posts', activeTab, activeCategory, currentPage],
+    queryKey: ['/api/test/posts', activeTab, activeCategory, currentPage],
     queryFn: async () => {
       const params = new URLSearchParams({
         page: currentPage.toString(),
