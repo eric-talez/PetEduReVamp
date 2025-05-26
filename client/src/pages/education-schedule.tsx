@@ -68,6 +68,8 @@ const coursesData = [
 
 // 검색 및 필터링 함수
 const filterCourses = (courses: any[], searchTerm: string, level: string, category: string) => {
+  console.log('필터링 중:', { searchTerm, level, category, coursesCount: courses.length });
+  
   return courses.filter(course => {
     const matchesSearch = !searchTerm || 
       course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -75,6 +77,8 @@ const filterCourses = (courses: any[], searchTerm: string, level: string, catego
     
     const matchesLevel = level === 'all' || course.level === level;
     const matchesCategory = category === 'all' || course.category === category;
+    
+    console.log(`강의 "${course.title}":`, { matchesSearch, matchesLevel, matchesCategory });
     
     return matchesSearch && matchesLevel && matchesCategory;
   });
