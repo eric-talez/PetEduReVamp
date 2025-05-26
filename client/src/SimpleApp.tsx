@@ -48,6 +48,7 @@ import AdminCommissionPage from "./pages/admin/commission";
 import AdminCommissionSettings from "./pages/admin/commission-settings";
 import AdminShop from "./pages/admin/shop";
 import AdminSettings from "./pages/admin/AdminSettings";
+import AdminContents from "./pages/admin/AdminContents";
 
 
 
@@ -281,6 +282,7 @@ function AppLayout({ children }: { children: ReactNode }) {
                   <Route path="/admin/commission-settings" component={AdminCommissionSettings} />
                   <Route path="/admin/shop" component={AdminShop} />
                   <Route path="/admin/settings" component={AdminSettings} />
+                  <Route path="/admin/contents" component={AdminContents} />
                   
                   {/* 대시보드 */}
                   <Route path="/dashboard" component={Dashboard} />
