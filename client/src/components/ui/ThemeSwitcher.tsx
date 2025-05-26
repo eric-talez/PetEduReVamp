@@ -153,8 +153,18 @@ export function ThemeSwitcherIconButton() {
 
   // 테마 토글 함수
   const toggleTheme = () => {
+    console.log('현재 테마:', theme);
     const newTheme = theme === 'dark' ? 'light' : 'dark';
+    console.log('새 테마로 전환:', newTheme);
     setTheme(newTheme);
+    
+    // 즉시 DOM에 클래스 적용
+    if (newTheme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+    
     announceToScreenReader(`${newTheme === 'dark' ? '다크' : '라이트'} 모드로 전환되었습니다`);
   };
 
