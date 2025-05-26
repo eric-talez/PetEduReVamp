@@ -59,12 +59,12 @@ export default function CreatePostPage() {
   // 게시글 작성 API 요청
   const createPostMutation = useMutation({
     mutationFn: async (data: PostFormValues) => {
-      const backendUrl = window.location.origin.replace(':5173', ':3000');
-      const response = await fetch(`${backendUrl}/api/test/posts`, {
+      const response = await fetch('http://localhost:3000/api/test/posts', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify(data),
       });
 

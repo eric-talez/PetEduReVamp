@@ -45,6 +45,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // 테스트용 게시글 작성 API (인증 없음)
   app.post('/api/test/posts', async (req, res) => {
+    // CORS 헤더 명시적 설정
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Methods', 'POST, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Content-Type');
+    res.header('Content-Type', 'application/json');
+    
     console.log('=== 테스트 게시글 작성 API 호출됨 ===');
     console.log('요청 데이터:', req.body);
     
