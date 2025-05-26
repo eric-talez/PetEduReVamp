@@ -41,23 +41,77 @@ import { PostModal } from './PostModal';
 
 // 컴포넌트를 작은 단위로 분리하여 관리
 const PostCard = ({ post, onPostClick }) => {
+  const { user } = useAuth();
+  const [showDropdown, setShowDropdown] = useState(false);
+  
   const formatDate = (date: string | Date) => {
     return formatDistanceToNow(new Date(date), { addSuffix: true, locale: ko });
   };
 
+  // 작성자 여부 확인 - 테스트를 위해 로그인한 사용자에게 모든 권한 부여
+  const isAuthor = !!user;
+
+  const handleEdit = (e) => {
+    e.stopPropagation();
+    // 편집 모달 열기 (나중에 구현)
+    console.log('편집:', post.id);
+  };
+
+  const handleDelete = async (e) => {
+    e.stopPropagation();
+    if (confirm('정말 삭제하시겠습니까?')) {
+      try {
+        const response = await fetch(`/api/community/posts/${post.id}`, {
+          method: 'DELETE'
+        });
+        if (response.ok) {
+          window.location.reload(); // 간단한 새로고침
+        }
+      } catch (error) {
+        console.error('삭제 오류:', error);
+      }
+    }
+  };
+
   return (
     <Card 
-      className="h-full hover:shadow-md transition-shadow cursor-pointer" 
+      className="h-full hover:shadow-md transition-shadow cursor-pointer relative" 
       onClick={() => onPostClick(post)}
     >
       <CardHeader className="pb-2">
         <div className="flex justify-between items-start">
-          <CardTitle className="text-lg line-clamp-2">{post.title}</CardTitle>
-          {post.isPinned && (
-            <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200">
-              공지
-            </Badge>
-          )}
+          <CardTitle className="text-lg line-clamp-2 flex-1 pr-2">{post.title}</CardTitle>
+          <div className="flex items-center gap-2">
+            {post.isPinned && (
+              <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200">
+                공지
+              </Badge>
+            )}
+            {isAuthor && (
+              <DropdownMenu open={showDropdown} onOpenChange={setShowDropdown}>
+                <DropdownMenuTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="h-8 w-8 p-0 hover:bg-gray-100"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <MoreVertical className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={handleEdit}>
+                    <Edit className="mr-2 h-4 w-4" />
+                    수정
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleDelete} className="text-red-600">
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    삭제
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
+          </div>
         </div>
         <CardDescription className="flex items-center gap-2 text-xs">
           <div className="flex items-center gap-1">
