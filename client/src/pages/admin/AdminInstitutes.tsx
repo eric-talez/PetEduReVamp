@@ -3,12 +3,45 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
 import { Search, Filter, Plus, Eye, Edit, Trash2, Building, MapPin, Users } from "lucide-react";
 import { useState } from "react";
 
 export default function AdminInstitutes() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [isAddInstituteOpen, setIsAddInstituteOpen] = useState(false);
+  const [newInstitute, setNewInstitute] = useState({
+    name: "",
+    code: "",
+    location: "",
+    director: "",
+    phone: "",
+    email: ""
+  });
+
+  // 기관 추가 함수
+  const handleAddInstitute = () => {
+    if (!newInstitute.name || !newInstitute.code || !newInstitute.director || !newInstitute.email) {
+      alert("필수 필드를 모두 입력해주세요.");
+      return;
+    }
+    
+    console.log("새 기관 추가:", newInstitute);
+    // 여기서 실제 API 호출 구현
+    
+    // 폼 초기화
+    setNewInstitute({
+      name: "",
+      code: "",
+      location: "",
+      director: "",
+      phone: "",
+      email: ""
+    });
+    setIsAddInstituteOpen(false);
+  };
 
   // 샘플 기관 데이터
   const institutes = [

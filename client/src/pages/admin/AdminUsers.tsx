@@ -3,12 +3,41 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
 import { Search, Filter, UserPlus, Eye, Edit, Trash2, Shield } from "lucide-react";
 import { useState } from "react";
 
 export default function AdminUsers() {
   const [searchTerm, setSearchTerm] = useState("");
   const [roleFilter, setRoleFilter] = useState("all");
+  const [isAddUserOpen, setIsAddUserOpen] = useState(false);
+  const [newUser, setNewUser] = useState({
+    name: "",
+    email: "",
+    role: "user",
+    password: ""
+  });
+
+  // 사용자 추가 함수
+  const handleAddUser = () => {
+    if (!newUser.name || !newUser.email || !newUser.password) {
+      alert("모든 필드를 입력해주세요.");
+      return;
+    }
+    
+    console.log("새 사용자 추가:", newUser);
+    // 여기서 실제 API 호출 구현
+    
+    // 폼 초기화
+    setNewUser({
+      name: "",
+      email: "",
+      role: "user",
+      password: ""
+    });
+    setIsAddUserOpen(false);
+  };
 
   // 샘플 사용자 데이터
   const users = [
@@ -86,10 +115,83 @@ export default function AdminUsers() {
           <h1 className="text-3xl font-bold">사용자 관리</h1>
           <p className="text-muted-foreground">플랫폼의 모든 사용자를 관리합니다</p>
         </div>
-        <Button>
-          <UserPlus className="h-4 w-4 mr-2" />
-          신규 사용자 추가
-        </Button>
+        <Dialog open={isAddUserOpen} onOpenChange={setIsAddUserOpen}>
+          <DialogTrigger asChild>
+            <Button>
+              <UserPlus className="h-4 w-4 mr-2" />
+              신규 사용자 추가
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle>신규 사용자 추가</DialogTitle>
+              <DialogDescription>
+                새로운 사용자를 플랫폼에 등록합니다.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="name" className="text-right">
+                  이름
+                </Label>
+                <Input
+                  id="name"
+                  value={newUser.name}
+                  onChange={(e) => setNewUser({ ...newUser, name: e.target.value })}
+                  className="col-span-3"
+                  placeholder="홍길동"
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="email" className="text-right">
+                  이메일
+                </Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={newUser.email}
+                  onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
+                  className="col-span-3"
+                  placeholder="user@example.com"
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="password" className="text-right">
+                  비밀번호
+                </Label>
+                <Input
+                  id="password"
+                  type="password"
+                  value={newUser.password}
+                  onChange={(e) => setNewUser({ ...newUser, password: e.target.value })}
+                  className="col-span-3"
+                  placeholder="••••••••"
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="role" className="text-right">
+                  역할
+                </Label>
+                <Select value={newUser.role} onValueChange={(value) => setNewUser({ ...newUser, role: value })}>
+                  <SelectTrigger className="col-span-3">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="user">일반회원</SelectItem>
+                    <SelectItem value="trainer">훈련사</SelectItem>
+                    <SelectItem value="institute-admin">기관관리자</SelectItem>
+                    <SelectItem value="admin">관리자</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button type="submit" onClick={handleAddUser}>
+                사용자 추가
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
 
       {/* 통계 카드 */}
