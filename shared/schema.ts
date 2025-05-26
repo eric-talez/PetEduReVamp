@@ -235,6 +235,18 @@ export const commissionPolicies = pgTable("commission_policies", {
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
+// 수수료 거래 테이블
+export const commissionTransactions = pgTable("commission_transactions", {
+  id: serial("id").primaryKey(),
+  orderId: text("order_id").notNull(),
+  amount: integer("amount").notNull(),
+  commissionRate: integer("commission_rate").notNull(),
+  commissionAmount: integer("commission_amount").notNull(),
+  status: text("status").notNull().default('pending'),
+  userId: integer("user_id").references(() => users.id, { onDelete: 'cascade' }),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
 // 정산 보고서 테이블
 export const settlementReports = pgTable("settlement_reports", {
   id: serial("id").primaryKey(),
@@ -300,20 +312,44 @@ export const createPetSchema = createInsertSchema(pets).omit({
 
 export const createCourseSchema = createInsertSchema(courses).omit({
   id: true,
-  trainerId: true,
   createdAt: true,
   updatedAt: true
 });
 
-export const createTrainingSessionSchema = createInsertSchema(trainingSessions).omit({
+export const createEventSchema = createInsertSchema(events).omit({
   id: true,
-  createdAt: true
+  createdAt: true,
+  updatedAt: true
 });
 
 export const createProductSchema = createInsertSchema(products).omit({
   id: true,
   createdAt: true,
   updatedAt: true
+});
+
+// 수수료 관련 스키마
+export const createCommissionPolicySchema = createInsertSchema(commissionPolicies).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true
+});
+
+export const createCommissionTransactionSchema = createInsertSchema(commissionTransactions).omit({
+  id: true,
+  createdAt: true
+});
+
+export const createSettlementReportSchema = createInsertSchema(settlementReports).omit({
+  id: true,
+  generatedAt: true,
+  approvedAt: true,
+  paidAt: true
+});
+
+export const createTrainingSessionSchema = createInsertSchema(trainingSessions).omit({
+  id: true,
+  createdAt: true
 });
 
 export const createCartItemSchema = createInsertSchema(cartItems).omit({
