@@ -48,11 +48,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // 테스트용 게시글 작성 API (인증 없음)
   app.post('/api/test/posts', async (req, res) => {
-    // CORS 헤더 명시적 설정
-    res.header('Access-Control-Allow-Origin', '*');
-    res.header('Access-Control-Allow-Methods', 'POST, OPTIONS');
-    res.header('Access-Control-Allow-Headers', 'Content-Type');
-    res.header('Content-Type', 'application/json');
+    // 명시적으로 JSON 응답 설정
+    res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Cache-Control', 'no-cache');
     
     console.log('=== 테스트 게시글 작성 API 호출됨 ===');
     console.log('요청 데이터:', req.body);
@@ -104,11 +102,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // 테스트용 게시글 목록 API (인증 없음)
   app.get('/api/test/posts', async (req, res) => {
-    // CORS 헤더 명시적 설정
-    res.header('Access-Control-Allow-Origin', '*');
-    res.header('Access-Control-Allow-Methods', 'GET, OPTIONS');
-    res.header('Access-Control-Allow-Headers', 'Content-Type');
-    res.header('Content-Type', 'application/json');
+    // 명시적으로 JSON 응답 설정
+    res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Cache-Control', 'no-cache');
     
     console.log('=== 테스트 게시글 목록 API 호출됨 ===');
     console.log('저장된 게시글 수:', testPosts.length);
