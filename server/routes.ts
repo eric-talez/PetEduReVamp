@@ -53,7 +53,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       authorId: 3,
       image: null,
       likes: 5,
-      comments: 3,
+      comments: 2,
       createdAt: new Date(Date.now() - 3600000),
       updatedAt: new Date(Date.now() - 3600000),
       author: {
@@ -61,6 +61,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
         username: 'testuser3',
         name: '반려인'
       }
+    }
+  ];
+
+  // 댓글 저장소 (메모리)
+  const testComments: any[] = [
+    {
+      id: 1,
+      postId: Date.now() - 3600000,
+      content: "정말 유용한 정보네요! 우리 강아지도 이 방법으로 훈련해봐야겠어요.",
+      authorId: 1,
+      author: { id: 1, username: 'testuser', name: '테스트 사용자' },
+      createdAt: new Date(Date.now() - 1800000),
+      updatedAt: new Date(Date.now() - 1800000)
+    },
+    {
+      id: 2,
+      postId: Date.now() - 3600000,
+      content: "기본 명령어 훈련은 정말 중요하죠. 저희 집 골든리트리버도 이렇게 훈련했어요!",
+      authorId: 3,
+      author: { id: 3, username: 'testuser3', name: '반려인' },
+      createdAt: new Date(Date.now() - 900000),
+      updatedAt: new Date(Date.now() - 900000)
     }
   ];
 
@@ -206,13 +228,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return;
       }
       
+      // 해당 게시글의 댓글 조회
+      const postComments = testComments.filter(comment => comment.postId === postId);
+      
       const responseData = {
         post: {
           ...post,
           author: post.author || { id: 1, username: 'testuser', name: '테스트 사용자' }
         },
         author: post.author || { id: 1, username: 'testuser', name: '테스트 사용자' },
-        comments: [] // 댓글은 나중에 구현
+        comments: postComments
       };
       
       console.log('게시글 상세 응답 데이터:', responseData);
@@ -326,6 +351,117 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error('게시글 삭제 오류:', error);
       res.status(500).json({ 
         message: '게시글 삭제 중 오류가 발생했습니다.',
+        error: error.message 
+      });
+    }
+  });
+
+  // 댓글 작성 API
+  app.post('/api/community/posts/:id/comments', async (req, res) => {
+    try {
+      console.log('=== 댓글 작성 API 호출됨 ===');
+      const postId = parseInt(req.params.id);
+      const { content } = req.body;
+      
+      if (!content) {
+        res.writeHead(400, {
+          'Content-Type': 'application/json',
+          'Cache-Control': 'no-cache'
+        });
+        res.end(JSON.stringify({ 
+          message: '댓글 내용을 입력해주세요.' 
+        }));
+        return;
+      }
+      
+      // 현재 로그인한 사용자 정보
+      const currentUser = req.user || { id: 3, username: 'testuser3', name: '반려인' };
+      
+      const newComment = {
+        id: Date.now(),
+        postId,
+        content,
+        authorId: currentUser.id,
+        author: {
+          id: currentUser.id,
+          username: currentUser.username,
+          name: currentUser.name
+        },
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
+      
+      // 메모리에 댓글 저장
+      testComments.push(newComment);
+      
+      // 게시글의 댓글 수 업데이트
+      const postIndex = testPosts.findIndex(p => p.id === postId);
+      if (postIndex !== -1) {
+        testPosts[postIndex].comments = testComments.filter(c => c.postId === postId).length;
+      }
+      
+      const responseData = {
+        comment: newComment,
+        message: '댓글이 성공적으로 작성되었습니다.'
+      };
+      
+      console.log('댓글 작성 완료:', responseData);
+      
+      res.writeHead(201, {
+        'Content-Type': 'application/json',
+        'Cache-Control': 'no-cache'
+      });
+      res.end(JSON.stringify(responseData));
+      return;
+    } catch (error: any) {
+      console.error('댓글 작성 오류:', error);
+      res.status(500).json({ 
+        message: '댓글 작성 중 오류가 발생했습니다.',
+        error: error.message 
+      });
+    }
+  });
+
+  // 좋아요 토글 API
+  app.post('/api/community/posts/:id/like', async (req, res) => {
+    try {
+      console.log('=== 좋아요 토글 API 호출됨 ===');
+      const postId = parseInt(req.params.id);
+      
+      // 메모리에서 게시글 찾기
+      const postIndex = testPosts.findIndex(p => p.id === postId);
+      
+      if (postIndex === -1) {
+        res.writeHead(404, {
+          'Content-Type': 'application/json',
+          'Cache-Control': 'no-cache'
+        });
+        res.end(JSON.stringify({ 
+          message: '게시글을 찾을 수 없습니다.' 
+        }));
+        return;
+      }
+      
+      // 좋아요 수 증가 (간단한 구현)
+      testPosts[postIndex].likes = testPosts[postIndex].likes + 1;
+      
+      const responseData = {
+        likes: testPosts[postIndex].likes,
+        message: '좋아요가 추가되었습니다.'
+      };
+      
+      console.log('좋아요 토글 완료:', responseData);
+      
+      res.writeHead(200, {
+        'Content-Type': 'application/json',
+        'Cache-Control': 'no-cache'
+      });
+      res.end(JSON.stringify(responseData));
+      return;
+    } catch (error: any) {
+      console.error('좋아요 토글 오류:', error);
+      res.status(500).json({ 
+        message: '좋아요 처리 중 오류가 발생했습니다.',
         error: error.message 
       });
     }

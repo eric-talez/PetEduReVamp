@@ -72,38 +72,52 @@ export function PostModal({ post, isOpen, onClose, onDelete }: PostModalProps) {
   // 댓글 작성 뮤테이션
   const createCommentMutation = useMutation({
     mutationFn: async (data: CommentFormData) => {
-      // 실제 API 연동 시 주석 해제
-      // const response = await fetch(`/api/community/posts/${post.id}/comments`, {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(data),
-      // });
-      // return await response.json();
-      
-      // 임시 댓글 추가 (테스트용)
-      const newComment = {
-        id: Date.now(),
-        content: data.content,
-        author: {
-          id: user?.id || 1,
-          name: user?.name || '사용자',
-          avatar: null
-        },
-        createdAt: new Date().toISOString(),
-      };
-      return newComment;
+      const response = await fetch(`/api/community/posts/${post.id}/comments`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      if (!response.ok) throw new Error('댓글 작성에 실패했습니다.');
+      return await response.json();
     },
-    onSuccess: (newComment) => {
+    onSuccess: (data) => {
       toast({
         title: "성공",
         description: "댓글이 작성되었습니다.",
       });
-      setComments(prev => [...prev, newComment]);
+      setComments(prev => [...prev, data.comment]);
       form.reset();
+      queryClient.invalidateQueries({ queryKey: ['/api/community/posts'] });
     },
     onError: (error: any) => {
       toast({
         title: "댓글 작성 실패",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  // 좋아요 뮤테이션
+  const likeMutation = useMutation({
+    mutationFn: async () => {
+      const response = await fetch(`/api/community/posts/${post.id}/like`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      if (!response.ok) throw new Error('좋아요 처리에 실패했습니다.');
+      return await response.json();
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "좋아요!",
+        description: "게시글에 좋아요를 표시했습니다.",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/community/posts'] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "좋아요 실패",
         description: error.message,
         variant: "destructive",
       });
@@ -182,7 +196,13 @@ export function PostModal({ post, isOpen, onClose, onDelete }: PostModalProps) {
 
             {/* 좋아요, 댓글 통계 */}
             <div className="flex items-center gap-4 pt-2 border-t">
-              <Button variant="ghost" size="sm" className="gap-2">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="gap-2 hover:text-red-500"
+                onClick={() => likeMutation.mutate()}
+                disabled={likeMutation.isPending}
+              >
                 <Heart className="h-4 w-4" />
                 좋아요 {post.likes || 0}
               </Button>
