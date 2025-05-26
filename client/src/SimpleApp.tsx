@@ -624,7 +624,118 @@ function AuthenticatedRoutes() {
           {() => <ProtectedTrainerRoute component={() => <Dashboard type="trainer" />} />}
         </Route>
         <Route path="/institute/dashboard">
-          {() => <ProtectedInstituteRoute component={() => <Dashboard type="institute-admin" />} />}
+          {() => {
+            const InstituteDashboard = lazy(() => import('./pages/institute-admin/InstituteDashboard'));
+            return (
+              <Suspense fallback={<div className="p-8 text-center">기관 대시보드 로딩 중...</div>}>
+                <InstituteDashboard />
+              </Suspense>
+            );
+          }}
+        </Route>
+        
+        {/* 관리자 메뉴 */}
+        <Route path="/admin/dashboard">
+          {() => {
+            const AdminHome = lazy(() => import('./pages/admin/AdminHome'));
+            return (
+              <Suspense fallback={<div className="p-8 text-center">관리자 대시보드 로딩 중...</div>}>
+                <AdminHome />
+              </Suspense>
+            );
+          }}
+        </Route>
+        <Route path="/admin/users">
+          {() => {
+            const AdminUsers = lazy(() => import('./pages/admin/AdminUsers'));
+            return (
+              <Suspense fallback={<div className="p-8 text-center">사용자 관리 로딩 중...</div>}>
+                <AdminUsers />
+              </Suspense>
+            );
+          }}
+        </Route>
+        <Route path="/admin/menu-management">
+          {() => {
+            const AdminMenuManagement = lazy(() => import('./pages/admin/menu-management'));
+            return (
+              <Suspense fallback={<div className="p-8 text-center">메뉴 관리 로딩 중...</div>}>
+                <AdminMenuManagement />
+              </Suspense>
+            );
+          }}
+        </Route>
+        
+        {/* 기관 관리자 메뉴 */}
+        <Route path="/institute/trainers">
+          {() => {
+            const InstituteTrainers = lazy(() => import('./pages/institute-admin/InstituteTrainers'));
+            return (
+              <Suspense fallback={<div className="p-8 text-center">훈련사 관리 로딩 중...</div>}>
+                <InstituteTrainers />
+              </Suspense>
+            );
+          }}
+        </Route>
+        <Route path="/institute/courses">
+          {() => {
+            const InstituteCourses = lazy(() => import('./pages/institute-admin/InstituteCourses'));
+            return (
+              <Suspense fallback={<div className="p-8 text-center">강좌 관리 로딩 중...</div>}>
+                <InstituteCourses />
+              </Suspense>
+            );
+          }}
+        </Route>
+        <Route path="/institute/facility">
+          {() => {
+            const InstituteFacility = lazy(() => import('./pages/institute-admin/InstituteFacility'));
+            return (
+              <Suspense fallback={<div className="p-8 text-center">시설 관리 로딩 중...</div>}>
+                <InstituteFacility />
+              </Suspense>
+            );
+          }}
+        </Route>
+        <Route path="/institute/members">
+          {() => {
+            const InstituteMembers = lazy(() => import('./pages/institute-admin/InstituteMembers'));
+            return (
+              <Suspense fallback={<div className="p-8 text-center">회원 관리 로딩 중...</div>}>
+                <InstituteMembers />
+              </Suspense>
+            );
+          }}
+        </Route>
+        <Route path="/institute/stats">
+          {() => {
+            const InstituteStats = lazy(() => import('./pages/institute-admin/InstituteStats'));
+            return (
+              <Suspense fallback={<div className="p-8 text-center">통계 로딩 중...</div>}>
+                <InstituteStats />
+              </Suspense>
+            );
+          }}
+        </Route>
+        <Route path="/institute/pet-assignments">
+          {() => {
+            const InstitutePetAssignments = lazy(() => import('./pages/institute-admin/InstitutePetAssignments'));
+            return (
+              <Suspense fallback={<div className="p-8 text-center">반려견 배정 로딩 중...</div>}>
+                <InstitutePetAssignments />
+              </Suspense>
+            );
+          }}
+        </Route>
+        <Route path="/institute/settings">
+          {() => {
+            const InstituteSettings = lazy(() => import('./pages/institute-admin/InstituteSettings'));
+            return (
+              <Suspense fallback={<div className="p-8 text-center">기관 설정 로딩 중...</div>}>
+                <InstituteSettings />
+              </Suspense>
+            );
+          }}
         </Route>
         
         {/* 일반 메뉴 */}
