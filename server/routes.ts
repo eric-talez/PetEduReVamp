@@ -1677,6 +1677,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // 교육 라우트 등록
   registerEducationRoutes(app);
+  
+  // 쇼핑 라우트 등록
+  registerShoppingRoutes(app);
 
   console.log('[server] WebSocket server initialized at /ws');
   

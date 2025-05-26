@@ -204,20 +204,20 @@ export function registerShoppingRoutes(app: Express) {
         .select({
           id: cartItems.id,
           quantity: cartItems.quantity,
-          addedAt: cartItems.addedAt,
+          createdAt: cartItems.createdAt,
           product: {
             id: products.id,
             name: products.name,
             price: products.price,
             discountPrice: products.discountPrice,
             images: products.images,
-            stockQuantity: products.stockQuantity
+            stock: products.stock
           }
         })
         .from(cartItems)
         .innerJoin(products, eq(cartItems.productId, products.id))
         .where(eq(cartItems.userId, userId))
-        .orderBy(desc(cartItems.addedAt));
+        .orderBy(desc(cartItems.createdAt));
 
       res.json(cartList);
     } catch (error) {
@@ -293,139 +293,5 @@ export function registerShoppingRoutes(app: Express) {
     }
   });
 
-  // 주문 생성 (결제 시스템은 나중에 구현)
-  app.post("/api/shopping/orders", async (req, res) => {
-    try {
-      if (!req.isAuthenticated()) {
-        return res.status(401).json({ message: 'Authentication required' });
-      }
-
-      const userId = req.user!.id;
-      const { cartItemIds, shippingAddress, paymentMethod } = req.body;
-
-      // 장바구니 아이템들 조회
-      const items = await db
-        .select({
-          cartItem: cartItems,
-          product: products
-        })
-        .from(cartItems)
-        .innerJoin(products, eq(cartItems.productId, products.id))
-        .where(and(
-          eq(cartItems.userId, userId),
-          inArray(cartItems.id, cartItemIds)
-        ));
-
-      if (items.length === 0) {
-        return res.status(400).json({ message: 'No valid cart items found' });
-      }
-
-      // 총 금액 계산
-      const totalAmount = items.reduce((total, item) => {
-        const price = item.product.discountPrice || item.product.price;
-        return total + (price * item.cartItem.quantity);
-      }, 0);
-
-      // 주문 생성
-      const order = await db
-        .insert(orders)
-        .values({
-          userId,
-          totalAmount,
-          status: 'pending',
-          shippingAddress: JSON.stringify(shippingAddress),
-          paymentMethod,
-          createdAt: new Date()
-        })
-        .returning();
-
-      // 주문 아이템들 생성
-      const orderItemsData = items.map(item => ({
-        orderId: order[0].id,
-        productId: item.product.id,
-        quantity: item.cartItem.quantity,
-        price: item.product.discountPrice || item.product.price
-      }));
-
-      await db.insert(orderItems).values(orderItemsData);
-
-      // 장바구니에서 주문된 아이템들 삭제
-      await db
-        .delete(cartItems)
-        .where(and(
-          eq(cartItems.userId, userId),
-          inArray(cartItems.id, cartItemIds)
-        ));
-
-      res.status(201).json(order[0]);
-    } catch (error) {
-      console.error('Error creating order:', error);
-      res.status(500).json({ message: 'Internal server error' });
-    }
-  });
-
-  // 사용자의 주문 목록 가져오기
-  app.get("/api/shopping/orders", async (req, res) => {
-    try {
-      if (!req.isAuthenticated()) {
-        return res.status(401).json({ message: 'Authentication required' });
-      }
-
-      const userId = req.user!.id;
-
-      const orderList = await db
-        .select()
-        .from(orders)
-        .where(eq(orders.userId, userId))
-        .orderBy(desc(orders.createdAt));
-
-      res.json(orderList);
-    } catch (error) {
-      console.error('Error fetching orders:', error);
-      res.status(500).json({ message: 'Internal server error' });
-    }
-  });
-
-  // 특정 주문 상세 정보 가져오기
-  app.get("/api/shopping/orders/:orderId", async (req, res) => {
-    try {
-      if (!req.isAuthenticated()) {
-        return res.status(401).json({ message: 'Authentication required' });
-      }
-
-      const orderId = parseInt(req.params.orderId);
-      const userId = req.user!.id;
-
-      const order = await db
-        .select()
-        .from(orders)
-        .where(and(
-          eq(orders.id, orderId),
-          eq(orders.userId, userId)
-        ))
-        .limit(1);
-
-      if (!order[0]) {
-        return res.status(404).json({ message: 'Order not found' });
-      }
-
-      // 주문 아이템들 조회
-      const items = await db
-        .select({
-          orderItem: orderItems,
-          product: products
-        })
-        .from(orderItems)
-        .innerJoin(products, eq(orderItems.productId, products.id))
-        .where(eq(orderItems.orderId, orderId));
-
-      res.json({
-        ...order[0],
-        items
-      });
-    } catch (error) {
-      console.error('Error fetching order details:', error);
-      res.status(500).json({ message: 'Internal server error' });
-    }
-  });
+  // 주문 기능은 나중에 구현 예정
 }
