@@ -85,9 +85,11 @@ export default function CreatePostPage() {
       setLocation('/community');
     },
     onError: (error: Error) => {
+      console.error('게시글 작성 오류:', error);
+      console.error('오류 상세:', error.message);
       toast({
         title: '게시글 작성 실패',
-        description: error.message,
+        description: error.message || '서버 오류가 발생했습니다.',
         variant: 'destructive',
       });
     },
