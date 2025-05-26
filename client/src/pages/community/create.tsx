@@ -67,12 +67,24 @@ export default function CreatePostPage() {
         body: JSON.stringify(data),
       });
 
+      console.log('응답 상태:', response.status);
+      console.log('응답 헤더:', response.headers);
+      
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || '게시글 작성에 실패했습니다.');
+        const errorText = await response.text();
+        console.log('오류 응답 내용:', errorText);
+        throw new Error(`서버 오류: ${response.status}`);
       }
 
-      return await response.json();
+      const responseText = await response.text();
+      console.log('성공 응답 내용:', responseText);
+      
+      try {
+        return JSON.parse(responseText);
+      } catch (e) {
+        console.error('JSON 파싱 오류. 응답 내용:', responseText);
+        throw new Error('서버 응답 형식 오류');
+      }
     },
     onSuccess: () => {
       toast({
