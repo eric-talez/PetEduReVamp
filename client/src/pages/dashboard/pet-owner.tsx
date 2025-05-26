@@ -353,7 +353,7 @@ export default function PetOwnerDashboard({ onAction }: PetOwnerDashboardProps) 
       </div>
       
       {/* Statistics */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 xl:grid-cols-5 gap-4 mb-8">
         <Card className="p-6 border border-gray-100 dark:border-gray-700">
           <div className="flex items-center">
             <div className="flex-shrink-0 h-12 w-12 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-full flex items-center justify-center">
