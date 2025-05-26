@@ -92,6 +92,13 @@ export default function EducationSchedulePage() {
   // 실시간 검색 및 필터링 적용
   const filteredCourses = filterCourses(coursesData, searchTerm, levelFilter, categoryFilter);
 
+  // 검색어 변경 처리
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    console.log('검색어 변경:', value);
+    setSearchTerm(value);
+  };
+
   const handleResetFilters = () => {
     setSearchTerm('');
     setLevelFilter('all');
@@ -119,7 +126,7 @@ export default function EducationSchedulePage() {
             <Input
               placeholder="강의명 또는 훈련사 검색"
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={handleSearchChange}
               className="pl-10"
             />
           </div>

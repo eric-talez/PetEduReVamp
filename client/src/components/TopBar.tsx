@@ -265,13 +265,15 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
     // API 호출 (실제로는 여기서 API 호출)
     console.log('검색 실행:', searchQuery);
     
-    // 샘플 검색 결과 - 실제로는 API 응답으로 대체
+    // 실제 존재하는 페이지로 연결되는 검색 결과
     setTimeout(() => {
       const mockResults = [
-        { id: 1, type: 'course', title: '기초 복종 훈련', trainer: '김훈련', link: '/courses/1' },
-        { id: 2, type: 'trainer', title: '박코치', specialty: '행동 교정 전문', link: '/trainers/2' },
-        { id: 3, type: 'institute', title: '바우멍 훈련소', location: '서울 강남', link: '/institutes/3' },
-        { id: 4, type: 'course', title: '어질리티 중급 과정', trainer: '이트레이너', link: '/courses/4' }
+        { id: 1, type: 'course', title: '기초 복종 훈련 마스터 과정', trainer: '김훈련', link: '/courses' },
+        { id: 2, type: 'course', title: '아지리티 스포츠 훈련', trainer: '박코치', link: '/courses' },
+        { id: 3, type: 'shop', title: '반려동물 용품', location: '쇼핑몰', link: '/shop' },
+        { id: 4, type: 'course', title: '문제행동 교정 전문과정', trainer: '이트레이너', link: '/courses' },
+        { id: 5, type: 'analytics', title: '학습 분석', specialty: '진도 관리', link: '/analytics' },
+        { id: 6, type: 'subscription', title: '구독 관리', specialty: '요금제', link: '/subscriptions' }
       ].filter(item => 
         item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         (item.trainer && item.trainer.toLowerCase().includes(searchQuery.toLowerCase()))
