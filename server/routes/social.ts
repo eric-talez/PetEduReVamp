@@ -15,12 +15,14 @@ const isAuthenticated = (req, res, next) => {
   next();
 };
 
-// 게시글 작성 (임시로 인증 체크 제거)
+// 게시글 작성
 router.post('/posts', async (req, res) => {
   try {
-    // 임시로 하드코딩된 사용자 ID 사용 (테스트용)
+    console.log('게시글 작성 요청 받음:', req.body);
+    // 테스트용 사용자 ID 사용
     const userId = 1;
     const postData = insertPostSchema.parse(req.body);
+    console.log('파싱된 데이터:', postData);
     
     // 게시글 저장
     const [post] = await db
