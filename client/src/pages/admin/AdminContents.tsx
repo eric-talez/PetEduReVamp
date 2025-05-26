@@ -26,6 +26,8 @@ import {
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import {
   Dialog,
@@ -92,6 +94,16 @@ export default function AdminContents() {
   const [selectedContent, setSelectedContent] = useState<Content | null>(null);
   const [showContentModal, setShowContentModal] = useState(false);
   const [modalMode, setModalMode] = useState<'view' | 'edit' | 'add'>('view');
+  const [newContent, setNewContent] = useState({
+    title: '',
+    type: 'banner' as 'banner' | 'image' | 'video' | 'article' | 'event',
+    status: 'draft' as 'active' | 'inactive' | 'draft' | 'scheduled',
+    location: '',
+    publishDate: '',
+    description: '',
+    url: '',
+    tags: ''
+  });
 
   // 콘텐츠 데이터 로드
   useEffect(() => {
@@ -274,7 +286,55 @@ export default function AdminContents() {
   const handleAddContent = () => {
     setSelectedContent(null);
     setModalMode('add');
+    // 폼 초기화
+    setNewContent({
+      title: '',
+      type: 'banner',
+      status: 'draft',
+      location: '',
+      publishDate: '',
+      description: '',
+      url: '',
+      tags: ''
+    });
     setShowContentModal(true);
+  };
+
+  // 콘텐츠 저장 함수
+  const handleSaveContent = () => {
+    if (!newContent.title || !newContent.location) {
+      toast({
+        title: "입력 오류",
+        description: "제목과 위치는 필수 입력 항목입니다.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // 새 콘텐츠 생성
+    const contentToSave = {
+      id: contents.length + 1,
+      title: newContent.title,
+      type: newContent.type,
+      status: newContent.status,
+      location: newContent.location,
+      publishDate: newContent.publishDate || new Date().toISOString().split('T')[0],
+      views: 0,
+      clicks: 0,
+      author: userName || '관리자',
+      createdAt: new Date().toLocaleDateString(),
+      updatedAt: new Date().toLocaleDateString()
+    };
+
+    // 콘텐츠 목록에 추가
+    setContents([...contents, contentToSave]);
+    
+    toast({
+      title: "콘텐츠 추가 완료",
+      description: "새 콘텐츠가 성공적으로 추가되었습니다.",
+    });
+    
+    setShowContentModal(false);
   };
   
   // 데이터 새로고침
@@ -566,15 +626,20 @@ export default function AdminContents() {
               <Button variant="outline" onClick={() => setShowContentModal(false)}>
                 닫기
               </Button>
-              {modalMode !== 'view' && (
+              {modalMode === 'add' && (
+                <Button onClick={handleSaveContent}>
+                  콘텐츠 추가
+                </Button>
+              )}
+              {modalMode === 'edit' && (
                 <Button onClick={() => {
                   toast({
-                    title: '저장 완료',
-                    description: '콘텐츠 정보가 저장되었습니다.',
+                    title: '수정 완료',
+                    description: '콘텐츠 정보가 수정되었습니다.',
                   });
                   setShowContentModal(false);
                 }}>
-                  저장
+                  수정 저장
                 </Button>
               )}
             </DialogFooter>
