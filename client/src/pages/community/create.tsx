@@ -59,8 +59,8 @@ export default function CreatePostPage() {
   // 게시글 작성 API 요청
   const createPostMutation = useMutation({
     mutationFn: async (data: PostFormValues) => {
-      // 직접 API 경로 사용 (같은 서버에서 실행됨)
-      const response = await fetch('/api/test/posts', {
+      // 새로운 커뮤니티 API 경로 사용
+      const response = await fetch('/api/community/posts', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

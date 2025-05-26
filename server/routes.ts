@@ -46,8 +46,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // 테스트용 게시글 저장소 (메모리)
   const testPosts: any[] = [];
 
+  // API 라우팅 우선순위 보장을 위한 명시적 설정
+  app.use('/api/community', (req, res, next) => {
+    res.setHeader('Content-Type', 'application/json');
+    next();
+  });
+
   // 테스트용 게시글 작성 API (인증 없음)
-  app.post('/api/test/posts', async (req, res) => {
+  app.post('/api/community/posts', async (req, res) => {
     // 명시적으로 JSON 응답 설정
     res.setHeader('Content-Type', 'application/json');
     res.setHeader('Cache-Control', 'no-cache');
@@ -103,7 +109,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // 테스트용 게시글 목록 API (인증 없음)
-  app.get('/api/test/posts', async (req, res) => {
+  app.get('/api/community/posts', async (req, res) => {
     // 명시적으로 JSON 응답 설정
     res.setHeader('Content-Type', 'application/json');
     res.setHeader('Cache-Control', 'no-cache');

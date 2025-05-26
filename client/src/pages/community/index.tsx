@@ -149,7 +149,7 @@ export default function CommunityPage() {
     isError,
     error
   } = useQuery({
-    queryKey: ['/api/test/posts', activeTab, activeCategory, currentPage],
+    queryKey: ['/api/community/posts', activeTab, activeCategory, currentPage],
     queryFn: async () => {
       const params = new URLSearchParams({
         page: currentPage.toString(),
@@ -164,8 +164,8 @@ export default function CommunityPage() {
         params.append('sort', 'popular');
       }
 
-      // 직접 API 경로 사용 (같은 서버에서 실행됨)
-      const response = await fetch(`/api/test/posts?${params.toString()}`);
+      // 새로운 커뮤니티 API 경로 사용
+      const response = await fetch(`/api/community/posts?${params.toString()}`);
       if (!response.ok) {
         throw new Error('게시글을 불러오는데 실패했습니다.');
       }
