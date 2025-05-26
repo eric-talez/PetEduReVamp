@@ -640,7 +640,7 @@ function AuthenticatedRoutes() {
             const AdminHome = lazy(() => import('./pages/admin/AdminHome'));
             return (
               <Suspense fallback={<div className="p-8 text-center">관리자 대시보드 로딩 중...</div>}>
-                <AdminHome />
+                <ProtectedAdminRoute component={AdminHome} />
               </Suspense>
             );
           }}
@@ -650,7 +650,7 @@ function AuthenticatedRoutes() {
             const AdminUsers = lazy(() => import('./pages/admin/AdminUsers'));
             return (
               <Suspense fallback={<div className="p-8 text-center">사용자 관리 로딩 중...</div>}>
-                <AdminUsers />
+                <ProtectedAdminRoute component={AdminUsers} />
               </Suspense>
             );
           }}
@@ -660,7 +660,7 @@ function AuthenticatedRoutes() {
             const AdminMenuManagement = lazy(() => import('./pages/admin/menu-management'));
             return (
               <Suspense fallback={<div className="p-8 text-center">메뉴 관리 로딩 중...</div>}>
-                <AdminMenuManagement />
+                <ProtectedAdminRoute component={AdminMenuManagement} />
               </Suspense>
             );
           }}
@@ -670,7 +670,7 @@ function AuthenticatedRoutes() {
             const AdminInstitutes = lazy(() => import('./pages/admin/AdminInstitutes'));
             return (
               <Suspense fallback={<div className="p-8 text-center">기관 관리 로딩 중...</div>}>
-                <AdminInstitutes />
+                <ProtectedAdminRoute component={AdminInstitutes} />
               </Suspense>
             );
           }}
@@ -680,7 +680,7 @@ function AuthenticatedRoutes() {
             const AdminTrainers = lazy(() => import('./pages/admin/AdminTrainers'));
             return (
               <Suspense fallback={<div className="p-8 text-center">훈련사 관리 로딩 중...</div>}>
-                <AdminTrainers />
+                <ProtectedAdminRoute component={AdminTrainers} />
               </Suspense>
             );
           }}
@@ -690,7 +690,7 @@ function AuthenticatedRoutes() {
             const AdminCourses = lazy(() => import('./pages/admin/AdminCourses'));
             return (
               <Suspense fallback={<div className="p-8 text-center">강좌 관리 로딩 중...</div>}>
-                <AdminCourses />
+                <ProtectedAdminRoute component={AdminCourses} />
               </Suspense>
             );
           }}
