@@ -59,10 +59,10 @@ export default function CreatePostPage() {
   // 게시글 작성 API 요청
   const createPostMutation = useMutation({
     mutationFn: async (data: PostFormValues) => {
-      // Replit 환경에서는 같은 도메인의 다른 포트를 사용
+      // 백엔드 서버는 포트 5000에서 실행됨
       const backendUrl = window.location.origin.includes('replit') 
         ? window.location.origin.replace(':5173', '') 
-        : 'http://localhost:3000';
+        : 'http://localhost:5000';
       
       console.log('Backend URL:', backendUrl);
       const response = await fetch(`${backendUrl}/api/test/posts`, {
