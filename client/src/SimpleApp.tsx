@@ -255,7 +255,65 @@ function AppLayout({ children }: { children: ReactNode }) {
             {/* 메인 컨텐츠 영역 */}
             <main id="main-content" className="flex-grow" tabIndex={-1}>
               <ErrorBoundary>
-                {children}
+                <Switch>
+                  {/* 홈 페이지 */}
+                  <Route path="/" component={Home} />
+                  
+                  {/* 강의 관련 */}
+                  <Route path="/courses" component={Courses} />
+                  <Route path="/course/:id" component={CourseDetail} />
+                  
+                  {/* 훈련사 및 기관 */}
+                  <Route path="/trainers" component={Trainers} />
+                  <Route path="/institutes" component={Institutes} />
+                  
+                  {/* 위치 및 이벤트 */}
+                  <Route path="/locations" component={LocationsPage} />
+                  <Route path="/events" component={EventsPage} />
+                  <Route path="/events/calendar" component={EventCalendarPage} />
+                  <Route path="/events/:id" component={EventDetailPage} />
+                  
+                  {/* 영상 및 화상 */}
+                  <Route path="/video-training" component={VideoTrainingPage} />
+                  <Route path="/video-call" component={VideoCallPage} />
+                  
+                  {/* 커뮤니티 */}
+                  <Route path="/community" component={Community} />
+                  <Route path="/community/post/:id" component={CommunityPostDetail} />
+                  
+                  {/* 쇼핑 */}
+                  <Route path="/shop">
+                    {() => {
+                      const ShopIndex = lazy(() => import('./pages/shop/index'));
+                      return (
+                        <Suspense fallback={<div className="p-8 text-center">쇼핑 페이지 로딩 중...</div>}>
+                          <ShopIndex />
+                        </Suspense>
+                      );
+                    }}
+                  </Route>
+                  
+                  {/* 인증 */}
+                  <Route path="/auth" component={Login} />
+                  
+                  {/* AI 분석 */}
+                  <Route path="/ai-analysis">
+                    {() => {
+                      const AIAnalysisPage = lazy(() => import('./pages/ai-analysis'));
+                      return (
+                        <Suspense fallback={<div className="p-8 text-center">AI 분석 페이지 로딩 중...</div>}>
+                          <AIAnalysisPage />
+                        </Suspense>
+                      );
+                    }}
+                  </Route>
+                  
+                  {/* 도움말 */}
+                  <Route path="/help/faq" component={FAQPage} />
+                  
+                  {/* 404 페이지 */}
+                  <Route component={NotFound} />
+                </Switch>
               </ErrorBoundary>
             </main>
             
