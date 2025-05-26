@@ -93,8 +93,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       console.log('응답 데이터:', responseData);
       
-      // 메모리에 게시글 저장
-      testPosts.unshift(responseData.post);
+      // 메모리에 게시글 저장 (작성자 정보 포함)
+      const postWithAuthor = {
+        ...responseData.post,
+        author: responseData.author
+      };
+      testPosts.unshift(postWithAuthor);
       
       // Express 응답 파이프라인 우회하여 직접 응답
       res.writeHead(201, {
