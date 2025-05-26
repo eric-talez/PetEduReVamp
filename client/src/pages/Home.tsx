@@ -131,9 +131,13 @@ export default function Home() {
                       <span className="text-sm font-semibold text-blue-600 dark:text-blue-400">활성 사용자</span>
                       <span className="text-lg font-bold">2,580</span>
                     </div>
-                    <span className="text-xs text-green-600 bg-green-100 dark:bg-green-900/30 dark:text-green-400 py-0.5 px-1.5 rounded-full">
+                    <button 
+                      onClick={() => setLocation('/dashboard')}
+                      className="text-xs text-green-600 bg-green-100 dark:bg-green-900/30 dark:text-green-400 py-0.5 px-1.5 rounded-full hover:bg-green-200 dark:hover:bg-green-800/50 transition-colors cursor-pointer"
+                      title="대시보드에서 자세히 보기"
+                    >
                       +12.5%
-                    </span>
+                    </button>
                   </div>
                   
                   <div className="flex items-center space-x-3">
@@ -141,9 +145,13 @@ export default function Home() {
                       <span className="text-sm font-semibold text-green-600 dark:text-green-400">인증 훈련사</span>
                       <span className="text-lg font-bold">157</span>
                     </div>
-                    <span className="text-xs text-green-600 bg-green-100 dark:bg-green-900/30 dark:text-green-400 py-0.5 px-1.5 rounded-full">
+                    <button 
+                      onClick={() => setLocation('/trainers')}
+                      className="text-xs text-green-600 bg-green-100 dark:bg-green-900/30 dark:text-green-400 py-0.5 px-1.5 rounded-full hover:bg-green-200 dark:hover:bg-green-800/50 transition-colors cursor-pointer"
+                      title="훈련사 목록 보기"
+                    >
                       +4.7%
-                    </span>
+                    </button>
                   </div>
                   
                   <div className="flex items-center space-x-3">
@@ -151,9 +159,13 @@ export default function Home() {
                       <span className="text-sm font-semibold text-purple-600 dark:text-purple-400">수료 반려견</span>
                       <span className="text-lg font-bold">4,750</span>
                     </div>
-                    <span className="text-xs text-green-600 bg-green-100 dark:bg-green-900/30 dark:text-green-400 py-0.5 px-1.5 rounded-full">
+                    <button 
+                      onClick={() => setLocation('/courses')}
+                      className="text-xs text-green-600 bg-green-100 dark:bg-green-900/30 dark:text-green-400 py-0.5 px-1.5 rounded-full hover:bg-green-200 dark:hover:bg-green-800/50 transition-colors cursor-pointer"
+                      title="강좌 목록 보기"
+                    >
                       +21.3%
-                    </span>
+                    </button>
                   </div>
                 </div>
                 
@@ -194,9 +206,13 @@ export default function Home() {
                           <span className="text-xl font-bold text-blue-600 dark:text-blue-400">2,580</span>
                           <div className="text-xs text-gray-600 dark:text-gray-400">활성 사용자</div>
                         </div>
-                        <span className="text-xs text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900/30 py-0.5 px-1.5 rounded-full">
+                        <button 
+                          onClick={() => setLocation('/dashboard')}
+                          className="text-xs text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900/30 py-0.5 px-1.5 rounded-full hover:bg-green-200 dark:hover:bg-green-800/50 transition-colors cursor-pointer"
+                          title="대시보드에서 자세히 보기"
+                        >
                           +12.5%
-                        </span>
+                        </button>
                       </div>
                       <div className="h-6 mt-1">
                         <MiniChart 
@@ -221,9 +237,13 @@ export default function Home() {
                           <span className="text-xl font-bold text-green-600 dark:text-green-400">157</span>
                           <div className="text-xs text-gray-600 dark:text-gray-400">인증 훈련사</div>
                         </div>
-                        <span className="text-xs text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900/30 py-0.5 px-1.5 rounded-full">
+                        <button 
+                          onClick={() => setLocation('/trainers')}
+                          className="text-xs text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900/30 py-0.5 px-1.5 rounded-full hover:bg-green-200 dark:hover:bg-green-800/50 transition-colors cursor-pointer"
+                          title="훈련사 목록 보기"
+                        >
                           +4.7%
-                        </span>
+                        </button>
                       </div>
                       <div className="h-6 mt-1">
                         <MiniChart 
@@ -248,9 +268,13 @@ export default function Home() {
                           <span className="text-xl font-bold text-purple-600 dark:text-purple-400">4,750</span>
                           <div className="text-xs text-gray-600 dark:text-gray-400">수료 반려견</div>
                         </div>
-                        <span className="text-xs text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900/30 py-0.5 px-1.5 rounded-full">
+                        <button 
+                          onClick={() => setLocation('/courses')}
+                          className="text-xs text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900/30 py-0.5 px-1.5 rounded-full hover:bg-green-200 dark:hover:bg-green-800/50 transition-colors cursor-pointer"
+                          title="강좌 목록 보기"
+                        >
                           +21.3%
-                        </span>
+                        </button>
                       </div>
                       <div className="h-6 mt-1">
                         <MiniChart 
