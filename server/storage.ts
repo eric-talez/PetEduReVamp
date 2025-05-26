@@ -465,8 +465,35 @@ export class MemStorage implements IStorage {
       socialId: null
     };
     
+    // 테스트 사용자 추가
+    const user3: User = {
+      id: this.currentId++,
+      username: "testuser3",
+      email: "testuser3@example.com",
+      password: "test123", // 비밀번호는 암호화되어 저장되어야 하지만 테스트용으로 평문
+      name: "반려인",
+      role: "pet-owner" as UserRole,
+      avatar: null,
+      bio: "테스트 반려인 계정입니다.",
+      location: "서울시 강남구",
+      specialty: null,
+      isVerified: true,
+      instituteId: null,
+      createdAt: new Date(),
+      // 추가 필수 필드
+      ci: null,
+      verified: false,
+      verifiedAt: null,
+      verificationName: null,
+      verificationBirth: null,
+      verificationPhone: null,
+      provider: null,
+      socialId: null
+    };
+
     this.users.set(user1.id, user1);
     this.users.set(user2.id, user2);
+    this.users.set(user3.id, user3);
     
     // 등록 샘플 데이터
     const enrollment1 = {
