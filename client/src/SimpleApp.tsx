@@ -47,6 +47,7 @@ import { DogLoading, FullScreenLoading } from "@/components/DogLoading";
 import { SkipToContent } from "@/components/ui/skip-to-content";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { AIAssistant } from "@/components/ui/AIAssistant";
+import { ThemeProvider } from "next-themes";
 
 // 인증 관련 임포트 - 호환성 레이어 사용
 import { useAuth, USER_ROLES, type UserRole, type AuthState, UserRoleEnum } from "@/lib/auth-compat";
@@ -1574,21 +1575,23 @@ function SimpleApp() {
   // }
   
   return (
-    <UserPreferencesProvider>
-      <AchievementsProvider>
-        <NotificationsProvider>
-          <KeyboardShortcutsManager>
-            <>
-              {auth.isAuthenticated ? <AuthenticatedRoutes /> : <UnauthenticatedRoutes />}
-              <DebugButton />
-              <Toaster />
-              <AccessibilityFloatingButton />
-              <SimpleChatBot />
-            </>
-          </KeyboardShortcutsManager>
-        </NotificationsProvider>
-      </AchievementsProvider>
-    </UserPreferencesProvider>
+    <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
+      <UserPreferencesProvider>
+        <AchievementsProvider>
+          <NotificationsProvider>
+            <KeyboardShortcutsManager>
+              <>
+                {auth.isAuthenticated ? <AuthenticatedRoutes /> : <UnauthenticatedRoutes />}
+                <DebugButton />
+                <Toaster />
+                <AccessibilityFloatingButton />
+                <SimpleChatBot />
+              </>
+            </KeyboardShortcutsManager>
+          </NotificationsProvider>
+        </AchievementsProvider>
+      </UserPreferencesProvider>
+    </ThemeProvider>
   );
 }
 
