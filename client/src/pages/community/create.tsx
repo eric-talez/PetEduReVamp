@@ -9,6 +9,7 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 import { queryClient } from '@/lib/queryClient';
@@ -26,6 +27,18 @@ const postFormSchema = z.object({
 });
 
 type PostFormValues = z.infer<typeof postFormSchema>;
+
+// 카테고리 옵션
+const CATEGORIES = [
+  { value: '일반', label: '일반' },
+  { value: '훈련팁', label: '훈련팁' },
+  { value: '건강관리', label: '건강관리' },
+  { value: '행동교정', label: '행동교정' },
+  { value: '영양정보', label: '영양정보' },
+  { value: '놀이활동', label: '놀이활동' },
+  { value: '질문답변', label: '질문답변' },
+  { value: '후기공유', label: '후기공유' },
+];
 
 export default function CreatePostPage() {
   const [, setLocation] = useLocation();
@@ -195,12 +208,23 @@ export default function CreatePostPage() {
                 name="tag"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>태그</FormLabel>
-                    <FormControl>
-                      <Input placeholder="태그를 입력하세요 (예: 반려동물, 훈련, 정보)" {...field} />
-                    </FormControl>
+                    <FormLabel>카테고리</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="카테고리를 선택하세요" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {CATEGORIES.map((category) => (
+                          <SelectItem key={category.value} value={category.value}>
+                            {category.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                     <FormDescription>
-                      태그는 쉼표(,)로 구분하지 않고 하나의 태그만 입력해주세요.
+                      게시글의 주제에 맞는 카테고리를 선택해주세요.
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
