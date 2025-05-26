@@ -35,6 +35,8 @@ import EventsPage from "./pages/events";
 import EventDetailPage from "./pages/events/event-detail";
 import EventCalendarPage from "./pages/events/calendar";
 import AnalyticsPage from "./pages/analytics";
+import EducationSchedulePage from "./pages/education-schedule";
+import TrainingPerformancePage from "./pages/training-performance";
 
 // 레이아웃 및 컴포넌트 임포트
 import { TopBar } from "@/components/TopBar";
@@ -1245,6 +1247,38 @@ function AuthenticatedRoutes() {
                 </div>
               }>
                 <AnalyticsPage />
+              </Suspense>
+            );
+          }}
+        </Route>
+
+        {/* 교육 일정 페이지 */}
+        <Route path="/education-schedule">
+          {() => {
+            console.log("교육 일정 페이지 접근");
+            return (
+              <Suspense fallback={
+                <div className="flex justify-center items-center h-screen">
+                  <DogLoading message="교육 일정 로딩 중..." size="medium" showTips={true} />
+                </div>
+              }>
+                <EducationSchedulePage />
+              </Suspense>
+            );
+          }}
+        </Route>
+
+        {/* 훈련 성과 페이지 */}
+        <Route path="/training-performance">
+          {() => {
+            console.log("훈련 성과 페이지 접근");
+            return (
+              <Suspense fallback={
+                <div className="flex justify-center items-center h-screen">
+                  <DogLoading message="훈련 성과 로딩 중..." size="medium" showTips={true} />
+                </div>
+              }>
+                <TrainingPerformancePage />
               </Suspense>
             );
           }}
