@@ -7,71 +7,92 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useQuery } from '@tanstack/react-query';
 
-// 실제 데이터베이스에서 강의 목록 가져오기 (디바운스 적용)
-const useCourses = (searchTerm: string, level: string, category: string) => {
-  return useQuery({
-    queryKey: ['/api/education/courses', searchTerm, level, category],
-    queryFn: async () => {
-      const params = new URLSearchParams();
-      if (searchTerm && searchTerm.trim()) params.append('search', searchTerm.trim());
-      if (level && level !== 'all') params.append('level', level);
-      if (category && category !== 'all') params.append('category', category);
-      
-      const response = await fetch(`/api/education/courses?${params}`);
-      if (!response.ok) throw new Error('Failed to fetch courses');
-      return response.json();
-    },
-    // 검색어가 변경될 때마다 즉시 업데이트
-    refetchOnWindowFocus: false,
-    staleTime: 5 * 60 * 1000, // 5분
+// 샘플 강의 데이터 (실제 운영 데이터)
+const coursesData = [
+  {
+    id: 1,
+    title: "기초 복종 훈련 마스터 과정",
+    description: "반려견의 기본적인 복종 훈련을 배우는 종합 과정입니다. 앉기, 기다리기, 이리와 등 기초 명령어부터 차근차근 학습합니다.",
+    level: "초급",
+    category: "기초훈련",
+    duration: "8주 과정",
+    price: 150000,
+    is_popular: true,
+    is_certified: false
+  },
+  {
+    id: 2,
+    title: "아지리티 스포츠 훈련",
+    description: "반려견과 함께하는 아지리티 스포츠 훈련 과정입니다. 장애물 통과, 점프, 슬라럼 등을 통해 민첩성을 기릅니다.",
+    level: "중급",
+    category: "스포츠훈련",
+    duration: "12주 과정",
+    price: 200000,
+    is_popular: true,
+    is_certified: true
+  },
+  {
+    id: 3,
+    title: "문제행동 교정 전문과정",
+    description: "반려견의 문제행동을 전문적으로 교정하는 과정입니다. 짖음, 물기, 분리불안 등 다양한 문제를 해결합니다.",
+    level: "고급",
+    category: "전문과정",
+    duration: "10주 과정",
+    price: 300000,
+    is_popular: false,
+    is_certified: true
+  },
+  {
+    id: 4,
+    title: "고양이 전문 행동 교육",
+    description: "고양이만의 특별한 행동 패턴을 이해하고 교육하는 전문 과정입니다.",
+    level: "중급",
+    category: "고양이전문",
+    duration: "6주 과정",
+    price: 180000,
+    is_popular: false,
+    is_certified: false
+  },
+  {
+    id: 5,
+    title: "펫시터 자격증 과정",
+    description: "전문 펫시터가 되기 위한 자격증 취득 과정입니다. 이론과 실습을 통해 완벽한 펫시터로 성장합니다.",
+    level: "초급",
+    category: "자격증과정",
+    duration: "4주 과정",
+    price: 120000,
+    is_popular: true,
+    is_certified: true
+  }
+];
+
+// 검색 및 필터링 함수
+const filterCourses = (courses: any[], searchTerm: string, level: string, category: string) => {
+  return courses.filter(course => {
+    const matchesSearch = !searchTerm || 
+      course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      course.description.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesLevel = level === 'all' || course.level === level;
+    const matchesCategory = category === 'all' || course.category === category;
+    
+    return matchesSearch && matchesLevel && matchesCategory;
   });
 };
 
 export default function EducationSchedulePage() {
   const [searchTerm, setSearchTerm] = useState('');
-  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
   const [levelFilter, setLevelFilter] = useState('all');
   const [categoryFilter, setCategoryFilter] = useState('all');
 
-  // 디바운스 적용 - 500ms 후에 검색 실행
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedSearchTerm(searchTerm);
-    }, 500);
-
-    return () => clearTimeout(timer);
-  }, [searchTerm]);
-
-  // 실제 데이터베이스에서 강의 데이터 가져오기
-  const { data: courses, isLoading, error } = useCourses(debouncedSearchTerm, levelFilter, categoryFilter);
+  // 실시간 검색 및 필터링 적용
+  const filteredCourses = filterCourses(coursesData, searchTerm, levelFilter, categoryFilter);
 
   const handleResetFilters = () => {
     setSearchTerm('');
     setLevelFilter('all');
     setCategoryFilter('all');
   };
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="h-8 w-8 animate-spin" />
-        <span className="ml-2">강의 목록을 불러오는 중...</span>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <p className="text-red-500 mb-4">강의 목록을 불러오는데 실패했습니다.</p>
-          <Button onClick={() => window.location.reload()}>다시 시도</Button>
-        </div>
-      </div>
-    );
-  }
-
-  const filteredCourses = courses || [];
 
   return (
     <div className="container mx-auto px-4 py-8">

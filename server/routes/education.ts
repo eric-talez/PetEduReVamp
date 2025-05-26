@@ -1,7 +1,5 @@
 import type { Express } from "express";
-import { db } from "../db";
-import { courses, courseEnrollments, users, pets } from "@shared/schema";
-import { eq, desc, and, gte, lte, count, like, or } from "drizzle-orm";
+import { storage } from "../storage";
 
 export function registerEducationRoutes(app: Express) {
   // 강의 목록 가져오기 (검색 및 필터링 포함)
@@ -9,38 +7,36 @@ export function registerEducationRoutes(app: Express) {
     try {
       const { search, category, level } = req.query;
       
-      let whereConditions: any[] = [];
+      // 모든 강의 목록 가져오기
+      const allCourses = await storage.getAllCourses();
       
-      // 검색 조건 추가
-      if (search) {
-        whereConditions.push(
-          or(
-            like(courses.title, `%${search}%`),
-            like(courses.description, `%${search}%`)
-          )
+      // 검색 및 필터링 적용
+      let filteredCourses = allCourses;
+      
+      // 검색어 필터링
+      if (search && typeof search === 'string') {
+        const searchTerm = search.toLowerCase();
+        filteredCourses = filteredCourses.filter(course => 
+          course.title.toLowerCase().includes(searchTerm) ||
+          course.description?.toLowerCase().includes(searchTerm)
         );
       }
       
-      // 카테고리 필터
+      // 카테고리 필터링
       if (category && category !== 'all') {
-        whereConditions.push(eq(courses.category, category as string));
+        filteredCourses = filteredCourses.filter(course => 
+          course.category === category
+        );
       }
       
-      // 난이도 필터
+      // 난이도 필터링
       if (level && level !== 'all') {
-        whereConditions.push(eq(courses.level, level as string));
+        filteredCourses = filteredCourses.filter(course => 
+          course.level === level
+        );
       }
       
-      const whereClause = whereConditions.length > 0 ? and(...whereConditions) : undefined;
-      
-      // 강의 목록 조회 - 기본 필드만 사용
-      const courseList = await db
-        .select()
-        .from(courses)
-        .where(whereClause)
-        .orderBy(desc(courses.createdAt));
-      
-      res.json(courseList);
+      res.json(filteredCourses);
     } catch (error) {
       console.error('Error fetching courses:', error);
       res.status(500).json({ message: 'Internal server error' });
