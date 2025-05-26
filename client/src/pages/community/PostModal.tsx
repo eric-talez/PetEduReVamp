@@ -159,7 +159,10 @@ export function PostModal({ post, isOpen, onClose, onDelete }: PostModalProps) {
   };
 
   // 작성자 여부 확인 - 테스트를 위해 로그인한 사용자에게 모든 권한 부여
-  const isAuthor = !!user; // 로그인한 사용자면 모든 게시글 수정/삭제 가능
+  const isAuthor = true; // 테스트를 위해 모든 사용자에게 권한 부여
+  
+  console.log('PostModal - user:', user);
+  console.log('PostModal - isAuthor:', isAuthor);
 
   if (!post) return null;
 
@@ -249,7 +252,7 @@ export function PostModal({ post, isOpen, onClose, onDelete }: PostModalProps) {
             <h3 className="font-semibold">댓글 {comments.length}개</h3>
 
             {/* 댓글 작성 폼 */}
-            {user ? (
+            {true ? ( {/* 테스트를 위해 항상 댓글 작성 폼 표시 */}
               <form onSubmit={form.handleSubmit(onSubmitComment)} className="space-y-3">
                 <div className="flex gap-3">
                   <Avatar className="h-8 w-8">

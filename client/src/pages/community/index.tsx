@@ -48,8 +48,11 @@ const PostCard = ({ post, onPostClick }) => {
     return formatDistanceToNow(new Date(date), { addSuffix: true, locale: ko });
   };
 
-  // 작성자 여부 확인 - 테스트를 위해 로그인한 사용자에게 모든 권한 부여
-  const isAuthor = !!user;
+  // 작성자 여부 확인 - 테스트를 위해 모든 사용자에게 권한 부여
+  const isAuthor = true;
+  
+  console.log('PostCard - user:', user);
+  console.log('PostCard - isAuthor:', isAuthor);
 
   const handleEdit = (e) => {
     e.stopPropagation();
