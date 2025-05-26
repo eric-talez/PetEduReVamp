@@ -11,11 +11,11 @@ import { useKeyboardAccessibility } from '@/hooks/use-keyboard-accessibility';
 
 // 페이지 컴포넌트 임포트
 import Home from "./pages/Home";
-import Dashboard from "@/pages/dashboard";
-import Courses from "@/pages/courses";
+import Dashboard from "@/pages/dashboard/index";
+import Courses from "@/pages/courses/index";
 import FAQPage from "@/pages/help/faq";
 import CourseDetail from "@/pages/course-detail";
-import Trainers from "@/pages/trainers";
+import Trainers from "@/pages/trainers/index";
 import Institutes from "@/pages/institutes";
 import Community from "@/pages/community";
 import CommunityPostDetail from "@/pages/community/post/[id]";
