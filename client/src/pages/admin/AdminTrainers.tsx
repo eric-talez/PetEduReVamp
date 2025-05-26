@@ -3,12 +3,48 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Search, Filter, Plus, Eye, Edit, Trash2, GraduationCap, MapPin, Star } from "lucide-react";
 import { useState } from "react";
 
 export default function AdminTrainers() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [isAddTrainerOpen, setIsAddTrainerOpen] = useState(false);
+  const [newTrainer, setNewTrainer] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    institute: "",
+    certification: "",
+    experience: "",
+    specialties: ""
+  });
+
+  // 훈련사 추가 함수
+  const handleAddTrainer = () => {
+    if (!newTrainer.name || !newTrainer.email || !newTrainer.institute || !newTrainer.certification) {
+      alert("필수 필드를 모두 입력해주세요.");
+      return;
+    }
+    
+    console.log("새 훈련사 추가:", newTrainer);
+    // 여기서 실제 API 호출 구현
+    
+    // 폼 초기화
+    setNewTrainer({
+      name: "",
+      email: "",
+      phone: "",
+      institute: "",
+      certification: "",
+      experience: "",
+      specialties: ""
+    });
+    setIsAddTrainerOpen(false);
+  };
 
   // 샘플 훈련사 데이터
   const trainers = [
@@ -86,10 +122,115 @@ export default function AdminTrainers() {
           <h1 className="text-3xl font-bold">훈련사 관리</h1>
           <p className="text-muted-foreground">등록된 훈련사들을 관리합니다</p>
         </div>
-        <Button>
-          <Plus className="h-4 w-4 mr-2" />
-          새 훈련사 등록
-        </Button>
+        <Dialog open={isAddTrainerOpen} onOpenChange={setIsAddTrainerOpen}>
+          <DialogTrigger asChild>
+            <Button>
+              <Plus className="h-4 w-4 mr-2" />
+              새 훈련사 등록
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-[500px]">
+            <DialogHeader>
+              <DialogTitle>새 훈련사 등록</DialogTitle>
+              <DialogDescription>
+                새로운 훈련사를 플랫폼에 등록합니다.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="trainer-name" className="text-right">
+                  이름 *
+                </Label>
+                <Input
+                  id="trainer-name"
+                  value={newTrainer.name}
+                  onChange={(e) => setNewTrainer({ ...newTrainer, name: e.target.value })}
+                  className="col-span-3"
+                  placeholder="김훈련사"
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="trainer-email" className="text-right">
+                  이메일 *
+                </Label>
+                <Input
+                  id="trainer-email"
+                  type="email"
+                  value={newTrainer.email}
+                  onChange={(e) => setNewTrainer({ ...newTrainer, email: e.target.value })}
+                  className="col-span-3"
+                  placeholder="trainer@example.com"
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="trainer-phone" className="text-right">
+                  연락처
+                </Label>
+                <Input
+                  id="trainer-phone"
+                  value={newTrainer.phone}
+                  onChange={(e) => setNewTrainer({ ...newTrainer, phone: e.target.value })}
+                  className="col-span-3"
+                  placeholder="010-1234-5678"
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="trainer-institute" className="text-right">
+                  소속 기관 *
+                </Label>
+                <Input
+                  id="trainer-institute"
+                  value={newTrainer.institute}
+                  onChange={(e) => setNewTrainer({ ...newTrainer, institute: e.target.value })}
+                  className="col-span-3"
+                  placeholder="서울반려견아카데미"
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="trainer-certification" className="text-right">
+                  자격증 *
+                </Label>
+                <Input
+                  id="trainer-certification"
+                  value={newTrainer.certification}
+                  onChange={(e) => setNewTrainer({ ...newTrainer, certification: e.target.value })}
+                  className="col-span-3"
+                  placeholder="국제반려견훈련사 1급"
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="trainer-experience" className="text-right">
+                  경력
+                </Label>
+                <Input
+                  id="trainer-experience"
+                  value={newTrainer.experience}
+                  onChange={(e) => setNewTrainer({ ...newTrainer, experience: e.target.value })}
+                  className="col-span-3"
+                  placeholder="5년"
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="trainer-specialties" className="text-right">
+                  전문 분야
+                </Label>
+                <Textarea
+                  id="trainer-specialties"
+                  value={newTrainer.specialties}
+                  onChange={(e) => setNewTrainer({ ...newTrainer, specialties: e.target.value })}
+                  className="col-span-3"
+                  placeholder="기본 순종, 문제행동 교정, 어질리티"
+                  rows={3}
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button type="submit" onClick={handleAddTrainer}>
+                훈련사 등록
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
 
       {/* 통계 카드 */}

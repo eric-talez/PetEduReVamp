@@ -3,12 +3,56 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Search, Filter, Plus, Eye, Edit, Trash2, BookOpen, Users, Clock, DollarSign } from "lucide-react";
 import { useState } from "react";
 
 export default function AdminCourses() {
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
+  const [isAddCourseOpen, setIsAddCourseOpen] = useState(false);
+  const [newCourse, setNewCourse] = useState({
+    title: "",
+    institute: "",
+    trainer: "",
+    category: "기본 훈련",
+    level: "초급",
+    duration: "",
+    price: "",
+    maxStudents: "",
+    startDate: "",
+    endDate: "",
+    description: ""
+  });
+
+  // 강좌 추가 함수
+  const handleAddCourse = () => {
+    if (!newCourse.title || !newCourse.institute || !newCourse.trainer || !newCourse.duration) {
+      alert("필수 필드를 모두 입력해주세요.");
+      return;
+    }
+    
+    console.log("새 강좌 추가:", newCourse);
+    // 여기서 실제 API 호출 구현
+    
+    // 폼 초기화
+    setNewCourse({
+      title: "",
+      institute: "",
+      trainer: "",
+      category: "기본 훈련",
+      level: "초급",
+      duration: "",
+      price: "",
+      maxStudents: "",
+      startDate: "",
+      endDate: "",
+      description: ""
+    });
+    setIsAddCourseOpen(false);
+  };
 
   // 샘플 강좌 데이터
   const courses = [
@@ -110,10 +154,171 @@ export default function AdminCourses() {
           <h1 className="text-3xl font-bold">강좌 관리</h1>
           <p className="text-muted-foreground">등록된 훈련 강좌들을 관리합니다</p>
         </div>
-        <Button>
-          <Plus className="h-4 w-4 mr-2" />
-          새 강좌 등록
-        </Button>
+        <Dialog open={isAddCourseOpen} onOpenChange={setIsAddCourseOpen}>
+          <DialogTrigger asChild>
+            <Button>
+              <Plus className="h-4 w-4 mr-2" />
+              새 강좌 등록
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>새 강좌 등록</DialogTitle>
+              <DialogDescription>
+                새로운 훈련 강좌를 플랫폼에 등록합니다.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="course-title" className="text-right">
+                  강좌명 *
+                </Label>
+                <Input
+                  id="course-title"
+                  value={newCourse.title}
+                  onChange={(e) => setNewCourse({ ...newCourse, title: e.target.value })}
+                  className="col-span-3"
+                  placeholder="기본 순종 훈련 과정"
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="course-institute" className="text-right">
+                  기관명 *
+                </Label>
+                <Input
+                  id="course-institute"
+                  value={newCourse.institute}
+                  onChange={(e) => setNewCourse({ ...newCourse, institute: e.target.value })}
+                  className="col-span-3"
+                  placeholder="서울반려견아카데미"
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="course-trainer" className="text-right">
+                  담당 훈련사 *
+                </Label>
+                <Input
+                  id="course-trainer"
+                  value={newCourse.trainer}
+                  onChange={(e) => setNewCourse({ ...newCourse, trainer: e.target.value })}
+                  className="col-span-3"
+                  placeholder="김훈련사"
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="course-category" className="text-right">
+                  카테고리
+                </Label>
+                <Select value={newCourse.category} onValueChange={(value) => setNewCourse({ ...newCourse, category: value })}>
+                  <SelectTrigger className="col-span-3">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="기본 훈련">기본 훈련</SelectItem>
+                    <SelectItem value="문제행동">문제행동</SelectItem>
+                    <SelectItem value="어질리티">어질리티</SelectItem>
+                    <SelectItem value="사회화">사회화</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="course-level" className="text-right">
+                  난이도
+                </Label>
+                <Select value={newCourse.level} onValueChange={(value) => setNewCourse({ ...newCourse, level: value })}>
+                  <SelectTrigger className="col-span-3">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="초급">초급</SelectItem>
+                    <SelectItem value="중급">중급</SelectItem>
+                    <SelectItem value="고급">고급</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="course-duration" className="text-right">
+                  기간 *
+                </Label>
+                <Input
+                  id="course-duration"
+                  value={newCourse.duration}
+                  onChange={(e) => setNewCourse({ ...newCourse, duration: e.target.value })}
+                  className="col-span-3"
+                  placeholder="8주"
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="course-price" className="text-right">
+                  수강료 (원)
+                </Label>
+                <Input
+                  id="course-price"
+                  type="number"
+                  value={newCourse.price}
+                  onChange={(e) => setNewCourse({ ...newCourse, price: e.target.value })}
+                  className="col-span-3"
+                  placeholder="320000"
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="course-max-students" className="text-right">
+                  최대 인원
+                </Label>
+                <Input
+                  id="course-max-students"
+                  type="number"
+                  value={newCourse.maxStudents}
+                  onChange={(e) => setNewCourse({ ...newCourse, maxStudents: e.target.value })}
+                  className="col-span-3"
+                  placeholder="30"
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="course-start-date" className="text-right">
+                  시작일
+                </Label>
+                <Input
+                  id="course-start-date"
+                  type="date"
+                  value={newCourse.startDate}
+                  onChange={(e) => setNewCourse({ ...newCourse, startDate: e.target.value })}
+                  className="col-span-3"
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="course-end-date" className="text-right">
+                  종료일
+                </Label>
+                <Input
+                  id="course-end-date"
+                  type="date"
+                  value={newCourse.endDate}
+                  onChange={(e) => setNewCourse({ ...newCourse, endDate: e.target.value })}
+                  className="col-span-3"
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="course-description" className="text-right">
+                  강좌 설명
+                </Label>
+                <Textarea
+                  id="course-description"
+                  value={newCourse.description}
+                  onChange={(e) => setNewCourse({ ...newCourse, description: e.target.value })}
+                  className="col-span-3"
+                  placeholder="강좌에 대한 상세 설명을 입력하세요"
+                  rows={3}
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button type="submit" onClick={handleAddCourse}>
+                강좌 등록
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
 
       {/* 통계 카드 */}
