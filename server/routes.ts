@@ -912,6 +912,68 @@ export async function registerRoutes(app: Express): Promise<Server> {
     return res.status(200).json(req.session.user);
   });
   
+  // 챗봇 API 엔드포인트
+  app.post('/api/chatbot', async (req, res) => {
+    try {
+      const { message } = req.body;
+      
+      if (!message || typeof message !== 'string') {
+        return res.status(400).json({ error: '메시지가 필요합니다' });
+      }
+
+      // OpenAI API 키 확인
+      if (!process.env.OPENAI_API_KEY) {
+        return res.status(200).json({ 
+          response: '죄송합니다. AI 서비스를 이용하려면 관리자가 OpenAI API 키를 설정해야 합니다. 관리자에게 문의해주세요.'
+        });
+      }
+
+      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'gpt-4o',
+          messages: [
+            {
+              role: 'system',
+              content: `당신은 반려동물 훈련 전문가 AI 어시스턴트입니다. 반려동물(특히 강아지)의 훈련, 행동 교정, 건강 관리, 사회화 등에 대한 전문적이고 실용적인 조언을 제공해주세요. 
+
+다음 가이드라인을 따라주세요:
+- 친근하고 이해하기 쉬운 한국어로 답변
+- 구체적이고 실행 가능한 조언 제공
+- 안전을 최우선으로 고려
+- 심각한 건강 문제나 공격성 문제는 전문가 상담 권유
+- 답변은 200자 이내로 간결하게 작성`
+            },
+            {
+              role: 'user',
+              content: message
+            }
+          ],
+          max_tokens: 500,
+          temperature: 0.7,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`OpenAI API 오류: ${response.status}`);
+      }
+
+      const data = await response.json();
+      const aiResponse = data.choices[0]?.message?.content || '죄송합니다. 응답을 생성할 수 없습니다.';
+
+      res.json({ response: aiResponse });
+    } catch (error) {
+      console.error('챗봇 API 오류:', error);
+      res.status(200).json({ 
+        response: '죄송합니다. 현재 AI 서비스에 일시적인 문제가 있습니다. 잠시 후 다시 시도해주세요.' 
+      });
+    }
+  });
+
   // Register new user
   app.post("/api/auth/register", async (req, res) => {
     try {

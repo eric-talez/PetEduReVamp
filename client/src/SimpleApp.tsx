@@ -28,6 +28,7 @@ import LocationsPage from "./pages/locations";
 import VideoCallPage from "./pages/video-call";
 import MessagesPage from "./pages/messages";
 import AdminCommissionPage from "./pages/admin/commission";
+import ChatbotPage from "./pages/chatbot";
 import AdminMenuConfigPage from "./pages/admin/menu-config";
 import AdminSettlementPage from "./pages/admin/settlement";
 import EventsPage from "./pages/events";
@@ -438,6 +439,7 @@ function AuthenticatedRoutes() {
         <Route path="/certificates" component={() => <div className="p-8"><h1 className="text-2xl font-bold mb-4">자격증 및 수료증</h1><p>자격증 및 수료증을 확인할 수 있는 페이지입니다.</p></div>} />
         <Route path="/video-training" component={VideoTrainingPage} />
         <Route path="/video-call" component={VideoCallPage} />
+        <Route path="/chatbot" component={ChatbotPage} />
         {/* 쇼핑몰 메인 */}
         <Route path="/shop">
           {() => {
