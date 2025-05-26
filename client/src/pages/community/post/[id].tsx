@@ -188,16 +188,16 @@ export default function PostDetailPage() {
   const { user, isLoading: authLoading } = useAuth();
   const [deleteAlertOpen, setDeleteAlertOpen] = useState(false);
   
-  // 게시글 조회
+  // 게시글 조회 - 테스트 API 사용
   const { 
     data: post, 
     isLoading, 
     isError, 
     error 
   } = useQuery({
-    queryKey: [`/api/social/posts/${postId}`],
+    queryKey: [`/api/community/posts/${postId}`],
     queryFn: async () => {
-      const response = await fetch(`/api/social/posts/${postId}`);
+      const response = await fetch(`/api/community/posts/${postId}`);
       if (!response.ok) {
         throw new Error('게시글을 불러오는데 실패했습니다.');
       }

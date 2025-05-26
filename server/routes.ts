@@ -159,6 +159,150 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // 게시글 상세 조회 API
+  app.get('/api/community/posts/:id', async (req, res) => {
+    try {
+      console.log('=== 테스트 게시글 상세 조회 API 호출됨 ===');
+      const postId = parseInt(req.params.id);
+      console.log('요청된 게시글 ID:', postId);
+      
+      // 메모리에서 게시글 찾기
+      const post = testPosts.find(p => p.id === postId);
+      
+      if (!post) {
+        console.log('게시글을 찾을 수 없음');
+        res.writeHead(404, {
+          'Content-Type': 'application/json',
+          'Cache-Control': 'no-cache'
+        });
+        res.end(JSON.stringify({ 
+          message: '게시글을 찾을 수 없습니다.' 
+        }));
+        return;
+      }
+      
+      const responseData = {
+        post: post,
+        author: post.author,
+        comments: [] // 댓글은 나중에 구현
+      };
+      
+      console.log('게시글 상세 응답 데이터:', responseData);
+      
+      // Express 응답 파이프라인 우회하여 직접 응답
+      res.writeHead(200, {
+        'Content-Type': 'application/json',
+        'Cache-Control': 'no-cache'
+      });
+      res.end(JSON.stringify(responseData));
+      return;
+    } catch (error: any) {
+      console.error('게시글 상세 조회 오류:', error);
+      res.status(500).json({ 
+        message: '게시글 조회 중 오류가 발생했습니다.',
+        error: error.message 
+      });
+    }
+  });
+
+  // 게시글 수정 API
+  app.put('/api/community/posts/:id', async (req, res) => {
+    try {
+      console.log('=== 테스트 게시글 수정 API 호출됨 ===');
+      const postId = parseInt(req.params.id);
+      const { title, content, tag } = req.body;
+      
+      // 메모리에서 게시글 찾기
+      const postIndex = testPosts.findIndex(p => p.id === postId);
+      
+      if (postIndex === -1) {
+        res.writeHead(404, {
+          'Content-Type': 'application/json',
+          'Cache-Control': 'no-cache'
+        });
+        res.end(JSON.stringify({ 
+          message: '게시글을 찾을 수 없습니다.' 
+        }));
+        return;
+      }
+      
+      // 게시글 수정
+      testPosts[postIndex] = {
+        ...testPosts[postIndex],
+        title,
+        content,
+        tag,
+        updatedAt: new Date()
+      };
+      
+      const responseData = {
+        post: testPosts[postIndex],
+        message: '게시글이 성공적으로 수정되었습니다.'
+      };
+      
+      console.log('게시글 수정 완료:', responseData);
+      
+      // Express 응답 파이프라인 우회하여 직접 응답
+      res.writeHead(200, {
+        'Content-Type': 'application/json',
+        'Cache-Control': 'no-cache'
+      });
+      res.end(JSON.stringify(responseData));
+      return;
+    } catch (error: any) {
+      console.error('게시글 수정 오류:', error);
+      res.status(500).json({ 
+        message: '게시글 수정 중 오류가 발생했습니다.',
+        error: error.message 
+      });
+    }
+  });
+
+  // 게시글 삭제 API
+  app.delete('/api/community/posts/:id', async (req, res) => {
+    try {
+      console.log('=== 테스트 게시글 삭제 API 호출됨 ===');
+      const postId = parseInt(req.params.id);
+      
+      // 메모리에서 게시글 찾기
+      const postIndex = testPosts.findIndex(p => p.id === postId);
+      
+      if (postIndex === -1) {
+        res.writeHead(404, {
+          'Content-Type': 'application/json',
+          'Cache-Control': 'no-cache'
+        });
+        res.end(JSON.stringify({ 
+          message: '게시글을 찾을 수 없습니다.' 
+        }));
+        return;
+      }
+      
+      // 게시글 삭제
+      testPosts.splice(postIndex, 1);
+      
+      const responseData = {
+        message: '게시글이 성공적으로 삭제되었습니다.'
+      };
+      
+      console.log('게시글 삭제 완료:', responseData);
+      
+      // Express 응답 파이프라인 우회하여 직접 응답
+      res.writeHead(200, {
+        'Content-Type': 'application/json',
+        'Cache-Control': 'no-cache'
+      });
+      res.end(JSON.stringify(responseData));
+      return;
+    } catch (error: any) {
+      console.error('게시글 삭제 오류:', error);
+      res.status(500).json({ 
+        message: '게시글 삭제 중 오류가 발생했습니다.',
+        error: error.message 
+      });
+    }
+  });
+
   // 소셜 기능 라우터 등록
   app.use('/api/social', socialRouter);
   
