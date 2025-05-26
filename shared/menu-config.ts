@@ -285,18 +285,7 @@ export const DEFAULT_MENU_ITEMS: MenuItem[] = [
     isActive: true,
     isPublic: false
   },
-  {
-    id: 'achievements',
-    title: '배지 및 업적',
-    path: '/achievements',
-    icon: 'Award',
-    type: 'internal',
-    category: 'myLearning',
-    roles: ['pet-owner', 'admin'],
-    orderIndex: 6,
-    isActive: true,
-    isPublic: false
-  },
+
   {
     id: 'subscriptions',
     title: '구독 관리',

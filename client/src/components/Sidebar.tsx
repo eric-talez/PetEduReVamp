@@ -945,13 +945,7 @@ export function Sidebar({
                           onClick={handleItemClick} 
                           show={true}
                         >교육 일정</AccessibleNavItem>
-                        <AccessibleNavItem 
-                          href="/achievements" 
-                          icon={<Award className="w-5 h-5 mr-2" />} 
-                          active={isActive("/achievements")} 
-                          onClick={handleItemClick} 
-                          show={true}
-                        >배지 및 업적</AccessibleNavItem>
+
                         <AccessibleNavItem 
                           href="/subscriptions" 
                           icon={<CreditCard className="w-5 h-5 mr-2" />} 
