@@ -182,8 +182,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       const responseData = {
-        post: post,
-        author: post.author,
+        post: {
+          ...post,
+          author: post.author || { id: 1, username: 'testuser', name: '테스트 사용자' }
+        },
+        author: post.author || { id: 1, username: 'testuser', name: '테스트 사용자' },
         comments: [] // 댓글은 나중에 구현
       };
       
