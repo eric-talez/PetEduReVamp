@@ -90,7 +90,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // 메모리에 게시글 저장
       testPosts.unshift(responseData.post);
       
-      res.status(201).json(responseData);
+      // JSON 응답 강제 설정
+      res.status(201);
+      res.end(JSON.stringify(responseData));
     } catch (error: any) {
       console.error('게시글 작성 오류:', error);
       res.status(500).json({ 
@@ -130,7 +132,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       };
       
       console.log('응답 데이터:', responseData);
-      res.status(200).json(responseData);
+      
+      // JSON 응답 강제 설정
+      res.status(200);
+      res.end(JSON.stringify(responseData));
     } catch (error: any) {
       console.error('게시글 목록 조회 오류:', error);
       res.status(500).json({ 
