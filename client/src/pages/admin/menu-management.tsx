@@ -215,10 +215,22 @@ export default function AdminMenuManagement() {
                 <div className="flex items-center gap-2">
                   <span className="text-sm text-muted-foreground">순서: {group.order}</span>
                   <Switch checked={group.visible} />
-                  <Button variant="ghost" size="sm">
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={() => {
+                      console.log('메뉴 그룹 편집:', group.name);
+                    }}
+                  >
                     <Edit className="h-4 w-4" />
                   </Button>
-                  <Button variant="ghost" size="sm">
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={() => {
+                      console.log('메뉴 그룹 삭제:', group.name);
+                    }}
+                  >
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
@@ -249,10 +261,22 @@ export default function AdminMenuManagement() {
                           )}
                           <Switch checked={item.visible} />
                         </div>
-                        <Button variant="ghost" size="sm">
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => {
+                            console.log('메뉴 항목 편집:', item.name);
+                          }}
+                        >
                           <Edit className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="sm">
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => {
+                            console.log('메뉴 항목 삭제:', item.name);
+                          }}
+                        >
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
