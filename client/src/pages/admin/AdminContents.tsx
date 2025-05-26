@@ -556,11 +556,115 @@ export default function AdminContents() {
               </DialogDescription>
             </DialogHeader>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <div className="text-sm font-medium mb-1">제목</div>
-                <div className="text-lg font-semibold">{selectedContent.title}</div>
+            {modalMode === 'add' ? (
+              <div className="grid gap-4 py-4">
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="content-title" className="text-right">
+                    제목 *
+                  </Label>
+                  <Input
+                    id="content-title"
+                    value={newContent.title}
+                    onChange={(e) => setNewContent({ ...newContent, title: e.target.value })}
+                    className="col-span-3"
+                    placeholder="콘텐츠 제목을 입력하세요"
+                  />
+                </div>
+
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="content-type" className="text-right">
+                    타입
+                  </Label>
+                  <Select value={newContent.type} onValueChange={(value: any) => setNewContent({ ...newContent, type: value })}>
+                    <SelectTrigger className="col-span-3">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="banner">배너</SelectItem>
+                      <SelectItem value="image">이미지</SelectItem>
+                      <SelectItem value="video">비디오</SelectItem>
+                      <SelectItem value="article">아티클</SelectItem>
+                      <SelectItem value="event">이벤트</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="content-status" className="text-right">
+                    상태
+                  </Label>
+                  <Select value={newContent.status} onValueChange={(value: any) => setNewContent({ ...newContent, status: value })}>
+                    <SelectTrigger className="col-span-3">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="draft">초안</SelectItem>
+                      <SelectItem value="active">활성</SelectItem>
+                      <SelectItem value="scheduled">예약됨</SelectItem>
+                      <SelectItem value="inactive">비활성</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="content-location" className="text-right">
+                    위치 *
+                  </Label>
+                  <Input
+                    id="content-location"
+                    value={newContent.location}
+                    onChange={(e) => setNewContent({ ...newContent, location: e.target.value })}
+                    className="col-span-3"
+                    placeholder="홈페이지, 메인배너, 사이드바 등"
+                  />
+                </div>
+
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="content-publishDate" className="text-right">
+                    게시일
+                  </Label>
+                  <Input
+                    id="content-publishDate"
+                    type="date"
+                    value={newContent.publishDate}
+                    onChange={(e) => setNewContent({ ...newContent, publishDate: e.target.value })}
+                    className="col-span-3"
+                  />
+                </div>
+
+                <div className="grid grid-cols-4 items-start gap-4">
+                  <Label htmlFor="content-description" className="text-right pt-2">
+                    설명
+                  </Label>
+                  <Textarea
+                    id="content-description"
+                    value={newContent.description}
+                    onChange={(e) => setNewContent({ ...newContent, description: e.target.value })}
+                    className="col-span-3"
+                    placeholder="콘텐츠에 대한 설명을 입력하세요"
+                    rows={4}
+                  />
+                </div>
+
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="content-tags" className="text-right">
+                    태그
+                  </Label>
+                  <Input
+                    id="content-tags"
+                    value={newContent.tags}
+                    onChange={(e) => setNewContent({ ...newContent, tags: e.target.value })}
+                    className="col-span-3"
+                    placeholder="태그를 쉼표로 구분하여 입력"
+                  />
+                </div>
               </div>
+            ) : selectedContent && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <div className="text-sm font-medium mb-1">제목</div>
+                  <div className="text-lg font-semibold">{selectedContent.title}</div>
+                </div>
               
               <div>
                 <div className="text-sm font-medium mb-1">타입</div>
