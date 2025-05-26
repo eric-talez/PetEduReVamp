@@ -26,6 +26,11 @@ export function BarChart({
   width = "100%"
 }: ChartProps) {
   if (type === "bar") {
+    // 데이터 유효성 검증
+    if (!data || !data.labels || !data.datasets) {
+      return <div className="flex items-center justify-center h-full text-muted-foreground">차트 데이터를 불러오는 중...</div>;
+    }
+    
     return (
       <ResponsiveContainer width={width} height={height}>
         <RechartsBarChart data={data.labels.map((label: string, index: number) => {
