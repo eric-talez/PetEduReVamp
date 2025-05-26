@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { useAuth } from '@/lib/auth-compat';
+import { useAuth } from '@/hooks/useAuth';
 import { 
   BarChart3, 
   TrendingUp, 
@@ -58,18 +58,9 @@ const recentAchievements = [
 ];
 
 export default function AnalyticsPage() {
-  const { user } = useAuth();
+  const { userName } = useAuth();
   const [selectedPeriod, setSelectedPeriod] = useState('30일');
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    // 데이터 로딩 시뮬레이션
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 1000);
-
-    return () => clearTimeout(timer);
-  }, []);
+  const [isLoading, setIsLoading] = useState(false);
 
   const getProgressColor = (progress: number) => {
     if (progress >= 80) return 'bg-green-500';
@@ -107,7 +98,7 @@ export default function AnalyticsPage() {
             분석 및 보고서
           </h1>
           <p className="text-gray-600 dark:text-gray-400 mt-2">
-            {user?.name || '반려인'}님의 훈련 진행 상황과 성과를 확인하세요
+            {userName || '반려인'}님의 훈련 진행 상황과 성과를 확인하세요
           </p>
         </div>
         <div className="flex gap-2">
