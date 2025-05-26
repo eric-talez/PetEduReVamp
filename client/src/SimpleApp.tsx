@@ -1175,81 +1175,7 @@ function AuthenticatedRoutes() {
           )}
         </Route>
         
-        {/* 기관 관리자 메뉴 */}
-        <Route path="/institute-dashboard">
-          {() => {
-            const InstituteAdminHome = lazy(() => import('./pages/institute-admin/InstituteAdminHome'));
-            return (
-              <Suspense fallback={<div className="p-8 flex justify-center items-center">
-                <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
-              </div>}>
-                <ProtectedInstituteRoute component={InstituteAdminHome} />
-              </Suspense>
-            );
-          }}
-        </Route>
-        <Route path="/institute/trainers">
-          {() => {
-            const InstituteTrainersManagement = lazy(() => import('./pages/institute-admin/InstituteTrainersManagement'));
-            return (
-              <Suspense fallback={<div className="p-8 flex justify-center items-center">
-                <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
-              </div>}>
-                <ProtectedInstituteRoute component={InstituteTrainersManagement} />
-              </Suspense>
-            );
-          }}
-        </Route>
-        <Route path="/institute/courses">
-          {() => {
-            const InstituteCoursesPage = lazy(() => import('./pages/institute/InstituteCoursesPage'));
-            return (
-              <Suspense fallback={<div className="p-8 flex justify-center items-center">
-                <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
-              </div>}>
-                <ProtectedInstituteRoute component={InstituteCoursesPage} />
-              </Suspense>
-            );
-          }}
-        </Route>
-        <Route path="/institute/students">
-          {() => {
-            const InstituteStudentsPage = lazy(() => import('./pages/institute/InstituteStudentsPage'));
-            return (
-              <Suspense fallback={<div className="p-8 flex justify-center items-center">
-                <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
-              </div>}>
-                <ProtectedInstituteRoute component={InstituteStudentsPage} />
-              </Suspense>
-            );
-          }}
-        </Route>
-        <Route path="/institute/facility">
-          {() => {
-            return (
-              <Suspense fallback={<div className="p-8 flex justify-center items-center">
-                <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
-              </div>}>
-                <ProtectedInstituteRoute component={() => <div className="p-8">
-                  <h1 className="text-2xl font-bold mb-4">시설 관리</h1>
-                  <p>기관의 시설 및 공간을 관리할 수 있는 페이지입니다.</p>
-                </div>} />
-              </Suspense>
-            );
-          }}
-        </Route>
-        <Route path="/institute/stats">
-          {() => {
-            const InstituteStatsAndRevenue = lazy(() => import('./pages/institute-admin/InstituteStatsAndRevenue'));
-            return (
-              <Suspense fallback={<div className="p-8 flex justify-center items-center">
-                <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
-              </div>}>
-                <ProtectedInstituteRoute component={InstituteStatsAndRevenue} />
-              </Suspense>
-            );
-          }}
-        </Route>
+
         <Route path="/institute/pet-assignments">
           {() => {
             const InstitutePetAssignments = lazy(() => import('./pages/institute-admin/InstitutePetAssignments'));
@@ -1325,30 +1251,7 @@ function AuthenticatedRoutes() {
             );
           }}
         </Route>
-        <Route path="/admin/institutes">
-          {() => {
-            const AdminInstitutes = lazy(() => import('./pages/admin/AdminInstitutes'));
-            return (
-              <Suspense fallback={<div className="p-8 flex justify-center items-center">
-                <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
-              </div>}>
-                <ProtectedAdminRoute component={AdminInstitutes} />
-              </Suspense>
-            );
-          }}
-        </Route>
-        <Route path="/admin/courses">
-          {() => {
-            const AdminCourses = lazy(() => import('./pages/admin/AdminCourses'));
-            return (
-              <Suspense fallback={<div className="p-8 flex justify-center items-center">
-                <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
-              </div>}>
-                <ProtectedAdminRoute component={AdminCourses} />
-              </Suspense>
-            );
-          }}
-        </Route>
+
         <Route path="/admin/reports">
           {() => {
             const AdminReports = lazy(() => import('./pages/admin/AdminReports'));
@@ -1420,19 +1323,7 @@ function AuthenticatedRoutes() {
             );
           }}
         </Route>
-        <Route path="/admin/menu-management">
-          {() => {
-            const AdminMenuManagement = lazy(() => import('./pages/admin/menu-management'));
-            return (
-              <Suspense fallback={<div className="p-8 flex justify-center items-center">
-                <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
-                <span className="ml-2">메뉴 관리 로딩 중...</span>
-              </div>}>
-                <ProtectedAdminRoute component={AdminMenuManagement} />
-              </Suspense>
-            );
-          }}
-        </Route>
+
         <Route path="/admin/facility">
           {() => {
             const AdminFacilityPage = lazy(() => import('./pages/institute/InstituteFacilityPage'));
