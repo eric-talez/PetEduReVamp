@@ -28,7 +28,7 @@ export function registerEducationRoutes(app: Express) {
       
       // 난이도 필터
       if (level && level !== 'all') {
-        whereConditions.push(eq(courses.difficulty, level as string));
+        whereConditions.push(eq(courses.level, level as string));
       }
       
       const whereClause = whereConditions.length > 0 ? and(...whereConditions) : undefined;

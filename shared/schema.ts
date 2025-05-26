@@ -94,12 +94,11 @@ export const courses = pgTable("courses", {
   description: text("description"),
   image: text("image"),
   category: text("category").notNull(),
-  difficulty: text("difficulty").notNull(), // 'beginner', 'intermediate', 'advanced'
+  level: text("level").notNull(), // '초급', '중급', '고급'
   duration: integer("duration"), // 분 단위
   price: integer("price").default(0), // 원 단위
   trainerId: integer("trainer_id").references(() => users.id, { onDelete: 'set null' }),
   instituteId: integer("institute_id").references(() => institutes.id, { onDelete: 'set null' }),
-  isActive: boolean("is_active").default(true),
   isPopular: boolean("is_popular").default(false),
   isCertified: boolean("is_certified").default(false),
   maxParticipants: integer("max_participants").default(10),
