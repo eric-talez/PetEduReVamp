@@ -203,13 +203,31 @@ export default function AdminInstitutes() {
                 <div className="text-center font-medium">{institute.studentsCount}명</div>
                 <div>{getStatusBadge(institute.status)}</div>
                 <div className="flex gap-2">
-                  <Button variant="ghost" size="sm">
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={() => {
+                      console.log('기관 상세보기:', institute.name);
+                    }}
+                  >
                     <Eye className="h-4 w-4" />
                   </Button>
-                  <Button variant="ghost" size="sm">
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={() => {
+                      console.log('기관 편집:', institute.name);
+                    }}
+                  >
                     <Edit className="h-4 w-4" />
                   </Button>
-                  <Button variant="ghost" size="sm">
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={() => {
+                      console.log('기관 삭제:', institute.name);
+                    }}
+                  >
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>

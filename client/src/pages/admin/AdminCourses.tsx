@@ -248,13 +248,31 @@ export default function AdminCourses() {
                 </div>
                 <div>{getStatusBadge(course.status)}</div>
                 <div className="flex gap-2">
-                  <Button variant="ghost" size="sm">
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={() => {
+                      console.log('강좌 상세보기:', course.title);
+                    }}
+                  >
                     <Eye className="h-4 w-4" />
                   </Button>
-                  <Button variant="ghost" size="sm">
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={() => {
+                      console.log('강좌 편집:', course.title);
+                    }}
+                  >
                     <Edit className="h-4 w-4" />
                   </Button>
-                  <Button variant="ghost" size="sm">
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={() => {
+                      console.log('강좌 삭제:', course.title);
+                    }}
+                  >
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>

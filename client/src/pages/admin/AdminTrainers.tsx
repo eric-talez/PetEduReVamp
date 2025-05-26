@@ -219,13 +219,31 @@ export default function AdminTrainers() {
                 <div>{getRatingStars(trainer.rating)}</div>
                 <div>{getStatusBadge(trainer.status)}</div>
                 <div className="flex gap-2">
-                  <Button variant="ghost" size="sm">
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={() => {
+                      console.log('훈련사 상세보기:', trainer.name);
+                    }}
+                  >
                     <Eye className="h-4 w-4" />
                   </Button>
-                  <Button variant="ghost" size="sm">
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={() => {
+                      console.log('훈련사 편집:', trainer.name);
+                    }}
+                  >
                     <Edit className="h-4 w-4" />
                   </Button>
-                  <Button variant="ghost" size="sm">
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={() => {
+                      console.log('훈련사 삭제:', trainer.name);
+                    }}
+                  >
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>

@@ -194,13 +194,31 @@ export default function AdminUsers() {
                 <div className="text-sm">{user.lastLogin}</div>
                 <div className="text-sm">{user.createdAt}</div>
                 <div className="flex gap-2">
-                  <Button variant="ghost" size="sm">
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={() => {
+                      console.log('사용자 상세보기:', user.name);
+                    }}
+                  >
                     <Eye className="h-4 w-4" />
                   </Button>
-                  <Button variant="ghost" size="sm">
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={() => {
+                      console.log('사용자 편집:', user.name);
+                    }}
+                  >
                     <Edit className="h-4 w-4" />
                   </Button>
-                  <Button variant="ghost" size="sm">
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={() => {
+                      console.log('사용자 삭제:', user.name);
+                    }}
+                  >
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
