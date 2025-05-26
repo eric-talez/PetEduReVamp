@@ -37,6 +37,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { queryClient } from '@/lib/queryClient';
+import { PostModal } from './PostModal';
 
 // 컴포넌트를 작은 단위로 분리하여 관리
 const PostCard = ({ post, onPostClick }) => {
@@ -165,7 +166,7 @@ export default function CommunityPage() {
   const [activeTab, setActiveTab] = useState('latest');
   const [activeCategory, setActiveCategory] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
-  const [selectedPost, setSelectedPost] = useState(null);
+  const [selectedPost, setSelectedPost] = useState<any>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [deleteAlertOpen, setDeleteAlertOpen] = useState(false);
 
@@ -271,10 +272,6 @@ export default function CommunityPage() {
     if (selectedPost) {
       deletePostMutation.mutate(selectedPost.id);
     }
-  };
-
-  const handleCreatePost = () => {
-    setLocation('/community/create');
   };
 
   return (
@@ -394,6 +391,16 @@ export default function CommunityPage() {
           )}
         </TabsContent>
       </Tabs>
+
+      {/* 게시글 상세 모달 */}
+      {selectedPost && (
+        <PostModal
+          post={selectedPost}
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          onDelete={handleDeletePost}
+        />
+      )}
     </div>
   );
 }
