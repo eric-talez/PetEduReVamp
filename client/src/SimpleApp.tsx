@@ -266,6 +266,13 @@ function AppLayout({ children }: { children: ReactNode }) {
                   {/* 홈 페이지 */}
                   <Route path="/" component={Home} />
                   
+                  {/* 관리자 메뉴 */}
+                  <Route path="/admin/dashboard" component={AdminHome} />
+                  <Route path="/admin/users" component={AdminUsers} />
+                  <Route path="/admin/institutes" component={AdminInstitutes} />
+                  <Route path="/admin/trainers" component={AdminTrainers} />
+                  <Route path="/admin/courses" component={AdminCourses} />
+                  
                   {/* 대시보드 */}
                   <Route path="/dashboard" component={Dashboard} />
                   <Route path="/trainer/dashboard" component={Dashboard} />
@@ -641,12 +648,7 @@ function AuthenticatedRoutes() {
           }}
         </Route>
         
-        {/* 관리자 메뉴 */}
-        <Route path="/admin/dashboard" component={AdminHome} />
-        <Route path="/admin/users" component={AdminUsers} />
-        <Route path="/admin/institutes" component={AdminInstitutes} />
-        <Route path="/admin/trainers" component={AdminTrainers} />
-        <Route path="/admin/courses" component={AdminCourses} />
+        {/* 메뉴 관리는 따로 처리 */}
         <Route path="/admin/menu-management">
           {() => {
             const AdminMenuManagement = lazy(() => import('./pages/admin/menu-management'));
