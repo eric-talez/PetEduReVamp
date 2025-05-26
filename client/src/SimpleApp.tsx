@@ -355,6 +355,36 @@ function AppLayout({ children }: { children: ReactNode }) {
                       );
                     }}
                   </Route>
+                  <Route path="/trainer/reviews">
+                    {() => {
+                      const TrainerReviews = lazy(() => import('./pages/trainer/reviews'));
+                      return (
+                        <Suspense fallback={<div className="p-8 text-center">리뷰 관리 로딩 중...</div>}>
+                          <TrainerReviews />
+                        </Suspense>
+                      );
+                    }}
+                  </Route>
+                  <Route path="/trainer/earnings">
+                    {() => {
+                      const TrainerEarnings = lazy(() => import('./pages/trainer/earnings'));
+                      return (
+                        <Suspense fallback={<div className="p-8 text-center">수익 관리 로딩 중...</div>}>
+                          <TrainerEarnings />
+                        </Suspense>
+                      );
+                    }}
+                  </Route>
+                  <Route path="/trainer/referrals">
+                    {() => {
+                      const TrainerReferrals = lazy(() => import('./pages/trainer/referralCodeManagement'));
+                      return (
+                        <Suspense fallback={<div className="p-8 text-center">추천 코드 관리 로딩 중...</div>}>
+                          <TrainerReferrals />
+                        </Suspense>
+                      );
+                    }}
+                  </Route>
                   
                   {/* 도움말 */}
                   <Route path="/help/faq" component={FAQPage} />
