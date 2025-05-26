@@ -35,20 +35,12 @@ export default function CreatePostPage() {
   const [isUploading, setIsUploading] = useState(false);
   const [serverAuthChecked, setServerAuthChecked] = useState(false);
 
-  // 서버 인증 상태 확인
+  // 간단한 인증 체크
   React.useEffect(() => {
-    const checkServerAuth = async () => {
-      try {
-        const response = await fetch('/api/auth/me', {
-          credentials: 'include'
-        });
-        
-        if (!response.ok) {
-          throw new Error('인증되지 않은 사용자');
-        }
-        
+    if (!authLoading) {
+      if (isAuthenticated) {
         setServerAuthChecked(true);
-      } catch (error) {
+      } else {
         toast({
           title: '로그인이 필요합니다',
           description: '게시글을 작성하려면 먼저 로그인해주세요.',
@@ -56,17 +48,6 @@ export default function CreatePostPage() {
         });
         setLocation('/auth');
       }
-    };
-
-    if (!authLoading && isAuthenticated) {
-      checkServerAuth();
-    } else if (!authLoading && !isAuthenticated) {
-      toast({
-        title: '로그인이 필요합니다',
-        description: '게시글을 작성하려면 먼저 로그인해주세요.',
-        variant: 'destructive'
-      });
-      setLocation('/auth');
     }
   }, [isAuthenticated, authLoading, toast, setLocation]);
 
@@ -185,7 +166,7 @@ export default function CreatePostPage() {
     );
   }
 
-  if (!user) return null; // 인증 확인 후 리다이렉트되므로 필요 없지만 타입 안전성을 위해 추가
+  if (!isAuthenticated || !serverAuthChecked) return null; // 인증 확인 후 리다이렉트되므로 필요 없지만 타입 안전성을 위해 추가
 
   return (
     <div className="container py-6 max-w-4xl">
