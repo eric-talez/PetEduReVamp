@@ -665,6 +665,36 @@ function AuthenticatedRoutes() {
             );
           }}
         </Route>
+        <Route path="/admin/institutes">
+          {() => {
+            const AdminInstitutes = lazy(() => import('./pages/admin/AdminInstitutes'));
+            return (
+              <Suspense fallback={<div className="p-8 text-center">기관 관리 로딩 중...</div>}>
+                <AdminInstitutes />
+              </Suspense>
+            );
+          }}
+        </Route>
+        <Route path="/admin/trainers">
+          {() => {
+            const AdminTrainers = lazy(() => import('./pages/admin/AdminTrainers'));
+            return (
+              <Suspense fallback={<div className="p-8 text-center">훈련사 관리 로딩 중...</div>}>
+                <AdminTrainers />
+              </Suspense>
+            );
+          }}
+        </Route>
+        <Route path="/admin/courses">
+          {() => {
+            const AdminCourses = lazy(() => import('./pages/admin/AdminCourses'));
+            return (
+              <Suspense fallback={<div className="p-8 text-center">강좌 관리 로딩 중...</div>}>
+                <AdminCourses />
+              </Suspense>
+            );
+          }}
+        </Route>
         
         {/* 기관 관리자 메뉴 */}
         <Route path="/institute/trainers">
