@@ -1,0 +1,97 @@
+좋습니다! 요청하신 **대소문자 구분 없이 중복된 Route path를 감지**하는 버전으로 스크립트를 개선해드렸습니다.
+
+---
+
+## ✅ `detect-duplicate-routes.js` (대소문자 포함 중복 감지)
+
+```js
+// detect-duplicate-routes.js
+const fs = require('fs');
+const path = require('path');
+
+const ROUTE_PATTERN = /<Route[^>]+path=["'`]([^"'`]+)["'`]/g;
+const routeMap = new Map();
+
+function scanDir(dir) {
+  const files = fs.readdirSync(dir);
+
+  for (const file of files) {
+    const fullPath = path.join(dir, file);
+
+    if (fs.statSync(fullPath).isDirectory()) {
+      scanDir(fullPath); // recursive
+    } else if (file.endsWith('.tsx') || file.endsWith('.jsx')) {
+      const content = fs.readFileSync(fullPath, 'utf-8');
+      let match;
+
+      while ((match = ROUTE_PATTERN.exec(content)) !== null) {
+        const routePath = match[1].toLowerCase(); // ⬅️ 대소문자 무시
+        const existing = routeMap.get(routePath) || [];
+        routeMap.set(routePath, [...existing, fullPath]);
+      }
+    }
+  }
+}
+
+// 🔍 실행
+console.log('📦 중복 라우트 탐색 중 (대소문자 무시)...');
+scanDir('./src'); // React app 기준
+
+let hasDuplicate = false;
+
+console.log('\n🔎 중복된 Route path 목록 (case-insensitive):');
+for (const [pathValue, files] of routeMap.entries()) {
+  if (files.length > 1) {
+    hasDuplicate = true;
+    console.log(`\n❗ '${pathValue}' 경로가 중복됩니다 (${files.length}회):`);
+    files.forEach((f, i) => console.log(`  [${i + 1}] ${f}`));
+  }
+}
+
+if (!hasDuplicate) {
+  console.log('✅ 중복된 라우트 path 없음!');
+}
+```
+
+---
+
+## 🎯 핵심 변경 사항
+
+* `match[1].toLowerCase()` → **모든 라우트 경로를 소문자로 통일**해서 비교
+* 따라서 `/Login`, `/login`, `/LOGIN` → **동일한 것으로 간주됨**
+
+---
+
+## 🧪 실행 예시
+
+```bash
+📦 중복 라우트 탐색 중 (대소문자 무시)...
+
+🔎 중복된 Route path 목록 (case-insensitive):
+
+❗ '/login' 경로가 중복됩니다 (2회):
+  [1] src/pages/Login.tsx
+  [2] src/pages/login.jsx
+```
+
+---
+
+## ✅ 사용 방법 요약
+
+1. `detect-duplicate-routes.js` 파일 저장
+2. `npm run check:routes` 스크립트 등록 또는
+3. 아래 명령어 실행:
+
+```bash
+node detect-duplicate-routes.js
+```
+
+---
+
+필요하시면:
+
+* `useRoutes()` 패턴까지 포함하는 확장 버전
+* 경로 외에 컴포넌트 이름 중복까지 탐지하는 버전
+* 자동으로 리포트 `.txt` 생성
+
+👉 말씀 주시면 바로 제공해드리겠습니다!
