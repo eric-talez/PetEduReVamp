@@ -470,7 +470,7 @@ export class MemStorage implements IStorage {
       id: this.currentId++,
       username: "testuser3",
       email: "testuser3@example.com",
-      password: "5f96f5f3ca56ed90cab2042ee5310134e06ae1e6d96fa335b499df5e7d09ab4115ccab6d86681cc9c2ddeb84c42a0b3f7406eb8873ad1b121b62637cb7cc82ca.56eb6567ec104a2b2e48d69337f45861", // test123 암호화
+      password: "test123", // 테스트용 평문 비밀번호
       name: "반려인",
       role: "pet-owner" as UserRole,
       avatar: null,
