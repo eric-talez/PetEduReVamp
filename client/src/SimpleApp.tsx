@@ -37,6 +37,7 @@ import EventCalendarPage from "./pages/events/calendar";
 import AnalyticsPage from "./pages/analytics";
 import EducationSchedulePage from "./pages/education-schedule";
 import TrainingPerformancePage from "./pages/training-performance";
+import AchievementsPage from "./pages/achievements";
 
 // 레이아웃 및 컴포넌트 임포트
 import { TopBar } from "@/components/TopBar";
@@ -1295,6 +1296,22 @@ function AuthenticatedRoutes() {
                 </div>
               }>
                 <TrainingPerformancePage />
+              </Suspense>
+            );
+          }}
+        </Route>
+
+        {/* 배지 및 업적 페이지 */}
+        <Route path="/achievements">
+          {() => {
+            console.log("배지 및 업적 페이지 접근");
+            return (
+              <Suspense fallback={
+                <div className="flex justify-center items-center h-screen">
+                  <DogLoading message="배지 및 업적 로딩 중..." size="medium" showTips={true} />
+                </div>
+              }>
+                <AchievementsPage />
               </Suspense>
             );
           }}
