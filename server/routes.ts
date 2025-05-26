@@ -43,8 +43,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
   registerMenuRoutes(app);
   registerAiRoutes(app);
   
-  // 테스트용 게시글 저장소 (메모리)
-  const testPosts: any[] = [];
+  // 테스트용 게시글 저장소 (메모리) - 샘플 데이터 포함
+  const testPosts: any[] = [
+    {
+      id: Date.now() - 3600000,
+      title: "반려견 기본 훈련 팁",
+      content: "반려견과 함께하는 기본적인 훈련 방법들을 공유합니다. 앉기, 기다리기, 손 등의 기본 명령어를 가르치는 효과적인 방법을 알아보세요.",
+      tag: "훈련팁",
+      authorId: 3,
+      image: null,
+      likes: 5,
+      comments: 3,
+      createdAt: new Date(Date.now() - 3600000),
+      updatedAt: new Date(Date.now() - 3600000),
+      author: {
+        id: 3,
+        username: 'testuser3',
+        name: '반려인'
+      }
+    }
+  ];
 
   // API 라우팅 우선순위 보장을 위한 명시적 설정
   app.use('/api/community', (req, res, next) => {
