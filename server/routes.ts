@@ -43,6 +43,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   registerMenuRoutes(app);
   registerAiRoutes(app);
   
+  // 테스트용 게시글 저장소 (메모리)
+  const testPosts: any[] = [];
+
   // 테스트용 게시글 작성 API (인증 없음)
   app.post('/api/test/posts', async (req, res) => {
     // CORS 헤더 명시적 설정
@@ -85,11 +88,57 @@ export async function registerRoutes(app: Express): Promise<Server> {
       };
       
       console.log('응답 데이터:', responseData);
+      
+      // 메모리에 게시글 저장
+      testPosts.unshift(responseData.post);
+      
       res.status(201).json(responseData);
     } catch (error: any) {
       console.error('게시글 작성 오류:', error);
       res.status(500).json({ 
         message: '게시글 작성 중 오류가 발생했습니다.',
+        error: error.message 
+      });
+    }
+  });
+
+  // 테스트용 게시글 목록 API (인증 없음)
+  app.get('/api/test/posts', async (req, res) => {
+    // CORS 헤더 명시적 설정
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Methods', 'GET, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Content-Type');
+    res.header('Content-Type', 'application/json');
+    
+    console.log('=== 테스트 게시글 목록 API 호출됨 ===');
+    console.log('저장된 게시글 수:', testPosts.length);
+    
+    try {
+      // 게시글 목록을 작성자 정보와 함께 반환
+      const postsWithAuthor = testPosts.map(post => ({
+        ...post,
+        author: {
+          id: 1,
+          username: 'testuser',
+          name: '테스트 사용자'
+        }
+      }));
+      
+      const responseData = {
+        posts: postsWithAuthor,
+        pagination: {
+          total: testPosts.length.toString(),
+          page: "1",
+          limit: "20"
+        }
+      };
+      
+      console.log('응답 데이터:', responseData);
+      res.status(200).json(responseData);
+    } catch (error: any) {
+      console.error('게시글 목록 조회 오류:', error);
+      res.status(500).json({ 
+        message: '게시글 목록 조회 중 오류가 발생했습니다.',
         error: error.message 
       });
     }
