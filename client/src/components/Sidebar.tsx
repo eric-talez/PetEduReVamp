@@ -418,6 +418,7 @@ export function Sidebar({
       '/my-pets': '반려견 관리',
       '/notebook': '알림장',
       '/calendar': '교육 일정',
+      '/education-schedule': '교육 일정',
       '/alerts': '알림',
       '/notifications': '알림'  // /notifications를 요청하면 /alerts로 처리
       // '/shop' 항목은 제거 - 사이드바에서 직접 새 창으로 열기 처리

@@ -1268,6 +1268,22 @@ function AuthenticatedRoutes() {
           }}
         </Route>
 
+        {/* 캘린더 경로를 교육일정으로 리다이렉트 */}
+        <Route path="/calendar">
+          {() => {
+            console.log("캘린더 페이지 접근 - 교육일정으로 리다이렉트");
+            return (
+              <Suspense fallback={
+                <div className="flex justify-center items-center h-screen">
+                  <DogLoading message="교육 일정 로딩 중..." size="medium" showTips={true} />
+                </div>
+              }>
+                <EducationSchedulePage />
+              </Suspense>
+            );
+          }}
+        </Route>
+
         {/* 훈련 성과 페이지 */}
         <Route path="/training-performance">
           {() => {
