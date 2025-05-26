@@ -272,18 +272,7 @@ export const DEFAULT_MENU_ITEMS: MenuItem[] = [
     isActive: true,
     isPublic: false
   },
-  {
-    id: 'training-performance',
-    title: '훈련 성과',
-    path: '/training-performance',
-    icon: 'TrendingUp',
-    type: 'internal',
-    category: 'myLearning',
-    roles: ['pet-owner', 'trainer', 'admin'],
-    orderIndex: 6,
-    isActive: true,
-    isPublic: false
-  },
+
   {
     id: 'analytics',
     title: '분석 및 보고서',
