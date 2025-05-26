@@ -110,10 +110,102 @@ export default function AdminInstitutes() {
           <h1 className="text-3xl font-bold">기관 관리</h1>
           <p className="text-muted-foreground">등록된 훈련 기관들을 관리합니다</p>
         </div>
-        <Button>
-          <Plus className="h-4 w-4 mr-2" />
-          새 기관 등록
-        </Button>
+        <Dialog open={isAddInstituteOpen} onOpenChange={setIsAddInstituteOpen}>
+          <DialogTrigger asChild>
+            <Button>
+              <Plus className="h-4 w-4 mr-2" />
+              새 기관 등록
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-[500px]">
+            <DialogHeader>
+              <DialogTitle>새 기관 등록</DialogTitle>
+              <DialogDescription>
+                새로운 훈련 기관을 플랫폼에 등록합니다.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="name" className="text-right">
+                  기관명 *
+                </Label>
+                <Input
+                  id="name"
+                  value={newInstitute.name}
+                  onChange={(e) => setNewInstitute({ ...newInstitute, name: e.target.value })}
+                  className="col-span-3"
+                  placeholder="서울반려견아카데미"
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="code" className="text-right">
+                  기관코드 *
+                </Label>
+                <Input
+                  id="code"
+                  value={newInstitute.code}
+                  onChange={(e) => setNewInstitute({ ...newInstitute, code: e.target.value })}
+                  className="col-span-3"
+                  placeholder="INST001"
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="director" className="text-right">
+                  원장명 *
+                </Label>
+                <Input
+                  id="director"
+                  value={newInstitute.director}
+                  onChange={(e) => setNewInstitute({ ...newInstitute, director: e.target.value })}
+                  className="col-span-3"
+                  placeholder="김원장"
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="email" className="text-right">
+                  이메일 *
+                </Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={newInstitute.email}
+                  onChange={(e) => setNewInstitute({ ...newInstitute, email: e.target.value })}
+                  className="col-span-3"
+                  placeholder="admin@institute.com"
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="phone" className="text-right">
+                  연락처
+                </Label>
+                <Input
+                  id="phone"
+                  value={newInstitute.phone}
+                  onChange={(e) => setNewInstitute({ ...newInstitute, phone: e.target.value })}
+                  className="col-span-3"
+                  placeholder="02-1234-5678"
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="location" className="text-right">
+                  주소
+                </Label>
+                <Input
+                  id="location"
+                  value={newInstitute.location}
+                  onChange={(e) => setNewInstitute({ ...newInstitute, location: e.target.value })}
+                  className="col-span-3"
+                  placeholder="서울시 강남구"
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button type="submit" onClick={handleAddInstitute}>
+                기관 등록
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
 
       {/* 통계 카드 */}
