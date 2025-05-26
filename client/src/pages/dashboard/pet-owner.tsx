@@ -403,6 +403,28 @@ export default function PetOwnerDashboard({ onAction }: PetOwnerDashboardProps) 
           </div>
         </Card>
         
+        {/* 반려동물 건강 관리 카드 */}
+        <Card className="p-6 border border-gray-100 dark:border-gray-700">
+          <div className="flex items-center">
+            <div className="flex-shrink-0 h-12 w-12 bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 rounded-full flex items-center justify-center">
+              <PawPrint className="h-6 w-6" />
+            </div>
+            <div className="ml-4">
+              <h2 className="text-sm font-medium text-gray-500 dark:text-gray-400">반려동물 건강</h2>
+              <p className="text-2xl font-semibold text-gray-800 dark:text-white">양호</p>
+            </div>
+          </div>
+          <div className="mt-4">
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-gray-600 dark:text-gray-300">다음 예방접종</span>
+              <span className="text-sm font-medium text-green-600 dark:text-green-400">30일 후</span>
+            </div>
+            <div className="flex items-center justify-between mt-2">
+              <span className="text-sm text-gray-600 dark:text-gray-300">건강검진</span>
+              <span className="text-sm font-medium text-blue-600 dark:text-blue-400">6개월 후</span>
+            </div>
+          </div>
+        </Card>
 
         <Card className="p-6 border border-gray-100 dark:border-gray-700">
           <div className="flex items-center">
@@ -424,6 +446,29 @@ export default function PetOwnerDashboard({ onAction }: PetOwnerDashboardProps) 
                 <Clock className="h-3 w-3 text-purple-500 dark:text-purple-400 mr-1" />
                 <span>내일 14:00 - 사회화 훈련 세션</span>
               </div>
+            </div>
+          </div>
+        </Card>
+
+        {/* 훈련 성과 카드 */}
+        <Card className="p-6 border border-gray-100 dark:border-gray-700">
+          <div className="flex items-center">
+            <div className="flex-shrink-0 h-12 w-12 bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 rounded-full flex items-center justify-center">
+              <Star className="h-6 w-6" />
+            </div>
+            <div className="ml-4">
+              <h2 className="text-sm font-medium text-gray-500 dark:text-gray-400">이번 주 훈련 성과</h2>
+              <p className="text-2xl font-semibold text-gray-800 dark:text-white">85%</p>
+            </div>
+          </div>
+          <div className="mt-4">
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-gray-600 dark:text-gray-300">완료한 훈련</span>
+              <span className="text-sm font-medium text-orange-600 dark:text-orange-400">4/5개</span>
+            </div>
+            <div className="flex items-center justify-between mt-2">
+              <span className="text-sm text-gray-600 dark:text-gray-300">연속 훈련 일수</span>
+              <span className="text-sm font-medium text-green-600 dark:text-green-400">7일</span>
             </div>
           </div>
         </Card>
