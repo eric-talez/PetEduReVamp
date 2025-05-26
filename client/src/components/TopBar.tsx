@@ -385,32 +385,49 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
               )}
               
               {/* 검색 결과 드롭다운 */}
-              {searchQuery.length > 0 && searchResults.length > 0 && (
+              {searchQuery.length > 0 && !isSearching && (
                 <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg z-50 max-h-64 overflow-y-auto">
-                  <div className="p-2">
-                    {searchResults.map(result => (
-                      <Link
-                        key={`${result.type}-${result.id}`}
-                        href={result.link}
-                        className="block p-2 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-md"
-                        onClick={() => setSearchQuery('')}
-                      >
-                        <div className="flex items-center">
-                          {result.type === 'course' && <Calendar className="h-4 w-4 mr-2 text-blue-500" />}
-                          {result.type === 'trainer' && <MessageSquare className="h-4 w-4 mr-2 text-green-500" />}
-                          {result.type === 'institute' && <DollarSign className="h-4 w-4 mr-2 text-amber-500" />}
-                          <div>
-                            <div className="font-medium">{result.title}</div>
-                            <div className="text-xs text-gray-500 dark:text-gray-400">
-                              {result.type === 'course' && result.trainer && `훈련사: ${result.trainer}`}
-                              {result.type === 'trainer' && result.specialty && `${result.specialty}`}
-                              {result.type === 'institute' && result.location && `${result.location}`}
+                  {searchResults.length > 0 ? (
+                    <div className="p-2">
+                      {searchResults.map(result => (
+                        <Link
+                          key={`${result.type}-${result.id}`}
+                          href={result.link}
+                          className="block p-2 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-md"
+                          onClick={() => setSearchQuery('')}
+                        >
+                          <div className="flex items-center">
+                            {result.type === 'course' && <Calendar className="h-4 w-4 mr-2 text-blue-500" />}
+                            {result.type === 'trainer' && <MessageSquare className="h-4 w-4 mr-2 text-green-500" />}
+                            {result.type === 'institute' && <DollarSign className="h-4 w-4 mr-2 text-amber-500" />}
+                            <div>
+                              <div className="font-medium">{result.title}</div>
+                              <div className="text-xs text-gray-500 dark:text-gray-400">
+                                {result.type === 'course' && result.trainer && `훈련사: ${result.trainer}`}
+                                {result.type === 'trainer' && result.specialty && `${result.specialty}`}
+                                {result.type === 'institute' && result.location && `${result.location}`}
+                              </div>
                             </div>
                           </div>
+                        </Link>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="p-4 text-center">
+                      <div className="flex flex-col items-center space-y-2">
+                        <Search className="h-8 w-8 text-gray-400" />
+                        <div className="text-sm text-gray-500 dark:text-gray-400">
+                          <p className="font-medium">'{searchQuery}' 검색 결과가 없습니다</p>
+                          <p className="text-xs mt-1">다른 키워드로 다시 검색해보세요</p>
                         </div>
-                      </Link>
-                    ))}
-                  </div>
+                        <div className="text-xs text-gray-400 space-y-1">
+                          <p>💡 검색 팁:</p>
+                          <p>• 강의명, 훈련사명, 기관명으로 검색</p>
+                          <p>• 짧은 키워드로 검색해보세요</p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
