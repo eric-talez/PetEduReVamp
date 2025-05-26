@@ -312,6 +312,18 @@ function AppLayout({ children }: { children: ReactNode }) {
                     }}
                   </Route>
                   
+                  {/* AI 챗봇 */}
+                  <Route path="/chatbot">
+                    {() => {
+                      const ChatbotPage = lazy(() => import('./pages/chatbot'));
+                      return (
+                        <Suspense fallback={<div className="p-8 text-center">AI 챗봇 로딩 중...</div>}>
+                          <ChatbotPage />
+                        </Suspense>
+                      );
+                    }}
+                  </Route>
+                  
                   {/* 도움말 */}
                   <Route path="/help/faq" component={FAQPage} />
                   
