@@ -16,17 +16,6 @@ export default function Courses(props?: CoursesPageProps) {
   const [filter, setFilter] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
 
-  // 검색 기능
-  const handleSearch = () => {
-    console.log('검색 실행:', searchTerm);
-    // 실제 검색 로직은 여기에 구현
-  };
-
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(e.target.value);
-    console.log('검색어 변경:', e.target.value);
-  };
-
   const courses = [
     {
       id: 1,
@@ -153,9 +142,28 @@ export default function Courses(props?: CoursesPageProps) {
     }
   ];
 
-  const filteredCourses = filter === "all" 
-    ? courses 
-    : courses.filter(course => course.level === filter || course.category === filter);
+  // 검색 기능
+  const handleSearch = () => {
+    console.log('검색 실행:', searchTerm);
+  };
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+    console.log('검색어 변경:', e.target.value);
+  };
+
+  // 실시간 검색 및 필터링
+  const filteredCourses = courses.filter(course => {
+    const matchesSearch = !searchTerm || 
+      course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      course.description.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesFilter = filter === 'all' || 
+      course.level === filter ||
+      course.category === filter;
+    
+    return matchesSearch && matchesFilter;
+  });
 
   return (
     <div className="py-8 px-4 sm:px-6 lg:px-8">
