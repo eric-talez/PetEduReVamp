@@ -89,13 +89,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
+      // 현재 로그인한 사용자 정보 가져오기
+      const currentUser = req.user || { id: 3, username: 'testuser3', name: '반려인' };
+      
       const responseData = {
         post: {
           id: Date.now(),
           title,
           content,
           tag: tag || '일반',
-          authorId: 1,
+          authorId: currentUser.id,
           image: null,
           likes: 0,
           comments: 0,
@@ -103,9 +106,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           updatedAt: new Date()
         },
         author: {
-          id: 1,
-          username: 'testuser',
-          name: '테스트 사용자'
+          id: currentUser.id,
+          username: currentUser.username,
+          name: currentUser.name
         }
       };
       
