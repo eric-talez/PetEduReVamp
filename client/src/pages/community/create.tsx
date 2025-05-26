@@ -93,8 +93,8 @@ export default function CreatePostPage() {
         title: '게시글이 작성되었습니다',
         description: '커뮤니티 페이지로 이동합니다.',
       });
-      // 캐시 무효화
-      queryClient.invalidateQueries({ queryKey: ['/api/social/posts'] });
+      // 캐시 무효화 - 올바른 API 키 사용
+      queryClient.invalidateQueries({ queryKey: ['/api/community/posts'] });
       // 커뮤니티 메인 페이지로 이동
       setLocation('/community');
     },
