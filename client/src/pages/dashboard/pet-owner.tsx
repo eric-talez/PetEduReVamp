@@ -583,14 +583,13 @@ export default function PetOwnerDashboard({ onAction }: PetOwnerDashboardProps) 
                   </div>
                   
                   <div>
-                    <Badge 
-                      variant={
-                        post.tag === "산책팁" ? "info" :
-                        post.tag === "훈련팁" ? "success" : "purple"
-                      } 
-                    >
+                    <span className={`text-xs px-2 py-1 rounded-full ${
+                        post.tag === "산책팁" ? "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300" :
+                        post.tag === "훈련팁" ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300" : 
+                        "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300"
+                      }`}>
                       {post.tag}
-                    </Badge>
+                    </span>
                   </div>
                 </div>
               </div>
