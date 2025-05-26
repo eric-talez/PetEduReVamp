@@ -419,6 +419,14 @@ function AuthenticatedRoutes() {
         <Route path="/trainers" component={Trainers} />
         <Route path="/institutes" component={Institutes} />
         <Route path="/community" component={Community} />
+        <Route path="/community/create" component={() => {
+          const CreatePost = lazy(() => import('./pages/community/create'));
+          return (
+            <Suspense fallback={<div className="p-8 text-center">게시글 작성 페이지 로딩 중...</div>}>
+              <CreatePost />
+            </Suspense>
+          );
+        }} />
         <Route path="/community/post/:id" component={CommunityPostDetail} />
         <Route path="/events" component={EventsPage} />
         <Route path="/events/calendar" component={EventCalendarPage} />
