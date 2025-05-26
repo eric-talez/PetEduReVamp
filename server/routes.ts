@@ -11,6 +11,7 @@ import { registerLocationRoutes } from "./location/routes";
 import { registerVideoCallRoutes } from "./videocall/routes";
 import { registerMenuRoutes } from "./menu/routes";
 import { registerAiRoutes } from "./ai/routes";
+import { registerAnalyticsRoutes } from "./routes/analytics";
 import { Event, EventLocation } from "@shared/schema";
 import { WebSocketServer } from 'ws';
 import { MessagingService } from './messaging/service';
