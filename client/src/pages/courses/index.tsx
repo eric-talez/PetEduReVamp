@@ -14,6 +14,18 @@ interface CoursesPageProps {
 export default function Courses(props?: CoursesPageProps) {
   const { mode = 'view', userType } = props || {};
   const [filter, setFilter] = useState("all");
+  const [searchTerm, setSearchTerm] = useState("");
+
+  // 검색 기능
+  const handleSearch = () => {
+    console.log('검색 실행:', searchTerm);
+    // 실제 검색 로직은 여기에 구현
+  };
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+    console.log('검색어 변경:', e.target.value);
+  };
 
   const courses = [
     {
@@ -173,9 +185,11 @@ export default function Courses(props?: CoursesPageProps) {
             <input 
               type="text" 
               placeholder="원하는 강의를 검색하세요" 
+              value={searchTerm}
+              onChange={handleSearchChange}
               className="flex-1 py-2 px-2 bg-transparent focus:outline-none text-gray-800 dark:text-gray-200"
             />
-            <Button className="ml-2">
+            <Button className="ml-2" onClick={handleSearch}>
               검색
             </Button>
           </div>
