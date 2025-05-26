@@ -10,7 +10,6 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { useAuth } from '@/hooks/useAuth';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 import { queryClient } from '@/lib/queryClient';
 
@@ -31,14 +30,7 @@ type PostFormValues = z.infer<typeof postFormSchema>;
 export default function CreatePostPage() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
-  const { isAuthenticated, isLoading: authLoading } = useAuth();
   const [isUploading, setIsUploading] = useState(false);
-  const [serverAuthChecked, setServerAuthChecked] = useState(false);
-
-  // 인증 체크 제거 - 서버에서 처리
-  React.useEffect(() => {
-    setServerAuthChecked(true);
-  }, []);
 
   // 폼 설정
   const form = useForm<PostFormValues>({
