@@ -147,15 +147,7 @@ export default function CreatePostPage() {
     }
   };
 
-  if (authLoading) {
-    return (
-      <div className="flex justify-center items-center min-h-[50vh]">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
-  }
-
-  // 인증 체크 조건 제거하고 바로 렌더링
+  // 로딩 및 인증 체크 완전 제거하고 바로 렌더링
 
   return (
     <div className="container py-6 max-w-4xl">
