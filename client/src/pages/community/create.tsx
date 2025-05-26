@@ -59,13 +59,8 @@ export default function CreatePostPage() {
   // 게시글 작성 API 요청
   const createPostMutation = useMutation({
     mutationFn: async (data: PostFormValues) => {
-      // 백엔드 서버는 포트 5000에서 실행됨
-      const backendUrl = window.location.origin.includes('replit') 
-        ? window.location.origin.replace(':5173', '') 
-        : 'http://localhost:5000';
-      
-      console.log('Backend URL:', backendUrl);
-      const response = await fetch(`${backendUrl}/api/test/posts`, {
+      // 직접 API 경로 사용 (같은 서버에서 실행됨)
+      const response = await fetch('/api/test/posts', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

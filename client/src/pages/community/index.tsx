@@ -164,12 +164,8 @@ export default function CommunityPage() {
         params.append('sort', 'popular');
       }
 
-      // 테스트 API 사용
-      const backendUrl = window.location.origin.includes('replit') 
-        ? window.location.origin.replace(':5173', '') 
-        : 'http://localhost:5000';
-      
-      const response = await fetch(`${backendUrl}/api/test/posts?${params.toString()}`);
+      // 직접 API 경로 사용 (같은 서버에서 실행됨)
+      const response = await fetch(`/api/test/posts?${params.toString()}`);
       if (!response.ok) {
         throw new Error('게시글을 불러오는데 실패했습니다.');
       }
