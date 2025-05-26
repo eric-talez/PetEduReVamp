@@ -12,6 +12,7 @@ import { registerVideoCallRoutes } from "./videocall/routes";
 import { registerMenuRoutes } from "./menu/routes";
 import { registerAiRoutes } from "./ai/routes";
 import { registerAnalyticsRoutes } from "./routes/analytics";
+import { registerEducationRoutes } from "./routes/education";
 import { Event, EventLocation } from "@shared/schema";
 import { WebSocketServer } from 'ws';
 import { MessagingService } from './messaging/service';
@@ -1669,6 +1670,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // 알림 라우트 등록
   registerNotificationRoutes(app, notificationService);
+  
+  // 분석 라우트 등록
+  registerAnalyticsRoutes(app);
 
   console.log('[server] WebSocket server initialized at /ws');
   
