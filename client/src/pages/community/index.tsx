@@ -61,11 +61,14 @@ const PostCard = ({ post, onPostClick }) => {
     e.stopPropagation();
     if (confirm('정말 삭제하시겠습니까?')) {
       try {
+        console.log('게시글 삭제 시도:', post.id);
         const response = await fetch(`/api/community/posts/${post.id}`, {
           method: 'DELETE'
         });
         if (response.ok) {
           window.location.reload(); // 간단한 새로고침
+        } else {
+          console.error('삭제 실패:', response.status);
         }
       } catch (error) {
         console.error('삭제 오류:', error);

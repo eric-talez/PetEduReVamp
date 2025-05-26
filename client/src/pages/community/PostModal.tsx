@@ -125,11 +125,36 @@ export function PostModal({ post, isOpen, onClose, onDelete }: PostModalProps) {
   });
 
   const onSubmitComment = (data: CommentFormData) => {
+    console.log('댓글 제출:', data);
+    console.log('게시글 ID:', post.id);
+    console.log('사용자:', user);
     createCommentMutation.mutate(data);
   };
 
-  const handleDelete = () => {
-    onDelete(post.id);
+  const handleDelete = async () => {
+    try {
+      console.log('삭제 요청:', post.id);
+      const response = await fetch(`/api/community/posts/${post.id}`, {
+        method: 'DELETE'
+      });
+      
+      if (response.ok) {
+        toast({
+          title: "성공",
+          description: "게시글이 삭제되었습니다.",
+        });
+        queryClient.invalidateQueries({ queryKey: ['/api/community/posts'] });
+        onClose(); // 모달 닫기
+      } else {
+        throw new Error('삭제에 실패했습니다.');
+      }
+    } catch (error: any) {
+      toast({
+        title: "삭제 실패",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
     setDeleteAlertOpen(false);
   };
 
