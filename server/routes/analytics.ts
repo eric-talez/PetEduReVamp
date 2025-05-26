@@ -236,3 +236,5 @@ export function registerAnalyticsRoutes(app: Express) {
     }
   });
 }
+
+export default registerAnalyticsRoutes;

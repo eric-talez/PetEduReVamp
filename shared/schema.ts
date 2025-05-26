@@ -260,6 +260,39 @@ export const settlementReports = pgTable("settlement_reports", {
   paidAt: timestamp("paid_at"),
 });
 
+// 소셜 기능 테이블들
+export const posts = pgTable("posts", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id, { onDelete: 'cascade' }).notNull(),
+  content: text("content").notNull(),
+  images: json("images").$type<string[]>(),
+  likes: integer("likes").default(0),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export const comments = pgTable("comments", {
+  id: serial("id").primaryKey(),
+  postId: integer("post_id").references(() => posts.id, { onDelete: 'cascade' }).notNull(),
+  userId: integer("user_id").references(() => users.id, { onDelete: 'cascade' }).notNull(),
+  content: text("content").notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const likes = pgTable("likes", {
+  id: serial("id").primaryKey(),
+  postId: integer("post_id").references(() => posts.id, { onDelete: 'cascade' }).notNull(),
+  userId: integer("user_id").references(() => users.id, { onDelete: 'cascade' }).notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const follows = pgTable("follows", {
+  id: serial("id").primaryKey(),
+  followerId: integer("follower_id").references(() => users.id, { onDelete: 'cascade' }).notNull(),
+  followingId: integer("following_id").references(() => users.id, { onDelete: 'cascade' }).notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
 // Type exports
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
@@ -357,4 +390,20 @@ export const createCartItemSchema = createInsertSchema(cartItems).omit({
   userId: true,
   createdAt: true,
   updatedAt: true
+});
+
+// 소셜 스키마들
+export const createPostSchema = createInsertSchema(posts).omit({
+  id: true,
+  userId: true,
+  createdAt: true,
+  updatedAt: true
+});
+
+export const insertPostSchema = createPostSchema;
+
+export const createCommentSchema = createInsertSchema(comments).omit({
+  id: true,
+  userId: true,
+  createdAt: true
 });
