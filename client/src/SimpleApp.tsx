@@ -1309,6 +1309,19 @@ function AuthenticatedRoutes() {
             );
           }}
         </Route>
+        <Route path="/admin/menu-management">
+          {() => {
+            const AdminMenuManagement = lazy(() => import('./pages/admin/menu-management'));
+            return (
+              <Suspense fallback={<div className="p-8 flex justify-center items-center">
+                <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
+                <span className="ml-2">메뉴 관리 로딩 중...</span>
+              </div>}>
+                <ProtectedAdminRoute component={AdminMenuManagement} />
+              </Suspense>
+            );
+          }}
+        </Route>
         <Route path="/admin/facility">
           {() => {
             const AdminFacilityPage = lazy(() => import('./pages/institute/InstituteFacilityPage'));
