@@ -3,12 +3,73 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar } from "@/components/ui/avatar";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { 
-  BarChart2, BookOpen, Calendar, Clock, Filter, Search, Star 
+  BarChart2, BookOpen, Calendar, Clock, Filter, Search, Star, Plus, MapPin 
 } from "lucide-react";
 
 export default function MyCourses() {
   const [filter, setFilter] = useState("inProgress");
+  const [isCourseSearchOpen, setIsCourseSearchOpen] = useState(false);
+  const [searchCriteria, setSearchCriteria] = useState({
+    keyword: "",
+    category: "all",
+    level: "all",
+    location: ""
+  });
+
+  // 이용 가능한 강좌 목록 (샘플 데이터)
+  const availableCourses = [
+    {
+      id: 101,
+      title: "고급 어질리티 마스터 클래스",
+      description: "전문 어질리티 코스를 통한 고난도 훈련",
+      trainer: "김어질 트레이너",
+      institute: "서울반려견아카데미",
+      category: "어질리티",
+      level: "고급",
+      price: 450000,
+      duration: "12주",
+      location: "서울 강남구"
+    },
+    {
+      id: 102,
+      title: "반려견 심리 상담 과정",
+      description: "반려견의 심리를 이해하고 소통하는 방법",
+      trainer: "박심리 트레이너",
+      institute: "부산펫아카데미",
+      category: "행동교정",
+      level: "중급",
+      price: 380000,
+      duration: "10주",
+      location: "부산 해운대구"
+    },
+    {
+      id: 103,
+      title: "퍼피 사회화 집중 과정",
+      description: "어린 강아지를 위한 전문 사회화 훈련",
+      trainer: "이퍼피 트레이너",
+      institute: "대구동물교육원",
+      category: "사회화",
+      level: "초급",
+      price: 280000,
+      duration: "6주",
+      location: "대구 중구"
+    }
+  ];
+
+  // 강좌 등록 함수
+  const handleCourseEnroll = (courseId: number) => {
+    const course = availableCourses.find(c => c.id === courseId);
+    if (course) {
+      console.log("강좌 등록:", course);
+      alert(`${course.title} 강좌에 등록 신청되었습니다.`);
+      setIsCourseSearchOpen(false);
+    }
+  };
   
   const courses = [
     {
@@ -239,9 +300,126 @@ export default function MyCourses() {
                  filter === "completed" ? "아직 완료한 강의가 없습니다." : 
                  "새로운 강의를 찾아 등록해보세요."}
               </p>
-              <Button>
-                강의 찾아보기
-              </Button>
+              <Dialog open={isCourseSearchOpen} onOpenChange={setIsCourseSearchOpen}>
+                <DialogTrigger asChild>
+                  <Button>
+                    <Plus className="h-4 w-4 mr-2" />
+                    강의 찾아보기
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[700px] max-h-[80vh] overflow-y-auto">
+                  <DialogHeader>
+                    <DialogTitle>새 강좌 찾기</DialogTitle>
+                    <DialogDescription>
+                      관심 있는 강좌를 검색하고 등록하세요.
+                    </DialogDescription>
+                  </DialogHeader>
+                  
+                  {/* 검색 필터 */}
+                  <div className="grid gap-4 py-4 border-b">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="search-keyword">키워드 검색</Label>
+                        <Input
+                          id="search-keyword"
+                          value={searchCriteria.keyword}
+                          onChange={(e) => setSearchCriteria({ ...searchCriteria, keyword: e.target.value })}
+                          placeholder="강좌명, 훈련사명 검색"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="search-location">지역</Label>
+                        <Input
+                          id="search-location"
+                          value={searchCriteria.location}
+                          onChange={(e) => setSearchCriteria({ ...searchCriteria, location: e.target.value })}
+                          placeholder="서울, 부산, 대구 등"
+                        />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="search-category">카테고리</Label>
+                        <Select value={searchCriteria.category} onValueChange={(value) => setSearchCriteria({ ...searchCriteria, category: value })}>
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="all">전체</SelectItem>
+                            <SelectItem value="기본훈련">기본 훈련</SelectItem>
+                            <SelectItem value="어질리티">어질리티</SelectItem>
+                            <SelectItem value="행동교정">행동 교정</SelectItem>
+                            <SelectItem value="사회화">사회화</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <Label htmlFor="search-level">난이도</Label>
+                        <Select value={searchCriteria.level} onValueChange={(value) => setSearchCriteria({ ...searchCriteria, level: value })}>
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="all">전체</SelectItem>
+                            <SelectItem value="초급">초급</SelectItem>
+                            <SelectItem value="중급">중급</SelectItem>
+                            <SelectItem value="고급">고급</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 검색 결과 */}
+                  <div className="space-y-4 max-h-96 overflow-y-auto">
+                    {availableCourses.map((course) => (
+                      <Card key={course.id} className="p-4 border">
+                        <div className="flex justify-between items-start mb-3">
+                          <div className="flex-1">
+                            <h3 className="font-semibold text-lg mb-1">{course.title}</h3>
+                            <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                              {course.description}
+                            </p>
+                            <div className="flex flex-wrap gap-2 text-sm text-gray-500">
+                              <span className="flex items-center">
+                                <BookOpen className="h-3 w-3 mr-1" />
+                                {course.trainer}
+                              </span>
+                              <span className="flex items-center">
+                                <MapPin className="h-3 w-3 mr-1" />
+                                {course.location}
+                              </span>
+                              <span>{course.duration}</span>
+                            </div>
+                          </div>
+                          <div className="text-right ml-4">
+                            <div className="flex flex-col items-end gap-2">
+                              <Badge variant={course.level === "초급" ? "success" : course.level === "중급" ? "warning" : "destructive"}>
+                                {course.level}
+                              </Badge>
+                              <div className="text-lg font-bold text-primary">
+                                {course.price.toLocaleString()}원
+                              </div>
+                              <Button size="sm" onClick={() => handleCourseEnroll(course.id)}>
+                                등록 신청
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="text-xs text-gray-500 border-t pt-2">
+                          <span>{course.institute}</span>
+                        </div>
+                      </Card>
+                    ))}
+                  </div>
+                  
+                  <DialogFooter>
+                    <Button variant="outline" onClick={() => setIsCourseSearchOpen(false)}>
+                      닫기
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
             </div>
           </Card>
         ) : (

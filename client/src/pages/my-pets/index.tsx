@@ -3,6 +3,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar } from "@/components/ui/avatar";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { 
   Calendar, Clock, Edit, FileText, Heart, Info, Plus, TrendingUp, Award, PawPrint, Cake, Dna, 
   Weight, Target, Upload
@@ -10,6 +15,41 @@ import {
 
 export default function MyPets() {
   const [activePet, setActivePet] = useState(0);
+  const [isAddPetOpen, setIsAddPetOpen] = useState(false);
+  const [newPet, setNewPet] = useState({
+    name: "",
+    breed: "",
+    age: "",
+    gender: "남아",
+    weight: "",
+    temperament: "",
+    allergies: "",
+    healthNotes: ""
+  });
+
+  // 반려견 추가 함수
+  const handleAddPet = () => {
+    if (!newPet.name || !newPet.breed || !newPet.age || !newPet.weight) {
+      alert("필수 필드를 모두 입력해주세요.");
+      return;
+    }
+    
+    console.log("새 반려견 추가:", newPet);
+    // 여기서 실제 API 호출 구현
+    
+    // 폼 초기화
+    setNewPet({
+      name: "",
+      breed: "",
+      age: "",
+      gender: "남아",
+      weight: "",
+      temperament: "",
+      allergies: "",
+      healthNotes: ""
+    });
+    setIsAddPetOpen(false);
+  };
   
   const pets = [
     {
@@ -105,12 +145,130 @@ export default function MyPets() {
           </button>
         ))}
         
-        <button
-          className="flex items-center p-4 rounded-lg border border-dashed border-gray-300 dark:border-gray-600 hover:border-primary/50"
-        >
-          <Plus className="w-6 h-6 text-gray-400 mr-2" />
-          <span className="text-gray-600 dark:text-gray-300">반려견 추가</span>
-        </button>
+        <Dialog open={isAddPetOpen} onOpenChange={setIsAddPetOpen}>
+          <DialogTrigger asChild>
+            <button
+              className="flex items-center p-4 rounded-lg border border-dashed border-gray-300 dark:border-gray-600 hover:border-primary/50"
+            >
+              <Plus className="w-6 h-6 text-gray-400 mr-2" />
+              <span className="text-gray-600 dark:text-gray-300">반려견 추가</span>
+            </button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-[500px]">
+            <DialogHeader>
+              <DialogTitle>새 반려견 등록</DialogTitle>
+              <DialogDescription>
+                새로운 반려견을 등록하여 건강과 훈련을 관리하세요.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="pet-name" className="text-right">
+                  이름 *
+                </Label>
+                <Input
+                  id="pet-name"
+                  value={newPet.name}
+                  onChange={(e) => setNewPet({ ...newPet, name: e.target.value })}
+                  className="col-span-3"
+                  placeholder="토리"
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="pet-breed" className="text-right">
+                  견종 *
+                </Label>
+                <Input
+                  id="pet-breed"
+                  value={newPet.breed}
+                  onChange={(e) => setNewPet({ ...newPet, breed: e.target.value })}
+                  className="col-span-3"
+                  placeholder="골든 리트리버"
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="pet-age" className="text-right">
+                  나이 *
+                </Label>
+                <Input
+                  id="pet-age"
+                  value={newPet.age}
+                  onChange={(e) => setNewPet({ ...newPet, age: e.target.value })}
+                  className="col-span-3"
+                  placeholder="3세"
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="pet-gender" className="text-right">
+                  성별
+                </Label>
+                <Select value={newPet.gender} onValueChange={(value) => setNewPet({ ...newPet, gender: value })}>
+                  <SelectTrigger className="col-span-3">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="남아">남아</SelectItem>
+                    <SelectItem value="여아">여아</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="pet-weight" className="text-right">
+                  체중 *
+                </Label>
+                <Input
+                  id="pet-weight"
+                  value={newPet.weight}
+                  onChange={(e) => setNewPet({ ...newPet, weight: e.target.value })}
+                  className="col-span-3"
+                  placeholder="28kg"
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="pet-temperament" className="text-right">
+                  성격
+                </Label>
+                <Input
+                  id="pet-temperament"
+                  value={newPet.temperament}
+                  onChange={(e) => setNewPet({ ...newPet, temperament: e.target.value })}
+                  className="col-span-3"
+                  placeholder="활발함, 친근함"
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="pet-allergies" className="text-right">
+                  알레르기
+                </Label>
+                <Input
+                  id="pet-allergies"
+                  value={newPet.allergies}
+                  onChange={(e) => setNewPet({ ...newPet, allergies: e.target.value })}
+                  className="col-span-3"
+                  placeholder="없음 또는 특정 알레르기"
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="pet-health-notes" className="text-right">
+                  건강 메모
+                </Label>
+                <Textarea
+                  id="pet-health-notes"
+                  value={newPet.healthNotes}
+                  onChange={(e) => setNewPet({ ...newPet, healthNotes: e.target.value })}
+                  className="col-span-3"
+                  placeholder="특별한 건강 상태나 주의사항"
+                  rows={3}
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button type="submit" onClick={handleAddPet}>
+                반려견 등록
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
 
       {/* Pet Profile */}
