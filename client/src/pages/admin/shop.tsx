@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { useAuth } from '@/hooks/useAuth';
+import { useGlobalAuth } from '@/hooks/useGlobalAuth';
 
 interface Product {
   id: number;
@@ -37,11 +37,11 @@ const SAMPLE_PRODUCTS: Product[] = [
 ];
 
 export default function AdminShopPage() {
-  const { user } = useAuth();
+  const { userRole, isAuthenticated } = useGlobalAuth();
   const [products, setProducts] = useState<Product[]>(SAMPLE_PRODUCTS);
   const [searchTerm, setSearchTerm] = useState('');
 
-  if (!user || user.role !== 'admin') {
+  if (!isAuthenticated || userRole !== 'admin') {
     return (
       <div className="flex items-center justify-center h-screen">
         <h1 className="text-2xl font-bold text-red-500">접근 권한이 없습니다</h1>
