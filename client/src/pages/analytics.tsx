@@ -5,6 +5,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { useAuth } from '@/hooks/useAuth';
+import { useQuery } from '@tanstack/react-query';
+import { queryClient } from '@/lib/queryClient';
 import { 
   BarChart3, 
   TrendingUp, 
@@ -60,7 +62,19 @@ const recentAchievements = [
 export default function AnalyticsPage() {
   const { userName } = useAuth();
   const [selectedPeriod, setSelectedPeriod] = useState('30일');
-  const [isLoading, setIsLoading] = useState(false);
+
+  // 실제 API 데이터 가져오기
+  const { data: trainingData, isLoading: trainingLoading } = useQuery({
+    queryKey: ['/api/analytics/training-progress'],
+    staleTime: 5 * 60 * 1000, // 5분간 캐시
+  });
+
+  const { data: activityData, isLoading: activityLoading } = useQuery({
+    queryKey: ['/api/analytics/activity-logs'],
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const isLoading = trainingLoading || activityLoading;
 
   const getProgressColor = (progress: number) => {
     if (progress >= 80) return 'bg-green-500';
