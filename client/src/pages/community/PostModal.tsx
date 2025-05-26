@@ -252,12 +252,12 @@ export function PostModal({ post, isOpen, onClose, onDelete }: PostModalProps) {
             <h3 className="font-semibold">댓글 {comments.length}개</h3>
 
             {/* 댓글 작성 폼 */}
-            {true ? ( {/* 테스트를 위해 항상 댓글 작성 폼 표시 */}
+            {true ? (
               <form onSubmit={form.handleSubmit(onSubmitComment)} className="space-y-3">
                 <div className="flex gap-3">
                   <Avatar className="h-8 w-8">
-                    <AvatarImage src="" alt={user.name || '사용자'} />
-                    <AvatarFallback>{(user.name || '사용자')[0]}</AvatarFallback>
+                    <AvatarImage src="" alt={user?.name || '사용자'} />
+                    <AvatarFallback>{(user?.name || '사용자')[0]}</AvatarFallback>
                   </Avatar>
                   <div className="flex-1">
                     <Textarea
