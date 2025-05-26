@@ -51,6 +51,7 @@ import {
   Brain,
   BarChart2,
   Sparkles,
+  Bot,
   CreditCard,
   Settings,
   Percent,
@@ -858,6 +859,14 @@ export function Sidebar({
                       onClick={handleItemClick} 
                       show={true}
                     >AI 분석</AccessibleNavItem>
+                    
+                    <AccessibleNavItem 
+                      href="/chatbot" 
+                      icon={<Bot className="w-5 h-5 mr-2" />} 
+                      active={isActive("/chatbot")} 
+                      onClick={handleItemClick} 
+                      show={true}
+                    >AI 챗봇</AccessibleNavItem>
                     
                     <AccessibleNavItem 
                       href="/messages" 
