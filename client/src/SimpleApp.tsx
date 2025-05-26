@@ -635,66 +635,54 @@ function AuthenticatedRoutes() {
         </Route>
         
         {/* 관리자 메뉴 */}
-        <Route path="/admin/dashboard">
-          {() => {
-            const AdminHome = lazy(() => import('./pages/admin/AdminHome'));
-            return (
-              <Suspense fallback={<div className="p-8 text-center">관리자 대시보드 로딩 중...</div>}>
-                <AdminHome />
-              </Suspense>
-            );
-          }}
-        </Route>
-        <Route path="/admin/users">
-          {() => {
-            const AdminUsers = lazy(() => import('./pages/admin/AdminUsers'));
-            return (
-              <Suspense fallback={<div className="p-8 text-center">사용자 관리 로딩 중...</div>}>
-                <AdminUsers />
-              </Suspense>
-            );
-          }}
-        </Route>
-        <Route path="/admin/menu-management">
-          {() => {
-            const AdminMenuManagement = lazy(() => import('./pages/admin/menu-management'));
-            return (
-              <Suspense fallback={<div className="p-8 text-center">메뉴 관리 로딩 중...</div>}>
-                <AdminMenuManagement />
-              </Suspense>
-            );
-          }}
-        </Route>
-        <Route path="/admin/institutes">
-          {() => {
-            const AdminInstitutes = lazy(() => import('./pages/admin/AdminInstitutes'));
-            return (
-              <Suspense fallback={<div className="p-8 text-center">기관 관리 로딩 중...</div>}>
-                <AdminInstitutes />
-              </Suspense>
-            );
-          }}
-        </Route>
-        <Route path="/admin/trainers">
-          {() => {
-            const AdminTrainers = lazy(() => import('./pages/admin/AdminTrainers'));
-            return (
-              <Suspense fallback={<div className="p-8 text-center">훈련사 관리 로딩 중...</div>}>
-                <AdminTrainers />
-              </Suspense>
-            );
-          }}
-        </Route>
-        <Route path="/admin/courses">
-          {() => {
-            const AdminCourses = lazy(() => import('./pages/admin/AdminCourses'));
-            return (
-              <Suspense fallback={<div className="p-8 text-center">강좌 관리 로딩 중...</div>}>
-                <AdminCourses />
-              </Suspense>
-            );
-          }}
-        </Route>
+        <Route path="/admin/dashboard" component={() => {
+          const AdminHome = lazy(() => import('./pages/admin/AdminHome'));
+          return (
+            <Suspense fallback={<div className="p-8 text-center">관리자 대시보드 로딩 중...</div>}>
+              <AdminHome />
+            </Suspense>
+          );
+        }} />
+        <Route path="/admin/users" component={() => {
+          const AdminUsers = lazy(() => import('./pages/admin/AdminUsers'));
+          return (
+            <Suspense fallback={<div className="p-8 text-center">사용자 관리 로딩 중...</div>}>
+              <AdminUsers />
+            </Suspense>
+          );
+        }} />
+        <Route path="/admin/menu-management" component={() => {
+          const AdminMenuManagement = lazy(() => import('./pages/admin/menu-management'));
+          return (
+            <Suspense fallback={<div className="p-8 text-center">메뉴 관리 로딩 중...</div>}>
+              <AdminMenuManagement />
+            </Suspense>
+          );
+        }} />
+        <Route path="/admin/institutes" component={() => {
+          const AdminInstitutes = lazy(() => import('./pages/admin/AdminInstitutes'));
+          return (
+            <Suspense fallback={<div className="p-8 text-center">기관 관리 로딩 중...</div>}>
+              <AdminInstitutes />
+            </Suspense>
+          );
+        }} />
+        <Route path="/admin/trainers" component={() => {
+          const AdminTrainers = lazy(() => import('./pages/admin/AdminTrainers'));
+          return (
+            <Suspense fallback={<div className="p-8 text-center">훈련사 관리 로딩 중...</div>}>
+              <AdminTrainers />
+            </Suspense>
+          );
+        }} />
+        <Route path="/admin/courses" component={() => {
+          const AdminCourses = lazy(() => import('./pages/admin/AdminCourses'));
+          return (
+            <Suspense fallback={<div className="p-8 text-center">강좌 관리 로딩 중...</div>}>
+              <AdminCourses />
+            </Suspense>
+          );
+        }} />
         
         {/* 기관 관리자 메뉴 */}
         <Route path="/institute/trainers">
