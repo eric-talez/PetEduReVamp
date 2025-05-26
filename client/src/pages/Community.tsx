@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { CommunityCard, Card, CardContent } from '@/components/ui/Card';
-import { Badge } from '@/components/ui/Badge';
-import { Button } from '@/components/ui/Button';
-import { Avatar } from '@/components/ui/Avatar';
+import { CommunityCard, Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Avatar } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Search, MessageSquare, TrendingUp, MessageCircle, Filter } from 'lucide-react';

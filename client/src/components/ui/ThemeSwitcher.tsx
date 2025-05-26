@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useTheme } from 'next-themes';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import { Sun, Moon, Monitor } from 'lucide-react';
 import {
   DropdownMenu,

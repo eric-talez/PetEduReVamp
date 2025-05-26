@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { ShoppingCart, ExternalLink } from "lucide-react";
-import { Button } from "@/components/ui/Button";
+import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 // 플로팅 장바구니 버튼 컴포넌트

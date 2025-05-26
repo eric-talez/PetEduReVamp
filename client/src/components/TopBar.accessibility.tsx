@@ -1,8 +1,8 @@
-import { ThemeToggle } from "@/components/ui/ThemeToggle";
+import { ThemeToggle } from "@/components/ui/themetoggle";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/Button";
+import { Button } from "@/components/ui/button";
 import { NotificationCenter } from "@/components/NotificationCenter";
-import { AccessibilityChecker } from "@/components/ui/AccessibilityChecker";
+import { AccessibilityChecker } from "@/components/ui/accessibilitychecker";
 import { 
   Bell, 
   Menu, 

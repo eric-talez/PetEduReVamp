@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { CourseCard } from '@/components/ui/Card';
-import { Badge } from '@/components/ui/Badge';
+import { CourseCard } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Search, Filter } from 'lucide-react';
 

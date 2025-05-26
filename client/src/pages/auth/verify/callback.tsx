@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useLocation } from 'wouter';
 import { DogLoading } from '@/components/DogLoading';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import { CheckCircle, AlertCircle, XCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 

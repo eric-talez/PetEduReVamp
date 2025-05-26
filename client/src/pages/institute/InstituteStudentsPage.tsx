@@ -8,7 +8,7 @@ import {
   DialogTitle, 
   DialogFooter 
 } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from '@/components/ui/progress';
 import { Input } from '@/components/ui/input';

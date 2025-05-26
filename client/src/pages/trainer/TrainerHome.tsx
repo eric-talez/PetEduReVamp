@@ -2,7 +2,7 @@ import { useAuth } from '@/lib/auth-compat';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 // Avatar 컴포넌트 대신 직접 이미지 태그 사용
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 

@@ -11,7 +11,7 @@ import {
   ResponsiveContainer
 } from 'recharts';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import { Link } from 'wouter';
 import { TrendingUp, TrendingDown, Eye, Award, MoveUp } from 'lucide-react';
 import { Star, Users, Clock } from "lucide-react";

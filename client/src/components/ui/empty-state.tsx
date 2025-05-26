@@ -1,6 +1,6 @@
 import React from 'react';
 import { FileQuestion } from 'lucide-react';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 
 interface EmptyStateProps {
   title?: string;

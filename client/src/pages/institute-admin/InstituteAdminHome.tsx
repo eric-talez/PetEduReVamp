@@ -4,7 +4,7 @@ import { Progress } from '@/components/ui/progress';
 import { ChevronRight, Users, FileText, Award, AlertTriangle, CheckCircle2, Zap, Calendar, Info, TrendingUp, ArrowUpRight, Check, X } from 'lucide-react';
 import { Link, useLocation } from 'wouter';
 import { useAuth } from '@/lib/auth-compat';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from '@/hooks/use-toast';
 import { 

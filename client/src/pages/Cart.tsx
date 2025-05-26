@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'wouter';
 import { ShoppingBag, Trash2, Plus, Minus, ArrowLeft, ShoppingCart, X } from 'lucide-react';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import { useCart } from '@/context/cart-context';
 
 export default function Cart() {

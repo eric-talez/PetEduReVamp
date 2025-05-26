@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { X, Send, Loader2, Bot, User, ChevronDown, ChevronUp } from 'lucide-react';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useAuth } from '@/lib/auth-compat';
 import { Textarea } from '@/components/ui/textarea';

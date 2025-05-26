@@ -7,7 +7,7 @@ import {
   DialogDescription,
   DialogFooter,
 } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { announceToScreenReader } from '@/components/a11y/AnnouncementRegion';
 import { useLocalStorage } from '@/hooks/use-local-storage';

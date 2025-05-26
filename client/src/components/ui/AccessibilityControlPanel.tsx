@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLocalStorage } from '@/hooks/use-local-storage';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';

@@ -12,10 +12,10 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
-} from '@/components/ui/Dialog';
-import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
-import { Textarea } from '@/components/ui/Textarea';
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import {
   Form,
   FormControl,
@@ -24,21 +24,21 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/components/ui/Form';
+} from '@/components/ui/form';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/Select';
+} from '@/components/ui/select';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from '@/components/ui/Popover';
+} from '@/components/ui/popover';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Calendar } from '@/components/ui/Calendar';
+import { Calendar } from '@/components/ui/calendar';
 
 // 일정 타입 정의
 export type EventType = 'lesson' | 'medical' | 'grooming' | 'other';

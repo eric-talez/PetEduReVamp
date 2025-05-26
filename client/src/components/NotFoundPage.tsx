@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import { useLocation } from 'wouter';
 import { DogIcon } from 'lucide-react';
 

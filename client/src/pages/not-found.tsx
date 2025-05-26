@@ -1,6 +1,6 @@
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Home, Search, ArrowLeft, PawPrint, MapPin } from "lucide-react";
-import { Button } from "@/components/ui/Button";
+import { Button } from "@/components/ui/button";
 import { Link, useLocation } from "wouter";
 import { useState, useEffect } from "react";
 import { useTheme } from "@/hooks/use-theme";

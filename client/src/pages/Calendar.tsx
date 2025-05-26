@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Badge } from '@/components/ui/Badge';
-import { Button } from '@/components/ui/Button';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Calendar as CalendarIcon, Clock, Plus, PawPrint, User, MapPin } from 'lucide-react';
-import { Avatar } from '@/components/ui/Avatar';
+import { Avatar } from '@/components/ui/avatar';
 
 // React DayPicker component for the calendar
 import { DayPicker } from 'react-day-picker';

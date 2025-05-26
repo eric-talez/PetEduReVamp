@@ -7,7 +7,7 @@ import { AlertCircle, ArrowLeft, Calendar, Clock, Info, Star, Video, Link as Lin
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/Tabs';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 // 상세 화상 수업 정보 가져오기 (실제 구현에서는 API 호출로 대체)
 const getVideoClassDetails = (id: number) => {
