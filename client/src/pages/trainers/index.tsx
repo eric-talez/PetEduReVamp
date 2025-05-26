@@ -20,6 +20,7 @@ import { useAuth } from "@/hooks/useAuth"; // 모듈화된 useAuth 훅 사용
 
 export default function Trainers() {
   const [filter, setFilter] = useState("all");
+  const [searchTerm, setSearchTerm] = useState("");
   const [selectedTrainer, setSelectedTrainer] = useState<any>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showMemberAlert, setShowMemberAlert] = useState(false);
@@ -217,13 +218,31 @@ export default function Trainers() {
     }
   ];
 
-  const filteredTrainers = filter === "all" 
-    ? trainers 
-    : filter === "certification" 
-      ? trainers.filter(trainer => trainer.certification)
-      : filter === "featured"
-        ? trainers.filter(trainer => trainer.featured)
-        : trainers.filter(trainer => trainer.category === filter);
+  // 검색 기능
+  const handleSearch = () => {
+    console.log('훈련사 검색 실행:', searchTerm);
+  };
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+    console.log('검색어 변경:', e.target.value);
+  };
+
+  // 실시간 검색 및 필터링
+  const filteredTrainers = trainers.filter(trainer => {
+    const matchesSearch = !searchTerm || 
+      trainer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      trainer.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      trainer.specialty.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      trainer.location.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesFilter = filter === 'all' || 
+      (filter === 'certification' && trainer.certification) ||
+      (filter === 'featured' && trainer.featured) ||
+      trainer.category === filter;
+    
+    return matchesSearch && matchesFilter;
+  });
 
   return (
     <div className="py-8 px-4 sm:px-6 lg:px-8">
@@ -253,9 +272,11 @@ export default function Trainers() {
             <input 
               type="text" 
               placeholder="지역, 전문 분야로 훈련사 찾기" 
+              value={searchTerm}
+              onChange={handleSearchChange}
               className="flex-1 py-2 px-2 bg-transparent focus:outline-none text-gray-800 dark:text-gray-200"
             />
-            <Button className="ml-2">
+            <Button className="ml-2" onClick={handleSearch}>
               검색
             </Button>
           </div>
