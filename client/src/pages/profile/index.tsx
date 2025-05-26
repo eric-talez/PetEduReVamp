@@ -10,7 +10,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { useToast } from "@/hooks/use-toast";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { FileUpload } from "@/components/ui/file-upload";
-import { DogLoading } from "@/components/ui/dogloading";
+import { DogLoading } from "@/components/DogLoading";
 
 interface ProfilePageProps {
   userType?: string;
@@ -229,7 +229,7 @@ export default function ProfilePage({ userType, section }: ProfilePageProps = {}
     return (
       <div className="container mx-auto p-6 flex items-center justify-center min-h-screen">
         <div className="text-center">
-          <DogLoading size="lg" message="프로필 정보를 불러오는 중..." />
+          <DogLoading size="large" message="프로필 정보를 불러오는 중..." />
         </div>
       </div>
     );
@@ -571,7 +571,7 @@ export default function ProfilePage({ userType, section }: ProfilePageProps = {}
                   {isSubmitting ? (
                     <div className="flex items-center justify-center">
                       <span className="mr-2">저장 중</span>
-                      <DogLoading size="sm" message="" />
+                      <DogLoading size="small" message="" />
                     </div>
                   ) : (
                     '저장'

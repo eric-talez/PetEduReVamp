@@ -84,6 +84,7 @@ export default function Dashboard({ type }: DashboardProps) {
       {/* 온보딩 가이드 - 사용자 역할에 맞는 가이드 제공 */}
       {showOnboarding && (
         <OnboardingGuide 
+          steps={[]}
           forceShow={true} 
           onComplete={() => {
             console.log('온보딩 완료');
