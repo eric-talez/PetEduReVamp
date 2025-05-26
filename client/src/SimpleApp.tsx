@@ -414,7 +414,7 @@ function AuthenticatedRoutes() {
         </Route>
         
         {/* 일반 메뉴 */}
-        <Route path="/courses" component={Courses} />
+        <Route path="/courses" component={() => <Courses />} />
         <Route path="/course/:id" component={CourseDetail} />
         <Route path="/trainers" component={Trainers} />
         <Route path="/institutes" component={Institutes} />
@@ -1262,9 +1262,9 @@ function UnauthenticatedRoutes() {
     <AppLayout>
       <Switch>
         <Route path="/auth" component={Login} />
-        <Route path="/courses" component={Courses} />
+        <Route path="/courses" component={() => <Courses />} />
         <Route path="/course/:id" component={CourseDetail} />
-        <Route path="/trainers" component={Trainers} />
+        <Route path="/trainers" component={() => <Trainers />} />
         <Route path="/video-training" component={VideoTrainingPage} />
         <Route path="/video-call" component={VideoCallPage} />
         <Route path="/institutes" component={Institutes} />

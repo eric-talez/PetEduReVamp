@@ -11,7 +11,8 @@ interface CoursesPageProps {
   userType?: string;
 }
 
-export default function Courses({ mode = 'view', userType }: CoursesPageProps) {
+export default function Courses(props?: CoursesPageProps) {
+  const { mode = 'view', userType } = props || {};
   const [filter, setFilter] = useState("all");
 
   const courses = [
