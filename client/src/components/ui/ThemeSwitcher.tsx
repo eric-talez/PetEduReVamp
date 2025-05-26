@@ -286,3 +286,6 @@ export function ThemeSettingsPanel() {
     </div>
   );
 }
+
+// ThemeToggle alias for backward compatibility
+export const ThemeToggle = ThemeSwitcherIconButton;
