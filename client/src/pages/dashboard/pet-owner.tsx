@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/Button";
 import { Avatar } from "@/components/ui/Avatar";
-import { Badge } from "@/components/ui/badge";
+
 import { useLocation, Link } from "wouter";
 import { BookOpen, Calendar, Medal, PawPrint, Star, Bone, Award, Clock } from "lucide-react";
 
@@ -403,32 +403,7 @@ export default function PetOwnerDashboard({ onAction }: PetOwnerDashboardProps) 
           </div>
         </Card>
         
-        <Card className="p-6 border border-gray-100 dark:border-gray-700">
-          <div className="flex items-center">
-            <div className="flex-shrink-0 h-12 w-12 bg-accent/20 dark:bg-accent/10 text-accent dark:text-accent/90 rounded-full flex items-center justify-center">
-              <Medal className="h-6 w-6" />
-            </div>
-            <div className="ml-4">
-              <h2 className="text-sm font-medium text-gray-500 dark:text-gray-400">획득한 배지</h2>
-              <p className="text-2xl font-semibold text-gray-800 dark:text-white">5개</p>
-            </div>
-          </div>
-          <div className="mt-4">
-            <div className="flex">
-              <div className="w-6 h-6 rounded-full bg-accent/80 text-white flex items-center justify-center text-xs">
-                <Star className="h-3 w-3" />
-              </div>
-              <div className="w-6 h-6 rounded-full bg-primary text-white flex items-center justify-center text-xs -ml-1">
-                <Bone className="h-3 w-3" />
-              </div>
-              <div className="w-6 h-6 rounded-full bg-blue-500 text-white flex items-center justify-center text-xs -ml-1">
-                <Award className="h-3 w-3" />
-              </div>
-              <Link href="/my-badges" className="ml-2 text-xs text-primary hover:text-primary/80">모두 보기</Link>
-            </div>
-          </div>
-        </Card>
-        
+
         <Card className="p-6 border border-gray-100 dark:border-gray-700">
           <div className="flex items-center">
             <div className="flex-shrink-0 h-12 w-12 bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 rounded-full flex items-center justify-center">
@@ -478,12 +453,12 @@ export default function PetOwnerDashboard({ onAction }: PetOwnerDashboardProps) 
                 <div className="flex justify-between items-start mb-2">
                   <h3 className="text-lg font-semibold text-gray-800 dark:text-white">{course.title}</h3>
                   {course.popular && (
-                    <Badge variant="warning">인기</Badge>
+                    <span className="text-xs bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300 px-2 py-1 rounded-full">인기</span>
                   )}
                   {course.level && (
-                    <Badge variant={course.level === "초급" ? "success" : "info"}>
+                    <span className={`text-xs px-2 py-1 rounded-full ${course.level === "초급" ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300" : "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300"}`}>
                       {course.level}
-                    </Badge>
+                    </span>
                   )}
                 </div>
                 <p className="text-sm text-gray-600 dark:text-gray-300 mb-3 line-clamp-2">
@@ -541,12 +516,9 @@ export default function PetOwnerDashboard({ onAction }: PetOwnerDashboardProps) 
                   className="w-full h-full object-cover"
                 />
                 {course.petName && (
-                  <Badge 
-                    variant="destructive" 
-                    className="absolute top-0 left-0 m-2"
-                  >
+                  <span className="absolute top-0 left-0 m-2 text-xs bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300 px-2 py-1 rounded-full">
                     {course.petName}에게 맞춤
-                  </Badge>
+                  </span>
                 )}
               </div>
               <div className="p-4">
