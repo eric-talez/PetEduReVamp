@@ -29,9 +29,7 @@ export function registerAnalyticsRoutes(app: Express) {
           lastSession: trainingSessions.sessionDate
         })
         .from(trainingSessions)
-        .where(and(
-          trainingSessions.petId.in ? trainingSessions.petId.in(petIds) : eq(trainingSessions.petId, petIds[0])
-        ))
+        .where(inArray(trainingSessions.petId, petIds))
         .groupBy(trainingSessions.skill)
         .orderBy(desc(trainingSessions.sessionDate));
       
@@ -66,9 +64,7 @@ export function registerAnalyticsRoutes(app: Express) {
       const totalSessionsResult = await db
         .select({ count: count() })
         .from(trainingSessions)
-        .where(and(
-          trainingSessions.petId.in ? trainingSessions.petId.in(petIds) : eq(trainingSessions.petId, petIds[0])
-        ));
+        .where(inArray(trainingSessions.petId, petIds));
       
       // 완료된 코스 수
       const completedCoursesResult = await db
@@ -84,8 +80,8 @@ export function registerAnalyticsRoutes(app: Express) {
         .select({ avgScore: avg(trainingSessions.score) })
         .from(trainingSessions)
         .where(and(
-          trainingSessions.petId.in ? trainingSessions.petId.in(petIds) : eq(trainingSessions.petId, petIds[0]),
-          trainingSessions.score.isNotNull()
+          inArray(trainingSessions.petId, petIds),
+          isNotNull(trainingSessions.score)
         ));
       
       // 총 훈련 시간 (분 단위)
@@ -93,8 +89,8 @@ export function registerAnalyticsRoutes(app: Express) {
         .select({ totalDuration: sum(trainingSessions.duration) })
         .from(trainingSessions)
         .where(and(
-          trainingSessions.petId.in ? trainingSessions.petId.in(petIds) : eq(trainingSessions.petId, petIds[0]),
-          trainingSessions.duration.isNotNull()
+          inArray(trainingSessions.petId, petIds),
+          isNotNull(trainingSessions.duration)
         ));
       
       const stats = {
@@ -138,7 +134,7 @@ export function registerAnalyticsRoutes(app: Express) {
         })
         .from(trainingSessions)
         .where(and(
-          trainingSessions.petId.in ? trainingSessions.petId.in(petIds) : eq(trainingSessions.petId, petIds[0]),
+          inArray(trainingSessions.petId, petIds),
           gte(trainingSessions.sessionDate, sixMonthsAgo)
         ))
         .groupBy(trainingSessions.sessionDate)
