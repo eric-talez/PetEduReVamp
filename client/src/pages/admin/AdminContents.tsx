@@ -540,8 +540,7 @@ export default function AdminContents() {
       </Tabs>
       
       {/* 콘텐츠 세부 정보 모달 */}
-      {selectedContent && (
-        <Dialog open={showContentModal} onOpenChange={setShowContentModal}>
+      <Dialog open={showContentModal} onOpenChange={setShowContentModal}>
           <DialogContent className="max-w-3xl">
             <DialogHeader>
               <DialogTitle>
