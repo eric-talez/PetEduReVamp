@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -7,30 +7,43 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useQuery } from '@tanstack/react-query';
 
-// 실제 데이터베이스에서 강의 목록 가져오기
+// 실제 데이터베이스에서 강의 목록 가져오기 (디바운스 적용)
 const useCourses = (searchTerm: string, level: string, category: string) => {
   return useQuery({
     queryKey: ['/api/education/courses', searchTerm, level, category],
     queryFn: async () => {
       const params = new URLSearchParams();
-      if (searchTerm) params.append('search', searchTerm);
+      if (searchTerm && searchTerm.trim()) params.append('search', searchTerm.trim());
       if (level && level !== 'all') params.append('level', level);
       if (category && category !== 'all') params.append('category', category);
       
       const response = await fetch(`/api/education/courses?${params}`);
       if (!response.ok) throw new Error('Failed to fetch courses');
       return response.json();
-    }
+    },
+    // 검색어가 변경될 때마다 즉시 업데이트
+    refetchOnWindowFocus: false,
+    staleTime: 5 * 60 * 1000, // 5분
   });
 };
 
 export default function EducationSchedulePage() {
   const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
   const [levelFilter, setLevelFilter] = useState('all');
   const [categoryFilter, setCategoryFilter] = useState('all');
 
+  // 디바운스 적용 - 500ms 후에 검색 실행
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
+
   // 실제 데이터베이스에서 강의 데이터 가져오기
-  const { data: courses, isLoading, error } = useCourses(searchTerm, levelFilter, categoryFilter);
+  const { data: courses, isLoading, error } = useCourses(debouncedSearchTerm, levelFilter, categoryFilter);
 
   const handleResetFilters = () => {
     setSearchTerm('');
