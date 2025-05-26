@@ -10,7 +10,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { useToast } from "@/hooks/use-toast";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { FileUpload } from "@/components/ui/file-upload";
-import { DogLoading } from "@/components/DogLoading";
+import { DogLoading } from "../../components/DogLoading";
 
 interface ProfilePageProps {
   userType?: string;
