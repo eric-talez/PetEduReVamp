@@ -326,11 +326,7 @@ export default function CommunityPage() {
             <>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {postsData.posts.map((post) => (
-                  <Link key={post.id} href={`/community/post/${post.id}`}>
-                    <a className="block h-full">
-                      <PostCard post={post} />
-                    </a>
-                  </Link>
+                  <PostCard key={post.id} post={post} onPostClick={handlePostClick} />
                 ))}
               </div>
 
@@ -371,11 +367,7 @@ export default function CommunityPage() {
             <>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {postsData.posts.map((post) => (
-                  <Link key={post.id} href={`/community/post/${post.id}`}>
-                    <a className="block h-full">
-                      <PostCard post={post} />
-                    </a>
-                  </Link>
+                  <PostCard key={post.id} post={post} onPostClick={handlePostClick} />
                 ))}
               </div>
 
