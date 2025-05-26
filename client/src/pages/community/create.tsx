@@ -45,13 +45,17 @@ export default function CreatePostPage() {
   const { toast } = useToast();
   const [isUploading, setIsUploading] = useState(false);
 
+  // URL 파라미터에서 카테고리 추출
+  const urlParams = new URLSearchParams(window.location.search);
+  const defaultCategory = urlParams.get('category') || '';
+
   // 폼 설정
   const form = useForm<PostFormValues>({
     resolver: zodResolver(postFormSchema),
     defaultValues: {
       title: '',
       content: '',
-      tag: '',
+      tag: defaultCategory,
       image: '',
     },
   });

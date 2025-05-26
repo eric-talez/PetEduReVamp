@@ -244,8 +244,8 @@ export default function CommunityPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [deleteAlertOpen, setDeleteAlertOpen] = useState(false);
 
-  // 카테고리 목록 (실제로는 서버에서 가져오거나 설정에서 관리할 수 있음)
-  const categories = ['공지사항', '자유게시판', '질문/답변', '정보공유', '자랑하기', '모임'];
+  // 카테고리 목록 (글쓰기 페이지와 동일하게 통일)
+  const categories = ['일반', '훈련팁', '건강관리', '행동교정', '영양정보', '놀이활동', '질문답변', '후기공유'];
 
   // 게시글 목록 조회 API 호출
   const {
@@ -278,9 +278,14 @@ export default function CommunityPage() {
     }
   });
 
-  // 게시글 작성 페이지로 이동
+  // 게시글 작성 페이지로 이동 (선택된 카테고리 전달)
   const handleCreatePost = () => {
-    setLocation('/community/create');
+    const params = new URLSearchParams();
+    if (activeCategory !== 'all') {
+      params.set('category', activeCategory);
+    }
+    const url = params.toString() ? `/community/create?${params.toString()}` : '/community/create';
+    setLocation(url);
   };
 
   // 페이지 변경 핸들러
