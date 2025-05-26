@@ -386,6 +386,78 @@ function AppLayout({ children }: { children: ReactNode }) {
                     }}
                   </Route>
                   
+                  {/* 기관 관리자 메뉴 */}
+                  <Route path="/institute/dashboard">
+                    {() => {
+                      const InstituteDashboard = lazy(() => import('./pages/institute-admin/InstituteDashboard'));
+                      return (
+                        <Suspense fallback={<div className="p-8 text-center">기관 대시보드 로딩 중...</div>}>
+                          <InstituteDashboard />
+                        </Suspense>
+                      );
+                    }}
+                  </Route>
+                  <Route path="/institute/trainers">
+                    {() => {
+                      const InstituteTrainers = lazy(() => import('./pages/institute-admin/InstituteTrainers'));
+                      return (
+                        <Suspense fallback={<div className="p-8 text-center">훈련사 관리 로딩 중...</div>}>
+                          <InstituteTrainers />
+                        </Suspense>
+                      );
+                    }}
+                  </Route>
+                  <Route path="/institute/courses">
+                    {() => {
+                      const InstituteCourses = lazy(() => import('./pages/institute-admin/InstituteCourses'));
+                      return (
+                        <Suspense fallback={<div className="p-8 text-center">강좌 관리 로딩 중...</div>}>
+                          <InstituteCourses />
+                        </Suspense>
+                      );
+                    }}
+                  </Route>
+                  <Route path="/institute/facility">
+                    {() => {
+                      const InstituteFacility = lazy(() => import('./pages/institute-admin/InstituteFacility'));
+                      return (
+                        <Suspense fallback={<div className="p-8 text-center">시설 관리 로딩 중...</div>}>
+                          <InstituteFacility />
+                        </Suspense>
+                      );
+                    }}
+                  </Route>
+                  <Route path="/institute/stats">
+                    {() => {
+                      const InstituteStats = lazy(() => import('./pages/institute-admin/InstituteStats'));
+                      return (
+                        <Suspense fallback={<div className="p-8 text-center">회원 관리 로딩 중...</div>}>
+                          <InstituteStats />
+                        </Suspense>
+                      );
+                    }}
+                  </Route>
+                  <Route path="/institute/pet-assignments">
+                    {() => {
+                      const InstitutePetAssignments = lazy(() => import('./pages/institute-admin/InstitutePetAssignments'));
+                      return (
+                        <Suspense fallback={<div className="p-8 text-center">반려견 배정 로딩 중...</div>}>
+                          <InstitutePetAssignments />
+                        </Suspense>
+                      );
+                    }}
+                  </Route>
+                  <Route path="/institute/settings">
+                    {() => {
+                      const InstituteSettings = lazy(() => import('./pages/institute-admin/InstituteSettings'));
+                      return (
+                        <Suspense fallback={<div className="p-8 text-center">기관 설정 로딩 중...</div>}>
+                          <InstituteSettings />
+                        </Suspense>
+                      );
+                    }}
+                  </Route>
+                  
                   {/* 도움말 */}
                   <Route path="/help/faq" component={FAQPage} />
                   
