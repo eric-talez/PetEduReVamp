@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useAuth } from '@/hooks/useAuth';
+import { useGlobalAuth } from '@/hooks/useGlobalAuth';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -49,7 +49,7 @@ interface PlatformStatsItem {
 }
 
 export default function AdminHome() {
-  const { userName } = useAuth();
+  const { userName } = useGlobalAuth();
   const [location, setLocation] = useLocation();
   const [activeTab, setActiveTab] = useState('overview');
   const [systemStatus, setSystemStatus] = useState<SystemStatusItem[]>([]);
