@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { Link, useLocation } from 'wouter';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -7,21 +7,48 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Pagination } from '@/components/ui/pagination';
 import { Badge } from '@/components/ui/badge';
-import { MessageSquare, Heart, Eye, Clock, Tag, Plus } from 'lucide-react';
+import { MessageSquare, Heart, Eye, Clock, Tag, Plus, ArrowLeft, MoreVertical, Edit, Trash2, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatDistanceToNow } from 'date-fns';
 import { ko } from 'date-fns/locale';
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogHeader, 
+  DialogTitle,
+  DialogDescription
+} from '@/components/ui/dialog';
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuTrigger 
+} from '@/components/ui/dropdown-menu';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { queryClient } from '@/lib/queryClient';
 
 // 컴포넌트를 작은 단위로 분리하여 관리
-const PostCard = ({ post }) => {
+const PostCard = ({ post, onPostClick }) => {
   const formatDate = (date: string | Date) => {
     return formatDistanceToNow(new Date(date), { addSuffix: true, locale: ko });
   };
 
   return (
-    <Card className="h-full hover:shadow-md transition-shadow">
+    <Card 
+      className="h-full hover:shadow-md transition-shadow cursor-pointer" 
+      onClick={() => onPostClick(post)}
+    >
       <CardHeader className="pb-2">
         <div className="flex justify-between items-start">
           <CardTitle className="text-lg line-clamp-2">{post.title}</CardTitle>
@@ -138,6 +165,9 @@ export default function CommunityPage() {
   const [activeTab, setActiveTab] = useState('latest');
   const [activeCategory, setActiveCategory] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
+  const [selectedPost, setSelectedPost] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [deleteAlertOpen, setDeleteAlertOpen] = useState(false);
 
   // 카테고리 목록 (실제로는 서버에서 가져오거나 설정에서 관리할 수 있음)
   const categories = ['공지사항', '자유게시판', '질문/답변', '정보공유', '자랑하기', '모임'];
@@ -182,6 +212,69 @@ export default function CommunityPage() {
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // 게시글 클릭 핸들러
+  const handlePostClick = async (post: any) => {
+    try {
+      const response = await fetch(`/api/community/posts/${post.id}`);
+      if (response.ok) {
+        const postData = await response.json();
+        setSelectedPost(postData.post);
+        setIsModalOpen(true);
+      } else {
+        toast({
+          title: "오류",
+          description: "게시글을 불러올 수 없습니다.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "오류",
+        description: "게시글을 불러오는 중 오류가 발생했습니다.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // 게시글 삭제
+  const deletePostMutation = useMutation({
+    mutationFn: async (postId: number) => {
+      const response = await fetch(`/api/community/posts/${postId}`, {
+        method: 'DELETE',
+      });
+      if (!response.ok) {
+        throw new Error('게시글 삭제에 실패했습니다.');
+      }
+      return await response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "성공",
+        description: "게시글이 삭제되었습니다.",
+      });
+      setIsModalOpen(false);
+      setDeleteAlertOpen(false);
+      queryClient.invalidateQueries({ queryKey: ['/api/community/posts'] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "삭제 실패",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleDeletePost = () => {
+    if (selectedPost) {
+      deletePostMutation.mutate(selectedPost.id);
+    }
+  };
+
+  const handleCreatePost = () => {
+    setLocation('/community/create');
   };
 
   return (
