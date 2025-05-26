@@ -36,6 +36,7 @@ import EventDetailPage from "./pages/events/event-detail";
 import EventCalendarPage from "./pages/events/calendar";
 import AnalyticsPage from "./pages/analytics";
 import EducationSchedulePage from "./pages/education-schedule";
+import SubscriptionsPage from "./pages/subscriptions";
 
 
 
@@ -761,15 +762,14 @@ function AuthenticatedRoutes() {
         
         <Route path="/subscriptions">
           {() => {
-            const SubscriptionManagement = lazy(() => import('./pages/subscriptions'));
+            console.log("구독 관리 페이지 접근");
             return (
               <Suspense fallback={
-                <div className="p-8 flex justify-center items-center">
-                  <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
-                  <span className="ml-2">구독 정보 로딩 중...</span>
+                <div className="flex justify-center items-center h-screen">
+                  <DogLoading message="구독 관리 로딩 중..." size="medium" showTips={true} />
                 </div>
               }>
-                <ProtectedRoute component={SubscriptionManagement} />
+                <ProtectedRoute component={SubscriptionsPage} />
               </Suspense>
             );
           }}
