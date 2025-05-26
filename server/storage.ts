@@ -465,12 +465,12 @@ export class MemStorage implements IStorage {
       socialId: null
     };
     
-    // 테스트 사용자 추가
+    // 테스트 사용자 추가 (비밀번호: test123을 암호화한 값)
     const user3: User = {
       id: this.currentId++,
       username: "testuser3",
       email: "testuser3@example.com",
-      password: "test123", // 비밀번호는 암호화되어 저장되어야 하지만 테스트용으로 평문
+      password: "5f96f5f3ca56ed90cab2042ee5310134e06ae1e6d96fa335b499df5e7d09ab4115ccab6d86681cc9c2ddeb84c42a0b3f7406eb8873ad1b121b62637cb7cc82ca.56eb6567ec104a2b2e48d69337f45861", // test123 암호화
       name: "반려인",
       role: "pet-owner" as UserRole,
       avatar: null,
