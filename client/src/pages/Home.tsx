@@ -1,4 +1,4 @@
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import { Link, useLocation } from 'wouter';
 import { useAuth } from '@/hooks/useAuth';
 import { BannerSlider } from '@/components/BannerSlider';

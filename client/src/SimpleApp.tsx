@@ -1264,17 +1264,7 @@ function UnauthenticatedRoutes() {
     <AppLayout>
       <Switch>
         <Route path="/auth" component={Login} />
-        <Route path="/courses" component={() => <Courses />} />
-        <Route path="/course/:id" component={CourseDetail} />
-        <Route path="/trainers" component={() => <Trainers />} />
-        <Route path="/video-training" component={VideoTrainingPage} />
-        <Route path="/video-call" component={VideoCallPage} />
-        <Route path="/institutes" component={Institutes} />
-        <Route path="/community" component={Community} />
-        <Route path="/community/post/:id" component={CommunityPostDetail} />
-        <Route path="/events" component={EventsPage} />
-        <Route path="/events/calendar" component={EventCalendarPage} />
-        <Route path="/events/:id" component={EventDetailPage} />
+        <Route path="/chatbot" component={ChatbotPage} />
         
         {/* 위치 서비스 */}
         <Route path="/locations">
