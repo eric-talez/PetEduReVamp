@@ -1,235 +1,72 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <body>
-    <!-- 푸터 프래그먼트 -->
-    <footer th:fragment="footer" class="footer">
-        <div class="container">
-            <div class="footer-top">
-                <div class="footer-logo">
-                    <div class="logo-icon">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 16h-2v-6h2v6zm-1-9a1 1 0 1 1 0-2 1 1 0 0 1 0 2zm5 9h-2v-6h2v6zm-1-9a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"/>
-                        </svg>
+    <!-- Footer Fragment -->
+    <footer th:fragment="footer" class="bg-gray-900 text-white lg:ml-64">
+        <div class="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <!-- Company Info -->
+                <div class="col-span-1 md:col-span-2">
+                    <div class="flex items-center mb-4">
+                        <img th:src="@{/images/logo-white.png}" alt="PetEdu" class="h-8 w-auto">
+                        <span class="ml-2 text-xl font-bold">PetEdu</span>
                     </div>
-                    <span class="logo-text">테일즈 쇼핑</span>
-                </div>
-                <div class="footer-nav">
-                    <div class="footer-nav-section">
-                        <h3 class="footer-nav-title">쇼핑 정보</h3>
-                        <ul class="footer-nav-list">
-                            <li><a th:href="@{/shop/best}">베스트 상품</a></li>
-                            <li><a th:href="@{/shop/new}">신상품</a></li>
-                            <li><a th:href="@{/shop/sale}">할인 상품</a></li>
-                            <li><a th:href="@{/shop/brand}">브랜드관</a></li>
-                        </ul>
-                    </div>
-                    <div class="footer-nav-section">
-                        <h3 class="footer-nav-title">고객 지원</h3>
-                        <ul class="footer-nav-list">
-                            <li><a th:href="@{/customer-service}">고객센터</a></li>
-                            <li><a th:href="@{/faq}">자주 묻는 질문</a></li>
-                            <li><a th:href="@{/notice}">공지사항</a></li>
-                            <li><a th:href="@{/contact}">1:1 문의</a></li>
-                        </ul>
-                    </div>
-                    <div class="footer-nav-section">
-                        <h3 class="footer-nav-title">회사 정보</h3>
-                        <ul class="footer-nav-list">
-                            <li><a th:href="@{/about}">회사 소개</a></li>
-                            <li><a th:href="@{/terms}">이용약관</a></li>
-                            <li><a th:href="@{/privacy}">개인정보처리방침</a></li>
-                            <li><a th:href="@{/careers}">채용 정보</a></li>
-                        </ul>
+                    <p class="text-gray-300 text-sm mb-4">
+                        AI 기반 반려동물 훈련 플랫폼으로 전문 훈련사와 함께하는 맞춤형 교육 서비스를 제공합니다.
+                    </p>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-gray-300 hover:text-white">
+                            <i class="fab fa-facebook-f"></i>
+                        </a>
+                        <a href="#" class="text-gray-300 hover:text-white">
+                            <i class="fab fa-instagram"></i>
+                        </a>
+                        <a href="#" class="text-gray-300 hover:text-white">
+                            <i class="fab fa-youtube"></i>
+                        </a>
+                        <a href="#" class="text-gray-300 hover:text-white">
+                            <i class="fab fa-twitter"></i>
+                        </a>
                     </div>
                 </div>
-                <div class="footer-social">
-                    <h3 class="footer-nav-title">소셜 미디어</h3>
-                    <div class="social-icons">
-                        <a href="#" class="social-icon">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path>
-                            </svg>
-                        </a>
-                        <a href="#" class="social-icon">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
-                                <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
-                                <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
-                            </svg>
-                        </a>
-                        <a href="#" class="social-icon">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z"></path>
-                            </svg>
-                        </a>
-                        <a href="#" class="social-icon">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path>
-                                <rect x="2" y="9" width="4" height="12"></rect>
-                                <circle cx="4" cy="4" r="2"></circle>
-                            </svg>
-                        </a>
-                    </div>
+
+                <!-- Quick Links -->
+                <div>
+                    <h3 class="text-sm font-semibold text-gray-400 tracking-wider uppercase mb-4">서비스</h3>
+                    <ul class="space-y-2">
+                        <li><a th:href="@{/courses}" class="text-sm text-gray-300 hover:text-white">강좌 찾기</a></li>
+                        <li><a th:href="@{/trainers}" class="text-sm text-gray-300 hover:text-white">훈련사 찾기</a></li>
+                        <li><a th:href="@{/institutes}" class="text-sm text-gray-300 hover:text-white">기관 찾기</a></li>
+                        <li><a th:href="@{/events}" class="text-sm text-gray-300 hover:text-white">이벤트</a></li>
+                        <li><a th:href="@{/shop}" class="text-sm text-gray-300 hover:text-white">쇼핑</a></li>
+                    </ul>
+                </div>
+
+                <!-- Support -->
+                <div>
+                    <h3 class="text-sm font-semibold text-gray-400 tracking-wider uppercase mb-4">고객지원</h3>
+                    <ul class="space-y-2">
+                        <li><a th:href="@{/help}" class="text-sm text-gray-300 hover:text-white">도움말</a></li>
+                        <li><a th:href="@{/contact}" class="text-sm text-gray-300 hover:text-white">문의하기</a></li>
+                        <li><a th:href="@{/faq}" class="text-sm text-gray-300 hover:text-white">자주 묻는 질문</a></li>
+                        <li><a th:href="@{/terms}" class="text-sm text-gray-300 hover:text-white">이용약관</a></li>
+                        <li><a th:href="@{/privacy}" class="text-sm text-gray-300 hover:text-white">개인정보처리방침</a></li>
+                    </ul>
                 </div>
             </div>
-            <div class="footer-bottom">
-                <div class="company-info">
-                    <p>테일즈 주식회사 | 대표이사: 홍길동 | 사업자등록번호: 123-45-67890</p>
-                    <p>주소: 서울특별시 강남구 테일즈로 123, 테일즈빌딩 8층 | 통신판매업신고: 제2024-서울강남-12345호</p>
-                    <p>고객센터: 1234-5678 (평일 09:00-18:00, 주말/공휴일 휴무)</p>
-                </div>
-                <div class="copyright">
-                    <p>&copy; 2024 테일즈 쇼핑 All Rights Reserved.</p>
+
+            <div class="mt-8 border-t border-gray-700 pt-8">
+                <div class="flex flex-col md:flex-row justify-between items-center">
+                    <p class="text-sm text-gray-400">
+                        © 2024 PetEdu Platform. All rights reserved.
+                    </p>
+                    <div class="mt-4 md:mt-0 flex space-x-6">
+                        <span class="text-sm text-gray-400">고객센터: 1588-0000</span>
+                        <span class="text-sm text-gray-400">이메일: support@petedu.com</span>
+                    </div>
                 </div>
             </div>
         </div>
-
-        <style>
-            .footer {
-                background-color: var(--gray-100);
-                border-top: 1px solid var(--border-color);
-                padding: 3rem 0 2rem;
-                margin-top: 4rem;
-            }
-            
-            .dark-mode .footer {
-                background-color: var(--gray-800);
-                border-color: var(--gray-700);
-            }
-            
-            .footer-top {
-                display: grid;
-                grid-template-columns: 1fr 2fr 1fr;
-                gap: 2rem;
-                margin-bottom: 2rem;
-            }
-            
-            .footer-logo {
-                display: flex;
-                flex-direction: column;
-                align-items: flex-start;
-            }
-            
-            .footer-logo .logo-icon {
-                width: 3rem;
-                height: 3rem;
-                margin-bottom: 1rem;
-            }
-            
-            .footer-logo .logo-text {
-                font-size: 1.25rem;
-                font-weight: 700;
-                margin-bottom: 1rem;
-            }
-            
-            .footer-nav {
-                display: grid;
-                grid-template-columns: repeat(3, 1fr);
-                gap: 2rem;
-            }
-            
-            .footer-nav-title {
-                font-size: 1rem;
-                font-weight: 600;
-                margin-bottom: 1rem;
-                color: var(--text-color);
-            }
-            
-            .dark-mode .footer-nav-title {
-                color: var(--gray-300);
-            }
-            
-            .footer-nav-list {
-                list-style: none;
-            }
-            
-            .footer-nav-list li {
-                margin-bottom: 0.5rem;
-            }
-            
-            .footer-nav-list a {
-                color: var(--gray-600);
-                font-size: 0.875rem;
-                transition: color 0.2s;
-            }
-            
-            .dark-mode .footer-nav-list a {
-                color: var(--gray-400);
-            }
-            
-            .footer-nav-list a:hover {
-                color: var(--primary-color);
-            }
-            
-            .social-icons {
-                display: flex;
-                gap: 1rem;
-            }
-            
-            .social-icon {
-                width: 2.5rem;
-                height: 2.5rem;
-                border-radius: 50%;
-                background-color: var(--gray-200);
-                color: var(--gray-700);
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                transition: all 0.2s;
-            }
-            
-            .dark-mode .social-icon {
-                background-color: var(--gray-700);
-                color: var(--gray-300);
-            }
-            
-            .social-icon:hover {
-                background-color: var(--primary-color);
-                color: white;
-            }
-            
-            .footer-bottom {
-                padding-top: 2rem;
-                border-top: 1px solid var(--border-color);
-            }
-            
-            .dark-mode .footer-bottom {
-                border-color: var(--gray-700);
-            }
-            
-            .company-info {
-                margin-bottom: 1rem;
-            }
-            
-            .company-info p {
-                font-size: 0.75rem;
-                color: var(--gray-500);
-                margin-bottom: 0.25rem;
-            }
-            
-            .dark-mode .company-info p {
-                color: var(--gray-500);
-            }
-            
-            .copyright p {
-                font-size: 0.75rem;
-                color: var(--gray-500);
-            }
-            
-            .dark-mode .copyright p {
-                color: var(--gray-500);
-            }
-            
-            @media (max-width: 768px) {
-                .footer-top {
-                    grid-template-columns: 1fr;
-                }
-                
-                .footer-nav {
-                    grid-template-columns: 1fr 1fr;
-                }
-            }
-        </style>
     </footer>
 </body>
 </html>
