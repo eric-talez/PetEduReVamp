@@ -35,10 +35,12 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(authz -> authz
-                .requestMatchers("/auth/**", "/oauth2/**").permitAll()
+                .requestMatchers("/", "/about", "/contact", "/courses", "/trainers", "/institutes", "/events").permitAll()
+                .requestMatchers("/auth/**", "/oauth2/**", "/login", "/register").permitAll()
                 .requestMatchers("/actuator/**").permitAll()
                 .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
-                .requestMatchers("/users").permitAll() // 회원가입 허용
+                .requestMatchers("/css/**", "/js/**", "/images/**", "/favicon.ico").permitAll()
+                .requestMatchers("/api/users").permitAll() // API 회원가입 허용
                 .anyRequest().authenticated()
             );
         
