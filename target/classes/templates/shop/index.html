@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="fragments/layout :: layout(~{::title}, ~{::main})">
+<head>
+    <title>테일즈 쇼핑 - 반려동물 용품 전문 쇼핑몰</title>
+</head>
+<body>
+    <main>
+        <div class="container">
+            <!-- 배너 슬라이더 -->
+            <section class="banner-section">
+                <div class="banner-container">
+                    <div class="banner-slider" id="banner-slider">
+                        <div class="banner-slide">
+                            <img src="https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?q=80&w=1200&auto=format&fit=crop&ixlib=rb-4.0.3" alt="반려동물 건강 캠페인" class="banner-image">
+                            <div class="banner-content">
+                                <h2 class="banner-title">반려동물 건강 캠페인</h2>
+                                <p class="banner-description">건강한 식습관과 정기적인 운동으로 반려동물의 건강을 지켜주세요. 건강 관리 용품 최대 40% 할인!</p>
+                                <a href="#" class="banner-button">자세히 보기</a>
+                            </div>
+                        </div>
+                        <div class="banner-slide">
+                            <img src="https://images.unsplash.com/photo-1535930891776-0c2dfb7fda1a?q=80&w=1200&auto=format&fit=crop&ixlib=rb-4.0.3" alt="신상품 소개" class="banner-image">
+                            <div class="banner-content">
+                                <h2 class="banner-title">2024 신상품 특별전</h2>
+                                <p class="banner-description">올 봄 새롭게 출시된 프리미엄 반려동물 용품을 만나보세요. 론칭 기념 특별 할인!</p>
+                                <a href="#" class="banner-button">신상품 보기</a>
+                            </div>
+                        </div>
+                        <div class="banner-slide">
+                            <img src="https://images.unsplash.com/photo-1606225457115-9b0de9c5fb09?q=80&w=1200&auto=format&fit=crop&ixlib=rb-4.0.3" alt="훈련사 추천 상품" class="banner-image">
+                            <div class="banner-content">
+                                <h2 class="banner-title">훈련사 추천 상품</h2>
+                                <p class="banner-description">전문 훈련사들이 엄선한 교육용 장난감과 훈련 용품을 만나보세요. 효과적인 교육을 위한 필수템!</p>
+                                <a href="#" class="banner-button">추천 상품 보기</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="banner-controls">
+                        <button class="banner-control" onclick="prevSlide()">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="15 18 9 12 15 6"></polyline>
+                            </svg>
+                        </button>
+                        <button class="banner-control" onclick="nextSlide()">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="9 18 15 12 9 6"></polyline>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- 카테고리 아이콘 그리드 -->
+            <section class="category-icon-section">
+                <div class="category-icon-grid">
+                    <a th:each="category : ${categories}" th:href="@{'/shop/category/' + ${category.name}}" class="category-icon-item">
+                        <div class="category-icon">
+                            <img th:src="${category.imageUrl}" th:alt="${category.name}">
+                        </div>
+                        <div class="category-icon-title" th:text="${category.name}">카테고리명</div>
+                    </a>
+                    <!-- 카테고리 데이터가 없을 경우 기본 데이터 표시 -->
+                    <th:block th:if="${#lists.isEmpty(categories)}">
+                        <a href="#" class="category-icon-item">
+                            <div class="category-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M7.5 12h9m-9 5.25h9m-9-10.5h9M4.5 19.5h15a2.25 2.25 0 0 0 2.25-2.25V6.75A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25v10.5A2.25 2.25 0 0 0 4.5 19.5Z"></path>
+                                </svg>
+                            </div>
+                            <div class="category-icon-title">강아지 사료</div>
+                        </a>
+                        <a href="#" class="category-icon-item">
+                            <div class="category-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M12.73 2.51A9 9 0 0 0 4.5 18h15a9 9 0 0 0-6.77-15.49M12 6.5a2.5 2.5 0 0 1 0 5 2.5 2.5 0 0 1 0-5m-4.17 5.959C9.1 13.819 10.5 14.5 12 14.5c1.5 0 2.9-.68 4.17-2.041l1.06 1.048C15.55 15.346 13.78 16 12 16s-3.55-.654-5.23-2.493l1.06-1.048Z"></path>
+                                </svg>
+                            </div>
+                            <div class="category-icon-title">강아지 간식</div>
+                        </a>
+                        <a href="#" class="category-icon-item">
+                            <div class="category-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M10 16v5a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-5m16 0v5a2 2 0 0 1-2 2h-2a2 2 0 0 1-2-2v-5M4 11V3a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8M1 11h22"></path>
+                                </svg>
+                            </div>
+                            <div class="category-icon-title">강아지 용품</div>
+                        </a>
+                        <a href="#" class="category-icon-item">
+                            <div class="category-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M7.5 12h9m-9 5.25h9m-9-10.5h9M4.5 19.5h15a2.25 2.25 0 0 0 2.25-2.25V6.75A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25v10.5A2.25 2.25 0 0 0 4.5 19.5Z"></path>
+                                </svg>
+                            </div>
+                            <div class="category-icon-title">고양이 사료</div>
+                        </a>
+                        <a href="#" class="category-icon-item">
+                            <div class="category-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M12.73 2.51A9 9 0 0 0 4.5 18h15a9 9 0 0 0-6.77-15.49M12 6.5a2.5 2.5 0 0 1 0 5 2.5 2.5 0 0 1 0-5m-4.17 5.959C9.1 13.819 10.5 14.5 12 14.5c1.5 0 2.9-.68 4.17-2.041l1.06 1.048C15.55 15.346 13.78 16 12 16s-3.55-.654-5.23-2.493l1.06-1.048Z"></path>
+                                </svg>
+                            </div>
+                            <div class="category-icon-title">고양이 간식</div>
+                        </a>
+                        <a href="#" class="category-icon-item">
+                            <div class="category-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M10 16v5a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-5m16 0v5a2 2 0 0 1-2 2h-2a2 2 0 0 1-2-2v-5M4 11V3a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8M1 11h22"></path>
+                                </svg>
+                            </div>
+                            <div class="category-icon-title">고양이 용품</div>
+                        </a>
+                        <a href="#" class="category-icon-item">
+                            <div class="category-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M14 9v6m-3-3h6M8.5 19H8a2 2 0 0 1-2-2v-1a2 2 0 0 0-2-2 2 2 0 0 0 2-2V11a2 2 0 0 1 2-2h.5M15 5h1a2 2 0 0 1 2 2v1a2 2 0 0 0 2 2 2 2 0 0 0-2 2v1a2 2 0 0 1-2 2h-1"></path>
+                                </svg>
+                            </div>
+                            <div class="category-icon-title">교육용품</div>
+                        </a>
+                        <a href="#" class="category-icon-item">
+                            <div class="category-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M20 21v-8a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8"></path>
+                                    <path d="M4 16s.5-1 2-1 2.5 2 4 2 2.5-2 4-2 2.5 2 4 2 2-1 2-1"></path>
+                                    <path d="M2 21h20"></path>
+                                    <path d="M7 8v2"></path>
+                                    <path d="M12 8v2"></path>
+                                    <path d="M17 8v2"></path>
+                                    <path d="M7 4h.01"></path>
+                                    <path d="M12 4h.01"></path>
+                                    <path d="M17 4h.01"></path>
+                                </svg>
+                            </div>
+                            <div class="category-icon-title">생일용품</div>
+                        </a>
+                    </th:block>
+                </div>
+
+                <style>
+                    .category-icon-section {
+                        margin: 2.5rem 0;
+                    }
+                    
+                    .category-icon-grid {
+                        display: flex;
+                        flex-wrap: wrap;
+                        justify-content: center;
+                        gap: 1.5rem;
+                    }
+                    
+                    .category-icon-item {
+                        display: flex;
+                        flex-direction: column;
+                        align-items: center;
+                        width: 90px;
+                        text-align: center;
+                        text-decoration: none;
+                        transition: transform 0.2s;
+                    }
+                    
+                    .category-icon-item:hover {
+                        transform: translateY(-3px);
+                    }
+                    
+                    .category-icon {
+                        width: 60px;
+                        height: 60px;
+                        border-radius: 50%;
+                        background-color: var(--primary-color);
+                        color: white;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        margin-bottom: 0.75rem;
+                        transition: all 0.3s ease;
+                    }
+                    
+                    .category-icon img {
+                        width: 100%;
+                        height: 100%;
+                        object-fit: cover;
+                        border-radius: 50%;
+                    }
+                    
+                    .category-icon svg {
+                        width: 32px;
+                        height: 32px;
+                    }
+                    
+                    .category-icon-item:hover .category-icon {
+                        background-color: var(--primary-hover);
+                        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+                    }
+                    
+                    .category-icon-title {
+                        font-size: 0.875rem;
+                        color: var(--text-color);
+                        font-weight: 500;
+                    }
+                    
+                    .dark-mode .category-icon-title {
+                        color: var(--gray-300);
+                    }
+                    
+                    @media (max-width: 768px) {
+                        .category-icon-grid {
+                            gap: 1rem;
+                        }
+                        
+                        .category-icon-item {
+                            width: 80px;
+                        }
+                        
+                        .category-icon {
+                            width: 50px;
+                            height: 50px;
+                        }
+                        
+                        .category-icon svg {
+                            width: 28px;
+                            height: 28px;
+                        }
+                    }
+                </style>
+            </section>
+            
+            <!-- 베스트 상품 섹션 -->
+            <section class="product-section">
+                <div class="section-header">
+                    <h2 class="section-title">베스트 상품</h2>
+                    <a th:href="@{/shop/best}" class="section-link">
+                        더보기
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="9 18 15 12 9 6"></polyline>
+                        </svg>
+                    </a>
+                </div>
+                
+                <div class="product-grid">
+                    <div th:each="product : ${bestProducts}" th:onclick="'goToProductDetail(' + ${product.id} + ')'" class="product-card">
+                        <div class="product-image">
+                            <img th:src="${product.mainImage}" th:alt="${product.name}">
+                            <div th:if="${product.discountRate > 0}" class="product-badge" th:text="${product.discountRate} + '%'">30%</div>
+                        </div>
+                        <div class="product-content">
+                            <div class="product-brand" th:text="${product.brand}">브랜드명</div>
+                            <div class="product-title" th:text="${product.name}">상품명</div>
+                            <div class="product-price">
+                                <div th:if="${product.discountRate > 0}" class="product-discount" th:text="${product.discountRate} + '%'">30%</div>
+                                <div class="product-current" th:text="${#numbers.formatInteger(product.price, 0, 'COMMA') + '원'}">29,800원</div>
+                                <div th:if="${product.discountRate > 0}" class="product-original" th:text="${#numbers.formatInteger(product.originalPrice, 0, 'COMMA') + '원'}">38,000원</div>
+                            </div>
+                            <div class="product-rating">
+                                <div class="product-stars">
+                                    <span th:each="i : ${#numbers.sequence(1, 5)}">
+                                        <svg th:if="${i <= product.rating}" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                                        </svg>
+                                        <svg th:unless="${i <= product.rating}" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                                        </svg>
+                                    </span>
+                                </div>
+                                <span th:text="'리뷰 ' + ${product.reviewCount}">리뷰 128개</span>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- 상품 데이터가 없을 경우 기본 데이터 표시 -->
+                    <th:block th:if="${#lists.isEmpty(bestProducts)}">
+                        <div class="product-card" onclick="goToProductDetail(1)">
+                            <div class="product-image">
+                                <img src="https://images.unsplash.com/photo-1568640347023-a616a30bc3bd?q=80&w=600&auto=format&fit=crop&ixlib=rb-4.0.3" alt="프리미엄 기능성 강아지 훈련 장난감">
+                                <div class="product-badge">22%</div>
+                            </div>
+                            <div class="product-content">
+                                <div class="product-brand">테일즈</div>
+                                <div class="product-title">프리미엄 기능성 강아지 훈련 장난감</div>
+                                <div class="product-price">
+                                    <div class="product-discount">22%</div>
+                                    <div class="product-current">29,800원</div>
+                                    <div class="product-original">38,000원</div>
+                                </div>
+                                <div class="product-rating">
+                                    <div class="product-stars">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                                        </svg>
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                                        </svg>
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                                        </svg>
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                                        </svg>
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                                        </svg>
+                                    </div>
+                                    <span>리뷰 128개</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="product-card" onclick="goToProductDetail(2)">
+                            <div class="product-image">
+                                <img src="https://images.unsplash.com/photo-1589924920114-de15293c7529?q=80&w=600&auto=format&fit=crop&ixlib=rb-4.0.3" alt="프리미엄 반려동물 간식">
+                                <div class="product-badge">15%</div>
+                            </div>
+                            <div class="product-content">
+                                <div class="product-brand">내추럴코어</div>
+                                <div class="product-title">프리미엄 유기농 반려동물 수제 간식 세트</div>
+                                <div class="product-price">
+                                    <div class="product-discount">15%</div>
+                                    <div class="product-current">25,500원</div>
+                                    <div class="product-original">30,000원</div>
+                                </div>
+                                <div class="product-rating">
+                                    <div class="product-stars">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                                        </svg>
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                                        </svg>
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                                        </svg>
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                                        </svg>
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                                        </svg>
+                                    </div>
+                                    <span>리뷰 96개</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="product-card" onclick="goToProductDetail(3)">
+                            <div class="product-image">
+                                <img src="https://images.unsplash.com/photo-1535294435445-d7249524ef2e?q=80&w=600&auto=format&fit=crop&ixlib=rb-4.0.3" alt="고양이 자동 급식기">
+                            </div>
+                            <div class="product-content">
+                                <div class="product-brand">펫테크</div>
+                                <div class="product-title">스마트 자동 급식기 - 앱 연동 가능</div>
+                                <div class="product-price">
+                                    <div class="product-current">75,000원</div>
+                                </div>
+                                <div class="product-rating">
+                                    <div class="product-stars">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                                        </svg>
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                                        </svg>
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                                        </svg>
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                                        </svg>
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                                        </svg>
+                                    </div>
+                                    <span>리뷰 75개</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="product-card" onclick="goToProductDetail(4)">
+                            <div class="product-image">
+                                <img src="https://images.unsplash.com/photo-1560743641-3914f2c45636?q=80&w=600&auto=format&fit=crop&ixlib=rb-4.0.3" alt="반려동물 캐리어">
+                                <div class="product-badge">30%</div>
+                            </div>
+                            <div class="product-content">
+                                <div class="product-brand">애니홈</div>
+                                <div class="product-title">프리미엄 반려동물 캐리어 - 기내 반입 가능</div>
+                                <div class="product-price">
+                                    <div class="product-discount">30%</div>
+                                    <div class="product-current">48,300원</div>
+                                    <div class="product-original">69,000원</div>
+                                </div>
+                                <div class="product-rating">
+                                    <div class="product-stars">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                                        </svg>
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                                        </svg>
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                                        </svg>
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                                        </svg>
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                                        </svg>
+                                    </div>
+                                    <span>리뷰 154개</span>
+                                </div>
+                            </div>
+                        </div>
+                    </th:block>
+                </div>
+            </section>
+            
+            <!-- 신상품 섹션 -->
+            <section class="product-section">
+                <div class="section-header">
+                    <h2 class="section-title">신상품</h2>
+                    <a th:href="@{/shop/new}" class="section-link">
+                        더보기
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="9 18 15 12 9 6"></polyline>
+                        </svg>
+                    </a>
+                </div>
+                
+                <div class="product-grid">
+                    <div th:each="product : ${newProducts}" th:onclick="'goToProductDetail(' + ${product.id} + ')'" class="product-card">
+                        <div class="product-image">
+                            <img th:src="${product.mainImage}" th:alt="${product.name}">
+                            <div th:if="${product.discountRate > 0}" class="product-badge" th:text="${product.discountRate} + '%'">30%</div>
+                        </div>
+                        <div class="product-content">
+                            <div class="product-brand" th:text="${product.brand}">브랜드명</div>
+                            <div class="product-title" th:text="${product.name}">상품명</div>
+                            <div class="product-price">
+                                <div th:if="${product.discountRate > 0}" class="product-discount" th:text="${product.discountRate} + '%'">30%</div>
+                                <div class="product-current" th:text="${#numbers.formatInteger(product.price, 0, 'COMMA') + '원'}">29,800원</div>
+                                <div th:if="${product.discountRate > 0}" class="product-original" th:text="${#numbers.formatInteger(product.originalPrice, 0, 'COMMA') + '원'}">38,000원</div>
+                            </div>
+                            <div class="product-rating">
+                                <div class="product-stars">
+                                    <span th:each="i : ${#numbers.sequence(1, 5)}">
+                                        <svg th:if="${i <= product.rating}" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                                        </svg>
+                                        <svg th:unless="${i <= product.rating}" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                                        </svg>
+                                    </span>
+                                </div>
+                                <span th:text="'리뷰 ' + ${product.reviewCount}">리뷰 128개</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- 교육연계 상품 섹션 -->
+            <section class="product-section">
+                <div class="section-header">
+                    <h2 class="section-title">교육 연계 상품</h2>
+                    <a th:href="@{/shop/edu-products}" class="section-link">
+                        더보기
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="9 18 15 12 9 6"></polyline>
+                        </svg>
+                    </a>
+                </div>
+                
+                <div class="product-grid">
+                    <div th:each="product : ${eduProducts}" th:onclick="'goToProductDetail(' + ${product.id} + ')'" class="product-card">
+                        <div class="product-image">
+                            <img th:src="${product.mainImage}" th:alt="${product.name}">
+                            <div th:if="${product.discountRate > 0}" class="product-badge" th:text="${product.discountRate} + '%'">30%</div>
+                        </div>
+                        <div class="product-content">
+                            <div class="product-brand" th:text="${product.brand}">브랜드명</div>
+                            <div class="product-title" th:text="${product.name}">상품명</div>
+                            <div class="product-price">
+                                <div th:if="${product.discountRate > 0}" class="product-discount" th:text="${product.discountRate} + '%'">30%</div>
+                                <div class="product-current" th:text="${#numbers.formatInteger(product.price, 0, 'COMMA') + '원'}">29,800원</div>
+                                <div th:if="${product.discountRate > 0}" class="product-original" th:text="${#numbers.formatInteger(product.originalPrice, 0, 'COMMA') + '원'}">38,000원</div>
+                            </div>
+                            <div class="product-rating">
+                                <div class="product-stars">
+                                    <span th:each="i : ${#numbers.sequence(1, 5)}">
+                                        <svg th:if="${i <= product.rating}" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                                        </svg>
+                                        <svg th:unless="${i <= product.rating}" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                                        </svg>
+                                    </span>
+                                </div>
+                                <span th:text="'리뷰 ' + ${product.reviewCount}">리뷰 128개</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+</body>
+</html>
