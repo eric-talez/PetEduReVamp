@@ -312,8 +312,22 @@ export function Sidebar({
       
       // 약간의 지연 후 페이지 이동 (로딩 표시가 보이도록)
       setTimeout(() => {
-        setLocation('/auth');
-      }, 1000);
+        try {
+          if (document.body.contains(overlay)) {
+            document.body.removeChild(overlay);
+          }
+        } catch (e) {
+          console.log('오버레이 제거 중 오류:', e);
+        }
+        
+        // 페이지 이동 시도 (여러 방식으로 시도)
+        try {
+          setLocation('/auth');
+        } catch (e) {
+          console.log('setLocation 실패, window.location 사용:', e);
+          window.location.href = '/auth';
+        }
+      }, 1500);
       return;
     }
 
