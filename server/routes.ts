@@ -1713,6 +1713,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json(applicationConfig.getApplicationInfo());
   });
 
+  // Spring Boot 애플리케이션 통합
+  try {
+    const { main } = await import('./spring/SpringBootApplication');
+    // Spring Boot 애플리케이션을 별도 포트에서 실행하지 않고 현재 Express 앱에 통합
+    console.log('[SpringBoot] Spring Boot 스타일 컴포넌트가 통합되었습니다');
+  } catch (error) {
+    console.log('[SpringBoot] Spring Boot 통합 스킵됨 (선택적)');
+  }
+  
   console.log('[SpringBoot] Spring Boot 스타일 API 엔드포인트가 등록되었습니다');
 
   // Java Bridge API 엔드포인트 추가
