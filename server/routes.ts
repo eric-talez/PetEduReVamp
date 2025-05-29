@@ -18,6 +18,7 @@ import { registerShoppingRoutes } from "./routes/shopping";
 import { userController } from "./java-style/UserController";
 import { petController } from "./java-style/PetController";
 import { courseController } from "./java-style/CourseController";
+import { registerSpringBootRoutes, registerSpringBootAPI } from "./spring-boot-routes";
 import { applicationConfig } from "./java-style/ApplicationConfig";
 import { Event, EventLocation } from "@shared/schema";
 import { WebSocketServer } from 'ws';
@@ -1714,6 +1715,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   console.log('[SpringBoot] Spring Boot 스타일 API 엔드포인트가 등록되었습니다');
+
+  // Spring Boot 웹 라우트와 API 등록
+  registerSpringBootRoutes(app);
+  registerSpringBootAPI(app);
 
   // Java Bridge API 엔드포인트 추가
   app.get('/api/java/status', (req, res) => {
