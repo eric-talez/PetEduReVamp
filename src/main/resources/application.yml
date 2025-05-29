@@ -7,52 +7,65 @@ spring:
     username: ${DB_USERNAME:postgres}
     password: ${DB_PASSWORD:password}
     driver-class-name: org.postgresql.Driver
-    
+  
   jpa:
     hibernate:
       ddl-auto: update
-    show-sql: true
+    show-sql: false
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
-    
+  
   thymeleaf:
     cache: false
     prefix: classpath:/templates/
     suffix: .html
     encoding: UTF-8
     mode: HTML
-    
+  
   web:
     resources:
       static-locations: classpath:/static/
-      cache:
-        period: 0
-    
-  devtools:
-    restart:
-      enabled: true
-    livereload:
-      enabled: true
+  
+  session:
+    store-type: jdbc
+    timeout: 30m
+  
+  security:
+    oauth2:
+      client:
+        registration:
+          kakao:
+            client-id: ${KAKAO_CLIENT_ID:}
+            client-secret: ${KAKAO_CLIENT_SECRET:}
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+            authorization-grant-type: authorization_code
+            scope: profile_nickname, profile_image, account_email
+          naver:
+            client-id: ${NAVER_CLIENT_ID:}
+            client-secret: ${NAVER_CLIENT_SECRET:}
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+            authorization-grant-type: authorization_code
+            scope: name, email
 
 server:
   port: ${PORT:8080}
   servlet:
     context-path: /
-    encoding:
-      charset: UTF-8
-      force: true
+    session:
+      cookie:
+        max-age: 1800
+        http-only: true
+        secure: false
 
 logging:
   level:
-    com.petedu: DEBUG
-    org.springframework.web: DEBUG
-    org.hibernate.SQL: DEBUG
-    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    com.petedu: INFO
+    org.springframework.security: DEBUG
+    org.springframework.web: INFO
   pattern:
-    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
-    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
   file:
     name: logs/application.log
 
@@ -65,20 +78,17 @@ management:
     health:
       show-details: always
 
-petedu:
-  app:
-    name: "PetEdu Platform"
-    version: "1.0.0"
-    description: "AI-powered Pet Training Platform"
-  security:
-    jwt:
-      secret: ${JWT_SECRET:your-secret-key}
-      expiration: 86400000
-  ai:
-    openai:
-      api-key: ${OPENAI_API_KEY:}
-  external:
-    kakao:
-      maps-api-key: ${KAKAO_MAPS_API_KEY:}
-    stripe:
-      secret-key: ${STRIPE_SECRET_KEY:}
+app:
+  jwt:
+    secret: ${JWT_SECRET:mySecretKey}
+    expiration: 86400000
+  
+  openai:
+    api-key: ${OPENAI_API_KEY:}
+  
+  stripe:
+    secret-key: ${STRIPE_SECRET_KEY:}
+    public-key: ${STRIPE_PUBLIC_KEY:}
+  
+  kakao:
+    maps-api-key: ${KAKAO_MAPS_API_KEY:}
