@@ -1,0 +1,94 @@
+spring:
+  application:
+    name: petedu-platform
+  
+  datasource:
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/petedu}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:password}
+    driver-class-name: org.postgresql.Driver
+  
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+  
+  thymeleaf:
+    cache: false
+    prefix: classpath:/templates/
+    suffix: .html
+    encoding: UTF-8
+    mode: HTML
+  
+  web:
+    resources:
+      static-locations: classpath:/static/
+  
+  session:
+    store-type: jdbc
+    timeout: 30m
+  
+  security:
+    oauth2:
+      client:
+        registration:
+          kakao:
+            client-id: ${KAKAO_CLIENT_ID:}
+            client-secret: ${KAKAO_CLIENT_SECRET:}
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+            authorization-grant-type: authorization_code
+            scope: profile_nickname, profile_image, account_email
+          naver:
+            client-id: ${NAVER_CLIENT_ID:}
+            client-secret: ${NAVER_CLIENT_SECRET:}
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+            authorization-grant-type: authorization_code
+            scope: name, email
+
+server:
+  port: ${PORT:8080}
+  servlet:
+    context-path: /
+    session:
+      cookie:
+        max-age: 1800
+        http-only: true
+        secure: false
+
+logging:
+  level:
+    com.petedu: INFO
+    org.springframework.security: DEBUG
+    org.springframework.web: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+  file:
+    name: logs/application.log
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
+
+app:
+  jwt:
+    secret: ${JWT_SECRET:mySecretKey}
+    expiration: 86400000
+  
+  openai:
+    api-key: ${OPENAI_API_KEY:}
+  
+  stripe:
+    secret-key: ${STRIPE_SECRET_KEY:}
+    public-key: ${STRIPE_PUBLIC_KEY:}
+  
+  kakao:
+    maps-api-key: ${KAKAO_MAPS_API_KEY:}

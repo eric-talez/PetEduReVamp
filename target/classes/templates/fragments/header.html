@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+    <!-- Header Fragment -->
+    <header th:fragment="header" class="bg-white shadow-lg fixed w-full top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <!-- Logo and Mobile Menu Button -->
+                <div class="flex items-center">
+                    <button @click="sidebarOpen = !sidebarOpen" class="lg:hidden p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100">
+                        <i class="fas fa-bars text-xl"></i>
+                    </button>
+                    <a th:href="@{/}" class="flex items-center ml-4 lg:ml-0">
+                        <img th:src="@{/images/logo.png}" alt="PetEdu" class="h-8 w-auto">
+                        <span class="ml-2 text-xl font-bold text-gray-900">PetEdu</span>
+                    </a>
+                </div>
+
+                <!-- Search Bar (Desktop) -->
+                <div class="hidden md:flex flex-1 max-w-md mx-8">
+                    <div class="relative w-full">
+                        <input type="text" 
+                               placeholder="강좌, 훈련사, 기관 검색..." 
+                               class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+                    </div>
+                </div>
+
+                <!-- Right Side Navigation -->
+                <div class="flex items-center space-x-4">
+                    <!-- Notifications -->
+                    <div class="relative" x-data="{ open: false }">
+                        <button @click="open = !open" class="p-2 text-gray-600 hover:text-gray-900 relative">
+                            <i class="fas fa-bell text-xl"></i>
+                            <span th:if="${unreadNotifications > 0}" 
+                                  th:text="${unreadNotifications}"
+                                  class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                            </span>
+                        </button>
+                        
+                        <!-- Notifications Dropdown -->
+                        <div x-show="open" @click.away="open = false" 
+                             class="absolute right-0 mt-2 w-80 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 z-50">
+                            <div class="py-1">
+                                <div class="px-4 py-2 text-sm font-medium text-gray-900 border-b">알림</div>
+                                <div th:if="${notifications != null and !notifications.empty}">
+                                    <div th:each="notification : ${notifications}" 
+                                         class="px-4 py-3 hover:bg-gray-50 cursor-pointer border-b">
+                                        <p th:text="${notification.message}" class="text-sm text-gray-900"></p>
+                                        <p th:text="${#temporals.format(notification.createdAt, 'yyyy-MM-dd HH:mm')}" 
+                                           class="text-xs text-gray-500 mt-1"></p>
+                                    </div>
+                                </div>
+                                <div th:if="${notifications == null or notifications.empty}" 
+                                     class="px-4 py-8 text-center text-gray-500">
+                                    새로운 알림이 없습니다.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- User Menu -->
+                    <div class="relative" x-data="{ open: false }" th:if="${isAuthenticated}">
+                        <button @click="open = !open" class="flex items-center space-x-2 p-2 rounded-md hover:bg-gray-100">
+                            <img th:src="${user?.avatar ?: '/images/default-avatar.png'}" 
+                                 th:alt="${user?.name}" 
+                                 class="h-8 w-8 rounded-full object-cover">
+                            <span th:text="${user?.name}" class="hidden md:block text-sm font-medium text-gray-900"></span>
+                            <i class="fas fa-chevron-down text-xs text-gray-500"></i>
+                        </button>
+
+                        <!-- User Dropdown -->
+                        <div x-show="open" @click.away="open = false" 
+                             class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 z-50">
+                            <div class="py-1">
+                                <a th:href="@{/profile}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                    <i class="fas fa-user mr-2"></i>프로필
+                                </a>
+                                <a th:href="@{/my-courses}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                    <i class="fas fa-book mr-2"></i>내 강좌
+                                </a>
+                                <a th:href="@{/my-pets}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                    <i class="fas fa-paw mr-2"></i>내 반려동물
+                                </a>
+                                <a th:href="@{/settings}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                    <i class="fas fa-cog mr-2"></i>설정
+                                </a>
+                                <div class="border-t my-1"></div>
+                                <form th:action="@{/logout}" method="post" class="block">
+                                    <button type="submit" class="w-full text-left px-4 py-2 text-sm text-red-700 hover:bg-gray-100">
+                                        <i class="fas fa-sign-out-alt mr-2"></i>로그아웃
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Login/Register Buttons -->
+                    <div th:unless="${isAuthenticated}" class="flex items-center space-x-2">
+                        <a th:href="@{/login}" class="px-4 py-2 text-sm font-medium text-blue-600 hover:text-blue-800">
+                            로그인
+                        </a>
+                        <a th:href="@{/register}" 
+                           class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700">
+                            회원가입
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Search (Hidden by default) -->
+        <div class="md:hidden border-t bg-gray-50 px-4 py-3" x-data="{ mobileSearchOpen: false }" x-show="mobileSearchOpen">
+            <div class="relative">
+                <input type="text" 
+                       placeholder="검색..." 
+                       class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+            </div>
+        </div>
+    </header>
+</body>
+</html>
