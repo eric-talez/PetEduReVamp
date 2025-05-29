@@ -1686,6 +1686,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // 쇼핑 라우트 등록
   registerShoppingRoutes(app);
 
+  // Spring Boot 웹 컨트롤러 임포트 및 등록
+  const { webController } = await import('./java-style/WebController');
+  
+  // Spring Boot 웹 페이지 라우팅 (Thymeleaf 스타일)
+  app.get('/', webController.home.bind(webController));
+  app.get('/dashboard', webController.dashboard.bind(webController));
+  app.get('/courses', webController.courses.bind(webController));
+  app.get('/pets', webController.pets.bind(webController));
+  app.get('/trainers', webController.trainers.bind(webController));
+  app.get('/admin', webController.admin.bind(webController));
+
   // Spring Boot 스타일 API 엔드포인트 추가
   
   // User API
