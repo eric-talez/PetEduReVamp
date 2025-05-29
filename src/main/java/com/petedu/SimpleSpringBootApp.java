@@ -14,8 +14,15 @@ import com.petedu.service.CourseService;
 import java.util.HashMap;
 import java.util.Map;
 
-@SpringBootApplication
-@EnableJpaRepositories
+@SpringBootApplication(
+    scanBasePackages = "com.petedu",
+    exclude = {
+        org.springframework.boot.autoconfigure.r2dbc.R2dbcAutoConfiguration.class,
+        org.springframework.boot.autoconfigure.r2dbc.R2dbcDataAutoConfiguration.class
+    }
+)
+@EnableJpaRepositories("com.petedu.repository")
+@EntityScan("com.petedu.entity")
 public class SimpleSpringBootApp {
     public static void main(String[] args) {
         System.setProperty("spring.profiles.active", "default");
