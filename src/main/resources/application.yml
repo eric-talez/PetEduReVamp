@@ -3,10 +3,10 @@ spring:
     name: petedu-platform
   
   datasource:
-    url: jdbc:mariadb://localhost:3306/petedu_db?useUnicode=true&characterEncoding=utf8mb4&useSSL=false&allowPublicKeyRetrieval=true
-    username: ${DB_USERNAME:petedu_user}
-    password: ${DB_PASSWORD:petedu_password}
-    driver-class-name: org.mariadb.jdbc.Driver
+    url: ${DATABASE_URL:jdbc:h2:mem:petedu_db;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE}
+    username: ${DB_USERNAME:sa}
+    password: ${DB_PASSWORD:}
+    driver-class-name: ${DB_DRIVER:org.h2.Driver}
     
   jpa:
     hibernate:
