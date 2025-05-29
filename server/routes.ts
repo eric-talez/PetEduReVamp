@@ -15,6 +15,7 @@ import { registerAnalyticsRoutes } from "./routes/analytics";
 import { registerEducationRoutes } from "./routes/education";
 import { javaBridge } from "./java-bridge";
 import { registerShoppingRoutes } from "./routes/shopping";
+import { userController } from "./java-style/UserController";
 import { Event, EventLocation } from "@shared/schema";
 import { WebSocketServer } from 'ws';
 import { MessagingService } from './messaging/service';
@@ -1681,6 +1682,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // 쇼핑 라우트 등록
   registerShoppingRoutes(app);
+
+  // Spring Boot 스타일 API 엔드포인트 추가
+  app.get('/api/spring/users', userController.findAll.bind(userController));
+  app.get('/api/spring/users/:id', userController.findById.bind(userController));
+  app.post('/api/spring/users', userController.save.bind(userController));
+  app.get('/api/spring/users/username/:username', userController.findByUsername.bind(userController));
+  app.get('/actuator/health', userController.health.bind(userController));
+
+  console.log('[SpringBoot] Spring Boot 스타일 API 엔드포인트가 등록되었습니다');
 
   // Java Bridge API 엔드포인트 추가
   app.get('/api/java/status', (req, res) => {
