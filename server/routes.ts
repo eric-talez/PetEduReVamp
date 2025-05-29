@@ -1713,13 +1713,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json(applicationConfig.getApplicationInfo());
   });
 
-  // Spring Boot 애플리케이션 통합
+  // Spring Boot 웹 페이지 라우팅 추가
   try {
-    const { main } = await import('./spring/SpringBootApplication');
-    // Spring Boot 애플리케이션을 별도 포트에서 실행하지 않고 현재 Express 앱에 통합
-    console.log('[SpringBoot] Spring Boot 스타일 컴포넌트가 통합되었습니다');
+    const { WebController } = await import('./spring/controller/WebController');
+    const webController = new WebController(storage);
+
+    // Spring Boot 스타일 페이지 라우팅
+    app.get('/spring', webController.home.bind(webController));
+    app.get('/spring/dashboard', webController.dashboard.bind(webController));
+    app.get('/spring/courses', webController.courses.bind(webController));
+    app.get('/spring/pets', webController.pets.bind(webController));
+    app.get('/spring/trainers', webController.trainers.bind(webController));
+    app.get('/spring/admin', webController.admin.bind(webController));
+
+    console.log('[SpringBoot] Spring Boot 웹 페이지 라우팅이 추가되었습니다');
   } catch (error) {
-    console.log('[SpringBoot] Spring Boot 통합 스킵됨 (선택적)');
+    console.log('[SpringBoot] Spring Boot 웹 페이지 스킵됨 (선택적)');
   }
   
   console.log('[SpringBoot] Spring Boot 스타일 API 엔드포인트가 등록되었습니다');
