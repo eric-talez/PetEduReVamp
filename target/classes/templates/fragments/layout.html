@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:fragment="layout(title, content)">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:replace="${title}">테일즈 쇼핑</title>
+    <link rel="stylesheet" th:href="@{/css/shop-style.css}">
+    <script th:src="@{/js/shop.js}" defer></script>
+</head>
+<body th:classappend="${session.darkMode} ? 'dark-mode' : ''">
+    <!-- 유틸리티 네비게이션 -->
+    <div th:replace="fragments/navigation :: utility-nav"></div>
+    
+    <!-- 헤더 -->
+    <header th:replace="fragments/navigation :: main-header"></header>
+    
+    <!-- 메인 콘텐츠 -->
+    <main th:replace="${content}">
+        <p>메인 콘텐츠가 여기에 들어갑니다.</p>
+    </main>
+    
+    <!-- 푸터 -->
+    <footer th:replace="fragments/footer :: footer"></footer>
+    
+    <!-- 챗봇 -->
+    <div th:replace="fragments/chatbot :: chatbot"></div>
+</body>
+</html>
