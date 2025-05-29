@@ -44,7 +44,6 @@ export interface IStorage {
   
   // 반려동물 관련
   getPet(id: number): Promise<any>;
-  getAllPets(): Promise<any[]>;
   getPetsByUserId(userId: number): Promise<any[]>;
   createPet(pet: any): Promise<any>;
   
