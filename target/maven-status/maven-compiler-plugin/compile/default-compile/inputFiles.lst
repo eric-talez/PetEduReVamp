@@ -6,7 +6,6 @@
 /home/runner/workspace/src/main/java/com/petedu/config/SecurityConfig.java
 /home/runner/workspace/src/main/java/com/petedu/repository/PetRepository.java
 /home/runner/workspace/src/main/java/com/petedu/service/UserService.java
-/home/runner/workspace/src/main/java/com/petedu/PetEduApplication.java
 /home/runner/workspace/src/main/java/com/petedu/controller/UserController.java
 /home/runner/workspace/src/main/java/com/petedu/controller/HomeController.java
 /home/runner/workspace/src/main/java/com/petedu/entity/CourseEnrollment.java

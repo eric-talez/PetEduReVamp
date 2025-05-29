@@ -14,7 +14,6 @@ com/petedu/WebController.class
 com/petedu/repository/UserRepository.class
 com/petedu/entity/CourseEnrollment.class
 com/petedu/SimpleSpringBootApp.class
-com/petedu/PetEduApplication.class
 com/petedu/repository/CourseRepository.class
 com/petedu/repository/PetRepository.class
 com/petedu/controller/HealthController.class
