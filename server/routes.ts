@@ -13,6 +13,7 @@ import { registerMenuRoutes } from "./menu/routes";
 import { registerAiRoutes } from "./ai/routes";
 import { registerAnalyticsRoutes } from "./routes/analytics";
 import { registerEducationRoutes } from "./routes/education";
+import { javaBridge } from "./java-bridge";
 import { registerShoppingRoutes } from "./routes/shopping";
 import { Event, EventLocation } from "@shared/schema";
 import { WebSocketServer } from 'ws';
@@ -1681,7 +1682,52 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // 쇼핑 라우트 등록
   registerShoppingRoutes(app);
 
+  // Java Bridge API 엔드포인트 추가
+  app.get('/api/java/status', (req, res) => {
+    res.json({ 
+      isRunning: javaBridge.isRunning(),
+      port: javaBridge.getPort(),
+      message: javaBridge.isRunning() ? 'Java 서비스가 실행 중입니다.' : 'Java 서비스가 실행되지 않았습니다.'
+    });
+  });
+
+  // Java 서비스 헬스 체크
+  app.get('/api/java/health', async (req, res) => {
+    try {
+      if (!javaBridge.isRunning()) {
+        return res.status(503).json({ message: 'Java 서비스가 실행되지 않았습니다.' });
+      }
+      
+      const result = await javaBridge.callJavaService('/actuator/health');
+      res.json({ status: 'UP', java: result });
+    } catch (error) {
+      res.status(503).json({ 
+        status: 'DOWN', 
+        message: 'Java 서비스 헬스 체크 실패',
+        error: error instanceof Error ? error.message : '알 수 없는 오류'
+      });
+    }
+  });
+
+  // Java 서비스로 사용자 데이터 전송
+  app.post('/api/java/users', async (req, res) => {
+    try {
+      if (!javaBridge.isRunning()) {
+        return res.status(503).json({ message: 'Java 서비스가 실행되지 않았습니다.' });
+      }
+      
+      const result = await javaBridge.callJavaService('/api/users', req.body);
+      res.json({ message: 'Java 서비스로 데이터 전송 완료', result });
+    } catch (error) {
+      res.status(500).json({ 
+        message: 'Java 서비스 호출 실패',
+        error: error instanceof Error ? error.message : '알 수 없는 오류'
+      });
+    }
+  });
+
   console.log('[server] WebSocket server initialized at /ws');
+  console.log('[JavaBridge] Java Bridge API endpoints registered');
   
   return httpServer;
 }
