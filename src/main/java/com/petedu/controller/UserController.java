@@ -2,7 +2,7 @@ package com.petedu.controller;
 
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;
-import com.petedu.domain.user.entity.User;
+import com.petedu.entity.User;
 import java.util.*;
 
 @RestController
