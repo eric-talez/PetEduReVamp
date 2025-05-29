@@ -2,16 +2,23 @@ package com.petedu;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.beans.factory.annotation.Autowired;
+import com.petedu.service.UserService;
+import com.petedu.service.PetService;
+import com.petedu.service.CourseService;
 import java.util.HashMap;
 import java.util.Map;
 
 @SpringBootApplication
+@EnableJpaRepositories
 public class SimpleSpringBootApp {
     public static void main(String[] args) {
+        System.setProperty("spring.profiles.active", "default");
         SpringApplication.run(SimpleSpringBootApp.class, args);
     }
 }
@@ -19,12 +26,26 @@ public class SimpleSpringBootApp {
 @Controller
 class WebController {
     
+    @Autowired
+    private UserService userService;
+    
+    @Autowired
+    private PetService petService;
+    
+    @Autowired
+    private CourseService courseService;
+    
     @GetMapping("/")
     public String home(Model model) {
-        model.addAttribute("userCount", 1250);
-        model.addAttribute("petCount", 3400);
-        model.addAttribute("courseCount", 150);
-        model.addAttribute("trainerCount", 85);
+        long userCount = userService.getTotalUserCount();
+        long petCount = petService.getTotalPetCount();
+        long courseCount = courseService.getTotalCourseCount();
+        long trainerCount = userService.getTrainerCount();
+        
+        model.addAttribute("userCount", userCount);
+        model.addAttribute("petCount", petCount);
+        model.addAttribute("courseCount", courseCount);
+        model.addAttribute("trainerCount", trainerCount);
         model.addAttribute("pageTitle", "PetEdu Platform - AI 반려동물 교육 플랫폼");
         return "index";
     }

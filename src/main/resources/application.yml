@@ -3,71 +3,57 @@ spring:
     name: petedu-platform
   
   datasource:
-    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/petedu}
-    username: ${DB_USERNAME:postgres}
-    password: ${DB_PASSWORD:password}
-    driver-class-name: org.postgresql.Driver
-  
+    url: jdbc:mariadb://localhost:3306/petedu_db?useUnicode=true&characterEncoding=utf8mb4&useSSL=false&allowPublicKeyRetrieval=true
+    username: ${DB_USERNAME:petedu_user}
+    password: ${DB_PASSWORD:petedu_password}
+    driver-class-name: org.mariadb.jdbc.Driver
+    
   jpa:
     hibernate:
       ddl-auto: update
-    show-sql: false
+    show-sql: true
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.PostgreSQLDialect
+        dialect: org.hibernate.dialect.MariaDBDialect
         format_sql: true
-  
+        
   thymeleaf:
     cache: false
     prefix: classpath:/templates/
     suffix: .html
     encoding: UTF-8
     mode: HTML
-  
+    
   web:
     resources:
       static-locations: classpath:/static/
-  
-  session:
-    store-type: jdbc
-    timeout: 30m
-  
+      
   security:
-    oauth2:
-      client:
-        registration:
-          kakao:
-            client-id: ${KAKAO_CLIENT_ID:}
-            client-secret: ${KAKAO_CLIENT_SECRET:}
-            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
-            authorization-grant-type: authorization_code
-            scope: profile_nickname, profile_image, account_email
-          naver:
-            client-id: ${NAVER_CLIENT_ID:}
-            client-secret: ${NAVER_CLIENT_SECRET:}
-            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
-            authorization-grant-type: authorization_code
-            scope: name, email
+    user:
+      name: admin
+      password: admin123
+      roles: ADMIN
 
 server:
-  port: ${PORT:8080}
+  port: 8080
   servlet:
     context-path: /
-    session:
-      cookie:
-        max-age: 1800
-        http-only: true
-        secure: false
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
 
 logging:
   level:
-    com.petedu: INFO
+    com.petedu: DEBUG
     org.springframework.security: DEBUG
-    org.springframework.web: INFO
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
   file:
-    name: logs/application.log
+    name: logs/spring-boot-application.log
 
 management:
   endpoints:
@@ -77,18 +63,3 @@ management:
   endpoint:
     health:
       show-details: always
-
-app:
-  jwt:
-    secret: ${JWT_SECRET:mySecretKey}
-    expiration: 86400000
-  
-  openai:
-    api-key: ${OPENAI_API_KEY:}
-  
-  stripe:
-    secret-key: ${STRIPE_SECRET_KEY:}
-    public-key: ${STRIPE_PUBLIC_KEY:}
-  
-  kakao:
-    maps-api-key: ${KAKAO_MAPS_API_KEY:}
