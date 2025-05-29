@@ -1724,6 +1724,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json(applicationConfig.getApplicationInfo());
   });
 
+  console.log('[SpringBoot] Spring Boot 웹 컨트롤러가 등록되었습니다');
   console.log('[SpringBoot] Spring Boot 스타일 API 엔드포인트가 등록되었습니다');
 
   // Java Bridge API 엔드포인트 추가
