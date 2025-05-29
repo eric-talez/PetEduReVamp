@@ -18,6 +18,7 @@ import { registerShoppingRoutes } from "./routes/shopping";
 import { userController } from "./java-style/UserController";
 import { petController } from "./java-style/PetController";
 import { courseController } from "./java-style/CourseController";
+import { applicationConfig } from "./java-style/ApplicationConfig";
 import { Event, EventLocation } from "@shared/schema";
 import { WebSocketServer } from 'ws';
 import { MessagingService } from './messaging/service';
@@ -1706,8 +1707,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/spring/courses/user/:userId', courseController.findByUserId.bind(courseController));
   app.post('/api/spring/courses/:courseId/enroll', courseController.enrollUser.bind(courseController));
   
-  // Health Check
+  // Health Check & Application Info
   app.get('/actuator/health', userController.health.bind(userController));
+  app.get('/actuator/info', (req, res) => {
+    res.json(applicationConfig.getApplicationInfo());
+  });
 
   console.log('[SpringBoot] Spring Boot 스타일 API 엔드포인트가 등록되었습니다');
 
