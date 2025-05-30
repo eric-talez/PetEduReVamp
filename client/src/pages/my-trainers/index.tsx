@@ -20,7 +20,7 @@ const MyTrainersPage = () => {
         email: 'trainer.kim@petedu.com'
       },
       location: '서울시 강남구',
-      avatar: null,
+      avatar: undefined,
       status: 'active',
       nextSession: '2025-06-02 14:00',
       totalSessions: 15,
@@ -38,7 +38,7 @@ const MyTrainersPage = () => {
         email: 'trainer.park@petedu.com'
       },
       location: '서울시 서초구',
-      avatar: null,
+      avatar: undefined,
       status: 'active',
       nextSession: '2025-06-05 10:00',
       totalSessions: 8,
@@ -67,7 +67,7 @@ const MyTrainersPage = () => {
                 <div className="flex items-start justify-between">
                   <div className="flex items-center space-x-4">
                     <Avatar className="h-16 w-16">
-                      <AvatarImage src={trainer.avatar} />
+                      <AvatarImage src={trainer.avatar || undefined} />
                       <AvatarFallback className="bg-primary text-primary-foreground">
                         {trainer.name.charAt(0)}
                       </AvatarFallback>
