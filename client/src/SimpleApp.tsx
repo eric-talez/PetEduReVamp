@@ -485,6 +485,18 @@ function AppLayout({ children }: { children: ReactNode }) {
                     }}
                   </Route>
                   
+                  {/* 나의 학습 메뉴 */}
+                  <Route path="/my-trainers">
+                    {() => {
+                      const MyTrainersPage = lazy(() => import('./pages/my-trainers'));
+                      return (
+                        <Suspense fallback={<div className="p-8 text-center">담당 훈련사 페이지 로딩 중...</div>}>
+                          <MyTrainersPage />
+                        </Suspense>
+                      );
+                    }}
+                  </Route>
+                  
                   {/* 도움말 */}
                   <Route path="/help/faq" component={FAQPage} />
                   
