@@ -519,9 +519,7 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
                     className="relative"
                     aria-label="알림"
                   >
-                    <div className="w-5 h-5 rounded-full border border-current flex items-center justify-center">
-                      <div className="w-2 h-2 rounded-full bg-current opacity-60"></div>
-                    </div>
+                    <Bell className="h-5 w-5" />
                     {unreadNotificationsCount > 0 && (
                       <Badge 
                         variant="danger" 
