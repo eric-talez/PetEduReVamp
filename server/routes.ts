@@ -2317,6 +2317,241 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Advanced search endpoint
+  app.get("/api/search", async (req, res) => {
+    try {
+      const {
+        q = '',
+        category = 'all',
+        location = 'all',
+        difficulty = 'all',
+        sortBy = 'relevance',
+        minRating = '0',
+        minPrice = '0',
+        maxPrice = '500000',
+        startDate,
+        endDate,
+        features = [],
+        page = '1',
+        limit = '10'
+      } = req.query;
+
+      const pageNum = parseInt(page as string);
+      const limitNum = parseInt(limit as string);
+      const offset = (pageNum - 1) * limitNum;
+
+      // Get all courses, trainers, and institutes from database
+      const courses = await storage.getAllCourses();
+      const users = await storage.getAllUsers();
+      const institutes = await storage.getAllInstitutes();
+
+      // Filter trainers and institutes
+      const trainers = users.filter(user => user.role === 'trainer');
+      
+      let results: any[] = [];
+
+      // Search in courses
+      if (category === 'all' || category !== 'trainer' && category !== 'institute') {
+        const courseResults = courses
+          .filter(course => {
+            // Text search
+            if (q && !course.title.toLowerCase().includes((q as string).toLowerCase()) &&
+                !course.description?.toLowerCase().includes((q as string).toLowerCase())) {
+              return false;
+            }
+            
+            // Category filter
+            if (category !== 'all' && course.category !== category) {
+              return false;
+            }
+            
+            // Location filter
+            if (location !== 'all' && course.location !== location) {
+              return false;
+            }
+            
+            // Difficulty filter
+            if (difficulty !== 'all' && course.difficulty !== difficulty) {
+              return false;
+            }
+            
+            // Price filter
+            const price = course.price || 0;
+            if (price < parseInt(minPrice as string) || price > parseInt(maxPrice as string)) {
+              return false;
+            }
+            
+            // Rating filter
+            const rating = course.rating || 0;
+            if (rating < parseFloat(minRating as string)) {
+              return false;
+            }
+            
+            // Date filter
+            if (startDate && course.startDate && new Date(course.startDate) < new Date(startDate as string)) {
+              return false;
+            }
+            if (endDate && course.endDate && new Date(course.endDate) > new Date(endDate as string)) {
+              return false;
+            }
+            
+            // Features filter
+            const featuresArray = Array.isArray(features) ? features : [features].filter(Boolean);
+            if (featuresArray.length > 0) {
+              const courseFeatures = course.features || [];
+              if (!featuresArray.some(feature => courseFeatures.includes(feature as string))) {
+                return false;
+              }
+            }
+            
+            return true;
+          })
+          .map(course => {
+            const trainer = trainers.find(t => t.id === course.trainerId);
+            const institute = institutes.find(i => i.id === course.instituteId);
+            
+            return {
+              id: course.id,
+              type: 'course' as const,
+              title: course.title,
+              description: course.description,
+              image: course.imageUrl,
+              price: course.price,
+              rating: course.rating,
+              reviewCount: course.reviewCount || 0,
+              location: course.location,
+              category: course.category,
+              difficulty: course.difficulty,
+              duration: course.duration,
+              startDate: course.startDate,
+              endDate: course.endDate,
+              maxParticipants: course.maxParticipants,
+              currentParticipants: course.currentParticipants,
+              features: course.features || [],
+              trainer: trainer ? {
+                id: trainer.id,
+                name: trainer.name,
+                avatar: trainer.avatar,
+                specialty: trainer.specialty
+              } : undefined,
+              institute: institute ? {
+                id: institute.id,
+                name: institute.name,
+                location: institute.address
+              } : undefined
+            };
+          });
+        
+        results = results.concat(courseResults);
+      }
+
+      // Search in trainers
+      if (category === 'all' || category === 'trainer') {
+        const trainerResults = trainers
+          .filter(trainer => {
+            // Text search
+            if (q && !trainer.name.toLowerCase().includes((q as string).toLowerCase()) &&
+                !trainer.bio?.toLowerCase().includes((q as string).toLowerCase()) &&
+                !trainer.specialty?.toLowerCase().includes((q as string).toLowerCase())) {
+              return false;
+            }
+            
+            // Location filter
+            if (location !== 'all' && trainer.location !== location) {
+              return false;
+            }
+            
+            return true;
+          })
+          .map(trainer => {
+            const institute = institutes.find(i => i.id === trainer.instituteId);
+            
+            return {
+              id: trainer.id,
+              type: 'trainer' as const,
+              title: trainer.name,
+              description: trainer.bio,
+              image: trainer.avatar,
+              location: trainer.location,
+              category: trainer.specialty,
+              features: [],
+              institute: institute ? {
+                id: institute.id,
+                name: institute.name,
+                location: institute.address
+              } : undefined
+            };
+          });
+        
+        results = results.concat(trainerResults);
+      }
+
+      // Search in institutes
+      if (category === 'all' || category === 'institute') {
+        const instituteResults = institutes
+          .filter(institute => {
+            // Text search
+            if (q && !institute.name.toLowerCase().includes((q as string).toLowerCase())) {
+              return false;
+            }
+            
+            // Location filter based on address
+            if (location !== 'all' && !institute.address?.includes(location as string)) {
+              return false;
+            }
+            
+            return true;
+          })
+          .map(institute => ({
+            id: institute.id,
+            type: 'institute' as const,
+            title: institute.name,
+            description: `수용인원: ${institute.capacity || '제한없음'}명`,
+            location: institute.address,
+            features: []
+          }));
+        
+        results = results.concat(instituteResults);
+      }
+
+      // Sort results
+      switch (sortBy) {
+        case 'price-low':
+          results.sort((a, b) => (a.price || 0) - (b.price || 0));
+          break;
+        case 'price-high':
+          results.sort((a, b) => (b.price || 0) - (a.price || 0));
+          break;
+        case 'rating':
+          results.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+          break;
+        case 'newest':
+          results.sort((a, b) => new Date(b.startDate || 0).getTime() - new Date(a.startDate || 0).getTime());
+          break;
+        case 'popular':
+          results.sort((a, b) => (b.reviewCount || 0) - (a.reviewCount || 0));
+          break;
+        default: // relevance - keep original order for now
+          break;
+      }
+
+      // Pagination
+      const totalCount = results.length;
+      const totalPages = Math.ceil(totalCount / limitNum);
+      const paginatedResults = results.slice(offset, offset + limitNum);
+
+      res.json({
+        results: paginatedResults,
+        totalCount,
+        currentPage: pageNum,
+        totalPages
+      });
+    } catch (error) {
+      console.error('Error in search:', error);
+      res.status(500).json({ message: "검색 중 오류가 발생했습니다." });
+    }
+  });
+
   console.log('[server] WebSocket server initialized at /ws');
   console.log('[JavaBridge] Java Bridge API endpoints registered');
   
