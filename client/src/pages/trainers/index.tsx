@@ -355,8 +355,8 @@ export default function Trainers() {
               <img 
                 src={trainer.background} 
                 alt={trainer.name} 
-                className="w-full h-full object-cover mix-blend-overlay"
-                style={{ filter: 'none' }}
+                className="w-full h-full object-cover mix-blend-overlay light-mode"
+                style={{ filter: 'none !important', WebkitFilter: 'none !important' }}
               />
               
               {trainer.featured && (
@@ -373,8 +373,8 @@ export default function Trainers() {
                   <img 
                     src="https://images.unsplash.com/photo-1543466835-00a7907e9de1?q=80&w=300&auto=format&fit=crop&sharp=100" 
                     alt={trainer.name} 
-                    className="w-full h-full object-cover brightness-105 contrast-105" 
-                    style={{ filter: 'none' }}
+                    className="w-full h-full object-cover brightness-105 contrast-105 light-mode" 
+                    style={{ filter: 'none !important', WebkitFilter: 'none !important' }}
                   />
                 </div>
                 <div className="ml-4 pb-1">
