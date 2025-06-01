@@ -1072,6 +1072,19 @@ function AuthenticatedRoutes() {
             />
           )}
         </Route>
+        <Route path="/profile">
+          {() => {
+            const Profile = lazy(() => import('./pages/profile'));
+            return (
+              <Suspense fallback={<div className="p-8 flex justify-center items-center">
+                <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
+                <span className="ml-2">프로필 로딩 중...</span>
+              </div>}>
+                <ProtectedRoute component={Profile} />
+              </Suspense>
+            );
+          }}
+        </Route>
 
         {/* 나의 학습 메뉴 서브 페이지들 */}
         <Route path="/my-trainers">

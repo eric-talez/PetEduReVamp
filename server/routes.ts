@@ -222,6 +222,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { posts, users } = await import('@shared/schema');
       const { eq } = await import('drizzle-orm');
       
+      // 페이지네이션 파라미터 추출
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 12;
+      const offset = (page - 1) * limit;
+      
       // 데이터베이스에서 게시글 목록과 작성자 정보 조회
       const result = await db.execute(`
         SELECT 
@@ -231,8 +236,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         FROM posts p 
         LEFT JOIN users u ON p.author_id = u.id 
         ORDER BY p.created_at DESC
-        LIMIT 20
+        LIMIT ${limit} OFFSET ${offset}
       `);
+      
+      // 전체 게시글 수 조회
+      const countResult = await db.execute('SELECT COUNT(*) as total FROM posts');
+      const totalPosts = parseInt(countResult.rows[0].total);
       
       const postsData = result.rows.map((row: any) => ({
         id: row.id,
@@ -255,9 +264,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const responseData = {
         posts: postsData,
         pagination: {
-          total: postsData.length.toString(),
-          page: "1",
-          limit: "20"
+          total: totalPosts,
+          page: page,
+          limit: limit,
+          totalPages: Math.ceil(totalPosts / limit)
         }
       };
       

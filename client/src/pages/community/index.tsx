@@ -279,6 +279,7 @@ export default function CommunityPage() {
     onSuccess: () => {
       // 게시글 목록 캐시 무효화하여 새로고침
       queryClient.invalidateQueries({ queryKey: ['/api/community/posts'] });
+      queryClient.refetchQueries({ queryKey: ['/api/community/posts'] });
       
       toast({
         title: "게시글 작성 완료",
@@ -293,6 +294,9 @@ export default function CommunityPage() {
         tags: ""
       });
       setIsCreatePostOpen(false);
+      
+      // 첫 페이지로 이동하여 새 게시글 확인
+      setCurrentPage(1);
     },
     onError: (error: Error) => {
       toast({
