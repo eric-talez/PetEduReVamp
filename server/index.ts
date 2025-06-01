@@ -28,6 +28,9 @@ app.use(cors({
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: false, limit: '50mb' }));
 
+// 업로드된 파일을 정적으로 서빙
+app.use('/uploads', express.static('public/uploads'));
+
 // 개발 환경에서 반려동물 API 직접 우회 처리
 if (process.env.NODE_ENV === 'development') {
   app.get('/api/pets', async (req, res) => {
