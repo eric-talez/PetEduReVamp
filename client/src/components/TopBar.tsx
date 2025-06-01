@@ -415,9 +415,7 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
                   className="relative"
                   aria-label="메시지"
                 >
-                  <div className="w-5 h-5 rounded border border-current flex items-center justify-center">
-                    <div className="w-2 h-2 rounded-sm bg-current"></div>
-                  </div>
+                  <MessageSquare className="h-5 w-5" />
                   {isAuthenticated && unreadMessagesCount > 0 && (
                     <Badge 
                       variant="danger" 
@@ -630,9 +628,7 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
                     aria-label="쇼핑몰 장바구니 보기"
                     tabIndex={0}
                   >
-                    <div className={`w-5 h-5 rounded border border-current flex items-center justify-center ${cartItemsCount > 0 ? 'text-primary' : ''}`}>
-                      <div className="w-2 h-2 rounded bg-current"></div>
-                    </div>
+                    <ShoppingCart className={`h-5 w-5 ${cartItemsCount > 0 ? 'text-primary' : ''}`} />
                     {cartItemsCount > 0 && (
                       <span className="absolute -top-1 -right-1 bg-primary text-white rounded-full w-4 h-4 text-xs flex items-center justify-center animate-pulse">
                         {cartItemsCount}
