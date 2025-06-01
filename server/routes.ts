@@ -1195,6 +1195,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Create new pet
   app.post("/api/pets", async (req, res) => {
     try {
+      // 개발 환경에서는 임시 사용자 사용
+      if (!req.session.user && process.env.NODE_ENV === 'development') {
+        req.session.user = { id: 1, username: 'testuser', role: 'pet-owner' };
+      }
+      
       if (!req.session.user) {
         return res.status(401).json({ message: "Not authenticated" });
       }
@@ -1202,7 +1207,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const petData = createPetSchema.parse(req.body);
       
       // Assign the current user as the pet owner
-      petData.userId = req.session.user.id;
+      petData.ownerId = req.session.user.id;
       
       const newPet = await storage.createPet(petData);
       return res.status(201).json(newPet);
@@ -1255,6 +1260,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Update pet photo
   app.put("/api/pets/:id/photo", upload.single("photo"), async (req, res) => {
     try {
+      // 개발 환경에서는 임시 사용자 사용
+      if (!req.session.user && process.env.NODE_ENV === 'development') {
+        req.session.user = { id: 1, username: 'testuser', role: 'pet-owner' };
+      }
+      
       if (!req.session.user) {
         return res.status(401).json({ message: "Not authenticated" });
       }

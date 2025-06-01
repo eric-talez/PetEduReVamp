@@ -315,8 +315,11 @@ export default function MyPetsPage() {
                       <PawPrint className="w-8 h-8 text-gray-400" />
                     </AvatarFallback>
                   </Avatar>
-                  <div className="absolute inset-0 bg-black bg-opacity-50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                    <Camera className="w-6 h-6 text-white" />
+                  <div className="absolute bottom-0 right-0 bg-primary rounded-full p-2 shadow-lg">
+                    <Camera className="w-4 h-4 text-white" />
+                  </div>
+                  <div className="absolute inset-0 bg-black bg-opacity-30 rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                    <span className="text-white text-xs font-medium">사진 변경</span>
                   </div>
                 </div>
                 
