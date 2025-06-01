@@ -1402,7 +1402,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // 사용자 설정 업데이트 API
   app.put("/api/user/settings", async (req, res) => {
     try {
-      if (!req.session.user) {
+      // Passport 사용자 또는 세션 사용자 확인
+      const user = req.user || req.session.user;
+      if (!user) {
+        console.log('인증 실패 - 세션:', req.session);
         return res.status(401).json({ message: "인증이 필요합니다" });
       }
 
@@ -1410,7 +1413,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { users } = await import('@shared/schema');
       const { eq } = await import('drizzle-orm');
       
-      const userId = req.session.user.id;
+      const userId = user.id;
       const { username, email, avatar } = req.body;
       
       console.log('설정 업데이트 요청:', { userId, username, email, avatar });
@@ -1464,7 +1467,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // 비밀번호 변경 API
   app.put("/api/user/password", async (req, res) => {
     try {
-      if (!req.session.user) {
+      const user = req.user || req.session.user;
+      if (!user) {
         return res.status(401).json({ message: "인증이 필요합니다" });
       }
 
@@ -1473,13 +1477,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { eq } = await import('drizzle-orm');
       const bcrypt = await import('bcrypt');
       
-      const userId = req.session.user.id;
+      const userId = user.id;
       const { currentPassword, newPassword } = req.body;
       
       console.log('비밀번호 변경 요청:', { userId });
 
       // 현재 사용자 정보 조회
-      const [user] = await db
+      const [currentUser] = await db
         .select()
         .from(users)
         .where(eq(users.id, userId));
