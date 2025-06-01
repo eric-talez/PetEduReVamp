@@ -953,4 +953,228 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+import { db } from "./db";
+import { eq } from "drizzle-orm";
+
+export class DatabaseStorage implements IStorage {
+  async getUser(id: number): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user || undefined;
+  }
+
+  async getUserByUsername(username: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.username, username));
+    return user || undefined;
+  }
+
+  async getUserByCi(ci: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.ci, ci));
+    return user || undefined;
+  }
+
+  async getUserBySocialId(provider: string, socialId: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users)
+      .where(eq(users.provider, provider))
+      .where(eq(users.socialId, socialId));
+    return user || undefined;
+  }
+
+  async getAllUsers(): Promise<User[]> {
+    return await db.select().from(users);
+  }
+
+  async createUser(insertUser: InsertUser): Promise<User> {
+    const [user] = await db
+      .insert(users)
+      .values(insertUser)
+      .returning();
+    return user;
+  }
+
+  async updateUserRole(userId: number, role: UserRole, trainerId?: number): Promise<User> {
+    const [user] = await db
+      .update(users)
+      .set({ role })
+      .where(eq(users.id, userId))
+      .returning();
+    return user;
+  }
+
+  async updateUserProfile(userId: number, profileData: ProfileUpdateData): Promise<User> {
+    const [user] = await db
+      .update(users)
+      .set(profileData)
+      .where(eq(users.id, userId))
+      .returning();
+    return user;
+  }
+
+  async updateUserVerification(userId: number, verificationData: {
+    ci: string;
+    verified: boolean;
+    verifiedAt: Date;
+    verificationName?: string;
+    verificationBirth?: string;
+    verificationPhone?: string;
+  }): Promise<User> {
+    const [user] = await db
+      .update(users)
+      .set({
+        ci: verificationData.ci,
+        verified: verificationData.verified,
+        verifiedAt: verificationData.verifiedAt,
+        verificationName: verificationData.verificationName,
+        verificationBirth: verificationData.verificationBirth,
+        verificationPhone: verificationData.verificationPhone
+      })
+      .where(eq(users.id, userId))
+      .returning();
+    return user;
+  }
+
+  // 기관 관련 메서드 - 임시로 빈 구현
+  async getInstituteByCode(code: string): Promise<any> {
+    return null;
+  }
+
+  async getInstitute(id: number): Promise<any> {
+    return null;
+  }
+
+  async getAllInstitutes(): Promise<any[]> {
+    return [];
+  }
+
+  // 훈련사 관련 메서드 - 임시로 빈 구현
+  async getTrainer(id: number): Promise<any> {
+    return null;
+  }
+
+  async getAllTrainers(): Promise<any[]> {
+    return [];
+  }
+
+  // 반려동물 관련 메서드 - 임시로 빈 구현
+  async getPet(id: number): Promise<any> {
+    return null;
+  }
+
+  async getPetsByUserId(userId: number): Promise<any[]> {
+    return [];
+  }
+
+  async createPet(pet: any): Promise<any> {
+    return null;
+  }
+
+  // 강좌 관련 메서드 - 임시로 빈 구현
+  async getCourse(id: number): Promise<any> {
+    return null;
+  }
+
+  async getAllCourses(): Promise<any[]> {
+    return [];
+  }
+
+  async getCoursesByUserId(userId: number): Promise<any[]> {
+    return [];
+  }
+
+  async createCourse(course: any): Promise<any> {
+    return null;
+  }
+
+  async enrollUserInCourse(userId: number, courseId: number): Promise<any> {
+    return null;
+  }
+
+  // 이벤트 관련 메서드 - 임시로 빈 구현
+  async getAllEvents(): Promise<Event[]> {
+    return [];
+  }
+
+  async getEvent(id: number): Promise<Event | undefined> {
+    return undefined;
+  }
+
+  async createEvent(event: InsertEvent): Promise<Event> {
+    throw new Error("Not implemented");
+  }
+
+  async getEventsByRegion(region: string): Promise<Event[]> {
+    return [];
+  }
+
+  async getEventsByCategory(category: string): Promise<Event[]> {
+    return [];
+  }
+
+  async checkEventAttendance(userId: number, eventId: number): Promise<boolean> {
+    return false;
+  }
+
+  async attendEvent(userId: number, eventId: number): Promise<EventAttendance> {
+    throw new Error("Not implemented");
+  }
+
+  async getEventLocation(id: number): Promise<EventLocation | undefined> {
+    return undefined;
+  }
+
+  async createEventLocation(location: InsertEventLocation): Promise<EventLocation> {
+    throw new Error("Not implemented");
+  }
+
+  // 수수료 정책 관련 메서드 - 임시로 빈 구현
+  async getCommissionPolicies(): Promise<any[]> {
+    return [];
+  }
+
+  async getCommissionPolicy(id: number): Promise<any | undefined> {
+    return undefined;
+  }
+
+  async createCommissionPolicy(policy: any): Promise<any> {
+    return null;
+  }
+
+  async updateCommissionPolicy(id: number, data: any): Promise<any> {
+    return null;
+  }
+
+  // 수수료 거래 관련 메서드 - 임시로 빈 구현
+  async getCommissionTransactions(): Promise<any[]> {
+    return [];
+  }
+
+  async getCommissionTransaction(id: number): Promise<any | undefined> {
+    return undefined;
+  }
+
+  async createCommissionTransaction(transaction: any): Promise<any> {
+    return null;
+  }
+
+  async updateCommissionTransaction(id: number, data: any): Promise<any> {
+    return null;
+  }
+
+  // 정산 보고서 관련 메서드 - 임시로 빈 구현
+  async getSettlementReports(): Promise<any[]> {
+    return [];
+  }
+
+  async getSettlementReport(id: number): Promise<any | undefined> {
+    return undefined;
+  }
+
+  async createSettlementReport(report: any): Promise<any> {
+    return null;
+  }
+
+  async updateSettlementReport(id: number, data: any): Promise<any> {
+    return null;
+  }
+}
+
+export const storage = new DatabaseStorage();

@@ -4,24 +4,17 @@
  */
 import passport from 'passport';
 import { Strategy as LocalStrategy } from 'passport-local';
-import { scrypt, randomBytes, timingSafeEqual } from 'crypto';
-import { promisify } from 'util';
+import bcrypt from 'bcrypt';
 import { storage } from '../storage';
 import { User as SelectUser } from '@shared/schema';
 
-const scryptAsync = promisify(scrypt);
-
 export async function hashPassword(password: string) {
-  const salt = randomBytes(16).toString('hex');
-  const buf = (await scryptAsync(password, salt, 64)) as Buffer;
-  return `${buf.toString('hex')}.${salt}`;
+  const saltRounds = 10;
+  return await bcrypt.hash(password, saltRounds);
 }
 
 export async function comparePasswords(supplied: string, stored: string) {
-  const [hashed, salt] = stored.split('.');
-  const hashedBuf = Buffer.from(hashed, 'hex');
-  const suppliedBuf = (await scryptAsync(supplied, salt, 64)) as Buffer;
-  return timingSafeEqual(hashedBuf, suppliedBuf);
+  return await bcrypt.compare(supplied, stored);
 }
 
 export function setupLocalAuth() {
@@ -36,10 +29,8 @@ export function setupLocalAuth() {
           return done(null, false, { message: '아이디 또는 비밀번호가 일치하지 않습니다.' });
         }
         
-        // 테스트 사용자의 경우 평문 비밀번호 비교
-        const isPasswordValid = username === 'testuser3' && user.password === 'test123' 
-          ? password === 'test123'
-          : await comparePasswords(password, user.password);
+        // bcrypt를 사용한 비밀번호 검증
+        const isPasswordValid = await comparePasswords(password, user.password);
           
         if (!isPasswordValid) {
           console.log(`로그인 실패: '${username}' 비밀번호 불일치`);
