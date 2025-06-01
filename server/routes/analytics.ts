@@ -1,6 +1,6 @@
 import type { Express } from "express";
 import { db } from "../db";
-import { trainingSessions, pets, users, courses, courseEnrollments } from "@shared/schema";
+import { trainingSessions, pets, users, courses, courseEnrollments, events } from "@shared/schema";
 import { eq, desc, and, gte, lte, count, avg, sum, inArray, isNotNull } from "drizzle-orm";
 
 export function registerAnalyticsRoutes(app: Express) {

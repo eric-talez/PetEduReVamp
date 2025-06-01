@@ -43,8 +43,12 @@ interface SearchResponse {
 }
 
 export default function SearchPage() {
+  // URL 파라미터에서 초기 검색어 가져오기
+  const urlParams = new URLSearchParams(window.location.search);
+  const initialQuery = urlParams.get('q') || '';
+  
   const [filters, setFilters] = useState<SearchFilters>({
-    query: "",
+    query: initialQuery,
     category: "all",
     location: "all",
     priceRange: [0, 500000],
