@@ -414,38 +414,56 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/community/posts/:id/like', async (req, res) => {
     try {
       console.log('=== 좋아요 토글 API 호출됨 ===');
+      const { db } = await import('./db');
       const postId = parseInt(req.params.id);
       
-      // 메모리에서 게시글 찾기
-      const postIndex = testPosts.findIndex(p => p.id === postId);
+      // 현재 로그인한 사용자 확인
+      const user = req.user || { id: 1, username: 'testuser', name: '테스트 사용자' };
       
-      if (postIndex === -1) {
-        res.writeHead(404, {
-          'Content-Type': 'application/json',
-          'Cache-Control': 'no-cache'
-        });
-        res.end(JSON.stringify({ 
-          message: '게시글을 찾을 수 없습니다.' 
-        }));
-        return;
+      // 게시글 존재 확인
+      const postCheck = await db.execute(`
+        SELECT id FROM posts 
+        WHERE id = ${postId} AND is_deleted = false
+        LIMIT 1
+      `);
+
+      if (postCheck.rows.length === 0) {
+        return res.status(404).json({ message: "게시글을 찾을 수 없습니다" });
       }
-      
-      // 좋아요 수 증가 (간단한 구현)
-      testPosts[postIndex].likes = testPosts[postIndex].likes + 1;
-      
-      const responseData = {
-        likes: testPosts[postIndex].likes,
-        message: '좋아요가 추가되었습니다.'
-      };
-      
-      console.log('좋아요 토글 완료:', responseData);
-      
-      res.writeHead(200, {
-        'Content-Type': 'application/json',
-        'Cache-Control': 'no-cache'
-      });
-      res.end(JSON.stringify(responseData));
-      return;
+
+      // 이미 좋아요한 게시글인지 확인
+      const likeCheck = await db.execute(`
+        SELECT id FROM likes 
+        WHERE post_id = ${postId} AND user_id = ${user.id}
+        LIMIT 1
+      `);
+
+      if (likeCheck.rows.length > 0) {
+        // 좋아요 취소
+        await db.execute(`DELETE FROM likes WHERE post_id = ${postId} AND user_id = ${user.id}`);
+        
+        // 게시글 좋아요 수 감소
+        await db.execute(`UPDATE posts SET likes = likes - 1 WHERE id = ${postId}`);
+
+        return res.status(200).json({
+          message: "좋아요가 취소되었습니다",
+          liked: false
+        });
+      } else {
+        // 좋아요 추가
+        await db.execute(`
+          INSERT INTO likes (post_id, user_id, created_at) 
+          VALUES (${postId}, ${user.id}, NOW())
+        `);
+        
+        // 게시글 좋아요 수 증가
+        await db.execute(`UPDATE posts SET likes = likes + 1 WHERE id = ${postId}`);
+
+        return res.status(200).json({
+          message: "좋아요가 추가되었습니다",
+          liked: true
+        });
+      }
     } catch (error: any) {
       console.error('좋아요 토글 오류:', error);
       res.status(500).json({ 
@@ -2538,6 +2556,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       console.log('=== 게시글 목록 API 호출됨 ===');
       
+      const { db } = await import('./db');
       const { page = '1', limit = '12', category = 'all', sort = 'latest' } = req.query;
       const pageNum = parseInt(page as string);
       const limitNum = parseInt(limit as string);
@@ -2608,6 +2627,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // 게시글 상세 조회
   app.get("/api/community/posts/:id", async (req, res) => {
     try {
+      const { db } = await import('./db');
       const postId = parseInt(req.params.id);
       
       // 조회수 증가
