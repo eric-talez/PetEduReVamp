@@ -25,6 +25,7 @@ import { WebSocketServer } from 'ws';
 import { MessagingService } from './messaging/service';
 import { NotificationService } from './notifications/service';
 import { registerNotificationRoutes } from './notifications/routes';
+import { notificationService } from './notifications/notification-service';
 import { requestPasswordReset, verifyResetToken, resetPassword } from './recovery';
 import socialRouter from './routes/social';
 import analyticsRouter from './routes/analytics';

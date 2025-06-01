@@ -342,6 +342,18 @@ export const follows = pgTable("follows", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
+// 알림 시스템
+export const notifications = pgTable("notifications", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id, { onDelete: 'cascade' }).notNull(),
+  type: text("type", { enum: ['event', 'course', 'health', 'payment', 'system'] }).notNull(),
+  title: text("title").notNull(),
+  message: text("message").notNull(),
+  data: json("data"),
+  isRead: boolean("is_read").notNull().default(false),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
 // Type exports
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
@@ -360,6 +372,8 @@ export type Product = typeof products.$inferSelect;
 export type InsertProduct = typeof products.$inferInsert;
 export type CartItem = typeof cartItems.$inferSelect;
 export type InsertCartItem = typeof cartItems.$inferInsert;
+export type Notification = typeof notifications.$inferSelect;
+export type InsertNotification = typeof notifications.$inferInsert;
 
 // Schema exports for validation
 export const createUserSchema = createInsertSchema(users)
