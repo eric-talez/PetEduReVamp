@@ -1152,14 +1152,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get user's pets
   app.get("/api/pets", async (req, res) => {
     try {
+      // 개발 환경에서는 임시 사용자 사용
+      if (!req.session.user && process.env.NODE_ENV === 'development') {
+        req.session.user = { id: 1, username: 'testuser', role: 'pet-owner' };
+      }
+      
       if (!req.session.user) {
         return res.status(401).json({ message: "Not authenticated" });
       }
       
-      const userId = req.session.user.id;
-      const pets = await storage.getPetsByUserId(userId);
+      // Use direct database query to get pets
+      const { db } = await import('./db');
+      const { pets } = await import('@shared/schema');
+      const { eq } = await import('drizzle-orm');
       
-      return res.status(200).json(pets);
+      const userPets = await db
+        .select()
+        .from(pets)
+        .where(eq(pets.ownerId, req.session.user.id));
+        
+      return res.status(200).json(userPets);
     } catch (error) {
       console.error("Get pets error:", error);
       return res.status(500).json({ message: "Internal server error" });
@@ -1206,10 +1218,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const petData = createPetSchema.parse(req.body);
       
-      // Assign the current user as the pet owner
-      petData.ownerId = req.session.user.id;
+      // Use direct database query to create pet
+      const { db } = await import('./db');
+      const { pets } = await import('@shared/schema');
       
-      const newPet = await storage.createPet(petData);
+      const [newPet] = await db
+        .insert(pets)
+        .values({
+          ...petData,
+          ownerId: req.session.user.id
+        })
+        .returning();
+        
       return res.status(201).json(newPet);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -1274,25 +1294,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Invalid pet ID" });
       }
 
-      // Check if pet exists and belongs to user
-      const existingPet = await storage.getPetById(petId);
+      // Check if pet exists and belongs to user using direct database query
+      const { db } = await import('./db');
+      const { pets } = await import('@shared/schema');
+      const { eq, and } = await import('drizzle-orm');
+      
+      const [existingPet] = await db
+        .select()
+        .from(pets)
+        .where(and(eq(pets.id, petId), eq(pets.ownerId, req.session.user.id)));
+        
       if (!existingPet) {
         return res.status(404).json({ message: "Pet not found" });
-      }
-      
-      if (existingPet.userId !== req.session.user.id) {
-        return res.status(403).json({ message: "Not authorized" });
       }
 
       if (!req.file) {
         return res.status(400).json({ message: "No photo file provided" });
       }
 
-      // For now, we'll store the file path/name as the avatar
-      // In a real application, you'd upload to a cloud service
+      // Store the file path/name as the avatar
       const photoPath = `/uploads/${req.file.filename}`;
       
-      const updatedPet = await storage.updatePet(petId, { avatar: photoPath });
+      const [updatedPet] = await db
+        .update(pets)
+        .set({ avatar: photoPath })
+        .where(eq(pets.id, petId))
+        .returning();
       
       return res.status(200).json({ 
         message: "Photo updated successfully", 
