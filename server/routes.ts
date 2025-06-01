@@ -1216,7 +1216,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: "Not authenticated" });
       }
       
-      const petData = createPetSchema.parse(req.body);
+      // Transform data types before validation
+      const transformedBody = {
+        ...req.body,
+        age: parseInt(req.body.age) || 0,
+        weight: req.body.weight ? parseInt(req.body.weight) * 1000 : null // kg를 그램으로 변환
+      };
+      
+      const petData = createPetSchema.parse(transformedBody);
       
       // Use direct database query to create pet
       const { db } = await import('./db');
