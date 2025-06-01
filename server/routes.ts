@@ -1397,6 +1397,207 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Institute and trainer routes are now in separate modules
   
+  // ===== 반려동물 건강 관리 API 엔드포인트 =====
+  
+  // 반려동물 예방접종 기록 조회
+  app.get("/api/pets/:petId/vaccinations", async (req, res) => {
+    try {
+      const user = req.user || req.session.user;
+      if (!user) {
+        return res.status(401).json({ message: "인증이 필요합니다" });
+      }
+
+      const { db } = await import('./db');
+      const { vaccinations, pets } = await import('@shared/schema');
+      const { eq, and } = await import('drizzle-orm');
+      
+      const petId = parseInt(req.params.petId);
+      
+      // 반려동물 소유권 확인
+      const [pet] = await db
+        .select()
+        .from(pets)
+        .where(and(eq(pets.id, petId), eq(pets.ownerId, user.id)));
+        
+      if (!pet) {
+        return res.status(404).json({ message: "반려동물을 찾을 수 없습니다" });
+      }
+
+      const petVaccinations = await db
+        .select()
+        .from(vaccinations)
+        .where(eq(vaccinations.petId, petId))
+        .orderBy(vaccinations.vaccineDate);
+
+      res.json({ success: true, vaccinations: petVaccinations });
+    } catch (error) {
+      console.error('예방접종 기록 조회 오류:', error);
+      res.status(500).json({ message: "서버 오류가 발생했습니다" });
+    }
+  });
+
+  // 예방접종 기록 추가
+  app.post("/api/pets/:petId/vaccinations", async (req, res) => {
+    try {
+      const user = req.user || req.session.user;
+      if (!user) {
+        return res.status(401).json({ message: "인증이 필요합니다" });
+      }
+
+      const { db } = await import('./db');
+      const { vaccinations, pets } = await import('@shared/schema');
+      const { eq, and } = await import('drizzle-orm');
+      
+      const petId = parseInt(req.params.petId);
+      const { vaccineName, vaccineType, vaccineDate, nextDueDate, veterinarian, clinicName, notes } = req.body;
+      
+      // 반려동물 소유권 확인
+      const [pet] = await db
+        .select()
+        .from(pets)
+        .where(and(eq(pets.id, petId), eq(pets.ownerId, user.id)));
+        
+      if (!pet) {
+        return res.status(404).json({ message: "반려동물을 찾을 수 없습니다" });
+      }
+
+      const [newVaccination] = await db
+        .insert(vaccinations)
+        .values({
+          petId,
+          vaccineName,
+          vaccineType,
+          vaccineDate: new Date(vaccineDate),
+          nextDueDate: nextDueDate ? new Date(nextDueDate) : null,
+          veterinarian,
+          clinicName,
+          notes
+        })
+        .returning();
+
+      res.json({ success: true, vaccination: newVaccination });
+    } catch (error) {
+      console.error('예방접종 기록 추가 오류:', error);
+      res.status(500).json({ message: "서버 오류가 발생했습니다" });
+    }
+  });
+
+  // 건강검진 기록 조회
+  app.get("/api/pets/:petId/checkups", async (req, res) => {
+    try {
+      const user = req.user || req.session.user;
+      if (!user) {
+        return res.status(401).json({ message: "인증이 필요합니다" });
+      }
+
+      const { db } = await import('./db');
+      const { healthCheckups, pets } = await import('@shared/schema');
+      const { eq, and } = await import('drizzle-orm');
+      
+      const petId = parseInt(req.params.petId);
+      
+      // 반려동물 소유권 확인
+      const [pet] = await db
+        .select()
+        .from(pets)
+        .where(and(eq(pets.id, petId), eq(pets.ownerId, user.id)));
+        
+      if (!pet) {
+        return res.status(404).json({ message: "반려동물을 찾을 수 없습니다" });
+      }
+
+      const checkups = await db
+        .select()
+        .from(healthCheckups)
+        .where(eq(healthCheckups.petId, petId))
+        .orderBy(healthCheckups.checkupDate);
+
+      res.json({ success: true, checkups });
+    } catch (error) {
+      console.error('건강검진 기록 조회 오류:', error);
+      res.status(500).json({ message: "서버 오류가 발생했습니다" });
+    }
+  });
+
+  // 건강검진 기록 추가
+  app.post("/api/pets/:petId/checkups", async (req, res) => {
+    try {
+      const user = req.user || req.session.user;
+      if (!user) {
+        return res.status(401).json({ message: "인증이 필요합니다" });
+      }
+
+      const { db } = await import('./db');
+      const { healthCheckups, pets } = await import('@shared/schema');
+      const { eq, and } = await import('drizzle-orm');
+      
+      const petId = parseInt(req.params.petId);
+      const { 
+        checkupDate, weight, temperature, bloodPressure, heartRate,
+        diagnosis, treatment, medication, veterinarian, clinicName, 
+        notes, nextCheckupDate 
+      } = req.body;
+      
+      // 반려동물 소유권 확인
+      const [pet] = await db
+        .select()
+        .from(pets)
+        .where(and(eq(pets.id, petId), eq(pets.ownerId, user.id)));
+        
+      if (!pet) {
+        return res.status(404).json({ message: "반려동물을 찾을 수 없습니다" });
+      }
+
+      const [newCheckup] = await db
+        .insert(healthCheckups)
+        .values({
+          petId,
+          checkupDate: new Date(checkupDate),
+          weight,
+          temperature,
+          bloodPressure,
+          heartRate,
+          diagnosis,
+          treatment,
+          medication,
+          veterinarian,
+          clinicName,
+          notes,
+          nextCheckupDate: nextCheckupDate ? new Date(nextCheckupDate) : null
+        })
+        .returning();
+
+      res.json({ success: true, checkup: newCheckup });
+    } catch (error) {
+      console.error('건강검진 기록 추가 오류:', error);
+      res.status(500).json({ message: "서버 오류가 발생했습니다" });
+    }
+  });
+
+  // 사용자의 모든 반려동물 조회
+  app.get("/api/pets", async (req, res) => {
+    try {
+      const user = req.user || req.session.user;
+      if (!user) {
+        return res.status(401).json({ message: "인증이 필요합니다" });
+      }
+
+      const { db } = await import('./db');
+      const { pets } = await import('@shared/schema');
+      const { eq } = await import('drizzle-orm');
+      
+      const userPets = await db
+        .select()
+        .from(pets)
+        .where(eq(pets.ownerId, user.id));
+
+      res.json({ success: true, pets: userPets });
+    } catch (error) {
+      console.error('반려동물 목록 조회 오류:', error);
+      res.status(500).json({ message: "서버 오류가 발생했습니다" });
+    }
+  });
+
   // ===== 사용자 설정 API 엔드포인트 =====
   
   // 사용자 설정 업데이트 API
