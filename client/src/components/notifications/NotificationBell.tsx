@@ -132,9 +132,15 @@ export function NotificationBell() {
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="sm" className="relative">
           {hasUnread ? (
-            <BellRing className="h-5 w-5 text-primary animate-pulse" />
+            <div className="relative">
+              <div className="w-5 h-5 rounded-full border-2 border-current flex items-center justify-center">
+                <div className="w-2 h-2 rounded-full bg-current"></div>
+              </div>
+            </div>
           ) : (
-            <Bell className="h-5 w-5" />
+            <div className="w-5 h-5 rounded-full border-2 border-current flex items-center justify-center">
+              <div className="w-2 h-2 rounded-full bg-current opacity-60"></div>
+            </div>
           )}
           {hasUnread && (
             <Badge 
