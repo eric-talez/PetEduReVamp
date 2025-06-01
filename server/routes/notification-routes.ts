@@ -92,7 +92,9 @@ export function registerNotificationRoutes(app: Express, server: Server) {
     }
 
     try {
-      const count = await notificationService.getUnreadCount(user.id);
+      // 개발환경에서는 임시 데이터 반환
+      const count = process.env.NODE_ENV === 'development' ? 3 : 
+        await notificationService.getUnreadCount(user.id);
       res.json({ count });
     } catch (error) {
       console.error('[Notifications] 읽지 않은 알림 수 조회 실패:', error);

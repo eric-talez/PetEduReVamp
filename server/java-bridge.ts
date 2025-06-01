@@ -1,5 +1,6 @@
 import { spawn, ChildProcess } from 'child_process';
 import path from 'path';
+import fs from 'fs';
 
 export class JavaBridge {
   private javaProcess: ChildProcess | null = null;
@@ -22,7 +23,6 @@ export class JavaBridge {
       const classPath = path.join(process.cwd(), 'target/classes');
       
       // 클래스 파일이 존재하는지 확인
-      const fs = require('fs');
       if (!fs.existsSync(classPath)) {
         console.log('[JavaBridge] Java 클래스 파일이 없습니다. Maven 빌드가 필요합니다.');
         return;

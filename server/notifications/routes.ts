@@ -55,15 +55,13 @@ export function registerNotificationRoutes(app: Express, notificationService: No
       // 실제 구현에서는 데이터베이스에서 알림 목록 조회
       // 임시 데이터 반환
       const sampleNotifications = Array.from({ length: 20 }, (_, index) => ({
-        id: `notification-${index + 1}`,
+        id: index + 1,
+        type: ['event', 'course', 'health', 'payment', 'system'][Math.floor(Math.random() * 5)] as 'event' | 'course' | 'health' | 'payment' | 'system',
         title: `알림 제목 ${index + 1}`,
         message: `알림 내용 ${index + 1}입니다.`,
-        type: ['info', 'success', 'warning', 'error', 'system'][Math.floor(Math.random() * 5)] as 'info' | 'success' | 'warning' | 'error' | 'system',
-        timestamp: new Date(Date.now() - Math.random() * 86400000 * 7), // 최근 7일 내 랜덤 시간
+        data: Math.random() > 0.7 ? { category: ['system', 'course', 'pet', 'social', 'payment'][Math.floor(Math.random() * 5)] } : undefined,
         isRead: Math.random() > 0.5, // 50% 확률로 읽음/안읽음
-        userId: user.id,
-        linkTo: Math.random() > 0.3 ? `/notifications/${index + 1}` : undefined,
-        metadata: Math.random() > 0.7 ? { category: ['system', 'course', 'pet', 'social', 'payment'][Math.floor(Math.random() * 5)] } : undefined
+        createdAt: new Date(Date.now() - Math.random() * 86400000 * 7).toISOString(), // 최근 7일 내 랜덤 시간
       }));
       
       // 읽음 여부 필터링
@@ -76,15 +74,8 @@ export function registerNotificationRoutes(app: Express, notificationService: No
       const totalCount = filteredNotifications.length;
       const totalPages = Math.ceil(totalCount / limit);
       
-      return res.status(200).json({
-        notifications: paginatedNotifications,
-        pagination: {
-          total: totalCount,
-          totalPages,
-          currentPage: page,
-          limit
-        }
-      });
+      // Frontend expects array directly, not wrapped in notifications property
+      return res.status(200).json(paginatedNotifications);
     } catch (error) {
       console.error('Error fetching notifications:', error);
       return res.status(500).json({ message: '서버 오류가 발생했습니다.' });
