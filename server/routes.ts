@@ -127,12 +127,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { posts } = await import('@shared/schema');
       
       const [savedPost] = await db.insert(posts).values({
-        authorId: currentUser.id,
-        title,
-        content,
-        tag: tag || '일반',
+        userId: currentUser.id,
+        content: `${title}\n\n${content}`,
+        images: [],
         likes: 0,
-        comments: 0,
         createdAt: new Date(),
         updatedAt: new Date()
       }).returning();
@@ -184,54 +182,57 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // 데이터베이스에서 게시글 목록과 작성자 정보 조회
       const result = await db.select({
         id: posts.id,
-        title: posts.title,
         content: posts.content,
-        tag: posts.tag,
-        authorId: posts.authorId,
-        image: posts.image,
+        userId: posts.userId,
+        images: posts.images,
         likes: posts.likes,
-        comments: posts.comments,
         createdAt: posts.createdAt,
         updatedAt: posts.updatedAt,
         username: users.username,
         name: users.name
       })
       .from(posts)
-      .leftJoin(users, eq(posts.authorId, users.id))
+      .leftJoin(users, eq(posts.userId, users.id))
       .orderBy(posts.createdAt)
       .limit(20);
       
-      const postsData = result.map(row => ({
-        id: row.id,
-        title: row.title,
-        content: row.content,
-        tag: row.tag,
-        authorId: row.authorId,
-        image: row.image,
-        likes: row.likes,
-        comments: row.comments,
-        createdAt: row.createdAt,
-        updatedAt: row.updatedAt,
-        author: {
-          id: row.authorId,
-          username: row.username || 'unknown',
-          name: row.name || '알 수 없음'
-        }
-      }));
+      const postsData = result.map((row: any) => {
+        // content에서 title과 content 분리 (첫 번째 줄이 title)
+        const lines = row.content.split('\n');
+        const title = lines[0] || '제목 없음';
+        const content = lines.slice(2).join('\n') || '';
+        
+        return {
+          id: row.id,
+          title,
+          content,
+          tag: '일반',
+          authorId: row.userId,
+          image: row.images?.[0] || null,
+          likes: row.likes,
+          comments: 0,
+          createdAt: row.createdAt,
+          updatedAt: row.updatedAt,
+          author: {
+            id: row.userId,
+            username: row.username || 'unknown',
+            name: row.name || '알 수 없음'
+          }
+        };
+      });
       
       const responseData = {
-        posts: posts,
+        posts: postsData,
         pagination: {
-          total: posts.length.toString(),
+          total: postsData.length.toString(),
           page: "1",
           limit: "20"
         }
       };
       
-      console.log('데이터베이스에서 조회된 게시글 수:', posts.length);
+      console.log('데이터베이스에서 조회된 게시글 수:', postsData.length);
       
       res.status(200).json(responseData);
-      await pool.end();
     } catch (error: any) {
       console.error('게시글 목록 조회 오류:', error);
       res.status(500).json({ 
