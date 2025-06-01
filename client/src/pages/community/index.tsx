@@ -423,8 +423,8 @@ export default function CommunityPage() {
   };
 
   return (
-    <div className="container py-6 max-w-6xl">
-      <div className="flex justify-between items-center mb-6">
+    <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 max-w-7xl">
+      <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold">커뮤니티</h1>
         <Dialog open={isCreatePostOpen} onOpenChange={setIsCreatePostOpen}>
           <DialogTrigger asChild>

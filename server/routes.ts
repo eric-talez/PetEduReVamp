@@ -129,8 +129,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // 직접 SQL로 삽입
       const result = await db.execute(`
         INSERT INTO posts (author_id, title, content, tag, likes, comments, created_at, updated_at)
-        VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW())
-        RETURNING *
+        VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())
       `, [currentUser.id, title, content, tag || '일반', 0, 0]);
       
       const savedPost = result.rows[0];
