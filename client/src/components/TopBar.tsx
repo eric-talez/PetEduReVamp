@@ -1,7 +1,7 @@
 import { ThemeToggle } from "@/components/ui/ThemeSwitcher";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { NotificationCenter } from "@/components/NotificationCenter";
+import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { 
   Bell, 
   Menu, 
@@ -542,130 +542,8 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
                 )}
               </div>
               
-              {/* Notifications Button & Popup */}
-              <div className="relative" ref={notificationPopupRef}>
-                <Button 
-                  variant="ghost" 
-                  size="icon"
-                  onClick={() => {
-                    if (isAuthenticated) {
-                      setNotificationPopupOpen(!notificationPopupOpen);
-                      setMessagePopupOpen(false);
-                      setCartPopupOpen(false);
-                    } else {
-                      setLocation("/auth");
-                    }
-                  }}
-                  className="relative"
-                  aria-label="알림"
-                >
-                  <Bell className="h-5 w-5" />
-                  {isAuthenticated && unreadNotificationsCount > 0 && (
-                    <Badge 
-                      variant="danger" 
-                      className="absolute -top-1 -right-1 px-1.5 py-0.5 min-w-4 h-4 flex items-center justify-center"
-                    >
-                      {unreadNotificationsCount}
-                    </Badge>
-                  )}
-                </Button>
-                
-                {/* Notifications Popup */}
-                {notificationPopupOpen && isAuthenticated && (
-                  <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white dark:bg-gray-900 rounded-md shadow-lg py-1 z-50 border border-gray-200 dark:border-gray-700">
-                    <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
-                      <div className="flex justify-between items-center">
-                        <h3 className="text-sm font-semibold">알림</h3>
-                        {unreadNotificationsCount > 0 && (
-                          <Button 
-                            variant="ghost" 
-                            size="sm" 
-                            onClick={markAllNotificationsAsRead}
-                            className="text-xs h-7 px-2"
-                            aria-label="모든 알림 읽음 표시하기"
-                          >
-                            모두 읽음 표시
-                          </Button>
-                        )}
-                      </div>
-                    </div>
-                    
-                    <div className="max-h-80 overflow-y-auto py-1">
-                      {notifications.length > 0 ? (
-                        notifications.map((notification) => (
-                          <div
-                            key={notification.id}
-                            className={`px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer ${!notification.read ? 'bg-blue-50 dark:bg-blue-900/20' : ''}`}
-                            onClick={() => {
-                              markNotificationAsRead(notification.id);
-                              setNotificationPopupOpen(false);
-                              if (notification.link) {
-                                setLocation(notification.link);
-                              } else {
-                                setLocation("/alerts");
-                              }
-                            }}
-                          >
-                            <div className="flex gap-3">
-                              <div className="flex-shrink-0">
-                                {notification.type === 'info' && (
-                                  <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400">
-                                    <AlertCircle className="h-4 w-4" />
-                                  </div>
-                                )}
-                                {notification.type === 'success' && (
-                                  <div className="w-8 h-8 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center text-green-600 dark:text-green-400">
-                                    <CheckCircle className="h-4 w-4" />
-                                  </div>
-                                )}
-                                {notification.type === 'warning' && (
-                                  <div className="w-8 h-8 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center text-amber-600 dark:text-amber-400">
-                                    <AlertCircle className="h-4 w-4" />
-                                  </div>
-                                )}
-                                {notification.type === 'error' && (
-                                  <div className="w-8 h-8 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center text-red-600 dark:text-red-400">
-                                    <AlertCircle className="h-4 w-4" />
-                                  </div>
-                                )}
-                              </div>
-                              <div className="flex-1">
-                                <div className="flex justify-between items-start">
-                                  <p className="text-sm font-medium">{notification.title}</p>
-                                  <p className="text-xs text-gray-500 dark:text-gray-400 ml-2 shrink-0">
-                                    {format(new Date(notification.timestamp), 'M월 d일', { locale: ko })}
-                                  </p>
-                                </div>
-                                <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
-                                  {notification.content}
-                                </p>
-                              </div>
-                            </div>
-                          </div>
-                        ))
-                      ) : (
-                        <div className="px-4 py-6 text-center">
-                          <p className="text-sm text-gray-500 dark:text-gray-400">알림이 없습니다</p>
-                        </div>
-                      )}
-                    </div>
-                    
-                    <div className="border-t border-gray-200 dark:border-gray-700 py-2 px-4">
-                      <Button 
-                        variant="link" 
-                        className="w-full justify-center" 
-                        onClick={() => {
-                          setNotificationPopupOpen(false);
-                          setLocation("/alerts");
-                        }}
-                      >
-                        모든 알림 보기
-                        <ChevronRight className="ml-1 h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                )}
-              </div>
+              {/* Real-time Notification Bell */}
+              {isAuthenticated && <NotificationBell />}
               
               <ThemeToggle />
             </div>
