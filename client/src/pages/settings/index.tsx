@@ -81,8 +81,8 @@ export default function SettingsPage({ userRole: propUserRole }: SettingsPagePro
     }
     
     try {
-      const response = await fetch('/api/auth/change-password', {
-        method: 'POST',
+      const response = await fetch('/api/user/password', {
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },

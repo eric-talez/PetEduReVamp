@@ -1397,6 +1397,130 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Institute and trainer routes are now in separate modules
   
+  // ===== 사용자 설정 API 엔드포인트 =====
+  
+  // 사용자 설정 업데이트 API
+  app.put("/api/user/settings", async (req, res) => {
+    try {
+      if (!req.session.user) {
+        return res.status(401).json({ message: "인증이 필요합니다" });
+      }
+
+      const { db } = await import('./db');
+      const { users } = await import('@shared/schema');
+      const { eq } = await import('drizzle-orm');
+      
+      const userId = req.session.user.id;
+      const { username, email, avatar } = req.body;
+      
+      console.log('설정 업데이트 요청:', { userId, username, email, avatar });
+
+      // 데이터베이스에서 사용자 정보 업데이트
+      const [updatedUser] = await db
+        .update(users)
+        .set({
+          name: username,
+          email: email,
+          avatar: avatar
+        })
+        .where(eq(users.id, userId))
+        .returning();
+
+      if (!updatedUser) {
+        return res.status(404).json({ message: "사용자를 찾을 수 없습니다" });
+      }
+
+      // 세션 정보도 업데이트
+      req.session.user = {
+        ...req.session.user,
+        name: updatedUser.name,
+        email: updatedUser.email,
+        avatar: updatedUser.avatar
+      };
+
+      console.log('설정 업데이트 완료:', updatedUser);
+
+      return res.status(200).json({
+        success: true,
+        message: "설정이 성공적으로 업데이트되었습니다",
+        user: {
+          id: updatedUser.id,
+          username: updatedUser.username,
+          name: updatedUser.name,
+          email: updatedUser.email,
+          avatar: updatedUser.avatar,
+          role: updatedUser.role
+        }
+      });
+    } catch (error: any) {
+      console.error('설정 업데이트 오류:', error);
+      return res.status(500).json({ 
+        message: "설정 업데이트 중 오류가 발생했습니다",
+        error: error.message 
+      });
+    }
+  });
+
+  // 비밀번호 변경 API
+  app.put("/api/user/password", async (req, res) => {
+    try {
+      if (!req.session.user) {
+        return res.status(401).json({ message: "인증이 필요합니다" });
+      }
+
+      const { db } = await import('./db');
+      const { users } = await import('@shared/schema');
+      const { eq } = await import('drizzle-orm');
+      const bcrypt = await import('bcrypt');
+      
+      const userId = req.session.user.id;
+      const { currentPassword, newPassword } = req.body;
+      
+      console.log('비밀번호 변경 요청:', { userId });
+
+      // 현재 사용자 정보 조회
+      const [user] = await db
+        .select()
+        .from(users)
+        .where(eq(users.id, userId));
+
+      if (!user) {
+        return res.status(404).json({ message: "사용자를 찾을 수 없습니다" });
+      }
+
+      // 현재 비밀번호 확인
+      const isCurrentPasswordValid = await bcrypt.compare(currentPassword, user.password);
+      if (!isCurrentPasswordValid) {
+        return res.status(400).json({ message: "현재 비밀번호가 올바르지 않습니다" });
+      }
+
+      // 새 비밀번호 암호화
+      const saltRounds = 10;
+      const hashedNewPassword = await bcrypt.hash(newPassword, saltRounds);
+
+      // 데이터베이스에서 비밀번호 업데이트
+      await db
+        .update(users)
+        .set({
+          password: hashedNewPassword
+        })
+        .where(eq(users.id, userId));
+
+      console.log('비밀번호 변경 완료:', userId);
+
+      return res.status(200).json({
+        success: true,
+        message: "비밀번호가 성공적으로 변경되었습니다"
+      });
+    } catch (error: any) {
+      console.error('비밀번호 변경 오류:', error);
+      return res.status(500).json({ 
+        message: "비밀번호 변경 중 오류가 발생했습니다",
+        error: error.message 
+      });
+    }
+  });
+
   // ===== 쇼핑 API 엔드포인트 =====
   
   // 상품 카테고리 목록 가져오기
