@@ -1628,6 +1628,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // 반려동물 추가
+  app.post("/api/pets", async (req, res) => {
+    try {
+      let user = req.user || req.session.user;
+      
+      // 개발 환경에서 임시 사용자 설정
+      if (!user && process.env.NODE_ENV === 'development') {
+        user = { id: 1, username: 'testuser', role: 'pet-owner' };
+      }
+      
+      if (!user) {
+        return res.status(401).json({ message: "인증이 필요합니다" });
+      }
+
+      const { db } = await import('./db');
+      const { pets } = await import('@shared/schema');
+      
+      const { name, breed, age, gender, weight, description, health, temperament, allergies } = req.body;
+      
+      const [newPet] = await db
+        .insert(pets)
+        .values({
+          name,
+          breed,
+          age: parseInt(age),
+          ownerId: user.id,
+          gender,
+          weight: weight ? parseInt(weight) : null,
+          description,
+          health,
+          temperament,
+          allergies
+        })
+        .returning();
+
+      res.json({ success: true, pet: newPet });
+    } catch (error) {
+      console.error('반려동물 추가 오류:', error);
+      res.status(500).json({ message: "서버 오류가 발생했습니다" });
+    }
+  });
+
   // ===== 사용자 설정 API 엔드포인트 =====
   
   // 사용자 설정 업데이트 API

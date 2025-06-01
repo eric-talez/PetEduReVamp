@@ -51,6 +51,7 @@ export default function HealthRecordPage() {
   const [selectedPetId, setSelectedPetId] = useState<number | null>(null);
   const [isVaccinationDialogOpen, setIsVaccinationDialogOpen] = useState(false);
   const [isCheckupDialogOpen, setIsCheckupDialogOpen] = useState(false);
+  const [isPetAddDialogOpen, setIsPetAddDialogOpen] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
