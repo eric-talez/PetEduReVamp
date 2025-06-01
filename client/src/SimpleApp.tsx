@@ -321,6 +321,65 @@ function AppLayout({ children }: { children: ReactNode }) {
                   </Route>
                   <Route path="/course/:id" component={CourseDetail} />
                   
+                  {/* 프로필 페이지 */}
+                  <Route path="/profile">
+                    {() => (
+                      <ProtectedRoute 
+                        component={() => (
+                          <div className="container mx-auto p-6">
+                            <h1 className="text-2xl font-bold mb-6">내 프로필</h1>
+                            <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                              <div className="flex flex-col md:flex-row gap-6">
+                                <div className="flex-shrink-0">
+                                  <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-white dark:border-gray-800 shadow-lg bg-gray-200 dark:bg-gray-600 flex items-center justify-center">
+                                    <span className="text-4xl text-gray-500 dark:text-gray-400">반</span>
+                                  </div>
+                                </div>
+                                <div className="flex-grow">
+                                  <h2 className="text-xl font-semibold">반려인</h2>
+                                  <p className="text-gray-500 dark:text-gray-400 mt-1">견주 회원</p>
+                                  <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="p-2 rounded hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                                      <p className="text-sm text-gray-500 dark:text-gray-400">이메일</p>
+                                      <p>user@example.com</p>
+                                    </div>
+                                    <div className="p-2 rounded hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                                      <p className="text-sm text-gray-500 dark:text-gray-400">연락처</p>
+                                      <p>010-1234-5678</p>
+                                    </div>
+                                    <div className="p-2 rounded hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                                      <p className="text-sm text-gray-500 dark:text-gray-400">가입일</p>
+                                      <p>2023년 8월 15일</p>
+                                    </div>
+                                    <div className="p-2 rounded hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                                      <p className="text-sm text-gray-500 dark:text-gray-400">최근 로그인</p>
+                                      <p>2023년 10월 5일</p>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      />
+                    )}
+                  </Route>
+
+                  {/* 설정 페이지 */}
+                  <Route path="/settings">
+                    {() => {
+                      const Settings = lazy(() => import('./pages/settings'));
+                      return (
+                        <Suspense fallback={<div className="p-8 flex justify-center items-center">
+                          <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
+                          <span className="ml-2">설정 로딩 중...</span>
+                        </div>}>
+                          <ProtectedRoute component={Settings} />
+                        </Suspense>
+                      );
+                    }}
+                  </Route>
+
                   {/* 훈련사 및 기관 */}
                   <Route path="/trainers" component={Trainers} />
                   <Route path="/institutes" component={Institutes} />
@@ -1072,48 +1131,7 @@ function AuthenticatedRoutes() {
             />
           )}
         </Route>
-        <Route path="/profile">
-          {() => (
-            <ProtectedRoute 
-              component={() => (
-                <div className="container mx-auto p-6">
-                  <h1 className="text-2xl font-bold mb-6">내 프로필</h1>
-                  <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-                    <div className="flex flex-col md:flex-row gap-6">
-                      <div className="flex-shrink-0">
-                        <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-white dark:border-gray-800 shadow-lg bg-gray-200 dark:bg-gray-600 flex items-center justify-center">
-                          <span className="text-4xl text-gray-500 dark:text-gray-400">반</span>
-                        </div>
-                      </div>
-                      <div className="flex-grow">
-                        <h2 className="text-xl font-semibold">반려인</h2>
-                        <p className="text-gray-500 dark:text-gray-400 mt-1">견주 회원</p>
-                        <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div className="p-2 rounded hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                            <p className="text-sm text-gray-500 dark:text-gray-400">이메일</p>
-                            <p>user@example.com</p>
-                          </div>
-                          <div className="p-2 rounded hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                            <p className="text-sm text-gray-500 dark:text-gray-400">연락처</p>
-                            <p>010-1234-5678</p>
-                          </div>
-                          <div className="p-2 rounded hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                            <p className="text-sm text-gray-500 dark:text-gray-400">가입일</p>
-                            <p>2023년 8월 15일</p>
-                          </div>
-                          <div className="p-2 rounded hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                            <p className="text-sm text-gray-500 dark:text-gray-400">최근 로그인</p>
-                            <p>2023년 10월 5일</p>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-            />
-          )}
-        </Route>
+
 
         {/* 나의 학습 메뉴 서브 페이지들 */}
         <Route path="/my-trainers">
