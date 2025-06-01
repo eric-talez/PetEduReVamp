@@ -54,6 +54,8 @@ export default function HealthRecordPage() {
   const [isVaccinationDialogOpen, setIsVaccinationDialogOpen] = useState(false);
   const [isCheckupDialogOpen, setIsCheckupDialogOpen] = useState(false);
   const [isPetAddDialogOpen, setIsPetAddDialogOpen] = useState(false);
+  const [isPetEditDialogOpen, setIsPetEditDialogOpen] = useState(false);
+  const [editingPet, setEditingPet] = useState<Pet | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -114,6 +116,43 @@ export default function HealthRecordPage() {
     }
   });
 
+  // 반려동물 등록
+  const addPetMutation = useMutation({
+    mutationFn: async (data: any) => {
+      const response = await fetch('/api/pets', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      if (!response.ok) throw new Error('반려동물 등록 실패');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/pets'] });
+      setIsPetAddDialogOpen(false);
+      toast({ title: "반려동물이 등록되었습니다" });
+    }
+  });
+
+  // 반려동물 정보 수정
+  const updatePetMutation = useMutation({
+    mutationFn: async (data: any) => {
+      const response = await fetch(`/api/pets/${editingPet?.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      if (!response.ok) throw new Error('반려동물 정보 수정 실패');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/pets'] });
+      setIsPetEditDialogOpen(false);
+      setEditingPet(null);
+      toast({ title: "반려동물 정보가 수정되었습니다" });
+    }
+  });
+
   const handleVaccinationSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
@@ -146,6 +185,49 @@ export default function HealthRecordPage() {
     addCheckupMutation.mutate(data);
   };
 
+  const handlePetSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    
+    const petData = {
+      name: formData.get('name'),
+      breed: formData.get('breed'),
+      age: parseInt(formData.get('age') as string),
+      weight: formData.get('weight') ? parseInt(formData.get('weight') as string) : undefined,
+      gender: formData.get('gender'),
+      description: formData.get('description'),
+      health: formData.get('health'),
+      temperament: formData.get('temperament'),
+      allergies: formData.get('allergies')
+    };
+    
+    addPetMutation.mutate(petData);
+  };
+
+  const handlePetEditSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    
+    const petData = {
+      name: formData.get('name'),
+      breed: formData.get('breed'),
+      age: parseInt(formData.get('age') as string),
+      weight: formData.get('weight') ? parseInt(formData.get('weight') as string) : undefined,
+      gender: formData.get('gender'),
+      description: formData.get('description'),
+      health: formData.get('health'),
+      temperament: formData.get('temperament'),
+      allergies: formData.get('allergies')
+    };
+    
+    updatePetMutation.mutate(petData);
+  };
+
+  const handleEditPet = (pet: Pet) => {
+    setEditingPet(pet);
+    setIsPetEditDialogOpen(true);
+  };
+
   return (
     <div className="container mx-auto p-6">
       <h1 className="text-2xl font-bold mb-6">반려동물 건강 관리</h1>
@@ -155,14 +237,34 @@ export default function HealthRecordPage() {
         <Card className="mb-6">
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle>반려동물 선택</CardTitle>
-            {selectedPet && (
-              <Link href={`/pet-care/pet-detail/${selectedPet.id}`}>
-                <Button variant="outline" size="sm">
-                  <Eye className="w-4 h-4 mr-2" />
-                  케어일지 상세보기
-                </Button>
-              </Link>
-            )}
+            <div className="flex gap-2">
+              <Dialog open={isPetAddDialogOpen} onOpenChange={setIsPetAddDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button variant="outline" size="sm">
+                    <Plus className="w-4 h-4 mr-2" />
+                    반려견 추가 등록하기
+                  </Button>
+                </DialogTrigger>
+              </Dialog>
+              {selectedPet && (
+                <>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => handleEditPet(selectedPet)}
+                  >
+                    <FileText className="w-4 h-4 mr-2" />
+                    반려견 등록 프로필 수정
+                  </Button>
+                  <Link href={`/pet-care/pet-detail/${selectedPet.id}`}>
+                    <Button variant="outline" size="sm">
+                      <Eye className="w-4 h-4 mr-2" />
+                      케어일지 상세보기
+                    </Button>
+                  </Link>
+                </>
+              )}
+            </div>
           </CardHeader>
           <CardContent>
             <div className="flex gap-4 flex-wrap">
@@ -383,10 +485,140 @@ export default function HealthRecordPage() {
             <Heart className="w-12 h-12 mx-auto mb-4 text-gray-400" />
             <h3 className="text-lg font-medium mb-2">등록된 반려동물이 없습니다</h3>
             <p className="text-gray-500 mb-4">먼저 반려동물을 등록해 주세요</p>
-            <Button>반려동물 등록하기</Button>
+            <Dialog open={isPetAddDialogOpen} onOpenChange={setIsPetAddDialogOpen}>
+              <DialogTrigger asChild>
+                <Button>반려동물 등록하기</Button>
+              </DialogTrigger>
+            </Dialog>
           </CardContent>
         </Card>
       )}
+
+      {/* 반려동물 등록 다이얼로그 */}
+      <Dialog open={isPetAddDialogOpen} onOpenChange={setIsPetAddDialogOpen}>
+        <DialogContent className="max-w-md max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>반려동물 등록</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handlePetSubmit} className="space-y-4">
+            <div>
+              <Label htmlFor="pet-name">이름 *</Label>
+              <Input id="pet-name" name="name" required />
+            </div>
+            <div>
+              <Label htmlFor="pet-breed">품종 *</Label>
+              <Input id="pet-breed" name="breed" required />
+            </div>
+            <div>
+              <Label htmlFor="pet-age">나이 *</Label>
+              <Input id="pet-age" name="age" type="number" min="0" required />
+            </div>
+            <div>
+              <Label htmlFor="pet-weight">몸무게 (kg)</Label>
+              <Input id="pet-weight" name="weight" type="number" step="0.1" min="0" />
+            </div>
+            <div>
+              <Label htmlFor="pet-gender">성별</Label>
+              <Select name="gender">
+                <SelectTrigger>
+                  <SelectValue placeholder="성별을 선택하세요" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="male">수컷</SelectItem>
+                  <SelectItem value="female">암컷</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label htmlFor="pet-health">건강 상태</Label>
+              <Input id="pet-health" name="health" placeholder="현재 건강 상태" />
+            </div>
+            <div>
+              <Label htmlFor="pet-temperament">성격</Label>
+              <Input id="pet-temperament" name="temperament" placeholder="성격 특징" />
+            </div>
+            <div>
+              <Label htmlFor="pet-allergies">알레르기</Label>
+              <Input id="pet-allergies" name="allergies" placeholder="알레르기 정보" />
+            </div>
+            <div>
+              <Label htmlFor="pet-description">특이사항</Label>
+              <Textarea id="pet-description" name="description" placeholder="기타 특이사항" />
+            </div>
+            <div className="flex justify-end gap-2 pt-4">
+              <Button type="button" variant="outline" onClick={() => setIsPetAddDialogOpen(false)}>
+                취소
+              </Button>
+              <Button type="submit" disabled={addPetMutation.isPending}>
+                {addPetMutation.isPending ? '등록 중...' : '등록'}
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* 반려동물 정보 수정 다이얼로그 */}
+      <Dialog open={isPetEditDialogOpen} onOpenChange={setIsPetEditDialogOpen}>
+        <DialogContent className="max-w-md max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>반려동물 정보 수정</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handlePetEditSubmit} className="space-y-4">
+            <div>
+              <Label htmlFor="edit-pet-name">이름 *</Label>
+              <Input id="edit-pet-name" name="name" defaultValue={editingPet?.name} required />
+            </div>
+            <div>
+              <Label htmlFor="edit-pet-breed">품종 *</Label>
+              <Input id="edit-pet-breed" name="breed" defaultValue={editingPet?.breed} required />
+            </div>
+            <div>
+              <Label htmlFor="edit-pet-age">나이 *</Label>
+              <Input id="edit-pet-age" name="age" type="number" min="0" defaultValue={editingPet?.age} required />
+            </div>
+            <div>
+              <Label htmlFor="edit-pet-weight">몸무게 (kg)</Label>
+              <Input id="edit-pet-weight" name="weight" type="number" step="0.1" min="0" defaultValue={editingPet?.weight || ''} />
+            </div>
+            <div>
+              <Label htmlFor="edit-pet-gender">성별</Label>
+              <Select name="gender" defaultValue={editingPet?.gender || ''}>
+                <SelectTrigger>
+                  <SelectValue placeholder="성별을 선택하세요" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="male">수컷</SelectItem>
+                  <SelectItem value="female">암컷</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label htmlFor="edit-pet-health">건강 상태</Label>
+              <Input id="edit-pet-health" name="health" defaultValue={editingPet?.health || ''} placeholder="현재 건강 상태" />
+            </div>
+            <div>
+              <Label htmlFor="edit-pet-temperament">성격</Label>
+              <Input id="edit-pet-temperament" name="temperament" defaultValue={editingPet?.temperament || ''} placeholder="성격 특징" />
+            </div>
+            <div>
+              <Label htmlFor="edit-pet-allergies">알레르기</Label>
+              <Input id="edit-pet-allergies" name="allergies" defaultValue={editingPet?.allergies || ''} placeholder="알레르기 정보" />
+            </div>
+            <div>
+              <Label htmlFor="edit-pet-description">특이사항</Label>
+              <Textarea id="edit-pet-description" name="description" defaultValue={editingPet?.description || ''} placeholder="기타 특이사항" />
+            </div>
+            <div className="flex justify-end gap-2 pt-4">
+              <Button type="button" variant="outline" onClick={() => setIsPetEditDialogOpen(false)}>
+                취소
+              </Button>
+              <Button type="submit" disabled={updatePetMutation.isPending}>
+                {updatePetMutation.isPending ? '수정 중...' : '수정'}
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
