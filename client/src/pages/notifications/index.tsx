@@ -87,14 +87,14 @@ export default function NotificationsPage() {
   const getIconForType = (type: string) => {
     switch (type) {
       case 'success':
-        return <CheckCircle className="h-5 w-5 text-green-500" />;
+        return <div className="w-3 h-3 rounded-full bg-green-500" />;
       case 'error':
-        return <AlertCircle className="h-5 w-5 text-red-500" />;
+        return <div className="w-3 h-3 rounded-full bg-red-500" />;
       case 'warning':
-        return <Clock className="h-5 w-5 text-amber-500" />;
+        return <div className="w-3 h-3 rounded-full bg-amber-500" />;
       case 'info':
       default:
-        return <Info className="h-5 w-5 text-blue-500" />;
+        return <div className="w-3 h-3 rounded-full bg-blue-500" />;
     }
   };
   

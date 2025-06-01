@@ -32,7 +32,7 @@ export default function NotificationsMenu({ currentPath }: NotificationsMenuProp
           className="w-full justify-start" 
           onClick={() => navigate("/notifications")}
         >
-          <Bell className="mr-2 h-4 w-4" />
+          <div className="mr-2 w-2 h-2 rounded-full bg-gray-500" />
           전체 알림
         </Button>
         <Button 
@@ -40,7 +40,7 @@ export default function NotificationsMenu({ currentPath }: NotificationsMenuProp
           className="w-full justify-start" 
           onClick={() => navigate("/notifications/system")}
         >
-          <Info className="mr-2 h-4 w-4" />
+          <div className="mr-2 w-2 h-2 rounded-full bg-blue-500" />
           시스템 알림
         </Button>
         <Button 
@@ -48,7 +48,7 @@ export default function NotificationsMenu({ currentPath }: NotificationsMenuProp
           className="w-full justify-start" 
           onClick={() => navigate("/notifications/training")}
         >
-          <Star className="mr-2 h-4 w-4" />
+          <div className="mr-2 w-2 h-2 rounded-full bg-purple-500" />
           훈련 피드백
         </Button>
         <Button 
@@ -56,7 +56,7 @@ export default function NotificationsMenu({ currentPath }: NotificationsMenuProp
           className="w-full justify-start" 
           onClick={() => navigate("/notifications/event")}
         >
-          <Calendar className="mr-2 h-4 w-4" />
+          <div className="mr-2 w-2 h-2 rounded-full bg-green-500" />
           일정 알림
         </Button>
         <Button 
@@ -64,7 +64,7 @@ export default function NotificationsMenu({ currentPath }: NotificationsMenuProp
           className="w-full justify-start" 
           onClick={() => navigate("/notifications/payment")}
         >
-          <Tag className="mr-2 h-4 w-4" />
+          <div className="mr-2 w-2 h-2 rounded-full bg-yellow-500" />
           결제 알림
         </Button>
         <Button 
@@ -72,7 +72,7 @@ export default function NotificationsMenu({ currentPath }: NotificationsMenuProp
           className="w-full justify-start" 
           onClick={() => navigate("/notifications/security")}
         >
-          <Shield className="mr-2 h-4 w-4" />
+          <div className="mr-2 w-2 h-2 rounded-full bg-red-500" />
           보안 알림
         </Button>
         <Button 
@@ -80,7 +80,7 @@ export default function NotificationsMenu({ currentPath }: NotificationsMenuProp
           className="w-full justify-start" 
           onClick={() => navigate("/notifications/order")}
         >
-          <Package className="mr-2 h-4 w-4" />
+          <div className="mr-2 w-2 h-2 rounded-full bg-indigo-500" /></div>
           주문 알림
         </Button>
       </div>

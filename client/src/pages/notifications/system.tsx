@@ -30,31 +30,31 @@ import NotificationsMenu from "./menu";
 // 알림 유형별 아이콘 및 색상 매핑
 const notificationTypeMap = {
   system: {
-    icon: <Info className="w-5 h-5" />,
+    icon: <div className="w-2 h-2 rounded-full bg-blue-500" />,
     color: "bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400",
   },
   training: {
-    icon: <Star className="w-5 h-5" />,
+    icon: <div className="w-2 h-2 rounded-full bg-purple-500" />,
     color: "bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400",
   },
   event: {
-    icon: <Calendar className="w-5 h-5" />,
+    icon: <div className="w-2 h-2 rounded-full bg-green-500" />,
     color: "bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400",
   },
   payment: {
-    icon: <Tag className="w-5 h-5" />,
+    icon: <div className="w-2 h-2 rounded-full bg-yellow-500" />,
     color: "bg-yellow-100 text-yellow-600 dark:bg-yellow-900/30 dark:text-yellow-400",
   },
   security: {
-    icon: <Shield className="w-5 h-5" />,
+    icon: <div className="w-2 h-2 rounded-full bg-red-500" />,
     color: "bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400",
   },
   order: {
-    icon: <Package className="w-5 h-5" />,
+    icon: <div className="w-2 h-2 rounded-full bg-indigo-500" />,
     color: "bg-indigo-100 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400",
   },
   pet: {
-    icon: <Bell className="w-5 h-5" />,
+    icon: <div className="w-2 h-2 rounded-full bg-orange-500" />,
     color: "bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400",
   },
 };
@@ -107,7 +107,7 @@ export default function SystemNotificationsPage() {
         link: "/settings/security"
       }
     ];
-    
+
     setNotifications(mockNotifications);
   }, []);
 
@@ -150,7 +150,7 @@ export default function SystemNotificationsPage() {
         !notif.content.toLowerCase().includes(searchQuery.toLowerCase())) {
       return false;
     }
-    
+
     return true;
   });
 
@@ -216,7 +216,7 @@ export default function SystemNotificationsPage() {
           <div className="md:col-span-1">
             <NotificationsMenu currentPath="/notifications/system" />
           </div>
-          
+
           <div className="md:col-span-3">
             <div className="mb-4">
               <Input 
@@ -225,14 +225,14 @@ export default function SystemNotificationsPage() {
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
               />
             </div>
-            
+
             <Tabs defaultValue="all">
               <TabsList className="mb-4">
                 <TabsTrigger value="all">전체</TabsTrigger>
                 <TabsTrigger value="unread">읽지 않음 ({unreadCount})</TabsTrigger>
                 <TabsTrigger value="read">읽음 ({notifications.length - unreadCount})</TabsTrigger>
               </TabsList>
-              
+
               <TabsContent value="all">
                 <div className="space-y-4">
                   {filteredNotifications.length > 0 ? (
@@ -259,7 +259,7 @@ export default function SystemNotificationsPage() {
                   )}
                 </div>
               </TabsContent>
-              
+
               <TabsContent value="unread">
                 <div className="space-y-4">
                   {filteredNotifications.filter(n => !n.read).length > 0 ? (
@@ -286,7 +286,7 @@ export default function SystemNotificationsPage() {
                   )}
                 </div>
               </TabsContent>
-              
+
               <TabsContent value="read">
                 <div className="space-y-4">
                   {filteredNotifications.filter(n => n.read).length > 0 ? (
@@ -338,7 +338,7 @@ function NotificationCard({
   onDelete 
 }: NotificationCardProps) {
   const { icon, color } = notificationTypeMap[notification.type];
-  
+
   // 알림 읽음 표시
   const handleClick = () => {
     if (!notification.read) {
@@ -346,14 +346,14 @@ function NotificationCard({
     }
     onToggleExpand();
   };
-  
+
   return (
     <Card className={`p-4 border-l-4 transition-all ${!notification.read ? 'border-l-blue-500' : 'border-l-transparent'}`}>
       <div className="flex items-start">
         <div className={`rounded-full w-10 h-10 flex items-center justify-center mr-4 ${color}`}>
           {icon}
         </div>
-        
+
         <div className="flex-1">
           <div className="flex items-start justify-between">
             <div>
@@ -367,7 +367,7 @@ function NotificationCard({
                 </span>
               </div>
             </div>
-            
+
             <div className="flex items-center space-x-1">
               {!notification.read && (
                 <Badge variant="outline" className="bg-blue-50 text-blue-600 border-blue-200">
@@ -376,11 +376,11 @@ function NotificationCard({
               )}
             </div>
           </div>
-          
+
           <div className={`text-sm mt-2 ${isExpanded ? '' : 'line-clamp-2'} text-gray-600 dark:text-gray-400`}>
             {notification.content}
           </div>
-          
+
           <div className="flex items-center justify-between mt-3">
             <Button 
               variant="ghost" 
@@ -400,7 +400,7 @@ function NotificationCard({
                 </>
               )}
             </Button>
-            
+
             <div className="flex items-center space-x-2">
               {notification.link && (
                 <Button 
@@ -412,7 +412,7 @@ function NotificationCard({
                   <a href={notification.link}>바로 가기</a>
                 </Button>
               )}
-              
+
               {!notification.read && (
                 <Button 
                   variant="ghost" 
@@ -426,7 +426,7 @@ function NotificationCard({
                   읽음 표시
                 </Button>
               )}
-              
+
               <Button 
                 variant="ghost" 
                 size="sm"
