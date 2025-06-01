@@ -127,10 +127,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { posts } = await import('@shared/schema');
       
       // 직접 SQL로 삽입
-      const result = await db.execute(`
+      await db.execute(`
         INSERT INTO posts (author_id, title, content, tag, likes, comments, created_at, updated_at)
         VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())
       `, [currentUser.id, title, content, tag || '일반', 0, 0]);
+      
+      // 방금 삽입된 게시글 조회
+      const result = await db.execute(`
+        SELECT * FROM posts WHERE author_id = ? AND title = ? ORDER BY created_at DESC LIMIT 1
+      `, [currentUser.id, title]);
       
       const savedPost = result.rows[0];
       
