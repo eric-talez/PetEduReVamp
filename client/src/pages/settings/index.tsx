@@ -1,6 +1,9 @@
 import { useState } from "react";
-import { useAuth } from "../../SimpleApp";
+import { useAuth } from "@/hooks/useAuth";
 import { Redirect } from "wouter";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { useToast } from "@/hooks/use-toast";
 
 interface SettingsPageProps {
   userRole?: string;
@@ -8,6 +11,7 @@ interface SettingsPageProps {
 
 export default function SettingsPage({ userRole: propUserRole }: SettingsPageProps = {}) {
   const auth = useAuth();
+  const { toast } = useToast();
   
   // 권한 체크
   const checkAccess = (allowedRoles: string[]) => {
@@ -28,6 +32,131 @@ export default function SettingsPage({ userRole: propUserRole }: SettingsPagePro
   const userRole = propUserRole || auth.userRole;
   const userName = auth.userName;
   const [activeTab, setActiveTab] = useState("account");
+  
+  // 폼 상태 관리
+  const [formData, setFormData] = useState({
+    username: userName || "",
+    email: "user@example.com",
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: ""
+  });
+  
+  const [profileImage, setProfileImage] = useState<string | null>(null);
+  
+  // 프로필 이미지 업로드 핸들러
+  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setProfileImage(e.target?.result as string);
+        toast({
+          title: "프로필 이미지 업로드",
+          description: "프로필 이미지가 선택되었습니다. 저장 버튼을 클릭하여 변경사항을 저장하세요.",
+        });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+  
+  // 비밀번호 변경 핸들러
+  const handlePasswordChange = async () => {
+    if (!formData.currentPassword || !formData.newPassword || !formData.confirmPassword) {
+      toast({
+        title: "비밀번호 변경 실패",
+        description: "모든 비밀번호 필드를 입력해주세요.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (formData.newPassword !== formData.confirmPassword) {
+      toast({
+        title: "비밀번호 변경 실패",
+        description: "새 비밀번호와 확인 비밀번호가 일치하지 않습니다.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    try {
+      const response = await fetch('/api/auth/change-password', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          currentPassword: formData.currentPassword,
+          newPassword: formData.newPassword,
+        }),
+      });
+      
+      if (response.ok) {
+        toast({
+          title: "비밀번호 변경 완료",
+          description: "비밀번호가 성공적으로 변경되었습니다.",
+        });
+        setFormData(prev => ({
+          ...prev,
+          currentPassword: "",
+          newPassword: "",
+          confirmPassword: ""
+        }));
+      } else {
+        const error = await response.json();
+        toast({
+          title: "비밀번호 변경 실패",
+          description: error.message || "비밀번호 변경 중 오류가 발생했습니다.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "비밀번호 변경 실패",
+        description: "네트워크 오류가 발생했습니다.",
+        variant: "destructive",
+      });
+    }
+  };
+  
+  // 설정 저장 핸들러
+  const handleSaveSettings = async () => {
+    try {
+      const response = await fetch('/api/user/settings', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          username: formData.username,
+          email: formData.email,
+          profileImage: profileImage,
+        }),
+      });
+      
+      if (response.ok) {
+        toast({
+          title: "설정 저장 완료",
+          description: "설정이 성공적으로 저장되었습니다.",
+        });
+      } else {
+        toast({
+          title: "설정 저장 실패",
+          description: "설정 저장 중 오류가 발생했습니다.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "설정 저장 실패",
+        description: "네트워크 오류가 발생했습니다.",
+        variant: "destructive",
+      });
+    }
+  };
 
   return (
     <div className="container mx-auto p-6">
@@ -109,45 +238,124 @@ export default function SettingsPage({ userRole: propUserRole }: SettingsPagePro
           {activeTab === "account" && (
             <div>
               <h2 className="text-xl font-semibold mb-4">계정 설정</h2>
-              <div className="space-y-4">
+              <div className="space-y-6">
+                {/* 프로필 이미지 업로드 */}
+                <div>
+                  <label className="block text-sm font-medium mb-3">프로필 이미지</label>
+                  <div className="flex items-center space-x-4">
+                    <div className="w-20 h-20 rounded-full overflow-hidden border-4 border-gray-200 dark:border-gray-700">
+                      {profileImage ? (
+                        <img 
+                          src={profileImage} 
+                          alt="프로필 이미지" 
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-gray-200 dark:bg-gray-600 flex items-center justify-center">
+                          <span className="text-2xl text-gray-500 dark:text-gray-400">
+                            {userName ? userName.charAt(0).toUpperCase() : 'U'}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                    <div>
+                      <input
+                        type="file"
+                        id="profile-image"
+                        accept="image/*"
+                        onChange={handleImageUpload}
+                        className="hidden"
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => document.getElementById('profile-image')?.click()}
+                      >
+                        이미지 선택
+                      </Button>
+                      <p className="text-xs text-gray-500 mt-1">JPG, PNG 파일만 업로드 가능</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 기본 정보 */}
                 <div>
                   <label className="block text-sm font-medium mb-1">사용자 이름</label>
-                  <input 
+                  <Input 
                     type="text" 
-                    className="w-full p-2 border dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-                    defaultValue={userName || ""}
+                    value={formData.username}
+                    onChange={(e) => setFormData(prev => ({...prev, username: e.target.value}))}
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-1">이메일</label>
-                  <input 
+                  <Input 
                     type="email" 
-                    className="w-full p-2 border dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-                    defaultValue="user@example.com"
+                    value={formData.email}
+                    onChange={(e) => setFormData(prev => ({...prev, email: e.target.value}))}
                   />
                 </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">비밀번호 변경</label>
-                  <input 
-                    type="password" 
-                    placeholder="현재 비밀번호"
-                    className="w-full p-2 border dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary mb-2"
-                  />
-                  <input 
-                    type="password" 
-                    placeholder="새 비밀번호"
-                    className="w-full p-2 border dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary mb-2"
-                  />
-                  <input 
-                    type="password" 
-                    placeholder="새 비밀번호 확인"
-                    className="w-full p-2 border dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-                  />
+
+                {/* 비밀번호 변경 */}
+                <div className="border-t pt-6">
+                  <h3 className="text-lg font-medium mb-4">비밀번호 변경</h3>
+                  <div className="space-y-3">
+                    <div>
+                      <label className="block text-sm font-medium mb-1">현재 비밀번호</label>
+                      <Input 
+                        type="password" 
+                        placeholder="현재 비밀번호를 입력하세요"
+                        value={formData.currentPassword}
+                        onChange={(e) => setFormData(prev => ({...prev, currentPassword: e.target.value}))}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-1">새 비밀번호</label>
+                      <Input 
+                        type="password" 
+                        placeholder="새 비밀번호를 입력하세요"
+                        value={formData.newPassword}
+                        onChange={(e) => setFormData(prev => ({...prev, newPassword: e.target.value}))}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-1">새 비밀번호 확인</label>
+                      <Input 
+                        type="password" 
+                        placeholder="새 비밀번호를 다시 입력하세요"
+                        value={formData.confirmPassword}
+                        onChange={(e) => setFormData(prev => ({...prev, confirmPassword: e.target.value}))}
+                      />
+                    </div>
+                    <div className="flex justify-end">
+                      <Button 
+                        variant="outline" 
+                        onClick={handlePasswordChange}
+                        disabled={!formData.currentPassword || !formData.newPassword || !formData.confirmPassword}
+                      >
+                        비밀번호 변경
+                      </Button>
+                    </div>
+                  </div>
                 </div>
-                <div className="mt-4 flex justify-end">
-                  <button className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90">
+
+                {/* 저장 버튼 */}
+                <div className="border-t pt-6 flex justify-end space-x-3">
+                  <Button variant="outline" onClick={() => {
+                    setFormData({
+                      username: userName || "",
+                      email: "user@example.com",
+                      currentPassword: "",
+                      newPassword: "",
+                      confirmPassword: ""
+                    });
+                    setProfileImage(null);
+                  }}>
+                    초기화
+                  </Button>
+                  <Button onClick={handleSaveSettings}>
                     변경사항 저장
-                  </button>
+                  </Button>
                 </div>
               </div>
             </div>
