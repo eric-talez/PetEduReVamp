@@ -41,8 +41,9 @@ export interface MenuConfiguration {
   updatedBy: string; // 마지막으로 업데이트한 관리자 ID
 }
 
-// 기본 메뉴 아이템
+// 기본 메뉴 아이템 - 간소화된 구조
 export const DEFAULT_MENU_ITEMS: MenuItem[] = [
+  // 메인 메뉴 - 핵심 기능만
   {
     id: 'home',
     title: '홈',
@@ -80,18 +81,6 @@ export const DEFAULT_MENU_ITEMS: MenuItem[] = [
     isPublic: true
   },
   {
-    id: 'locations',
-    title: '위치 서비스',
-    path: '/locations',
-    icon: 'MapPin',
-    type: 'internal',
-    category: 'main',
-    roles: ['user', 'pet-owner', 'trainer', 'institute-admin', 'admin'],
-    orderIndex: 3,
-    isActive: true,
-    isPublic: true
-  },
-  {
     id: 'community',
     title: '커뮤니티',
     path: '/community',
@@ -99,91 +88,45 @@ export const DEFAULT_MENU_ITEMS: MenuItem[] = [
     type: 'internal',
     category: 'main',
     roles: ['user', 'pet-owner', 'trainer', 'institute-admin', 'admin'],
-    orderIndex: 4,
+    orderIndex: 3,
     isActive: true,
     isPublic: true
   },
+  
+  // 학습 도구 - 영상/화상 훈련과 AI 기능 통합
   {
-    id: 'events',
-    title: '이벤트',
-    path: '/events',
-    icon: 'Calendar',
-    type: 'internal',
-    category: 'main',
-    roles: ['user', 'pet-owner', 'trainer', 'institute-admin', 'admin'],
-    orderIndex: 5,
-    isActive: true,
-    isPublic: true
-  },
-  {
-    id: 'video-training',
-    title: '영상 훈련',
-    path: '/video-training',
+    id: 'training-hub',
+    title: '훈련 센터',
+    path: '/training-hub',
     icon: 'Video',
     type: 'internal',
-    category: 'main',
-    roles: ['user', 'pet-owner', 'trainer', 'institute-admin', 'admin'],
-    orderIndex: 6,
-    isActive: true,
-    isPublic: true
-  },
-  {
-    id: 'video-call',
-    title: '화상 훈련',
-    path: '/video-call',
-    icon: 'VideoIcon',
-    type: 'internal',
-    category: 'main',
-    roles: ['user', 'pet-owner', 'trainer', 'institute-admin', 'admin'],
-    orderIndex: 7,
-    isActive: true,
-    isPublic: true
-  },
-  {
-    id: 'ai-analysis',
-    title: 'AI 분석',
-    path: '/ai-analysis',
-    icon: 'Sparkles',
-    type: 'internal',
-    category: 'main',
-    roles: ['pet-owner', 'trainer', 'institute-admin', 'admin'],
-    orderIndex: 8,
-    isActive: true,
-    isPublic: false
-  },
-  {
-    id: 'ai-chatbot',
-    title: 'AI 챗봇',
-    path: '/ai-chatbot',
-    icon: 'Sparkles',
-    type: 'internal',
-    category: 'main',
-    roles: ['user', 'pet-owner', 'trainer', 'institute-admin', 'admin'],
-    orderIndex: 9,
-    isActive: true,
-    isPublic: true
-  },
-  {
-    id: 'messages',
-    title: '메시지',
-    path: '/messages',
-    icon: 'MessageSquare',
-    type: 'internal',
     category: 'features',
-    roles: ['pet-owner', 'trainer', 'institute-admin', 'admin'],
+    roles: ['user', 'pet-owner', 'trainer', 'institute-admin', 'admin'],
     orderIndex: 0,
     isActive: true,
-    isPublic: false
+    isPublic: true
   },
   {
-    id: 'alerts',
-    title: '알림',
-    path: '/alerts',
-    icon: 'Bell',
+    id: 'ai-assistant',
+    title: 'AI 도우미',
+    path: '/ai-assistant',
+    icon: 'Sparkles',
     type: 'internal',
     category: 'features',
     roles: ['pet-owner', 'trainer', 'institute-admin', 'admin'],
     orderIndex: 1,
+    isActive: true,
+    isPublic: false
+  },
+  {
+    id: 'communication',
+    title: '소통 센터',
+    path: '/communication',
+    icon: 'Bell',
+    type: 'internal',
+    category: 'features',
+    roles: ['pet-owner', 'trainer', 'institute-admin', 'admin'],
+    orderIndex: 2,
     isActive: true,
     isPublic: false
   },

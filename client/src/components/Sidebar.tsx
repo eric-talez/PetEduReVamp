@@ -535,23 +535,6 @@ export function Sidebar({
             {/* 비로그인 상태 메뉴 */}
             {!isAuthenticated ? (
               <>
-                {/* 쇼핑몰 메뉴 그룹 (항상 표시) */}
-                <SidebarMenuGroup
-                  expanded={expanded}
-                  title="쇼핑"
-                  groupName="shopping"
-                  isOpen={menuGroups.shopping}
-                  toggleGroup={toggleMenuGroup}
-                  icon={<ShoppingBag className="w-5 h-5 text-gray-500" />}
-                />
-                
-                {/* 쇼핑몰 메뉴 그룹 내용 */}
-                {menuGroups.shopping && (
-                  <div className={cn("mt-1 pl-2", !expanded && "pl-0")}>
-                    <SpecialShopLink expanded={expanded}>쇼핑몰</SpecialShopLink>
-                  </div>
-                )}
-                
                 <SidebarMenuGroup
                   expanded={expanded}
                   title="메인 메뉴"
@@ -567,104 +550,30 @@ export function Sidebar({
                       href="/" 
                       icon={<Home className="w-5 h-5 mr-2" />} 
                       active={isActive("/")} 
-                      onClick={(path) => {
-                        console.log("비회원 메뉴 클릭:", path);
-                        handleItemClick(path);
-                      }} 
+                      onClick={handleItemClick} 
                       show={true}
                     >홈</AccessibleNavItem>
                     <AccessibleNavItem 
                       href="/courses" 
                       icon={<GraduationCap className="w-5 h-5 mr-2" />} 
                       active={isActive("/courses")} 
-                      onClick={(path) => {
-                        console.log("강의 탐색 메뉴 클릭:", path);
-                        handleItemClick(path);
-                      }} 
+                      onClick={handleItemClick} 
                       show={true}
                     >강의 탐색</AccessibleNavItem>
                     <AccessibleNavItem 
                       href="/trainers" 
                       icon={<UserRoundCheck className="w-5 h-5 mr-2" />} 
                       active={isActive("/trainers")} 
-                      onClick={(path) => {
-                        console.log("훈련사 찾기 메뉴 클릭:", path);
-                        handleItemClick(path);
-                      }} 
+                      onClick={handleItemClick} 
                       show={true}
                     >훈련사 찾기</AccessibleNavItem>
-                    <AccessibleNavItem 
-                      href="/locations" 
-                      icon={<MapPin className="w-5 h-5 mr-2" />} 
-                      active={isActive("/locations")} 
-                      onClick={(path) => {
-                        console.log("비회원이 위치 서비스 클릭");
-                        // 위치 서비스 메뉴는 비회원도 접근 가능
-                        handleItemClick(path);
-                      }} 
-                      show={true}
-                    >위치 서비스</AccessibleNavItem>
-                    <AccessibleNavItem 
-                      href="/video-training" 
-                      icon={<Video className="w-5 h-5 mr-2" />} 
-                      active={isActive("/video-training")} 
-                      onClick={(path) => {
-                        console.log("영상 훈련 메뉴 클릭:", path);
-                        handleItemClick(path);
-                      }} 
-                      show={true}
-                    >영상 훈련</AccessibleNavItem>
-                    <AccessibleNavItem 
-                      href="/video-call" 
-                      icon={<VideoIcon className="w-5 h-5 mr-2" />} 
-                      active={isActive("/video-call")} 
-                      onClick={(path) => {
-                        console.log("화상 수업 메뉴 클릭:", path);
-                        handleItemClick(path);
-                      }} 
-                      show={true}
-                    >화상 수업</AccessibleNavItem>
                     <AccessibleNavItem 
                       href="/community" 
                       icon={<MessageSquare className="w-5 h-5 mr-2" />} 
                       active={isActive("/community")} 
-                      onClick={(path) => {
-                        console.log("비회원이 커뮤니티 클릭");
-                        handleItemClick(path);
-                      }} 
+                      onClick={handleItemClick} 
                       show={true}
                     >커뮤니티</AccessibleNavItem>
-                    <AccessibleNavItem 
-                      href="/events" 
-                      icon={<Calendar className="w-5 h-5 mr-2" />} 
-                      active={isActive("/events")} 
-                      onClick={(path) => {
-                        console.log("비회원이 이벤트 메뉴 클릭");
-                        handleItemClick(path);
-                      }} 
-                      show={true}
-                    >이벤트</AccessibleNavItem>
-                    <AccessibleNavItem 
-                      href="/ai-chatbot" 
-                      icon={<Sparkles className="w-5 h-5 mr-2" />} 
-                      active={isActive("/ai-chatbot")} 
-                      onClick={(path) => {
-                        console.log("비회원이 AI 챗봇 메뉴 클릭");
-                        handleItemClick(path);
-                      }} 
-                      show={true}
-                    >AI 챗봇</AccessibleNavItem>
-                    <AccessibleNavItem 
-                      href="/shop" 
-                      icon={<Store className="w-5 h-5 mr-2" />} 
-                      active={isActive("/shop")} 
-                      onClick={(path) => {
-                        console.log("쇼핑몰 메뉴 클릭");
-                        // 새 창에서 쇼핑몰 열기
-                        window.open("https://replit.com/join/wshpfpjewg-hnblgkjw", "_blank");
-                      }} 
-                      show={true}
-                    >쇼핑몰</AccessibleNavItem>
                   </>
                 )}
                 
@@ -751,23 +660,6 @@ export function Sidebar({
             ) : (
               /* 로그인 상태 메뉴 */
               <>
-                {/* 쇼핑몰 메뉴 그룹 (항상 표시) */}
-                <SidebarMenuGroup
-                  expanded={expanded}
-                  title="쇼핑"
-                  groupName="shopping"
-                  isOpen={menuGroups.shopping}
-                  toggleGroup={toggleMenuGroup}
-                  icon={<ShoppingBag className="w-5 h-5 text-gray-500" />}
-                />
-                
-                {/* 쇼핑몰 메뉴 그룹 내용 */}
-                {menuGroups.shopping && (
-                  <div className={cn("mt-1 pl-2", !expanded && "pl-0")}>
-                    <SpecialShopLink expanded={expanded}>쇼핑몰</SpecialShopLink>
-                  </div>
-                )}
-                
                 {/* 모든 사용자 공통 메뉴 */}
                 <SidebarMenuGroup
                   expanded={expanded}
@@ -815,29 +707,27 @@ export function Sidebar({
                     >훈련사 찾기</AccessibleNavItem>
                     
                     <AccessibleNavItem 
-                      href="/locations" 
-                      icon={<MapPin className="w-5 h-5 mr-2" />} 
-                      active={isActive("/locations")} 
-                      onClick={handleItemClick} 
-                      show={true}
-                    >위치 서비스</AccessibleNavItem>
-                    
-                    <AccessibleNavItem 
                       href="/community" 
                       icon={<MessageSquare className="w-5 h-5 mr-2" />} 
                       active={isActive("/community")} 
                       onClick={handleItemClick} 
                       show={true}
                     >커뮤니티</AccessibleNavItem>
-                    
-                    <AccessibleNavItem 
-                      href="/events" 
-                      icon={<Calendar className="w-5 h-5 mr-2" />} 
-                      active={isActive("/events")} 
-                      onClick={handleItemClick} 
-                      show={true}
-                    >이벤트</AccessibleNavItem>
-                    
+                  </>
+                )}
+
+                {/* 학습 도구 그룹 */}
+                <SidebarMenuGroup
+                  expanded={expanded}
+                  title="학습 도구"
+                  groupName="features"
+                  isOpen={menuGroups.features}
+                  toggleGroup={toggleMenuGroup}
+                  icon={<Video className="w-5 h-5 text-gray-500" />}
+                />
+
+                {menuGroups.features && (
+                  <>
                     <AccessibleNavItem 
                       href="/video-training" 
                       icon={<Video className="w-5 h-5 mr-2" />} 
@@ -885,8 +775,6 @@ export function Sidebar({
                       onClick={handleItemClick} 
                       show={true}
                     >알림</AccessibleNavItem>
-                    
-                    {/* SpecialShopLink removed from here - now a standalone menu item */}
                   </>
                 )}
 
@@ -1226,6 +1114,22 @@ export function Sidebar({
                   </div>
                 ) : (
                   <HelpSection expanded={expanded} handleItemClick={handleItemClick} />
+                )}
+
+                {/* 쇼핑 메뉴 그룹 - 하단에 통합 */}
+                <SidebarMenuGroup
+                  expanded={expanded}
+                  title="쇼핑"
+                  groupName="shopping"
+                  isOpen={menuGroups.shopping}
+                  toggleGroup={toggleMenuGroup}
+                  icon={<ShoppingBag className="w-5 h-5 text-gray-500" />}
+                />
+                
+                {menuGroups.shopping && (
+                  <div className={cn("mt-1 pl-2", !expanded && "pl-0")}>
+                    <SpecialShopLink expanded={expanded}>쇼핑몰</SpecialShopLink>
+                  </div>
                 )}
 
                 {/* 통계 섹션 */}
