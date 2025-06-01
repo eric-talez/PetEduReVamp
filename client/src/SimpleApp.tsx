@@ -496,6 +496,40 @@ function AppLayout({ children }: { children: ReactNode }) {
                       );
                     }}
                   </Route>
+                  <Route path="/education-schedule">
+                    {() => {
+                      const EducationSchedulePage = lazy(() => import('./pages/education-schedule'));
+                      return (
+                        <Suspense fallback={<div className="p-8 text-center">교육 일정 페이지 로딩 중...</div>}>
+                          <EducationSchedulePage />
+                        </Suspense>
+                      );
+                    }}
+                  </Route>
+                  
+                  {/* 기능 메뉴 */}
+                  <Route path="/alerts">
+                    {() => {
+                      const AlertsPage = lazy(() => import('./pages/alerts'));
+                      return (
+                        <Suspense fallback={<div className="p-8 text-center">알림 페이지 로딩 중...</div>}>
+                          <AlertsPage />
+                        </Suspense>
+                      );
+                    }}
+                  </Route>
+                  
+                  {/* AI 챗봇 */}
+                  <Route path="/ai-chatbot">
+                    {() => {
+                      const AIChatbotPage = lazy(() => import('./pages/ai-chatbot'));
+                      return (
+                        <Suspense fallback={<div className="p-8 text-center">AI 챗봇 페이지 로딩 중...</div>}>
+                          <AIChatbotPage />
+                        </Suspense>
+                      );
+                    }}
+                  </Route>
                   
                   {/* 도움말 */}
                   <Route path="/help/faq" component={FAQPage} />
