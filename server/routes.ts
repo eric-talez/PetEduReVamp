@@ -2671,6 +2671,329 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ===== 커뮤니티 API 엔드포인트 =====
+  
+  // 게시글 목록 조회
+  app.get("/api/community/posts", async (req, res) => {
+    try {
+      console.log('=== 게시글 목록 API 호출됨 ===');
+      
+      const { page = '1', limit = '12', category = 'all', sort = 'latest' } = req.query;
+      const pageNum = parseInt(page as string);
+      const limitNum = parseInt(limit as string);
+      const offset = (pageNum - 1) * limitNum;
+
+      // 기본 쿼리
+      let query = db
+        .select({
+          id: posts.id,
+          title: posts.title,
+          content: posts.content,
+          category: posts.category,
+          tag: posts.tag,
+          image: posts.image,
+          likes: posts.likes,
+          views: posts.views,
+          comments: posts.comments,
+          createdAt: posts.createdAt,
+          updatedAt: posts.updatedAt,
+          author: {
+            id: users.id,
+            username: users.username,
+            name: users.name,
+            avatar: users.avatar
+          }
+        })
+        .from(posts)
+        .leftJoin(users, eq(posts.authorId, users.id))
+        .where(eq(posts.isDeleted, false));
+
+      // 카테고리 필터링
+      if (category !== 'all') {
+        query = query.where(eq(posts.category, category as string));
+      }
+
+      // 정렬
+      if (sort === 'latest') {
+        query = query.orderBy(desc(posts.createdAt));
+      } else if (sort === 'popular') {
+        query = query.orderBy(desc(posts.likes));
+      } else if (sort === 'views') {
+        query = query.orderBy(desc(posts.views));
+      }
+
+      // 페이지네이션
+      query = query.limit(limitNum).offset(offset);
+
+      const postsResult = await query;
+      
+      // 전체 게시글 수 조회
+      const totalResult = await db
+        .select({ count: sql<number>`count(*)` })
+        .from(posts)
+        .where(eq(posts.isDeleted, false));
+      
+      const total = totalResult[0]?.count || 0;
+      
+      console.log(`데이터베이스에서 조회된 게시글 수: ${postsResult.length}`);
+
+      return res.status(200).json({
+        posts: postsResult,
+        pagination: {
+          total,
+          page: pageNum,
+          limit: limitNum,
+          totalPages: Math.ceil(total / limitNum)
+        }
+      });
+    } catch (error: any) {
+      console.error('게시글 목록 조회 오류:', error);
+      return res.status(500).json({ 
+        message: "게시글을 불러오는 중 오류가 발생했습니다",
+        error: error.message 
+      });
+    }
+  });
+
+  // 게시글 상세 조회
+  app.get("/api/community/posts/:id", async (req, res) => {
+    try {
+      const postId = parseInt(req.params.id);
+      
+      // 조회수 증가
+      await db
+        .update(posts)
+        .set({ views: sql`${posts.views} + 1` })
+        .where(eq(posts.id, postId));
+
+      // 게시글 상세 정보 조회
+      const postResult = await db
+        .select({
+          id: posts.id,
+          title: posts.title,
+          content: posts.content,
+          category: posts.category,
+          tag: posts.tag,
+          image: posts.image,
+          likes: posts.likes,
+          views: posts.views,
+          comments: posts.comments,
+          createdAt: posts.createdAt,
+          updatedAt: posts.updatedAt,
+          author: {
+            id: users.id,
+            username: users.username,
+            name: users.name,
+            avatar: users.avatar
+          }
+        })
+        .from(posts)
+        .leftJoin(users, eq(posts.authorId, users.id))
+        .where(and(eq(posts.id, postId), eq(posts.isDeleted, false)))
+        .limit(1);
+
+      if (postResult.length === 0) {
+        return res.status(404).json({ message: "게시글을 찾을 수 없습니다" });
+      }
+
+      return res.status(200).json(postResult[0]);
+    } catch (error: any) {
+      console.error('게시글 상세 조회 오류:', error);
+      return res.status(500).json({ 
+        message: "게시글을 불러오는 중 오류가 발생했습니다",
+        error: error.message 
+      });
+    }
+  });
+
+  // 게시글 작성
+  app.post("/api/community/posts", async (req, res) => {
+    try {
+      const user = req.user || req.session.user;
+      if (!user) {
+        return res.status(401).json({ message: "로그인이 필요합니다" });
+      }
+
+      const { title, content, category = 'general', tag, image } = req.body;
+
+      if (!title || !content) {
+        return res.status(400).json({ message: "제목과 내용은 필수입니다" });
+      }
+
+      const newPost = await db
+        .insert(posts)
+        .values({
+          authorId: user.id,
+          title,
+          content,
+          category,
+          tag,
+          image
+        })
+        .returning();
+
+      return res.status(201).json({
+        message: "게시글이 성공적으로 작성되었습니다",
+        post: newPost[0]
+      });
+    } catch (error: any) {
+      console.error('게시글 작성 오류:', error);
+      return res.status(500).json({ 
+        message: "게시글 작성 중 오류가 발생했습니다",
+        error: error.message 
+      });
+    }
+  });
+
+  // 게시글 수정
+  app.put("/api/community/posts/:id", async (req, res) => {
+    try {
+      const user = req.user || req.session.user;
+      if (!user) {
+        return res.status(401).json({ message: "로그인이 필요합니다" });
+      }
+
+      const postId = parseInt(req.params.id);
+      const { title, content, category, tag, image } = req.body;
+
+      // 게시글 작성자 확인
+      const existingPost = await db
+        .select()
+        .from(posts)
+        .where(and(eq(posts.id, postId), eq(posts.authorId, user.id)))
+        .limit(1);
+
+      if (existingPost.length === 0) {
+        return res.status(404).json({ message: "게시글을 찾을 수 없거나 수정 권한이 없습니다" });
+      }
+
+      const updatedPost = await db
+        .update(posts)
+        .set({
+          title,
+          content,
+          category,
+          tag,
+          image,
+          updatedAt: new Date()
+        })
+        .where(eq(posts.id, postId))
+        .returning();
+
+      return res.status(200).json({
+        message: "게시글이 성공적으로 수정되었습니다",
+        post: updatedPost[0]
+      });
+    } catch (error: any) {
+      console.error('게시글 수정 오류:', error);
+      return res.status(500).json({ 
+        message: "게시글 수정 중 오류가 발생했습니다",
+        error: error.message 
+      });
+    }
+  });
+
+  // 게시글 삭제
+  app.delete("/api/community/posts/:id", async (req, res) => {
+    try {
+      const user = req.user || req.session.user;
+      if (!user) {
+        return res.status(401).json({ message: "로그인이 필요합니다" });
+      }
+
+      const postId = parseInt(req.params.id);
+
+      // 게시글 작성자 확인
+      const existingPost = await db
+        .select()
+        .from(posts)
+        .where(and(eq(posts.id, postId), eq(posts.authorId, user.id)))
+        .limit(1);
+
+      if (existingPost.length === 0) {
+        return res.status(404).json({ message: "게시글을 찾을 수 없거나 삭제 권한이 없습니다" });
+      }
+
+      // 소프트 삭제
+      await db
+        .update(posts)
+        .set({ isDeleted: true })
+        .where(eq(posts.id, postId));
+
+      return res.status(200).json({
+        message: "게시글이 성공적으로 삭제되었습니다"
+      });
+    } catch (error: any) {
+      console.error('게시글 삭제 오류:', error);
+      return res.status(500).json({ 
+        message: "게시글 삭제 중 오류가 발생했습니다",
+        error: error.message 
+      });
+    }
+  });
+
+  // 게시글 좋아요
+  app.post("/api/community/posts/:id/like", async (req, res) => {
+    try {
+      const user = req.user || req.session.user;
+      if (!user) {
+        return res.status(401).json({ message: "로그인이 필요합니다" });
+      }
+
+      const postId = parseInt(req.params.id);
+
+      // 이미 좋아요한 게시글인지 확인
+      const existingLike = await db
+        .select()
+        .from(likes)
+        .where(and(eq(likes.postId, postId), eq(likes.userId, user.id)))
+        .limit(1);
+
+      if (existingLike.length > 0) {
+        // 좋아요 취소
+        await db
+          .delete(likes)
+          .where(and(eq(likes.postId, postId), eq(likes.userId, user.id)));
+
+        // 게시글 좋아요 수 감소
+        await db
+          .update(posts)
+          .set({ likes: sql`${posts.likes} - 1` })
+          .where(eq(posts.id, postId));
+
+        return res.status(200).json({
+          message: "좋아요가 취소되었습니다",
+          liked: false
+        });
+      } else {
+        // 좋아요 추가
+        await db
+          .insert(likes)
+          .values({
+            postId,
+            userId: user.id
+          });
+
+        // 게시글 좋아요 수 증가
+        await db
+          .update(posts)
+          .set({ likes: sql`${posts.likes} + 1` })
+          .where(eq(posts.id, postId));
+
+        return res.status(200).json({
+          message: "좋아요가 추가되었습니다",
+          liked: true
+        });
+      }
+    } catch (error: any) {
+      console.error('좋아요 처리 오류:', error);
+      return res.status(500).json({ 
+        message: "좋아요 처리 중 오류가 발생했습니다",
+        error: error.message 
+      });
+    }
+  });
+
   console.log('[server] WebSocket server initialized at /ws');
   console.log('[JavaBridge] Java Bridge API endpoints registered');
   
