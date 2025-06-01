@@ -1,4 +1,4 @@
-import { useAuth } from "../../SimpleApp";
+import { useAuth } from "@/hooks/useAuth";
 import { Redirect } from "wouter";
 import { useState, useEffect } from "react";
 import { z } from "zod";
