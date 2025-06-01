@@ -249,6 +249,18 @@ export const DEFAULT_MENU_ITEMS: MenuItem[] = [
     isPublic: false
   },
   {
+    id: 'pet-health',
+    title: '반려견 건강관리',
+    path: '/pet-care/health-record',
+    icon: 'Activity',
+    type: 'internal',
+    category: 'myLearning',
+    roles: ['pet-owner', 'admin'],
+    orderIndex: 4,
+    isActive: true,
+    isPublic: false
+  },
+  {
     id: 'notebook',
     title: '알림장',
     path: '/notebook',
