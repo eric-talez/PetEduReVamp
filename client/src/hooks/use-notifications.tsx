@@ -84,7 +84,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
   const [wsStatus, setWsStatus] = useState<WebSocketStatus>('disconnected');
   const [socket, setSocket] = useState<WebSocket | null>(null);
   const [reconnectAttempts, setReconnectAttempts] = useState(0);
-  const MAX_RECONNECT_ATTEMPTS = 5;
+  const MAX_RECONNECT_ATTEMPTS = 3;
   
   // 읽지 않은 알림 수 계산
   const unreadCount = notifications.filter(n => !n.isRead).length;

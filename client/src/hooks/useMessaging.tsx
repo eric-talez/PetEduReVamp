@@ -70,8 +70,8 @@ export function MessagingProvider({ children }: { children: ReactNode }) {
   // 재연결 시도 횟수 및 타이머 참조
   const reconnectAttemptsRef = useRef(0);
   const reconnectTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const MAX_RECONNECT_ATTEMPTS = 5;
-  const RECONNECT_INTERVAL = 3000; // 3초마다 재시도
+  const MAX_RECONNECT_ATTEMPTS = 3;
+  const RECONNECT_INTERVAL = 10000; // 10초마다 재시도 (더 긴 간격)
   
   // WebSocket 연결 함수
   const connectWebSocket = useCallback((isReconnect = false) => {
