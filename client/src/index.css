@@ -441,6 +441,23 @@ body:not(.dark) svg,
   filter: none !important;
   backdrop-filter: none !important;
   -webkit-filter: none !important;
+  mix-blend-mode: normal !important;
+  opacity: 1 !important;
+}
+
+/* 모든 이미지에서 라이트 모드 필터링 방지 */
+*, *::before, *::after {
+  --tw-brightness: brightness(1) !important;
+  --tw-contrast: contrast(1) !important;
+  --tw-grayscale: grayscale(0) !important;
+  --tw-hue-rotate: hue-rotate(0deg) !important;
+  --tw-invert: invert(0) !important;
+  --tw-saturate: saturate(1) !important;
+  --tw-sepia: sepia(0) !important;
+}
+
+html:not(.dark) * {
+  filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-opacity) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow) !important;
 }
 
 /* 특정 클래스가 있는 경우에만 라이트 모드 필터 무시 */
@@ -449,6 +466,7 @@ body:not(.dark) svg,
   filter: none !important;
   backdrop-filter: none !important;
   -webkit-filter: none !important;
+  mix-blend-mode: normal !important;
 }
 
 /* 다크 모드에서만 필요한 경우 이미지 필터 적용 */
