@@ -1,7 +1,12 @@
 import { 
   users, type User, type InsertUser, type UserRole,
-  Event, InsertEvent, EventLocation, InsertEventLocation, EventAttendance, InsertEventAttendance,
-  events, eventLocations, eventAttendances
+  events, type Event, type InsertEvent, 
+  eventLocations, type EventLocation, type InsertEventLocation, 
+  eventAttendances, type EventAttendance,
+  courses, type Course, type InsertCourse,
+  institutes, trainers, pets, vaccinations, checkups,
+  commissionPolicies, commissionTransactions, settlementReports,
+  shopCategories, products, cartItems
 } from "@shared/schema";
 
 // 프로필 업데이트를 위한 인터페이스
@@ -84,6 +89,20 @@ export interface IStorage {
   getSettlementReport(id: number): Promise<any | undefined>;
   createSettlementReport(report: any): Promise<any>;
   updateSettlementReport(id: number, data: any): Promise<any>;
+
+  // Shop 관련
+  getAllProducts(): Promise<any[]>;
+  getProduct(id: number): Promise<any | undefined>;
+  createProduct(product: any): Promise<any>;
+  updateProduct(id: number, data: any): Promise<any>;
+  getProductsByCategory(categoryId: number): Promise<any[]>;
+  getAllShopCategories(): Promise<any[]>;
+  getShopCategory(id: number): Promise<any | undefined>;
+  createShopCategory(category: any): Promise<any>;
+  getCartItems(userId: number): Promise<any[]>;
+  addToCart(userId: number, productId: number, quantity: number, options?: any): Promise<any>;
+  updateCartItem(id: number, quantity: number): Promise<any>;
+  removeFromCart(id: number): Promise<boolean>;
 }
 
 export class MemStorage implements IStorage {
@@ -976,7 +995,7 @@ export class MemStorage implements IStorage {
 }
 
 import { db } from "./db";
-import { eq } from "drizzle-orm";
+import { eq, and, ilike, sql } from "drizzle-orm";
 
 export class DatabaseStorage implements IStorage {
   async getUser(id: number): Promise<User | undefined> {
@@ -987,6 +1006,239 @@ export class DatabaseStorage implements IStorage {
   async getUserByUsername(username: string): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.username, username));
     return user || undefined;
+  }
+
+  // Events - Real Database Implementation
+  async getAllEvents(): Promise<Event[]> {
+    return await db.select().from(events).where(eq(events.isActive, true));
+  }
+
+  async getEvent(id: number): Promise<Event | undefined> {
+    const [event] = await db.select().from(events).where(eq(events.id, id));
+    return event || undefined;
+  }
+
+  async createEvent(event: InsertEvent): Promise<Event> {
+    const [newEvent] = await db.insert(events).values(event).returning();
+    return newEvent;
+  }
+
+  async getEventsByRegion(region: string): Promise<Event[]> {
+    return await db.select().from(events).where(and(
+      eq(events.isActive, true),
+      ilike(events.location, `%${region}%`)
+    ));
+  }
+
+  async getEventsByCategory(category: string): Promise<Event[]> {
+    return await db.select().from(events).where(and(
+      eq(events.isActive, true),
+      eq(events.category, category)
+    ));
+  }
+
+  async checkEventAttendance(userId: number, eventId: number): Promise<boolean> {
+    const [attendance] = await db.select().from(eventAttendances).where(and(
+      eq(eventAttendances.userId, userId),
+      eq(eventAttendances.eventId, eventId)
+    ));
+    return !!attendance;
+  }
+
+  async attendEvent(userId: number, eventId: number): Promise<EventAttendance> {
+    const [attendance] = await db.insert(eventAttendances).values({
+      userId,
+      eventId,
+      attendedAt: new Date()
+    }).returning();
+    
+    // Update participant count
+    await db.update(events)
+      .set({ currentParticipants: sql`${events.currentParticipants} + 1` })
+      .where(eq(events.id, eventId));
+    
+    return attendance;
+  }
+
+  async getEventLocation(id: number): Promise<EventLocation | undefined> {
+    const [location] = await db.select().from(eventLocations).where(eq(eventLocations.id, id));
+    return location || undefined;
+  }
+
+  async createEventLocation(location: InsertEventLocation): Promise<EventLocation> {
+    const [newLocation] = await db.insert(eventLocations).values(location).returning();
+    return newLocation;
+  }
+
+  // Courses - Real Database Implementation
+  async getCourse(id: number): Promise<any> {
+    const [course] = await db.select().from(courses).where(eq(courses.id, id));
+    return course || undefined;
+  }
+
+  async getAllCourses(): Promise<any[]> {
+    return await db.select().from(courses).where(eq(courses.isActive, true));
+  }
+
+  async getCoursesByUserId(userId: number): Promise<any[]> {
+    // This would require a join with enrollment table when implemented
+    return await db.select().from(courses).where(eq(courses.instructorId, userId));
+  }
+
+  async createCourse(course: any): Promise<any> {
+    const [newCourse] = await db.insert(courses).values(course).returning();
+    return newCourse;
+  }
+
+  async enrollUserInCourse(userId: number, courseId: number): Promise<any> {
+    // This would use enrollment table when schema is updated
+    // For now, we'll update course enrollment count
+    await db.update(courses)
+      .set({ enrolledCount: sql`${courses.enrolledCount} + 1` })
+      .where(eq(courses.id, courseId));
+    return { userId, courseId, enrolledAt: new Date() };
+  }
+
+  // Commission Policies - Real Database Implementation
+  async getCommissionPolicies(): Promise<any[]> {
+    return await db.select().from(commissionPolicies).where(eq(commissionPolicies.isActive, true));
+  }
+
+  async getCommissionPolicy(id: number): Promise<any | undefined> {
+    const [policy] = await db.select().from(commissionPolicies).where(eq(commissionPolicies.id, id));
+    return policy || undefined;
+  }
+
+  async createCommissionPolicy(policy: any): Promise<any> {
+    const [newPolicy] = await db.insert(commissionPolicies).values(policy).returning();
+    return newPolicy;
+  }
+
+  async updateCommissionPolicy(id: number, data: any): Promise<any> {
+    const [updatedPolicy] = await db.update(commissionPolicies)
+      .set({ ...data, updatedAt: new Date() })
+      .where(eq(commissionPolicies.id, id))
+      .returning();
+    return updatedPolicy;
+  }
+
+  // Commission Transactions - Real Database Implementation
+  async getCommissionTransactions(): Promise<any[]> {
+    return await db.select().from(commissionTransactions);
+  }
+
+  async getCommissionTransaction(id: number): Promise<any | undefined> {
+    const [transaction] = await db.select().from(commissionTransactions).where(eq(commissionTransactions.id, id));
+    return transaction || undefined;
+  }
+
+  async createCommissionTransaction(transaction: any): Promise<any> {
+    const [newTransaction] = await db.insert(commissionTransactions).values(transaction).returning();
+    return newTransaction;
+  }
+
+  async updateCommissionTransaction(id: number, data: any): Promise<any> {
+    const [updatedTransaction] = await db.update(commissionTransactions)
+      .set(data)
+      .where(eq(commissionTransactions.id, id))
+      .returning();
+    return updatedTransaction;
+  }
+
+  // Settlement Reports - Real Database Implementation
+  async getSettlementReports(): Promise<any[]> {
+    return await db.select().from(settlementReports);
+  }
+
+  async getSettlementReport(id: number): Promise<any | undefined> {
+    const [report] = await db.select().from(settlementReports).where(eq(settlementReports.id, id));
+    return report || undefined;
+  }
+
+  async createSettlementReport(report: any): Promise<any> {
+    const [newReport] = await db.insert(settlementReports).values(report).returning();
+    return newReport;
+  }
+
+  async updateSettlementReport(id: number, data: any): Promise<any> {
+    const [updatedReport] = await db.update(settlementReports)
+      .set(data)
+      .where(eq(settlementReports.id, id))
+      .returning();
+    return updatedReport;
+  }
+
+  // Shop Products - Real Database Implementation
+  async getAllProducts(): Promise<any[]> {
+    return await db.select().from(products).where(eq(products.isActive, true));
+  }
+
+  async getProduct(id: number): Promise<any | undefined> {
+    const [product] = await db.select().from(products).where(eq(products.id, id));
+    return product || undefined;
+  }
+
+  async createProduct(product: any): Promise<any> {
+    const [newProduct] = await db.insert(products).values(product).returning();
+    return newProduct;
+  }
+
+  async updateProduct(id: number, data: any): Promise<any> {
+    const [updatedProduct] = await db.update(products)
+      .set({ ...data, updatedAt: new Date() })
+      .where(eq(products.id, id))
+      .returning();
+    return updatedProduct;
+  }
+
+  async getProductsByCategory(categoryId: number): Promise<any[]> {
+    return await db.select().from(products).where(and(
+      eq(products.isActive, true),
+      eq(products.categoryId, categoryId)
+    ));
+  }
+
+  // Shop Categories - Real Database Implementation
+  async getAllShopCategories(): Promise<any[]> {
+    return await db.select().from(shopCategories).where(eq(shopCategories.isActive, true));
+  }
+
+  async getShopCategory(id: number): Promise<any | undefined> {
+    const [category] = await db.select().from(shopCategories).where(eq(shopCategories.id, id));
+    return category || undefined;
+  }
+
+  async createShopCategory(category: any): Promise<any> {
+    const [newCategory] = await db.insert(shopCategories).values(category).returning();
+    return newCategory;
+  }
+
+  // Cart Items - Real Database Implementation
+  async getCartItems(userId: number): Promise<any[]> {
+    return await db.select().from(cartItems).where(eq(cartItems.userId, userId));
+  }
+
+  async addToCart(userId: number, productId: number, quantity: number, options?: any): Promise<any> {
+    const [cartItem] = await db.insert(cartItems).values({
+      userId,
+      productId,
+      quantity,
+      options
+    }).returning();
+    return cartItem;
+  }
+
+  async updateCartItem(id: number, quantity: number): Promise<any> {
+    const [updatedItem] = await db.update(cartItems)
+      .set({ quantity, updatedAt: new Date() })
+      .where(eq(cartItems.id, id))
+      .returning();
+    return updatedItem;
+  }
+
+  async removeFromCart(id: number): Promise<boolean> {
+    await db.delete(cartItems).where(eq(cartItems.id, id));
+    return true;
   }
 
   async getUserByCi(ci: string): Promise<User | undefined> {
