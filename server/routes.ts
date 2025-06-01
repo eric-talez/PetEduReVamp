@@ -3,6 +3,9 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { z } from "zod";
 import { createUserSchema, createPetSchema, createCourseSchema } from "@shared/schema";
+import multer from "multer";
+import path from "path";
+import fs from "fs";
 import { registerCommissionRoutes } from "./commission/routes";
 import { registerTrainerRoutes } from "./trainers/routes";
 import { registerCourseRoutes } from "./courses/routes";
@@ -34,6 +37,36 @@ import analyticsRouter from './routes/analytics';
 
 // 본인인증 관련 로직 임포트
 import { verifyIdentity } from './auth/verify';
+
+// Multer 설정 - 파일 업로드
+const uploadsDir = path.join(process.cwd(), 'public', 'uploads');
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
+
+const storage_config = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, uploadsDir);
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
+  }
+});
+
+const upload = multer({ 
+  storage: storage_config,
+  limits: {
+    fileSize: 5 * 1024 * 1024 // 5MB 제한
+  },
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype.startsWith('image/')) {
+      cb(null, true);
+    } else {
+      cb(new Error('이미지 파일만 업로드 가능합니다.'));
+    }
+  }
+});
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // 본인인증 API 엔드포인트
@@ -1215,6 +1248,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       console.error("Update pet error:", error);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // Update pet photo
+  app.put("/api/pets/:id/photo", upload.single("photo"), async (req, res) => {
+    try {
+      if (!req.session.user) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+      
+      const petId = parseInt(req.params.id);
+      if (isNaN(petId)) {
+        return res.status(400).json({ message: "Invalid pet ID" });
+      }
+
+      // Check if pet exists and belongs to user
+      const existingPet = await storage.getPetById(petId);
+      if (!existingPet) {
+        return res.status(404).json({ message: "Pet not found" });
+      }
+      
+      if (existingPet.userId !== req.session.user.id) {
+        return res.status(403).json({ message: "Not authorized" });
+      }
+
+      if (!req.file) {
+        return res.status(400).json({ message: "No photo file provided" });
+      }
+
+      // For now, we'll store the file path/name as the avatar
+      // In a real application, you'd upload to a cloud service
+      const photoPath = `/uploads/${req.file.filename}`;
+      
+      const updatedPet = await storage.updatePet(petId, { avatar: photoPath });
+      
+      return res.status(200).json({ 
+        message: "Photo updated successfully", 
+        pet: updatedPet 
+      });
+    } catch (error) {
+      console.error("Update pet photo error:", error);
       return res.status(500).json({ message: "Internal server error" });
     }
   });
