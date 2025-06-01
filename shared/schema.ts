@@ -312,10 +312,13 @@ export const posts = pgTable("posts", {
   authorId: integer("author_id").references(() => users.id, { onDelete: 'cascade' }).notNull(),
   title: text("title").notNull(),
   content: text("content").notNull(),
+  category: text("category").notNull().default('general'), // general, training, health, breed, tips
   tag: text("tag"),
   image: text("image"),
   likes: integer("likes").default(0),
+  views: integer("views").default(0),
   comments: integer("comments").default(0),
+  isDeleted: boolean("is_deleted").default(false),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
@@ -325,7 +328,12 @@ export const comments = pgTable("comments", {
   postId: integer("post_id").references(() => posts.id, { onDelete: 'cascade' }).notNull(),
   userId: integer("user_id").references(() => users.id, { onDelete: 'cascade' }).notNull(),
   content: text("content").notNull(),
+  parentId: integer("parent_id").references(() => comments.id, { onDelete: 'cascade' }), // 대댓글 지원
+  likes: integer("likes").default(0),
+  isEdited: boolean("is_edited").default(false),
+  isDeleted: boolean("is_deleted").default(false),
   createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
 export const likes = pgTable("likes", {
@@ -447,6 +455,8 @@ export const createTrainingSessionSchema = createInsertSchema(trainingSessions).
   id: true,
   createdAt: true
 });
+
+
 
 export const createCartItemSchema = createInsertSchema(cartItems).omit({
   id: true,
