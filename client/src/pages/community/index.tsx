@@ -254,6 +254,55 @@ export default function CommunityPage() {
     tags: ""
   });
 
+  // 게시글 작성 뮤테이션
+  const createPostMutation = useMutation({
+    mutationFn: async (postData: typeof newPost) => {
+      const response = await fetch('/api/community/posts', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          title: postData.title,
+          content: postData.content,
+          tag: postData.tags,
+          category: postData.category
+        }),
+      });
+      
+      if (!response.ok) {
+        throw new Error('게시글 작성에 실패했습니다.');
+      }
+      
+      return response.json();
+    },
+    onSuccess: () => {
+      // 게시글 목록 캐시 무효화하여 새로고침
+      queryClient.invalidateQueries({ queryKey: ['/api/community/posts'] });
+      
+      toast({
+        title: "게시글 작성 완료",
+        description: "새 게시글이 성공적으로 작성되었습니다.",
+      });
+      
+      // 폼 초기화
+      setNewPost({
+        title: "",
+        content: "",
+        category: "일반",
+        tags: ""
+      });
+      setIsCreatePostOpen(false);
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "작성 실패",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  });
+
   // 게시글 작성 함수
   const handleSubmitPost = () => {
     if (!newPost.title || !newPost.content) {
@@ -266,21 +315,7 @@ export default function CommunityPage() {
     }
     
     console.log("새 게시글 작성:", newPost);
-    // 여기서 실제 API 호출 구현
-    
-    toast({
-      title: "게시글 작성 완료",
-      description: "새 게시글이 성공적으로 작성되었습니다.",
-    });
-    
-    // 폼 초기화
-    setNewPost({
-      title: "",
-      content: "",
-      category: "일반",
-      tags: ""
-    });
-    setIsCreatePostOpen(false);
+    createPostMutation.mutate(newPost);
   };
   const [selectedPost, setSelectedPost] = useState<any>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
