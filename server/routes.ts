@@ -101,13 +101,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     next();
   });
 
-  // 테스트용 게시글 작성 API (인증 없음)
+  // 게시글 작성 API (데이터베이스 저장)
   app.post('/api/community/posts', async (req, res) => {
-    // 명시적으로 JSON 응답 설정
     res.setHeader('Content-Type', 'application/json');
     res.setHeader('Cache-Control', 'no-cache');
     
-    console.log('=== 테스트 게시글 작성 API 호출됨 ===');
+    console.log('=== 게시글 작성 API 호출됨 ===');
     console.log('요청 데이터:', req.body);
     
     try {
@@ -123,18 +122,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // 현재 로그인한 사용자 정보 가져오기
       const currentUser = req.user || { id: 3, username: 'testuser3', name: '반려인' };
       
+      // 데이터베이스에 게시글 저장
+      const { Pool } = await import('pg');
+      const pool = new Pool({
+        connectionString: process.env.DATABASE_URL
+      });
+      
+      const result = await pool.query(`
+        INSERT INTO posts (author_id, title, content, tag, likes, comments, created_at, updated_at)
+        VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW())
+        RETURNING *
+      `, [currentUser.id, title, content, tag || '일반', 0, 0]);
+      
+      const savedPost = result.rows[0];
+      
       const responseData = {
         post: {
-          id: Date.now(),
-          title,
-          content,
-          tag: tag || '일반',
-          authorId: currentUser.id,
-          image: null,
-          likes: 0,
-          comments: 0,
-          createdAt: new Date(),
-          updatedAt: new Date()
+          id: savedPost.id,
+          title: savedPost.title,
+          content: savedPost.content,
+          tag: savedPost.tag,
+          authorId: savedPost.author_id,
+          image: savedPost.image,
+          likes: savedPost.likes,
+          comments: savedPost.comments,
+          createdAt: savedPost.created_at,
+          updatedAt: savedPost.updated_at
         },
         author: {
           id: currentUser.id,
@@ -143,22 +156,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       };
       
-      console.log('응답 데이터:', responseData);
+      console.log('데이터베이스 저장 완료:', responseData);
       
-      // 메모리에 게시글 저장 (작성자 정보 포함)
-      const postWithAuthor = {
-        ...responseData.post,
-        author: responseData.author
-      };
-      testPosts.unshift(postWithAuthor);
-      
-      // Express 응답 파이프라인 우회하여 직접 응답
-      res.writeHead(201, {
-        'Content-Type': 'application/json',
-        'Cache-Control': 'no-cache'
-      });
-      res.end(JSON.stringify(responseData));
-      return;
+      res.status(201).json(responseData);
     } catch (error: any) {
       console.error('게시글 작성 오류:', error);
       res.status(500).json({ 
