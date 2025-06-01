@@ -32,32 +32,13 @@ export default function MyPetsPage() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const pets = [
-    {
-      id: 1,
-      name: "멍멍이",
-      breed: "골든 리트리버",
-      age: "2세 5개월",
-      weight: "28kg",
-      trainerId: "김훈련사",
-      status: "훈련중",
-      lastSession: "2025-05-30",
-      nextSession: "2025-06-02",
-      photo: null
-    },
-    {
-      id: 2,
-      name: "뽀삐",
-      breed: "말티즈",
-      age: "1세 3개월",
-      weight: "3.2kg",
-      trainerId: "박훈련사",
-      status: "평가 대기",
-      lastSession: null,
-      nextSession: "2025-06-03",
-      photo: null
-    }
-  ];
+  // 반려견 목록 조회
+  const { data: petsResponse, isLoading } = useQuery({
+    queryKey: ['/api/pets'],
+    enabled: true
+  });
+
+  const pets = petsResponse?.pets || [];
 
   // 반려견 등록 뮤테이션
   const registerPetMutation = useMutation({
@@ -326,25 +307,42 @@ export default function MyPetsPage() {
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
                     <span className="text-gray-600">체중</span>
-                    <p className="font-medium">{pet.weight}</p>
+                    <p className="font-medium">{pet.weight ? `${(pet.weight / 1000).toFixed(1)}kg` : '미등록'}</p>
                   </div>
                   <div>
-                    <span className="text-gray-600">담당 훈련사</span>
-                    <p className="font-medium">{pet.trainerId}</p>
+                    <span className="text-gray-600">나이</span>
+                    <p className="font-medium">{pet.age}세</p>
+                  </div>
+                  <div>
+                    <span className="text-gray-600">성별</span>
+                    <p className="font-medium">{pet.gender || '미등록'}</p>
+                  </div>
+                  <div>
+                    <span className="text-gray-600">품종</span>
+                    <p className="font-medium">{pet.breed}</p>
                   </div>
                 </div>
                 
-                <div className="space-y-2 text-sm">
-                  {pet.lastSession && (
-                    <div className="flex items-center text-gray-600">
-                      <Calendar className="w-4 h-4 mr-2" />
-                      마지막 훈련: {pet.lastSession}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
+                    <span className="text-sm font-medium text-green-900">건강 상태</span>
+                    <Badge variant="secondary" className="bg-green-100 text-green-800">
+                      {pet.health || '건강함'}
+                    </Badge>
+                  </div>
+                  
+                  {pet.temperament && (
+                    <div className="flex items-center text-gray-600 text-sm">
+                      <Heart className="w-4 h-4 mr-2" />
+                      성격: {pet.temperament}
                     </div>
                   )}
-                  <div className="flex items-center text-gray-600">
-                    <Calendar className="w-4 h-4 mr-2" />
-                    다음 훈련: {pet.nextSession}
-                  </div>
+                  
+                  {pet.description && (
+                    <div className="text-gray-600 text-sm">
+                      <p className="line-clamp-2">{pet.description}</p>
+                    </div>
+                  )}
                 </div>
                 
                 <div className="flex gap-2">
