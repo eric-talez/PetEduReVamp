@@ -126,14 +126,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { db } = await import('./db');
       const { posts } = await import('@shared/schema');
       
-      const [savedPost] = await db.insert(posts).values({
-        userId: currentUser.id,
-        content: `${title}\n\n${content}`,
-        images: [],
-        likes: 0,
-        createdAt: new Date(),
-        updatedAt: new Date()
-      }).returning();
+      // 직접 SQL로 삽입
+      const result = await db.execute(`
+        INSERT INTO posts (author_id, title, content, tag, likes, comments, created_at, updated_at)
+        VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW())
+        RETURNING *
+      `, [currentUser.id, title, content, tag || '일반', 0, 0]);
+      
+      const savedPost = result.rows[0];
       
       const responseData = {
         post: {
@@ -180,46 +180,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { eq } = await import('drizzle-orm');
       
       // 데이터베이스에서 게시글 목록과 작성자 정보 조회
-      const result = await db.select({
-        id: posts.id,
-        content: posts.content,
-        userId: posts.userId,
-        images: posts.images,
-        likes: posts.likes,
-        createdAt: posts.createdAt,
-        updatedAt: posts.updatedAt,
-        username: users.username,
-        name: users.name
-      })
-      .from(posts)
-      .leftJoin(users, eq(posts.userId, users.id))
-      .orderBy(posts.createdAt)
-      .limit(20);
+      const result = await db.execute(`
+        SELECT 
+          p.id, p.title, p.content, p.tag, p.likes, p.comments, 
+          p.created_at, p.updated_at, p.author_id, p.image,
+          u.username, u.name
+        FROM posts p 
+        LEFT JOIN users u ON p.author_id = u.id 
+        ORDER BY p.created_at DESC
+        LIMIT 20
+      `);
       
-      const postsData = result.map((row: any) => {
-        // content에서 title과 content 분리 (첫 번째 줄이 title)
-        const lines = row.content.split('\n');
-        const title = lines[0] || '제목 없음';
-        const content = lines.slice(2).join('\n') || '';
-        
-        return {
-          id: row.id,
-          title,
-          content,
-          tag: '일반',
-          authorId: row.userId,
-          image: row.images?.[0] || null,
-          likes: row.likes,
-          comments: 0,
-          createdAt: row.createdAt,
-          updatedAt: row.updatedAt,
-          author: {
-            id: row.userId,
-            username: row.username || 'unknown',
-            name: row.name || '알 수 없음'
-          }
-        };
-      });
+      const postsData = result.rows.map((row: any) => ({
+        id: row.id,
+        title: row.title,
+        content: row.content,
+        tag: row.tag,
+        authorId: row.author_id,
+        image: row.image,
+        likes: row.likes,
+        comments: row.comments,
+        createdAt: row.created_at,
+        updatedAt: row.updated_at,
+        author: {
+          id: row.author_id,
+          username: row.username || 'unknown',
+          name: row.name || '알 수 없음'
+        }
+      }));
       
       const responseData = {
         posts: postsData,

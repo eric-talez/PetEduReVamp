@@ -542,7 +542,7 @@ export default function CommunityPage() {
             <div className="text-center py-12">
               <p className="text-xl mb-2">게시글이 없습니다</p>
               <p className="text-muted-foreground mb-4">첫 번째 게시글을 작성해보세요!</p>
-              <Button onClick={handleCreatePost}>
+              <Button onClick={() => setIsCreatePostOpen(true)}>
                 <Plus className="h-4 w-4 mr-1" />
                 글쓰기
               </Button>
@@ -585,7 +585,7 @@ export default function CommunityPage() {
             <div className="text-center py-12">
               <p className="text-xl mb-2">게시글이 없습니다</p>
               <p className="text-muted-foreground mb-4">첫 번째 게시글을 작성해보세요!</p>
-              <Button onClick={handleCreatePost}>
+              <Button onClick={() => setIsCreatePostOpen(true)}>
                 <Plus className="h-4 w-4 mr-1" />
                 글쓰기
               </Button>
