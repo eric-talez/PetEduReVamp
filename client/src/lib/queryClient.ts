@@ -57,13 +57,16 @@ export async function apiRequest(
   }
   
   try {
+    // FormData의 경우 Content-Type을 설정하지 않아야 브라우저가 자동으로 boundary를 설정함
+    const isFormData = data instanceof FormData;
+    
     const res = await fetch(url, {
       method,
       headers: {
-        ...(data ? { "Content-Type": "application/json" } : {}),
+        ...(data && !isFormData ? { "Content-Type": "application/json" } : {}),
         ...authHeaders
       },
-      body: data ? JSON.stringify(data) : undefined,
+      body: data ? (isFormData ? data : JSON.stringify(data)) : undefined,
       credentials: "include",
     });
     
