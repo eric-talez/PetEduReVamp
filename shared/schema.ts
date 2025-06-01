@@ -72,6 +72,53 @@ export const pets = pgTable("pets", {
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
+// 예방접종 기록 테이블
+export const vaccinations = pgTable("vaccinations", {
+  id: serial("id").primaryKey(),
+  petId: integer("pet_id").references(() => pets.id, { onDelete: 'cascade' }).notNull(),
+  vaccineName: text("vaccine_name").notNull(),
+  vaccineType: text("vaccine_type"), // '종합백신', '광견병', '코로나', etc.
+  vaccineDate: timestamp("vaccine_date").notNull(),
+  nextDueDate: timestamp("next_due_date"),
+  veterinarian: text("veterinarian"),
+  clinicName: text("clinic_name"),
+  notes: text("notes"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+// 건강검진 기록 테이블
+export const healthCheckups = pgTable("health_checkups", {
+  id: serial("id").primaryKey(),
+  petId: integer("pet_id").references(() => pets.id, { onDelete: 'cascade' }).notNull(),
+  checkupDate: timestamp("checkup_date").notNull(),
+  weight: integer("weight"), // 그램 단위
+  temperature: text("temperature"), // 체온
+  bloodPressure: text("blood_pressure"),
+  heartRate: integer("heart_rate"),
+  diagnosis: text("diagnosis"),
+  treatment: text("treatment"),
+  medication: text("medication"),
+  veterinarian: text("veterinarian"),
+  clinicName: text("clinic_name"),
+  notes: text("notes"),
+  nextCheckupDate: timestamp("next_checkup_date"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+// 의료 기록 첨부파일 테이블
+export const medicalAttachments = pgTable("medical_attachments", {
+  id: serial("id").primaryKey(),
+  petId: integer("pet_id").references(() => pets.id, { onDelete: 'cascade' }).notNull(),
+  recordType: text("record_type").notNull(), // 'vaccination', 'checkup', 'treatment'
+  recordId: integer("record_id").notNull(),
+  fileName: text("file_name").notNull(),
+  filePath: text("file_path").notNull(),
+  fileType: text("file_type"), // 'image', 'pdf', 'document'
+  uploadedAt: timestamp("uploaded_at").notNull().defaultNow(),
+});
+
 // 훈련 세션 테이블
 export const trainingSessions = pgTable("training_sessions", {
   id: serial("id").primaryKey(),
