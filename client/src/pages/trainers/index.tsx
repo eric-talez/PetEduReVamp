@@ -350,13 +350,13 @@ export default function Trainers() {
         {filteredTrainers.map((trainer) => (
           <Card 
             key={trainer.id} 
-            hover 
             className="overflow-hidden border border-gray-100 dark:border-gray-700 transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
             <div className="relative h-32 bg-gradient-to-r from-primary/60 to-accent/60">
               <img 
                 src={trainer.background} 
                 alt={trainer.name} 
                 className="w-full h-full object-cover mix-blend-overlay"
+                style={{ filter: 'none' }}
               />
               
               {trainer.featured && (
@@ -374,6 +374,7 @@ export default function Trainers() {
                     src="https://images.unsplash.com/photo-1543466835-00a7907e9de1?q=80&w=300&auto=format&fit=crop&sharp=100" 
                     alt={trainer.name} 
                     className="w-full h-full object-cover brightness-105 contrast-105" 
+                    style={{ filter: 'none' }}
                   />
                 </div>
                 <div className="ml-4 pb-1">
