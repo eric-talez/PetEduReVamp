@@ -1181,6 +1181,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return res.status(500).json({ message: "Internal server error" });
     }
   });
+
+  // Update pet
+  app.put("/api/pets/:id", async (req, res) => {
+    try {
+      if (!req.session.user) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+      
+      const petId = parseInt(req.params.id);
+      if (isNaN(petId)) {
+        return res.status(400).json({ message: "Invalid pet ID" });
+      }
+
+      // Check if pet exists and belongs to user
+      const existingPet = await storage.getPetById(petId);
+      if (!existingPet) {
+        return res.status(404).json({ message: "Pet not found" });
+      }
+      
+      if (existingPet.userId !== req.session.user.id) {
+        return res.status(403).json({ message: "Not authorized" });
+      }
+      
+      const petData = createPetSchema.parse(req.body);
+      const updatedPet = await storage.updatePet(petId, petData);
+      
+      return res.status(200).json(updatedPet);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid data", errors: error.errors });
+      }
+      
+      console.error("Update pet error:", error);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+  });
   
   // ===== Course Routes =====
   

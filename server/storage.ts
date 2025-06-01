@@ -44,8 +44,10 @@ export interface IStorage {
   
   // 반려동물 관련
   getPet(id: number): Promise<any>;
+  getPetById(id: number): Promise<any>;
   getPetsByUserId(userId: number): Promise<any[]>;
   createPet(pet: any): Promise<any>;
+  updatePet(id: number, pet: any): Promise<any>;
   
   // 강좌 관련
   getCourse(id: number): Promise<any>;
@@ -706,6 +708,10 @@ export class MemStorage implements IStorage {
     return this.pets.get(id);
   }
   
+  async getPetById(id: number): Promise<any> {
+    return this.pets.get(id);
+  }
+  
   async getPetsByUserId(userId: number): Promise<any[]> {
     return Array.from(this.pets.values()).filter(pet => pet.userId === userId);
   }
@@ -715,6 +721,22 @@ export class MemStorage implements IStorage {
     const newPet = { ...pet, id, createdAt: new Date(), updatedAt: new Date() };
     this.pets.set(id, newPet);
     return newPet;
+  }
+  
+  async updatePet(id: number, petData: any): Promise<any> {
+    const existingPet = this.pets.get(id);
+    if (!existingPet) {
+      throw new Error("Pet not found");
+    }
+    
+    const updatedPet = { 
+      ...existingPet, 
+      ...petData, 
+      id, 
+      updatedAt: new Date() 
+    };
+    this.pets.set(id, updatedPet);
+    return updatedPet;
   }
   
   // 강좌 관련 메서드
@@ -1059,11 +1081,19 @@ export class DatabaseStorage implements IStorage {
     return null;
   }
 
+  async getPetById(id: number): Promise<any> {
+    return null;
+  }
+
   async getPetsByUserId(userId: number): Promise<any[]> {
     return [];
   }
 
   async createPet(pet: any): Promise<any> {
+    return null;
+  }
+
+  async updatePet(id: number, pet: any): Promise<any> {
     return null;
   }
 
