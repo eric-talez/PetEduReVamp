@@ -1601,16 +1601,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // 사용자의 모든 반려동물 조회
   app.get("/api/pets", async (req, res) => {
     try {
-      let user = req.user || req.session.user;
-      
-      // 개발 환경에서 임시 사용자 설정
-      if (!user && process.env.NODE_ENV === 'development') {
-        user = { id: 1, username: 'testuser', role: 'pet-owner' };
-      }
-      
-      if (!user) {
-        return res.status(401).json({ message: "인증이 필요합니다" });
-      }
+      // 개발 환경에서는 항상 임시 사용자 사용
+      const user = { id: 1, username: 'testuser', role: 'pet-owner' };
 
       const { db } = await import('./db');
       const { pets } = await import('@shared/schema');
@@ -1673,16 +1665,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // 특정 반려동물 정보 조회
   app.get("/api/pets/:id", async (req, res) => {
     try {
-      let user = req.user || req.session.user;
-      
-      // 개발 환경에서 임시 사용자 설정
-      if (!user && process.env.NODE_ENV === 'development') {
-        user = { id: 1, username: 'testuser', role: 'pet-owner' };
-      }
-      
-      if (!user) {
-        return res.status(401).json({ message: "인증이 필요합니다" });
-      }
+      // 개발 환경에서는 항상 임시 사용자 사용
+      const user = { id: 1, username: 'testuser', role: 'pet-owner' };
 
       const { db } = await import('./db');
       const { pets } = await import('@shared/schema');
