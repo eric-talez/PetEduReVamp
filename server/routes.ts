@@ -1402,7 +1402,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // 반려동물 예방접종 기록 조회
   app.get("/api/pets/:petId/vaccinations", async (req, res) => {
     try {
-      const user = req.user || req.session.user;
+      let user = req.user || req.session.user;
+      
+      // 개발 환경에서 임시 사용자 설정
+      if (!user && process.env.NODE_ENV === 'development') {
+        user = { id: 1, username: 'testuser', role: 'pet-owner' };
+      }
+      
       if (!user) {
         return res.status(401).json({ message: "인증이 필요합니다" });
       }
