@@ -1488,12 +1488,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .from(users)
         .where(eq(users.id, userId));
 
-      if (!user) {
+      if (!currentUser) {
         return res.status(404).json({ message: "사용자를 찾을 수 없습니다" });
       }
 
       // 현재 비밀번호 확인
-      const isCurrentPasswordValid = await bcrypt.compare(currentPassword, user.password);
+      const isCurrentPasswordValid = await bcrypt.compare(currentPassword, currentUser.password);
       if (!isCurrentPasswordValid) {
         return res.status(400).json({ message: "현재 비밀번호가 올바르지 않습니다" });
       }
