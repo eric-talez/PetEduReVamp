@@ -3,9 +3,10 @@ import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { EnhancedAnalytics } from "@/components/dashboard/EnhancedAnalytics";
 
 import { useLocation, Link } from "wouter";
-import { BookOpen, Calendar, Medal, PawPrint, Star, Bone, Award, Clock } from "lucide-react";
+import { BookOpen, Calendar, Medal, PawPrint, Star, Bone, Award, Clock, BarChart3 } from "lucide-react";
 
 interface PetOwnerDashboardProps {
   onAction: (action: string, data?: any) => void;
@@ -31,6 +32,7 @@ export default function PetOwnerDashboard({ onAction }: PetOwnerDashboardProps) 
   const { userName, userRole } = useAuth();
   const [, setLocation] = useLocation();
   const [currentSlide, setCurrentSlide] = useState<number>(0);
+  const [activeTab, setActiveTab] = useState('dashboard');
 
   // 배너 슬라이드 데이터
   const bannerSlides = [
@@ -266,10 +268,63 @@ export default function PetOwnerDashboard({ onAction }: PetOwnerDashboardProps) 
     }
   ];
 
+  const tabs = [
+    { id: 'dashboard', label: '대시보드', icon: BookOpen },
+    { id: 'analytics', label: '학습 분석', icon: BarChart3 },
+    { id: 'schedule', label: '일정 관리', icon: Calendar },
+    { id: 'achievements', label: '성취도', icon: Award }
+  ];
+
   return (
     <div className="py-8 px-4 sm:px-6 lg:px-8">
-      {/* Banner Slider - 5개 슬라이드 */}
-      <div className="relative rounded-xl overflow-hidden h-48 md:h-60 mb-8 bg-gradient-to-r from-primary/80 to-accent/80 shadow-lg">
+      {/* Welcome Header */}
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+          안녕하세요, {userName || '반려인'}님! 🐾
+        </h1>
+        <p className="text-gray-600 dark:text-gray-300">
+          반려견과 함께하는 즐거운 학습 여정을 계속해보세요.
+        </p>
+      </div>
+
+      {/* Tab Navigation */}
+      <div className="mb-8">
+        <div className="border-b border-gray-200 dark:border-gray-700">
+          <nav className="-mb-px flex space-x-8">
+            {tabs.map((tab) => {
+              const Icon = tab.icon;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`group inline-flex items-center py-4 px-1 border-b-2 font-medium text-sm ${
+                    activeTab === tab.id
+                      ? 'border-primary text-primary'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
+                  }`}
+                >
+                  <Icon className={`mr-2 h-5 w-5 ${
+                    activeTab === tab.id ? 'text-primary' : 'text-gray-400 group-hover:text-gray-500'
+                  }`} />
+                  {tab.label}
+                </button>
+              );
+            })}
+          </nav>
+        </div>
+      </div>
+
+      {/* Tab Content */}
+      {activeTab === 'analytics' && (
+        <div className="space-y-8">
+          <EnhancedAnalytics />
+        </div>
+      )}
+
+      {activeTab === 'dashboard' && (
+        <div className="space-y-8">
+          {/* Banner Slider - 5개 슬라이드 */}
+          <div className="relative rounded-xl overflow-hidden h-48 md:h-60 mb-8 bg-gradient-to-r from-primary/80 to-accent/80 shadow-lg">
         {/* 슬라이드 이미지 (현재 슬라이드만 표시) */}
         <div className="absolute inset-0 transition-all duration-500 ease-in-out">
           <img 
@@ -638,6 +693,65 @@ export default function PetOwnerDashboard({ onAction }: PetOwnerDashboardProps) 
           ))}
         </div>
       </div>
+        </div>
+      )}
+
+      {/* Schedule Tab */}
+      {activeTab === 'schedule' && (
+        <div className="space-y-8">
+          <Card className="p-6">
+            <div className="flex items-center mb-4">
+              <Calendar className="h-6 w-6 text-primary mr-3" />
+              <h2 className="text-xl font-bold text-gray-800 dark:text-white">일정 관리</h2>
+            </div>
+            <p className="text-gray-600 dark:text-gray-300 mb-4">
+              반려견 훈련 일정과 건강 관리 스케줄을 한눈에 확인하세요.
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                <h3 className="font-semibold text-blue-800 dark:text-blue-300 mb-2">다가오는 훈련</h3>
+                <p className="text-sm text-blue-600 dark:text-blue-400">오늘 17:00 - 기본 훈련 3주차</p>
+              </div>
+              <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                <h3 className="font-semibold text-green-800 dark:text-green-300 mb-2">건강 체크</h3>
+                <p className="text-sm text-green-600 dark:text-green-400">30일 후 - 예방접종 일정</p>
+              </div>
+            </div>
+          </Card>
+        </div>
+      )}
+
+      {/* Achievements Tab */}
+      {activeTab === 'achievements' && (
+        <div className="space-y-8">
+          <Card className="p-6">
+            <div className="flex items-center mb-4">
+              <Award className="h-6 w-6 text-primary mr-3" />
+              <h2 className="text-xl font-bold text-gray-800 dark:text-white">성취도</h2>
+            </div>
+            <p className="text-gray-600 dark:text-gray-300 mb-6">
+              반려견과 함께 달성한 성과들을 확인하세요.
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="text-center p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
+                <Award className="h-8 w-8 text-yellow-500 mx-auto mb-2" />
+                <h3 className="font-semibold text-yellow-800 dark:text-yellow-300">첫 수료증</h3>
+                <p className="text-sm text-yellow-600 dark:text-yellow-400">기초 훈련 과정 완료</p>
+              </div>
+              <div className="text-center p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+                <Medal className="h-8 w-8 text-purple-500 mx-auto mb-2" />
+                <h3 className="font-semibold text-purple-800 dark:text-purple-300">7일 연속 학습</h3>
+                <p className="text-sm text-purple-600 dark:text-purple-400">꾸준한 학습 습관 형성</p>
+              </div>
+              <div className="text-center p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                <Star className="h-8 w-8 text-green-500 mx-auto mb-2" />
+                <h3 className="font-semibold text-green-800 dark:text-green-300">우수 반려인</h3>
+                <p className="text-sm text-green-600 dark:text-green-400">커뮤니티 활동 인정</p>
+              </div>
+            </div>
+          </Card>
+        </div>
+      )}
     </div>
   );
 }
