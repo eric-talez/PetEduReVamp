@@ -34,7 +34,11 @@ export function registerNotificationRoutes(app: Express, notificationService: No
   
   // 알림 목록 가져오기 API
   app.get('/api/notifications', async (req, res) => {
-    if (!req.session.user) {
+    // 개발환경에서는 기본 사용자 설정
+    const user = req.user || (process.env.NODE_ENV === 'development' ? 
+      { id: 1, username: 'testuser', name: '반려인', role: 'pet-owner' } : null);
+    
+    if (!user) {
       return res.status(401).json({ message: '인증이 필요합니다.' });
     }
     

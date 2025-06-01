@@ -18,8 +18,15 @@ export class JavaBridge {
       const javaHome = '/nix/store/zmj3m7wrgqf340vqd4v90w8dw371vhjg-openjdk-17.0.7+7';
       const javaPath = path.join(javaHome, 'bin', 'java');
       
-      // 컴파일된 Java 클래스 실행
-      const classPath = path.join(process.cwd(), 'src/main/java');
+      // 컴파일된 Java 클래스 실행 - Maven 타겟 디렉토리 사용
+      const classPath = path.join(process.cwd(), 'target/classes');
+      
+      // 클래스 파일이 존재하는지 확인
+      const fs = require('fs');
+      if (!fs.existsSync(classPath)) {
+        console.log('[JavaBridge] Java 클래스 파일이 없습니다. Maven 빌드가 필요합니다.');
+        return;
+      }
       
       this.javaProcess = spawn(javaPath, [
         '-cp', classPath,

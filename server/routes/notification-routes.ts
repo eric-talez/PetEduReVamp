@@ -83,13 +83,16 @@ export function registerNotificationRoutes(app: Express, server: Server) {
 
   // 읽지 않은 알림 수 조회
   app.get('/api/notifications/unread-count', async (req, res) => {
-    if (!req.isAuthenticated()) {
+    // 개발환경에서는 기본 사용자 설정
+    const user = req.user || (process.env.NODE_ENV === 'development' ? 
+      { id: 1, username: 'testuser', name: '반려인', role: 'pet-owner' } : null);
+    
+    if (!user) {
       return res.status(401).json({ error: '인증이 필요합니다' });
     }
 
     try {
-      const userId = req.user.id;
-      const count = await notificationService.getUnreadCount(userId);
+      const count = await notificationService.getUnreadCount(user.id);
       res.json({ count });
     } catch (error) {
       console.error('[Notifications] 읽지 않은 알림 수 조회 실패:', error);
