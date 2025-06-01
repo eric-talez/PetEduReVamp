@@ -642,6 +642,16 @@ function AppLayout({ children }: { children: ReactNode }) {
                       );
                     }}
                   </Route>
+                  <Route path="/pet-care/pet-detail/:id">
+                    {() => {
+                      const PetDetailPage = lazy(() => import('./pages/pet-care/pet-detail'));
+                      return (
+                        <Suspense fallback={<div className="p-8 text-center">반려동물 상세 페이지 로딩 중...</div>}>
+                          <PetDetailPage />
+                        </Suspense>
+                      );
+                    }}
+                  </Route>
                   <Route path="/notebook">
                     {() => {
                       const NotebookPage = lazy(() => import('./pages/notebook'));

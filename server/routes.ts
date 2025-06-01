@@ -1670,6 +1670,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // 특정 반려동물 정보 조회
+  app.get("/api/pets/:id", async (req, res) => {
+    try {
+      let user = req.user || req.session.user;
+      
+      // 개발 환경에서 임시 사용자 설정
+      if (!user && process.env.NODE_ENV === 'development') {
+        user = { id: 1, username: 'testuser', role: 'pet-owner' };
+      }
+      
+      if (!user) {
+        return res.status(401).json({ message: "인증이 필요합니다" });
+      }
+
+      const { db } = await import('./db');
+      const { pets } = await import('@shared/schema');
+      const { eq, and } = await import('drizzle-orm');
+
+      const petId = parseInt(req.params.id);
+      
+      const [pet] = await db
+        .select()
+        .from(pets)
+        .where(and(eq(pets.id, petId), eq(pets.ownerId, user.id)));
+
+      if (!pet) {
+        return res.status(404).json({ message: "반려동물을 찾을 수 없습니다" });
+      }
+
+      res.json({ success: true, pet });
+    } catch (error) {
+      console.error('반려동물 조회 오류:', error);
+      res.status(500).json({ message: "서버 오류가 발생했습니다" });
+    }
+  });
+
   // ===== 사용자 설정 API 엔드포인트 =====
   
   // 사용자 설정 업데이트 API

@@ -151,8 +151,16 @@ export default function HealthRecordPage() {
       {/* 반려동물 선택 */}
       {pets.length > 0 && (
         <Card className="mb-6">
-          <CardHeader>
+          <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle>반려동물 선택</CardTitle>
+            {selectedPet && (
+              <Link href={`/pet-care/pet-detail/${selectedPet.id}`}>
+                <Button variant="outline" size="sm">
+                  <Eye className="w-4 h-4 mr-2" />
+                  케어일지 상세보기
+                </Button>
+              </Link>
+            )}
           </CardHeader>
           <CardContent>
             <div className="flex gap-4 flex-wrap">

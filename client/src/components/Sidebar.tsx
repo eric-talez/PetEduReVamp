@@ -926,6 +926,13 @@ export function Sidebar({
                           show={true}
                         >반려견 관리</AccessibleNavItem>
                         <AccessibleNavItem 
+                          href="/pet-care/health-record" 
+                          icon={<Activity className="w-5 h-5 mr-2" />} 
+                          active={isActive("/pet-care/health-record")} 
+                          onClick={handleItemClick} 
+                          show={true}
+                        >반려견 건강관리</AccessibleNavItem>
+                        <AccessibleNavItem 
                           href="/notebook" 
                           icon={<Edit className="w-5 h-5 mr-2" />} 
                           active={isActive("/notebook")} 
