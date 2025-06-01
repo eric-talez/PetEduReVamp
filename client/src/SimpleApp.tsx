@@ -593,6 +593,16 @@ function AppLayout({ children }: { children: ReactNode }) {
                       );
                     }}
                   </Route>
+                  <Route path="/calendar">
+                    {() => {
+                      const EducationSchedulePage = lazy(() => import('./pages/education-schedule'));
+                      return (
+                        <Suspense fallback={<div className="p-8 text-center">교육 일정 페이지 로딩 중...</div>}>
+                          <EducationSchedulePage />
+                        </Suspense>
+                      );
+                    }}
+                  </Route>
                   <Route path="/analytics">
                     {() => {
                       const AnalyticsPage = lazy(() => import('./pages/analytics'));
