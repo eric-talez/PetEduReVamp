@@ -287,11 +287,38 @@ function AppLayout({ children }: { children: ReactNode }) {
                   <Route path="/admin/spring-boot-test" component={SpringBootTestPage} />
                   
                   {/* 대시보드 */}
-                  <Route path="/dashboard" component={Dashboard} />
-                  <Route path="/trainer/dashboard" component={Dashboard} />
+                  <Route path="/dashboard">
+                    {() => {
+                      const DashboardPage = lazy(() => import('./pages/dashboard'));
+                      return (
+                        <Suspense fallback={<div className="p-8 text-center">대시보드 로딩 중...</div>}>
+                          <DashboardPage />
+                        </Suspense>
+                      );
+                    }}
+                  </Route>
+                  <Route path="/trainer/dashboard">
+                    {() => {
+                      const DashboardPage = lazy(() => import('./pages/dashboard'));
+                      return (
+                        <Suspense fallback={<div className="p-8 text-center">훈련사 대시보드 로딩 중...</div>}>
+                          <DashboardPage />
+                        </Suspense>
+                      );
+                    }}
+                  </Route>
                   
                   {/* 강의 관련 */}
-                  <Route path="/courses" component={Courses} />
+                  <Route path="/courses">
+                    {() => {
+                      const CoursesPage = lazy(() => import('./pages/courses'));
+                      return (
+                        <Suspense fallback={<div className="p-8 text-center">강의 목록 로딩 중...</div>}>
+                          <CoursesPage />
+                        </Suspense>
+                      );
+                    }}
+                  </Route>
                   <Route path="/course/:id" component={CourseDetail} />
                   
                   {/* 훈련사 및 기관 */}
@@ -339,13 +366,13 @@ function AppLayout({ children }: { children: ReactNode }) {
                     }}
                   </Route>
                   
-                  {/* AI 챗봇 */}
+                  {/* AI 챗봇 - /chatbot 경로도 지원 */}
                   <Route path="/chatbot">
                     {() => {
-                      const ChatbotPage = lazy(() => import('./pages/chatbot'));
+                      const AIChatbotPage = lazy(() => import('./pages/ai-chatbot'));
                       return (
                         <Suspense fallback={<div className="p-8 text-center">AI 챗봇 로딩 중...</div>}>
-                          <ChatbotPage />
+                          <AIChatbotPage />
                         </Suspense>
                       );
                     }}
@@ -368,6 +395,16 @@ function AppLayout({ children }: { children: ReactNode }) {
                       return (
                         <Suspense fallback={<div className="p-8 text-center">수강생 관리 로딩 중...</div>}>
                           <TrainerStudents />
+                        </Suspense>
+                      );
+                    }}
+                  </Route>
+                  <Route path="/trainer/courses">
+                    {() => {
+                      const TrainerCourses = lazy(() => import('./pages/trainer/courses'));
+                      return (
+                        <Suspense fallback={<div className="p-8 text-center">강의 관리 로딩 중...</div>}>
+                          <TrainerCourses />
                         </Suspense>
                       );
                     }}
@@ -484,6 +521,26 @@ function AppLayout({ children }: { children: ReactNode }) {
                       );
                     }}
                   </Route>
+                  <Route path="/institute/trainers">
+                    {() => {
+                      const InstituteTrainers = lazy(() => import('./pages/institute-admin/InstituteTrainers'));
+                      return (
+                        <Suspense fallback={<div className="p-8 text-center">훈련사 관리 로딩 중...</div>}>
+                          <InstituteTrainers />
+                        </Suspense>
+                      );
+                    }}
+                  </Route>
+                  <Route path="/institute/members">
+                    {() => {
+                      const InstituteMembers = lazy(() => import('./pages/institute-admin/InstituteMembers'));
+                      return (
+                        <Suspense fallback={<div className="p-8 text-center">회원 관리 로딩 중...</div>}>
+                          <InstituteMembers />
+                        </Suspense>
+                      );
+                    }}
+                  </Route>
                   
                   {/* 나의 학습 메뉴 */}
                   <Route path="/my-trainers">
@@ -514,6 +571,16 @@ function AppLayout({ children }: { children: ReactNode }) {
                       return (
                         <Suspense fallback={<div className="p-8 text-center">알림 페이지 로딩 중...</div>}>
                           <AlertsPage />
+                        </Suspense>
+                      );
+                    }}
+                  </Route>
+                  <Route path="/messages">
+                    {() => {
+                      const MessagesPage = lazy(() => import('./pages/messages'));
+                      return (
+                        <Suspense fallback={<div className="p-8 text-center">메시지 페이지 로딩 중...</div>}>
+                          <MessagesPage />
                         </Suspense>
                       );
                     }}
