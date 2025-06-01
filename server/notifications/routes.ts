@@ -61,7 +61,7 @@ export function registerNotificationRoutes(app: Express, notificationService: No
         type: ['info', 'success', 'warning', 'error', 'system'][Math.floor(Math.random() * 5)] as 'info' | 'success' | 'warning' | 'error' | 'system',
         timestamp: new Date(Date.now() - Math.random() * 86400000 * 7), // 최근 7일 내 랜덤 시간
         isRead: Math.random() > 0.5, // 50% 확률로 읽음/안읽음
-        userId: req.session.user.id,
+        userId: user.id,
         linkTo: Math.random() > 0.3 ? `/notifications/${index + 1}` : undefined,
         metadata: Math.random() > 0.7 ? { category: ['system', 'course', 'pet', 'social', 'payment'][Math.floor(Math.random() * 5)] } : undefined
       }));
@@ -93,7 +93,11 @@ export function registerNotificationRoutes(app: Express, notificationService: No
   
   // 특정 알림 조회 API
   app.get('/api/notifications/:id', async (req, res) => {
-    if (!req.session.user) {
+    // 개발환경에서는 기본 사용자 설정
+    const user = req.user || (process.env.NODE_ENV === 'development' ? 
+      { id: 1, username: 'testuser', name: '반려인', role: 'pet-owner' } : null);
+    
+    if (!user) {
       return res.status(401).json({ message: '인증이 필요합니다.' });
     }
     
@@ -109,7 +113,7 @@ export function registerNotificationRoutes(app: Express, notificationService: No
         type: 'info' as const,
         timestamp: new Date(),
         isRead: false,
-        userId: req.session.user.id,
+        userId: user.id,
         linkTo: `/notifications/${notificationId}`,
         metadata: { category: 'system' }
       };
@@ -123,7 +127,11 @@ export function registerNotificationRoutes(app: Express, notificationService: No
   
   // 알림 읽음 표시 API
   app.patch('/api/notifications/:id/read', async (req, res) => {
-    if (!req.session.user) {
+    // 개발환경에서는 기본 사용자 설정
+    const user = req.user || (process.env.NODE_ENV === 'development' ? 
+      { id: 1, username: 'testuser', name: '반려인', role: 'pet-owner' } : null);
+    
+    if (!user) {
       return res.status(401).json({ message: '인증이 필요합니다.' });
     }
     
