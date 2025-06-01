@@ -1430,7 +1430,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const petVaccinations = await db
-        .select()
+        .select({
+          id: vaccinations.id,
+          petId: vaccinations.petId,
+          vaccineName: vaccinations.vaccineName,
+          vaccineType: vaccinations.vaccineType,
+          vaccineDate: vaccinations.vaccineDate,
+          nextDueDate: vaccinations.nextDueDate,
+          veterinarian: vaccinations.veterinarian,
+          clinicName: vaccinations.clinicName,
+          notes: vaccinations.notes,
+          createdAt: vaccinations.createdAt
+        })
         .from(vaccinations)
         .where(eq(vaccinations.petId, petId))
         .orderBy(vaccinations.vaccineDate);
@@ -1525,7 +1536,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const checkups = await db
-        .select()
+        .select({
+          id: healthCheckups.id,
+          petId: healthCheckups.petId,
+          checkupDate: healthCheckups.checkupDate,
+          weight: healthCheckups.weight,
+          temperature: healthCheckups.temperature,
+          bloodPressure: healthCheckups.bloodPressure,
+          heartRate: healthCheckups.heartRate,
+          diagnosis: healthCheckups.diagnosis,
+          treatment: healthCheckups.treatment,
+          medication: healthCheckups.medication,
+          veterinarian: healthCheckups.veterinarian,
+          clinicName: healthCheckups.clinicName,
+          notes: healthCheckups.notes,
+          nextCheckupDate: healthCheckups.nextCheckupDate,
+          createdAt: healthCheckups.createdAt
+        })
         .from(healthCheckups)
         .where(eq(healthCheckups.petId, petId))
         .orderBy(healthCheckups.checkupDate);

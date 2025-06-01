@@ -149,6 +149,77 @@ if (process.env.NODE_ENV === 'development') {
       res.status(500).json({ message: "서버 오류가 발생했습니다" });
     }
   });
+
+  // 개별 반려동물 예방접종 기록 조회
+  app.get('/api/pets/:petId/vaccinations', async (req, res) => {
+    try {
+      const { db } = await import('./db');
+      const { vaccinations, pets } = await import('@shared/schema');
+      const { eq, and } = await import('drizzle-orm');
+
+      const petId = parseInt(req.params.petId);
+      
+      const records = await db
+        .select({
+          id: vaccinations.id,
+          petId: vaccinations.petId,
+          vaccineName: vaccinations.vaccineName,
+          vaccineType: vaccinations.vaccineType,
+          vaccineDate: vaccinations.vaccineDate,
+          nextDueDate: vaccinations.nextDueDate,
+          veterinarian: vaccinations.veterinarian,
+          clinicName: vaccinations.clinicName,
+          notes: vaccinations.notes,
+          createdAt: vaccinations.createdAt
+        })
+        .from(vaccinations)
+        .leftJoin(pets, eq(vaccinations.petId, pets.id))
+        .where(and(eq(vaccinations.petId, petId), eq(pets.ownerId, 1)));
+
+      res.json({ success: true, vaccinations: records });
+    } catch (error) {
+      console.error('반려동물 예방접종 기록 조회 오류:', error);
+      res.status(500).json({ message: "서버 오류가 발생했습니다" });
+    }
+  });
+
+  // 개별 반려동물 건강검진 기록 조회
+  app.get('/api/pets/:petId/checkups', async (req, res) => {
+    try {
+      const { db } = await import('./db');
+      const { healthCheckups, pets } = await import('@shared/schema');
+      const { eq, and } = await import('drizzle-orm');
+
+      const petId = parseInt(req.params.petId);
+      
+      const records = await db
+        .select({
+          id: healthCheckups.id,
+          petId: healthCheckups.petId,
+          checkupDate: healthCheckups.checkupDate,
+          weight: healthCheckups.weight,
+          temperature: healthCheckups.temperature,
+          heartRate: healthCheckups.heartRate,
+          bloodPressure: healthCheckups.bloodPressure,
+          diagnosis: healthCheckups.diagnosis,
+          treatment: healthCheckups.treatment,
+          medication: healthCheckups.medication,
+          veterinarian: healthCheckups.veterinarian,
+          clinicName: healthCheckups.clinicName,
+          notes: healthCheckups.notes,
+          nextCheckupDate: healthCheckups.nextCheckupDate,
+          createdAt: healthCheckups.createdAt
+        })
+        .from(healthCheckups)
+        .leftJoin(pets, eq(healthCheckups.petId, pets.id))
+        .where(and(eq(healthCheckups.petId, petId), eq(pets.ownerId, 1)));
+
+      res.json({ success: true, checkups: records });
+    } catch (error) {
+      console.error('반려동물 건강검진 기록 조회 오류:', error);
+      res.status(500).json({ message: "서버 오류가 발생했습니다" });
+    }
+  });
 }
 
 
