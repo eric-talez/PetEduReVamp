@@ -36,6 +36,7 @@ import EventCalendarPage from "./pages/events/calendar";
 import AnalyticsPage from "./pages/analytics";
 import EducationSchedulePage from "./pages/education-schedule";
 import SubscriptionsPage from "./pages/subscriptions";
+import SearchPage from "./pages/search";
 
 // 관리자 페이지 직접 import
 import AdminHome from "./pages/admin/AdminHome";
@@ -736,6 +737,9 @@ function AppLayout({ children }: { children: ReactNode }) {
                       );
                     }}
                   </Route>
+                  
+                  {/* 검색 */}
+                  <Route path="/search" component={SearchPage} />
                   
                   {/* 도움말 */}
                   <Route path="/help/faq" component={FAQPage} />

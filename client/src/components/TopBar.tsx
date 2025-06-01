@@ -260,28 +260,9 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
   const handleSearch = () => {
     if (!searchQuery.trim()) return;
     
-    setIsSearching(true);
-    
-    // API 호출 (실제로는 여기서 API 호출)
-    console.log('검색 실행:', searchQuery);
-    
-    // 실제 존재하는 페이지로 연결되는 검색 결과
-    setTimeout(() => {
-      const mockResults = [
-        { id: 1, type: 'course', title: '기초 복종 훈련 마스터 과정', trainer: '김훈련', link: '/courses' },
-        { id: 2, type: 'course', title: '아지리티 스포츠 훈련', trainer: '박코치', link: '/courses' },
-        { id: 3, type: 'shop', title: '반려동물 용품', location: '쇼핑몰', link: '/shop' },
-        { id: 4, type: 'course', title: '문제행동 교정 전문과정', trainer: '이트레이너', link: '/courses' },
-        { id: 5, type: 'analytics', title: '학습 분석', specialty: '진도 관리', link: '/analytics' },
-        { id: 6, type: 'subscription', title: '구독 관리', specialty: '요금제', link: '/subscriptions' }
-      ].filter(item => 
-        item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (item.trainer && item.trainer.toLowerCase().includes(searchQuery.toLowerCase()))
-      );
-      
-      setSearchResults(mockResults);
-      setIsSearching(false);
-    }, 500);
+    // 검색 페이지로 이동하면서 쿼리 전달
+    setLocation(`/search?q=${encodeURIComponent(searchQuery)}`);
+    setSearchQuery('');
   };
   
   // 엔터 키 처리
@@ -385,49 +366,29 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
               )}
               
               {/* 검색 결과 드롭다운 */}
-              {searchQuery.length > 0 && !isSearching && (
-                <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg z-50 max-h-64 overflow-y-auto">
-                  {searchResults.length > 0 ? (
-                    <div className="p-2">
-                      {searchResults.map(result => (
-                        <Link
-                          key={`${result.type}-${result.id}`}
-                          href={result.link}
-                          className="block p-2 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-md"
-                          onClick={() => setSearchQuery('')}
-                        >
-                          <div className="flex items-center">
-                            {result.type === 'course' && <Calendar className="h-4 w-4 mr-2 text-blue-500" />}
-                            {result.type === 'trainer' && <MessageSquare className="h-4 w-4 mr-2 text-green-500" />}
-                            {result.type === 'institute' && <DollarSign className="h-4 w-4 mr-2 text-amber-500" />}
-                            <div>
-                              <div className="font-medium">{result.title}</div>
-                              <div className="text-xs text-gray-500 dark:text-gray-400">
-                                {result.type === 'course' && result.trainer && `훈련사: ${result.trainer}`}
-                                {result.type === 'trainer' && result.specialty && `${result.specialty}`}
-                                {result.type === 'institute' && result.location && `${result.location}`}
-                              </div>
-                            </div>
-                          </div>
-                        </Link>
-                      ))}
+              {searchQuery.length > 0 && (
+                <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg z-50">
+                  <div className="p-3 border-b border-gray-200 dark:border-gray-700">
+                    <div className="text-sm text-gray-600 dark:text-gray-400">
+                      "'{searchQuery}'" 에 대한 검색
                     </div>
-                  ) : (
-                    <div className="p-4 text-center">
-                      <div className="flex flex-col items-center space-y-2">
-                        <Search className="h-8 w-8 text-gray-400" />
-                        <div className="text-sm text-gray-500 dark:text-gray-400">
-                          <p className="font-medium">'{searchQuery}' 검색 결과가 없습니다</p>
-                          <p className="text-xs mt-1">다른 키워드로 다시 검색해보세요</p>
-                        </div>
-                        <div className="text-xs text-gray-400 space-y-1">
-                          <p>💡 검색 팁:</p>
-                          <p>• 강의명, 훈련사명, 기관명으로 검색</p>
-                          <p>• 짧은 키워드로 검색해보세요</p>
-                        </div>
+                  </div>
+                  <div className="p-2">
+                    <Link
+                      href={`/search?q=${encodeURIComponent(searchQuery)}`}
+                      className="flex items-center justify-between w-full p-3 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-md transition-colors"
+                      onClick={() => setSearchQuery('')}
+                    >
+                      <div className="flex items-center">
+                        <Search className="h-4 w-4 mr-3 text-primary" />
+                        <span className="font-medium">"{searchQuery}" 전체 검색</span>
                       </div>
+                      <ArrowRight className="h-4 w-4 text-gray-400" />
+                    </Link>
+                    <div className="text-xs text-gray-500 dark:text-gray-400 mt-2 px-3">
+                      강의, 훈련사, 기관을 포함한 상세 검색 결과를 확인하세요
                     </div>
-                  )}
+                  </div>
                 </div>
               )}
             </div>
