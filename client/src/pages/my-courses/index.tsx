@@ -1,546 +1,98 @@
-import { useState } from "react";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Avatar } from "@/components/ui/avatar";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { 
-  BarChart2, BookOpen, Calendar, Clock, Filter, Search, Star, Plus, MapPin 
-} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
+import { BookOpen, Clock, User } from "lucide-react";
 
-export default function MyCourses() {
-  const [filter, setFilter] = useState("inProgress");
-  const [isCourseSearchOpen, setIsCourseSearchOpen] = useState(false);
-  const [searchCriteria, setSearchCriteria] = useState({
-    keyword: "",
-    category: "all",
-    level: "all",
-    location: ""
-  });
-
-  // 이용 가능한 강좌 목록 (샘플 데이터)
-  const availableCourses = [
-    {
-      id: 101,
-      title: "고급 어질리티 마스터 클래스",
-      description: "전문 어질리티 코스를 통한 고난도 훈련",
-      trainer: "김어질 트레이너",
-      institute: "서울반려견아카데미",
-      category: "어질리티",
-      level: "고급",
-      price: 450000,
-      duration: "12주",
-      location: "서울 강남구"
-    },
-    {
-      id: 102,
-      title: "반려견 심리 상담 과정",
-      description: "반려견의 심리를 이해하고 소통하는 방법",
-      trainer: "박심리 트레이너",
-      institute: "부산펫아카데미",
-      category: "행동교정",
-      level: "중급",
-      price: 380000,
-      duration: "10주",
-      location: "부산 해운대구"
-    },
-    {
-      id: 103,
-      title: "퍼피 사회화 집중 과정",
-      description: "어린 강아지를 위한 전문 사회화 훈련",
-      trainer: "이퍼피 트레이너",
-      institute: "대구동물교육원",
-      category: "사회화",
-      level: "초급",
-      price: 280000,
-      duration: "6주",
-      location: "대구 중구"
-    }
-  ];
-
-  // 강좌 등록 함수
-  const handleCourseEnroll = (courseId: number) => {
-    const course = availableCourses.find(c => c.id === courseId);
-    if (course) {
-      console.log("강좌 등록:", course);
-      alert(`${course.title} 강좌에 등록 신청되었습니다.`);
-      setIsCourseSearchOpen(false);
-    }
-  };
-  
+export default function MyCoursesPage() {
   const courses = [
     {
       id: 1,
-      title: "반려견 기초 훈련 마스터하기",
-      description: "앉아, 기다려, 엎드려 등 기본 명령어부터 산책 예절까지 체계적으로 배우는 초보 견주 필수 코스",
-      image: "https://images.unsplash.com/photo-1535930891776-0c2dfb7fda1a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=350",
-      progress: 65,
-      trainer: {
-        name: "김훈련 트레이너",
-        avatar: "https://images.unsplash.com/photo-1607990281513-2c110a25bd8c?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100"
-      },
-      startDate: "2023-09-05",
-      endDate: "2023-11-30",
-      status: "inProgress",
-      nextClass: "오늘 17:00 - 기본 훈련 3주차",
-      popular: true
+      title: "기초 반려견 훈련",
+      instructor: "김훈련사",
+      progress: 75,
+      totalLessons: 12,
+      completedLessons: 9,
+      status: "진행중",
+      nextLesson: "2025-06-02 14:00"
     },
     {
       id: 2,
-      title: "반려견 어질리티 입문",
-      description: "다양한 장애물 코스를 통해 반려견의 민첩성과 집중력을 향상시키는 어질리티 훈련 기초 과정",
-      image: "https://images.unsplash.com/photo-1583336663277-620dc1996580?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=350",
-      progress: 30,
-      trainer: {
-        name: "박민첩 트레이너",
-        avatar: "https://images.unsplash.com/photo-1548535537-3cfaf1fc327c?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100"
-      },
-      startDate: "2023-10-15",
-      endDate: "2024-01-15",
-      status: "inProgress",
-      nextClass: "내일 14:00 - 어질리티 기초 훈련",
-      level: "중급"
-    },
-    {
-      id: 3,
-      title: "반려견 사회화 훈련",
-      description: "다른 반려견, 사람, 환경에 올바르게 적응하는 방법을 배우는 필수 사회화 과정",
-      image: "https://images.unsplash.com/photo-1548199973-03cce0bbc87b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=350",
+      title: "사회화 훈련 프로그램",
+      instructor: "박훈련사",
       progress: 45,
-      trainer: {
-        name: "이사회 트레이너",
-        avatar: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100"
-      },
-      startDate: "2023-11-01",
-      endDate: "2024-02-01",
-      status: "inProgress",
-      nextClass: "금요일 16:00 - 타 견종 만남 세션",
-      level: "초급"
-    },
-    {
-      id: 4,
-      title: "반려견 기본 예절",
-      description: "반려견의 기본적인 예절과 행동을 가르치는 기초 훈련 과정, 초보 견주에게 필수적인 코스",
-      image: "https://images.unsplash.com/photo-1601758174039-617983b8cdd9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=350",
-      progress: 100,
-      trainer: {
-        name: "김예절 트레이너",
-        avatar: "https://images.unsplash.com/photo-1531427186611-ecfd6d936c79?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100"
-      },
-      startDate: "2023-05-10",
-      endDate: "2023-08-10",
-      status: "completed",
-      certificate: true,
-      level: "초급"
-    },
-    {
-      id: 5,
-      title: "문제 행동 교정 과정",
-      description: "반려견의 짖음, 물기, 불안 등 다양한 문제 행동을 과학적으로 교정하는 특화된 과정",
-      image: "https://images.unsplash.com/photo-1583337130417-3346a1be7dee?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=350",
-      progress: 100,
-      trainer: {
-        name: "박행동 트레이너",
-        avatar: "https://images.unsplash.com/photo-1599566150163-29194dcaad36?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100"
-      },
-      startDate: "2023-06-15",
-      endDate: "2023-09-15",
-      status: "completed",
-      certificate: true,
-      level: "중급"
-    },
-    {
-      id: 6,
-      title: "노즈워크 기초",
-      description: "반려견의 후각을 활용한 놀이와 훈련으로 지능을 발달시키는 노즈워크 입문 과정",
-      image: "https://images.unsplash.com/photo-1591946614720-90a587da4a36?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=350",
-      progress: 0,
-      trainer: {
-        name: "박후각 트레이너",
-        avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100"
-      },
-      startDate: "2024-01-10",
-      endDate: "2024-03-10",
-      status: "upcoming",
-      level: "초급"
+      totalLessons: 8,
+      completedLessons: 4,
+      status: "진행중",
+      nextLesson: "2025-06-03 10:00"
     }
   ];
 
-  const filteredCourses = courses.filter(course => {
-    if (filter === "all") return true;
-    return course.status === filter;
-  });
-
   return (
-    <div className="py-8 px-4 sm:px-6 lg:px-8">
-      {/* Header */}
+    <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-800 dark:text-white mb-2">내 강의실</h1>
-        <p className="text-gray-600 dark:text-gray-300">
-          등록한 모든 강의를 확인하고 학습을 계속하세요.
-        </p>
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">내 강의</h1>
+        <p className="text-gray-600">현재 수강 중인 강의와 진행 상황을 확인하세요.</p>
       </div>
 
-      {/* Course Statistics */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <Card className="p-6 border border-gray-100 dark:border-gray-700">
-          <div className="flex items-center">
-            <div className="flex-shrink-0 h-12 w-12 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-full flex items-center justify-center">
-              <BookOpen className="h-6 w-6" />
-            </div>
-            <div className="ml-4">
-              <h2 className="text-sm font-medium text-gray-500 dark:text-gray-400">전체 강의</h2>
-              <p className="text-2xl font-semibold text-gray-800 dark:text-white">{courses.length}개</p>
-            </div>
-          </div>
-        </Card>
-        
-        <Card className="p-6 border border-gray-100 dark:border-gray-700">
-          <div className="flex items-center">
-            <div className="flex-shrink-0 h-12 w-12 bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 rounded-full flex items-center justify-center">
-              <BarChart2 className="h-6 w-6" />
-            </div>
-            <div className="ml-4">
-              <h2 className="text-sm font-medium text-gray-500 dark:text-gray-400">진행 중인 강의</h2>
-              <p className="text-2xl font-semibold text-gray-800 dark:text-white">{courses.filter(c => c.status === 'inProgress').length}개</p>
-            </div>
-          </div>
-        </Card>
-        
-        <Card className="p-6 border border-gray-100 dark:border-gray-700">
-          <div className="flex items-center">
-            <div className="flex-shrink-0 h-12 w-12 bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 rounded-full flex items-center justify-center">
-              <Calendar className="h-6 w-6" />
-            </div>
-            <div className="ml-4">
-              <h2 className="text-sm font-medium text-gray-500 dark:text-gray-400">다음 수업</h2>
-              <p className="text-sm font-semibold text-gray-800 dark:text-white mt-1">
-                {courses.find(c => c.status === 'inProgress')?.nextClass || "예정된 수업 없음"}
-              </p>
-            </div>
-          </div>
-        </Card>
-      </div>
-
-      {/* Filters */}
-      <div className="mb-8 flex flex-wrap items-center gap-2">
-        <div className="flex items-center bg-gray-100 dark:bg-gray-800 rounded-lg p-1 mr-4">
-          <Filter className="h-4 w-4 text-gray-500 dark:text-gray-400 ml-2 mr-1" />
-          <span className="text-sm text-gray-700 dark:text-gray-300 mr-2">상태:</span>
-        </div>
-        
-        <Button
-          variant={filter === "all" ? "default" : "outline"}
-          size="sm"
-          onClick={() => setFilter("all")}
-          className="text-xs"
-        >
-          전체
-        </Button>
-        
-        <Button
-          variant={filter === "inProgress" ? "default" : "outline"}
-          size="sm"
-          onClick={() => setFilter("inProgress")}
-          className="text-xs"
-        >
-          진행 중
-        </Button>
-        
-        <Button
-          variant={filter === "completed" ? "default" : "outline"}
-          size="sm"
-          onClick={() => setFilter("completed")}
-          className="text-xs"
-        >
-          완료
-        </Button>
-        
-        <Button
-          variant={filter === "upcoming" ? "default" : "outline"}
-          size="sm"
-          onClick={() => setFilter("upcoming")}
-          className="text-xs"
-        >
-          예정
-        </Button>
-        
-        <div className="ml-auto">
-          <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <Search className="h-4 w-4 text-gray-400" />
-            </div>
-            <input 
-              type="text" 
-              placeholder="강의 검색" 
-              className="pl-10 pr-4 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-primary focus:border-primary"
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* Course List */}
-      <div className="space-y-6">
-        {filteredCourses.length === 0 ? (
-          <Card className="p-8 border border-gray-100 dark:border-gray-700 text-center">
-            <div className="flex flex-col items-center">
-              <BookOpen className="h-12 w-12 text-gray-400 mb-4" />
-              <h3 className="text-lg font-medium text-gray-800 dark:text-white mb-2">
-                {filter === "all" ? "등록된 강의가 없습니다" : 
-                 filter === "inProgress" ? "진행 중인 강의가 없습니다" : 
-                 filter === "completed" ? "완료한 강의가 없습니다" : 
-                 "예정된 강의가 없습니다"}
-              </h3>
-              <p className="text-gray-500 dark:text-gray-400 mb-6">
-                {filter === "all" ? "새로운 강의를 찾아보세요!" : 
-                 filter === "inProgress" ? "새로운 강의를 시작해보세요." : 
-                 filter === "completed" ? "아직 완료한 강의가 없습니다." : 
-                 "새로운 강의를 찾아 등록해보세요."}
-              </p>
-              <Dialog open={isCourseSearchOpen} onOpenChange={setIsCourseSearchOpen}>
-                <DialogTrigger asChild>
-                  <Button>
-                    <Plus className="h-4 w-4 mr-2" />
-                    강의 찾아보기
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="sm:max-w-[700px] max-h-[80vh] overflow-y-auto">
-                  <DialogHeader>
-                    <DialogTitle>새 강좌 찾기</DialogTitle>
-                    <DialogDescription>
-                      관심 있는 강좌를 검색하고 등록하세요.
-                    </DialogDescription>
-                  </DialogHeader>
-                  
-                  {/* 검색 필터 */}
-                  <div className="grid gap-4 py-4 border-b">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="search-keyword">키워드 검색</Label>
-                        <Input
-                          id="search-keyword"
-                          value={searchCriteria.keyword}
-                          onChange={(e) => setSearchCriteria({ ...searchCriteria, keyword: e.target.value })}
-                          placeholder="강좌명, 훈련사명 검색"
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="search-location">지역</Label>
-                        <Input
-                          id="search-location"
-                          value={searchCriteria.location}
-                          onChange={(e) => setSearchCriteria({ ...searchCriteria, location: e.target.value })}
-                          placeholder="서울, 부산, 대구 등"
-                        />
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="search-category">카테고리</Label>
-                        <Select value={searchCriteria.category} onValueChange={(value) => setSearchCriteria({ ...searchCriteria, category: value })}>
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="all">전체</SelectItem>
-                            <SelectItem value="기본훈련">기본 훈련</SelectItem>
-                            <SelectItem value="어질리티">어질리티</SelectItem>
-                            <SelectItem value="행동교정">행동 교정</SelectItem>
-                            <SelectItem value="사회화">사회화</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div>
-                        <Label htmlFor="search-level">난이도</Label>
-                        <Select value={searchCriteria.level} onValueChange={(value) => setSearchCriteria({ ...searchCriteria, level: value })}>
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="all">전체</SelectItem>
-                            <SelectItem value="초급">초급</SelectItem>
-                            <SelectItem value="중급">중급</SelectItem>
-                            <SelectItem value="고급">고급</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* 검색 결과 */}
-                  <div className="space-y-4 max-h-96 overflow-y-auto">
-                    {availableCourses.map((course) => (
-                      <Card key={course.id} className="p-4 border">
-                        <div className="flex justify-between items-start mb-3">
-                          <div className="flex-1">
-                            <h3 className="font-semibold text-lg mb-1">{course.title}</h3>
-                            <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
-                              {course.description}
-                            </p>
-                            <div className="flex flex-wrap gap-2 text-sm text-gray-500">
-                              <span className="flex items-center">
-                                <BookOpen className="h-3 w-3 mr-1" />
-                                {course.trainer}
-                              </span>
-                              <span className="flex items-center">
-                                <MapPin className="h-3 w-3 mr-1" />
-                                {course.location}
-                              </span>
-                              <span>{course.duration}</span>
-                            </div>
-                          </div>
-                          <div className="text-right ml-4">
-                            <div className="flex flex-col items-end gap-2">
-                              <Badge variant={course.level === "초급" ? "success" : course.level === "중급" ? "warning" : "destructive"}>
-                                {course.level}
-                              </Badge>
-                              <div className="text-lg font-bold text-primary">
-                                {course.price.toLocaleString()}원
-                              </div>
-                              <Button size="sm" onClick={() => handleCourseEnroll(course.id)}>
-                                등록 신청
-                              </Button>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="text-xs text-gray-500 border-t pt-2">
-                          <span>{course.institute}</span>
-                        </div>
-                      </Card>
-                    ))}
-                  </div>
-                  
-                  <DialogFooter>
-                    <Button variant="outline" onClick={() => setIsCourseSearchOpen(false)}>
-                      닫기
-                    </Button>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
-            </div>
-          </Card>
-        ) : (
-          filteredCourses.map((course) => (
-            <Card key={course.id} className="overflow-hidden border border-gray-100 dark:border-gray-700">
-              <div className="flex flex-col md:flex-row">
-                <div className="md:w-1/4 relative">
-                  <img 
-                    src={course.image} 
-                    alt={course.title} 
-                    className="w-full h-48 md:h-full object-cover"
-                  />
-                  {course.status === "inProgress" && (
-                    <div className="absolute top-2 right-2 bg-primary text-white text-xs font-bold px-2 py-1 rounded">
-                      진행 중
-                    </div>
-                  )}
-                  {course.status === "completed" && (
-                    <div className="absolute top-2 right-2 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded">
-                      완료
-                    </div>
-                  )}
-                  {course.status === "upcoming" && (
-                    <div className="absolute top-2 right-2 bg-blue-500 text-white text-xs font-bold px-2 py-1 rounded">
-                      예정
-                    </div>
-                  )}
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        {courses.map((course) => (
+          <Card key={course.id} className="hover:shadow-lg transition-shadow">
+            <CardHeader>
+              <div className="flex items-start justify-between">
+                <div className="flex-1">
+                  <CardTitle className="text-lg">{course.title}</CardTitle>
+                  <CardDescription className="flex items-center mt-2">
+                    <User className="w-4 h-4 mr-1" />
+                    {course.instructor}
+                  </CardDescription>
                 </div>
-                <div className="p-6 md:w-3/4">
-                  <div className="flex flex-wrap justify-between items-start mb-2">
-                    <h3 className="text-lg font-semibold text-gray-800 dark:text-white">{course.title}</h3>
-                    <div className="flex items-center mt-1 md:mt-0">
-                      {course.popular && <Badge variant="warning" className="mr-2">인기</Badge>}
-                      {course.level && (
-                        <Badge 
-                          variant={course.level === "초급" ? "success" : 
-                                 course.level === "중급" ? "info" : "secondary"}
-                        >
-                          {course.level}
-                        </Badge>
-                      )}
-                    </div>
+                <Badge variant={course.status === "진행중" ? "default" : "secondary"}>
+                  {course.status}
+                </Badge>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div>
+                  <div className="flex items-center justify-between text-sm text-gray-600 mb-2">
+                    <span>진행률</span>
+                    <span>{course.completedLessons}/{course.totalLessons} 강의</span>
                   </div>
-                  
-                  <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
-                    {course.description}
-                  </p>
-                  
-                  <div className="flex flex-wrap justify-between items-center mb-4">
-                    <div className="flex items-center mb-2 md:mb-0">
-                      <Avatar
-                        src={course.trainer.avatar}
-                        alt={course.trainer.name}
-                        className="w-8 h-8 mr-2"
-                      />
-                      <span className="text-sm text-gray-700 dark:text-gray-300">{course.trainer.name}</span>
-                    </div>
-                    
-                    <div className="text-sm text-gray-500 dark:text-gray-400">
-                      {course.startDate} ~ {course.endDate}
-                    </div>
+                  <Progress value={course.progress} className="h-2" />
+                  <div className="text-right text-sm text-gray-500 mt-1">
+                    {course.progress}%
                   </div>
-                  
-                  {course.status === "inProgress" && (
-                    <div className="mb-4">
-                      <div className="flex justify-between items-center mb-1 text-xs text-gray-500 dark:text-gray-400">
-                        <span>진도율</span>
-                        <span>{course.progress}%</span>
-                      </div>
-                      <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                        <div 
-                          className="bg-primary h-2 rounded-full" 
-                          style={{ width: `${course.progress}%` }}
-                        ></div>
-                      </div>
-                    </div>
-                  )}
-                  
-                  {course.status === "inProgress" && course.nextClass && (
-                    <div className="flex items-center text-sm text-gray-600 dark:text-gray-300 mb-4">
-                      <Clock className="h-4 w-4 text-primary mr-2" />
-                      <span>다음 수업: {course.nextClass}</span>
-                    </div>
-                  )}
-                  
-                  {course.status === "completed" && course.certificate && (
-                    <div className="flex items-center text-sm text-gray-600 dark:text-gray-300 mb-4">
-                      <Star className="h-4 w-4 text-yellow-500 mr-2" />
-                      <span>수료증 발급 가능</span>
-                    </div>
-                  )}
-                  
-                  <div className="flex flex-wrap gap-2">
-                    {course.status === "inProgress" && (
-                      <Button>
-                        이어서 학습하기
-                      </Button>
-                    )}
-                    
-                    {course.status === "completed" && course.certificate && (
-                      <Button>
-                        수료증 발급
-                      </Button>
-                    )}
-                    
-                    {course.status === "upcoming" && (
-                      <Button>
-                        강의 정보
-                      </Button>
-                    )}
-                    
-                    <Button variant="outline">
-                      상세 보기
-                    </Button>
-                  </div>
+                </div>
+                
+                <div className="flex items-center text-sm text-gray-600">
+                  <Clock className="w-4 h-4 mr-2" />
+                  다음 수업: {course.nextLesson}
+                </div>
+                
+                <div className="flex gap-2">
+                  <Button size="sm" className="flex-1">
+                    <BookOpen className="w-4 h-4 mr-2" />
+                    수업 참여
+                  </Button>
+                  <Button size="sm" variant="outline">
+                    상세 보기
+                  </Button>
                 </div>
               </div>
-            </Card>
-          ))
-        )}
+            </CardContent>
+          </Card>
+        ))}
       </div>
+
+      {courses.length === 0 && (
+        <div className="text-center py-12">
+          <BookOpen className="w-16 h-16 mx-auto text-gray-400 mb-4" />
+          <h3 className="text-lg font-medium text-gray-900 mb-2">수강 중인 강의가 없습니다</h3>
+          <p className="text-gray-600 mb-4">새로운 강의를 신청해보세요.</p>
+          <Button>강의 둘러보기</Button>
+        </div>
+      )}
     </div>
   );
 }

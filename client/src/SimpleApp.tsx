@@ -543,6 +543,16 @@ function AppLayout({ children }: { children: ReactNode }) {
                   </Route>
                   
                   {/* 나의 학습 메뉴 */}
+                  <Route path="/my-courses">
+                    {() => {
+                      const MyCoursesPage = lazy(() => import('./pages/my-courses'));
+                      return (
+                        <Suspense fallback={<div className="p-8 text-center">내 강의 페이지 로딩 중...</div>}>
+                          <MyCoursesPage />
+                        </Suspense>
+                      );
+                    }}
+                  </Route>
                   <Route path="/my-trainers">
                     {() => {
                       const MyTrainersPage = lazy(() => import('./pages/my-trainers'));
@@ -553,12 +563,52 @@ function AppLayout({ children }: { children: ReactNode }) {
                       );
                     }}
                   </Route>
+                  <Route path="/my-pets">
+                    {() => {
+                      const MyPetsPage = lazy(() => import('./pages/my-pets'));
+                      return (
+                        <Suspense fallback={<div className="p-8 text-center">내 반려견 페이지 로딩 중...</div>}>
+                          <MyPetsPage />
+                        </Suspense>
+                      );
+                    }}
+                  </Route>
+                  <Route path="/notebook">
+                    {() => {
+                      const NotebookPage = lazy(() => import('./pages/notebook'));
+                      return (
+                        <Suspense fallback={<div className="p-8 text-center">알림장 페이지 로딩 중...</div>}>
+                          <NotebookPage />
+                        </Suspense>
+                      );
+                    }}
+                  </Route>
                   <Route path="/education-schedule">
                     {() => {
                       const EducationSchedulePage = lazy(() => import('./pages/education-schedule'));
                       return (
                         <Suspense fallback={<div className="p-8 text-center">교육 일정 페이지 로딩 중...</div>}>
                           <EducationSchedulePage />
+                        </Suspense>
+                      );
+                    }}
+                  </Route>
+                  <Route path="/analytics">
+                    {() => {
+                      const AnalyticsPage = lazy(() => import('./pages/analytics'));
+                      return (
+                        <Suspense fallback={<div className="p-8 text-center">분석 및 보고서 페이지 로딩 중...</div>}>
+                          <AnalyticsPage />
+                        </Suspense>
+                      );
+                    }}
+                  </Route>
+                  <Route path="/subscriptions">
+                    {() => {
+                      const SubscriptionsPage = lazy(() => import('./pages/subscriptions'));
+                      return (
+                        <Suspense fallback={<div className="p-8 text-center">구독 관리 페이지 로딩 중...</div>}>
+                          <SubscriptionsPage />
                         </Suspense>
                       );
                     }}
