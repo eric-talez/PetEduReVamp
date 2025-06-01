@@ -244,147 +244,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // 게시글 목록 API (데이터베이스 조회)
-  app.get('/api/community/posts', async (req, res) => {
-    res.setHeader('Content-Type', 'application/json');
-    res.setHeader('Cache-Control', 'no-cache');
-    
-    console.log('=== 게시글 목록 API 호출됨 ===');
-    
-    try {
-      const { db } = await import('./db');
-      const { posts, users } = await import('@shared/schema');
-      const { eq } = await import('drizzle-orm');
-      
-      // 페이지네이션 파라미터 추출
-      const page = parseInt(req.query.page as string) || 1;
-      const limit = parseInt(req.query.limit as string) || 12;
-      const offset = (page - 1) * limit;
-      
-      // 데이터베이스에서 게시글 목록과 작성자 정보 조회
-      const result = await db.execute(`
-        SELECT 
-          p.id, p.title, p.content, p.tag, p.likes, p.comments, 
-          p.created_at, p.updated_at, p.author_id, p.image,
-          u.username, u.name
-        FROM posts p 
-        LEFT JOIN users u ON p.author_id = u.id 
-        ORDER BY p.created_at DESC
-        LIMIT ${limit} OFFSET ${offset}
-      `);
-      
-      // 전체 게시글 수 조회
-      const countResult = await db.execute('SELECT COUNT(*) as total FROM posts');
-      const totalPosts = parseInt(countResult.rows[0].total);
-      
-      const postsData = result.rows.map((row: any) => ({
-        id: row.id,
-        title: row.title,
-        content: row.content,
-        tag: row.tag,
-        authorId: row.author_id,
-        image: row.image,
-        likes: row.likes,
-        comments: row.comments,
-        createdAt: row.created_at,
-        updatedAt: row.updated_at,
-        author: {
-          id: row.author_id,
-          username: row.username || 'unknown',
-          name: row.name || '알 수 없음'
-        }
-      }));
-      
-      const responseData = {
-        posts: postsData,
-        pagination: {
-          total: totalPosts,
-          page: page,
-          limit: limit,
-          totalPages: Math.ceil(totalPosts / limit)
-        }
-      };
-      
-      console.log('데이터베이스에서 조회된 게시글 수:', postsData.length);
-      
-      res.status(200).json(responseData);
-    } catch (error: any) {
-      console.error('게시글 목록 조회 오류:', error);
-      res.status(500).json({ 
-        message: '게시글 목록 조회 중 오류가 발생했습니다.',
-        error: error.message 
-      });
-    }
-  });
 
-  // 게시글 상세 조회 API
-  app.get('/api/community/posts/:id', async (req, res) => {
-    try {
-      console.log('=== 테스트 게시글 상세 조회 API 호출됨 ===');
-      const postId = parseInt(req.params.id);
-      console.log('요청된 게시글 ID:', postId);
-      console.log('저장된 게시글 ID들:', testPosts.map(p => p.id));
-      
-      // 메모리에서 게시글 찾기 (숫자와 문자열 모두 고려)
-      const post = testPosts.find(p => p.id == postId || p.id === req.params.id);
-      
-      if (!post) {
-        console.log('게시글을 찾을 수 없음 - 새 게시글 생성');
-        // 404 대신 기본 게시글 반환
-        const defaultPost = {
-          id: postId,
-          title: '새로운 게시글',
-          content: '게시글을 불러오는 중입니다...',
-          tag: '일반',
-          authorId: 1,
-          author: { id: 1, username: 'system', name: '시스템' },
-          image: null,
-          likes: 0,
-          comments: 0,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
-        };
-        
-        const responseData = {
-          post: defaultPost,
-          author: defaultPost.author,
-          comments: []
-        };
-        
-        console.log('기본 게시글 응답 데이터:', responseData);
-        res.status(200).json(responseData);
-        return;
-      }
-      
-      // 해당 게시글의 댓글 조회
-      const postComments = testComments.filter(comment => comment.postId === postId);
-      
-      const responseData = {
-        post: {
-          ...post,
-          author: post.author || { id: 1, username: 'testuser', name: '테스트 사용자' }
-        },
-        author: post.author || { id: 1, username: 'testuser', name: '테스트 사용자' },
-        comments: postComments
-      };
-      
-      console.log('게시글 상세 응답 데이터:', responseData);
-      
-      // Express 응답 파이프라인 우회하여 직접 응답
-      res.writeHead(200, {
-        'Content-Type': 'application/json',
-        'Cache-Control': 'no-cache'
-      });
-      res.end(JSON.stringify(responseData));
-      return;
-    } catch (error: any) {
-      console.error('게시글 상세 조회 오류:', error);
-      res.status(500).json({ 
-        message: '게시글 조회 중 오류가 발생했습니다.',
-        error: error.message 
-      });
-    }
-  });
 
   // 게시글 수정 API
   app.put('/api/community/posts/:id', async (req, res) => {
@@ -2683,62 +2543,52 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const limitNum = parseInt(limit as string);
       const offset = (pageNum - 1) * limitNum;
 
-      // 기본 쿼리
-      let query = db
-        .select({
-          id: posts.id,
-          title: posts.title,
-          content: posts.content,
-          category: posts.category,
-          tag: posts.tag,
-          image: posts.image,
-          likes: posts.likes,
-          views: posts.views,
-          comments: posts.comments,
-          createdAt: posts.createdAt,
-          updatedAt: posts.updatedAt,
-          author: {
-            id: users.id,
-            username: users.username,
-            name: users.name,
-            avatar: users.avatar
-          }
-        })
-        .from(posts)
-        .leftJoin(users, eq(posts.authorId, users.id))
-        .where(eq(posts.isDeleted, false));
-
-      // 카테고리 필터링
-      if (category !== 'all') {
-        query = query.where(eq(posts.category, category as string));
-      }
-
-      // 정렬
-      if (sort === 'latest') {
-        query = query.orderBy(desc(posts.createdAt));
-      } else if (sort === 'popular') {
-        query = query.orderBy(desc(posts.likes));
-      } else if (sort === 'views') {
-        query = query.orderBy(desc(posts.views));
-      }
-
-      // 페이지네이션
-      query = query.limit(limitNum).offset(offset);
-
-      const postsResult = await query;
+      // 데이터베이스에서 게시글 목록과 작성자 정보 조회
+      const result = await db.execute(`
+        SELECT 
+          p.id, p.title, p.content, p.category, p.tag, p.likes, p.views, p.comments, 
+          p.created_at, p.updated_at, p.author_id, p.image,
+          u.username, u.name, u.avatar
+        FROM posts p 
+        LEFT JOIN users u ON p.author_id = u.id 
+        WHERE p.is_deleted = false
+        ${category !== 'all' ? `AND p.category = '${category}'` : ''}
+        ORDER BY ${sort === 'popular' ? 'p.likes DESC' : sort === 'views' ? 'p.views DESC' : 'p.created_at DESC'}
+        LIMIT ${limitNum} OFFSET ${offset}
+      `);
       
       // 전체 게시글 수 조회
-      const totalResult = await db
-        .select({ count: sql<number>`count(*)` })
-        .from(posts)
-        .where(eq(posts.isDeleted, false));
+      const countResult = await db.execute(`
+        SELECT COUNT(*) as total FROM posts 
+        WHERE is_deleted = false
+        ${category !== 'all' ? `AND category = '${category}'` : ''}
+      `);
+      const total = parseInt(countResult.rows[0].total);
+
+      const postsData = result.rows.map((row: any) => ({
+        id: row.id,
+        title: row.title,
+        content: row.content,
+        category: row.category,
+        tag: row.tag,
+        image: row.image,
+        likes: row.likes,
+        views: row.views,
+        comments: row.comments,
+        createdAt: row.created_at,
+        updatedAt: row.updated_at,
+        author: {
+          id: row.author_id,
+          username: row.username || 'unknown',
+          name: row.name || '알 수 없음',
+          avatar: row.avatar
+        }
+      }));
       
-      const total = totalResult[0]?.count || 0;
-      
-      console.log(`데이터베이스에서 조회된 게시글 수: ${postsResult.length}`);
+      console.log(`데이터베이스에서 조회된 게시글 수: ${postsData.length}`);
 
       return res.status(200).json({
-        posts: postsResult,
+        posts: postsData,
         pagination: {
           total,
           page: pageNum,
@@ -2761,42 +2611,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const postId = parseInt(req.params.id);
       
       // 조회수 증가
-      await db
-        .update(posts)
-        .set({ views: sql`${posts.views} + 1` })
-        .where(eq(posts.id, postId));
+      await db.execute(`UPDATE posts SET views = views + 1 WHERE id = ${postId}`);
 
       // 게시글 상세 정보 조회
-      const postResult = await db
-        .select({
-          id: posts.id,
-          title: posts.title,
-          content: posts.content,
-          category: posts.category,
-          tag: posts.tag,
-          image: posts.image,
-          likes: posts.likes,
-          views: posts.views,
-          comments: posts.comments,
-          createdAt: posts.createdAt,
-          updatedAt: posts.updatedAt,
-          author: {
-            id: users.id,
-            username: users.username,
-            name: users.name,
-            avatar: users.avatar
-          }
-        })
-        .from(posts)
-        .leftJoin(users, eq(posts.authorId, users.id))
-        .where(and(eq(posts.id, postId), eq(posts.isDeleted, false)))
-        .limit(1);
+      const result = await db.execute(`
+        SELECT 
+          p.id, p.title, p.content, p.category, p.tag, p.image, 
+          p.likes, p.views, p.comments, p.created_at, p.updated_at,
+          u.id as author_id, u.username, u.name, u.avatar
+        FROM posts p 
+        LEFT JOIN users u ON p.author_id = u.id 
+        WHERE p.id = ${postId} AND p.is_deleted = false
+        LIMIT 1
+      `);
 
-      if (postResult.length === 0) {
+      if (result.rows.length === 0) {
         return res.status(404).json({ message: "게시글을 찾을 수 없습니다" });
       }
 
-      return res.status(200).json(postResult[0]);
+      const row = result.rows[0];
+      const postData = {
+        id: row.id,
+        title: row.title,
+        content: row.content,
+        category: row.category,
+        tag: row.tag,
+        image: row.image,
+        likes: row.likes,
+        views: row.views,
+        comments: row.comments,
+        createdAt: row.created_at,
+        updatedAt: row.updated_at,
+        author: {
+          id: row.author_id,
+          username: row.username || 'unknown',
+          name: row.name || '알 수 없음',
+          avatar: row.avatar
+        }
+      };
+
+      return res.status(200).json(postData);
     } catch (error: any) {
       console.error('게시글 상세 조회 오류:', error);
       return res.status(500).json({ 
