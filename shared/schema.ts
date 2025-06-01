@@ -262,10 +262,13 @@ export const settlementReports = pgTable("settlement_reports", {
 // 소셜 기능 테이블들
 export const posts = pgTable("posts", {
   id: serial("id").primaryKey(),
-  userId: integer("user_id").references(() => users.id, { onDelete: 'cascade' }).notNull(),
+  authorId: integer("author_id").references(() => users.id, { onDelete: 'cascade' }).notNull(),
+  title: text("title").notNull(),
   content: text("content").notNull(),
-  images: json("images").$type<string[]>(),
+  tag: text("tag"),
+  image: text("image"),
   likes: integer("likes").default(0),
+  comments: integer("comments").default(0),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
