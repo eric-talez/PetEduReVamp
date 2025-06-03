@@ -92,7 +92,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/messages/send", async (req, res) => {
     try {
       const { receiverId, message } = req.body;
-      
+
       res.json({ 
         success: true, 
         message: "메시지가 전송되었습니다",
@@ -101,6 +101,74 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('메시지 전송 오류:', error);
       res.status(500).json({ error: "메시지 전송 중 오류가 발생했습니다" });
+    }
+  });
+
+  // 강좌 수강신청 API
+  app.post("/api/courses/enroll", async (req, res) => {
+    try {
+      const { courseId } = req.body;
+
+      res.json({ 
+        success: true, 
+        message: "수강신청이 완료되었습니다",
+        enrollmentId: Date.now()
+      });
+    } catch (error) {
+      console.error('수강신청 오류:', error);
+      res.status(500).json({ error: "수강신청 중 오류가 발생했습니다" });
+    }
+  });
+
+  // 개인 훈련 예약 생성 API
+  app.post("/api/reservations/create", async (req, res) => {
+    try {
+      const { trainerId, date, time, service, duration, petName, notes, location, phone, email } = req.body;
+
+      const reservation = {
+        id: Date.now(),
+        trainerId,
+        date,
+        time,
+        service,
+        duration,
+        petName,
+        notes,
+        location,
+        phone,
+        email,
+        status: 'pending',
+        createdAt: new Date()
+      };
+
+      console.log('예약 생성:', reservation);
+
+      res.json({ 
+        success: true, 
+        message: "예약이 신청되었습니다",
+        reservationId: reservation.id,
+        reservation
+      });
+    } catch (error) {
+      console.error('예약 생성 오류:', error);
+      res.status(500).json({ error: "예약 신청 중 오류가 발생했습니다" });
+    }
+  });
+
+  // 예약 취소 API
+  app.post("/api/reservations/:id/cancel", async (req, res) => {
+    try {
+      const reservationId = req.params.id;
+
+      console.log(`예약 ${reservationId} 취소 요청`);
+
+      res.json({ 
+        success: true, 
+        message: "예약이 성공적으로 취소되었습니다." 
+      });
+    } catch (error) {
+      console.error('예약 취소 오류:', error);
+      res.status(500).json({ error: "예약 취소 중 오류가 발생했습니다" });
     }
   });
 

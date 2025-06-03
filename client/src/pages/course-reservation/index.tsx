@@ -1,409 +1,597 @@
-import { useState, useEffect } from 'react';
-import { Calendar, Clock, Users, Info, MapPin, CalendarIcon } from 'lucide-react';
-import { Card } from '@/components/ui/card';
+
+import React, { useState, useEffect } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
+import { Calendar } from '@/components/ui/calendar';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Separator } from '@/components/ui/separator';
-import { format } from 'date-fns';
-import { ko } from 'date-fns/locale';
-import { Calendar as CalendarComponent } from '@/components/ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { cn } from '@/lib/utils';
-import { useLocation } from 'wouter';
-import { useAuth } from '@/SimpleApp';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Calendar as CalendarIcon, Clock, MapPin, Star, User, Phone, Mail, Award } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
 
-export default function CourseReservation() {
-  const { isAuthenticated } = useAuth();
-  const [, setLocation] = useLocation();
+interface Trainer {
+  id: number;
+  name: string;
+  avatar: string;
+  specialty: string[];
+  rating: number;
+  reviewCount: number;
+  location: string;
+  experience: string;
+  price: number;
+  description: string;
+  availableSlots: {
+    [date: string]: string[];
+  };
+  certifications: string[];
+}
+
+interface Reservation {
+  id: number;
+  trainerId: number;
+  trainerName: string;
+  trainerAvatar: string;
+  date: string;
+  time: string;
+  duration: number;
+  service: string;
+  status: 'pending' | 'confirmed' | 'completed' | 'cancelled';
+  petName: string;
+  location: string;
+  price: number;
+  notes: string;
+}
+
+const mockTrainers: Trainer[] = [
+  {
+    id: 1,
+    name: '김민수 전문 훈련사',
+    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=300&q=80',
+    specialty: ['기본복종훈련', '행동교정', '퍼피트레이닝'],
+    rating: 4.8,
+    reviewCount: 127,
+    location: '서울시 강남구',
+    experience: '5년',
+    price: 80000,
+    description: '반려견 행동교정 전문가로 5년간 300마리 이상의 강아지를 성공적으로 훈련시킨 경험이 있습니다.',
+    availableSlots: {
+      '2025-06-10': ['09:00', '10:30', '14:00', '15:30'],
+      '2025-06-11': ['09:00', '11:00', '13:00', '16:00'],
+      '2025-06-12': ['10:00', '14:00', '15:30', '17:00'],
+    },
+    certifications: ['KKF 공인 훈련사', '동물행동학 전문가', 'CCPDT 인증']
+  },
+  {
+    id: 2,
+    name: '박지연 훈련사',
+    avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b494?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=300&q=80',
+    specialty: ['소형견전문', '사회화훈련', '아지리티'],
+    rating: 4.9,
+    reviewCount: 89,
+    location: '서울시 송파구',
+    experience: '3년',
+    price: 70000,
+    description: '소형견 전문 훈련사로 특히 퍼피 클래스와 사회화 훈련에 특화되어 있습니다.',
+    availableSlots: {
+      '2025-06-10': ['10:00', '11:30', '15:00', '16:30'],
+      '2025-06-11': ['09:30', '11:00', '14:00', '15:30'],
+      '2025-06-13': ['09:00', '10:30', '13:30', '15:00'],
+    },
+    certifications: ['소형견 전문 인증', '퍼피 트레이닝 전문가']
+  }
+];
+
+export default function CourseReservationPage() {
+  const { user } = useAuth();
+  const [trainers] = useState<Trainer[]>(mockTrainers);
+  const [reservations, setReservations] = useState<Reservation[]>([]);
+  const [selectedTrainer, setSelectedTrainer] = useState<Trainer | null>(null);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
-  const [selectedTimeSlot, setSelectedTimeSlot] = useState<string | null>(null);
-  const [selectedClass, setSelectedClass] = useState<any | null>(null);
-  const [step, setStep] = useState(1); // 1: 수업 선택, 2: 날짜 시간 선택, 3: 예약 확인
-  
-  // URL에서 trainerId 파라미터 가져오기
-  const [trainerId, setTrainerId] = useState<string | null>(null);
-  
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const trainerParam = params.get('trainer');
-    if (trainerParam) {
-      setTrainerId(trainerParam);
-    }
-  }, []);
-  
-  // 모의 데이터
-  const trainerClasses = [
-    {
-      id: 1,
-      title: '반려견 기초 훈련 클래스',
-      type: '그룹 수업',
-      maxParticipants: 5,
-      duration: '60분',
-      price: 25000,
-      description: '반려견과 견주를 위한 기초 훈련 클래스입니다. 앉아, 엎드려, 기다려 등의 기본 명령어를 훈련합니다.',
-      image: 'https://images.unsplash.com/photo-1548199973-03cce0bbc87b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=350',
-      trainer: {
-        id: 1,
-        name: '김훈련',
-        avatar: 'https://images.unsplash.com/photo-1607990281513-2c110a25bd8c?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&h=200',
-      },
-      location: '서울시 강남구 테헤란로 123',
-      availableDates: [new Date(), new Date(Date.now() + 86400000), new Date(Date.now() + 86400000 * 2)],
-      timeSlots: ['10:00', '14:00', '16:00'],
-      reviews: [
-        { id: 1, author: '박지민', rating: 5, comment: '아주 유익한 수업이었습니다! 강아지가 기본 명령어를 잘 따르게 되었어요.' },
-        { id: 2, author: '김영희', rating: 4, comment: '친절하게 가르쳐주셔서 좋았습니다. 다음 과정도 듣고 싶어요.' }
-      ]
-    },
-    {
-      id: 2,
-      title: '문제 행동 교정 1:1 상담',
-      type: '1:1 상담',
-      maxParticipants: 1,
-      duration: '50분',
-      price: 50000,
-      description: '짖음, 분리불안, 공격성 등 반려견의 문제 행동을 분석하고 교정하는 1:1 맞춤형 상담입니다.',
-      image: 'https://images.unsplash.com/photo-1541687536467-89201e011187?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=350',
-      trainer: {
-        id: 1,
-        name: '김훈련',
-        avatar: 'https://images.unsplash.com/photo-1607990281513-2c110a25bd8c?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&h=200',
-      },
-      location: '서울시 강남구 테헤란로 123',
-      availableDates: [new Date(), new Date(Date.now() + 86400000), new Date(Date.now() + 86400000 * 3)],
-      timeSlots: ['11:00', '13:00', '17:00'],
-      reviews: [
-        { id: 3, author: '이하준', rating: 5, comment: '우리 강아지의 분리불안이 많이 개선되었어요. 정말 감사합니다!' }
-      ]
-    },
-    {
-      id: 3,
-      title: '어질리티 중급 과정',
-      type: '그룹 수업',
-      maxParticipants: 4,
-      duration: '90분',
-      price: 35000,
-      description: '반려견의 민첩성과 균형감각을 키우는 어질리티 중급 과정입니다. 기초 훈련을 마친 반려견에게 추천합니다.',
-      image: 'https://images.unsplash.com/photo-1566647387313-9fda80664848?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=350',
-      trainer: {
-        id: 1,
-        name: '김훈련',
-        avatar: 'https://images.unsplash.com/photo-1607990281513-2c110a25bd8c?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&h=200',
-      },
-      location: '서울시 강남구 대치동 반려견 훈련센터',
-      availableDates: [new Date(Date.now() + 86400000), new Date(Date.now() + 86400000 * 4)],
-      timeSlots: ['15:00', '18:00'],
-      reviews: [
-        { id: 4, author: '최준호', rating: 4, comment: '전문적인 교육이 좋았습니다. 강아지가 장애물을 잘 넘기게 되었어요.' }
-      ]
-    }
-  ];
+  const [selectedTime, setSelectedTime] = useState('');
+  const [activeTab, setActiveTab] = useState('book');
+  const [isBookingDialogOpen, setIsBookingDialogOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  // 오늘 날짜 이전의 날짜는 비활성화
-  const disabledDates = (date: Date) => {
-    return date < new Date(new Date().setHours(0, 0, 0, 0));
+  // 예약 폼 상태
+  const [bookingForm, setBookingForm] = useState({
+    service: '',
+    duration: '60',
+    petName: '',
+    petAge: '',
+    petBreed: '',
+    notes: '',
+    location: 'trainer', // 'trainer' | 'home' | 'center'
+    phone: '',
+    email: ''
+  });
+
+  useEffect(() => {
+    if (user) {
+      fetchMyReservations();
+    }
+  }, [user]);
+
+  const fetchMyReservations = async () => {
+    try {
+      // 목업 데이터
+      const mockReservations: Reservation[] = [
+        {
+          id: 1,
+          trainerId: 1,
+          trainerName: '김민수 전문 훈련사',
+          trainerAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=300&q=80',
+          date: '2025-06-15',
+          time: '14:00',
+          duration: 60,
+          service: '기본복종훈련',
+          status: 'confirmed',
+          petName: '멍멍이',
+          location: '서울시 강남구 훈련센터',
+          price: 80000,
+          notes: '산책 시 리드줄 끌기 문제 개선'
+        }
+      ];
+      setReservations(mockReservations);
+    } catch (error) {
+      console.error('예약 목록 조회 오류:', error);
+    }
   };
-  
-  // 클래스 선택 처리
-  const handleSelectClass = (classItem: any) => {
-    setSelectedClass(classItem);
-    setStep(2);
-    window.scrollTo(0, 0);
+
+  const getAvailableSlots = () => {
+    if (!selectedTrainer || !selectedDate) return [];
+    
+    const dateString = selectedDate.toISOString().split('T')[0];
+    return selectedTrainer.availableSlots[dateString] || [];
   };
-  
-  // 날짜 선택 처리
-  const handleDateSelect = (date: Date | undefined) => {
-    setSelectedDate(date);
-    setSelectedTimeSlot(null); // 날짜 변경 시 시간 선택 초기화
-  };
-  
-  // 시간 선택 처리
-  const handleTimeSelect = (time: string) => {
-    setSelectedTimeSlot(time);
-  };
-  
-  // 예약 진행 처리
-  const handleContinueReservation = () => {
-    if (!selectedTimeSlot) {
-      alert('수업 시간을 선택해주세요.');
+
+  const handleBookReservation = async () => {
+    if (!selectedTrainer || !selectedDate || !selectedTime) {
+      alert('훈련사, 날짜, 시간을 모두 선택해주세요.');
       return;
     }
-    setStep(3);
-    window.scrollTo(0, 0);
-  };
-  
-  // 예약 확정 처리
-  const handleConfirmReservation = () => {
-    if (!isAuthenticated) {
-      // 비로그인 사용자는 로그인 페이지로 리디렉션
-      const currentPath = window.location.pathname + window.location.search;
-      setLocation(`/auth/login?redirect=${encodeURIComponent(currentPath)}`);
+
+    if (!user) {
+      alert('로그인이 필요합니다.');
       return;
     }
-    
-    console.log('예약 확정', {
-      class: selectedClass,
-      date: selectedDate,
-      time: selectedTimeSlot
-    });
-    
-    // 예약 성공 페이지로 이동
-    setLocation('/reservation-complete');
+
+    setLoading(true);
+    try {
+      const response = await fetch('/api/reservations/create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          trainerId: selectedTrainer.id,
+          date: selectedDate.toISOString().split('T')[0],
+          time: selectedTime,
+          ...bookingForm
+        }),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        alert('예약이 완료되었습니다! 훈련사가 확인 후 연락드리겠습니다.');
+        setIsBookingDialogOpen(false);
+        setBookingForm({
+          service: '',
+          duration: '60',
+          petName: '',
+          petAge: '',
+          petBreed: '',
+          notes: '',
+          location: 'trainer',
+          phone: '',
+          email: ''
+        });
+        setSelectedTime('');
+        fetchMyReservations();
+      } else {
+        alert('예약에 실패했습니다. 다시 시도해주세요.');
+      }
+    } catch (error) {
+      console.error('예약 생성 오류:', error);
+      alert('네트워크 오류가 발생했습니다.');
+    } finally {
+      setLoading(false);
+    }
   };
-  
+
+  const handleCancelReservation = async (reservationId: number) => {
+    if (!confirm('예약을 취소하시겠습니까?')) return;
+
+    try {
+      const response = await fetch(`/api/reservations/${reservationId}/cancel`, {
+        method: 'POST',
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        alert('예약이 취소되었습니다.');
+        fetchMyReservations();
+      } else {
+        alert('예약 취소에 실패했습니다.');
+      }
+    } catch (error) {
+      console.error('예약 취소 오류:', error);
+      alert('네트워크 오류가 발생했습니다.');
+    }
+  };
+
+  const getStatusBadge = (status: string) => {
+    const statusConfig = {
+      pending: { label: '대기중', variant: 'secondary' as const },
+      confirmed: { label: '확정', variant: 'default' as const },
+      completed: { label: '완료', variant: 'outline' as const },
+      cancelled: { label: '취소', variant: 'destructive' as const }
+    };
+
+    const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.pending;
+    return <Badge variant={config.variant}>{config.label}</Badge>;
+  };
+
+  const getLocationPrice = () => {
+    if (!selectedTrainer) return 0;
+    
+    const basePrice = selectedTrainer.price;
+    const duration = parseInt(bookingForm.duration);
+    const locationMultiplier = bookingForm.location === 'home' ? 1.5 : 1;
+    
+    return Math.round(basePrice * (duration / 60) * locationMultiplier);
+  };
+
   return (
-    <div className="container mx-auto py-8 px-4">
-      {/* 단계 표시기 */}
+    <div className="container mx-auto p-6">
       <div className="mb-8">
-        <div className="flex items-center justify-between max-w-3xl mx-auto">
-          <div className={`flex flex-col items-center ${step >= 1 ? 'text-primary' : 'text-gray-400'}`}>
-            <div className={`w-8 h-8 rounded-full flex items-center justify-center mb-2 ${step >= 1 ? 'bg-primary text-white' : 'bg-gray-200 dark:bg-gray-700'}`}>
-              1
-            </div>
-            <span className="text-sm">수업 선택</span>
-          </div>
-          
-          <div className={`flex-1 h-1 mx-2 ${step >= 2 ? 'bg-primary' : 'bg-gray-200 dark:bg-gray-700'}`}></div>
-          
-          <div className={`flex flex-col items-center ${step >= 2 ? 'text-primary' : 'text-gray-400'}`}>
-            <div className={`w-8 h-8 rounded-full flex items-center justify-center mb-2 ${step >= 2 ? 'bg-primary text-white' : 'bg-gray-200 dark:bg-gray-700'}`}>
-              2
-            </div>
-            <span className="text-sm">일정 선택</span>
-          </div>
-          
-          <div className={`flex-1 h-1 mx-2 ${step >= 3 ? 'bg-primary' : 'bg-gray-200 dark:bg-gray-700'}`}></div>
-          
-          <div className={`flex flex-col items-center ${step >= 3 ? 'text-primary' : 'text-gray-400'}`}>
-            <div className={`w-8 h-8 rounded-full flex items-center justify-center mb-2 ${step >= 3 ? 'bg-primary text-white' : 'bg-gray-200 dark:bg-gray-700'}`}>
-              3
-            </div>
-            <span className="text-sm">예약 확인</span>
-          </div>
-        </div>
+        <h1 className="text-3xl font-bold mb-2">개인 훈련 예약</h1>
+        <p className="text-gray-600">전문 훈련사와 1:1 맞춤 훈련을 받아보세요</p>
       </div>
-      
-      {/* 1단계: 수업 선택 */}
-      {step === 1 && (
-        <div>
-          <h1 className="text-2xl font-bold mb-6">수업 예약</h1>
-          
-          <div className="space-y-6">
-            {trainerClasses.map((classItem) => (
-              <Card key={classItem.id} className="overflow-hidden">
-                <div className="md:flex">
-                  <div className="md:w-1/3 h-48 md:h-auto">
-                    <img 
-                      src={classItem.image} 
-                      alt={classItem.title} 
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  <div className="p-6 md:w-2/3">
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <h2 className="text-xl font-semibold mb-2">{classItem.title}</h2>
-                        <div className="flex items-center mb-4">
-                          <img 
-                            src={classItem.trainer.avatar} 
-                            alt={classItem.trainer.name}
-                            className="w-6 h-6 rounded-full mr-2"
-                          />
-                          <span className="text-sm text-gray-600 dark:text-gray-400">{classItem.trainer.name} 훈련사</span>
+
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="book">예약하기</TabsTrigger>
+          <TabsTrigger value="my-reservations">내 예약</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="book" className="space-y-6">
+          <div className="grid gap-6 lg:grid-cols-3">
+            {/* 훈련사 목록 */}
+            <div className="lg:col-span-2">
+              <h2 className="text-xl font-semibold mb-4">훈련사 선택</h2>
+              <div className="space-y-4">
+                {trainers.map((trainer) => (
+                  <Card key={trainer.id} className={`cursor-pointer transition-all ${
+                    selectedTrainer?.id === trainer.id ? 'ring-2 ring-primary bg-primary/5' : 'hover:shadow-md'
+                  }`} onClick={() => setSelectedTrainer(trainer)}>
+                    <CardContent className="p-6">
+                      <div className="flex items-start gap-4">
+                        <Avatar className="w-16 h-16">
+                          <AvatarImage src={trainer.avatar} alt={trainer.name} />
+                          <AvatarFallback>{trainer.name[0]}</AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1 space-y-3">
+                          <div>
+                            <h3 className="font-semibold text-lg">{trainer.name}</h3>
+                            <div className="flex items-center gap-2 mt-1">
+                              <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                              <span className="text-sm font-medium">{trainer.rating}</span>
+                              <span className="text-sm text-gray-500">({trainer.reviewCount})</span>
+                            </div>
+                          </div>
+                          <div className="flex flex-wrap gap-2">
+                            {trainer.specialty.map((spec, index) => (
+                              <Badge key={index} variant="outline" className="text-xs">
+                                {spec}
+                              </Badge>
+                            ))}
+                          </div>
+                          <div className="flex items-center gap-4 text-sm text-gray-600">
+                            <div className="flex items-center gap-1">
+                              <MapPin className="h-4 w-4" />
+                              {trainer.location}
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <Award className="h-4 w-4" />
+                              경력 {trainer.experience}
+                            </div>
+                          </div>
+                          <p className="text-sm text-gray-600 line-clamp-2">{trainer.description}</p>
+                          <div className="flex items-center justify-between">
+                            <span className="text-lg font-semibold">{trainer.price.toLocaleString()}원/시간</span>
+                            <Button 
+                              variant={selectedTrainer?.id === trainer.id ? "default" : "outline"}
+                              size="sm"
+                            >
+                              {selectedTrainer?.id === trainer.id ? "선택됨" : "선택하기"}
+                            </Button>
+                          </div>
                         </div>
                       </div>
-                      <Badge className={classItem.type === '1:1 상담' ? 'bg-blue-500' : 'bg-green-500'}>
-                        {classItem.type}
-                      </Badge>
-                    </div>
-                    
-                    <p className="text-gray-600 dark:text-gray-400 mb-4 line-clamp-2">
-                      {classItem.description}
-                    </p>
-                    
-                    <div className="flex flex-wrap gap-4 text-sm mb-4">
-                      <div className="flex items-center">
-                        <Clock className="h-4 w-4 mr-1 text-gray-600 dark:text-gray-400" />
-                        <span>{classItem.duration}</span>
-                      </div>
-                      <div className="flex items-center">
-                        <Users className="h-4 w-4 mr-1 text-gray-600 dark:text-gray-400" />
-                        <span>최대 {classItem.maxParticipants}명</span>
-                      </div>
-                      <div className="flex items-center">
-                        <MapPin className="h-4 w-4 mr-1 text-gray-600 dark:text-gray-400" />
-                        <span>{classItem.location}</span>
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-center justify-between">
-                      <div className="text-lg font-bold text-primary">
-                        {classItem.price.toLocaleString()}원
-                      </div>
-                      <Button onClick={() => handleSelectClass(classItem)}>
-                        예약하기
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              </Card>
-            ))}
-          </div>
-        </div>
-      )}
-      
-      {/* 2단계: 날짜 및 시간 선택 */}
-      {step === 2 && selectedClass && (
-        <div>
-          <h1 className="text-2xl font-bold mb-6">일정 선택</h1>
-          
-          <div className="flex flex-col md:flex-row gap-8">
-            <div className="md:w-1/2">
-              <Card className="p-4">
-                <h2 className="text-lg font-medium mb-4">날짜 선택</h2>
-                <CalendarComponent
-                  mode="single"
-                  selected={selectedDate}
-                  onSelect={handleDateSelect}
-                  className="rounded-md border"
-                  disabled={disabledDates}
-                  initialFocus
-                />
-              </Card>
-            </div>
-            
-            <div className="md:w-1/2">
-              <Card className="p-4">
-                <h2 className="text-lg font-medium mb-4">시간 선택</h2>
-                {selectedDate ? (
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                    {selectedClass.timeSlots.map((time: string) => (
-                      <Button
-                        key={time}
-                        variant={selectedTimeSlot === time ? "default" : "outline"}
-                        className="justify-center"
-                        onClick={() => handleTimeSelect(time)}
-                      >
-                        {time}
-                      </Button>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-8 text-gray-500">
-                    날짜를 먼저 선택해주세요.
-                  </div>
-                )}
-              </Card>
-              
-              <div className="mt-8 flex justify-between">
-                <Button variant="outline" onClick={() => setStep(1)}>
-                  이전
-                </Button>
-                <Button onClick={handleContinueReservation}>
-                  다음
-                </Button>
+                    </CardContent>
+                  </Card>
+                ))}
               </div>
             </div>
-          </div>
-        </div>
-      )}
-      
-      {/* 3단계: 예약 확인 */}
-      {step === 3 && selectedClass && selectedDate && selectedTimeSlot && (
-        <div>
-          <h1 className="text-2xl font-bold mb-6">예약 확인</h1>
-          
-          <Card className="p-6 mb-6">
-            <h2 className="text-xl font-semibold mb-4">예약 정보</h2>
-            
-            <div className="space-y-4">
-              <div className="flex flex-col md:flex-row">
-                <div className="font-medium md:w-1/4">수업명</div>
-                <div className="md:w-3/4">{selectedClass.title}</div>
-              </div>
-              
-              <div className="flex flex-col md:flex-row">
-                <div className="font-medium md:w-1/4">수업 유형</div>
-                <div className="md:w-3/4">
-                  <Badge className={selectedClass.type === '1:1 상담' ? 'bg-blue-500' : 'bg-green-500'}>
-                    {selectedClass.type}
-                  </Badge>
-                </div>
-              </div>
-              
-              <div className="flex flex-col md:flex-row">
-                <div className="font-medium md:w-1/4">훈련사</div>
-                <div className="md:w-3/4 flex items-center">
-                  <img 
-                    src={selectedClass.trainer.avatar} 
-                    alt={selectedClass.trainer.name}
-                    className="w-6 h-6 rounded-full mr-2"
+
+            {/* 예약 설정 */}
+            <div className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>날짜 & 시간 선택</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <Calendar
+                    mode="single"
+                    selected={selectedDate}
+                    onSelect={setSelectedDate}
+                    disabled={(date) => date < new Date() || date > new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)}
+                    className="rounded-md border w-full"
                   />
-                  <span>{selectedClass.trainer.name} 훈련사</span>
-                </div>
-              </div>
-              
-              <div className="flex flex-col md:flex-row">
-                <div className="font-medium md:w-1/4">일정</div>
-                <div className="md:w-3/4 flex items-center">
-                  <Calendar className="h-4 w-4 mr-2 text-gray-600 dark:text-gray-400" />
-                  <span>
-                    {selectedDate ? format(selectedDate, 'yyyy년 M월 d일 (EEEE)', { locale: ko }) : ''}
-                  </span>
-                </div>
-              </div>
-              
-              <div className="flex flex-col md:flex-row">
-                <div className="font-medium md:w-1/4">시간</div>
-                <div className="md:w-3/4 flex items-center">
-                  <Clock className="h-4 w-4 mr-2 text-gray-600 dark:text-gray-400" />
-                  <span>{selectedTimeSlot} (소요시간: {selectedClass.duration})</span>
-                </div>
-              </div>
-              
-              <div className="flex flex-col md:flex-row">
-                <div className="font-medium md:w-1/4">장소</div>
-                <div className="md:w-3/4 flex items-center">
-                  <MapPin className="h-4 w-4 mr-2 text-gray-600 dark:text-gray-400" />
-                  <span>{selectedClass.location}</span>
-                </div>
-              </div>
-            </div>
-            
-            <Separator className="my-6" />
-            
-            <div className="space-y-4">
-              <div className="flex flex-col md:flex-row">
-                <div className="font-medium md:w-1/4">결제 금액</div>
-                <div className="md:w-3/4 font-bold text-primary text-lg">
-                  {selectedClass.price.toLocaleString()}원
-                </div>
-              </div>
-              
-              {!isAuthenticated && (
-                <div className="bg-amber-50 dark:bg-amber-950 p-4 rounded-md flex items-start">
-                  <Info className="h-5 w-5 text-amber-500 mt-0.5 mr-2 flex-shrink-0" />
-                  <div>
-                    <p className="text-amber-800 dark:text-amber-200 text-sm">
-                      로그인 후 예약하시면 예약 내역을 확인하고 관리할 수 있습니다.
-                    </p>
-                  </div>
-                </div>
+                  
+                  {selectedTrainer && selectedDate && (
+                    <div>
+                      <Label>이용 가능한 시간</Label>
+                      <div className="grid grid-cols-2 gap-2 mt-2">
+                        {getAvailableSlots().map((slot) => (
+                          <Button
+                            key={slot}
+                            variant={selectedTime === slot ? "default" : "outline"}
+                            size="sm"
+                            onClick={() => setSelectedTime(slot)}
+                            className="text-xs"
+                          >
+                            {slot}
+                          </Button>
+                        ))}
+                      </div>
+                      {getAvailableSlots().length === 0 && (
+                        <p className="text-sm text-gray-500 mt-2">선택한 날짜에 이용 가능한 시간이 없습니다.</p>
+                      )}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {selectedTrainer && selectedDate && selectedTime && (
+                <Dialog open={isBookingDialogOpen} onOpenChange={setIsBookingDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button className="w-full" size="lg">
+                      예약 신청하기
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+                    <DialogHeader>
+                      <DialogTitle>예약 신청</DialogTitle>
+                      <DialogDescription>
+                        {selectedTrainer.name} • {selectedDate.toLocaleDateString()} {selectedTime}
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="service">훈련 서비스</Label>
+                          <Select value={bookingForm.service} onValueChange={(value) => setBookingForm({...bookingForm, service: value})}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="서비스 선택" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="basic">기본 복종 훈련</SelectItem>
+                              <SelectItem value="behavior">문제행동 교정</SelectItem>
+                              <SelectItem value="socialization">사회화 훈련</SelectItem>
+                              <SelectItem value="puppy">퍼피 트레이닝</SelectItem>
+                              <SelectItem value="advanced">고급 훈련</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div>
+                          <Label htmlFor="duration">훈련 시간</Label>
+                          <Select value={bookingForm.duration} onValueChange={(value) => setBookingForm({...bookingForm, duration: value})}>
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="60">1시간</SelectItem>
+                              <SelectItem value="90">1시간 30분</SelectItem>
+                              <SelectItem value="120">2시간</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+
+                      <div>
+                        <Label htmlFor="location">훈련 장소</Label>
+                        <Select value={bookingForm.location} onValueChange={(value) => setBookingForm({...bookingForm, location: value})}>
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="trainer">훈련사 센터</SelectItem>
+                            <SelectItem value="center">훈련 센터</SelectItem>
+                            <SelectItem value="home">방문 훈련 (+50%)</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="grid grid-cols-3 gap-4">
+                        <div>
+                          <Label htmlFor="petName">반려동물 이름</Label>
+                          <Input
+                            id="petName"
+                            value={bookingForm.petName}
+                            onChange={(e) => setBookingForm({...bookingForm, petName: e.target.value})}
+                            placeholder="이름"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="petAge">나이</Label>
+                          <Input
+                            id="petAge"
+                            value={bookingForm.petAge}
+                            onChange={(e) => setBookingForm({...bookingForm, petAge: e.target.value})}
+                            placeholder="예: 2년"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="petBreed">품종</Label>
+                          <Input
+                            id="petBreed"
+                            value={bookingForm.petBreed}
+                            onChange={(e) => setBookingForm({...bookingForm, petBreed: e.target.value})}
+                            placeholder="품종"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="phone">연락처</Label>
+                          <Input
+                            id="phone"
+                            value={bookingForm.phone}
+                            onChange={(e) => setBookingForm({...bookingForm, phone: e.target.value})}
+                            placeholder="010-0000-0000"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="email">이메일</Label>
+                          <Input
+                            id="email"
+                            type="email"
+                            value={bookingForm.email}
+                            onChange={(e) => setBookingForm({...bookingForm, email: e.target.value})}
+                            placeholder="example@email.com"
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <Label htmlFor="notes">특이사항 및 요청사항</Label>
+                        <Textarea
+                          id="notes"
+                          value={bookingForm.notes}
+                          onChange={(e) => setBookingForm({...bookingForm, notes: e.target.value})}
+                          placeholder="훈련 목표나 특별히 요청하고 싶은 내용을 적어주세요"
+                          rows={3}
+                        />
+                      </div>
+
+                      <div className="p-4 bg-gray-50 rounded-lg">
+                        <div className="flex justify-between items-center">
+                          <span className="font-medium">총 예약 금액</span>
+                          <span className="text-xl font-bold">{getLocationPrice().toLocaleString()}원</span>
+                        </div>
+                        <div className="text-sm text-gray-600 mt-1">
+                          기본료 {selectedTrainer.price.toLocaleString()}원 × {parseInt(bookingForm.duration) / 60}시간
+                          {bookingForm.location === 'home' && ' × 1.5 (방문료 포함)'}
+                        </div>
+                      </div>
+
+                      <div className="flex gap-2 pt-4">
+                        <Button onClick={() => setIsBookingDialogOpen(false)} variant="outline" className="flex-1">
+                          취소
+                        </Button>
+                        <Button onClick={handleBookReservation} disabled={loading} className="flex-1">
+                          {loading ? '예약 중...' : '예약 신청'}
+                        </Button>
+                      </div>
+                    </div>
+                  </DialogContent>
+                </Dialog>
               )}
             </div>
-          </Card>
-          
-          <div className="flex justify-between">
-            <Button variant="outline" onClick={() => setStep(2)}>
-              이전
-            </Button>
-            <Button onClick={handleConfirmReservation}>
-              예약 확정하기
-            </Button>
           </div>
-        </div>
-      )}
+        </TabsContent>
+
+        <TabsContent value="my-reservations" className="space-y-6">
+          {!user ? (
+            <Card>
+              <CardContent className="pt-6 text-center">
+                <p className="text-gray-600">로그인 후 예약 내역을 확인할 수 있습니다.</p>
+                <Button className="mt-4" onClick={() => window.location.href = '/auth/login'}>
+                  로그인
+                </Button>
+              </CardContent>
+            </Card>
+          ) : reservations.length === 0 ? (
+            <Card>
+              <CardContent className="pt-6 text-center">
+                <p className="text-gray-600">아직 예약한 훈련이 없습니다.</p>
+                <Button className="mt-4" onClick={() => setActiveTab('book')}>
+                  예약하기
+                </Button>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="space-y-4">
+              {reservations.map((reservation) => (
+                <Card key={reservation.id}>
+                  <CardContent className="pt-6">
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-start gap-4">
+                        <Avatar className="w-12 h-12">
+                          <AvatarImage src={reservation.trainerAvatar} alt={reservation.trainerName} />
+                          <AvatarFallback>{reservation.trainerName[0]}</AvatarFallback>
+                        </Avatar>
+                        <div className="space-y-2">
+                          <div>
+                            <h3 className="font-semibold">{reservation.trainerName}</h3>
+                            <p className="text-sm text-gray-600">{reservation.service}</p>
+                          </div>
+                          <div className="flex items-center gap-4 text-sm text-gray-600">
+                            <div className="flex items-center gap-1">
+                              <CalendarIcon className="h-4 w-4" />
+                              {reservation.date}
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <Clock className="h-4 w-4" />
+                              {reservation.time} ({reservation.duration}분)
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <User className="h-4 w-4" />
+                              {reservation.petName}
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-1 text-sm text-gray-600">
+                            <MapPin className="h-4 w-4" />
+                            {reservation.location}
+                          </div>
+                          <p className="text-sm text-gray-600 max-w-md">{reservation.notes}</p>
+                          <div className="text-lg font-semibold">{reservation.price.toLocaleString()}원</div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {getStatusBadge(reservation.status)}
+                        {reservation.status === 'pending' && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleCancelReservation(reservation.id)}
+                          >
+                            취소
+                          </Button>
+                        )}
+                        {reservation.status === 'confirmed' && (
+                          <Button size="sm">
+                            훈련 참여
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
