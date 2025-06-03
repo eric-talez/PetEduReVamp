@@ -73,6 +73,7 @@ export function RealTimePopularChart() {
       trend: 'up',
       changePercent: 15.2,
       author: "김민수 훈련사",
+      imageUrl: "https://images.unsplash.com/photo-1601758228041-f3b2795255f1?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=200&q=80",
       detailPath: "/courses/1"
     },
     {
@@ -86,6 +87,7 @@ export function RealTimePopularChart() {
       trend: 'up',
       changePercent: 8.5,
       author: "박지혜 훈련사",
+      imageUrl: "https://images.unsplash.com/photo-1537151608828-ea2b11777ee8?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=200&q=80",
       detailPath: "/courses/2"
     },
     {
@@ -354,6 +356,27 @@ export function RealTimePopularChart() {
         >
           <div className="flex-shrink-0 w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
             <span className="text-primary font-bold text-sm">{index + 1}</span>
+          </div>
+          
+          {/* 썸네일 영역 */}
+          <div className="flex-shrink-0 w-16 h-12 bg-gray-100 dark:bg-gray-700 rounded-md overflow-hidden">
+            {item.imageUrl ? (
+              <img 
+                src={item.imageUrl} 
+                alt={item.title}
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.style.display = 'none';
+                  target.nextElementSibling?.classList.remove('hidden');
+                }}
+              />
+            ) : null}
+            <div className={`w-full h-full flex items-center justify-center ${item.imageUrl ? 'hidden' : ''}`}>
+              <div className="text-gray-400 text-xs text-center">
+                <div className="w-6 h-6 mx-auto mb-1 bg-gray-300 dark:bg-gray-600 rounded"></div>
+              </div>
+            </div>
           </div>
           
           <div className="flex-grow min-w-0">

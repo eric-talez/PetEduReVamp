@@ -574,14 +574,9 @@ export default function Home() {
           </div>
         </div>
 
-        {/* 실시간 인기차트 영역 */}
+        {/* 실시간 인기차트 영역 (통합) */}
         <div className="mb-8">
           <RealTimePopularChart />
-        </div>
-
-        {/* 인기 훈련사 섹션 */}
-        <div className="mb-8">
-          <TrendingSection />
         </div>
 
         {/* 테마 테스트 요소 */}
