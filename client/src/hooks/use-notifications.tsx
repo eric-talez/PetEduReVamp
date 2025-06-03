@@ -152,7 +152,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
           setTimeout(() => {
             setReconnectAttempts(prev => prev + 1);
             setupWebSocket();
-          }, Math.min(1000 * Math.pow(2, reconnectAttempts), 30000)); // 지수 백오프 (최대 30초)
+          }, Math.min(3000 * Math.pow(2, reconnectAttempts), 60000)); // 지수 백오프 (3초 시작, 최대 60초)
         } else {
           setError(new Error('Failed to connect to notification service after multiple attempts'));
           toast({

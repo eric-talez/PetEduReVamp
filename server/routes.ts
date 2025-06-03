@@ -1763,6 +1763,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // 관리자 배너 목록 조회
   app.get("/api/admin/banners", async (req, res) => {
     try {
+      let user = req.user || req.session.user;
+      
+      // 개발 환경에서 임시 관리자 사용자 설정
+      if (!user && process.env.NODE_ENV === 'development') {
+        user = { id: 1, username: 'admin', role: 'admin' };
+      }
+      
+      if (!user) {
+        return res.status(401).json({ message: "인증이 필요합니다." });
+      }
+      
+      if (user.role !== 'admin') {
+        return res.status(403).json({ message: "관리자 권한이 필요합니다." });
+      }
+      
       const { db } = await import('./db');
       
       const result = await db.execute(`
@@ -1798,6 +1813,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // 관리자 배너 생성
   app.post("/api/admin/banners", async (req, res) => {
     try {
+      let user = req.user || req.session.user;
+      
+      // 개발 환경에서 임시 관리자 사용자 설정
+      if (!user && process.env.NODE_ENV === 'development') {
+        user = { id: 1, username: 'admin', role: 'admin' };
+      }
+      
+      if (!user) {
+        return res.status(401).json({ message: "인증이 필요합니다." });
+      }
+      
+      if (user.role !== 'admin') {
+        return res.status(403).json({ message: "관리자 권한이 필요합니다." });
+      }
+      
       const { db } = await import('./db');
       const {
         title,
