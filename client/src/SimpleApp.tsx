@@ -321,6 +321,16 @@ function AppLayout({ children }: { children: ReactNode }) {
                     }}
                   </Route>
                   <Route path="/course/:id" component={CourseDetail} />
+                  <Route path="/courses/:id">
+                    {(params) => {
+                      const CourseDetail = lazy(() => import('./pages/courses/detail'));
+                      return (
+                        <Suspense fallback={<div className="p-8 text-center">강의 정보 로딩 중...</div>}>
+                          <CourseDetail courseId={params.id} />
+                        </Suspense>
+                      );
+                    }}
+                  </Route>
                   
                   {/* 프로필 페이지 */}
                   <Route path="/profile">
@@ -383,6 +393,16 @@ function AppLayout({ children }: { children: ReactNode }) {
 
                   {/* 훈련사 및 기관 */}
                   <Route path="/trainers" component={Trainers} />
+                  <Route path="/trainers/:id">
+                    {(params) => {
+                      const TrainerDetail = lazy(() => import('./pages/trainers/detail'));
+                      return (
+                        <Suspense fallback={<div className="p-8 text-center">훈련사 정보 로딩 중...</div>}>
+                          <TrainerDetail trainerId={params.id} />
+                        </Suspense>
+                      );
+                    }}
+                  </Route>
                   <Route path="/institutes" component={Institutes} />
                   
                   {/* 위치 및 이벤트 */}
