@@ -199,6 +199,110 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // 상담 관련 API
+  app.get("/api/consultations/my-requests", async (req, res) => {
+    try {
+      // 실제 구현에서는 사용자 세션에서 userId를 가져와야 함
+      const consultations = [
+        {
+          id: 1,
+          trainerId: 1,
+          trainerName: "김민수 전문 훈련사",
+          status: "pending",
+          date: "2025-06-10",
+          time: "14:00",
+          type: "행동교정",
+          petName: "멍멍이",
+          message: "강아지가 낯선 사람을 보면 짖는 문제로 상담 요청드립니다.",
+          createdAt: "2025-06-03T17:30:00.000Z"
+        },
+        {
+          id: 2,
+          trainerId: 2,
+          trainerName: "박지연 훈련사",
+          status: "confirmed",
+          date: "2025-06-08",
+          time: "10:00",
+          type: "기본훈련",
+          petName: "코코",
+          message: "기본적인 앉기, 기다리기 훈련을 배우고 싶습니다.",
+          createdAt: "2025-06-01T09:15:00.000Z"
+        }
+      ];
+      
+      res.json({ success: true, consultations });
+    } catch (error) {
+      console.error('상담 목록 조회 오류:', error);
+      res.status(500).json({ error: "상담 목록을 불러올 수 없습니다" });
+    }
+  });
+
+  app.post("/api/consultations/:id/cancel", async (req, res) => {
+    try {
+      const consultationId = req.params.id;
+      
+      // 실제 구현에서는 데이터베이스에서 상담을 취소 상태로 업데이트
+      console.log(`상담 ${consultationId} 취소 요청`);
+      
+      res.json({ 
+        success: true, 
+        message: "상담이 성공적으로 취소되었습니다." 
+      });
+    } catch (error) {
+      console.error('상담 취소 오류:', error);
+      res.status(500).json({ error: "상담 취소 중 오류가 발생했습니다" });
+    }
+  });
+
+  app.get("/api/consultations/:id", async (req, res) => {
+    try {
+      const consultationId = req.params.id;
+      
+      // 실제 구현에서는 데이터베이스에서 상담 상세 정보 조회
+      const consultation = {
+        id: parseInt(consultationId),
+        trainerId: 1,
+        trainerName: "김민수 전문 훈련사",
+        trainerAvatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=300&q=80",
+        status: "confirmed",
+        date: "2025-06-10",
+        time: "14:00",
+        type: "행동교정",
+        petName: "멍멍이",
+        petAge: "2년",
+        petBreed: "골든 리트리버",
+        message: "강아지가 낯선 사람을 보면 짖는 문제로 상담 요청드립니다.",
+        contactPhone: "010-1234-5678",
+        contactEmail: "user@example.com",
+        createdAt: "2025-06-03T17:30:00.000Z",
+        videoCallUrl: "https://meet.google.com/abc-defg-hij"
+      };
+      
+      res.json({ success: true, consultation });
+    } catch (error) {
+      console.error('상담 상세 조회 오류:', error);
+      res.status(500).json({ error: "상담 정보를 불러올 수 없습니다" });
+    }
+  });
+
+  app.post("/api/consultations/:id/join", async (req, res) => {
+    try {
+      const consultationId = req.params.id;
+      
+      // 실제 구현에서는 화상 회의 시스템과 연동
+      const videoCallUrl = "https://meet.google.com/abc-defg-hij";
+      
+      res.json({ 
+        success: true, 
+        message: "화상 상담에 참여합니다.",
+        videoCallUrl 
+      });
+    } catch (error) {
+      console.error('화상 상담 참여 오류:', error);
+      res.status(500).json({ error: "화상 상담 참여 중 오류가 발생했습니다" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

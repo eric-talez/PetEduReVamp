@@ -970,9 +970,9 @@ export function RealTimePopularChart() {
                             title: "상담 신청 완료",
                             description: result.message,
                           });
-                          // 상담 신청 후 상세 페이지로 이동
+                          // 상담 신청 후 상담 관리 페이지로 이동
                           setIsTrainerModalOpen(false);
-                          setLocation(`/video-call/reserve?trainer=${selectedTrainer.id}`);
+                          setLocation('/consultation');
                         } else {
                           throw new Error('상담 신청 실패');
                         }

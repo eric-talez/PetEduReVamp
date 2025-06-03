@@ -425,6 +425,18 @@ function AppLayout({ children }: { children: ReactNode }) {
                     }}
                   </Route>
                   
+                  {/* 상담 관리 */}
+                  <Route path="/consultation">
+                    {() => {
+                      const ConsultationPage = lazy(() => import('./pages/consultation'));
+                      return (
+                        <Suspense fallback={<div className="p-8 text-center">상담 현황 로딩 중...</div>}>
+                          <ConsultationPage />
+                        </Suspense>
+                      );
+                    }}
+                  </Route>
+                  
                   {/* 커뮤니티 */}
                   <Route path="/community" component={Community} />
                   <Route path="/community/post/:id" component={CommunityPostDetail} />
