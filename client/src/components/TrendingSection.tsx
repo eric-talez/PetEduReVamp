@@ -13,7 +13,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Link } from 'wouter';
-import { TrendingUp, TrendingDown, Eye, Award, MoveUp } from 'lucide-react';
+import { TrendingUp, TrendingDown, Eye, Award, MoveUp, MapPin, Sparkles } from 'lucide-react';
 import { Star, Users, Clock } from "lucide-react";
 import { NewTrainerProfileModal, Trainer } from './NewTrainerProfileModal';
 
@@ -26,6 +26,9 @@ const trendingTrainers = [
     rating: 4.9,
     avatar: 'https://randomuser.me/api/portraits/men/32.jpg',
     views: 1283,
+    location: '서울 강남구',
+    advantages: ['10년+ 경력', '인증 전문가', '성공률 95%'],
+    certifications: ['반려동물행동교정사 1급', 'KKC 공인 훈련사'],
     dailyData: [
       { hour: '00:00', views: 42 },
       { hour: '04:00', views: 35 },
@@ -44,6 +47,9 @@ const trendingTrainers = [
     rating: 4.8,
     avatar: 'https://randomuser.me/api/portraits/women/44.jpg',
     views: 986,
+    location: '서울 송파구',
+    advantages: ['맞춤형 교육', '견종별 전문', '온라인 상담'],
+    certifications: ['KKC 공인 훈련사', '반려동물관리사 1급'],
     dailyData: [
       { hour: '00:00', views: 32 },
       { hour: '04:00', views: 25 },
@@ -62,6 +68,9 @@ const trendingTrainers = [
     rating: 4.7,
     avatar: 'https://randomuser.me/api/portraits/men/55.jpg',
     views: 754,
+    location: '경기 고양시',
+    advantages: ['대회 수상 경력', '전문 시설', '단계별 프로그램'],
+    certifications: ['국제 어질리티 지도사', 'KKC 공인 훈련사'],
     dailyData: [
       { hour: '00:00', views: 25 },
       { hour: '04:00', views: 18 },
@@ -80,6 +89,9 @@ const trendingTrainers = [
     rating: 4.6,
     avatar: 'https://randomuser.me/api/portraits/women/22.jpg',
     views: 623,
+    location: '서울 마포구',
+    advantages: ['퍼피 전문', '그룹 클래스', '사후 관리'],
+    certifications: ['동물행동학 전문가', '반려동물 사회화 지도사'],
     dailyData: [
       { hour: '00:00', views: 18 },
       { hour: '04:00', views: 12 },
@@ -98,6 +110,9 @@ const trendingTrainers = [
     rating: 4.5,
     avatar: 'https://randomuser.me/api/portraits/men/76.jpg',
     views: 508,
+    location: '경기 성남시',
+    advantages: ['경찰견 출신', '특수 훈련', '개별 맞춤'],
+    certifications: ['특수목적견 훈련사', '경찰견 훈련 전문가'],
     dailyData: [
       { hour: '00:00', views: 15 },
       { hour: '04:00', views: 10 },
@@ -581,34 +596,74 @@ export function TrendingSection() {
   const renderTrainerItem = (trainer: any, index: number) => (
     <div 
       key={trainer.id} 
-      className="flex items-center border-b border-gray-100 dark:border-gray-800 py-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+      className="border-b border-gray-100 dark:border-gray-800 py-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors rounded-lg px-2"
       onClick={() => handleTrainerClick(trainer.id)}
     >
-      <span className="text-lg font-bold w-6 text-gray-400">{index + 1}</span>
-      <div className="h-10 w-10 rounded-full overflow-hidden mr-3">
-        <img src={trainer.avatar} alt={trainer.name} className="h-full w-full object-cover" />
-      </div>
-      <div className="flex-1">
-        <div className="flex justify-between">
-          <h4 className="font-medium">{trainer.name} 훈련사</h4>
-          <div className="flex items-center text-sm text-gray-500">
-            <Eye size={14} className="mr-1" /> {trainer.views.toLocaleString()}
-          </div>
+      <div className="flex items-start">
+        <span className="text-lg font-bold w-6 text-gray-400 mt-1">{index + 1}</span>
+        <div className="h-12 w-12 rounded-full overflow-hidden mr-3 ring-2 ring-primary/20">
+          <img src={trainer.avatar} alt={trainer.name} className="h-full w-full object-cover" />
         </div>
-        <div className="flex items-center">
-          <Badge variant="outline" className="text-xs mr-2">{trainer.specialty}</Badge>
-          <div className="flex items-center space-x-2">
-            <div className={`text-xs flex items-center ${trainer.change >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-              {trainer.change >= 0 ? (
-                <TrendingUp size={12} className="mr-1" />
-              ) : (
-                <TrendingDown size={12} className="mr-1" />
-              )}
-              {Math.abs(trainer.change)}%
+        <div className="flex-1">
+          <div className="flex justify-between items-start mb-2">
+            <div>
+              <div className="flex items-center gap-2">
+                <h4 className="font-semibold text-gray-900 dark:text-white">{trainer.name}</h4>
+                <Badge className="bg-gradient-to-r from-amber-500 to-orange-500 text-white text-xs px-2 py-1">
+                  <Award size={10} className="mr-1" />
+                  인증 훈련사
+                </Badge>
+              </div>
+              <div className="flex items-center text-xs text-gray-500 dark:text-gray-400 mt-1">
+                <MapPin size={12} className="mr-1" />
+                <span>{trainer.location}</span>
+              </div>
             </div>
-            <Badge variant={trainer.change >= 0 ? "success" : "destructive"} className="text-xs">
-              {trainer.change >= 0 ? `${trainer.rankChange || 0}위 ▲` : `${Math.abs(trainer.rankChange || 0)}위 ▼`}
+            <div className="flex items-center text-sm text-gray-500">
+              <Eye size={14} className="mr-1" /> {trainer.views.toLocaleString()}
+            </div>
+          </div>
+          
+          <div className="mb-2">
+            <Badge variant="outline" className="text-xs mr-2 bg-primary/10 border-primary/20">
+              {trainer.specialty}
             </Badge>
+            <div className="flex items-center space-x-2 mt-1">
+              <div className={`text-xs flex items-center ${trainer.change >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                {trainer.change >= 0 ? (
+                  <TrendingUp size={12} className="mr-1" />
+                ) : (
+                  <TrendingDown size={12} className="mr-1" />
+                )}
+                {Math.abs(trainer.change)}%
+              </div>
+              <Badge variant={trainer.change >= 0 ? "default" : "destructive"} className="text-xs">
+                {trainer.change >= 0 ? `${trainer.rankChange || 0}위 ▲` : `${Math.abs(trainer.rankChange || 0)}위 ▼`}
+              </Badge>
+            </div>
+          </div>
+
+          {/* 장점 표시 */}
+          <div className="flex flex-wrap gap-1 mb-2">
+            {trainer.advantages?.slice(0, 3).map((advantage: string, idx: number) => (
+              <Badge key={idx} variant="secondary" className="text-xs px-2 py-1 bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-700">
+                <Sparkles size={8} className="mr-1" />
+                {advantage}
+              </Badge>
+            ))}
+          </div>
+
+          {/* 자격증 표시 */}
+          <div className="flex flex-wrap gap-1">
+            {trainer.certifications?.slice(0, 2).map((cert: string, idx: number) => (
+              <Badge key={idx} variant="outline" className="text-xs px-2 py-1 bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-700">
+                <Award size={8} className="mr-1" />
+                {cert.length > 12 ? `${cert.substring(0, 12)}...` : cert}
+              </Badge>
+            ))}
+            {trainer.certifications?.length > 2 && (
+              <Badge variant="outline" className="text-xs">+{trainer.certifications.length - 2}</Badge>
+            )}
           </div>
         </div>
       </div>
