@@ -59,23 +59,7 @@ export default function AdminDashboard({ onAction }: AdminDashboardProps) {
       
       {/* Statistics */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <Card className="p-6 border border-gray-100 dark:border-gray-700">
-          <div className="flex items-center">
-            <div className="flex-shrink-0 h-12 w-12 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-full flex items-center justify-center">
-              <Users className="h-6 w-6" />
-            </div>
-            <div className="ml-4">
-              <h2 className="text-sm font-medium text-gray-500 dark:text-gray-400">전체 사용자</h2>
-              <p className="text-2xl font-semibold text-gray-800 dark:text-white">2,548명</p>
-            </div>
-          </div>
-          <div className="mt-4">
-            <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400">
-              <span>지난 달 +124명</span>
-              <a href="/admin/users" className="text-primary hover:text-primary/80">관리</a>
-            </div>
-          </div>
-        </Card>
+
         
         <Card className="p-6 border border-gray-100 dark:border-gray-700">
           <div className="flex items-center">
@@ -128,10 +112,6 @@ export default function AdminDashboard({ onAction }: AdminDashboardProps) {
               <div className="flex items-center mb-1">
                 <div className="w-2 h-2 rounded-full bg-green-500 mr-2"></div>
                 <span>API: 100% 가동</span>
-              </div>
-              <div className="flex items-center">
-                <div className="w-2 h-2 rounded-full bg-green-500 mr-2"></div>
-                <span>DB: 99.9% 가동</span>
               </div>
             </div>
           </div>

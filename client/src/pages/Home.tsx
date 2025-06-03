@@ -244,33 +244,7 @@ export default function Home() {
         {/* 서비스 현황 및 날씨 - 배너 위 영역 - 토글 가능한 섹션 */}
         
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">총 사용자</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">1,234</div>
-            <p className="text-xs text-muted-foreground">
-              +20.1% 전월 대비
-            </p>
-          </CardContent>
-        </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">DB 연결 상태</CardTitle>
-            <div className="h-4 w-4 bg-green-500 rounded-full animate-pulse" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-600">활성</div>
-            <p className="text-xs text-muted-foreground">
-              실시간 데이터베이스 연결
-            </p>
-          </CardContent>
-        </Card>
-        </div>
         <div className="mb-4">
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden transition-all duration-300">
             {/* 헤더 영역 - 클릭 시 토글 */}
