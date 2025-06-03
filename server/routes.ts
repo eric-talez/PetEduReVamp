@@ -2633,6 +2633,78 @@ Percent: 8.5 },
     }
   });
 
+  // 상담신청 API
+  app.post('/api/consultation/request', async (req: Request, res: Response) => {
+    try {
+      const { trainerId, trainerName, userId, userName, message, phone, preferredTime } = req.body;
+
+      // 현재 로그인한 사용자 정보 가져오기
+      const user = req.user || req.session?.user || { id: 1, name: '테스트 사용자' };
+
+      // 상담신청 데이터 저장 (실제로는 데이터베이스에 저장)
+      const consultationRequest = {
+        id: Date.now(),
+        trainerId: trainerId || 1,
+        trainerName: trainerName || '김민수 전문 훈련사',
+        userId: user.id,
+        userName: user.name || userName || '사용자',
+        message: message || '상담을 요청합니다.',
+        phone: phone || '',
+        preferredTime: preferredTime || '',
+        status: 'pending',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
+
+      console.log('상담신청 요청:', consultationRequest);
+
+      res.json({ 
+        success: true, 
+        message: '상담신청이 완료되었습니다. 곧 연락드리겠습니다.',
+        consultationId: consultationRequest.id,
+        data: consultationRequest
+      });
+    } catch (error) {
+      console.error('상담신청 오류:', error);
+      res.status(500).json({ 
+        success: false,
+        error: '상담신청에 실패했습니다.' 
+      });
+    }
+  });
+
+  // 훈련사별 상담신청 목록 조회
+  app.get('/api/consultation/trainer/:trainerId', async (req: Request, res: Response) => {
+    try {
+      const { trainerId } = req.params;
+
+      // 실제로는 데이터베이스에서 조회
+      const consultations = [
+        {
+          id: 1,
+          trainerId: parseInt(trainerId),
+          userId: 1,
+          userName: '테스트 사용자',
+          message: '기본 훈련 상담 요청',
+          phone: '010-1234-5678',
+          status: 'pending',
+          createdAt: new Date()
+        }
+      ];
+
+      res.json({ 
+        success: true, 
+        consultations
+      });
+    } catch (error) {
+      console.error('상담신청 목록 조회 오류:', error);
+      res.status(500).json({ 
+        success: false,
+        error: '상담신청 목록 조회에 실패했습니다.' 
+      });
+    }
+  });
+
   // 장바구니 추가 API
   app.post('/api/cart/add', async (req: Request, res: Response) => {
     try {

@@ -673,6 +673,7 @@ export function RealTimePopularChart() {
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
+```text
             console.log('[RealTimePopularChart] 아이템 클릭:', item.title, item.detailPath);
             handleItemClick(item);
           }}
@@ -756,6 +757,34 @@ export function RealTimePopularChart() {
       ))}
     </div>
   );
+
+  const handleConsultationClick = async (trainerName: string) => {
+    console.log('[Modal Action] 상담 신청 클릭:', trainerName);
+
+    try {
+      const response = await fetch('/api/consultation/request', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          trainerName: trainerName,
+          message: `${trainerName}와의 상담을 신청합니다.`
+        }),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        alert(result.message);
+      } else {
+        alert('상담신청에 실패했습니다. 다시 시도해주세요.');
+      }
+    } catch (error) {
+      console.error('상담신청 오류:', error);
+      alert('네트워크 오류가 발생했습니다.');
+    }
+  };
 
   return (
     <>
@@ -922,6 +951,7 @@ export function RealTimePopularChart() {
                     className="w-full"
                     onClick={() => {
                       console.log('[Modal Action] 상담 신청 클릭:', selectedTrainer.name);
+                      handleConsultationClick(selectedTrainer.name);
                       // 상담 신청 페이지로 이동
                       setIsTrainerModalOpen(false);
                       setLocation(`/video-call/reserve?trainer=${selectedTrainer.id}`);
