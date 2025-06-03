@@ -216,10 +216,17 @@ export function Sidebar({
   useEffect(() => {
     console.log('Sidebar useEffect - userRole:', userRole, 'isAuthenticated:', isAuthenticated);
 
-    // 기관 관리자 및 관리자 권한 확인
+    // 권한별 메뉴 표시 권한 확인
     const isInstituteAdmin = userRole === 'institute-admin';
     const isAdmin = userRole === 'admin';
     const isTrainer = userRole === 'trainer';
+    const isPetOwner = userRole === 'pet-owner';
+    
+    // 권한별 서비스 접근 가능 여부
+    const canAccessNotebook = isPetOwner || isTrainer || isInstituteAdmin || isAdmin;
+    const canAccessConsultation = isPetOwner || isTrainer || isInstituteAdmin || isAdmin;
+    const canAccessCourses = isPetOwner || isTrainer || isInstituteAdmin || isAdmin;
+    const canAccessMessaging = isPetOwner || isTrainer || isInstituteAdmin || isAdmin;
 
     console.log('권한 체크 - 기관 관리자:', isInstituteAdmin, '관리자:', isAdmin, '훈련사:', isTrainer);
 

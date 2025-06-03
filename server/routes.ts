@@ -1,4 +1,4 @@
-import type { Express } from "express";
+import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { db } from "./db";
 
@@ -72,8 +72,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // 상담 신청 API
-  app.post("/api/consultation/request", async (req, res) => {
+  // 상담 신청 API (권한 체크 추가)
+  const checkRole = (requiredRoles: string[]) => {
+    return (req: Request, res: Response, next: NextFunction) => {
+      const userRole = req.headers['x-user-role'] as string || 
+                      req.user?.role || 
+                      req.session?.user?.role;
+
+      if (!userRole || !requiredRoles.includes(userRole)) {
+        return res.status(403).json({
+          success: false,
+          error: '접근 권한이 없습니다.',
+          requiredRoles,
+          userRole
+        });
+      }
+
+      next();
+    };
+  };
+
+  // 기관 관리자 권한으로 소속 훈련사 알림장 조회 허용
+  const checkInstituteAccess = (req: Request, res: Response, next: NextFunction) => {
+    const userRole = req.headers['x-user-role'] as string || req.user?.role;
+    const userId = req.user?.id;
+
+    if (userRole === 'institute-admin') {
+      // 기관 관리자는 소속 훈련사의 데이터만 접근 가능
+      req.query.instituteFilter = userId?.toString();
+    }
+
+    next();
+  };
+  app.post('/api/consultation/request', 
+    checkRole(['pet-owner', 'trainer', 'institute-admin', 'admin']),
+    async (req, res) => {
     try {
       const { trainerId, message, preferredDate } = req.body;
 
@@ -437,15 +470,59 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     }
   });
-
-  // 알림장 목록 조회 API
-  app.get('/api/notebook/entries', async (req: Request, res: Response) => {
+  
+    // 훈련사별 상담신청 목록 조회 (권한 체크 추가)
+  app.get('/api/consultation/trainer/:trainerId', 
+    checkRole(['trainer', 'institute-admin', 'admin']),
+    async (req: Request, res: Response) => {
     try {
-      const user = req.user || req.session?.user || { id: 1, role: 'pet-owner' };
-      const { petId, trainerId, date, limit = 20, offset = 0 } = req.query;
+      // 실제 구현에서는 트레이너 ID를 이용하여 상담 신청 목록 조회
+      const trainerId = req.params.trainerId;
+      console.log(`훈련사 ${trainerId}의 상담 신청 목록 조회`);
 
-      // 샘플 알림장 데이터
-      const entries = [
+      // 샘플 데이터
+      const consultations = [
+        {
+          id: 1,
+          petName: '코코',
+          ownerName: '김반려',
+          message: '짖음 문제 상담',
+          status: '대기중'
+        },
+        {
+          id: 2,
+          petName: '뭉치',
+          ownerName: '박반려',
+          message: '배변 훈련 상담',
+          status: '확정'
+        }
+      ];
+
+      res.json({
+        success: true,
+        consultations
+      });
+    } catch (error) {
+      console.error('상담 신청 목록 조회 오류:', error);
+      res.status(500).json({
+        success: false,
+        error: '상담 신청 목록 조회에 실패했습니다.'
+      });
+    }
+  });
+
+  // 알림장 목록 조회 API (권한 체크 추가)
+  app.get('/api/notebook/entries', 
+    checkRole(['pet-owner', 'trainer', 'institute-admin', 'admin']),
+    checkInstituteAccess,
+    async (req: Request, res: Response) => {
+    try {
+      const { petId, date, limit = 20, offset = 0 } = req.query;
+      const userRole = req.headers['x-user-role'] as string || req.user?.role;
+      const userId = req.user?.id || 1;
+
+      // 실제로는 데이터베이스에서 권한별 필터링하여 조회
+      let entries = [
         {
           id: '1',
           date: new Date().toISOString().split('T')[0],
@@ -493,7 +570,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     }
   });
-
+  
   // 새 알림장 작성 API
   app.post('/api/notebook/entries', async (req: Request, res: Response) => {
     try {
@@ -613,7 +690,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/trainer/my-pets', async (req: Request, res: Response) => {
     try {
       const user = req.user || req.session?.user || { id: 1, role: 'trainer' };
-      
+
       if (user.role !== 'trainer') {
         return res.status(403).json({
           success: false,
@@ -662,7 +739,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/trainer/notebook/entries', async (req: Request, res: Response) => {
     try {
       const user = req.user || req.session?.user || { id: 1, role: 'trainer' };
-      
+
       if (user.role !== 'trainer') {
         return res.status(403).json({
           success: false,
@@ -793,7 +870,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       ];
 
-      res.json({
+      res.json```tool_code
+({
         success: true,
         templates
       });

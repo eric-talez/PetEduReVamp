@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -107,6 +106,8 @@ export default function NotebookPage() {
   const [showUnread, setShowUnread] = useState(true);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [loading, setLoading] = useState(false);
+    const [userRole, setUserRole] = useState<string | null>(null); // 사용자 권한 상태 추가
+  const [user, setUser] = useState<any>(null); // 사용자 정보 상태 추가
 
   // 새 알림장 폼 상태
   const [newEntry, setNewEntry] = useState({
@@ -243,6 +244,12 @@ export default function NotebookPage() {
     ];
 
     setEntries(sampleEntries);
+        // 사용자 권한 및 정보 설정 (가정)
+        setUserRole('trainer'); // 예시: 훈련사 권한
+        setUser({
+            id: 'trainer1',
+            instituteId: 'institute1'
+        });
   }, []);
 
   // 필터링 및 검색
@@ -404,20 +411,43 @@ export default function NotebookPage() {
     }
   };
 
-  // AI 도우미로 내용 생성
-  const handleAIGenerate = async () => {
-    if (!newEntry.petName) {
+  // 권한별 알림장 접근 제어
+  const checkNotebookAccess = (entry: any) => {
+    if (!userRole) return false;
+
+    // 기관 관리자는 소속 훈련사의 알림장 조회 가능
+    if (userRole === 'institute-admin') {
+      return entry.trainerId && entry.instituteId === user?.instituteId;
+    }
+
+    // 훈련사는 자신이 담당하는 반려동물의 알림장만 접근
+    if (userRole === 'trainer') {
+      return entry.trainerId === user?.id;
+    }
+
+    // 반려인은 자신의 반려동물 알림장만 접근
+    if (userRole === 'pet-owner') {
+      return entry.ownerId === user?.id;
+    }
+
+    // 관리자는 모든 알림장 접근 가능
+    return userRole === 'admin';
+  };
+
+  // AI 알림장 생성 (중복 제거)
+  const handleAIGenerate = async (petData: any) => {
+    // 권한 체크
+    if (!['trainer', 'institute-admin', 'admin'].includes(userRole || '')) {
       toast({
-        title: '반려동물 정보 필요',
-        description: 'AI 도우미를 사용하려면 반려동물 이름을 먼저 입력해주세요.',
-        variant: 'destructive'
+        title: "권한 부족",
+        description: "AI 알림장 생성은 훈련사 이상의 권한이 필요합니다.",
+        variant: "destructive",
       });
       return;
     }
 
-    setLoading(true);
-
     try {
+      setIsLoading(true);
       const response = await fetch('/api/notebook/ai-generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -430,7 +460,7 @@ export default function NotebookPage() {
       });
 
       const data = await response.json();
-      
+
       if (data.success) {
         setNewEntry(prev => ({
           ...prev,
