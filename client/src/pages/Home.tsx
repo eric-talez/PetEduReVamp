@@ -574,6 +574,11 @@ export default function Home() {
           </div>
         </div>
 
+        {/* 실시간 인기차트 영역 */}
+        <div className="mb-8">
+          <RealTimePopularChart />
+        </div>
+
         {/* 인기 훈련사 섹션 */}
         <div className="mb-8">
           <TrendingSection />
@@ -627,11 +632,6 @@ export default function Home() {
               </Button>
             </div>
           </div>
-        </div>
-
-        {/* 실시간 인기차트 영역 */}
-        <div className="mb-8">
-          <RealTimePopularChart />
         </div>
 
         {/* 쇼핑 페이지 접근 컴포넌트 */}

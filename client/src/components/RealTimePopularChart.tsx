@@ -348,7 +348,6 @@ export function RealTimePopularChart() {
             e.preventDefault();
             e.stopPropagation();
             console.log('[RealTimePopularChart] 아이템 클릭:', item.title, item.detailPath);
-            alert(`클릭됨: ${item.title}`);
             handleItemClick(item.detailPath);
           }}
           type="button"
