@@ -11,6 +11,60 @@ interface CourseDetailProps {
 }
 
 export default function CourseDetail({ courseId }: CourseDetailProps) {
+  // 수강신청 핸들러
+  const handleEnrollment = async (courseId: number) => {
+    try {
+      const response = await fetch('/api/courses/enroll', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ courseId }),
+      });
+
+      if (response.ok) {
+        alert('수강신청이 완료되었습니다!');
+        // 결제 페이지로 이동하거나 추가 처리
+      } else {
+        alert('수강신청에 실패했습니다. 다시 시도해주세요.');
+      }
+    } catch (error) {
+      console.error('수강신청 오류:', error);
+      alert('네트워크 오류가 발생했습니다.');
+    }
+  };
+
+  // 장바구니 추가 핸들러
+  const handleAddToCart = async (course: any) => {
+    try {
+      const cartItem = {
+        productId: course.id,
+        name: course.title,
+        price: course.price,
+        quantity: 1,
+        imageUrl: course.thumbnail,
+        inStock: true,
+      };
+
+      const response = await fetch('/api/cart/add', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(cartItem),
+      });
+
+      if (response.ok) {
+        alert('장바구니에 추가되었습니다!');
+      } else {
+        alert('장바구니 추가에 실패했습니다.');
+      }
+    } catch (error) {
+      console.error('장바구니 추가 오류:', error);
+      alert('네트워크 오류가 발생했습니다.');
+    }
+  };
+
   // Mock data based on the popular chart data
   const getCourseData = (id: string) => {
     const courses = {
@@ -133,10 +187,18 @@ export default function CourseDetail({ courseId }: CourseDetailProps) {
               <CardTitle className="text-2xl">{course.price.toLocaleString()}원</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <Button className="w-full" size="lg">
+              <Button 
+                className="w-full" 
+                size="lg"
+                onClick={() => handleEnrollment(course.id)}
+              >
                 수강 신청하기
               </Button>
-              <Button variant="outline" className="w-full">
+              <Button 
+                variant="outline" 
+                className="w-full"
+                onClick={() => handleAddToCart(course)}
+              >
                 장바구니에 추가
               </Button>
               

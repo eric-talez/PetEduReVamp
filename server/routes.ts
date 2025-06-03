@@ -32,6 +32,7 @@ import { notificationService } from './notifications/notification-service';
 import { requestPasswordReset, verifyResetToken, resetPassword } from './recovery';
 import socialRouter from './routes/social';
 import analyticsRouter from './routes/analytics';
+import {Request, Response} from 'express';
 
 // 타입은 server/types.d.ts에 정의되어 있습니다.
 
@@ -71,7 +72,7 @@ const upload = multer({
 export async function registerRoutes(app: Express): Promise<Server> {
   // 본인인증 API 엔드포인트
   app.post('/api/auth/verify-identity', verifyIdentity);
-  
+
   // 비밀번호 재설정 API 엔드포인트
   app.post('/api/reset-password', requestPasswordReset);
   app.get('/api/reset-password/:token', verifyResetToken);
@@ -85,7 +86,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   registerVideoCallRoutes(app);
   registerMenuRoutes(app);
   registerAiRoutes(app);
-  
+
   // 테스트용 게시글 저장소 (메모리) - 샘플 데이터 포함
   const testPosts: any[] = [
     {
@@ -139,31 +140,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/community/posts', async (req, res) => {
     res.setHeader('Content-Type', 'application/json');
     res.setHeader('Cache-Control', 'no-cache');
-    
+
     console.log('=== 게시글 작성 API 호출됨 ===');
     console.log('요청 데이터:', req.body);
-    
+
     try {
       const { title, content, tag } = req.body;
-      
+
       if (!title || !content) {
         return res.status(400).json({ 
           message: '제목과 내용을 입력해주세요.',
           received: { title, content, tag }
         });
       }
-      
+
       // 현재 로그인한 사용자 정보 가져오기
       const sessionUser = req.session?.user;
       const currentUser = sessionUser || req.user || { id: 3, username: 'testuser3', name: '반려인' };
-      
+
       console.log('게시글 작성 사용자:', currentUser);
-      
+
       // 기존 데이터베이스 연결 사용
       const { db } = await import('./db');
-      
+
       let savedPost;
-      
+
       try {
         // Drizzle ORM 사용
         const { posts } = await import('@shared/schema');
@@ -176,10 +177,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
           comments: 0,
           image: null
         };
-        
+
         const insertResult = await db.insert(posts).values(newPostData).returning();
         savedPost = insertResult[0];
-        
+
         // 데이터베이스 필드명을 API 응답 형식으로 변환
         savedPost = {
           id: savedPost.id,
@@ -193,10 +194,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
           updated_at: savedPost.updatedAt,
           image: savedPost.image
         };
-        
+
       } catch (error) {
         console.error('데이터베이스 삽입 실패:', error);
-        
+
         // 임시 응답 생성
         savedPost = {
           id: Date.now(),
@@ -211,7 +212,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           image: null
         };
       }
-      
+
       const responseData = {
         post: {
           id: savedPost.id,
@@ -231,9 +232,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           name: currentUser.name
         }
       };
-      
+
       console.log('데이터베이스 저장 완료:', responseData);
-      
+
       res.status(201).json(responseData);
     } catch (error: any) {
       console.error('게시글 작성 오류:', error);
@@ -252,10 +253,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log('=== 테스트 게시글 수정 API 호출됨 ===');
       const postId = parseInt(req.params.id);
       const { title, content, tag } = req.body;
-      
+
       // 메모리에서 게시글 찾기
       const postIndex = testPosts.findIndex(p => p.id === postId);
-      
+
       if (postIndex === -1) {
         res.writeHead(404, {
           'Content-Type': 'application/json',
@@ -266,7 +267,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }));
         return;
       }
-      
+
       // 게시글 수정
       testPosts[postIndex] = {
         ...testPosts[postIndex],
@@ -275,14 +276,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         tag,
         updatedAt: new Date()
       };
-      
+
       const responseData = {
         post: testPosts[postIndex],
         message: '게시글이 성공적으로 수정되었습니다.'
       };
-      
+
       console.log('게시글 수정 완료:', responseData);
-      
+
       // Express 응답 파이프라인 우회하여 직접 응답
       res.writeHead(200, {
         'Content-Type': 'application/json',
@@ -304,10 +305,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       console.log('=== 테스트 게시글 삭제 API 호출됨 ===');
       const postId = parseInt(req.params.id);
-      
+
       // 메모리에서 게시글 찾기
       const postIndex = testPosts.findIndex(p => p.id === postId);
-      
+
       if (postIndex === -1) {
         res.writeHead(404, {
           'Content-Type': 'application/json',
@@ -318,16 +319,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }));
         return;
       }
-      
+
       // 게시글 삭제
       testPosts.splice(postIndex, 1);
-      
+
       const responseData = {
         message: '게시글이 성공적으로 삭제되었습니다.'
       };
-      
+
       console.log('게시글 삭제 완료:', responseData);
-      
+
       // Express 응답 파이프라인 우회하여 직접 응답
       res.writeHead(200, {
         'Content-Type': 'application/json',
@@ -350,7 +351,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log('=== 댓글 작성 API 호출됨 ===');
       const postId = parseInt(req.params.id);
       const { content } = req.body;
-      
+
       if (!content) {
         res.writeHead(400, {
           'Content-Type': 'application/json',
@@ -361,10 +362,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }));
         return;
       }
-      
+
       // 현재 로그인한 사용자 정보
       const currentUser = req.user || { id: 3, username: 'testuser3', name: '반려인' };
-      
+
       const newComment = {
         id: Date.now(),
         postId,
@@ -378,23 +379,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
         createdAt: new Date(),
         updatedAt: new Date()
       };
-      
+
       // 메모리에 댓글 저장
       testComments.push(newComment);
-      
+
       // 게시글의 댓글 수 업데이트
       const postIndex = testPosts.findIndex(p => p.id === postId);
       if (postIndex !== -1) {
         testPosts[postIndex].comments = testComments.filter(c => c.postId === postId).length;
       }
-      
+
       const responseData = {
         comment: newComment,
         message: '댓글이 성공적으로 작성되었습니다.'
       };
-      
+
       console.log('댓글 작성 완료:', responseData);
-      
+
       res.writeHead(201, {
         'Content-Type': 'application/json',
         'Cache-Control': 'no-cache'
@@ -416,10 +417,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log('=== 좋아요 토글 API 호출됨 ===');
       const { db } = await import('./db');
       const postId = parseInt(req.params.id);
-      
+
       // 현재 로그인한 사용자 확인
       const user = req.user || { id: 1, username: 'testuser', name: '테스트 사용자' };
-      
+
       // 게시글 존재 확인
       const postCheck = await db.execute(`
         SELECT id FROM posts 
@@ -441,7 +442,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (likeCheck.rows.length > 0) {
         // 좋아요 취소
         await db.execute(`DELETE FROM likes WHERE post_id = ${postId} AND user_id = ${user.id}`);
-        
+
         // 게시글 좋아요 수 감소
         await db.execute(`UPDATE posts SET likes = likes - 1 WHERE id = ${postId}`);
 
@@ -455,7 +456,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           INSERT INTO likes (post_id, user_id, created_at) 
           VALUES (${postId}, ${user.id}, NOW())
         `);
-        
+
         // 게시글 좋아요 수 증가
         await db.execute(`UPDATE posts SET likes = likes + 1 WHERE id = ${postId}`);
 
@@ -475,10 +476,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // 소셜 기능 라우터 등록
   app.use('/api/social', socialRouter);
-  
+
   // 분석 및 보고서 기능 라우터 등록
   app.use('/api/analytics', analyticsRouter);
-  
+
   // 이벤트 API 엔드포인트
   // 샘플 이벤트 데이터
   const sampleEvents: Event[] = [
@@ -563,7 +564,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       updatedAt: new Date()
     }
   ];
-  
+
   // 샘플 이벤트 위치 데이터
   const sampleLocations: EventLocation[] = [
     {
@@ -617,27 +618,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
       updatedAt: new Date()
     }
   ];
-  
+
   // 모든 이벤트 가져오기
   app.get("/api/events", (req, res) => {
     try {
       // 이벤트에 위치 정보 포함
       const eventsWithLocation = sampleEvents.map(event => {
         const location = sampleLocations.find(loc => loc.id === event.locationId);
-        
+
         // 주최자 정보 (실제로는 사용자 데이터베이스에서 가져와야 함)
         const organizer = {
           name: `주최자 ${event.organizerId}`,
           avatar: `https://images.unsplash.com/photo-${1600000000000 + event.organizerId}?auto=format&fit=crop&w=100&h=100`
         };
-        
+
         return {
           ...event,
           location,
           organizer
         };
       });
-      
+
       return res.status(200).json(eventsWithLocation);
     } catch (error) {
       console.error("이벤트 조회 오류:", error);
@@ -647,28 +648,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     }
   });
-  
+
   // 이벤트 상세 조회
   app.get("/api/events/:id", (req, res) => {
     try {
       const eventId = parseInt(req.params.id);
       const event = sampleEvents.find(e => e.id === eventId);
-      
+
       if (!event) {
         return res.status(404).json({ 
           message: "이벤트를 찾을 수 없습니다", 
           code: "EVENT_NOT_FOUND" 
         });
       }
-      
+
       const location = sampleLocations.find(loc => loc.id === event.locationId);
-      
+
       // 주최자 정보
       const organizer = {
         name: `주최자 ${event.organizerId}`,
         avatar: `https://images.unsplash.com/photo-${1600000000000 + event.organizerId}?auto=format&fit=crop&w=100&h=100`
       };
-      
+
       return res.status(200).json({
         ...event,
         location,
@@ -682,42 +683,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     }
   });
-  
+
   // 지역별 이벤트 조회
   app.get("/api/events/region/:region", (req, res) => {
     try {
       const { region } = req.params;
-      
+
       if (!region) {
         return res.status(400).json({ 
           message: "지역 정보가 필요합니다", 
           code: "REGION_REQUIRED" 
         });
       }
-      
+
       // 지역별 이벤트 필터링
       const filteredEvents = sampleEvents.filter(event => {
         const location = sampleLocations.find(loc => loc.id === event.locationId);
         return location && location.region === region;
       });
-      
+
       // 이벤트에 위치 정보 포함
       const eventsWithLocation = filteredEvents.map(event => {
         const location = sampleLocations.find(loc => loc.id === event.locationId);
-        
+
         // 주최자 정보
         const organizer = {
           name: `주최자 ${event.organizerId}`,
           avatar: `https://images.unsplash.com/photo-${1600000000000 + event.organizerId}?auto=format&fit=crop&w=100&h=100`
         };
-        
+
         return {
           ...event,
           location,
           organizer
         };
       });
-      
+
       return res.status(200).json(eventsWithLocation);
     } catch (error) {
       console.error("지역별 이벤트 조회 오류:", error);
@@ -727,39 +728,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     }
   });
-  
+
   // 카테고리별 이벤트 조회
   app.get("/api/events/category/:category", (req, res) => {
     try {
       const { category } = req.params;
-      
+
       if (!category) {
         return res.status(400).json({ 
           message: "카테고리 정보가 필요합니다", 
           code: "CATEGORY_REQUIRED" 
         });
       }
-      
+
       // 카테고리별 이벤트 필터링
       const filteredEvents = sampleEvents.filter(event => event.category === category);
-      
+
       // 이벤트에 위치 정보 포함
       const eventsWithLocation = filteredEvents.map(event => {
         const location = sampleLocations.find(loc => loc.id === event.locationId);
-        
+
         // 주최자 정보
         const organizer = {
           name: `주최자 ${event.organizerId}`,
           avatar: `https://images.unsplash.com/photo-${1600000000000 + event.organizerId}?auto=format&fit=crop&w=100&h=100`
         };
-        
+
         return {
           ...event,
           location,
           organizer
         };
       });
-      
+
       return res.status(200).json(eventsWithLocation);
     } catch (error) {
       console.error("카테고리별 이벤트 조회 오류:", error);
@@ -769,17 +770,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     }
   });
-  
+
   // 프로필 업데이트 API
   app.put("/api/user/profile", async (req, res) => {
     try {
       if (!req.session.user) {
         return res.status(401).json({ message: "인증되지 않은 사용자입니다" });
       }
-      
+
       const userId = req.session.user.id;
       const { name, email, phone, bio, location, avatar } = req.body;
-      
+
       // 업데이트할 프로필 데이터 준비
       const profileData = {
         name: name || undefined,
@@ -789,37 +790,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
         location: location || undefined,
         avatar: avatar || undefined
       };
-      
+
       // 빈 객체인지 확인 (모든 값이 undefined면 업데이트할 내용이 없음)
       const hasUpdates = Object.values(profileData).some(value => value !== undefined);
       if (!hasUpdates) {
         return res.status(400).json({ message: "업데이트할 내용이 없습니다" });
       }
-      
+
       // 프로필 업데이트
       const updatedUser = await storage.updateUserProfile(userId, profileData);
-      
+
       // 세션 업데이트
       if (updatedUser) {
         const { password: _, instituteId, ...userWithoutSensitiveData } = updatedUser;
-        
+
         // 세션에 저장할 사용자 정보 (타입에 맞게 조정)
         req.session.user = {
           ...userWithoutSensitiveData,
           instituteId: instituteId || undefined // null을 undefined로 변환
         };
-        
+
         // 비밀번호를 제외한 사용자 정보만 반환
         return res.status(200).json(userWithoutSensitiveData);
       }
-      
+
       return res.status(500).json({ message: "사용자 정보 업데이트에 실패했습니다" });
     } catch (error) {
       console.error("프로필 업데이트 오류:", error);
       return res.status(500).json({ message: "서버 오류가 발생했습니다" });
     }
   });
-  
+
   // 인기 차트 통계 API
   app.get('/api/popular-stats', async (req, res) => {
     try {
@@ -834,7 +835,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ],
         courses: [
           { id: 1, views: 1893, likes: 167, comments: 78, trend: 'up', changePercent: 15.2 },
-          { id: 2, views: 1567, likes: 145, comments: 65, trend: 'up', changePercent: 8.5 },
+          { id: 2, views: 1567, likes: 145, comments: 65, trend: 'up', change```tool_code
+Percent: 8.5 },
           { id: 3, views: 1234, likes: 98, comments: 43, trend: 'stable', changePercent: 2.1 },
           { id: 4, views: 987, likes: 76, comments: 32, trend: 'down', changePercent: -3.2 },
           { id: 5, views: 876, likes: 67, comments: 25, trend: 'up', changePercent: 4.8 }
@@ -865,47 +867,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // 로그 메시지
   console.log('[server] API routes registered');
   // ===== Auth Routes =====
-  
+
   // Login
   app.post("/api/auth/login", async (req, res) => {
     try {
       console.log("로그인 시도:", req.body);
       const { username, password } = req.body;
-      
+
       if (!username || !password) {
         return res.status(400).json({ message: "Username and password are required" });
       }
-      
+
       const user = await storage.getUserByUsername(username);
-      
+
       if (!user) {
         return res.status(401).json({ message: "Invalid credentials" });
       }
-      
+
       // In a real app, we'd properly hash and compare the password
       if (user.password !== password) {
         return res.status(401).json({ message: "Invalid credentials" });
       }
-      
+
       // Set user in session (removing password field and handling instituteId)
       const { password: _, instituteId, ...userWithoutSensitiveData } = user;
-      
+
       // 세션에 저장할 사용자 정보 (타입에 맞게 조정)
       req.session.user = {
         ...userWithoutSensitiveData,
         instituteId: instituteId || undefined // null을 undefined로 변환
       };
-      
+
       // 세션 저장 확인
       req.session.save((err) => {
         if (err) {
           console.error("세션 저장 오류:", err);
           return res.status(500).json({ message: "Session save error" });
         }
-        
+
         console.log("세션 저장 성공:", req.sessionID);
         console.log("로그인한 사용자:", req.session.user);
-        
+
         return res.status(200).json(userWithoutSensitiveData);
       });
     } catch (error) {
@@ -913,7 +915,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return res.status(500).json({ message: "Internal server error" });
     }
   });
-  
+
   // Logout
   app.post("/api/auth/logout", (req, res) => {
     req.session.destroy((err) => {
@@ -924,15 +926,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return res.status(200).json({ message: "Logged out successfully" });
     });
   });
-  
+
   // Banner Management API Routes
   // Get all active banners for display
   app.get("/api/banners", async (req, res) => {
     try {
       const { type = 'main', position = 'hero' } = req.query;
-      
+
       const activeBanners = await storage.getActiveBanners(type as string, position as string);
-      
+
       res.json(activeBanners);
     } catch (error: any) {
       console.error('배너 조회 오류:', error);
@@ -963,12 +965,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
     try {
       const validatedData = createBannerSchema.parse(req.body);
-      
+
       const newBanner = await storage.createBanner({
         ...validatedData,
         createdBy: req.session.user.id
       });
-      
+
       res.status(201).json(newBanner);
     } catch (error: any) {
       console.error('배너 생성 오류:', error);
@@ -988,13 +990,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const bannerId = parseInt(req.params.id);
       const validatedData = createBannerSchema.partial().parse(req.body);
-      
+
       const updatedBanner = await storage.updateBanner(bannerId, validatedData);
-      
+
       if (!updatedBanner) {
         return res.status(404).json({ message: '배너를 찾을 수 없습니다.' });
       }
-      
+
       res.json(updatedBanner);
     } catch (error: any) {
       console.error('배너 수정 오류:', error);
@@ -1014,11 +1016,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const bannerId = parseInt(req.params.id);
       const success = await storage.deleteBanner(bannerId);
-      
+
       if (!success) {
         return res.status(404).json({ message: '배너를 찾을 수 없습니다.' });
       }
-      
+
       res.json({ message: '배너가 성공적으로 삭제되었습니다.' });
     } catch (error: any) {
       console.error('배너 삭제 오류:', error);
@@ -1031,7 +1033,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     console.log("세션 확인 - SessionID:", req.sessionID);
     console.log("세션 확인 - 전체 세션:", req.session);
     console.log("세션 확인 - 사용자:", req.session.user);
-    
+
     if (!req.session || !req.session.user) {
       // 로그인되지 않은 사용자는 401 상태 반환
       return res.status(401).json({ 
@@ -1039,16 +1041,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         code: "AUTH_REQUIRED"
       });
     }
-    
+
     console.log("인증된 사용자 정보 반환:", req.session.user);
     return res.status(200).json(req.session.user);
   });
-  
+
   // 챗봇 API 엔드포인트
   app.post('/api/chatbot', async (req, res) => {
     try {
       const { message } = req.body;
-      
+
       if (!message || typeof message !== 'string') {
         return res.status(400).json({ error: '메시지가 필요합니다' });
       }
@@ -1111,7 +1113,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userData = createUserSchema.parse(req.body);
       const existingUser = await storage.getUserByUsername(userData.username);
-      
+
       if (existingUser) {
         return res.status(409).json({ message: "Username already taken" });
       }
@@ -1125,9 +1127,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         userData.role = 'trainer';
         // 올바른 방식으로 instituteId 처리 (userData에 포함시키지 않고 생성 후 처리)
       }
-      
+
       const newUser = await storage.createUser(userData);
-      
+
       // Don't return the password
       const { password: _, ...userWithoutPassword } = newUser;
       return res.status(201).json(userWithoutPassword);
@@ -1135,30 +1137,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (error instanceof z.ZodError) {
         return res.status(400).json({ message: "Invalid data", errors: error.errors });
       }
-      
+
       console.error("Registration error:", error);
       return res.status(500).json({ message: "Internal server error" });
     }
   });
-  
+
   // ===== User Routes =====
-  
+
   // 프로필 업데이트 (legacy 엔드포인트는 제거하고 `/api/user/profile`로 통합)
-  
+
   // Get user profile
   app.get("/api/users/:id", async (req, res) => {
     try {
       if (!req.session.user) {
         return res.status(401).json({ message: "Not authenticated" });
       }
-      
+
       const userId = parseInt(req.params.id);
       const user = await storage.getUser(userId);
-      
+
       if (!user) {
         return res.status(404).json({ message: "User not found" });
       }
-      
+
       // Don't return the password
       const { password: _, ...userWithoutPassword } = user;
       return res.status(200).json(userWithoutPassword);
@@ -1167,9 +1169,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return res.status(500).json({ message: "Internal server error" });
     }
   });
-  
+
   // ===== Pet Routes =====
-  
+
   // Get user's pets
   app.get("/api/pets", async (req, res) => {
     try {
@@ -1177,54 +1179,54 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!req.session.user && process.env.NODE_ENV === 'development') {
         req.session.user = { id: 1, username: 'testuser', role: 'pet-owner' };
       }
-      
+
       if (!req.session.user) {
         return res.status(401).json({ message: "Not authenticated" });
       }
-      
+
       // Use direct database query to get pets
       const { db } = await import('./db');
       const { pets } = await import('@shared/schema');
       const { eq } = await import('drizzle-orm');
-      
+
       const userPets = await db
         .select()
         .from(pets)
         .where(eq(pets.ownerId, req.session.user.id));
-        
+
       return res.status(200).json(userPets);
     } catch (error) {
       console.error("Get pets error:", error);
       return res.status(500).json({ message: "Internal server error" });
     }
   });
-  
+
   // Get specific pet
   app.get("/api/pets/:id", async (req, res) => {
     try {
       if (!req.session.user) {
         return res.status(401).json({ message: "Not authenticated" });
       }
-      
+
       const petId = parseInt(req.params.id);
       const pet = await storage.getPet(petId);
-      
+
       if (!pet) {
         return res.status(404).json({ message: "Pet not found" });
       }
-      
+
       // Check if pet belongs to the logged-in user
       if (pet.userId !== req.session.user.id) {
         return res.status(403).json({ message: "Not authorized" });
       }
-      
+
       return res.status(200).json(pet);
     } catch (error) {
       console.error("Get pet error:", error);
       return res.status(500).json({ message: "Internal server error" });
     }
   });
-  
+
   // Create new pet
   app.post("/api/pets", async (req, res) => {
     try {
@@ -1232,24 +1234,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!req.session.user && process.env.NODE_ENV === 'development') {
         req.session.user = { id: 1, username: 'testuser', role: 'pet-owner' };
       }
-      
+
       if (!req.session.user) {
         return res.status(401).json({ message: "Not authenticated" });
       }
-      
+
       // Transform data types before validation
       const transformedBody = {
         ...req.body,
         age: parseInt(req.body.age) || 0,
         weight: req.body.weight ? parseInt(req.body.weight) * 1000 : null // kg를 그램으로 변환
       };
-      
+
       const petData = createPetSchema.parse(transformedBody);
-      
+
       // Use direct database query to create pet
       const { db } = await import('./db');
       const { pets } = await import('@shared/schema');
-      
+
       const [newPet] = await db
         .insert(pets)
         .values({
@@ -1257,13 +1259,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
           ownerId: req.session.user.id
         })
         .returning();
-        
+
       return res.status(201).json(newPet);
     } catch (error) {
       if (error instanceof z.ZodError) {
         return res.status(400).json({ message: "Invalid data", errors: error.errors });
       }
-      
+
       console.error("Create pet error:", error);
       return res.status(500).json({ message: "Internal server error" });
     }
@@ -1275,7 +1277,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!req.session.user) {
         return res.status(401).json({ message: "Not authenticated" });
       }
-      
+
       const petId = parseInt(req.params.id);
       if (isNaN(petId)) {
         return res.status(400).json({ message: "Invalid pet ID" });
@@ -1286,20 +1288,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!existingPet) {
         return res.status(404).json({ message: "Pet not found" });
       }
-      
+
       if (existingPet.userId !== req.session.user.id) {
         return res.status(403).json({ message: "Not authorized" });
       }
-      
+
       const petData = createPetSchema.parse(req.body);
       const updatedPet = await storage.updatePet(petId, petData);
-      
+
       return res.status(200).json(updatedPet);
     } catch (error) {
       if (error instanceof z.ZodError) {
         return res.status(400).json({ message: "Invalid data", errors: error.errors });
       }
-      
+
       console.error("Update pet error:", error);
       return res.status(500).json({ message: "Internal server error" });
     }
@@ -1312,11 +1314,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!req.session.user && process.env.NODE_ENV === 'development') {
         req.session.user = { id: 1, username: 'testuser', role: 'pet-owner' };
       }
-      
+
       if (!req.session.user) {
         return res.status(401).json({ message: "Not authenticated" });
       }
-      
+
       const petId = parseInt(req.params.id);
       if (isNaN(petId)) {
         return res.status(400).json({ message: "Invalid pet ID" });
@@ -1326,12 +1328,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { db } = await import('./db');
       const { pets } = await import('@shared/schema');
       const { eq, and } = await import('drizzle-orm');
-      
+
       const [existingPet] = await db
         .select()
         .from(pets)
         .where(and(eq(pets.id, petId), eq(pets.ownerId, req.session.user.id)));
-        
+
       if (!existingPet) {
         return res.status(404).json({ message: "Pet not found" });
       }
@@ -1342,13 +1344,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Store the file path/name as the avatar
       const photoPath = `/uploads/${req.file.filename}`;
-      
+
       const [updatedPet] = await db
         .update(pets)
         .set({ avatar: photoPath })
         .where(eq(pets.id, petId))
         .returning();
-      
+
       return res.status(200).json({ 
         message: "Photo updated successfully", 
         pet: updatedPet 
@@ -1358,9 +1360,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return res.status(500).json({ message: "Internal server error" });
     }
   });
-  
+
   // ===== Course Routes =====
-  
+
   // Get all courses
   app.get("/api/courses", async (req, res) => {
     try {
@@ -1371,57 +1373,57 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return res.status(500).json({ message: "Internal server error" });
     }
   });
-  
+
   // Get course by ID
   app.get("/api/courses/:id", async (req, res) => {
     try {
       const courseId = parseInt(req.params.id);
       const course = await storage.getCourse(courseId);
-      
+
       if (!course) {
         return res.status(404).json({ message: "Course not found" });
       }
-      
+
       return res.status(200).json(course);
     } catch (error) {
       console.error("Get course error:", error);
       return res.status(500).json({ message: "Internal server error" });
     }
   });
-  
+
   // Get user's enrolled courses
   app.get("/api/user/courses", async (req, res) => {
     try {
       if (!req.session.user) {
         return res.status(401).json({ message: "Not authenticated" });
       }
-      
+
       const userId = req.session.user.id;
       const courses = await storage.getCoursesByUserId(userId);
-      
+
       return res.status(200).json(courses);
     } catch (error) {
       console.error("Get user courses error:", error);
       return res.status(500).json({ message: "Internal server error" });
     }
   });
-  
+
   // Enroll in a course
   app.post("/api/courses/:id/enroll", async (req, res) => {
     try {
       if (!req.session.user) {
         return res.status(401).json({ message: "Not authenticated" });
       }
-      
+
       const courseId = parseInt(req.params.id);
       const userId = req.session.user.id;
-      
+
       const course = await storage.getCourse(courseId);
-      
+
       if (!course) {
         return res.status(404).json({ message: "Course not found" });
       }
-      
+
       const enrollment = await storage.enrollUserInCourse(userId, courseId);
       return res.status(201).json(enrollment);
     } catch (error) {
@@ -1429,38 +1431,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return res.status(500).json({ message: "Internal server error" });
     }
   });
-  
+
   // Create new course (for trainers)
   app.post("/api/courses", async (req, res) => {
     try {
       if (!req.session.user) {
         return res.status(401).json({ message: "Not authenticated" });
       }
-      
+
       // Check if user is a trainer
       if (req.session.user.role !== "trainer" && req.session.user.role !== "institute-admin" && req.session.user.role !== "admin") {
         return res.status(403).json({ message: "Only trainers can create courses" });
       }
-      
+
       const courseData = createCourseSchema.parse(req.body);
-      
+
       // 과정 생성 시 trainerId는 현재 사용자로 설정하되, createCourse 함수에 별도로 전달
       const trainerId = req.session.user.id;
-      
+
       const newCourse = await storage.createCourse({...courseData, trainerId});
       return res.status(201).json(newCourse);
     } catch (error) {
       if (error instanceof z.ZodError) {
         return res.status(400).json({ message: "Invalid data", errors: error.errors });
       }
-      
+
       console.error("Create course error:", error);
       return res.status(500).json({ message: "Internal server error" });
     }
   });
-  
+
   // ===== Trainer Routes =====
-  
+
   // Get all trainers
   app.get("/api/trainers", async (req, res) => {
     try {
@@ -1471,50 +1473,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return res.status(500).json({ message: "Internal server error" });
     }
   });
-  
+
   // Get trainer by ID
   app.get("/api/trainers/:id", async (req, res) => {
     try {
       const trainerId = parseInt(req.params.id);
       const trainer = await storage.getTrainer(trainerId);
-      
+
       if (!trainer) {
         return res.status(404).json({ message: "Trainer not found" });
       }
-      
+
       return res.status(200).json(trainer);
     } catch (error) {
       console.error("Get trainer error:", error);
       return res.status(500).json({ message: "Internal server error" });
     }
   });
-  
+
   // ===== User Management Routes =====
-  
+
   // Upgrade user to pet owner
   app.post("/api/users/:id/upgrade-to-pet-owner", async (req, res) => {
     try {
       if (!req.session.user) {
         return res.status(401).json({ message: "Not authenticated" });
       }
-      
+
       // Check if user is institute admin
       if (req.session.user.role !== "institute-admin") {
         return res.status(403).json({ message: "Only institute admins can upgrade users" });
       }
-      
+
       const userId = parseInt(req.params.id);
       const { trainerId } = req.body;
-      
+
       // Validate trainer belongs to institute
       const trainer = await storage.getTrainer(trainerId);
       if (!trainer || trainer.instituteId !== req.session.user.instituteId) {
         return res.status(400).json({ message: "Invalid trainer" });
       }
-      
+
       // Upgrade user
       const updatedUser = await storage.updateUserRole(userId, 'pet-owner', trainerId);
-      
+
       return res.status(200).json(updatedUser);
     } catch (error) {
       console.error("Upgrade user error:", error);
@@ -1528,20 +1530,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!req.session.user) {
         return res.status(401).json({ message: "Not authenticated" });
       }
-      
+
       const { query } = req.query;
-      
+
       if (!query || typeof query !== 'string') {
         return res.status(400).json({
           success: false,
           message: '검색어가 필요합니다.'
         });
       }
-      
+
       // 검색 로직 구현 (이름, 이메일, 역할 등으로 검색)
       // 실제 구현에서는 데이터베이스 쿼리를 사용하여 검색
       // 예시: const users = await db.select().from(users).where(like(users.name, `%${query}%`));
-      
+
       // 임시 구현 (메모리 스토리지에서 필터링)
       const sampleUsers = [
         { id: 2, name: '김훈련', role: 'trainer', avatar: null, email: 'trainer@example.com' },
@@ -1552,13 +1554,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         { id: 7, name: '김철수', role: 'trainer', avatar: null, email: 'kim@example.com' },
         { id: 8, name: '이영희', role: 'pet-owner', avatar: null, email: 'lee@example.com' },
       ];
-      
+
       const searchResults = sampleUsers.filter(user => 
         user.name.includes(query) || 
         user.role.includes(query) ||
         user.email.includes(query)
       );
-      
+
       return res.status(200).json({
         success: true,
         users: searchResults
@@ -1571,21 +1573,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     }
   });
-  
+
   // Institute and trainer routes are now in separate modules
-  
+
   // ===== 반려동물 건강 관리 API 엔드포인트 =====
-  
+
   // 반려동물 예방접종 기록 조회
   app.get("/api/pets/:petId/vaccinations", async (req, res) => {
     try {
       let user = req.user || req.session.user;
-      
+
       // 개발 환경에서 임시 사용자 설정
       if (!user && process.env.NODE_ENV === 'development') {
         user = { id: 1, username: 'testuser', role: 'pet-owner' };
       }
-      
+
       if (!user) {
         return res.status(401).json({ message: "인증이 필요합니다" });
       }
@@ -1593,15 +1595,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { db } = await import('./db');
       const { vaccinations, pets } = await import('@shared/schema');
       const { eq, and } = await import('drizzle-orm');
-      
+
       const petId = parseInt(req.params.petId);
-      
+
       // 반려동물 소유권 확인
       const [pet] = await db
         .select()
         .from(pets)
         .where(and(eq(pets.id, petId), eq(pets.ownerId, user.id)));
-        
+
       if (!pet) {
         return res.status(404).json({ message: "반려동물을 찾을 수 없습니다" });
       }
@@ -1634,12 +1636,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/pets/:petId/vaccinations", async (req, res) => {
     try {
       let user = req.user || req.session.user;
-      
+
       // 개발 환경에서 임시 사용자 설정
       if (!user && process.env.NODE_ENV === 'development') {
         user = { id: 1, username: 'testuser', role: 'pet-owner' };
       }
-      
+
       if (!user) {
         return res.status(401).json({ message: "인증이 필요합니다" });
       }
@@ -1647,16 +1649,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { db } = await import('./db');
       const { vaccinations, pets } = await import('@shared/schema');
       const { eq, and } = await import('drizzle-orm');
-      
+
       const petId = parseInt(req.params.petId);
       const { vaccineName, vaccineType, vaccineDate, nextDueDate, veterinarian, clinicName, notes } = req.body;
-      
+
       // 반려동물 소유권 확인
       const [pet] = await db
         .select()
         .from(pets)
         .where(and(eq(pets.id, petId), eq(pets.ownerId, user.id)));
-        
+
       if (!pet) {
         return res.status(404).json({ message: "반려동물을 찾을 수 없습니다" });
       }
@@ -1686,12 +1688,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/pets/:petId/checkups", async (req, res) => {
     try {
       let user = req.user || req.session.user;
-      
+
       // 개발 환경에서 임시 사용자 설정
       if (!user && process.env.NODE_ENV === 'development') {
         user = { id: 1, username: 'testuser', role: 'pet-owner' };
       }
-      
+
       if (!user) {
         return res.status(401).json({ message: "인증이 필요합니다" });
       }
@@ -1699,15 +1701,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { db } = await import('./db');
       const { healthCheckups, pets } = await import('@shared/schema');
       const { eq, and } = await import('drizzle-orm');
-      
+
       const petId = parseInt(req.params.petId);
-      
+
       // 반려동물 소유권 확인
       const [pet] = await db
         .select()
         .from(pets)
         .where(and(eq(pets.id, petId), eq(pets.ownerId, user.id)));
-        
+
       if (!pet) {
         return res.status(404).json({ message: "반려동물을 찾을 수 없습니다" });
       }
@@ -1745,12 +1747,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/pets/:petId/checkups", async (req, res) => {
     try {
       let user = req.user || req.session.user;
-      
+
       // 개발 환경에서 임시 사용자 설정
       if (!user && process.env.NODE_ENV === 'development') {
         user = { id: 1, username: 'testuser', role: 'pet-owner' };
       }
-      
+
       if (!user) {
         return res.status(401).json({ message: "인증이 필요합니다" });
       }
@@ -1758,20 +1760,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { db } = await import('./db');
       const { healthCheckups, pets } = await import('@shared/schema');
       const { eq, and } = await import('drizzle-orm');
-      
+
       const petId = parseInt(req.params.petId);
       const { 
         checkupDate, weight, temperature, bloodPressure, heartRate,
         diagnosis, treatment, medication, veterinarian, clinicName, 
         notes, nextCheckupDate 
       } = req.body;
-      
+
       // 반려동물 소유권 확인
       const [pet] = await db
         .select()
         .from(pets)
         .where(and(eq(pets.id, petId), eq(pets.ownerId, user.id)));
-        
+
       if (!pet) {
         return res.status(404).json({ message: "반려동물을 찾을 수 없습니다" });
       }
@@ -1806,22 +1808,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/admin/banners", async (req, res) => {
     try {
       let user = req.user || req.session.user;
-      
+
       // 개발 환경에서 임시 관리자 사용자 설정
       if (!user && process.env.NODE_ENV === 'development') {
         user = { id: 1, username: 'admin', role: 'admin' };
       }
-      
+
       if (!user) {
         return res.status(401).json({ message: "인증이 필요합니다." });
       }
-      
+
       if (user.role !== 'admin') {
         return res.status(403).json({ message: "관리자 권한이 필요합니다." });
       }
-      
+
       const { db } = await import('./db');
-      
+
       const result = await db.execute(`
         SELECT 
           id,
@@ -1856,20 +1858,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/admin/banners", async (req, res) => {
     try {
       let user = req.user || req.session.user;
-      
+
       // 개발 환경에서 임시 관리자 사용자 설정
       if (!user && process.env.NODE_ENV === 'development') {
         user = { id: 1, username: 'admin', role: 'admin' };
       }
-      
+
       if (!user) {
         return res.status(401).json({ message: "인증이 필요합니다." });
       }
-      
+
       if (user.role !== 'admin') {
         return res.status(403).json({ message: "관리자 권한이 필요합니다." });
       }
-      
+
       const { db } = await import('./db');
       const {
         title,
@@ -2041,7 +2043,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { db } = await import('./db');
       const { pets } = await import('@shared/schema');
       const { eq } = await import('drizzle-orm');
-      
+
       const userPets = await db
         .select()
         .from(pets)
@@ -2058,21 +2060,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/pets", async (req, res) => {
     try {
       let user = req.user || req.session.user;
-      
+
       // 개발 환경에서 임시 사용자 설정
       if (!user && process.env.NODE_ENV === 'development') {
         user = { id: 1, username: 'testuser', role: 'pet-owner' };
       }
-      
+
       if (!user) {
         return res.status(401).json({ message: "인증이 필요합니다" });
       }
 
       const { db } = await import('./db');
       const { pets } = await import('@shared/schema');
-      
+
       const { name, breed, age, gender, weight, description, health, temperament, allergies } = req.body;
-      
+
       const [newPet] = await db
         .insert(pets)
         .values({
@@ -2107,7 +2109,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { eq, and } = await import('drizzle-orm');
 
       const petId = parseInt(req.params.id);
-      
+
       const [pet] = await db
         .select()
         .from(pets)
@@ -2125,7 +2127,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // ===== 사용자 설정 API 엔드포인트 =====
-  
+
   // 사용자 설정 업데이트 API
   app.put("/api/user/settings", async (req, res) => {
     try {
@@ -2139,10 +2141,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { db } = await import('./db');
       const { users } = await import('@shared/schema');
       const { eq } = await import('drizzle-orm');
-      
+
       const userId = user.id;
       const { username, email, avatar } = req.body;
-      
+
       console.log('설정 업데이트 요청:', { userId, username, email, avatar });
 
       // 데이터베이스에서 사용자 정보 업데이트
@@ -2203,10 +2205,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { users } = await import('@shared/schema');
       const { eq } = await import('drizzle-orm');
       const bcrypt = await import('bcrypt');
-      
+
       const userId = user.id;
       const { currentPassword, newPassword } = req.body;
-      
+
       console.log('비밀번호 변경 요청:', { userId });
 
       // 현재 사용자 정보 조회
@@ -2253,7 +2255,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // ===== 쇼핑 API 엔드포인트 =====
-  
+
   // 상품 카테고리 목록 가져오기
   app.get("/api/shop/categories", (req, res) => {
     try {
@@ -2267,7 +2269,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         { id: 7, name: "건강관리", slug: "health", count: 18 },
         { id: 8, name: "훈련용품", slug: "training", count: 12 }
       ];
-      
+
       return res.status(200).json({ categories });
     } catch (error) {
       console.error("Get shop categories error:", error);
@@ -2288,7 +2290,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         { id: 7, name: "치와와", slug: "chihuahua", count: 52 },
         { id: 8, name: "댕댕이", slug: "mixed-breed", count: 189 }
       ];
-      
+
       return res.status(200).json({ breeds });
     } catch (error) {
       console.error("Get popular breeds error:", error);
@@ -2301,7 +2303,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       // 필터링 파라미터 가져오기
       const { category, breed, minPrice, maxPrice, sort, page = 1, limit = 12 } = req.query;
-      
+
       // 상품 목록 (예시 데이터)
       const products = [
         {
@@ -2409,11 +2411,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
         }
       ];
-      
+
       // 페이지네이션 계산
       const startIndex = (Number(page) - 1) * Number(limit);
       const endIndex = startIndex + Number(limit);
-      
+
       // 응답 데이터 구성
       const response = {
         products: products.slice(startIndex, endIndex),
@@ -2422,7 +2424,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         limit: Number(limit),
         totalPages: Math.ceil(products.length / Number(limit))
       };
-      
+
       return res.status(200).json(response);
     } catch (error) {
       console.error("Get products error:", error);
@@ -2434,7 +2436,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/shop/products/:id", async (req, res) => {
     try {
       const productId = parseInt(req.params.id);
-      
+
       // 예시 상품 상세 데이터
       const products = [
         {
@@ -2468,13 +2470,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
           ]
         }
       ];
-      
+
       const product = products.find(p => p.id === productId);
-      
+
       if (!product) {
         return res.status(404).json({ message: "Product not found" });
       }
-      
+
       return res.status(200).json(product);
     } catch (error) {
       console.error("Get product detail error:", error);
@@ -2488,13 +2490,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!req.session.user) {
         return res.status(401).json({ message: "Not authenticated" });
       }
-      
+
       const { productId, quantity } = req.body;
-      
+
       if (!productId || !quantity) {
         return res.status(400).json({ message: "Product ID and quantity are required" });
       }
-      
+
       // 간단한 성공 응답
       return res.status(200).json({ 
         success: true, 
@@ -2516,8 +2518,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!req.session.user) {
         return res.status(401).json({ message: "Not authenticated" });
       }
-      
-      // 간단한 장바구니 데이터 반환
+
+// 간단한 장바구니 데이터 반환
       return res.status(200).json({
         userId: req.session.user.id,
         items: [],
@@ -2534,16 +2536,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/shop/check-referral", async (req, res) => {
     try {
       const { referralCode } = req.body;
-      
+
       if (!referralCode) {
         return res.status(400).json({ message: "Referral code is required" });
       }
-      
+
       // 예시 추천인 코드
       const validCodes = ["TALES2024", "WELCOME10", "PETFRIEND"];
-      
+
       const isValid = validCodes.includes(referralCode);
-      
+
       return res.status(200).json({
         valid: isValid,
         discount: isValid ? 10 : 0,
@@ -2556,13 +2558,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   const httpServer = createServer(app);
-  
+
   // 외부 도메인 (funnytalez.com)에서의 인증 확인 API
   app.get("/api/auth/external-verify", (req, res) => {
     try {
       // URL 파라미터에서 인증 정보 확인
       const { auth, role, name } = req.query;
-      
+
       // 간단한 검증 - 실제 운영에서는 더 강력한 보안 검증 필요
       if (auth === 'true' && role && name) {
         return res.status(200).json({
@@ -2585,7 +2587,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     }
   });
-  
+
   // WebSocket 서버 초기화
   const wss = new WebSocketServer({
     server: httpServer,
@@ -2594,43 +2596,125 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // 메시징 서비스 초기화
   const messagingService = new MessagingService(wss, storage);
-  
+
   // 알림 서비스 초기화
   const notificationService = new NotificationService(wss, storage);
-  
+
   // 알림 라우트 등록
   registerNotificationRoutes(app, notificationService);
-  
+
   // 분석 라우트 등록
   registerAnalyticsRoutes(app);
-  
+
   // 교육 라우트 등록
   registerEducationRoutes(app);
-  
+
   // 쇼핑 라우트 등록
   registerShoppingRoutes(app);
 
+  // 쇼핑 관련 라우트
+
+  // 수강신청 API
+  app.post('/api/courses/enroll', async (req: Request, res: Response) => {
+    try {
+      const { courseId } = req.body;
+
+      // 실제로는 데이터베이스에 저장
+      console.log('수강신청 요청:', courseId);
+
+      res.json({ 
+        success: true, 
+        message: '수강신청이 완료되었습니다.',
+        enrollmentId: Date.now()
+      });
+    } catch (error) {
+      console.error('수강신청 오류:', error);
+      res.status(500).json({ error: '수강신청에 실패했습니다.' });
+    }
+  });
+
+  // 장바구니 추가 API
+  app.post('/api/cart/add', async (req: Request, res: Response) => {
+    try {
+      const cartItem = req.body;
+
+      console.log('장바구니 추가:', cartItem);
+
+      res.json({ 
+        success: true, 
+        message: '장바구니에 추가되었습니다.',
+        cartItem
+      });
+    } catch (error) {
+      console.error('장바구니 추가 오류:', error);
+      res.status(500).json({ error: '장바구니 추가에 실패했습니다.' });
+    }
+  });
+
+  // 커뮤니티 좋아요 API
+  app.post('/api/community/posts/:postId/like', async (req: Request, res: Response) => {
+    try {
+      const { postId } = req.params;
+
+      console.log('좋아요 토글:', postId);
+
+      res.json({ 
+        success: true, 
+        message: '좋아요가 처리되었습니다.',
+        postId
+      });
+    } catch (error) {
+      console.error('좋아요 오류:', error);
+      res.status(500).json({ error: '좋아요 처리에 실패했습니다.' });
+    }
+  });
+
+  // 커뮤니티 댓글 작성 API
+  app.post('/api/community/posts/:postId/comments', async (req: Request, res: Response) => {
+    try {
+      const { postId } = req.params;
+      const { content } = req.body;
+
+      console.log('댓글 작성:', postId, content);
+
+      res.json({ 
+        success: true, 
+        message: '댓글이 작성되었습니다.',
+        comment: {
+          id: Date.now(),
+          content,
+          postId,
+          author: '사용자',
+          timestamp: new Date().toISOString()
+        }
+      });
+    } catch (error) {
+      console.error('댓글 작성 오류:', error);
+      res.status(500).json({ error: '댓글 작성에 실패했습니다.' });
+    }
+  });
+
   // Spring Boot 스타일 API 엔드포인트 추가
-  
+
   // User API
   app.get('/api/spring/users', userController.findAll.bind(userController));
   app.get('/api/spring/users/:id', userController.findById.bind(userController));
   app.post('/api/spring/users', userController.save.bind(userController));
   app.get('/api/spring/users/username/:username', userController.findByUsername.bind(userController));
-  
+
   // Pet API
   app.get('/api/spring/pets', petController.findAll.bind(petController));
   app.get('/api/spring/pets/:id', petController.findById.bind(petController));
   app.post('/api/spring/pets', petController.save.bind(petController));
   app.get('/api/spring/pets/user/:userId', petController.findByUserId.bind(petController));
-  
+
   // Course API
   app.get('/api/spring/courses', courseController.findAll.bind(courseController));
   app.get('/api/spring/courses/:id', courseController.findById.bind(courseController));
   app.post('/api/spring/courses', courseController.save.bind(courseController));
   app.get('/api/spring/courses/user/:userId', courseController.findByUserId.bind(courseController));
   app.post('/api/spring/courses/:courseId/enroll', courseController.enrollUser.bind(courseController));
-  
+
   // Health Check & Application Info
   app.get('/actuator/health', userController.health.bind(userController));
   app.get('/actuator/info', (req, res) => {
@@ -2658,7 +2742,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!javaBridge.isRunning()) {
         return res.status(503).json({ message: 'Java 서비스가 실행되지 않았습니다.' });
       }
-      
+
       const result = await javaBridge.callJavaService('/actuator/health');
       res.json({ status: 'UP', java: result });
     } catch (error) {
@@ -2676,7 +2760,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!javaBridge.isRunning()) {
         return res.status(503).json({ message: 'Java 서비스가 실행되지 않았습니다.' });
       }
-      
+
       const result = await javaBridge.callJavaService('/api/users', req.body);
       res.json({ message: 'Java 서비스로 데이터 전송 완료', result });
     } catch (error) {
@@ -2717,7 +2801,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Filter trainers and institutes
       const trainers = users.filter(user => user.role === 'trainer');
-      
+
       let results: any[] = [];
 
       // Search in courses
@@ -2729,34 +2813,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 !course.description?.toLowerCase().includes((q as string).toLowerCase())) {
               return false;
             }
-            
+
             // Category filter
             if (category !== 'all' && course.category !== category) {
               return false;
             }
-            
+
             // Location filter
             if (location !== 'all' && course.location !== location) {
               return false;
             }
-            
+
             // Difficulty filter
             if (difficulty !== 'all' && course.difficulty !== difficulty) {
               return false;
             }
-            
+
             // Price filter
             const price = course.price || 0;
             if (price < parseInt(minPrice as string) || price > parseInt(maxPrice as string)) {
               return false;
             }
-            
+
             // Rating filter
             const rating = course.rating || 0;
             if (rating < parseFloat(minRating as string)) {
               return false;
             }
-            
+
             // Date filter
             if (startDate && course.startDate && new Date(course.startDate) < new Date(startDate as string)) {
               return false;
@@ -2764,7 +2848,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             if (endDate && course.endDate && new Date(course.endDate) > new Date(endDate as string)) {
               return false;
             }
-            
+
             // Features filter
             const featuresArray = Array.isArray(features) ? features : [features].filter(Boolean);
             if (featuresArray.length > 0) {
@@ -2773,13 +2857,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 return false;
               }
             }
-            
+
             return true;
           })
           .map(course => {
             const trainer = trainers.find(t => t.id === course.trainerId);
             const institute = institutes.find(i => i.id === course.instituteId);
-            
+
             return {
               id: course.id,
               type: 'course' as const,
@@ -2811,7 +2895,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               } : undefined
             };
           });
-        
+
         results = results.concat(courseResults);
       }
 
@@ -2825,17 +2909,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 !trainer.specialty?.toLowerCase().includes((q as string).toLowerCase())) {
               return false;
             }
-            
+
             // Location filter
             if (location !== 'all' && trainer.location !== location) {
               return false;
             }
-            
+
             return true;
           })
           .map(trainer => {
             const institute = institutes.find(i => i.id === trainer.instituteId);
-            
+
             return {
               id: trainer.id,
               type: 'trainer' as const,
@@ -2852,7 +2936,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               } : undefined
             };
           });
-        
+
         results = results.concat(trainerResults);
       }
 
@@ -2864,12 +2948,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
             if (q && !institute.name.toLowerCase().includes((q as string).toLowerCase())) {
               return false;
             }
-            
+
             // Location filter based on address
             if (location !== 'all' && !institute.address?.includes(location as string)) {
               return false;
             }
-            
+
             return true;
           })
           .map(institute => ({
@@ -2880,7 +2964,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             location: institute.address,
             features: []
           }));
-        
+
         results = results.concat(instituteResults);
       }
 
@@ -2923,12 +3007,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // ===== 커뮤니티 API 엔드포인트 =====
-  
+
   // 게시글 목록 조회
   app.get("/api/community/posts", async (req, res) => {
     try {
       console.log('=== 게시글 목록 API 호출됨 ===');
-      
+
       const { db } = await import('./db');
       const { page = '1', limit = '12', category = 'all', sort = 'latest' } = req.query;
       const pageNum = parseInt(page as string);
@@ -2948,7 +3032,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ORDER BY ${sort === 'popular' ? 'p.likes DESC' : sort === 'views' ? 'p.views DESC' : 'p.created_at DESC'}
         LIMIT ${limitNum} OFFSET ${offset}
       `);
-      
+
       // 전체 게시글 수 조회
       const countResult = await db.execute(`
         SELECT COUNT(*) as total FROM posts 
@@ -2976,7 +3060,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           avatar: row.avatar
         }
       }));
-      
+
       console.log(`데이터베이스에서 조회된 게시글 수: ${postsData.length}`);
 
       return res.status(200).json({
@@ -3002,7 +3086,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { db } = await import('./db');
       const postId = parseInt(req.params.id);
-      
+
       // 조회수 증가
       await db.execute(`UPDATE posts SET views = views + 1 WHERE id = ${postId}`);
 
@@ -3243,6 +3327,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   console.log('[server] WebSocket server initialized at /ws');
   console.log('[JavaBridge] Java Bridge API endpoints registered');
-  
+
   return httpServer;
 }

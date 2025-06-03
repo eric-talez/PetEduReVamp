@@ -50,14 +50,14 @@ import { PostModal } from './PostModal';
 const PostCard = ({ post, onPostClick }) => {
   const { user } = useAuth();
   const [showDropdown, setShowDropdown] = useState(false);
-  
+
   const formatDate = (date: string | Date) => {
     return formatDistanceToNow(new Date(date), { addSuffix: true, locale: ko });
   };
 
   // 작성자 여부 확인 - 테스트를 위해 모든 사용자에게 권한 부여
   const isAuthor = true;
-  
+
   console.log('PostCard - user:', user);
   console.log('PostCard - isAuthor:', isAuthor);
 
@@ -269,23 +269,23 @@ export default function CommunityPage() {
           category: postData.category
         }),
       });
-      
+
       if (!response.ok) {
         throw new Error('게시글 작성에 실패했습니다.');
       }
-      
+
       return response.json();
     },
     onSuccess: () => {
       // 게시글 목록 캐시 무효화하여 새로고침
       queryClient.invalidateQueries({ queryKey: ['/api/community/posts'] });
       queryClient.refetchQueries({ queryKey: ['/api/community/posts'] });
-      
+
       toast({
         title: "게시글 작성 완료",
         description: "새 게시글이 성공적으로 작성되었습니다.",
       });
-      
+
       // 폼 초기화
       setNewPost({
         title: "",
@@ -294,7 +294,7 @@ export default function CommunityPage() {
         tags: ""
       });
       setIsCreatePostOpen(false);
-      
+
       // 첫 페이지로 이동하여 새 게시글 확인
       setCurrentPage(1);
     },
@@ -317,7 +317,7 @@ export default function CommunityPage() {
       });
       return;
     }
-    
+
     console.log("새 게시글 작성:", newPost);
     createPostMutation.mutate(newPost);
   };
