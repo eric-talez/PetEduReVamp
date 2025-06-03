@@ -7,10 +7,11 @@ import { WeeklyWeatherModal } from '@/components/WeeklyWeatherModal';
 import { ShopPreview } from '@/components/ShopPreview';
 import { SocialLoginButtons } from '@/components/SocialLoginButtons';
 import { useState, lazy, Suspense, useEffect } from 'react';
-import { Loader2, ChevronDown, ChevronRight, ChevronLeft } from 'lucide-react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { PasswordResetForm } from '@/components/PasswordResetForm';
-import {
+import { 
+  Loader2, 
+  ChevronDown, 
+  ChevronRight, 
+  ChevronLeft,
   BookOpen,
   Users,
   Video,
@@ -20,7 +21,6 @@ import {
   Calendar,
   MapPin,
   Eye,
-  ChevronRight,
   Play,
   UserCheck,
   Clock,
@@ -36,13 +36,14 @@ import {
   Search,
   ArrowRight,
   Plus,
-  ChevronDown,
   Sparkles,
   Rocket,
   Percent,
   Truck,
   User
 } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { PasswordResetForm } from '@/components/PasswordResetForm';
 import { Badge } from '@/components/ui/badge';
 
 // 각 역할별 홈 페이지를 동적으로 임포트
@@ -251,7 +252,16 @@ export default function Home() {
     });
 
     if (!finalAuthState) {
-      return <GuestHome />;
+      return (
+        <div className="container mx-auto px-4 py-8">
+          <div className="text-center py-20">
+            <h1 className="text-3xl font-bold mb-4">Talez에 오신 것을 환영합니다</h1>
+            <p className="text-gray-600 mb-8">로그인하여 더 많은 기능을 이용해보세요.</p>
+            <Button onClick={() => setLocation('/login')} className="mr-4">로그인</Button>
+            <Button variant="outline" onClick={() => setLocation('/register')}>회원가입</Button>
+          </div>
+        </div>
+      );
     }
 
     return (
