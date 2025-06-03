@@ -7,7 +7,7 @@ import { WeeklyWeatherModal } from '@/components/WeeklyWeatherModal';
 import { ShopPreview } from '@/components/ShopPreview';
 import { SocialLoginButtons } from '@/components/SocialLoginButtons';
 import { useState, lazy, Suspense } from 'react';
-import { Loader2, ChevronDown } from 'lucide-react';
+import { Loader2, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { PasswordResetForm } from '@/components/PasswordResetForm';
 
@@ -23,13 +23,83 @@ export default function Home() {
   const [isWeatherModalOpen, setIsWeatherModalOpen] = useState(false);
   const [isServiceStatsOpen, setIsServiceStatsOpen] = useState(true);
   const [showPasswordReset, setShowPasswordReset] = useState(false);
-  // 간단한 메인 배너 데이터
-  const mainBanner = {
-    title: "Talez - 반려견과 함께하는 특별한 여정",
-    subtitle: "전문 훈련사와 AI 기술로 반려견 교육의 새로운 기준을 만들어갑니다",
-    features: ["전문가 1:1 교육", "AI 행동 분석", "실시간 상담", "커뮤니티"],
-    image: "https://images.unsplash.com/photo-1601758124510-52d02ddb7cbd?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=400&q=80"
-  };
+  const [currentSlide, setCurrentSlide] = useState(0);
+
+  // 8개의 배너 슬라이드 데이터
+  const bannerSlides = [
+    {
+      id: 1,
+      title: "반려견 맞춤형 전문 교육 서비스",
+      description: "Talez의 전문 훈련사가 제공하는 개인 맞춤형 교육으로 반려견의 성장을 돕습니다",
+      features: ["1:1 전문가 코칭", "행동 교정 프로그램", "실시간 화상 교육"],
+      image: "https://images.unsplash.com/photo-1601758124510-52d02ddb7cbd?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=400&q=80",
+      primaryAction: { text: "프로그램 둘러보기", path: "/courses" },
+      secondaryAction: { text: "무료 체험 신청", path: "/auth" }
+    },
+    {
+      id: 2,
+      title: "AI 기반 반려견 행동 분석",
+      description: "최신 인공지능 기술로 반려견의 행동과 감정을 분석하고 맞춤형 솔루션을 제공합니다",
+      features: ["영상 기반 행동 분석", "감정 상태 모니터링", "맞춤형 훈련 가이드"],
+      image: "https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=400&q=80",
+      primaryAction: { text: "AI 분석 체험하기", path: "/ai-analysis" },
+      secondaryAction: { text: "기술 소개 보기", path: "/about" }
+    },
+    {
+      id: 3,
+      title: "반려견 친화적 장소 찾기",
+      description: "전국의 반려견 친화적인 장소를 찾고 즐거운 시간을 보내세요",
+      features: ["반려견 동반 가능한 장소", "실시간 위치 정보", "사용자 리뷰"],
+      image: "https://images.unsplash.com/photo-1534361960057-19889db9621e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=400&q=80",
+      primaryAction: { text: "장소 찾아보기", path: "/locations" },
+      secondaryAction: { text: "내 주변 검색", path: "/location" }
+    },
+    {
+      id: 4,
+      title: "전문 훈련사와 실시간 화상 교육",
+      description: "언제 어디서나 편리하게 전문가와 실시간 화상 교육을 받아보세요",
+      features: ["실시간 화상 상담", "개별 맞춤 커리큘럼", "녹화 복습 제공"],
+      image: "https://images.unsplash.com/photo-1606225457115-9b0de9c5fb09?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=400&q=80",
+      primaryAction: { text: "화상 교육 시작", path: "/video-call" },
+      secondaryAction: { text: "훈련사 찾기", path: "/trainers" }
+    },
+    {
+      id: 5,
+      title: "반려견 건강 관리 & 기록",
+      description: "반려견의 건강 상태를 체계적으로 관리하고 기록해보세요",
+      features: ["건강 기록 관리", "예방접종 알림", "병원 예약"],
+      image: "https://images.unsplash.com/photo-1535930891776-0c2dfb7fda1a?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=400&q=80",
+      primaryAction: { text: "건강 관리 시작", path: "/pet-care/health-record" },
+      secondaryAction: { text: "AI 분석", path: "/pet-care/ai-analysis" }
+    },
+    {
+      id: 6,
+      title: "반려견 교육 용품 쇼핑몰",
+      description: "교육에 필요한 다양한 용품들을 한 곳에서 만나보세요",
+      features: ["훈련사 추천 상품", "교육 연계 할인", "빠른 배송"],
+      image: "https://images.unsplash.com/photo-1596492784531-6e6eb5ea9993?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=400&q=80",
+      primaryAction: { text: "쇼핑몰 둘러보기", path: "/shop" },
+      secondaryAction: { text: "추천 상품", path: "/shop/product" }
+    },
+    {
+      id: 7,
+      title: "반려인 커뮤니티",
+      description: "비슷한 고민을 가진 반려인들과 소통하고 정보를 공유하세요",
+      features: ["반려인 소통", "경험 공유", "전문가 Q&A"],
+      image: "https://images.unsplash.com/photo-1548199973-03cce0bbc87b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=400&q=80",
+      primaryAction: { text: "커뮤니티 참여", path: "/community" },
+      secondaryAction: { text: "게시글 작성", path: "/community/create" }
+    },
+    {
+      id: 8,
+      title: "기관 및 훈련소 등록",
+      description: "전문 교육 기관이나 훈련소를 운영하신다면 Talez와 함께하세요",
+      features: ["기관 등록", "코스 관리", "수익 창출"],
+      image: "https://images.unsplash.com/photo-1587300003388-59208cc962cb?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=400&q=80",
+      primaryAction: { text: "기관 등록하기", path: "/institutes/register" },
+      secondaryAction: { text: "파트너 안내", path: "/partners/institutions" }
+    }
+  ];
 
   // 서비스 현황 토글 함수
   const toggleServiceStats = () => {
@@ -110,56 +180,104 @@ export default function Home() {
     console.log('Home - renderDefaultHome() - auth state:', { isAuthenticated, userRole, userName });
     return (
       <div className="container mx-auto px-4 py-8">
-        {/* 메인 배너 */}
+        {/* 메인 배너 슬라이더 */}
         <div className="mb-8">
-          <div className="relative overflow-hidden rounded-xl h-[240px] bg-gradient-to-r from-primary to-primary/80 shadow-lg">
-            {/* 배경 이미지 */}
-            <div className="absolute inset-0">
-              <img 
-                src={mainBanner.image} 
-                alt={mainBanner.title}
-                className="w-full h-full object-cover opacity-30"
-              />
-              <div className="absolute inset-0 bg-gradient-to-r from-primary/90 to-primary/70"></div>
+          <div className="relative overflow-hidden rounded-xl h-[168px] bg-gradient-to-r from-primary to-primary/80 shadow-lg">
+            {/* 배너 슬라이드들 */}
+            <div className="relative h-full">
+              {bannerSlides.map((slide, index) => (
+                <div
+                  key={slide.id}
+                  className={`absolute inset-0 transition-opacity duration-500 ${
+                    index === currentSlide ? 'opacity-100' : 'opacity-0'
+                  }`}
+                >
+                  {/* 배경 이미지 */}
+                  <div className="absolute inset-0">
+                    <img 
+                      src={slide.image} 
+                      alt={slide.title}
+                      className="w-full h-full object-cover opacity-30"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-r from-primary/90 to-primary/70"></div>
+                  </div>
+                  
+                  {/* 배너 콘텐츠 */}
+                  <div className="relative z-10 flex flex-col justify-center h-full px-6 md:px-12">
+                    <h1 className="text-white text-lg md:text-2xl font-bold mb-2 max-w-3xl">
+                      {slide.title}
+                    </h1>
+                    <p className="text-white/90 text-xs md:text-sm max-w-2xl mb-3">
+                      {slide.description}
+                    </p>
+                    
+                    {/* 주요 기능 태그 */}
+                    <div className="flex flex-wrap gap-1 mb-3">
+                      {slide.features.map((feature, idx) => (
+                        <span 
+                          key={idx} 
+                          className="inline-flex items-center text-xs bg-white/20 text-white px-2 py-1 rounded-full backdrop-blur-sm"
+                        >
+                          <span className="mr-1 text-yellow-300">✓</span> {feature}
+                        </span>
+                      ))}
+                    </div>
+                    
+                    {/* 액션 버튼 */}
+                    <div className="flex flex-wrap gap-2">
+                      <Button
+                        size="sm"
+                        className="bg-white text-primary font-semibold hover:bg-gray-50 px-4 py-1.5 rounded-lg shadow-md text-xs"
+                        onClick={() => setLocation(slide.primaryAction.path)}
+                      >
+                        {slide.primaryAction.text}
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="border-white text-white hover:bg-white hover:text-primary px-4 py-1.5 rounded-lg backdrop-blur-sm text-xs"
+                        onClick={() => setLocation(slide.secondaryAction.path)}
+                      >
+                        {slide.secondaryAction.text}
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
-            
-            {/* 배너 콘텐츠 */}
-            <div className="relative z-10 flex flex-col justify-center h-full px-6 md:px-12">
-              <h1 className="text-white text-2xl md:text-3xl font-bold mb-3 max-w-3xl">
-                {mainBanner.title}
-              </h1>
-              <p className="text-white/90 text-sm md:text-lg max-w-2xl mb-4">
-                {mainBanner.subtitle}
-              </p>
-              
-              {/* 주요 기능 태그 */}
-              <div className="flex flex-wrap gap-2 mb-6">
-                {mainBanner.features.map((feature, idx) => (
-                  <span 
-                    key={idx} 
-                    className="inline-flex items-center text-xs md:text-sm bg-white/20 text-white px-3 py-1.5 rounded-full backdrop-blur-sm"
-                  >
-                    <span className="mr-1.5 text-yellow-300">✓</span> {feature}
-                  </span>
-                ))}
-              </div>
-              
-              {/* 액션 버튼 */}
-              <div className="flex flex-wrap gap-3">
-                <Button
-                  className="bg-white text-primary font-semibold hover:bg-gray-50 px-6 py-2 rounded-lg shadow-md"
-                  onClick={() => setLocation('/courses')}
-                >
-                  교육 시작하기
-                </Button>
-                <Button
-                  variant="outline"
-                  className="border-white text-white hover:bg-white hover:text-primary px-6 py-2 rounded-lg backdrop-blur-sm"
-                  onClick={() => setLocation('/about')}
-                >
-                  서비스 소개
-                </Button>
-              </div>
+
+            {/* 네비게이션 버튼 */}
+            <Button
+              variant="outline"
+              size="icon"
+              className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white h-8 w-8"
+              onClick={() => setCurrentSlide(prev => (prev - 1 + bannerSlides.length) % bannerSlides.length)}
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+
+            <Button
+              variant="outline"
+              size="icon"
+              className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white h-8 w-8"
+              onClick={() => setCurrentSlide(prev => (prev + 1) % bannerSlides.length)}
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+
+            {/* 슬라이드 인디케이터 */}
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+              {bannerSlides.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => setCurrentSlide(index)}
+                  className={`w-2 h-2 rounded-full transition-all ${
+                    index === currentSlide 
+                      ? 'bg-white' 
+                      : 'bg-white/50 hover:bg-white/70'
+                  }`}
+                />
+              ))}
             </div>
           </div>
         </div>
