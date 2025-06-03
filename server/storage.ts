@@ -104,6 +104,13 @@ export interface IStorage {
   addToCart(userId: number, productId: number, quantity: number, options?: any): Promise<any>;
   updateCartItem(id: number, quantity: number): Promise<any>;
   removeFromCart(id: number): Promise<boolean>;
+  
+  // Banner 관련
+  getActiveBanners(type: string, position: string): Promise<Banner[]>;
+  getAllBanners(): Promise<Banner[]>;
+  createBanner(banner: InsertBanner & { createdBy: number }): Promise<Banner>;
+  updateBanner(id: number, data: Partial<InsertBanner>): Promise<Banner | undefined>;
+  deleteBanner(id: number): Promise<boolean>;
 }
 
 export class MemStorage implements IStorage {
@@ -1457,6 +1464,115 @@ export class DatabaseStorage implements IStorage {
 
   async updateSettlementReport(id: number, data: any): Promise<any> {
     return null;
+  }
+
+  // Banner 관련 메서드 구현
+  async getActiveBanners(type: string, position: string): Promise<Banner[]> {
+    try {
+      const { db } = await import('./db');
+      const { eq, and, lte, gte, or, isNull } = await import('drizzle-orm');
+      
+      const now = new Date();
+      
+      const activeBanners = await db
+        .select()
+        .from(banners)
+        .where(
+          and(
+            eq(banners.type, type),
+            eq(banners.position, position),
+            eq(banners.status, 'active'),
+            eq(banners.isActive, true),
+            or(
+              isNull(banners.startDate),
+              lte(banners.startDate, now)
+            ),
+            or(
+              isNull(banners.endDate),
+              gte(banners.endDate, now)
+            )
+          )
+        )
+        .orderBy(banners.orderIndex);
+      
+      return activeBanners;
+    } catch (error) {
+      console.error('배너 조회 오류:', error);
+      return [];
+    }
+  }
+
+  async getAllBanners(): Promise<Banner[]> {
+    try {
+      const { db } = await import('./db');
+      
+      const allBanners = await db
+        .select()
+        .from(banners)
+        .orderBy(banners.createdAt);
+      
+      return allBanners;
+    } catch (error) {
+      console.error('전체 배너 조회 오류:', error);
+      return [];
+    }
+  }
+
+  async createBanner(banner: InsertBanner & { createdBy: number }): Promise<Banner> {
+    try {
+      const { db } = await import('./db');
+      
+      const [newBanner] = await db
+        .insert(banners)
+        .values({
+          ...banner,
+          createdAt: new Date(),
+          updatedAt: new Date()
+        })
+        .returning();
+      
+      return newBanner;
+    } catch (error) {
+      console.error('배너 생성 오류:', error);
+      throw error;
+    }
+  }
+
+  async updateBanner(id: number, data: Partial<InsertBanner>): Promise<Banner | undefined> {
+    try {
+      const { db } = await import('./db');
+      const { eq } = await import('drizzle-orm');
+      
+      const [updatedBanner] = await db
+        .update(banners)
+        .set({
+          ...data,
+          updatedAt: new Date()
+        })
+        .where(eq(banners.id, id))
+        .returning();
+      
+      return updatedBanner;
+    } catch (error) {
+      console.error('배너 수정 오류:', error);
+      return undefined;
+    }
+  }
+
+  async deleteBanner(id: number): Promise<boolean> {
+    try {
+      const { db } = await import('./db');
+      const { eq } = await import('drizzle-orm');
+      
+      const result = await db
+        .delete(banners)
+        .where(eq(banners.id, id));
+      
+      return result.rowCount > 0;
+    } catch (error) {
+      console.error('배너 삭제 오류:', error);
+      return false;
+    }
   }
 }
 

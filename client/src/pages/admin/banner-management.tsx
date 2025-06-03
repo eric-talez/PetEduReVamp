@@ -134,11 +134,15 @@ export default function BannerManagement() {
   const { data: banners = [], isLoading, isError } = useQuery({
     queryKey: ['/api/admin/banners'],
     queryFn: async () => {
-      // 실제 환경에서는 API 호출로 대체
-      // 현재는 테스트 데이터 반환
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // 테스트 데이터
+      const response = await fetch('/api/admin/banners', {
+        credentials: 'include'
+      });
+      if (!response.ok) {
+        throw new Error('배너 데이터를 불러오는데 실패했습니다');
+      }
+      return response.json();
+    }
+  });
       const mockBanners: Banner[] = [
         {
           id: 1,

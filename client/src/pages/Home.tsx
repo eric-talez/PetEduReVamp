@@ -10,6 +10,8 @@ import { useState, lazy, Suspense, useEffect } from 'react';
 import { Loader2, ChevronDown, ChevronRight, ChevronLeft } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { PasswordResetForm } from '@/components/PasswordResetForm';
+import { useQuery } from '@tanstack/react-query';
+import type { Banner } from '@shared/schema';
 
 // 각 역할별 홈 페이지를 동적으로 임포트
 const TrainerHome = lazy(() => import('./trainer/TrainerHome'));
@@ -25,8 +27,20 @@ export default function Home() {
   const [showPasswordReset, setShowPasswordReset] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
 
-  // 8개의 배너 슬라이드 데이터
-  const bannerSlides = [
+  // 관리자가 등록한 배너 데이터 조회
+  const { data: adminBanners = [], isLoading: bannersLoading } = useQuery({
+    queryKey: ['/api/banners', 'main', 'hero'],
+    queryFn: async () => {
+      const response = await fetch('/api/banners?type=main&position=hero');
+      if (!response.ok) {
+        throw new Error('배너를 불러오는데 실패했습니다');
+      }
+      return response.json() as Promise<Banner[]>;
+    }
+  });
+
+  // 기본 배너 데이터 (관리자 배너가 없을 때 사용)
+  const defaultBannerSlides = [
     {
       id: 1,
       title: "Talez - 반려견과 함께하는 특별한 여정",
@@ -100,6 +114,28 @@ export default function Home() {
       secondaryAction: { text: "파트너 안내", path: "/partners" }
     }
   ];
+
+  // 관리자 배너를 표시 형식으로 변환하는 함수
+  const convertAdminBannerToSlide = (banner: Banner) => ({
+    id: banner.id,
+    title: banner.title,
+    subtitle: banner.description || '',
+    features: [],
+    image: banner.imageUrl,
+    primaryAction: { 
+      text: "자세히 보기", 
+      path: banner.linkUrl || "/" 
+    },
+    secondaryAction: { 
+      text: "더 알아보기", 
+      path: "/about" 
+    }
+  });
+
+  // 표시할 배너 슬라이드 결정 (관리자 배너 우선, 없으면 기본 배너)
+  const bannerSlides = adminBanners.length > 0 
+    ? adminBanners.map(convertAdminBannerToSlide)
+    : defaultBannerSlides;
 
   // 서비스 현황 토글 함수
   const toggleServiceStats = () => {
