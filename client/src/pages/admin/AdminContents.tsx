@@ -114,6 +114,45 @@ export default function AdminContents() {
     status: 'active' as 'active' | 'inactive' | 'scheduled'
   });
 
+  // Banner creation mutation
+  const createBannerMutation = useMutation({
+    mutationFn: async (bannerData: any) => {
+      const response = await fetch('/api/admin/banners', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(bannerData),
+      });
+      if (!response.ok) throw new Error('배너 생성에 실패했습니다');
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({ title: '성공', description: '배너가 성공적으로 등록되었습니다.' });
+      setShowBannerDialog(false);
+      setBannerFormData({
+        title: '',
+        description: '',
+        imageUrl: '',
+        altText: '',
+        linkUrl: '',
+        targetBlank: true,
+        type: 'main' as 'main' | 'event' | 'shop' | 'course' | 'trainer',
+        position: 'hero' as 'hero' | 'sidebar' | 'footer' | 'popup',
+        order: 1,
+        startDate: '',
+        endDate: '',
+        status: 'active' as 'active' | 'inactive' | 'scheduled'
+      });
+      refetchBanners();
+    },
+    onError: (error: Error) => {
+      toast({
+        title: '오류',
+        description: error.message,
+        variant: 'destructive',
+      });
+    },
+  });
+
   // Fetch banners
   const { data: banners = [], isLoading: bannersLoading, refetch: refetchBanners } = useQuery({
     queryKey: ['/api/admin/banners'],
@@ -128,22 +167,108 @@ export default function AdminContents() {
     }
   });
 
-  // Create banner mutation
-  const createBannerMutation = useMutation({
-    mutationFn: async (data: any) => {
-      const response = await fetch('/api/admin/banners', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({
-          ...data,
-          orderIndex: data.order
-        }),
-      });
-      
-      if (!response.ok) {
+  // Mock contents data for display purposes
+  const mockContents: Content[] = [
+    {
+      id: 1,
+      title: '펫 교육 프로그램 소개',
+      type: 'article',
+      status: 'active',
+      publishDate: '2024-01-15',
+      location: '메인페이지',
+      views: 1250,
+      clicks: 89,
+      author: '관리자',
+      createdAt: '2024-01-15T09:00:00Z',
+      updatedAt: '2024-01-15T09:00:00Z'
+    },
+    {
+      id: 2,
+      title: '신년 특별 이벤트 배너',
+      type: 'banner',
+      status: 'active',
+      publishDate: '2024-01-01',
+      location: '메인배너',
+      views: 3450,
+      clicks: 234,
+      author: '마케팅팀',
+      createdAt: '2024-01-01T00:00:00Z',
+      updatedAt: '2024-01-10T14:30:00Z'
+    },
+    {
+      id: 3,
+      title: '펫 훈련 영상 시리즈',
+      type: 'video',
+      status: 'draft',
+      publishDate: '',
+      location: '교육센터',
+      views: 0,
+      author: '교육팀',
+      createdAt: '2024-01-20T11:15:00Z',
+      updatedAt: '2024-01-20T11:15:00Z'
+    },
+    {
+      id: 4,
+      title: '반려동물 건강 체크 이벤트',
+      type: 'event',
+      status: 'scheduled',
+      publishDate: '2024-02-01',
+      location: '이벤트페이지',
+      views: 0,
+      author: '이벤트팀',
+      createdAt: '2024-01-18T16:45:00Z',
+      updatedAt: '2024-01-18T16:45:00Z'
+    },
+    {
+      id: 5,
+      title: '프리미엄 사료 광고',
+      type: 'image',
+      status: 'inactive',
+      publishDate: '2023-12-20',
+      location: '사이드바',
+      views: 890,
+      clicks: 45,
+      author: '광고팀',
+      createdAt: '2023-12-20T13:20:00Z',
+      updatedAt: '2024-01-05T10:10:00Z'
+    }
+  ];
+
+  // 새 콘텐츠 상태
+  const [newContent, setNewContent] = useState({
+    title: '',
+    type: 'article' as Content['type'],
+    status: 'draft' as Content['status'],
+    location: '',
+    publishDate: '',
+    description: '',
+    tags: ''
+  });
+
+  // 콘텐츠 데이터 로딩
+  useEffect(() => {
+    const loadContents = async () => {
+      try {
+        setIsLoading(true);
+        
+        // 실제 API 호출로 대체 가능
+        await new Promise(resolve => setTimeout(resolve, 800));
+        
+        setContents(mockContents);
+      } catch (error) {
+        console.error('콘텐츠 데이터 로딩 오류:', error);
+        toast({
+          title: '데이터 로딩 오류',
+          description: '콘텐츠 정보를 불러오는 중 오류가 발생했습니다.',
+          variant: 'destructive',
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    loadContents();
+  }, [toast]);
         const errorData = await response.json().catch(() => ({}));
         throw new Error(errorData.message || '배너 생성에 실패했습니다');
       }
@@ -475,7 +600,11 @@ export default function AdminContents() {
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold tracking-tight">콘텐츠 관리</h1>
         <div className="flex items-center space-x-2">
-          <Button onClick={handleAddContent} variant="default">
+          <Button onClick={() => setShowBannerDialog(true)} variant="default">
+            <Layout className="mr-2 h-4 w-4" />
+            배너 등록
+          </Button>
+          <Button onClick={handleAddContent} variant="outline">
             <PlusCircle className="mr-2 h-4 w-4" />
             콘텐츠 추가
           </Button>
@@ -866,6 +995,153 @@ export default function AdminContents() {
                   수정 저장
                 </Button>
               )}
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Banner Registration Dialog */}
+        <Dialog open={showBannerDialog} onOpenChange={setShowBannerDialog}>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>새 배너 등록</DialogTitle>
+              <DialogDescription>
+                메인 페이지에 표시될 배너를 등록하세요.
+              </DialogDescription>
+            </DialogHeader>
+            
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="banner-title" className="text-right">제목 *</Label>
+                <Input
+                  id="banner-title"
+                  value={bannerFormData.title}
+                  onChange={(e) => setBannerFormData({ ...bannerFormData, title: e.target.value })}
+                  className="col-span-3"
+                  placeholder="배너 제목을 입력하세요"
+                />
+              </div>
+              
+              <div className="grid grid-cols-4 items-start gap-4">
+                <Label htmlFor="banner-description" className="text-right pt-2">설명</Label>
+                <Textarea
+                  id="banner-description"
+                  value={bannerFormData.description}
+                  onChange={(e) => setBannerFormData({ ...bannerFormData, description: e.target.value })}
+                  className="col-span-3"
+                  placeholder="배너 설명을 입력하세요"
+                  rows={3}
+                />
+              </div>
+              
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="banner-image" className="text-right">이미지 URL *</Label>
+                <Input
+                  id="banner-image"
+                  value={bannerFormData.imageUrl}
+                  onChange={(e) => setBannerFormData({ ...bannerFormData, imageUrl: e.target.value })}
+                  className="col-span-3"
+                  placeholder="https://example.com/image.jpg"
+                />
+              </div>
+              
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="banner-alt" className="text-right">Alt 텍스트</Label>
+                <Input
+                  id="banner-alt"
+                  value={bannerFormData.altText}
+                  onChange={(e) => setBannerFormData({ ...bannerFormData, altText: e.target.value })}
+                  className="col-span-3"
+                  placeholder="이미지 설명"
+                />
+              </div>
+              
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="banner-link" className="text-right">링크 URL</Label>
+                <Input
+                  id="banner-link"
+                  value={bannerFormData.linkUrl}
+                  onChange={(e) => setBannerFormData({ ...bannerFormData, linkUrl: e.target.value })}
+                  className="col-span-3"
+                  placeholder="https://example.com"
+                />
+              </div>
+              
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="banner-type" className="text-right">배너 타입</Label>
+                <Select value={bannerFormData.type} onValueChange={(value: any) => setBannerFormData({ ...bannerFormData, type: value })}>
+                  <SelectTrigger className="col-span-3">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="main">메인 배너</SelectItem>
+                    <SelectItem value="event">이벤트 배너</SelectItem>
+                    <SelectItem value="shop">쇼핑 배너</SelectItem>
+                    <SelectItem value="course">강의 배너</SelectItem>
+                    <SelectItem value="trainer">훈련사 배너</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="banner-position" className="text-right">위치</Label>
+                <Select value={bannerFormData.position} onValueChange={(value: any) => setBannerFormData({ ...bannerFormData, position: value })}>
+                  <SelectTrigger className="col-span-3">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="hero">메인 히어로</SelectItem>
+                    <SelectItem value="sidebar">사이드바</SelectItem>
+                    <SelectItem value="footer">푸터</SelectItem>
+                    <SelectItem value="popup">팝업</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="banner-order" className="text-right">순서</Label>
+                <Input
+                  id="banner-order"
+                  type="number"
+                  value={bannerFormData.order}
+                  onChange={(e) => setBannerFormData({ ...bannerFormData, order: parseInt(e.target.value) || 1 })}
+                  className="col-span-3"
+                  min="1"
+                />
+              </div>
+              
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="banner-start" className="text-right">시작일</Label>
+                <Input
+                  id="banner-start"
+                  type="date"
+                  value={bannerFormData.startDate}
+                  onChange={(e) => setBannerFormData({ ...bannerFormData, startDate: e.target.value })}
+                  className="col-span-3"
+                />
+              </div>
+              
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="banner-end" className="text-right">종료일</Label>
+                <Input
+                  id="banner-end"
+                  type="date"
+                  value={bannerFormData.endDate}
+                  onChange={(e) => setBannerFormData({ ...bannerFormData, endDate: e.target.value })}
+                  className="col-span-3"
+                />
+              </div>
+            </div>
+            
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setShowBannerDialog(false)}>
+                취소
+              </Button>
+              <Button 
+                onClick={() => createBannerMutation.mutate(bannerFormData)}
+                disabled={createBannerMutation.isPending || !bannerFormData.title || !bannerFormData.imageUrl}
+              >
+                {createBannerMutation.isPending ? '등록 중...' : '배너 등록'}
+              </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
