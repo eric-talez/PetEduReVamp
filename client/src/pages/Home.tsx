@@ -6,7 +6,7 @@ import { MiniChart } from '@/components/ui/mini-chart';
 import { WeeklyWeatherModal } from '@/components/WeeklyWeatherModal';
 import { ShopPreview } from '@/components/ShopPreview';
 import { SocialLoginButtons } from '@/components/SocialLoginButtons';
-import { useState, lazy, Suspense } from 'react';
+import { useState, lazy, Suspense, useEffect } from 'react';
 import { Loader2, ChevronDown, ChevronRight, ChevronLeft } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { PasswordResetForm } from '@/components/PasswordResetForm';
@@ -114,6 +114,15 @@ export default function Home() {
   const prevSlide = () => {
     setCurrentSlide((prev) => (prev - 1 + bannerSlides.length) % bannerSlides.length);
   };
+
+  // 자동 슬라이드 진행
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % bannerSlides.length);
+    }, 5000); // 5초마다 자동 진행
+
+    return () => clearInterval(interval);
+  }, [bannerSlides.length]);
 
   // 빠른 로그인 처리 함수
   const handleQuickLogin = (role: string) => {
@@ -428,9 +437,9 @@ export default function Home() {
               <img 
                 src={bannerSlides[currentSlide].image} 
                 alt={bannerSlides[currentSlide].title}
-                className="w-full h-full object-cover opacity-30"
+                className="w-full h-full object-cover"
               />
-              <div className="absolute inset-0 bg-gradient-to-r from-primary/90 to-primary/70"></div>
+              <div className="absolute inset-0 bg-gradient-to-r from-black/50 to-black/30"></div>
             </div>
             
             {/* 배너 콘텐츠 */}
