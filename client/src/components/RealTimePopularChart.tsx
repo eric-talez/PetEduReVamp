@@ -187,7 +187,7 @@ export function RealTimePopularChart() {
       changePercent: 25.4,
       location: "서울 한강공원",
       date: "2024-06-15",
-      detailPath: "/events/event-detail/1"
+      detailPath: "/events/1"
     },
     {
       id: 2,
@@ -201,7 +201,7 @@ export function RealTimePopularChart() {
       changePercent: 19.8,
       location: "경기 분당",
       date: "2024-06-08",
-      detailPath: "/events/event-detail/2"
+      detailPath: "/events/2"
     },
     {
       id: 3,
@@ -215,7 +215,7 @@ export function RealTimePopularChart() {
       changePercent: 0,
       location: "경기 고양시",
       date: "2024-06-22",
-      detailPath: "/events/event-detail/3"
+      detailPath: "/events/3"
     },
     {
       id: 4,
@@ -229,7 +229,7 @@ export function RealTimePopularChart() {
       changePercent: 13.7,
       location: "서울 마포구",
       date: "2024-06-10",
-      detailPath: "/events/event-detail/4"
+      detailPath: "/events/4"
     },
     {
       id: 5,
@@ -243,7 +243,7 @@ export function RealTimePopularChart() {
       changePercent: -4.2,
       location: "부산 중구",
       date: "2024-06-12",
-      detailPath: "/events/event-detail/5"
+      detailPath: "/events/5"
     }
   ];
 
