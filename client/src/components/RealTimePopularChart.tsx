@@ -2,7 +2,10 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { TrendingUp, TrendingDown, Minus, Eye, Heart, MessageCircle, Users, MapPin, Calendar } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { TrendingUp, TrendingDown, Minus, Eye, Heart, MessageCircle, Users, MapPin, Calendar, Star, Phone, Mail, Award } from 'lucide-react';
 import { useLocation } from 'wouter';
 
 interface PopularItem {
@@ -25,6 +28,10 @@ interface PopularItem {
 export function RealTimePopularChart() {
   const [, setLocation] = useLocation();
   const [updateTime, setUpdateTime] = useState(new Date());
+  const [selectedTrainer, setSelectedTrainer] = useState<any>(null);
+  const [selectedCourse, setSelectedCourse] = useState<any>(null);
+  const [isTrainerModalOpen, setIsTrainerModalOpen] = useState(false);
+  const [isCourseModalOpen, setIsCourseModalOpen] = useState(false);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -34,9 +41,101 @@ export function RealTimePopularChart() {
     return () => clearInterval(interval);
   }, []);
 
-  const handleItemClick = (detailPath: string) => {
-    console.log('[RealTimePopularChart] 클릭된 경로:', detailPath);
-    setLocation(detailPath);
+  const handleItemClick = (item: PopularItem) => {
+    console.log('[RealTimePopularChart] 아이템 클릭:', item.title, item.detailPath);
+    
+    if (item.detailPath.startsWith('/trainers/')) {
+      const trainerId = item.detailPath.split('/')[2];
+      const trainerData = getTrainerData(trainerId);
+      setSelectedTrainer(trainerData);
+      setIsTrainerModalOpen(true);
+    } else if (item.detailPath.startsWith('/courses/')) {
+      const courseId = item.detailPath.split('/')[2];
+      const courseData = getCourseData(courseId);
+      setSelectedCourse(courseData);
+      setIsCourseModalOpen(true);
+    } else {
+      console.log('[RealTimePopularChart] 클릭된 경로:', item.detailPath);
+      setLocation(item.detailPath);
+    }
+  };
+
+  const getTrainerData = (id: string) => {
+    const trainers = {
+      '1': {
+        id: 1,
+        name: "김민수 전문 훈련사",
+        specialty: "반려견 기본 훈련",
+        experience: "10년",
+        rating: 4.9,
+        reviews: 156,
+        students: 450,
+        totalCourses: 12,
+        location: "서울 강남구",
+        phone: "010-1234-5678",
+        email: "trainer1@example.com",
+        avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=300&q=80",
+        description: "10년 이상의 경험을 가진 전문 반려견 훈련사로, 특히 기본 순종 훈련과 문제 행동 교정에 탁월한 실력을 보유하고 있습니다.",
+        certifications: ["KKF 공인 훈련사", "CCPDT-KA 자격증", "반려동물 행동분석사"],
+        specialties: ["기본 순종 훈련", "문제 행동 교정", "사회화 훈련"],
+        courses: [
+          { id: 1, title: "기본 순종 훈련", price: 150000, duration: "4주" },
+          { id: 2, title: "문제 행동 교정", price: 200000, duration: "6주" }
+        ]
+      },
+      '2': {
+        id: 2,
+        name: "이수진 훈련사",
+        specialty: "배변 훈련 전문",
+        experience: "8년",
+        rating: 4.8,
+        reviews: 89,
+        students: 320,
+        totalCourses: 8,
+        location: "서울 서초구",
+        phone: "010-2345-6789",
+        email: "trainer2@example.com",
+        avatar: "https://images.unsplash.com/photo-1494790108755-2616b612b5bc?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=300&q=80",
+        description: "배변 훈련과 실내 훈련 전문가로, 어린 강아지부터 성견까지 효과적인 훈련 방법을 제공합니다.",
+        certifications: ["IAABC 공인 훈련사", "반려동물 배변 전문가"],
+        specialties: ["배변 훈련", "실내 훈련", "어린 강아지 훈련"],
+        courses: [
+          { id: 3, title: "실내 배변 훈련", price: 120000, duration: "3주" },
+          { id: 4, title: "어린 강아지 기초 훈련", price: 180000, duration: "5주" }
+        ]
+      }
+    };
+    
+    return trainers[id as keyof typeof trainers] || trainers['1'];
+  };
+
+  const getCourseData = (id: string) => {
+    const courses = {
+      '1': {
+        id: 1,
+        title: "기본 순종 훈련",
+        description: "반려견의 기본적인 순종 훈련을 위한 필수 과정입니다.",
+        instructor: "김민수 훈련사",
+        duration: "4주",
+        price: 150000,
+        rating: 4.8,
+        students: 1200,
+        thumbnail: "https://images.unsplash.com/photo-1552053831-71594a27632d?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400&q=80"
+      },
+      '2': {
+        id: 2,
+        title: "실내 배변 훈련",
+        description: "실내에서 올바른 배변 습관을 기르는 전문 훈련 과정입니다.",
+        instructor: "이수진 훈련사",
+        duration: "3주",
+        price: 120000,
+        rating: 4.7,
+        students: 890,
+        thumbnail: "https://images.unsplash.com/photo-1583337130417-3346a1be7dee?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400&q=80"
+      }
+    };
+    
+    return courses[id as keyof typeof courses] || courses['1'];
   };
 
   const getTrendIcon = (trend: 'up' | 'down' | 'stable') => {
@@ -353,7 +452,7 @@ export function RealTimePopularChart() {
             e.preventDefault();
             e.stopPropagation();
             console.log('[RealTimePopularChart] 아이템 클릭:', item.title, item.detailPath);
-            handleItemClick(item.detailPath);
+            handleItemClick(item);
           }}
           type="button"
         >
@@ -437,53 +536,241 @@ export function RealTimePopularChart() {
   );
 
   return (
-    <Card className="w-full">
-      <CardHeader className="pb-3">
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-lg font-bold flex items-center space-x-2">
-            <TrendingUp className="h-5 w-5 text-primary" />
-            <span>실시간 인기 차트</span>
-          </CardTitle>
-          <div className="text-xs text-gray-500">
-            마지막 업데이트: {updateTime.toLocaleTimeString()}
+    <>
+      <Card className="w-full">
+        <CardHeader className="pb-3">
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-lg font-bold flex items-center space-x-2">
+              <TrendingUp className="h-5 w-5 text-primary" />
+              <span>실시간 인기 차트</span>
+            </CardTitle>
+            <div className="text-xs text-gray-500">
+              마지막 업데이트: {updateTime.toLocaleTimeString()}
+            </div>
           </div>
-        </div>
-      </CardHeader>
-      
-      <CardContent>
-        <Tabs defaultValue="trainers" className="w-full">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="trainers" className="text-xs">
-              훈련사
-            </TabsTrigger>
-            <TabsTrigger value="courses" className="text-xs">
-              강좌
-            </TabsTrigger>
-            <TabsTrigger value="events" className="text-xs">
-              이벤트
-            </TabsTrigger>
-            <TabsTrigger value="community" className="text-xs">
-              커뮤니티 글
-            </TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="trainers" className="mt-4">
-            {renderPopularList(trainersData, true)}
-          </TabsContent>
-          
-          <TabsContent value="courses" className="mt-4">
-            {renderPopularList(coursesData)}
-          </TabsContent>
-          
-          <TabsContent value="events" className="mt-4">
-            {renderPopularList(eventsData, true, true)}
-          </TabsContent>
-          
-          <TabsContent value="community" className="mt-4">
-            {renderPopularList(communityData)}
-          </TabsContent>
-        </Tabs>
-      </CardContent>
-    </Card>
+        </CardHeader>
+        
+        <CardContent>
+          <Tabs defaultValue="trainers" className="w-full">
+            <TabsList className="grid w-full grid-cols-4">
+              <TabsTrigger value="trainers" className="text-xs">
+                훈련사
+              </TabsTrigger>
+              <TabsTrigger value="courses" className="text-xs">
+                강좌
+              </TabsTrigger>
+              <TabsTrigger value="events" className="text-xs">
+                이벤트
+              </TabsTrigger>
+              <TabsTrigger value="community" className="text-xs">
+                커뮤니티 글
+              </TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="trainers" className="mt-4">
+              {renderPopularList(trainersData, true)}
+            </TabsContent>
+            
+            <TabsContent value="courses" className="mt-4">
+              {renderPopularList(coursesData)}
+            </TabsContent>
+            
+            <TabsContent value="events" className="mt-4">
+              {renderPopularList(eventsData, true, true)}
+            </TabsContent>
+            
+            <TabsContent value="community" className="mt-4">
+              {renderPopularList(communityData)}
+            </TabsContent>
+          </Tabs>
+        </CardContent>
+      </Card>
+
+      {/* Trainer Detail Modal */}
+    <Dialog open={isTrainerModalOpen} onOpenChange={setIsTrainerModalOpen}>
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        {selectedTrainer && (
+          <>
+            <DialogHeader>
+              <DialogTitle className="text-2xl font-bold">{selectedTrainer.name}</DialogTitle>
+            </DialogHeader>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {/* 훈련사 기본 정보 */}
+              <div className="md:col-span-2">
+                <div className="flex items-start gap-4 mb-6">
+                  <Avatar className="w-20 h-20">
+                    <AvatarImage src={selectedTrainer.avatar} alt={selectedTrainer.name} />
+                    <AvatarFallback>{selectedTrainer.name.charAt(0)}</AvatarFallback>
+                  </Avatar>
+                  
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Badge variant="secondary">{selectedTrainer.specialty}</Badge>
+                      <div className="flex items-center gap-1">
+                        <Star className="w-4 h-4 text-yellow-400 fill-current" />
+                        <span className="font-medium">{selectedTrainer.rating}</span>
+                        <span className="text-sm text-muted-foreground">({selectedTrainer.reviews}개 리뷰)</span>
+                      </div>
+                    </div>
+                    
+                    <p className="text-muted-foreground mb-3">{selectedTrainer.description}</p>
+                    
+                    <div className="flex flex-wrap gap-4 text-sm">
+                      <div className="flex items-center gap-1">
+                        <Award className="w-4 h-4" />
+                        <span>경력 {selectedTrainer.experience}</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Users className="w-4 h-4" />
+                        <span>{selectedTrainer.students}명 훈련</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <MapPin className="w-4 h-4" />
+                        <span>{selectedTrainer.location}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 전문 분야 */}
+                <div className="mb-6">
+                  <h3 className="font-semibold mb-3">전문 분야</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedTrainer.specialties.map((specialty: string, index: number) => (
+                      <Badge key={index} variant="outline">{specialty}</Badge>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 자격증 */}
+                <div className="mb-6">
+                  <h3 className="font-semibold mb-3">자격증 및 인증</h3>
+                  <ul className="space-y-1">
+                    {selectedTrainer.certifications.map((cert: string, index: number) => (
+                      <li key={index} className="flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-primary" />
+                        <span className="text-sm">{cert}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                {/* 진행 중인 강좌 */}
+                <div>
+                  <h3 className="font-semibold mb-3">진행 중인 강좌</h3>
+                  <div className="space-y-3">
+                    {selectedTrainer.courses.map((course: any) => (
+                      <div key={course.id} className="p-3 bg-muted rounded-lg">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <h4 className="font-medium">{course.title}</h4>
+                            <p className="text-sm text-muted-foreground">{course.duration}</p>
+                          </div>
+                          <div className="text-right">
+                            <p className="font-semibold">{course.price.toLocaleString()}원</p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* 연락처 및 액션 */}
+              <div className="space-y-4">
+                <Card>
+                  <CardContent className="p-4">
+                    <h3 className="font-semibold mb-3">연락처</h3>
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2">
+                        <Phone className="w-4 h-4" />
+                        <span className="text-sm">{selectedTrainer.phone}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Mail className="w-4 h-4" />
+                        <span className="text-sm">{selectedTrainer.email}</span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <div className="space-y-2">
+                  <Button className="w-full">상담 신청</Button>
+                  <Button variant="outline" className="w-full">메시지 보내기</Button>
+                  <Button variant="ghost" className="w-full">프로필 전체보기</Button>
+                </div>
+              </div>
+            </div>
+          </>
+        )}
+      </DialogContent>
+    </Dialog>
+
+    {/* Course Detail Modal */}
+    <Dialog open={isCourseModalOpen} onOpenChange={setIsCourseModalOpen}>
+      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+        {selectedCourse && (
+          <>
+            <DialogHeader>
+              <DialogTitle className="text-2xl font-bold">{selectedCourse.title}</DialogTitle>
+            </DialogHeader>
+            
+            <div className="space-y-6">
+              {/* 강좌 썸네일 */}
+              <div className="aspect-video rounded-lg overflow-hidden">
+                <img 
+                  src={selectedCourse.thumbnail} 
+                  alt={selectedCourse.title}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="md:col-span-2">
+                  <p className="text-muted-foreground mb-4">{selectedCourse.description}</p>
+                  
+                  <div className="flex items-center gap-4 text-sm mb-4">
+                    <div className="flex items-center gap-1">
+                      <Star className="w-4 h-4 text-yellow-400 fill-current" />
+                      <span>{selectedCourse.rating}</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Users className="w-4 h-4" />
+                      <span>{selectedCourse.students}명 수강</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Calendar className="w-4 h-4" />
+                      <span>{selectedCourse.duration}</span>
+                    </div>
+                  </div>
+
+                  <div className="border-t pt-4">
+                    <h3 className="font-semibold mb-2">강사</h3>
+                    <p className="text-sm text-muted-foreground">{selectedCourse.instructor}</p>
+                  </div>
+                </div>
+
+                <div>
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="text-center mb-4">
+                        <p className="text-2xl font-bold">{selectedCourse.price.toLocaleString()}원</p>
+                      </div>
+                      <div className="space-y-2">
+                        <Button className="w-full">수강 신청</Button>
+                        <Button variant="outline" className="w-full">장바구니 추가</Button>
+                        <Button variant="ghost" className="w-full">상세정보 보기</Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+            </div>
+          </>
+        )}
+      </DialogContent>
+    </Dialog>
+    </>
   );
 }
