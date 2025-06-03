@@ -48,7 +48,7 @@ export function RealTimePopularChart() {
       trend: 'up',
       changePercent: 15.3,
       author: "김훈련사",
-      detailPath: "/courses/1"
+      detailPath: "/course/1"
     },
     {
       id: 2,
@@ -61,7 +61,7 @@ export function RealTimePopularChart() {
       trend: 'up',
       changePercent: 8.7,
       author: "박전문가",
-      detailPath: "/courses/2"
+      detailPath: "/course/2"
     },
     {
       id: 3,
@@ -74,7 +74,7 @@ export function RealTimePopularChart() {
       trend: 'stable',
       changePercent: 0,
       author: "이행동전문가",
-      detailPath: "/courses/3"
+      detailPath: "/course/3"
     },
     {
       id: 4,
@@ -87,7 +87,7 @@ export function RealTimePopularChart() {
       trend: 'down',
       changePercent: -3.2,
       author: "최스포츠강사",
-      detailPath: "/courses/4"
+      detailPath: "/course/4"
     },
     {
       id: 5,
@@ -100,7 +100,7 @@ export function RealTimePopularChart() {
       trend: 'up',
       changePercent: 12.1,
       author: "정퍼피전문가",
-      detailPath: "/courses/5"
+      detailPath: "/course/5"
     }
   ];
 
@@ -187,7 +187,7 @@ export function RealTimePopularChart() {
       changePercent: 25.4,
       location: "서울 한강공원",
       date: "2024-06-15",
-      detailPath: "/events/1"
+      detailPath: "/events/event-detail/1"
     },
     {
       id: 2,
@@ -201,7 +201,7 @@ export function RealTimePopularChart() {
       changePercent: 19.8,
       location: "경기 분당",
       date: "2024-06-08",
-      detailPath: "/events/2"
+      detailPath: "/events/event-detail/2"
     },
     {
       id: 3,
@@ -215,7 +215,7 @@ export function RealTimePopularChart() {
       changePercent: 0,
       location: "경기 고양시",
       date: "2024-06-22",
-      detailPath: "/events/3"
+      detailPath: "/events/event-detail/3"
     },
     {
       id: 4,
@@ -229,7 +229,7 @@ export function RealTimePopularChart() {
       changePercent: 13.7,
       location: "서울 마포구",
       date: "2024-06-10",
-      detailPath: "/events/4"
+      detailPath: "/events/event-detail/4"
     },
     {
       id: 5,
@@ -243,7 +243,7 @@ export function RealTimePopularChart() {
       changePercent: -4.2,
       location: "부산 중구",
       date: "2024-06-12",
-      detailPath: "/events/5"
+      detailPath: "/events/event-detail/5"
     }
   ];
 
@@ -260,7 +260,7 @@ export function RealTimePopularChart() {
       trend: 'up',
       changePercent: 22.1,
       author: "반려인123",
-      detailPath: "/community/posts/1"
+      detailPath: "/community/post/1"
     },
     {
       id: 2,
@@ -273,7 +273,7 @@ export function RealTimePopularChart() {
       trend: 'up',
       changePercent: 16.3,
       author: "요리하는엄마",
-      detailPath: "/community/posts/2"
+      detailPath: "/community/post/2"
     },
     {
       id: 3,
@@ -286,7 +286,7 @@ export function RealTimePopularChart() {
       trend: 'stable',
       changePercent: 0,
       author: "한강산책러",
-      detailPath: "/community/posts/3"
+      detailPath: "/community/post/3"
     },
     {
       id: 4,
@@ -299,7 +299,7 @@ export function RealTimePopularChart() {
       trend: 'up',
       changePercent: 9.4,
       author: "극복맘",
-      detailPath: "/community/posts/4"
+      detailPath: "/community/post/4"
     },
     {
       id: 5,
@@ -312,7 +312,7 @@ export function RealTimePopularChart() {
       trend: 'down',
       changePercent: -1.8,
       author: "수의사김박사",
-      detailPath: "/community/posts/5"
+      detailPath: "/community/post/5"
     }
   ];
 
