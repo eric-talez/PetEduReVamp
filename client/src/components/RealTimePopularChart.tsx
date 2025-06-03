@@ -454,19 +454,19 @@ export function RealTimePopularChart() {
             </TabsTrigger>
           </TabsList>
           
-          <TabsContent value="courses" className="mt-4">
+          <TabsContent value="courses" className="mt-4" style={{ pointerEvents: 'auto' }}>
             {renderPopularList(popularCourses)}
           </TabsContent>
           
-          <TabsContent value="trainers" className="mt-4">
+          <TabsContent value="trainers" className="mt-4" style={{ pointerEvents: 'auto' }}>
             {renderPopularList(popularTrainers, true)}
           </TabsContent>
           
-          <TabsContent value="events" className="mt-4">
+          <TabsContent value="events" className="mt-4" style={{ pointerEvents: 'auto' }}>
             {renderPopularList(popularEvents, true, true)}
           </TabsContent>
           
-          <TabsContent value="posts" className="mt-4">
+          <TabsContent value="posts" className="mt-4" style={{ pointerEvents: 'auto' }}>
             {renderPopularList(popularPosts)}
           </TabsContent>
         </Tabs>

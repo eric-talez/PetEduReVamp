@@ -6,7 +6,7 @@ import { MiniChart } from '@/components/ui/mini-chart';
 import { WeeklyWeatherModal } from '@/components/WeeklyWeatherModal';
 import { ShopPreview } from '@/components/ShopPreview';
 import { SocialLoginButtons } from '@/components/SocialLoginButtons';
-import { RealTimePopularChart } from '@/components/RealTimePopularChart';
+import { TestClickChart } from '@/components/TestClickChart';
 import { useState, lazy, Suspense, useEffect } from 'react';
 import { Loader2, ChevronDown, ChevronRight, ChevronLeft } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -631,7 +631,7 @@ export default function Home() {
 
         {/* 실시간 인기차트 영역 */}
         <div className="mb-8">
-          <RealTimePopularChart />
+          <TestClickChart />
         </div>
 
         {/* 쇼핑 페이지 접근 컴포넌트 */}
