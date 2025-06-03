@@ -414,6 +414,16 @@ function AppLayout({ children }: { children: ReactNode }) {
                   {/* 영상 및 화상 */}
                   <Route path="/video-training" component={VideoTrainingPage} />
                   <Route path="/video-call" component={VideoCallPage} />
+                  <Route path="/video-call/reserve">
+                    {() => {
+                      const VideoCallReserve = lazy(() => import('./pages/video-call/reserve'));
+                      return (
+                        <Suspense fallback={<div className="p-8 text-center">상담 예약 페이지 로딩 중...</div>}>
+                          <VideoCallReserve />
+                        </Suspense>
+                      );
+                    }}
+                  </Route>
                   
                   {/* 커뮤니티 */}
                   <Route path="/community" component={Community} />

@@ -1,495 +1,325 @@
-import { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useLocation } from 'wouter';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { useAuth } from '@/hooks/useAuth';
-import { AlertCircle, ArrowLeft, Calendar, Clock, Info, Star, Video, Link as LinkIcon } from 'lucide-react';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Textarea } from '@/components/ui/textarea';
+import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Calendar, Clock, Phone, Mail, User, MessageSquare } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
-// 상세 화상 수업 정보 가져오기 (실제 구현에서는 API 호출로 대체)
-const getVideoClassDetails = (id: number) => {
-  const videoClasses = [
-    {
-      id: 1,
-      title: "1:1 맞춤형 반려견 훈련 컨설팅",
-      trainer: "김훈련",
-      trainerId: 1,
-      price: 35000,
-      duration: 30,
-      rating: 4.8,
-      reviews: 128,
-      image: "https://images.unsplash.com/photo-1587300003388-59208cc962cb?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80",
-      tags: ["1:1 훈련", "맞춤형", "문제행동"],
-      description: "반려견의 문제행동 및 기본 훈련에 대한 1:1 맞춤형 화상 컨설팅 서비스입니다. 전문 훈련사가 당신의 반려견에 맞는 훈련 방법을 제시합니다.",
-      availability: "평일 10AM-6PM",
-      availableDates: [
-        { date: "2025-05-10", slots: ["10:00", "11:00", "14:00", "15:00", "16:00"] },
-        { date: "2025-05-11", slots: ["10:00", "11:00", "14:00", "15:00"] },
-        { date: "2025-05-12", slots: ["11:00", "14:00", "16:00"] }
-      ]
-    },
-    {
-      id: 2,
-      title: "그룹 화상 반려견 기초 훈련 클래스",
-      trainer: "박훈련",
-      trainerId: 2,
-      price: 25000,
-      duration: 45,
-      rating: 4.6,
-      reviews: 96,
-      image: "https://images.unsplash.com/photo-1541599468348-e96984315921?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80",
-      tags: ["그룹 클래스", "기초 훈련", "사회화"],
-      description: "최대 5명의 반려인과 함께하는 그룹 화상 훈련 클래스입니다. 기본 복종 훈련과 사회화 훈련을 배울 수 있습니다.",
-      availability: "주말 클래스",
-      availableDates: [
-        { date: "2025-05-15", slots: ["14:00", "16:00"] },
-        { date: "2025-05-16", slots: ["14:00", "16:00"] },
-        { date: "2025-05-17", slots: ["10:00", "14:00"] }
-      ]
-    },
-    // 다른 클래스 정보...
+export default function VideoCallReserve() {
+  const [location, setLocation] = useLocation();
+  const { toast } = useToast();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  // URL에서 trainer ID 추출
+  const urlParams = new URLSearchParams(window.location.search);
+  const trainerId = urlParams.get('trainer') || '1';
+  
+  // 폼 상태
+  const [formData, setFormData] = useState({
+    preferredDate: '',
+    preferredTime: '',
+    consultationType: 'general',
+    petName: '',
+    petAge: '',
+    petBreed: '',
+    concerns: '',
+    contactPhone: '',
+    contactEmail: ''
+  });
+
+  // 훈련사 정보 (실제로는 API에서 가져와야 함)
+  const trainerInfo = {
+    id: trainerId,
+    name: "김민수 전문 훈련사",
+    title: "15년 경력의 반려견 행동 교정 전문가",
+    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=300&q=80",
+    specialties: ["기본훈련", "행동교정", "사회화", "어질리티"],
+    rating: 4.9,
+    consultationFee: 50000,
+    phone: "010-1234-5678",
+    email: "trainer1@example.com"
+  };
+
+  const handleInputChange = (field: string, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    try {
+      // 상담 예약 API 호출
+      const response = await fetch('/api/consultation/request', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          trainerId: parseInt(trainerId),
+          ...formData,
+          message: `상담 유형: ${formData.consultationType}, 반려동물: ${formData.petName} (${formData.petBreed}, ${formData.petAge}), 고민사항: ${formData.concerns}`
+        })
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        toast({
+          title: "상담 예약 완료",
+          description: "상담 예약이 성공적으로 완료되었습니다. 곧 연락드리겠습니다.",
+        });
+        setLocation('/');
+      } else {
+        throw new Error('예약 실패');
+      }
+    } catch (error) {
+      toast({
+        title: "예약 실패",
+        description: "상담 예약 중 오류가 발생했습니다. 다시 시도해주세요.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const consultationTypes = [
+    { value: 'general', label: '일반 상담' },
+    { value: 'behavior', label: '행동 교정' },
+    { value: 'training', label: '기본 훈련' },
+    { value: 'socialization', label: '사회화 훈련' },
+    { value: 'emergency', label: '응급 상담' }
   ];
 
-  return videoClasses.find(c => c.id === id);
-};
-
-export default function VideoClassReservePage() {
-  const { isAuthenticated } = useAuth();
-  const [, setLocation] = useLocation();
-  const [classId, setClassId] = useState<number | null>(null);
-  const [videoClass, setVideoClass] = useState<any>(null);
-  const [selectedDate, setSelectedDate] = useState<string | null>(null);
-  const [selectedTime, setSelectedTime] = useState<string | null>(null);
-  const [reservationStep, setReservationStep] = useState(1);
-  const [loading, setLoading] = useState(false);
-  const [connectionMethod, setConnectionMethod] = useState<'system' | 'personal'>('system');
-  const [zoomMeetingLink, setZoomMeetingLink] = useState<string>("");
-
-  useEffect(() => {
-    // URL에서 ID 파싱 (실제 구현에서는 React Router 또는 다른 라우팅 라이브러리 사용)
-    const pathParts = window.location.pathname.split('/');
-    const id = parseInt(pathParts[pathParts.length - 1]);
-    
-    if (!isNaN(id)) {
-      setClassId(id);
-      const details = getVideoClassDetails(id);
-      if (details) {
-        setVideoClass(details);
-      } else {
-        // 존재하지 않는 클래스 ID인 경우
-        setLocation('/video-call');
-      }
-    } else {
-      // 잘못된 URL인 경우
-      setLocation('/video-call');
-    }
-
-    // 로그인 상태를 확인하지만 비로그인 상태로도 계속 진행 가능
-    console.log('예약 페이지 접근: 로그인 상태 =', isAuthenticated ? '로그인됨' : '비로그인');
-  }, [isAuthenticated, setLocation]);
-
-  const handleDateSelect = (date: string) => {
-    setSelectedDate(date);
-    setSelectedTime(null);
-  };
-
-  const handleTimeSelect = (time: string) => {
-    setSelectedTime(time);
-  };
-
-  // 연결 방식 변경 핸들러
-  const handleConnectionMethodChange = (value: string) => {
-    setConnectionMethod(value as 'system' | 'personal');
-  };
-  
-  // 줌 링크 변경 핸들러
-  const handleZoomLinkChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setZoomMeetingLink(event.target.value);
-  };
-
-  const handleContinue = () => {
-    if (reservationStep === 1 && selectedDate && selectedTime) {
-      setReservationStep(2);
-    } else if (reservationStep === 2) {
-      // 결제 처리 로직
-      setLoading(true);
-      
-      // 결제 시뮬레이션
-      setTimeout(() => {
-        setLoading(false);
-        setReservationStep(3);
-      }, 1500);
-    }
-  };
-
-  // 예약 시 비로그인 상태인 경우 로그인 안내 표시
-  if (!isAuthenticated) {
-    return (
-      <div className="container mx-auto py-12 px-4">
-        <Card className="max-w-md mx-auto">
-          <CardHeader>
-            <div className="flex items-center space-x-2 text-amber-500">
-              <AlertCircle className="h-6 w-6" />
-              <CardTitle>로그인 필요</CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <p>화상 수업 예약을 위해서는 로그인이 필요합니다.</p>
-            <p className="mt-2 text-gray-500">로그인 페이지로 이동하시려면 아래 버튼을 클릭해주세요.</p>
-          </CardContent>
-          <CardFooter>
-            <Button 
-              className="w-full" 
-              onClick={() => window.location.href = '/auth'}
-            >
-              로그인 페이지로 이동
-            </Button>
-          </CardFooter>
-        </Card>
-      </div>
-    );
-  }
-
-  if (!videoClass) {
-    return (
-      <div className="container mx-auto py-12 px-4 text-center">
-        <div className="animate-spin w-10 h-10 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
-        <p>클래스 정보를 불러오는 중...</p>
-      </div>
-    );
-  }
-
   return (
-    <div className="container mx-auto py-8 px-4">
-      <Button 
-        variant="outline" 
-        className="mb-6" 
-        onClick={() => setLocation('/video-call')}
-      >
-        <ArrowLeft className="mr-2 h-4 w-4" />
-        화상 수업 목록으로 돌아가기
-      </Button>
+    <div className="container mx-auto p-6 max-w-4xl">
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold mb-2">상담 예약</h1>
+        <p className="text-muted-foreground">전문 훈련사와의 1:1 상담을 예약하세요</p>
+      </div>
 
-      {reservationStep === 1 && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-1">
-            <Card>
-              <div className="h-48 overflow-hidden">
-                <img 
-                  src={videoClass.image} 
-                  alt={videoClass.title} 
-                  className="w-full h-full object-cover"
-                />
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* 훈련사 정보 */}
+        <div className="lg:col-span-1">
+          <Card className="sticky top-6">
+            <CardHeader>
+              <CardTitle>담당 훈련사</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center gap-3">
+                <Avatar className="w-16 h-16">
+                  <AvatarImage src={trainerInfo.avatar} alt={trainerInfo.name} />
+                  <AvatarFallback>{trainerInfo.name.charAt(0)}</AvatarFallback>
+                </Avatar>
+                <div>
+                  <h3 className="font-semibold">{trainerInfo.name}</h3>
+                  <p className="text-sm text-muted-foreground">{trainerInfo.title}</p>
+                  <div className="flex items-center gap-1 mt-1">
+                    <span className="text-yellow-400">★</span>
+                    <span className="text-sm">{trainerInfo.rating}</span>
+                  </div>
+                </div>
               </div>
-              <CardHeader>
-                <CardTitle>{videoClass.title}</CardTitle>
-                <CardDescription className="flex items-center">
-                  <span>{videoClass.trainer} 훈련사</span>
-                  <div className="flex items-center ml-auto">
-                    <Star className="h-4 w-4 text-yellow-400 fill-yellow-400 mr-1" />
-                    <span>{videoClass.rating} ({videoClass.reviews})</span>
-                  </div>
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center mb-2">
-                  <Clock className="h-4 w-4 mr-2" />
-                  <span>{videoClass.duration}분</span>
-                </div>
-                <div className="flex items-center mb-4">
-                  <Calendar className="h-4 w-4 mr-2" />
-                  <span>{videoClass.availability}</span>
-                </div>
-                <div className="text-lg font-bold text-primary">
-                  {videoClass.price.toLocaleString()}원
-                </div>
-              </CardContent>
-            </Card>
-          </div>
 
-          <div className="lg:col-span-2">
-            <Card>
-              <CardHeader>
-                <CardTitle>수업 일정 선택</CardTitle>
-                <CardDescription>
-                  원하시는 날짜와 시간을 선택해주세요
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="mb-6">
-                  <h3 className="text-lg font-medium mb-3">날짜 선택</h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    {videoClass.availableDates.map((dateInfo: any) => (
-                      <Button
-                        key={dateInfo.date}
-                        variant={selectedDate === dateInfo.date ? "default" : "outline"}
-                        className="justify-start"
-                        onClick={() => handleDateSelect(dateInfo.date)}
-                      >
-                        <Calendar className="mr-2 h-4 w-4" />
-                        {new Date(dateInfo.date).toLocaleDateString('ko-KR', {
-                          month: 'long',
-                          day: 'numeric',
-                          weekday: 'short'
-                        })}
-                      </Button>
-                    ))}
-                  </div>
+              <div>
+                <h4 className="font-medium mb-2">전문 분야</h4>
+                <div className="flex flex-wrap gap-1">
+                  {trainerInfo.specialties.map((specialty, index) => (
+                    <Badge key={index} variant="secondary" className="text-xs">
+                      {specialty}
+                    </Badge>
+                  ))}
                 </div>
+              </div>
 
-                {selectedDate && (
-                  <div>
-                    <h3 className="text-lg font-medium mb-3">시간 선택</h3>
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                      {videoClass.availableDates
-                        .find((d: any) => d.date === selectedDate)
-                        ?.slots.map((time: string) => (
-                          <Button
-                            key={time}
-                            variant={selectedTime === time ? "default" : "outline"}
-                            onClick={() => handleTimeSelect(time)}
-                          >
-                            <Clock className="mr-2 h-4 w-4" />
-                            {time}
-                          </Button>
-                        ))}
-                    </div>
-                  </div>
-                )}
-                
-                <div className="mt-6 border-t pt-6">
-                  <h3 className="text-lg font-medium mb-3">연결 방식 선택</h3>
-                  <Tabs defaultValue="system" onValueChange={handleConnectionMethodChange}>
-                    <TabsList className="mb-4">
-                      <TabsTrigger value="system">시스템 화상 연결</TabsTrigger>
-                      <TabsTrigger value="personal">개인 줌 링크 사용</TabsTrigger>
-                    </TabsList>
-                    <TabsContent value="system">
-                      <div className="p-4 bg-muted/40 rounded-md border border-muted">
-                        <div className="flex items-start">
-                          <Video className="h-5 w-5 text-primary mr-2 mt-0.5" />
-                          <div>
-                            <p className="text-sm font-medium">내장 화상 시스템 사용</p>
-                            <p className="text-sm text-foreground">내장된 화상 회의 시스템을 통해 수업을 진행합니다. 별도의 앱 설치가 필요하지 않습니다.</p>
-                          </div>
-                        </div>
-                      </div>
-                    </TabsContent>
-                    <TabsContent value="personal">
-                      <div className="p-4 bg-muted/40 rounded-md border border-muted">
-                        <div className="flex items-start mb-4">
-                          <LinkIcon className="h-5 w-5 text-primary mr-2 mt-0.5" />
-                          <div>
-                            <p className="text-sm font-medium">개인 줌 회의 링크 사용</p>
-                            <p className="text-sm text-foreground">본인의 Zoom 회의 링크를 사용하여 수업을 진행합니다.</p>
-                          </div>
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="zoom-link" className="font-medium text-foreground">줌 회의 링크</Label>
-                          <Input 
-                            id="zoom-link" 
-                            placeholder="https://zoom.us/j/123456789" 
-                            value={zoomMeetingLink} 
-                            onChange={handleZoomLinkChange}
-                            className="border-input bg-background"
-                            aria-label="줌 회의 링크 입력"
-                          />
-                          <p className="text-xs text-foreground/70">예: https://zoom.us/j/123456789</p>
-                        </div>
-                      </div>
-                    </TabsContent>
-                  </Tabs>
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 text-sm">
+                  <Phone className="w-4 h-4" />
+                  <span>{trainerInfo.phone}</span>
                 </div>
-              </CardContent>
-              <CardFooter className="flex justify-between border-t pt-4">
-                <Button variant="outline" onClick={() => setLocation('/video-call')}>
-                  취소
-                </Button>
-                <Button 
-                  disabled={!selectedDate || !selectedTime || (connectionMethod === 'personal' && !zoomMeetingLink)}
-                  onClick={handleContinue}
-                  className="bg-primary text-primary-foreground hover:bg-primary/90"
-                  aria-label="다음 단계로 진행하기"
-                >
-                  다음 단계
-                </Button>
-              </CardFooter>
-            </Card>
-          </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <Mail className="w-4 h-4" />
+                  <span>{trainerInfo.email}</span>
+                </div>
+              </div>
+
+              <div className="pt-4 border-t">
+                <div className="text-center">
+                  <p className="text-sm text-muted-foreground">상담료</p>
+                  <p className="text-2xl font-bold">{trainerInfo.consultationFee.toLocaleString()}원</p>
+                  <p className="text-xs text-muted-foreground">30분 기준</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
-      )}
 
-      {reservationStep === 2 && (
-        <div className="max-w-2xl mx-auto">
+        {/* 예약 폼 */}
+        <div className="lg:col-span-2">
           <Card>
             <CardHeader>
-              <CardTitle>결제 정보</CardTitle>
-              <CardDescription>
-                수업 예약을 완료하기 위해 결제 정보를 확인해주세요
-              </CardDescription>
+              <CardTitle>상담 예약 정보</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="border-b pb-4 mb-4">
-                <h3 className="font-medium mb-2">예약 정보</h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <form onSubmit={handleSubmit} className="space-y-6">
+                {/* 날짜 및 시간 */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <p className="text-sm text-gray-500">수업명</p>
-                    <p className="font-medium">{videoClass.title}</p>
+                    <label className="block text-sm font-medium mb-2">
+                      <Calendar className="w-4 h-4 inline mr-1" />
+                      희망 날짜
+                    </label>
+                    <Input
+                      type="date"
+                      value={formData.preferredDate}
+                      onChange={(e) => handleInputChange('preferredDate', e.target.value)}
+                      min={new Date().toISOString().split('T')[0]}
+                      required
+                    />
                   </div>
                   <div>
-                    <p className="text-sm text-gray-500">훈련사</p>
-                    <p className="font-medium">{videoClass.trainer} 훈련사</p>
+                    <label className="block text-sm font-medium mb-2">
+                      <Clock className="w-4 h-4 inline mr-1" />
+                      희망 시간
+                    </label>
+                    <Input
+                      type="time"
+                      value={formData.preferredTime}
+                      onChange={(e) => handleInputChange('preferredTime', e.target.value)}
+                      required
+                    />
                   </div>
-                  <div>
-                    <p className="text-sm text-gray-500">날짜</p>
-                    <p className="font-medium">{new Date(selectedDate!).toLocaleDateString('ko-KR', {
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric',
-                      weekday: 'long'
-                    })}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-500">시간</p>
-                    <p className="font-medium">{selectedTime}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-500">수업 시간</p>
-                    <p className="font-medium">{videoClass.duration}분</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-500">연결 방식</p>
-                    <p className="font-medium">{connectionMethod === 'system' ? '내장 화상 시스템' : '개인 줌 링크'}</p>
-                  </div>
-                  {connectionMethod === 'personal' && (
-                    <div className="col-span-1 sm:col-span-2">
-                      <p className="text-sm text-gray-500">입력한 줌 링크</p>
-                      <p className="font-medium break-all bg-muted/30 p-2 rounded-md border border-muted text-foreground">{zoomMeetingLink}</p>
+                </div>
+
+                {/* 상담 유형 */}
+                <div>
+                  <label className="block text-sm font-medium mb-2">상담 유형</label>
+                  <select
+                    className="w-full p-2 border border-input rounded-md"
+                    value={formData.consultationType}
+                    onChange={(e) => handleInputChange('consultationType', e.target.value)}
+                    required
+                  >
+                    {consultationTypes.map((type) => (
+                      <option key={type.value} value={type.value}>
+                        {type.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* 반려동물 정보 */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold">반려동물 정보</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium mb-2">이름</label>
+                      <Input
+                        placeholder="반려동물 이름"
+                        value={formData.petName}
+                        onChange={(e) => handleInputChange('petName', e.target.value)}
+                        required
+                      />
                     </div>
-                  )}
+                    <div>
+                      <label className="block text-sm font-medium mb-2">나이</label>
+                      <Input
+                        placeholder="예: 2년 3개월"
+                        value={formData.petAge}
+                        onChange={(e) => handleInputChange('petAge', e.target.value)}
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-2">품종</label>
+                      <Input
+                        placeholder="예: 골든 리트리버"
+                        value={formData.petBreed}
+                        onChange={(e) => handleInputChange('petBreed', e.target.value)}
+                        required
+                      />
+                    </div>
+                  </div>
                 </div>
-              </div>
 
-              <div className="border-b pb-4 mb-4">
-                <h3 className="font-medium mb-2">결제 금액</h3>
-                <div className="flex justify-between items-center">
-                  <span>수업 금액</span>
-                  <span className="font-medium">{videoClass.price.toLocaleString()}원</span>
+                {/* 고민사항 */}
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    <MessageSquare className="w-4 h-4 inline mr-1" />
+                    상담 내용 및 고민사항
+                  </label>
+                  <Textarea
+                    placeholder="구체적인 상담 내용이나 고민사항을 자세히 적어주세요..."
+                    value={formData.concerns}
+                    onChange={(e) => handleInputChange('concerns', e.target.value)}
+                    rows={4}
+                    required
+                  />
                 </div>
-                <div className="flex justify-between items-center mt-2 text-green-600">
-                  <span>할인</span>
-                  <span>- 0원</span>
-                </div>
-                <div className="flex justify-between items-center mt-4 font-bold text-lg">
-                  <span>최종 결제 금액</span>
-                  <span className="text-primary">{videoClass.price.toLocaleString()}원</span>
-                </div>
-              </div>
 
-              <div className="bg-blue-50 dark:bg-blue-900/30 p-4 rounded-lg flex gap-3">
-                <Info className="h-5 w-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
-                <div className="text-sm text-blue-700 dark:text-blue-300">
-                  <p>결제 완료 후 예약 확정 이메일이 발송됩니다. 수업 시작 10분 전에 입장 링크가 담긴 알림을 받게 됩니다.</p>
-                  <p className="mt-1">수업 시작 10분 전까지 취소 시 100% 환불이 가능하며, 그 이후에는 취소 및 환불이 불가능합니다.</p>
+                {/* 연락처 정보 */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold">연락처 정보</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium mb-2">
+                        <Phone className="w-4 h-4 inline mr-1" />
+                        휴대폰 번호
+                      </label>
+                      <Input
+                        type="tel"
+                        placeholder="010-0000-0000"
+                        value={formData.contactPhone}
+                        onChange={(e) => handleInputChange('contactPhone', e.target.value)}
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-2">
+                        <Mail className="w-4 h-4 inline mr-1" />
+                        이메일
+                      </label>
+                      <Input
+                        type="email"
+                        placeholder="example@email.com"
+                        value={formData.contactEmail}
+                        onChange={(e) => handleInputChange('contactEmail', e.target.value)}
+                        required
+                      />
+                    </div>
+                  </div>
                 </div>
-              </div>
+
+                {/* 제출 버튼 */}
+                <div className="flex gap-3 pt-6">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setLocation('/')}
+                    className="flex-1"
+                  >
+                    취소
+                  </Button>
+                  <Button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="flex-1"
+                  >
+                    {isSubmitting ? '예약 중...' : '상담 예약하기'}
+                  </Button>
+                </div>
+              </form>
             </CardContent>
-            <CardFooter className="flex justify-between border-t pt-4">
-              <Button variant="outline" onClick={() => setReservationStep(1)}>
-                이전 단계
-              </Button>
-              <Button 
-                onClick={handleContinue}
-                disabled={loading}
-              >
-                {loading ? (
-                  <>
-                    <div className="animate-spin w-4 h-4 border-2 border-current border-t-transparent rounded-full mr-2"></div>
-                    처리 중...
-                  </>
-                ) : '결제하기'}
-              </Button>
-            </CardFooter>
           </Card>
         </div>
-      )}
-
-      {reservationStep === 3 && (
-        <div className="max-w-md mx-auto">
-          <Card className="bg-green-50 dark:bg-green-900/30 border-green-200 dark:border-green-800">
-            <CardHeader>
-              <CardTitle className="text-green-700 dark:text-green-300 flex items-center gap-2">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-                예약이 완료되었습니다!
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="mb-6">
-                <p className="mb-4">
-                  {videoClass.trainer} 훈련사와의 화상 수업이 예약되었습니다. 
-                  예약 확인 이메일이 발송되었으니 확인해주세요.
-                </p>
-                <div className="bg-white dark:bg-gray-800 p-4 rounded-lg mb-4">
-                  <div className="grid grid-cols-2 gap-3 text-sm">
-                    <div>
-                      <p className="text-gray-500">수업명</p>
-                      <p className="font-medium">{videoClass.title}</p>
-                    </div>
-                    <div>
-                      <p className="text-gray-500">날짜 및 시간</p>
-                      <p className="font-medium">{new Date(selectedDate!).toLocaleDateString('ko-KR', {
-                        month: 'long',
-                        day: 'numeric'
-                      })} {selectedTime}</p>
-                    </div>
-                    <div>
-                      <p className="text-gray-500">연결 방식</p>
-                      <p className="font-medium">{connectionMethod === 'system' ? '내장 화상 시스템' : '개인 줌 링크'}</p>
-                    </div>
-                  </div>
-                  
-                  {connectionMethod === 'personal' && (
-                    <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-700">
-                      <p className="text-gray-500 mb-1">줌 회의 링크</p>
-                      <div className="flex items-start p-2 bg-background rounded-md border border-muted">
-                        <LinkIcon className="h-4 w-4 text-primary mr-2 mt-0.5 flex-shrink-0" />
-                        <p className="font-medium text-sm break-all text-foreground">{zoomMeetingLink}</p>
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                <div className="flex items-center gap-2 text-blue-600 dark:text-blue-400 mb-2">
-                  {connectionMethod === 'system' ? (
-                    <>
-                      <Video className="h-4 w-4" />
-                      <span className="text-sm">화상 수업 입장 링크는 수업 시작 10분 전에 이메일과 알림으로 발송됩니다.</span>
-                    </>
-                  ) : (
-                    <>
-                      <LinkIcon className="h-4 w-4" />
-                      <span className="text-sm">입력하신 줌 링크로 약속된 시간에 접속해 주세요. 알림도 발송됩니다.</span>
-                    </>
-                  )}
-                </div>
-              </div>
-            </CardContent>
-            <CardFooter>
-              <Button 
-                className="w-full" 
-                onClick={() => setLocation('/video-call')}
-              >
-                화상 수업 목록으로 돌아가기
-              </Button>
-            </CardFooter>
-          </Card>
-        </div>
-      )}
+      </div>
     </div>
   );
 }
