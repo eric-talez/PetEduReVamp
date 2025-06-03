@@ -157,24 +157,34 @@ export function QuickThemeToggle() {
   const toggleTheme = () => {
     const newTheme = theme === 'dark' ? 'light' : 'dark';
     console.log('빠른 테마 전환:', newTheme);
-    console.log('현재 document.documentElement.className:', document.documentElement.className);
     
-    // 즉시 DOM에 클래스 적용하여 시각적 변화 보장
+    // 강제로 DOM 클래스 적용
     const root = document.documentElement;
-    if (newTheme === 'dark') {
-      root.classList.remove('light');
-      root.classList.add('dark');
-      console.log('다크 모드 클래스 추가됨');
-    } else {
-      root.classList.remove('dark');
-      root.classList.add('light');
-      console.log('라이트 모드 클래스 추가됨');
-    }
+    const body = document.body;
     
-    console.log('변경 후 document.documentElement.className:', document.documentElement.className);
+    // 모든 기존 테마 클래스 제거
+    root.classList.remove('light', 'dark');
+    body.classList.remove('light', 'dark');
+    
+    // 새 테마 클래스 추가
+    root.classList.add(newTheme);
+    body.classList.add(newTheme);
+    
+    // HTML 태그에도 클래스 추가 (일부 CSS 선택자용)
+    document.querySelector('html')?.classList.remove('light', 'dark');
+    document.querySelector('html')?.classList.add(newTheme);
+    
+    // 로컬 스토리지에 저장
+    localStorage.setItem('petedu-theme', newTheme);
+    
+    console.log('강제 적용 후 html.className:', document.documentElement.className);
+    console.log('강제 적용 후 body.className:', document.body.className);
     
     // 테마 상태 업데이트
     setTheme(newTheme);
+    
+    // 페이지 새로고침 없이 스타일 강제 적용
+    document.documentElement.style.colorScheme = newTheme;
   };
 
   return (

@@ -1,0 +1,37 @@
+NODE_ENV=production pm2 start server/index.ts --name funnytalez-backend-prod --interpreter ./node_modules/.bin/tsx --instances max
+요 명령어로 수행했을 때 아래 오류 발생
+
+/home/ec2-user/.pm2/logs/store-funnytalez-be-error.log last 15 lines:
+1|store-fu | 
+1|store-fu | Node.js v20.19.1
+1|store-fu | /var/www/store_funnytalez/node_modules/src/mysql2/driver.ts:76
+1|store-fu | 			throw new DrizzleError({
+1|store-fu | 			      ^
+1|store-fu | 
+1|store-fu | 
+1|store-fu | DrizzleError: You need to specify "mode": "planetscale" or "default" when providing a schema. Read more: https://orm.drizzle.team/docs/rqb#modes
+1|store-fu |     at construct (/var/www/store_funnytalez/node_modules/src/mysql2/driver.ts:76:10)
+1|store-fu |     at drizzle (/var/www/store_funnytalez/node_modules/src/mysql2/driver.ts:161:9)
+1|store-fu |     at <anonymous> (/var/www/store_funnytalez/server/db.ts:42:8) {
+1|store-fu |   cause: undefined
+1|store-fu | }
+1|store-fu | 
+1|store-fu | Node.js v20.19.1
+
+/home/ec2-user/.pm2/logs/funnytalez-backend-prod-out.log last 15 lines:
+/home/ec2-user/.pm2/logs/funnytalez-backend-prod-error.log last 15 lines:
+2|funnytal |     at async ModuleJob._link (node:internal/modules/esm/module_job:110:19)
+2|funnytal | You have triggered an unhandledRejection, you may have forgotten to catch a Promise rejection:
+2|funnytal | TypeError [ERR_UNKNOWN_FILE_EXTENSION]: Unknown file extension ".ts" for /var/www/funnytalez/server/index.ts
+2|funnytal |     at Object.getFileProtocolModuleFormat [as file:] (node:internal/modules/esm/get_format:189:9)
+2|funnytal |     at defaultGetFormat (node:internal/modules/esm/get_format:232:36)
+2|funnytal |     at defaultLoad (node:internal/modules/esm/load:145:22)
+2|funnytal |     at async ModuleLoader.loadAndTranslate (node:internal/modules/esm/loader:477:45)
+2|funnytal |     at async ModuleJob._link (node:internal/modules/esm/module_job:110:19)
+2|funnytal | You have triggered an unhandledRejection, you may have forgotten to catch a Promise rejection:
+2|funnytal | TypeError [ERR_UNKNOWN_FILE_EXTENSION]: Unknown file extension ".ts" for /var/www/funnytalez/server/index.ts
+2|funnytal |     at Object.getFileProtocolModuleFormat [as file:] (node:internal/modules/esm/get_format:189:9)
+2|funnytal |     at defaultGetFormat (node:internal/modules/esm/get_format:232:36)
+2|funnytal |     at defaultLoad (node:internal/modules/esm/load:145:22)
+2|funnytal |     at async ModuleLoader.loadAndTranslate (node:internal/modules/esm/loader:477:45)
+2|funnytal |     at async ModuleJob._link (node:internal/modules/esm/module_job:110:19)

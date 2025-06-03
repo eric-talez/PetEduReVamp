@@ -473,7 +473,7 @@ export default function Home() {
               <div className="flex flex-wrap gap-2">
                 <Button
                   size="sm"
-                  className="bg-white/90 dark:bg-gray-800/90 text-primary dark:text-primary-foreground font-semibold hover:bg-white dark:hover:bg-gray-800 px-4 py-1.5 rounded-lg shadow-md border border-white/20 dark:border-gray-700/50"
+                  className="bg-background/95 text-foreground font-semibold hover:bg-background border border-border px-4 py-1.5 rounded-lg shadow-md backdrop-blur-sm"
                   onClick={() => setLocation(bannerSlides[currentSlide].primaryAction.path)}
                 >
                   {bannerSlides[currentSlide].primaryAction.text}
@@ -481,7 +481,7 @@ export default function Home() {
                 <Button
                   size="sm"
                   variant="outline"
-                  className="border-2 border-white/80 dark:border-gray-300/80 text-white dark:text-gray-200 hover:bg-white/90 dark:hover:bg-gray-800/90 hover:text-primary dark:hover:text-primary-foreground px-4 py-1.5 rounded-lg backdrop-blur-sm"
+                  className="border-2 border-foreground/60 text-foreground/90 hover:bg-background/80 hover:text-foreground px-4 py-1.5 rounded-lg backdrop-blur-sm"
                   onClick={() => setLocation(bannerSlides[currentSlide].secondaryAction.path)}
                 >
                   {bannerSlides[currentSlide].secondaryAction.text}
@@ -540,6 +540,11 @@ export default function Home() {
         {/* 인기 훈련사 섹션 */}
         <div className="mb-8">
           <TrendingSection />
+        </div>
+
+        {/* 테마 테스트 요소 */}
+        <div className="mb-4 p-4 bg-background border border-border rounded-lg">
+          <p className="text-foreground">테마 테스트: 배경색과 텍스트 색상이 테마에 따라 변경되어야 합니다.</p>
         </div>
 
         {/* 서비스 소개 섹션 */}
