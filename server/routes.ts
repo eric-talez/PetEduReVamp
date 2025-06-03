@@ -104,6 +104,101 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // 댓글 작성 API
+  app.post("/api/community/posts/:id/comments", async (req, res) => {
+    try {
+      const postId = parseInt(req.params.id);
+      const { content, authorName } = req.body;
+      
+      const newComment = {
+        id: Date.now(),
+        postId,
+        content,
+        author: authorName || "익명",
+        createdAt: new Date().toISOString(),
+        likes: 0
+      };
+      
+      res.json({ 
+        success: true, 
+        message: "댓글이 작성되었습니다",
+        comment: newComment
+      });
+    } catch (error) {
+      console.error('댓글 작성 오류:', error);
+      res.status(500).json({ error: "댓글 작성 중 오류가 발생했습니다" });
+    }
+  });
+
+  // 댓글 목록 조회 API
+  app.get("/api/community/posts/:id/comments", async (req, res) => {
+    try {
+      const postId = parseInt(req.params.id);
+      
+      const mockComments = [
+        {
+          id: 1,
+          postId,
+          content: "정말 유용한 정보네요! 감사합니다.",
+          author: "반려인A",
+          createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
+          likes: 3
+        },
+        {
+          id: 2,
+          postId,
+          content: "저도 비슷한 경험이 있어서 공감합니다.",
+          author: "반려인B",
+          createdAt: new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString(),
+          likes: 1
+        }
+      ];
+      
+      res.json({ 
+        success: true, 
+        comments: mockComments
+      });
+    } catch (error) {
+      console.error('댓글 조회 오류:', error);
+      res.status(500).json({ error: "댓글을 불러올 수 없습니다" });
+    }
+  });
+
+  // 이벤트 참가 신청 API
+  app.post("/api/events/:id/register", async (req, res) => {
+    try {
+      const eventId = parseInt(req.params.id);
+      const { participantName, phone, email } = req.body;
+      
+      res.json({ 
+        success: true, 
+        message: "이벤트 참가 신청이 완료되었습니다",
+        registrationId: Date.now()
+      });
+    } catch (error) {
+      console.error('이벤트 참가 신청 오류:', error);
+      res.status(500).json({ error: "참가 신청 중 오류가 발생했습니다" });
+    }
+  });
+
+  // 공유 링크 생성 API
+  app.post("/api/share", async (req, res) => {
+    try {
+      const { type, id, title } = req.body;
+      const shareUrl = `${req.protocol}://${req.get('host')}/${type}/${id}`;
+      
+      res.json({ 
+        success: true, 
+        message: "공유 링크가 생성되었습니다",
+        shareUrl,
+        title
+      });
+    } catch (error) {
+      console.error('공유 링크 생성 오류:', error);
+      res.status(500).json({ error: "공유 링크 생성 중 오류가 발생했습니다" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
