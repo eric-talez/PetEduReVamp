@@ -860,7 +860,8 @@ export class MemStorage implements IStorage {
 
   async getCommissionTransaction(id: number): Promise<any | undefined> {
     return this.commissionTransactions.get(id);
-  }```python
+  }
+
   async createCommissionTransaction(transaction: any): Promise<any> {
     const id = this.transactionId++;
     const newTransaction = { ...transaction, id, createdAt: new Date() };
