@@ -155,7 +155,7 @@ export function TrainerProfileModal({ trainer, open, onOpenChange }: TrainerProf
                 e.stopPropagation();
                 console.log('[Dialog Action] 메시지 보내기 클릭:', trainer.name);
                 onOpenChange(false); // 모달 닫기
-                window.location.href = `/messages?trainer=${trainer.id}`;
+                window.location.href = `/messages`;
               }}
             >
               <MessageSquare className="w-4 h-4 mr-2" />
@@ -171,7 +171,7 @@ export function TrainerProfileModal({ trainer, open, onOpenChange }: TrainerProf
                 e.stopPropagation();
                 console.log('[Dialog Action] 화상 상담 예약 클릭:', trainer.name);
                 onOpenChange(false); // 모달 닫기
-                window.location.href = `/video-call/reserve?trainer=${trainer.id}`;
+                window.location.href = `/video-call`;
               }}
             >
               <VideoIcon className="w-4 h-4 mr-2" />
@@ -187,7 +187,7 @@ export function TrainerProfileModal({ trainer, open, onOpenChange }: TrainerProf
                 e.stopPropagation();
                 console.log('[Dialog Action] 수업 일정 보기 클릭:', trainer.name);
                 onOpenChange(false); // 모달 닫기
-                window.location.href = `/trainers/detail?id=${trainer.id}`;
+                window.location.href = `/trainers`;
               }}
             >
               <Calendar className="w-4 h-4 mr-2" />

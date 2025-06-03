@@ -923,7 +923,8 @@ export function RealTimePopularChart() {
                     onClick={() => {
                       console.log('[Modal Action] 상담 신청 클릭:', selectedTrainer.name);
                       // 상담 신청 페이지로 이동
-                      window.location.href = `/video-call/reserve?trainer=${selectedTrainer.id}`;
+                      setIsTrainerModalOpen(false);
+                      setLocation(`/video-call/reserve?trainer=${selectedTrainer.id}`);
                     }}
                   >
                     상담 신청
@@ -934,7 +935,8 @@ export function RealTimePopularChart() {
                     onClick={() => {
                       console.log('[Modal Action] 메시지 보내기 클릭:', selectedTrainer.name);
                       // 메시지 페이지로 이동
-                      window.location.href = `/messages?trainer=${selectedTrainer.id}`;
+                      setIsTrainerModalOpen(false);
+                      setLocation(`/messages?trainer=${selectedTrainer.id}`);
                     }}
                   >
                     메시지 보내기
