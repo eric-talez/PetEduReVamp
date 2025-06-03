@@ -605,30 +605,30 @@ export function TrendingSection() {
           <img src={trainer.avatar} alt={trainer.name} className="h-full w-full object-cover" />
         </div>
         <div className="flex-1">
-          <div className="flex justify-between items-start mb-2">
-            <div>
-              <div className="flex items-center gap-2">
-                <h4 className="font-semibold text-gray-900 dark:text-white">{trainer.name}</h4>
-                <Badge className="bg-gradient-to-r from-amber-500 to-orange-500 text-white text-xs px-2 py-1">
-                  <Award size={10} className="mr-1" />
-                  인증 훈련사
-                </Badge>
-              </div>
-              <div className="flex items-center text-xs text-gray-500 dark:text-gray-400 mt-1">
+          {/* 상단: 이름, 인증 배지, 지역, 조회수를 가로로 배열 */}
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h4 className="font-semibold text-gray-900 dark:text-white">{trainer.name}</h4>
+              <Badge className="bg-gradient-to-r from-amber-500 to-orange-500 text-white text-xs px-2 py-1">
+                <Award size={10} className="mr-1" />
+                인증 훈련사
+              </Badge>
+              <div className="flex items-center text-xs text-gray-500 dark:text-gray-400">
                 <MapPin size={12} className="mr-1" />
                 <span>{trainer.location}</span>
               </div>
             </div>
-            <div className="flex items-center text-sm text-gray-500">
+            <div className="flex items-center text-sm text-gray-500 ml-4">
               <Eye size={14} className="mr-1" /> {trainer.views.toLocaleString()}
             </div>
           </div>
           
-          <div className="mb-2">
-            <Badge variant="outline" className="text-xs mr-2 bg-primary/10 border-primary/20">
+          {/* 중단: 전문분야와 통계를 가로로 배열 */}
+          <div className="flex items-center gap-4 mb-2 flex-wrap">
+            <Badge variant="outline" className="text-xs bg-primary/10 border-primary/20">
               {trainer.specialty}
             </Badge>
-            <div className="flex items-center space-x-2 mt-1">
+            <div className="flex items-center space-x-2">
               <div className={`text-xs flex items-center ${trainer.change >= 0 ? 'text-green-500' : 'text-red-500'}`}>
                 {trainer.change >= 0 ? (
                   <TrendingUp size={12} className="mr-1" />
@@ -643,27 +643,30 @@ export function TrendingSection() {
             </div>
           </div>
 
-          {/* 장점 표시 */}
-          <div className="flex flex-wrap gap-1 mb-2">
-            {trainer.advantages?.slice(0, 3).map((advantage: string, idx: number) => (
-              <Badge key={idx} variant="secondary" className="text-xs px-2 py-1 bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-700">
-                <Sparkles size={8} className="mr-1" />
-                {advantage}
-              </Badge>
-            ))}
-          </div>
+          {/* 하단: 장점과 자격증을 가로로 배열 */}
+          <div className="flex items-start gap-4 flex-wrap">
+            {/* 장점 표시 */}
+            <div className="flex flex-wrap gap-1">
+              {trainer.advantages?.slice(0, 2).map((advantage: string, idx: number) => (
+                <Badge key={idx} variant="secondary" className="text-xs px-2 py-1 bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-700">
+                  <Sparkles size={8} className="mr-1" />
+                  {advantage}
+                </Badge>
+              ))}
+            </div>
 
-          {/* 자격증 표시 */}
-          <div className="flex flex-wrap gap-1">
-            {trainer.certifications?.slice(0, 2).map((cert: string, idx: number) => (
-              <Badge key={idx} variant="outline" className="text-xs px-2 py-1 bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-700">
-                <Award size={8} className="mr-1" />
-                {cert.length > 12 ? `${cert.substring(0, 12)}...` : cert}
-              </Badge>
-            ))}
-            {trainer.certifications?.length > 2 && (
-              <Badge variant="outline" className="text-xs">+{trainer.certifications.length - 2}</Badge>
-            )}
+            {/* 자격증 표시 */}
+            <div className="flex flex-wrap gap-1">
+              {trainer.certifications?.slice(0, 2).map((cert: string, idx: number) => (
+                <Badge key={idx} variant="outline" className="text-xs px-2 py-1 bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-700">
+                  <Award size={8} className="mr-1" />
+                  {cert.length > 10 ? `${cert.substring(0, 10)}...` : cert}
+                </Badge>
+              ))}
+              {trainer.certifications?.length > 2 && (
+                <Badge variant="outline" className="text-xs">+{trainer.certifications.length - 2}</Badge>
+              )}
+            </div>
           </div>
         </div>
       </div>
