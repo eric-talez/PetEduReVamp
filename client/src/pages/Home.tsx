@@ -24,12 +24,12 @@ export default function Home() {
   const [isWeatherModalOpen, setIsWeatherModalOpen] = useState(false);
   const [isServiceStatsOpen, setIsServiceStatsOpen] = useState(true);
   const [showPasswordReset, setShowPasswordReset] = useState(false);
-  
+
   // 서비스 현황 토글 함수
   const toggleServiceStats = () => {
     setIsServiceStatsOpen(prev => !prev);
   };
-  
+
   // 빠른 로그인 처리 함수
   const handleQuickLogin = (role: string) => {
     // 로그인 시뮬레이션을 위한 함수
@@ -43,7 +43,7 @@ export default function Home() {
       email: "test@example.com",
       role: role
     };
-    
+
     // 로그인 이벤트 발생 (hooks/useAuth.tsx에서 이 이벤트를 감지함)
     const loginEvent = new CustomEvent('login', {
       detail: { 
@@ -53,16 +53,16 @@ export default function Home() {
         userRole: mockUser.role
       }
     });
-    
+
     console.log('Login event dispatched as:', role);
     window.dispatchEvent(loginEvent);
   };
-  
+
   // 사용자 역할에 따라 적절한 홈페이지 컴포넌트를 반환
   if (isAuthenticated) {
     console.log("Home 컴포넌트: 인증된 사용자, 역할:", userRole);
     let HomeComponent;
-    
+
     switch(userRole) {
       case 'trainer':
         console.log("Home 컴포넌트: 훈련사 홈 렌더링");
@@ -81,7 +81,7 @@ export default function Home() {
         // 기본 홈페이지(아래 정의됨)로 폴백
         return renderDefaultHome();
     }
-    
+
     return (
       <Suspense fallback={
         <div className="flex items-center justify-center min-h-screen">
@@ -93,10 +93,10 @@ export default function Home() {
       </Suspense>
     );
   }
-  
+
   // 기본 홈페이지 렌더링 함수
   return renderDefaultHome();
-  
+
   // 기본 홈페이지 렌더링 함수
   function renderDefaultHome() {
     console.log('Home - renderDefaultHome() - auth state:', { isAuthenticated, userRole, userName });
@@ -139,7 +139,7 @@ export default function Home() {
                       +12.5%
                     </button>
                   </div>
-                  
+
                   <div className="flex items-center space-x-3">
                     <div className="flex flex-col">
                       <span className="text-sm font-semibold text-green-600 dark:text-green-400">인증 훈련사</span>
@@ -153,7 +153,7 @@ export default function Home() {
                       +4.7%
                     </button>
                   </div>
-                  
+
                   <div className="flex items-center space-x-3">
                     <div className="flex flex-col">
                       <span className="text-sm font-semibold text-purple-600 dark:text-purple-400">수료 반려견</span>
@@ -168,7 +168,7 @@ export default function Home() {
                     </button>
                   </div>
                 </div>
-                
+
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
                     <div className="w-10 h-10">
@@ -204,96 +204,60 @@ export default function Home() {
                       <div className="flex justify-between items-center">
                         <div>
                           <span className="text-xl font-bold text-blue-600 dark:text-blue-400">2,580</span>
-                          <div className="text-xs text-gray-600 dark:text-gray-400">활성 사용자</div>
+                          <div className="text-xs text-gray-600 dark:text-gray-400">활성 사용자 (주간)</div>
                         </div>
-                        <button 
-                          onClick={() => setLocation('/dashboard')}
-                          className="text-xs text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900/30 py-0.5 px-1.5 rounded-full hover:bg-green-200 dark:hover:bg-green-800/50 transition-colors cursor-pointer"
-                          title="대시보드에서 자세히 보기"
-                        >
-                          +12.5%
-                        </button>
+                        <div className="w-8 h-8 bg-blue-100 dark:bg-blue-800/50 rounded flex items-center justify-center">
+                          <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+                        </div>
                       </div>
-                      <div className="h-6 mt-1">
-                        <MiniChart 
-                          data={[
-                            { name: '1월', value: 1800 },
-                            { name: '2월', value: 1950 },
-                            { name: '3월', value: 2100 },
-                            { name: '4월', value: 2350 },
-                            { name: '5월', value: 2580 }
-                          ]} 
-                          stroke="#3b82f6"
-                          fill="rgba(59, 130, 246, 0.2)"
-                          height={25}
-                        />
+                      <div className="mt-2 text-xs text-green-600 dark:text-green-400">+12% 전주 대비</div>
+                      <div className="mt-1 flex items-center gap-1">
+                        {[65, 78, 82, 89, 95, 102, 108].map((height, index) => (
+                          <div key={index} className="flex-1 bg-blue-200 dark:bg-blue-700 rounded-sm" style={{height: `${height / 5}px`}}></div>
+                        ))}
                       </div>
                     </div>
-                    
-                    {/* 인증 훈련사 */}
+
+                    {/* 완료된 수업 */}
                     <div className="bg-green-50 dark:bg-green-900/20 p-3 rounded-lg">
                       <div className="flex justify-between items-center">
                         <div>
-                          <span className="text-xl font-bold text-green-600 dark:text-green-400">157</span>
-                          <div className="text-xs text-gray-600 dark:text-gray-400">인증 훈련사</div>
+                          <span className="text-xl font-bold text-green-600 dark:text-green-400">156</span>
+                          <div className="text-xs text-gray-600 dark:text-gray-400">완료된 수업 (주간)</div>
                         </div>
-                        <button 
-                          onClick={() => setLocation('/trainers')}
-                          className="text-xs text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900/30 py-0.5 px-1.5 rounded-full hover:bg-green-200 dark:hover:bg-green-800/50 transition-colors cursor-pointer"
-                          title="훈련사 목록 보기"
-                        >
-                          +4.7%
-                        </button>
+                        <div className="w-8 h-8 bg-green-100 dark:bg-green-800/50 rounded flex items-center justify-center">
+                          <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                        </div>
                       </div>
-                      <div className="h-6 mt-1">
-                        <MiniChart 
-                          data={[
-                            { name: '1월', value: 135 },
-                            { name: '2월', value: 142 },
-                            { name: '3월', value: 147 },
-                            { name: '4월', value: 152 },
-                            { name: '5월', value: 157 }
-                          ]} 
-                          stroke="#16a34a"
-                          fill="rgba(22, 163, 74, 0.2)"
-                          height={25}
-                        />
+                      <div className="mt-2 text-xs text-green-600 dark:text-green-400">+8% 전주 대비</div>
+                      <div className="mt-1 flex items-center gap-1">
+                        {[18, 22, 25, 28, 24, 30, 32].map((height, index) => (
+                          <div key={index} className="flex-1 bg-green-200 dark:bg-green-700 rounded-sm" style={{height: `${height}px`}}></div>
+                        ))}
                       </div>
                     </div>
-                    
-                    {/* 수료 반려견 */}
+
+                    {/* 신규 가입 */}
                     <div className="bg-purple-50 dark:bg-purple-900/20 p-3 rounded-lg">
                       <div className="flex justify-between items-center">
                         <div>
-                          <span className="text-xl font-bold text-purple-600 dark:text-purple-400">4,750</span>
-                          <div className="text-xs text-gray-600 dark:text-gray-400">수료 반려견</div>
+                          <span className="text-xl font-bold text-purple-600 dark:text-purple-400">47</span>
+                          <div className="text-xs text-gray-600 dark:text-gray-400">신규 가입 (주간)</div>
                         </div>
-                        <button 
-                          onClick={() => setLocation('/courses')}
-                          className="text-xs text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900/30 py-0.5 px-1.5 rounded-full hover:bg-green-200 dark:hover:bg-green-800/50 transition-colors cursor-pointer"
-                          title="강좌 목록 보기"
-                        >
-                          +21.3%
-                        </button>
+                        <div className="w-8 h-8 bg-purple-100 dark:bg-purple-800/50 rounded flex items-center justify-center">
+                          <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                        </div>
                       </div>
-                      <div className="h-6 mt-1">
-                        <MiniChart 
-                          data={[
-                            { name: '1월', value: 3200 },
-                            { name: '2월', value: 3650 },
-                            { name: '3월', value: 4050 },
-                            { name: '4월', value: 4450 },
-                            { name: '5월', value: 4750 }
-                          ]} 
-                          stroke="#9333ea"
-                          fill="rgba(147, 51, 234, 0.2)"
-                          height={25}
-                        />
+                      <div className="mt-2 text-xs text-blue-600 dark:text-blue-400">+23% 전주 대비</div>
+                      <div className="mt-1 flex items-center gap-1">
+                        {[8, 6, 12, 9, 15, 11, 18].map((height, index) => (
+                          <div key={index} className="flex-1 bg-purple-200 dark:bg-purple-700 rounded-sm" style={{height: `${height + 10}px`}}></div>
+                        ))}
                       </div>
                     </div>
                   </div>
                 </div>
-                
+
                 {/* 날씨 카드 */}
                 <div>
                   <div className="flex justify-between items-start mb-1">
@@ -349,14 +313,14 @@ export default function Home() {
             )}
           </div>
         </div>
-        
+
         {/* 배너 슬라이더와 로그인 영역 */}
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">
           {/* 배너 슬라이더 - 왼쪽 3/4 */}
           <div className="lg:col-span-3">
             <BannerSlider />
           </div>
-          
+
           {/* 로그인 영역 - 오른쪽 1/4 */}
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 flex flex-col h-[400px] overflow-y-auto">
             {isAuthenticated ? (
@@ -422,12 +386,12 @@ export default function Home() {
             )}
           </div>
         </div>
-        
+
         {/* 인기 훈련사 섹션 */}
         <div className="mb-8">
           <TrendingSection />
         </div>
-        
+
         {/* 서비스 소개 섹션 */}
         <div className="mb-12">
           <h2 className="text-2xl font-bold mb-6 text-center">우리의 서비스</h2>
@@ -444,7 +408,7 @@ export default function Home() {
                 <Link href="/courses">프로그램 보기</Link>
               </Button>
             </div>
-            
+
             <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md">
               <div className="w-12 h-12 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center mb-4">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -457,7 +421,7 @@ export default function Home() {
                 <Link href="/trainers">트레이너 찾기</Link>
               </Button>
             </div>
-            
+
             <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md">
               <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900 rounded-full flex items-center justify-center mb-4">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -482,7 +446,7 @@ export default function Home() {
           onClose={() => setIsWeatherModalOpen(false)}
           location={{ name: "서울", region: "강남구" }}
         />
-        
+
         {/* 비밀번호 찾기 모달 */}
         <Dialog open={showPasswordReset} onOpenChange={setShowPasswordReset}>
           <DialogContent className="sm:max-w-[425px]">
