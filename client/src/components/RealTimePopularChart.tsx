@@ -935,6 +935,196 @@ export function RealTimePopularChart() {
         )}
       </DialogContent>
     </Dialog>
+
+    {/* 이벤트 모달 */}
+    <Dialog open={isEventModalOpen} onOpenChange={setIsEventModalOpen}>
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        {selectedEvent && (
+          <>
+            <DialogHeader>
+              <DialogTitle className="text-xl font-bold">{selectedEvent.title}</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-6">
+              <div className="aspect-video relative rounded-lg overflow-hidden bg-gray-100">
+                <img 
+                  src={selectedEvent.thumbnail} 
+                  alt={selectedEvent.title}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              
+              <div className="grid md:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="font-semibold mb-2">이벤트 정보</h3>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex items-center gap-2">
+                        <Calendar className="w-4 h-4" />
+                        <span>{selectedEvent.date}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Clock className="w-4 h-4" />
+                        <span>{selectedEvent.time}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <MapPin className="w-4 h-4" />
+                        <span>{selectedEvent.location}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Users className="w-4 h-4" />
+                        <span>{selectedEvent.currentParticipants}/{selectedEvent.maxParticipants}명 참가</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <h3 className="font-semibold mb-2">설명</h3>
+                    <p className="text-sm text-muted-foreground">{selectedEvent.description}</p>
+                  </div>
+
+                  <div>
+                    <h3 className="font-semibold mb-2">참가 조건</h3>
+                    <ul className="text-sm space-y-1">
+                      {selectedEvent.requirements?.map((req: string, index: number) => (
+                        <li key={index} className="flex items-start gap-2">
+                          <span className="text-primary">•</span>
+                          {req}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+
+                <div>
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="text-center mb-4">
+                        <p className="text-lg font-semibold mb-2">참가비</p>
+                        <p className="text-2xl font-bold">{selectedEvent.entryFee?.toLocaleString()}원</p>
+                      </div>
+                      <div className="space-y-2">
+                        <Button className="w-full">참가 신청</Button>
+                        <Button variant="outline" className="w-full">문의하기</Button>
+                      </div>
+                      
+                      <div className="mt-4 pt-4 border-t">
+                        <div className="text-sm space-y-1">
+                          <p><strong>주최:</strong> {selectedEvent.organizer}</p>
+                          <p><strong>연락처:</strong> {selectedEvent.contact}</p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+            </div>
+          </>
+        )}
+      </DialogContent>
+    </Dialog>
+
+    {/* 커뮤니티 모달 */}
+    <Dialog open={isCommunityModalOpen} onOpenChange={setIsCommunityModalOpen}>
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        {selectedCommunity && (
+          <>
+            <DialogHeader>
+              <DialogTitle className="text-xl font-bold">{selectedCommunity.title}</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-6">
+              {selectedCommunity.thumbnail && (
+                <div className="aspect-video relative rounded-lg overflow-hidden bg-gray-100">
+                  <img 
+                    src={selectedCommunity.thumbnail} 
+                    alt={selectedCommunity.title}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              )}
+              
+              <div className="grid md:grid-cols-3 gap-6">
+                <div className="md:col-span-2 space-y-4">
+                  <div className="flex items-center gap-3">
+                    <img 
+                      src={selectedCommunity.authorAvatar} 
+                      alt={selectedCommunity.author}
+                      className="w-10 h-10 rounded-full"
+                    />
+                    <div>
+                      <p className="font-medium">{selectedCommunity.author}</p>
+                      <p className="text-sm text-muted-foreground">{selectedCommunity.date}</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                    <div className="flex items-center gap-1">
+                      <Eye className="w-4 h-4" />
+                      <span>{selectedCommunity.views?.toLocaleString()}</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Heart className="w-4 h-4" />
+                      <span>{selectedCommunity.likes}</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <MessageCircle className="w-4 h-4" />
+                      <span>{selectedCommunity.comments}</span>
+                    </div>
+                  </div>
+
+                  <div>
+                    <h3 className="font-semibold mb-2">내용</h3>
+                    <div className="prose prose-sm max-w-none">
+                      <p className="whitespace-pre-line">{selectedCommunity.fullContent}</p>
+                    </div>
+                  </div>
+
+                  {selectedCommunity.tags && (
+                    <div>
+                      <h3 className="font-semibold mb-2">태그</h3>
+                      <div className="flex flex-wrap gap-2">
+                        {selectedCommunity.tags.map((tag: string, index: number) => (
+                          <span key={index} className="px-2 py-1 bg-secondary text-secondary-foreground rounded-md text-xs">
+                            #{tag}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <div>
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="space-y-3">
+                        <Button className="w-full" variant="outline">
+                          <Heart className="w-4 h-4 mr-2" />
+                          좋아요
+                        </Button>
+                        <Button className="w-full" variant="outline">
+                          <MessageCircle className="w-4 h-4 mr-2" />
+                          댓글 쓰기
+                        </Button>
+                        <Button className="w-full" variant="outline">
+                          <Share2 className="w-4 h-4 mr-2" />
+                          공유하기
+                        </Button>
+                      </div>
+                      
+                      <div className="mt-4 pt-4 border-t text-sm">
+                        <p className="font-medium mb-2">카테고리</p>
+                        <span className="px-2 py-1 bg-primary/10 text-primary rounded-md text-xs">
+                          {selectedCommunity.category}
+                        </span>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+            </div>
+          </>
+        )}
+      </DialogContent>
+    </Dialog>
     </>
   );
 }
