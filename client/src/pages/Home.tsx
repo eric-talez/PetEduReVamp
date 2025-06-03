@@ -203,7 +203,23 @@ export default function Home() {
 
   // 기본 홈페이지 렌더링 함수
   function renderDefaultHome() {
-    console.log('Home - renderDefaultHome() - auth state:', { isAuthenticated, userRole, userName });
+    // GlobalAuth 상태를 우선적으로 확인
+    const globalAuthState = (window as any).globalAuthState;
+    const isGloballyAuthenticated = globalAuthState?.isAuthenticated || false;
+    const finalAuthState = isGloballyAuthenticated || isAuthenticated || false;
+
+    console.log('Home - renderDefaultHome() - auth states:', { 
+      localAuth: isAuthenticated || false,
+      globalAuth: isGloballyAuthenticated,
+      finalAuth: finalAuthState,
+      userRole: userRole || globalAuthState?.userRole || null, 
+      userName: userName || globalAuthState?.userName || null 
+    });
+
+    if (!finalAuthState) {
+      return <GuestHome />;
+    }
+    
     return (
       <div className="container mx-auto px-4 py-8">
         {/* 서비스 현황 및 날씨 - 배너 위 영역 - 토글 가능한 섹션 */}
@@ -451,7 +467,7 @@ export default function Home() {
               />
               <div className="absolute inset-0 bg-gradient-to-r from-black/50 to-black/30"></div>
             </div>
-            
+
             {/* 배너 콘텐츠 */}
             <div className="relative z-10 flex flex-col justify-center h-full px-6 md:px-12">
               <h1 className="text-white text-xl md:text-2xl font-bold mb-2 max-w-3xl">
@@ -460,7 +476,7 @@ export default function Home() {
               <p className="text-white/90 text-sm md:text-base max-w-2xl mb-3">
                 {bannerSlides[currentSlide].subtitle}
               </p>
-              
+
               {/* 주요 기능 태그 */}
               <div className="flex flex-wrap gap-2 mb-4">
                 {bannerSlides[currentSlide].features.map((feature, idx) => (
@@ -472,7 +488,7 @@ export default function Home() {
                   </span>
                 ))}
               </div>
-              
+
               {/* 액션 버튼 */}
               <div className="flex flex-wrap gap-2">
                 <Button
@@ -505,7 +521,7 @@ export default function Home() {
             >
               <ChevronLeft className="h-5 w-5" />
             </button>
-            
+
             <button
               className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/30 hover:bg-white/50 text-white backdrop-blur-sm h-10 w-10 rounded-full flex items-center justify-center transition-all duration-200 hover:scale-110 z-20"
               onClick={(e) => {
@@ -517,7 +533,7 @@ export default function Home() {
             >
               <ChevronRight className="h-5 w-5" />
             </button>
-            
+
             {/* 슬라이드 인디케이터 */}
             <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-20">
               {bannerSlides.map((_, index) => (

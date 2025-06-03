@@ -1,12 +1,20 @@
-// import { useAuth } from "../../SimpleApp";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Avatar } from "@/components/ui/avatar";
-import { 
-  Users, Shield, Bell, CheckSquare, Settings, 
-  TrendingUp, Database, BarChart2, Activity, Globe, Building
-} from "lucide-react";
+import { useAuth } from '@/hooks/useAuth';
+import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import ApiStatusMonitor from '@/components/ApiStatusMonitor';
+import {
+  Users,
+  BookOpen,
+  Calendar,
+  TrendingUp,
+  BarChart2,
+  Activity,
+  AlertCircle,
+  CheckCircle,
+  Server
+} from 'lucide-react';
 
 interface AdminDashboardProps {
   onAction: (action: string, data?: any) => void;
@@ -23,6 +31,21 @@ export default function AdminDashboard({ onAction }: AdminDashboardProps) {
   };
 
   return (
+    <div className="p-6 space-y-6">
+      <div className="flex justify-between items-center">
+        <h1 className="text-2xl font-bold text-gray-800 dark:text-white">관리자 대시보드</h1>
+        <Badge variant="default">Administrator</Badge>
+      </div>
+
+      <Tabs defaultValue="overview" className="w-full">
+        <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="overview">개요</TabsTrigger>
+          <TabsTrigger value="api-status">API 상태</TabsTrigger>
+          <TabsTrigger value="performance">성능</TabsTrigger>
+          <TabsTrigger value="analytics">분석</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="overview" className="space-y-6 mt-6">
     <div className="py-8 px-4 sm:px-6 lg:px-8">
       {/* Banner */}
       <div className="relative rounded-xl overflow-hidden h-60 md:h-80 mb-8 bg-gradient-to-r from-primary/80 to-accent/80 shadow-lg">
@@ -31,9 +54,9 @@ export default function AdminDashboard({ onAction }: AdminDashboardProps) {
           alt="관리자 대시보드"
           className="w-full h-full object-cover absolute mix-blend-overlay"
         />
-        
+
         <div className="absolute inset-0 bg-gradient-to-r from-primary/80 to-accent/30 mix-blend-multiply"></div>
-        
+
         <div className="relative h-full flex flex-col justify-center px-8 md:px-12">
           <h1 className="text-white text-2xl md:text-4xl font-bold mb-2 md:mb-4 max-w-xl">
             시스템 관리자 대시보드
@@ -56,7 +79,7 @@ export default function AdminDashboard({ onAction }: AdminDashboardProps) {
           </div>
         </div>
       </div>
-      
+
       {/* Statistics */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <Card className="p-6 border border-gray-100 dark:border-gray-700">
@@ -76,11 +99,11 @@ export default function AdminDashboard({ onAction }: AdminDashboardProps) {
             </div>
           </div>
         </Card>
-        
+
         <Card className="p-6 border border-gray-100 dark:border-gray-700">
           <div className="flex items-center">
             <div className="flex-shrink-0 h-12 w-12 bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 rounded-full flex items-center justify-center">
-              <CheckSquare className="h-6 w-6" />
+              <CheckCircle className="h-6 w-6" />
             </div>
             <div className="ml-4">
               <h2 className="text-sm font-medium text-gray-500 dark:text-gray-400">승인 대기</h2>
@@ -94,11 +117,11 @@ export default function AdminDashboard({ onAction }: AdminDashboardProps) {
             </div>
           </div>
         </Card>
-        
+
         <Card className="p-6 border border-gray-100 dark:border-gray-700">
           <div className="flex items-center">
             <div className="flex-shrink-0 h-12 w-12 bg-accent/20 dark:bg-accent/10 text-accent dark:text-accent/90 rounded-full flex items-center justify-center">
-              <Bell className="h-6 w-6" />
+              <AlertCircle className="h-6 w-6" />
             </div>
             <div className="ml-4">
               <h2 className="text-sm font-medium text-gray-500 dark:text-gray-400">미해결 신고</h2>
@@ -112,7 +135,7 @@ export default function AdminDashboard({ onAction }: AdminDashboardProps) {
             </div>
           </div>
         </Card>
-        
+
         <Card className="p-6 border border-gray-100 dark:border-gray-700">
           <div className="flex items-center">
             <div className="flex-shrink-0 h-12 w-12 bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 rounded-full flex items-center justify-center">
@@ -137,7 +160,7 @@ export default function AdminDashboard({ onAction }: AdminDashboardProps) {
           </div>
         </Card>
       </div>
-      
+
       {/* Performance Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         <Card className="border border-gray-100 dark:border-gray-700">
@@ -156,7 +179,7 @@ export default function AdminDashboard({ onAction }: AdminDashboardProps) {
             </div>
           </div>
         </Card>
-        
+
         <Card className="border border-gray-100 dark:border-gray-700">
           <div className="p-6">
             <div className="flex justify-between items-center mb-6">
@@ -174,14 +197,14 @@ export default function AdminDashboard({ onAction }: AdminDashboardProps) {
           </div>
         </Card>
       </div>
-      
+
       {/* System Monitoring */}
       <div className="mb-8">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-xl font-bold text-gray-800 dark:text-white">시스템 모니터링</h2>
           <Button variant="outline" size="sm">상세 보기</Button>
         </div>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <Card className="border border-gray-100 dark:border-gray-700">
             <div className="p-5">
@@ -194,7 +217,7 @@ export default function AdminDashboard({ onAction }: AdminDashboardProps) {
                   <p className="text-xs text-gray-500 dark:text-gray-400">PostgreSQL</p>
                 </div>
               </div>
-              
+
               <div className="space-y-3">
                 <div>
                   <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mb-1">
@@ -205,7 +228,7 @@ export default function AdminDashboard({ onAction }: AdminDashboardProps) {
                     <div className="bg-blue-500 h-2 rounded-full" style={{ width: "24%" }}></div>
                   </div>
                 </div>
-                
+
                 <div>
                   <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mb-1">
                     <span>메모리 사용</span>
@@ -215,7 +238,7 @@ export default function AdminDashboard({ onAction }: AdminDashboardProps) {
                     <div className="bg-blue-500 h-2 rounded-full" style={{ width: "42%" }}></div>
                   </div>
                 </div>
-                
+
                 <div>
                   <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mb-1">
                     <span>디스크 사용</span>
@@ -228,7 +251,7 @@ export default function AdminDashboard({ onAction }: AdminDashboardProps) {
               </div>
             </div>
           </Card>
-          
+
           <Card className="border border-gray-100 dark:border-gray-700">
             <div className="p-5">
               <div className="flex items-center mb-4">
@@ -240,7 +263,7 @@ export default function AdminDashboard({ onAction }: AdminDashboardProps) {
                   <p className="text-xs text-gray-500 dark:text-gray-400">Node.js</p>
                 </div>
               </div>
-              
+
               <div className="space-y-3">
                 <div>
                   <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mb-1">
@@ -251,7 +274,7 @@ export default function AdminDashboard({ onAction }: AdminDashboardProps) {
                     <div className="bg-green-500 h-2 rounded-full" style={{ width: "32%" }}></div>
                   </div>
                 </div>
-                
+
                 <div>
                   <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mb-1">
                     <span>메모리 사용</span>
@@ -261,7 +284,7 @@ export default function AdminDashboard({ onAction }: AdminDashboardProps) {
                     <div className="bg-green-500 h-2 rounded-full" style={{ width: "38%" }}></div>
                   </div>
                 </div>
-                
+
                 <div>
                   <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mb-1">
                     <span>응답 시간</span>
@@ -274,19 +297,19 @@ export default function AdminDashboard({ onAction }: AdminDashboardProps) {
               </div>
             </div>
           </Card>
-          
+
           <Card className="border border-gray-100 dark:border-gray-700">
             <div className="p-5">
               <div className="flex items-center mb-4">
                 <div className="flex-shrink-0 h-10 w-10 bg-accent/20 dark:bg-accent/10 text-accent dark:text-accent/90 rounded-full flex items-center justify-center">
-                  <Shield className="h-5 w-5" />
+                  <Server className="h-5 w-5" />
                 </div>
                 <div className="ml-3">
                   <h3 className="text-base font-medium text-gray-800 dark:text-white">보안 상태</h3>
                   <p className="text-xs text-gray-500 dark:text-gray-400">보안 모니터링</p>
                 </div>
               </div>
-              
+
               <div className="space-y-3">
                 <div>
                   <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mb-1">
@@ -297,7 +320,7 @@ export default function AdminDashboard({ onAction }: AdminDashboardProps) {
                     <div className="bg-green-500 h-2 rounded-full w-full"></div>
                   </div>
                 </div>
-                
+
                 <div>
                   <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mb-1">
                     <span>마지막 백업</span>
@@ -307,7 +330,7 @@ export default function AdminDashboard({ onAction }: AdminDashboardProps) {
                     <div className="bg-green-500 h-2 rounded-full w-full"></div>
                   </div>
                 </div>
-                
+
                 <div>
                   <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mb-1">
                     <span>로그인 실패</span>
@@ -322,7 +345,7 @@ export default function AdminDashboard({ onAction }: AdminDashboardProps) {
           </Card>
         </div>
       </div>
-      
+
       {/* Recent Activities & Pending Approvals */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Recent Activities */}
@@ -330,12 +353,12 @@ export default function AdminDashboard({ onAction }: AdminDashboardProps) {
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-xl font-bold text-gray-800 dark:text-white">최근 관리 활동</h2>
           </div>
-          
+
           <Card className="border border-gray-100 dark:border-gray-700">
             <div className="divide-y divide-gray-200 dark:divide-gray-700">
               <div className="p-5 flex items-center">
                 <div className="flex-shrink-0 h-10 w-10 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-full flex items-center justify-center">
-                  <CheckSquare className="h-5 w-5" />
+                  <CheckCircle className="h-5 w-5" />
                 </div>
                 <div className="ml-4 flex-1">
                   <div className="flex justify-between items-center">
@@ -349,10 +372,10 @@ export default function AdminDashboard({ onAction }: AdminDashboardProps) {
                   </p>
                 </div>
               </div>
-              
+
               <div className="p-5 flex items-center">
                 <div className="flex-shrink-0 h-10 w-10 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-full flex items-center justify-center">
-                  <Bell className="h-5 w-5" />
+                  <AlertCircle className="h-5 w-5" />
                 </div>
                 <div className="ml-4 flex-1">
                   <div className="flex justify-between items-center">
@@ -366,7 +389,7 @@ export default function AdminDashboard({ onAction }: AdminDashboardProps) {
                   </p>
                 </div>
               </div>
-              
+
               <div className="p-5 flex items-center">
                 <div className="flex-shrink-0 h-10 w-10 bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 rounded-full flex items-center justify-center">
                   <Settings className="h-5 w-5" />
@@ -386,14 +409,14 @@ export default function AdminDashboard({ onAction }: AdminDashboardProps) {
             </div>
           </Card>
         </div>
-        
+
         {/* Pending Approvals */}
         <div>
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-xl font-bold text-gray-800 dark:text-white">승인 대기 목록</h2>
             <a href="/admin/approvals" className="text-sm text-primary hover:text-primary/80 font-medium">모두 보기</a>
           </div>
-          
+
           <Card className="border border-gray-100 dark:border-gray-700">
             <div className="divide-y divide-gray-200 dark:divide-gray-700">
               <div className="p-5">
@@ -414,7 +437,7 @@ export default function AdminDashboard({ onAction }: AdminDashboardProps) {
                   <Button size="sm" className="text-xs">승인</Button>
                 </div>
               </div>
-              
+
               <div className="p-5">
                 <div className="flex items-center">
                   <div className="w-10 h-10 rounded-md bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
@@ -431,7 +454,7 @@ export default function AdminDashboard({ onAction }: AdminDashboardProps) {
                   <Button size="sm" className="text-xs">승인</Button>
                 </div>
               </div>
-              
+
               <div className="p-5">
                 <div className="flex items-center">
                   <Avatar 
@@ -454,6 +477,35 @@ export default function AdminDashboard({ onAction }: AdminDashboardProps) {
           </Card>
         </div>
       </div>
+    </div>
+        </TabsContent>
+
+        <TabsContent value="api-status" className="space-y-6 mt-6">
+          <ApiStatusMonitor />
+        </TabsContent>
+
+        <TabsContent value="performance" className="space-y-6 mt-6">
+          <Card className="border border-gray-100 dark:border-gray-700">
+            <div className="p-6">
+              <h2 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">성능 지표</h2>
+              <div className="text-sm text-gray-500 dark:text-gray-400">
+                성능 모니터링 데이터가 여기에 표시됩니다.
+              </div>
+            </div>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="analytics" className="space-y-6 mt-6">
+          <Card className="border border-gray-100 dark:border-gray-700">
+            <div className="p-6">
+              <h2 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">상세 분석</h2>
+              <div className="text-sm text-gray-500 dark:text-gray-400">
+                상세 분석 데이터가 여기에 표시됩니다.
+              </div>
+            </div>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
