@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/lib/auth-compat';
 import { useToast } from '@/hooks/use-toast';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   Card,
   CardContent,
@@ -83,9 +84,10 @@ interface Content {
 export default function AdminContents() {
   const { userName } = useAuth();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [contents, setContents] = useState<Content[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('all');
+  const [activeTab, setActiveTab] = useState('banners');
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState<string | null>(null);
   const [filterStatus, setFilterStatus] = useState<string | null>(null);
@@ -94,6 +96,124 @@ export default function AdminContents() {
   const [selectedContent, setSelectedContent] = useState<Content | null>(null);
   const [showContentModal, setShowContentModal] = useState(false);
   const [modalMode, setModalMode] = useState<'view' | 'edit' | 'add'>('view');
+  
+  // Banner management state
+  const [showBannerDialog, setShowBannerDialog] = useState(false);
+  const [bannerFormData, setBannerFormData] = useState({
+    title: '',
+    description: '',
+    imageUrl: '',
+    altText: '',
+    linkUrl: '',
+    targetBlank: true,
+    type: 'main' as 'main' | 'event' | 'shop' | 'course' | 'trainer',
+    position: 'hero' as 'hero' | 'sidebar' | 'footer' | 'popup',
+    order: 1,
+    startDate: '',
+    endDate: '',
+    status: 'active' as 'active' | 'inactive' | 'scheduled'
+  });
+
+  // Fetch banners
+  const { data: banners = [], isLoading: bannersLoading, refetch: refetchBanners } = useQuery({
+    queryKey: ['/api/admin/banners'],
+    queryFn: async () => {
+      const response = await fetch('/api/admin/banners', {
+        credentials: 'include'
+      });
+      if (!response.ok) {
+        throw new Error('배너 데이터를 불러오는데 실패했습니다');
+      }
+      return response.json();
+    }
+  });
+
+  // Create banner mutation
+  const createBannerMutation = useMutation({
+    mutationFn: async (data: any) => {
+      const response = await fetch('/api/admin/banners', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          ...data,
+          orderIndex: data.order
+        }),
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || '배너 생성에 실패했습니다');
+      }
+      
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({queryKey: ['/api/admin/banners']});
+      queryClient.invalidateQueries({queryKey: ['/api/banners']});
+      setShowBannerDialog(false);
+      setBannerFormData({
+        title: '',
+        description: '',
+        imageUrl: '',
+        altText: '',
+        linkUrl: '',
+        targetBlank: true,
+        type: 'main',
+        position: 'hero',
+        order: 1,
+        startDate: '',
+        endDate: '',
+        status: 'active'
+      });
+      toast({
+        title: '배너 생성 완료',
+        description: '새로운 배너가 성공적으로 생성되었습니다.',
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: '배너 생성 실패',
+        description: error.message,
+        variant: 'destructive',
+      });
+    }
+  });
+
+  // Delete banner mutation
+  const deleteBannerMutation = useMutation({
+    mutationFn: async (bannerId: number) => {
+      const response = await fetch(`/api/admin/banners/${bannerId}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || '배너 삭제에 실패했습니다');
+      }
+      
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({queryKey: ['/api/admin/banners']});
+      queryClient.invalidateQueries({queryKey: ['/api/banners']});
+      toast({
+        title: '배너 삭제 완료',
+        description: '배너가 성공적으로 삭제되었습니다.',
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: '배너 삭제 실패',
+        description: error.message,
+        variant: 'destructive',
+      });
+    }
+  });
+
   const [newContent, setNewContent] = useState({
     title: '',
     type: 'banner' as 'banner' | 'image' | 'video' | 'article' | 'event',
