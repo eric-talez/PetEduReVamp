@@ -948,12 +948,41 @@ export function RealTimePopularChart() {
                 <div className="space-y-2">
                   <Button 
                     className="w-full"
-                    onClick={() => {
+                    onClick={async () => {
                       console.log('[Modal Action] 상담 신청 클릭:', selectedTrainer.name);
                       handleConsultationClick(selectedTrainer.name);
-                      // 상담 신청 페이지로 이동
-                      setIsTrainerModalOpen(false);
-                      setLocation(`/video-call/reserve?trainer=${selectedTrainer.id}`);
+                      try {
+                        const response = await fetch('/api/consultation/request', {
+                          method: 'POST',
+                          headers: {
+                            'Content-Type': 'application/json',
+                          },
+                          body: JSON.stringify({
+                            trainerId: selectedTrainer.id,
+                            message: `${selectedTrainer.name}님께 상담을 요청합니다.`,
+                            preferredDate: new Date().toISOString()
+                          })
+                        });
+                        
+                        if (response.ok) {
+                          const result = await response.json();
+                          toast({
+                            title: "상담 신청 완료",
+                            description: result.message,
+                          });
+                          // 상담 신청 후 상세 페이지로 이동
+                          setIsTrainerModalOpen(false);
+                          setLocation(`/video-call/reserve?trainer=${selectedTrainer.id}`);
+                        } else {
+                          throw new Error('상담 신청 실패');
+                        }
+                      } catch (error) {
+                        toast({
+                          title: "오류",
+                          description: "상담 신청 중 오류가 발생했습니다.",
+                          variant: "destructive",
+                        });
+                      }
                     }}
                   >
                     상담 신청
@@ -961,11 +990,39 @@ export function RealTimePopularChart() {
                   <Button 
                     variant="outline" 
                     className="w-full"
-                    onClick={() => {
+                    onClick={async () => {
                       console.log('[Modal Action] 메시지 보내기 클릭:', selectedTrainer.name);
-                      // 메시지 페이지로 이동
-                      setIsTrainerModalOpen(false);
-                      setLocation(`/messages?trainer=${selectedTrainer.id}`);
+                      try {
+                        const response = await fetch('/api/messages/send', {
+                          method: 'POST',
+                          headers: {
+                            'Content-Type': 'application/json',
+                          },
+                          body: JSON.stringify({
+                            receiverId: selectedTrainer.id,
+                            message: `안녕하세요 ${selectedTrainer.name}님, 훈련에 대해 문의드리고 싶습니다.`
+                          })
+                        });
+                        
+                        if (response.ok) {
+                          const result = await response.json();
+                          toast({
+                            title: "메시지 전송 완료",
+                            description: result.message,
+                          });
+                          // 메시지 전송 후 상세 페이지로 이동
+                          setIsTrainerModalOpen(false);
+                          setLocation(`/messages?trainer=${selectedTrainer.id}`);
+                        } else {
+                          throw new Error('메시지 전송 실패');
+                        }
+                      } catch (error) {
+                        toast({
+                          title: "오류",
+                          description: "메시지 전송 중 오류가 발생했습니다.",
+                          variant: "destructive",
+                        });
+                      }
                     }}
                   >
                     메시지 보내기
