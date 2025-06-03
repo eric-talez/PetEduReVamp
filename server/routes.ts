@@ -609,6 +609,114 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // 훈련사별 담당 반려동물 목록 API
+  app.get('/api/trainer/my-pets', async (req: Request, res: Response) => {
+    try {
+      const user = req.user || req.session?.user || { id: 1, role: 'trainer' };
+      
+      if (user.role !== 'trainer') {
+        return res.status(403).json({
+          success: false,
+          error: '훈련사만 접근 가능합니다.'
+        });
+      }
+
+      // 실제로는 데이터베이스에서 훈련사가 담당하는 반려동물 목록 조회
+      const myPets = [
+        {
+          id: 'pet1',
+          name: '멍멍이',
+          breed: '골든 리트리버',
+          age: 2,
+          ownerName: '김반려',
+          ownerId: 'owner1',
+          assignedDate: '2024-01-15',
+          avatar: null
+        },
+        {
+          id: 'pet2',
+          name: '야옹이',
+          breed: '러시안 블루',
+          age: 3,
+          ownerName: '이반려',
+          ownerId: 'owner2',
+          assignedDate: '2024-01-20',
+          avatar: null
+        }
+      ];
+
+      res.json({
+        success: true,
+        pets: myPets
+      });
+    } catch (error) {
+      console.error('담당 반려동물 목록 조회 오류:', error);
+      res.status(500).json({
+        success: false,
+        error: '담당 반려동물 목록 조회에 실패했습니다.'
+      });
+    }
+  });
+
+  // 훈련사용 알림장 목록 조회 API
+  app.get('/api/trainer/notebook/entries', async (req: Request, res: Response) => {
+    try {
+      const user = req.user || req.session?.user || { id: 1, role: 'trainer' };
+      
+      if (user.role !== 'trainer') {
+        return res.status(403).json({
+          success: false,
+          error: '훈련사만 접근 가능합니다.'
+        });
+      }
+
+      const { petId, date, limit = 20, offset = 0 } = req.query;
+
+      // 실제로는 데이터베이스에서 해당 훈련사가 작성한 알림장 조회
+      const entries = [
+        {
+          id: '1',
+          date: new Date().toISOString().split('T')[0],
+          petName: '멍멍이',
+          petId: 'pet1',
+          ownerName: '김반려',
+          ownerId: 'owner1',
+          title: '기본 훈련 세션',
+          content: '오늘 멍멍이는 앉기와 기다리기 명령을 잘 따라했습니다.',
+          activities: ['기본 명령어', '리드줄 훈련'],
+          mood: 'excellent',
+          duration: 90,
+          location: 'PetEdu 훈련장 A',
+          photos: [],
+          nextGoals: ['산책 훈련', '다른 강아지와의 사회화'],
+          isRead: false,
+          createdAt: new Date().toISOString()
+        }
+      ];
+
+      // 필터링 적용
+      let filteredEntries = entries;
+      if (petId && petId !== 'all') {
+        filteredEntries = filteredEntries.filter(entry => entry.petId === petId);
+      }
+      if (date) {
+        filteredEntries = filteredEntries.filter(entry => entry.date === date);
+      }
+
+      res.json({
+        success: true,
+        entries: filteredEntries.slice(Number(offset), Number(offset) + Number(limit)),
+        total: filteredEntries.length
+      });
+    } catch (error) {
+      console.error('훈련사 알림장 목록 조회 오류:', error);
+      res.status(500).json({
+        success: false,
+        error: '알림장 목록 조회에 실패했습니다.'
+      });
+    }
+  });
+
   // AI 알림장 생성 API
   app.post('/api/notebook/ai-generate', async (req: Request, res: Response) => {
     try {

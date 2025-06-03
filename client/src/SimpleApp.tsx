@@ -86,16 +86,16 @@ function NavigationMessageListener({ children }: { children: ReactNode }) {
     const handleSpecialNavigation = (event: MessageEvent) => {
       try {
         const message = event.data;
-        
+
         if (message && message.type) {
           console.log("[Navigation] 메시지 수신:", message.type);
-          
+
           switch (message.type) {
             case 'NAVIGATE_TO_SHOP':
               console.log("[Navigation] 쇼핑 페이지로 이동 요청 수신");
               window.location.href = '/shop';
               break;
-              
+
             case 'NAVIGATE_TO_HOME':
               console.log("[Navigation] 홈으로 이동 요청 수신");
               window.location.href = '/';
@@ -106,10 +106,10 @@ function NavigationMessageListener({ children }: { children: ReactNode }) {
         console.error("[Navigation] 메시지 처리 중 오류 발생:", error);
       }
     };
-    
+
     // 이벤트 리스너 등록
     window.addEventListener('message', handleSpecialNavigation);
-    
+
     // 정리 함수
     return () => {
       window.removeEventListener('message', handleSpecialNavigation);
@@ -136,7 +136,7 @@ function AppLayout({ children }: { children: ReactNode }) {
     return true;
   });
   const auth = useAuth();
-  
+
   // 인증 상태가 변경될 때마다 윈도우 객체에 저장된 상태를 확인하고 동기화
   useEffect(() => {
     if (window.__peteduAuthState && window.__peteduAuthState.isAuthenticated) {
@@ -154,12 +154,12 @@ function AppLayout({ children }: { children: ReactNode }) {
       }
     }
   }, [auth.isAuthenticated, auth.userRole, auth.userName]);
-  
+
   // 사이드바 크기 토글 핸들러
   const toggleSidebarSize = () => {
     const newState = !sidebarExpanded;
     setSidebarExpanded(newState);
-    
+
     // 사이드바 상태를 localStorage에 저장
     try {
       localStorage.setItem('sidebarExpanded', String(newState));
@@ -168,23 +168,23 @@ function AppLayout({ children }: { children: ReactNode }) {
       console.error('사이드바 상태 저장 오류:', e);
     }
   };
-  
+
   // 화면 크기 변경 감지
   useEffect(() => {
     function handleResize() {
       setIsDesktop(window.innerWidth >= 1024);
     }
-    
+
     // 초기 실행
     handleResize();
-    
+
     // 이벤트 리스너 등록
     window.addEventListener('resize', handleResize);
-    
+
     // 클린업
     return () => window.removeEventListener('resize', handleResize);
   }, []);
-  
+
   // 키보드 접근성 설정 (전역 단축키)
   useKeyboardAccessibility([
     // 홈 페이지로 이동
@@ -217,7 +217,7 @@ function AppLayout({ children }: { children: ReactNode }) {
       <div className="bg-background text-foreground min-h-screen font-sans flex flex-col">
         {/* 접근성 개선: 콘텐츠로 건너뛰기 링크 */}
         <SkipToContent contentId="main-content" />
-        
+
         <div className="flex flex-grow">
           {/* 사이드바 - 항상 고정된 너비를 가짐 */}
           <aside 
@@ -245,7 +245,7 @@ function AppLayout({ children }: { children: ReactNode }) {
               </div>
             )}
           </aside>
-          
+
           {/* 모바일 오버레이 - 사이드바가 열리면 본문 위에 표시 */}
           {sidebarOpen && !isDesktop && (
             <div 
@@ -254,7 +254,7 @@ function AppLayout({ children }: { children: ReactNode }) {
               aria-hidden="true"
             />
           )}
-          
+
           {/* 우측 컨텐츠 영역 (헤더 + 메인) */}
           <div className={`
             flex-grow flex flex-col min-h-screen transition-all duration-300 w-full
@@ -265,14 +265,14 @@ function AppLayout({ children }: { children: ReactNode }) {
               sidebarOpen={sidebarOpen}
               onToggleSidebar={isDesktop ? toggleSidebarSize : () => setSidebarOpen(!sidebarOpen)}
             />
-            
+
             {/* 메인 컨텐츠 영역 */}
             <main id="main-content" className="flex-grow" tabIndex={-1}>
               <ErrorBoundary>
                 <Switch>
                   {/* 홈 페이지 */}
                   <Route path="/" component={Home} />
-                  
+
                   {/* 관리자 메뉴 */}
                   <Route path="/admin/dashboard" component={AdminHome} />
                   <Route path="/admin/users" component={AdminUsers} />
@@ -286,7 +286,7 @@ function AppLayout({ children }: { children: ReactNode }) {
                   <Route path="/admin/settings" component={AdminSettings} />
                   <Route path="/admin/contents" component={AdminContents} />
                   <Route path="/admin/spring-boot-test" component={SpringBootTestPage} />
-                  
+
                   {/* 대시보드 */}
                   <Route path="/dashboard">
                     {() => {
@@ -308,7 +308,7 @@ function AppLayout({ children }: { children: ReactNode }) {
                       );
                     }}
                   </Route>
-                  
+
                   {/* 강의 관련 */}
                   <Route path="/courses">
                     {() => {
@@ -331,7 +331,7 @@ function AppLayout({ children }: { children: ReactNode }) {
                       );
                     }}
                   </Route>
-                  
+
                   {/* 프로필 페이지 */}
                   <Route path="/profile">
                     {() => (
@@ -404,13 +404,13 @@ function AppLayout({ children }: { children: ReactNode }) {
                     }}
                   </Route>
                   <Route path="/institutes" component={Institutes} />
-                  
+
                   {/* 위치 및 이벤트 */}
                   <Route path="/locations" component={LocationsPage} />
                   <Route path="/events" component={EventsPage} />
                   <Route path="/events/calendar" component={EventCalendarPage} />
                   <Route path="/events/:id" component={EventDetailPage} />
-                  
+
                   {/* 영상 및 화상 */}
                   <Route path="/video-training" component={VideoTrainingPage} />
                   <Route path="/video-call" component={VideoCallPage} />
@@ -424,7 +424,7 @@ function AppLayout({ children }: { children: ReactNode }) {
                       );
                     }}
                   </Route>
-                  
+
                   {/* 상담 관리 */}
                   <Route path="/consultation">
                     {() => {
@@ -436,11 +436,11 @@ function AppLayout({ children }: { children: ReactNode }) {
                       );
                     }}
                   </Route>
-                  
+
                   {/* 커뮤니티 */}
                   <Route path="/community" component={Community} />
                   <Route path="/community/post/:id" component={CommunityPostDetail} />
-                  
+
                   {/* 쇼핑 */}
                   <Route path="/shop">
                     {() => {
@@ -452,10 +452,10 @@ function AppLayout({ children }: { children: ReactNode }) {
                       );
                     }}
                   </Route>
-                  
+
                   {/* 인증 */}
                   <Route path="/auth" component={Login} />
-                  
+
                   {/* AI 분석 */}
                   <Route path="/ai-analysis">
                     {() => {
@@ -467,7 +467,7 @@ function AppLayout({ children }: { children: ReactNode }) {
                       );
                     }}
                   </Route>
-                  
+
                   {/* AI 챗봇 - /chatbot 경로도 지원 */}
                   <Route path="/chatbot">
                     {() => {
@@ -479,7 +479,7 @@ function AppLayout({ children }: { children: ReactNode }) {
                       );
                     }}
                   </Route>
-                  
+
                   {/* 훈련사 메뉴 */}
                   <Route path="/trainer/classes">
                     {() => {
@@ -551,7 +551,7 @@ function AppLayout({ children }: { children: ReactNode }) {
                       );
                     }}
                   </Route>
-                  
+
                   {/* 기관 관리자 메뉴 */}
                   <Route path="/institute/dashboard">
                     {() => {
@@ -643,7 +643,7 @@ function AppLayout({ children }: { children: ReactNode }) {
                       );
                     }}
                   </Route>
-                  
+
                   {/* 나의 학습 메뉴 */}
                   <Route path="/my-courses">
                     {() => {
@@ -745,7 +745,7 @@ function AppLayout({ children }: { children: ReactNode }) {
                       );
                     }}
                   </Route>
-                  
+
                   {/* 기능 메뉴 */}
                   <Route path="/alerts">
                     {() => {
@@ -767,7 +767,7 @@ function AppLayout({ children }: { children: ReactNode }) {
                       );
                     }}
                   </Route>
-                  
+
                   {/* AI 챗봇 */}
                   <Route path="/ai-chatbot">
                     {() => {
@@ -779,24 +779,24 @@ function AppLayout({ children }: { children: ReactNode }) {
                       );
                     }}
                   </Route>
-                  
+
                   {/* 검색 */}
                   <Route path="/search" component={SearchPage} />
-                  
+
                   {/* 도움말 */}
                   <Route path="/help/faq" component={FAQPage} />
-                  
+
                   {/* 404 페이지 */}
                   <Route component={NotFound} />
                 </Switch>
               </ErrorBoundary>
             </main>
-            
+
             {/* 플로팅 장바구니 버튼 */}
             <FloatingCartButton />
           </div>
         </div>
-        
+
         {/* 챗봇 */}
         <div className="fixed bottom-4 right-4 z-50">
           <SimpleChatbot />
@@ -815,12 +815,12 @@ function ProtectedRoute({ component: Component, requiredRoles = null, fallback =
   fallback?: React.ReactNode;
 }) {
   const { isAuthenticated, userRole, isLoading } = useAuth();
-  
+
   // 로딩 중일 때는 로딩 표시
   if (isLoading) {
     return <FullScreenLoading message="인증 정보 확인 중..." />;
   }
-  
+
   // 로그인 여부 체크
   if (!isAuthenticated) {
     // 접근 제한 메시지와 함께 로그인 페이지로 리다이렉션
@@ -833,7 +833,8 @@ function ProtectedRoute({ component: Component, requiredRoles = null, fallback =
             <line x1="12" y1="17" x2="12.01" y2="17"></line>
           </svg>
         </div>
-        <h2 className="text-xl font-semibold mb-2">로그인이 필요한 페이지입니다</h2>
+        <h2 className="text-xl font-semibold mb-2">로그```
+인이 필요한 페이지입니다</h2>
         <p className="text-gray-600 dark:text-gray-400 mb-6">이 기능을 사용하려면 로그인이 필요합니다.</p>
         <button
           onClick={() => window.location.href = '/auth'}
@@ -844,12 +845,12 @@ function ProtectedRoute({ component: Component, requiredRoles = null, fallback =
       </div>
     );
   }
-  
+
   // 권한 검증 (requiredRoles이 null이면 로그인만 되어 있으면 됨)
   if (requiredRoles && userRole && !requiredRoles.includes(userRole as UserRole)) {
     return <>{fallback}</>;
   }
-  
+
   return <Component />;
 }
 
@@ -906,7 +907,7 @@ function ProtectedAdminRoute({ component: Component, fallback = <div className="
  */
 function AuthenticatedRoutes() {
   const { userRole } = useAuth();
-  
+
   // 역할에 따라 홈 컴포넌트 다르게 처리
   const getHomeComponent = () => {
     switch(userRole) {
@@ -932,7 +933,7 @@ function AuthenticatedRoutes() {
         return <Home />;
     }
   };
-  
+
   return (
     <AppLayout>
       <Switch>
@@ -940,7 +941,7 @@ function AuthenticatedRoutes() {
         <Route path="/">
           {getHomeComponent()}
         </Route>
-        
+
         {/* 대시보드 */}
         <Route path="/dashboard">
           {() => <Dashboard />}
@@ -958,7 +959,7 @@ function AuthenticatedRoutes() {
             );
           }}
         </Route>
-        
+
         {/* 메뉴 관리는 따로 처리 */}
         <Route path="/admin/menu-management">
           {() => {
@@ -970,7 +971,7 @@ function AuthenticatedRoutes() {
             );
           }}
         </Route>
-        
+
         {/* 기관 관리자 메뉴 */}
         <Route path="/institute/trainers">
           {() => {
@@ -1042,7 +1043,7 @@ function AuthenticatedRoutes() {
             );
           }}
         </Route>
-        
+
         {/* 일반 메뉴 */}
         <Route path="/courses" component={() => <Courses />} />
         <Route path="/course/:id" component={CourseDetail} />
@@ -1082,7 +1083,7 @@ function AuthenticatedRoutes() {
             );
           }}
         </Route>
-        
+
         {/* 상품 상세 페이지 */}
         <Route path="/shop/product/:id">
           {() => {
@@ -1095,7 +1096,7 @@ function AuthenticatedRoutes() {
             );
           }}
         </Route>
-        
+
         {/* 장바구니 페이지 */}
         <Route path="/shop/cart">
           {() => {
@@ -1108,7 +1109,7 @@ function AuthenticatedRoutes() {
             );
           }}
         </Route>
-        
+
         {/* 결제 페이지 */}
         <Route path="/shop/checkout">
           {() => {
@@ -1121,7 +1122,7 @@ function AuthenticatedRoutes() {
             );
           }}
         </Route>
-        
+
         {/* 주문 완료 페이지 */}
         <Route path="/shop/order-complete">
           {() => {
@@ -1134,7 +1135,7 @@ function AuthenticatedRoutes() {
             );
           }}
         </Route>
-        
+
         {/* 주문 내역 페이지 */}
         <Route path="/shop/order-history">
           {() => {
@@ -1208,7 +1209,7 @@ function AuthenticatedRoutes() {
           )}
         </Route>
 
-        
+
         {/* 훈련사 메뉴 - 권한 검증 적용 */}
         <Route path="/trainer/courses">
           {() => {
@@ -1284,7 +1285,7 @@ function AuthenticatedRoutes() {
             );
           }}
         </Route>
-        
+
         <Route path="/trainer/notebook">
           {() => {
             const NotebookPage = lazy(() => import('./pages/notebook'));
@@ -1299,7 +1300,7 @@ function AuthenticatedRoutes() {
             );
           }}
         </Route>
-        
+
         <Route path="/trainer/profile">
           {() => {
             const ProfilePage = lazy(() => import('./pages/profile'));
@@ -1316,7 +1317,7 @@ function AuthenticatedRoutes() {
             );
           }}
         </Route>
-        
+
         <Route path="/trainer/settings">
           {() => {
             const SettingsPage = lazy(() => import('./pages/settings'));
@@ -1333,7 +1334,7 @@ function AuthenticatedRoutes() {
             );
           }}
         </Route>
-        
+
         <Route path="/institute/profile">
           {() => {
             const ProfilePage = lazy(() => import('./pages/profile'));
@@ -1350,7 +1351,7 @@ function AuthenticatedRoutes() {
             );
           }}
         </Route>
-        
+
         <Route path="/institute/settings">
           {() => {
             const SettingsPage = lazy(() => import('./pages/settings'));
@@ -1367,7 +1368,7 @@ function AuthenticatedRoutes() {
             );
           }}
         </Route>
-        
+
         <Route path="/profile">
           {() => {
             const ProfilePage = lazy(() => import('./pages/profile'));
@@ -1384,7 +1385,7 @@ function AuthenticatedRoutes() {
             );
           }}
         </Route>
-        
+
         <Route path="/subscriptions">
           {() => {
             console.log("구독 관리 페이지 접근");
@@ -1399,7 +1400,7 @@ function AuthenticatedRoutes() {
             );
           }}
         </Route>
-        
+
         <Route path="/settings">
           {() => {
             const SettingsPage = lazy(() => import('./pages/settings'));
@@ -1416,9 +1417,9 @@ function AuthenticatedRoutes() {
             );
           }}
         </Route>
-        
+
         {/* 중복 경로 제거: /trainer-earnings는 /trainer/earnings로 통합되었습니다 */}
-        
+
         <Route path="/notebook">
           {() => {
             const Notebook = lazy(() => import('./pages/notebook'));
@@ -1433,7 +1434,7 @@ function AuthenticatedRoutes() {
             );
           }}
         </Route>
-        
+
         <Route path="/ai-chatbot">
           {() => {
             console.log("AI 챗봇 페이지 접근");
@@ -1450,7 +1451,7 @@ function AuthenticatedRoutes() {
             );
           }}
         </Route>
-        
+
         <Route path="/trainer-referrals">
           {() => {
             const TrainerReferrals = lazy(() => import('./pages/trainer-referrals'));
@@ -1465,7 +1466,7 @@ function AuthenticatedRoutes() {
             );
           }}
         </Route>
-        
+
         <Route path="/shop">
           {() => (
             <Suspense fallback={
@@ -1480,7 +1481,7 @@ function AuthenticatedRoutes() {
             </Suspense>
           )}
         </Route>
-        
+
 
         <Route path="/institute/pet-assignments">
           {() => {
@@ -1530,7 +1531,7 @@ function AuthenticatedRoutes() {
             );
           }}
         </Route>
-        
+
         {/* 관리자 메뉴 */}
         <Route path="/admin/dashboard">
           {() => {
@@ -1582,7 +1583,7 @@ function AuthenticatedRoutes() {
             );
           }}
         </Route>
-        
+
         <Route path="/admin/analytics">
           {() => {
             const AnalyticsPage = lazy(() => import('./pages/admin/analytics'));
@@ -1731,7 +1732,7 @@ function AuthenticatedRoutes() {
             />
           )}
         </Route>
-        
+
         {/* AI 분석 페이지 */}
         <Route path="/ai-analysis">
           {() => {
@@ -1748,7 +1749,7 @@ function AuthenticatedRoutes() {
             );
           }}
         </Route>
-        
+
         {/* 분석 및 보고서 페이지 */}
         <Route path="/analytics">
           {() => {
@@ -1797,10 +1798,62 @@ function AuthenticatedRoutes() {
           }}
         </Route>
 
+        {/* 훈련사 메뉴 */}
+        <Route path="/trainer/courses">
+          {() => {
+            const TrainerCourses = lazy(() => import('./pages/trainer/courses'));
+            return (
+              <Suspense fallback={<div className="p-8 text-center">강의 관리 로딩 중...</div>}>
+                <ProtectedTrainerRoute component={TrainerCourses} />
+              </Suspense>
+            );
+          }}
+        </Route>
+        <Route path="/trainer/notebook">
+          {() => {
+            const TrainerNotebook = lazy(() => import('./pages/trainer/notebook'));
+            return (
+              <Suspense fallback={<div className="p-8 text-center">훈련 노트 로딩 중...</div>}>
+                <ProtectedTrainerRoute component={TrainerNotebook} />
+              </Suspense>
+            );
+          }}
+        </Route>
+        <Route path="/trainer/students">
+          {() => {
+            const TrainerStudents = lazy(() => import('./pages/trainer/students'));
+            return (
+              <Suspense fallback={<div className="p-8 text-center">수강생 관리 로딩 중...</div>}>
+                <ProtectedTrainerRoute component={TrainerStudents} />
+              </Suspense>
+            );
+          }}
+        </Route>
+        <Route path="/trainer/stats">
+          {() => {
+            const TrainerStats = lazy(() => import('./pages/trainer/stats'));
+            return (
+              <Suspense fallback={<div className="p-8 text-center">통계 로딩 중...</div>}>
+                <ProtectedTrainerRoute component={TrainerStats} />
+              </Suspense>
+            );
+          }}
+        </Route>
+        <Route path="/trainer/earnings">
+          {() => {
+            const TrainerEarnings = lazy(() => import('./pages/trainer/earnings'));
+            return (
+              <Suspense fallback={<div className="p-8 text-center">수익 관리 로딩 중...</div>}>
+                <ProtectedTrainerRoute component={TrainerEarnings} />
+              </Suspense>
+            );
+          }}
+        </Route>
 
 
 
-        
+
+
         {/* 404 페이지 */}
         <Route component={NotFound} />
       </Switch>
@@ -1817,7 +1870,7 @@ function UnauthenticatedRoutes() {
       <Switch>
         <Route path="/auth" component={Login} />
         <Route path="/chatbot" component={ChatbotPage} />
-        
+
         {/* 위치 서비스 */}
         <Route path="/locations">
           {() => {
@@ -1833,7 +1886,7 @@ function UnauthenticatedRoutes() {
             );
           }}
         </Route>
-        
+
         {/* AI 챗봇 */}
         <Route path="/ai-chatbot">
           {() => {
@@ -1849,7 +1902,7 @@ function UnauthenticatedRoutes() {
             );
           }}
         </Route>
-        
+
         {/* 쇼핑몰 메인 */}
         <Route path="/shop">
           {() => {
@@ -1863,7 +1916,7 @@ function UnauthenticatedRoutes() {
             );
           }}
         </Route>
-        
+
         {/* 상품 상세 페이지 */}
         <Route path="/shop/product/:id">
           {() => {
@@ -1876,7 +1929,7 @@ function UnauthenticatedRoutes() {
             );
           }}
         </Route>
-        
+
         {/* 장바구니 페이지 */}
         <Route path="/shop/cart">
           {() => {
@@ -1889,7 +1942,7 @@ function UnauthenticatedRoutes() {
             );
           }}
         </Route>
-        
+
         {/* 결제 페이지 */}
         <Route path="/shop/checkout">
           {() => {
@@ -1902,7 +1955,7 @@ function UnauthenticatedRoutes() {
             );
           }}
         </Route>
-        
+
         {/* 주문 완료 페이지 */}
         <Route path="/shop/order-complete">
           {() => {
@@ -1959,7 +2012,7 @@ function UnauthenticatedRoutes() {
             );
           }}
         </Route>
-        
+
         {/* 성취 배지 페이지 */}
         <Route path="/profile/achievements">
           {() => {
@@ -2001,17 +2054,17 @@ function DebugButton() {
     localStorage.removeItem('petedu_auth');
     window.location.reload();
   };
-  
+
   const handleLoginAs = (role: 'user' | 'pet-owner' | 'trainer' | 'institute-admin' | 'admin') => {
     console.log(`Login as ${role}`);
-    
+
     // 역할에 맞는 표시 이름 설정
     const displayName = role === 'admin' ? '관리자' 
                : role === 'trainer' ? '훈련사' 
                : role === 'institute-admin' ? '기관 관리자' 
                : role === 'pet-owner' ? '반려인' 
                : '일반 사용자';
-    
+
     // 새로운 글로벌 인증 시스템으로 로그인 이벤트 발생
     const loginEvent = new CustomEvent('login', { 
       detail: { 
@@ -2021,7 +2074,7 @@ function DebugButton() {
         userName: displayName
       } 
     });
-    
+
     window.dispatchEvent(loginEvent);
   };
 
@@ -2116,15 +2169,15 @@ function KeyboardShortcutsManager({ children }: { children: ReactNode }) {
  */
 function SimpleApp() {
   const auth = useAuth();
-  
+
   // 디버깅: 현재 인증 상태 출력
   console.log('SimpleApp render - Auth state:', auth);
-  
+
   // 로딩 상태는 더 이상 체크하지 않음 - 이미 useAuth에서 처리됨
   // if (auth.isLoading) {
   //   return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   // }
-  
+
   return (
     <ThemeProvider defaultTheme="light" storageKey="petedu-theme">
       <ThemeManager>

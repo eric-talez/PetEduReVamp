@@ -36,7 +36,8 @@ import {
   Mic,
   Download,
   Share,
-  MoreHorizontal
+  MoreHorizontal,
+  Check
 } from 'lucide-react';
 import { format, isToday, isYesterday, subDays, addDays } from 'date-fns';
 import { ko } from 'date-fns/locale';
@@ -527,6 +528,14 @@ export default function NotebookPage() {
     return filtered;
   }, [entries, searchTerm, showRead, showUnread, filters.tags, sortBy]);
 
+   const markAsRead = (entryId: string) => {
+    setEntries(prevEntries =>
+      prevEntries.map(entry =>
+        entry.id === entryId ? { ...entry, isRead: true } : entry
+      )
+    );
+  };
+
   return (
     <div className="container mx-auto p-6 space-y-6">
       {/* 헤더 */}
@@ -833,6 +842,33 @@ export default function NotebookPage() {
                     </div>
                   </div>
                 )}
+
+                {/* 액션 버튼들 */}
+                <div className="flex gap-2 pt-2 border-t">
+                  {!entry.isRead && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => markAsRead(entry.id)}
+                      className="flex items-center gap-1"
+                    >
+                      <Check className="h-3 w-3" />
+                      읽음 표시
+                    </Button>
+                  )}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      // 훈련사에게 메시지 보내기 기능
+                      window.location.href = `/messages?trainer=${entry.trainerId}`;
+                    }}
+                    className="flex items-center gap-1"
+                  >
+                    <MessageSquare className="h-3 w-3" />
+                    훈련사에게 연락
+                  </Button>
+                </div>
 
                 {/* 추가 정보 */}
                 <div className="flex flex-wrap gap-4 text-xs text-gray-500">
