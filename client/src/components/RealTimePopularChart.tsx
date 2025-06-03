@@ -339,6 +339,7 @@ export function RealTimePopularChart() {
   };
 
   const handleItemClick = (detailPath: string) => {
+    console.log('[RealTimePopularChart] 클릭된 경로:', detailPath);
     setLocation(detailPath);
   };
 
