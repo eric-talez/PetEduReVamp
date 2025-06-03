@@ -160,7 +160,6 @@ export function WeeklyWeatherModal({ isOpen, onClose, location = { name: "서울
     if (score >= 80) return "매우 좋음";
     if (score >= 60) return "좋음";
     if (score >= 40) return "보통";
-    return "나쁨";re >= 40) return "보통";
     if (score >= 20) return "좋지 않음";
     return "매우 좋지 않음";
   };
