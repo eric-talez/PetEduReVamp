@@ -8,7 +8,7 @@ import { WeeklyWeatherModal } from '@/components/WeeklyWeatherModal';
 import { ShopPreview } from '@/components/ShopPreview'; // 인증 상태에 의존하지 않는 컴포넌트
 import { SocialLoginButtons } from '@/components/SocialLoginButtons'; // 소셜 로그인 버튼
 import { useState, lazy, Suspense } from 'react';
-import { Loader2, ChevronDown, ChevronRight } from 'lucide-react';
+import { Loader2, ChevronDown, ChevronRight, ChevronLeft } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { PasswordResetForm } from '@/components/PasswordResetForm';
 
