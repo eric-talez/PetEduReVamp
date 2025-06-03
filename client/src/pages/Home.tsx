@@ -282,74 +282,69 @@ export default function Home() {
           </div>
         </div>
 
-        {/* 로그인 영역과 간단한 서비스 안내 */}
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">
-          {/* 빈 공간 - 왼쪽 3/4 */}
-          <div className="lg:col-span-3">
-            {/* 추가 콘텐츠 영역 (필요시 사용) */}
-          </div>
+        {/* 서비스 현황 섹션 */}
+        <div className="mb-8">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+            <div className="flex items-center justify-between cursor-pointer" onClick={toggleServiceStats}>
+              <h2 className="text-xl font-bold">서비스 현황</h2>
+              <ChevronDown className={`h-5 w-5 transition-transform ${isServiceStatsOpen ? 'rotate-180' : ''}`} />
+            </div>
+            {isServiceStatsOpen && (
+              <div className="mt-6 space-y-6">
+                {/* 주간 통계 */}
+                <div>
+                  <h3 className="text-lg font-semibold mb-4">이번 주 활동</h3>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                      <span className="text-sm font-medium">새로운 반려견 등록</span>
+                      <div className="flex items-center space-x-3">
+                        <MiniChart data={[12, 19, 24, 18, 26, 23, 31]} color="blue" />
+                        <span className="text-lg font-bold text-blue-600">145</span>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                      <span className="text-sm font-medium">완료된 교육 세션</span>
+                      <div className="flex items-center space-x-3">
+                        <MiniChart data={[8, 15, 12, 20, 18, 25, 22]} color="green" />
+                        <span className="text-lg font-bold text-green-600">89</span>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+                      <span className="text-sm font-medium">활성 사용자</span>
+                      <div className="flex items-center space-x-3">
+                        <MiniChart data={[45, 52, 48, 61, 58, 67, 73]} color="purple" />
+                        <span className="text-lg font-bold text-purple-600">1,247</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
 
-          {/* 로그인 영역 - 오른쪽 1/4 */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 flex flex-col h-[400px] overflow-y-auto">
-            {isAuthenticated ? (
-              <>
-                <h2 className="text-lg font-semibold mb-4">환영합니다</h2>
-                <div className="flex items-center mb-4">
-                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center mr-3">
-                    <span className="text-primary font-bold">{userName?.charAt(0)}</span>
+                {/* 실시간 날씨 정보 */}
+                <div>
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-semibold">산책하기 좋은 날씨</h3>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setIsWeatherModalOpen(true)}
+                    >
+                      주간 예보 보기
+                    </Button>
                   </div>
-                  <div>
-                    <p className="font-medium">{userName}</p>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                      {userRole === 'pet-owner' && '반려인'}
-                      {userRole === 'trainer' && '훈련사'}
-                      {userRole === 'institute-admin' && '기관 관리자'}
-                      {userRole === 'admin' && '관리자'}
-                    </p>
+                  <div className="p-4 bg-gradient-to-r from-blue-50 to-sky-50 dark:from-blue-900/20 dark:to-sky-900/20 rounded-lg">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm text-gray-600 dark:text-gray-300">서울 강남구</p>
+                        <p className="text-2xl font-bold">22°C</p>
+                        <p className="text-sm text-blue-600 dark:text-blue-400">산책하기 좋은 날씨입니다! 🌤️</p>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-4xl">☀️</div>
+                        <p className="text-sm text-gray-500 mt-1">맑음</p>
+                      </div>
+                    </div>
                   </div>
                 </div>
-                <Button 
-                  variant="default" 
-                  className="mb-2 w-full"
-                  onClick={() => window.location.href = '/dashboard'}
-                >
-                  대시보드로 이동
-                </Button>
-                <Button 
-                  variant="outline" 
-                  className="w-full"
-                  onClick={logout}
-                >
-                  로그아웃
-                </Button>
-              </>
-            ) : (
-              <>
-                <h2 className="text-lg font-semibold mb-4">Talez 서비스 안내</h2>
-                <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg mb-4">
-                  <h3 className="font-medium text-blue-700 dark:text-blue-400 mb-1">맞춤형 반려견 교육</h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-300">반려견의 특성과 수준에 맞는 교육을 전문 훈련사와 함께 시작해보세요.</p>
-                </div>
-                <div className="bg-green-50 dark:bg-green-900/20 p-3 rounded-lg mb-4">
-                  <h3 className="font-medium text-green-700 dark:text-green-400 mb-1">AI 행동 분석</h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-300">인공지능을 활용한 반려견 행동 분석으로 효과적인 훈련 방법을 찾아보세요.</p>
-                </div>
-                <div className="bg-purple-50 dark:bg-purple-900/20 p-3 rounded-lg mb-4">
-                  <h3 className="font-medium text-purple-700 dark:text-purple-400 mb-1">반려견 친화 장소</h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-300">전국의 반려견 친화적인 장소를 찾고 즐거운 시간을 보내세요.</p>
-                </div>
-                <div className="mt-auto text-center">
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">
-                    상단의 로그인 버튼을 통해 Talez를 시작하세요.
-                  </p>
-                </div>
-              </>
-            )}
-            <hr className="my-4 dark:border-gray-700" />
-            {/* 비로그인 시에만 소셜 로그인 안내 표시 */}
-            {!isAuthenticated && (
-              <div className="text-sm text-center text-gray-500 dark:text-gray-400">
-                <p>카카오, 네이버로 간편하게 시작할 수 있습니다.</p>
               </div>
             )}
           </div>
