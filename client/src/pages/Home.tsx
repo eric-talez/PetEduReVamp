@@ -108,11 +108,21 @@ export default function Home() {
 
   // 배너 슬라이드 네비게이션 함수
   const nextSlide = () => {
-    setCurrentSlide((prev) => (prev + 1) % bannerSlides.length);
+    console.log('Next slide clicked, current:', currentSlide);
+    setCurrentSlide((prev) => {
+      const next = (prev + 1) % bannerSlides.length;
+      console.log('Moving to slide:', next);
+      return next;
+    });
   };
 
   const prevSlide = () => {
-    setCurrentSlide((prev) => (prev - 1 + bannerSlides.length) % bannerSlides.length);
+    console.log('Previous slide clicked, current:', currentSlide);
+    setCurrentSlide((prev) => {
+      const next = (prev - 1 + bannerSlides.length) % bannerSlides.length;
+      console.log('Moving to slide:', next);
+      return next;
+    });
   };
 
   // 자동 슬라이드 진행
@@ -484,35 +494,44 @@ export default function Home() {
             </div>
 
             {/* 네비게이션 화살표 */}
-            <Button
-              variant="ghost"
-              size="icon"
-              className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/30 text-white backdrop-blur-sm h-8 w-8"
-              onClick={prevSlide}
+            <button
+              className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/30 hover:bg-white/50 text-white backdrop-blur-sm h-10 w-10 rounded-full flex items-center justify-center transition-all duration-200 hover:scale-110 z-20"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                prevSlide();
+              }}
               aria-label="이전 슬라이드"
             >
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
+              <ChevronLeft className="h-5 w-5" />
+            </button>
             
-            <Button
-              variant="ghost"
-              size="icon"
-              className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/30 text-white backdrop-blur-sm h-8 w-8"
-              onClick={nextSlide}
+            <button
+              className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/30 hover:bg-white/50 text-white backdrop-blur-sm h-10 w-10 rounded-full flex items-center justify-center transition-all duration-200 hover:scale-110 z-20"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                nextSlide();
+              }}
               aria-label="다음 슬라이드"
             >
-              <ChevronRight className="h-4 w-4" />
-            </Button>
+              <ChevronRight className="h-5 w-5" />
+            </button>
             
             {/* 슬라이드 인디케이터 */}
-            <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1">
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-20">
               {bannerSlides.map((_, index) => (
                 <button
                   key={index}
-                  className={`w-2 h-2 rounded-full transition-all ${
-                    currentSlide === index ? 'bg-white' : 'bg-white/40'
+                  className={`w-3 h-3 rounded-full transition-all duration-200 hover:scale-125 ${
+                    currentSlide === index ? 'bg-white shadow-lg' : 'bg-white/50 hover:bg-white/70'
                   }`}
-                  onClick={() => setCurrentSlide(index)}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('Dot clicked, moving to slide:', index);
+                    setCurrentSlide(index);
+                  }}
                   aria-label={`${index + 1}번째 슬라이드로 이동`}
                 />
               ))}
