@@ -1,4 +1,5 @@
-import { ThemeToggle } from "@/components/ui/ThemeSwitcher";
+import { useTheme } from "@/context/theme-context";
+import { Sun, Moon } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { NotificationBell } from "@/components/notifications/NotificationBell";
@@ -82,6 +83,7 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
   const isAuthenticated = authState?.isAuthenticated || auth?.isAuthenticated;
   const logout = auth?.logout;
   const [location, setLocation] = useLocation();
+  const { theme, setTheme } = useTheme();
   
   // 검색 상태
   const [searchQuery, setSearchQuery] = useState('');
@@ -605,7 +607,18 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
                 </div>
               )}
               
-              <ThemeToggle />
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setTheme(theme === 'dark' ? 'light' : 'dark');
+                }}
+                className="h-9 w-9 px-0"
+                aria-label="테마 전환"
+              >
+                <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+                <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+              </Button>
             </div>
 
             {isAuthenticated ? (
