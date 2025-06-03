@@ -39,7 +39,7 @@ export function RealTimePopularChart() {
   const [isCourseModalOpen, setIsCourseModalOpen] = useState(false);
   const [isEventModalOpen, setIsEventModalOpen] = useState(false);
   const [isCommunityModalOpen, setIsCommunityModalOpen] = useState(false);
-  
+
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
@@ -97,13 +97,13 @@ export function RealTimePopularChart() {
 
   const handleItemClick = (item: PopularItem) => {
     console.log('[RealTimePopularChart] 아이템 클릭:', item.title, item.detailPath);
-    
+
     if (item.detailPath.startsWith('/trainers/')) {
       const trainerId = item.detailPath.split('/')[2];
       const trainerData = getTrainerData(trainerId);
       setSelectedTrainer(trainerData);
       setIsTrainerModalOpen(true);
-      
+
       // 메인메뉴와 일관성을 위한 이벤트 발생
       window.dispatchEvent(new CustomEvent('trainerProfileViewed', {
         detail: { trainerId, source: 'popular-chart' }
@@ -113,7 +113,7 @@ export function RealTimePopularChart() {
       const courseData = getCourseData(courseId);
       setSelectedCourse(courseData);
       setIsCourseModalOpen(true);
-      
+
       // 과정 조회 이벤트
       window.dispatchEvent(new CustomEvent('courseViewed', {
         detail: { courseId, source: 'popular-chart' }
@@ -123,7 +123,7 @@ export function RealTimePopularChart() {
       const eventData = getEventData(eventId);
       setSelectedEvent(eventData);
       setIsEventModalOpen(true);
-      
+
       // 이벤트 조회 이벤트
       window.dispatchEvent(new CustomEvent('eventViewed', {
         detail: { eventId, source: 'popular-chart' }
@@ -184,7 +184,7 @@ export function RealTimePopularChart() {
         ]
       }
     };
-    
+
     return trainers[id as keyof typeof trainers] || trainers['1'];
   };
 
@@ -213,7 +213,7 @@ export function RealTimePopularChart() {
         thumbnail: "https://images.unsplash.com/photo-1583337130417-3346a1be7dee?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400&q=80"
       }
     };
-    
+
     return courses[id as keyof typeof courses] || courses['1'];
   };
 
@@ -258,7 +258,7 @@ export function RealTimePopularChart() {
         thumbnail: "https://images.unsplash.com/photo-1601758228041-f3b2795255f1?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400&q=80"
       }
     };
-    
+
     return events[id as keyof typeof events] || events['1'];
   };
 
@@ -326,7 +326,7 @@ export function RealTimePopularChart() {
         thumbnail: "https://images.unsplash.com/photo-1583337130417-3346a1be7dee?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300&q=80"
       }
     };
-    
+
     return community[id as keyof typeof community] || community['1'];
   };
 
@@ -355,7 +355,7 @@ export function RealTimePopularChart() {
   // 통계 데이터와 기본 데이터 병합 함수
   const mergeWithStats = (baseData: PopularItem[], statsArray: any[], category: string) => {
     if (!statsData || !statsArray) return baseData;
-    
+
     return baseData.map((item, index) => {
       const stat = statsArray[index];
       if (stat && stat.id === item.id) {
@@ -681,7 +681,7 @@ export function RealTimePopularChart() {
           <div className="flex-shrink-0 w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
             <span className="text-primary font-bold text-sm">{index + 1}</span>
           </div>
-          
+
           {/* 썸네일 영역 */}
           <div className="flex-shrink-0 w-16 h-12 bg-gray-100 dark:bg-gray-700 rounded-md overflow-hidden">
             {item.imageUrl ? (
@@ -702,7 +702,7 @@ export function RealTimePopularChart() {
               </div>
             </div>
           </div>
-          
+
           <div className="flex-grow min-w-0">
             <div className="flex items-center space-x-2 mb-1">
               <h3 className="font-semibold text-sm truncate">{item.title}</h3>
@@ -711,7 +711,7 @@ export function RealTimePopularChart() {
             <p className="text-xs text-gray-600 dark:text-gray-400 line-clamp-1 mb-2">
               {item.description}
             </p>
-            
+
             <div className="flex items-center space-x-4 text-xs text-gray-500">
               <div className="flex items-center space-x-1">
                 <Eye className="h-3 w-3" />
@@ -745,7 +745,7 @@ export function RealTimePopularChart() {
               )}
             </div>
           </div>
-          
+
           <div className="flex-shrink-0 flex items-center space-x-2">
             {getTrendIcon(item.trend)}
             <span className={`text-xs font-medium ${getTrendColor(item.trend)}`}>
@@ -771,7 +771,7 @@ export function RealTimePopularChart() {
             </div>
           </div>
         </CardHeader>
-        
+
         <CardContent>
           <Tabs defaultValue="trainers" className="w-full">
             <TabsList className="grid w-full grid-cols-4">
@@ -788,19 +788,19 @@ export function RealTimePopularChart() {
                 커뮤니티 글
               </TabsTrigger>
             </TabsList>
-            
+
             <TabsContent value="trainers" className="mt-4">
               {renderPopularList(trainersData, true)}
             </TabsContent>
-            
+
             <TabsContent value="courses" className="mt-4">
               {renderPopularList(coursesData)}
             </TabsContent>
-            
+
             <TabsContent value="events" className="mt-4">
               {renderPopularList(eventsData, true, true)}
             </TabsContent>
-            
+
             <TabsContent value="community" className="mt-4">
               {renderPopularList(communityData)}
             </TabsContent>
@@ -816,7 +816,7 @@ export function RealTimePopularChart() {
             <DialogHeader>
               <DialogTitle className="text-2xl font-bold">{selectedTrainer.name}</DialogTitle>
             </DialogHeader>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {/* 훈련사 기본 정보 */}
               <div className="md:col-span-2">
@@ -825,7 +825,7 @@ export function RealTimePopularChart() {
                     <AvatarImage src={selectedTrainer.avatar} alt={selectedTrainer.name} />
                     <AvatarFallback>{selectedTrainer.name.charAt(0)}</AvatarFallback>
                   </Avatar>
-                  
+
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-2">
                       <Badge variant="secondary">{selectedTrainer.specialty}</Badge>
@@ -835,9 +835,9 @@ export function RealTimePopularChart() {
                         <span className="text-sm text-muted-foreground">({selectedTrainer.reviews}개 리뷰)</span>
                       </div>
                     </div>
-                    
+
                     <p className="text-muted-foreground mb-3">{selectedTrainer.description}</p>
-                    
+
                     <div className="flex flex-wrap gap-4 text-sm">
                       <div className="flex items-center gap-1">
                         <Award className="w-4 h-4" />
@@ -922,7 +922,8 @@ export function RealTimePopularChart() {
                     className="w-full"
                     onClick={() => {
                       console.log('[Modal Action] 상담 신청 클릭:', selectedTrainer.name);
-                      // TODO: 상담 신청 모달 열기 또는 페이지 이동
+                      // 상담 신청 페이지로 이동
+                      window.location.href = `/video-call/reserve?trainer=${selectedTrainer.id}`;
                     }}
                   >
                     상담 신청
@@ -932,7 +933,8 @@ export function RealTimePopularChart() {
                     className="w-full"
                     onClick={() => {
                       console.log('[Modal Action] 메시지 보내기 클릭:', selectedTrainer.name);
-                      // TODO: 메시지 작성 모달 열기
+                      // 메시지 페이지로 이동
+                      window.location.href = `/messages?trainer=${selectedTrainer.id}`;
                     }}
                   >
                     메시지 보내기
@@ -964,7 +966,7 @@ export function RealTimePopularChart() {
             <DialogHeader>
               <DialogTitle className="text-2xl font-bold">{selectedCourse.title}</DialogTitle>
             </DialogHeader>
-            
+
             <div className="space-y-6">
               {/* 강좌 썸네일 */}
               <div className="aspect-video rounded-lg overflow-hidden">
@@ -978,7 +980,7 @@ export function RealTimePopularChart() {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="md:col-span-2">
                   <p className="text-muted-foreground mb-4">{selectedCourse.description}</p>
-                  
+
                   <div className="flex items-center gap-4 text-sm mb-4">
                     <div className="flex items-center gap-1">
                       <Star className="w-4 h-4 text-yellow-400 fill-current" />
@@ -1064,7 +1066,7 @@ export function RealTimePopularChart() {
                   className="w-full h-full object-cover"
                 />
               </div>
-              
+
               <div className="grid md:grid-cols-2 gap-6">
                 <div className="space-y-4">
                   <div>
@@ -1146,7 +1148,7 @@ export function RealTimePopularChart() {
                           전체보기
                         </Button>
                       </div>
-                      
+
                       <div className="mt-4 pt-4 border-t">
                         <div className="text-sm space-y-1">
                           <p><strong>주최:</strong> {selectedEvent.organizer}</p>
@@ -1181,7 +1183,7 @@ export function RealTimePopularChart() {
                   />
                 </div>
               )}
-              
+
               <div className="grid md:grid-cols-3 gap-6">
                 <div className="md:col-span-2 space-y-4">
                   <div className="flex items-center gap-3">
@@ -1274,7 +1276,7 @@ export function RealTimePopularChart() {
                           공유하기
                         </Button>
                       </div>
-                      
+
                       <div className="mt-4 pt-4 border-t text-sm">
                         <p className="font-medium mb-2">카테고리</p>
                         <span className="px-2 py-1 bg-primary/10 text-primary rounded-md text-xs">
