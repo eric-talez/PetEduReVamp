@@ -199,7 +199,7 @@ export default function ProductDetailPage() {
   const [location, navigate] = useLocation();
   const { isAuthenticated } = useAuth();
   const { toast } = useToast();
-  
+
   const [product, setProduct] = useState<Product | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [selectedColor, setSelectedColor] = useState<string | undefined>(undefined);
@@ -209,7 +209,10 @@ export default function ProductDetailPage() {
   const [isReferralApplied, setIsReferralApplied] = useState(false);
   const [referralDiscount, setReferralDiscount] = useState(0);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
-  
+  const [isLoading, setIsLoading] = useState(false);
+  const [finalPrice, setFinalPrice] = useState(0);
+  const [isImageZoomed, setIsImageZoomed] = useState(false);
+
   useEffect(() => {
     if (params && params.id) {
       // 실제로는 API 호출을 통해 상품 정보를 가져와야 합니다.
@@ -231,33 +234,61 @@ export default function ProductDetailPage() {
   }, [params, navigate]);
 
   // 장바구니에 추가
-  const addToCart = () => {
-    if (!product) return;
-    
-    // 필수 옵션 체크
-    if (product.options?.color && !selectedColor) {
+  const addToCart = async () => {
+    if (!isAuthenticated) {
       toast({
-        title: "색상을 선택해주세요",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    if (product.options?.size && !selectedSize) {
-      toast({
-        title: "사이즈를 선택해주세요",
+        title: "로그인이 필요합니다",
+        description: "장바구니에 담으려면 로그인해주세요.",
         variant: "destructive",
       });
       return;
     }
 
-    // 실제로는 장바구니 API를 호출하거나 상태를 업데이트해야 합니다.
-    // 예: cartService.addItem(product.id, quantity, selectedColor, selectedSize);
-    
-    toast({
-      title: "장바구니에 추가되었습니다",
-      description: `${product.name} ${quantity}개`,
-    });
+    try {
+      setIsLoading(true);
+
+      const cartItem = {
+        productId: product?.id,
+        quantity: quantity,
+        selectedColor: selectedColor,
+        selectedSize: selectedSize,
+        price: finalPrice
+      };
+
+      const response = await fetch('/api/cart', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(cartItem),
+      });
+
+      if (!response.ok) {
+        throw new Error('장바구니 추가에 실패했습니다');
+      }
+
+      const result = await response.json();
+
+      toast({
+        title: "장바구니에 추가되었습니다",
+        description: `${product?.name} ${quantity}개`,
+      });
+
+      // 장바구니 개수 업데이트 이벤트 발생
+      window.dispatchEvent(new CustomEvent('cartUpdated', { 
+        detail: {  }
+      }));
+
+    } catch (error) {
+      console.error('장바구니 추가 오류:', error);
+      toast({
+        title: "오류가 발생했습니다",
+        description: "장바구니 추가에 실패했습니다. 다시 시도해주세요.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // 수량 증가
@@ -273,7 +304,7 @@ export default function ProductDetailPage() {
   };
 
   // 위시리스트에 추가/제거
-  const toggleWishlist = () => {
+  const toggleWishlist = async () => {
     if (!isAuthenticated) {
       toast({
         title: "로그인이 필요합니다",
@@ -283,11 +314,31 @@ export default function ProductDetailPage() {
       return;
     }
 
-    setIsWishlist(prev => !prev);
-    toast({
-      title: isWishlist ? "위시리스트에서 제거되었습니다" : "위시리스트에 추가되었습니다",
-      description: product?.name,
-    });
+    try {
+        setIsLoading(true);
+        const newWishlistState = !isWishlist;
+        setIsWishlist(newWishlistState);
+
+        // TODO: 위시리스트 API 연동 (POST: 추가, DELETE: 제거)
+        console.log('위시리스트 토글:', {
+          productId: product?.id,
+          isWishlisted: newWishlistState
+        });
+    
+        toast({
+          title: newWishlistState ? "위시리스트에 추가되었습니다" : "위시리스트에서 제거되었습니다",
+          description: product?.name,
+        });
+      } catch (error) {
+        console.error('위시리스트 오류:', error);
+        toast({
+          title: "오류가 발생했습니다",
+          description: "위시리스트 처리에 실패했습니다. 다시 시도해주세요.",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
+      }
   };
 
   // 추천인 코드 적용
@@ -335,9 +386,9 @@ export default function ProductDetailPage() {
   const discountedPrice = product.discountRate 
     ? Math.round(product.price * (1 - product.discountRate / 100)) 
     : product.price;
-  
+
   // 추천인 코드 할인이 적용된 최종 가격 계산
-  const finalPrice = isReferralApplied 
+  const finalPriceCalculated = isReferralApplied 
     ? Math.round(discountedPrice * (1 - referralDiscount / 100)) 
     : discountedPrice;
 
@@ -406,7 +457,7 @@ export default function ProductDetailPage() {
           </div>
 
           <h1 className="text-2xl font-bold mb-2">{product.name}</h1>
-          
+
           <div className="flex items-center mb-4">
             <div className="flex">
               {[1, 2, 3, 4, 5].map((star) => (
@@ -439,7 +490,7 @@ export default function ProductDetailPage() {
             ) : (
               <span className="text-xl font-bold">{finalPrice.toLocaleString()}원</span>
             )}
-            
+
             {isReferralApplied && (
               <div className="mt-1 text-sm text-green-600 flex items-center">
                 <Check className="w-4 h-4 mr-1" />
@@ -545,23 +596,23 @@ export default function ProductDetailPage() {
               <span className="text-gray-600">상품 금액</span>
               <span>{product.price.toLocaleString()}원</span>
             </div>
-            
+
             {product.discountRate && (
               <div className="flex justify-between mb-2 text-red-500">
                 <span>상품 할인</span>
                 <span>-{Math.round(product.price * product.discountRate / 100).toLocaleString()}원</span>
               </div>
             )}
-            
+
             {isReferralApplied && (
               <div className="flex justify-between mb-2 text-green-600">
                 <span>추천인 할인</span>
                 <span>-{Math.round(discountedPrice * referralDiscount / 100).toLocaleString()}원</span>
               </div>
             )}
-            
+
             <Separator className="my-2" />
-            
+
             <div className="flex justify-between font-bold">
               <span>결제 예상 금액</span>
               <span>{(finalPrice * quantity).toLocaleString()}원</span>
@@ -578,14 +629,14 @@ export default function ProductDetailPage() {
               <ShoppingCart className="w-4 h-4 mr-2" />
               장바구니에 담기
             </Button>
-            
+
             <Button 
               variant={isWishlist ? "default" : "outline"} 
               onClick={toggleWishlist}
             >
               <Heart className={`w-4 h-4 ${isWishlist ? "fill-current" : ""}`} />
             </Button>
-            
+
             <Popover>
               <PopoverTrigger asChild>
                 <Button variant="outline">
@@ -625,7 +676,7 @@ export default function ProductDetailPage() {
                 <p className="text-gray-600">3만원 이상 구매 시 무료 배송</p>
               </div>
             </div>
-            
+
             <div className="flex items-start">
               <Shield className="w-4 h-4 mr-2 mt-0.5 text-gray-500" />
               <div>
@@ -633,7 +684,7 @@ export default function ProductDetailPage() {
                 <p className="text-gray-600">모든 결제는 안전하게 보호됩니다</p>
               </div>
             </div>
-            
+
             <div className="flex items-start">
               <RotateCcw className="w-4 h-4 mr-2 mt-0.5 text-gray-500" />
               <div>
@@ -653,11 +704,11 @@ export default function ProductDetailPage() {
             <TabsTrigger value="specifications" className="rounded-b-none">제품 스펙</TabsTrigger>
             <TabsTrigger value="reviews" className="rounded-b-none">리뷰 ({reviews.length})</TabsTrigger>
           </TabsList>
-          
+
           <TabsContent value="description" className="pt-6">
             <div className="prose prose-lg max-w-none dark:prose-invert">
               <p>{product.longDescription || product.description}</p>
-              
+
               {product.features && (
                 <div className="mt-8 grid md:grid-cols-2 gap-6">
                   {product.features.map((feature, idx) => (
@@ -675,7 +726,7 @@ export default function ProductDetailPage() {
               )}
             </div>
           </TabsContent>
-          
+
           <TabsContent value="specifications" className="pt-6">
             {product.specifications ? (
               <ul className="space-y-2">
@@ -690,11 +741,11 @@ export default function ProductDetailPage() {
               <p className="text-gray-600">제품 스펙 정보가 없습니다.</p>
             )}
           </TabsContent>
-          
+
           <TabsContent value="reviews" className="pt-6">
             <div className="mb-8">
               <h3 className="text-lg font-semibold mb-4">고객 리뷰</h3>
-              
+
               <div className="flex items-center mb-6">
                 <div className="flex items-center mr-4">
                   <span className="text-3xl font-bold mr-2">{product.rating}</span>
@@ -714,10 +765,10 @@ export default function ProductDetailPage() {
                     <span className="text-sm text-gray-600">{product.reviewCount} 리뷰</span>
                   </div>
                 </div>
-                
+
                 <Button variant="outline">리뷰 작성하기</Button>
               </div>
-              
+
               <div className="space-y-6">
                 {reviews.map((review) => (
                   <div key={review.id} className="border-b pb-6">
@@ -742,7 +793,7 @@ export default function ProductDetailPage() {
                           </div>
                         </div>
                       </div>
-                      
+
                       <div className="flex">
                         {[1, 2, 3, 4, 5].map((star) => (
                           <Star
@@ -756,9 +807,9 @@ export default function ProductDetailPage() {
                         ))}
                       </div>
                     </div>
-                    
-                    <p className="text-gray-700 mb-3">{review.comment}</p>
-                    
+
+                    <p className="text-gray-70 mb-3">{review.comment}</p>
+
                     {review.images && review.images.length > 0 && (
                       <div className="flex space-x-2 mb-3">
                         {review.images.map((image, idx) => (
@@ -772,7 +823,7 @@ export default function ProductDetailPage() {
                         ))}
                       </div>
                     )}
-                    
+
                     <div className="flex text-sm">
                       <Button variant="ghost" size="sm" className="h-8 text-xs">
                         도움이 됐어요 ({review.helpful || 0})
@@ -793,7 +844,7 @@ export default function ProductDetailPage() {
       {product.relatedProducts && product.relatedProducts.length > 0 && (
         <div className="mt-12">
           <h2 className="text-2xl font-bold mb-6">관련 상품</h2>
-          
+
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {productList
               .filter(p => product.relatedProducts?.includes(p.id))
@@ -807,10 +858,10 @@ export default function ProductDetailPage() {
                         className="w-full h-full object-cover transition-transform hover:scale-105"  
                       />
                     </div>
-                    
+
                     <CardContent className="p-4">
                       <h3 className="font-medium text-base line-clamp-2 mb-1">{relatedProduct.name}</h3>
-                      
+
                       <div className="flex items-center mb-2">
                         <div className="flex">
                           {[1, 2, 3, 4, 5].map((star) => (
@@ -826,7 +877,7 @@ export default function ProductDetailPage() {
                         </div>
                         <span className="ml-1 text-xs text-gray-600">({relatedProduct.reviewCount})</span>
                       </div>
-                      
+
                       <div className="flex items-center">
                         {relatedProduct.discountRate ? (
                           <>
