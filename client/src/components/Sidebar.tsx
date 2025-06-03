@@ -110,13 +110,15 @@ function NavItem({ href, icon, children, active, onClick, show }: NavItemProps) 
             <a
               href={href}
               className={cn(
-                "sidebar-link flex items-center justify-center py-2 text-sm font-medium rounded-md transition-all duration-200 ease-in-out px-2",
-                active ? "bg-primary/10 text-primary" : "text-gray-700 dark:text-gray-200 hover:text-primary dark:hover:text-primary"
+                "sidebar-link flex items-center justify-center py-2 text-sm font-medium rounded-md transition-all duration-200 ease-in-out px-2 group",
+                active ? "bg-primary/10 text-primary" : "text-gray-700 dark:text-gray-200 hover:text-primary dark:hover:text-primary hover:bg-primary/5"
               )}
               onClick={handleClick}
               aria-label={typeof children === 'string' ? children : children?.toString()}
             >
-              {icon}
+              <div className="transition-all duration-200 group-hover:scale-110 group-hover:rotate-6">
+                {icon}
+              </div>
             </a>
           </TooltipTrigger>
           <TooltipContent side="right">
@@ -132,14 +134,16 @@ function NavItem({ href, icon, children, active, onClick, show }: NavItemProps) 
     <a
       href={href}
       className={cn(
-        "sidebar-link flex items-center py-2 text-sm font-medium rounded-md transition-all duration-200 ease-in-out px-3",
-        active ? "bg-primary/10 text-primary" : "text-gray-700 dark:text-gray-200 hover:text-primary dark:hover:text-primary"
+        "sidebar-link flex items-center py-2 text-sm font-medium rounded-md transition-all duration-200 ease-in-out px-3 group",
+        active ? "bg-primary/10 text-primary" : "text-gray-700 dark:text-gray-200 hover:text-primary dark:hover:text-primary hover:bg-primary/5"
       )}
       onClick={handleClick}
       aria-current={active ? "page" : undefined}
     >
-      {icon}
-      <span>{children}</span>
+      <div className="transition-all duration-200 group-hover:scale-110 group-hover:rotate-6 mr-3">
+        {icon}
+      </div>
+      <span className="transition-all duration-200 group-hover:translate-x-1">{children}</span>
     </a>
   );
 }
@@ -721,14 +725,14 @@ export function Sidebar({
                     <AccessibleNavItem href="/ai-analysis" icon={<Sparkles className="w-5 h-5 mr-2" />} active={isActive("/ai-analysis")} onClick={handleItemClick} show={true}>AI 도우미</AccessibleNavItem>
                     <AccessibleNavItem href="/messages" icon={<MessageSquare className="w-5 h-5 mr-2" />} active={isActive("/messages")} onClick={handleItemClick} show={true}>메시지</AccessibleNavItem>
                     <AccessibleNavItem href="/alerts" icon={<Bell className="w-5 h-5 mr-2" />} active={isActive("/alerts")} onClick={handleItemClick} show={true}>알림</AccessibleNavItem>
-                    {(showTrainerMenu || showInstituteMenu) && <AccessibleNavItem href="/analytics" icon={<BarChart3 className="w-5 h-5 mr-2" />} active={isActive("/analytics")} onClick={handleItemClick} show={true}>분석 리포트</AccessibleNavItem>}
+                    {(showTrainerMenu || showInstituteMenu) && <AccessibleNavItem href="/analytics" icon={<BarChart2 className="w-5 h-5 mr-2" />} active={isActive("/analytics")} onClick={handleItemClick} show={true}>분석 리포트</AccessibleNavItem>}
                   </>
                 )}
 
                 {/* 시스템 관리 (관리자) */}
                 {showAdminMenu && (
                   <>
-                    <SidebarMenuGroup expanded={expanded} title="시스템 관리" groupName="admin" isOpen={menuGroups.admin} toggleGroup={toggleMenuGroup} icon={<Shield className="w-5 h-5 text-gray-500" />} />
+                    <SidebarMenuGroup expanded={expanded} title="시스템 관리" groupName="admin" isOpen={menuGroups.admin} toggleGroup={toggleMenuGroup} icon={<Settings className="w-5 h-5 text-gray-500" />} />
                     {menuGroups.admin && (
                       <>
                         <AccessibleNavItem href="/admin/users" icon={<Settings className="w-5 h-5 mr-2" />} active={isActive("/admin/users")} onClick={handleItemClick} show={true}>시스템 관리</AccessibleNavItem>
