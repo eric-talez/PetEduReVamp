@@ -1,5 +1,4 @@
-
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -45,6 +44,12 @@ export default function ConsultationPage() {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('book');
   const [consultations, setConsultations] = useState<Consultation[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [selectedConsultation, setSelectedConsultation] = useState<Consultation | null>(null);
+  const [showDetailDialog, setShowDetailDialog] = useState(false);
+  const [filterStatus, setFilterStatus] = useState<string>('all');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [isVideoCallActive, setIsVideoCallActive] = useState(false);
   const [trainers, setTrainers] = useState<Trainer[]>([]);
   const [selectedTrainer, setSelectedTrainer] = useState<Trainer | null>(null);
   const [isBookingDialogOpen, setIsBookingDialogOpen] = useState(false);
@@ -111,7 +116,7 @@ export default function ConsultationPage() {
     try {
       const response = await fetch('/api/consultations/my-requests');
       const result = await response.json();
-      
+
       if (result.success) {
         setConsultations(result.consultations);
       }
@@ -186,6 +191,85 @@ export default function ConsultationPage() {
       alert('네트워크 오류가 발생했습니다.');
     }
   };
+
+  const handleJoinVideoCall = async (consultationId: number) => {
+    try {
+      setIsVideoCallActive(true);
+      const response = await fetch(`/api/consultations/${consultationId}/join`, {
+        method: 'POST',
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        // 화상 회의 URL로 리다이렉트 또는 새 창 열기
+        if (data.videoCallUrl.includes('zoom.us') || data.videoCallUrl.includes('meet.google.com')) {
+          window.open(data.videoCallUrl, '_blank', 'width=1200,height=800');
+        } else {
+          // 내장 화상 회의 시스템 사용
+          // setLocation(`/video-call?room=${consultationId}&type=consultation`);
+        }
+
+        alert({
+          title: "화상 상담 참여",
+          description: "화상 상담이 시작됩니다.",
+        });
+      } else {
+        throw new Error(data.error);
+      }
+    } catch (error) {
+      console.error('화상 상담 참여 실패:', error);
+      alert({
+        title: "오류",
+        description: "화상 상담 참여에 실패했습니다.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsVideoCallActive(false);
+    }
+  };
+
+  // 상담 상태 업데이트
+  const handleUpdateStatus = async (consultationId: number, newStatus: string) => {
+    try {
+      const response = await fetch(`/api/consultations/${consultationId}/status`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus })
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        setConsultations(prev => 
+          prev.map(c => c.id === consultationId ? { ...c, status: newStatus } : c)
+        );
+        alert({
+          title: "성공",
+          description: "상담 상태가 업데이트되었습니다.",
+        });
+      }
+    } catch (error) {
+      console.error('상태 업데이트 실패:', error);
+      alert({
+        title: "오류",
+        description: "상태 업데이트에 실패했습니다.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // 필터링된 상담 목록
+  const filteredConsultations = useMemo(() => {
+    return consultations.filter(consultation => {
+      if (filterStatus !== 'all' && consultation.status !== filterStatus) {
+        return false;
+      }
+      if (searchTerm && !consultation.trainerName.toLowerCase().includes(searchTerm.toLowerCase()) &&
+          !consultation.petName.toLowerCase().includes(searchTerm.toLowerCase())) {
+        return false;
+      }
+      return true;
+    });
+  }, [consultations, filterStatus, searchTerm]);
 
   const getStatusBadge = (status: string) => {
     const statusConfig = {
@@ -447,7 +531,7 @@ export default function ConsultationPage() {
                           </Button>
                         )}
                         {consultation.status === 'confirmed' && (
-                          <Button size="sm">
+                          <Button size="sm" onClick={() => handleJoinVideoCall(consultation.id)}>
                             상담 참여
                           </Button>
                         )}

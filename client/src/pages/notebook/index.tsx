@@ -1,5 +1,4 @@
-
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -85,19 +84,23 @@ interface NotebookTemplate {
 }
 
 export default function NotebookPage() {
-  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [entries, setEntries] = useState<NotebookEntry[]>([]);
-  const [filteredEntries, setFilteredEntries] = useState<NotebookEntry[]>([]);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedPet, setSelectedPet] = useState<string>('all');
-  const [selectedTrainer, setSelectedTrainer] = useState<string>('all');
-  const [isNewEntryOpen, setIsNewEntryOpen] = useState(false);
-  const [isAIHelperOpen, setIsAIHelperOpen] = useState(false);
-  const [selectedTemplate, setSelectedTemplate] = useState<string>('');
-  const [viewMode, setViewMode] = useState<'calendar' | 'list' | 'grid'>('list');
-  const [sortBy, setSortBy] = useState<'date' | 'pet' | 'trainer'>('date');
-  const [loading, setLoading] = useState(false);
-  const { toast } = useToast();
+  const [isLoading, setIsLoading] = useState(true);
+  const [filters, setFilters] = useState({
+    petName: '',
+    trainerId: '',
+    date: '',
+    tags: [] as string[]
+  });
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedEntry, setSelectedEntry] = useState<NotebookEntry | null>(null);
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [isAIDialogOpen, setIsAIDialogOpen] = useState(false);
+  const [aiGeneratedContent, setAiGeneratedContent] = useState<any>(null);
+  const [sortBy, setSortBy] = useState<'date' | 'recent'>('recent');
+  const [showRead, setShowRead] = useState(true);
+  const [showUnread, setShowUnread] = useState(true);
 
   // 새 알림장 폼 상태
   const [newEntry, setNewEntry] = useState({
@@ -298,7 +301,7 @@ export default function NotebookPage() {
       };
 
       setEntries(prev => [entry, ...prev]);
-      
+
       // 폼 초기화
       setNewEntry({
         petName: '',
@@ -326,7 +329,7 @@ export default function NotebookPage() {
       });
 
       setIsNewEntryOpen(false);
-      
+
       toast({
         title: '알림장 저장 완료',
         description: '새로운 알림장이 성공적으로 저장되었습니다.'
@@ -360,7 +363,7 @@ export default function NotebookPage() {
       await new Promise(resolve => setTimeout(resolve, 2000));
 
       const aiGeneratedContent = `오늘 ${newEntry.petName}는 훈련에 적극적으로 참여했습니다. 
-      
+
 특히 다음과 같은 활동에서 좋은 반응을 보였습니다:
 - 기본 명령어 훈련: 이전보다 집중력이 향상되었음
 - 사회화 훈련: 다른 반려동물들과 원활한 상호작용
@@ -409,7 +412,7 @@ export default function NotebookPage() {
     }));
 
     setSelectedTemplate(templateId);
-    
+
     toast({
       title: '템플릿 적용 완료',
       description: `${template.name}이 적용되었습니다.`
@@ -424,6 +427,106 @@ export default function NotebookPage() {
     return format(date, 'MM월 dd일', { locale: ko });
   };
 
+  // 알림장 목록 조회
+  const fetchEntries = useCallback(async () => {
+    try {
+      setIsLoading(true);
+
+      const queryParams = new URLSearchParams();
+      if (filters.petName) queryParams.append('petId', filters.petName);
+      if (filters.trainerId) queryParams.append('trainerId', filters.trainerId);
+      if (filters.date) queryParams.append('date', filters.date);
+
+      const response = await fetch(`/api/notebook/entries?${queryParams}`);
+      const data = await response.json();
+
+      if (data.success) {
+        setEntries(data.entries || []);
+      } else {
+        throw new Error(data.error || '알림장을 불러올 수 없습니다');
+      }
+    } catch (error) {
+      console.error('알림장 조회 실패:', error);
+      toast({
+        title: "오류",
+        description: "알림장을 불러오는 중 오류가 발생했습니다.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  }, [filters, toast]);
+
+  // AI 알림장 생성
+  const handleAIGenerate = async (petData: any) => {
+    try {
+      setIsLoading(true);
+      const response = await fetch('/api/notebook/ai-generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(petData)
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        setAiGeneratedContent(data.content);
+        setIsCreateDialogOpen(true);
+        setIsAIDialogOpen(false);
+        toast({
+          title: "성공",
+          description: "AI가 알림장 내용을 생성했습니다.",
+        });
+      } else {
+        throw new Error(data.error);
+      }
+    } catch (error) {
+      console.error('AI 생성 실패:', error);
+      toast({
+        title: "오류",
+        description: "AI 알림장 생성에 실패했습니다.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // 필터링된 엔트리
+  const filteredEntries = useMemo(() => {
+    let filtered = entries.filter(entry => {
+      // 검색어 필터
+      if (searchTerm) {
+        const searchLower = searchTerm.toLowerCase();
+        if (!entry.title.toLowerCase().includes(searchLower) && 
+            !entry.content.toLowerCase().includes(searchLower)) {
+          return false;
+        }
+      }
+
+      // 읽음/안읽음 필터
+      if (!showRead && entry.isRead) return false;
+      if (!showUnread && !entry.isRead) return false;
+
+      // 태그 필터
+      if (filters.tags.length > 0) {
+        if (!entry.tags?.some(tag => filters.tags.includes(tag))) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+
+    // 정렬
+    if (sortBy === 'date') {
+      filtered.sort((a, b) => a.date.localeCompare(b.date));
+    } else {
+      filtered.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    }
+
+    return filtered;
+  }, [entries, searchTerm, showRead, showUnread, filters.tags, sortBy]);
+
   return (
     <div className="container mx-auto p-6 space-y-6">
       {/* 헤더 */}
@@ -435,7 +538,7 @@ export default function NotebookPage() {
           </h1>
           <p className="text-gray-600 mt-2">반려동물의 일일 훈련 기록과 상태를 관리하세요</p>
         </div>
-        
+
         <div className="flex gap-2">
           <Dialog open={isNewEntryOpen} onOpenChange={setIsNewEntryOpen}>
             <DialogTrigger asChild>
@@ -448,7 +551,7 @@ export default function NotebookPage() {
               <DialogHeader>
                 <DialogTitle>새 알림장 작성</DialogTitle>
               </DialogHeader>
-              
+
               <Tabs defaultValue="basic" className="w-full">
                 <TabsList className="grid w-full grid-cols-4">
                   <TabsTrigger value="basic">기본 정보</TabsTrigger>
@@ -456,7 +559,7 @@ export default function NotebookPage() {
                   <TabsTrigger value="media">미디어</TabsTrigger>
                   <TabsTrigger value="ai">AI 도우미</TabsTrigger>
                 </TabsList>
-                
+
                 <TabsContent value="basic" className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div>
@@ -476,7 +579,7 @@ export default function NotebookPage() {
                       />
                     </div>
                   </div>
-                  
+
                   <div>
                     <label className="text-sm font-medium mb-2 block">제목 *</label>
                     <Input
@@ -485,7 +588,7 @@ export default function NotebookPage() {
                       placeholder="알림장 제목을 입력하세요"
                     />
                   </div>
-                  
+
                   <div>
                     <label className="text-sm font-medium mb-2 block">내용 *</label>
                     <Textarea
@@ -495,7 +598,7 @@ export default function NotebookPage() {
                       rows={6}
                     />
                   </div>
-                  
+
                   <div className="grid grid-cols-3 gap-4">
                     <div>
                       <label className="text-sm font-medium mb-2 block">기분 상태</label>
@@ -532,7 +635,7 @@ export default function NotebookPage() {
                     </div>
                   </div>
                 </TabsContent>
-                
+
                 <TabsContent value="activities" className="space-y-4">
                   <div>
                     <label className="text-sm font-medium mb-2 block">특별 노트</label>
@@ -544,7 +647,7 @@ export default function NotebookPage() {
                     />
                   </div>
                 </TabsContent>
-                
+
                 <TabsContent value="media" className="space-y-4">
                   <div className="text-center p-8 border-2 border-dashed border-gray-300 rounded-lg">
                     <Camera className="h-12 w-12 text-gray-400 mx-auto mb-4" />
@@ -554,7 +657,7 @@ export default function NotebookPage() {
                     </Button>
                   </div>
                 </TabsContent>
-                
+
                 <TabsContent value="ai" className="space-y-4">
                   <div className="text-center p-8 border border-blue-200 rounded-lg bg-blue-50">
                     <Sparkles className="h-12 w-12 text-blue-600 mx-auto mb-4" />
@@ -562,7 +665,7 @@ export default function NotebookPage() {
                     <p className="text-gray-600 mb-4">
                       AI가 반려동물 정보를 바탕으로 알림장 내용을 자동 생성해드립니다.
                     </p>
-                    
+
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
                       {templates.map(template => (
                         <Card 
@@ -577,14 +680,14 @@ export default function NotebookPage() {
                         </Card>
                       ))}
                     </div>
-                    
+
                     <Button onClick={handleAIGenerate} disabled={loading}>
                       {loading ? '생성 중...' : 'AI로 내용 생성'}
                     </Button>
                   </div>
                 </TabsContent>
               </Tabs>
-              
+
               <div className="flex justify-end gap-3 pt-4 border-t">
                 <Button variant="outline" onClick={() => setIsNewEntryOpen(false)}>
                   취소
@@ -611,7 +714,7 @@ export default function NotebookPage() {
                 className="pl-10"
               />
             </div>
-            
+
             <div className="flex gap-2">
               <Select value={selectedPet} onValueChange={setSelectedPet}>
                 <SelectTrigger className="w-32">
@@ -623,7 +726,7 @@ export default function NotebookPage() {
                   <SelectItem value="pet2">야옹이</SelectItem>
                 </SelectContent>
               </Select>
-              
+
               <Select value={selectedTrainer} onValueChange={setSelectedTrainer}>
                 <SelectTrigger className="w-32">
                   <SelectValue placeholder="훈련사" />
@@ -634,7 +737,7 @@ export default function NotebookPage() {
                   <SelectItem value="trainer2">이영희</SelectItem>
                 </SelectContent>
               </Select>
-              
+
               <Select value={sortBy} onValueChange={(value: 'date' | 'pet' | 'trainer') => setSortBy(value)}>
                 <SelectTrigger className="w-24">
                   <SelectValue />
@@ -698,7 +801,7 @@ export default function NotebookPage() {
                       </div>
                     </div>
                   </div>
-                  
+
                   <div className="flex items-center gap-2">
                     <div className="text-xl" title={moodLabels[entry.mood]}>
                       {moodEmojis[entry.mood]}
@@ -711,10 +814,10 @@ export default function NotebookPage() {
                   </div>
                 </div>
               </CardHeader>
-              
+
               <CardContent className="space-y-4">
                 <p className="text-gray-700 leading-relaxed">{entry.content}</p>
-                
+
                 {/* 활동 태그 */}
                 {Object.entries(entry.activities).some(([_, activities]) => activities.length > 0) && (
                   <div className="space-y-2">
@@ -730,7 +833,7 @@ export default function NotebookPage() {
                     </div>
                   </div>
                 )}
-                
+
                 {/* 추가 정보 */}
                 <div className="flex flex-wrap gap-4 text-xs text-gray-500">
                   {entry.location && (
@@ -752,7 +855,7 @@ export default function NotebookPage() {
                     </span>
                   )}
                 </div>
-                
+
                 {/* 다음 목표 */}
                 {entry.nextGoals.length > 0 && (
                   <div className="bg-gray-50 p-3 rounded-lg">
@@ -767,7 +870,7 @@ export default function NotebookPage() {
                     </ul>
                   </div>
                 )}
-                
+
                 {/* 특별 노트 */}
                 {entry.notes && (
                   <div className="bg-yellow-50 border-l-4 border-yellow-400 p-3">

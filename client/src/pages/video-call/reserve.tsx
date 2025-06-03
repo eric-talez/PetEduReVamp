@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLocation } from 'wouter';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -13,11 +13,27 @@ export default function VideoCallReserve() {
   const [location, setLocation] = useLocation();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
+  const [selectedTrainer, setSelectedTrainer] = useState<any>(null);
+  const [selectedDate, setSelectedDate] = useState<Date>();
+  const [selectedTime, setSelectedTime] = useState<string>('');
+  const [serviceType, setServiceType] = useState<string>('');
+  const [duration, setDuration] = useState<number>(60);
+  const [petName, setPetName] = useState<string>('');
+  const [notes, setNotes] = useState<string>('');
+  const [contactInfo, setContactInfo] = useState({
+    phone: '',
+    email: '',
+    location: ''
+  });
+  const [availableSlots, setAvailableSlots] = useState<string[]>([]);
+  const [isLoadingSlots, setIsLoadingSlots] = useState(false);
+  const [pricing, setPricing] = useState<{[key: string]: number}>({});
+  const [totalPrice, setTotalPrice] = useState<number>(0);
+
   // URL에서 trainer ID 추출
   const urlParams = new URLSearchParams(window.location.search);
   const trainerId = urlParams.get('trainer') || '1';
-  
+
   // 폼 상태
   const [formData, setFormData] = useState({
     preferredDate: '',
@@ -96,6 +112,83 @@ export default function VideoCallReserve() {
     { value: 'socialization', label: '사회화 훈련' },
     { value: 'emergency', label: '응급 상담' }
   ];
+
+  useEffect(() => {
+    // URL에서 trainerId 파라미터 가져오기
+    const params = new URLSearchParams(location.search);
+    const trainerId = params.get('trainer');
+
+    if (trainerId) {
+      // 훈련사 정보 로드
+      fetchTrainerInfo(trainerId);
+      // 가격 정보 로드
+      fetchPricing(trainerId);
+    }
+  }, [location.search]);
+
+  // 선택된 날짜가 변경될 때 예약 가능 시간대 조회
+  useEffect(() => {
+    if (selectedTrainer && selectedDate) {
+      fetchAvailableSlots(selectedTrainer.id, selectedDate);
+    }
+  }, [selectedTrainer, selectedDate]);
+
+  // 서비스 타입과 duration이 변경될 때 총 가격 계산
+  useEffect(() => {
+    if (serviceType && duration && pricing[serviceType]) {
+      const basePrice = pricing[serviceType];
+      const durationMultiplier = duration / 60; // 1시간 기준
+      setTotalPrice(Math.round(basePrice * durationMultiplier));
+    }
+  }, [serviceType, duration, pricing]);
+
+  // 예약 가능 시간대 조회
+  const fetchAvailableSlots = async (trainerId: string, date: Date) => {
+    try {
+      setIsLoadingSlots(true);
+      const dateString = date.toISOString().split('T')[0];
+
+      const response = await fetch(`/api/trainers/${trainerId}/available-slots?date=${dateString}`);
+      const data = await response.json();
+
+      if (data.success) {
+        setAvailableSlots(data.slots || []);
+      } else {
+        setAvailableSlots([]);
+      }
+    } catch (error) {
+      console.error('시간대 조회 실패:', error);
+      setAvailableSlots([]);
+    } finally {
+      setIsLoadingSlots(false);
+    }
+  };
+
+  // 가격 정보 조회
+  const fetchPricing = async (trainerId: string) => {
+    try {
+      const response = await fetch(`/api/trainers/${trainerId}/pricing`);
+      const data = await response.json();
+
+      if (data.success) {
+        setPricing(data.pricing || {
+          '기본훈련': 50000,
+          '행동교정': 70000,
+          '고급훈련': 90000,
+          '특수훈련': 120000
+        });
+      }
+    } catch (error) {
+      console.error('가격 정보 조회 실패:', error);
+      // 기본 가격 설정
+      setPricing({
+        '기본훈련': 50000,
+        '행동교정': 70000,
+        '고급훈련': 90000,
+        '특수훈련': 120000
+      });
+    }
+  };
 
   return (
     <div className="container mx-auto p-6 max-w-4xl">

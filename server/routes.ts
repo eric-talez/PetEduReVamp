@@ -698,6 +698,98 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // 훈련사 예약 가능 시간대 조회 API
+  app.get('/api/trainers/:id/available-slots', async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const { date } = req.query;
+
+      // 실제로는 데이터베이스에서 해당 날짜의 예약된 시간을 조회하여 
+      // 사용 가능한 시간대를 계산해야 함
+      const allSlots = [
+        '09:00', '10:00', '11:00', '14:00', '15:00', '16:00', '17:00', '18:00'
+      ];
+
+      // 샘플: 일부 시간대는 이미 예약됨
+      const bookedSlots = ['11:00', '15:00'];
+      const availableSlots = allSlots.filter(slot => !bookedSlots.includes(slot));
+
+      res.json({
+        success: true,
+        slots: availableSlots,
+        date,
+        trainerId: id
+      });
+    } catch (error) {
+      console.error('예약 가능 시간대 조회 오류:', error);
+      res.status(500).json({
+        success: false,
+        error: '예약 가능 시간대를 조회할 수 없습니다.'
+      });
+    }
+  });
+
+  // 훈련사 가격 정보 조회 API
+  app.get('/api/trainers/:id/pricing', async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+
+      // 실제로는 데이터베이스에서 훈련사별 가격 정보 조회
+      const pricing = {
+        '기본훈련': 50000,
+        '행동교정': 70000,
+        '고급훈련': 90000,
+        '특수훈련': 120000,
+        '1:1맞춤훈련': 150000
+      };
+
+      res.json({
+        success: true,
+        pricing,
+        trainerId: id
+      });
+    } catch (error) {
+      console.error('가격 정보 조회 오류:', error);
+      res.status(500).json({
+        success: false,
+        error: '가격 정보를 조회할 수 없습니다.'
+      });
+    }
+  });
+
+  // 상담 상태 업데이트 API
+  app.patch('/api/consultations/:id/status', async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const { status } = req.body;
+
+      // 유효한 상태 값 검증
+      const validStatuses = ['pending', 'confirmed', 'completed', 'cancelled'];
+      if (!validStatuses.includes(status)) {
+        return res.status(400).json({
+          success: false,
+          error: '유효하지 않은 상태값입니다.'
+        });
+      }
+
+      // 실제로는 데이터베이스에서 상담 상태 업데이트
+      console.log(`상담 ${id}의 상태를 ${status}로 업데이트`);
+
+      res.json({
+        success: true,
+        message: '상담 상태가 업데이트되었습니다.',
+        consultationId: id,
+        newStatus: status
+      });
+    } catch (error) {
+      console.error('상담 상태 업데이트 오류:', error);
+      res.status(500).json({
+        success: false,
+        error: '상담 상태 업데이트에 실패했습니다.'
+      });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

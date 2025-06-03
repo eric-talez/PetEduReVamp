@@ -61,13 +61,18 @@ interface Contact {
 export default function MessagingPage() {
   const { user } = useAuth();
   const { sendNotification, sendTestNotification } = useNotifications();
-  
+
   const [activeTab, setActiveTab] = useState('messages');
   const [messageInput, setMessageInput] = useState('');
   const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [contacts, setContacts] = useState<Contact[]>([]);
-  
+  const [isTyping, setIsTyping] = useState(false);
+  const [typingUsers, setTypingUsers] = useState<string[]>([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [onlineUsers, setOnlineUsers] = useState<Set<string>>(new Set());
+  const [uploadingFile, setUploadingFile] = useState(false);
+
   // 샘플 데이터 로드
   useEffect(() => {
     // 샘플 연락처 데이터
@@ -107,11 +112,11 @@ export default function MessagingPage() {
         unreadCount: 0
       }
     ];
-    
+
     setContacts(sampleContacts);
     // 기본으로 첫 번째 연락처 선택
     setSelectedContact(sampleContacts[0]);
-    
+
     // 샘플 메시지 데이터 (첫 번째 연락처와의 대화)
     const sampleMessages: Message[] = [
       {
@@ -200,14 +205,14 @@ export default function MessagingPage() {
         isRead: false
       }
     ];
-    
+
     setMessages(sampleMessages);
   }, [user]);
-  
+
   // 메시지 전송 처리
   const handleSendMessage = () => {
     if (!messageInput.trim() || !selectedContact) return;
-    
+
     // 새 메시지 생성
     const newMessage: Message = {
       id: Date.now().toString(),
@@ -226,14 +231,14 @@ export default function MessagingPage() {
       timestamp: new Date(),
       isRead: false
     };
-    
+
     // 메시지 목록에 추가
     setMessages(prev => [...prev, newMessage]);
-    
+
     // 입력 필드 초기화
     setMessageInput('');
   };
-  
+
   // 테스트 알림 전송
   const handleSendTestNotification = () => {
     if (sendTestNotification) {
@@ -245,15 +250,15 @@ export default function MessagingPage() {
       });
     }
   };
-  
+
   // 연락처 선택 처리
   const handleSelectContact = (contact: Contact) => {
     setSelectedContact(contact);
-    
+
     // 실제 구현에서는 서버에서 해당 연락처와의 메시지 이력을 가져옴
     // 여기서는 샘플 데이터만 표시
   };
-  
+
   return (
     <div className="container py-6">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
@@ -263,7 +268,7 @@ export default function MessagingPage() {
             훈련사, 기관 및 다른 사용자와 대화하세요
           </p>
         </div>
-        
+
         <div className="flex items-center gap-2">
           <Button
             variant="outline"
@@ -273,21 +278,21 @@ export default function MessagingPage() {
             <Bell className="h-4 w-4 mr-2" />
             테스트 알림 전송
           </Button>
-          
+
           <Button>
             <MessageSquare className="h-4 w-4 mr-2" />
             새 대화
           </Button>
         </div>
       </div>
-      
+
       <Tabs defaultValue="messages" value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="messages">메시지</TabsTrigger>
           <TabsTrigger value="contacts">연락처</TabsTrigger>
           <TabsTrigger value="settings">설정</TabsTrigger>
         </TabsList>
-        
+
         <TabsContent value="messages" className="mt-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 h-[calc(100vh-250px)]">
             {/* 연락처 목록 (모바일에서는 숨김) */}
@@ -353,7 +358,7 @@ export default function MessagingPage() {
                 </CardContent>
               </ScrollArea>
             </Card>
-            
+
             {/* 메시지 영역 */}
             <Card className="md:col-span-2 flex flex-col h-full">
               {selectedContact ? (
@@ -376,7 +381,7 @@ export default function MessagingPage() {
                       </div>
                     </div>
                   </CardHeader>
-                  
+
                   {/* 메시지 목록 */}
                   <ScrollArea className="flex-grow h-[calc(100vh-450px)]">
                     <CardContent className="p-4">
@@ -395,7 +400,7 @@ export default function MessagingPage() {
                                 <AvatarFallback>{message.sender.name.charAt(0)}</AvatarFallback>
                               </Avatar>
                             )}
-                            
+
                             <div 
                               className={`
                                 max-w-[70%] p-3 rounded-lg
@@ -420,7 +425,7 @@ export default function MessagingPage() {
                       </div>
                     </CardContent>
                   </ScrollArea>
-                  
+
                   {/* 메시지 입력 */}
                   <CardFooter className="border-t p-4">
                     <div className="flex w-full gap-2">
@@ -461,7 +466,7 @@ export default function MessagingPage() {
             </Card>
           </div>
         </TabsContent>
-        
+
         <TabsContent value="contacts" className="mt-4">
           <Card>
             <CardHeader>
@@ -479,7 +484,7 @@ export default function MessagingPage() {
                     연락처 추가
                   </Button>
                 </div>
-                
+
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {contacts.slice(0, 3).map(contact => (
                     <Card key={contact.id} className="overflow-hidden">
@@ -512,9 +517,9 @@ export default function MessagingPage() {
                     </Card>
                   ))}
                 </div>
-                
+
                 <Separator className="my-4" />
-                
+
                 <div className="flex justify-between items-center">
                   <h3 className="text-sm font-medium">그룹 및 팀</h3>
                   <Button variant="ghost" size="sm">
@@ -522,7 +527,7 @@ export default function MessagingPage() {
                     그룹 만들기
                   </Button>
                 </div>
-                
+
                 <Card>
                   <CardHeader className="pb-2">
                     <CardTitle className="text-base">반려동물 훈련 그룹</CardTitle>
@@ -555,7 +560,7 @@ export default function MessagingPage() {
             </CardContent>
           </Card>
         </TabsContent>
-        
+
         <TabsContent value="settings" className="mt-4">
           <Card>
             <CardHeader>
@@ -583,9 +588,9 @@ export default function MessagingPage() {
                     </div>
                   </div>
                 </div>
-                
+
                 <Separator />
-                
+
                 <div>
                   <h3 className="text-base font-medium mb-2">대화 설정</h3>
                   <div className="space-y-2">
@@ -603,9 +608,9 @@ export default function MessagingPage() {
                     </div>
                   </div>
                 </div>
-                
+
                 <Separator />
-                
+
                 <div>
                   <h3 className="text-base font-medium mb-2">보안 및 개인 정보</h3>
                   <div className="space-y-4">
@@ -624,7 +629,7 @@ export default function MessagingPage() {
                         </div>
                       </CardContent>
                     </Card>
-                    
+
                     <Card className="bg-card">
                       <CardContent className="p-4">
                         <div className="flex items-center justify-between">
@@ -640,7 +645,7 @@ export default function MessagingPage() {
                         </div>
                       </CardContent>
                     </Card>
-                    
+
                     <Button variant="destructive" className="w-full">
                       모든 대화 기록 삭제
                     </Button>
