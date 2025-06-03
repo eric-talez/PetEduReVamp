@@ -48,13 +48,13 @@ import {
 import {
   Search,
   PlusCircle,
-  Filter,
-  RefreshCw,
-  ChevronLeft,
-  ChevronRight,
-  Edit,
-  Trash2,
   Eye,
+  Edit2,
+  Trash2,
+  RefreshCw,
+  Filter,
+  ChevronDown,
+  MoreHorizontal,
   Image,
   Video,
   FileText,
@@ -87,7 +87,7 @@ export default function AdminContents() {
   const queryClient = useQueryClient();
   const [contents, setContents] = useState<Content[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('banners');
+  const [activeTab, setActiveTab] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState<string | null>(null);
   const [filterStatus, setFilterStatus] = useState<string | null>(null);
@@ -269,175 +269,6 @@ export default function AdminContents() {
     
     loadContents();
   }, [toast]);
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || '배너 생성에 실패했습니다');
-      }
-      
-      return response.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({queryKey: ['/api/admin/banners']});
-      queryClient.invalidateQueries({queryKey: ['/api/banners']});
-      setShowBannerDialog(false);
-      setBannerFormData({
-        title: '',
-        description: '',
-        imageUrl: '',
-        altText: '',
-        linkUrl: '',
-        targetBlank: true,
-        type: 'main',
-        position: 'hero',
-        order: 1,
-        startDate: '',
-        endDate: '',
-        status: 'active'
-      });
-      toast({
-        title: '배너 생성 완료',
-        description: '새로운 배너가 성공적으로 생성되었습니다.',
-      });
-    },
-    onError: (error: Error) => {
-      toast({
-        title: '배너 생성 실패',
-        description: error.message,
-        variant: 'destructive',
-      });
-    }
-  });
-
-  // Delete banner mutation
-  const deleteBannerMutation = useMutation({
-    mutationFn: async (bannerId: number) => {
-      const response = await fetch(`/api/admin/banners/${bannerId}`, {
-        method: 'DELETE',
-        credentials: 'include',
-      });
-      
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || '배너 삭제에 실패했습니다');
-      }
-      
-      return response.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({queryKey: ['/api/admin/banners']});
-      queryClient.invalidateQueries({queryKey: ['/api/banners']});
-      toast({
-        title: '배너 삭제 완료',
-        description: '배너가 성공적으로 삭제되었습니다.',
-      });
-    },
-    onError: (error: Error) => {
-      toast({
-        title: '배너 삭제 실패',
-        description: error.message,
-        variant: 'destructive',
-      });
-    }
-  });
-
-  const [newContent, setNewContent] = useState({
-    title: '',
-    type: 'banner' as 'banner' | 'image' | 'video' | 'article' | 'event',
-    status: 'draft' as 'active' | 'inactive' | 'draft' | 'scheduled',
-    location: '',
-    publishDate: '',
-    description: '',
-    url: '',
-    tags: ''
-  });
-
-  // 콘텐츠 데이터 로드
-  useEffect(() => {
-    const loadContents = async () => {
-      setIsLoading(true);
-      try {
-        // 실제 구현 시 API 호출로 대체
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        // 임시 데이터
-        const mockContents: Content[] = [
-          {
-            id: 1,
-            title: '메인 배너 - 신규 강좌 홍보',
-            type: 'banner',
-            status: 'active',
-            publishDate: '2024-05-01',
-            location: '홈페이지 메인',
-            views: 4521,
-            clicks: 348,
-            author: '관리자',
-            createdAt: '2024-04-28',
-            updatedAt: '2024-05-01'
-          },
-          {
-            id: 2,
-            title: '반려견 기초 훈련 가이드',
-            type: 'article',
-            status: 'active',
-            publishDate: '2024-04-20',
-            location: '블로그',
-            views: 1250,
-            author: '김훈련',
-            createdAt: '2024-04-15',
-            updatedAt: '2024-04-20'
-          },
-          {
-            id: 3,
-            title: '여름 맞이 반려견 수영 교실 안내',
-            type: 'event',
-            status: 'scheduled',
-            publishDate: '2024-06-01',
-            location: '이벤트 페이지',
-            views: 0,
-            author: '이벤트팀',
-            createdAt: '2024-05-10',
-            updatedAt: '2024-05-10'
-          },
-          {
-            id: 4,
-            title: '반려견 훈련 성공 사례 - 말라뮤트 구름이',
-            type: 'video',
-            status: 'active',
-            publishDate: '2024-04-25',
-            location: '성공 사례 갤러리',
-            views: 832,
-            author: '박트레이너',
-            createdAt: '2024-04-23',
-            updatedAt: '2024-04-25'
-          },
-          {
-            id: 5,
-            title: '강아지 장난감 추천 - 여름 특집',
-            type: 'article',
-            status: 'draft',
-            publishDate: '',
-            location: '블로그',
-            views: 0,
-            author: '최에디터',
-            createdAt: '2024-05-08',
-            updatedAt: '2024-05-08'
-          }
-        ];
-        
-        setContents(mockContents);
-      } catch (error) {
-        console.error('콘텐츠 데이터 로딩 오류:', error);
-        toast({
-          title: '데이터 로딩 오류',
-          description: '콘텐츠 정보를 불러오는 중 오류가 발생했습니다.',
-          variant: 'destructive',
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    
-    loadContents();
-  }, [toast]);
   
   // 콘텐츠 타입에 따른 아이콘 표시
   const getContentTypeIcon = (type: string) => {
@@ -531,67 +362,56 @@ export default function AdminContents() {
   const handleAddContent = () => {
     setSelectedContent(null);
     setModalMode('add');
-    // 폼 초기화
-    setNewContent({
-      title: '',
-      type: 'banner',
-      status: 'draft',
-      location: '',
-      publishDate: '',
-      description: '',
-      url: '',
-      tags: ''
-    });
     setShowContentModal(true);
   };
-
-  // 콘텐츠 저장 함수
-  const handleSaveContent = () => {
-    if (!newContent.title || !newContent.location) {
+  
+  // 콘텐츠 저장
+  const handleSaveContent = async () => {
+    try {
+      if (modalMode === 'add') {
+        // 새 콘텐츠 추가 로직
+        const newId = Math.max(...contents.map(c => c.id)) + 1;
+        const newContentItem: Content = {
+          id: newId,
+          title: newContent.title,
+          type: newContent.type,
+          status: newContent.status,
+          location: newContent.location,
+          publishDate: newContent.publishDate,
+          views: 0,
+          author: userName || '관리자',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        };
+        
+        setContents([...contents, newContentItem]);
+        
+        toast({
+          title: '콘텐츠 추가 완료',
+          description: '새로운 콘텐츠가 성공적으로 추가되었습니다.',
+        });
+      }
+      
+      setShowContentModal(false);
+    } catch (error) {
       toast({
-        title: "입력 오류",
-        description: "제목과 위치는 필수 입력 항목입니다.",
-        variant: "destructive",
+        title: '저장 오류',
+        description: '콘텐츠 저장 중 오류가 발생했습니다.',
+        variant: 'destructive',
       });
-      return;
     }
-
-    // 새 콘텐츠 생성
-    const contentToSave = {
-      id: contents.length + 1,
-      title: newContent.title,
-      type: newContent.type,
-      status: newContent.status,
-      location: newContent.location,
-      publishDate: newContent.publishDate || new Date().toISOString().split('T')[0],
-      views: 0,
-      clicks: 0,
-      author: userName || '관리자',
-      createdAt: new Date().toLocaleDateString(),
-      updatedAt: new Date().toLocaleDateString()
-    };
-
-    // 콘텐츠 목록에 추가
-    setContents([...contents, contentToSave]);
-    
-    toast({
-      title: "콘텐츠 추가 완료",
-      description: "새 콘텐츠가 성공적으로 추가되었습니다.",
-    });
-    
-    setShowContentModal(false);
   };
   
-  // 데이터 새로고침
+  // 새로고침 기능
   const handleRefresh = () => {
-    setIsLoading(true);
-    // 실제 구현 시 API 호출로 대체
+    toast({
+      title: '새로고침 완료',
+      description: '콘텐츠 목록이 업데이트되었습니다.',
+    });
+    
+    // 실제로는 API 재호출
     setTimeout(() => {
-      setIsLoading(false);
-      toast({
-        title: '새로고침 완료',
-        description: '콘텐츠 데이터가 업데이트되었습니다.',
-      });
+      setContents([...mockContents]);
     }, 1000);
   };
   
@@ -734,23 +554,7 @@ export default function AdminContents() {
                           size="icon"
                           onClick={() => handleEditContent(content)}
                         >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => {
-                            if (window.confirm('이 콘텐츠를 삭제하시겠습니까?')) {
-                              // 실제 구현 시 API 호출로 대체
-                              setContents(prev => prev.filter(c => c.id !== content.id));
-                              toast({
-                                title: '콘텐츠 삭제',
-                                description: '콘텐츠가 삭제되었습니다.',
-                              });
-                            }
-                          }}
-                        >
-                          <Trash2 className="h-4 w-4" />
+                          <Edit2 className="h-4 w-4" />
                         </Button>
                       </TableCell>
                     </TableRow>
@@ -759,53 +563,28 @@ export default function AdminContents() {
               </TableBody>
             </Table>
           </CardContent>
-          {filteredContents.length > 0 && (
-            <CardFooter className="flex items-center justify-between p-4 border-t">
-              <div className="text-sm text-muted-foreground">
-                {filteredContents.length}개 콘텐츠 중 {(currentPage - 1) * itemsPerPage + 1}-
-                {Math.min(currentPage * itemsPerPage, filteredContents.length)} 표시
-              </div>
-              <div className="flex items-center space-x-2">
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                  disabled={currentPage === 1}
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
-                  disabled={currentPage === totalPages}
-                >
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
-              </div>
-            </CardFooter>
-          )}
         </Card>
       </Tabs>
-      
-      {/* 콘텐츠 세부 정보 모달 */}
+
+      {/* Content Modal */}
       <Dialog open={showContentModal} onOpenChange={setShowContentModal}>
-          <DialogContent className="max-w-3xl">
-            <DialogHeader>
-              <DialogTitle>
-                {modalMode === 'view' && '콘텐츠 세부 정보'}
-                {modalMode === 'edit' && '콘텐츠 편집'}
-                {modalMode === 'add' && '새 콘텐츠 추가'}
-              </DialogTitle>
-              <DialogDescription>
-                {modalMode === 'view' && '콘텐츠의 세부 정보를 확인합니다.'}
-                {modalMode === 'edit' && '콘텐츠 정보를 수정합니다.'}
-                {modalMode === 'add' && '새로운 콘텐츠를 추가합니다.'}
-              </DialogDescription>
-            </DialogHeader>
-            
-            {modalMode === 'add' ? (
-              <div className="grid gap-4 py-4">
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>
+              {modalMode === 'view' && '콘텐츠 상세 정보'}
+              {modalMode === 'edit' && '콘텐츠 수정'}
+              {modalMode === 'add' && '새 콘텐츠 추가'}
+            </DialogTitle>
+            <DialogDescription>
+              {modalMode === 'view' && '콘텐츠 정보를 확인할 수 있습니다.'}
+              {modalMode === 'edit' && '콘텐츠 정보를 수정할 수 있습니다.'}
+              {modalMode === 'add' && '새로운 콘텐츠를 추가할 수 있습니다.'}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="grid gap-4 py-4">
+            {modalMode === 'add' && (
+              <div className="grid gap-4">
                 <div className="grid grid-cols-4 items-center gap-4">
                   <Label htmlFor="content-title" className="text-right">
                     제목 *
@@ -821,7 +600,7 @@ export default function AdminContents() {
 
                 <div className="grid grid-cols-4 items-center gap-4">
                   <Label htmlFor="content-type" className="text-right">
-                    타입
+                    타입 *
                   </Label>
                   <Select value={newContent.type} onValueChange={(value: any) => setNewContent({ ...newContent, type: value })}>
                     <SelectTrigger className="col-span-3">
@@ -907,244 +686,179 @@ export default function AdminContents() {
                   />
                 </div>
               </div>
-            ) : selectedContent ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <div className="text-sm font-medium mb-1">제목</div>
-                  <div className="text-lg font-semibold">{selectedContent.title}</div>
-                </div>
-              
-                <div>
-                  <div className="text-sm font-medium mb-1">타입</div>
-                  <div className="flex items-center">
-                    {getContentTypeIcon(selectedContent.type)}
-                    <span className="capitalize">
-                      {selectedContent.type === 'banner' && '배너'}
-                      {selectedContent.type === 'image' && '이미지'}
-                      {selectedContent.type === 'video' && '비디오'}
-                      {selectedContent.type === 'article' && '아티클'}
-                      {selectedContent.type === 'event' && '이벤트'}
-                    </span>
-                  </div>
-                </div>
-                
-                <div>
-                  <div className="text-sm font-medium mb-1">상태</div>
-                  <div>{getStatusBadge(selectedContent.status)}</div>
-                </div>
-                
-                <div>
-                  <div className="text-sm font-medium mb-1">위치</div>
-                  <div>{selectedContent.location}</div>
-                </div>
-                
-                <div>
-                  <div className="text-sm font-medium mb-1">게시일</div>
-                  <div>
-                    {selectedContent.publishDate || 
-                      <span className="text-muted-foreground">미설정</span>}
-                  </div>
-                </div>
-                
-                <div>
-                  <div className="text-sm font-medium mb-1">작성자</div>
-                  <div>{selectedContent.author}</div>
-                </div>
-                
-                <div>
-                  <div className="text-sm font-medium mb-1">조회수</div>
-                  <div>{selectedContent.views.toLocaleString()}</div>
-                </div>
-                
-                {selectedContent.clicks !== undefined && (
-                  <div>
-                    <div className="text-sm font-medium mb-1">클릭수</div>
-                    <div>{selectedContent.clicks.toLocaleString()}</div>
-                  </div>
-                )}
-                
-                <div>
-                  <div className="text-sm font-medium mb-1">생성일</div>
-                  <div>{selectedContent.createdAt}</div>
-                </div>
-                
-                <div>
-                  <div className="text-sm font-medium mb-1">수정일</div>
-                  <div>{selectedContent.updatedAt}</div>
-                </div>
-              </div>
-            ) : null}
-            
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setShowContentModal(false)}>
-                닫기
+            )}
+          </div>
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowContentModal(false)}>
+              취소
+            </Button>
+            {modalMode === 'add' && (
+              <Button onClick={handleSaveContent}>
+                콘텐츠 추가
               </Button>
-              {modalMode === 'add' && (
-                <Button onClick={handleSaveContent}>
-                  콘텐츠 추가
-                </Button>
-              )}
-              {modalMode === 'edit' && (
-                <Button onClick={() => {
-                  toast({
-                    title: '수정 완료',
-                    description: '콘텐츠 정보가 수정되었습니다.',
-                  });
-                  setShowContentModal(false);
-                }}>
-                  수정 저장
-                </Button>
-              )}
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+            )}
+            {modalMode === 'edit' && (
+              <Button onClick={() => {
+                toast({
+                  title: '수정 완료',
+                  description: '콘텐츠 정보가 수정되었습니다.',
+                });
+                setShowContentModal(false);
+              }}>
+                수정 저장
+              </Button>
+            )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
-        {/* Banner Registration Dialog */}
-        <Dialog open={showBannerDialog} onOpenChange={setShowBannerDialog}>
-          <DialogContent className="max-w-2xl">
-            <DialogHeader>
-              <DialogTitle>새 배너 등록</DialogTitle>
-              <DialogDescription>
-                메인 페이지에 표시될 배너를 등록하세요.
-              </DialogDescription>
-            </DialogHeader>
-            
-            <div className="grid gap-4 py-4">
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="banner-title" className="text-right">제목 *</Label>
-                <Input
-                  id="banner-title"
-                  value={bannerFormData.title}
-                  onChange={(e) => setBannerFormData({ ...bannerFormData, title: e.target.value })}
-                  className="col-span-3"
-                  placeholder="배너 제목을 입력하세요"
-                />
-              </div>
-              
-              <div className="grid grid-cols-4 items-start gap-4">
-                <Label htmlFor="banner-description" className="text-right pt-2">설명</Label>
-                <Textarea
-                  id="banner-description"
-                  value={bannerFormData.description}
-                  onChange={(e) => setBannerFormData({ ...bannerFormData, description: e.target.value })}
-                  className="col-span-3"
-                  placeholder="배너 설명을 입력하세요"
-                  rows={3}
-                />
-              </div>
-              
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="banner-image" className="text-right">이미지 URL *</Label>
-                <Input
-                  id="banner-image"
-                  value={bannerFormData.imageUrl}
-                  onChange={(e) => setBannerFormData({ ...bannerFormData, imageUrl: e.target.value })}
-                  className="col-span-3"
-                  placeholder="https://example.com/image.jpg"
-                />
-              </div>
-              
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="banner-alt" className="text-right">Alt 텍스트</Label>
-                <Input
-                  id="banner-alt"
-                  value={bannerFormData.altText}
-                  onChange={(e) => setBannerFormData({ ...bannerFormData, altText: e.target.value })}
-                  className="col-span-3"
-                  placeholder="이미지 설명"
-                />
-              </div>
-              
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="banner-link" className="text-right">링크 URL</Label>
-                <Input
-                  id="banner-link"
-                  value={bannerFormData.linkUrl}
-                  onChange={(e) => setBannerFormData({ ...bannerFormData, linkUrl: e.target.value })}
-                  className="col-span-3"
-                  placeholder="https://example.com"
-                />
-              </div>
-              
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="banner-type" className="text-right">배너 타입</Label>
-                <Select value={bannerFormData.type} onValueChange={(value: any) => setBannerFormData({ ...bannerFormData, type: value })}>
-                  <SelectTrigger className="col-span-3">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="main">메인 배너</SelectItem>
-                    <SelectItem value="event">이벤트 배너</SelectItem>
-                    <SelectItem value="shop">쇼핑 배너</SelectItem>
-                    <SelectItem value="course">강의 배너</SelectItem>
-                    <SelectItem value="trainer">훈련사 배너</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="banner-position" className="text-right">위치</Label>
-                <Select value={bannerFormData.position} onValueChange={(value: any) => setBannerFormData({ ...bannerFormData, position: value })}>
-                  <SelectTrigger className="col-span-3">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="hero">메인 히어로</SelectItem>
-                    <SelectItem value="sidebar">사이드바</SelectItem>
-                    <SelectItem value="footer">푸터</SelectItem>
-                    <SelectItem value="popup">팝업</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="banner-order" className="text-right">순서</Label>
-                <Input
-                  id="banner-order"
-                  type="number"
-                  value={bannerFormData.order}
-                  onChange={(e) => setBannerFormData({ ...bannerFormData, order: parseInt(e.target.value) || 1 })}
-                  className="col-span-3"
-                  min="1"
-                />
-              </div>
-              
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="banner-start" className="text-right">시작일</Label>
-                <Input
-                  id="banner-start"
-                  type="date"
-                  value={bannerFormData.startDate}
-                  onChange={(e) => setBannerFormData({ ...bannerFormData, startDate: e.target.value })}
-                  className="col-span-3"
-                />
-              </div>
-              
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="banner-end" className="text-right">종료일</Label>
-                <Input
-                  id="banner-end"
-                  type="date"
-                  value={bannerFormData.endDate}
-                  onChange={(e) => setBannerFormData({ ...bannerFormData, endDate: e.target.value })}
-                  className="col-span-3"
-                />
-              </div>
+      {/* Banner Registration Dialog */}
+      <Dialog open={showBannerDialog} onOpenChange={setShowBannerDialog}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>새 배너 등록</DialogTitle>
+            <DialogDescription>
+              메인 페이지에 표시될 배너를 등록하세요.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="banner-title" className="text-right">제목 *</Label>
+              <Input
+                id="banner-title"
+                value={bannerFormData.title}
+                onChange={(e) => setBannerFormData({ ...bannerFormData, title: e.target.value })}
+                className="col-span-3"
+                placeholder="배너 제목을 입력하세요"
+              />
             </div>
             
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setShowBannerDialog(false)}>
-                취소
-              </Button>
-              <Button 
-                onClick={() => createBannerMutation.mutate(bannerFormData)}
-                disabled={createBannerMutation.isPending || !bannerFormData.title || !bannerFormData.imageUrl}
-              >
-                {createBannerMutation.isPending ? '등록 중...' : '배너 등록'}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+            <div className="grid grid-cols-4 items-start gap-4">
+              <Label htmlFor="banner-description" className="text-right pt-2">설명</Label>
+              <Textarea
+                id="banner-description"
+                value={bannerFormData.description}
+                onChange={(e) => setBannerFormData({ ...bannerFormData, description: e.target.value })}
+                className="col-span-3"
+                placeholder="배너 설명을 입력하세요"
+                rows={3}
+              />
+            </div>
+            
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="banner-image" className="text-right">이미지 URL *</Label>
+              <Input
+                id="banner-image"
+                value={bannerFormData.imageUrl}
+                onChange={(e) => setBannerFormData({ ...bannerFormData, imageUrl: e.target.value })}
+                className="col-span-3"
+                placeholder="https://example.com/image.jpg"
+              />
+            </div>
+            
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="banner-alt" className="text-right">Alt 텍스트</Label>
+              <Input
+                id="banner-alt"
+                value={bannerFormData.altText}
+                onChange={(e) => setBannerFormData({ ...bannerFormData, altText: e.target.value })}
+                className="col-span-3"
+                placeholder="이미지 설명"
+              />
+            </div>
+            
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="banner-link" className="text-right">링크 URL</Label>
+              <Input
+                id="banner-link"
+                value={bannerFormData.linkUrl}
+                onChange={(e) => setBannerFormData({ ...bannerFormData, linkUrl: e.target.value })}
+                className="col-span-3"
+                placeholder="https://example.com"
+              />
+            </div>
+            
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="banner-type" className="text-right">배너 타입</Label>
+              <Select value={bannerFormData.type} onValueChange={(value: any) => setBannerFormData({ ...bannerFormData, type: value })}>
+                <SelectTrigger className="col-span-3">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="main">메인 배너</SelectItem>
+                  <SelectItem value="event">이벤트 배너</SelectItem>
+                  <SelectItem value="shop">쇼핑 배너</SelectItem>
+                  <SelectItem value="course">강의 배너</SelectItem>
+                  <SelectItem value="trainer">훈련사 배너</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="banner-position" className="text-right">위치</Label>
+              <Select value={bannerFormData.position} onValueChange={(value: any) => setBannerFormData({ ...bannerFormData, position: value })}>
+                <SelectTrigger className="col-span-3">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="hero">메인 히어로</SelectItem>
+                  <SelectItem value="sidebar">사이드바</SelectItem>
+                  <SelectItem value="footer">푸터</SelectItem>
+                  <SelectItem value="popup">팝업</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="banner-order" className="text-right">순서</Label>
+              <Input
+                id="banner-order"
+                type="number"
+                value={bannerFormData.order}
+                onChange={(e) => setBannerFormData({ ...bannerFormData, order: parseInt(e.target.value) || 1 })}
+                className="col-span-3"
+                min="1"
+              />
+            </div>
+            
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="banner-start" className="text-right">시작일</Label>
+              <Input
+                id="banner-start"
+                type="date"
+                value={bannerFormData.startDate}
+                onChange={(e) => setBannerFormData({ ...bannerFormData, startDate: e.target.value })}
+                className="col-span-3"
+              />
+            </div>
+            
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="banner-end" className="text-right">종료일</Label>
+              <Input
+                id="banner-end"
+                type="date"
+                value={bannerFormData.endDate}
+                onChange={(e) => setBannerFormData({ ...bannerFormData, endDate: e.target.value })}
+                className="col-span-3"
+              />
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowBannerDialog(false)}>
+              취소
+            </Button>
+            <Button 
+              onClick={() => createBannerMutation.mutate(bannerFormData)}
+              disabled={createBannerMutation.isPending || !bannerFormData.title || !bannerFormData.imageUrl}
+            >
+              {createBannerMutation.isPending ? '등록 중...' : '배너 등록'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
