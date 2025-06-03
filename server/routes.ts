@@ -1760,6 +1760,206 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // 관리자 배너 목록 조회
+  app.get("/api/admin/banners", async (req, res) => {
+    try {
+      const { db } = await import('./db');
+      
+      const result = await db.execute(`
+        SELECT 
+          id,
+          title,
+          description,
+          image_url as "imageUrl",
+          alt_text as "altText",
+          link_url as "linkUrl",
+          target_blank as "targetBlank",
+          type,
+          position,
+          order_index as "order",
+          start_date as "startDate",
+          end_date as "endDate",
+          status,
+          is_active as "isActive",
+          created_at as "createdAt",
+          updated_at as "updatedAt"
+        FROM banners 
+        WHERE is_active = true
+        ORDER BY type, order_index, created_at DESC
+      `);
+
+      res.json(result.rows);
+    } catch (error) {
+      console.error('배너 목록 조회 오류:', error);
+      res.status(500).json({ message: "배너 목록을 불러오는데 실패했습니다" });
+    }
+  });
+
+  // 관리자 배너 생성
+  app.post("/api/admin/banners", async (req, res) => {
+    try {
+      const { db } = await import('./db');
+      const {
+        title,
+        description,
+        imageUrl,
+        altText,
+        linkUrl,
+        targetBlank,
+        type,
+        position,
+        orderIndex,
+        startDate,
+        endDate,
+        status
+      } = req.body;
+
+      const result = await db.execute(`
+        INSERT INTO banners (
+          title, description, image_url, alt_text, link_url, target_blank,
+          type, position, order_index, start_date, end_date, status, is_active, created_by
+        ) VALUES (
+          $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, true, 1
+        ) RETURNING 
+          id,
+          title,
+          description,
+          image_url as "imageUrl",
+          alt_text as "altText",
+          link_url as "linkUrl",
+          target_blank as "targetBlank",
+          type,
+          position,
+          order_index as "order",
+          start_date as "startDate",
+          end_date as "endDate",
+          status,
+          created_at as "createdAt",
+          updated_at as "updatedAt"
+      `, [
+        title,
+        description || null,
+        imageUrl,
+        altText,
+        linkUrl || null,
+        targetBlank || false,
+        type,
+        position,
+        orderIndex || 0,
+        startDate ? new Date(startDate) : null,
+        endDate ? new Date(endDate) : null,
+        status
+      ]);
+
+      res.json(result.rows[0]);
+    } catch (error) {
+      console.error('배너 생성 오류:', error);
+      res.status(500).json({ message: "배너 생성에 실패했습니다" });
+    }
+  });
+
+  // 관리자 배너 수정
+  app.put("/api/admin/banners/:id", async (req, res) => {
+    try {
+      const { db } = await import('./db');
+      const bannerId = parseInt(req.params.id);
+      const {
+        title,
+        description,
+        imageUrl,
+        altText,
+        linkUrl,
+        targetBlank,
+        type,
+        position,
+        orderIndex,
+        startDate,
+        endDate,
+        status
+      } = req.body;
+
+      const result = await db.execute(`
+        UPDATE banners SET
+          title = $1,
+          description = $2,
+          image_url = $3,
+          alt_text = $4,
+          link_url = $5,
+          target_blank = $6,
+          type = $7,
+          position = $8,
+          order_index = $9,
+          start_date = $10,
+          end_date = $11,
+          status = $12,
+          updated_at = NOW()
+        WHERE id = $13 AND is_active = true
+        RETURNING 
+          id,
+          title,
+          description,
+          image_url as "imageUrl",
+          alt_text as "altText",
+          link_url as "linkUrl",
+          target_blank as "targetBlank",
+          type,
+          position,
+          order_index as "order",
+          start_date as "startDate",
+          end_date as "endDate",
+          status,
+          created_at as "createdAt",
+          updated_at as "updatedAt"
+      `, [
+        title,
+        description || null,
+        imageUrl,
+        altText,
+        linkUrl || null,
+        targetBlank || false,
+        type,
+        position,
+        orderIndex || 0,
+        startDate ? new Date(startDate) : null,
+        endDate ? new Date(endDate) : null,
+        status,
+        bannerId
+      ]);
+
+      if (result.rows.length === 0) {
+        return res.status(404).json({ message: "배너를 찾을 수 없습니다" });
+      }
+
+      res.json(result.rows[0]);
+    } catch (error) {
+      console.error('배너 수정 오류:', error);
+      res.status(500).json({ message: "배너 수정에 실패했습니다" });
+    }
+  });
+
+  // 관리자 배너 삭제
+  app.delete("/api/admin/banners/:id", async (req, res) => {
+    try {
+      const { db } = await import('./db');
+      const bannerId = parseInt(req.params.id);
+
+      const result = await db.execute(`
+        UPDATE banners SET is_active = false, updated_at = NOW()
+        WHERE id = $1 AND is_active = true
+        RETURNING id
+      `, [bannerId]);
+
+      if (result.rows.length === 0) {
+        return res.status(404).json({ message: "배너를 찾을 수 없습니다" });
+      }
+
+      res.json({ success: true, message: "배너가 삭제되었습니다" });
+    } catch (error) {
+      console.error('배너 삭제 오류:', error);
+      res.status(500).json({ message: "배너 삭제에 실패했습니다" });
+    }
+  });
+
   // 사용자의 모든 반려동물 조회
   app.get("/api/pets", async (req, res) => {
     try {
