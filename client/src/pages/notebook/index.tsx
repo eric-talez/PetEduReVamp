@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -9,6 +10,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Switch } from '@/components/ui/switch';
 import { 
   CalendarDays, 
   Plus, 
@@ -37,7 +39,10 @@ import {
   Download,
   Share,
   MoreHorizontal,
-  Check
+  Edit,
+  Trash2,
+  Eye,
+  EyeOff
 } from 'lucide-react';
 import { format, isToday, isYesterday, subDays, addDays } from 'date-fns';
 import { ko } from 'date-fns/locale';
@@ -85,23 +90,23 @@ interface NotebookTemplate {
 }
 
 export default function NotebookPage() {
+  const { toast } = useToast();
   const [entries, setEntries] = useState<NotebookEntry[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [filters, setFilters] = useState({
-    petName: '',
-    trainerId: '',
-    date: '',
-    tags: [] as string[]
-  });
-  const [searchTerm, setSearchTerm] = useState('');
+  const [filteredEntries, setFilteredEntries] = useState<NotebookEntry[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedPet, setSelectedPet] = useState('all');
+  const [selectedTrainer, setSelectedTrainer] = useState('all');
   const [selectedEntry, setSelectedEntry] = useState<NotebookEntry | null>(null);
-  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [isNewEntryOpen, setIsNewEntryOpen] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
-  const [isAIDialogOpen, setIsAIDialogOpen] = useState(false);
-  const [aiGeneratedContent, setAiGeneratedContent] = useState<any>(null);
-  const [sortBy, setSortBy] = useState<'date' | 'recent'>('recent');
+  const [isAIHelperOpen, setIsAIHelperOpen] = useState(false);
+  const [selectedTemplate, setSelectedTemplate] = useState<string>('');
+  const [sortBy, setSortBy] = useState<'date' | 'pet' | 'trainer'>('date');
   const [showRead, setShowRead] = useState(true);
   const [showUnread, setShowUnread] = useState(true);
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [loading, setLoading] = useState(false);
 
   // 새 알림장 폼 상태
   const [newEntry, setNewEntry] = useState({
@@ -128,68 +133,6 @@ export default function NotebookPage() {
     location: '',
     tags: [] as string[]
   });
-
-  // 샘플 데이터
-  const sampleEntries: NotebookEntry[] = [
-    {
-      id: '1',
-      date: format(new Date(), 'yyyy-MM-dd'),
-      petName: '멍멍이',
-      petId: 'pet1',
-      trainerName: '김민수',
-      trainerId: 'trainer1',
-      title: '오늘의 기본 훈련 세션',
-      content: '오늘 멍멍이는 기본 명령어 훈련을 매우 잘 따라했습니다. 특히 "앉아"와 "기다려" 명령에 대한 반응이 지난주보다 훨씬 개선되었어요.',
-      activities: {
-        training: ['기본 명령어', '리드줄 훈련'],
-        play: ['공 던지기', '터그놀이'],
-        meal: ['아침 사료', '간식 훈련'],
-        health: ['구강 검진'],
-        behavior: ['긍정적 반응', '집중력 향상']
-      },
-      mood: 'excellent',
-      photos: [],
-      videos: [],
-      notes: '내일은 산책 훈련을 추가로 진행할 예정입니다.',
-      nextGoals: ['산책 훈련', '다른 강아지와의 사회화'],
-      weather: '맑음',
-      duration: 90,
-      location: 'PetEdu 훈련장 A',
-      tags: ['기본훈련', '개선됨', '추천'],
-      isRead: false,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    },
-    {
-      id: '2',
-      date: format(subDays(new Date(), 1), 'yyyy-MM-dd'),
-      petName: '야옹이',
-      petId: 'pet2',
-      trainerName: '이영희',
-      trainerId: 'trainer2',
-      title: '고양이 행동 교정 세션',
-      content: '야옹이의 스크래칭 문제를 개선하기 위한 훈련을 진행했습니다. 전용 스크래칭 포스트 사용법을 익혔고, 가구 긁기가 50% 정도 줄어들었습니다.',
-      activities: {
-        training: ['스크래칭 교정', '장난감 활용'],
-        play: ['깃털 놀이', '레이저 포인터'],
-        meal: ['습식 사료', '고양이 풀'],
-        health: ['털갈이 관리'],
-        behavior: ['스크래칭 개선', '활동성 증가']
-      },
-      mood: 'good',
-      photos: [],
-      videos: [],
-      notes: '점진적으로 개선되고 있습니다. 꾸준한 훈련이 필요해요.',
-      nextGoals: ['완전한 스크래칭 교정', '새로운 장난감 적응'],
-      weather: '흐림',
-      duration: 75,
-      location: 'PetEdu 고양이 전용실',
-      tags: ['행동교정', '진행중'],
-      isRead: true,
-      createdAt: subDays(new Date(), 1).toISOString(),
-      updatedAt: subDays(new Date(), 1).toISOString()
-    }
-  ];
 
   // 템플릿 데이터
   const templates: NotebookTemplate[] = [
@@ -236,10 +179,70 @@ export default function NotebookPage() {
     anxious: '불안'
   };
 
-  // 초기 데이터 로드
+  // 샘플 데이터 로드
   useEffect(() => {
+    const sampleEntries: NotebookEntry[] = [
+      {
+        id: '1',
+        date: format(new Date(), 'yyyy-MM-dd'),
+        petName: '멍멍이',
+        petId: 'pet1',
+        trainerName: '김민수',
+        trainerId: 'trainer1',
+        title: '오늘의 기본 훈련 세션',
+        content: '오늘 멍멍이는 기본 명령어 훈련을 매우 잘 따라했습니다. 특히 "앉아"와 "기다려" 명령에 대한 반응이 지난주보다 훨씬 개선되었어요.',
+        activities: {
+          training: ['기본 명령어', '리드줄 훈련'],
+          play: ['공 던지기', '터그놀이'],
+          meal: ['아침 사료', '간식 훈련'],
+          health: ['구강 검진'],
+          behavior: ['긍정적 반응', '집중력 향상']
+        },
+        mood: 'excellent',
+        photos: [],
+        videos: [],
+        notes: '내일은 산책 훈련을 추가로 진행할 예정입니다.',
+        nextGoals: ['산책 훈련', '다른 강아지와의 사회화'],
+        weather: '맑음',
+        duration: 90,
+        location: 'PetEdu 훈련장 A',
+        tags: ['기본훈련', '개선됨', '추천'],
+        isRead: false,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      },
+      {
+        id: '2',
+        date: format(subDays(new Date(), 1), 'yyyy-MM-dd'),
+        petName: '야옹이',
+        petId: 'pet2',
+        trainerName: '이영희',
+        trainerId: 'trainer2',
+        title: '고양이 행동 교정 세션',
+        content: '야옹이의 스크래칭 문제를 개선하기 위한 훈련을 진행했습니다. 전용 스크래칭 포스트 사용법을 익혔고, 가구 긁기가 50% 정도 줄어들었습니다.',
+        activities: {
+          training: ['스크래칭 교정', '장난감 활용'],
+          play: ['깃털 놀이', '레이저 포인터'],
+          meal: ['습식 사료', '고양이 풀'],
+          health: ['털갈이 관리'],
+          behavior: ['스크래칭 개선', '활동성 증가']
+        },
+        mood: 'good',
+        photos: [],
+        videos: [],
+        notes: '점진적으로 개선되고 있습니다. 꾸준한 훈련이 필요해요.',
+        nextGoals: ['완전한 스크래칭 교정', '새로운 장난감 적응'],
+        weather: '흐림',
+        duration: 75,
+        location: 'PetEdu 고양이 전용실',
+        tags: ['행동교정', '진행중'],
+        isRead: true,
+        createdAt: subDays(new Date(), 1).toISOString(),
+        updatedAt: subDays(new Date(), 1).toISOString()
+      }
+    ];
+
     setEntries(sampleEntries);
-    setFilteredEntries(sampleEntries);
   }, []);
 
   // 필터링 및 검색
@@ -266,6 +269,15 @@ export default function NotebookPage() {
       filtered = filtered.filter(entry => entry.trainerId === selectedTrainer);
     }
 
+    // 읽음/안읽음 필터
+    if (!showRead && !showUnread) {
+      filtered = [];
+    } else if (!showRead) {
+      filtered = filtered.filter(entry => !entry.isRead);
+    } else if (!showUnread) {
+      filtered = filtered.filter(entry => entry.isRead);
+    }
+
     // 날짜 정렬
     if (sortBy === 'date') {
       filtered.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
@@ -276,7 +288,36 @@ export default function NotebookPage() {
     }
 
     setFilteredEntries(filtered);
-  }, [entries, searchQuery, selectedPet, selectedTrainer, sortBy]);
+  }, [entries, searchQuery, selectedPet, selectedTrainer, sortBy, showRead, showUnread]);
+
+  // 알림장 목록 조회
+  const fetchEntries = useCallback(async () => {
+    try {
+      setIsLoading(true);
+
+      const queryParams = new URLSearchParams();
+      if (selectedPet !== 'all') queryParams.append('petId', selectedPet);
+      if (selectedTrainer !== 'all') queryParams.append('trainerId', selectedTrainer);
+
+      const response = await fetch(`/api/notebook/entries?${queryParams}`);
+      const data = await response.json();
+
+      if (data.success) {
+        setEntries(data.entries || []);
+      } else {
+        throw new Error(data.error || '알림장을 불러올 수 없습니다');
+      }
+    } catch (error) {
+      console.error('알림장 조회 실패:', error);
+      toast({
+        title: "오류",
+        description: "알림장을 불러오는 중 오류가 발생했습니다.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  }, [selectedPet, selectedTrainer, toast]);
 
   // 새 알림장 저장
   const handleSaveEntry = async () => {
@@ -292,49 +333,66 @@ export default function NotebookPage() {
     setLoading(true);
 
     try {
-      const entry: NotebookEntry = {
-        id: Date.now().toString(),
-        date: format(selectedDate, 'yyyy-MM-dd'),
-        ...newEntry,
-        isRead: false,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      };
-
-      setEntries(prev => [entry, ...prev]);
-
-      // 폼 초기화
-      setNewEntry({
-        petName: '',
-        petId: '',
-        trainerName: '',
-        trainerId: '',
-        title: '',
-        content: '',
-        activities: {
-          training: [],
-          play: [],
-          meal: [],
-          health: [],
-          behavior: []
+      const response = await fetch('/api/notebook/entries', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
         },
-        mood: 'good',
-        photos: [],
-        videos: [],
-        notes: '',
-        nextGoals: [],
-        weather: '',
-        duration: 60,
-        location: '',
-        tags: []
+        body: JSON.stringify({
+          ...newEntry,
+          date: format(selectedDate, 'yyyy-MM-dd')
+        }),
       });
 
-      setIsNewEntryOpen(false);
+      const data = await response.json();
 
-      toast({
-        title: '알림장 저장 완료',
-        description: '새로운 알림장이 성공적으로 저장되었습니다.'
-      });
+      if (data.success) {
+        const entry: NotebookEntry = {
+          id: data.entry.id,
+          date: format(selectedDate, 'yyyy-MM-dd'),
+          ...newEntry,
+          isRead: false,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        };
+
+        setEntries(prev => [entry, ...prev]);
+
+        // 폼 초기화
+        setNewEntry({
+          petName: '',
+          petId: '',
+          trainerName: '',
+          trainerId: '',
+          title: '',
+          content: '',
+          activities: {
+            training: [],
+            play: [],
+            meal: [],
+            health: [],
+            behavior: []
+          },
+          mood: 'good',
+          photos: [],
+          videos: [],
+          notes: '',
+          nextGoals: [],
+          weather: '',
+          duration: 60,
+          location: '',
+          tags: []
+        });
+
+        setIsNewEntryOpen(false);
+
+        toast({
+          title: '알림장 저장 완료',
+          description: '새로운 알림장이 성공적으로 저장되었습니다.'
+        });
+      } else {
+        throw new Error(data.error);
+      }
     } catch (error) {
       toast({
         title: '저장 실패',
@@ -360,30 +418,39 @@ export default function NotebookPage() {
     setLoading(true);
 
     try {
-      // AI API 호출 시뮬레이션
-      await new Promise(resolve => setTimeout(resolve, 2000));
-
-      const aiGeneratedContent = `오늘 ${newEntry.petName}는 훈련에 적극적으로 참여했습니다. 
-
-특히 다음과 같은 활동에서 좋은 반응을 보였습니다:
-- 기본 명령어 훈련: 이전보다 집중력이 향상되었음
-- 사회화 훈련: 다른 반려동물들과 원활한 상호작용
-- 놀이 활동: 활발하고 긍정적인 반응
-
-오늘의 전반적인 상태는 양호하며, 지속적인 훈련을 통해 더욱 발전할 것으로 예상됩니다.
-
-다음 세션에서는 ${newEntry.petName}의 특성을 고려하여 맞춤형 훈련을 진행할 예정입니다.`;
-
-      setNewEntry(prev => ({
-        ...prev,
-        content: aiGeneratedContent,
-        title: `${format(selectedDate, 'MM월 dd일', { locale: ko })} ${prev.petName} 훈련 일지`
-      }));
-
-      toast({
-        title: 'AI 내용 생성 완료',
-        description: 'AI가 알림장 내용을 생성했습니다. 필요에 따라 수정해주세요.'
+      const response = await fetch('/api/notebook/ai-generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          petName: newEntry.petName,
+          petBreed: '',
+          activities: Object.values(newEntry.activities).flat(),
+          additionalContext: newEntry.notes
+        })
       });
+
+      const data = await response.json();
+      
+      if (data.success) {
+        setNewEntry(prev => ({
+          ...prev,
+          content: data.content.content,
+          title: data.content.title,
+          tags: data.content.tags,
+          activities: {
+            ...prev.activities,
+            training: data.content.activities || prev.activities.training
+          },
+          nextGoals: data.content.nextGoals || prev.nextGoals
+        }));
+
+        toast({
+          title: 'AI 내용 생성 완료',
+          description: 'AI가 알림장 내용을 생성했습니다. 필요에 따라 수정해주세요.'
+        });
+      } else {
+        throw new Error(data.error);
+      }
     } catch (error) {
       toast({
         title: 'AI 생성 실패',
@@ -428,112 +495,21 @@ export default function NotebookPage() {
     return format(date, 'MM월 dd일', { locale: ko });
   };
 
-  // 알림장 목록 조회
-  const fetchEntries = useCallback(async () => {
+  // 알림장 읽음 처리
+  const markAsRead = async (entryId: string) => {
     try {
-      setIsLoading(true);
+      const response = await fetch(`/api/notebook/entries/${entryId}/read`, {
+        method: 'PATCH'
+      });
 
-      const queryParams = new URLSearchParams();
-      if (filters.petName) queryParams.append('petId', filters.petName);
-      if (filters.trainerId) queryParams.append('trainerId', filters.trainerId);
-      if (filters.date) queryParams.append('date', filters.date);
-
-      const response = await fetch(`/api/notebook/entries?${queryParams}`);
-      const data = await response.json();
-
-      if (data.success) {
-        setEntries(data.entries || []);
-      } else {
-        throw new Error(data.error || '알림장을 불러올 수 없습니다');
+      if (response.ok) {
+        setEntries(prev => prev.map(entry => 
+          entry.id === entryId ? { ...entry, isRead: true } : entry
+        ));
       }
     } catch (error) {
-      console.error('알림장 조회 실패:', error);
-      toast({
-        title: "오류",
-        description: "알림장을 불러오는 중 오류가 발생했습니다.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
+      console.error('읽음 처리 실패:', error);
     }
-  }, [filters, toast]);
-
-  // AI 알림장 생성
-  const handleAIGenerate = async (petData: any) => {
-    try {
-      setIsLoading(true);
-      const response = await fetch('/api/notebook/ai-generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(petData)
-      });
-
-      const data = await response.json();
-      if (data.success) {
-        setAiGeneratedContent(data.content);
-        setIsCreateDialogOpen(true);
-        setIsAIDialogOpen(false);
-        toast({
-          title: "성공",
-          description: "AI가 알림장 내용을 생성했습니다.",
-        });
-      } else {
-        throw new Error(data.error);
-      }
-    } catch (error) {
-      console.error('AI 생성 실패:', error);
-      toast({
-        title: "오류",
-        description: "AI 알림장 생성에 실패했습니다.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // 필터링된 엔트리
-  const filteredEntries = useMemo(() => {
-    let filtered = entries.filter(entry => {
-      // 검색어 필터
-      if (searchTerm) {
-        const searchLower = searchTerm.toLowerCase();
-        if (!entry.title.toLowerCase().includes(searchLower) && 
-            !entry.content.toLowerCase().includes(searchLower)) {
-          return false;
-        }
-      }
-
-      // 읽음/안읽음 필터
-      if (!showRead && entry.isRead) return false;
-      if (!showUnread && !entry.isRead) return false;
-
-      // 태그 필터
-      if (filters.tags.length > 0) {
-        if (!entry.tags?.some(tag => filters.tags.includes(tag))) {
-          return false;
-        }
-      }
-
-      return true;
-    });
-
-    // 정렬
-    if (sortBy === 'date') {
-      filtered.sort((a, b) => a.date.localeCompare(b.date));
-    } else {
-      filtered.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-    }
-
-    return filtered;
-  }, [entries, searchTerm, showRead, showUnread, filters.tags, sortBy]);
-
-   const markAsRead = (entryId: string) => {
-    setEntries(prevEntries =>
-      prevEntries.map(entry =>
-        entry.id === entryId ? { ...entry, isRead: true } : entry
-      )
-    );
   };
 
   return (
@@ -549,6 +525,28 @@ export default function NotebookPage() {
         </div>
 
         <div className="flex gap-2">
+          <Dialog open={isAIHelperOpen} onOpenChange={setIsAIHelperOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline" className="flex items-center gap-2">
+                <Sparkles className="h-4 w-4" />
+                AI 도우미
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>AI 알림장 도우미</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                <p className="text-sm text-gray-600">
+                  AI가 반려동물 정보를 바탕으로 알림장 내용을 자동 생성해드립니다.
+                </p>
+                <Button onClick={handleAIGenerate} disabled={loading} className="w-full">
+                  {loading ? '생성 중...' : 'AI로 내용 생성'}
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+
           <Dialog open={isNewEntryOpen} onOpenChange={setIsNewEntryOpen}>
             <DialogTrigger asChild>
               <Button className="flex items-center gap-2">
@@ -724,7 +722,25 @@ export default function NotebookPage() {
               />
             </div>
 
-            <div className="flex gap-2">
+            <div className="flex gap-2 items-center">
+              <div className="flex items-center gap-2">
+                <Switch
+                  id="show-read"
+                  checked={showRead}
+                  onCheckedChange={setShowRead}
+                />
+                <label htmlFor="show-read" className="text-sm">읽음</label>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <Switch
+                  id="show-unread"
+                  checked={showUnread}
+                  onCheckedChange={setShowUnread}
+                />
+                <label htmlFor="show-unread" className="text-sm">안읽음</label>
+              </div>
+
               <Select value={selectedPet} onValueChange={setSelectedPet}>
                 <SelectTrigger className="w-32">
                   <SelectValue placeholder="반려동물" />
@@ -764,7 +780,14 @@ export default function NotebookPage() {
 
       {/* 알림장 목록 */}
       <div className="space-y-4">
-        {filteredEntries.length === 0 ? (
+        {isLoading ? (
+          <Card>
+            <CardContent className="p-12 text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+              <p className="text-gray-600">알림장을 불러오는 중...</p>
+            </CardContent>
+          </Card>
+        ) : filteredEntries.length === 0 ? (
           <Card>
             <CardContent className="p-12 text-center">
               <BookOpen className="h-16 w-16 text-gray-300 mx-auto mb-4" />
@@ -778,7 +801,16 @@ export default function NotebookPage() {
           </Card>
         ) : (
           filteredEntries.map((entry) => (
-            <Card key={entry.id} className={`transition-all hover:shadow-md ${!entry.isRead ? 'border-blue-200 bg-blue-50/30' : ''}`}>
+            <Card 
+              key={entry.id} 
+              className={`transition-all hover:shadow-md cursor-pointer ${!entry.isRead ? 'border-blue-200 bg-blue-50/30' : ''}`}
+              onClick={() => {
+                setSelectedEntry(entry);
+                if (!entry.isRead) {
+                  markAsRead(entry.id);
+                }
+              }}
+            >
               <CardHeader className="pb-3">
                 <div className="flex justify-between items-start">
                   <div className="flex items-center gap-3">
@@ -825,7 +857,7 @@ export default function NotebookPage() {
               </CardHeader>
 
               <CardContent className="space-y-4">
-                <p className="text-gray-700 leading-relaxed">{entry.content}</p>
+                <p className="text-gray-700 leading-relaxed line-clamp-3">{entry.content}</p>
 
                 {/* 활동 태그 */}
                 {Object.entries(entry.activities).some(([_, activities]) => activities.length > 0) && (
@@ -842,33 +874,6 @@ export default function NotebookPage() {
                     </div>
                   </div>
                 )}
-
-                {/* 액션 버튼들 */}
-                <div className="flex gap-2 pt-2 border-t">
-                  {!entry.isRead && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => markAsRead(entry.id)}
-                      className="flex items-center gap-1"
-                    >
-                      <Check className="h-3 w-3" />
-                      읽음 표시
-                    </Button>
-                  )}
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      // 훈련사에게 메시지 보내기 기능
-                      window.location.href = `/messages?trainer=${entry.trainerId}`;
-                    }}
-                    className="flex items-center gap-1"
-                  >
-                    <MessageSquare className="h-3 w-3" />
-                    훈련사에게 연락
-                  </Button>
-                </div>
 
                 {/* 추가 정보 */}
                 <div className="flex flex-wrap gap-4 text-xs text-gray-500">
@@ -891,34 +896,101 @@ export default function NotebookPage() {
                     </span>
                   )}
                 </div>
-
-                {/* 다음 목표 */}
-                {entry.nextGoals.length > 0 && (
-                  <div className="bg-gray-50 p-3 rounded-lg">
-                    <h4 className="text-sm font-medium text-gray-600 mb-2">다음 목표</h4>
-                    <ul className="text-sm text-gray-700 space-y-1">
-                      {entry.nextGoals.map((goal, index) => (
-                        <li key={index} className="flex items-center gap-2">
-                          <div className="w-1.5 h-1.5 bg-blue-500 rounded-full"></div>
-                          {goal}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-
-                {/* 특별 노트 */}
-                {entry.notes && (
-                  <div className="bg-yellow-50 border-l-4 border-yellow-400 p-3">
-                    <h4 className="text-sm font-medium text-yellow-800 mb-1">특별 노트</h4>
-                    <p className="text-sm text-yellow-700">{entry.notes}</p>
-                  </div>
-                )}
               </CardContent>
             </Card>
           ))
         )}
       </div>
+
+      {/* 알림장 상세 보기 모달 */}
+      {selectedEntry && (
+        <Dialog open={!!selectedEntry} onOpenChange={() => setSelectedEntry(null)}>
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                {selectedEntry.title}
+                <div className="text-xl">{moodEmojis[selectedEntry.mood]}</div>
+              </DialogTitle>
+            </DialogHeader>
+
+            <div className="space-y-6">
+              {/* 기본 정보 */}
+              <div className="grid grid-cols-2 gap-4 p-4 bg-gray-50 rounded-lg">
+                <div>
+                  <span className="text-sm text-gray-600">반려동물:</span>
+                  <p className="font-medium">{selectedEntry.petName}</p>
+                </div>
+                <div>
+                  <span className="text-sm text-gray-600">훈련사:</span>
+                  <p className="font-medium">{selectedEntry.trainerName}</p>
+                </div>
+                <div>
+                  <span className="text-sm text-gray-600">날짜:</span>
+                  <p className="font-medium">{formatEntryDate(selectedEntry.date)}</p>
+                </div>
+                <div>
+                  <span className="text-sm text-gray-600">훈련 시간:</span>
+                  <p className="font-medium">{selectedEntry.duration}분</p>
+                </div>
+              </div>
+
+              {/* 내용 */}
+              <div>
+                <h3 className="text-lg font-semibold mb-3">훈련 내용</h3>
+                <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
+                  {selectedEntry.content}
+                </p>
+              </div>
+
+              {/* 활동 */}
+              {Object.entries(selectedEntry.activities).some(([_, activities]) => activities.length > 0) && (
+                <div>
+                  <h3 className="text-lg font-semibold mb-3">오늘의 활동</h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    {Object.entries(selectedEntry.activities).map(([category, activities]) => (
+                      activities.length > 0 && (
+                        <div key={category}>
+                          <h4 className="font-medium text-gray-600 mb-2 capitalize">{category}</h4>
+                          <div className="flex flex-wrap gap-1">
+                            {activities.map((activity, index) => (
+                              <Badge key={index} variant="outline" className="text-xs">
+                                {activity}
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
+                      )
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* 다음 목표 */}
+              {selectedEntry.nextGoals.length > 0 && (
+                <div>
+                  <h3 className="text-lg font-semibold mb-3">다음 목표</h3>
+                  <ul className="space-y-2">
+                    {selectedEntry.nextGoals.map((goal, index) => (
+                      <li key={index} className="flex items-center gap-2">
+                        <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                        {goal}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {/* 특별 노트 */}
+              {selectedEntry.notes && (
+                <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4">
+                  <h4 className="font-medium text-yellow-800 mb-2">특별 노트</h4>
+                  <p className="text-yellow-700">{selectedEntry.notes}</p>
+                </div>
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 }
