@@ -341,16 +341,17 @@ export function RealTimePopularChart() {
   const renderPopularList = (items: PopularItem[], showLocation = false, showDate = false) => (
     <div className="space-y-3">
       {items.map((item, index) => (
-        <div
+        <button
           key={item.id}
-          className="flex items-center space-x-4 p-3 bg-white dark:bg-gray-800 rounded-lg shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer border hover:border-primary/20"
+          className="w-full flex items-center space-x-4 p-3 bg-white dark:bg-gray-800 rounded-lg shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer border hover:border-primary/20 text-left"
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
             console.log('[RealTimePopularChart] 아이템 클릭:', item.title, item.detailPath);
+            alert(`클릭됨: ${item.title}`);
             handleItemClick(item.detailPath);
           }}
-          style={{ pointerEvents: 'auto' }}
+          type="button"
         >
           <div className="flex-shrink-0 w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
             <span className="text-primary font-bold text-sm">{index + 1}</span>
@@ -405,7 +406,7 @@ export function RealTimePopularChart() {
               {item.trend !== 'stable' && (item.changePercent > 0 ? '+' : '')}{item.changePercent}%
             </span>
           </div>
-        </div>
+        </button>
       ))}
     </div>
   );
