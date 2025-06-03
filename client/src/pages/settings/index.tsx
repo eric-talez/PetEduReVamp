@@ -4,6 +4,8 @@ import { Redirect } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
+import { ThemeSettings } from "@/components/ThemeSettings";
+import { AccessibilitySettings } from "@/components/ui/AccessibilityControls";
 
 interface SettingsPageProps {
   userRole?: string;
@@ -200,6 +202,18 @@ export default function SettingsPage({ userRole: propUserRole }: SettingsPagePro
                 }`}
               >
                 개인정보 설정
+              </button>
+            </li>
+            <li>
+              <button 
+                onClick={() => setActiveTab("theme")}
+                className={`w-full text-left px-4 py-2 rounded-lg ${
+                  activeTab === "theme" 
+                    ? "bg-primary text-white" 
+                    : "hover:bg-gray-100 dark:hover:bg-gray-700"
+                }`}
+              >
+                테마 및 화면 설정
               </button>
             </li>
             {userRole === 'trainer' && (

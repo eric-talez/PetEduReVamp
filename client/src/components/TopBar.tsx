@@ -1,5 +1,4 @@
-import { useTheme } from "@/context/theme-context";
-import { Sun, Moon } from "lucide-react";
+import { QuickThemeToggle } from "@/components/ThemeSettings";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { NotificationBell } from "@/components/notifications/NotificationBell";
@@ -83,7 +82,6 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
   const isAuthenticated = authState?.isAuthenticated || auth?.isAuthenticated;
   const logout = auth?.logout;
   const [location, setLocation] = useLocation();
-  const { theme, setTheme } = useTheme();
   
   // 검색 상태
   const [searchQuery, setSearchQuery] = useState('');
@@ -607,21 +605,7 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
                 </div>
               )}
               
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  console.log('현재 테마:', theme);
-                  console.log('새 테마로 전환:', theme === 'dark' ? 'light' : 'dark');
-                  setTheme(theme === 'dark' ? 'light' : 'dark');
-                }}
-                className="h-9 w-9 px-0 hover:bg-accent border-gray-300 dark:border-gray-600"
-                aria-label="테마 전환"
-                title="다크/라이트 모드 전환"
-              >
-                <Sun className="h-[1.1rem] w-[1.1rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-                <Moon className="absolute h-[1.1rem] w-[1.1rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-              </Button>
+              <QuickThemeToggle />
             </div>
 
             {isAuthenticated ? (

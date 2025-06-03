@@ -18,7 +18,7 @@ import {
   Settings,
   PanelLeft
 } from 'lucide-react';
-import { useTheme } from '@/hooks/use-theme';
+import { useTheme } from '@/context/theme-context';
 
 interface AccessibilitySettingsProps {
   isOpen: boolean;
