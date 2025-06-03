@@ -140,20 +140,63 @@ export function NewTrainerProfileModal({ trainer, isOpen, onClose }: TrainerProf
         <div>
           <h3 className="text-md font-semibold mb-3">훈련사에게 연락하기</h3>
           <div className="grid grid-cols-2 gap-3">
-            <Button className="w-full" size="sm">
+            <Button 
+              type="button"
+              className="w-full" 
+              size="sm"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('[Modal Action] 메시지 보내기 클릭:', trainer.name);
+                // 메시지 보내기 로직
+              }}
+            >
               <MessageSquare className="w-4 h-4 mr-2" />
               메시지 보내기
             </Button>
-            <Button className="w-full" variant="outline" size="sm">
+            <Button 
+              type="button"
+              className="w-full" 
+              variant="outline" 
+              size="sm"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('[Modal Action] 화상 상담 예약 클릭:', trainer.name);
+                // 화상 상담 예약 로직
+              }}
+            >
               <VideoIcon className="w-4 h-4 mr-2" />
               화상 상담 예약
             </Button>
-            <Button className="w-full" variant="secondary" size="sm">
+            <Button 
+              type="button"
+              className="w-full" 
+              variant="secondary" 
+              size="sm"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('[Modal Action] 수업 일정 보기 클릭:', trainer.name);
+                // 수업 일정 보기 로직
+              }}
+            >
               <Calendar className="w-4 h-4 mr-2" />
               수업 일정 보기
             </Button>
             {trainer.contactInfo?.phone && (
-              <Button className="w-full" variant="outline" size="sm">
+              <Button 
+                type="button"
+                className="w-full" 
+                variant="outline" 
+                size="sm"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  console.log('[Modal Action] 전화 연락 클릭:', trainer.name);
+                  // 전화 연락 로직
+                }}
+              >
                 <Phone className="w-4 h-4 mr-2" />
                 전화 연락
               </Button>
