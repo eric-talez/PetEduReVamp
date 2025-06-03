@@ -164,7 +164,7 @@ export function Sidebar({
   console.log('Sidebar render - userRole:', userRole, 'isAuthenticated:', isAuthenticated);
   const [location, setLocation] = useLocation();
   const [internalExpanded, setInternalExpanded] = useState(true);
-  
+
   // 외부에서 제어되는 상태 또는 내부 상태 사용
   const expanded = externalExpanded !== undefined ? externalExpanded : internalExpanded;
 
@@ -195,7 +195,7 @@ export function Sidebar({
         console.error('저장된 메뉴 그룹 상태 파싱 오류:', e);
       }
     }
-    
+
     return {
       main: true,         // 메인 메뉴
       learning: false,    // 학습 메뉴
@@ -204,17 +204,17 @@ export function Sidebar({
       admin: false        // 관리자 메뉴
     };
   });
-  
+
   useEffect(() => {
     console.log('Sidebar useEffect - userRole:', userRole, 'isAuthenticated:', isAuthenticated);
-    
+
     // 기관 관리자 및 관리자 권한 확인
     const isInstituteAdmin = userRole === 'institute-admin';
     const isAdmin = userRole === 'admin';
     const isTrainer = userRole === 'trainer';
-    
+
     console.log('권한 체크 - 기관 관리자:', isInstituteAdmin, '관리자:', isAdmin, '훈련사:', isTrainer);
-    
+
     // 로그인 상태가 변경되면 메뉴 그룹 상태 업데이트
     setMenuGroups((prevGroups: Record<string, boolean>) => {
       // 권한에 따른 값 업데이트
@@ -227,7 +227,7 @@ export function Sidebar({
         myLearning: isAuthenticated ? prevGroups.myLearning : false,
         features: isAuthenticated ? prevGroups.features : false
       };
-      
+
       // localStorage에 업데이트된 메뉴 상태 저장
       try {
         localStorage.setItem('menuGroups', JSON.stringify(updatedMenuGroups));
@@ -235,7 +235,7 @@ export function Sidebar({
       } catch (e) {
         console.error('메뉴 그룹 상태 저장 오류:', e);
       }
-      
+
       console.log('메뉴 그룹 업데이트:', updatedMenuGroups);
       return updatedMenuGroups;
     });
@@ -258,14 +258,14 @@ export function Sidebar({
         ...prev,
         [group]: !currentState
       };
-      
+
       // localStorage에 저장
       try {
         localStorage.setItem('menuGroups', JSON.stringify(newState));
       } catch (e) {
         console.error('메뉴 그룹 상태 저장 오류:', e);
       }
-      
+
       console.log(`메뉴 상태 변경 후: ${group} = ${!currentState}`);
       return newState;
     });
@@ -293,7 +293,7 @@ export function Sidebar({
         !path.startsWith('/events/') && 
         !path.startsWith('/help/')) {
       console.log('로그인 필요: ', path);
-      
+
       // 로딩 표시를 위한 오버레이 요소 생성
       const overlay = document.createElement('div');
       overlay.className = 'fixed inset-0 bg-black/30 z-50 flex items-center justify-center';
@@ -305,7 +305,7 @@ export function Sidebar({
         </div>
       `;
       document.body.appendChild(overlay);
-      
+
       // 약간의 지연 후 페이지 이동 (로딩 표시가 보이도록)
       setTimeout(() => {
         try {
@@ -315,7 +315,7 @@ export function Sidebar({
         } catch (e) {
           console.log('오버레이 제거 중 오류:', e);
         }
-        
+
         // 페이지 이동 시도 (여러 방식으로 시도)
         try {
           setLocation('/auth');
@@ -332,7 +332,7 @@ export function Sidebar({
       // 훈련사 전용 페이지
       if ((path.startsWith('/trainer-dashboard') || path.startsWith('/trainer/')) && userRole !== 'trainer' && userRole !== 'admin') {
         console.log('훈련사 권한 필요');
-        
+
         // 접근 제한 알림 표시
         const overlay = document.createElement('div');
         overlay.className = 'fixed inset-0 bg-black/30 z-50 flex items-center justify-center';
@@ -344,9 +344,9 @@ export function Sidebar({
             <button class="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2">확인</button>
           </div>
         `;
-        
+
         document.body.appendChild(overlay);
-        
+
         // 확인 버튼 클릭 시 오버레이 제거 및 홈으로 이동
         const button = overlay.querySelector('button');
         if (button) {
@@ -355,14 +355,14 @@ export function Sidebar({
             window.location.href = '/';
           });
         }
-        
+
         return;
       }
 
       // 기관 관리자 전용 페이지
       if ((path.startsWith('/institute-dashboard') || path.startsWith('/institute/')) && userRole !== 'institute-admin' && userRole !== 'admin') {
         console.log('기관 관리자 권한 필요');
-        
+
         // 접근 제한 알림 표시
         const overlay = document.createElement('div');
         overlay.className = 'fixed inset-0 bg-black/30 z-50 flex items-center justify-center';
@@ -374,9 +374,9 @@ export function Sidebar({
             <button class="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2">확인</button>
           </div>
         `;
-        
+
         document.body.appendChild(overlay);
-        
+
         // 확인 버튼 클릭 시 오버레이 제거 및 홈으로 이동
         const button = overlay.querySelector('button');
         if (button) {
@@ -385,14 +385,14 @@ export function Sidebar({
             window.location.href = '/';
           });
         }
-        
+
         return;
       }
 
       // 시스템 관리자 전용 페이지
       if (path.startsWith('/admin') && userRole !== 'admin') {
         console.log('관리자 권한 필요');
-        
+
         // 접근 제한 알림 표시
         const overlay = document.createElement('div');
         overlay.className = 'fixed inset-0 bg-black/30 z-50 flex items-center justify-center';
@@ -404,9 +404,9 @@ export function Sidebar({
             <button class="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2">확인</button>
           </div>
         `;
-        
+
         document.body.appendChild(overlay);
-        
+
         // 확인 버튼 클릭 시 오버레이 제거 및 홈으로 이동
         const button = overlay.querySelector('button');
         if (button) {
@@ -415,7 +415,7 @@ export function Sidebar({
             window.location.href = '/';
           });
         }
-        
+
         return;
       }
     }
@@ -446,10 +446,10 @@ export function Sidebar({
     // SPA 라우팅 함수
     const navigateToPage = (targetPath: string) => {
       console.log(`페이지 이동: ${targetPath}`);
-      
+
       // wouter를 사용한 SPA 라우팅
       setLocation(targetPath);
-      
+
       // 모바일 화면에서만 사이드바 닫기
       if (onClose && window.innerWidth < 768) onClose();
     };
@@ -483,9 +483,9 @@ export function Sidebar({
   const showPetOwnerMenu = userRole === 'pet-owner' || userRole === 'admin';
   const showBasicMenu = true; // 모든 사용자가 접근 가능한 메뉴
   const isPetOwner = userRole === 'pet-owner';
-  
+
   // 이 useEffect는 중복되므로 제거 (위에서 이미 처리됨)
-  
+
   console.log('메뉴 표시 상태 - 기관 관리자 메뉴:', showInstituteMenu, '(역할:', userRole, ')');
   console.log('메뉴 그룹 상태:', menuGroups);
 
@@ -555,14 +555,14 @@ export function Sidebar({
                       active={isActive("/courses")} 
                       onClick={handleItemClick} 
                       show={true}
-                    >강의 탐색</AccessibleNavItem>
+                    >강의 찾기</AccessibleNavItem>
                     <AccessibleNavItem 
                       href="/trainers" 
                       icon={<UserRoundCheck className="w-5 h-5 mr-2" />} 
                       active={isActive("/trainers")} 
                       onClick={handleItemClick} 
                       show={true}
-                    >훈련사 찾기</AccessibleNavItem>
+                    >전문가 찾기</AccessibleNavItem>
                     <AccessibleNavItem 
                       href="/community" 
                       icon={<MessageSquare className="w-5 h-5 mr-2" />} 
@@ -572,7 +572,7 @@ export function Sidebar({
                     >커뮤니티</AccessibleNavItem>
                   </>
                 )}
-                
+
                 {/* 특별 메뉴는 비로그인 상태에서 숨김 처리 */}
 
                 {/* 쇼핑몰 메뉴 그룹 (항상 표시) */}
@@ -584,14 +584,14 @@ export function Sidebar({
                   toggleGroup={toggleMenuGroup}
                   icon={<ShoppingBag className="w-5 h-5 text-gray-500" />}
                 />
-                
+
                 {/* 쇼핑몰 메뉴 그룹 내용 */}
                 {menuGroups.shopping && (
                   <div className={cn("mt-1 pl-2", !expanded && "pl-0")}>
                     <SpecialShopLink expanded={expanded}>쇼핑몰</SpecialShopLink>
                   </div>
                 )}
-                
+
                 {/* 비로그인 상태에서 특별 메뉴 내용도 숨김 처리 */}
 
                 {expanded ? (
@@ -670,8 +670,8 @@ export function Sidebar({
                   <>
                     <AccessibleNavItem href="/" icon={<Home className="w-5 h-5 mr-2" />} active={isActive("/")} onClick={handleItemClick} show={true}>홈</AccessibleNavItem>
                     {showDashboardLink && <AccessibleNavItem href="/dashboard" icon={<BarChart2 className="w-5 h-5 mr-2" />} active={isActive("/dashboard")} onClick={handleItemClick} show={true}>대시보드</AccessibleNavItem>}
-                    <AccessibleNavItem href="/courses" icon={<GraduationCap className="w-5 h-5 mr-2" />} active={isActive("/courses")} onClick={handleItemClick} show={true}>강의</AccessibleNavItem>
-                    <AccessibleNavItem href="/trainers" icon={<UserRoundCheck className="w-5 h-5 mr-2" />} active={isActive("/trainers")} onClick={handleItemClick} show={true}>훈련사</AccessibleNavItem>
+                    <AccessibleNavItem href="/courses" icon={<GraduationCap className="w-5 h-5 mr-2" />} active={isActive("/courses")} onClick={handleItemClick} show={true}>강의 찾기</AccessibleNavItem>
+                    <AccessibleNavItem href="/trainers" icon={<UserRoundCheck className="w-5 h-5 mr-2" />} active={isActive("/trainers")} onClick={handleItemClick} show={true}>전문가 찾기</AccessibleNavItem>
                     <AccessibleNavItem href="/community" icon={<MessageSquare className="w-5 h-5 mr-2" />} active={isActive("/community")} onClick={handleItemClick} show={true}>커뮤니티</AccessibleNavItem>
                     <SpecialShopLink expanded={expanded}>쇼핑몰</SpecialShopLink>
                   </>
@@ -702,7 +702,8 @@ export function Sidebar({
                       <>
                         {showTrainerMenu && <AccessibleNavItem href="/trainer/students" icon={<Users className="w-5 h-5 mr-2" />} active={isActive("/trainer/students")} onClick={handleItemClick} show={true}>학생 관리</AccessibleNavItem>}
                         {showTrainerMenu && <AccessibleNavItem href="/trainer/courses" icon={<Presentation className="w-5 h-5 mr-2" />} active={isActive("/trainer/courses")} onClick={handleItemClick} show={true}>강의 관리</AccessibleNavItem>}
-                        {showTrainerMenu && <AccessibleNavItem href="/trainer/classes" icon={<Calendar className="w-5 h-5 mr-2" />} active={isActive("/trainer/classes")} onClick={handleItemClick} show={true}>수업 일정</AccessibleNavItem>}
+                        {showTrainerMenu && <AccessibleNavItem href="/trainer/classes" icon={<Calendar className="w-5 h-5 mr-2Line chart of changes made, incorporating menu name updates for clarity and user-friendliness.
+" />} active={isActive("/trainer/classes")} onClick={handleItemClick} show={true}>수업 일정</AccessibleNavItem>}
                         {(showTrainerMenu || showInstituteMenu) && <AccessibleNavItem href="/trainer/earnings" icon={<DollarSign className="w-5 h-5 mr-2" />} active={isActive("/trainer/earnings")} onClick={handleItemClick} show={true}>수익 관리</AccessibleNavItem>}
                         {showInstituteMenu && <AccessibleNavItem href="/institute/trainers" icon={<UserCog className="w-5 h-5 mr-2" />} active={isActive("/institute/trainers")} onClick={handleItemClick} show={true}>훈련사 관리</AccessibleNavItem>}
                         {showInstituteMenu && <AccessibleNavItem href="/institute/facility" icon={<Building className="w-5 h-5 mr-2" />} active={isActive("/institute/facility")} onClick={handleItemClick} show={true}>시설 관리</AccessibleNavItem>}

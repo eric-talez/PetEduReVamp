@@ -70,7 +70,7 @@ export const DEFAULT_MENU_ITEMS: MenuItem[] = [
   },
   {
     id: 'courses',
-    title: '강의',
+    title: '강의 찾기',
     path: '/courses',
     icon: 'GraduationCap',
     type: 'internal',
@@ -82,7 +82,7 @@ export const DEFAULT_MENU_ITEMS: MenuItem[] = [
   },
   {
     id: 'trainers',
-    title: '훈련사',
+    title: '전문가 찾기',
     path: '/trainers',
     icon: 'UserRoundCheck',
     type: 'internal',
@@ -121,7 +121,7 @@ export const DEFAULT_MENU_ITEMS: MenuItem[] = [
   // === 학습 관리 (견주/훈련사) ===
   {
     id: 'my-learning',
-    title: '나의 학습',
+    title: '수강 중인 강의',
     path: '/my-courses',
     icon: 'BookOpen',
     type: 'internal',
@@ -133,7 +133,7 @@ export const DEFAULT_MENU_ITEMS: MenuItem[] = [
   },
   {
     id: 'my-pets',
-    title: '반려견 관리',
+    title: '우리 아이 프로필',
     path: '/my-pets',
     icon: 'PawPrint',
     type: 'internal',
@@ -145,7 +145,7 @@ export const DEFAULT_MENU_ITEMS: MenuItem[] = [
   },
   {
     id: 'my-trainers',
-    title: '내 훈련사',
+    title: '담당 전문가',
     path: '/my-trainers',
     icon: 'UserRoundCheck',
     type: 'internal',
@@ -195,7 +195,7 @@ export const DEFAULT_MENU_ITEMS: MenuItem[] = [
   // === 운영 관리 (훈련사/기관) ===
   {
     id: 'student-management',
-    title: '학생 관리',
+    title: '수강생 관리',
     path: '/trainer/students',
     icon: 'Users',
     type: 'internal',
@@ -207,7 +207,7 @@ export const DEFAULT_MENU_ITEMS: MenuItem[] = [
   },
   {
     id: 'course-management',
-    title: '강의 관리',
+    title: '내 강의 관리',
     path: '/trainer/courses',
     icon: 'Presentation',
     type: 'internal',
@@ -219,7 +219,7 @@ export const DEFAULT_MENU_ITEMS: MenuItem[] = [
   },
   {
     id: 'class-schedule',
-    title: '수업 일정',
+    title: '수업 스케줄',
     path: '/trainer/classes',
     icon: 'Calendar',
     type: 'internal',
@@ -231,7 +231,7 @@ export const DEFAULT_MENU_ITEMS: MenuItem[] = [
   },
   {
     id: 'financial-management',
-    title: '수익 관리',
+    title: '정산 관리',
     path: '/trainer/earnings',
     icon: 'DollarSign',
     type: 'internal',
@@ -269,7 +269,7 @@ export const DEFAULT_MENU_ITEMS: MenuItem[] = [
   // === 도구 및 기능 ===
   {
     id: 'video-training',
-    title: '영상 훈련',
+    title: '동영상 교육',
     path: '/video-training',
     icon: 'Video',
     type: 'internal',
@@ -281,7 +281,7 @@ export const DEFAULT_MENU_ITEMS: MenuItem[] = [
   },
   {
     id: 'video-call',
-    title: '화상 수업',
+    title: '화상 상담',
     path: '/video-call',
     icon: 'VideoIcon',
     type: 'internal',
@@ -293,7 +293,7 @@ export const DEFAULT_MENU_ITEMS: MenuItem[] = [
   },
   {
     id: 'ai-assistant',
-    title: 'AI 도우미',
+    title: 'AI 행동 분석',
     path: '/ai-analysis',
     icon: 'Sparkles',
     type: 'internal',
@@ -305,7 +305,7 @@ export const DEFAULT_MENU_ITEMS: MenuItem[] = [
   },
   {
     id: 'messaging',
-    title: '메시지',
+    title: '대화하기',
     path: '/messages',
     icon: 'MessageSquare',
     type: 'internal',
@@ -317,7 +317,7 @@ export const DEFAULT_MENU_ITEMS: MenuItem[] = [
   },
   {
     id: 'notifications',
-    title: '알림',
+    title: '알림센터',
     path: '/alerts',
     icon: 'Bell',
     type: 'internal',
@@ -329,7 +329,7 @@ export const DEFAULT_MENU_ITEMS: MenuItem[] = [
   },
   {
     id: 'analytics',
-    title: '분석 리포트',
+    title: '성과 분석',
     path: '/analytics',
     icon: 'BarChart3',
     type: 'internal',
