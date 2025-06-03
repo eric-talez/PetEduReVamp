@@ -157,6 +157,43 @@ export default function Home() {
           </div>
         </div>
 
+        {/* 서비스 현황 섹션 */}
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 mb-8">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-bold">Talez 서비스 현황</h2>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={toggleServiceStats}
+              className="flex items-center gap-2"
+            >
+              {isServiceStatsOpen ? '접기' : '펼치기'}
+              <ChevronDown className={`h-4 w-4 transition-transform ${isServiceStatsOpen ? 'rotate-180' : ''}`} />
+            </Button>
+          </div>
+          
+          {isServiceStatsOpen && (
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+              <div className="text-center p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">2,500+</div>
+                <div className="text-sm text-gray-600 dark:text-gray-400">등록된 반려견</div>
+              </div>
+              <div className="text-center p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                <div className="text-2xl font-bold text-green-600 dark:text-green-400">150+</div>
+                <div className="text-sm text-gray-600 dark:text-gray-400">전문 훈련사</div>
+              </div>
+              <div className="text-center p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+                <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">50+</div>
+                <div className="text-sm text-gray-600 dark:text-gray-400">교육 프로그램</div>
+              </div>
+              <div className="text-center p-4 bg-orange-50 dark:bg-orange-900/20 rounded-lg">
+                <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">95%</div>
+                <div className="text-sm text-gray-600 dark:text-gray-400">고객 만족도</div>
+              </div>
+            </div>
+          )}
+        </div>
+
         {/* 로그인 영역과 간단한 서비스 안내 */}
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">
           {/* 빈 공간 - 왼쪽 3/4 */}
@@ -235,42 +272,7 @@ export default function Home() {
           <TrendingSection />
         </div>
 
-        {/* 서비스 소개 섹션 */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 mb-8">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold">Talez 서비스 현황</h2>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={toggleServiceStats}
-              className="flex items-center gap-2"
-            >
-              {isServiceStatsOpen ? '접기' : '펼치기'}
-              <ChevronDown className={`h-4 w-4 transition-transform ${isServiceStatsOpen ? 'rotate-180' : ''}`} />
-            </Button>
-          </div>
-          
-          {isServiceStatsOpen && (
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-              <div className="text-center p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">2,500+</div>
-                <div className="text-sm text-gray-600 dark:text-gray-400">등록된 반려견</div>
-              </div>
-              <div className="text-center p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
-                <div className="text-2xl font-bold text-green-600 dark:text-green-400">150+</div>
-                <div className="text-sm text-gray-600 dark:text-gray-400">전문 훈련사</div>
-              </div>
-              <div className="text-center p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
-                <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">50+</div>
-                <div className="text-sm text-gray-600 dark:text-gray-400">교육 프로그램</div>
-              </div>
-              <div className="text-center p-4 bg-orange-50 dark:bg-orange-900/20 rounded-lg">
-                <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">95%</div>
-                <div className="text-sm text-gray-600 dark:text-gray-400">고객 만족도</div>
-              </div>
-            </div>
-          )}
-        </div>
+
 
         {/* 빠른 로그인 영역 */}
         <div className="bg-gradient-to-r from-primary/10 to-accent/10 rounded-xl p-8 mb-8">
