@@ -101,6 +101,7 @@ export function RealTimePopularChart() {
       trend: 'stable',
       changePercent: 2.1,
       author: "이준호 훈련사",
+      imageUrl: "https://images.unsplash.com/photo-1625316708582-7c38734be31d?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=200&q=80",
       detailPath: "/courses/3"
     },
     {
@@ -114,6 +115,7 @@ export function RealTimePopularChart() {
       trend: 'down',
       changePercent: -3.2,
       author: "최예린 훈련사",
+      imageUrl: "https://images.unsplash.com/photo-1601758228006-b11156ae1dd9?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=200&q=80",
       detailPath: "/courses/4"
     },
     {
@@ -127,6 +129,7 @@ export function RealTimePopularChart() {
       trend: 'up',
       changePercent: 12.8,
       author: "정현우 훈련사",
+      imageUrl: "https://images.unsplash.com/photo-1548199973-03cce0bbc87b?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=200&q=80",
       detailPath: "/courses/5"
     }
   ];
