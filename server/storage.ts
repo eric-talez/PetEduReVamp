@@ -38,30 +38,30 @@ export interface IStorage {
     verificationBirth?: string;
     verificationPhone?: string;
   }): Promise<User>;
-  
+
   // 기관 관련
   getInstituteByCode(code: string): Promise<any>;
   getInstitute(id: number): Promise<any>;
   getAllInstitutes(): Promise<any[]>;
-  
+
   // 훈련사 관련
   getTrainer(id: number): Promise<any>;
   getAllTrainers(): Promise<any[]>;
-  
+
   // 반려동물 관련
   getPet(id: number): Promise<any>;
   getPetById(id: number): Promise<any>;
   getPetsByUserId(userId: number): Promise<any[]>;
   createPet(pet: any): Promise<any>;
   updatePet(id: number, pet: any): Promise<any>;
-  
+
   // 강좌 관련
   getCourse(id: number): Promise<any>;
   getAllCourses(): Promise<any[]>;
   getCoursesByUserId(userId: number): Promise<any[]>;
   createCourse(course: any): Promise<any>;
   enrollUserInCourse(userId: number, courseId: number): Promise<any>;
-  
+
   // 이벤트 관련
   getAllEvents(): Promise<Event[]>;
   getEvent(id: number): Promise<Event | undefined>;
@@ -72,19 +72,19 @@ export interface IStorage {
   attendEvent(userId: number, eventId: number): Promise<EventAttendance>;
   getEventLocation(id: number): Promise<EventLocation | undefined>;
   createEventLocation(location: InsertEventLocation): Promise<EventLocation>;
-  
+
   // 수수료 정책 관련
   getCommissionPolicies(): Promise<any[]>;
   getCommissionPolicy(id: number): Promise<any | undefined>;
   createCommissionPolicy(policy: any): Promise<any>;
   updateCommissionPolicy(id: number, data: any): Promise<any>;
-  
+
   // 수수료 거래 관련
   getCommissionTransactions(): Promise<any[]>;
   getCommissionTransaction(id: number): Promise<any | undefined>;
   createCommissionTransaction(transaction: any): Promise<any>;
   updateCommissionTransaction(id: number, data: any): Promise<any>;
-  
+
   // 정산 보고서 관련
   getSettlementReports(): Promise<any[]>;
   getSettlementReport(id: number): Promise<any | undefined>;
@@ -104,7 +104,7 @@ export interface IStorage {
   addToCart(userId: number, productId: number, quantity: number, options?: any): Promise<any>;
   updateCartItem(id: number, quantity: number): Promise<any>;
   removeFromCart(id: number): Promise<boolean>;
-  
+
   // Banner 관련
   getActiveBanners(type: string, position: string): Promise<Banner[]>;
   getAllBanners(): Promise<Banner[]>;
@@ -129,7 +129,9 @@ export class MemStorage implements IStorage {
   private events: Map<number, Event> = new Map();
   private eventLocations: Map<number, EventLocation> = new Map();
   private eventAttendances: Map<number, EventAttendance[]> = new Map();
-  
+  private communityPosts: any[] = [];
+  private comments: any[] = [];
+
   currentId: number;
   private policyId: number;
   private transactionId: number;
@@ -160,7 +162,7 @@ export class MemStorage implements IStorage {
     this.events = new Map();
     this.eventLocations = new Map();
     this.eventAttendances = new Map();
-    
+
     this.currentId = 1;
     this.policyId = 1;
     this.transactionId = 1;
@@ -173,11 +175,11 @@ export class MemStorage implements IStorage {
     this.enrollmentId = 1;
     this.eventId = 1;
     this.eventLocationId = 1;
-    
+
     // 샘플 데이터 초기화
     this.initSampleData();
   }
-  
+
   // 샘플 데이터 초기화
   private initSampleData() {
     // 수수료 정책 샘플 데이터
@@ -192,7 +194,7 @@ export class MemStorage implements IStorage {
       updatedAt: new Date(),
       tiers: [] as any[]
     };
-    
+
     // 수수료 티어 추가
     const tier1 = {
       id: this.tierId++,
@@ -201,7 +203,7 @@ export class MemStorage implements IStorage {
       minSales: 0,
       rate: 10
     };
-    
+
     const tier2 = {
       id: this.tierId++,
       policyId: trainerPolicy.id,
@@ -209,7 +211,7 @@ export class MemStorage implements IStorage {
       minSales: 1000000,
       rate: 15
     };
-    
+
     const tier3 = {
       id: this.tierId++,
       policyId: trainerPolicy.id,
@@ -217,13 +219,13 @@ export class MemStorage implements IStorage {
       minSales: 5000000,
       rate: 20
     };
-    
+
     trainerPolicy.tiers = [tier1, tier2, tier3];
     this.commissionPolicies.set(trainerPolicy.id, trainerPolicy);
     this.commissionTiers.set(tier1.id, tier1);
     this.commissionTiers.set(tier2.id, tier2);
     this.commissionTiers.set(tier3.id, tier3);
-    
+
     // 기관 수수료 정책
     const institutePolicy = {
       id: this.policyId++,
@@ -236,7 +238,7 @@ export class MemStorage implements IStorage {
       updatedAt: new Date(),
       tiers: [] as any[]
     };
-    
+
     // 수수료 티어 추가
     const instituteTier1 = {
       id: this.tierId++,
@@ -245,7 +247,7 @@ export class MemStorage implements IStorage {
       minSales: 0,
       rate: 8
     };
-    
+
     const instituteTier2 = {
       id: this.tierId++,
       policyId: institutePolicy.id,
@@ -253,12 +255,12 @@ export class MemStorage implements IStorage {
       minSales: 10000000,
       rate: 12
     };
-    
+
     institutePolicy.tiers = [instituteTier1, instituteTier2];
     this.commissionPolicies.set(institutePolicy.id, institutePolicy);
     this.commissionTiers.set(instituteTier1.id, instituteTier1);
     this.commissionTiers.set(instituteTier2.id, instituteTier2);
-    
+
     // 트레이너 샘플 데이터
     const trainer1 = {
       id: this.trainerId++,
@@ -274,7 +276,7 @@ export class MemStorage implements IStorage {
       rating: 4.9,
       reviewCount: 128
     };
-    
+
     const trainer2 = {
       id: this.trainerId++,
       name: "이교육",
@@ -289,10 +291,10 @@ export class MemStorage implements IStorage {
       rating: 4.7,
       reviewCount: 86
     };
-    
+
     this.trainers.set(trainer1.id, trainer1);
     this.trainers.set(trainer2.id, trainer2);
-    
+
     // 기관 샘플 데이터
     const institute1 = {
       id: this.instituteId++,
@@ -304,7 +306,7 @@ export class MemStorage implements IStorage {
       status: "active",
       description: "반려동물 교육 전문 기관입니다."
     };
-    
+
     const institute2 = {
       id: this.instituteId++,
       name: "스마트 펫 스쿨",
@@ -315,10 +317,10 @@ export class MemStorage implements IStorage {
       status: "active",
       description: "최신 교육 방법론을 적용한 반려동물 교육 기관입니다."
     };
-    
+
     this.institutes.set(institute1.id, institute1);
     this.institutes.set(institute2.id, institute2);
-    
+
     // 수수료 거래 샘플 데이터
     const transaction1 = {
       id: this.transactionId++,
@@ -336,7 +338,7 @@ export class MemStorage implements IStorage {
       createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), // 7일 전
       updatedAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
     };
-    
+
     const transaction2 = {
       id: this.transactionId++,
       type: "institute",
@@ -353,7 +355,7 @@ export class MemStorage implements IStorage {
       createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000), // 5일 전
       updatedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000)
     };
-    
+
     const transaction3 = {
       id: this.transactionId++,
       type: "trainer",
@@ -370,11 +372,11 @@ export class MemStorage implements IStorage {
       createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000), // 3일 전
       updatedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000)
     };
-    
+
     this.commissionTransactions.set(transaction1.id, transaction1);
     this.commissionTransactions.set(transaction2.id, transaction2);
     this.commissionTransactions.set(transaction3.id, transaction3);
-    
+
     // 정산 보고서 샘플 데이터
     const settlementReport1 = {
       id: this.reportId++,
@@ -389,7 +391,7 @@ export class MemStorage implements IStorage {
       createdAt: new Date(2025, 4, 1),
       updatedAt: new Date(2025, 4, 5)
     };
-    
+
     const settlementReport2 = {
       id: this.reportId++,
       type: "institute",
@@ -402,10 +404,10 @@ export class MemStorage implements IStorage {
       createdAt: new Date(2025, 4, 1),
       updatedAt: new Date(2025, 4, 1)
     };
-    
+
     this.settlementReports.set(settlementReport1.id, settlementReport1);
     this.settlementReports.set(settlementReport2.id, settlementReport2);
-    
+
     // 강좌 샘플 데이터
     const course1 = {
       id: this.courseId++,
@@ -423,7 +425,7 @@ export class MemStorage implements IStorage {
       createdAt: new Date(),
       updatedAt: new Date()
     };
-    
+
     const course2 = {
       id: this.courseId++,
       title: "고양이 행동 교정 마스터",
@@ -440,10 +442,10 @@ export class MemStorage implements IStorage {
       createdAt: new Date(),
       updatedAt: new Date()
     };
-    
+
     this.courses.set(course1.id, course1);
     this.courses.set(course2.id, course2);
-    
+
     // 사용자 샘플 데이터
     const user1: User = {
       id: this.currentId++,
@@ -469,7 +471,7 @@ export class MemStorage implements IStorage {
       provider: null,
       socialId: null
     };
-    
+
     const user2: User = {
       id: this.currentId++,
       username: "petowner2",
@@ -494,7 +496,7 @@ export class MemStorage implements IStorage {
       provider: null,
       socialId: null
     };
-    
+
     // 테스트 사용자 추가 (비밀번호: test123을 암호화한 값)
     const user3: User = {
       id: this.currentId++,
@@ -524,7 +526,7 @@ export class MemStorage implements IStorage {
     this.users.set(user1.id, user1);
     this.users.set(user2.id, user2);
     this.users.set(user3.id, user3);
-    
+
     // 등록 샘플 데이터
     const enrollment1 = {
       id: this.enrollmentId++,
@@ -536,7 +538,7 @@ export class MemStorage implements IStorage {
       completed: false,
       certificateIssued: false
     };
-    
+
     this.enrollments.set(enrollment1.id, enrollment1);
   }
 
@@ -560,7 +562,7 @@ export class MemStorage implements IStorage {
 
   async createUser(insertUser: InsertUser): Promise<User> {
     const id = this.currentId++;
-    
+
     // 필수 기본값 설정
     const user: User = {
       ...insertUser, 
@@ -582,21 +584,21 @@ export class MemStorage implements IStorage {
       verificationPhone: insertUser.verificationPhone || null,
       createdAt: new Date()
     };
-    
+
     this.users.set(id, user);
-    
+
     // CI 값이 있는 경우 CI 맵에 추가
     if (user.ci) {
       this.userCiMap.set(user.ci, id);
     }
-    
+
     // 소셜 로그인 사용자인 경우 소셜 ID 맵에 추가
     if (user.provider && user.socialId) {
       const key = `${user.provider}:${user.socialId}`;
       this.userSocialMap.set(key, id);
       console.log(`소셜 계정 맵에 추가: ${key} -> ${id}`);
     }
-    
+
     return user;
   }
 
@@ -611,23 +613,23 @@ export class MemStorage implements IStorage {
     if (!user) {
       throw new Error("User not found");
     }
-    
+
     // 사용자 업데이트 시 타입 보존
     const updatedUser: User = { 
       ...user, 
       role  // UserRole 타입 사용
     };
-    
+
     this.users.set(userId, updatedUser);
     return updatedUser;
   }
-  
+
   async updateUserProfile(userId: number, profileData: ProfileUpdateData): Promise<User> {
     const user = this.users.get(userId);
     if (!user) {
       throw new Error(`User with ID ${userId} not found`);
     }
-    
+
     // 수정할 필드만 업데이트
     const updatedUser: User = {
       ...user,
@@ -637,12 +639,12 @@ export class MemStorage implements IStorage {
       location: profileData.location !== undefined ? profileData.location : user.location,
       avatar: profileData.avatar !== undefined ? profileData.avatar : user.avatar
     };
-    
+
     // phone이 User 인터페이스에 없으므로 별도로 처리 (실제 구현에서는 스키마에 추가 필요)
     if (profileData.phone !== undefined) {
       (updatedUser as any).phone = profileData.phone;
     }
-    
+
     this.users.set(userId, updatedUser);
     return updatedUser;
   }
@@ -655,7 +657,7 @@ export class MemStorage implements IStorage {
     }
     return undefined;
   }
-  
+
   async getUserBySocialId(provider: string, socialId: string): Promise<User | undefined> {
     const key = `${provider}:${socialId}`;
     const userId = this.userSocialMap.get(key);
@@ -677,85 +679,85 @@ export class MemStorage implements IStorage {
     if (!user) {
       throw new Error(`User with ID ${userId} not found`);
     }
-    
+
     // 기존 CI 매핑이 있다면 제거 (사용자가 CI를 변경하는 경우)
     if ((user as any).ci) {
       this.userCiMap.delete((user as any).ci);
     }
-    
+
     // 새 CI 매핑 추가
     this.userCiMap.set(verificationData.ci, userId);
-    
+
     // 사용자 정보 업데이트
     const updatedUser: User = {
       ...user,
       isVerified: verificationData.verified
     };
-    
+
     // User 인터페이스에 직접 포함되지 않은 필드들 처리
     (updatedUser as any).ci = verificationData.ci;
     (updatedUser as any).verifiedAt = verificationData.verifiedAt;
-    
+
     if (verificationData.verificationName) {
       (updatedUser as any).verificationName = verificationData.verificationName;
     }
-    
+
     if (verificationData.verificationBirth) {
       (updatedUser as any).verificationBirth = verificationData.verificationBirth;
     }
-    
+
     if (verificationData.verificationPhone) {
       (updatedUser as any).verificationPhone = verificationData.verificationPhone;
     }
-    
+
     this.users.set(userId, updatedUser);
     return updatedUser;
   }
-  
+
   // 기관 관련 메서드
   async getInstitute(id: number): Promise<any> {
     return this.institutes.get(id);
   }
-  
+
   async getAllInstitutes(): Promise<any[]> {
     return Array.from(this.institutes.values());
   }
-  
+
   // 훈련사 관련 메서드
   async getTrainer(id: number): Promise<any> {
     return this.trainers.get(id);
   }
-  
+
   async getAllTrainers(): Promise<any[]> {
     return Array.from(this.trainers.values());
   }
-  
+
   // 반려동물 관련 메서드
   async getPet(id: number): Promise<any> {
     return this.pets.get(id);
   }
-  
+
   async getPetById(id: number): Promise<any> {
     return this.pets.get(id);
   }
-  
+
   async getPetsByUserId(userId: number): Promise<any[]> {
     return Array.from(this.pets.values()).filter(pet => pet.userId === userId);
   }
-  
+
   async createPet(pet: any): Promise<any> {
     const id = this.petId++;
     const newPet = { ...pet, id, createdAt: new Date(), updatedAt: new Date() };
     this.pets.set(id, newPet);
     return newPet;
   }
-  
+
   async updatePet(id: number, petData: any): Promise<any> {
     const existingPet = this.pets.get(id);
     if (!existingPet) {
       throw new Error("Pet not found");
     }
-    
+
     const updatedPet = { 
       ...existingPet, 
       ...petData, 
@@ -765,48 +767,48 @@ export class MemStorage implements IStorage {
     this.pets.set(id, updatedPet);
     return updatedPet;
   }
-  
+
   // 강좌 관련 메서드
   async getCourse(id: number): Promise<any> {
     return this.courses.get(id);
   }
-  
+
   async getAllCourses(): Promise<any[]> {
     return Array.from(this.courses.values());
   }
-  
+
   async getCoursesByUserId(userId: number): Promise<any[]> {
     // 사용자가 등록한 강좌 찾기
     const userEnrollments = Array.from(this.enrollments.values())
       .filter(enrollment => enrollment.userId === userId);
-    
+
     // 등록된 강좌 ID 목록
     const enrolledCourseIds = userEnrollments.map(enrollment => enrollment.courseId);
-    
+
     // 해당 강좌들 반환
     return Array.from(this.courses.values())
       .filter(course => enrolledCourseIds.includes(course.id));
   }
-  
+
   async createCourse(course: any): Promise<any> {
     const id = this.courseId++;
     const newCourse = { ...course, id, createdAt: new Date(), updatedAt: new Date() };
     this.courses.set(id, newCourse);
     return newCourse;
   }
-  
+
   async enrollUserInCourse(userId: number, courseId: number): Promise<any> {
     // 사용자와 강좌 존재 확인
     const user = await this.getUser(userId);
     const course = await this.getCourse(courseId);
-    
+
     if (!user) {
       throw new Error("User not found");
     }
     if (!course) {
       throw new Error("Course not found");
     }
-    
+
     // 등록 생성
     const id = this.enrollmentId++;
     const enrollment = {
@@ -819,7 +821,7 @@ export class MemStorage implements IStorage {
       completed: false,
       certificateIssued: false
     };
-    
+
     this.enrollments.set(id, enrollment);
     return enrollment;
   }
@@ -828,78 +830,77 @@ export class MemStorage implements IStorage {
   async getCommissionPolicies(): Promise<any[]> {
     return Array.from(this.commissionPolicies.values());
   }
-  
+
   async getCommissionPolicy(id: number): Promise<any | undefined> {
     return this.commissionPolicies.get(id);
   }
-  
+
   async createCommissionPolicy(policy: any): Promise<any> {
     const id = this.policyId++;
     const newPolicy = { ...policy, id, createdAt: new Date(), updatedAt: new Date() };
     this.commissionPolicies.set(id, newPolicy);
     return newPolicy;
   }
-  
+
   async updateCommissionPolicy(id: number, data: any): Promise<any> {
     const policy = this.commissionPolicies.get(id);
     if (!policy) {
       throw new Error("수수료 정책을 찾을 수 없습니다");
     }
-    
+
     const updatedPolicy = { ...policy, ...data, updatedAt: new Date() };
     this.commissionPolicies.set(id, updatedPolicy);
     return updatedPolicy;
   }
-  
+
   // 수수료 거래 관련 메서드
   async getCommissionTransactions(): Promise<any[]> {
     return Array.from(this.commissionTransactions.values());
   }
-  
+
   async getCommissionTransaction(id: number): Promise<any | undefined> {
     return this.commissionTransactions.get(id);
-  }
-  
+  }```python
   async createCommissionTransaction(transaction: any): Promise<any> {
     const id = this.transactionId++;
     const newTransaction = { ...transaction, id, createdAt: new Date() };
     this.commissionTransactions.set(id, newTransaction);
     return newTransaction;
   }
-  
+
   async updateCommissionTransaction(id: number, data: any): Promise<any> {
     const transaction = this.commissionTransactions.get(id);
     if (!transaction) {
       throw new Error("수수료 거래를 찾을 수 없습니다");
     }
-    
+
     const updatedTransaction = { ...transaction, ...data };
     this.commissionTransactions.set(id, updatedTransaction);
     return updatedTransaction;
   }
-  
+
   // 정산 보고서 관련 메서드
   async getSettlementReports(): Promise<any[]> {
     return Array.from(this.settlementReports.values());
   }
-  
+
   async getSettlementReport(id: number): Promise<any | undefined> {
     return this.settlementReports.get(id);
   }
-  
+
   async createSettlementReport(report: any): Promise<any> {
     const id = this.reportId++;
     const newReport = { ...report, id, createdAt: new Date() };
     this.settlementReports.set(id, newReport);
     return newReport;
   }
-  
+
   async updateSettlementReport(id: number, data: any): Promise<any> {
     const report = this.settlementReports.get(id);
     if (!report) {
       throw new Error("정산 보고서를 찾을 수 없습니다");
     }
-    
+
     const updatedReport = { ...report, ...data, updatedAt: new Date() };
     this.settlementReports.set(id, updatedReport);
     return updatedReport;
@@ -934,7 +935,7 @@ export class MemStorage implements IStorage {
   async getEventsByRegion(region: string): Promise<Event[]> {
     const events = Array.from(this.events.values());
     const locations = Array.from(this.eventLocations.values());
-    
+
     return events.filter(event => {
       const location = locations.find(loc => loc.id === event.locationId);
       return location && location.region === region;
@@ -1000,6 +1001,140 @@ export class MemStorage implements IStorage {
     this.eventLocations.set(newLocation.id, newLocation);
     return newLocation;
   }
+
+  // 커뮤니티 관련 메서드
+  getPosts(category?: string, sort?: string) {
+    let posts = [...this.communityPosts];
+
+    if (category && category !== 'all') {
+      posts = posts.filter(post => post.category === category);
+    }
+
+    if (sort === 'popular') {
+      posts.sort((a, b) => (b.likes + b.comments) - (a.likes + a.comments));
+    } else {
+      posts.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    }
+
+    return posts;
+  }
+
+  getPost(postId: number) {
+    return this.communityPosts.find(post => post.id === postId);
+  }
+
+  addPost(post: any) {
+    this.communityPosts.push(post);
+    return post;
+  }
+
+  updatePost(postId: number, userId: number, updateData: any) {
+    const postIndex = this.communityPosts.findIndex(post => post.id === postId && post.author.id === userId);
+    if (postIndex === -1) return null;
+
+    this.communityPosts[postIndex] = {
+      ...this.communityPosts[postIndex],
+      ...updateData,
+      updatedAt: new Date()
+    };
+    return this.communityPosts[postIndex];
+  }
+
+  deletePost(postId: number, userId: number) {
+    const postIndex = this.communityPosts.findIndex(post => post.id === postId && post.author.id === userId);
+    if (postIndex === -1) return false;
+
+    this.communityPosts.splice(postIndex, 1);
+    return true;
+  }
+
+  toggleLike(postId: number, userId: number) {
+    const post = this.getPost(postId);
+    if (!post) return false;
+
+    if (!post.likedBy) post.likedBy = [];
+
+    const likedIndex = post.likedBy.indexOf(userId);
+    if (likedIndex > -1) {
+      post.likedBy.splice(likedIndex, 1);
+      post.likes = Math.max(0, post.likes - 1);
+      return false;
+    } else {
+      post.likedBy.push(userId);
+      post.likes += 1;
+      return true;
+    }
+  }
+
+  incrementCommentCount(postId: number) {
+    const post = this.getPost(postId);
+    if (post) {
+      post.comments += 1;
+    }
+  }
+
+  // 댓글 관련 메서드
+  getCommentsByPostId(postId: number) {
+    return this.comments.filter(comment => comment.postId === postId)
+      .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+  }
+
+  getComment(commentId: number) {
+    return this.comments.find(comment => comment.id === commentId);
+  }
+
+  addComment(comment: any) {
+    this.comments.push(comment);
+    return comment;
+  }
+
+  updateComment(commentId: number, userId: number, content: string) {
+    const commentIndex = this.comments.findIndex(comment => 
+      comment.id === commentId && comment.author.id === userId
+    );
+    if (commentIndex === -1) return null;
+
+    this.comments[commentIndex].content = content;
+    this.comments[commentIndex].updatedAt = new Date();
+    return this.comments[commentIndex];
+  }
+
+  deleteComment(commentId: number, userId: number) {
+    const commentIndex = this.comments.findIndex(comment => 
+      comment.id === commentId && comment.author.id === userId
+    );
+    if (commentIndex === -1) return false;
+
+    const comment = this.comments[commentIndex];
+    this.comments.splice(commentIndex, 1);
+
+    // 게시글의 댓글 수 감소
+    const post = this.getPost(comment.postId);
+    if (post) {
+      post.comments = Math.max(0, post.comments - 1);
+    }
+
+    return true;
+  }
+
+  toggleCommentLike(commentId: number, userId: number) {
+    const comment = this.getComment(commentId);
+    if (!comment) return false;
+
+    if (!comment.likedBy) comment.likedBy = [];
+    if (!comment.likes) comment.likes = 0;
+
+    const likedIndex = comment.likedBy.indexOf(userId);
+    if (likedIndex > -1) {
+      comment.likedBy.splice(likedIndex, 1);
+      comment.likes = Math.max(0, comment.likes - 1);
+      return false;
+    } else {
+      comment.likedBy.push(userId);
+      comment.likes += 1;
+      return true;
+    }
+  }
 }
 
 import { db } from "./db";
@@ -1059,12 +1194,12 @@ export class DatabaseStorage implements IStorage {
       eventId,
       attendedAt: new Date()
     }).returning();
-    
+
     // Update participant count
     await db.update(events)
       .set({ currentParticipants: sql`${events.currentParticipants} + 1` })
       .where(eq(events.id, eventId));
-    
+
     return attendance;
   }
 
@@ -1471,9 +1606,9 @@ export class DatabaseStorage implements IStorage {
     try {
       const { db } = await import('./db');
       const { eq, and, lte, gte, or, isNull } = await import('drizzle-orm');
-      
+
       const now = new Date();
-      
+
       const activeBanners = await db
         .select()
         .from(banners)
@@ -1494,7 +1629,7 @@ export class DatabaseStorage implements IStorage {
           )
         )
         .orderBy(banners.orderIndex);
-      
+
       return activeBanners;
     } catch (error) {
       console.error('배너 조회 오류:', error);
@@ -1505,12 +1640,12 @@ export class DatabaseStorage implements IStorage {
   async getAllBanners(): Promise<Banner[]> {
     try {
       const { db } = await import('./db');
-      
+
       const allBanners = await db
         .select()
         .from(banners)
         .orderBy(banners.createdAt);
-      
+
       return allBanners;
     } catch (error) {
       console.error('전체 배너 조회 오류:', error);
@@ -1521,7 +1656,7 @@ export class DatabaseStorage implements IStorage {
   async createBanner(banner: InsertBanner & { createdBy: number }): Promise<Banner> {
     try {
       const { db } = await import('./db');
-      
+
       const [newBanner] = await db
         .insert(banners)
         .values({
@@ -1530,7 +1665,7 @@ export class DatabaseStorage implements IStorage {
           updatedAt: new Date()
         })
         .returning();
-      
+
       return newBanner;
     } catch (error) {
       console.error('배너 생성 오류:', error);
@@ -1542,7 +1677,7 @@ export class DatabaseStorage implements IStorage {
     try {
       const { db } = await import('./db');
       const { eq } = await import('drizzle-orm');
-      
+
       const [updatedBanner] = await db
         .update(banners)
         .set({
@@ -1551,7 +1686,7 @@ export class DatabaseStorage implements IStorage {
         })
         .where(eq(banners.id, id))
         .returning();
-      
+
       return updatedBanner;
     } catch (error) {
       console.error('배너 수정 오류:', error);
@@ -1563,11 +1698,11 @@ export class DatabaseStorage implements IStorage {
     try {
       const { db } = await import('./db');
       const { eq } = await import('drizzle-orm');
-      
+
       const result = await db
         .delete(banners)
         .where(eq(banners.id, id));
-      
+
       return result.rowCount > 0;
     } catch (error) {
       console.error('배너 삭제 오류:', error);
