@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Calendar, Clock, Phone, Mail, User, MessageSquare } from 'lucide-react';
+import { Calendar, Clock, Phone, Mail, MessageSquare } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 export default function VideoCallReserve() {
@@ -31,7 +31,7 @@ export default function VideoCallReserve() {
     contactEmail: ''
   });
 
-  // 훈련사 정보 (실제로는 API에서 가져와야 함)
+  // 훈련사 정보
   const trainerInfo = {
     id: trainerId,
     name: "김민수 전문 훈련사",
@@ -56,7 +56,6 @@ export default function VideoCallReserve() {
     setIsSubmitting(true);
 
     try {
-      // 상담 예약 API 호출
       const response = await fetch('/api/consultation/request', {
         method: 'POST',
         headers: {
