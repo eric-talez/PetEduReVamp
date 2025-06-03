@@ -103,16 +103,31 @@ export function RealTimePopularChart() {
       const trainerData = getTrainerData(trainerId);
       setSelectedTrainer(trainerData);
       setIsTrainerModalOpen(true);
+      
+      // 메인메뉴와 일관성을 위한 이벤트 발생
+      window.dispatchEvent(new CustomEvent('trainerProfileViewed', {
+        detail: { trainerId, source: 'popular-chart' }
+      }));
     } else if (item.detailPath.startsWith('/courses/')) {
       const courseId = item.detailPath.split('/')[2];
       const courseData = getCourseData(courseId);
       setSelectedCourse(courseData);
       setIsCourseModalOpen(true);
+      
+      // 과정 조회 이벤트
+      window.dispatchEvent(new CustomEvent('courseViewed', {
+        detail: { courseId, source: 'popular-chart' }
+      }));
     } else if (item.detailPath.startsWith('/events/')) {
       const eventId = item.detailPath.split('/')[2];
       const eventData = getEventData(eventId);
       setSelectedEvent(eventData);
       setIsEventModalOpen(true);
+      
+      // 이벤트 조회 이벤트
+      window.dispatchEvent(new CustomEvent('eventViewed', {
+        detail: { eventId, source: 'popular-chart' }
+      }));
     } else if (item.detailPath.startsWith('/community/')) {
       const communityId = item.detailPath.split('/')[2];
       const communityData = getCommunityData(communityId);

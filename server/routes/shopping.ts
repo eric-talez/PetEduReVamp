@@ -293,5 +293,134 @@ export function registerShoppingRoutes(app: Express) {
     }
   });
 
+  // 위시리스트에 상품 추가
+  app.post("/api/shopping/wishlist", async (req, res) => {
+    try {
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: 'Authentication required' });
+      }
+
+      const userId = req.user!.id;
+      const { productId } = req.body;
+
+      // 상품 존재 확인
+      const product = await db
+        .select()
+        .from(products)
+        .where(eq(products.id, productId))
+        .limit(1);
+
+      if (!product[0]) {
+        return res.status(404).json({ message: 'Product not found' });
+      }
+
+      // 이미 위시리스트에 있는지 확인
+      const { wishlistItems } = await import('@shared/schema');
+      const existingItem = await db
+        .select()
+        .from(wishlistItems)
+        .where(and(
+          eq(wishlistItems.userId, userId),
+          eq(wishlistItems.productId, productId)
+        ))
+        .limit(1);
+
+      if (existingItem[0]) {
+        return res.status(409).json({ message: 'Product already in wishlist' });
+      }
+
+      // 위시리스트에 추가
+      const newItem = await db
+        .insert(wishlistItems)
+        .values({
+          userId,
+          productId,
+          createdAt: new Date()
+        })
+        .returning();
+
+      res.status(201).json(newItem[0]);
+    } catch (error) {
+      console.error('Error adding to wishlist:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  });
+
+  // 위시리스트에서 상품 제거
+  app.delete("/api/shopping/wishlist", async (req, res) => {
+    try {
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: 'Authentication required' });
+      }
+
+      const userId = req.user!.id;
+      const { productId } = req.body;
+
+      const { wishlistItems } = await import('@shared/schema');
+      const deletedItem = await db
+        .delete(wishlistItems)
+        .where(and(
+          eq(wishlistItems.userId, userId),
+          eq(wishlistItems.productId, productId)
+        ))
+        .returning();
+
+      if (!deletedItem[0]) {
+        return res.status(404).json({ message: 'Wishlist item not found' });
+      }
+
+      res.json({ message: 'Item removed from wishlist' });
+    } catch (error) {
+      console.error('Error removing from wishlist:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  });
+
+  // 추천인 코드 유효성 검사
+  app.post("/api/shopping/referral/validate", async (req, res) => {
+    try {
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: 'Authentication required' });
+      }
+
+      const { referralCode, productId } = req.body;
+
+      // 추천인 코드 검증 로직
+      const { referralCodes } = await import('@shared/schema');
+      const referral = await db
+        .select()
+        .from(referralCodes)
+        .where(and(
+          eq(referralCodes.code, referralCode),
+          eq(referralCodes.isActive, true)
+        ))
+        .limit(1);
+
+      if (!referral[0]) {
+        return res.json({ 
+          isValid: false, 
+          message: '유효하지 않은 추천인 코드입니다.' 
+        });
+      }
+
+      // 만료일 체크
+      if (referral[0].expiresAt && new Date() > referral[0].expiresAt) {
+        return res.json({ 
+          isValid: false, 
+          message: '만료된 추천인 코드입니다.' 
+        });
+      }
+
+      res.json({
+        isValid: true,
+        discountPercent: referral[0].discountPercent || 10,
+        message: '추천인 코드가 유효합니다.'
+      });
+    } catch (error) {
+      console.error('Error validating referral code:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  });
+
   // 주문 기능은 나중에 구현 예정
 }

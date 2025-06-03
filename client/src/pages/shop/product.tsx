@@ -255,16 +255,19 @@ export default function ProductDetailPage() {
         price: finalPrice
       };
 
-      const response = await fetch('/api/cart', {
+      const response = await fetch('/api/shopping/cart', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
         },
         body: JSON.stringify(cartItem),
+        credentials: 'include'
       });
 
       if (!response.ok) {
-        throw new Error('장바구니 추가에 실패했습니다');
+        const errorData = await response.json();
+        throw new Error(errorData.message || '장바구니 추가에 실패했습니다');
       }
 
       const result = await response.json();
@@ -276,14 +279,14 @@ export default function ProductDetailPage() {
 
       // 장바구니 개수 업데이트 이벤트 발생
       window.dispatchEvent(new CustomEvent('cartUpdated', { 
-        detail: {  }
+        detail: { cartCount: result.cartCount || 1 }
       }));
 
     } catch (error) {
       console.error('장바구니 추가 오류:', error);
       toast({
         title: "오류가 발생했습니다",
-        description: "장바구니 추가에 실패했습니다. 다시 시도해주세요.",
+        description: error.message || "장바구니 추가에 실패했습니다. 다시 시도해주세요.",
         variant: "destructive",
       });
     } finally {
@@ -315,34 +318,51 @@ export default function ProductDetailPage() {
     }
 
     try {
-        setIsLoading(true);
-        const newWishlistState = !isWishlist;
-        setIsWishlist(newWishlistState);
+      setIsLoading(true);
+      const newWishlistState = !isWishlist;
 
-        // TODO: 위시리스트 API 연동 (POST: 추가, DELETE: 제거)
-        console.log('위시리스트 토글:', {
-          productId: product?.id,
-          isWishlisted: newWishlistState
-        });
-    
-        toast({
-          title: newWishlistState ? "위시리스트에 추가되었습니다" : "위시리스트에서 제거되었습니다",
-          description: product?.name,
-        });
-      } catch (error) {
-        console.error('위시리스트 오류:', error);
-        toast({
-          title: "오류가 발생했습니다",
-          description: "위시리스트 처리에 실패했습니다. 다시 시도해주세요.",
-          variant: "destructive",
-        });
-      } finally {
-        setIsLoading(false);
+      const method = newWishlistState ? 'POST' : 'DELETE';
+      const response = await fetch('/api/shopping/wishlist', {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+        },
+        body: JSON.stringify({ productId: product?.id }),
+        credentials: 'include'
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || '위시리스트 처리에 실패했습니다');
       }
+
+      setIsWishlist(newWishlistState);
+      
+      toast({
+        title: newWishlistState ? "위시리스트에 추가되었습니다" : "위시리스트에서 제거되었습니다",
+        description: product?.name,
+      });
+
+      // 위시리스트 업데이트 이벤트 발생
+      window.dispatchEvent(new CustomEvent('wishlistUpdated', { 
+        detail: { productId: product?.id, isWishlisted: newWishlistState }
+      }));
+
+    } catch (error) {
+      console.error('위시리스트 오류:', error);
+      toast({
+        title: "오류가 발생했습니다",
+        description: error.message || "위시리스트 처리에 실패했습니다. 다시 시도해주세요.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // 추천인 코드 적용
-  const applyReferralCode = () => {
+  const applyReferralCode = async () => {
     if (!referralCode.trim()) {
       toast({
         title: "추천인 코드를 입력해주세요",
@@ -351,21 +371,117 @@ export default function ProductDetailPage() {
       return;
     }
 
-    // 실제로는 API 호출을 통해 추천인 코드 유효성을 검사해야 합니다.
-    // 여기서는 간단하게 모든 코드를 유효하다고 가정합니다.
-    const isValid = true;
-    const discount = product?.referralCommission || 0;
+    try {
+      setIsLoading(true);
 
-    if (isValid) {
-      setIsReferralApplied(true);
-      setReferralDiscount(discount);
-      toast({
-        title: "추천인 코드가 적용되었습니다",
-        description: `${discount}% 할인이 적용됩니다.`,
+      const response = await fetch('/api/shopping/referral/validate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+        },
+        body: JSON.stringify({ 
+          referralCode: referralCode.trim(),
+          productId: product?.id 
+        }),
+        credentials: 'include'
       });
-    } else {
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || '추천인 코드 확인에 실패했습니다');
+      }
+
+      const result = await response.json();
+      
+      if (result.isValid) {
+        setIsReferralApplied(true);
+        setReferralDiscount(result.discountPercent || product?.referralCommission || 0);
+        toast({
+          title: "추천인 코드가 적용되었습니다",
+          description: `${result.discountPercent || product?.referralCommission || 0}% 할인이 적용됩니다.`,
+        });
+      } else {
+        toast({
+          title: "유효하지 않은 추천인 코드입니다",
+          description: result.message || "다시 확인해주세요.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error('추천인 코드 확인 오류:', error);
       toast({
-        title: "유효하지 않은 추천인 코드입니다",
+        title: "오류가 발생했습니다",
+        description: error.message || "추천인 코드 확인에 실패했습니다.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // 공유 기능
+  const handleShare = async (platform: string) => {
+    const url = window.location.href;
+    const title = `${product?.name} - Talez 쇼핑몰`;
+    const description = product?.description || '';
+
+    try {
+      switch (platform) {
+        case 'copy':
+          await navigator.clipboard.writeText(url);
+          toast({
+            title: "링크가 복사되었습니다",
+            description: "클립보드에 상품 링크가 복사되었습니다.",
+          });
+          break;
+          
+        case 'kakao':
+          if (window.Kakao) {
+            window.Kakao.Share.sendDefault({
+              objectType: 'commerce',
+              content: {
+                title: title,
+                description: description,
+                imageUrl: product?.imageUrl,
+                link: {
+                  webUrl: url,
+                  mobileWebUrl: url,
+                },
+              },
+              commerce: {
+                productName: product?.name,
+                regularPrice: product?.price,
+                discountPrice: finalPrice,
+                discountRate: product?.discountRate,
+              },
+            });
+          } else {
+            window.open(`https://story.kakao.com/share?url=${encodeURIComponent(url)}`);
+          }
+          break;
+          
+        case 'linkedin':
+          window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`);
+          break;
+          
+        default:
+          break;
+      }
+      
+      // 공유 이벤트 추적
+      if (typeof gtag !== 'undefined') {
+        gtag('event', 'share', {
+          method: platform,
+          content_type: 'product',
+          item_id: product?.id
+        });
+      }
+    } catch (error) {
+      console.error('공유 오류:', error);
+      toast({
+        title: "공유에 실패했습니다",
+        description: "다시 시도해주세요.",
         variant: "destructive",
       });
     }
@@ -391,6 +507,11 @@ export default function ProductDetailPage() {
   const finalPriceCalculated = isReferralApplied 
     ? Math.round(discountedPrice * (1 - referralDiscount / 100)) 
     : discountedPrice;
+
+  // finalPrice 상태 실시간 업데이트
+  React.useEffect(() => {
+    setFinalPrice(finalPriceCalculated);
+  }, [finalPriceCalculated]);
 
   return (
     <div className="container mx-auto py-8 px-4">
@@ -652,13 +773,13 @@ export default function ProductDetailPage() {
                     </p>
                   </div>
                   <div className="flex gap-2">
-                    <Button size="sm" className="h-8">
+                    <Button size="sm" className="h-8" onClick={() => handleShare('copy')}>
                       복사
                     </Button>
-                    <Button size="sm" variant="outline" className="h-8">
+                    <Button size="sm" variant="outline" className="h-8" onClick={() => handleShare('kakao')}>
                       카카오
                     </Button>
-                    <Button size="sm" variant="outline" className="h-8">
+                    <Button size="sm" variant="outline" className="h-8" onClick={() => handleShare('linkedin')}>
                       링크드인
                     </Button>
                   </div>
