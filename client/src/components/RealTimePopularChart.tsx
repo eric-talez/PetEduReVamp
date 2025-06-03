@@ -7,7 +7,9 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { TrendingUp, TrendingDown, Minus, Eye, Heart, MessageCircle, Users, MapPin, Calendar, Star, Phone, Mail, Award, Share2, Clock } from 'lucide-react';
 import { useLocation } from 'wouter';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { apiRequest } from '@/lib/queryClient';
+import { useToast } from '@/hooks/use-toast';
 
 interface PopularItem {
   id: number;
@@ -37,12 +39,53 @@ export function RealTimePopularChart() {
   const [isCourseModalOpen, setIsCourseModalOpen] = useState(false);
   const [isEventModalOpen, setIsEventModalOpen] = useState(false);
   const [isCommunityModalOpen, setIsCommunityModalOpen] = useState(false);
+  
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
 
   // 실시간 통계 데이터 조회
   const { data: statsData, isLoading: statsLoading } = useQuery({
     queryKey: ['/api/popular-stats'],
     refetchInterval: 30000, // 30초마다 자동 갱신
   });
+
+  // 좋아요 기능
+  const likeMutation = useMutation({
+    mutationFn: async ({ postId, type }: { postId: number; type: string }) => {
+      return apiRequest('POST', `/api/${type}/${postId}/like`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/popular-stats'] });
+      toast({
+        title: "좋아요!",
+        description: "좋아요가 추가되었습니다.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "오류",
+        description: "좋아요 처리 중 오류가 발생했습니다.",
+        variant: "destructive",
+      });
+    }
+  });
+
+  // 공유 기능
+  const handleShare = (title: string, id: number, type: string) => {
+    if (navigator.share) {
+      navigator.share({
+        title: title,
+        url: `${window.location.origin}/${type}/${id}`,
+      });
+    } else {
+      // 브라우저가 Web Share API를 지원하지 않는 경우
+      navigator.clipboard.writeText(`${window.location.origin}/${type}/${id}`);
+      toast({
+        title: "링크 복사됨",
+        description: "링크가 클립보드에 복사되었습니다.",
+      });
+    }
+  };
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -1183,18 +1226,22 @@ export function RealTimePopularChart() {
                           variant="outline"
                           onClick={() => {
                             console.log('[Modal Action] 좋아요 클릭:', selectedCommunity.title);
-                            // TODO: 좋아요 API 호출
+                            likeMutation.mutate({ postId: selectedCommunity.id, type: 'community' });
                           }}
+                          disabled={likeMutation.isPending}
                         >
                           <Heart className="w-4 h-4 mr-2" />
-                          좋아요
+                          {likeMutation.isPending ? '처리중...' : '좋아요'}
                         </Button>
                         <Button 
                           className="w-full" 
                           variant="outline"
                           onClick={() => {
                             console.log('[Modal Action] 댓글 쓰기 클릭:', selectedCommunity.title);
-                            // TODO: 댓글 작성 모달 열기
+                            toast({
+                              title: "댓글 작성",
+                              description: "댓글 작성 기능이 곧 추가될 예정입니다.",
+                            });
                           }}
                         >
                           <MessageCircle className="w-4 h-4 mr-2" />
@@ -1205,7 +1252,7 @@ export function RealTimePopularChart() {
                           variant="outline"
                           onClick={() => {
                             console.log('[Modal Action] 공유하기 클릭:', selectedCommunity.title);
-                            // TODO: 공유 기능 구현
+                            handleShare(selectedCommunity.title, selectedCommunity.id, 'community');
                           }}
                         >
                           <Share2 className="w-4 h-4 mr-2" />
