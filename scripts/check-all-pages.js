@@ -79,6 +79,22 @@ function scanDirectory(dir, prefix = '') {
 scanDirectory(pageDir);
 console.log(`발견된 페이지 파일: ${Array.from(existingPages).sort().join(', ')}\n`);
 
+// 환경변수 체크 완성
+envFiles.forEach(file => {
+  if (fs.existsSync(file)) {
+    const content = fs.readFileSync(file, 'utf-8');
+    const lines = content.split('\n');
+    lines.forEach(line => {
+      if (line.includes('=') && !line.startsWith('#')) {
+        const varName = line.split('=')[0].trim();
+        if (varName) envVars.add(varName);
+      }
+    });
+  }
+});
+
+console.log(`발견된 환경변수: ${Array.from(envVars).sort().join(', ')}\n`);
+
 // 3. 라우트와 페이지 파일 매칭 체크
 console.log('🔗 3. 라우트-페이지 매칭 체크:');
 const missingPages = [];

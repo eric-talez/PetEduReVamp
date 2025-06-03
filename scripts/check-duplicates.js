@@ -169,6 +169,9 @@ function checkUseEffect(dir) {
             
             if (!hasCondition) {
               console.log(`⚠️ ${fullPath}:${i + 1} - navigate() without condition in useEffect`);
+            }
+          }
+        }
               hasIssues = true;
             }
           }

@@ -835,8 +835,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ],
         courses: [
           { id: 1, views: 1893, likes: 167, comments: 78, trend: 'up', changePercent: 15.2 },
-          { id: 2, views: 1567, likes: 145, comments: 65, trend: 'up', change```tool_code
-Percent: 8.5 },
+          { id: 2, views: 1567, likes: 145, comments: 65, trend: 'up', changePercent: 8.5 },
           { id: 3, views: 1234, likes: 98, comments: 43, trend: 'stable', changePercent: 2.1 },
           { id: 4, views: 987, likes: 76, comments: 32, trend: 'down', changePercent: -3.2 },
           { id: 5, views: 876, likes: 67, comments: 25, trend: 'up', changePercent: 4.8 }
@@ -2519,7 +2518,8 @@ Percent: 8.5 },
         return res.status(401).json({ message: "Not authenticated" });
       }
 
-// 간단한 장바구니 데이터 반환
+// 간단한 장바구니 데이터 반환구문 오류 수정 및 코드 안전성 강화를 위한 express 라우트 코드베이스 업데이트.
+```tool_code
       return res.status(200).json({
         userId: req.session.user.id,
         items: [],

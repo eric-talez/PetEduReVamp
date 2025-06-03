@@ -673,7 +673,6 @@ export function RealTimePopularChart() {
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
-```text
             console.log('[RealTimePopularChart] 아이템 클릭:', item.title, item.detailPath);
             handleItemClick(item);
           }}
