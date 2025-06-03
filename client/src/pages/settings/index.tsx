@@ -461,6 +461,15 @@ export default function SettingsPage({ userRole: propUserRole }: SettingsPagePro
               </div>
             </div>
           )}
+
+          {activeTab === "theme" && (
+            <div>
+              <h2 className="text-xl font-semibold mb-4">테마 및 화면 설정</h2>
+              <div className="space-y-6">
+                <ThemeSettings />
+              </div>
+            </div>
+          )}
           
           {activeTab === "trainer" && (
             <div>
