@@ -72,7 +72,9 @@ export default function MyPetsPage() {
       });
       if (response.ok) {
         const data = await response.json();
-        setPets(data);
+        setPets(Array.isArray(data) ? data : data.pets || []);
+      } else {
+        setPets([]);
       }
     } catch (error) {
       toast({
