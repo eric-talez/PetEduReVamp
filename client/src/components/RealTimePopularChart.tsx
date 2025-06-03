@@ -30,8 +30,12 @@ export function RealTimePopularChart() {
   const [updateTime, setUpdateTime] = useState(new Date());
   const [selectedTrainer, setSelectedTrainer] = useState<any>(null);
   const [selectedCourse, setSelectedCourse] = useState<any>(null);
+  const [selectedEvent, setSelectedEvent] = useState<any>(null);
+  const [selectedCommunity, setSelectedCommunity] = useState<any>(null);
   const [isTrainerModalOpen, setIsTrainerModalOpen] = useState(false);
   const [isCourseModalOpen, setIsCourseModalOpen] = useState(false);
+  const [isEventModalOpen, setIsEventModalOpen] = useState(false);
+  const [isCommunityModalOpen, setIsCommunityModalOpen] = useState(false);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -54,6 +58,16 @@ export function RealTimePopularChart() {
       const courseData = getCourseData(courseId);
       setSelectedCourse(courseData);
       setIsCourseModalOpen(true);
+    } else if (item.detailPath.startsWith('/events/')) {
+      const eventId = item.detailPath.split('/')[2];
+      const eventData = getEventData(eventId);
+      setSelectedEvent(eventData);
+      setIsEventModalOpen(true);
+    } else if (item.detailPath.startsWith('/community/')) {
+      const communityId = item.detailPath.split('/')[2];
+      const communityData = getCommunityData(communityId);
+      setSelectedCommunity(communityData);
+      setIsCommunityModalOpen(true);
     } else {
       console.log('[RealTimePopularChart] 클릭된 경로:', item.detailPath);
       setLocation(item.detailPath);
@@ -136,6 +150,119 @@ export function RealTimePopularChart() {
     };
     
     return courses[id as keyof typeof courses] || courses['1'];
+  };
+
+  const getEventData = (id: string) => {
+    const events = {
+      '1': {
+        id: 1,
+        title: "2024 반려견 어질리티 챔피언십",
+        description: "전국 반려견들이 참가하는 어질리티 대회입니다. 초보자부터 전문가까지 다양한 부문으로 진행됩니다.",
+        date: "2024년 7월 15일",
+        time: "10:00 - 18:00",
+        location: "올림픽공원 체조경기장",
+        address: "서울특별시 송파구 올림픽로 424",
+        category: "스포츠대회",
+        organizer: "한국반려견협회",
+        maxParticipants: 200,
+        currentParticipants: 156,
+        entryFee: 50000,
+        prizes: ["1등: 200만원", "2등: 100만원", "3등: 50만원"],
+        requirements: ["3개월 이상의 건강한 반려견", "기본 예방접종 완료", "보험 가입 필수"],
+        contact: "010-1234-5678",
+        email: "agility@petassociation.kr",
+        thumbnail: "https://images.unsplash.com/photo-1551717743-49959800b1f6?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400&q=80"
+      },
+      '2': {
+        id: 2,
+        title: "펫 페어 2024",
+        description: "반려동물 용품 전시회 및 체험 행사입니다.",
+        date: "2024년 8월 20일",
+        time: "09:00 - 17:00",
+        location: "코엑스 전시홀",
+        address: "서울특별시 강남구 영동대로 513",
+        category: "전시회",
+        organizer: "펫산업협회",
+        maxParticipants: 5000,
+        currentParticipants: 3200,
+        entryFee: 10000,
+        prizes: [],
+        requirements: ["사전 등록 필수"],
+        contact: "02-1234-5678",
+        email: "info@petfair.kr",
+        thumbnail: "https://images.unsplash.com/photo-1601758228041-f3b2795255f1?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400&q=80"
+      }
+    };
+    
+    return events[id as keyof typeof events] || events['1'];
+  };
+
+  const getCommunityData = (id: string) => {
+    const community = {
+      '1': {
+        id: 1,
+        title: "우리집 강아지 분리불안 해결했어요!",
+        content: "3개월 동안 심각한 분리불안으로 고생했던 우리 골든리트리버 멍멍이가 드디어 혼자 있는 걸 편안해하게 되었어요. 처음에는 5분만 나가도 온 집을 다 뜯어놓고 짖어대서 정말 힘들었는데...",
+        fullContent: `3개월 동안 심각한 분리불안으로 고생했던 우리 골든리트리버 멍멍이가 드디어 혼자 있는 걸 편안해하게 되었어요.
+
+처음에는 5분만 나가도 온 집을 다 뜯어놓고 짖어대서 정말 힘들었습니다. 이웃들 민원도 들어오고, 집은 매일 난장판이 되고... 정말 포기하고 싶었어요.
+
+하지만 전문 훈련사님의 도움으로 단계별 훈련을 시작했습니다:
+
+1. 나가는 신호 없애기 - 열쇠, 가방 등을 평소에도 만지기
+2. 짧은 시간부터 시작 - 1분, 3분, 5분씩 늘려가기
+3. 특별한 장난감 - 나갈 때만 주는 특별한 간식 장난감
+4. 무시하기 - 돌아와서도 바로 관심 주지 않기
+
+3개월 정도 꾸준히 했더니 이제는 2-3시간도 혼자 잘 있어요! 
+
+같은 고민 있으신 분들 포기하지 마세요. 시간은 걸리지만 분명 좋아집니다!`,
+        author: "골든맘",
+        authorAvatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=300&q=80",
+        category: "훈련후기",
+        date: "2024년 6월 1일",
+        views: 3245,
+        likes: 189,
+        comments: 67,
+        tags: ["분리불안", "골든리트리버", "훈련후기", "성공사례"],
+        thumbnail: "https://images.unsplash.com/photo-1552053831-71594a27632d?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300&q=80"
+      },
+      '2': {
+        id: 2,
+        title: "강아지 간식 만들기 레시피 모음",
+        content: "집에서 쉽게 만들 수 있는 건강한 강아지 간식 레시피를 공유합니다...",
+        fullContent: `집에서 쉽게 만들 수 있는 건강한 강아지 간식 레시피를 공유드려요!
+
+🥕 당근 쿠키
+재료: 당근 1개, 밀가루 1컵, 달걀 1개
+1. 당근을 갈아서 으깨기
+2. 밀가루, 달걀과 섞어 반죽하기
+3. 쿠키 모양으로 만들어 오븐에 15분
+
+🍠 고구마 칩
+재료: 고구마 1개
+1. 고구마를 얇게 슬라이스
+2. 오븐에 120도로 2시간 건조
+
+🐟 연어 져키
+재료: 연어 살 200g
+1. 연어를 얇게 썰기
+2. 소금 없이 오븐에서 저온 건조
+
+모든 간식은 소금, 설탕, 양념 없이 만들어주세요!`,
+        author: "펫셰프",
+        authorAvatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=300&q=80",
+        category: "레시피",
+        date: "2024년 5월 28일",
+        views: 2789,
+        likes: 156,
+        comments: 78,
+        tags: ["수제간식", "레시피", "건강한간식", "DIY"],
+        thumbnail: "https://images.unsplash.com/photo-1583337130417-3346a1be7dee?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300&q=80"
+      }
+    };
+    
+    return community[id as keyof typeof community] || community['1'];
   };
 
   const getTrendIcon = (trend: 'up' | 'down' | 'stable') => {
