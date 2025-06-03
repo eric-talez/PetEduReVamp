@@ -26,6 +26,11 @@ export function RealTimePopularChart() {
   const [, setLocation] = useLocation();
   const [updateTime, setUpdateTime] = useState(new Date());
 
+  // 컴포넌트 마운트 확인
+  useEffect(() => {
+    console.log('[RealTimePopularChart] 컴포넌트가 마운트되었습니다');
+  }, []);
+
   // 실시간 업데이트 시뮬레이션
   useEffect(() => {
     const interval = setInterval(() => {
@@ -346,16 +351,15 @@ export function RealTimePopularChart() {
   const renderPopularList = (items: PopularItem[], showLocation = false, showDate = false) => (
     <div className="space-y-3">
       {items.map((item, index) => (
-        <button
+        <div
           key={item.id}
-          className="w-full flex items-center space-x-4 p-3 bg-white dark:bg-gray-800 rounded-lg shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer border hover:border-primary/20 text-left"
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            console.log('[RealTimePopularChart] 버튼 클릭됨:', item.detailPath);
+          className="flex items-center space-x-4 p-3 bg-white dark:bg-gray-800 rounded-lg shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer border hover:border-primary/20"
+          onClick={() => {
+            console.log('[RealTimePopularChart] 클릭 테스트:', item.title, item.detailPath);
+            alert(`클릭됨: ${item.title}`);
             handleItemClick(item.detailPath);
           }}
-          type="button"
+          style={{ pointerEvents: 'auto', position: 'relative', zIndex: 1 }}
         >
           <div className="flex-shrink-0 w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
             <span className="text-primary font-bold text-sm">{index + 1}</span>
@@ -410,7 +414,7 @@ export function RealTimePopularChart() {
               {item.trend !== 'stable' && (item.changePercent > 0 ? '+' : '')}{item.changePercent}%
             </span>
           </div>
-        </button>
+        </div>
       ))}
     </div>
   );
