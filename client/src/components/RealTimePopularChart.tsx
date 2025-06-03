@@ -860,9 +860,36 @@ export function RealTimePopularChart() {
                 </Card>
 
                 <div className="space-y-2">
-                  <Button className="w-full">상담 신청</Button>
-                  <Button variant="outline" className="w-full">메시지 보내기</Button>
-                  <Button variant="ghost" className="w-full">프로필 전체보기</Button>
+                  <Button 
+                    className="w-full"
+                    onClick={() => {
+                      console.log('[Modal Action] 상담 신청 클릭:', selectedTrainer.name);
+                      // TODO: 상담 신청 모달 열기 또는 페이지 이동
+                    }}
+                  >
+                    상담 신청
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    className="w-full"
+                    onClick={() => {
+                      console.log('[Modal Action] 메시지 보내기 클릭:', selectedTrainer.name);
+                      // TODO: 메시지 작성 모달 열기
+                    }}
+                  >
+                    메시지 보내기
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    className="w-full"
+                    onClick={() => {
+                      console.log('[Modal Action] 프로필 전체보기 클릭:', selectedTrainer.name);
+                      setIsTrainerModalOpen(false);
+                      setLocation(`/trainers/${selectedTrainer.id}`);
+                    }}
+                  >
+                    프로필 전체보기
+                  </Button>
                 </div>
               </div>
             </div>
@@ -922,9 +949,36 @@ export function RealTimePopularChart() {
                         <p className="text-2xl font-bold">{selectedCourse.price.toLocaleString()}원</p>
                       </div>
                       <div className="space-y-2">
-                        <Button className="w-full">수강 신청</Button>
-                        <Button variant="outline" className="w-full">장바구니 추가</Button>
-                        <Button variant="ghost" className="w-full">상세정보 보기</Button>
+                        <Button 
+                          className="w-full"
+                          onClick={() => {
+                            console.log('[Modal Action] 수강 신청 클릭:', selectedCourse.title);
+                            // TODO: 수강 신청 프로세스 시작
+                          }}
+                        >
+                          수강 신청
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          className="w-full"
+                          onClick={() => {
+                            console.log('[Modal Action] 장바구니 추가 클릭:', selectedCourse.title);
+                            // TODO: 장바구니 추가 기능
+                          }}
+                        >
+                          장바구니 추가
+                        </Button>
+                        <Button 
+                          variant="ghost" 
+                          className="w-full"
+                          onClick={() => {
+                            console.log('[Modal Action] 상세정보 보기 클릭:', selectedCourse.title);
+                            setIsCourseModalOpen(false);
+                            setLocation(`/courses/${selectedCourse.id}`);
+                          }}
+                        >
+                          상세정보 보기
+                        </Button>
                       </div>
                     </CardContent>
                   </Card>
@@ -1003,8 +1057,36 @@ export function RealTimePopularChart() {
                         <p className="text-2xl font-bold">{selectedEvent.entryFee?.toLocaleString()}원</p>
                       </div>
                       <div className="space-y-2">
-                        <Button className="w-full">참가 신청</Button>
-                        <Button variant="outline" className="w-full">문의하기</Button>
+                        <Button 
+                          className="w-full"
+                          onClick={() => {
+                            console.log('[Modal Action] 참가 신청 클릭:', selectedEvent.title);
+                            // TODO: 이벤트 참가 신청 프로세스
+                          }}
+                        >
+                          참가 신청
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          className="w-full"
+                          onClick={() => {
+                            console.log('[Modal Action] 문의하기 클릭:', selectedEvent.title);
+                            // TODO: 문의 모달 열기
+                          }}
+                        >
+                          문의하기
+                        </Button>
+                        <Button 
+                          variant="ghost" 
+                          className="w-full"
+                          onClick={() => {
+                            console.log('[Modal Action] 이벤트 전체보기 클릭:', selectedEvent.title);
+                            setIsEventModalOpen(false);
+                            setLocation(`/events/${selectedEvent.id}`);
+                          }}
+                        >
+                          전체보기
+                        </Button>
                       </div>
                       
                       <div className="mt-4 pt-4 border-t">
@@ -1096,15 +1178,36 @@ export function RealTimePopularChart() {
                   <Card>
                     <CardContent className="p-4">
                       <div className="space-y-3">
-                        <Button className="w-full" variant="outline">
+                        <Button 
+                          className="w-full" 
+                          variant="outline"
+                          onClick={() => {
+                            console.log('[Modal Action] 좋아요 클릭:', selectedCommunity.title);
+                            // TODO: 좋아요 API 호출
+                          }}
+                        >
                           <Heart className="w-4 h-4 mr-2" />
                           좋아요
                         </Button>
-                        <Button className="w-full" variant="outline">
+                        <Button 
+                          className="w-full" 
+                          variant="outline"
+                          onClick={() => {
+                            console.log('[Modal Action] 댓글 쓰기 클릭:', selectedCommunity.title);
+                            // TODO: 댓글 작성 모달 열기
+                          }}
+                        >
                           <MessageCircle className="w-4 h-4 mr-2" />
                           댓글 쓰기
                         </Button>
-                        <Button className="w-full" variant="outline">
+                        <Button 
+                          className="w-full" 
+                          variant="outline"
+                          onClick={() => {
+                            console.log('[Modal Action] 공유하기 클릭:', selectedCommunity.title);
+                            // TODO: 공유 기능 구현
+                          }}
+                        >
                           <Share2 className="w-4 h-4 mr-2" />
                           공유하기
                         </Button>
