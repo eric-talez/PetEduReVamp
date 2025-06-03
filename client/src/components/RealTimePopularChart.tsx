@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { TrendingUp, TrendingDown, Minus, Eye, Heart, MessageCircle, Users, MapPin, Calendar, Star, Phone, Mail, Award } from 'lucide-react';
+import { TrendingUp, TrendingDown, Minus, Eye, Heart, MessageCircle, Users, MapPin, Calendar, Star, Phone, Mail, Award, Share2, Clock } from 'lucide-react';
 import { useLocation } from 'wouter';
 import { useQuery } from '@tanstack/react-query';
 
