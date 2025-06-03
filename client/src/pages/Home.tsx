@@ -217,7 +217,18 @@ export default function Home() {
     });
 
     if (!finalAuthState) {
-      return <GuestHome />;
+      // Return the default non-authenticated home content directly
+      return (
+        <div className="container mx-auto px-4 py-8">
+          {/* Non-authenticated user content would go here */}
+          <div className="text-center py-20">
+            <h1 className="text-3xl font-bold mb-4">Talez에 오신 것을 환영합니다</h1>
+            <p className="text-gray-600 mb-8">로그인하여 더 많은 기능을 이용해보세요.</p>
+            <Button onClick={() => setLocation('/login')} className="mr-4">로그인</Button>
+            <Button variant="outline" onClick={() => setLocation('/register')}>회원가입</Button>
+          </div>
+        </div>
+      );
     }
     
     return (
