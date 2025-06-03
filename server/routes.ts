@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { z } from "zod";
-import { createUserSchema, createPetSchema, createCourseSchema } from "@shared/schema";
+import { createUserSchema, createPetSchema, createCourseSchema, createBannerSchema, banners } from "@shared/schema";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
@@ -883,6 +883,107 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
   
+  // Banner Management API Routes
+  // Get all active banners for display
+  app.get("/api/banners", async (req, res) => {
+    try {
+      const { type = 'main', position = 'hero' } = req.query;
+      
+      const activeBanners = await storage.getActiveBanners(type as string, position as string);
+      
+      res.json(activeBanners);
+    } catch (error: any) {
+      console.error('배너 조회 오류:', error);
+      res.status(500).json({ message: '배너를 불러오는 중 오류가 발생했습니다.' });
+    }
+  });
+
+  // Admin: Get all banners for management
+  app.get("/api/admin/banners", async (req, res) => {
+    if (!req.session?.user || req.session.user.role !== 'admin') {
+      return res.status(403).json({ message: '관리자 권한이 필요합니다.' });
+    }
+
+    try {
+      const allBanners = await storage.getAllBanners();
+      res.json(allBanners);
+    } catch (error: any) {
+      console.error('관리자 배너 조회 오류:', error);
+      res.status(500).json({ message: '배너를 불러오는 중 오류가 발생했습니다.' });
+    }
+  });
+
+  // Admin: Create new banner
+  app.post("/api/admin/banners", async (req, res) => {
+    if (!req.session?.user || req.session.user.role !== 'admin') {
+      return res.status(403).json({ message: '관리자 권한이 필요합니다.' });
+    }
+
+    try {
+      const validatedData = createBannerSchema.parse(req.body);
+      
+      const newBanner = await storage.createBanner({
+        ...validatedData,
+        createdBy: req.session.user.id
+      });
+      
+      res.status(201).json(newBanner);
+    } catch (error: any) {
+      console.error('배너 생성 오류:', error);
+      if (error.name === 'ZodError') {
+        return res.status(400).json({ message: '입력 데이터가 올바르지 않습니다.', errors: error.errors });
+      }
+      res.status(500).json({ message: '배너 생성 중 오류가 발생했습니다.' });
+    }
+  });
+
+  // Admin: Update banner
+  app.put("/api/admin/banners/:id", async (req, res) => {
+    if (!req.session?.user || req.session.user.role !== 'admin') {
+      return res.status(403).json({ message: '관리자 권한이 필요합니다.' });
+    }
+
+    try {
+      const bannerId = parseInt(req.params.id);
+      const validatedData = createBannerSchema.partial().parse(req.body);
+      
+      const updatedBanner = await storage.updateBanner(bannerId, validatedData);
+      
+      if (!updatedBanner) {
+        return res.status(404).json({ message: '배너를 찾을 수 없습니다.' });
+      }
+      
+      res.json(updatedBanner);
+    } catch (error: any) {
+      console.error('배너 수정 오류:', error);
+      if (error.name === 'ZodError') {
+        return res.status(400).json({ message: '입력 데이터가 올바르지 않습니다.', errors: error.errors });
+      }
+      res.status(500).json({ message: '배너 수정 중 오류가 발생했습니다.' });
+    }
+  });
+
+  // Admin: Delete banner
+  app.delete("/api/admin/banners/:id", async (req, res) => {
+    if (!req.session?.user || req.session.user.role !== 'admin') {
+      return res.status(403).json({ message: '관리자 권한이 필요합니다.' });
+    }
+
+    try {
+      const bannerId = parseInt(req.params.id);
+      const success = await storage.deleteBanner(bannerId);
+      
+      if (!success) {
+        return res.status(404).json({ message: '배너를 찾을 수 없습니다.' });
+      }
+      
+      res.json({ message: '배너가 성공적으로 삭제되었습니다.' });
+    } catch (error: any) {
+      console.error('배너 삭제 오류:', error);
+      res.status(500).json({ message: '배너 삭제 중 오류가 발생했습니다.' });
+    }
+  });
+
   // Get current user info
   app.get("/api/auth/me", (req, res) => {
     console.log("세션 확인 - SessionID:", req.sessionID);

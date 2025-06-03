@@ -6,7 +6,8 @@ import {
   courses, type Course, type InsertCourse,
   institutes, trainers, pets, vaccinations, checkups,
   commissionPolicies, commissionTransactions, settlementReports,
-  shopCategories, products, cartItems
+  shopCategories, products, cartItems,
+  banners, type Banner, type InsertBanner
 } from "@shared/schema";
 
 // 프로필 업데이트를 위한 인터페이스

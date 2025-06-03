@@ -36,6 +36,27 @@ export const users = pgTable("users", {
   membershipExpiresAt: timestamp("membership_expires_at"), // 멤버십 만료일
 });
 
+// 배너 관리 테이블
+export const banners = pgTable("banners", {
+  id: serial("id").primaryKey(),
+  title: text("title").notNull(),
+  description: text("description"),
+  imageUrl: text("image_url").notNull(),
+  altText: text("alt_text"),
+  linkUrl: text("link_url"),
+  targetBlank: boolean("target_blank").default(true),
+  type: text("type").notNull().default('main'), // 'main', 'sub', 'popup'
+  position: text("position").notNull().default('hero'), // 'hero', 'sidebar', 'footer'
+  orderIndex: integer("order_index").notNull().default(0),
+  startDate: timestamp("start_date"),
+  endDate: timestamp("end_date"),
+  status: text("status").notNull().default('active'), // 'active', 'inactive', 'scheduled'
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  createdBy: integer("created_by").references(() => users.id),
+});
+
 // 기관 정보 테이블
 export const institutes = pgTable("institutes", {
   id: serial("id").primaryKey(),
@@ -480,3 +501,15 @@ export const createCommentSchema = createInsertSchema(comments).omit({
   userId: true,
   createdAt: true
 });
+
+// 배너 스키마들
+export const createBannerSchema = createInsertSchema(banners).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+  createdBy: true
+});
+
+export const insertBannerSchema = createBannerSchema;
+export type InsertBanner = z.infer<typeof insertBannerSchema>;
+export type Banner = typeof banners.$inferSelect;
