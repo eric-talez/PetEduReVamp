@@ -266,44 +266,44 @@ export default function Home() {
 
             {/* 축소된 상태일 때 간략한 정보 표시 */}
             {!isServiceStatsOpen && (
-              <div className="px-4 pb-3 grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div className="md:col-span-3 flex justify-between">
-                  <div className="flex items-center space-x-3">
+              <div className="px-6 pb-4 grid grid-cols-1 md:grid-cols-4 gap-6">
+                <div className="md:col-span-3 flex justify-between space-x-6">
+                  <div className="flex items-center space-x-4">
                     <div className="flex flex-col">
                       <span className="text-sm font-semibold text-blue-600 dark:text-blue-400">활성 사용자</span>
                       <span className="text-lg font-bold">2,580</span>
                     </div>
                     <button 
                       onClick={() => setLocation('/dashboard')}
-                      className="text-xs text-green-600 bg-green-100 dark:bg-green-900/30 dark:text-green-400 py-0.5 px-1.5 rounded-full hover:bg-green-200 dark:hover:bg-green-800/50 transition-colors cursor-pointer"
+                      className="text-xs text-green-600 bg-green-100 dark:bg-green-900/30 dark:text-green-400 py-1 px-2 rounded-full hover:bg-green-200 dark:hover:bg-green-800/50 transition-colors cursor-pointer"
                       title="대시보드에서 자세히 보기"
                     >
                       +12.5%
                     </button>
                   </div>
 
-                  <div className="flex items-center space-x-3">
+                  <div className="flex items-center space-x-4">
                     <div className="flex flex-col">
                       <span className="text-sm font-semibold text-green-600 dark:text-green-400">인증 훈련사</span>
                       <span className="text-lg font-bold">157</span>
                     </div>
                     <button 
                       onClick={() => setLocation('/trainers')}
-                      className="text-xs text-green-600 bg-green-100 dark:bg-green-900/30 dark:text-green-400 py-0.5 px-1.5 rounded-full hover:bg-green-200 dark:hover:bg-green-800/50 transition-colors cursor-pointer"
+                      className="text-xs text-green-600 bg-green-100 dark:bg-green-900/30 dark:text-green-400 py-1 px-2 rounded-full hover:bg-green-200 dark:hover:bg-green-800/50 transition-colors cursor-pointer"
                       title="훈련사 목록 보기"
                     >
                       +4.7%
                     </button>
                   </div>
 
-                  <div className="flex items-center space-x-3">
+                  <div className="flex items-center space-x-4">
                     <div className="flex flex-col">
                       <span className="text-sm font-semibold text-purple-600 dark:text-purple-400">수료 반려견</span>
                       <span className="text-lg font-bold">4,750</span>
                     </div>
                     <button 
                       onClick={() => setLocation('/courses')}
-                      className="text-xs text-green-600 bg-green-100 dark:bg-green-900/30 dark:text-green-400 py-0.5 px-1.5 rounded-full hover:bg-green-200 dark:hover:bg-green-800/50 transition-colors cursor-pointer"
+                      className="text-xs text-green-600 bg-green-100 dark:bg-green-900/30 dark:text-green-400 py-1 px-2 rounded-full hover:bg-green-200 dark:hover:bg-green-800/50 transition-colors cursor-pointer"
                       title="강좌 목록 보기"
                     >
                       +21.3%
@@ -311,8 +311,8 @@ export default function Home() {
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
+                <div className="flex items-center justify-center md:justify-end">
+                  <div className="flex items-center space-x-4">
                     <div className="w-10 h-10">
                       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-amber-500">
                         <circle cx="12" cy="12" r="5" />
