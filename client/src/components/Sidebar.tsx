@@ -548,28 +548,32 @@ export function Sidebar({
                   <>
                     <AccessibleNavItem 
                       href="/" 
-                      icon={<Home className="w-5 h-5 mr-2" />} 
+                      icon={<Home className="w-5 h-5 mr-2" />}
+                      hoverIcon={<PawPrint className="w-5 h-5 mr-2 text-primary" />}
                       active={isActive("/")} 
                       onClick={handleItemClick} 
                       show={true}
                     >홈</AccessibleNavItem>
                     <AccessibleNavItem 
                       href="/courses" 
-                      icon={<GraduationCap className="w-5 h-5 mr-2" />} 
+                      icon={<GraduationCap className="w-5 h-5 mr-2" />}
+                      hoverIcon={<BookOpen className="w-5 h-5 mr-2 text-primary" />}
                       active={isActive("/courses")} 
                       onClick={handleItemClick} 
                       show={true}
                     >강의 찾기</AccessibleNavItem>
                     <AccessibleNavItem 
                       href="/trainers" 
-                      icon={<UserRoundCheck className="w-5 h-5 mr-2" />} 
+                      icon={<UserRoundCheck className="w-5 h-5 mr-2" />}
+                      hoverIcon={<Award className="w-5 h-5 mr-2 text-primary" />}
                       active={isActive("/trainers")} 
                       onClick={handleItemClick} 
                       show={true}
                     >전문가 찾기</AccessibleNavItem>
                     <AccessibleNavItem 
                       href="/community" 
-                      icon={<MessageSquare className="w-5 h-5 mr-2" />} 
+                      icon={<MessageSquare className="w-5 h-5 mr-2" />}
+                      hoverIcon={<Users className="w-5 h-5 mr-2 text-primary" />}
                       active={isActive("/community")} 
                       onClick={handleItemClick} 
                       show={true}
@@ -672,11 +676,11 @@ export function Sidebar({
 
                 {menuGroups.main && (
                   <>
-                    <AccessibleNavItem href="/" icon={<Home className="w-5 h-5 mr-2" />} active={isActive("/")} onClick={handleItemClick} show={true}>홈</AccessibleNavItem>
-                    {showDashboardLink && <AccessibleNavItem href="/dashboard" icon={<BarChart2 className="w-5 h-5 mr-2" />} active={isActive("/dashboard")} onClick={handleItemClick} show={true}>대시보드</AccessibleNavItem>}
-                    <AccessibleNavItem href="/courses" icon={<GraduationCap className="w-5 h-5 mr-2" />} active={isActive("/courses")} onClick={handleItemClick} show={true}>강의 찾기</AccessibleNavItem>
-                    <AccessibleNavItem href="/trainers" icon={<UserRoundCheck className="w-5 h-5 mr-2" />} active={isActive("/trainers")} onClick={handleItemClick} show={true}>전문가 찾기</AccessibleNavItem>
-                    <AccessibleNavItem href="/community" icon={<MessageSquare className="w-5 h-5 mr-2" />} active={isActive("/community")} onClick={handleItemClick} show={true}>커뮤니티</AccessibleNavItem>
+                    <AccessibleNavItem href="/" icon={<Home className="w-5 h-5 mr-2" />} hoverIcon={<PawPrint className="w-5 h-5 mr-2 text-primary" />} active={isActive("/")} onClick={handleItemClick} show={true}>홈</AccessibleNavItem>
+                    {showDashboardLink && <AccessibleNavItem href="/dashboard" icon={<BarChart2 className="w-5 h-5 mr-2" />} hoverIcon={<TrendingUp className="w-5 h-5 mr-2 text-primary" />} active={isActive("/dashboard")} onClick={handleItemClick} show={true}>대시보드</AccessibleNavItem>}
+                    <AccessibleNavItem href="/courses" icon={<GraduationCap className="w-5 h-5 mr-2" />} hoverIcon={<BookOpen className="w-5 h-5 mr-2 text-primary" />} active={isActive("/courses")} onClick={handleItemClick} show={true}>강의 찾기</AccessibleNavItem>
+                    <AccessibleNavItem href="/trainers" icon={<UserRoundCheck className="w-5 h-5 mr-2" />} hoverIcon={<Award className="w-5 h-5 mr-2 text-primary" />} active={isActive("/trainers")} onClick={handleItemClick} show={true}>전문가 찾기</AccessibleNavItem>
+                    <AccessibleNavItem href="/community" icon={<MessageSquare className="w-5 h-5 mr-2" />} hoverIcon={<Users className="w-5 h-5 mr-2 text-primary" />} active={isActive("/community")} onClick={handleItemClick} show={true}>커뮤니티</AccessibleNavItem>
                     <SpecialShopLink expanded={expanded}>쇼핑몰</SpecialShopLink>
                   </>
                 )}
@@ -687,12 +691,12 @@ export function Sidebar({
                     <SidebarMenuGroup expanded={expanded} title="학습" groupName="learning" isOpen={menuGroups.learning} toggleGroup={toggleMenuGroup} icon={<BookOpen className="w-5 h-5 text-gray-500" />} />
                     {menuGroups.learning && (
                       <>
-                        <AccessibleNavItem href="/my-courses" icon={<GraduationCap className="w-5 h-5 mr-2" />} active={isActive("/my-courses")} onClick={handleItemClick} show={true}>나의 학습</AccessibleNavItem>
-                        <AccessibleNavItem href="/my-pets" icon={<PawPrint className="w-5 h-5 mr-2" />} active={isActive("/my-pets")} onClick={handleItemClick} show={true}>반려견 관리</AccessibleNavItem>
-                        <AccessibleNavItem href="/my-trainers" icon={<UserRoundCheck className="w-5 h-5 mr-2" />} active={isActive("/my-trainers")} onClick={handleItemClick} show={true}>내 훈련사</AccessibleNavItem>
-                        <AccessibleNavItem href="/pet-care/health-record" icon={<Activity className="w-5 h-5 mr-2" />} active={isActive("/pet-care/health-record")} onClick={handleItemClick} show={true}>건강 관리</AccessibleNavItem>
-                        <AccessibleNavItem href="/notebook" icon={<Edit className="w-5 h-5 mr-2" />} active={isActive("/notebook")} onClick={handleItemClick} show={true}>알림장</AccessibleNavItem>
-                        <AccessibleNavItem href="/education-schedule" icon={<Calendar className="w-5 h-5 mr-2" />} active={isActive("/education-schedule")} onClick={handleItemClick} show={true}>일정 관리</AccessibleNavItem>
+                        <AccessibleNavItem href="/my-courses" icon={<GraduationCap className="w-5 h-5 mr-2" />} hoverIcon={<BookOpen className="w-5 h-5 mr-2 text-primary" />} active={isActive("/my-courses")} onClick={handleItemClick} show={true}>나의 학습</AccessibleNavItem>
+                        <AccessibleNavItem href="/my-pets" icon={<PawPrint className="w-5 h-5 mr-2" />} hoverIcon={<Award className="w-5 h-5 mr-2 text-primary" />} active={isActive("/my-pets")} onClick={handleItemClick} show={true}>반려견 관리</AccessibleNavItem>
+                        <AccessibleNavItem href="/my-trainers" icon={<UserRoundCheck className="w-5 h-5 mr-2" />} hoverIcon={<Users className="w-5 h-5 mr-2 text-primary" />} active={isActive("/my-trainers")} onClick={handleItemClick} show={true}>내 훈련사</AccessibleNavItem>
+                        <AccessibleNavItem href="/pet-care/health-record" icon={<Activity className="w-5 h-5 mr-2" />} hoverIcon={<TrendingUp className="w-5 h-5 mr-2 text-primary" />} active={isActive("/pet-care/health-record")} onClick={handleItemClick} show={true}>건강 관리</AccessibleNavItem>
+                        <AccessibleNavItem href="/notebook" icon={<Edit className="w-5 h-5 mr-2" />} hoverIcon={<MessageSquare className="w-5 h-5 mr-2 text-primary" />} active={isActive("/notebook")} onClick={handleItemClick} show={true}>알림장</AccessibleNavItem>
+                        <AccessibleNavItem href="/education-schedule" icon={<Calendar className="w-5 h-5 mr-2" />} hoverIcon={<CheckSquare className="w-5 h-5 mr-2 text-primary" />} active={isActive("/education-schedule")} onClick={handleItemClick} show={true}>일정 관리</AccessibleNavItem>
                       </>
                     )}
                   </>

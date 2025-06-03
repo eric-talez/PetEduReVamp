@@ -6,6 +6,7 @@ import { SidebarContext } from "./Sidebar";
 interface AccessibleNavItemProps {
   href: string;
   icon: React.ReactNode;
+  hoverIcon?: React.ReactNode;
   children: React.ReactNode;
   active?: boolean;
   onClick?: (path: string) => void;
@@ -18,7 +19,7 @@ interface AccessibleNavItemProps {
  * - 사이드바 닫힘 상태: 아이콘만 표시하되 툴팁으로 제목 표시
  * - 접근성 레이블 추가
  */
-export function AccessibleNavItem({ href, icon, children, active, onClick, show }: AccessibleNavItemProps) {
+export function AccessibleNavItem({ href, icon, hoverIcon, children, active, onClick, show }: AccessibleNavItemProps) {
   const { expanded } = useContext(SidebarContext);
   
   const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
@@ -46,13 +47,22 @@ export function AccessibleNavItem({ href, icon, children, active, onClick, show 
             <a
               href={href}
               className={cn(
-                "sidebar-link flex items-center justify-center py-2 text-sm font-medium rounded-md transition-all duration-200 ease-in-out px-2",
-                active ? "bg-primary/10 text-primary" : "text-gray-700 dark:text-gray-200 hover:text-primary dark:hover:text-primary"
+                "sidebar-link flex items-center justify-center py-2 text-sm font-medium rounded-md transition-all duration-200 ease-in-out px-2 group",
+                active ? "bg-primary/10 text-primary" : "text-gray-700 dark:text-gray-200 hover:text-primary dark:hover:text-primary hover:bg-primary/5"
               )}
               onClick={handleClick}
               aria-label={accessibilityLabel}
             >
-              {React.cloneElement(icon as React.ReactElement, { className: "w-5 h-5" })}
+              <div className="relative w-5 h-5">
+                <div className="absolute inset-0 transition-all duration-300 group-hover:scale-0 group-hover:opacity-0">
+                  {React.cloneElement(icon as React.ReactElement, { className: "w-5 h-5" })}
+                </div>
+                {hoverIcon && (
+                  <div className="absolute inset-0 transition-all duration-300 scale-0 opacity-0 group-hover:scale-110 group-hover:opacity-100 group-hover:rotate-12">
+                    {React.cloneElement(hoverIcon as React.ReactElement, { className: "w-5 h-5" })}
+                  </div>
+                )}
+              </div>
             </a>
           </TooltipTrigger>
           <TooltipContent side="right">
@@ -68,8 +78,8 @@ export function AccessibleNavItem({ href, icon, children, active, onClick, show 
     <a
       href={href}
       className={cn(
-        "sidebar-link flex items-center py-2 text-sm font-medium rounded-md transition-all duration-200 ease-in-out px-3",
-        active ? "bg-primary/10 text-primary" : "text-gray-700 dark:text-gray-200 hover:text-primary dark:hover:text-primary",
+        "sidebar-link flex items-center py-2 text-sm font-medium rounded-md transition-all duration-200 ease-in-out px-3 group",
+        active ? "bg-primary/10 text-primary" : "text-gray-700 dark:text-gray-200 hover:text-primary dark:hover:text-primary hover:bg-primary/5",
         "focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
       )}
       onClick={handleClick}
@@ -88,8 +98,17 @@ export function AccessibleNavItem({ href, icon, children, active, onClick, show 
         }
       }}
     >
-      {icon}
-      <span className="ml-2">{children}</span>
+      <div className="relative w-5 h-5 mr-3">
+        <div className="absolute inset-0 transition-all duration-300 group-hover:scale-0 group-hover:opacity-0">
+          {React.cloneElement(icon as React.ReactElement, { className: "w-5 h-5" })}
+        </div>
+        {hoverIcon && (
+          <div className="absolute inset-0 transition-all duration-300 scale-0 opacity-0 group-hover:scale-110 group-hover:opacity-100 group-hover:rotate-12">
+            {React.cloneElement(hoverIcon as React.ReactElement, { className: "w-5 h-5" })}
+          </div>
+        )}
+      </div>
+      <span className="transition-all duration-200 group-hover:translate-x-1">{children}</span>
     </a>
   );
 }
