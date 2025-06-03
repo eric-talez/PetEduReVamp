@@ -349,7 +349,19 @@ export function RealTimePopularChart() {
         <div
           key={item.id}
           className="flex items-center space-x-4 p-3 bg-white dark:bg-gray-800 rounded-lg shadow-sm hover:shadow-md transition-shadow cursor-pointer border hover:border-primary/20"
-          onClick={() => handleItemClick(item.detailPath)}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            handleItemClick(item.detailPath);
+          }}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              handleItemClick(item.detailPath);
+            }
+          }}
         >
           <div className="flex-shrink-0 w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
             <span className="text-primary font-bold text-sm">{index + 1}</span>
