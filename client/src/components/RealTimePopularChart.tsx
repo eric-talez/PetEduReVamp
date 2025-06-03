@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { TrendingUp, TrendingDown, Minus, Eye, Heart, MessageCircle, Users, MapPin, Calendar, Star, Phone, Mail, Award } from 'lucide-react';
 import { useLocation } from 'wouter';
+import { useQuery } from '@tanstack/react-query';
 
 interface PopularItem {
   id: number;
@@ -36,6 +37,12 @@ export function RealTimePopularChart() {
   const [isCourseModalOpen, setIsCourseModalOpen] = useState(false);
   const [isEventModalOpen, setIsEventModalOpen] = useState(false);
   const [isCommunityModalOpen, setIsCommunityModalOpen] = useState(false);
+
+  // 실시간 통계 데이터 조회
+  const { data: statsData, isLoading: statsLoading } = useQuery({
+    queryKey: ['/api/popular-stats'],
+    refetchInterval: 30000, // 30초마다 자동 갱신
+  });
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -287,7 +294,27 @@ export function RealTimePopularChart() {
     }
   };
 
-  const coursesData: PopularItem[] = [
+  // 통계 데이터와 기본 데이터 병합 함수
+  const mergeWithStats = (baseData: PopularItem[], statsArray: any[], category: string) => {
+    if (!statsData || !statsArray) return baseData;
+    
+    return baseData.map((item, index) => {
+      const stat = statsArray[index];
+      if (stat && stat.id === item.id) {
+        return {
+          ...item,
+          views: stat.views,
+          likes: stat.likes,
+          comments: stat.comments,
+          trend: stat.trend,
+          changePercent: stat.changePercent
+        };
+      }
+      return item;
+    });
+  };
+
+  const baseCourseData: PopularItem[] = [
     {
       id: 1,
       title: "반려견 기본 예절 마스터하기",
@@ -360,7 +387,10 @@ export function RealTimePopularChart() {
     }
   ];
 
-  const trainersData: PopularItem[] = [
+  // 실시간 통계와 병합된 데이터
+  const coursesData = mergeWithStats(baseCourseData, statsData?.courses, 'courses');
+
+  const baseTrainerData: PopularItem[] = [
     {
       id: 1,
       title: "김민수 전문 훈련사",
@@ -428,7 +458,10 @@ export function RealTimePopularChart() {
     }
   ];
 
-  const eventsData: PopularItem[] = [
+  // 모든 데이터 타입에 대한 실시간 통계 병합
+  const trainersData = mergeWithStats(baseTrainerData, statsData?.trainers, 'trainers');
+
+  const baseEventData: PopularItem[] = [
     {
       id: 1,
       title: "2024 반려견 어질리티 챔피언십",

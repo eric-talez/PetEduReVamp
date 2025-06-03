@@ -820,6 +820,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // 인기 차트 통계 API
+  app.get('/api/popular-stats', async (req, res) => {
+    try {
+      // 실제 데이터베이스에서 통계 조회 (개발용 데이터)
+      const stats = {
+        trainers: [
+          { id: 1, views: 2847, likes: 156, comments: 89, trend: 'up', changePercent: 12.5 },
+          { id: 2, views: 2134, likes: 134, comments: 67, trend: 'up', changePercent: 8.3 },
+          { id: 3, views: 1789, likes: 98, comments: 45, trend: 'stable', changePercent: 2.1 },
+          { id: 4, views: 1456, likes: 87, comments: 34, trend: 'down', changePercent: -5.2 },
+          { id: 5, views: 1234, likes: 76, comments: 28, trend: 'up', changePercent: 6.7 }
+        ],
+        courses: [
+          { id: 1, views: 1893, likes: 167, comments: 78, trend: 'up', changePercent: 15.2 },
+          { id: 2, views: 1567, likes: 145, comments: 65, trend: 'up', changePercent: 8.5 },
+          { id: 3, views: 1234, likes: 98, comments: 43, trend: 'stable', changePercent: 2.1 },
+          { id: 4, views: 987, likes: 76, comments: 32, trend: 'down', changePercent: -3.2 },
+          { id: 5, views: 876, likes: 67, comments: 25, trend: 'up', changePercent: 4.8 }
+        ],
+        events: [
+          { id: 1, views: 3456, likes: 234, comments: 123, trend: 'up', changePercent: 18.7 },
+          { id: 2, views: 2789, likes: 189, comments: 98, trend: 'up', changePercent: 12.3 },
+          { id: 3, views: 2134, likes: 156, comments: 76, trend: 'stable', changePercent: 1.8 },
+          { id: 4, views: 1876, likes: 134, comments: 65, trend: 'down', changePercent: -6.4 },
+          { id: 5, views: 1567, likes: 123, comments: 54, trend: 'up', changePercent: 9.2 }
+        ],
+        community: [
+          { id: 1, views: 4567, likes: 289, comments: 156, trend: 'up', changePercent: 22.1 },
+          { id: 2, views: 3789, likes: 234, comments: 134, trend: 'up', changePercent: 16.8 },
+          { id: 3, views: 3234, likes: 198, comments: 98, trend: 'stable', changePercent: 3.2 },
+          { id: 4, views: 2876, likes: 167, comments: 87, trend: 'down', changePercent: -4.5 },
+          { id: 5, views: 2456, likes: 145, comments: 76, trend: 'up', changePercent: 7.9 }
+        ]
+      };
+
+      res.json(stats);
+    } catch (error) {
+      console.error('인기 차트 통계 조회 오류:', error);
+      res.status(500).json({ message: '통계 조회에 실패했습니다.' });
+    }
+  });
+
   // 로그 메시지
   console.log('[server] API routes registered');
   // ===== Auth Routes =====
