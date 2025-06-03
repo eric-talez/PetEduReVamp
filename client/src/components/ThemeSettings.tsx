@@ -156,18 +156,25 @@ export function QuickThemeToggle() {
 
   const toggleTheme = () => {
     const newTheme = theme === 'dark' ? 'light' : 'dark';
-    setTheme(newTheme);
     console.log('빠른 테마 전환:', newTheme);
+    console.log('현재 document.documentElement.className:', document.documentElement.className);
     
     // 즉시 DOM에 클래스 적용하여 시각적 변화 보장
     const root = document.documentElement;
     if (newTheme === 'dark') {
       root.classList.remove('light');
       root.classList.add('dark');
+      console.log('다크 모드 클래스 추가됨');
     } else {
       root.classList.remove('dark');
       root.classList.add('light');
+      console.log('라이트 모드 클래스 추가됨');
     }
+    
+    console.log('변경 후 document.documentElement.className:', document.documentElement.className);
+    
+    // 테마 상태 업데이트
+    setTheme(newTheme);
   };
 
   return (

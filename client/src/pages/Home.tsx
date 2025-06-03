@@ -473,7 +473,7 @@ export default function Home() {
               <div className="flex flex-wrap gap-2">
                 <Button
                   size="sm"
-                  className="bg-white text-primary font-semibold hover:bg-gray-50 px-4 py-1.5 rounded-lg shadow-md"
+                  className="bg-white/90 dark:bg-gray-800/90 text-primary dark:text-primary-foreground font-semibold hover:bg-white dark:hover:bg-gray-800 px-4 py-1.5 rounded-lg shadow-md border border-white/20 dark:border-gray-700/50"
                   onClick={() => setLocation(bannerSlides[currentSlide].primaryAction.path)}
                 >
                   {bannerSlides[currentSlide].primaryAction.text}
@@ -481,7 +481,7 @@ export default function Home() {
                 <Button
                   size="sm"
                   variant="outline"
-                  className="border-white text-white hover:bg-white hover:text-primary px-4 py-1.5 rounded-lg backdrop-blur-sm"
+                  className="border-2 border-white/80 dark:border-gray-300/80 text-white dark:text-gray-200 hover:bg-white/90 dark:hover:bg-gray-800/90 hover:text-primary dark:hover:text-primary-foreground px-4 py-1.5 rounded-lg backdrop-blur-sm"
                   onClick={() => setLocation(bannerSlides[currentSlide].secondaryAction.path)}
                 >
                   {bannerSlides[currentSlide].secondaryAction.text}
@@ -491,7 +491,7 @@ export default function Home() {
 
             {/* 네비게이션 화살표 */}
             <button
-              className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/30 hover:bg-white/50 text-white backdrop-blur-sm h-10 w-10 rounded-full flex items-center justify-center transition-all duration-200 hover:scale-110 z-20"
+              className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/30 dark:bg-gray-800/40 hover:bg-white/50 dark:hover:bg-gray-800/60 text-white dark:text-gray-200 backdrop-blur-sm h-10 w-10 rounded-full flex items-center justify-center transition-all duration-200 hover:scale-110 z-20 border border-white/20 dark:border-gray-600/30"
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
@@ -503,7 +503,7 @@ export default function Home() {
             </button>
             
             <button
-              className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/30 hover:bg-white/50 text-white backdrop-blur-sm h-10 w-10 rounded-full flex items-center justify-center transition-all duration-200 hover:scale-110 z-20"
+              className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/30 dark:bg-gray-800/40 hover:bg-white/50 dark:hover:bg-gray-800/60 text-white dark:text-gray-200 backdrop-blur-sm h-10 w-10 rounded-full flex items-center justify-center transition-all duration-200 hover:scale-110 z-20 border border-white/20 dark:border-gray-600/30"
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
@@ -519,8 +519,10 @@ export default function Home() {
               {bannerSlides.map((_, index) => (
                 <button
                   key={index}
-                  className={`w-3 h-3 rounded-full transition-all duration-200 hover:scale-125 ${
-                    currentSlide === index ? 'bg-white shadow-lg' : 'bg-white/50 hover:bg-white/70'
+                  className={`w-3 h-3 rounded-full transition-all duration-200 hover:scale-125 border border-white/30 dark:border-gray-400/40 ${
+                    currentSlide === index 
+                      ? 'bg-white dark:bg-gray-200 shadow-lg' 
+                      : 'bg-white/50 dark:bg-gray-400/50 hover:bg-white/70 dark:hover:bg-gray-300/70'
                   }`}
                   onClick={(e) => {
                     e.preventDefault();
