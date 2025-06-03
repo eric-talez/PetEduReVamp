@@ -28,16 +28,18 @@ if (isProduction && !isReplit) {
   console.log('🎯 운영 환경: MariaDB 연결 설정');
   
   pool = mysql.createPool({
-    ...PRODUCTION_DB_CONFIG,
+    host: PRODUCTION_DB_CONFIG.host,
+    port: PRODUCTION_DB_CONFIG.port,
+    user: PRODUCTION_DB_CONFIG.user,
+    password: PRODUCTION_DB_CONFIG.password,
+    database: PRODUCTION_DB_CONFIG.database,
+    multipleStatements: PRODUCTION_DB_CONFIG.multipleStatements,
     waitForConnections: true,
     connectionLimit: 10,
-    queueLimit: 0,
-    acquireTimeout: 60000,
-    timeout: 60000,
-    reconnect: true
+    queueLimit: 0
   });
   
-  db = drizzleMaria(pool, { schema });
+  db = drizzleMaria(pool, { schema, mode: 'default' });
   
 } else {
   // 🔧 개발 환경: PostgreSQL (Replit) 연결
