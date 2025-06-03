@@ -3,7 +3,7 @@ import { createServer, type Server } from "http";
 import { db } from "./db";
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  
+
   // 실시간 인기 통계 API
   app.get("/api/popular-stats", async (req, res) => {
     try {
@@ -25,7 +25,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           { id: 2, views: 823, likes: 98, title: "고양이 건강 관리법", category: "건강" }
         ]
       };
-      
+
       res.json(popularStats);
     } catch (error) {
       console.error('인기 통계 조회 오류:', error);
@@ -48,7 +48,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           position: "hero"
         }
       ];
-      
+
       res.json(banners);
     } catch (error) {
       console.error('배너 조회 오류:', error);
@@ -60,7 +60,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/community/posts/:id/like", async (req, res) => {
     try {
       const postId = parseInt(req.params.id);
-      
+
       res.json({ 
         success: true, 
         message: "좋아요가 반영되었습니다",
@@ -76,7 +76,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/consultation/request", async (req, res) => {
     try {
       const { trainerId, message, preferredDate } = req.body;
-      
+
       res.json({ 
         success: true, 
         message: "상담 신청이 완료되었습니다",
@@ -177,7 +177,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const postId = parseInt(req.params.id);
       const { content, authorName } = req.body;
-      
+
       const newComment = {
         id: Date.now(),
         postId,
@@ -186,7 +186,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         createdAt: new Date().toISOString(),
         likes: 0
       };
-      
+
       res.json({ 
         success: true, 
         message: "댓글이 작성되었습니다",
@@ -202,7 +202,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/community/posts/:id/comments", async (req, res) => {
     try {
       const postId = parseInt(req.params.id);
-      
+
       const mockComments = [
         {
           id: 1,
@@ -221,7 +221,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           likes: 1
         }
       ];
-      
+
       res.json({ 
         success: true, 
         comments: mockComments
@@ -237,7 +237,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const eventId = parseInt(req.params.id);
       const { participantName, phone, email } = req.body;
-      
+
       res.json({ 
         success: true, 
         message: "이벤트 참가 신청이 완료되었습니다",
@@ -254,7 +254,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { type, id, title } = req.body;
       const shareUrl = `${req.protocol}://${req.get('host')}/${type}/${id}`;
-      
+
       res.json({ 
         success: true, 
         message: "공유 링크가 생성되었습니다",
@@ -297,7 +297,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           createdAt: "2025-06-01T09:15:00.000Z"
         }
       ];
-      
+
       res.json({ success: true, consultations });
     } catch (error) {
       console.error('상담 목록 조회 오류:', error);
@@ -308,10 +308,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/consultations/:id/cancel", async (req, res) => {
     try {
       const consultationId = req.params.id;
-      
+
       // 실제 구현에서는 데이터베이스에서 상담을 취소 상태로 업데이트
       console.log(`상담 ${consultationId} 취소 요청`);
-      
+
       res.json({ 
         success: true, 
         message: "상담이 성공적으로 취소되었습니다." 
@@ -325,7 +325,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/consultations/:id", async (req, res) => {
     try {
       const consultationId = req.params.id;
-      
+
       // 실제 구현에서는 데이터베이스에서 상담 상세 정보 조회
       const consultation = {
         id: parseInt(consultationId),
@@ -345,7 +345,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         createdAt: "2025-06-03T17:30:00.000Z",
         videoCallUrl: "https://meet.google.com/abc-defg-hij"
       };
-      
+
       res.json({ success: true, consultation });
     } catch (error) {
       console.error('상담 상세 조회 오류:', error);
@@ -356,10 +356,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/consultations/:id/join", async (req, res) => {
     try {
       const consultationId = req.params.id;
-      
+
       // 실제 구현에서는 화상 회의 시스템과 연동
       const videoCallUrl = "https://meet.google.com/abc-defg-hij";
-      
+
       res.json({ 
         success: true, 
         message: "화상 상담에 참여합니다.",
@@ -368,6 +368,333 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('화상 상담 참여 오류:', error);
       res.status(500).json({ error: "화상 상담 참여 중 오류가 발생했습니다" });
+    }
+  });
+
+  // 수강 목록 조회 API
+  app.get('/api/enrollments', async (req: Request, res: Response) => {
+    try {
+      // 현재 로그인한 사용자 정보 가져오기
+      const user = req.user || req.session?.user || { id: 1, role: 'pet-owner' };
+
+      let enrollments;
+
+      if (user.role === 'trainer') {
+        // 훈련사인 경우: 자신이 담당하는 강좌의 수강생 목록
+        enrollments = [
+          {
+            id: 1,
+            studentName: '김반려',
+            petName: '멍멍이',
+            courseName: '기본 훈련 과정',
+            enrolledAt: '2024-01-15',
+            status: 'active',
+            progress: 75
+          },
+          {
+            id: 2,
+            studentName: '이반려',
+            petName: '야옹이',
+            courseName: '고양이 행동 교정',
+            enrolledAt: '2024-01-20',
+            status: 'active',
+            progress: 60
+          }
+        ];
+      } else {
+        // 반려인인 경우: 자신이 수강 중인 강좌 목록
+        enrollments = [
+          {
+            id: 1,
+            courseName: '기본 훈련 과정',
+            trainerName: '김민수 훈련사',
+            enrolledAt: '2024-01-15',
+            status: 'active',
+            progress: 75,
+            nextClass: '2024-02-01 14:00'
+          },
+          {
+            id: 2,
+            courseName: '고급 서비스독 훈련',
+            trainerName: '박영희 훈련사',
+            enrolledAt: '2024-01-10',
+            status: 'completed',
+            progress: 100,
+            completedAt: '2024-01-25'
+          }
+        ];
+      }
+
+      res.json({
+        success: true,
+        enrollments
+      });
+    } catch (error) {
+      console.error('수강 목록 조회 오류:', error);
+      res.status(500).json({
+        success: false,
+        error: '수강 목록 조회에 실패했습니다.'
+      });
+    }
+  });
+
+  // 알림장 목록 조회 API
+  app.get('/api/notebook/entries', async (req: Request, res: Response) => {
+    try {
+      const user = req.user || req.session?.user || { id: 1, role: 'pet-owner' };
+      const { petId, trainerId, date, limit = 20, offset = 0 } = req.query;
+
+      // 샘플 알림장 데이터
+      const entries = [
+        {
+          id: '1',
+          date: new Date().toISOString().split('T')[0],
+          petName: '멍멍이',
+          petId: 'pet1',
+          trainerName: '김민수',
+          trainerId: 'trainer1',
+          title: '오늘의 기본 훈련 세션',
+          content: '오늘 멍멍이는 기본 명령어 훈련을 매우 잘 따라했습니다.',
+          activities: {
+            training: ['기본 명령어', '리드줄 훈련'],
+            play: ['공 던지기', '터그놀이']
+          },
+          mood: 'excellent',
+          duration: 90,
+          location: 'PetEdu 훈련장 A',
+          tags: ['기본훈련', '개선됨'],
+          isRead: false,
+          createdAt: new Date().toISOString()
+        }
+      ];
+
+      // 필터링 적용
+      let filteredEntries = entries;
+      if (petId) {
+        filteredEntries = filteredEntries.filter(entry => entry.petId === petId);
+      }
+      if (trainerId) {
+        filteredEntries = filteredEntries.filter(entry => entry.trainerId === trainerId);
+      }
+      if (date) {
+        filteredEntries = filteredEntries.filter(entry => entry.date === date);
+      }
+
+      res.json({
+        success: true,
+        entries: filteredEntries.slice(Number(offset), Number(offset) + Number(limit)),
+        total: filteredEntries.length
+      });
+    } catch (error) {
+      console.error('알림장 목록 조회 오류:', error);
+      res.status(500).json({
+        success: false,
+        error: '알림장 목록 조회에 실패했습니다.'
+      });
+    }
+  });
+
+  // 새 알림장 작성 API
+  app.post('/api/notebook/entries', async (req: Request, res: Response) => {
+    try {
+      const user = req.user || req.session?.user || { id: 1, role: 'trainer' };
+      const entryData = req.body;
+
+      // 필수 필드 검증
+      if (!entryData.title || !entryData.content || !entryData.petName) {
+        return res.status(400).json({
+          success: false,
+          error: '제목, 내용, 반려동물 이름은 필수입니다.'
+        });
+      }
+
+      // 새 알림장 생성
+      const newEntry = {
+        id: Date.now().toString(),
+        ...entryData,
+        trainerId: user.id,
+        trainerName: user.name || '훈련사',
+        isRead: false,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+
+      console.log('[Notebook] 새 알림장 생성:', newEntry);
+
+      res.json({
+        success: true,
+        message: '알림장이 성공적으로 저장되었습니다.',
+        entry: newEntry
+      });
+    } catch (error) {
+      console.error('알림장 작성 오류:', error);
+      res.status(500).json({
+        success: false,
+        error: '알림장 작성에 실패했습니다.'
+      });
+    }
+  });
+
+  // 알림장 수정 API
+  app.put('/api/notebook/entries/:id', async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const updateData = req.body;
+      const user = req.user || req.session?.user || { id: 1, role: 'trainer' };
+
+      // 실제로는 데이터베이스에서 해당 알림장을 찾아 업데이트
+      const updatedEntry = {
+        id,
+        ...updateData,
+        updatedAt: new Date().toISOString()
+      };
+
+      console.log('[Notebook] 알림장 수정:', updatedEntry);
+
+      res.json({
+        success: true,
+        message: '알림장이 성공적으로 수정되었습니다.',
+        entry: updatedEntry
+      });
+    } catch (error) {
+      console.error('알림장 수정 오류:', error);
+      res.status(500).json({
+        success: false,
+        error: '알림장 수정에 실패했습니다.'
+      });
+    }
+  });
+
+  // 알림장 삭제 API
+  app.delete('/api/notebook/entries/:id', async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const user = req.user || req.session?.user || { id: 1, role: 'trainer' };
+
+      // 실제로는 데이터베이스에서 해당 알림장을 삭제
+      console.log('[Notebook] 알림장 삭제:', id);
+
+      res.json({
+        success: true,
+        message: '알림장이 성공적으로 삭제되었습니다.'
+      });
+    } catch (error) {
+      console.error('알림장 삭제 오류:', error);
+      res.status(500).json({
+        success: false,
+        error: '알림장 삭제에 실패했습니다.'
+      });
+    }
+  });
+
+  // 알림장 읽음 처리 API
+  app.patch('/api/notebook/entries/:id/read', async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const user = req.user || req.session?.user || { id: 1, role: 'pet-owner' };
+
+      // 실제로는 데이터베이스에서 읽음 상태 업데이트
+      console.log('[Notebook] 알림장 읽음 처리:', id);
+
+      res.json({
+        success: true,
+        message: '알림장을 읽음으로 표시했습니다.'
+      });
+    } catch (error) {
+      console.error('알림장 읽음 처리 오류:', error);
+      res.status(500).json({
+        success: false,
+        error: '알림장 읽음 처리에 실패했습니다.'
+      });
+    }
+  });
+
+  // AI 알림장 생성 API
+  app.post('/api/notebook/ai-generate', async (req: Request, res: Response) => {
+    try {
+      const { petName, petBreed, activities, additionalContext } = req.body;
+
+      if (!petName) {
+        return res.status(400).json({
+          success: false,
+          error: '반려동물 이름은 필수입니다.'
+        });
+      }
+
+      // AI 생성 시뮬레이션 (실제로는 OpenAI API 호출)
+      await new Promise(resolve => setTimeout(resolve, 2000));
+
+      const aiGeneratedContent = {
+        title: `${new Date().toLocaleDateString('ko-KR')} ${petName} 훈련 일지`,
+        content: `오늘 ${petName}는 훈련에 적극적으로 참여했습니다.
+
+특히 다음과 같은 활동에서 좋은 반응을 보였습니다:
+- 기본 명령어 훈련: 이전보다 집중력이 향상되었음
+- 사회화 훈련: 다른 반려동물들과 원활한 상호작용
+- 놀이 활동: 활발하고 긍정적인 반응
+
+오늘의 전반적인 상태는 양호하며, 지속적인 훈련을 통해 더욱 발전할 것으로 예상됩니다.
+
+다음 세션에서는 ${petName}의 특성을 고려하여 맞춤형 훈련을 진행할 예정입니다.`,
+        activities: activities || ['기본 명령어', '사회화 훈련', '놀이 활동'],
+        nextGoals: [`${petName} 맞춤형 훈련`, '고급 명령어 학습'],
+        tags: ['AI생성', '맞춤훈련']
+      };
+
+      res.json({
+        success: true,
+        message: 'AI가 알림장 내용을 생성했습니다.',
+        content: aiGeneratedContent
+      });
+    } catch (error) {
+      console.error('AI 알림장 생성 오류:', error);
+      res.status(500).json({
+        success: false,
+        error: 'AI 알림장 생성에 실패했습니다.'
+      });
+    }
+  });
+
+  // 알림장 템플릿 목록 API
+  app.get('/api/notebook/templates', async (req: Request, res: Response) => {
+    try {
+      const templates = [
+        {
+          id: 'basic-training',
+          name: '기본 훈련 템플릿',
+          description: '일반적인 반려동물 기본 훈련 세션용',
+          activities: ['기본 명령어', '리드줄 훈련', '사회화 훈련'],
+          defaultContent: '오늘 {petName}는 기본 훈련을 진행했습니다.',
+          tags: ['기본훈련', '초급']
+        },
+        {
+          id: 'behavior-correction',
+          name: '행동 교정 템플릿',
+          description: '문제 행동 교정을 위한 세션용',
+          activities: ['문제행동 분석', '교정 훈련', '대안행동 제시'],
+          defaultContent: '{petName}의 행동 교정을 위한 훈련을 실시했습니다.',
+          tags: ['행동교정', '치료']
+        },
+        {
+          id: 'socialization',
+          name: '사회화 훈련 템플릿',
+          description: '다른 동물이나 사람과의 사회화 훈련용',
+          activities: ['타 반려동물과의 만남', '사람과의 교감', '환경 적응'],
+          defaultContent: '{petName}의 사회화 능력 향상을 위한 훈련을 진행했습니다.',
+          tags: ['사회화', '적응']
+        }
+      ];
+
+      res.json({
+        success: true,
+        templates
+      });
+    } catch (error) {
+      console.error('알림장 템플릿 조회 오류:', error);
+      res.status(500).json({
+        success: false,
+        error: '알림장 템플릿 조회에 실패했습니다.'
+      });
     }
   });
 
