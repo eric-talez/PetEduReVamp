@@ -451,13 +451,13 @@ export function RealTimePopularChart() {
       </CardHeader>
       
       <CardContent>
-        <Tabs defaultValue="courses" className="w-full">
+        <Tabs defaultValue="trainers" className="w-full">
           <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="courses" className="text-xs">
-              강좌
-            </TabsTrigger>
             <TabsTrigger value="trainers" className="text-xs">
               훈련사
+            </TabsTrigger>
+            <TabsTrigger value="courses" className="text-xs">
+              강좌
             </TabsTrigger>
             <TabsTrigger value="events" className="text-xs">
               이벤트
@@ -467,12 +467,12 @@ export function RealTimePopularChart() {
             </TabsTrigger>
           </TabsList>
           
-          <TabsContent value="courses" className="mt-4">
-            {renderPopularList(coursesData)}
-          </TabsContent>
-          
           <TabsContent value="trainers" className="mt-4">
             {renderPopularList(trainersData, true)}
+          </TabsContent>
+          
+          <TabsContent value="courses" className="mt-4">
+            {renderPopularList(coursesData)}
           </TabsContent>
           
           <TabsContent value="events" className="mt-4">
