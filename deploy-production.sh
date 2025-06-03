@@ -1,37 +1,28 @@
 #!/bin/bash
 
-echo "🚀 Production Deployment Script"
-echo "================================"
+echo "🚀 Production Deployment Script (TypeScript Direct)"
+echo "=================================================="
 
 # 1. Install dependencies
 echo "📦 Installing dependencies..."
 npm install
 
-# 2. Build TypeScript for server
-echo "🔧 Building server for production..."
-npx tsc --project tsconfig.server.json
-
-# 3. Copy necessary files
-echo "📋 Copying configuration files..."
-cp package.json dist/
-cp -r shared dist/
-
-# 4. Create logs directory
+# 2. Create logs directory
 mkdir -p logs
 
-# 5. Stop existing PM2 processes
+# 3. Stop existing PM2 processes
 echo "🛑 Stopping existing processes..."
 pm2 delete all || true
 
-# 6. Start production server
-echo "🚀 Starting production server..."
-NODE_ENV=production pm2 start dist/server/index.js --name funnytalez-backend-prod --instances max
+# 4. Start production server with tsx directly
+echo "🚀 Starting production server with tsx..."
+NODE_ENV=production pm2 start server/index.ts --name funnytalez-backend-prod --interpreter ./node_modules/.bin/tsx --instances max
 
-# 7. Save PM2 configuration
+# 5. Save PM2 configuration
 echo "💾 Saving PM2 configuration..."
 pm2 save
 
-# 8. Show status
+# 6. Show status
 echo "📊 Process status:"
 pm2 status
 

@@ -1,0 +1,45 @@
+vite.config.ts:21:25 - error TS1343: The 'import.meta' meta-property is only allowed when the '--module' option is 'es2020', 'es2022', 'esnext', 'system', 'node16', or 'nodenext'.
+
+21       "@": path.resolve(import.meta.dirname, "client", "src"),
+                           ~~~~~~~~~~~
+
+vite.config.ts:22:31 - error TS1343: The 'import.meta' meta-property is only allowed when the '--module' option is 'es2020', 'es2022', 'esnext', 'system', 'node16', or 'nodenext'.
+
+22       "@shared": path.resolve(import.meta.dirname, "shared"),
+                                 ~~~~~~~~~~~
+
+vite.config.ts:23:31 - error TS1343: The 'import.meta' meta-property is only allowed when the '--module' option is 'es2020', 'es2022', 'esnext', 'system', 'node16', or 'nodenext'.
+
+23       "@assets": path.resolve(import.meta.dirname, "attached_assets"),
+                                 ~~~~~~~~~~~
+
+vite.config.ts:26:22 - error TS1343: The 'import.meta' meta-property is only allowed when the '--module' option is 'es2020', 'es2022', 'esnext', 'system', 'node16', or 'nodenext'.
+
+26   root: path.resolve(import.meta.dirname, "client"),
+                        ~~~~~~~~~~~
+
+vite.config.ts:28:26 - error TS1343: The 'import.meta' meta-property is only allowed when the '--module' option is 'es2020', 'es2022', 'esnext', 'system', 'node16', or 'nodenext'.
+
+28     outDir: path.resolve(import.meta.dirname, "dist/public"),
+                            ~~~~~~~~~~~
+
+
+Found 243 errors in 16 files.
+
+Errors  Files
+     4  server/events/routes.ts:101
+     1  server/java-style/UserController.ts:91
+     2  server/java-style/WebController.ts:19
+     2  server/menu/routes.ts:3
+     3  server/notifications/service.ts:47
+    84  server/routes.ts:490
+     7  server/routes/ai.ts:64
+    11  server/routes/analytics.ts:19
+     1  server/routes/notification-routes.ts:16
+    37  server/routes/social.ts:11
+     2  server/spring-boot-routes.ts:132
+    76  server/storage.ts:7
+     3  server/vite.ts:39
+     2  shared/schema-old.ts:236
+     3  shared/schema.ts:326
+     5  vite.config.ts:21
