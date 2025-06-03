@@ -388,7 +388,7 @@ export function RealTimePopularChart() {
   ];
 
   // 실시간 통계와 병합된 데이터
-  const coursesData = mergeWithStats(baseCourseData, statsData?.courses, 'courses');
+  const coursesData = mergeWithStats(baseCourseData, statsData?.courses || [], 'courses');
 
   const baseTrainerData: PopularItem[] = [
     {
@@ -459,7 +459,7 @@ export function RealTimePopularChart() {
   ];
 
   // 모든 데이터 타입에 대한 실시간 통계 병합
-  const trainersData = mergeWithStats(baseTrainerData, statsData?.trainers, 'trainers');
+  const trainersData = mergeWithStats(baseTrainerData, statsData?.trainers || [], 'trainers');
 
   const baseEventData: PopularItem[] = [
     {
@@ -534,7 +534,9 @@ export function RealTimePopularChart() {
     }
   ];
 
-  const communityData: PopularItem[] = [
+  const eventsData = mergeWithStats(baseEventData, statsData?.events || [], 'events');
+
+  const baseCommunityData: PopularItem[] = [
     {
       id: 1,
       title: "우리집 강아지 분리불안 해결했어요!",
@@ -601,6 +603,8 @@ export function RealTimePopularChart() {
       detailPath: "/community/5"
     }
   ];
+
+  const communityData = mergeWithStats(baseCommunityData, statsData?.community || [], 'community');
 
   const renderPopularList = (items: PopularItem[], showLocation = false, showDate = false) => (
     <div className="space-y-3">
