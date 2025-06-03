@@ -608,16 +608,19 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
               )}
               
               <Button
-                variant="ghost"
+                variant="outline"
                 size="sm"
                 onClick={() => {
+                  console.log('현재 테마:', theme);
+                  console.log('새 테마로 전환:', theme === 'dark' ? 'light' : 'dark');
                   setTheme(theme === 'dark' ? 'light' : 'dark');
                 }}
-                className="h-9 w-9 px-0"
+                className="h-9 w-9 px-0 hover:bg-accent border-gray-300 dark:border-gray-600"
                 aria-label="테마 전환"
+                title="다크/라이트 모드 전환"
               >
-                <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-                <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+                <Sun className="h-[1.1rem] w-[1.1rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+                <Moon className="absolute h-[1.1rem] w-[1.1rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
               </Button>
             </div>
 
