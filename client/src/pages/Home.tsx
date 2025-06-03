@@ -1,14 +1,13 @@
 import { Button } from '@/components/ui/button';
 import { Link, useLocation } from 'wouter';
 import { useAuth } from '@/hooks/useAuth';
-import { BannerSlider } from '@/components/BannerSlider';
 import { TrendingSection } from '@/components/TrendingSection';
 import { MiniChart } from '@/components/ui/mini-chart';
 import { WeeklyWeatherModal } from '@/components/WeeklyWeatherModal';
-import { ShopPreview } from '@/components/ShopPreview'; // 인증 상태에 의존하지 않는 컴포넌트
-import { SocialLoginButtons } from '@/components/SocialLoginButtons'; // 소셜 로그인 버튼
+import { ShopPreview } from '@/components/ShopPreview';
+import { SocialLoginButtons } from '@/components/SocialLoginButtons';
 import { useState, lazy, Suspense } from 'react';
-import { Loader2, ChevronDown, ChevronRight } from 'lucide-react';
+import { Loader2, ChevronDown, ChevronRight, ChevronLeft } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { PasswordResetForm } from '@/components/PasswordResetForm';
 
@@ -421,64 +420,94 @@ export default function Home() {
           </div>
         </div>
 
-        {/* 배너 슬라이더와 로그인 영역 */}
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">
-          {/* 배너 슬라이더 - 왼쪽 3/4 */}
-          <div className="lg:col-span-3">
-            <BannerSlider />
-          </div>
-
-          {/* 로그인 영역 - 오른쪽 1/4 */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 flex flex-col h-[400px] overflow-y-auto">
-            {isAuthenticated ? (
-              <>
-                <h2 className="text-lg font-semibold mb-4">환영합니다</h2>
-                <div className="flex items-center mb-4">
-                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center mr-3">
-                    <span className="text-primary font-bold">{userName?.charAt(0)}</span>
-                  </div>
-                  <div>
-                    <p className="font-medium">{userName}</p>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                      {userRole === 'pet-owner' && '반려인'}
-                      {userRole === 'trainer' && '훈련사'}
-                      {userRole === 'institute-admin' && '기관 관리자'}
-                      {userRole === 'admin' && '관리자'}
-                    </p>
-                  </div>
-                </div>
-                <Button 
-                  variant="default" 
-                  className="mb-2 w-full"
-                  onClick={() => window.location.href = '/dashboard'}
-                >
-                  대시보드로 이동
-                </Button>
-                <Button 
-                  variant="outline" 
-                  className="w-full"
-                  onClick={logout}
-                >
-                  로그아웃
-                </Button>
-              </>
-            ) : (
-              <>
-                <h2 className="text-lg font-semibold mb-4">Talez 시작하기</h2>
-                <div className="text-center">
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-                    상단의 로그인 버튼을 통해 Talez를 시작하세요.
-                  </p>
-                </div>
-              </>
-            )}
-            <hr className="my-4 dark:border-gray-700" />
-            {/* 비로그인 시에만 소셜 로그인 안내 표시 */}
-            {!isAuthenticated && (
-              <div className="text-sm text-center text-gray-500 dark:text-gray-400">
-                <p>카카오, 네이버로 간편하게 시작할 수 있습니다.</p>
+        {/* 메인 배너 슬라이더 */}
+        <div className="mb-8">
+          <div className="relative overflow-hidden rounded-xl h-[168px] bg-gradient-to-r from-primary to-primary/80 shadow-lg">
+            {/* 배경 이미지 */}
+            <div className="absolute inset-0 transition-all duration-500 ease-in-out">
+              <img 
+                src={bannerSlides[currentSlide].image} 
+                alt={bannerSlides[currentSlide].title}
+                className="w-full h-full object-cover opacity-30"
+              />
+              <div className="absolute inset-0 bg-gradient-to-r from-primary/90 to-primary/70"></div>
+            </div>
+            
+            {/* 배너 콘텐츠 */}
+            <div className="relative z-10 flex flex-col justify-center h-full px-6 md:px-12">
+              <h1 className="text-white text-xl md:text-2xl font-bold mb-2 max-w-3xl">
+                {bannerSlides[currentSlide].title}
+              </h1>
+              <p className="text-white/90 text-sm md:text-base max-w-2xl mb-3">
+                {bannerSlides[currentSlide].subtitle}
+              </p>
+              
+              {/* 주요 기능 태그 */}
+              <div className="flex flex-wrap gap-2 mb-4">
+                {bannerSlides[currentSlide].features.map((feature, idx) => (
+                  <span 
+                    key={idx} 
+                    className="inline-flex items-center text-xs bg-white/20 text-white px-2 py-1 rounded-full backdrop-blur-sm"
+                  >
+                    <span className="mr-1 text-yellow-300">✓</span> {feature}
+                  </span>
+                ))}
               </div>
-            )}
+              
+              {/* 액션 버튼 */}
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  size="sm"
+                  className="bg-white text-primary font-semibold hover:bg-gray-50 px-4 py-1.5 rounded-lg shadow-md"
+                  onClick={() => setLocation(bannerSlides[currentSlide].primaryAction.path)}
+                >
+                  {bannerSlides[currentSlide].primaryAction.text}
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="border-white text-white hover:bg-white hover:text-primary px-4 py-1.5 rounded-lg backdrop-blur-sm"
+                  onClick={() => setLocation(bannerSlides[currentSlide].secondaryAction.path)}
+                >
+                  {bannerSlides[currentSlide].secondaryAction.text}
+                </Button>
+              </div>
+            </div>
+
+            {/* 네비게이션 화살표 */}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/30 text-white backdrop-blur-sm h-8 w-8"
+              onClick={prevSlide}
+              aria-label="이전 슬라이드"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/30 text-white backdrop-blur-sm h-8 w-8"
+              onClick={nextSlide}
+              aria-label="다음 슬라이드"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+            
+            {/* 슬라이드 인디케이터 */}
+            <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1">
+              {bannerSlides.map((_, index) => (
+                <button
+                  key={index}
+                  className={`w-2 h-2 rounded-full transition-all ${
+                    currentSlide === index ? 'bg-white' : 'bg-white/40'
+                  }`}
+                  onClick={() => setCurrentSlide(index)}
+                  aria-label={`${index + 1}번째 슬라이드로 이동`}
+                />
+              ))}
+            </div>
           </div>
         </div>
 
