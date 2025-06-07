@@ -118,6 +118,12 @@ export default function SearchPage() {
     refetch();
   };
 
+  const handleSuggestionClick = (suggestion: string) => {
+    setFilters(prev => ({ ...prev, query: suggestion }));
+    setCurrentPage(1);
+    refetch();
+  };
+
   return (
     <div className="container mx-auto px-4 py-8 max-w-7xl">
       <div className="mb-8">
@@ -146,6 +152,8 @@ export default function SearchPage() {
             currentPage={currentPage}
             totalPages={searchData?.totalPages}
             onPageChange={handlePageChange}
+            suggestions={searchData?.suggestions}
+            onSuggestionClick={handleSuggestionClick}
           />
         </div>
       </div>

@@ -431,18 +431,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       let results: any[] = [];
 
+      // 검색어 정규화 (공백 제거, 소문자 변환)
+      const normalizedQuery = query.toLowerCase().replace(/\s+/g, '');
+      
+      // 키워드 매칭 함수
+      const isMatch = (text: string) => {
+        if (!text) return false;
+        const normalizedText = text.toLowerCase().replace(/\s+/g, '');
+        return normalizedText.includes(normalizedQuery) || 
+               text.toLowerCase().includes(query.toLowerCase());
+      };
+
       // 훈련사 검색
       if (category === 'all' || category === 'trainer') {
         try {
           const trainers = await storage.getAllTrainers();
           const matchedTrainers = trainers
-            .filter(trainer => 
-              trainer.name.toLowerCase().includes(query.toLowerCase()) ||
-              (trainer.bio && trainer.bio.toLowerCase().includes(query.toLowerCase())) ||
-              (trainer.specialties && trainer.specialties.some((spec: string) => 
-                spec.toLowerCase().includes(query.toLowerCase())
-              ))
-            )
+            .filter(trainer => {
+              // 이름, 설명, 전문분야, 주소에서 검색
+              return isMatch(trainer.name) ||
+                     isMatch(trainer.bio) ||
+                     isMatch(trainer.address) ||
+                     (trainer.specialties && trainer.specialties.some((spec: string) => isMatch(spec))) ||
+                     // 추가 키워드 매칭
+                     (query.includes('강아지') && trainer.specialties?.some((spec: string) => spec.includes('기본') || spec.includes('훈련'))) ||
+                     (query.includes('개') && trainer.specialties?.some((spec: string) => spec.includes('훈련'))) ||
+                     (query.includes('교정') && trainer.specialties?.some((spec: string) => spec.includes('행동') || spec.includes('교정'))) ||
+                     (query.includes('아카데미') && trainer.name.includes('아카데미')) ||
+                     (query.includes('센터') && trainer.name.includes('센터')) ||
+                     (query.includes('스쿨') && trainer.name.includes('스쿨'));
+            })
             .map(trainer => ({
               id: trainer.id,
               type: 'trainer',
@@ -472,10 +490,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         try {
           const institutes = await storage.getAllInstitutes();
           const matchedInstitutes = institutes
-            .filter(institute => 
-              institute.name.toLowerCase().includes(query.toLowerCase()) ||
-              (institute.description && institute.description.toLowerCase().includes(query.toLowerCase()))
-            )
+            .filter(institute => {
+              return isMatch(institute.name) ||
+                     isMatch(institute.description) ||
+                     isMatch(institute.address) ||
+                     // 추가 키워드 매칭
+                     (query.includes('강아지') && institute.description?.includes('교육')) ||
+                     (query.includes('개') && institute.name.includes('애견')) ||
+                     (query.includes('훈련소') && institute.type === '훈련기관') ||
+                     (query.includes('아카데미') && institute.name.includes('아카데미')) ||
+                     (query.includes('센터') && institute.name.includes('센터'));
+            })
             .map(institute => ({
               id: institute.id,
               type: 'institute',
@@ -503,10 +528,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         try {
           const courses = await storage.getAllCourses();
           const matchedCourses = courses
-            .filter(course => 
-              course.title.toLowerCase().includes(query.toLowerCase()) ||
-              (course.description && course.description.toLowerCase().includes(query.toLowerCase()))
-            )
+            .filter(course => {
+              return isMatch(course.title) ||
+                     isMatch(course.description) ||
+                     isMatch(course.category) ||
+                     // 추가 키워드 매칭
+                     (query.includes('기본') && course.title.includes('기본')) ||
+                     (query.includes('훈련') && course.category?.includes('훈련')) ||
+                     (query.includes('강아지') && course.category?.includes('반려견'));
+            })
             .map(course => ({
               id: course.id,
               type: 'course',
@@ -578,12 +608,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       console.log(`[검색] "${query}" 검색 결과: ${totalCount}개 항목`);
 
+      // 검색 결과가 없을 때 추천 검색어 제공
+      let suggestions: string[] = [];
+      if (totalCount === 0) {
+        const allTrainers = await storage.getAllTrainers();
+        const allInstitutes = await storage.getAllInstitutes();
+        
+        // 인기 검색어 추천
+        suggestions = [
+          '도그아카데미',
+          '펫트레이닝센터', 
+          '해피독스쿨',
+          '강동애견훈련소',
+          '부산동물행동센터',
+          '기본훈련',
+          '행동교정',
+          '분리불안',
+          '배변훈련',
+          '사회화훈련'
+        ].slice(0, 5);
+      }
+
       res.json({
         results: paginatedResults,
         totalCount,
         currentPage,
         totalPages,
-        message: totalCount > 0 ? `"${query}"에 대한 ${totalCount}개 결과` : `"${query}"에 대한 검색 결과가 없습니다.`
+        message: totalCount > 0 ? `"${query}"에 대한 ${totalCount}개 결과` : `"${query}"에 대한 검색 결과가 없습니다.`,
+        suggestions: suggestions
       });
 
     } catch (error) {

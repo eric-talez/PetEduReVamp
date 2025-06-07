@@ -57,6 +57,8 @@ interface SearchResultsProps {
   currentPage?: number;
   totalPages?: number;
   onPageChange?: (page: number) => void;
+  suggestions?: string[];
+  onSuggestionClick?: (suggestion: string) => void;
 }
 
 const categoryLabels: Record<string, string> = {
@@ -347,7 +349,7 @@ function InstituteCard({ result }: { result: SearchResult }) {
   );
 }
 
-export function SearchResults({ results, isLoading, totalCount, currentPage = 1, totalPages = 1, onPageChange }: SearchResultsProps) {
+export function SearchResults({ results, isLoading, totalCount, currentPage = 1, totalPages = 1, onPageChange, suggestions, onSuggestionClick }: SearchResultsProps) {
   if (isLoading) {
     return (
       <div className="space-y-4">
@@ -378,6 +380,25 @@ export function SearchResults({ results, isLoading, totalCount, currentPage = 1,
         <div className="text-gray-400 mb-4">
           <BookOpen className="w-16 h-16 mx-auto" />
         </div>
+        <h3 className="text-lg font-medium text-gray-900 mb-2">검색 결과가 없습니다</h3>
+        <p className="text-gray-600 mb-6">다른 검색어로 시도해보세요.</p>
+        
+        {suggestions && suggestions.length > 0 && (
+          <div className="max-w-md mx-auto">
+            <h4 className="text-sm font-medium text-gray-900 mb-3">추천 검색어</h4>
+            <div className="flex flex-wrap gap-2 justify-center">
+              {suggestions.map((suggestion, index) => (
+                <button
+                  key={index}
+                  onClick={() => onSuggestionClick?.(suggestion)}
+                  className="px-3 py-1 text-sm bg-blue-50 text-blue-600 rounded-full hover:bg-blue-100 transition-colors"
+                >
+                  {suggestion}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
         <h3 className="text-lg font-medium text-gray-900 mb-2">검색 결과가 없습니다</h3>
         <p className="text-gray-500">다른 검색어나 필터를 시도해보세요.</p>
       </div>
