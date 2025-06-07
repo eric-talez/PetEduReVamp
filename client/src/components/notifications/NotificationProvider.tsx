@@ -39,7 +39,12 @@ export function NotificationProvider({ children, userId }: NotificationProviderP
     console.log('[WebSocket] 연결 시도:', wsUrl);
     setConnectionStatus('connecting');
 
-    const ws = new WebSocket(wsUrl);
+    // WebSocket 서버가 비활성화되어 있어 연결하지 않음
+    console.log('[WebSocket] 연결 건너뜀: 서버에서 비활성화됨');
+    setConnectionStatus('disconnected');
+    return;
+    
+    // const ws = new WebSocket(wsUrl);
 
     ws.onopen = () => {
       console.log('[WebSocket] 연결 성공');

@@ -92,8 +92,13 @@ export function MessagingProvider({ children }: { children: ReactNode }) {
       }
     }
 
-    // 새 연결 생성
-    wsRef.current = new WebSocket(wsUrl);
+    // WebSocket 서버가 비활성화되어 있어 연결하지 않음
+    console.log('WebSocket 연결 건너뜀: 서버에서 비활성화됨');
+    setIsConnected(false);
+    return false;
+    
+    // 새 연결 생성 (주석 처리)
+    // wsRef.current = new WebSocket(wsUrl);
 
     // 연결 이벤트 핸들러
     wsRef.current.onopen = () => {
