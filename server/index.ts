@@ -9,11 +9,14 @@ import { setupMonitoring, setupErrorHandling } from "./monitoring";
 import { setupSecurity } from "./security";
 import { setupPerformance, monitorMemoryUsage } from "./performance";
 // 비밀번호 재설정 관련 모듈 (별도 초기화 필요 없음)
+import { recovery } from './recovery';
+import { registerNotificationRoutes } from './routes/notification-routes';
+import { errorHandler, notFoundHandler, requestIdMiddleware } from './middleware/error-handler';
 
 const MemoryStore = memorystore(session);
 const app = express();
 
-// 프록시 신뢰 설정 (Nginx, 로드밸런서 등을 위해 필요)
+// 프록시 신뢰 설정 (Nginx, 로드밸서 등을 위해 필요)
 app.set('trust proxy', 1);
 
 // CORS 설정 - funnytalez.com과의 통신을 위해 허용
@@ -58,7 +61,7 @@ if (process.env.NODE_ENV === 'development') {
       const { eq, and } = await import('drizzle-orm');
 
       const petId = parseInt(req.params.id);
-      
+
       const [pet] = await db
         .select()
         .from(pets)
@@ -82,7 +85,7 @@ if (process.env.NODE_ENV === 'development') {
       const { eq, and } = await import('drizzle-orm');
 
       const petId = req.query.petId ? parseInt(req.query.petId as string) : null;
-      
+
       let query = db
         .select({
           id: vaccinations.id,
@@ -118,7 +121,7 @@ if (process.env.NODE_ENV === 'development') {
       const { eq, and } = await import('drizzle-orm');
 
       const petId = req.query.petId ? parseInt(req.query.petId as string) : null;
-      
+
       let query = db
         .select({
           id: healthCheckups.id,
@@ -161,7 +164,7 @@ if (process.env.NODE_ENV === 'development') {
       const { eq, and } = await import('drizzle-orm');
 
       const petId = parseInt(req.params.petId);
-      
+
       const records = await db
         .select({
           id: vaccinations.id,
@@ -194,7 +197,7 @@ if (process.env.NODE_ENV === 'development') {
       const { eq, and } = await import('drizzle-orm');
 
       const petId = parseInt(req.params.petId);
-      
+
       const records = await db
         .select({
           id: healthCheckups.id,
@@ -285,22 +288,31 @@ app.use((req, res, next) => {
 (async () => {
   // 보안 설정 초기화
   setupSecurity(app);
-  
+
   // 성능 최적화 설정 초기화
   setupPerformance(app);
-  
+
   // 모니터링 설정 초기화
   setupMonitoring(app);
-  
+
+  // 요청 ID 미들웨어 추가
+  app.use(requestIdMiddleware);
+
   // 라우트 등록
-  const server = await registerRoutes(app);
-  
+  registerRoutes(app, server);
+
+  // 404 핸들러
+  app.use(notFoundHandler);
+
+  // 글로벌 에러 핸들러
+  app.use(errorHandler);
+
   // 오류 처리 미들웨어 설정 (모든 라우트 등록 후)
   setupErrorHandling(app);
-  
+
   // 백업 및 복구 시스템 초기화
   // 초기화 필요없음
-  
+
   // 메모리 사용량 모니터링 시작
   if (process.env.NODE_ENV === 'production') {
     monitorMemoryUsage();

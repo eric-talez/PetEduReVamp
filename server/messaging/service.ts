@@ -455,4 +455,86 @@ export class MessagingService {
       }
     });
   }
+
+  // 직접 메시지 전송 API
+  public sendDirectMessage(senderId: number, receiverId: number, content: string, type: 'text' | 'image' | 'notification' = 'text', metadata?: any): void {
+    this.processAndDeliverMessage(senderId, {
+      type: 'message',
+      receiverId,
+      content,
+      messageType: type,
+      metadata
+    });
+  }
+
+  // 메시지 읽음 처리 API
+  public markMessageAsRead(userId: number, messageId: string): void {
+    // 모든 대화에서 해당 메시지 찾기
+    this.messageHistory.forEach((messages, conversationId) => {
+      const message = messages.find(m => m.id === messageId && m.receiver.id === userId);
+      if (message) {
+        message.isRead = true;
+        
+        // 발신자에게 읽음 확인 전송
+        const sender = this.clients.get(message.sender.id);
+        if (sender) {
+          sender.connection.send(JSON.stringify({
+            type: 'read_receipt',
+            messageId,
+            readerId: userId,
+            timestamp: new Date()
+          }));
+        }
+      }
+    });
+  }
+
+  // 대화 읽음 처리 API
+  public markConversationAsRead(userId: number, conversationId: string): void {
+    const conversation = this.messageHistory.get(conversationId);
+    if (conversation) {
+      let readCount = 0;
+      conversation.forEach(message => {
+        if (message.receiver.id === userId && !message.isRead) {
+          message.isRead = true;
+          readCount++;
+        }
+      });
+
+      if (readCount > 0) {
+        // 발신자들에게 읽음 확인 전송
+        const senderIds = new Set(conversation.map(m => m.sender.id));
+        senderIds.forEach(senderId => {
+          const sender = this.clients.get(senderId);
+          if (sender) {
+            sender.connection.send(JSON.stringify({
+              type: 'conversation_read',
+              conversationId,
+              readerId: userId,
+              readCount,
+              timestamp: new Date()
+            }));
+          }
+        });
+      }
+    }
+  }
+
+  // 온라인 사용자 목록 반환
+  public getOnlineUsers(): Array<{id: number, name: string, role: string}> {
+    const users: Array<{id: number, name: string, role: string}> = [];
+    this.clients.forEach((client, userId) => {
+      users.push({
+        id: userId,
+        name: client.userName,
+        role: client.role
+      });
+    });
+    return users;
+  }
+
+  // 연결된 클라이언트 수 반환
+  public getConnectedClientsCount(): number {
+    return this.clients.size;
+  }
 }

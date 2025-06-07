@@ -1,20 +1,18 @@
+
 import { WebSocket } from 'ws';
 import { db } from '../db';
-import { notifications, users } from '@shared/schema';
+import { notifications } from '@shared/schema';
 import { eq, and, desc } from 'drizzle-orm';
 
 export interface NotificationData {
-  id?: number;
   userId: number;
-  type: 'event' | 'course' | 'health' | 'payment' | 'system';
+  type: 'system' | 'course' | 'event' | 'health' | 'payment' | 'message';
   title: string;
   message: string;
   data?: any;
-  isRead?: boolean;
-  createdAt?: Date;
 }
 
-export class NotificationService {
+class NotificationService {
   private static instance: NotificationService;
   private connections: Map<number, WebSocket[]> = new Map();
 
@@ -36,7 +34,12 @@ export class NotificationService {
       this.removeConnection(userId, ws);
     });
 
-    console.log(`[Notification] 사용자 ${userId} WebSocket 연결됨`);
+    ws.on('error', (error) => {
+      console.error(`[Notification] WebSocket error for user ${userId}:`, error);
+      this.removeConnection(userId, ws);
+    });
+
+    console.log(`[Notification] 사용자 ${userId} WebSocket 연결됨 (총 ${this.connections.get(userId)?.length}개)`);
   }
 
   // WebSocket 연결 해제
@@ -63,7 +66,7 @@ export class NotificationService {
         type: notification.type,
         title: notification.title,
         message: notification.message,
-        data: notification.data,
+        data: notification.data ? JSON.stringify(notification.data) : null,
         isRead: false
       }).returning();
 
@@ -72,19 +75,30 @@ export class NotificationService {
       if (userConnections && userConnections.length > 0) {
         const payload = JSON.stringify({
           type: 'notification',
-          data: savedNotification
+          data: {
+            ...savedNotification,
+            data: savedNotification.data ? JSON.parse(savedNotification.data) : null
+          }
         });
 
         userConnections.forEach(ws => {
           if (ws.readyState === WebSocket.OPEN) {
-            ws.send(payload);
+            try {
+              ws.send(payload);
+            } catch (error) {
+              console.error(`[Notification] 전송 실패:`, error);
+              this.removeConnection(notification.userId, ws);
+            }
           }
         });
 
         console.log(`[Notification] 사용자 ${notification.userId}에게 실시간 알림 전송: ${notification.title}`);
+      } else {
+        console.log(`[Notification] 사용자 ${notification.userId}가 오프라인 상태 - 알림만 저장됨`);
       }
     } catch (error) {
       console.error('[Notification] 알림 발송 실패:', error);
+      throw error;
     }
   }
 
@@ -109,29 +123,101 @@ export class NotificationService {
   // 알림 읽음 처리
   async markAsRead(notificationId: number, userId: number): Promise<void> {
     await db.update(notifications)
-      .set({ isRead: true })
+      .set({ 
+        isRead: true,
+        readAt: new Date()
+      })
       .where(and(
         eq(notifications.id, notificationId),
         eq(notifications.userId, userId)
       ));
+
+    // 실시간으로 읽음 상태 업데이트 전송
+    const userConnections = this.connections.get(userId);
+    if (userConnections) {
+      const payload = JSON.stringify({
+        type: 'notification_read',
+        data: { notificationId }
+      });
+
+      userConnections.forEach(ws => {
+        if (ws.readyState === WebSocket.OPEN) {
+          ws.send(payload);
+        }
+      });
+    }
   }
 
   // 모든 알림 읽음 처리
   async markAllAsRead(userId: number): Promise<void> {
     await db.update(notifications)
-      .set({ isRead: true })
+      .set({ 
+        isRead: true,
+        readAt: new Date()
+      })
       .where(eq(notifications.userId, userId));
+
+    // 실시간으로 모든 읽음 상태 업데이트 전송
+    const userConnections = this.connections.get(userId);
+    if (userConnections) {
+      const payload = JSON.stringify({
+        type: 'all_notifications_read'
+      });
+
+      userConnections.forEach(ws => {
+        if (ws.readyState === WebSocket.OPEN) {
+          ws.send(payload);
+        }
+      });
+    }
   }
 
   // 사용자 알림 목록 조회
-  async getUserNotifications(userId: number, limit: number = 20): Promise<any[]> {
-    return await db.select().from(notifications)
+  async getUserNotifications(userId: number, limit: number = 20, offset: number = 0): Promise<any[]> {
+    const results = await db.select().from(notifications)
       .where(eq(notifications.userId, userId))
       .orderBy(desc(notifications.createdAt))
-      .limit(limit);
+      .limit(limit)
+      .offset(offset);
+
+    return results.map(notification => ({
+      ...notification,
+      data: notification.data ? JSON.parse(notification.data) : null
+    }));
   }
 
-  // 특정 이벤트 알림
+  // 연결된 사용자 수 확인
+  getConnectionsCount(): number {
+    let total = 0;
+    this.connections.forEach(connections => {
+      total += connections.length;
+    });
+    return total;
+  }
+
+  // 특정 사용자 온라인 상태 확인
+  isUserOnline(userId: number): boolean {
+    const userConnections = this.connections.get(userId);
+    return userConnections ? userConnections.length > 0 : false;
+  }
+
+  // 시스템 알림 전송 (모든 사용자에게)
+  async sendSystemNotification(title: string, message: string, data?: any): Promise<void> {
+    // 모든 온라인 사용자에게 시스템 알림 전송
+    const onlineUsers = Array.from(this.connections.keys());
+    
+    for (const userId of onlineUsers) {
+      await this.sendNotification({
+        userId,
+        type: 'system',
+        title,
+        message,
+        data
+      });
+    }
+  }
+
+  // 특정 이벤트 알림 메서드들
   async notifyEventRegistration(userId: number, eventTitle: string, eventId: number): Promise<void> {
     await this.sendNotification({
       userId,
@@ -142,27 +228,6 @@ export class NotificationService {
     });
   }
 
-  async notifyEventCancellation(userId: number, eventTitle: string, eventId: number): Promise<void> {
-    await this.sendNotification({
-      userId,
-      type: 'event',
-      title: '이벤트 참가 취소',
-      message: `"${eventTitle}" 이벤트 참가가 취소되었습니다.`,
-      data: { eventId, action: 'cancelled' }
-    });
-  }
-
-  async notifyEventReminder(userId: number, eventTitle: string, eventDate: Date): Promise<void> {
-    await this.sendNotification({
-      userId,
-      type: 'event',
-      title: '이벤트 일정 알림',
-      message: `내일 "${eventTitle}" 이벤트가 예정되어 있습니다.`,
-      data: { eventDate, action: 'reminder' }
-    });
-  }
-
-  // 강좌 관련 알림
   async notifyCourseEnrollment(userId: number, courseTitle: string, courseId: number): Promise<void> {
     await this.sendNotification({
       userId,
@@ -173,17 +238,6 @@ export class NotificationService {
     });
   }
 
-  async notifyCourseProgress(userId: number, courseTitle: string, progress: number): Promise<void> {
-    await this.sendNotification({
-      userId,
-      type: 'course',
-      title: '학습 진도 업데이트',
-      message: `"${courseTitle}" 강좌 진도가 ${progress}%로 업데이트되었습니다.`,
-      data: { progress, action: 'progress_update' }
-    });
-  }
-
-  // 건강 관련 알림
   async notifyHealthCheckupReminder(userId: number, petName: string, dueDate: Date): Promise<void> {
     await this.sendNotification({
       userId,
@@ -194,17 +248,6 @@ export class NotificationService {
     });
   }
 
-  async notifyVaccinationReminder(userId: number, petName: string, vaccineName: string): Promise<void> {
-    await this.sendNotification({
-      userId,
-      type: 'health',
-      title: '예방접종 일정 알림',
-      message: `${petName}의 ${vaccineName} 예방접종 일정입니다.`,
-      data: { petName, vaccineName, action: 'vaccination_reminder' }
-    });
-  }
-
-  // 결제 관련 알림
   async notifyPaymentSuccess(userId: number, amount: number, description: string): Promise<void> {
     await this.sendNotification({
       userId,
@@ -212,16 +255,6 @@ export class NotificationService {
       title: '결제 완료',
       message: `${description} 결제가 완료되었습니다. (${amount.toLocaleString()}원)`,
       data: { amount, description, action: 'payment_success' }
-    });
-  }
-
-  async notifyPaymentFailed(userId: number, amount: number, description: string): Promise<void> {
-    await this.sendNotification({
-      userId,
-      type: 'payment',
-      title: '결제 실패',
-      message: `${description} 결제가 실패했습니다. 다시 시도해주세요.`,
-      data: { amount, description, action: 'payment_failed' }
     });
   }
 }

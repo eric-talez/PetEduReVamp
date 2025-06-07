@@ -3,9 +3,12 @@ import { createServer, type Server } from "http";
 import { db } from "./db";
 import { registerMessagingRoutes } from "./routes/messaging";
 import { globalErrorHandler, notFoundHandler } from "./middleware/error-handler";
+import { registerShoppingRoutes } from "./routes/shopping";
+import { registerNotificationRoutes } from "./routes/notification-routes";
+import { registerUploadRoutes } from "./routes/upload";
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  
+
   // 실시간 인기 통계 API
   app.get("/api/popular-stats", async (req, res) => {
     try {
@@ -27,7 +30,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           { id: 2, views: 823, likes: 98, title: "고양이 건강 관리법", category: "건강" }
         ]
       };
-      
+
       res.json(popularStats);
     } catch (error) {
       console.error('인기 통계 조회 오류:', error);
@@ -50,7 +53,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           position: "hero"
         }
       ];
-      
+
       res.json(banners);
     } catch (error) {
       console.error('배너 조회 오류:', error);
@@ -62,9 +65,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/consultation/request", async (req, res) => {
     try {
       const { trainerId, message, preferredDate } = req.body;
-      
+
       console.log('상담 신청 요청:', { trainerId, message, preferredDate });
-      
+
       res.json({ 
         success: true, 
         message: "상담 신청이 성공적으로 완료되었습니다." 
@@ -79,9 +82,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/messages/send", async (req, res) => {
     try {
       const { receiverId, message } = req.body;
-      
+
       console.log('메시지 전송 요청:', { receiverId, message });
-      
+
       res.json({ 
         success: true, 
         message: "메시지가 성공적으로 전송되었습니다." 
@@ -96,9 +99,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/comments/create", async (req, res) => {
     try {
       const { postId, content } = req.body;
-      
+
       console.log('댓글 작성 요청:', { postId, content });
-      
+
       res.json({ 
         success: true, 
         message: "댓글이 성공적으로 작성되었습니다.",
@@ -120,9 +123,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/events/:id/register", async (req, res) => {
     try {
       const eventId = req.params.id;
-      
+
       console.log('이벤트 참가 신청:', { eventId });
-      
+
       res.json({ 
         success: true, 
         message: "이벤트 참가 신청이 완료되었습니다." 
@@ -138,9 +141,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const eventId = req.params.id;
       const { message } = req.body;
-      
+
       console.log('이벤트 문의:', { eventId, message });
-      
+
       res.json({ 
         success: true, 
         message: "문의가 성공적으로 전송되었습니다." 
@@ -155,9 +158,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/like", async (req, res) => {
     try {
       const { itemId, itemType } = req.body;
-      
+
       console.log('좋아요 요청:', { itemId, itemType });
-      
+
       res.json({ 
         success: true, 
         message: "좋아요가 추가되었습니다.",
@@ -173,11 +176,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/share", async (req, res) => {
     try {
       const { itemId, itemType, title } = req.body;
-      
+
       console.log('공유 링크 생성:', { itemId, itemType, title });
-      
+
       const shareUrl = `${req.protocol}://${req.get('host')}/${itemType}/${itemId}`;
-      
+
       res.json({ 
         success: true, 
         message: "공유 링크가 생성되었습니다.",
@@ -228,7 +231,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           updatedAt: "2025-06-03T00:00:00.000Z"
         }
       ];
-      
+
       res.json(pets);
     } catch (error) {
       console.error('반려동물 목록 조회 오류:', error);
@@ -239,9 +242,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/pets", async (req, res) => {
     try {
       const petData = req.body;
-      
+
       console.log('반려동물 등록 요청:', petData);
-      
+
       const newPet = {
         id: Date.now(),
         ...petData,
@@ -249,7 +252,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       };
-      
+
       res.json({ 
         success: true, 
         message: "반려동물이 성공적으로 등록되었습니다.",
@@ -265,9 +268,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const petId = req.params.id;
       const updateData = req.body;
-      
+
       console.log(`반려동물 ${petId} 수정 요청:`, updateData);
-      
+
       res.json({ 
         success: true, 
         message: "반려동물 정보가 성공적으로 수정되었습니다." 
@@ -281,9 +284,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.delete("/api/pets/:id", async (req, res) => {
     try {
       const petId = req.params.id;
-      
+
       console.log(`반려동물 ${petId} 삭제 요청`);
-      
+
       res.json({ 
         success: true, 
         message: "반려동물이 성공적으로 삭제되었습니다." 
@@ -325,7 +328,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           createdAt: "2025-06-01T09:15:00.000Z"
         }
       ];
-      
+
       res.json({ success: true, consultations });
     } catch (error) {
       console.error('상담 목록 조회 오류:', error);
@@ -336,9 +339,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/consultations/:id/cancel", async (req, res) => {
     try {
       const consultationId = req.params.id;
-      
+
       console.log(`상담 ${consultationId} 취소 요청`);
-      
+
       res.json({ 
         success: true, 
         message: "상담이 성공적으로 취소되었습니다." 
@@ -352,7 +355,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/consultations/:id", async (req, res) => {
     try {
       const consultationId = req.params.id;
-      
+
       const consultation = {
         id: parseInt(consultationId),
         trainerId: 1,
@@ -371,7 +374,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         createdAt: "2025-06-03T17:30:00.000Z",
         videoCallUrl: "https://meet.google.com/abc-defg-hij"
       };
-      
+
       res.json({ success: true, consultation });
     } catch (error) {
       console.error('상담 상세 조회 오류:', error);
@@ -382,9 +385,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/consultations/:id/join", async (req, res) => {
     try {
       const consultationId = req.params.id;
-      
+
       const videoCallUrl = "https://meet.google.com/abc-defg-hij";
-      
+
       res.json({ 
         success: true, 
         message: "화상 상담에 참여합니다.",
@@ -395,6 +398,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ error: "화상 상담 참여 중 오류가 발생했습니다" });
     }
   });
+
+  // 알림 관련 라우트
+  registerNotificationRoutes(app);
+
+  // 파일 업로드 라우트
+  registerUploadRoutes(app);
 
   // 메시징 라우트 등록
   const httpServer = createServer(app);
