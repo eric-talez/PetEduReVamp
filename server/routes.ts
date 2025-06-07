@@ -6,6 +6,7 @@ import { errorHandler } from "./middleware/error-handler";
 import { registerShoppingRoutes } from "./routes/shopping";
 // import { registerNotificationRoutes } from "./routes/notification-routes";
 import { registerUploadRoutes } from "./routes/upload";
+import { storage } from "./storage";
 
 export async function registerRoutes(app: Express): Promise<Server> {
 
@@ -396,6 +397,204 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('화상 상담 참여 오류:', error);
       res.status(500).json({ error: "화상 상담 참여 중 오류가 발생했습니다" });
+    }
+  });
+
+    // 검색 API 구현
+  app.get("/api/search", async (req, res) => {
+    try {
+      const { 
+        q: query, 
+        category = 'all',
+        location = 'all',
+        minPrice,
+        maxPrice,
+        difficulty = 'all',
+        startDate,
+        endDate,
+        features,
+        sortBy = 'relevance',
+        minRating,
+        page = 1,
+        limit = 10
+      } = req.query;
+
+      if (!query || typeof query !== 'string') {
+        return res.status(400).json({
+          results: [],
+          totalCount: 0,
+          currentPage: parseInt(page as string),
+          totalPages: 0,
+          message: "검색어를 입력해주세요."
+        });
+      }
+
+      let results: any[] = [];
+
+      // 훈련사 검색
+      if (category === 'all' || category === 'trainer') {
+        try {
+          const trainers = await storage.getAllTrainers();
+          const matchedTrainers = trainers
+            .filter(trainer => 
+              trainer.name.toLowerCase().includes(query.toLowerCase()) ||
+              (trainer.bio && trainer.bio.toLowerCase().includes(query.toLowerCase())) ||
+              (trainer.specialties && trainer.specialties.some((spec: string) => 
+                spec.toLowerCase().includes(query.toLowerCase())
+              ))
+            )
+            .map(trainer => ({
+              id: trainer.id,
+              type: 'trainer',
+              title: trainer.name,
+              description: trainer.bio || '전문 반려동물 훈련사입니다.',
+              image: trainer.photo || trainer.avatar,
+              rating: trainer.rating || 4.5,
+              reviewCount: trainer.reviewCount || 0,
+              location: trainer.address || trainer.location,
+              category: trainer.specialties?.[0] || '기본훈련',
+              price: trainer.price || 50000,
+              trainer: {
+                id: trainer.id,
+                name: trainer.name,
+                avatar: trainer.photo || trainer.avatar,
+                specialty: trainer.specialties?.[0]
+              }
+            }));
+          results.push(...matchedTrainers);
+        } catch (error) {
+          console.error('훈련사 검색 오류:', error);
+        }
+      }
+
+      // 기관 검색
+      if (category === 'all' || category === 'institute') {
+        try {
+          const institutes = await storage.getAllInstitutes();
+          const matchedInstitutes = institutes
+            .filter(institute => 
+              institute.name.toLowerCase().includes(query.toLowerCase()) ||
+              (institute.description && institute.description.toLowerCase().includes(query.toLowerCase()))
+            )
+            .map(institute => ({
+              id: institute.id,
+              type: 'institute',
+              title: institute.name,
+              description: institute.description || '전문 반려동물 교육 기관입니다.',
+              image: institute.logo,
+              rating: institute.rating || 4.0,
+              reviewCount: institute.reviewCount || 0,
+              location: institute.address,
+              category: institute.category || '종합교육',
+              institute: {
+                id: institute.id,
+                name: institute.name,
+                location: institute.address
+              }
+            }));
+          results.push(...matchedInstitutes);
+        } catch (error) {
+          console.error('기관 검색 오류:', error);
+        }
+      }
+
+      // 강의 검색
+      if (category === 'all' || category === 'course') {
+        try {
+          const courses = await storage.getAllCourses();
+          const matchedCourses = courses
+            .filter(course => 
+              course.title.toLowerCase().includes(query.toLowerCase()) ||
+              (course.description && course.description.toLowerCase().includes(query.toLowerCase()))
+            )
+            .map(course => ({
+              id: course.id,
+              type: 'course',
+              title: course.title,
+              description: course.description || '반려동물 교육 강의입니다.',
+              image: course.thumbnail,
+              price: course.price || 30000,
+              rating: course.rating || 4.2,
+              reviewCount: course.reviewCount || 0,
+              difficulty: course.level || '초급',
+              duration: course.duration || '4주',
+              maxParticipants: course.maxParticipants || 10,
+              currentParticipants: course.currentParticipants || 0,
+              startDate: course.startDate ? new Date(course.startDate) : null,
+              endDate: course.endDate ? new Date(course.endDate) : null
+            }));
+          results.push(...matchedCourses);
+        } catch (error) {
+          console.error('강의 검색 오류:', error);
+        }
+      }
+
+      // 필터링 적용
+      if (minPrice) {
+        results = results.filter(item => (item.price || 0) >= parseInt(minPrice as string));
+      }
+      if (maxPrice) {
+        results = results.filter(item => (item.price || 0) <= parseInt(maxPrice as string));
+      }
+      if (difficulty !== 'all') {
+        results = results.filter(item => item.difficulty === difficulty);
+      }
+      if (minRating) {
+        results = results.filter(item => (item.rating || 0) >= parseFloat(minRating as string));
+      }
+
+      // 정렬
+      switch (sortBy) {
+        case 'price-low':
+          results.sort((a, b) => (a.price || 0) - (b.price || 0));
+          break;
+        case 'price-high':
+          results.sort((a, b) => (b.price || 0) - (a.price || 0));
+          break;
+        case 'rating':
+          results.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+          break;
+        case 'newest':
+          results.sort((a, b) => new Date(b.startDate || 0).getTime() - new Date(a.startDate || 0).getTime());
+          break;
+        default: // relevance
+          // 관련성 기준으로 정렬 (이름에 검색어가 포함된 것 우선)
+          results.sort((a, b) => {
+            const aNameMatch = a.title.toLowerCase().includes(query.toLowerCase());
+            const bNameMatch = b.title.toLowerCase().includes(query.toLowerCase());
+            if (aNameMatch && !bNameMatch) return -1;
+            if (!aNameMatch && bNameMatch) return 1;
+            return (b.rating || 0) - (a.rating || 0);
+          });
+      }
+
+      // 페이지네이션
+      const totalCount = results.length;
+      const totalPages = Math.ceil(totalCount / parseInt(limit as string));
+      const currentPage = parseInt(page as string);
+      const startIndex = (currentPage - 1) * parseInt(limit as string);
+      const endIndex = startIndex + parseInt(limit as string);
+      const paginatedResults = results.slice(startIndex, endIndex);
+
+      console.log(`[검색] "${query}" 검색 결과: ${totalCount}개 항목`);
+
+      res.json({
+        results: paginatedResults,
+        totalCount,
+        currentPage,
+        totalPages,
+        message: totalCount > 0 ? `"${query}"에 대한 ${totalCount}개 결과` : `"${query}"에 대한 검색 결과가 없습니다.`
+      });
+
+    } catch (error) {
+      console.error('검색 API 오류:', error);
+      res.status(500).json({
+        results: [],
+        totalCount: 0,
+        currentPage: 1,
+        totalPages: 0,
+        message: "검색 중 오류가 발생했습니다."
+      });
     }
   });
 

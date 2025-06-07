@@ -261,71 +261,218 @@ export class MemStorage implements IStorage {
     this.commissionTiers.set(instituteTier1.id, instituteTier1);
     this.commissionTiers.set(instituteTier2.id, instituteTier2);
 
-    // 트레이너 샘플 데이터
-    const trainer1 = {
-      id: this.trainerId++,
-      name: "김훈련",
-      email: "trainer1@example.com",
-      specialty: "반려견 기본 훈련",
-      experience: 5,
-      bio: "5년 경력의 전문 반려견 훈련사입니다.",
-      status: "active",
-      image: "https://images.unsplash.com/photo-1607990281513-2c110a25bd8c?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&h=200",
-      certifications: ["KKF 공인 훈련사", "국제 반려동물 관리사"],
-      location: "서울 강남구",
-      rating: 4.9,
-      reviewCount: 128
-    };
+    // 초기 훈련사 데이터 (실제 운영 업체 포함)
+const initialTrainers = [
+  {
+    id: 1,
+    name: "김민수 전문 훈련사",
+    email: "trainer1@talez.co.kr",
+    phone: "010-1234-5678",
+    bio: "10년 경력의 전문 반려동물 훈련사입니다. 행동교정과 기본훈련을 전문으로 합니다.",
+    specialties: ["행동교정", "기본훈련", "분리불안"],
+    certifications: ["KKF 공인 훈련사", "동물행동학 전문가"],
+    experience: 10,
+    rating: 4.8,
+    reviewCount: 156,
+    price: 80000,
+    availability: true,
+    photo: "/uploads/photo-1748800087482-304379439.png",
+    avatar: "/uploads/photo-1748800087482-304379439.png",
+    address: "서울시 강남구",
+    latitude: 37.5172,
+    longitude: 127.0473
+  },
+  {
+    id: 10,
+    name: "도그아카데미",
+    email: "info@dogacademy.co.kr",
+    phone: "02-123-4567",
+    bio: "전문 반려견 교육 및 훈련 전문 업체입니다. 15년 이상의 노하우로 안전하고 효과적인 교육을 제공합니다.",
+    specialties: ["기본훈련", "고급훈련", "어질리티", "사회화"],
+    certifications: ["반려동물관리사", "애견훈련사 자격증"],
+    experience: 15,
+    rating: 4.9,
+    reviewCount: 324,
+    price: 120000,
+    availability: true,
+    photo: "/uploads/photo-1748800087482-304379439.png",
+    avatar: "/uploads/photo-1748800087482-304379439.png",
+    address: "서울시 송파구 방이동",
+    latitude: 37.5103,
+    longitude: 127.1138
+  },
+  {
+    id: 11,
+    name: "펫트레이닝센터",
+    email: "contact@pettraining.co.kr",
+    phone: "02-987-6543",
+    bio: "개별 맞춤형 훈련 프로그램으로 반려견의 문제행동을 근본적으로 해결합니다.",
+    specialties: ["문제행동교정", "공격성교정", "분리불안", "배변훈련"],
+    certifications: ["KKF 공인 훈련사", "동물행동치료사"],
+    experience: 12,
+    rating: 4.7,
+    reviewCount: 189,
+    price: 100000,
+    availability: true,
+    photo: "/uploads/photo-1748800087482-304379439.png",
+    avatar: "/uploads/photo-1748800087482-304379439.png",
+    address: "서울시 마포구 상암동",
+    latitude: 37.5794,
+    longitude: 126.8895
+  },
+  {
+    id: 12,
+    name: "해피독스쿨",
+    email: "hello@happydogschool.com",
+    phone: "031-456-7890",
+    bio: "즐겁고 안전한 환경에서 반려견과 보호자가 함께 배우는 교육 프로그램을 운영합니다.",
+    specialties: ["퍼피클래스", "기본훈련", "사회화", "놀이훈련"],
+    certifications: ["반려동물관리사", "애견미용사"],
+    experience: 8,
+    rating: 4.6,
+    reviewCount: 267,
+    price: 75000,
+    availability: true,
+    photo: "/uploads/photo-1748800087482-304379439.png",
+    avatar: "/uploads/photo-1748800087482-304379439.png",
+    address: "경기도 성남시 분당구",
+    latitude: 37.3595,
+    longitude: 127.1052
+  },
+  {
+    id: 13,
+    name: "골든리트리버클럽",
+    email: "info@goldenclub.kr",
+    phone: "010-8765-4321",
+    bio: "대형견 전문 훈련사로 골든리트리버, 래브라도 등 대형견 훈련에 특화되어 있습니다.",
+    specialties: ["대형견훈련", "리트리버훈련", "수영훈련", "어질리티"],
+    certifications: ["대형견 전문 훈련사", "수영 훈련 전문가"],
+    experience: 13,
+    rating: 4.8,
+    reviewCount: 143,
+    price: 150000,
+    availability: true,
+    photo: "/uploads/photo-1748800087482-304379439.png",
+    avatar: "/uploads/photo-1748800087482-304379439.png",
+    address: "경기도 용인시 기흥구",
+    latitude: 37.2636,
+    longitude: 127.0286
+  }
+];
 
-    const trainer2 = {
-      id: this.trainerId++,
-      name: "이교육",
-      email: "trainer2@example.com",
-      specialty: "고양이 행동 교정",
-      experience: 3,
-      bio: "고양이 행동 전문가입니다.",
-      status: "active",
-      image: "https://images.unsplash.com/photo-1548535537-3cfaf1fc327c?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&h=200",
-      certifications: ["반려동물행동교정사", "고양이 전문 행동 상담사"],
-      location: "서울 서초구",
-      rating: 4.7,
-      reviewCount: 86
-    };
+    this.trainers.clear();
+    initialTrainers.forEach(trainer => {
+      this.trainers.set(trainer.id, trainer);
+    });
 
-    this.trainers.set(trainer1.id, trainer1);
-    this.trainers.set(trainer2.id, trainer2);
+    // 초기 기관 데이터 (실제 운영 업체 포함)
+const initialInstitutes = [
+  {
+    id: 1,
+    name: "서울펫아카데미",
+    type: "교육기관",
+    address: "서울시 강남구 테헤란로 123",
+    description: "전문적인 반려동물 교육을 제공하는 기관입니다.",
+    phone: "02-1234-5678",
+    email: "info@seoulpetacademy.com",
+    website: "https://seoulpetacademy.com",
+    rating: 4.5,
+    reviewCount: 89,
+    category: "종합교육",
+    facilities: ["실내훈련장", "야외운동장", "수영장"],
+    certifications: ["교육청 인가", "동물보호단체 인증"],
+    founded: 2015,
+    logo: null,
+    latitude: 37.5017,
+    longitude: 127.0396
+  },
+  {
+    id: 10,
+    name: "강동애견훈련소",
+    type: "훈련기관",
+    address: "서울시 강동구 천호대로 456",
+    description: "25년 전통의 전문 애견훈련소입니다. 기본훈련부터 전문훈련까지 체계적인 교육과정을 운영합니다.",
+    phone: "02-456-7890",
+    email: "gangdong@dogtraining.co.kr",
+    website: "https://gangdong-training.com",
+    rating: 4.7,
+    reviewCount: 234,
+    category: "전문훈련",
+    facilities: ["대형 실내훈련장", "야외훈련장", "숙박시설", "놀이터"],
+    certifications: ["농림축산식품부 허가", "한국애견협회 인증"],
+    founded: 1998,
+    logo: null,
+    latitude: 37.5492,
+    longitude: 127.1464
+  },
+  {
+    id: 11,
+    name: "부산동물행동센터",
+    type: "행동교정기관",
+    address: "부산시 해운대구 센텀중앙로 97",
+    description: "반려동물 행동 문제 전문 교정 기관입니다. 수의사와 행동전문가가 함께 운영합니다.",
+    phone: "051-123-4567",
+    email: "info@busanbehavior.com",
+    website: "https://busan-behavior.co.kr",
+    rating: 4.9,
+    reviewCount: 187,
+    category: "행동교정",
+    facilities: ["행동분석실", "개별상담실", "재활훈련장"],
+    certifications: ["동물병원 면허", "행동분석사 자격"],
+    founded: 2010,
+    logo: null,
+    latitude: 35.1695,
+    longitude: 129.1281
+  },
+  {
+    id: 12,
+    name: "인천펫플러스",
+    type: "종합교육센터",
+    address: "인천시 연수구 컨벤시아대로 165",
+    description: "반려동물 교육, 미용, 호텔 서비스를 한 곳에서 제공하는 종합 펫서비스 센터입니다.",
+    phone: "032-987-6543",
+    email: "petplus@incheon.kr",
+    website: "https://incheon-petplus.com",
+    rating: 4.6,
+    reviewCount: 156,
+    category: "종합서비스",
+    facilities: ["교육장", "미용실", "펜션", "카페", "놀이터"],
+    certifications: ["사업자등록", "동물미용사 자격"],
+    founded: 2018,
+    logo: null,
+    latitude: 37.4095,
+    longitude: 126.7211
+  },
+  {
+    id: 13,
+    name: "대전반려동물교육원",
+    type: "교육기관",
+    address: "대전시 유성구 대덕대로 512",
+    description: "체계적인 커리큘럼과 전문 강사진을 통해 반려동물과 보호자 모두를 교육합니다.",
+    phone: "042-321-9876",
+    email: "education@daejeonpet.ac.kr",
+    website: "https://daejeon-pet-edu.kr",
+    rating: 4.4,
+    reviewCount: 98,
+    category: "교육기관",
+    facilities: ["강의실", "실습장", "도서관", "상담실"],
+    certifications: ["교육부 인가", "반려동물교육협회 인증"],
+    founded: 2012,
+    logo: null,
+    latitude: 36.3504,
+    longitude: 127.3845
+  }];
 
-    // 기관 샘플 데이터
-    const institute1 = {
-      id: this.instituteId++,
-      name: "행복한 펫 아카데미",
-      code: "HAPPY",
-      address: "서울시 강남구 역삼동 123",
-      email: "happy@petacademy.com",
-      phone: "02-1234-5678",
-      status: "active",
-      description: "반려동물 교육 전문 기관입니다."
-    };
-
-    const institute2 = {
-      id: this.instituteId++,
-      name: "스마트 펫 스쿨",
-      code: "SMART",
-      address: "서울시 서초구 서초동 456",
-      email: "info@smartpet.com",
-      phone: "02-9876-5432",
-      status: "active",
-      description: "최신 교육 방법론을 적용한 반려동물 교육 기관입니다."
-    };
-
-    this.institutes.set(institute1.id, institute1);
-    this.institutes.set(institute2.id, institute2);
+    this.institutes.clear();
+    initialInstitutes.forEach(institute => {
+      this.institutes.set(institute.id, institute);
+    });
 
     // 수수료 거래 샘플 데이터
     const transaction1 = {
       id: this.transactionId++,
       type: "trainer",
-      referenceId: trainer1.id,
+      referenceId: 1,
       amount: 125000,
       commissionAmount: 12500,
       status: "completed",
@@ -342,7 +489,7 @@ export class MemStorage implements IStorage {
     const transaction2 = {
       id: this.transactionId++,
       type: "institute",
-      referenceId: institute1.id,
+      referenceId: 1,
       amount: 200000,
       commissionAmount: 16000,
       status: "completed",
@@ -359,7 +506,7 @@ export class MemStorage implements IStorage {
     const transaction3 = {
       id: this.transactionId++,
       type: "trainer",
-      referenceId: trainer2.id,
+      referenceId: 2,
       amount: 85000,
       commissionAmount: 8500,
       status: "completed",
@@ -381,7 +528,7 @@ export class MemStorage implements IStorage {
     const settlementReport1 = {
       id: this.reportId++,
       type: "trainer",
-      referenceId: trainer1.id,
+      referenceId: 1,
       period: "2025-04",
       totalSales: 450000,
       totalCommission: 45000,
@@ -395,7 +542,7 @@ export class MemStorage implements IStorage {
     const settlementReport2 = {
       id: this.reportId++,
       type: "institute",
-      referenceId: institute1.id,
+      referenceId: 1,
       period: "2025-04",
       totalSales: 1250000,
       totalCommission: 100000,
@@ -418,8 +565,8 @@ export class MemStorage implements IStorage {
       price: 150000,
       duration: "4주",
       image: "https://example.com/images/dog-training.jpg",
-      trainerId: trainer1.id,
-      instituteId: institute1.id,
+      trainerId: 1,
+      instituteId: 1,
       isPopular: true,
       isCertified: true,
       createdAt: new Date(),
@@ -435,8 +582,8 @@ export class MemStorage implements IStorage {
       price: 180000,
       duration: "6주",
       image: "https://example.com/images/cat-behavior.jpg",
-      trainerId: trainer2.id,
-      instituteId: institute2.id,
+      trainerId: 2,
+      instituteId: 2,
       isPopular: false,
       isCertified: true,
       createdAt: new Date(),
