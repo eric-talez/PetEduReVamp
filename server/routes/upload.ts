@@ -1,4 +1,3 @@
-
 import type { Express, Request, Response } from "express";
 import { 
   uploadSingle, 
@@ -125,7 +124,7 @@ export function registerUploadRoutes(app: Express) {
         });
       } catch (error) {
         console.error('프로필 업데이트 오류:', error);
-        
+
         // 파일 업로드는 성공했지만 DB 업데이트 실패 시에도 파일 정보 반환
         const fileInfo = processUploadedFiles(req.file);
         res.status(200).json({ 
@@ -135,6 +134,38 @@ export function registerUploadRoutes(app: Express) {
           warning: '프로필 업데이트를 다시 시도해주세요.'
         });
       }
+    });
+  });
+
+  app.post("/api/upload/image", (req: Request, res: Response) => {
+    uploadSingle(req, res, (err) => {
+      if (err) {
+        console.error('업로드 오류:', err);
+        return res.status(400).json({ 
+          success: false, 
+          message: err.message 
+        });
+      }
+
+      if (!req.file) {
+        return res.status(400).json({ 
+          success: false, 
+          message: '업로드할 파일이 없습니다.' 
+        });
+      }
+      
+      const imageUrl = `/uploads/${req.file.filename}`;
+
+        // 이미지 접근 가능성 확인
+        console.log(`[Upload] 이미지 업로드 성공: ${imageUrl}`);
+
+        res.json({
+          success: true,
+          message: '이미지가 성공적으로 업로드되었습니다.',
+          imageUrl: imageUrl,
+          filename: req.file.filename,
+          fullUrl: `${req.protocol}://${req.get('host')}${imageUrl}` // 절대 URL도 제공
+        });
     });
   });
 

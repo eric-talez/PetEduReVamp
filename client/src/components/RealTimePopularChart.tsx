@@ -488,7 +488,8 @@ export function RealTimePopularChart() {
       trend: 'stable',
       changePercent: 1.8,
       location: "경기 성남시",
-      detailPath: "/trainers/3"
+      detailPath: "/trainers/3",
+      imageUrl: "https://api.dicebear.com/7.x/initials/svg?seed=이준호&backgroundColor=10b981&textColor=ffffff"
     },
     {
       id: 4,
@@ -501,7 +502,8 @@ export function RealTimePopularChart() {
       trend: 'up',
       changePercent: 9.7,
       location: "서울 마포구",
-      detailPath: "/trainers/4"
+      detailPath: "/trainers/4",
+      imageUrl: "https://api.dicebear.com/7.x/initials/svg?seed=최예린&backgroundColor=f59e0b&textColor=ffffff"
     },
     {
       id: 5,
@@ -514,7 +516,8 @@ export function RealTimePopularChart() {
       trend: 'down',
       changePercent: -2.4,
       location: "서울 용산구",
-      detailPath: "/trainers/5"
+      detailPath: "/trainers/5",
+      imageUrl: "https://api.dicebear.com/7.x/initials/svg?seed=정현우&backgroundColor=ef4444&textColor=ffffff"
     }
   ];
 
@@ -687,13 +690,19 @@ export function RealTimePopularChart() {
           {/* 썸네일 영역 */}
           <div className="w-12 h-12 rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden flex-shrink-0">
             <img 
-              src={item.imageUrl} 
+              src={item.imageUrl || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(item.author || item.title)}&backgroundColor=6366f1&textColor=ffffff`} 
               alt={item.title}
               className="w-full h-full object-cover"
               onError={(e) => {
                 const target = e.target as HTMLImageElement;
-                // 기본 아바타 이미지로 대체
-                target.src = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(item.author || item.title)}&backgroundColor=6366f1&textColor=ffffff`;
+                // 이미 대체 이미지를 사용중이면 더 이상 변경하지 않음
+                if (!target.src.includes('dicebear.com')) {
+                  target.src = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(item.author || item.title)}&backgroundColor=6366f1&textColor=ffffff`;
+                }
+              }}
+              onLoad={() => {
+                // 이미지 로딩 성공 시 로그 (디버깅용)
+                console.log(`[Image] 로딩 성공: ${item.title}`);
               }}
             />
           </div>
