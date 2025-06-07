@@ -6,7 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   Plus, 
@@ -402,6 +402,9 @@ export default function TrainerNotebookPage() {
           <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>새 훈련 알림장 작성</DialogTitle>
+              <DialogDescription>
+                반려동물의 훈련 세션과 일상 관리 기록을 작성합니다.
+              </DialogDescription>
             </DialogHeader>
             
             <div className="space-y-4">
@@ -783,7 +786,7 @@ export default function TrainerNotebookPage() {
                       <div className="flex items-center gap-2">
                         <h3 className="font-semibold text-lg">{entry.title}</h3>
                         {!entry.isRead && (
-                          <Badge variant="destructive" className="text-xs px-2 py-0">새글</Badge>
+                          <Badge variant="secondary" className="text-xs px-2 py-0 bg-red-100 text-red-800">새글</Badge>
                         )}
                       </div>
                       <div className="flex items-center gap-4 text-sm text-gray-500">
@@ -879,6 +882,9 @@ export default function TrainerNotebookPage() {
                     </div>
                   </div>
                 </DialogTitle>
+                <DialogDescription>
+                  훈련 세션의 상세 내용과 일상 관리 기록을 확인할 수 있습니다.
+                </DialogDescription>
               </DialogHeader>
               
               <div className="space-y-6">
@@ -1026,7 +1032,8 @@ export default function TrainerNotebookPage() {
                                 <div className="flex items-center gap-4">
                                   <span className="font-medium">{walk.time}</span>
                                   <span className="text-sm text-gray-600">{walk.duration}분</span>
-                                  <Badge variant={walk.intensity === 'intense' ? 'destructive' : walk.intensity === 'moderate' ? 'default' : 'secondary'}>
+                                  <Badge variant="secondary" 
+                                         className={walk.intensity === 'intense' ? 'bg-red-100 text-red-800' : walk.intensity === 'moderate' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'}>
                                     {walk.intensity === 'light' ? '가벼움' : walk.intensity === 'moderate' ? '보통' : '강함'}
                                   </Badge>
                                 </div>
