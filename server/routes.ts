@@ -1,6 +1,8 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { db } from "./db";
+import { registerMessagingRoutes } from "./routes/messaging";
+import { globalErrorHandler, notFoundHandler } from "./middleware/error-handler";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   
@@ -394,6 +396,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // 메시징 라우트 등록
   const httpServer = createServer(app);
+  registerMessagingRoutes(app, httpServer);
+
+  // 404 핸들러
+  app.use(notFoundHandler);
+
+  // 글로벌 에러 핸들러
+  app.use(globalErrorHandler);
+
   return httpServer;
 }

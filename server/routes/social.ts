@@ -15,63 +15,78 @@ const isAuthenticated = (req, res, next) => {
   next();
 };
 
-// 게시글 작성 (테스트용 - 인증 없음)
-router.post('/posts', async (req, res) => {
-  console.log('=== 게시글 작성 API 호출됨 ===');
-  console.log('요청 데이터:', req.body);
-  
+// 게시글 작성
+router.post('/posts', isAuthenticated, async (req, res) => {
   try {
-    // 테스트용 사용자 정보
-    const testUser = {
-      id: 1,
-      username: 'testuser',
-      name: '테스트 사용자'
-    };
+    const { title, content, tag, image } = req.body;
     
-    const { title, content, tag } = req.body;
-    
-    // 간단한 유효성 검사
+    // 입력값 검증
     if (!title || !content) {
       return res.status(400).json({ 
+        success: false,
         message: '제목과 내용을 입력해주세요.',
-        received: { title, content, tag }
+        code: 'MISSING_REQUIRED_FIELDS'
+      });
+    }
+
+    if (title.length > 200) {
+      return res.status(400).json({
+        success: false,
+        message: '제목은 200자를 초과할 수 없습니다.',
+        code: 'TITLE_TOO_LONG'
+      });
+    }
+
+    if (content.length > 5000) {
+      return res.status(400).json({
+        success: false,
+        message: '내용은 5000자를 초과할 수 없습니다.',
+        code: 'CONTENT_TOO_LONG'
       });
     }
     
-    console.log('유효성 검사 통과:', { title, content, tag });
-    
-    // 게시글 저장 (간단한 구조)
-    const newPost = {
-      title,
-      content,
-      tag: tag || '일반',
-      authorId: testUser.id,
-      image: null,
-      likes: 0,
-      comments: 0
-    };
-    
-    console.log('저장할 게시글 데이터:', newPost);
-    
-    // 성공 응답 (임시로 데이터베이스 저장 없이)
-    const responseData = {
-      post: {
-        id: Date.now(), // 임시 ID
-        ...newPost,
+    // 데이터베이스에 게시글 저장
+    const [newPost] = await db.insert(posts)
+      .values({
+        title: title.trim(),
+        content: content.trim(),
+        tag: tag || '일반',
+        image,
+        authorId: req.user.id,
+        likes: 0,
+        comments: 0,
+        viewCount: 0,
+        isPublished: true,
+        allowComments: true,
         createdAt: new Date(),
         updatedAt: new Date()
-      },
-      author: testUser
-    };
+      })
+      .returning();
+
+    // 작성자 정보 조회
+    const [author] = await db.select({
+      id: users.id,
+      name: users.name,
+      username: users.username,
+      avatar: users.avatar
+    })
+    .from(users)
+    .where(eq(users.id, req.user.id));
     
-    console.log('응답 데이터:', responseData);
-    
-    return res.status(201).json(responseData);
+    res.status(201).json({
+      success: true,
+      message: '게시글이 성공적으로 작성되었습니다.',
+      post: {
+        ...newPost,
+        author
+      }
+    });
   } catch (error: any) {
     console.error('게시글 작성 오류:', error);
     res.status(500).json({ 
+      success: false,
       message: '게시글 작성 중 오류가 발생했습니다.',
-      error: error.message 
+      code: 'INTERNAL_SERVER_ERROR'
     });
   }
 });

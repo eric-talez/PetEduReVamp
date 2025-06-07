@@ -2,14 +2,81 @@
  * auth/index.ts
  * 인증 관련 모듈들을 통합
  */
-import { Express, Router } from 'express';
+import { Express, Router, Request, Response, NextFunction } from 'express';
 import passport from 'passport';
 import session from 'express-session';
+import jwt from 'jsonwebtoken';
 import { hashPassword, setupLocalAuth } from './local-auth';
 import { setupSocialAuth } from './social-auth';
 import { storage } from '../storage';
 import { User as SelectUser } from '@shared/schema';
 import { UserRole } from '@shared/schema';
+
+// JWT 설정
+const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
+const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '7d';
+
+// JWT 토큰 생성
+export function generateJwtToken(user: SelectUser): string {
+  return jwt.sign(
+    { 
+      id: user.id, 
+      username: user.username, 
+      role: user.role 
+    },
+    JWT_SECRET,
+    { expiresIn: JWT_EXPIRES_IN }
+  );
+}
+
+// JWT 토큰 검증 미들웨어
+export function verifyJwtToken(req: Request, res: Response, next: NextFunction) {
+  const authHeader = req.headers.authorization;
+  const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
+
+  if (!token) {
+    return res.status(401).json({
+      success: false,
+      message: '인증 토큰이 필요합니다.',
+      code: 'NO_TOKEN'
+    });
+  }
+
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET) as any;
+    req.user = decoded;
+    next();
+  } catch (error) {
+    return res.status(403).json({
+      success: false,
+      message: '유효하지 않은 토큰입니다.',
+      code: 'INVALID_TOKEN'
+    });
+  }
+}
+
+// 역할별 권한 체크 미들웨어
+export function requireRole(...allowedRoles: UserRole[]) {
+  return (req: Request, res: Response, next: NextFunction) => {
+    if (!req.user) {
+      return res.status(401).json({
+        success: false,
+        message: '인증이 필요합니다.',
+        code: 'AUTHENTICATION_REQUIRED'
+      });
+    }
+
+    if (!allowedRoles.includes(req.user.role)) {
+      return res.status(403).json({
+        success: false,
+        message: '접근 권한이 없습니다.',
+        code: 'INSUFFICIENT_PERMISSIONS'
+      });
+    }
+
+    next();
+  };
+}
 
 // Express 애플리케이션에 타입 확장
 declare global {
@@ -82,12 +149,13 @@ function setupAuthRoutes(app: Express) {
     return res.json(req.user);
   });
   
-  // 로그인 API
+  // JWT 로그인 API
   router.post('/login', (req, res, next) => {
     passport.authenticate('local', (err: Error, user: any, info: { message?: string }) => {
       if (err) {
         console.error('로그인 오류:', err);
         return res.status(500).json({
+          success: false,
           message: '로그인 처리 중 오류가 발생했습니다',
           code: 'LOGIN_ERROR'
         });
@@ -95,22 +163,38 @@ function setupAuthRoutes(app: Express) {
       
       if (!user) {
         return res.status(401).json({
+          success: false,
           message: info?.message || '아이디 또는 비밀번호가 일치하지 않습니다',
           code: 'INVALID_CREDENTIALS'
         });
       }
       
+      // JWT 토큰 생성
+      const token = generateJwtToken(user);
+      
       req.login(user, (loginErr) => {
         if (loginErr) {
           console.error('로그인 세션 생성 오류:', loginErr);
           return res.status(500).json({
+            success: false,
             message: '로그인 세션 생성 중 오류가 발생했습니다',
             code: 'SESSION_ERROR'
           });
         }
         
         console.log('로그인 성공:', user.username);
-        return res.json(user);
+        return res.json({
+          success: true,
+          user: {
+            id: user.id,
+            username: user.username,
+            name: user.name,
+            email: user.email,
+            role: user.role
+          },
+          token,
+          expiresIn: JWT_EXPIRES_IN
+        });
       });
     })(req, res, next);
   });
