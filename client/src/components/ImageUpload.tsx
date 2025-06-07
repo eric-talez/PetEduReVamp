@@ -41,23 +41,23 @@ export function ImageUpload({
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.readAsDataURL(file);
-      
+
       reader.onload = (event) => {
         const img = new Image();
         img.src = event.target?.result as string;
-        
+
         img.onload = () => {
           // 이미지 크기 계산
           let width = img.width;
           let height = img.height;
-          
+
           // 최대 크기 제한
           if (width > maxWidth || height > maxHeight) {
             const ratio = Math.min(maxWidth / width, maxHeight / height);
             width = Math.floor(width * ratio);
             height = Math.floor(height * ratio);
           }
-          
+
           // 비율 설정이 있는 경우 적용
           if (aspectRatio) {
             if (width / height > aspectRatio) {
@@ -68,35 +68,35 @@ export function ImageUpload({
               height = Math.floor(width / aspectRatio);
             }
           }
-          
+
           // 캔버스 생성 및 이미지 그리기
           const canvas = document.createElement('canvas');
           canvas.width = width;
           canvas.height = height;
-          
+
           const ctx = canvas.getContext('2d');
           if (!ctx) {
             reject(new Error('캔버스 컨텍스트를 가져올 수 없습니다.'));
             return;
           }
-          
+
           // 배경을 흰색으로 채우기 (투명 배경 방지)
           ctx.fillStyle = 'white';
           ctx.fillRect(0, 0, width, height);
-          
+
           // 이미지 그리기
           ctx.drawImage(img, 0, 0, width, height);
-          
+
           // 최적화된 이미지 생성
           const optimizedImage = canvas.toDataURL('image/jpeg', quality);
           resolve(optimizedImage);
         };
-        
+
         img.onerror = () => {
           reject(new Error('이미지 로드 중 오류가 발생했습니다.'));
         };
       };
-      
+
       reader.onerror = () => {
         reject(new Error('파일을 읽는 중 오류가 발생했습니다.'));
       };
@@ -105,34 +105,54 @@ export function ImageUpload({
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     setError(null);
-    
+
     const file = e.target.files?.[0];
     if (!file) return;
-    
+
     // 파일 크기 검사
     if (file.size > maxSize * 1024 * 1024) {
       setError(`파일 크기는 ${maxSize}MB 이하여야 합니다.`);
       return;
     }
-    
+
     // 파일 유형 검사
     if (!file.type.startsWith('image/')) {
       setError('이미지 파일만 업로드할 수 있습니다.');
       return;
     }
-    
+
     try {
-      // 이미지 최적화
-      const optimizedImage = await optimizeImage(file);
-      
-      // 미리보기 및 결과 업데이트
-      setPreview(optimizedImage);
-      onChange(optimizedImage);
+      // 서버에 파일 업로드
+      const formData = new FormData();
+      formData.append('file', file);
+
+      try {
+        const response = await fetch('/api/upload/single', {
+          method: 'POST',
+          body: formData
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          setPreview(result.file.url);
+          onChange(result.file.url);
+        } else {
+          throw new Error(result.message);
+        }
+      } catch (uploadError) {
+        console.error('서버 업로드 오류:', uploadError);
+        setError('서버 업로드 중 오류가 발생했습니다.');
+
+        // 실패 시 로컬 최적화된 이미지로 대체
+        setPreview(optimizedImage);
+        onChange(optimizedImage);
+      }
     } catch (error) {
       console.error('이미지 최적화 중 오류:', error);
       setError('이미지 처리 중 오류가 발생했습니다.');
     }
-    
+
     // 입력 필드 초기화
     if (inputRef.current) {
       inputRef.current.value = '';
@@ -159,32 +179,53 @@ export function ImageUpload({
     e.preventDefault();
     setIsDragging(false);
     setError(null);
-    
+
     const file = e.dataTransfer.files?.[0];
     if (!file) return;
-    
+
     // 파일 크기 검사
     if (file.size > maxSize * 1024 * 1024) {
       setError(`파일 크기는 ${maxSize}MB 이하여야 합니다.`);
       return;
     }
-    
+
     // 파일 유형 검사
     if (!file.type.startsWith('image/')) {
       setError('이미지 파일만 업로드할 수 있습니다.');
       return;
     }
-    
+
     try {
-      // 이미지 최적화
-      const optimizedImage = await optimizeImage(file);
-      
-      // 미리보기 및 결과 업데이트
-      setPreview(optimizedImage);
-      onChange(optimizedImage);
-    } catch (error) {
-      console.error('이미지 최적화 중 오류:', error);
-      setError('이미지 처리 중 오류가 발생했습니다.');
+      // 서버에 파일 업로드
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await fetch('/api/upload/single', {
+        method: 'POST',
+        body: formData
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        setPreview(result.file.url);
+        onChange(result.file.url);
+      } else {
+        throw new Error(result.message);
+      }
+    } catch (uploadError) {
+      console.error('서버 업로드 오류:', uploadError);
+      setError('서버 업로드 중 오류가 발생했습니다.');
+
+      // 실패 시 로컬 최적화된 이미지로 대체
+      try {
+        const optimizedImage = await optimizeImage(file);
+        setPreview(optimizedImage);
+        onChange(optimizedImage);
+      } catch (error) {
+        console.error('이미지 최적화 중 오류:', error);
+        setError('이미지 처리 중 오류가 발생했습니다.');
+      }
     }
   };
 
@@ -236,11 +277,11 @@ export function ImageUpload({
           </>
         )}
       </div>
-      
+
       {error && (
         <p className="text-sm text-red-500 mt-2">{error}</p>
       )}
-      
+
       <input
         ref={inputRef}
         type="file"
