@@ -400,9 +400,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);
   registerMessagingRoutes(app, httpServer);
 
-  // 404 핸들러
-  app.use(notFoundHandler);
-
   // 글로벌 에러 핸들러
   app.use(globalErrorHandler);
 
