@@ -383,6 +383,33 @@ export const notifications = pgTable("notifications", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
+// 메시징 시스템
+export const conversations = pgTable("conversations", {
+  id: serial("id").primaryKey(),
+  participantIds: json("participant_ids").$type<number[]>().notNull(),
+  title: text("title"),
+  type: text("type").notNull().default('direct'), // 'direct', 'group'
+  lastMessageId: integer("last_message_id"),
+  lastMessageAt: timestamp("last_message_at"),
+  isActive: boolean("is_active").notNull().default(true),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export const messages = pgTable("messages", {
+  id: serial("id").primaryKey(),
+  conversationId: integer("conversation_id").references(() => conversations.id, { onDelete: 'cascade' }).notNull(),
+  senderId: integer("sender_id").references(() => users.id, { onDelete: 'cascade' }).notNull(),
+  content: text("content").notNull(),
+  type: text("type").notNull().default('text'), // 'text', 'image', 'file'
+  metadata: json("metadata"), // 파일 정보, 이미지 URL 등
+  isRead: boolean("is_read").notNull().default(false),
+  isEdited: boolean("is_edited").notNull().default(false),
+  isDeleted: boolean("is_deleted").notNull().default(false),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
 // Type exports
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
@@ -403,6 +430,10 @@ export type CartItem = typeof cartItems.$inferSelect;
 export type InsertCartItem = typeof cartItems.$inferInsert;
 export type Notification = typeof notifications.$inferSelect;
 export type InsertNotification = typeof notifications.$inferInsert;
+export type Conversation = typeof conversations.$inferSelect;
+export type InsertConversation = typeof conversations.$inferInsert;
+export type Message = typeof messages.$inferSelect;
+export type InsertMessage = typeof messages.$inferInsert;
 
 // Schema exports for validation
 export const createUserSchema = createInsertSchema(users)

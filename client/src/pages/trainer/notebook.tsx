@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Plus, Search, Filter, Edit, Trash2, BookOpen, Calendar, User } from "lucide-react";
 import { useState } from "react";
 
-export default function TrainerNotebook() {
+function TrainerNotebook() {
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
 
