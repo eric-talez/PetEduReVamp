@@ -7,6 +7,8 @@ import { registerShoppingRoutes } from "./routes/shopping";
 // import { registerNotificationRoutes } from "./routes/notification-routes";
 import { registerUploadRoutes } from "./routes/upload";
 import { storage } from "./storage";
+import { courses, users, institutes } from "@shared/schema";
+import { ilike, or } from "drizzle-orm";
 
 export async function registerRoutes(app: Express): Promise<Server> {
 
@@ -432,9 +434,9 @@ app.get('/api/search', async (req, res) => {
 
       // 전체 강의 조회
       try {
-        const courses = await db.select().from(coursesTable).limit(5);
-        console.log(`[검색] 전체 강의 수: ${courses.length}`);
-        results.push(...courses.map(course => ({
+        const courseResults = await db.select().from(courses).limit(5);
+        console.log(`[검색] 전체 강의 수: ${courseResults.length}`);
+        results.push(...courseResults.map(course => ({
           ...course,
           type: 'course'
         })));
@@ -442,11 +444,11 @@ app.get('/api/search', async (req, res) => {
         console.log('[검색] 강의 테이블 조회 실패:', err);
       }
 
-      // 전체 훈련사 조회
+      // 전체 훈련사 조회 (users 테이블에서 role이 trainer인 경우)
       try {
-        const trainers = await db.select().from(trainersTable).limit(5);
-        console.log(`[검색] 전체 훈련사 수: ${trainers.length}`);
-        results.push(...trainers.map(trainer => ({
+        const trainerResults = await db.select().from(users).limit(5);
+        console.log(`[검색] 전체 훈련사 수: ${trainerResults.length}`);
+        results.push(...trainerResults.map(trainer => ({
           ...trainer,
           type: 'trainer',
           title: trainer.name
@@ -457,9 +459,9 @@ app.get('/api/search', async (req, res) => {
 
       // 전체 기관 조회
       try {
-        const institutes = await db.select().from(institutesTable).limit(5);
-        console.log(`[검색] 전체 기관 수: ${institutes.length}`);
-        results.push(...institutes.map(institute => ({
+        const instituteResults = await db.select().from(institutes).limit(5);
+        console.log(`[검색] 전체 기관 수: ${instituteResults.length}`);
+        results.push(...instituteResults.map(institute => ({
           ...institute,
           type: 'institute',
           title: institute.name
@@ -470,19 +472,19 @@ app.get('/api/search', async (req, res) => {
     } else {
       // 강의 검색
       try {
-        const courses = await db.select()
-          .from(coursesTable)
+        const courseResults = await db.select()
+          .from(courses)
           .where(
             or(
-              ilike(coursesTable.title, `%${searchQuery}%`),
-              ilike(coursesTable.description, `%${searchQuery}%`)
+              ilike(courses.title, `%${searchQuery}%`),
+              ilike(courses.description, `%${searchQuery}%`)
             )
           )
           .limit(Number(limit))
           .offset(offset);
 
-        console.log(`[검색] 강의 검색 결과: ${courses.length}개`);
-        results.push(...courses.map(course => ({
+        console.log(`[검색] 강의 검색 결과: ${courseResults.length}개`);
+        results.push(...courseResults.map(course => ({
           ...course,
           type: 'course'
         })));
@@ -490,22 +492,22 @@ app.get('/api/search', async (req, res) => {
         console.log('[검색] 강의 검색 실패:', err);
       }
 
-      // 훈련사 검색
+      // 훈련사 검색 (users 테이블에서 role이 trainer인 경우)
       try {
-        const trainers = await db.select()
-          .from(trainersTable)
+        const trainerResults = await db.select()
+          .from(users)
           .where(
             or(
-              ilike(trainersTable.name, `%${searchQuery}%`),
-              ilike(trainersTable.specialty, `%${searchQuery}%`),
-              ilike(trainersTable.bio, `%${searchQuery}%`)
+              ilike(users.name, `%${searchQuery}%`),
+              ilike(users.specialty, `%${searchQuery}%`),
+              ilike(users.bio, `%${searchQuery}%`)
             )
           )
           .limit(Number(limit))
           .offset(offset);
 
-        console.log(`[검색] 훈련사 검색 결과: ${trainers.length}개`);
-        results.push(...trainers.map(trainer => ({
+        console.log(`[검색] 훈련사 검색 결과: ${trainerResults.length}개`);
+        results.push(...trainerResults.map(trainer => ({
           ...trainer,
           type: 'trainer',
           title: trainer.name
@@ -516,19 +518,19 @@ app.get('/api/search', async (req, res) => {
 
       // 기관 검색
       try {
-        const institutes = await db.select()
-          .from(institutesTable)
+        const instituteResults = await db.select()
+          .from(institutes)
           .where(
             or(
-              ilike(institutesTable.name, `%${searchQuery}%`),
-              ilike(institutesTable.description, `%${searchQuery}%`)
+              ilike(institutes.name, `%${searchQuery}%`),
+              ilike(institutes.description, `%${searchQuery}%`)
             )
           )
           .limit(Number(limit))
           .offset(offset);
 
-        console.log(`[검색] 기관 검색 결과: ${institutes.length}개`);
-        results.push(...institutes.map(institute => ({
+        console.log(`[검색] 기관 검색 결과: ${instituteResults.length}개`);
+        results.push(...instituteResults.map(institute => ({
           ...institute,
           type: 'institute',
           title: institute.name
