@@ -90,8 +90,15 @@ export default function TrainerDetail({ trainerId }: TrainerDetailProps) {
           <div className="flex flex-col md:flex-row gap-6">
             <div className="flex-shrink-0">
               <Avatar className="w-32 h-32">
-                <AvatarImage src={trainer.avatar} alt={trainer.name} />
-                <AvatarFallback className="text-2xl">{trainer.name.charAt(0)}</AvatarFallback>
+                <AvatarImage 
+                  src={trainer.avatar || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(trainer.name)}&backgroundColor=6366f1&textColor=ffffff`} 
+                  alt={trainer.name}
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.src = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(trainer.name)}&backgroundColor=6366f1&textColor=ffffff`;
+                  }}
+                />
+                <AvatarFallback className="text-2xl bg-primary text-white">{trainer.name.charAt(0)}</AvatarFallback>
               </Avatar>
             </div>
             

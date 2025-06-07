@@ -142,11 +142,17 @@ export function ImageUpload({
         }
       } catch (uploadError) {
         console.error('서버 업로드 오류:', uploadError);
-        setError('서버 업로드 중 오류가 발생했습니다.');
-
-        // 실패 시 로컬 최적화된 이미지로 대체
-        setPreview(optimizedImage);
-        onChange(optimizedImage);
+        
+        // 서버 업로드 실패 시 로컬 최적화된 이미지 사용
+        try {
+          const optimizedImage = await optimizeImage(file);
+          setPreview(optimizedImage);
+          onChange(optimizedImage);
+          setError('이미지가 로컬에 저장되었습니다. (서버 업로드 실패)');
+        } catch (optimizeError) {
+          console.error('이미지 최적화 중 오류:', optimizeError);
+          setError('이미지 처리 중 오류가 발생했습니다.');
+        }
       }
     } catch (error) {
       console.error('이미지 최적화 중 오류:', error);
@@ -215,15 +221,15 @@ export function ImageUpload({
       }
     } catch (uploadError) {
       console.error('서버 업로드 오류:', uploadError);
-      setError('서버 업로드 중 오류가 발생했습니다.');
-
-      // 실패 시 로컬 최적화된 이미지로 대체
+      
+      // 서버 업로드 실패 시 로컬 최적화된 이미지 사용
       try {
         const optimizedImage = await optimizeImage(file);
         setPreview(optimizedImage);
         onChange(optimizedImage);
-      } catch (error) {
-        console.error('이미지 최적화 중 오류:', error);
+        setError('이미지가 로컬에 저장되었습니다. (서버 업로드 실패)');
+      } catch (optimizeError) {
+        console.error('이미지 최적화 중 오류:', optimizeError);
         setError('이미지 처리 중 오류가 발생했습니다.');
       }
     }

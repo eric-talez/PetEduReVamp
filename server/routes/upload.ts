@@ -125,9 +125,14 @@ export function registerUploadRoutes(app: Express) {
         });
       } catch (error) {
         console.error('프로필 업데이트 오류:', error);
-        res.status(500).json({ 
-          success: false, 
-          message: '프로필 업데이트 중 오류가 발생했습니다.' 
+        
+        // 파일 업로드는 성공했지만 DB 업데이트 실패 시에도 파일 정보 반환
+        const fileInfo = processUploadedFiles(req.file);
+        res.status(200).json({ 
+          success: true, 
+          file: fileInfo,
+          message: '파일 업로드는 완료되었지만 프로필 업데이트에 실패했습니다.',
+          warning: '프로필 업데이트를 다시 시도해주세요.'
         });
       }
     });

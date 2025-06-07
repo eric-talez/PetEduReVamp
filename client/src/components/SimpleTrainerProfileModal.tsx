@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Avatar } from '@/components/ui/avatar';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Calendar, Clock, MapPin, MessageSquare, Phone, Star, VideoIcon, X, Award, Briefcase, Sparkles } from 'lucide-react';
@@ -44,7 +44,7 @@ export function SimpleTrainerProfileModal({ trainer, isOpen, onClose }: SimpleTr
     console.log("SimpleTrainerProfileModal - 모달이 닫혀있습니다");
     return null;
   }
-  
+
   console.log("SimpleTrainerProfileModal - 렌더링:", trainer.name);
 
   return (
@@ -66,11 +66,17 @@ export function SimpleTrainerProfileModal({ trainer, isOpen, onClose }: SimpleTr
         <div className="p-6 border-b border-gray-100 dark:border-gray-800 relative">
           <div className="flex items-start gap-4">
             <div className="h-20 w-20 rounded-full overflow-hidden border-4 border-primary/20 shadow-lg">
-              <img 
-                src={trainer.image}
-                alt={trainer.name}
-                className="w-full h-full object-cover brightness-110 contrast-110" 
-              />
+              <Avatar className="h-20 w-20 mb-4">
+                <AvatarImage 
+                  src={trainer.image || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(trainer.name)}&backgroundColor=6366f1&textColor=ffffff`}
+                  alt={trainer.name}
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.src = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(trainer.name)}&backgroundColor=6366f1&textColor=ffffff`;
+                  }}
+                />
+                <AvatarFallback className="text-2xl bg-primary text-white">{trainer.name.charAt(0)}</AvatarFallback>
+              </Avatar>
             </div>
             <div>
               <h2 className="text-xl font-bold">{trainer.name} 트레이너</h2>
@@ -105,7 +111,7 @@ export function SimpleTrainerProfileModal({ trainer, isOpen, onClose }: SimpleTr
             <span className="sr-only">닫기</span>
           </button>
         </div>
-        
+
         {/* 내용 */}
         <div className="p-6">
           <div className="mb-6">
@@ -165,7 +171,7 @@ export function SimpleTrainerProfileModal({ trainer, isOpen, onClose }: SimpleTr
             </div>
           )}
         </div>
-        
+
         {/* 푸터 */}
         <div className="p-6 border-t border-gray-100 dark:border-gray-800">
           <h3 className="text-md font-semibold mb-3">훈련사에게 연락하기</h3>
@@ -189,7 +195,7 @@ export function SimpleTrainerProfileModal({ trainer, isOpen, onClose }: SimpleTr
               </Button>
             )}
           </div>
-          
+
           <div className="mt-4 flex justify-between">
             <span className="text-sm">강의 {trainer.coursesCount}개</span>
             <Button 
