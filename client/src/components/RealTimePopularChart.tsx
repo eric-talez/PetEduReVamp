@@ -452,7 +452,7 @@ export function RealTimePopularChart() {
     {
       id: 1,
       title: "김민수 전문 훈련사",
-      description: "15년 경력의 반려견 행동 교정 전문가로, 다양한 견종의 훈련 경험을 보유하고 있습니다.",
+      description: "15년 경력의 반려견 행동교정 전문가입니다.",
       category: "행동교정",
       views: 2150,
       likes: 124,
@@ -460,7 +460,8 @@ export function RealTimePopularChart() {
       trend: 'up',
       changePercent: 18.5,
       location: "서울 강남구",
-      detailPath: "/trainers/1"
+      detailPath: "/trainers/1",
+      imageUrl: "https://api.dicebear.com/7.x/initials/svg?seed=김민수&backgroundColor=6366f1&textColor=ffffff"
     },
     {
       id: 2,
@@ -473,7 +474,8 @@ export function RealTimePopularChart() {
       trend: 'up',
       changePercent: 12.3,
       location: "서울 송파구",
-      detailPath: "/trainers/2"
+      detailPath: "/trainers/2",
+      imageUrl: "https://api.dicebear.com/7.x/initials/svg?seed=박지혜&backgroundColor=8b5cf6&textColor=ffffff"
     },
     {
       id: 3,
@@ -683,24 +685,17 @@ export function RealTimePopularChart() {
           </div>
 
           {/* 썸네일 영역 */}
-          <div className="flex-shrink-0 w-16 h-12 bg-gray-100 dark:bg-gray-700 rounded-md overflow-hidden">
-            {item.imageUrl ? (
-              <img 
-                src={item.imageUrl} 
-                alt={item.title}
-                className="w-full h-full object-cover"
-                onError={(e) => {
-                  const target = e.target as HTMLImageElement;
-                  target.style.display = 'none';
-                  target.nextElementSibling?.classList.remove('hidden');
-                }}
-              />
-            ) : null}
-            <div className={`w-full h-full flex items-center justify-center ${item.imageUrl ? 'hidden' : ''}`}>
-              <div className="text-gray-400 text-xs text-center">
-                <div className="w-6 h-6 mx-auto mb-1 bg-gray-300 dark:bg-gray-600 rounded"></div>
-              </div>
-            </div>
+          <div className="w-12 h-12 rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden flex-shrink-0">
+            <img 
+              src={item.imageUrl} 
+              alt={item.title}
+              className="w-full h-full object-cover"
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                // 기본 아바타 이미지로 대체
+                target.src = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(item.author || item.title)}&backgroundColor=6366f1&textColor=ffffff`;
+              }}
+            />
           </div>
 
           <div className="flex-grow min-w-0">
@@ -783,6 +778,28 @@ export function RealTimePopularChart() {
       console.error('상담신청 오류:', error);
       alert('네트워크 오류가 발생했습니다.');
     }
+  };
+
+  // 훈련사 데이터 업데이트 시 이미지 처리 개선
+  const updateStatsWithTrend = (data: PopularItem[], statsData: any) => {
+    return data.map(item => {
+      const stat = statsData?.trainers?.find((s: any) => s.name === item.author);
+      if (stat) {
+        return {
+          ...item,
+          views: stat.views,
+          likes: stat.likes,
+          trend: stat.trend,
+          changePercent: stat.changePercent,
+          // 이미지가 없는 경우 기본 아바타 이미지 사용
+          imageUrl: item.imageUrl || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(item.author || item.title)}&backgroundColor=6366f1&textColor=ffffff`
+        };
+      }
+      return {
+        ...item,
+        imageUrl: item.imageUrl || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(item.author || item.title)}&backgroundColor=6366f1&textColor=ffffff`
+      };
+    });
   };
 
   return (
@@ -963,7 +980,7 @@ export function RealTimePopularChart() {
                             preferredDate: new Date().toISOString()
                           })
                         });
-                        
+
                         if (response.ok) {
                           const result = await response.json();
                           toast({
@@ -1003,7 +1020,7 @@ export function RealTimePopularChart() {
                             message: `안녕하세요 ${selectedTrainer.name}님, 훈련에 대해 문의드리고 싶습니다.`
                           })
                         });
-                        
+
                         if (response.ok) {
                           const result = await response.json();
                           toast({
@@ -1221,7 +1238,7 @@ export function RealTimePopularChart() {
                                   email: "participant@example.com"
                                 })
                               });
-                              
+
                               if (response.ok) {
                                 const result = await response.json();
                                 toast({
@@ -1258,7 +1275,7 @@ export function RealTimePopularChart() {
                                   message: `${selectedEvent.title} 이벤트에 대해 문의드립니다.`
                                 })
                               });
-                              
+
                               if (response.ok) {
                                 const result = await response.json();
                                 toast({
@@ -1409,7 +1426,7 @@ export function RealTimePopularChart() {
                                   authorName: "반려인"
                                 })
                               });
-                              
+
                               if (response.ok) {
                                 const result = await response.json();
                                 toast({
