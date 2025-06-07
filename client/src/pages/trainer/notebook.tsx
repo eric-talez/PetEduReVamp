@@ -1,210 +1,3 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Search, Filter, Edit, Trash2, BookOpen, Calendar, User } from "lucide-react";
-import { useState } from "react";
-
-function TrainerNotebook() {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState("all");
-
-  // 샘플 노트북 데이터
-  const notes = [
-    {
-      id: 1,
-      title: "골든 리트리버 - 기본 복종 훈련",
-      student: "김철수",
-      pet: "Max",
-      category: "basic-training",
-      date: "2024-01-20",
-      content: "오늘은 앉기와 기다리기 명령을 집중적으로 훈련했습니다. Max는 앉기에 대해서는 90% 성공률을 보였으나...",
-      tags: ["복종훈련", "골든리트리버", "기초"]
-    },
-    {
-      id: 2,
-      title: "말티즈 - 짖음 교정 훈련",
-      student: "이영희",
-      pet: "Luna",
-      category: "behavior-correction",
-      date: "2024-01-19",
-      content: "방문자에 대한 과도한 짖음을 줄이기 위한 훈련을 진행했습니다. 조용히 하기 명령에 대한 반응이...",
-      tags: ["행동교정", "말티즈", "짖음"]
-    },
-    {
-      id: 3,
-      title: "시베리안 허스키 - 산책 훈련",
-      student: "박민수",
-      pet: "Storm",
-      category: "leash-training",
-      date: "2024-01-18",
-      content: "끌림 없는 산책을 위한 리드줄 훈련을 실시했습니다. 허스키 특성상 에너지가 많아서...",
-      tags: ["산책훈련", "허스키", "리드줄"]
-    }
-  ];
-
-  const getCategoryBadge = (category: string) => {
-    const categoryMap: Record<string, { label: string; className: string }> = {
-      'basic-training': { label: '기초훈련', className: 'bg-blue-100 text-blue-800' },
-      'behavior-correction': { label: '행동교정', className: 'bg-orange-100 text-orange-800' },
-      'leash-training': { label: '산책훈련', className: 'bg-green-100 text-green-800' },
-      'agility': { label: '민첩성', className: 'bg-purple-100 text-purple-800' }
-    };
-    
-    const categoryInfo = categoryMap[category] || { label: category, className: 'bg-gray-100 text-gray-800' };
-    return (
-      <Badge className={categoryInfo.className}>
-        {categoryInfo.label}
-      </Badge>
-    );
-  };
-
-  return (
-    <div className="container mx-auto p-6 space-y-6">
-      {/* 헤더 */}
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold">훈련 노트북</h1>
-          <p className="text-muted-foreground">훈련 과정과 진행 상황을 기록하고 관리합니다</p>
-        </div>
-        <Button>
-          <Plus className="h-4 w-4 mr-2" />
-          새 훈련 기록 작성
-        </Button>
-      </div>
-
-      {/* 통계 카드 */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">총 훈련 기록</CardTitle>
-            <BookOpen className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">127</div>
-            <p className="text-xs text-muted-foreground">
-              +12 이번주 신규
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">활성 훈련생</CardTitle>
-            <User className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">23</div>
-            <p className="text-xs text-muted-foreground">
-              현재 훈련 진행 중
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">이번주 세션</CardTitle>
-            <Calendar className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">18</div>
-            <p className="text-xs text-muted-foreground">
-              +3 지난주 대비
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">완료율</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">85%</div>
-            <p className="text-xs text-muted-foreground">
-              목표 달성률
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* 검색 및 필터 */}
-      <Card>
-        <CardHeader>
-          <CardTitle>훈련 기록</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex gap-4 mb-4">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="제목, 훈련생, 반려동물명으로 검색..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-            <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-              <SelectTrigger className="w-48">
-                <SelectValue placeholder="카테고리 필터" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">전체</SelectItem>
-                <SelectItem value="basic-training">기초훈련</SelectItem>
-                <SelectItem value="behavior-correction">행동교정</SelectItem>
-                <SelectItem value="leash-training">산책훈련</SelectItem>
-                <SelectItem value="agility">민첩성</SelectItem>
-              </SelectContent>
-            </Select>
-            <Button variant="outline">
-              <Filter className="h-4 w-4 mr-2" />
-              고급 필터
-            </Button>
-          </div>
-
-          {/* 노트 카드 목록 */}
-          <div className="grid gap-4">
-            {notes.map((note) => (
-              <Card key={note.id} className="hover:shadow-md transition-shadow">
-                <CardHeader>
-                  <div className="flex justify-between items-start">
-                    <div className="space-y-2">
-                      <CardTitle className="text-lg">{note.title}</CardTitle>
-                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                        <span>훈련생: {note.student}</span>
-                        <span>반려동물: {note.pet}</span>
-                        <span>{note.date}</span>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      {getCategoryBadge(note.category)}
-                      <Button variant="ghost" size="sm">
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button variant="ghost" size="sm">
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
-                    {note.content}
-                  </p>
-                  <div className="flex gap-2">
-                    {note.tags.map((tag, index) => (
-                      <Badge key={index} variant="secondary" className="text-xs">
-                        #{tag}
-                      </Badge>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-  );
-}
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -253,6 +46,15 @@ interface NotebookEntry {
   nextGoals: string[];
   isRead: boolean;
   createdAt: string;
+  // 새로 추가된 일상 관리 필드들
+  mealTimes?: {
+    breakfast: string;
+    lunch: string;
+    dinner: string;
+    snacks: { time: string; type: string }[];
+  };
+  bathroomBreaks?: { time: string; type: 'urine' | 'feces' | 'both'; location: string }[];
+  walkSchedule?: { time: string; duration: number; location: string; intensity: 'light' | 'moderate' | 'intense' }[];
 }
 
 interface Pet {
@@ -286,7 +88,16 @@ export default function TrainerNotebookPage() {
     duration: 60,
     location: 'PetEdu 훈련장',
     nextGoals: [] as string[],
-    photos: [] as string[]
+    photos: [] as string[],
+    // 새로 추가된 일상 관리 필드들
+    mealTimes: {
+      breakfast: '',
+      lunch: '', 
+      dinner: '',
+      snacks: [] as { time: string; type: string }[]
+    },
+    bathroomBreaks: [] as { time: string; type: 'urine' | 'feces' | 'both'; location: string }[],
+    walkSchedule: [] as { time: string; duration: number; location: string; intensity: 'light' | 'moderate' | 'intense' }[]
   });
 
   // 기분 이모지 매핑
@@ -318,41 +129,92 @@ export default function TrainerNotebookPage() {
     const samplePets: Pet[] = [
       {
         id: 'pet1',
-        name: '멍멍이',
+        name: 'Max',
         breed: '골든 리트리버',
-        age: 2,
-        ownerName: '김반려',
-        ownerId: 'owner1'
+        age: 3,
+        ownerName: '김철수',
+        ownerId: 'owner1',
+        avatar: '/api/placeholder/50/50'
       },
       {
         id: 'pet2',
-        name: '야옹이',
-        breed: '러시안 블루',
-        age: 3,
-        ownerName: '이반려',
-        ownerId: 'owner2'
+        name: 'Luna',
+        breed: '말티즈',
+        age: 2,
+        ownerName: '이영희',
+        ownerId: 'owner2',
+        avatar: '/api/placeholder/50/50'
+      },
+      {
+        id: 'pet3',
+        name: 'Storm',
+        breed: '시베리안 허스키',
+        age: 4,
+        ownerName: '박민수',
+        ownerId: 'owner3',
+        avatar: '/api/placeholder/50/50'
+      },
+      {
+        id: 'pet4',
+        name: 'Coco',
+        breed: '푸들',
+        age: 1,
+        ownerName: '최지영',
+        ownerId: 'owner4',
+        avatar: '/api/placeholder/50/50'
       }
     ];
 
-    // 기존 알림장 목록
     const sampleEntries: NotebookEntry[] = [
       {
         id: '1',
-        date: format(new Date(), 'yyyy-MM-dd'),
-        petName: '멍멍이',
+        date: '2024-01-20',
+        petName: 'Max',
         petId: 'pet1',
-        ownerName: '김반려',
+        ownerName: '김철수',
         ownerId: 'owner1',
-        title: '기본 훈련 세션',
-        content: '오늘 멍멍이는 앉기와 기다리기 명령을 잘 따라했습니다.',
-        activities: ['기본 명령어', '리드줄 훈련'],
+        title: '기본 복종 훈련 - 앉기와 기다리기',
+        content: '오늘은 Max와 함께 기본적인 복종 훈련을 진행했습니다. 앉기 명령에 대해서는 90% 성공률을 보였으며, 기다리기 명령도 점차 향상되고 있습니다. 집중력이 좋고 학습 의욕이 높은 편입니다.',
+        activities: ['기본 명령어', '놀이 훈련'],
         mood: 'excellent',
         duration: 90,
-        location: 'PetEdu 훈련장 A',
+        location: 'PetEdu 훈련장 A동',
         photos: [],
-        nextGoals: ['산책 훈련', '다른 강아지와의 사회화'],
+        nextGoals: ['엎드려 명령 추가', '산만함 줄이기'],
         isRead: false,
-        createdAt: new Date().toISOString()
+        createdAt: '2024-01-20T10:00:00Z',
+        mealTimes: {
+          breakfast: '08:00',
+          lunch: '12:30',
+          dinner: '18:00',
+          snacks: [{ time: '15:00', type: '간식' }]
+        },
+        bathroomBreaks: [
+          { time: '09:30', type: 'both', location: '야외' },
+          { time: '14:00', type: 'urine', location: '실내' }
+        ],
+        walkSchedule: [
+          { time: '07:00', duration: 30, location: '동네 공원', intensity: 'moderate' },
+          { time: '19:00', duration: 45, location: '강변 산책로', intensity: 'intense' }
+        ]
+      },
+      {
+        id: '2',
+        date: '2024-01-19',
+        petName: 'Luna',
+        petId: 'pet2',
+        ownerName: '이영희',
+        ownerId: 'owner2',
+        title: '짖음 교정 훈련',
+        content: 'Luna의 과도한 짖음 문제를 해결하기 위한 훈련을 실시했습니다. 방문자나 다른 개들을 볼 때 나타나는 반응성 짖음을 중점적으로 다뤘습니다. 조용히 하기 명령에 대한 반응이 개선되고 있습니다.',
+        activities: ['행동 교정', '사회화 훈련'],
+        mood: 'good',
+        duration: 60,
+        location: 'PetEdu 훈련장 B동',
+        photos: [],
+        nextGoals: ['외부 자극에 대한 둔감화', '긍정적 강화 지속'],
+        isRead: true,
+        createdAt: '2024-01-19T14:00:00Z'
       }
     ];
 
@@ -362,51 +224,99 @@ export default function TrainerNotebookPage() {
 
   // 필터링된 알림장 목록
   const filteredEntries = entries.filter(entry => {
-    if (selectedPet !== 'all' && entry.petId !== selectedPet) return false;
-    if (searchQuery && !entry.title.toLowerCase().includes(searchQuery.toLowerCase()) && 
-        !entry.content.toLowerCase().includes(searchQuery.toLowerCase())) return false;
-    return true;
+    const matchesPet = selectedPet === 'all' || entry.petId === selectedPet;
+    const matchesSearch = entry.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         entry.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         entry.petName.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesPet && matchesSearch;
   });
 
-  // 새 알림장 저장
-  const handleSaveEntry = async () => {
-    if (!newEntry.petId || !newEntry.title || !newEntry.content) {
+  // AI 내용 생성 함수
+  const generateAIContent = async () => {
+    if (!newEntry.petId) {
       toast({
-        title: '필수 항목 누락',
-        description: '반려동물, 제목, 내용을 입력해주세요.',
+        title: '반려동물을 선택해주세요',
+        description: 'AI 내용 생성을 위해 먼저 반려동물을 선택해야 합니다.',
         variant: 'destructive'
       });
       return;
     }
 
     setLoading(true);
+    try {
+      const selectedPetData = myPets.find(pet => pet.id === newEntry.petId);
+      
+      const response = await fetch('/api/ai/generate-notebook-content', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          petName: selectedPetData?.name,
+          breed: selectedPetData?.breed,
+          age: selectedPetData?.age
+        })
+      });
 
+      if (response.ok) {
+        const result = await response.json();
+        setNewEntry(prev => ({
+          ...prev,
+          title: result.content.title,
+          content: result.content.content,
+          activities: [...prev.activities, ...result.content.activities],
+          nextGoals: result.content.nextGoals
+        }));
+
+        toast({
+          title: 'AI 내용 생성 완료',
+          description: 'AI가 알림장 내용을 생성했습니다.'
+        });
+      }
+    } catch (error) {
+      toast({
+        title: 'AI 생성 실패',
+        description: 'AI 내용 생성 중 오류가 발생했습니다.',
+        variant: 'destructive'
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 알림장 저장
+  const handleSaveEntry = async () => {
+    if (!newEntry.petId || !newEntry.title || !newEntry.content) {
+      toast({
+        title: '필수 정보를 입력해주세요',
+        description: '반려동물, 제목, 내용은 필수 입력 항목입니다.',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    setLoading(true);
     try {
       const selectedPetData = myPets.find(pet => pet.id === newEntry.petId);
       if (!selectedPetData) return;
 
-      const response = await fetch('/api/notebook/entries', {
+      const response = await fetch('/api/notebook-entries', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...newEntry,
           petName: selectedPetData.name,
           ownerName: selectedPetData.ownerName,
-          ownerId: selectedPetData.ownerId,
-          date: format(new Date(), 'yyyy-MM-dd')
-        }),
+          ownerId: selectedPetData.ownerId
+        })
       });
 
       const result = await response.json();
-
       if (result.success) {
         const entry: NotebookEntry = {
-          id: Date.now().toString(),
-          date: format(new Date(), 'yyyy-MM-dd'),
+          id: result.id,
+          date: new Date().toISOString().split('T')[0],
           petName: selectedPetData.name,
-          petId: newEntry.petId,
           ownerName: selectedPetData.ownerName,
           ownerId: selectedPetData.ownerId,
           ...newEntry,
@@ -426,7 +336,15 @@ export default function TrainerNotebookPage() {
           duration: 60,
           location: 'PetEdu 훈련장',
           nextGoals: [],
-          photos: []
+          photos: [],
+          mealTimes: {
+            breakfast: '',
+            lunch: '', 
+            dinner: '',
+            snacks: []
+          },
+          bathroomBreaks: [],
+          walkSchedule: []
         });
 
         setIsNewEntryOpen(false);
@@ -449,66 +367,16 @@ export default function TrainerNotebookPage() {
     }
   };
 
-  // 알림장 상세 보기
+  // 알림장 조회
   const viewEntry = (entry: NotebookEntry) => {
     setSelectedEntry(entry);
     setIsViewDialogOpen(true);
-  };
-
-  // AI 도우미로 내용 생성
-  const generateAIContent = async () => {
-    if (!newEntry.petId) {
-      toast({
-        title: '반려동물 선택 필요',
-        description: 'AI 도우미를 사용하려면 반려동물을 먼저 선택해주세요.',
-        variant: 'destructive'
-      });
-      return;
-    }
-
-    setLoading(true);
-
-    try {
-      const selectedPetData = myPets.find(pet => pet.id === newEntry.petId);
-      if (!selectedPetData) return;
-
-      const response = await fetch('/api/notebook/ai-generate', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          petName: selectedPetData.name,
-          petBreed: selectedPetData.breed,
-          activities: newEntry.activities,
-          additionalContext: '트레이너가 작성하는 훈련 일지'
-        }),
-      });
-
-      const result = await response.json();
-
-      if (result.success) {
-        setNewEntry(prev => ({
-          ...prev,
-          title: result.content.title,
-          content: result.content.content,
-          activities: [...prev.activities, ...result.content.activities],
-          nextGoals: result.content.nextGoals
-        }));
-
-        toast({
-          title: 'AI 내용 생성 완료',
-          description: 'AI가 알림장 내용을 생성했습니다.'
-        });
-      }
-    } catch (error) {
-      toast({
-        title: 'AI 생성 실패',
-        description: 'AI 내용 생성 중 오류가 발생했습니다.',
-        variant: 'destructive'
-      });
-    } finally {
-      setLoading(false);
+    
+    // 읽음 상태 업데이트
+    if (!entry.isRead) {
+      setEntries(prev => prev.map(e => 
+        e.id === entry.id ? { ...e, isRead: true } : e
+      ));
     }
   };
 
@@ -623,6 +491,223 @@ export default function TrainerNotebookPage() {
                   />
                 </div>
               </div>
+
+              {/* 일상 관리 섹션 */}
+              <div className="space-y-6 pt-6 border-t">
+                <h3 className="text-lg font-semibold flex items-center gap-2">
+                  <Clock className="h-5 w-5 text-blue-600" />
+                  일상 관리 기록
+                </h3>
+
+                {/* 식사 시간 */}
+                <div className="space-y-4">
+                  <h4 className="text-md font-medium text-gray-700">🍽️ 식사 시간</h4>
+                  <div className="grid grid-cols-3 gap-4">
+                    <div>
+                      <label className="text-sm font-medium mb-2 block">아침 식사</label>
+                      <Input
+                        type="time"
+                        value={newEntry.mealTimes.breakfast}
+                        onChange={(e) => setNewEntry(prev => ({ 
+                          ...prev, 
+                          mealTimes: { ...prev.mealTimes, breakfast: e.target.value }
+                        }))}
+                      />
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium mb-2 block">점심 식사</label>
+                      <Input
+                        type="time"
+                        value={newEntry.mealTimes.lunch}
+                        onChange={(e) => setNewEntry(prev => ({ 
+                          ...prev, 
+                          mealTimes: { ...prev.mealTimes, lunch: e.target.value }
+                        }))}
+                      />
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium mb-2 block">저녁 식사</label>
+                      <Input
+                        type="time"
+                        value={newEntry.mealTimes.dinner}
+                        onChange={(e) => setNewEntry(prev => ({ 
+                          ...prev, 
+                          mealTimes: { ...prev.mealTimes, dinner: e.target.value }
+                        }))}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* 배변 기록 */}
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <h4 className="text-md font-medium text-gray-700">🚽 배변 기록</h4>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setNewEntry(prev => ({
+                        ...prev,
+                        bathroomBreaks: [...prev.bathroomBreaks, { time: '', type: 'urine', location: '' }]
+                      }))}
+                    >
+                      <Plus className="h-4 w-4 mr-1" />
+                      배변 기록 추가
+                    </Button>
+                  </div>
+                  {newEntry.bathroomBreaks.map((breakItem, index) => (
+                    <div key={index} className="grid grid-cols-4 gap-3 items-end">
+                      <div>
+                        <label className="text-sm font-medium mb-2 block">시간</label>
+                        <Input
+                          type="time"
+                          value={breakItem.time}
+                          onChange={(e) => {
+                            const updated = [...newEntry.bathroomBreaks];
+                            updated[index].time = e.target.value;
+                            setNewEntry(prev => ({ ...prev, bathroomBreaks: updated }));
+                          }}
+                        />
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium mb-2 block">종류</label>
+                        <Select
+                          value={breakItem.type}
+                          onValueChange={(value: 'urine' | 'feces' | 'both') => {
+                            const updated = [...newEntry.bathroomBreaks];
+                            updated[index].type = value;
+                            setNewEntry(prev => ({ ...prev, bathroomBreaks: updated }));
+                          }}
+                        >
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="urine">소변</SelectItem>
+                            <SelectItem value="feces">대변</SelectItem>
+                            <SelectItem value="both">소변+대변</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium mb-2 block">장소</label>
+                        <Input
+                          value={breakItem.location}
+                          onChange={(e) => {
+                            const updated = [...newEntry.bathroomBreaks];
+                            updated[index].location = e.target.value;
+                            setNewEntry(prev => ({ ...prev, bathroomBreaks: updated }));
+                          }}
+                          placeholder="실내/야외"
+                        />
+                      </div>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          const updated = newEntry.bathroomBreaks.filter((_, i) => i !== index);
+                          setNewEntry(prev => ({ ...prev, bathroomBreaks: updated }));
+                        }}
+                      >
+                        삭제
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+
+                {/* 산책 스케줄 */}
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <h4 className="text-md font-medium text-gray-700">🚶 산책 스케줄</h4>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setNewEntry(prev => ({
+                        ...prev,
+                        walkSchedule: [...prev.walkSchedule, { time: '', duration: 30, location: '', intensity: 'moderate' }]
+                      }))}
+                    >
+                      <Plus className="h-4 w-4 mr-1" />
+                      산책 기록 추가
+                    </Button>
+                  </div>
+                  {newEntry.walkSchedule.map((walk, index) => (
+                    <div key={index} className="grid grid-cols-5 gap-3 items-end">
+                      <div>
+                        <label className="text-sm font-medium mb-2 block">시간</label>
+                        <Input
+                          type="time"
+                          value={walk.time}
+                          onChange={(e) => {
+                            const updated = [...newEntry.walkSchedule];
+                            updated[index].time = e.target.value;
+                            setNewEntry(prev => ({ ...prev, walkSchedule: updated }));
+                          }}
+                        />
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium mb-2 block">시간(분)</label>
+                        <Input
+                          type="number"
+                          value={walk.duration}
+                          onChange={(e) => {
+                            const updated = [...newEntry.walkSchedule];
+                            updated[index].duration = parseInt(e.target.value) || 0;
+                            setNewEntry(prev => ({ ...prev, walkSchedule: updated }));
+                          }}
+                          placeholder="30"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium mb-2 block">장소</label>
+                        <Input
+                          value={walk.location}
+                          onChange={(e) => {
+                            const updated = [...newEntry.walkSchedule];
+                            updated[index].location = e.target.value;
+                            setNewEntry(prev => ({ ...prev, walkSchedule: updated }));
+                          }}
+                          placeholder="공원, 동네 등"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium mb-2 block">강도</label>
+                        <Select
+                          value={walk.intensity}
+                          onValueChange={(value: 'light' | 'moderate' | 'intense') => {
+                            const updated = [...newEntry.walkSchedule];
+                            updated[index].intensity = value;
+                            setNewEntry(prev => ({ ...prev, walkSchedule: updated }));
+                          }}
+                        >
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="light">가벼움</SelectItem>
+                            <SelectItem value="moderate">보통</SelectItem>
+                            <SelectItem value="intense">강함</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          const updated = newEntry.walkSchedule.filter((_, i) => i !== index);
+                          setNewEntry(prev => ({ ...prev, walkSchedule: updated }));
+                        }}
+                      >
+                        삭제
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
             
             <div className="flex justify-end gap-3 pt-4 border-t">
@@ -689,13 +774,19 @@ export default function TrainerNotebookPage() {
                 <div className="flex justify-between items-start">
                   <div className="flex items-center gap-3">
                     <Avatar className="h-10 w-10">
+                      <AvatarImage src={myPets.find(p => p.id === entry.petId)?.avatar} />
                       <AvatarFallback>
                         <PawPrint className="h-5 w-5" />
                       </AvatarFallback>
                     </Avatar>
                     <div>
-                      <CardTitle className="text-lg">{entry.title}</CardTitle>
-                      <div className="flex items-center gap-4 text-sm text-gray-600">
+                      <div className="flex items-center gap-2">
+                        <h3 className="font-semibold text-lg">{entry.title}</h3>
+                        {!entry.isRead && (
+                          <Badge variant="destructive" className="text-xs px-2 py-0">새글</Badge>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-4 text-sm text-gray-500">
                         <span className="flex items-center gap-1">
                           <PawPrint className="h-3 w-3" />
                           {entry.petName}
@@ -717,40 +808,48 @@ export default function TrainerNotebookPage() {
                   </div>
                   
                   <div className="flex items-center gap-2">
-                    <div className="text-xl" title={moodLabels[entry.mood]}>
-                      {moodEmojis[entry.mood]}
+                    <div className="flex items-center gap-1 text-sm">
+                      <span>{moodEmojis[entry.mood]}</span>
+                      <span className="text-gray-500">{moodLabels[entry.mood]}</span>
                     </div>
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => viewEntry(entry)}
+                      className="flex items-center gap-1"
                     >
-                      <Eye className="h-4 w-4 mr-1" />
-                      상세보기
+                      <Eye className="h-4 w-4" />
+                      보기
                     </Button>
                   </div>
                 </div>
               </CardHeader>
               
-              <CardContent>
-                <p className="text-gray-700 leading-relaxed mb-4 line-clamp-3">{entry.content}</p>
+              <CardContent className="pt-0">
+                <p className="text-gray-600 mb-3 line-clamp-2">
+                  {entry.content}
+                </p>
                 
                 {entry.activities.length > 0 && (
                   <div className="flex flex-wrap gap-1 mb-3">
                     {entry.activities.map((activity, index) => (
-                      <Badge key={index} variant="outline" className="text-xs">
+                      <Badge key={index} variant="secondary" className="text-xs">
                         {activity}
                       </Badge>
                     ))}
                   </div>
                 )}
                 
-                <div className="flex justify-between items-center text-xs text-gray-500">
-                  <span className="flex items-center gap-1">
+                <div className="flex items-center justify-between text-sm text-gray-500">
+                  <div className="flex items-center gap-1">
                     <MapPin className="h-3 w-3" />
                     {entry.location}
-                  </span>
-                  <span>{format(new Date(entry.createdAt), 'HH:mm')}</span>
+                  </div>
+                  {entry.nextGoals.length > 0 && (
+                    <div className="text-right">
+                      <span>다음 목표: {entry.nextGoals[0]}...</span>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -758,78 +857,188 @@ export default function TrainerNotebookPage() {
         )}
       </div>
 
-      {/* 상세보기 다이얼로그 */}
+      {/* 알림장 상세 보기 다이얼로그 */}
       <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           {selectedEntry && (
             <>
               <DialogHeader>
-                <DialogTitle className="flex items-center gap-2">
-                  <BookOpen className="h-5 w-5" />
-                  {selectedEntry.title}
+                <DialogTitle className="flex items-center gap-3">
+                  <Avatar className="h-10 w-10">
+                    <AvatarImage src={myPets.find(p => p.id === selectedEntry.petId)?.avatar} />
+                    <AvatarFallback>
+                      <PawPrint className="h-5 w-5" />
+                    </AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <h2 className="text-xl font-bold">{selectedEntry.title}</h2>
+                    <div className="flex items-center gap-4 text-sm text-gray-500">
+                      <span>{selectedEntry.petName}</span>
+                      <span>{selectedEntry.ownerName}</span>
+                      <span>{format(new Date(selectedEntry.date), 'yyyy년 MM월 dd일', { locale: ko })}</span>
+                    </div>
+                  </div>
                 </DialogTitle>
               </DialogHeader>
               
-              <div className="space-y-4">
-                <div className="flex items-center gap-4 text-sm text-gray-600">
-                  <span className="flex items-center gap-1">
-                    <PawPrint className="h-4 w-4" />
-                    {selectedEntry.petName}
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <User className="h-4 w-4" />
-                    {selectedEntry.ownerName}
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <Calendar className="h-4 w-4" />
-                    {format(new Date(selectedEntry.date), 'yyyy년 MM월 dd일', { locale: ko })}
-                  </span>
-                  <div className="flex items-center gap-1">
-                    <span className="text-lg">{moodEmojis[selectedEntry.mood]}</span>
-                    <span>{moodLabels[selectedEntry.mood]}</span>
-                  </div>
-                </div>
-                
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <h4 className="font-medium mb-2">훈련 내용</h4>
-                  <p className="text-gray-700 whitespace-pre-wrap">{selectedEntry.content}</p>
-                </div>
-                
-                {selectedEntry.activities.length > 0 && (
-                  <div>
-                    <h4 className="font-medium mb-2">오늘의 활동</h4>
-                    <div className="flex flex-wrap gap-2">
-                      {selectedEntry.activities.map((activity, index) => (
-                        <Badge key={index} variant="outline">
-                          {activity}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                
-                {selectedEntry.nextGoals.length > 0 && (
-                  <div>
-                    <h4 className="font-medium mb-2">다음 목표</h4>
-                    <ul className="space-y-1">
-                      {selectedEntry.nextGoals.map((goal, index) => (
-                        <li key={index} className="flex items-center gap-2 text-sm">
-                          <div className="w-1.5 h-1.5 bg-blue-500 rounded-full"></div>
-                          {goal}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-                
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <span className="font-medium">훈련 시간:</span> {selectedEntry.duration}분
-                  </div>
-                  <div>
-                    <span className="font-medium">장소:</span> {selectedEntry.location}
-                  </div>
-                </div>
+              <div className="space-y-6">
+                <Tabs defaultValue="content" className="w-full">
+                  <TabsList className="grid w-full grid-cols-2">
+                    <TabsTrigger value="content">훈련 내용</TabsTrigger>
+                    <TabsTrigger value="daily">일상 관리</TabsTrigger>
+                  </TabsList>
+                  
+                  <TabsContent value="content" className="space-y-4">
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                          <FileText className="h-5 w-5" />
+                          훈련 상세 내용
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div className="grid grid-cols-3 gap-4 text-sm">
+                          <div className="text-center p-3 bg-gray-50 rounded-lg">
+                            <div className="text-2xl mb-1">{moodEmojis[selectedEntry.mood]}</div>
+                            <div className="font-medium">{moodLabels[selectedEntry.mood]}</div>
+                            <div className="text-gray-500">기분 상태</div>
+                          </div>
+                          <div className="text-center p-3 bg-gray-50 rounded-lg">
+                            <div className="text-xl font-bold text-blue-600 mb-1">{selectedEntry.duration}분</div>
+                            <div className="text-gray-500">훈련 시간</div>
+                          </div>
+                          <div className="text-center p-3 bg-gray-50 rounded-lg">
+                            <div className="text-sm font-medium mb-1">{selectedEntry.location}</div>
+                            <div className="text-gray-500">훈련 장소</div>
+                          </div>
+                        </div>
+                        
+                        <div>
+                          <h4 className="font-medium mb-2">훈련 내용</h4>
+                          <p className="text-gray-700 leading-relaxed">{selectedEntry.content}</p>
+                        </div>
+                        
+                        {selectedEntry.activities.length > 0 && (
+                          <div>
+                            <h4 className="font-medium mb-2">진행한 활동</h4>
+                            <div className="flex flex-wrap gap-2">
+                              {selectedEntry.activities.map((activity, index) => (
+                                <Badge key={index} variant="outline">
+                                  {activity}
+                                </Badge>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                        
+                        {selectedEntry.nextGoals.length > 0 && (
+                          <div>
+                            <h4 className="font-medium mb-2">다음 목표</h4>
+                            <ul className="space-y-1">
+                              {selectedEntry.nextGoals.map((goal, index) => (
+                                <li key={index} className="flex items-center gap-2 text-sm">
+                                  <Star className="h-3 w-3 text-yellow-500" />
+                                  {goal}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+                  </TabsContent>
+                  
+                  <TabsContent value="daily" className="space-y-4">
+                    {selectedEntry.mealTimes && (
+                      <Card>
+                        <CardHeader>
+                          <CardTitle className="flex items-center gap-2">
+                            🍽️ 식사 시간
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="grid grid-cols-3 gap-4">
+                            <div className="text-center p-3 bg-orange-50 rounded-lg">
+                              <div className="font-medium">아침</div>
+                              <div className="text-lg">{selectedEntry.mealTimes.breakfast || '미기록'}</div>
+                            </div>
+                            <div className="text-center p-3 bg-yellow-50 rounded-lg">
+                              <div className="font-medium">점심</div>
+                              <div className="text-lg">{selectedEntry.mealTimes.lunch || '미기록'}</div>
+                            </div>
+                            <div className="text-center p-3 bg-blue-50 rounded-lg">
+                              <div className="font-medium">저녁</div>
+                              <div className="text-lg">{selectedEntry.mealTimes.dinner || '미기록'}</div>
+                            </div>
+                          </div>
+                          {selectedEntry.mealTimes.snacks.length > 0 && (
+                            <div className="mt-4">
+                              <h5 className="font-medium mb-2">간식</h5>
+                              <div className="flex flex-wrap gap-2">
+                                {selectedEntry.mealTimes.snacks.map((snack, index) => (
+                                  <Badge key={index} variant="outline">
+                                    {snack.time} - {snack.type}
+                                  </Badge>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </CardContent>
+                      </Card>
+                    )}
+                    
+                    {selectedEntry.bathroomBreaks && selectedEntry.bathroomBreaks.length > 0 && (
+                      <Card>
+                        <CardHeader>
+                          <CardTitle className="flex items-center gap-2">
+                            🚽 배변 기록
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="space-y-2">
+                            {selectedEntry.bathroomBreaks.map((record, index) => (
+                              <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                <div className="flex items-center gap-4">
+                                  <span className="font-medium">{record.time}</span>
+                                  <Badge variant={record.type === 'both' ? 'default' : 'secondary'}>
+                                    {record.type === 'urine' ? '소변' : record.type === 'feces' ? '대변' : '소변+대변'}
+                                  </Badge>
+                                </div>
+                                <span className="text-sm text-gray-500">{record.location}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    )}
+                    
+                    {selectedEntry.walkSchedule && selectedEntry.walkSchedule.length > 0 && (
+                      <Card>
+                        <CardHeader>
+                          <CardTitle className="flex items-center gap-2">
+                            🚶 산책 스케줄
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="space-y-2">
+                            {selectedEntry.walkSchedule.map((walk, index) => (
+                              <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                <div className="flex items-center gap-4">
+                                  <span className="font-medium">{walk.time}</span>
+                                  <span className="text-sm text-gray-600">{walk.duration}분</span>
+                                  <Badge variant={walk.intensity === 'intense' ? 'destructive' : walk.intensity === 'moderate' ? 'default' : 'secondary'}>
+                                    {walk.intensity === 'light' ? '가벼움' : walk.intensity === 'moderate' ? '보통' : '강함'}
+                                  </Badge>
+                                </div>
+                                <span className="text-sm text-gray-500">{walk.location}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    )}
+                  </TabsContent>
+                </Tabs>
               </div>
             </>
           )}
