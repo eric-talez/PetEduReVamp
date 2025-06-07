@@ -1,4 +1,3 @@
-
 import { Request, Response, NextFunction } from 'express';
 import { z } from 'zod';
 
@@ -118,44 +117,53 @@ export const handleZodError = (error: z.ZodError): ApiError => {
 };
 
 // 글로벌 에러 핸들러 미들웨어
-export const errorHandler = (
-  error: Error,
-  req: Request,
-  res: Response,
-  next: NextFunction
-): void => {
-  console.error('[Error Handler]', {
-    error: error.message,
-    stack: error.stack,
-    url: req.url,
-    method: req.method,
+export const errorHandler = (err: any, req: any, res: any, next: any) => {
+  const timestamp = new Date().toISOString();
+  const requestId = req.headers['x-request-id'] || Math.random().toString(36).substr(2, 9);
+
+  console.error(`[에러] ${timestamp} [${requestId}] ${req.method} ${req.url}:`, {
+    message: err.message,
+    stack: err.stack,
     body: req.body,
-    timestamp: new Date().toISOString()
+    query: req.query,
+    headers: req.headers
   });
 
-  // Zod 검증 에러
-  if (error instanceof z.ZodError) {
-    const apiError = handleZodError(error);
-    res.status(apiError.statusCode).json(errorResponse(apiError));
-    return;
+  // 특정 에러 타입별 처리
+  let statusCode = 500;
+  let message = '서버 내부 오류가 발생했습니다';
+
+  if (err.name === 'ValidationError') {
+    statusCode = 400;
+    message = '입력 데이터가 올바르지 않습니다';
+  } else if (err.name === 'UnauthorizedError' || err.status === 401) {
+    statusCode = 401;
+    message = '인증이 필요합니다';
+  } else if (err.name === 'ForbiddenError' || err.status === 403) {
+    statusCode = 403;
+    message = '접근 권한이 없습니다';
+  } else if (err.name === 'NotFoundError' || err.status === 404) {
+    statusCode = 404;
+    message = '요청한 리소스를 찾을 수 없습니다';
+  } else if (err.code === 'ECONNREFUSED') {
+    statusCode = 503;
+    message = '데이터베이스 연결에 실패했습니다';
+  } else if (err.code === 'ETIMEOUT') {
+    statusCode = 504;
+    message = '요청 시간이 초과되었습니다';
   }
 
-  // 커스텀 API 에러
-  if (error instanceof ApiError) {
-    res.status(error.statusCode).json(errorResponse(error));
-    return;
-  }
+  const isDevelopment = process.env.NODE_ENV === 'development';
 
-  // 데이터베이스 에러
-  if (error.message.includes('duplicate key') || error.message.includes('UNIQUE constraint')) {
-    const apiError = ApiError.conflict('이미 존재하는 데이터입니다');
-    res.status(apiError.statusCode).json(errorResponse(apiError));
-    return;
-  }
-
-  // 기본 에러 (500)
-  const apiError = ApiError.internalError();
-  res.status(apiError.statusCode).json(errorResponse(apiError));
+  res.status(statusCode).json({
+    error: message,
+    requestId,
+    timestamp,
+    ...(isDevelopment && { 
+      originalError: err.message,
+      stack: err.stack 
+    })
+  });
 };
 
 // 비동기 핸들러 래퍼

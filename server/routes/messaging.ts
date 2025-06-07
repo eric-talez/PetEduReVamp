@@ -19,6 +19,37 @@ export function registerMessagingRoutes(app: Express, server: Server) {
     }
   });
 
+  wss.on('connection', ws => {
+    console.log('WebSocket connection established');
+
+    ws.isAlive = true; // Add isAlive property
+
+    ws.on('pong', () => {
+      ws.isAlive = true;
+    });
+
+    ws.on('error', error => {
+      console.error('WebSocket error:', error);
+    });
+
+    ws.on('close', (code, reason) => {
+      console.log('WebSocket closed with code %d and reason %s', code, reason);
+    });
+  });
+
+  // Ping clients regularly to check connection
+  setInterval(() => {
+    wss.clients.forEach(ws => {
+      if (ws.isAlive === false) {
+        console.log('Terminating WebSocket due to inactivity');
+        return ws.terminate();
+      }
+
+      ws.isAlive = false;
+      ws.ping(() => {});
+    });
+  }, 30000); // Check every 30 seconds
+
   // 메시징 서비스 초기화
   messagingService = new MessagingService(wss, storage);
 
