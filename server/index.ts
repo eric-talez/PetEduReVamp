@@ -10,7 +10,7 @@ import { setupSecurity } from "./security";
 import { setupPerformance, monitorMemoryUsage } from "./performance";
 // 비밀번호 재설정 관련 모듈 (별도 초기화 필요 없음)
 // import { recovery } from './recovery';
-import { registerNotificationRoutes } from './routes/notification-routes';
+// import { registerNotificationRoutes } from './routes/notification-routes';
 import { errorHandler, requestIdMiddleware } from './middleware/error-handler';
 
 const MemoryStore = memorystore(session);

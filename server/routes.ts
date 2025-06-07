@@ -4,7 +4,7 @@ import { db } from "./db";
 import { registerMessagingRoutes } from "./routes/messaging";
 import { errorHandler } from "./middleware/error-handler";
 import { registerShoppingRoutes } from "./routes/shopping";
-import { registerNotificationRoutes } from "./routes/notification-routes";
+// import { registerNotificationRoutes } from "./routes/notification-routes";
 import { registerUploadRoutes } from "./routes/upload";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -399,8 +399,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // 알림 관련 라우트
-  registerNotificationRoutes(app);
+  // 알림 관련 라우트 (임시 비활성화)
+  // registerNotificationRoutes(app);
 
   // 파일 업로드 라우트
   registerUploadRoutes(app);
@@ -409,8 +409,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);
   registerMessagingRoutes(app, httpServer);
   
-  // 알림 라우트 등록
-  registerNotificationRoutes(app, httpServer);
+  // 알림 라우트 등록 (WebSocket 설정 문제로 임시 비활성화)
 
   // 글로벌 에러 핸들러
   app.use(errorHandler);
