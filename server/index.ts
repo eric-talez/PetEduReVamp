@@ -9,9 +9,9 @@ import { setupMonitoring, setupErrorHandling } from "./monitoring";
 import { setupSecurity } from "./security";
 import { setupPerformance, monitorMemoryUsage } from "./performance";
 // 비밀번호 재설정 관련 모듈 (별도 초기화 필요 없음)
-import { recovery } from './recovery';
+// import { recovery } from './recovery';
 import { registerNotificationRoutes } from './routes/notification-routes';
-import { errorHandler, notFoundHandler, requestIdMiddleware } from './middleware/error-handler';
+import { errorHandler, requestIdMiddleware } from './middleware/error-handler';
 
 const MemoryStore = memorystore(session);
 const app = express();
@@ -299,13 +299,9 @@ app.use((req, res, next) => {
   app.use(requestIdMiddleware);
 
   // 라우트 등록
-  registerRoutes(app, server);
+  const server = await registerRoutes(app);
 
-  // 404 핸들러
-  app.use(notFoundHandler);
-
-  // 글로벌 에러 핸들러
-  app.use(errorHandler);
+  // Error handlers are now registered in routes.ts
 
   // 오류 처리 미들웨어 설정 (모든 라우트 등록 후)
   setupErrorHandling(app);
@@ -343,11 +339,7 @@ app.use((req, res, next) => {
   // this serves both the API and the client.
   // It is the only port that is not firewalled.
   const port = 5000;
-  server.listen({
-    port,
-    host: "0.0.0.0",
-    reusePort: true,
-  }, () => {
+  server.listen(port, "0.0.0.0", () => {
     log(`serving on port ${port}`);
   });
 })();

@@ -11,12 +11,8 @@ export function registerNotificationRoutes(app: Express, server: Server) {
 
   // WebSocket 서버 초기화
   const wss = new WebSocketServer({ 
-    server, 
-    path: '/ws',
-    verifyClient: (info) => {
-      // WebSocket 연결 검증 로직 (필요시)
-      return true;
-    }
+    server: server,
+    path: '/ws'
   });
 
   wss.on('connection', (ws: WebSocket, req) => {

@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { db } from "./db";
 import { registerMessagingRoutes } from "./routes/messaging";
-import { globalErrorHandler, notFoundHandler } from "./middleware/error-handler";
+import { errorHandler } from "./middleware/error-handler";
 import { registerShoppingRoutes } from "./routes/shopping";
 import { registerNotificationRoutes } from "./routes/notification-routes";
 import { registerUploadRoutes } from "./routes/upload";
@@ -408,9 +408,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // 메시징 라우트 등록
   const httpServer = createServer(app);
   registerMessagingRoutes(app, httpServer);
+  
+  // 알림 라우트 등록
+  registerNotificationRoutes(app, httpServer);
 
   // 글로벌 에러 핸들러
-  app.use(globalErrorHandler);
+  app.use(errorHandler);
 
   return httpServer;
 }
