@@ -833,8 +833,7 @@ function ProtectedRoute({ component: Component, requiredRoles = null, fallback =
             <line x1="12" y1="17" x2="12.01" y2="17"></line>
           </svg>
         </div>
-        <h2 className="text-xl font-semibold mb-2">로그```
-인이 필요한 페이지입니다</h2>
+        <h2 className="text-xl font-semibold mb-2">로그인이 필요한 페이지입니다</h2>
         <p className="text-gray-600 dark:text-gray-400 mb-6">이 기능을 사용하려면 로그인이 필요합니다.</p>
         <button
           onClick={() => window.location.href = '/auth'}
@@ -1731,6 +1730,30 @@ function AuthenticatedRoutes() {
               component={AdminSettlementPage}
             />
           )}
+        </Route>
+        <Route path="/admin/commission">
+          {() => {
+            const AdminCommission = lazy(() => import('./pages/admin/AdminCommission'));
+            return (
+              <Suspense fallback={<div className="p-8 flex justify-center items-center">
+                <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
+              </div>}>
+                <ProtectedAdminRoute component={AdminCommission} />
+              </Suspense>
+            );
+          }}
+        </Route>
+        <Route path="/admin/service-inspection">
+          {() => {
+            const ServiceInspection = lazy(() => import('./pages/admin/ServiceInspection'));
+            return (
+              <Suspense fallback={<div className="p-8 flex justify-center items-center">
+                <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
+              </div>}>
+                <ProtectedAdminRoute component={ServiceInspection} />
+              </Suspense>
+            );
+          }}
         </Route>
 
         {/* AI 분석 페이지 */}

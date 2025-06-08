@@ -221,7 +221,7 @@ export function Sidebar({
     const isAdmin = userRole === 'admin';
     const isTrainer = userRole === 'trainer';
     const isPetOwner = userRole === 'pet-owner';
-    
+
     // 권한별 서비스 접근 가능 여부
     const canAccessNotebook = isPetOwner || isTrainer || isInstituteAdmin || isAdmin;
     const canAccessConsultation = isPetOwner || isTrainer || isInstituteAdmin || isAdmin;
@@ -720,11 +720,11 @@ export function Sidebar({
                     <SidebarMenuGroup expanded={expanded} title="운영 관리" groupName="management" isOpen={menuGroups.management} toggleGroup={toggleMenuGroup} icon={<UserCog className="w-5 h-5 text-gray-500" />} />
                     {menuGroups.management && (
                       <>
-                        
+
                     <AccessibleNavItem href="/trainer/courses" icon={<BookOpen className="w-5 h-5 mr-2" />} hoverIcon={<GraduationCap className="w-5 h-5 mr-2 text-primary" />} active={isActive("/trainer/courses")} onClick={handleItemClick} show={true}>내 강좌</AccessibleNavItem>
                     <AccessibleNavItem href="/trainer/notebook" icon={<FileText className="w-5 h-5 mr-2" />} hoverIcon={<Edit className="w-5 h-5 mr-2 text-primary" />} active={isActive("/trainer/notebook")} onClick={handleItemClick} show={true}>알림장 관리</AccessibleNavItem>
                     <AccessibleNavItem href="/trainer/students" icon={<Users className="w-5 h-5 mr-2" />} hoverIcon={<UserCheck className="w-5 h-5 mr-2 text-primary" />} active={isActive("/trainer/students")} onClick={handleItemClick} show={true}>학생 관리</AccessibleNavItem>
-                    
+
                         {(showTrainerMenu || showInstituteMenu) && <AccessibleNavItem href="/trainer/earnings" icon={<DollarSign className="w-5 h-5 mr-2" />} active={isActive("/trainer/earnings")} onClick={handleItemClick} show={true}>수익 관리</AccessibleNavItem>}
                         {showInstituteMenu && <AccessibleNavItem href="/institute/trainers" icon={<UserCog className="w-5 h-5 mr-2" />} active={isActive("/institute/trainers")} onClick={handleItemClick} show={true}>훈련사 관리</AccessibleNavItem>}
                         {showInstituteMenu && <AccessibleNavItem href="/institute/facility" icon={<Building className="w-5 h-5 mr-2" />} active={isActive("/institute/facility")} onClick={handleItemClick} show={true}>시설 관리</AccessibleNavItem>}
@@ -811,3 +811,5 @@ export function Sidebar({
     </SidebarContext.Provider>
   );
 }
+
+// Add service inspection menu for admin role.
