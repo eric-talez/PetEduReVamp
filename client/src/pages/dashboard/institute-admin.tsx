@@ -157,7 +157,7 @@ export default function InstituteAdminDashboard({ onAction }: InstituteAdminDash
             </div>
             <div className="h-64 flex items-center justify-center">
               <div className="flex items-center space-x-2">
-                <BarChart2 className="h-6 w-6 text-primary" />
+                <BarChart3 className="h-6 w-6 text-primary" />
                 <span className="text-sm text-gray-500 dark:text-gray-400">
                   여기에 강의별 수익 분포 차트가 표시됩니다.
                 </span>

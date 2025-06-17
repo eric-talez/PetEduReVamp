@@ -3,7 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar } from "@/components/ui/avatar";
-import { Users, BookOpen, Calendar, DollarSign, TrendingUp, Award, BarChart2 } from "lucide-react";
+import { Users, BookOpen, Calendar, DollarSign, TrendingUp, Award, BarChart3 } from "lucide-react";
 
 interface TrainerDashboardProps {
   onAction: (action: string, data?: any) => void;
@@ -159,7 +159,7 @@ export default function TrainerDashboard({ onAction }: TrainerDashboardProps) {
             </div>
             <div className="h-64 flex items-center justify-center">
               <div className="flex items-center space-x-2">
-                <BarChart2 className="h-6 w-6 text-primary" />
+                <BarChart3 className="h-6 w-6 text-primary" />
                 <span className="text-sm text-gray-500 dark:text-gray-400">
                   여기에 수강생 분포 차트가 표시됩니다.
                 </span>

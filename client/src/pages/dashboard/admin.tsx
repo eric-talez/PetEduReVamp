@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar } from "@/components/ui/avatar";
 import { 
   Users, Shield, Bell, CheckSquare, Settings, 
-  TrendingUp, Database, BarChart2, Activity, Globe, Building
+  TrendingUp, Database, BarChart3, Activity, Globe, Building
 } from "lucide-react";
 
 interface AdminDashboardProps {
@@ -145,7 +145,7 @@ export default function AdminDashboard({ onAction }: AdminDashboardProps) {
             </div>
             <div className="h-64 flex items-center justify-center">
               <div className="flex items-center space-x-2">
-                <BarChart2 className="h-6 w-6 text-primary" />
+                <BarChart3 className="h-6 w-6 text-primary" />
                 <span className="text-sm text-gray-500 dark:text-gray-400">
                   여기에 사용자 역할 분포 차트가 표시됩니다.
                 </span>
