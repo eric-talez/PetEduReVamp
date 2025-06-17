@@ -1126,6 +1126,14 @@ app.get('/api/search', async (req, res) => {
 
   // Get all courses
   app.get("/api/courses", async (req, res) => {
+    try {
+      const courses = await storage.getAllCourses();
+      return res.status(200).json(courses);
+    } catch (error: any) {
+      console.error("Get courses error:", error);
+      return res.status(500).json({ message: "강좌 조회 중 오류가 발생했습니다." });
+    }
+  });
 
   // Global error handler
   app.use(errorHandler);
