@@ -194,6 +194,30 @@ export const DEFAULT_MENU_ITEMS: MenuItem[] = [
   {
     id: 'consultation-status',
     title: '내 상담 현황',
+    href: '/consultation',
+    icon: 'MessageSquare',
+    type: 'internal',
+    category: 'learning',
+    roles: ['pet-owner', 'trainer', 'admin'],
+    orderIndex: 6,
+    isActive: true,
+    isPublic: false
+  },
+  {
+    id: 'my-consultation-requests',
+    title: '상담 신청 내역',
+    href: '/consultation/requests',
+    icon: 'Calendar',
+    type: 'internal',
+    category: 'learning',
+    roles: ['pet-owner'],
+    orderIndex: 7,
+    isActive: true,
+    isPublic: false
+  },
+  {
+    id: 'incomplete-menu',
+    title: '내 상담 현황',
     path: '/consultation',
     icon: 'MessageCircle',
     type: 'internal',

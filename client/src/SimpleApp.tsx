@@ -1873,9 +1873,28 @@ function AuthenticatedRoutes() {
           }}
         </Route>
 
+        {/* 상담 관련 라우트 추가 */}
+                  <Route path="/courses">
+                    {({ params }) => {
+                      const CoursesPage = lazy(() => import('./pages/courses/index'));
+                      return (
+                        <Suspense fallback={<DogLoading />}>
+                          <CoursesPage />
+                        </Suspense>
+                      );
+                    }}
+                  </Route>
 
-
-
+                  <Route path="/consultation">
+                    {({ params }) => {
+                      const ConsultationPage = lazy(() => import('./pages/consultation/index'));
+                      return (
+                        <Suspense fallback={<DogLoading />}>
+                          <ConsultationPage />
+                        </Suspense>
+                      );
+                    }}
+                  </Route>
 
         {/* 404 페이지 */}
         <Route component={NotFound} />
