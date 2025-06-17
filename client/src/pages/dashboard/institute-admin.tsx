@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar } from "@/components/ui/avatar";
 import { 
-  Users, BookOpen, Building, UserRoundCheck, BarChart2, 
+  Users, BookOpen, Building, UserRoundCheck, BarChart3, 
   TrendingUp, DollarSign, Calendar, MapPin 
 } from "lucide-react";
 
