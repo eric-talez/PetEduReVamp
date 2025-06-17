@@ -55,7 +55,25 @@ import {
   Star,
   CreditCard,
   Activity,
-  MessageSquare
+  MessageSquare,
+  Heart as PawPrint,
+  Edit3 as Edit,
+  Square as CheckSquare,
+  UserCog,
+  Wrench,
+  Monitor as Presentation,
+  Play as VideoIcon,
+  Sparkles,
+  Bot,
+  ThumbsUp,
+  BarChart,
+  ShoppingBag,
+  LogIn,
+  ChevronsLeft,
+  ChevronsRight,
+  Percent,
+  DollarSign,
+  Image as ImageIcon
 } from "lucide-react";
 
 // 사이드바 컨텍스트 생성
@@ -258,7 +276,7 @@ export function Sidebar({
 
   // 메뉴 그룹 토글 함수 - 개선된 에러 처리
   const toggleMenuGroup = useCallback((groupId: string) => {
-    setMenuGroups(prev => {
+    setMenuGroups((prev: Record<string, boolean>) => {
       const updated = {
         ...prev,
         [groupId]: !prev[groupId]
@@ -703,8 +721,8 @@ export function Sidebar({
                       <>
                         <AccessibleNavItem href="/my-courses" icon={<GraduationCap className="w-5 h-5 mr-2" />} hoverIcon={<BookOpen className="w-5 h-5 mr-2 text-primary" />} active={isActive("/my-courses")} onClick={handleItemClick} show={true}>나의 학습</AccessibleNavItem>
                         <AccessibleNavItem href="/my-pets" icon={<PawPrint className="w-5 h-5 mr-2" />} hoverIcon={<Award className="w-5 h-5 mr-2 text-primary" />} active={isActive("/my-pets")} onClick={handleItemClick} show={true}>반려견 관리</AccessibleNavItem>
-                        <AccessibleNavItem href="/consultation" icon{<Video className="w-5 h-5 mr-2" />} hoverIcon={<MessageSquare className="w-5 h-5 mr-2 text-primary" />} active={isActive("/consultation")} onClick={handleItemClick} show={true}>내 상담 현황</AccessibleNavItem>
-                        <AccessibleNavItem href="/my-trainers" icon={<UserRoundCheck className="5 h-5 mr-2" />} hoverIcon={<Users className="w-5 h-5 mr-2 text-primary" />} active={isActive("/my-trainers")} onClick={handleItemClick} show={true}>내 훈련사</AccessibleNavItem>
+                        <AccessibleNavItem href="/consultation" icon={<MessageCircle className="w-5 h-5 mr-2" />} hoverIcon={<MessageSquare className="w-5 h-5 mr-2 text-primary" />} active={isActive("/consultation")} onClick={handleItemClick} show={true}>내 상담 현황</AccessibleNavItem>
+                        <AccessibleNavItem href="/my-trainers" icon={<UserRoundCheck className="w-5 h-5 mr-2" />} hoverIcon={<Users className="w-5 h-5 mr-2 text-primary" />} active={isActive("/my-trainers")} onClick={handleItemClick} show={true}>내 훈련사</AccessibleNavItem>
                         <AccessibleNavItem href="/pet-care/health-record" icon={<Activity className="w-5 h-5 mr-2" />} hoverIcon={<TrendingUp className="w-5 h-5 mr-2 text-primary" />} active={isActive("/pet-care/health-record")} onClick={handleItemClick} show={true}>건강 관리</AccessibleNavItem>
                         <AccessibleNavItem href="/notebook" icon={<Edit className="w-5 h-5 mr-2" />} hoverIcon={<MessageSquare className="w-5 h-5 mr-2 text-primary" />} active={isActive("/notebook")} onClick={handleItemClick} show={true}>알림장</AccessibleNavItem>
                         <AccessibleNavItem href="/education-schedule" icon={<Calendar className="w-5 h-5 mr-2" />} hoverIcon={<CheckSquare className="w-5 h-5 mr-2 text-primary" />} active={isActive("/education-schedule")} onClick={handleItemClick} show={true}>일정 관리</AccessibleNavItem>
