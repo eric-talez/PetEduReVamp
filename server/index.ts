@@ -9,7 +9,7 @@ import compression from "compression";
 import rateLimit from "express-rate-limit";
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = parseInt(process.env.PORT || "5000", 10);
 
 // Security middleware
 app.use(helmet({
@@ -75,7 +75,7 @@ async function startServer() {
     }
 
     // Start the server
-    server.listen(PORT, "0.0.0.0", () => {
+    server.listen(PORT, () => {
       const mode = process.env.NODE_ENV || "development";
       console.log(`🚀 Server running on port ${PORT} in ${mode} mode`);
       console.log(`📱 Local: http://localhost:${PORT}`);
