@@ -112,8 +112,6 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
             </div>
             <p className="text-xs text-muted-foreground">이미지를 불러올 수 없습니다</p>
           </div>
-        </div>ex items-center justify-center bg-muted/20 text-muted-foreground">
-          <span className="text-sm">이미지를 불러올 수 없습니다</span>
         </div>
       )}
     </div>

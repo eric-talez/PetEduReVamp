@@ -1650,64 +1650,7 @@ export class DatabaseStorage implements IStorage {
   async updatePet(id: number, pet: any): Promise<any> {
     return null;
   }
-
-  // 강좌 관련 메서드 - 임시로 빈 구현
-  async getCourse(id: number): Promise<any> {
-    return null;
-  }
-
-  async getAllCourses(): Promise<any[]> {
-    return [];
-  }
-
-  async getCoursesByUserId(userId: number): Promise<any[]> {
-    return [];
-  }
-
-  async createCourse(course: any): Promise<any> {
-    return null;
-  }
-
-  async enrollUserInCourse(userId: number, courseId: number): Promise<any> {
-    return null;
-  }
-
-  // 이벤트 관련 메서드 - 임시로 빈 구현
-  async getAllEvents(): Promise<Event[]> {
-    return [];
-  }
-
-  async getEvent(id: number): Promise<Event | undefined> {
-    return undefined;
-  }
-
-  async createEvent(event: InsertEvent): Promise<Event> {
-    throw new Error("Not implemented");
-  }
-
-  async getEventsByRegion(region: string): Promise<Event[]> {
-    return [];
-  }
-
-  async getEventsByCategory(category: string): Promise<Event[]> {
-    return [];
-  }
-
-  async checkEventAttendance(userId: number, eventId: number): Promise<boolean> {
-    return false;
-  }
-
-  async attendEvent(userId: number, eventId: number): Promise<EventAttendance> {
-    throw new Error("Not implemented");
-  }
-
-  async getEventLocation(id: number): Promise<EventLocation | undefined> {
-    return undefined;
-  }
-
-  async createEventLocation(location: InsertEventLocation): Promise<EventLocation> {
-    throw new Error("Not implemented");
-  }
+}
 
   // 수수료 정책 관련 메서드 - 임시로 빈 구현
   async getCommissionPolicies(): Promise<any[]> {

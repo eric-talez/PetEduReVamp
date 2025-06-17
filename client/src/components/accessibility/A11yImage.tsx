@@ -125,7 +125,7 @@ const A11yImage: React.FC<A11yImageProps> = ({
           ...imageStyle,
           objectFit: 'cover',
           opacity: isLoading ? 0 : 1,
-          transition: 'opacity 0.3s ease'acity 0.3s ease',
+          transition: 'opacity 0.3s ease',
         }}
         loading={priority ? 'eager' : 'lazy'}
         onLoad={handleLoad}
