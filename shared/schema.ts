@@ -128,6 +128,24 @@ export const healthCheckups = pgTable("health_checkups", {
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
+// 별칭으로 checkups 테이블 추가 (storage.ts 호환성을 위해)
+export const checkups = healthCheckups;
+
+// 훈련사 테이블 (users 테이블의 훈련사 역할 사용자를 위한 확장 정보)
+export const trainers = pgTable("trainers", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id, { onDelete: 'cascade' }).notNull().unique(),
+  specialization: text("specialization"),
+  experience: integer("experience").default(0), // 경력 (년)
+  certifications: json("certifications").$type<string[]>(), // 자격증 목록
+  availability: json("availability"), // 가능한 시간대
+  rating: integer("rating").default(0), // 0-500 (5.0 = 500)
+  reviewCount: integer("review_count").default(0),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
 // 의료 기록 첨부파일 테이블
 export const medicalAttachments = pgTable("medical_attachments", {
   id: serial("id").primaryKey(),
@@ -166,10 +184,13 @@ export const courses = pgTable("courses", {
   duration: integer("duration"), // 분 단위
   price: integer("price").default(0), // 원 단위
   trainerId: integer("trainer_id").references(() => users.id, { onDelete: 'set null' }),
+  instructorId: integer("instructor_id").references(() => users.id, { onDelete: 'set null' }), // alias for trainerId
   instituteId: integer("institute_id").references(() => institutes.id, { onDelete: 'set null' }),
   isPopular: boolean("is_popular").default(false),
   isCertified: boolean("is_certified").default(false),
+  isActive: boolean("is_active").default(true),
   maxParticipants: integer("max_participants").default(10),
+  enrolledCount: integer("enrolled_count").default(0),
   syllabus: json("syllabus"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
@@ -434,6 +455,12 @@ export type Conversation = typeof conversations.$inferSelect;
 export type InsertConversation = typeof conversations.$inferInsert;
 export type Message = typeof messages.$inferSelect;
 export type InsertMessage = typeof messages.$inferInsert;
+export type Trainer = typeof trainers.$inferSelect;
+export type InsertTrainer = typeof trainers.$inferInsert;
+export type Checkup = typeof checkups.$inferSelect;
+export type InsertCheckup = typeof checkups.$inferInsert;
+export type Banner = typeof banners.$inferSelect;
+export type InsertBanner = typeof banners.$inferInsert;
 
 // Schema exports for validation
 export const createUserSchema = createInsertSchema(users)
@@ -542,5 +569,3 @@ export const createBannerSchema = createInsertSchema(banners).omit({
 });
 
 export const insertBannerSchema = createBannerSchema;
-export type InsertBanner = z.infer<typeof insertBannerSchema>;
-export type Banner = typeof banners.$inferSelect;

@@ -204,8 +204,6 @@ export function AccessibilitySettings({ isOpen, onClose }: AccessibilitySettings
           {/* 색상 대비 검사 */}
           <div className="pt-4 border-t">
             <ContrastChecker showDialog={true} />
-          </div></old_str>bel="다크 모드 전환"
-            />
           </div>
           
           {/* 고대비 모드 */}
