@@ -85,61 +85,57 @@ export default function TrainerDetail({ trainerId }: TrainerDetailProps) {
   return (
     <div className="container mx-auto p-6 max-w-6xl">
       {/* 훈련사 프로필 헤더 */}
-      <Card className="mb-6">
+      <Card className="mb-6 overflow-hidden">
+        {/* 프로필 이미지를 맨 위로 이동 */}
+        <div className="w-full h-64 bg-gradient-to-br from-blue-50 to-purple-50 relative flex items-center justify-center">
+          <Avatar className="w-48 h-48 border-4 border-white shadow-xl">
+            <AvatarImage 
+              src={trainer.avatar || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(trainer.name)}&backgroundColor=6366f1&textColor=ffffff`} 
+              alt={trainer.name}
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.src = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(trainer.name)}&backgroundColor=6366f1&textColor=ffffff`;
+              }}
+            />
+            <AvatarFallback className="text-4xl bg-primary text-white">{trainer.name.charAt(0)}</AvatarFallback>
+          </Avatar>
+        </div>
+        
         <CardContent className="pt-6">
-          <div className="flex flex-col md:flex-row gap-6">
-            <div className="flex-shrink-0">
-              <Avatar className="w-32 h-32">
-                <AvatarImage 
-                  src={trainer.avatar || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(trainer.name)}&backgroundColor=6366f1&textColor=ffffff`} 
-                  alt={trainer.name}
-                  onError={(e) => {
-                    const target = e.target as HTMLImageElement;
-                    target.src = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(trainer.name)}&backgroundColor=6366f1&textColor=ffffff`;
-                  }}
-                />
-                <AvatarFallback className="text-2xl bg-primary text-white">{trainer.name.charAt(0)}</AvatarFallback>
-              </Avatar>
+          <div className="text-center mb-6">
+            <h1 className="text-3xl font-bold mb-2">{trainer.name}</h1>
+            <p className="text-lg text-muted-foreground mb-3">{trainer.title}</p>
+            
+            <div className="flex justify-center items-center gap-4 text-sm text-muted-foreground mb-4">
+              <div className="flex items-center gap-1">
+                <Star className="w-4 h-4 text-yellow-400 fill-current" />
+                <span>{trainer.rating}</span>
+                <span>({trainer.reviews}개 리뷰)</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <Users className="w-4 h-4" />
+                <span>{trainer.students}명 훈련</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <BookOpen className="w-4 h-4" />
+                <span>{trainer.totalCourses}개 과정</span>
+              </div>
             </div>
             
-            <div className="flex-grow">
-              <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
-                <div>
-                  <h1 className="text-3xl font-bold mb-2">{trainer.name}</h1>
-                  <p className="text-lg text-muted-foreground mb-3">{trainer.title}</p>
-                  <p className="text-sm mb-4">{trainer.description}</p>
-                  
-                  <div className="flex flex-wrap gap-2 mb-4">
-                    <Badge variant="secondary">{trainer.category}</Badge>
-                    <Badge variant="outline">{trainer.experience} 경력</Badge>
-                  </div>
-                  
-                  <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                    <div className="flex items-center gap-1">
-                      <Star className="w-4 h-4 text-yellow-400 fill-current" />
-                      <span>{trainer.rating}</span>
-                      <span>({trainer.reviews}개 리뷰)</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Users className="w-4 h-4" />
-                      <span>{trainer.students}명 훈련</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <BookOpen className="w-4 h-4" />
-                      <span>{trainer.totalCourses}개 과정</span>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="flex flex-col gap-2 md:items-end">
-                  <Button size="lg" className="w-full md:w-auto">
-                    상담 신청
-                  </Button>
-                  <Button variant="outline" size="lg" className="w-full md:w-auto">
-                    메시지 보내기
-                  </Button>
-                </div>
-              </div>
+            <p className="text-center text-sm mb-6">{trainer.description}</p>
+            
+            <div className="flex flex-wrap justify-center gap-2 mb-6">
+              <Badge variant="secondary">{trainer.category}</Badge>
+              <Badge variant="outline">{trainer.experience} 경력</Badge>
+            </div>
+            
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <Button size="lg" className="flex-1 sm:flex-none">
+                상담 신청
+              </Button>
+              <Button variant="outline" size="lg" className="flex-1 sm:flex-none">
+                메시지 보내기
+              </Button>
             </div>
           </div>
         </CardContent>
