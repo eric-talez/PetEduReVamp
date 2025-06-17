@@ -263,7 +263,7 @@ export default function MyPetsPage() {
                 )}
               </div>
               
-              <div className="grid grid-cols-2 gap-4"></div>
+              <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="name">이름 *</Label>
                   <Input
