@@ -762,8 +762,6 @@ const initialInstitutes = [
       throw new Error("User not found");
     }
 
-    Adding deletePet method to the MemStorage class in storage.ts to enable pet deletion functionality.```text
-
     // 사용자 업데이트 시 타입 보존
     const updatedUser: User = { 
       ...user, 
