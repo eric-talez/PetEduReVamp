@@ -19,6 +19,7 @@ import {
   PanelLeft
 } from 'lucide-react';
 import { useTheme } from '@/context/theme-context';
+import ContrastChecker from '@/components/ui/ContrastChecker';
 
 interface AccessibilitySettingsProps {
   isOpen: boolean;
@@ -197,6 +198,13 @@ export function AccessibilitySettings({ isOpen, onClose }: AccessibilitySettings
               checked={theme === 'dark'}
               onCheckedChange={(checked) => setTheme(checked ? 'dark' : 'light')}
               aria-label="다크 모드 전환"
+            />
+          </div>
+          
+          {/* 색상 대비 검사 */}
+          <div className="pt-4 border-t">
+            <ContrastChecker showDialog={true} />
+          </div></old_str>bel="다크 모드 전환"
             />
           </div>
           
