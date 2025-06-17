@@ -54,6 +54,7 @@ export interface IStorage {
   getPetsByUserId(userId: number): Promise<any[]>;
   createPet(pet: any): Promise<any>;
   updatePet(id: number, pet: any): Promise<any>;
+  deletePet(id: number): Promise<boolean>;
 
   // 강좌 관련
   getCourse(id: number): Promise<any>;
@@ -915,6 +916,16 @@ const initialInstitutes = [
     };
     this.pets.set(id, updatedPet);
     return updatedPet;
+  }
+
+  async deletePet(id: number): Promise<boolean> {
+    const existingPet = this.pets.get(id);
+    if (!existingPet) {
+      return false;
+    }
+    
+    this.pets.delete(id);
+    return true;
   }
 
   // 강좌 관련 메서드
@@ -1875,7 +1886,8 @@ export class DatabaseStorage implements IStorage {
             return false;
         }
     }
-  async updatePet(id: number, pet: any): Promise<any> {
+
+    async updatePet(id: number, pet: any): Promise<any> {
         try {
             const { db } = await import('./db');
             const { eq } = await import('drizzle-orm');
