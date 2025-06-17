@@ -191,6 +191,18 @@ export const DEFAULT_MENU_ITEMS: MenuItem[] = [
     isActive: true,
     isPublic: false
   },
+  {
+    id: 'consultation-status',
+    title: '내 상담 현황',
+    path: '/consultation',
+    icon: 'MessageCircle',
+    type: 'internal',
+    category: 'learning',
+    roles: ['pet-owner', 'trainer', 'admin'],
+    orderIndex: 6,
+    isActive: true,
+    isPublic: false
+  },
 
   // === 운영 관리 (훈련사/기관) ===
   {

@@ -294,13 +294,20 @@ export function Sidebar({
   };
 
   const handleItemClick = (path: string) => {
+    // path 값 검증
+    if (!path || typeof path !== 'string') {
+      console.warn('잘못된 경로:', path);
+      return;
+    }
+
     console.log(`메뉴 클릭: ${path} (사용자 역할: ${userRole || '비로그인'})`);
 
     // 특정 페이지 접근 권한 및 라우팅 처리
     const publicPaths = [
       "/", "/courses", "/trainers", "/video-training", "/video-call", "/community",
       "/institutes", "/institutes/register", "/events", "/events/calendar",
-      "/help/faq", "/help/guide", "/help/about", "/help/contact", "/shop", "/locations"
+      "/help/faq", "/help/guide", "/help/about", "/help/contact", "/shop", "/locations",
+      "/consultation"
     ];
 
     // 로그인 필요한 페이지 접근 시
