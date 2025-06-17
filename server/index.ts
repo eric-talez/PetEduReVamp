@@ -371,6 +371,17 @@ app.use((req, res, next) => {
   // this serves both the API and the client.
   // It is the only port that is not firewalled.
   const port = 5000;
+  // WebSocket 서버 활성화
+import { WebSocketServer } from 'ws';
+import { registerNotificationRoutes } from './routes/notification-routes';
+
+const wss = new WebSocketServer({ 
+  server: server,
+  path: '/ws'
+});
+
+// 알림 라우트 등록 (WebSocket 서버 포함)
+registerNotificationRoutes(app, server);
   server.listen(port, "0.0.0.0", () => {
     log(`serving on port ${port}`);
   });
