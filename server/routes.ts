@@ -598,9 +598,237 @@ app.get('/api/search', async (req, res) => {
   }
 });
 
+  // 강의 수강신청
+  app.post("/api/courses/:id/enroll", (req, res) => {
+    const courseId = parseInt(req.params.id);
+    const { userId } = req.body;
+
+    if (!userId) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "사용자 ID가 필요합니다." 
+      });
+    }
+
+    // 실제로는 데이터베이스에서 수강신청 처리
+    console.log(`강좌 ${courseId}에 사용자 ${userId} 수강신청`);
+
+    return res.json({ 
+      success: true, 
+      message: "수강신청이 완료되었습니다." 
+    });
+  });
+
+  // 강의 리뷰 조회
+  app.get("/api/courses/:id/reviews", (req, res) => {
+    const courseId = parseInt(req.params.id);
+
+    const mockReviews = [
+      {
+        id: 1,
+        userId: 1,
+        userName: "김반려",
+        userAvatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100",
+        rating: 5,
+        comment: "정말 유익한 강의였습니다. 우리 강아지가 많이 달라졌어요!",
+        createdAt: "2025-06-15",
+        helpful: 12
+      },
+      {
+        id: 2,
+        userId: 2,
+        userName: "박훈련",
+        userAvatar: "https://images.unsplash.com/photo-1494790108755-2616b612b494?w=100&h=100",
+        rating: 4,
+        comment: "체계적이고 실용적인 내용이 좋았습니다.",
+        createdAt: "2025-06-10",
+        helpful: 8
+      }
+    ];
+
+    return res.json(mockReviews);
+  });
+
+  // 강의 리뷰 작성
+  app.post("/api/courses/:id/reviews", (req, res) => {
+    const courseId = parseInt(req.params.id);
+    const { userId, rating, comment } = req.body;
+
+    if (!userId || !rating || !comment) {
+      return res.status(400).json({
+        success: false,
+        message: "모든 필드를 입력해주세요."
+      });
+    }
+
+    // 실제로는 데이터베이스에 저장
+    console.log(`강좌 ${courseId}에 리뷰 작성:`, { userId, rating, comment });
+
+    return res.json({
+      success: true,
+      message: "리뷰가 등록되었습니다.",
+      review: {
+        id: Date.now(),
+        userId,
+        rating,
+        comment,
+        createdAt: new Date().toISOString().split('T')[0],
+        helpful: 0
+      }
+    });
+  });
+
+  // 강의 즐겨찾기 추가/제거
+  app.post("/api/courses/:id/favorite", (req, res) => {
+    const courseId = parseInt(req.params.id);
+    const { userId, action } = req.body; // action: 'add' or 'remove'
+
+    if (!userId || !action) {
+      return res.status(400).json({
+        success: false,
+        message: "사용자 ID와 액션이 필요합니다."
+      });
+    }
+
+    console.log(`강좌 ${courseId} 즐겨찾기 ${action}:`, userId);
+
+    return res.json({
+      success: true,
+      message: action === 'add' ? "즐겨찾기에 추가되었습니다." : "즐겨찾기에서 제거되었습니다.",
+      isFavorite: action === 'add'
+    });
+  });
+
+  // 사용자 즐겨찾기 강의 목록
+  app.get("/api/users/:userId/favorite-courses", (req, res) => {
+    const userId = parseInt(req.params.userId);
+
+    const mockFavorites = [
+      {
+        id: 1,
+        title: "강아지 기본 복종 훈련",
+        thumbnail: "https://images.unsplash.com/photo-1551717743-49959800b1f6?w=400&h=200",
+        price: 120000,
+        rating: 4.7,
+        addedAt: "2025-06-15"
+      }
+    ];
+
+    return res.json(mockFavorites);
+  });
+
+  // 강의 진행률 업데이트
+  app.post("/api/courses/:id/progress", (req, res) => {
+    const courseId = parseInt(req.params.id);
+    const { userId, lessonId, completed } = req.body;
+
+    if (!userId || !lessonId) {
+      return res.status(400).json({
+        success: false,
+        message: "필수 정보가 누락되었습니다."
+      });
+    }
+
+    // 실제로는 데이터베이스에서 진행률 업데이트
+    console.log(`강좌 ${courseId} 진행률 업데이트:`, { userId, lessonId, completed });
+
+    return res.json({
+      success: true,
+      message: "진행률이 업데이트되었습니다.",
+      progress: completed ? 75 : 65 // 모의 진행률
+    });
+  });
+
+  // 개인화된 강의 추천
+  app.get("/api/users/:userId/recommended-courses", (req, res) => {
+    const userId = parseInt(req.params.userId);
+
+    const mockRecommendations = [
+      {
+        id: 4,
+        title: "고급 어질리티 훈련",
+        reason: "기본 훈련 과정을 완료하신 분께 추천",
+        thumbnail: "https://images.unsplash.com/photo-1583336663277-620dc1996580?w=400&h=200",
+        price: 180000,
+        rating: 4.8,
+        matchScore: 0.92
+      },
+      {
+        id: 5,
+        title: "반려견 심리 케어",
+        reason: "관심 분야를 기반으로 추천",
+        thumbnail: "https://images.unsplash.com/photo-1601758177266-bc599de87707?w=400&h=200",
+        price: 150000,
+        rating: 4.6,
+        matchScore: 0.87
+      }
+    ];
+
+    return res.json(mockRecommendations);
+  });
+
+  // 강의 수료증 발급
+  app.post("/api/courses/:id/certificate", (req, res) => {
+    const courseId = parseInt(req.params.id);
+    const { userId } = req.body;
+
+    if (!userId) {
+      return res.status(400).json({
+        success: false,
+        message: "사용자 ID가 필요합니다."
+      });
+    }
+
+    // 수강 완료 여부 확인 (실제로는 데이터베이스에서)
+    const isCompleted = true; // 모의 데이터
+
+    if (!isCompleted) {
+      return res.status(400).json({
+        success: false,
+        message: "강의를 완료한 후 수료증을 발급받을 수 있습니다."
+      });
+    }
+
+    const certificate = {
+      id: `CERT-${courseId}-${userId}-${Date.now()}`,
+      courseId,
+      userId,
+      courseTitle: "강아지 기본 복종 훈련",
+      studentName: "김반려",
+      completedAt: new Date().toISOString().split('T')[0],
+      issuedAt: new Date().toISOString(),
+      certificateUrl: `/certificates/${courseId}/${userId}.pdf`
+    };
+
+    console.log(`수료증 발급:`, certificate);
+
+    return res.json({
+      success: true,
+      message: "수료증이 발급되었습니다.",
+      certificate
+    });
+  });
+
+  // 사용자 수료증 목록
+  app.get("/api/users/:userId/certificates", (req, res) => {
+    const userId = parseInt(req.params.userId);
+
+    const mockCertificates = [
+      {
+        id: "CERT-1-1-1706123456789",
+        courseId: 1,
+        courseTitle: "강아지 기본 복종 훈련",
+        completedAt: "2025-06-15",
+        issuedAt: "2025-06-15T10:30:00.000Z",
+        certificateUrl: "/certificates/1/1.pdf"
+      }
+    ];
+
+    return res.json(mockCertificates);
+  });
+
   // 알림 관련 라우트 (임시 비활성화)
   // registerNotificationRoutes(app);
-
   // 파일 업로드 라우트
   registerUploadRoutes(app);
 

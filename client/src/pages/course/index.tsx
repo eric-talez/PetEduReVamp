@@ -8,7 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Progress } from '@/components/ui/progress';
-import { Search, Star, Clock, Users, BookOpen, Award, Calendar, MapPin, Filter } from 'lucide-react';
+import { Search, Star, Clock, Users, BookOpen, Award, Calendar, MapPin, Filter, Heart } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 
 interface Course {
@@ -175,6 +175,100 @@ export default function CoursePage() {
     setFilteredCourses(filtered);
   };
 
+  const [reviews, setReviews] = useState<any[]>([]);
+  const [newReview, setNewReview] = useState({ rating: 5, comment: '' });
+  const [favoriteList, setFavoriteList] = useState<number[]>([]);
+  const [recommendedCourses, setRecommendedCourses] = useState<any[]>([]);
+
+  // 리뷰 데이터 로드
+  const loadReviews = async (courseId: number) => {
+    try {
+      const response = await fetch(`/api/courses/${courseId}/reviews`);
+      const reviewData = await response.json();
+      setReviews(reviewData);
+    } catch (error) {
+      console.error('리뷰 로드 오류:', error);
+    }
+  };
+
+  // 즐겨찾기 토글
+  const toggleFavorite = async (courseId: number) => {
+    if (!user) {
+      alert('로그인이 필요합니다.');
+      return;
+    }
+
+    const isFavorite = favoriteList.includes(courseId);
+    const action = isFavorite ? 'remove' : 'add';
+
+    try {
+      const response = await fetch(`/api/courses/${courseId}/favorite`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: user.id, action })
+      });
+
+      const result = await response.json();
+      if (result.success) {
+        if (action === 'add') {
+          setFavoriteList(prev => [...prev, courseId]);
+        } else {
+          setFavoriteList(prev => prev.filter(id => id !== courseId));
+        }
+      }
+    } catch (error) {
+      console.error('즐겨찾기 오류:', error);
+    }
+  };
+
+  // 리뷰 작성
+  const submitReview = async (courseId: number) => {
+    if (!user || !newReview.comment.trim()) {
+      alert('리뷰 내용을 입력해주세요.');
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/courses/${courseId}/reviews`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: user.id,
+          rating: newReview.rating,
+          comment: newReview.comment
+        })
+      });
+
+      const result = await response.json();
+      if (result.success) {
+        setReviews(prev => [result.review, ...prev]);
+        setNewReview({ rating: 5, comment: '' });
+        alert('리뷰가 등록되었습니다.');
+      }
+    } catch (error) {
+      console.error('리뷰 작성 오류:', error);
+    }
+  };
+
+  // 추천 강의 로드
+  const loadRecommendations = async () => {
+    if (!user) return;
+
+    try {
+      const response = await fetch(`/api/users/${user.id}/recommended-courses`);
+      const recommendations = await response.json();
+      setRecommendedCourses(recommendations);
+    } catch (error) {
+      console.error('추천 강의 로드 오류:', error);
+    }
+  };
+
+  useEffect(() => {
+    if (user) {
+      loadRecommendations();
+    }
+  }, [user]);
+
   const handleEnrollCourse = async (courseId: number) => {
     if (!user) {
       alert('로그인이 필요합니다.');
@@ -187,7 +281,7 @@ export default function CoursePage() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ courseId }),
+        body: JSON.stringify({ courseId, userId: user.id }),
       });
 
       const result = await response.json();
@@ -272,7 +366,39 @@ export default function CoursePage() {
         </div>
 
         <TabsContent value={activeTab} className="space-y-6">
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {/* 추천 강의 섹션 */}
+          {user && recommendedCourses.length > 0 && activeTab === 'all' && (
+            <div className="mb-8">
+              <h2 className="text-xl font-semibold mb-4">👨‍🏫 당신을 위한 추천 강의</h2>
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {recommendedCourses.slice(0, 3).map((course) => (
+                  <Card key={course.id} className="border-blue-200 bg-blue-50/30">
+                    <div className="relative">
+                      <img
+                        src={course.thumbnail}
+                        alt={course.title}
+                        className="w-full h-32 object-cover rounded-t-lg"
+                      />
+                      <Badge className="absolute top-2 left-2 bg-blue-500">추천</Badge>
+                    </div>
+                    <CardContent className="p-4">
+                      <h3 className="font-semibold text-sm mb-1">{course.title}</h3>
+                      <p className="text-xs text-blue-600 mb-2">{course.reason}</p>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-1">
+                          <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
+                          <span className="text-xs">{course.rating}</span>
+                        </div>
+                        <span className="text-sm font-medium">{course.price.toLocaleString()}원</span>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3"></div>
             {filteredCourses.map((course) => (
               <Card key={course.id} className="hover:shadow-lg transition-shadow overflow-hidden">
                 <div className="relative">
@@ -366,15 +492,27 @@ export default function CoursePage() {
                         <span className="text-lg font-bold">{course.price.toLocaleString()}원</span>
                       )}
                     </div>
-                    <Dialog open={isDetailOpen && selectedCourse?.id === course.id} onOpenChange={setIsDetailOpen}>
-                      <DialogTrigger asChild>
-                        <Button 
-                          variant={course.isEnrolled ? "outline" : "default"}
-                          onClick={() => setSelectedCourse(course)}
-                        >
-                          {course.isEnrolled ? "강좌 보기" : "상세 정보"}
-                        </Button>
-                      </DialogTrigger>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => toggleFavorite(course.id)}
+                        className={favoriteList.includes(course.id) ? "text-red-500" : "text-gray-400"}
+                      >
+                        <Heart className={`h-4 w-4 ${favoriteList.includes(course.id) ? 'fill-current' : ''}`} />
+                      </Button>
+                      <Dialog open={isDetailOpen && selectedCourse?.id === course.id} onOpenChange={setIsDetailOpen}>
+                        <DialogTrigger asChild>
+                          <Button 
+                            variant={course.isEnrolled ? "outline" : "default"}
+                            onClick={() => {
+                              setSelectedCourse(course);
+                              loadReviews(course.id);
+                            }}
+                          >
+                            {course.isEnrolled ? "강좌 보기" : "상세 정보"}
+                          </Button>
+                        </DialogTrigger>
                       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
                         <DialogHeader>
                           <DialogTitle>{course.title}</DialogTitle>
@@ -462,6 +600,73 @@ export default function CoursePage() {
                                     </span>
                                   )}
                                 </div>
+                              </div>
+                            </div>
+
+                            {/* 리뷰 섹션 */}
+                            <div className="border-t pt-4">
+                              <h3 className="font-semibold mb-4">수강생 리뷰 ({reviews.length})</h3>
+                              
+                              {/* 리뷰 작성 */}
+                              {selectedCourse.isEnrolled && (
+                                <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+                                  <h4 className="font-medium mb-3">리뷰 작성하기</h4>
+                                  <div className="flex items-center gap-2 mb-3">
+                                    <span className="text-sm">평점:</span>
+                                    {[1,2,3,4,5].map((star) => (
+                                      <button
+                                        key={star}
+                                        onClick={() => setNewReview(prev => ({...prev, rating: star}))}
+                                        className={`${newReview.rating >= star ? 'text-yellow-400' : 'text-gray-300'}`}
+                                      >
+                                        <Star className="h-4 w-4 fill-current" />
+                                      </button>
+                                    ))}
+                                  </div>
+                                  <textarea
+                                    value={newReview.comment}
+                                    onChange={(e) => setNewReview(prev => ({...prev, comment: e.target.value}))}
+                                    placeholder="강의에 대한 솔직한 후기를 남겨주세요..."
+                                    className="w-full p-3 border rounded-lg resize-none"
+                                    rows={3}
+                                  />
+                                  <Button 
+                                    onClick={() => submitReview(selectedCourse.id)}
+                                    className="mt-2"
+                                    size="sm"
+                                  >
+                                    리뷰 등록
+                                  </Button>
+                                </div>
+                              )}
+
+                              {/* 리뷰 목록 */}
+                              <div className="space-y-4 max-h-64 overflow-y-auto">
+                                {reviews.map((review) => (
+                                  <div key={review.id} className="flex gap-3 p-3 border rounded-lg">
+                                    <Avatar className="w-10 h-10">
+                                      <AvatarImage src={review.userAvatar} alt={review.userName} />
+                                      <AvatarFallback>{review.userName[0]}</AvatarFallback>
+                                    </Avatar>
+                                    <div className="flex-1">
+                                      <div className="flex items-center gap-2 mb-1">
+                                        <span className="font-medium text-sm">{review.userName}</span>
+                                        <div className="flex">
+                                          {Array.from({length: review.rating}).map((_, i) => (
+                                            <Star key={i} className="h-3 w-3 fill-yellow-400 text-yellow-400" />
+                                          ))}
+                                        </div>
+                                        <span className="text-xs text-gray-500">{review.createdAt}</span>
+                                      </div>
+                                      <p className="text-sm text-gray-700">{review.comment}</p>
+                                      <div className="flex items-center gap-2 mt-2">
+                                        <button className="text-xs text-gray-500 hover:text-blue-600">
+                                          도움됨 ({review.helpful})
+                                        </button>
+                                      </div>
+                                    </div>
+                                  </div>
+                                ))}
                               </div>
                             </div>
 
