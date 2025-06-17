@@ -470,46 +470,35 @@ export default function Trainers() {
           <Card 
             key={trainer.id} 
             className="overflow-hidden border border-gray-100 dark:border-gray-700 transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
-            <div className="relative h-32 bg-gradient-to-r from-primary/60 to-accent/60">
-              <img 
-                src={trainer.background} 
-                alt={trainer.name} 
-                className="w-full h-full object-cover light-mode"
-                style={{ 
-                  filter: 'none !important', 
-                  WebkitFilter: 'none !important',
-                  mixBlendMode: 'normal',
-                  opacity: '0.8'
-                }}
-              />
+            
+            {/* 프로필 이미지를 맨 위로 이동 */}
+            <div className="relative h-48 bg-gradient-to-br from-blue-50 to-purple-50 flex items-center justify-center">
+              <div className="w-32 h-32 rounded-full overflow-hidden shadow-xl border-4 border-white">
+                <img 
+                  src="https://images.unsplash.com/photo-1543466835-00a7907e9de1?q=80&w=300&auto=format&fit=crop&sharp=100" 
+                  alt={trainer.name} 
+                  className="w-full h-full object-cover light-mode" 
+                  style={{ 
+                    filter: 'none !important', 
+                    WebkitFilter: 'none !important',
+                    brightness: '1',
+                    contrast: '1'
+                  }}
+                />
+              </div>
               
               {trainer.featured && (
-                <Badge variant="warning" className="absolute top-2 right-2">
+                <Badge variant="warning" className="absolute top-3 right-3">
                   <Sparkles className="h-3 w-3 mr-1" />
                   추천 훈련사
                 </Badge>
               )}
             </div>
             
-            <div className="pt-0 p-5">
-              <div className="flex items-end -mt-12 mb-4">
-                <div className="w-20 h-20 border-4 border-white dark:border-gray-800 rounded-full overflow-hidden shadow-lg">
-                  <img 
-                    src="https://images.unsplash.com/photo-1543466835-00a7907e9de1?q=80&w=300&auto=format&fit=crop&sharp=100" 
-                    alt={trainer.name} 
-                    className="w-full h-full object-cover light-mode" 
-                    style={{ 
-                      filter: 'none !important', 
-                      WebkitFilter: 'none !important',
-                      brightness: '1',
-                      contrast: '1'
-                    }}
-                  />
-                </div>
-                <div className="ml-4 pb-1">
-                  <h3 className="text-lg font-semibold text-gray-800 dark:text-white">{trainer.name}</h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-300">{trainer.title}</p>
-                </div>
+            <div className="p-5">
+              <div className="text-center mb-4">
+                <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-1">{trainer.name}</h3>
+                <p className="text-sm text-gray-600 dark:text-gray-300">{trainer.title}</p>
               </div>
               
               <div className="space-y-3 mb-4">
