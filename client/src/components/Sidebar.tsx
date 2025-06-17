@@ -3,7 +3,7 @@ import { BarChart } from "@/components/ui/chart";
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { ScrollArea } from "@/components/ui/scroll-area";
-import React, { useState, useEffect, createContext, useContext } from "react";
+import React, { useState, useEffect, createContext, useContext, useCallback } from "react";
 import { SpecialShopLink } from "./SpecialShopLink";
 import { HelpSection } from "./HelpSection";
 import { StatisticsSection } from "./StatisticsSection";
@@ -210,6 +210,7 @@ export function Sidebar({
       management: false,  // 운영 관리 메뉴
       tools: false,       // 도구 메뉴
       admin: false        // 관리자 메뉴
+      //shopping: false
     };
   });
 
@@ -264,27 +265,27 @@ export function Sidebar({
     }
   };
 
-  const toggleMenuGroup = (group: string) => {
-    console.log(`토글 메뉴 그룹: ${group}, 현재 상태: ${menuGroups[group as keyof typeof menuGroups]}`);
-    setMenuGroups((prev: Record<string, boolean>) => {
-      // 타입 안전성 보장을 위한 접근 방식
-      const currentState = group in prev ? prev[group] : false;
-      const newState = {
+  // 메뉴 그룹 토글 함수 - 개선된 에러 처리
+  const toggleMenuGroup = useCallback((groupId: string) => {
+    setMenuGroups(prev => {
+      const updated = {
         ...prev,
-        [group]: !currentState
+        [groupId]: !prev[groupId]
       };
 
-      // localStorage에 저장
+      // localStorage에 상태 저장 - 안전한 처리
       try {
-        localStorage.setItem('menuGroups', JSON.stringify(newState));
-      } catch (e) {
-        console.error('메뉴 그룹 상태 저장 오류:', e);
+        const serializedState = JSON.stringify(updated);
+        localStorage.setItem('menuGroupStates', serializedState);
+        console.log(`✅ 메뉴 그룹 [${groupId}] 상태 변경:`, updated[groupId] ? '열림' : '닫힘');
+      } catch (error) {
+        console.error('❌ localStorage 저장 실패:', error);
+        // localStorage 실패 시에도 UI 상태는 업데이트
       }
 
-      console.log(`메뉴 상태 변경 후: ${group} = ${!currentState}`);
-      return newState;
+      return updated;
     });
-  };
+  }, []);
 
   const isActive = (path: string) => {
     if (path === "/" && location === "/") return true;
@@ -704,7 +705,7 @@ export function Sidebar({
                       <>
                         <AccessibleNavItem href="/my-courses" icon={<GraduationCap className="w-5 h-5 mr-2" />} hoverIcon={<BookOpen className="w-5 h-5 mr-2 text-primary" />} active={isActive("/my-courses")} onClick={handleItemClick} show={true}>나의 학습</AccessibleNavItem>
                         <AccessibleNavItem href="/my-pets" icon={<PawPrint className="w-5 h-5 mr-2" />} hoverIcon={<Award className="w-5 h-5 mr-2 text-primary" />} active={isActive("/my-pets")} onClick={handleItemClick} show={true}>반려견 관리</AccessibleNavItem>
-                        <AccessibleNavItem href="/consultation" icon={<Video className="w-5 h-5 mr-2" />} hoverIcon={<MessageSquare className="w-5 h-5 mr-2 text-primary" />} active={isActive("/consultation")} onClick={handleItemClick} show={true}>내 상담 현황</AccessibleNavItem>
+                        <AccessibleNavItem hreferef="/consultation" icon={<Video className="w-5 h-5 mr-2" />} hoverIcon={<MessageSquare className="w-5 h-5 mr-2 text-primary" />} active={isActive("/consultation")} onClick={handleItemClick} show={true}>내 상담 현황</AccessibleNavItem>
                         <AccessibleNavItem href="/my-trainers" icon={<UserRoundCheck className="5 h-5 mr-2" />} hoverIcon={<Users className="w-5 h-5 mr-2 text-primary" />} active={isActive("/my-trainers")} onClick={handleItemClick} show={true}>내 훈련사</AccessibleNavItem>
                         <AccessibleNavItem href="/pet-care/health-record" icon={<Activity className="w-5 h-5 mr-2" />} hoverIcon={<TrendingUp className="w-5 h-5 mr-2 text-primary" />} active={isActive("/pet-care/health-record")} onClick={handleItemClick} show={true}>건강 관리</AccessibleNavItem>
                         <AccessibleNavItem href="/notebook" icon={<Edit className="w-5 h-5 mr-2" />} hoverIcon={<MessageSquare className="w-5 h-5 mr-2 text-primary" />} active={isActive("/notebook")} onClick={handleItemClick} show={true}>알림장</AccessibleNavItem>

@@ -29,16 +29,30 @@ interface Request extends ExpressRequest {
 }
 
 export function registerMenuRoutes(app: Express) {
-  // 메뉴 설정 가져오기
+  // 메뉴 설정 가져오기 - 권한별 필터링 추가
   app.get('/api/menu-configuration', async (req: Request, res: Response) => {
     try {
-      console.log('[DEBUG] GET /api/menu-configuration 요청 받음');
-      console.log('[DEBUG] 쿼리 파라미터:', req.query);
+      console.log('[메뉴API] GET /api/menu-configuration 요청');
+      const userRole = req.user?.role || 'user';
+      const instituteId = req.query.instituteId;
       
-      // 임시 해결: 데이터베이스 접근 문제가 있는 경우 기본 메뉴 반환
-      return res.json(DEFAULT_MENU_CONFIGURATION);
+      console.log('[메뉴API] 사용자 역할:', userRole, '기관ID:', instituteId);
+      
+      // 사용자 역할에 따른 메뉴 필터링
+      const filteredMenuConfig = {
+        ...DEFAULT_MENU_CONFIGURATION,
+        items: DEFAULT_MENU_CONFIGURATION.items.filter(item => 
+          item.roles.includes(userRole as any) || item.isPublic
+        ),
+        groups: DEFAULT_MENU_CONFIGURATION.groups.filter(group => 
+          group.roles.includes(userRole as any) || group.isPublic
+        )
+      };
+      
+      console.log('[메뉴API] 필터링된 메뉴 항목 수:', filteredMenuConfig.items.length);
+      return res.json(filteredMenuConfig);
     } catch (error) {
-      console.error('메뉴 설정 조회 오류:', error);
+      console.error('❌ 메뉴 설정 조회 오류:', error);
       res.status(500).json({ error: '메뉴 설정을 가져오는데 실패했습니다.' });
     }
   });
