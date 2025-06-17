@@ -54,6 +54,16 @@
             "date": 1749425315333,
             "name": "/home/runner/workspace/logs/error-2025-06-08.log",
             "hash": "efa69f5feb12f4e4c3c1d1ad67f15eb31028ec20b90dafd47bc31326aa351a4a"
+        },
+        {
+            "date": 1750093191287,
+            "name": "/home/runner/workspace/logs/error-2025-06-16.log",
+            "hash": "02145af120fe14172ae1baf4f8d8ddb8d1bc86dcbe9822c51034a036593ea8e2"
+        },
+        {
+            "date": 1750140834971,
+            "name": "/home/runner/workspace/logs/error-2025-06-17.log",
+            "hash": "6537499f9949c21aac3b11b40a7d7509e402024d08f9e42ab70080c133fa4032"
         }
     ],
     "hashType": "sha256"
