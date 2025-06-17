@@ -827,7 +827,7 @@ app.get('/api/search', async (req, res) => {
     return res.json(mockCertificates);
   });
 
-  // 알림 관련 라우트 (임시 비활성화)
+  // 알림 관련 라우트 (// 임시 비활성화)
   // registerNotificationRoutes(app);
   // 파일 업로드 라우트
   registerUploadRoutes(app);
@@ -910,190 +910,134 @@ app.get('/api/search', async (req, res) => {
 
 // ===== Trainer Routes =====
 
-  // Get all trainers
+// Get all trainers with filtering
   app.get("/api/trainers", async (req, res) => {
     try {
-      const trainers = [
-        {
-          id: 1,
-          name: "김훈련",
-          title: "수석 훈련사",
-          specialty: "반려견 기본 훈련",
-          avatar: "https://images.unsplash.com/photo-1607990281513-2c110a25bd8c?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&h=200",
-          background: "https://images.unsplash.com/photo-1535930891776-0c2dfb7fda1a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=350",
-          location: "서울시 강남구",
-          rating: 4.9,
-          reviews: 56,
-          courses: 5,
-          experience: "10년+",
-          category: "기본 훈련",
-          certification: true,
-          featured: true,
-          bio: "10년 이상의 경력을 가진 전문 훈련사로서 수천 마리의 반려견을 교육했습니다.",
-          phone: "010-1234-5678",
-          email: "trainer1@example.com",
-          specialties: ["기본 순종 훈련", "문제 행동 교정", "사회화 훈련"],
-          hourlyRate: 50000,
-          availableSlots: ["09:00", "10:00", "14:00", "15:00", "16:00"]
-        },
-        {
-          id: 2,
-          name: "박민첩",
-          title: "어질리티 전문 훈련사",
-          specialty: "반려견 어질리티",
-          avatar: "https://images.unsplash.com/photo-1548535537-3cfaf1fc327c?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&h=200",
-          background: "https://images.unsplash.com/photo-1583336663277-620dc1996580?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=350",
-          location: "서울시 송파구",
-          rating: 4.7,
-          reviews: 38,
-          courses: 3,
-          experience: "7년",
-          category: "활동 훈련",
-          certification: true,
-          featured: false,
-          bio: "어질리티 대회에서 여러 차례 수상한 경력을 가진 전문 훈련사입니다.",
-          phone: "010-2345-6789",
-          email: "trainer2@example.com",
-          specialties: ["어질리티 훈련", "민첩성 향상", "체력 증진"],
-          hourlyRate: 60000,
-          availableSlots: ["10:00", "11:00", "15:00", "16:00"]
-        },
-        {
-          id: 3,
-          name: "이사회",
-          title: "사회화 전문 훈련사",
-          specialty: "반려견 사회화 훈련",
-          avatar: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&h=200",
-          background: "https://images.unsplash.com/photo-1548199973-03cce0bbc87b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=350",
-          location: "서울시 마포구",
-          rating: 4.8,
-          reviews: 44,
-          courses: 2,
-          experience: "6년",
-          category: "사회화",
-          certification: true,
-          featured: false,
-          bio: "반려견이 다른 동물, 사람, 환경에 적응할 수 있도록 도와주는 사회화 훈련 전문가입니다.",
-          phone: "010-3456-7890",
-          email: "trainer3@example.com",
-          specialties: ["사회화 훈련", "환경 적응", "분리불안 해소"],
-          hourlyRate: 55000,
-          availableSlots: ["09:00", "13:00", "14:00", "17:00"]
-        }
-      ];
+      const { 
+        specialty, 
+        location, 
+        certification, 
+        featured, 
+        search, 
+        minRating, 
+        maxPrice,
+        page = 1,
+        limit = 12,
+        sortBy = 'rating',
+        sortOrder = 'desc'
+      } = req.query;
 
-      // 필터링 파라미터 처리
-      const { specialty, location, certification, featured, search } = req.query;
+      let trainers = await storage.getAllTrainers();
 
-      let filteredTrainers = [...trainers];
-
-      if (specialty) {
-        filteredTrainers = filteredTrainers.filter(trainer => 
-          trainer.category.toLowerCase().includes(specialty.toString().toLowerCase())
+      // 필터링 적용
+      if (specialty && specialty !== 'all') {
+        trainers = trainers.filter(trainer => 
+          trainer.specialties?.includes(specialty) || trainer.specialty === specialty
         );
       }
 
       if (location) {
-        filteredTrainers = filteredTrainers.filter(trainer => 
-          trainer.location.toLowerCase().includes(location.toString().toLowerCase())
+        trainers = trainers.filter(trainer => 
+          trainer.address?.includes(location as string) ||
+          trainer.location?.includes(location as string)
         );
       }
 
       if (certification === 'true') {
-        filteredTrainers = filteredTrainers.filter(trainer => trainer.certification);
+        trainers = trainers.filter(trainer => trainer.certifications && trainer.certifications.length > 0);
       }
 
       if (featured === 'true') {
-        filteredTrainers = filteredTrainers.filter(trainer => trainer.featured);
+        trainers = trainers.filter(trainer => trainer.featured === true);
       }
 
       if (search) {
-        const searchTerm = search.toString().toLowerCase();
-        filteredTrainers = filteredTrainers.filter(trainer => 
+        const searchTerm = (search as string).toLowerCase();
+        trainers = trainers.filter(trainer => 
           trainer.name.toLowerCase().includes(searchTerm) ||
-          trainer.specialty.toLowerCase().includes(searchTerm) ||
-          trainer.location.toLowerCase().includes(searchTerm)
+          trainer.bio?.toLowerCase().includes(searchTerm) ||
+          trainer.specialties?.some((spec: string) => spec.toLowerCase().includes(searchTerm))
         );
       }
 
-      res.json({
-        trainers: filteredTrainers,
-        total: filteredTrainers.length,
-        message: "훈련사 목록을 성공적으로 조회했습니다."
-      });
-    } catch (error) {
-      console.error('훈련사 목록 조회 오류:', error);
-      res.status(500).json({ 
-        error: '훈련사 목록 조회에 실패했습니다.',
-        message: error instanceof Error ? error.message : '알 수 없는 오류가 발생했습니다.'
-      });
-    }
-  });
-
-  // Get trainer by ID
-  app.get("/api/trainers/:id", async (req, res) => {
-    try {
-      const trainerId = parseInt(req.params.id);
-
-      // 임시 훈련사 데이터 (실제로는 데이터베이스에서 조회)
-      const trainers = [
-        {
-          id: 1,
-          name: "김훈련",
-          title: "수석 훈련사",
-          specialty: "반려견 기본 훈련",
-          avatar: "https://images.unsplash.com/photo-1607990281513-2c110a25bd8c?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&h=200",
-          background: "https://images.unsplash.com/photo-1535930891776-0c2dfb7fda1a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=350",
-          location: "서울시 강남구",
-          rating: 4.9,
-          reviews: 56,
-          courses: 5,
-          experience: "10년+",
-          category: "기본 훈련",
-          certification: true,
-          featured: true,
-          bio: "10년 이상의 경력을 가진 전문 훈련사로서 수천 마리의 반려견을 교육했습니다. 문제 행동 교정, 기본 훈련에 특화되어 있으며 개별 맞춤형 훈련 프로그램을 제공합니다.",
-          phone: "010-1234-5678",
-          email: "trainer1@example.com",
-          specialties: ["기본 순종 훈련", "문제 행동 교정", "사회화 훈련"],
-          certifications: ["KKF 공인 훈련사", "CCPDT-KA 자격증", "반려동물 행동분석사"],
-          hourlyRate: 50000,
-          availableSlots: ["09:00", "10:00", "14:00", "15:00", "16:00"],
-          workingDays: ["월", "화", "수", "목", "금", "토"],
-          description: "반려견과 견주의 행복한 동반자 관계를 만들어가는 것이 저의 목표입니다.",
-          achievements: ["2023년 우수 훈련사 선정", "반려견 행동교정 전문가 과정 수료", "1000마리 이상 훈련 완료"]
-        }
-      ];
-
-      const trainer = trainers.find(t => t.id === trainerId);
-
-      if (!trainer) {
-        return res.status(404).json({ 
-          error: '훈련사를 찾을 수 없습니다.',
-          message: `ID ${trainerId}에 해당하는 훈련사가 존재하지 않습니다.`
-        });
+      if (minRating) {
+        trainers = trainers.filter(trainer => trainer.rating >= parseFloat(minRating as string));
       }
 
-      res.json({
-        trainer,
-        message: "훈련사 정보를 성공적으로 조회했습니다."
+      if (maxPrice) {
+        trainers = trainers.filter(trainer => trainer.price <= parseInt(maxPrice as string));
+      }
+
+      // 정렬
+      trainers.sort((a, b) => {
+        let aValue, bValue;
+
+        switch (sortBy) {
+          case 'rating':
+            aValue = a.rating || 0;
+            bValue = b.rating || 0;
+            break;
+          case 'price':
+            aValue = a.price || 0;
+            bValue = b.price || 0;
+            break;
+          case 'experience':
+            aValue = a.experience || 0;
+            bValue = b.experience || 0;
+            break;
+          case 'reviews':
+            aValue = a.reviewCount || 0;
+            bValue = b.reviewCount || 0;
+            break;
+          default:
+            aValue = a.rating || 0;
+            bValue = b.rating || 0;
+        }
+
+        return sortOrder === 'desc' ? bValue - aValue : aValue - bValue;
       });
-    } catch (error) {
-      console.error('훈련사 상세 조회 오류:', error);
-      res.status(500).json({ 
-        error: '훈련사 정보 조회에 실패했습니다.',
-        message: error instanceof Error ? error.message : '알 수 없는 오류가 발생했습니다.'
+
+      // 페이지네이션
+      const pageNum = parseInt(page as string);
+      const limitNum = parseInt(limit as string);
+      const startIndex = (pageNum - 1) * limitNum;
+      const endIndex = startIndex + limitNum;
+
+      const paginatedTrainers = trainers.slice(startIndex, endIndex);
+      const totalPages = Math.ceil(trainers.length / limitNum);
+
+      return res.status(200).json({
+        trainers: paginatedTrainers,
+        pagination: {
+          currentPage: pageNum,
+          totalPages,
+          totalCount: trainers.length,
+          hasNext: pageNum < totalPages,
+          hasPrev: pageNum > 1
+        },
+        filters: {
+          specialty,
+          location,
+          certification,
+          featured,
+          search,
+          minRating,
+          maxPrice
+        }
       });
+    } catch (error: any) {
+      console.error("Get trainers error:", error);
+      return res.status(500).json({ message: "Internal server error" });
     }
   });
 
-  // Book consultation with trainer
+  // 훈련사 상담 예약 API
   app.post("/api/trainers/:id/consultation", async (req, res) => {
     try {
       const trainerId = parseInt(req.params.id);
       const { userId, date, time, message } = req.body;
 
-      // 상담 예약 로직 (실제로는 데이터베이스에 저장)
+      // 간단한 예약 데이터 생성 (실제로는 DB에 저장)
       const consultation = {
         id: Date.now(),
         trainerId,
@@ -1102,52 +1046,79 @@ app.get('/api/search', async (req, res) => {
         time,
         message,
         status: 'pending',
-        createdAt: new Date().toISOString()
+        createdAt: new Date()
       };
 
-      res.json({
-        consultation,
-        message: "상담 예약이 성공적으로 완료되었습니다."
+      return res.status(201).json({
+        message: "상담 예약이 완료되었습니다.",
+        consultation
       });
-    } catch (error) {
-      console.error('상담 예약 오류:', error);
-      res.status(500).json({ 
-        error: '상담 예약에 실패했습니다.',
-        message: error instanceof Error ? error.message : '알 수 없는 오류가 발생했습니다.'
-      });
+    } catch (error: any) {
+      console.error("Consultation booking error:", error);
+      return res.status(500).json({ message: "예약 처리 중 오류가 발생했습니다." });
     }
   });
 
-  // Book video class with trainer
-  app.post("/api/trainers/:id/video-class", async (req, res) => {
+  // 훈련사 리뷰 조회 API
+  app.get("/api/trainers/:id/reviews", async (req, res) => {
     try {
       const trainerId = parseInt(req.params.id);
-      const { userId, date, time, duration, petInfo } = req.body;
+      const { page = 1, limit = 10 } = req.query;
 
-      // 화상수업 예약 로직
-      const videoClass = {
-        id: Date.now(),
+      // 임시 리뷰 데이터
+      const reviews = [
+        {
+          id: 1,
+          userId: 1,
+          userName: "김반려",
+          rating: 5,
+          comment: "정말 친절하고 전문적인 훈련사님입니다. 우리 강아지가 많이 달라졌어요!",
+          createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+        },
+        {
+          id: 2,
+          userId: 2,
+          userName: "이고양",
+          rating: 4,
+          comment: "체계적인 교육 프로그램으로 만족스러운 결과를 얻었습니다.",
+          createdAt: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000)
+        }
+      ];
+
+      return res.status(200).json({
+        reviews,
+        totalCount: reviews.length
+      });
+    } catch (error: any) {
+      console.error("Get trainer reviews error:", error);
+      return res.status(500).json({ message: "리뷰 조회 중 오류가 발생했습니다." });
+    }
+  });
+
+  // 훈련사 스케줄 조회 API
+  app.get("/api/trainers/:id/schedule", async (req, res) => {
+    try {
+      const trainerId = parseInt(req.params.id);
+      const { date } = req.query;
+
+      // 임시 스케줄 데이터
+      const schedule = {
         trainerId,
-        userId,
-        date,
-        time,
-        duration: duration || 60,
-        petInfo,
-        status: 'scheduled',
-        meetingUrl: `https://meet.example.com/room/${Date.now()}`,
-        createdAt: new Date().toISOString()
+        date: date || new Date().toISOString().split('T')[0],
+        availableSlots: [
+          { time: "09:00", available: true },
+          { time: "10:00", available: false },
+          { time: "11:00", available: true },
+          { time: "14:00", available: true },
+          { time: "15:00", available: false },
+          { time: "16:00", available: true }
+        ]
       };
 
-      res.json({
-        videoClass,
-        message: "화상수업 예약이 성공적으로 완료되었습니다."
-      });
-    } catch (error) {
-      console.error('화상수업 예약 오류:', error);
-      res.status(500).json({ 
-        error: '화상수업 예약에 실패했습니다.',
-        message: error instanceof Error ? error.message : '알 수 없는 오류가 발생했습니다.'
-      });
+      return res.status(200).json(schedule);
+    } catch (error: any) {
+      console.error("Get trainer schedule error:", error);
+      return res.status(500).json({ message: "스케줄 조회 중 오류가 발생했습니다." });
     }
   });
 
@@ -1155,7 +1126,7 @@ app.get('/api/search', async (req, res) => {
 
   // Get all courses
   app.get("/api/courses", async (req, res) => {
-    
+
   // Global error handler
   app.use(errorHandler);
 
