@@ -1,9 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { Search, Filter, MapPin, Star, Briefcase, Award, Sparkles, X, AlertCircle } from "lucide-react";
+import { Search, Filter, MapPin, Star, Briefcase, Award, Sparkles, X, AlertCircle, Loader2 } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -25,8 +25,73 @@ export default function Trainers() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showMemberAlert, setShowMemberAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState({ title: "", description: "" });
+  const [trainers, setTrainers] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [, setLocation] = useLocation();
   const { isAuthenticated } = useAuth(); // useAuth 훅을 사용하여 로그인 상태 확인
+
+  // API에서 훈련사 데이터 로드
+  useEffect(() => {
+    const fetchTrainers = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        const params = new URLSearchParams();
+        if (filter !== "all") {
+          if (filter === "certification") {
+            params.append('certification', 'true');
+          } else if (filter === "featured") {
+            params.append('featured', 'true');
+          } else {
+            params.append('specialty', filter);
+          }
+        }
+        if (searchTerm) {
+          params.append('search', searchTerm);
+        }
+        
+        const response = await fetch(`/api/trainers?${params.toString()}`);
+        if (!response.ok) {
+          throw new Error('훈련사 데이터를 불러오는데 실패했습니다.');
+        }
+        
+        const data = await response.json();
+        setTrainers(data.trainers || []);
+      } catch (err) {
+        console.error('훈련사 데이터 로드 오류:', err);
+        setError(err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다.');
+        // 오류 시 기본 데이터 사용
+        setTrainers(getDefaultTrainers());
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTrainers();
+  }, [filter, searchTerm]);
+
+  // 기본 훈련사 데이터 (API 오류 시 사용)
+  const getDefaultTrainers = () => [
+    {
+      id: 1,
+      name: "김훈련",
+      title: "수석 훈련사",
+      specialty: "반려견 기본 훈련",
+      avatar: "https://images.unsplash.com/photo-1607990281513-2c110a25bd8c?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&h=200",
+      background: "https://images.unsplash.com/photo-1535930891776-0c2dfb7fda1a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=350",
+      location: "서울시 강남구",
+      rating: 4.9,
+      reviews: 56,
+      courses: 5,
+      experience: "10년+",
+      category: "기본 훈련",
+      certification: true,
+      featured: true,
+      bio: "10년 이상의 경력을 가진 전문 훈련사로서 수천 마리의 반려견을 교육했습니다."
+    }
+  ];
   
   const openTrainerModal = (trainer: any) => {
     console.log("훈련사 프로필 열기:", trainer.name);
@@ -45,7 +110,7 @@ export default function Trainers() {
     setLocation(`/courses?trainer=${trainerId}`);
   };
   
-  const handleBookConsultation = (trainerId: number) => {
+  const handleBookConsultation = async (trainerId: number) => {
     console.log(`${trainerId}번 훈련사와 상담 예약하기`);
     
     if (!isAuthenticated) {
@@ -58,8 +123,36 @@ export default function Trainers() {
       return;
     }
     
-    closeTrainerModal();
-    setLocation(`/video-call?trainer=${trainerId}`);
+    try {
+      // 실제 상담 예약 API 호출
+      const response = await fetch(`/api/trainers/${trainerId}/consultation`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: 1, // 실제로는 현재 로그인한 사용자 ID
+          date: new Date().toISOString().split('T')[0],
+          time: "14:00",
+          message: "상담 예약 요청입니다."
+        })
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        console.log('상담 예약 성공:', data);
+        closeTrainerModal();
+        setLocation(`/video-call?trainer=${trainerId}&consultation=${data.consultation.id}`);
+      } else {
+        console.error('상담 예약 실패');
+        closeTrainerModal();
+        setLocation(`/video-call?trainer=${trainerId}`);
+      }
+    } catch (error) {
+      console.error('상담 예약 오류:', error);
+      closeTrainerModal();
+      setLocation(`/video-call?trainer=${trainerId}`);
+    }
   };
   
   const handleCourseReservation = (trainerId: number) => {
@@ -84,139 +177,36 @@ export default function Trainers() {
     setLocation('/auth');
   };
   
-  const trainers = [
-    {
-      id: 1,
-      name: "김훈련",
-      title: "수석 훈련사",
-      specialty: "반려견 기본 훈련",
-      avatar: "https://images.unsplash.com/photo-1607990281513-2c110a25bd8c?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&h=200",
-      background: "https://images.unsplash.com/photo-1535930891776-0c2dfb7fda1a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=350",
-      location: "서울시 강남구",
-      rating: 4.9,
-      reviews: 56,
-      courses: 5,
-      experience: "10년+",
-      category: "기본 훈련",
-      certification: true,
-      featured: true,
-      bio: "10년 이상의 경력을 가진 전문 훈련사로서 수천 마리의 반려견을 교육했습니다. 문제 행동 교정, 기본 훈련에 특화되어 있으며 개별 맞춤형 훈련 프로그램을 제공합니다."
-    },
-    {
-      id: 2,
-      name: "박민첩",
-      title: "어질리티 전문 훈련사",
-      specialty: "반려견 어질리티",
-      avatar: "https://images.unsplash.com/photo-1548535537-3cfaf1fc327c?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&h=200",
-      background: "https://images.unsplash.com/photo-1583336663277-620dc1996580?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=350",
-      location: "서울시 송파구",
-      rating: 4.7,
-      reviews: 38,
-      courses: 3,
-      experience: "7년",
-      category: "활동 훈련",
-      certification: true,
-      bio: "어질리티 대회에서 여러 차례 수상한 경력을 가진 전문 훈련사입니다. 반려견의 신체 능력을 향상시키고 집중력과 민첩성을 키울 수 있는 다양한 훈련법을 제공합니다."
-    },
-    {
-      id: 3,
-      name: "이사회",
-      title: "사회화 전문 훈련사",
-      specialty: "반려견 사회화 훈련",
-      avatar: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&h=200",
-      background: "https://images.unsplash.com/photo-1548199973-03cce0bbc87b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=350",
-      location: "서울시 마포구",
-      rating: 4.8,
-      reviews: 44,
-      courses: 2,
-      experience: "6년",
-      category: "사회화",
-      certification: true,
-      bio: "반려견이 다른 동물, 사람, 환경에 적응할 수 있도록 도와주는 사회화 훈련 전문가입니다. 동물 행동학을 전공하여 과학적인 접근법으로 훈련을 진행합니다."
-    },
-    {
-      id: 4,
-      name: "최행동",
-      title: "행동 교정 전문가",
-      specialty: "문제 행동 교정",
-      avatar: "https://images.unsplash.com/photo-1599566150163-29194dcaad36?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&h=200",
-      background: "https://images.unsplash.com/photo-1583512603806-077998240c7a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=350",
-      location: "경기도 고양시",
-      rating: 4.7,
-      reviews: 31,
-      courses: 4,
-      experience: "8년",
-      category: "행동 교정",
-      certification: true,
-      featured: true,
-      bio: "분리불안, 공격성, 짖음 등 다양한 문제 행동을 전문적으로 교정합니다. 개별 상담을 통해 반려견의 특성을 파악하고 맞춤형 솔루션을 제공합니다."
-    },
-    {
-      id: 5,
-      name: "박재미",
-      title: "트릭 훈련 전문가",
-      specialty: "재미있는 트릭 훈련",
-      avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&h=200",
-      background: "https://images.unsplash.com/photo-1587300003388-59208cc962cb?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=350",
-      location: "인천시 부평구",
-      rating: 4.5,
-      reviews: 27,
-      courses: 2,
-      experience: "5년",
-      category: "트릭 훈련",
-      certification: false,
-      bio: "반려견과 재미있게 교감할 수 있는 다양한 트릭 훈련을 제공합니다. 하이파이브부터 점프, 회전까지 반려견의 두뇌를 자극하고 견주와의 유대감을 강화하는 훈련법을 알려드립니다."
-    },
-    {
-      id: 6,
-      name: "김심리",
-      title: "반려견 심리 상담사",
-      specialty: "반려견 심리 케어",
-      avatar: "https://images.unsplash.com/photo-1546961329-78bef0414d7c?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&h=200",
-      background: "https://images.unsplash.com/photo-1601758177266-bc599de87707?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=350",
-      location: "서울시 서초구",
-      rating: 4.8,
-      reviews: 35,
-      courses: 3,
-      experience: "9년",
-      category: "심리 케어",
-      certification: true,
-      bio: "반려견의 심리 상태를 분석하고 정서적 안정을 돕는 전문가입니다. 애착 형성, 트라우마 극복, 자신감 향상 등 심리적 측면에서 접근하는 훈련 프로그램을 제공합니다."
-    },
-    {
-      id: 7,
-      name: "이산책",
-      title: "산책 훈련 전문가",
-      specialty: "산책 예절 마스터",
-      avatar: "https://images.unsplash.com/photo-1531427186611-ecfd6d936c79?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&h=200",
-      background: "https://images.unsplash.com/photo-1551730459-92db2a308d6a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=350",
-      location: "경기도 성남시",
-      rating: 4.6,
-      reviews: 29,
-      courses: 1,
-      experience: "6년",
-      category: "기본 훈련",
-      certification: true,
-      bio: "끌기, 짖기 없이 즐거운 산책을 위한 전문 훈련사입니다. 리드 훈련과 외부 환경 적응법을 통해 반려견의 산책 스트레스를 줄이고 견주가 편안하게 산책할 수 있도록 도와드립니다."
-    },
-    {
-      id: 8,
-      name: "박후각",
-      title: "노즈워크 전문가",
-      specialty: "반려견 노즈워크",
-      avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&h=200",
-      background: "https://images.unsplash.com/photo-1591946614720-90a587da4a36?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=350",
-      location: "서울시 강서구",
-      rating: 4.7,
-      reviews: 22,
-      courses: 2,
-      experience: "4년",
-      category: "특수 훈련",
-      certification: false,
-      featured: true,
-      bio: "반려견의 뛰어난 후각을 활용한 노즈워크 전문 훈련사입니다. 후각을 통한 놀이와 훈련으로 반려견의 지능 발달과 스트레스 해소에 도움을 드립니다."
-    }
-  ];
+  // 로딩 상태 처리
+  if (loading) {
+    return (
+      <div className="py-8 px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center">
+            <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-primary" />
+            <p className="text-gray-600 dark:text-gray-400">훈련사 정보를 불러오는 중...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // 에러 상태 처리
+  if (error) {
+    return (
+      <div className="py-8 px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center">
+            <AlertCircle className="h-8 w-8 mx-auto mb-4 text-red-500" />
+            <p className="text-red-600 dark:text-red-400 mb-4">{error}</p>
+            <Button onClick={() => window.location.reload()}>
+              다시 시도
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // 검색 기능
   const handleSearch = () => {
@@ -228,21 +218,8 @@ export default function Trainers() {
     console.log('검색어 변경:', e.target.value);
   };
 
-  // 실시간 검색 및 필터링
-  const filteredTrainers = trainers.filter(trainer => {
-    const matchesSearch = !searchTerm || 
-      trainer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      trainer.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      trainer.specialty.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      trainer.location.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesFilter = filter === 'all' || 
-      (filter === 'certification' && trainer.certification) ||
-      (filter === 'featured' && trainer.featured) ||
-      trainer.category === filter;
-    
-    return matchesSearch && matchesFilter;
-  });
+  // 검색 결과 표시 (API에서 이미 필터링된 데이터 사용)
+  const filteredTrainers = trainers;
 
   return (
     <div className="py-8 px-4 sm:px-6 lg:px-8">

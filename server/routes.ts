@@ -908,7 +908,255 @@ app.get('/api/search', async (req, res) => {
     }
   });
 
-  // 글로벌 에러 핸들러
+// ===== Trainer Routes =====
+
+  // Get all trainers
+  app.get("/api/trainers", async (req, res) => {
+    try {
+      const trainers = [
+        {
+          id: 1,
+          name: "김훈련",
+          title: "수석 훈련사",
+          specialty: "반려견 기본 훈련",
+          avatar: "https://images.unsplash.com/photo-1607990281513-2c110a25bd8c?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&h=200",
+          background: "https://images.unsplash.com/photo-1535930891776-0c2dfb7fda1a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=350",
+          location: "서울시 강남구",
+          rating: 4.9,
+          reviews: 56,
+          courses: 5,
+          experience: "10년+",
+          category: "기본 훈련",
+          certification: true,
+          featured: true,
+          bio: "10년 이상의 경력을 가진 전문 훈련사로서 수천 마리의 반려견을 교육했습니다.",
+          phone: "010-1234-5678",
+          email: "trainer1@example.com",
+          specialties: ["기본 순종 훈련", "문제 행동 교정", "사회화 훈련"],
+          hourlyRate: 50000,
+          availableSlots: ["09:00", "10:00", "14:00", "15:00", "16:00"]
+        },
+        {
+          id: 2,
+          name: "박민첩",
+          title: "어질리티 전문 훈련사",
+          specialty: "반려견 어질리티",
+          avatar: "https://images.unsplash.com/photo-1548535537-3cfaf1fc327c?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&h=200",
+          background: "https://images.unsplash.com/photo-1583336663277-620dc1996580?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=350",
+          location: "서울시 송파구",
+          rating: 4.7,
+          reviews: 38,
+          courses: 3,
+          experience: "7년",
+          category: "활동 훈련",
+          certification: true,
+          featured: false,
+          bio: "어질리티 대회에서 여러 차례 수상한 경력을 가진 전문 훈련사입니다.",
+          phone: "010-2345-6789",
+          email: "trainer2@example.com",
+          specialties: ["어질리티 훈련", "민첩성 향상", "체력 증진"],
+          hourlyRate: 60000,
+          availableSlots: ["10:00", "11:00", "15:00", "16:00"]
+        },
+        {
+          id: 3,
+          name: "이사회",
+          title: "사회화 전문 훈련사",
+          specialty: "반려견 사회화 훈련",
+          avatar: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&h=200",
+          background: "https://images.unsplash.com/photo-1548199973-03cce0bbc87b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=350",
+          location: "서울시 마포구",
+          rating: 4.8,
+          reviews: 44,
+          courses: 2,
+          experience: "6년",
+          category: "사회화",
+          certification: true,
+          featured: false,
+          bio: "반려견이 다른 동물, 사람, 환경에 적응할 수 있도록 도와주는 사회화 훈련 전문가입니다.",
+          phone: "010-3456-7890",
+          email: "trainer3@example.com",
+          specialties: ["사회화 훈련", "환경 적응", "분리불안 해소"],
+          hourlyRate: 55000,
+          availableSlots: ["09:00", "13:00", "14:00", "17:00"]
+        }
+      ];
+
+      // 필터링 파라미터 처리
+      const { specialty, location, certification, featured, search } = req.query;
+
+      let filteredTrainers = [...trainers];
+
+      if (specialty) {
+        filteredTrainers = filteredTrainers.filter(trainer => 
+          trainer.category.toLowerCase().includes(specialty.toString().toLowerCase())
+        );
+      }
+
+      if (location) {
+        filteredTrainers = filteredTrainers.filter(trainer => 
+          trainer.location.toLowerCase().includes(location.toString().toLowerCase())
+        );
+      }
+
+      if (certification === 'true') {
+        filteredTrainers = filteredTrainers.filter(trainer => trainer.certification);
+      }
+
+      if (featured === 'true') {
+        filteredTrainers = filteredTrainers.filter(trainer => trainer.featured);
+      }
+
+      if (search) {
+        const searchTerm = search.toString().toLowerCase();
+        filteredTrainers = filteredTrainers.filter(trainer => 
+          trainer.name.toLowerCase().includes(searchTerm) ||
+          trainer.specialty.toLowerCase().includes(searchTerm) ||
+          trainer.location.toLowerCase().includes(searchTerm)
+        );
+      }
+
+      res.json({
+        trainers: filteredTrainers,
+        total: filteredTrainers.length,
+        message: "훈련사 목록을 성공적으로 조회했습니다."
+      });
+    } catch (error) {
+      console.error('훈련사 목록 조회 오류:', error);
+      res.status(500).json({ 
+        error: '훈련사 목록 조회에 실패했습니다.',
+        message: error instanceof Error ? error.message : '알 수 없는 오류가 발생했습니다.'
+      });
+    }
+  });
+
+  // Get trainer by ID
+  app.get("/api/trainers/:id", async (req, res) => {
+    try {
+      const trainerId = parseInt(req.params.id);
+
+      // 임시 훈련사 데이터 (실제로는 데이터베이스에서 조회)
+      const trainers = [
+        {
+          id: 1,
+          name: "김훈련",
+          title: "수석 훈련사",
+          specialty: "반려견 기본 훈련",
+          avatar: "https://images.unsplash.com/photo-1607990281513-2c110a25bd8c?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&h=200",
+          background: "https://images.unsplash.com/photo-1535930891776-0c2dfb7fda1a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=350",
+          location: "서울시 강남구",
+          rating: 4.9,
+          reviews: 56,
+          courses: 5,
+          experience: "10년+",
+          category: "기본 훈련",
+          certification: true,
+          featured: true,
+          bio: "10년 이상의 경력을 가진 전문 훈련사로서 수천 마리의 반려견을 교육했습니다. 문제 행동 교정, 기본 훈련에 특화되어 있으며 개별 맞춤형 훈련 프로그램을 제공합니다.",
+          phone: "010-1234-5678",
+          email: "trainer1@example.com",
+          specialties: ["기본 순종 훈련", "문제 행동 교정", "사회화 훈련"],
+          certifications: ["KKF 공인 훈련사", "CCPDT-KA 자격증", "반려동물 행동분석사"],
+          hourlyRate: 50000,
+          availableSlots: ["09:00", "10:00", "14:00", "15:00", "16:00"],
+          workingDays: ["월", "화", "수", "목", "금", "토"],
+          description: "반려견과 견주의 행복한 동반자 관계를 만들어가는 것이 저의 목표입니다.",
+          achievements: ["2023년 우수 훈련사 선정", "반려견 행동교정 전문가 과정 수료", "1000마리 이상 훈련 완료"]
+        }
+      ];
+
+      const trainer = trainers.find(t => t.id === trainerId);
+
+      if (!trainer) {
+        return res.status(404).json({ 
+          error: '훈련사를 찾을 수 없습니다.',
+          message: `ID ${trainerId}에 해당하는 훈련사가 존재하지 않습니다.`
+        });
+      }
+
+      res.json({
+        trainer,
+        message: "훈련사 정보를 성공적으로 조회했습니다."
+      });
+    } catch (error) {
+      console.error('훈련사 상세 조회 오류:', error);
+      res.status(500).json({ 
+        error: '훈련사 정보 조회에 실패했습니다.',
+        message: error instanceof Error ? error.message : '알 수 없는 오류가 발생했습니다.'
+      });
+    }
+  });
+
+  // Book consultation with trainer
+  app.post("/api/trainers/:id/consultation", async (req, res) => {
+    try {
+      const trainerId = parseInt(req.params.id);
+      const { userId, date, time, message } = req.body;
+
+      // 상담 예약 로직 (실제로는 데이터베이스에 저장)
+      const consultation = {
+        id: Date.now(),
+        trainerId,
+        userId,
+        date,
+        time,
+        message,
+        status: 'pending',
+        createdAt: new Date().toISOString()
+      };
+
+      res.json({
+        consultation,
+        message: "상담 예약이 성공적으로 완료되었습니다."
+      });
+    } catch (error) {
+      console.error('상담 예약 오류:', error);
+      res.status(500).json({ 
+        error: '상담 예약에 실패했습니다.',
+        message: error instanceof Error ? error.message : '알 수 없는 오류가 발생했습니다.'
+      });
+    }
+  });
+
+  // Book video class with trainer
+  app.post("/api/trainers/:id/video-class", async (req, res) => {
+    try {
+      const trainerId = parseInt(req.params.id);
+      const { userId, date, time, duration, petInfo } = req.body;
+
+      // 화상수업 예약 로직
+      const videoClass = {
+        id: Date.now(),
+        trainerId,
+        userId,
+        date,
+        time,
+        duration: duration || 60,
+        petInfo,
+        status: 'scheduled',
+        meetingUrl: `https://meet.example.com/room/${Date.now()}`,
+        createdAt: new Date().toISOString()
+      };
+
+      res.json({
+        videoClass,
+        message: "화상수업 예약이 성공적으로 완료되었습니다."
+      });
+    } catch (error) {
+      console.error('화상수업 예약 오류:', error);
+      res.status(500).json({ 
+        error: '화상수업 예약에 실패했습니다.',
+        message: error instanceof Error ? error.message : '알 수 없는 오류가 발생했습니다.'
+      });
+    }
+  });
+
+  // ===== Course Routes =====
+
+  // Get all courses
+  app.get("/api/courses", async (req, res) => {
+    
+  // Global error handler
   app.use(errorHandler);
 
   return httpServer;
