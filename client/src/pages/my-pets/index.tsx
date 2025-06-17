@@ -8,8 +8,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
-import { Plus, Edit, Trash2, Heart, Calendar, Weight } from 'lucide-react';
+import { Plus, Edit, Trash2, Heart, Calendar, Weight, Upload, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { ImageUpload } from '@/components/ImageUpload';
 
 interface Pet {
   id: number;
@@ -40,6 +41,7 @@ interface PetFormData {
   personality: string;
   medicalHistory: string;
   specialNotes: string;
+  imageUrl?: string;
 }
 
 export default function MyPetsPage() {
@@ -57,7 +59,8 @@ export default function MyPetsPage() {
     color: '',
     personality: '',
     medicalHistory: '',
-    specialNotes: ''
+    specialNotes: '',
+    imageUrl: ''
   });
   const { toast } = useToast();
 
@@ -136,7 +139,8 @@ export default function MyPetsPage() {
       color: pet.color,
       personality: pet.personality,
       medicalHistory: pet.medicalHistory,
-      specialNotes: pet.specialNotes
+      specialNotes: pet.specialNotes,
+      imageUrl: pet.imageUrl || ''
     });
     setIsDialogOpen(true);
   };
@@ -177,7 +181,8 @@ export default function MyPetsPage() {
       color: '',
       personality: '',
       medicalHistory: '',
-      specialNotes: ''
+      specialNotes: '',
+      imageUrl: ''
     });
   };
 
@@ -185,6 +190,14 @@ export default function MyPetsPage() {
     setEditingPet(null);
     resetForm();
     setIsDialogOpen(true);
+  };
+
+  const handleImageUpload = (imageUrl: string) => {
+    setFormData({ ...formData, imageUrl });
+  };
+
+  const handleRemoveImage = () => {
+    setFormData({ ...formData, imageUrl: '' });
   };
 
   if (loading) {
@@ -221,7 +234,36 @@ export default function MyPetsPage() {
             </DialogHeader>
             
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+              {/* 이미지 업로드 섹션 */}
+              <div className="space-y-4">
+                <Label>반려동물 사진</Label>
+                {formData.imageUrl ? (
+                  <div className="relative inline-block">
+                    <img 
+                      src={formData.imageUrl} 
+                      alt="반려동물 사진" 
+                      className="w-32 h-32 object-cover rounded-lg border"
+                    />
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      size="sm"
+                      className="absolute -top-2 -right-2 w-6 h-6 p-0"
+                      onClick={handleRemoveImage}
+                    >
+                      <X className="w-3 h-3" />
+                    </Button>
+                  </div>
+                ) : (
+                  <ImageUpload
+                    onUpload={handleImageUpload}
+                    acceptedTypes={['image/*']}
+                    maxSize={5}
+                  />
+                )}
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4"></div>
                 <div>
                   <Label htmlFor="name">이름 *</Label>
                   <Input
@@ -360,6 +402,17 @@ export default function MyPetsPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {pets.map((pet) => (
             <Card key={pet.id} className="overflow-hidden">
+              {/* 반려동물 이미지 */}
+              {pet.imageUrl && (
+                <div className="w-full h-48 overflow-hidden">
+                  <img 
+                    src={pet.imageUrl} 
+                    alt={pet.name}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              )}
+              
               <CardHeader className="pb-3">
                 <div className="flex justify-between items-start">
                   <div>

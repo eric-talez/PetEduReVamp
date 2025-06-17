@@ -242,6 +242,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // 반려동물 생성
   app.post("/api/pets", async (req, res) => {
     try {
       const petData = req.body;
@@ -267,6 +268,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // 반려동물 수정
   app.put("/api/pets/:id", async (req, res) => {
     try {
       const petId = req.params.id;
@@ -284,6 +286,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // 반려동물 삭제
   app.delete("/api/pets/:id", async (req, res) => {
     try {
       const petId = req.params.id;
@@ -405,7 +408,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 // 검색 API - 성능 최적화 및 에러 처리 개선
 app.get('/api/search', async (req, res) => {
   const startTime = Date.now();
-  
+
   try {
     const { 
       q: query = '', 
@@ -429,10 +432,10 @@ app.get('/api/search', async (req, res) => {
     console.log(`[검색] "${query}" 검색 시작`);
 
     let results: any[] = [];
-    
+
     // 캐시된 결과가 있는지 확인 (개발용)
     const cacheKey = `search:${searchQuery}:${page}:${limit}`;
-    
+
     if (!searchQuery) {
       // 기본 추천 데이터 (빠른 응답)
       results = [
@@ -474,7 +477,7 @@ app.get('/api/search', async (req, res) => {
     } else {
       // 데이터베이스 검색 시도 (빠른 실패 처리)
       const dbPromises = [];
-      
+
       // 병렬 검색으로 성능 향상
       dbPromises.push(
         db.select().from(courses)
@@ -517,7 +520,7 @@ app.get('/api/search', async (req, res) => {
 
       try {
         const [courseResults, trainerResults, instituteResults] = await Promise.all(dbPromises);
-        
+
         if (courseResults.length > 0) {
           results.push(...courseResults.map(course => ({ ...course, type: 'course' })));
         }
@@ -564,7 +567,7 @@ app.get('/api/search', async (req, res) => {
 
     const endTime = Date.now();
     const responseTime = endTime - startTime;
-    
+
     console.log(`[검색] "${query}" 완료 - ${results.length}개 결과, ${responseTime}ms`);
 
     // 추천 검색어
@@ -584,9 +587,9 @@ app.get('/api/search', async (req, res) => {
   } catch (error) {
     const endTime = Date.now();
     const responseTime = endTime - startTime;
-    
+
     console.error('[검색] 치명적 오류:', error);
-    
+
     res.status(500).json({ 
       error: '검색 서비스가 일시적으로 불안정합니다. 잠시 후 다시 시도해주세요.',
       responseTime,

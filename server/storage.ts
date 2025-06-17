@@ -761,6 +761,8 @@ const initialInstitutes = [
       throw new Error("User not found");
     }
 
+    Adding deletePet method to the MemStorage class in storage.ts to enable pet deletion functionality.```text
+
     // 사용자 업데이트 시 타입 보존
     const updatedUser: User = { 
       ...user, 
@@ -1857,6 +1859,39 @@ export class DatabaseStorage implements IStorage {
       return false;
     }
   }
+
+    async deletePet(id: number): Promise<boolean> {
+        try {
+            const { db } = await import('./db');
+            const { eq } = await import('drizzle-orm');
+
+            const result = await db
+                .delete(pets)
+                .where(eq(pets.id, id));
+
+            return result.rowCount > 0;
+        } catch (error) {
+            console.error('반려동물 삭제 오류:', error);
+            return false;
+        }
+    }
+  async updatePet(id: number, pet: any): Promise<any> {
+        try {
+            const { db } = await import('./db');
+            const { eq } = await import('drizzle-orm');
+
+            const [updatedPet] = await db
+                .update(pets)
+                .set(pet)
+                .where(eq(pets.id, id))
+                .returning();
+
+            return updatedPet;
+        } catch (error) {
+            console.error('반려동물 업데이트 오류:', error);
+            return null;
+        }
+    }
 }
 
 export const storage = new DatabaseStorage();
