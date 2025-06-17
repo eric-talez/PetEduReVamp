@@ -11,6 +11,9 @@ import rateLimit from "express-rate-limit";
 const app = express();
 const PORT = parseInt(process.env.PORT || "5000", 10);
 
+// Trust proxy for proper rate limiting
+app.set('trust proxy', true);
+
 // Security middleware
 app.use(helmet({
   contentSecurityPolicy: {
@@ -37,8 +40,7 @@ const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: process.env.NODE_ENV === 'development' ? 1000 : 100, // Higher limit for development
   standardHeaders: true,
-  legacyHeaders: false,
-  trustProxy: true // Fix the X-Forwarded-For header warning
+  legacyHeaders: false
 });
 app.use(limiter);
 
