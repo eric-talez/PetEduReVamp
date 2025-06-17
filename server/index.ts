@@ -32,10 +32,13 @@ app.use(cors({
   credentials: true
 }));
 
-// Rate limiting
+// Rate limiting - more permissive for development
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100 // limit each IP to 100 requests per windowMs
+  max: process.env.NODE_ENV === 'development' ? 1000 : 100, // Higher limit for development
+  standardHeaders: true,
+  legacyHeaders: false,
+  trustProxy: true // Fix the X-Forwarded-For header warning
 });
 app.use(limiter);
 
