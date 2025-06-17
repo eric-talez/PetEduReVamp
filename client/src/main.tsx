@@ -10,6 +10,16 @@ import './debug.js';
 
 console.log('ENV VAR CHECK in main:', import.meta.env.VITE_KAKAO_MAPS_API_KEY);
 
+// Global error handlers
+window.addEventListener('unhandledrejection', (event) => {
+  console.warn('Unhandled promise rejection:', event.reason);
+  event.preventDefault();
+});
+
+window.addEventListener('error', (event) => {
+  console.warn('Global error:', event.error);
+});
+
 createRoot(document.getElementById("root")!).render(
   <QueryClientProvider client={queryClient}>
     <ThemeProvider>

@@ -11,9 +11,6 @@ import rateLimit from "express-rate-limit";
 const app = express();
 const PORT = parseInt(process.env.PORT || "5000", 10);
 
-// Trust proxy for proper rate limiting
-app.set('trust proxy', true);
-
 // Security middleware
 app.use(helmet({
   contentSecurityPolicy: {
@@ -35,14 +32,16 @@ app.use(cors({
   credentials: true
 }));
 
-// Rate limiting - more permissive for development
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: process.env.NODE_ENV === 'development' ? 1000 : 100, // Higher limit for development
-  standardHeaders: true,
-  legacyHeaders: false
-});
-app.use(limiter);
+// Disable rate limiting in development to avoid proxy issues
+if (process.env.NODE_ENV === 'production') {
+  const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 100,
+    standardHeaders: true,
+    legacyHeaders: false
+  });
+  app.use(limiter);
+}
 
 // Compression
 app.use(compression());
