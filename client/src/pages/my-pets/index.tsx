@@ -192,10 +192,6 @@ export default function MyPetsPage() {
     setIsDialogOpen(true);
   };
 
-  const handleImageUpload = (imageUrl: string) => {
-    setFormData({ ...formData, imageUrl });
-  };
-
   const handleRemoveImage = () => {
     setFormData({ ...formData, imageUrl: '' });
   };
@@ -234,33 +230,75 @@ export default function MyPetsPage() {
             </DialogHeader>
             
             <form onSubmit={handleSubmit} className="space-y-4">
-              {/* 이미지 업로드 섹션 */}
+              {/* 프로필 이미지 업로드 섹션 */}
               <div className="space-y-4">
-                <Label>반려동물 사진</Label>
-                {formData.imageUrl ? (
-                  <div className="relative inline-block">
-                    <img 
-                      src={formData.imageUrl} 
-                      alt="반려동물 사진" 
-                      className="w-32 h-32 object-cover rounded-lg border"
-                    />
-                    <Button
-                      type="button"
-                      variant="destructive"
-                      size="sm"
-                      className="absolute -top-2 -right-2 w-6 h-6 p-0"
-                      onClick={handleRemoveImage}
-                    >
-                      <X className="w-3 h-3" />
-                    </Button>
+                <div className="flex items-center gap-2">
+                  <Label>프로필 사진</Label>
+                  <Badge variant="secondary" className="text-xs">선택사항</Badge>
+                </div>
+                
+                <div className="flex items-start gap-4">
+                  {/* 이미지 미리보기 */}
+                  <div className="flex-shrink-0">
+                    {formData.imageUrl ? (
+                      <div className="relative">
+                        <img 
+                          src={formData.imageUrl} 
+                          alt="반려동물 프로필 사진" 
+                          className="w-32 h-32 object-cover rounded-xl border-2 border-gray-200 shadow-sm"
+                        />
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          size="sm"
+                          className="absolute -top-2 -right-2 w-7 h-7 p-0 rounded-full shadow-md bg-white hover:bg-gray-100 border"
+                          onClick={handleRemoveImage}
+                        >
+                          <X className="w-4 h-4 text-gray-600" />
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="w-32 h-32 border-2 border-dashed border-gray-300 rounded-xl flex items-center justify-center bg-gray-50">
+                        <Upload className="w-8 h-8 text-gray-400" />
+                      </div>
+                    )}
                   </div>
-                ) : (
-                  <ImageUpload
-                    onUpload={handleImageUpload}
-                    acceptedTypes={['image/*']}
-                    maxSize={5}
-                  />
-                )}
+
+                  {/* 업로드 컨트롤 */}
+                  <div className="flex-1 space-y-3">
+                    {!formData.imageUrl ? (
+                      <ImageUpload
+                        value={formData.imageUrl}
+                        onChange={(url) => setFormData({ ...formData, imageUrl: url || '' })}
+                        maxSize={5}
+                        label="프로필 사진 업로드"
+                        aspectRatio={1}
+                        maxWidth={400}
+                        maxHeight={400}
+                      />
+                    ) : (
+                      <div className="space-y-2">
+                        <p className="text-sm text-green-600 font-medium">이미지가 업로드되었습니다</p>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setFormData({ ...formData, imageUrl: '' })}
+                          className="flex items-center gap-2"
+                        >
+                          <Upload className="w-4 h-4" />
+                          다른 사진 선택
+                        </Button>
+                      </div>
+                    )}
+                    
+                    <div className="text-xs text-gray-500 space-y-1">
+                      <p>• JPG, PNG, GIF 지원 (최대 5MB)</p>
+                      <p>• 정사각형 비율 권장 (1:1)</p>
+                      <p>• 선명하고 밝은 사진 권장</p>
+                    </div>
+                  </div>
+                </div>
               </div>
               
               <div className="grid grid-cols-2 gap-4">
@@ -401,17 +439,26 @@ export default function MyPetsPage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {pets.map((pet) => (
-            <Card key={pet.id} className="overflow-hidden">
-              {/* 반려동물 이미지 */}
-              {pet.imageUrl && (
-                <div className="w-full h-48 overflow-hidden">
+            <Card key={pet.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+              {/* 반려동물 프로필 이미지 */}
+              <div className="w-full h-48 overflow-hidden bg-gradient-to-br from-blue-50 to-purple-50">
+                {pet.imageUrl ? (
                   <img 
                     src={pet.imageUrl} 
-                    alt={pet.name}
+                    alt={`${pet.name}의 프로필 사진`}
                     className="w-full h-full object-cover"
                   />
-                </div>
-              )}
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <div className="text-center">
+                      <div className="text-6xl mb-2">
+                        {pet.species === 'dog' ? '🐶' : pet.species === 'cat' ? '🐱' : '🐾'}
+                      </div>
+                      <p className="text-sm text-gray-500 font-medium">{pet.name}</p>
+                    </div>
+                  </div>
+                )}
+              </div>
               
               <CardHeader className="pb-3">
                 <div className="flex justify-between items-start">
