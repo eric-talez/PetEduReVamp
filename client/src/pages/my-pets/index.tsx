@@ -440,8 +440,8 @@ export default function MyPetsPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {pets.map((pet) => (
             <Card key={pet.id} className="overflow-hidden hover:shadow-lg transition-shadow">
-              {/* 반려동물 프로필 이미지 */}
-              <div className="w-full h-48 overflow-hidden bg-gradient-to-br from-blue-50 to-purple-50">
+              {/* 반려동물 프로필 이미지 - 맨 위로 이동 */}
+              <div className="w-full h-48 overflow-hidden bg-gradient-to-br from-blue-50 to-purple-50 relative">
                 {pet.imageUrl ? (
                   <img 
                     src={pet.imageUrl} 
@@ -458,24 +458,24 @@ export default function MyPetsPage() {
                     </div>
                   </div>
                 )}
+                
+                {/* 수정/삭제 버튼을 이미지 위에 오버레이로 배치 */}
+                <div className="absolute top-2 right-2 flex gap-1">
+                  <Button size="sm" variant="secondary" className="w-8 h-8 p-0 bg-white/80 hover:bg-white/90" onClick={() => handleEdit(pet)}>
+                    <Edit className="w-3 h-3" />
+                  </Button>
+                  <Button size="sm" variant="secondary" className="w-8 h-8 p-0 bg-white/80 hover:bg-white/90" onClick={() => handleDelete(pet.id)}>
+                    <Trash2 className="w-3 h-3" />
+                  </Button>
+                </div>
               </div>
               
               <CardHeader className="pb-3">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <CardTitle className="text-xl">{pet.name}</CardTitle>
-                    <CardDescription>
-                      {pet.species === 'dog' ? '🐶' : pet.species === 'cat' ? '🐱' : '🐾'} {pet.breed}
-                    </CardDescription>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button size="sm" variant="outline" onClick={() => handleEdit(pet)}>
-                      <Edit className="w-3 h-3" />
-                    </Button>
-                    <Button size="sm" variant="outline" onClick={() => handleDelete(pet.id)}>
-                      <Trash2 className="w-3 h-3" />
-                    </Button>
-                  </div>
+                <div>
+                  <CardTitle className="text-xl">{pet.name}</CardTitle>
+                  <CardDescription>
+                    {pet.species === 'dog' ? '🐶' : pet.species === 'cat' ? '🐱' : '🐾'} {pet.breed}
+                  </CardDescription>
                 </div>
               </CardHeader>
               
