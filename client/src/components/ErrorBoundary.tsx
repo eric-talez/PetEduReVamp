@@ -39,10 +39,29 @@ class ErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
     // 에러 로깅 또는 에러 보고 서비스에 에러 정보 전송
-    console.error('ErrorBoundary caught an error:', error, errorInfo);
-    
-    // 상위 컴포넌트에 에러 전달 (선택적)
-    this.props.onError?.(error, errorInfo);
+    console.error('Error caught by boundary:', error, errorInfo);
+
+    // 에러 리포팅 (개발 환경에서는 콘솔, 프로덕션에서는 서비스로 전송)
+    if (process.env.NODE_ENV === 'production') {
+      // 실제 서비스에서는 에러 모니터링 서비스로 전송
+      this.reportError(error, errorInfo);
+    }
+  }
+
+  private reportError = (error: Error, errorInfo: ErrorInfo) => {
+    // 에러 정보를 서버로 전송하는 로직
+    fetch('/api/error-report', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        error: error.message,
+        stack: error.stack,
+        componentStack: errorInfo.componentStack,
+        timestamp: new Date().toISOString(),
+        userAgent: navigator.userAgent,
+        url: window.location.href
+      })
+    }).catch(err => console.error('Failed to report error:', err));
   }
 
   resetErrorBoundary = (): void => {
@@ -64,11 +83,11 @@ class ErrorBoundary extends Component<Props, State> {
           aria-live="assertive"
         >
           {this.props.showDogLoading && <DogLoading size="small" message="문제 확인 중..." showTips={false} />}
-          
+
           <div className="flex items-center justify-center w-16 h-16 rounded-full bg-red-100 dark:bg-red-900/20">
             <AlertTriangle className="h-8 w-8 text-red-600 dark:text-red-400" aria-hidden="true" />
           </div>
-          
+
           <div className="text-center">
             <h3 className="text-lg font-semibold text-red-800 dark:text-red-400">
               문제가 발생했습니다
@@ -77,7 +96,7 @@ class ErrorBoundary extends Component<Props, State> {
               {this.state.error?.message || '알 수 없는 오류가 발생했습니다. 다시 시도해 주세요.'}
             </p>
           </div>
-          
+
           <div className="flex gap-3">
             <Button 
               variant="outline"
@@ -86,7 +105,7 @@ class ErrorBoundary extends Component<Props, State> {
             >
               다시 시도
             </Button>
-            
+
             <Button 
               variant="outline"
               className="border-red-300 text-red-700 hover:bg-red-100 dark:border-red-700 dark:text-red-300 dark:hover:bg-red-900/30"

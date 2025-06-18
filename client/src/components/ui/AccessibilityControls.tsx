@@ -37,21 +37,21 @@ export function AccessibilitySettings({ isOpen, onClose }: AccessibilitySettings
   const [reducedMotion, setReducedMotion] = useState<boolean>(false);
   const [highContrast, setHighContrast] = useState<boolean>(false);
   const [focusMode, setFocusMode] = useState<boolean>(false);
-  
+
   // 글꼴 크기 변경 처리
   useEffect(() => {
     document.documentElement.style.setProperty('--accessibility-font-scale', fontSize.toString());
     const storageKey = 'petedu_accessibility_fontSize';
     localStorage.setItem(storageKey, fontSize.toString());
   }, [fontSize]);
-  
+
   // 대비 변경 처리
   useEffect(() => {
     document.documentElement.style.setProperty('--accessibility-contrast', contrast.toString());
     const storageKey = 'petedu_accessibility_contrast';
     localStorage.setItem(storageKey, contrast.toString());
   }, [contrast]);
-  
+
   // 고대비 모드 처리
   useEffect(() => {
     if (highContrast) {
@@ -62,7 +62,7 @@ export function AccessibilitySettings({ isOpen, onClose }: AccessibilitySettings
     const storageKey = 'petedu_accessibility_highContrast';
     localStorage.setItem(storageKey, highContrast.toString());
   }, [highContrast]);
-  
+
   // 모션 감소 처리
   useEffect(() => {
     if (reducedMotion) {
@@ -73,7 +73,7 @@ export function AccessibilitySettings({ isOpen, onClose }: AccessibilitySettings
     const storageKey = 'petedu_accessibility_reducedMotion';
     localStorage.setItem(storageKey, reducedMotion.toString());
   }, [reducedMotion]);
-  
+
   // 집중 모드 처리
   useEffect(() => {
     if (focusMode) {
@@ -84,33 +84,33 @@ export function AccessibilitySettings({ isOpen, onClose }: AccessibilitySettings
     const storageKey = 'petedu_accessibility_focusMode';
     localStorage.setItem(storageKey, focusMode.toString());
   }, [focusMode]);
-  
+
   // 저장된 접근성 설정 로드
   useEffect(() => {
     const loadSavedSettings = () => {
       try {
         const savedFontSize = localStorage.getItem('petedu_accessibility_fontSize');
         if (savedFontSize) setFontSize(parseFloat(savedFontSize));
-        
+
         const savedContrast = localStorage.getItem('petedu_accessibility_contrast');
         if (savedContrast) setContrast(parseFloat(savedContrast));
-        
+
         const savedHighContrast = localStorage.getItem('petedu_accessibility_highContrast');
         if (savedHighContrast) setHighContrast(savedHighContrast === 'true');
-        
+
         const savedReducedMotion = localStorage.getItem('petedu_accessibility_reducedMotion');
         if (savedReducedMotion) setReducedMotion(savedReducedMotion === 'true');
-        
+
         const savedFocusMode = localStorage.getItem('petedu_accessibility_focusMode');
         if (savedFocusMode) setFocusMode(savedFocusMode === 'true');
       } catch (error) {
         console.error('접근성 설정을 로드하는 중 오류 발생:', error);
       }
     };
-    
+
     loadSavedSettings();
   }, []);
-  
+
   // 모든 설정 초기화
   const resetAllSettings = () => {
     setFontSize(1);
@@ -118,13 +118,30 @@ export function AccessibilitySettings({ isOpen, onClose }: AccessibilitySettings
     setHighContrast(false);
     setReducedMotion(false);
     setFocusMode(false);
-    
+
     // 로컬 스토리지에서 설정 제거
     localStorage.removeItem('petedu_accessibility_fontSize');
     localStorage.removeItem('petedu_accessibility_contrast');
     localStorage.removeItem('petedu_accessibility_highContrast');
     localStorage.removeItem('petedu_accessibility_reducedMotion');
     localStorage.removeItem('petedu_accessibility_focusMode');
+  };
+
+  const toggleHighContrast = () => {
+    setHighContrast(!highContrast);
+    document.documentElement.classList.toggle('high-contrast', !highContrast);
+
+    // 접근성 향상을 위한 포커스 관리
+    const focusableElements = document.querySelectorAll(
+      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+    );
+    focusableElements.forEach(el => {
+      if (highContrast) {
+        el.setAttribute('data-high-contrast', 'true');
+      } else {
+        el.removeAttribute('data-high-contrast');
+      }
+    });
   };
 
   return (
@@ -136,7 +153,7 @@ export function AccessibilitySettings({ isOpen, onClose }: AccessibilitySettings
             접근성 설정
           </DialogTitle>
         </DialogHeader>
-        
+
         <div className="space-y-6 py-4">
           {/* 글꼴 크기 설정 */}
           <div className="space-y-2">
@@ -162,7 +179,7 @@ export function AccessibilitySettings({ isOpen, onClose }: AccessibilitySettings
               <ZoomIn className="w-4 h-4 text-muted-foreground" />
             </div>
           </div>
-          
+
           {/* 대비 설정 */}
           <div className="space-y-2">
             <div className="flex justify-between items-center">
@@ -183,7 +200,7 @@ export function AccessibilitySettings({ isOpen, onClose }: AccessibilitySettings
               aria-label="대비 조절"
             />
           </div>
-          
+
           {/* 테마 전환 */}
           <div className="flex items-center justify-between">
             <Label className="text-base font-medium flex items-center">
@@ -200,12 +217,12 @@ export function AccessibilitySettings({ isOpen, onClose }: AccessibilitySettings
               aria-label="다크 모드 전환"
             />
           </div>
-          
+
           {/* 색상 대비 검사 */}
           <div className="pt-4 border-t">
             <ContrastChecker showDialog={true} />
           </div>
-          
+
           {/* 고대비 모드 */}
           <div className="flex items-center justify-between">
             <Label className="text-base font-medium flex items-center">
@@ -214,11 +231,11 @@ export function AccessibilitySettings({ isOpen, onClose }: AccessibilitySettings
             </Label>
             <Switch
               checked={highContrast}
-              onCheckedChange={setHighContrast}
+              onCheckedChange={toggleHighContrast}
               aria-label="고대비 모드 전환"
             />
           </div>
-          
+
           {/* 모션 감소 */}
           <div className="flex items-center justify-between">
             <Label className="text-base font-medium flex items-center">
@@ -231,7 +248,7 @@ export function AccessibilitySettings({ isOpen, onClose }: AccessibilitySettings
               aria-label="모션 감소 전환"
             />
           </div>
-          
+
           {/* 집중 모드 */}
           <div className="flex items-center justify-between">
             <Label className="text-base font-medium flex items-center">
@@ -245,7 +262,7 @@ export function AccessibilitySettings({ isOpen, onClose }: AccessibilitySettings
             />
           </div>
         </div>
-        
+
         <DialogFooter className="flex justify-between">
           <Button variant="outline" onClick={resetAllSettings}>
             설정 초기화
@@ -262,7 +279,7 @@ export function AccessibilitySettings({ isOpen, onClose }: AccessibilitySettings
  */
 export function AccessibilityFloatingButton() {
   const [isOpen, setIsOpen] = useState(false);
-  
+
   return (
     <>
       <Button
@@ -274,7 +291,7 @@ export function AccessibilityFloatingButton() {
       >
         <Settings className="h-5 w-5" />
       </Button>
-      
+
       <AccessibilitySettings isOpen={isOpen} onClose={() => setIsOpen(false)} />
     </>
   );

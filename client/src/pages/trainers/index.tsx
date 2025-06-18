@@ -17,6 +17,7 @@ import {
 
 import { useLocation } from "wouter";
 import { useAuth } from "@/hooks/useAuth"; // 모듈화된 useAuth 훅 사용
+import { TrainerProfileModal } from "@/components/TrainerProfileModal";
 
 export default function Trainers() {
   const [filter, setFilter] = useState("all");
@@ -30,7 +31,7 @@ export default function Trainers() {
   const [error, setError] = useState<string | null>(null);
   const [, setLocation] = useLocation();
   const { isAuthenticated } = useAuth();
-  
+
   // 고급 필터링 상태
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const [locationFilter, setLocationFilter] = useState("");
@@ -38,12 +39,12 @@ export default function Trainers() {
   const [maxPrice, setMaxPrice] = useState(200000);
   const [sortBy, setSortBy] = useState("rating");
   const [sortOrder, setSortOrder] = useState("desc");
-  
+
   // 페이지네이션 상태
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
-  
+
   // 즐겨찾기 상태
   const [favorites, setFavorites] = useState<number[]>([]);
 
@@ -53,9 +54,9 @@ export default function Trainers() {
       try {
         setLoading(true);
         setError(null);
-        
+
         const params = new URLSearchParams();
-        
+
         // 기본 필터
         if (filter !== "all") {
           if (filter === "certification") {
@@ -66,24 +67,24 @@ export default function Trainers() {
             params.append('specialty', filter);
           }
         }
-        
+
         // 고급 필터
         if (searchTerm) params.append('search', searchTerm);
         if (locationFilter) params.append('location', locationFilter);
         if (minRating > 0) params.append('minRating', minRating.toString());
         if (maxPrice < 200000) params.append('maxPrice', maxPrice.toString());
-        
+
         // 정렬 및 페이지네이션
         params.append('sortBy', sortBy);
         params.append('sortOrder', sortOrder);
         params.append('page', currentPage.toString());
         params.append('limit', '12');
-        
+
         const response = await fetch(`/api/trainers?${params.toString()}`);
         if (!response.ok) {
           throw new Error('훈련사 데이터를 불러오는데 실패했습니다.');
         }
-        
+
         const data = await response.json();
         setTrainers(data.trainers || []);
         setTotalPages(data.pagination?.totalPages || 1);
@@ -114,7 +115,7 @@ export default function Trainers() {
     const newFavorites = favorites.includes(trainerId)
       ? favorites.filter(id => id !== trainerId)
       : [...favorites, trainerId];
-    
+
     setFavorites(newFavorites);
     localStorage.setItem('favoriteTrainers', JSON.stringify(newFavorites));
   };
@@ -139,7 +140,7 @@ export default function Trainers() {
       bio: "10년 이상의 경력을 가진 전문 훈련사로서 수천 마리의 반려견을 교육했습니다."
     }
   ];
-  
+
   const openTrainerModal = (trainer: any) => {
     console.log("훈련사 프로필 열기:", trainer.name);
     setSelectedTrainer(trainer);
@@ -150,16 +151,16 @@ export default function Trainers() {
     console.log("훈련사 프로필 닫기");
     setIsModalOpen(false);
   };
-  
+
   const handleViewCourses = (trainerId: number) => {
     console.log(`${trainerId}번 훈련사의 강의 목록 보기`);
     closeTrainerModal();
     setLocation(`/courses?trainer=${trainerId}`);
   };
-  
+
   const handleBookConsultation = async (trainerId: number) => {
     console.log(`${trainerId}번 훈련사와 상담 예약하기`);
-    
+
     if (!isAuthenticated) {
       closeTrainerModal();
       setAlertMessage({
@@ -169,7 +170,7 @@ export default function Trainers() {
       setShowMemberAlert(true);
       return;
     }
-    
+
     try {
       // 실제 상담 예약 API 호출
       const response = await fetch(`/api/trainers/${trainerId}/consultation`, {
@@ -184,7 +185,7 @@ export default function Trainers() {
           message: "상담 예약 요청입니다."
         })
       });
-      
+
       if (response.ok) {
         const data = await response.json();
         console.log('상담 예약 성공:', data);
@@ -201,10 +202,10 @@ export default function Trainers() {
       setLocation(`/video-call?trainer=${trainerId}`);
     }
   };
-  
+
   const handleCourseReservation = (trainerId: number) => {
     console.log(`${trainerId}번 훈련사의 화상수업 예약하기`);
-    
+
     if (!isAuthenticated) {
       closeTrainerModal();
       setAlertMessage({
@@ -214,16 +215,16 @@ export default function Trainers() {
       setShowMemberAlert(true);
       return;
     }
-    
+
     closeTrainerModal();
     setLocation(`/course-reservation?trainer=${trainerId}`);
   };
-  
+
   const handleLoginRedirect = () => {
     setShowMemberAlert(false);
     setLocation('/auth');
   };
-  
+
   // 로딩 상태 처리
   if (loading) {
     return (
@@ -277,9 +278,9 @@ export default function Trainers() {
           alt="훈련사 찾기"
           className="w-full h-full object-cover absolute mix-blend-overlay"
         />
-        
+
         <div className="absolute inset-0 bg-gradient-to-r from-primary/80 to-accent/30 mix-blend-multiply"></div>
-        
+
         <div className="relative h-full flex flex-col justify-center px-6 md:px-10">
           <h1 className="text-white text-xl md:text-3xl font-bold mb-2 md:mb-4 max-w-xl">
             전문 반려견 훈련사를 만나보세요
@@ -287,7 +288,7 @@ export default function Trainers() {
           <p className="text-white text-sm md:text-base max-w-xl mb-4">
             경험이 풍부한 훈련사들이 당신과 반려견의 행복한 생활을 도와드립니다.
           </p>
-          
+
           {/* Search Bar */}
           <div className="max-w-lg bg-white dark:bg-gray-800 rounded-lg flex items-center p-1">
             <div className="px-2">
@@ -306,7 +307,7 @@ export default function Trainers() {
           </div>
         </div>
       </div>
-      
+
       {/* Filters */}
       <div className="mb-8 space-y-4">
         {/* 기본 필터 */}
@@ -315,7 +316,7 @@ export default function Trainers() {
             <Filter className="h-4 w-4 text-gray-500 dark:text-gray-400 ml-2 mr-1" />
             <span className="text-sm text-gray-700 dark:text-gray-300 mr-2">필터:</span>
           </div>
-          
+
           <Button
             variant={filter === "all" ? "default" : "outline"}
             size="sm"
@@ -324,7 +325,7 @@ export default function Trainers() {
           >
             전체
           </Button>
-          
+
           <Button
             variant={filter === "certification" ? "default" : "outline"}
             size="sm"
@@ -333,7 +334,7 @@ export default function Trainers() {
           >
             인증 훈련사
           </Button>
-          
+
           <Button
             variant={filter === "featured" ? "default" : "outline"}
             size="sm"
@@ -342,7 +343,7 @@ export default function Trainers() {
           >
             추천 훈련사
           </Button>
-          
+
           <Button
             variant={filter === "기본 훈련" ? "default" : "outline"}
             size="sm"
@@ -351,7 +352,7 @@ export default function Trainers() {
           >
             기본 훈련
           </Button>
-          
+
           <Button
             variant={filter === "행동 교정" ? "default" : "outline"}
             size="sm"
@@ -360,7 +361,7 @@ export default function Trainers() {
           >
             행동 교정
           </Button>
-          
+
           <Button
             variant={filter === "특수 훈련" ? "default" : "outline"}
             size="sm"
@@ -394,7 +395,7 @@ export default function Trainers() {
                   className="w-full px-3 py-2 border rounded-md text-sm"
                 />
               </div>
-              
+
               <div>
                 <label className="block text-sm font-medium mb-2">최소 평점</label>
                 <select
@@ -408,7 +409,7 @@ export default function Trainers() {
                   <option value={3.5}>3.5점 이상</option>
                 </select>
               </div>
-              
+
               <div>
                 <label className="block text-sm font-medium mb-2">최대 금액</label>
                 <select
@@ -422,7 +423,7 @@ export default function Trainers() {
                   <option value={50000}>5만원 이하</option>
                 </select>
               </div>
-              
+
               <div>
                 <label className="block text-sm font-medium mb-2">정렬 기준</label>
                 <select
@@ -442,7 +443,7 @@ export default function Trainers() {
                 </select>
               </div>
             </div>
-            
+
             <div className="flex justify-between items-center text-sm text-gray-600 dark:text-gray-400">
               <span>총 {totalCount}명의 훈련사</span>
               <Button
@@ -463,14 +464,14 @@ export default function Trainers() {
           </div>
         )}
       </div>
-      
+
       {/* Trainers Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredTrainers.map((trainer) => (
           <Card 
             key={trainer.id} 
             className="overflow-hidden border border-gray-100 dark:border-gray-700 transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
-            
+
             {/* 프로필 이미지를 맨 위로 이동 */}
             <div className="relative h-48 bg-gradient-to-br from-blue-50 to-purple-50 flex items-center justify-center">
               <div className="w-32 h-32 rounded-full overflow-hidden shadow-xl border-4 border-white">
@@ -486,7 +487,7 @@ export default function Trainers() {
                   }}
                 />
               </div>
-              
+
               {trainer.featured && (
                 <Badge variant="warning" className="absolute top-3 right-3">
                   <Sparkles className="h-3 w-3 mr-1" />
@@ -494,35 +495,35 @@ export default function Trainers() {
                 </Badge>
               )}
             </div>
-            
+
             <div className="p-5">
               <div className="text-center mb-4">
                 <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-1">{trainer.name}</h3>
                 <p className="text-sm text-gray-600 dark:text-gray-300">{trainer.title}</p>
               </div>
-              
+
               <div className="space-y-3 mb-4">
                 <div className="flex items-center">
                   <MapPin className="h-4 w-4 text-gray-500 dark:text-gray-400 mr-2" />
                   <span className="text-sm text-gray-700 dark:text-gray-300">{trainer.location}</span>
                 </div>
-                
+
                 <div className="flex items-center">
                   <Star className="h-4 w-4 text-yellow-500 fill-yellow-500 mr-2" />
                   <span className="text-sm text-gray-700 dark:text-gray-300">{trainer.rating} ({trainer.reviews} 후기)</span>
                 </div>
-                
+
                 <div className="flex items-center">
                   <Briefcase className="h-4 w-4 text-gray-500 dark:text-gray-400 mr-2" />
                   <span className="text-sm text-gray-700 dark:text-gray-300">경력 {trainer.experience}</span>
                 </div>
               </div>
-              
+
               <div className="flex flex-wrap gap-2 mb-4">
                 <Badge variant="outline" className="bg-primary/10 dark:bg-primary/5 text-primary-foreground">
                   {trainer.specialty}
                 </Badge>
-                
+
                 {trainer.certification && (
                   <Badge variant="success" className="flex items-center">
                     <Award className="h-3 w-3 mr-1" />
@@ -530,17 +531,17 @@ export default function Trainers() {
                   </Badge>
                 )}
               </div>
-              
+
               <p className="text-sm text-gray-600 dark:text-gray-300 mb-4 line-clamp-3">
                 {trainer.bio}
               </p>
-              
+
               <div className="flex justify-between items-center">
                 <div className="text-sm">
                   <span className="text-gray-500 dark:text-gray-400">강의 </span>
                   <span className="font-medium text-gray-700 dark:text-gray-300">{trainer.courses}개</span>
                 </div>
-                
+
                 <div className="flex gap-2">
                   <Button
                     variant="ghost"
@@ -559,7 +560,7 @@ export default function Trainers() {
                       }`} 
                     />
                   </Button>
-                  
+
                   <Button
                     size="sm"
                     onClick={() => {
@@ -575,7 +576,7 @@ export default function Trainers() {
           </Card>
         ))}
       </div>
-      
+
       {/* Pagination */}
       {totalPages > 1 && (
         <div className="mt-10 flex justify-center">
@@ -589,7 +590,7 @@ export default function Trainers() {
             >
               이전
             </Button>
-            
+
             {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
               let pageNum;
               if (totalPages <= 5) {
@@ -601,7 +602,7 @@ export default function Trainers() {
               } else {
                 pageNum = currentPage - 2 + i;
               }
-              
+
               return (
                 <Button
                   key={pageNum}
@@ -614,7 +615,7 @@ export default function Trainers() {
                 </Button>
               );
             })}
-            
+
             <Button 
               variant="outline" 
               size="sm" 
@@ -627,7 +628,7 @@ export default function Trainers() {
           </nav>
         </div>
       )}
-      
+
       {/* 회원 전용 서비스 알림 */}
       <AlertDialog open={showMemberAlert} onOpenChange={setShowMemberAlert}>
         <AlertDialogContent>
@@ -650,7 +651,7 @@ export default function Trainers() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-      
+
       {/* 트레이너 프로필 모달 */}
       {isModalOpen && selectedTrainer && (
         <div 
@@ -669,7 +670,7 @@ export default function Trainers() {
                 className="w-full h-full object-cover"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
-              
+
               <button 
                 onClick={closeTrainerModal}
                 className="absolute top-4 right-4 bg-black/30 hover:bg-black/50 text-white rounded-full p-1.5 transition-colors"
@@ -679,7 +680,7 @@ export default function Trainers() {
                 <X size={20} />
               </button>
             </div>
-            
+
             {/* 모달 본문 */}
             <div className="p-6">
               {/* 기본 정보 섹션 */}
@@ -691,7 +692,7 @@ export default function Trainers() {
                     className="w-full h-full object-cover brightness-110 contrast-110" 
                   />
                 </div>
-                
+
                 <div className="mt-4 sm:mt-6 sm:ml-4">
                   <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
                     {selectedTrainer.name}
@@ -703,14 +704,14 @@ export default function Trainers() {
                     <Badge variant="outline" className="bg-primary/10 dark:bg-primary/5 text-primary-foreground">
                       {selectedTrainer.specialty}
                     </Badge>
-                    
+
                     {selectedTrainer.certification && (
                       <Badge variant="success" className="flex items-center">
                         <Award className="h-3 w-3 mr-1" />
                         인증
                       </Badge>
                     )}
-                    
+
                     {selectedTrainer.featured && (
                       <Badge variant="warning" className="flex items-center">
                         <Sparkles className="h-3 w-3 mr-1" />
@@ -720,7 +721,7 @@ export default function Trainers() {
                   </div>
                 </div>
               </div>
-              
+
               {/* 상세 정보 */}
               <div className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -731,7 +732,7 @@ export default function Trainers() {
                       <div className="text-xs text-gray-500">{selectedTrainer.reviews} 후기</div>
                     </div>
                   </div>
-                  
+
                   <div className="flex items-center space-x-2 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
                     <Briefcase className="h-5 w-5 text-gray-500" />
                     <div>
@@ -739,7 +740,7 @@ export default function Trainers() {
                       <div className="text-xs text-gray-500">전문 훈련사</div>
                     </div>
                   </div>
-                  
+
                   <div className="flex items-center space-x-2 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
                     <MapPin className="h-5 w-5 text-gray-500" />
                     <div>
@@ -748,12 +749,12 @@ export default function Trainers() {
                     </div>
                   </div>
                 </div>
-                
+
                 <div>
                   <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">훈련사 소개</h3>
                   <p className="text-gray-700 dark:text-gray-300">{selectedTrainer.bio}</p>
                 </div>
-                
+
                 <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
                   <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">강의 및 예약</h3>
                   <p className="text-gray-600 dark:text-gray-400 mb-4">
