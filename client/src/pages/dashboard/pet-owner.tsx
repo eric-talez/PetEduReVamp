@@ -139,7 +139,7 @@ export default function PetOwnerDashboard({ onAction }: PetOwnerDashboardProps) 
     const timer = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % bannerSlides.length);
     }, 5000); // 5초마다 슬라이드 변경
-    
+
     // 컴포넌트 언마운트 시 타이머 정리
     return () => clearInterval(timer);
   }, [bannerSlides.length]);
@@ -334,7 +334,7 @@ export default function PetOwnerDashboard({ onAction }: PetOwnerDashboardProps) 
           />
           <div className="absolute inset-0 bg-gradient-to-r from-black/60 to-transparent"></div>
         </div>
-        
+
         {/* 슬라이드 콘텐츠 (현재 슬라이드만 표시) */}
         <div className="relative h-full flex flex-col justify-center px-8 md:px-12">
           <h1 className="text-white text-lg md:text-2xl font-bold mb-1 md:mb-2 max-w-xl">
@@ -343,7 +343,7 @@ export default function PetOwnerDashboard({ onAction }: PetOwnerDashboardProps) 
           <p className="text-white text-xs md:text-sm max-w-xl mb-2 md:mb-3 line-clamp-2">
             {bannerSlides[currentSlide].description}
           </p>
-          
+
           {/* 주요 기능 목록 */}
           <div className="flex flex-wrap gap-2 mb-3 md:mb-4">
             {bannerSlides[currentSlide].features.map((feature: string, idx: number) => (
@@ -355,7 +355,7 @@ export default function PetOwnerDashboard({ onAction }: PetOwnerDashboardProps) 
               </span>
             ))}
           </div>
-          
+
           {/* 버튼 */}
           <div className="flex flex-wrap gap-2">
             <Button
@@ -373,7 +373,7 @@ export default function PetOwnerDashboard({ onAction }: PetOwnerDashboardProps) 
             </Button>
           </div>
         </div>
-        
+
         {/* 슬라이드 인디케이터 */}
         <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-1.5">
           {bannerSlides.map((_, index) => (
@@ -385,7 +385,7 @@ export default function PetOwnerDashboard({ onAction }: PetOwnerDashboardProps) 
             />
           ))}
         </div>
-        
+
         {/* 슬라이드 네비게이션 버튼 */}
         <button 
           className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center rounded-full bg-black/20 text-white hover:bg-black/30"
@@ -406,7 +406,7 @@ export default function PetOwnerDashboard({ onAction }: PetOwnerDashboardProps) 
           </svg>
         </button>
       </div>
-      
+
       {/* Statistics */}
       <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 xl:grid-cols-5 gap-4 mb-8">
         <Card className="p-6 border border-gray-100 dark:border-gray-700">
@@ -426,14 +426,14 @@ export default function PetOwnerDashboard({ onAction }: PetOwnerDashboardProps) 
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">전체 진도율 45%</p>
           </div>
         </Card>
-        
-        <Card className="p-6 border border-gray-100 dark:border-gray-700">
+
+        <Card className="p-6 border border-gray-100 dark:border-gray-700 cursor-pointer hover:shadow-lg transition-all duration-200" onClick={() => setLocation('/my-pets')}>
           <div className="flex items-center">
             <div className="flex-shrink-0 h-12 w-12 bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 rounded-full flex items-center justify-center">
               <PawPrint className="h-6 w-6" />
             </div>
             <div className="ml-4">
-              <h2 className="text-sm font-medium text-gray-500 dark:text-gray-400">등록된 반려견</h2>
+              <h2 className="text-sm font-medium text-gray-500 dark:text-gray-400">등록 반려견</h2>
               <p className="text-2xl font-semibold text-gray-800 dark:text-white">2마리</p>
             </div>
           </div>
@@ -457,7 +457,7 @@ export default function PetOwnerDashboard({ onAction }: PetOwnerDashboardProps) 
             </div>
           </div>
         </Card>
-        
+
         {/* 반려동물 건강 관리 카드 */}
         <Card className="p-6 border border-gray-100 dark:border-gray-700">
           <div className="flex items-center">
@@ -506,7 +506,7 @@ export default function PetOwnerDashboard({ onAction }: PetOwnerDashboardProps) 
         </Card>
 
         {/* 훈련 성과 카드 */}
-        <Card className="p-6 border border-gray-100 dark:border-gray-700">
+        <Card className="p-6 border border-gray-100 dark:border-gray-700 cursor-pointer hover:shadow-lg transition-all duration-200" onClick={() => setLocation('/analytics')}>
           <div className="flex items-center">
             <div className="flex-shrink-0 h-12 w-12 bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 rounded-full flex items-center justify-center">
               <Star className="h-6 w-6" />
@@ -528,14 +528,14 @@ export default function PetOwnerDashboard({ onAction }: PetOwnerDashboardProps) 
           </div>
         </Card>
       </div>
-      
+
       {/* Current Courses */}
       <div className="mb-12">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-xl font-bold text-gray-800 dark:text-white">진행 중인 강의</h2>
           <Link href="/my-courses" className="text-sm text-primary hover:text-primary/80 font-medium">모두 보기</Link>
         </div>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {courses.map((course) => (
             <Card key={course.id} className="overflow-hidden border border-gray-100 dark:border-gray-700 card-hover">
@@ -572,7 +572,7 @@ export default function PetOwnerDashboard({ onAction }: PetOwnerDashboardProps) 
                     </Avatar>
                     <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">{course.trainer.name}</span>
                   </div>
-                  
+
                   <div className="text-right">
                     <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mb-1">
                       <div 
@@ -596,14 +596,14 @@ export default function PetOwnerDashboard({ onAction }: PetOwnerDashboardProps) 
           ))}
         </div>
       </div>
-      
+
       {/* Recommended Courses */}
       <div className="mb-12">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-xl font-bold text-gray-800 dark:text-white">내 반려견을 위한 맞춤 추천</h2>
           <Link href="/recommendations" className="text-sm text-primary hover:text-primary/80 font-medium">더 많은 추천</Link>
         </div>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {recommendedCourses.map((course) => (
             <Card key={course.id} className="overflow-hidden border border-gray-100 dark:border-gray-700 card-hover">
@@ -633,14 +633,14 @@ export default function PetOwnerDashboard({ onAction }: PetOwnerDashboardProps) 
           ))}
         </div>
       </div>
-      
+
       {/* Community */}
       <div>
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-xl font-bold text-gray-800 dark:text-white">인기 커뮤니티 소식</h2>
           <Link href="/community" className="text-sm text-primary hover:text-primary/80 font-medium">커뮤니티 가기</Link>
         </div>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {communityPosts.map((post) => (
             <Card key={post.id} className="overflow-hidden border border-gray-100 dark:border-gray-700 card-hover">
@@ -650,18 +650,18 @@ export default function PetOwnerDashboard({ onAction }: PetOwnerDashboardProps) 
                     <AvatarImage src={post.author.avatar} />
                     <AvatarFallback>{post.author.name.substring(0, 2)}</AvatarFallback>
                   </Avatar>
-                  
+
                   <div className="ml-3">
                     <h3 className="text-sm font-medium text-gray-800 dark:text-white">{post.author.name}</h3>
                     <p className="text-xs text-gray-500 dark:text-gray-400">{post.author.time}</p>
                   </div>
                 </div>
-                
+
                 <h4 className="text-base font-semibold text-gray-800 dark:text-white mb-2">{post.title}</h4>
                 <p className="text-sm text-gray-600 dark:text-gray-300 mb-4 line-clamp-3">
                   {post.content}
                 </p>
-                
+
                 <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400">
                   <div className="flex space-x-4">
                     <div className="flex items-center">
@@ -677,7 +677,7 @@ export default function PetOwnerDashboard({ onAction }: PetOwnerDashboardProps) 
                       <span>{post.comments}</span>
                     </div>
                   </div>
-                  
+
                   <div>
                     <span className={`text-xs px-2 py-1 rounded-full ${
                         post.tag === "산책팁" ? "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300" :
