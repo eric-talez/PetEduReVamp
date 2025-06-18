@@ -243,7 +243,7 @@ const FilterOptions = ({ activeCategory, setActiveCategory, categories }: {
 };
 
 // 메인 커뮤니티 페이지 컴포넌트
-export default function CommunityPage() {
+function CommunityPage() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const { user, isLoading: authLoading } = useAuth();
@@ -454,7 +454,6 @@ export default function CommunityPage() {
       alert('댓글 작성 중 오류가 발생했습니다.');
     }
   };
-  const handlePostSubmit = async (postData: any) => {
 
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 max-w-7xl">
