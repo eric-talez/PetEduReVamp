@@ -1,571 +1,295 @@
-import { pgTable, text, serial, integer, boolean, timestamp, json, varchar, uniqueIndex } from "drizzle-orm/pg-core";
-import { createInsertSchema } from "drizzle-zod";
+import { pgTable, text, integer, boolean, timestamp, serial, decimal, jsonb, varchar } from "drizzle-orm/pg-core";
+import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
 
-// User types
-export type UserRole = 'user' | 'pet-owner' | 'trainer' | 'institute-admin' | 'admin';
-
+// 사용자 테이블
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
-  username: text("username").notNull().unique(),
+  username: varchar("username", { length: 100 }).notNull().unique(),
+  email: varchar("email", { length: 255 }).notNull().unique(),
   password: text("password").notNull(),
-  email: text("email").notNull().unique(),
-  name: text("name").notNull(),
-  role: text("role").$type<UserRole>().notNull().default('user'),
-  avatar: text("avatar"),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
+  role: varchar("role", { length: 50 }).notNull().default("pet-owner"),
+  name: varchar("name", { length: 100 }),
+  phone: varchar("phone", { length: 20 }),
+  profileImage: text("profile_image"),
   bio: text("bio"),
-  location: text("location"),
-  specialty: text("specialty"),
-  isVerified: boolean("is_verified").default(false),
-  instituteId: integer("institute_id").references(() => institutes.id, { onDelete: 'set null' }),
-  // 소셜 로그인 관련 필드
-  ci: text("ci").unique(), // 사용자 식별 정보 (소셜 ID + 제공자)
-  verified: boolean("verified").default(false),
-  verifiedAt: timestamp("verified_at"),
-  verificationName: text("verification_name"), // 실명 인증 이름
-  verificationBirth: text("verification_birth"), // 생년월일
-  verificationPhone: text("verification_phone"), // 인증 휴대폰
-  // 소셜 로그인 제공자 정보
-  provider: text("provider"), // 'kakao', 'naver' 등
-  socialId: text("social_id"), // 소셜 서비스에서의 ID
-  // 결제 관련 필드 추가
-  stripeCustomerId: text("stripe_customer_id"), // Stripe 고객 ID
-  stripeSubscriptionId: text("stripe_subscription_id"), // Stripe 구독 ID
-  membershipTier: text("membership_tier"), // 'free', 'basic', 'premium' 등
-  membershipExpiresAt: timestamp("membership_expires_at"), // 멤버십 만료일
-});
-
-// 배너 관리 테이블
-export const banners = pgTable("banners", {
-  id: serial("id").primaryKey(),
-  title: text("title").notNull(),
-  description: text("description"),
-  imageUrl: text("image_url").notNull(),
-  altText: text("alt_text"),
-  linkUrl: text("link_url"),
-  targetBlank: boolean("target_blank").default(true),
-  type: text("type").notNull().default('main'), // 'main', 'sub', 'popup'
-  position: text("position").notNull().default('hero'), // 'hero', 'sidebar', 'footer'
-  orderIndex: integer("order_index").notNull().default(0),
-  startDate: timestamp("start_date"),
-  endDate: timestamp("end_date"),
-  status: text("status").notNull().default('active'), // 'active', 'inactive', 'scheduled'
   isActive: boolean("is_active").default(true),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-  updatedAt: timestamp("updated_at").notNull().defaultNow(),
-  createdBy: integer("created_by").references(() => users.id),
+  emailVerified: boolean("email_verified").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
-// 기관 정보 테이블
-export const institutes = pgTable("institutes", {
-  id: serial("id").primaryKey(),
-  name: text("name").notNull(),
-  code: text("code").notNull().unique(),
-  address: text("address"),
-  phone: text("phone"),
-  email: text("email"),
-  website: text("website"),
-  description: text("description"),
-  logo: text("logo"),
-  isActive: boolean("is_active").default(true),
-  businessNumber: text("business_number"),
-  capacity: integer("capacity").default(50),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-  updatedAt: timestamp("updated_at").notNull().defaultNow(),
-});
-
-// 반려동물 정보 테이블
-export const pets = pgTable("pets", {
-  id: serial("id").primaryKey(),
-  name: text("name").notNull(),
-  breed: text("breed").notNull(),
-  age: integer("age").notNull(),
-  weight: integer("weight"), // 그램 단위
-  gender: text("gender"), // 'male', 'female'
-  description: text("description"),
-  avatar: text("avatar"),
-  ownerId: integer("owner_id").references(() => users.id, { onDelete: 'cascade' }).notNull(),
-  health: text("health"),
-  temperament: text("temperament"),
-  allergies: text("allergies"),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-  updatedAt: timestamp("updated_at").notNull().defaultNow(),
-});
-
-// 예방접종 기록 테이블
-export const vaccinations = pgTable("vaccinations", {
-  id: serial("id").primaryKey(),
-  petId: integer("pet_id").references(() => pets.id, { onDelete: 'cascade' }).notNull(),
-  vaccineName: text("vaccine_name").notNull(),
-  vaccineType: text("vaccine_type"), // '종합백신', '광견병', '코로나', etc.
-  vaccineDate: timestamp("vaccine_date").notNull(),
-  nextDueDate: timestamp("next_due_date"),
-  veterinarian: text("veterinarian"),
-  clinicName: text("clinic_name"),
-  notes: text("notes"),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-  updatedAt: timestamp("updated_at").notNull().defaultNow(),
-});
-
-// 건강검진 기록 테이블
-export const healthCheckups = pgTable("health_checkups", {
-  id: serial("id").primaryKey(),
-  petId: integer("pet_id").references(() => pets.id, { onDelete: 'cascade' }).notNull(),
-  checkupDate: timestamp("checkup_date").notNull(),
-  weight: integer("weight"), // 그램 단위
-  temperature: text("temperature"), // 체온
-  bloodPressure: text("blood_pressure"),
-  heartRate: integer("heart_rate"),
-  diagnosis: text("diagnosis"),
-  treatment: text("treatment"),
-  medication: text("medication"),
-  veterinarian: text("veterinarian"),
-  clinicName: text("clinic_name"),
-  notes: text("notes"),
-  nextCheckupDate: timestamp("next_checkup_date"),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-  updatedAt: timestamp("updated_at").notNull().defaultNow(),
-});
-
-// 별칭으로 checkups 테이블 추가 (storage.ts 호환성을 위해)
-export const checkups = healthCheckups;
-
-// 훈련사 테이블 (users 테이블의 훈련사 역할 사용자를 위한 확장 정보)
-export const trainers = pgTable("trainers", {
-  id: serial("id").primaryKey(),
-  userId: integer("user_id").references(() => users.id, { onDelete: 'cascade' }).notNull().unique(),
-  specialization: text("specialization"),
-  experience: integer("experience").default(0), // 경력 (년)
-  certifications: json("certifications").$type<string[]>(), // 자격증 목록
-  availability: json("availability"), // 가능한 시간대
-  rating: integer("rating").default(0), // 0-500 (5.0 = 500)
-  reviewCount: integer("review_count").default(0),
-  isActive: boolean("is_active").default(true),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-  updatedAt: timestamp("updated_at").notNull().defaultNow(),
-});
-
-// 의료 기록 첨부파일 테이블
-export const medicalAttachments = pgTable("medical_attachments", {
-  id: serial("id").primaryKey(),
-  petId: integer("pet_id").references(() => pets.id, { onDelete: 'cascade' }).notNull(),
-  recordType: text("record_type").notNull(), // 'vaccination', 'checkup', 'treatment'
-  recordId: integer("record_id").notNull(),
-  fileName: text("file_name").notNull(),
-  filePath: text("file_path").notNull(),
-  fileType: text("file_type"), // 'image', 'pdf', 'document'
-  uploadedAt: timestamp("uploaded_at").notNull().defaultNow(),
-});
-
-// 훈련 세션 테이블
-export const trainingSessions = pgTable("training_sessions", {
-  id: serial("id").primaryKey(),
-  petId: integer("pet_id").references(() => pets.id, { onDelete: 'cascade' }).notNull(),
-  trainerId: integer("trainer_id").references(() => users.id, { onDelete: 'set null' }),
-  skill: text("skill").notNull(),
-  progress: integer("progress").notNull().default(0), // 0-100
-  level: text("level").notNull(), // 'beginner', 'intermediate', 'advanced', 'master'
-  sessionDate: timestamp("session_date").notNull().defaultNow(),
-  duration: integer("duration"), // 분 단위
-  notes: text("notes"),
-  score: integer("score"), // 0-100
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-});
-
-// 강의/코스 테이블
+// 강의 테이블
 export const courses = pgTable("courses", {
   id: serial("id").primaryKey(),
-  title: text("title").notNull(),
+  title: varchar("title", { length: 200 }).notNull(),
   description: text("description"),
-  image: text("image"),
-  category: text("category").notNull(),
-  level: text("level").notNull(), // '초급', '중급', '고급'
-  duration: integer("duration"), // 분 단위
-  price: integer("price").default(0), // 원 단위
-  trainerId: integer("trainer_id").references(() => users.id, { onDelete: 'set null' }),
-  instructorId: integer("instructor_id").references(() => users.id, { onDelete: 'set null' }), // alias for trainerId
-  instituteId: integer("institute_id").references(() => institutes.id, { onDelete: 'set null' }),
-  isPopular: boolean("is_popular").default(false),
-  isCertified: boolean("is_certified").default(false),
+  content: text("content"),
+  price: decimal("price", { precision: 10, scale: 2 }),
+  duration: integer("duration"),
+  level: varchar("level", { length: 50 }),
+  category: varchar("category", { length: 100 }),
+  instructorId: integer("instructor_id").references(() => users.id),
+  imageUrl: text("image_url"),
+  videoUrl: text("video_url"),
   isActive: boolean("is_active").default(true),
-  maxParticipants: integer("max_participants").default(10),
-  enrolledCount: integer("enrolled_count").default(0),
-  syllabus: json("syllabus"),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  rating: decimal("rating", { precision: 3, scale: 2 }),
+  enrollmentCount: integer("enrollment_count").default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
-// 강의 등록 테이블
-export const courseEnrollments = pgTable("course_enrollments", {
+// 기관 테이블
+export const institutes = pgTable("institutes", {
   id: serial("id").primaryKey(),
-  courseId: integer("course_id").references(() => courses.id, { onDelete: 'cascade' }).notNull(),
-  userId: integer("user_id").references(() => users.id, { onDelete: 'cascade' }).notNull(),
-  petId: integer("pet_id").references(() => pets.id, { onDelete: 'cascade' }),
-  enrolledAt: timestamp("enrolled_at").notNull().defaultNow(),
-  completedAt: timestamp("completed_at"),
-  progress: integer("progress").default(0), // 0-100
-  status: text("status").notNull().default('active'), // 'active', 'completed', 'cancelled'
-});
-
-// 강의 스케줄 테이블
-export const courseSchedules = pgTable("course_schedules", {
-  id: serial("id").primaryKey(),
-  courseId: integer("course_id").references(() => courses.id, { onDelete: 'cascade' }).notNull(),
-  scheduledAt: timestamp("scheduled_at").notNull(),
-  duration: integer("duration").notNull(), // 분 단위
-  maxParticipants: integer("max_participants").default(10),
-  currentParticipants: integer("current_participants").default(0),
-  location: text("location"),
-  meetingUrl: text("meeting_url"), // 온라인 강의용
-  status: text("status").notNull().default('scheduled'), // 'scheduled', 'ongoing', 'completed', 'cancelled'
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-});
-
-// AI 분석 결과 테이블
-export const aiAnalyses = pgTable("ai_analyses", {
-  id: serial("id").primaryKey(),
-  petId: integer("pet_id").references(() => pets.id, { onDelete: 'cascade' }).notNull(),
-  userId: integer("user_id").references(() => users.id, { onDelete: 'cascade' }).notNull(),
-  analysisType: text("analysis_type").notNull(), // 'behavior', 'health', 'training'
-  inputData: json("input_data"), // 분석에 사용된 입력 데이터
-  results: json("results"), // AI 분석 결과
-  confidence: integer("confidence"), // 0-100
-  recommendations: json("recommendations"), // 추천 사항
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-});
-
-// 쇼핑 카테고리 테이블
-export const shopCategories = pgTable("shop_categories", {
-  id: serial("id").primaryKey(),
-  name: text("name").notNull(),
+  name: varchar("name", { length: 200 }).notNull(),
   description: text("description"),
+  address: text("address"),
+  phone: varchar("phone", { length: 20 }),
+  email: varchar("email", { length: 255 }),
+  website: text("website"),
+  logoUrl: text("logo_url"),
+  isVerified: boolean("is_verified").default(false),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// 반려동물 테이블
+export const pets = pgTable("pets", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 100 }).notNull(),
+  species: varchar("species", { length: 50 }).notNull(),
+  breed: varchar("breed", { length: 100 }),
+  age: integer("age"),
+  weight: decimal("weight", { precision: 5, scale: 2 }),
+  ownerId: integer("owner_id").references(() => users.id),
+  profileImage: text("profile_image"),
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// 커뮤니티 게시글 테이블
+export const posts = pgTable("posts", {
+  id: serial("id").primaryKey(),
+  title: varchar("title", { length: 200 }).notNull(),
+  content: text("content").notNull(),
+  authorId: integer("author_id").references(() => users.id),
+  category: varchar("category", { length: 100 }),
+  tags: jsonb("tags"),
+  views: integer("views").default(0),
+  likes: integer("likes").default(0),
+  commentsCount: integer("comments_count").default(0),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// 댓글 테이블
+export const comments = pgTable("comments", {
+  id: serial("id").primaryKey(),
+  content: text("content").notNull(),
+  postId: integer("post_id").references(() => posts.id),
+  authorId: integer("author_id").references(() => users.id),
   parentId: integer("parent_id"),
   isActive: boolean("is_active").default(true),
-  sortOrder: integer("sort_order").default(0),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
-// 상품 테이블
-export const products = pgTable("products", {
+// 예약 테이블
+export const reservations = pgTable("reservations", {
   id: serial("id").primaryKey(),
-  name: text("name").notNull(),
+  userId: integer("user_id").references(() => users.id),
+  trainerId: integer("trainer_id").references(() => users.id),
+  petId: integer("pet_id").references(() => pets.id),
+  serviceType: varchar("service_type", { length: 100 }).notNull(),
+  scheduledAt: timestamp("scheduled_at").notNull(),
+  duration: integer("duration").default(60),
+  status: varchar("status", { length: 50 }).default("pending"),
+  notes: text("notes"),
+  price: decimal("price", { precision: 10, scale: 2 }),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// 알림 테이블
+export const notifications = pgTable("notifications", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id),
+  title: varchar("title", { length: 200 }).notNull(),
+  message: text("message").notNull(),
+  type: varchar("type", { length: 50 }).notNull(),
+  isRead: boolean("is_read").default(false),
+  actionUrl: text("action_url"),
+  metadata: jsonb("metadata"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// 시스템 설정 테이블
+export const systemSettings = pgTable("system_settings", {
+  id: serial("id").primaryKey(),
+  key: varchar("key", { length: 100 }).notNull().unique(),
+  value: text("value"),
   description: text("description"),
-  price: integer("price").notNull(), // 원 단위
-  discountPrice: integer("discount_price"),
-  categoryId: integer("category_id").references(() => shopCategories.id, { onDelete: 'set null' }),
-  images: json("images").$type<string[]>(), // 이미지 URL 배열
-  tags: json("tags").$type<string[]>(), // 태그 배열
-  stock: integer("stock").default(0),
+  category: varchar("category", { length: 50 }),
   isActive: boolean("is_active").default(true),
-  rating: integer("rating").default(0), // 0-500 (5.0 = 500)
-  reviewCount: integer("review_count").default(0),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
-// 장바구니 테이블
-export const cartItems = pgTable("cart_items", {
-  id: serial("id").primaryKey(),
-  userId: integer("user_id").references(() => users.id, { onDelete: 'cascade' }).notNull(),
-  productId: integer("product_id").references(() => products.id, { onDelete: 'cascade' }).notNull(),
-  quantity: integer("quantity").notNull().default(1),
-  options: json("options"), // 색상, 크기 등 옵션
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-  updatedAt: timestamp("updated_at").notNull().defaultNow(),
-});
+// Zod 스키마 생성
+export const insertUserSchema = createInsertSchema(users);
+export const selectUserSchema = createSelectSchema(users);
+export const insertCourseSchema = createInsertSchema(courses);
+export const selectCourseSchema = createSelectSchema(courses);
+export const insertInstituteSchema = createInsertSchema(institutes);
+export const selectInstituteSchema = createSelectSchema(institutes);
+export const insertPetSchema = createInsertSchema(pets);
+export const selectPetSchema = createSelectSchema(pets);
 
-// 이벤트 관련 테이블
+// Missing schema tables required by storage.ts
 export const events = pgTable("events", {
   id: serial("id").primaryKey(),
-  title: text("title").notNull(),
+  title: varchar("title", { length: 200 }).notNull(),
   description: text("description"),
-  category: text("category").notNull(),
   date: timestamp("date").notNull(),
   location: text("location"),
-  maxParticipants: integer("max_participants"),
-  currentParticipants: integer("current_participants").default(0),
-  price: integer("price").default(0),
-  imageUrl: text("image_url"),
-  organizerId: integer("organizer_id").references(() => users.id, { onDelete: 'set null' }),
+  category: varchar("category", { length: 100 }),
+  organizerId: integer("organizer_id").references(() => users.id),
   isActive: boolean("is_active").default(true),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
 export const eventLocations = pgTable("event_locations", {
   id: serial("id").primaryKey(),
-  name: text("name").notNull(),
+  name: varchar("name", { length: 200 }).notNull(),
   address: text("address").notNull(),
+  capacity: integer("capacity"),
   latitude: text("latitude"),
   longitude: text("longitude"),
-  capacity: integer("capacity"),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
+  createdAt: timestamp("created_at").defaultNow(),
 });
 
 export const eventAttendances = pgTable("event_attendances", {
   id: serial("id").primaryKey(),
-  eventId: integer("event_id").references(() => events.id, { onDelete: 'cascade' }).notNull(),
-  userId: integer("user_id").references(() => users.id, { onDelete: 'cascade' }).notNull(),
-  attendedAt: timestamp("attended_at").notNull().defaultNow(),
+  eventId: integer("event_id").references(() => events.id),
+  userId: integer("user_id").references(() => users.id),
+  attendedAt: timestamp("attended_at").defaultNow(),
 });
 
-// 수수료 정책 테이블
+export const trainers = pgTable("trainers", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id),
+  specialty: text("specialty"),
+  experience: integer("experience"),
+  certification: text("certification"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const vaccinations = pgTable("vaccinations", {
+  id: serial("id").primaryKey(),
+  petId: integer("pet_id").references(() => pets.id),
+  name: varchar("name", { length: 100 }).notNull(),
+  date: timestamp("date").notNull(),
+  nextDue: timestamp("next_due"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const checkups = pgTable("checkups", {
+  id: serial("id").primaryKey(),
+  petId: integer("pet_id").references(() => pets.id),
+  date: timestamp("date").notNull(),
+  weight: decimal("weight", { precision: 5, scale: 2 }),
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 export const commissionPolicies = pgTable("commission_policies", {
   id: serial("id").primaryKey(),
-  name: text("name").notNull(),
-  description: text("description"),
-  rate: integer("rate").notNull(), // 백분율 * 100 (예: 15% = 1500)
-  minAmount: integer("min_amount").default(0),
-  maxAmount: integer("max_amount"),
+  name: varchar("name", { length: 100 }).notNull(),
+  rate: decimal("rate", { precision: 5, scale: 2 }).notNull(),
   isActive: boolean("is_active").default(true),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  createdAt: timestamp("created_at").defaultNow(),
 });
 
-// 수수료 거래 테이블
 export const commissionTransactions = pgTable("commission_transactions", {
   id: serial("id").primaryKey(),
-  orderId: text("order_id").notNull(),
-  amount: integer("amount").notNull(),
-  commissionRate: integer("commission_rate").notNull(),
-  commissionAmount: integer("commission_amount").notNull(),
-  status: text("status").notNull().default('pending'),
-  userId: integer("user_id").references(() => users.id, { onDelete: 'cascade' }),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
+  amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
+  type: varchar("type", { length: 50 }).notNull(),
+  status: varchar("status", { length: 50 }).default("pending"),
+  createdAt: timestamp("created_at").defaultNow(),
 });
 
-// 정산 보고서 테이블
 export const settlementReports = pgTable("settlement_reports", {
   id: serial("id").primaryKey(),
-  period: text("period").notNull(), // 'YYYY-MM' 형식
-  totalRevenue: integer("total_revenue").notNull(),
-  totalCommission: integer("total_commission").notNull(),
-  netAmount: integer("net_amount").notNull(),
-  status: text("status").notNull().default('pending'), // 'pending', 'approved', 'paid'
-  generatedAt: timestamp("generated_at").notNull().defaultNow(),
-  approvedAt: timestamp("approved_at"),
-  paidAt: timestamp("paid_at"),
+  period: varchar("period", { length: 20 }).notNull(),
+  totalAmount: decimal("total_amount", { precision: 10, scale: 2 }).notNull(),
+  status: varchar("status", { length: 50 }).default("draft"),
+  createdAt: timestamp("created_at").defaultNow(),
 });
 
-// 소셜 기능 테이블들
-export const posts = pgTable("posts", {
+export const shopCategories = pgTable("shop_categories", {
   id: serial("id").primaryKey(),
-  authorId: integer("author_id").references(() => users.id, { onDelete: 'cascade' }).notNull(),
-  title: text("title").notNull(),
-  content: text("content").notNull(),
-  category: text("category").notNull().default('general'), // general, training, health, breed, tips
-  tag: text("tag"),
-  image: text("image"),
-  likes: integer("likes").default(0),
-  views: integer("views").default(0),
-  comments: integer("comments").default(0),
-  isDeleted: boolean("is_deleted").default(false),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  name: varchar("name", { length: 100 }).notNull(),
+  description: text("description"),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
 });
 
-export const comments = pgTable("comments", {
+export const products = pgTable("products", {
   id: serial("id").primaryKey(),
-  postId: integer("post_id").references(() => posts.id, { onDelete: 'cascade' }).notNull(),
-  userId: integer("user_id").references(() => users.id, { onDelete: 'cascade' }).notNull(),
-  content: text("content").notNull(),
-  parentId: integer("parent_id").references(() => comments.id, { onDelete: 'cascade' }), // 대댓글 지원
-  likes: integer("likes").default(0),
-  isEdited: boolean("is_edited").default(false),
-  isDeleted: boolean("is_deleted").default(false),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  name: varchar("name", { length: 200 }).notNull(),
+  description: text("description"),
+  price: decimal("price", { precision: 10, scale: 2 }).notNull(),
+  categoryId: integer("category_id").references(() => shopCategories.id),
+  stock: integer("stock").default(0),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
 });
 
-export const likes = pgTable("likes", {
+export const cartItems = pgTable("cart_items", {
   id: serial("id").primaryKey(),
-  postId: integer("post_id").references(() => posts.id, { onDelete: 'cascade' }).notNull(),
-  userId: integer("user_id").references(() => users.id, { onDelete: 'cascade' }).notNull(),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
+  userId: integer("user_id").references(() => users.id),
+  productId: integer("product_id").references(() => products.id),
+  quantity: integer("quantity").notNull().default(1),
+  createdAt: timestamp("created_at").defaultNow(),
 });
 
-export const follows = pgTable("follows", {
+export const banners = pgTable("banners", {
   id: serial("id").primaryKey(),
-  followerId: integer("follower_id").references(() => users.id, { onDelete: 'cascade' }).notNull(),
-  followingId: integer("following_id").references(() => users.id, { onDelete: 'cascade' }).notNull(),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
+  title: varchar("title", { length: 200 }).notNull(),
+  content: text("content"),
+  imageUrl: text("image_url"),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
 });
 
-// 알림 시스템
-export const notifications = pgTable("notifications", {
-  id: serial("id").primaryKey(),
-  userId: integer("user_id").references(() => users.id, { onDelete: 'cascade' }).notNull(),
-  type: text("type", { enum: ['event', 'course', 'health', 'payment', 'system'] }).notNull(),
-  title: text("title").notNull(),
-  message: text("message").notNull(),
-  data: json("data"),
-  isRead: boolean("is_read").notNull().default(false),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-});
+// Type definitions
+export type UserRole = "admin" | "trainer" | "institute-admin" | "pet-owner";
 
-// 메시징 시스템
-export const conversations = pgTable("conversations", {
-  id: serial("id").primaryKey(),
-  participantIds: json("participant_ids").$type<number[]>().notNull(),
-  title: text("title"),
-  type: text("type").notNull().default('direct'), // 'direct', 'group'
-  lastMessageId: integer("last_message_id"),
-  lastMessageAt: timestamp("last_message_at"),
-  isActive: boolean("is_active").notNull().default(true),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-  updatedAt: timestamp("updated_at").notNull().defaultNow(),
-});
+export type User = z.infer<typeof selectUserSchema>;
+export type NewUser = z.infer<typeof insertUserSchema>;
+export type InsertUser = z.infer<typeof insertUserSchema>;
 
-export const messages = pgTable("messages", {
-  id: serial("id").primaryKey(),
-  conversationId: integer("conversation_id").references(() => conversations.id, { onDelete: 'cascade' }).notNull(),
-  senderId: integer("sender_id").references(() => users.id, { onDelete: 'cascade' }).notNull(),
-  content: text("content").notNull(),
-  type: text("type").notNull().default('text'), // 'text', 'image', 'file'
-  metadata: json("metadata"), // 파일 정보, 이미지 URL 등
-  isRead: boolean("is_read").notNull().default(false),
-  isEdited: boolean("is_edited").notNull().default(false),
-  isDeleted: boolean("is_deleted").notNull().default(false),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-  updatedAt: timestamp("updated_at").notNull().defaultNow(),
-});
+export type Course = z.infer<typeof selectCourseSchema>;
+export type NewCourse = z.infer<typeof insertCourseSchema>;
+export type InsertCourse = z.infer<typeof insertCourseSchema>;
 
-// Type exports
-export type User = typeof users.$inferSelect;
-export type InsertUser = typeof users.$inferInsert;
-export type Pet = typeof pets.$inferSelect;
-export type InsertPet = typeof pets.$inferInsert;
-export type Course = typeof courses.$inferSelect;
-export type InsertCourse = typeof courses.$inferInsert;
-export type TrainingSession = typeof trainingSessions.$inferSelect;
-export type InsertTrainingSession = typeof trainingSessions.$inferInsert;
+export type Institute = z.infer<typeof selectInstituteSchema>;
+export type NewInstitute = z.infer<typeof insertInstituteSchema>;
+
+export type Pet = z.infer<typeof selectPetSchema>;
+export type NewPet = z.infer<typeof insertPetSchema>;
+
 export type Event = typeof events.$inferSelect;
 export type InsertEvent = typeof events.$inferInsert;
+
 export type EventLocation = typeof eventLocations.$inferSelect;
 export type InsertEventLocation = typeof eventLocations.$inferInsert;
+
 export type EventAttendance = typeof eventAttendances.$inferSelect;
-export type Product = typeof products.$inferSelect;
-export type InsertProduct = typeof products.$inferInsert;
-export type CartItem = typeof cartItems.$inferSelect;
-export type InsertCartItem = typeof cartItems.$inferInsert;
-export type Notification = typeof notifications.$inferSelect;
-export type InsertNotification = typeof notifications.$inferInsert;
-export type Conversation = typeof conversations.$inferSelect;
-export type InsertConversation = typeof conversations.$inferInsert;
-export type Message = typeof messages.$inferSelect;
-export type InsertMessage = typeof messages.$inferInsert;
-export type Trainer = typeof trainers.$inferSelect;
-export type InsertTrainer = typeof trainers.$inferInsert;
-export type Checkup = typeof checkups.$inferSelect;
-export type InsertCheckup = typeof checkups.$inferInsert;
+
 export type Banner = typeof banners.$inferSelect;
 export type InsertBanner = typeof banners.$inferInsert;
-
-// Schema exports for validation
-export const createUserSchema = createInsertSchema(users)
-  .omit({
-    id: true,
-    createdAt: true,
-    instituteId: true,
-    verified: true,
-    verifiedAt: true,
-    provider: true,
-    socialId: true
-  })
-  .extend({
-    instituteCode: z.string().optional(),
-    address: z.string().optional(),
-    phoneNumber: z.string().optional(),
-    ci: z.string().optional(),
-    verificationData: z.object({
-      name: z.string(),
-      birth: z.string(),
-      phone: z.string(),
-      medicalHistory: z.string().optional(),
-    }).optional(),
-  });
-
-export const createPetSchema = createInsertSchema(pets).omit({
-  id: true,
-  ownerId: true,
-  createdAt: true,
-  updatedAt: true
-});
-
-export const createCourseSchema = createInsertSchema(courses).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true
-});
-
-export const createEventSchema = createInsertSchema(events).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true
-});
-
-export const createProductSchema = createInsertSchema(products).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true
-});
-
-// 수수료 관련 스키마
-export const createCommissionPolicySchema = createInsertSchema(commissionPolicies).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true
-});
-
-export const createCommissionTransactionSchema = createInsertSchema(commissionTransactions).omit({
-  id: true,
-  createdAt: true
-});
-
-export const createSettlementReportSchema = createInsertSchema(settlementReports).omit({
-  id: true,
-  generatedAt: true,
-  approvedAt: true,
-  paidAt: true
-});
-
-export const createTrainingSessionSchema = createInsertSchema(trainingSessions).omit({
-  id: true,
-  createdAt: true
-});
-
-
-
-export const createCartItemSchema = createInsertSchema(cartItems).omit({
-  id: true,
-  userId: true,
-  createdAt: true,
-  updatedAt: true
-});
-
-// 소셜 스키마들
-export const createPostSchema = createInsertSchema(posts).omit({
-  id: true,
-  userId: true,
-  createdAt: true,
-  updatedAt: true
-});
-
-export const insertPostSchema = createPostSchema;
-
-export const createCommentSchema = createInsertSchema(comments).omit({
-  id: true,
-  userId: true,
-  createdAt: true
-});
-
-// 배너 스키마들
-export const createBannerSchema = createInsertSchema(banners).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-  createdBy: true
-});
-
-export const insertBannerSchema = createBannerSchema;

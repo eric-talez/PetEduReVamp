@@ -16,6 +16,31 @@ export default function Courses(props?: CoursesPageProps) {
   const [filter, setFilter] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
 
+  // 수강 신청 처리 함수
+  const handleEnrollment = async (courseId: number) => {
+    try {
+      const response = await fetch(`/api/courses/${courseId}/enroll`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+      });
+
+      if (response.ok) {
+        alert('수강 신청이 완료되었습니다!');
+        // 페이지 새로고침 또는 상태 업데이트
+        window.location.reload();
+      } else {
+        const error = await response.text();
+        alert(`수강 신청 실패: ${error}`);
+      }
+    } catch (error) {
+      console.error('수강 신청 오류:', error);
+      alert('수강 신청 중 오류가 발생했습니다.');
+    }
+  };
+
   const courses = [
     {
       id: 1,

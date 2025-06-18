@@ -47,7 +47,7 @@ import { queryClient } from '@/lib/queryClient';
 import { PostModal } from './PostModal';
 
 // 컴포넌트를 작은 단위로 분리하여 관리
-const PostCard = ({ post, onPostClick }) => {
+const PostCard = ({ post, onPostClick }: { post: any; onPostClick: (post: any) => void }) => {
   const { user } = useAuth();
   const [showDropdown, setShowDropdown] = useState(false);
 
@@ -61,13 +61,13 @@ const PostCard = ({ post, onPostClick }) => {
   console.log('PostCard - user:', user);
   console.log('PostCard - isAuthor:', isAuthor);
 
-  const handleEdit = (e) => {
+  const handleEdit = (e: React.MouseEvent) => {
     e.stopPropagation();
     // 편집 모달 열기 (나중에 구현)
     console.log('편집:', post.id);
   };
 
-  const handleDelete = async (e) => {
+  const handleDelete = async (e: React.MouseEvent) => {
     e.stopPropagation();
     if (confirm('정말 삭제하시겠습니까?')) {
       try {
@@ -153,7 +153,7 @@ const PostCard = ({ post, onPostClick }) => {
         <p className="text-sm text-muted-foreground line-clamp-2">{post.content}</p>
         {post.tags && post.tags.length > 0 && (
           <div className="flex flex-wrap gap-1 mt-2">
-            {post.tags.map((tag, index) => (
+            {post.tags.map((tag: string, index: number) => (
               <div key={index} className="inline-flex items-center text-xs text-blue-600">
                 <Tag className="h-3 w-3 mr-1" />
                 {tag}
@@ -425,6 +425,32 @@ export default function CommunityPage() {
       deletePostMutation.mutate(selectedPost.id);
     }
   };
+
+  // 댓글 작성 함수
+  const handleCommentSubmit = async (postId: number, content: string) => {
+    try {
+      const response = await fetch('/api/comments/create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ postId, content }),
+        credentials: 'include',
+      });
+
+      if (response.ok) {
+        alert('댓글이 작성되었습니다!');
+        // 댓글 목록 새로고침
+        window.location.reload();
+      } else {
+        alert('댓글 작성에 실패했습니다.');
+      }
+    } catch (error) {
+      console.error('댓글 작성 오류:', error);
+      alert('댓글 작성 중 오류가 발생했습니다.');
+    }
+  };
+  const handlePostSubmit = async (postData: any) => {
 
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 max-w-7xl">
