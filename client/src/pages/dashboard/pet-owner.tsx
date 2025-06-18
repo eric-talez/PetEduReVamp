@@ -409,7 +409,7 @@ export default function PetOwnerDashboard({ onAction }: PetOwnerDashboardProps) 
 
       {/* Statistics */}
       <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 xl:grid-cols-5 gap-4 mb-8">
-        <Card className="p-6 border border-gray-100 dark:border-gray-700">
+        <Card className="p-6 border border-gray-100 dark:border-gray-700 cursor-pointer hover:shadow-lg transition-all duration-200" onClick={() => setLocation('/my-courses')}>
           <div className="flex items-center">
             <div className="flex-shrink-0 h-12 w-12 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-full flex items-center justify-center">
               <BookOpen className="h-6 w-6" />
@@ -459,7 +459,7 @@ export default function PetOwnerDashboard({ onAction }: PetOwnerDashboardProps) 
         </Card>
 
         {/* 반려동물 건강 관리 카드 */}
-        <Card className="p-6 border border-gray-100 dark:border-gray-700">
+        <Card className="p-6 border border-gray-100 dark:border-gray-700 cursor-pointer hover:shadow-lg transition-all duration-200" onClick={() => setLocation('/health-tracker')}>
           <div className="flex items-center">
             <div className="flex-shrink-0 h-12 w-12 bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 rounded-full flex items-center justify-center">
               <PawPrint className="h-6 w-6" />
@@ -481,7 +481,7 @@ export default function PetOwnerDashboard({ onAction }: PetOwnerDashboardProps) 
           </div>
         </Card>
 
-        <Card className="p-6 border border-gray-100 dark:border-gray-700">
+        <Card className="p-6 border border-gray-100 dark:border-gray-700 cursor-pointer hover:shadow-lg transition-all duration-200" onClick={() => setLocation('/schedule')}>
           <div className="flex items-center">
             <div className="flex-shrink-0 h-12 w-12 bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 rounded-full flex items-center justify-center">
               <Calendar className="h-6 w-6" />
@@ -538,7 +538,7 @@ export default function PetOwnerDashboard({ onAction }: PetOwnerDashboardProps) 
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {courses.map((course) => (
-            <Card key={course.id} className="overflow-hidden border border-gray-100 dark:border-gray-700 card-hover">
+            <Card key={course.id} className="overflow-hidden border border-gray-100 dark:border-gray-700 card-hover cursor-pointer hover:shadow-lg transition-all duration-200" onClick={() => setLocation(`/course/${course.id}`)}>
               <div className="relative h-40">
                 <img 
                   src={course.image} 
@@ -606,7 +606,7 @@ export default function PetOwnerDashboard({ onAction }: PetOwnerDashboardProps) 
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {recommendedCourses.map((course) => (
-            <Card key={course.id} className="overflow-hidden border border-gray-100 dark:border-gray-700 card-hover">
+            <Card key={course.id} className="overflow-hidden border border-gray-100 dark:border-gray-700 card-hover cursor-pointer hover:shadow-lg transition-all duration-200" onClick={() => setLocation(`/course/${course.id}`)}>
               <div className="relative h-36">
                 <img 
                   src={course.image} 
@@ -643,7 +643,7 @@ export default function PetOwnerDashboard({ onAction }: PetOwnerDashboardProps) 
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {communityPosts.map((post) => (
-            <Card key={post.id} className="overflow-hidden border border-gray-100 dark:border-gray-700 card-hover">
+            <Card key={post.id} className="overflow-hidden border border-gray-100 dark:border-gray-700 card-hover cursor-pointer hover:shadow-lg transition-all duration-200" onClick={() => setLocation(`/community/post/${post.id}`)}>
               <div className="p-5">
                 <div className="flex items-center mb-4">
                   <Avatar className="w-10 h-10">
