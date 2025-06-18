@@ -214,7 +214,11 @@ const PostCardSkeleton = () => (
 );
 
 // 필터 옵션 컴포넌트
-const FilterOptions = ({ activeCategory, setActiveCategory, categories }) => {
+const FilterOptions = ({ activeCategory, setActiveCategory, categories }: { 
+  activeCategory: string; 
+  setActiveCategory: (category: string) => void; 
+  categories: string[]; 
+}) => {
   return (
     <div className="flex flex-wrap gap-2 mb-4">
       <Button
@@ -224,7 +228,7 @@ const FilterOptions = ({ activeCategory, setActiveCategory, categories }) => {
       >
         전체
       </Button>
-      {categories.map((category) => (
+      {categories.map((category: string) => (
         <Button
           key={category}
           variant={activeCategory === category ? 'default' : 'outline'}
@@ -587,12 +591,20 @@ export default function CommunityPage() {
               />
 
               {postsData.pagination.totalPages > 1 && (
-                <Pagination
-                  className="mt-6 flex justify-center"
-                  currentPage={currentPage}
-                  totalPages={postsData.pagination.totalPages}
-                  onPageChange={handlePageChange}
-                />
+                <div className="mt-6 flex justify-center">
+                  <div className="flex items-center gap-2">
+                    {Array.from({ length: postsData.pagination.totalPages }, (_, i) => i + 1).map((page) => (
+                      <Button
+                        key={page}
+                        variant={currentPage === page ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => handlePageChange(page)}
+                      >
+                        {page}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
               )}
             </>
           )}
@@ -630,12 +642,20 @@ export default function CommunityPage() {
               />
 
               {postsData.pagination.totalPages > 1 && (
-                <Pagination
-                  className="mt-6 flex justify-center"
-                  currentPage={currentPage}
-                  totalPages={postsData.pagination.totalPages}
-                  onPageChange={handlePageChange}
-                />
+                <div className="mt-6 flex justify-center">
+                  <div className="flex items-center gap-2">
+                    {Array.from({ length: postsData.pagination.totalPages }, (_, i) => i + 1).map((page) => (
+                      <Button
+                        key={page}
+                        variant={currentPage === page ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => handlePageChange(page)}
+                      >
+                        {page}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
               )}
             </>
           )}
@@ -654,3 +674,5 @@ export default function CommunityPage() {
     </div>
   );
 }
+
+export default CommunityPage;
