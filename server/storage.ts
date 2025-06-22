@@ -112,6 +112,45 @@ export interface IStorage {
   createBanner(banner: InsertBanner & { createdBy: number }): Promise<Banner>;
   updateBanner(id: number, data: Partial<InsertBanner>): Promise<Banner | undefined>;
   deleteBanner(id: number): Promise<boolean>;
+
+  // 건강 관리 관련
+  getVaccinations(petId: number): Promise<any[]>;
+  createVaccination(vaccination: any): Promise<any>;
+  updateVaccination(id: number, data: any): Promise<any>;
+  deleteVaccination(id: number): Promise<boolean>;
+  getCheckups(petId: number): Promise<any[]>;
+  createCheckup(checkup: any): Promise<any>;
+  updateCheckup(id: number, data: any): Promise<any>;
+  deleteCheckup(id: number): Promise<boolean>;
+
+  // 메시지 관련
+  getMessages(userId: number): Promise<any[]>;
+  getMessage(id: number): Promise<any | undefined>;
+  createMessage(message: any): Promise<any>;
+  updateMessage(id: number, data: any): Promise<any>;
+  deleteMessage(id: number): Promise<boolean>;
+  markMessageAsRead(id: number): Promise<any>;
+
+  // 알림 관련
+  getNotifications(userId: number): Promise<any[]>;
+  getNotification(id: number): Promise<any | undefined>;
+  createNotification(notification: any): Promise<any>;
+  markNotificationAsRead(id: number): Promise<any>;
+  deleteNotification(id: number): Promise<boolean>;
+
+  // 화상 수업 관련
+  getVideoClasses(): Promise<any[]>;
+  getVideoClass(id: number): Promise<any | undefined>;
+  createVideoClass(videoClass: any): Promise<any>;
+  updateVideoClass(id: number, data: any): Promise<any>;
+  deleteVideoClass(id: number): Promise<boolean>;
+
+  // 예약 관련
+  getReservations(userId?: number): Promise<any[]>;
+  getReservation(id: number): Promise<any | undefined>;
+  createReservation(reservation: any): Promise<any>;
+  updateReservation(id: number, data: any): Promise<any>;
+  cancelReservation(id: number): Promise<any>;
 }
 
 // 메모리 기반 데이터 저장소 (운영 환경용)
@@ -235,11 +274,310 @@ export class MemoryStorage implements IStorage{
 
     this.products.set(sampleProduct.id, sampleProduct);
 
+    // 샘플 사용자 (견주) 추가
+    const petOwnerUser = {
+      id: this.userId++,
+      username: 'petowner',
+      email: 'owner@example.com',
+      name: '반려인',
+      role: 'pet-owner',
+      password: 'hashed_password_here',
+      avatar: '/images/pet-owner-avatar.png',
+      createdAt: new Date(),
+      isVerified: true,
+      instituteId: null,
+      ci: null,
+      verified: false,
+      verifiedAt: null,
+      verificationName: null,
+      verificationBirth: null,
+      verificationPhone: null,
+      provider: null,
+      socialId: null,
+      bio: '반려동물과 함께하는 행복한 일상',
+      location: '서울시 강남구'
+    };
+
+    this.users.set(petOwnerUser.id, petOwnerUser);
+
+    // 샘플 훈련사 추가
+    const trainerUser = {
+      id: this.userId++,
+      username: 'trainer',
+      email: 'trainer@example.com',
+      name: '김민수',
+      role: 'trainer',
+      password: 'hashed_password_here',
+      avatar: '/images/trainer-avatar.png',
+      createdAt: new Date(),
+      isVerified: true,
+      instituteId: 1,
+      ci: null,
+      verified: false,
+      verifiedAt: null,
+      verificationName: null,
+      verificationBirth: null,
+      verificationPhone: null,
+      provider: null,
+      socialId: null,
+      bio: '10년 경력의 전문 반려동물 훈련사',
+      location: '서울시 강남구',
+      specializations: ['기본훈련', '행동교정', '어질리티'],
+      certification: '반려동물행동교정사 1급'
+    };
+
+    this.users.set(trainerUser.id, trainerUser);
+
+    // 샘플 반려동물 추가
+    const samplePet1 = {
+      id: this.petId++,
+      name: '멍멍이',
+      breed: '골든 리트리버',
+      age: 3,
+      weight: 25000, // 그램 단위
+      gender: 'male',
+      ownerId: petOwnerUser.id,
+      description: '활발하고 친근한 성격의 골든 리트리버',
+      health: '건강함',
+      temperament: '온순하고 활발함',
+      allergies: '없음',
+      microchipId: 'MC001234567890',
+      registrationNumber: 'REG-2024-001',
+      birthDate: '2021-03-15',
+      adoptionDate: '2021-05-20',
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+
+    const samplePet2 = {
+      id: this.petId++,
+      name: '야옹이',
+      breed: '페르시안',
+      age: 2,
+      weight: 4500, // 그램 단위
+      gender: 'female',
+      ownerId: petOwnerUser.id,
+      description: '조용하고 우아한 성격의 페르시안 고양이',
+      health: '건강함',
+      temperament: '차분하고 독립적',
+      allergies: '특정 사료에 알레르기',
+      microchipId: 'MC001234567891',
+      registrationNumber: 'REG-2024-002',
+      birthDate: '2022-08-10',
+      adoptionDate: '2022-10-15',
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+
+    this.pets.set(samplePet1.id, samplePet1);
+    this.pets.set(samplePet2.id, samplePet2);
+
+    // 샘플 예방접종 기록
+    const vaccination1 = {
+      id: 1,
+      petId: samplePet1.id,
+      vaccineName: 'DHPPL',
+      vaccineType: '종합백신',
+      vaccineDate: '2024-01-15',
+      nextDueDate: '2025-01-15',
+      veterinarian: '박수의사',
+      clinicName: '강남동물병원',
+      notes: '정상적으로 접종 완료. 부작용 없음',
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+
+    const vaccination2 = {
+      id: 2,
+      petId: samplePet1.id,
+      vaccineName: '광견병 백신',
+      vaccineType: '광견병',
+      vaccineDate: '2024-01-15',
+      nextDueDate: '2025-01-15',
+      veterinarian: '박수의사',
+      clinicName: '강남동물병원',
+      notes: '광견병 예방접종 완료',
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+
+    const vaccination3 = {
+      id: 3,
+      petId: samplePet2.id,
+      vaccineName: 'FVRCP',
+      vaccineType: '종합백신',
+      vaccineDate: '2024-02-10',
+      nextDueDate: '2025-02-10',
+      veterinarian: '이수의사',
+      clinicName: '서초동물병원',
+      notes: '고양이 종합백신 접종 완료',
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+
+    // 샘플 건강검진 기록
+    const checkup1 = {
+      id: this.checkupId++,
+      petId: samplePet1.id,
+      checkupDate: '2024-01-20',
+      weight: 25000,
+      temperature: '38.2°C',
+      diagnosis: '정상',
+      treatment: '정기검진, 특별한 치료 불필요',
+      veterinarian: '박수의사',
+      clinicName: '강남동물병원',
+      notes: '전반적으로 건강상태 양호. 다음 검진까지 현재 사료 유지',
+      nextCheckupDate: '2024-07-20',
+      bloodPressure: '정상',
+      heartRate: '80bpm',
+      eyeExam: '정상',
+      dentalCheck: '치석 약간 있음, 양치 권장',
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+
+    const checkup2 = {
+      id: this.checkupId++,
+      petId: samplePet2.id,
+      checkupDate: '2024-02-15',
+      weight: 4500,
+      temperature: '38.5°C',
+      diagnosis: '정상',
+      treatment: '정기검진, 털갈이 관리 권장',
+      veterinarian: '이수의사',
+      clinicName: '서초동물병원',
+      notes: '건강상태 우수. 털갈이 시기로 브러싱 자주 해주세요',
+      nextCheckupDate: '2024-08-15',
+      bloodPressure: '정상',
+      heartRate: '120bpm',
+      eyeExam: '정상',
+      dentalCheck: '양호',
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+
+    this.checkups.set(checkup1.id, checkup1);
+    this.checkups.set(checkup2.id, checkup2);
+
+    // 샘플 알림장 기록
+    const journal1 = {
+      id: 1,
+      trainerId: trainerUser.id,
+      petOwnerId: petOwnerUser.id,
+      petId: samplePet1.id,
+      title: '멍멍이 기본 훈련 1회차',
+      content: '오늘은 기본적인 앉기와 기다리기 훈련을 진행했습니다. 멍멍이가 처음에는 산만했지만 점차 집중력이 향상되었습니다. 간식을 이용한 긍정적 강화 훈련이 효과적이었습니다.',
+      trainingDate: '2024-01-21',
+      trainingDuration: 60,
+      trainingType: '기본 훈련',
+      progressRating: 4,
+      behaviorNotes: '활발하고 호기심이 많음. 간식에 대한 반응이 좋음. 집중 시간이 5분 정도로 짧지만 점진적으로 늘어나고 있음.',
+      homeworkInstructions: '집에서 하루 2번, 5분씩 앉기 연습을 해주세요. 간식은 작은 크기로 나누어 주시고, 성공할 때마다 칭찬과 함께 주세요.',
+      nextGoals: '다음 시간에는 눕기와 손 흔들기를 배워보겠습니다. 산책 시 리드줄 훈련도 시작할 예정입니다.',
+      isRead: false,
+      readAt: null,
+      status: 'sent',
+      createdAt: new Date('2024-01-21T14:30:00Z'),
+      updatedAt: new Date('2024-01-21T14:30:00Z')
+    };
+
+    // 메시지 샘플 데이터
+    const message1 = {
+      id: this.messageId++,
+      senderId: trainerUser.id,
+      receiverId: petOwnerUser.id,
+      subject: '멍멍이 훈련 관련 문의',
+      content: '안녕하세요. 멍멍이의 훈련 진행 상황에 대해 궁금한 점이 있어 연락드립니다.',
+      type: 'training',
+      status: 'unread',
+      isUrgent: false,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+
+    this.messages.set(message1.id, message1);
+
+    // 알림 샘플 데이터
+    const notification1 = {
+      id: this.notificationId++,
+      userId: petOwnerUser.id,
+      title: '새로운 훈련 알림장이 도착했습니다',
+      message: '김민수 훈련사님이 멍멍이의 훈련 알림장을 작성했습니다.',
+      type: 'journal',
+      status: 'unread',
+      linkTo: '/journals',
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+
+    this.notifications.set(notification1.id, notification1);
+
+    // 화상 수업 샘플 데이터
+    const videoClass1 = {
+      id: 1,
+      title: '강아지 기초 훈련 마스터 클래스',
+      trainer: '김민수',
+      trainerId: trainerUser.id,
+      price: 45000,
+      duration: 60,
+      rating: 4.8,
+      reviews: 24,
+      image: '/images/video-class-basic-training.jpg',
+      trainerImage: '/images/trainer-kim-profile.jpg',
+      tags: ['기초훈련', '신규견주', '온라인'],
+      description: '반려견의 기본적인 훈련 방법을 배우는 실시간 화상 수업입니다. 앉기, 기다리기, 오기 등의 기본 명령어부터 시작합니다.',
+      availability: '매주 토요일 14:00-15:00',
+      status: 'open',
+      seatsTotal: 8,
+      seatsBooked: 3,
+      nextSession: '2024-01-27T14:00:00Z',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      minParticipants: 2,
+      cancellationDeadline: '24시간 전',
+      isAutoCancelEnabled: true,
+      curriculum: [
+        '1주차: 기본 명령어 (앉기, 기다리기)',
+        '2주차: 오기 훈련과 리드줄 훈련',
+        '3주차: 문제 행동 교정',
+        '4주차: 고급 명령어와 트릭'
+      ],
+      materials: [
+        '간식 (작은 크기)',
+        '리드줄',
+        '장난감 1-2개',
+        '매트 또는 수건'
+      ]
+    };
+
+    // 예약 샘플 데이터
+    const reservation1 = {
+      id: 1,
+      classId: videoClass1.id,
+      userId: petOwnerUser.id,
+      userName: petOwnerUser.name,
+      reservationDate: '2024-01-27',
+      reservationTime: '14:00',
+      status: 'confirmed',
+      paymentStatus: 'paid',
+      createdAt: new Date(),
+      notes: '강아지 기초 훈련에 대해 배우고 싶습니다.',
+      petInfo: {
+        name: samplePet1.name,
+        breed: samplePet1.breed,
+        age: samplePet1.age
+      }
+    };
+
     console.log('✅ 운영 환경용 샘플 데이터 초기화 완료');
     console.log(`   - 관리자 계정: ${this.users.size}개`);
     console.log(`   - 기관: ${this.institutes.size}개`);
     console.log(`   - 수수료 정책: ${this.commissionPolicies.size}개`);
     console.log(`   - 상품: ${this.products.size}개`);
+    console.log(`   - 반려동물: ${this.pets.size}마리`);
+    console.log(`   - 건강검진 기록: ${this.checkups.size}건`);
+    console.log(`   - 메시지: ${this.messages.size}건`);
+    console.log(`   - 알림: ${this.notifications.size}건`);
   }
 
   // Getter 메서드들
@@ -868,6 +1206,311 @@ export class DatabaseStorage implements IStorage {
     async deletePet(id: number): Promise<boolean> {
         return false;
     }
+
+  // 건강 관리 메서드 구현
+  async getVaccinations(petId: number): Promise<any[]> {
+    // 메모리에서 해당 반려동물의 예방접종 기록 조회
+    const vaccinations = Array.from(this.checkups.values()).filter(
+      (v: any) => v.petId === petId && v.type === 'vaccination'
+    );
+    
+    // 샘플 예방접종 데이터 반환
+    return [
+      {
+        id: 1,
+        petId: petId,
+        vaccineName: 'DHPPL',
+        vaccineType: '종합백신',
+        vaccineDate: '2024-01-15',
+        nextDueDate: '2025-01-15',
+        veterinarian: '박수의사',
+        clinicName: '강남동물병원',
+        notes: '정상적으로 접종 완료. 부작용 없음'
+      },
+      {
+        id: 2,
+        petId: petId,
+        vaccineName: '광견병 백신',
+        vaccineType: '광견병',
+        vaccineDate: '2024-01-15',
+        nextDueDate: '2025-01-15',
+        veterinarian: '박수의사',
+        clinicName: '강남동물병원',
+        notes: '광견병 예방접종 완료'
+      }
+    ];
+  }
+
+  async createVaccination(vaccination: any): Promise<any> {
+    const newVaccination = {
+      id: Date.now(),
+      ...vaccination,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    return newVaccination;
+  }
+
+  async updateVaccination(id: number, data: any): Promise<any> {
+    return { id, ...data, updatedAt: new Date() };
+  }
+
+  async deleteVaccination(id: number): Promise<boolean> {
+    return true;
+  }
+
+  async getCheckups(petId: number): Promise<any[]> {
+    // 해당 반려동물의 건강검진 기록 조회
+    return Array.from(this.checkups.values()).filter(
+      (checkup: any) => checkup.petId === petId
+    );
+  }
+
+  async createCheckup(checkup: any): Promise<any> {
+    const newCheckup = {
+      id: this.checkupId++,
+      ...checkup,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    this.checkups.set(newCheckup.id, newCheckup);
+    return newCheckup;
+  }
+
+  async updateCheckup(id: number, data: any): Promise<any> {
+    const checkup = this.checkups.get(id);
+    if (checkup) {
+      const updatedCheckup = { ...checkup, ...data, updatedAt: new Date() };
+      this.checkups.set(id, updatedCheckup);
+      return updatedCheckup;
+    }
+    return null;
+  }
+
+  async deleteCheckup(id: number): Promise<boolean> {
+    return this.checkups.delete(id);
+  }
+
+  // 메시지 관련 메서드 구현
+  async getMessages(userId: number): Promise<any[]> {
+    return Array.from(this.messages.values()).filter(
+      (message: any) => message.receiverId === userId || message.senderId === userId
+    );
+  }
+
+  async getMessage(id: number): Promise<any | undefined> {
+    return this.messages.get(id);
+  }
+
+  async createMessage(message: any): Promise<any> {
+    const newMessage = {
+      id: this.messageId++,
+      ...message,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    this.messages.set(newMessage.id, newMessage);
+    return newMessage;
+  }
+
+  async updateMessage(id: number, data: any): Promise<any> {
+    const message = this.messages.get(id);
+    if (message) {
+      const updatedMessage = { ...message, ...data, updatedAt: new Date() };
+      this.messages.set(id, updatedMessage);
+      return updatedMessage;
+    }
+    return null;
+  }
+
+  async deleteMessage(id: number): Promise<boolean> {
+    return this.messages.delete(id);
+  }
+
+  async markMessageAsRead(id: number): Promise<any> {
+    const message = this.messages.get(id);
+    if (message) {
+      message.status = 'read';
+      message.readAt = new Date();
+      this.messages.set(id, message);
+      return message;
+    }
+    return null;
+  }
+
+  // 알림 관련 메서드 구현
+  async getNotifications(userId: number): Promise<any[]> {
+    return Array.from(this.notifications.values()).filter(
+      (notification: any) => notification.userId === userId
+    );
+  }
+
+  async getNotification(id: number): Promise<any | undefined> {
+    return this.notifications.get(id);
+  }
+
+  async createNotification(notification: any): Promise<any> {
+    const newNotification = {
+      id: this.notificationId++,
+      ...notification,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    this.notifications.set(newNotification.id, newNotification);
+    return newNotification;
+  }
+
+  async markNotificationAsRead(id: number): Promise<any> {
+    const notification = this.notifications.get(id);
+    if (notification) {
+      notification.status = 'read';
+      notification.readAt = new Date();
+      this.notifications.set(id, notification);
+      return notification;
+    }
+    return null;
+  }
+
+  async deleteNotification(id: number): Promise<boolean> {
+    return this.notifications.delete(id);
+  }
+
+  // 화상 수업 관련 메서드 구현
+  async getVideoClasses(): Promise<any[]> {
+    // 샘플 화상 수업 데이터 반환
+    return [
+      {
+        id: 1,
+        title: '강아지 기초 훈련 마스터 클래스',
+        trainer: '김민수',
+        trainerId: 3,
+        price: 45000,
+        duration: 60,
+        rating: 4.8,
+        reviews: 24,
+        image: '/images/video-class-basic-training.jpg',
+        trainerImage: '/images/trainer-kim-profile.jpg',
+        tags: ['기초훈련', '신규견주', '온라인'],
+        description: '반려견의 기본적인 훈련 방법을 배우는 실시간 화상 수업입니다.',
+        availability: '매주 토요일 14:00-15:00',
+        status: 'open',
+        seatsTotal: 8,
+        seatsBooked: 3,
+        nextSession: '2024-01-27T14:00:00Z'
+      },
+      {
+        id: 2,
+        title: '고양이 행동 교정 클래스',
+        trainer: '이준호',
+        trainerId: 4,
+        price: 38000,
+        duration: 45,
+        rating: 4.6,
+        reviews: 18,
+        image: '/images/video-class-cat-behavior.jpg',
+        trainerImage: '/images/trainer-lee-profile.jpg',
+        tags: ['행동교정', '고양이', '온라인'],
+        description: '고양이의 문제 행동을 이해하고 교정하는 방법을 배웁니다.',
+        availability: '매주 일요일 15:00-15:45',
+        status: 'open',
+        seatsTotal: 6,
+        seatsBooked: 2,
+        nextSession: '2024-01-28T15:00:00Z'
+      }
+    ];
+  }
+
+  async getVideoClass(id: number): Promise<any | undefined> {
+    const classes = await this.getVideoClasses();
+    return classes.find((cls: any) => cls.id === id);
+  }
+
+  async createVideoClass(videoClass: any): Promise<any> {
+    const newClass = {
+      id: Date.now(),
+      ...videoClass,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    return newClass;
+  }
+
+  async updateVideoClass(id: number, data: any): Promise<any> {
+    return { id, ...data, updatedAt: new Date() };
+  }
+
+  async deleteVideoClass(id: number): Promise<boolean> {
+    return true;
+  }
+
+  // 예약 관련 메서드 구현
+  async getReservations(userId?: number): Promise<any[]> {
+    // 샘플 예약 데이터 반환
+    const reservations = [
+      {
+        id: 1,
+        classId: 1,
+        userId: 2,
+        userName: '반려인',
+        reservationDate: '2024-01-27',
+        reservationTime: '14:00',
+        status: 'confirmed',
+        paymentStatus: 'paid',
+        createdAt: new Date(),
+        notes: '강아지 기초 훈련에 대해 배우고 싶습니다.',
+        petInfo: {
+          name: '멍멍이',
+          breed: '골든 리트리버',
+          age: 3
+        }
+      },
+      {
+        id: 2,
+        classId: 2,
+        userId: 2,
+        userName: '반려인',
+        reservationDate: '2024-01-28',
+        reservationTime: '15:00',
+        status: 'pending',
+        paymentStatus: 'pending',
+        createdAt: new Date(),
+        notes: '고양이 행동 교정이 필요합니다.',
+        petInfo: {
+          name: '야옹이',
+          breed: '페르시안',
+          age: 2
+        }
+      }
+    ];
+
+    if (userId) {
+      return reservations.filter((reservation: any) => reservation.userId === userId);
+    }
+    return reservations;
+  }
+
+  async getReservation(id: number): Promise<any | undefined> {
+    const reservations = await this.getReservations();
+    return reservations.find((reservation: any) => reservation.id === id);
+  }
+
+  async createReservation(reservation: any): Promise<any> {
+    const newReservation = {
+      id: Date.now(),
+      ...reservation,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    return newReservation;
+  }
+
+  async updateReservation(id: number, data: any): Promise<any> {
+    return { id, ...data, updatedAt: new Date() };
+  }
+
+  async cancelReservation(id: number): Promise<any> {
+    return { id, status: 'cancelled', updatedAt: new Date() };
+  }
 }
 
 // Export the storage instance
