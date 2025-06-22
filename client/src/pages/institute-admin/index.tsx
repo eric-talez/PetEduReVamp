@@ -100,6 +100,12 @@ export default function InstituteAdminPage() {
   const [filterType, setFilterType] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [reviewComment, setReviewComment] = useState('');
+  const [selectedCourse, setSelectedCourse] = useState<any>(null);
+  const [isCourseDialogOpen, setIsCourseDialogOpen] = useState(false);
+  const [selectedJournal, setSelectedJournal] = useState<any>(null);
+  const [isJournalDialogOpen, setIsJournalDialogOpen] = useState(false);
+  const [selectedStudent, setSelectedStudent] = useState<any>(null);
+  const [isStudentDialogOpen, setIsStudentDialogOpen] = useState(false);
 
   // 기관 통계 조회
   const { data: stats } = useQuery({
@@ -175,6 +181,206 @@ export default function InstituteAdminPage() {
       toast({
         title: "상태 변경 완료",
         description: "훈련사 상태가 성공적으로 변경되었습니다."
+      });
+    }
+  });
+
+  // 강좌 목록 조회 (승인 대기 중)
+  const { data: pendingCourses, isLoading: coursesLoading } = useQuery({
+    queryKey: ['/api/institute/pending-courses'],
+    queryFn: async () => {
+      return [
+        {
+          id: 1,
+          title: "기초 복종 훈련",
+          description: "반려견의 기본적인 복종 훈련을 위한 8주 과정",
+          trainer: { id: 1, name: "김민수", email: "kim@example.com" },
+          category: "기초훈련",
+          duration: "8주",
+          maxStudents: 10,
+          price: 350000,
+          level: "초급",
+          status: "pending",
+          submittedAt: "2025-01-21T10:00:00Z",
+          curriculum: [
+            { week: 1, topic: "기본 자세 훈련", content: "앉기, 기다리기 기본 자세" },
+            { week: 2, topic: "호명 반응", content: "이름 부르기 반응 훈련" }
+          ],
+          objectives: ["기본 명령어 이해", "집중력 향상", "사회성 기초"],
+          requirements: "건강한 반려견, 최신 예방접종 완료"
+        },
+        {
+          id: 2,
+          title: "어질리티 기초",
+          description: "운동능력 향상을 위한 어질리티 훈련",
+          trainer: { id: 2, name: "이준호", email: "lee@example.com" },
+          category: "운동훈련",
+          duration: "6주",
+          maxStudents: 8,
+          price: 280000,
+          level: "중급",
+          status: "pending",
+          submittedAt: "2025-01-20T14:30:00Z",
+          curriculum: [
+            { week: 1, topic: "장애물 익숙해지기", content: "기본 장애물 소개" },
+            { week: 2, topic: "점프 훈련", content: "높이별 점프 연습" }
+          ],
+          objectives: ["운동능력 향상", "협응력 개발", "자신감 증진"],
+          requirements: "기초 복종 훈련 수료, 관절 건강 양호"
+        }
+      ];
+    }
+  });
+
+  // 알림장 목록 조회 (소속 훈련사들 작성)
+  const { data: allJournals, isLoading: journalsLoading } = useQuery({
+    queryKey: ['/api/institute/journals'],
+    queryFn: async () => {
+      return [
+        {
+          id: 1,
+          title: "멍멍이 훈련 일지 - 1주차",
+          content: "오늘은 기본 자세 훈련을 진행했습니다. 앉기와 기다리기 명령에 대한 반응이 좋았습니다.",
+          trainer: { id: 1, name: "김민수", avatar: "/avatars/trainer1.jpg" },
+          student: { id: 1, name: "홍길동", pet: { name: "멍멍이", breed: "골든 리트리버" } },
+          course: { id: 1, title: "기초 복종 훈련" },
+          trainingDate: "2025-01-21",
+          trainingDuration: 60,
+          progressRating: 4,
+          behaviorNotes: "적극적이고 집중력이 좋음",
+          homeworkInstructions: "매일 5분씩 앉기 연습",
+          nextGoals: "기다리기 시간 연장",
+          createdAt: "2025-01-21T16:00:00Z",
+          status: "sent"
+        },
+        {
+          id: 2,
+          title: "바둑이 훈련 일지 - 3주차",
+          content: "산책 시 리더 훈련을 중점적으로 진행했습니다. 많은 개선이 있었습니다.",
+          trainer: { id: 2, name: "이준호", avatar: "/avatars/trainer2.jpg" },
+          student: { id: 2, name: "김영희", pet: { name: "바둑이", breed: "보더 콜리" } },
+          course: { id: 2, title: "어질리티 기초" },
+          trainingDate: "2025-01-20",
+          trainingDuration: 90,
+          progressRating: 5,
+          behaviorNotes: "에너지가 넘치고 학습 능력이 뛰어남",
+          homeworkInstructions: "장애물 설치 후 가정에서 연습",
+          nextGoals: "복잡한 코스 도전",
+          createdAt: "2025-01-20T18:30:00Z",
+          status: "read"
+        }
+      ];
+    }
+  });
+
+  // 학생 목록 조회 (출결 포함)
+  const { data: allStudents, isLoading: studentsLoading } = useQuery({
+    queryKey: ['/api/institute/students'],
+    queryFn: async () => {
+      return [
+        {
+          id: 1,
+          name: "홍길동",
+          email: "hong@example.com",
+          phone: "010-1234-5678",
+          address: "서울시 강남구",
+          joinDate: "2025-01-15",
+          status: "active",
+          pet: {
+            id: 1,
+            name: "멍멍이",
+            breed: "골든 리트리버",
+            age: 2,
+            weight: 28.5,
+            gender: "수컷",
+            neutered: true,
+            healthStatus: "양호",
+            specialNotes: "활발한 성격, 사람을 좋아함"
+          },
+          trainer: { id: 1, name: "김민수" },
+          course: { id: 1, title: "기초 복종 훈련", startDate: "2025-01-15", endDate: "2025-03-15" },
+          attendance: {
+            totalSessions: 8,
+            attendedSessions: 6,
+            absences: 1,
+            lateArrivals: 1,
+            attendanceRate: 87.5,
+            recentAttendance: [
+              { date: "2025-01-21", status: "attended", notes: "정시 참석" },
+              { date: "2025-01-18", status: "late", notes: "10분 지각" },
+              { date: "2025-01-15", status: "attended", notes: "첫 수업" },
+              { date: "2025-01-12", status: "absent", notes: "펫 컨디션 난조" }
+            ]
+          },
+          progress: {
+            overallRating: 4.2,
+            skillAssessments: [
+              { skill: "기본 복종", score: 85, notes: "앉기, 기다리기 우수" },
+              { skill: "집중력", score: 78, notes: "산만할 때가 있음" },
+              { skill: "사회성", score: 92, notes: "다른 반려견과 잘 어울림" }
+            ]
+          }
+        },
+        {
+          id: 2,
+          name: "김영희",
+          email: "kim@example.com",
+          phone: "010-9876-5432",
+          address: "서울시 서초구",
+          joinDate: "2025-01-10",
+          status: "active",
+          pet: {
+            id: 2,
+            name: "바둑이",
+            breed: "보더 콜리",
+            age: 3,
+            weight: 22.0,
+            gender: "암컷",
+            neutered: true,
+            healthStatus: "양호",
+            specialNotes: "매우 영리하고 에너지가 많음"
+          },
+          trainer: { id: 2, name: "이준호" },
+          course: { id: 2, title: "어질리티 기초", startDate: "2025-01-10", endDate: "2025-02-28" },
+          attendance: {
+            totalSessions: 6,
+            attendedSessions: 6,
+            absences: 0,
+            lateArrivals: 0,
+            attendanceRate: 100,
+            recentAttendance: [
+              { date: "2025-01-20", status: "attended", notes: "우수한 참여" },
+              { date: "2025-01-17", status: "attended", notes: "정시 참석" },
+              { date: "2025-01-14", status: "attended", notes: "적극적 참여" },
+              { date: "2025-01-11", status: "attended", notes: "첫 수업" }
+            ]
+          },
+          progress: {
+            overallRating: 4.8,
+            skillAssessments: [
+              { skill: "운동 능력", score: 95, notes: "뛰어난 신체 능력" },
+              { skill: "학습 속도", score: 90, notes: "빠른 이해력" },
+              { skill: "집중력", score: 88, notes: "장시간 집중 가능" }
+            ]
+          }
+        }
+      ];
+    }
+  });
+
+  // 강좌 승인 처리
+  const courseApproveMutation = useMutation({
+    mutationFn: async ({ id, action, comment }: { id: number; action: 'approve' | 'reject'; comment?: string }) => {
+      console.log('강좌 승인 처리:', { id, action, comment });
+      return { success: true };
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/institute/pending-courses'] });
+      setIsCourseDialogOpen(false);
+      setSelectedCourse(null);
+      toast({
+        title: "강좌 승인 완료",
+        description: "강좌가 성공적으로 처리되었습니다."
       });
     }
   });
@@ -335,9 +541,18 @@ export default function InstituteAdminPage() {
       </div>
 
       <Tabs defaultValue="approvals" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="approvals">
             승인 관리 ({stats?.pendingApprovals || 0})
+          </TabsTrigger>
+          <TabsTrigger value="courses">
+            내 강좌 ({pendingCourses?.length || 0})
+          </TabsTrigger>
+          <TabsTrigger value="journals">
+            알림장 관리 ({allJournals?.length || 0})
+          </TabsTrigger>
+          <TabsTrigger value="students">
+            학생 관리 ({allStudents?.length || 0})
           </TabsTrigger>
           <TabsTrigger value="trainers">
             훈련사 관리 ({stats?.totalTrainers || 0})
@@ -539,6 +754,390 @@ export default function InstituteAdminPage() {
                   </CardContent>
                 </Card>
               ))
+            )}
+          </div>
+        </TabsContent>
+
+        {/* 강좌 승인 관리 */}
+        <TabsContent value="courses" className="space-y-4">
+          <div className="flex justify-between items-center">
+            <h3 className="text-lg font-semibold">강좌 승인 관리</h3>
+            <Badge variant="outline">대기 중: {pendingCourses?.length || 0}개</Badge>
+          </div>
+          
+          <div className="grid gap-4">
+            {coursesLoading ? (
+              <div className="space-y-4">
+                {Array.from({ length: 2 }).map((_, i) => (
+                  <Card key={i} className="animate-pulse">
+                    <CardHeader>
+                      <div className="h-6 bg-gray-200 rounded w-1/3"></div>
+                      <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="h-20 bg-gray-200 rounded"></div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            ) : pendingCourses && pendingCourses.length > 0 ? (
+              pendingCourses.map((course: any) => (
+                <Card key={course.id} className="cursor-pointer hover:shadow-lg transition-shadow">
+                  <CardHeader>
+                    <div className="flex justify-between items-start">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-2">
+                          <BookOpen className="h-5 w-5 text-blue-600" />
+                          <CardTitle className="text-xl">{course.title}</CardTitle>
+                          <Badge variant="outline">{course.category}</Badge>
+                          <Badge variant="secondary">{course.level}</Badge>
+                        </div>
+                        <p className="text-gray-600 dark:text-gray-400 mb-2">{course.description}</p>
+                        <div className="flex items-center gap-4 text-sm">
+                          <span className="flex items-center gap-1">
+                            <User className="h-4 w-4" />
+                            {course.trainer.name}
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <Clock className="h-4 w-4" />
+                            {course.duration}
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <Users className="h-4 w-4" />
+                            최대 {course.maxStudents}명
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <DollarSign className="h-4 w-4" />
+                            {course.price.toLocaleString()}원
+                          </span>
+                        </div>
+                      </div>
+                      <Badge variant="warning">승인 대기</Badge>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      <div>
+                        <h4 className="font-semibold text-sm mb-1">강좌 목표</h4>
+                        <div className="flex flex-wrap gap-1">
+                          {course.objectives.map((obj: string, idx: number) => (
+                            <Badge key={idx} variant="outline" className="text-xs">{obj}</Badge>
+                          ))}
+                        </div>
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-sm mb-1">참가 요건</h4>
+                        <p className="text-sm text-gray-600">{course.requirements}</p>
+                      </div>
+                      <div className="flex justify-end gap-2 pt-2">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => {
+                            setSelectedCourse(course);
+                            setIsCourseDialogOpen(true);
+                          }}
+                        >
+                          <Eye className="h-4 w-4 mr-2" />
+                          상세보기
+                        </Button>
+                        <Button 
+                          variant="default" 
+                          size="sm"
+                          onClick={() => courseApproveMutation.mutate({ id: course.id, action: 'approve' })}
+                          disabled={courseApproveMutation.isPending}
+                        >
+                          <Check className="h-4 w-4 mr-2" />
+                          승인
+                        </Button>
+                        <Button 
+                          variant="destructive" 
+                          size="sm"
+                          onClick={() => courseApproveMutation.mutate({ id: course.id, action: 'reject' })}
+                          disabled={courseApproveMutation.isPending}
+                        >
+                          <X className="h-4 w-4 mr-2" />
+                          거부
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
+            ) : (
+              <Card>
+                <CardContent className="text-center py-8">
+                  <BookOpen className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold text-gray-600 mb-2">승인 대기 중인 강좌가 없습니다</h3>
+                  <p className="text-gray-500">새로운 강좌 등록 요청이 있으면 여기에 표시됩니다.</p>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+        </TabsContent>
+
+        {/* 알림장 관리 */}
+        <TabsContent value="journals" className="space-y-4">
+          <div className="flex justify-between items-center">
+            <h3 className="text-lg font-semibold">알림장 관리</h3>
+            <Badge variant="outline">총 {allJournals?.length || 0}개</Badge>
+          </div>
+          
+          <div className="grid gap-4">
+            {journalsLoading ? (
+              <div className="space-y-4">
+                {Array.from({ length: 2 }).map((_, i) => (
+                  <Card key={i} className="animate-pulse">
+                    <CardHeader>
+                      <div className="h-5 bg-gray-200 rounded w-1/3"></div>
+                      <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="h-16 bg-gray-200 rounded"></div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            ) : allJournals && allJournals.length > 0 ? (
+              allJournals.map((journal: any) => (
+                <Card key={journal.id} className="cursor-pointer hover:shadow-lg transition-shadow">
+                  <CardHeader>
+                    <div className="flex justify-between items-start">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-2">
+                          <FileText className="h-5 w-5 text-green-600" />
+                          <CardTitle className="text-lg">{journal.title}</CardTitle>
+                          <Badge variant={journal.status === 'sent' ? 'default' : 'secondary'}>
+                            {journal.status === 'sent' ? '전송됨' : '읽음'}
+                          </Badge>
+                        </div>
+                        <div className="flex items-center gap-4 text-sm text-gray-600">
+                          <span className="flex items-center gap-1">
+                            <User className="h-4 w-4" />
+                            훈련사: {journal.trainer.name}
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <Users className="h-4 w-4" />
+                            학생: {journal.student.name}
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <Heart className="h-4 w-4" />
+                            반려동물: {journal.student.pet.name} ({journal.student.pet.breed})
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <Calendar className="h-4 w-4" />
+                            {journal.trainingDate}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      <p className="text-gray-700 dark:text-gray-300">{journal.content}</p>
+                      <div className="grid grid-cols-2 gap-4 text-sm">
+                        <div>
+                          <span className="font-semibold">훈련 시간:</span> {journal.trainingDuration}분
+                        </div>
+                        <div>
+                          <span className="font-semibold">진도 평가:</span> 
+                          <div className="flex items-center gap-1 mt-1">
+                            {Array.from({ length: 5 }).map((_, i) => (
+                              <Star
+                                key={i}
+                                className={`h-4 w-4 ${
+                                  i < journal.progressRating ? 'text-yellow-400 fill-current' : 'text-gray-300'
+                                }`}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                        <div>
+                          <span className="font-semibold">행동 특이사항:</span>
+                          <p className="text-gray-600 mt-1">{journal.behaviorNotes}</p>
+                        </div>
+                        <div>
+                          <span className="font-semibold">다음 목표:</span>
+                          <p className="text-gray-600 mt-1">{journal.nextGoals}</p>
+                        </div>
+                      </div>
+                      <div className="flex justify-end gap-2 pt-2">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => {
+                            setSelectedJournal(journal);
+                            setIsJournalDialogOpen(true);
+                          }}
+                        >
+                          <Eye className="h-4 w-4 mr-2" />
+                          상세보기
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
+            ) : (
+              <Card>
+                <CardContent className="text-center py-8">
+                  <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold text-gray-600 mb-2">작성된 알림장이 없습니다</h3>
+                  <p className="text-gray-500">훈련사들이 작성한 알림장이 여기에 표시됩니다.</p>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+        </TabsContent>
+
+        {/* 학생 관리 (출결 포함) */}
+        <TabsContent value="students" className="space-y-4">
+          <div className="flex justify-between items-center">
+            <h3 className="text-lg font-semibold">학생 관리</h3>
+            <Badge variant="outline">총 {allStudents?.length || 0}명</Badge>
+          </div>
+          
+          <div className="grid gap-4">
+            {studentsLoading ? (
+              <div className="space-y-4">
+                {Array.from({ length: 2 }).map((_, i) => (
+                  <Card key={i} className="animate-pulse">
+                    <CardHeader>
+                      <div className="h-5 bg-gray-200 rounded w-1/3"></div>
+                      <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="h-24 bg-gray-200 rounded"></div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            ) : allStudents && allStudents.length > 0 ? (
+              allStudents.map((student: any) => (
+                <Card key={student.id} className="cursor-pointer hover:shadow-lg transition-shadow">
+                  <CardHeader>
+                    <div className="flex justify-between items-start">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-2">
+                          <GraduationCap className="h-5 w-5 text-blue-600" />
+                          <CardTitle className="text-xl">{student.name}</CardTitle>
+                          <Badge variant={student.status === 'active' ? 'default' : 'secondary'}>
+                            {student.status === 'active' ? '수강중' : '휴강'}
+                          </Badge>
+                        </div>
+                        <div className="flex items-center gap-4 text-sm text-gray-600">
+                          <span>{student.email}</span>
+                          <span>{student.phone}</span>
+                          <span>가입일: {student.joinDate}</span>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-lg font-bold text-green-600">
+                          {student.attendance.attendanceRate}%
+                        </div>
+                        <div className="text-sm text-gray-500">출석률</div>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      {/* 반려동물 정보 */}
+                      <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg">
+                        <h4 className="font-semibold text-sm mb-2 flex items-center gap-1">
+                          <Heart className="h-4 w-4" />
+                          반려동물 정보
+                        </h4>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm">
+                          <div><span className="font-medium">이름:</span> {student.pet.name}</div>
+                          <div><span className="font-medium">품종:</span> {student.pet.breed}</div>
+                          <div><span className="font-medium">나이:</span> {student.pet.age}살</div>
+                          <div><span className="font-medium">체중:</span> {student.pet.weight}kg</div>
+                        </div>
+                        <p className="text-sm text-gray-600 mt-2">{student.pet.specialNotes}</p>
+                      </div>
+
+                      {/* 수강 정보 */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <h4 className="font-semibold text-sm mb-2">수강 과정</h4>
+                          <p className="text-sm">{student.course.title}</p>
+                          <p className="text-xs text-gray-500">
+                            {student.course.startDate} ~ {student.course.endDate}
+                          </p>
+                          <p className="text-xs text-gray-500">담당: {student.trainer.name}</p>
+                        </div>
+                        <div>
+                          <h4 className="font-semibold text-sm mb-2">출석 현황</h4>
+                          <div className="grid grid-cols-3 gap-2 text-xs">
+                            <div className="text-center p-2 bg-green-100 rounded">
+                              <div className="font-bold text-green-800">{student.attendance.attendedSessions}</div>
+                              <div className="text-green-600">출석</div>
+                            </div>
+                            <div className="text-center p-2 bg-yellow-100 rounded">
+                              <div className="font-bold text-yellow-800">{student.attendance.lateArrivals}</div>
+                              <div className="text-yellow-600">지각</div>
+                            </div>
+                            <div className="text-center p-2 bg-red-100 rounded">
+                              <div className="font-bold text-red-800">{student.attendance.absences}</div>
+                              <div className="text-red-600">결석</div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* 학습 성과 */}
+                      <div>
+                        <h4 className="font-semibold text-sm mb-2">학습 성과 평가</h4>
+                        <div className="space-y-2">
+                          {student.progress.skillAssessments.map((skill: any, idx: number) => (
+                            <div key={idx} className="flex items-center justify-between text-sm">
+                              <span>{skill.skill}</span>
+                              <div className="flex items-center gap-2">
+                                <div className="w-24 h-2 bg-gray-200 rounded-full">
+                                  <div 
+                                    className="h-2 bg-blue-500 rounded-full" 
+                                    style={{ width: `${skill.score}%` }}
+                                  ></div>
+                                </div>
+                                <span className="w-12 text-right font-medium">{skill.score}점</span>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                        <div className="mt-2 text-right">
+                          <span className="text-sm font-semibold">
+                            종합 평점: {student.progress.overallRating}/5.0
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="flex justify-end gap-2 pt-2">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => {
+                            setSelectedStudent(student);
+                            setIsStudentDialogOpen(true);
+                          }}
+                        >
+                          <Eye className="h-4 w-4 mr-2" />
+                          상세보기
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
+            ) : (
+              <Card>
+                <CardContent className="text-center py-8">
+                  <GraduationCap className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold text-gray-600 mb-2">등록된 학생이 없습니다</h3>
+                  <p className="text-gray-500">신규 학생 등록 시 여기에 표시됩니다.</p>
+                </CardContent>
+              </Card>
             )}
           </div>
         </TabsContent>
