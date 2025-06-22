@@ -1,1052 +1,888 @@
-import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import React, { useState } from 'react';
+import { useQuery, useMutation } from '@tanstack/react-query';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from '@/components/ui/dialog';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { 
-  Plus, 
-  Search, 
-  BookOpen, 
-  PawPrint,
+  FileText,
+  Plus,
+  Search,
   Calendar,
   Clock,
-  User,
-  MapPin,
   Star,
-  Edit,
-  Eye,
   Send,
-  FileText,
-  Camera,
-  Sparkles
+  Eye,
+  Edit,
+  Trash2,
+  User,
+  Heart,
+  MessageSquare,
+  CheckCircle,
+  AlertCircle,
+  Filter,
+  Download,
+  Upload
 } from 'lucide-react';
-import { format } from 'date-fns';
-import { ko } from 'date-fns/locale';
+import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
+import { queryClient } from '@/lib/queryClient';
 
-interface NotebookEntry {
-  id: string;
-  date: string;
-  petName: string;
-  petId: string;
-  ownerName: string;
-  ownerId: string;
+interface Journal {
+  id: number;
   title: string;
   content: string;
-  activities: string[];
-  mood: 'excellent' | 'good' | 'normal' | 'tired' | 'anxious';
-  duration: number;
-  location: string;
-  photos: string[];
-  nextGoals: string[];
-  isRead: boolean;
-  createdAt: string;
-  // 새로 추가된 일상 관리 필드들
-  mealTimes?: {
-    breakfast: string;
-    lunch: string;
-    dinner: string;
-    snacks: { time: string; type: string }[];
+  trainer: {
+    id: number;
+    name: string;
+    avatar?: string;
   };
-  bathroomBreaks?: { time: string; type: 'urine' | 'feces' | 'both'; location: string }[];
-  walkSchedule?: { time: string; duration: number; location: string; intensity: 'light' | 'moderate' | 'intense' }[];
+  student: {
+    id: number;
+    name: string;
+    email: string;
+    pet: {
+      id: number;
+      name: string;
+      breed: string;
+      age: number;
+    };
+  };
+  course: {
+    id: number;
+    title: string;
+    session: number;
+  };
+  trainingDate: string;
+  trainingDuration: number;
+  progressRating: number;
+  behaviorNotes: string;
+  homeworkInstructions: string;
+  nextGoals: string;
+  attachments: string[];
+  status: 'draft' | 'sent' | 'read' | 'replied';
+  createdAt: string;
+  updatedAt: string;
+  readAt?: string;
+  replyMessage?: string;
 }
 
-interface Pet {
-  id: string;
+interface Student {
+  id: number;
   name: string;
-  breed: string;
-  age: number;
-  ownerName: string;
-  ownerId: string;
-  avatar?: string;
+  email: string;
+  pet: {
+    id: number;
+    name: string;
+    breed: string;
+    age: number;
+  };
+  course: {
+    id: number;
+    title: string;
+    currentSession: number;
+    totalSessions: number;
+  };
+  lastJournal?: string;
 }
 
 export default function TrainerNotebookPage() {
-  const [entries, setEntries] = useState<NotebookEntry[]>([]);
-  const [myPets, setMyPets] = useState<Pet[]>([]);
-  const [selectedPet, setSelectedPet] = useState<string>('all');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [isNewEntryOpen, setIsNewEntryOpen] = useState(false);
-  const [selectedEntry, setSelectedEntry] = useState<NotebookEntry | null>(null);
-  const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const { userRole, isAuthenticated } = useAuth();
   const { toast } = useToast();
+  const [selectedTab, setSelectedTab] = useState('journals');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [dateFilter, setDateFilter] = useState('all');
+  const [selectedJournal, setSelectedJournal] = useState<Journal | null>(null);
+  const [isJournalDetailOpen, setIsJournalDetailOpen] = useState(false);
+  const [isCreateJournalOpen, setIsCreateJournalOpen] = useState(false);
+  const [selectedStudent, setSelectedStudent] = useState<number | null>(null);
 
-  // 새 알림장 폼 상태
-  const [newEntry, setNewEntry] = useState({
-    petId: '',
-    title: '',
-    content: '',
-    activities: [] as string[],
-    mood: 'good' as NotebookEntry['mood'],
-    duration: 60,
-    location: 'PetEdu 훈련장',
-    nextGoals: [] as string[],
-    photos: [] as string[],
-    // 새로 추가된 일상 관리 필드들
-    mealTimes: {
-      breakfast: '',
-      lunch: '', 
-      dinner: '',
-      snacks: [] as { time: string; type: string }[]
-    },
-    bathroomBreaks: [] as { time: string; type: 'urine' | 'feces' | 'both'; location: string }[],
-    walkSchedule: [] as { time: string; duration: number; location: string; intensity: 'light' | 'moderate' | 'intense' }[]
-  });
-
-  // 기분 이모지 매핑
-  const moodEmojis = {
-    excellent: '😊',
-    good: '🙂',
-    normal: '😐',
-    tired: '😴',
-    anxious: '😰'
-  };
-
-  const moodLabels = {
-    excellent: '최고',
-    good: '좋음',
-    normal: '보통',
-    tired: '피곤',
-    anxious: '불안'
-  };
-
-  // 활동 옵션
-  const activityOptions = [
-    '기본 명령어', '리드줄 훈련', '사회화 훈련', '공 던지기', '터그놀이',
-    '배변 훈련', '행동 교정', '놀이 훈련', '민첩성 훈련', '산책 훈련'
-  ];
-
-  // 샘플 데이터 로드
-  useEffect(() => {
-    // 담당 반려동물 목록
-    const samplePets: Pet[] = [
-      {
-        id: 'pet1',
-        name: 'Max',
-        breed: '골든 리트리버',
-        age: 3,
-        ownerName: '김철수',
-        ownerId: 'owner1',
-        avatar: '/api/placeholder/50/50'
-      },
-      {
-        id: 'pet2',
-        name: 'Luna',
-        breed: '말티즈',
-        age: 2,
-        ownerName: '이영희',
-        ownerId: 'owner2',
-        avatar: '/api/placeholder/50/50'
-      },
-      {
-        id: 'pet3',
-        name: 'Storm',
-        breed: '시베리안 허스키',
-        age: 4,
-        ownerName: '박민수',
-        ownerId: 'owner3',
-        avatar: '/api/placeholder/50/50'
-      },
-      {
-        id: 'pet4',
-        name: 'Coco',
-        breed: '푸들',
-        age: 1,
-        ownerName: '최지영',
-        ownerId: 'owner4',
-        avatar: '/api/placeholder/50/50'
-      }
-    ];
-
-    const sampleEntries: NotebookEntry[] = [
-      {
-        id: '1',
-        date: '2024-01-20',
-        petName: 'Max',
-        petId: 'pet1',
-        ownerName: '김철수',
-        ownerId: 'owner1',
-        title: '기본 복종 훈련 - 앉기와 기다리기',
-        content: '오늘은 Max와 함께 기본적인 복종 훈련을 진행했습니다. 앉기 명령에 대해서는 90% 성공률을 보였으며, 기다리기 명령도 점차 향상되고 있습니다. 집중력이 좋고 학습 의욕이 높은 편입니다.',
-        activities: ['기본 명령어', '놀이 훈련'],
-        mood: 'excellent',
-        duration: 90,
-        location: 'PetEdu 훈련장 A동',
-        photos: [],
-        nextGoals: ['엎드려 명령 추가', '산만함 줄이기'],
-        isRead: false,
-        createdAt: '2024-01-20T10:00:00Z',
-        mealTimes: {
-          breakfast: '08:00',
-          lunch: '12:30',
-          dinner: '18:00',
-          snacks: [{ time: '15:00', type: '간식' }]
-        },
-        bathroomBreaks: [
-          { time: '09:30', type: 'both', location: '야외' },
-          { time: '14:00', type: 'urine', location: '실내' }
-        ],
-        walkSchedule: [
-          { time: '07:00', duration: 30, location: '동네 공원', intensity: 'moderate' },
-          { time: '19:00', duration: 45, location: '강변 산책로', intensity: 'intense' }
-        ]
-      },
-      {
-        id: '2',
-        date: '2024-01-19',
-        petName: 'Luna',
-        petId: 'pet2',
-        ownerName: '이영희',
-        ownerId: 'owner2',
-        title: '짖음 교정 훈련',
-        content: 'Luna의 과도한 짖음 문제를 해결하기 위한 훈련을 실시했습니다. 방문자나 다른 개들을 볼 때 나타나는 반응성 짖음을 중점적으로 다뤘습니다. 조용히 하기 명령에 대한 반응이 개선되고 있습니다.',
-        activities: ['행동 교정', '사회화 훈련'],
-        mood: 'good',
-        duration: 60,
-        location: 'PetEdu 훈련장 B동',
-        photos: [],
-        nextGoals: ['외부 자극에 대한 둔감화', '긍정적 강화 지속'],
-        isRead: true,
-        createdAt: '2024-01-19T14:00:00Z'
-      }
-    ];
-
-    setMyPets(samplePets);
-    setEntries(sampleEntries);
-  }, []);
-
-  // 필터링된 알림장 목록
-  const filteredEntries = entries.filter(entry => {
-    const matchesPet = selectedPet === 'all' || entry.petId === selectedPet;
-    const matchesSearch = entry.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         entry.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         entry.petName.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesPet && matchesSearch;
-  });
-
-  // AI 내용 생성 함수
-  const generateAIContent = async () => {
-    if (!newEntry.petId) {
-      toast({
-        title: '반려동물을 선택해주세요',
-        description: 'AI 내용 생성을 위해 먼저 반려동물을 선택해야 합니다.',
-        variant: 'destructive'
-      });
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const selectedPetData = myPets.find(pet => pet.id === newEntry.petId);
-      
-      const response = await fetch('/api/ai/generate-notebook-content', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          petName: selectedPetData?.name,
-          breed: selectedPetData?.breed,
-          age: selectedPetData?.age
-        })
-      });
-
-      if (response.ok) {
-        const result = await response.json();
-        setNewEntry(prev => ({
-          ...prev,
-          title: result.content.title,
-          content: result.content.content,
-          activities: [...prev.activities, ...result.content.activities],
-          nextGoals: result.content.nextGoals
-        }));
-
-        toast({
-          title: 'AI 내용 생성 완료',
-          description: 'AI가 알림장 내용을 생성했습니다.'
-        });
-      }
-    } catch (error) {
-      toast({
-        title: 'AI 생성 실패',
-        description: 'AI 내용 생성 중 오류가 발생했습니다.',
-        variant: 'destructive'
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // 알림장 저장
-  const handleSaveEntry = async () => {
-    if (!newEntry.petId || !newEntry.title || !newEntry.content) {
-      toast({
-        title: '필수 정보를 입력해주세요',
-        description: '반려동물, 제목, 내용은 필수 입력 항목입니다.',
-        variant: 'destructive'
-      });
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const selectedPetData = myPets.find(pet => pet.id === newEntry.petId);
-      if (!selectedPetData) return;
-
-      const response = await fetch('/api/notebook-entries', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...newEntry,
-          petName: selectedPetData.name,
-          ownerName: selectedPetData.ownerName,
-          ownerId: selectedPetData.ownerId
-        })
-      });
-
-      const result = await response.json();
-      if (result.success) {
-        const entry: NotebookEntry = {
-          id: result.id,
-          date: new Date().toISOString().split('T')[0],
-          petName: selectedPetData.name,
-          ownerName: selectedPetData.ownerName,
-          ownerId: selectedPetData.ownerId,
-          ...newEntry,
-          isRead: false,
-          createdAt: new Date().toISOString()
-        };
-
-        setEntries(prev => [entry, ...prev]);
-        
-        // 폼 초기화
-        setNewEntry({
-          petId: '',
-          title: '',
-          content: '',
-          activities: [],
-          mood: 'good',
-          duration: 60,
-          location: 'PetEdu 훈련장',
-          nextGoals: [],
-          photos: [],
-          mealTimes: {
-            breakfast: '',
-            lunch: '', 
-            dinner: '',
-            snacks: []
+  // 알림장 목록 조회
+  const { data: journals, isLoading: journalsLoading } = useQuery({
+    queryKey: ['/api/trainer/journals'],
+    queryFn: async () => {
+      return [
+        {
+          id: 1,
+          title: "멍멍이 훈련 일지 - 1주차",
+          content: "오늘은 기본 자세 훈련을 진행했습니다. 멍멍이는 앉기 명령에 대한 반응이 매우 좋았고, 기다리기 명령도 5초 정도 유지할 수 있었습니다. 처음 수업치고는 집중력이 뛰어났습니다.",
+          trainer: { id: 1, name: "김민수", avatar: "/avatars/trainer1.jpg" },
+          student: {
+            id: 1,
+            name: "홍길동",
+            email: "hong@example.com",
+            pet: { id: 1, name: "멍멍이", breed: "골든 리트리버", age: 2 }
           },
-          bathroomBreaks: [],
-          walkSchedule: []
-        });
+          course: { id: 1, title: "기초 복종 훈련", session: 1 },
+          trainingDate: "2025-01-21",
+          trainingDuration: 60,
+          progressRating: 4,
+          behaviorNotes: "적극적이고 집중력이 좋음. 다른 개들과의 사회성도 우수함.",
+          homeworkInstructions: "매일 5분씩 앉기 연습을 해주세요. 간식을 활용하여 긍정적인 경험을 만들어주시기 바랍니다.",
+          nextGoals: "기다리기 시간을 10초까지 연장하고, 이리와 명령 추가 예정",
+          attachments: ["/attachments/progress-photo1.jpg"],
+          status: 'sent',
+          createdAt: "2025-01-21T16:00:00Z",
+          updatedAt: "2025-01-21T16:00:00Z",
+          readAt: "2025-01-21T18:30:00Z"
+        },
+        {
+          id: 2,
+          title: "바둑이 훈련 일지 - 3주차",
+          content: "오늘은 어질리티 기초 과정 3주차 수업을 진행했습니다. 바둑이는 낮은 점프대 통과에 성공했고, 터널 통과도 망설임 없이 해냈습니다. 운동 능력이 뛰어나 진도가 빠르게 나가고 있습니다.",
+          trainer: { id: 1, name: "김민수" },
+          student: {
+            id: 2,
+            name: "김영희",
+            email: "kim@example.com",
+            pet: { id: 2, name: "바둑이", breed: "보더 콜리", age: 3 }
+          },
+          course: { id: 2, title: "어질리티 기초", session: 3 },
+          trainingDate: "2025-01-20",
+          trainingDuration: 90,
+          progressRating: 5,
+          behaviorNotes: "에너지가 넘치고 학습 능력이 뛰어남. 새로운 도전을 즐기는 성격",
+          homeworkInstructions: "집에서 낮은 장애물을 설치하여 점프 연습을 해주세요. 안전에 주의하시기 바랍니다.",
+          nextGoals: "더 높은 점프대와 복잡한 코스 도전 예정",
+          attachments: [],
+          status: 'read',
+          createdAt: "2025-01-20T18:30:00Z",
+          updatedAt: "2025-01-20T18:30:00Z",
+          readAt: "2025-01-20T20:15:00Z",
+          replyMessage: "감사합니다! 집에서도 열심히 연습하고 있어요."
+        },
+        {
+          id: 3,
+          title: "초코 행동 교정 상담 - 초회",
+          content: "오늘은 초코의 짖기 문제에 대한 초회 상담을 진행했습니다. 방문자나 다른 개를 보면 과도하게 짖는 행동을 보이고 있습니다. 원인 분석 결과 불안감과 영역 보호 본능이 주요 원인으로 보입니다.",
+          trainer: { id: 1, name: "김민수" },
+          student: {
+            id: 3,
+            name: "박철수",
+            email: "park@example.com",
+            pet: { id: 3, name: "초코", breed: "시바견", age: 4 }
+          },
+          course: { id: 3, title: "문제행동 교정", session: 1 },
+          trainingDate: "2025-01-19",
+          trainingDuration: 120,
+          progressRating: 3,
+          behaviorNotes: "경계심이 강하고 새로운 환경에 민감함. 시간이 걸리더라도 인내심을 가지고 접근 필요",
+          homeworkInstructions: "하루 2회, 10분씩 조용한 환경에서 이름 부르기 연습을 해주세요. 짖을 때는 무시하고, 조용할 때 칭찬과 간식을 주세요.",
+          nextGoals: "기본 신뢰 관계 구축 후 점진적 둔감화 훈련 시작",
+          attachments: ["/attachments/behavior-analysis1.pdf"],
+          status: 'draft',
+          createdAt: "2025-01-19T15:00:00Z",
+          updatedAt: "2025-01-21T10:00:00Z"
+        }
+      ] as Journal[];
+    },
+    enabled: isAuthenticated
+  });
 
-        setIsNewEntryOpen(false);
-        
-        toast({
-          title: '알림장 저장 완료',
-          description: '새로운 알림장이 성공적으로 저장되었습니다.'
-        });
-      } else {
-        throw new Error(result.message);
-      }
-    } catch (error) {
+  // 학생 목록 조회
+  const { data: students, isLoading: studentsLoading } = useQuery({
+    queryKey: ['/api/trainer/students-for-journal'],
+    queryFn: async () => {
+      return [
+        {
+          id: 1,
+          name: "홍길동",
+          email: "hong@example.com",
+          pet: { id: 1, name: "멍멍이", breed: "골든 리트리버", age: 2 },
+          course: { id: 1, title: "기초 복종 훈련", currentSession: 2, totalSessions: 8 },
+          lastJournal: "2025-01-21"
+        },
+        {
+          id: 2,
+          name: "김영희",
+          email: "kim@example.com",
+          pet: { id: 2, name: "바둑이", breed: "보더 콜리", age: 3 },
+          course: { id: 2, title: "어질리티 기초", currentSession: 4, totalSessions: 6 },
+          lastJournal: "2025-01-20"
+        },
+        {
+          id: 3,
+          name: "박철수",
+          email: "park@example.com",
+          pet: { id: 3, name: "초코", breed: "시바견", age: 4 },
+          course: { id: 3, title: "문제행동 교정", currentSession: 1, totalSessions: 12 },
+          lastJournal: null
+        }
+      ] as Student[];
+    },
+    enabled: isAuthenticated
+  });
+
+  // 알림장 작성/수정
+  const saveJournalMutation = useMutation({
+    mutationFn: async (journalData: any) => {
+      console.log('알림장 저장:', journalData);
+      return { success: true, id: Math.random() };
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/trainer/journals'] });
+      setIsCreateJournalOpen(false);
       toast({
-        title: '저장 실패',
-        description: '알림장 저장 중 오류가 발생했습니다.',
-        variant: 'destructive'
+        title: "알림장 저장 완료",
+        description: "알림장이 성공적으로 저장되었습니다."
       });
-    } finally {
-      setLoading(false);
+    }
+  });
+
+  // 알림장 전송
+  const sendJournalMutation = useMutation({
+    mutationFn: async (journalId: number) => {
+      console.log('알림장 전송:', journalId);
+      return { success: true };
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/trainer/journals'] });
+      toast({
+        title: "알림장 전송 완료",
+        description: "학부모에게 알림장이 전송되었습니다."
+      });
+    }
+  });
+
+  // 알림장 삭제
+  const deleteJournalMutation = useMutation({
+    mutationFn: async (journalId: number) => {
+      console.log('알림장 삭제:', journalId);
+      return { success: true };
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/trainer/journals'] });
+      toast({
+        title: "알림장 삭제 완료",
+        description: "알림장이 성공적으로 삭제되었습니다."
+      });
+    }
+  });
+
+  const getStatusBadge = (status: Journal['status']) => {
+    switch (status) {
+      case 'draft':
+        return <Badge variant="secondary">임시저장</Badge>;
+      case 'sent':
+        return <Badge variant="default">전송됨</Badge>;
+      case 'read':
+        return <Badge variant="success">읽음</Badge>;
+      case 'replied':
+        return <Badge variant="info">답장받음</Badge>;
+      default:
+        return <Badge variant="secondary">{status}</Badge>;
     }
   };
 
-  // 알림장 조회
-  const viewEntry = (entry: NotebookEntry) => {
-    setSelectedEntry(entry);
-    setIsViewDialogOpen(true);
-    
-    // 읽음 상태 업데이트
-    if (!entry.isRead) {
-      setEntries(prev => prev.map(e => 
-        e.id === entry.id ? { ...e, isRead: true } : e
-      ));
-    }
+  const filteredJournals = journals?.filter(journal => {
+    const matchesSearch = journal.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         journal.student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         journal.student.pet.name.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus = statusFilter === 'all' || journal.status === statusFilter;
+    const matchesDate = dateFilter === 'all' || 
+                       (dateFilter === 'today' && journal.trainingDate === '2025-01-22') ||
+                       (dateFilter === 'week' && new Date(journal.trainingDate) >= new Date('2025-01-16'));
+    return matchesSearch && matchesStatus && matchesDate;
+  });
+
+  const handleJournalClick = (journal: Journal) => {
+    setSelectedJournal(journal);
+    setIsJournalDetailOpen(true);
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      {/* 헤더 */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+    <div className="p-6 space-y-6">
+      <div className="flex justify-between items-start">
         <div>
-          <h1 className="text-3xl font-bold flex items-center gap-2">
-            <BookOpen className="h-8 w-8 text-blue-600" />
-            훈련 알림장 관리
-          </h1>
-          <p className="text-gray-600 mt-2">담당 반려동물들의 훈련 기록을 작성하고 관리하세요</p>
+          <h1 className="text-3xl font-bold">알림장 관리</h1>
+          <p className="text-gray-600 dark:text-gray-400 mt-2">
+            {userRole === 'institute-admin' 
+              ? '소속 훈련사들의 알림장 현황을 확인하고 관리하세요'
+              : '수강생 훈련 일지를 작성하고 학부모와 소통하세요'}
+          </p>
         </div>
-        
-        <Dialog open={isNewEntryOpen} onOpenChange={setIsNewEntryOpen}>
-          <DialogTrigger asChild>
-            <Button className="flex items-center gap-2">
-              <Plus className="h-4 w-4" />
-              새 알림장 작성
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>새 훈련 알림장 작성</DialogTitle>
-              <DialogDescription>
-                반려동물의 훈련 세션과 일상 관리 기록을 작성합니다.
-              </DialogDescription>
-            </DialogHeader>
-            
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-sm font-medium mb-2 block">담당 반려동물 *</label>
-                  <Select value={newEntry.petId} onValueChange={(value) => 
-                    setNewEntry(prev => ({ ...prev, petId: value }))}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="반려동물을 선택하세요" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {myPets.map(pet => (
-                        <SelectItem key={pet.id} value={pet.id}>
-                          {pet.name} ({pet.ownerName})
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <label className="text-sm font-medium mb-2 block">기분 상태</label>
-                  <Select value={newEntry.mood} onValueChange={(value: NotebookEntry['mood']) => 
-                    setNewEntry(prev => ({ ...prev, mood: value }))}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {Object.entries(moodLabels).map(([key, label]) => (
-                        <SelectItem key={key} value={key}>
-                          {moodEmojis[key as keyof typeof moodEmojis]} {label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              
-              <div>
-                <label className="text-sm font-medium mb-2 block">제목 *</label>
-                <Input
-                  value={newEntry.title}
-                  onChange={(e) => setNewEntry(prev => ({ ...prev, title: e.target.value }))}
-                  placeholder="훈련 세션 제목을 입력하세요"
-                />
-              </div>
-              
-              <div>
-                <label className="text-sm font-medium mb-2 block">훈련 내용 *</label>
-                <Textarea
-                  value={newEntry.content}
-                  onChange={(e) => setNewEntry(prev => ({ ...prev, content: e.target.value }))}
-                  placeholder="오늘의 훈련 내용과 반려동물의 상태를 자세히 기록해주세요"
-                  rows={6}
-                />
-                <div className="mt-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={generateAIContent}
-                    disabled={loading}
-                    className="flex items-center gap-2"
-                  >
-                    <Sparkles className="h-4 w-4" />
-                    {loading ? 'AI 생성 중...' : 'AI로 내용 생성'}
-                  </Button>
-                </div>
-              </div>
-              
-              <div className="grid grid-cols-3 gap-4">
-                <div>
-                  <label className="text-sm font-medium mb-2 block">훈련 시간 (분)</label>
-                  <Input
-                    type="number"
-                    value={newEntry.duration}
-                    onChange={(e) => setNewEntry(prev => ({ ...prev, duration: parseInt(e.target.value) || 0 }))}
-                    placeholder="60"
-                  />
-                </div>
-                <div className="col-span-2">
-                  <label className="text-sm font-medium mb-2 block">장소</label>
-                  <Input
-                    value={newEntry.location}
-                    onChange={(e) => setNewEntry(prev => ({ ...prev, location: e.target.value }))}
-                    placeholder="훈련 장소"
-                  />
-                </div>
-              </div>
-
-              {/* 일상 관리 섹션 */}
-              <div className="space-y-6 pt-6 border-t">
-                <h3 className="text-lg font-semibold flex items-center gap-2">
-                  <Clock className="h-5 w-5 text-blue-600" />
-                  일상 관리 기록
-                </h3>
-
-                {/* 식사 시간 */}
-                <div className="space-y-4">
-                  <h4 className="text-md font-medium text-gray-700">🍽️ 식사 시간</h4>
-                  <div className="grid grid-cols-3 gap-4">
-                    <div>
-                      <label className="text-sm font-medium mb-2 block">아침 식사</label>
-                      <Input
-                        type="time"
-                        value={newEntry.mealTimes.breakfast}
-                        onChange={(e) => setNewEntry(prev => ({ 
-                          ...prev, 
-                          mealTimes: { ...prev.mealTimes, breakfast: e.target.value }
-                        }))}
-                      />
-                    </div>
-                    <div>
-                      <label className="text-sm font-medium mb-2 block">점심 식사</label>
-                      <Input
-                        type="time"
-                        value={newEntry.mealTimes.lunch}
-                        onChange={(e) => setNewEntry(prev => ({ 
-                          ...prev, 
-                          mealTimes: { ...prev.mealTimes, lunch: e.target.value }
-                        }))}
-                      />
-                    </div>
-                    <div>
-                      <label className="text-sm font-medium mb-2 block">저녁 식사</label>
-                      <Input
-                        type="time"
-                        value={newEntry.mealTimes.dinner}
-                        onChange={(e) => setNewEntry(prev => ({ 
-                          ...prev, 
-                          mealTimes: { ...prev.mealTimes, dinner: e.target.value }
-                        }))}
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* 배변 기록 */}
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center">
-                    <h4 className="text-md font-medium text-gray-700">🚽 배변 기록</h4>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setNewEntry(prev => ({
-                        ...prev,
-                        bathroomBreaks: [...prev.bathroomBreaks, { time: '', type: 'urine', location: '' }]
-                      }))}
-                    >
-                      <Plus className="h-4 w-4 mr-1" />
-                      배변 기록 추가
-                    </Button>
-                  </div>
-                  {newEntry.bathroomBreaks.map((breakItem, index) => (
-                    <div key={index} className="grid grid-cols-4 gap-3 items-end">
-                      <div>
-                        <label className="text-sm font-medium mb-2 block">시간</label>
-                        <Input
-                          type="time"
-                          value={breakItem.time}
-                          onChange={(e) => {
-                            const updated = [...newEntry.bathroomBreaks];
-                            updated[index].time = e.target.value;
-                            setNewEntry(prev => ({ ...prev, bathroomBreaks: updated }));
-                          }}
-                        />
-                      </div>
-                      <div>
-                        <label className="text-sm font-medium mb-2 block">종류</label>
-                        <Select
-                          value={breakItem.type}
-                          onValueChange={(value: 'urine' | 'feces' | 'both') => {
-                            const updated = [...newEntry.bathroomBreaks];
-                            updated[index].type = value;
-                            setNewEntry(prev => ({ ...prev, bathroomBreaks: updated }));
-                          }}
-                        >
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="urine">소변</SelectItem>
-                            <SelectItem value="feces">대변</SelectItem>
-                            <SelectItem value="both">소변+대변</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div>
-                        <label className="text-sm font-medium mb-2 block">장소</label>
-                        <Input
-                          value={breakItem.location}
-                          onChange={(e) => {
-                            const updated = [...newEntry.bathroomBreaks];
-                            updated[index].location = e.target.value;
-                            setNewEntry(prev => ({ ...prev, bathroomBreaks: updated }));
-                          }}
-                          placeholder="실내/야외"
-                        />
-                      </div>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          const updated = newEntry.bathroomBreaks.filter((_, i) => i !== index);
-                          setNewEntry(prev => ({ ...prev, bathroomBreaks: updated }));
-                        }}
-                      >
-                        삭제
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-
-                {/* 산책 스케줄 */}
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center">
-                    <h4 className="text-md font-medium text-gray-700">🚶 산책 스케줄</h4>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setNewEntry(prev => ({
-                        ...prev,
-                        walkSchedule: [...prev.walkSchedule, { time: '', duration: 30, location: '', intensity: 'moderate' }]
-                      }))}
-                    >
-                      <Plus className="h-4 w-4 mr-1" />
-                      산책 기록 추가
-                    </Button>
-                  </div>
-                  {newEntry.walkSchedule.map((walk, index) => (
-                    <div key={index} className="grid grid-cols-5 gap-3 items-end">
-                      <div>
-                        <label className="text-sm font-medium mb-2 block">시간</label>
-                        <Input
-                          type="time"
-                          value={walk.time}
-                          onChange={(e) => {
-                            const updated = [...newEntry.walkSchedule];
-                            updated[index].time = e.target.value;
-                            setNewEntry(prev => ({ ...prev, walkSchedule: updated }));
-                          }}
-                        />
-                      </div>
-                      <div>
-                        <label className="text-sm font-medium mb-2 block">시간(분)</label>
-                        <Input
-                          type="number"
-                          value={walk.duration}
-                          onChange={(e) => {
-                            const updated = [...newEntry.walkSchedule];
-                            updated[index].duration = parseInt(e.target.value) || 0;
-                            setNewEntry(prev => ({ ...prev, walkSchedule: updated }));
-                          }}
-                          placeholder="30"
-                        />
-                      </div>
-                      <div>
-                        <label className="text-sm font-medium mb-2 block">장소</label>
-                        <Input
-                          value={walk.location}
-                          onChange={(e) => {
-                            const updated = [...newEntry.walkSchedule];
-                            updated[index].location = e.target.value;
-                            setNewEntry(prev => ({ ...prev, walkSchedule: updated }));
-                          }}
-                          placeholder="공원, 동네 등"
-                        />
-                      </div>
-                      <div>
-                        <label className="text-sm font-medium mb-2 block">강도</label>
-                        <Select
-                          value={walk.intensity}
-                          onValueChange={(value: 'light' | 'moderate' | 'intense') => {
-                            const updated = [...newEntry.walkSchedule];
-                            updated[index].intensity = value;
-                            setNewEntry(prev => ({ ...prev, walkSchedule: updated }));
-                          }}
-                        >
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="light">가벼움</SelectItem>
-                            <SelectItem value="moderate">보통</SelectItem>
-                            <SelectItem value="intense">강함</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          const updated = newEntry.walkSchedule.filter((_, i) => i !== index);
-                          setNewEntry(prev => ({ ...prev, walkSchedule: updated }));
-                        }}
-                      >
-                        삭제
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-            
-            <div className="flex justify-end gap-3 pt-4 border-t">
-              <Button variant="outline" onClick={() => setIsNewEntryOpen(false)}>
-                취소
-              </Button>
-              <Button onClick={handleSaveEntry} disabled={loading}>
-                {loading ? '저장 중...' : '저장'}
-              </Button>
-            </div>
-          </DialogContent>
-        </Dialog>
-      </div>
-
-      {/* 필터 및 검색 */}
-      <Card>
-        <CardContent className="p-4">
-          <div className="flex flex-col lg:flex-row gap-4 items-center">
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-              <Input
-                placeholder="제목, 내용으로 검색..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-            
-            <Select value={selectedPet} onValueChange={setSelectedPet}>
-              <SelectTrigger className="w-48">
-                <SelectValue placeholder="반려동물 선택" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">모든 반려동물</SelectItem>
-                {myPets.map(pet => (
-                  <SelectItem key={pet.id} value={pet.id}>
-                    {pet.name} ({pet.ownerName})
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* 알림장 목록 */}
-      <div className="space-y-4">
-        {filteredEntries.length === 0 ? (
-          <Card>
-            <CardContent className="p-12 text-center">
-              <BookOpen className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-gray-600 mb-2">알림장이 없습니다</h3>
-              <p className="text-gray-500 mb-4">첫 번째 훈련 알림장을 작성해보세요!</p>
-              <Button onClick={() => setIsNewEntryOpen(true)}>
+        {userRole !== 'institute-admin' && (
+          <Dialog open={isCreateJournalOpen} onOpenChange={setIsCreateJournalOpen}>
+            <DialogTrigger asChild>
+              <Button>
                 <Plus className="h-4 w-4 mr-2" />
                 새 알림장 작성
               </Button>
-            </CardContent>
-          </Card>
-        ) : (
-          filteredEntries.map((entry) => (
-            <Card key={entry.id} className="transition-all hover:shadow-md">
-              <CardHeader className="pb-3">
-                <div className="flex justify-between items-start">
-                  <div className="flex items-center gap-3">
-                    <Avatar className="h-10 w-10">
-                      <AvatarImage src={myPets.find(p => p.id === entry.petId)?.avatar} />
-                      <AvatarFallback>
-                        <PawPrint className="h-5 w-5" />
-                      </AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <h3 className="font-semibold text-lg">{entry.title}</h3>
-                        {!entry.isRead && (
-                          <Badge variant="secondary" className="text-xs px-2 py-0 bg-red-100 text-red-800">새글</Badge>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-4 text-sm text-gray-500">
-                        <span className="flex items-center gap-1">
-                          <PawPrint className="h-3 w-3" />
-                          {entry.petName}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <User className="h-3 w-3" />
-                          {entry.ownerName}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <Calendar className="h-3 w-3" />
-                          {format(new Date(entry.date), 'MM월 dd일', { locale: ko })}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <Clock className="h-3 w-3" />
-                          {entry.duration}분
-                        </span>
-                      </div>
-                    </div>
+            </DialogTrigger>
+            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle>새 알림장 작성</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="student">수강생 선택</Label>
+                    <Select value={selectedStudent?.toString()} onValueChange={(value) => setSelectedStudent(Number(value))}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="수강생을 선택하세요" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {students?.map((student: Student) => (
+                          <SelectItem key={student.id} value={student.id.toString()}>
+                            {student.name} - {student.pet.name} ({student.course.title})
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
-                  
-                  <div className="flex items-center gap-2">
-                    <div className="flex items-center gap-1 text-sm">
-                      <span>{moodEmojis[entry.mood]}</span>
-                      <span className="text-gray-500">{moodLabels[entry.mood]}</span>
-                    </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => viewEntry(entry)}
-                      className="flex items-center gap-1"
-                    >
-                      <Eye className="h-4 w-4" />
-                      보기
-                    </Button>
+                  <div>
+                    <Label htmlFor="date">훈련 날짜</Label>
+                    <Input id="date" type="date" defaultValue="2025-01-22" />
                   </div>
                 </div>
-              </CardHeader>
-              
-              <CardContent className="pt-0">
-                <p className="text-gray-600 mb-3 line-clamp-2">
-                  {entry.content}
-                </p>
                 
-                {entry.activities.length > 0 && (
-                  <div className="flex flex-wrap gap-1 mb-3">
-                    {entry.activities.map((activity, index) => (
-                      <Badge key={index} variant="secondary" className="text-xs">
-                        {activity}
-                      </Badge>
-                    ))}
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="duration">훈련 시간 (분)</Label>
+                    <Input id="duration" type="number" placeholder="60" />
                   </div>
-                )}
-                
-                <div className="flex items-center justify-between text-sm text-gray-500">
-                  <div className="flex items-center gap-1">
-                    <MapPin className="h-3 w-3" />
-                    {entry.location}
+                  <div>
+                    <Label htmlFor="rating">진도 평가 (1-5점)</Label>
+                    <Select>
+                      <SelectTrigger>
+                        <SelectValue placeholder="평점 선택" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="5">5점 - 매우 우수</SelectItem>
+                        <SelectItem value="4">4점 - 우수</SelectItem>
+                        <SelectItem value="3">3점 - 보통</SelectItem>
+                        <SelectItem value="2">2점 - 미흡</SelectItem>
+                        <SelectItem value="1">1점 - 매우 미흡</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
-                  {entry.nextGoals.length > 0 && (
-                    <div className="text-right">
-                      <span>다음 목표: {entry.nextGoals[0]}...</span>
-                    </div>
-                  )}
                 </div>
-              </CardContent>
-            </Card>
-          ))
+
+                <div>
+                  <Label htmlFor="content">훈련 내용</Label>
+                  <Textarea 
+                    id="content" 
+                    placeholder="오늘 진행한 훈련 내용을 상세히 작성해주세요..."
+                    rows={4}
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="behavior">행동 특이사항</Label>
+                  <Textarea 
+                    id="behavior" 
+                    placeholder="반려견의 행동이나 성격적 특징을 기록해주세요..."
+                    rows={2}
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="homework">숙제 및 집에서 할 일</Label>
+                  <Textarea 
+                    id="homework" 
+                    placeholder="집에서 연습해야 할 내용이나 주의사항을 작성해주세요..."
+                    rows={2}
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="goals">다음 훈련 목표</Label>
+                  <Textarea 
+                    id="goals" 
+                    placeholder="다음 수업에서 목표로 하는 내용을 작성해주세요..."
+                    rows={2}
+                  />
+                </div>
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setIsCreateJournalOpen(false)}>
+                  취소
+                </Button>
+                <Button variant="secondary" onClick={() => saveJournalMutation.mutate({ status: 'draft' })}>
+                  임시저장
+                </Button>
+                <Button onClick={() => saveJournalMutation.mutate({ status: 'sent' })}>
+                  <Send className="h-4 w-4 mr-2" />
+                  작성 완료 및 전송
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         )}
       </div>
 
-      {/* 알림장 상세 보기 다이얼로그 */}
-      <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-          {selectedEntry && (
-            <>
-              <DialogHeader>
-                <DialogTitle className="flex items-center gap-3">
-                  <Avatar className="h-10 w-10">
-                    <AvatarImage src={myPets.find(p => p.id === selectedEntry.petId)?.avatar} />
-                    <AvatarFallback>
-                      <PawPrint className="h-5 w-5" />
-                    </AvatarFallback>
-                  </Avatar>
+      <Tabs value={selectedTab} onValueChange={setSelectedTab} className="w-full">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="journals">알림장 목록</TabsTrigger>
+          <TabsTrigger value="students">수강생 현황</TabsTrigger>
+          <TabsTrigger value="templates">템플릿 관리</TabsTrigger>
+        </TabsList>
+
+        {/* 알림장 목록 */}
+        <TabsContent value="journals" className="space-y-4">
+          {/* 통계 */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
                   <div>
-                    <h2 className="text-xl font-bold">{selectedEntry.title}</h2>
-                    <div className="flex items-center gap-4 text-sm text-gray-500">
-                      <span>{selectedEntry.petName}</span>
-                      <span>{selectedEntry.ownerName}</span>
-                      <span>{format(new Date(selectedEntry.date), 'yyyy년 MM월 dd일', { locale: ko })}</span>
-                    </div>
+                    <p className="text-sm text-gray-600">총 알림장</p>
+                    <p className="text-2xl font-bold">{journals?.length || 0}</p>
                   </div>
-                </DialogTitle>
-                <DialogDescription>
-                  훈련 세션의 상세 내용과 일상 관리 기록을 확인할 수 있습니다.
-                </DialogDescription>
-              </DialogHeader>
-              
-              <div className="space-y-6">
-                <Tabs defaultValue="content" className="w-full">
-                  <TabsList className="grid w-full grid-cols-2">
-                    <TabsTrigger value="content">훈련 내용</TabsTrigger>
-                    <TabsTrigger value="daily">일상 관리</TabsTrigger>
-                  </TabsList>
-                  
-                  <TabsContent value="content" className="space-y-4">
-                    <Card>
-                      <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                          <FileText className="h-5 w-5" />
-                          훈련 상세 내용
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent className="space-y-4">
-                        <div className="grid grid-cols-3 gap-4 text-sm">
-                          <div className="text-center p-3 bg-gray-50 rounded-lg">
-                            <div className="text-2xl mb-1">{moodEmojis[selectedEntry.mood]}</div>
-                            <div className="font-medium">{moodLabels[selectedEntry.mood]}</div>
-                            <div className="text-gray-500">기분 상태</div>
+                  <FileText className="h-8 w-8 text-blue-500" />
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-gray-600">전송됨</p>
+                    <p className="text-2xl font-bold text-green-600">
+                      {journals?.filter(j => j.status === 'sent' || j.status === 'read').length || 0}
+                    </p>
+                  </div>
+                  <Send className="h-8 w-8 text-green-500" />
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-gray-600">임시저장</p>
+                    <p className="text-2xl font-bold text-yellow-600">
+                      {journals?.filter(j => j.status === 'draft').length || 0}
+                    </p>
+                  </div>
+                  <Edit className="h-8 w-8 text-yellow-500" />
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-gray-600">답장받음</p>
+                    <p className="text-2xl font-bold text-purple-600">
+                      {journals?.filter(j => j.status === 'replied').length || 0}
+                    </p>
+                  </div>
+                  <MessageSquare className="h-8 w-8 text-purple-500" />
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* 검색 및 필터 */}
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex flex-col sm:flex-row gap-4">
+                <div className="flex-1">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                    <Input
+                      placeholder="제목, 학생명, 반려동물명으로 검색..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="pl-10"
+                    />
+                  </div>
+                </div>
+                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                  <SelectTrigger className="w-40">
+                    <SelectValue placeholder="상태 필터" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">전체</SelectItem>
+                    <SelectItem value="draft">임시저장</SelectItem>
+                    <SelectItem value="sent">전송됨</SelectItem>
+                    <SelectItem value="read">읽음</SelectItem>
+                    <SelectItem value="replied">답장받음</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Select value={dateFilter} onValueChange={setDateFilter}>
+                  <SelectTrigger className="w-40">
+                    <SelectValue placeholder="날짜 필터" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">전체</SelectItem>
+                    <SelectItem value="today">오늘</SelectItem>
+                    <SelectItem value="week">이번 주</SelectItem>
+                    <SelectItem value="month">이번 달</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* 알림장 목록 */}
+          <div className="grid gap-4">
+            {journalsLoading ? (
+              <div className="space-y-4">
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <Card key={i} className="animate-pulse">
+                    <CardContent className="p-6">
+                      <div className="h-6 bg-gray-200 rounded w-1/3 mb-2"></div>
+                      <div className="h-4 bg-gray-200 rounded w-2/3 mb-4"></div>
+                      <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            ) : filteredJournals && filteredJournals.length > 0 ? (
+              filteredJournals.map((journal: Journal) => (
+                <Card 
+                  key={journal.id} 
+                  className="cursor-pointer hover:shadow-lg transition-shadow"
+                  onClick={() => handleJournalClick(journal)}
+                >
+                  <CardContent className="p-6">
+                    <div className="flex justify-between items-start">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-2">
+                          <FileText className="h-5 w-5 text-green-600" />
+                          <h3 className="text-lg font-semibold">{journal.title}</h3>
+                          {getStatusBadge(journal.status)}
+                        </div>
+                        
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm mb-3">
+                          <div className="flex items-center gap-1">
+                            <User className="h-4 w-4" />
+                            <span>{journal.student.name}</span>
                           </div>
-                          <div className="text-center p-3 bg-gray-50 rounded-lg">
-                            <div className="text-xl font-bold text-blue-600 mb-1">{selectedEntry.duration}분</div>
-                            <div className="text-gray-500">훈련 시간</div>
+                          <div className="flex items-center gap-1">
+                            <Heart className="h-4 w-4" />
+                            <span>{journal.student.pet.name} ({journal.student.pet.breed})</span>
                           </div>
-                          <div className="text-center p-3 bg-gray-50 rounded-lg">
-                            <div className="text-sm font-medium mb-1">{selectedEntry.location}</div>
-                            <div className="text-gray-500">훈련 장소</div>
+                          <div className="flex items-center gap-1">
+                            <Calendar className="h-4 w-4" />
+                            <span>{journal.trainingDate}</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <Clock className="h-4 w-4" />
+                            <span>{journal.trainingDuration}분</span>
                           </div>
                         </div>
                         
-                        <div>
-                          <h4 className="font-medium mb-2">훈련 내용</h4>
-                          <p className="text-gray-700 leading-relaxed">{selectedEntry.content}</p>
-                        </div>
+                        <p className="text-gray-600 dark:text-gray-400 line-clamp-2 mb-3">
+                          {journal.content}
+                        </p>
                         
-                        {selectedEntry.activities.length > 0 && (
-                          <div>
-                            <h4 className="font-medium mb-2">진행한 활동</h4>
-                            <div className="flex flex-wrap gap-2">
-                              {selectedEntry.activities.map((activity, index) => (
-                                <Badge key={index} variant="outline">
-                                  {activity}
-                                </Badge>
+                        <div className="flex items-center gap-4 text-sm">
+                          <div className="flex items-center gap-1">
+                            <span className="text-gray-500">진도 평가:</span>
+                            <div className="flex">
+                              {Array.from({ length: 5 }).map((_, i) => (
+                                <Star
+                                  key={i}
+                                  className={`h-4 w-4 ${
+                                    i < journal.progressRating ? 'text-yellow-400 fill-current' : 'text-gray-300'
+                                  }`}
+                                />
                               ))}
                             </div>
                           </div>
-                        )}
-                        
-                        {selectedEntry.nextGoals.length > 0 && (
-                          <div>
-                            <h4 className="font-medium mb-2">다음 목표</h4>
-                            <ul className="space-y-1">
-                              {selectedEntry.nextGoals.map((goal, index) => (
-                                <li key={index} className="flex items-center gap-2 text-sm">
-                                  <Star className="h-3 w-3 text-yellow-500" />
-                                  {goal}
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-                        )}
-                      </CardContent>
-                    </Card>
-                  </TabsContent>
-                  
-                  <TabsContent value="daily" className="space-y-4">
-                    {selectedEntry.mealTimes && (
-                      <Card>
-                        <CardHeader>
-                          <CardTitle className="flex items-center gap-2">
-                            🍽️ 식사 시간
-                          </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                          <div className="grid grid-cols-3 gap-4">
-                            <div className="text-center p-3 bg-orange-50 rounded-lg">
-                              <div className="font-medium">아침</div>
-                              <div className="text-lg">{selectedEntry.mealTimes.breakfast || '미기록'}</div>
-                            </div>
-                            <div className="text-center p-3 bg-yellow-50 rounded-lg">
-                              <div className="font-medium">점심</div>
-                              <div className="text-lg">{selectedEntry.mealTimes.lunch || '미기록'}</div>
-                            </div>
-                            <div className="text-center p-3 bg-blue-50 rounded-lg">
-                              <div className="font-medium">저녁</div>
-                              <div className="text-lg">{selectedEntry.mealTimes.dinner || '미기록'}</div>
-                            </div>
-                          </div>
-                          {selectedEntry.mealTimes.snacks.length > 0 && (
-                            <div className="mt-4">
-                              <h5 className="font-medium mb-2">간식</h5>
-                              <div className="flex flex-wrap gap-2">
-                                {selectedEntry.mealTimes.snacks.map((snack, index) => (
-                                  <Badge key={index} variant="outline">
-                                    {snack.time} - {snack.type}
-                                  </Badge>
-                                ))}
-                              </div>
+                          {journal.readAt && (
+                            <div className="flex items-center gap-1 text-green-600">
+                              <CheckCircle className="h-4 w-4" />
+                              <span>읽음: {new Date(journal.readAt).toLocaleDateString()}</span>
                             </div>
                           )}
-                        </CardContent>
-                      </Card>
-                    )}
-                    
-                    {selectedEntry.bathroomBreaks && selectedEntry.bathroomBreaks.length > 0 && (
-                      <Card>
-                        <CardHeader>
-                          <CardTitle className="flex items-center gap-2">
-                            🚽 배변 기록
-                          </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                          <div className="space-y-2">
-                            {selectedEntry.bathroomBreaks.map((record, index) => (
-                              <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                                <div className="flex items-center gap-4">
-                                  <span className="font-medium">{record.time}</span>
-                                  <Badge variant={record.type === 'both' ? 'default' : 'secondary'}>
-                                    {record.type === 'urine' ? '소변' : record.type === 'feces' ? '대변' : '소변+대변'}
-                                  </Badge>
-                                </div>
-                                <span className="text-sm text-gray-500">{record.location}</span>
-                              </div>
-                            ))}
+                        </div>
+
+                        {journal.replyMessage && (
+                          <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                            <p className="text-sm">
+                              <MessageSquare className="h-4 w-4 inline mr-1" />
+                              <strong>학부모 답장:</strong> {journal.replyMessage}
+                            </p>
                           </div>
-                        </CardContent>
-                      </Card>
-                    )}
-                    
-                    {selectedEntry.walkSchedule && selectedEntry.walkSchedule.length > 0 && (
-                      <Card>
-                        <CardHeader>
-                          <CardTitle className="flex items-center gap-2">
-                            🚶 산책 스케줄
-                          </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                          <div className="space-y-2">
-                            {selectedEntry.walkSchedule.map((walk, index) => (
-                              <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                                <div className="flex items-center gap-4">
-                                  <span className="font-medium">{walk.time}</span>
-                                  <span className="text-sm text-gray-600">{walk.duration}분</span>
-                                  <Badge variant="secondary" 
-                                         className={walk.intensity === 'intense' ? 'bg-red-100 text-red-800' : walk.intensity === 'moderate' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'}>
-                                    {walk.intensity === 'light' ? '가벼움' : walk.intensity === 'moderate' ? '보통' : '강함'}
-                                  </Badge>
-                                </div>
-                                <span className="text-sm text-gray-500">{walk.location}</span>
-                              </div>
-                            ))}
-                          </div>
-                        </CardContent>
-                      </Card>
-                    )}
-                  </TabsContent>
-                </Tabs>
+                        )}
+                      </div>
+                      
+                      <div className="flex flex-col gap-2 ml-4">
+                        <Button variant="outline" size="sm">
+                          <Eye className="h-4 w-4 mr-2" />
+                          상세보기
+                        </Button>
+                        {journal.status === 'draft' && (
+                          <>
+                            <Button variant="outline" size="sm">
+                              <Edit className="h-4 w-4 mr-2" />
+                              편집
+                            </Button>
+                            <Button 
+                              size="sm"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                sendJournalMutation.mutate(journal.id);
+                              }}
+                            >
+                              <Send className="h-4 w-4 mr-2" />
+                              전송
+                            </Button>
+                          </>
+                        )}
+                        {journal.status === 'draft' && (
+                          <Button 
+                            variant="destructive" 
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (confirm('정말로 삭제하시겠습니까?')) {
+                                deleteJournalMutation.mutate(journal.id);
+                              }
+                            }}
+                          >
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            삭제
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
+            ) : (
+              <Card>
+                <CardContent className="text-center py-8">
+                  <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold text-gray-600 mb-2">
+                    {searchTerm || statusFilter !== 'all' || dateFilter !== 'all' ? 
+                      '검색 조건에 맞는 알림장이 없습니다' : 
+                      '작성된 알림장이 없습니다'
+                    }
+                  </h3>
+                  <p className="text-gray-500 mb-4">
+                    {searchTerm || statusFilter !== 'all' || dateFilter !== 'all' ? 
+                      '다른 검색어나 필터를 시도해보세요' : 
+                      '첫 번째 알림장을 작성해보세요'
+                    }
+                  </p>
+                  {!searchTerm && statusFilter === 'all' && dateFilter === 'all' && userRole !== 'institute-admin' && (
+                    <Button onClick={() => setIsCreateJournalOpen(true)}>
+                      <Plus className="h-4 w-4 mr-2" />
+                      새 알림장 작성
+                    </Button>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+          </div>
+        </TabsContent>
+
+        {/* 수강생 현황 */}
+        <TabsContent value="students" className="space-y-4">
+          <div className="grid gap-4">
+            {studentsLoading ? (
+              <div className="space-y-4">
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <Card key={i} className="animate-pulse">
+                    <CardContent className="p-6">
+                      <div className="h-5 bg-gray-200 rounded w-1/3 mb-2"></div>
+                      <div className="h-4 bg-gray-200 rounded w-2/3"></div>
+                    </CardContent>
+                  </Card>
+                ))}
               </div>
+            ) : (
+              students?.map((student: Student) => (
+                <Card key={student.id} className="cursor-pointer hover:shadow-md transition-shadow">
+                  <CardContent className="p-6">
+                    <div className="flex justify-between items-start">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-2">
+                          <User className="h-5 w-5 text-blue-600" />
+                          <h3 className="text-lg font-semibold">{student.name}</h3>
+                          {student.lastJournal ? (
+                            <Badge variant="success">최근 작성: {student.lastJournal}</Badge>
+                          ) : (
+                            <Badge variant="warning">알림장 미작성</Badge>
+                          )}
+                        </div>
+                        
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
+                          <div>
+                            <span className="text-gray-500">반려동물:</span>
+                            <span className="font-medium ml-1">{student.pet.name} ({student.pet.breed})</span>
+                          </div>
+                          <div>
+                            <span className="text-gray-500">과정:</span>
+                            <span className="font-medium ml-1">{student.course.title}</span>
+                          </div>
+                          <div>
+                            <span className="text-gray-500">진도:</span>
+                            <span className="font-medium ml-1">
+                              {student.course.currentSession}/{student.course.totalSessions}회
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <Button 
+                        size="sm"
+                        onClick={() => {
+                          setSelectedStudent(student.id);
+                          setIsCreateJournalOpen(true);
+                        }}
+                      >
+                        <Plus className="h-4 w-4 mr-2" />
+                        알림장 작성
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
+            )}
+          </div>
+        </TabsContent>
+
+        {/* 템플릿 관리 */}
+        <TabsContent value="templates" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>알림장 템플릿</CardTitle>
+              <CardDescription>자주 사용하는 형식을 템플릿으로 저장하여 효율적으로 작성하세요</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="h-64 flex items-center justify-center text-gray-500">
+                템플릿 관리 기능 (향후 구현)
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+
+      {/* 알림장 상세 모달 */}
+      <Dialog open={isJournalDetailOpen} onOpenChange={setIsJournalDetailOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          {selectedJournal && (
+            <>
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2">
+                  <FileText className="h-6 w-6 text-green-600" />
+                  {selectedJournal.title}
+                </DialogTitle>
+                <div className="flex items-center gap-2 mt-2">
+                  {getStatusBadge(selectedJournal.status)}
+                  <span className="text-sm text-gray-500">
+                    작성: {new Date(selectedJournal.createdAt).toLocaleDateString()}
+                  </span>
+                  {selectedJournal.readAt && (
+                    <span className="text-sm text-green-600">
+                      읽음: {new Date(selectedJournal.readAt).toLocaleDateString()}
+                    </span>
+                  )}
+                </div>
+              </DialogHeader>
+
+              <div className="space-y-6">
+                {/* 기본 정보 */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <h4 className="font-semibold mb-2">수강생 정보</h4>
+                    <div className="space-y-1 text-sm">
+                      <div><span className="font-medium">이름:</span> {selectedJournal.student.name}</div>
+                      <div><span className="font-medium">이메일:</span> {selectedJournal.student.email}</div>
+                      <div><span className="font-medium">반려동물:</span> {selectedJournal.student.pet.name} ({selectedJournal.student.pet.breed})</div>
+                      <div><span className="font-medium">나이:</span> {selectedJournal.student.pet.age}살</div>
+                    </div>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold mb-2">훈련 정보</h4>
+                    <div className="space-y-1 text-sm">
+                      <div><span className="font-medium">과정:</span> {selectedJournal.course.title}</div>
+                      <div><span className="font-medium">회차:</span> {selectedJournal.course.session}회차</div>
+                      <div><span className="font-medium">날짜:</span> {selectedJournal.trainingDate}</div>
+                      <div><span className="font-medium">시간:</span> {selectedJournal.trainingDuration}분</div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 훈련 내용 */}
+                <div>
+                  <h4 className="font-semibold mb-2">훈련 내용</h4>
+                  <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg whitespace-pre-wrap">
+                    {selectedJournal.content}
+                  </div>
+                </div>
+
+                {/* 평가 및 특이사항 */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <h4 className="font-semibold mb-2">진도 평가</h4>
+                    <div className="flex items-center gap-2">
+                      {Array.from({ length: 5 }).map((_, i) => (
+                        <Star
+                          key={i}
+                          className={`h-5 w-5 ${
+                            i < selectedJournal.progressRating ? 'text-yellow-400 fill-current' : 'text-gray-300'
+                          }`}
+                        />
+                      ))}
+                      <span className="font-medium">({selectedJournal.progressRating}/5)</span>
+                    </div>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold mb-2">행동 특이사항</h4>
+                    <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded text-sm">
+                      {selectedJournal.behaviorNotes}
+                    </div>
+                  </div>
+                </div>
+
+                {/* 숙제 및 목표 */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <h4 className="font-semibold mb-2">숙제 및 집에서 할 일</h4>
+                    <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded text-sm">
+                      {selectedJournal.homeworkInstructions}
+                    </div>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold mb-2">다음 훈련 목표</h4>
+                    <div className="p-3 bg-green-50 dark:bg-green-900/20 rounded text-sm">
+                      {selectedJournal.nextGoals}
+                    </div>
+                  </div>
+                </div>
+
+                {/* 답장 */}
+                {selectedJournal.replyMessage && (
+                  <div>
+                    <h4 className="font-semibold mb-2">학부모 답장</h4>
+                    <div className="p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+                      <p className="text-sm">{selectedJournal.replyMessage}</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setIsJournalDetailOpen(false)}>
+                  닫기
+                </Button>
+                {selectedJournal.status === 'draft' && (
+                  <>
+                    <Button variant="outline">
+                      <Edit className="h-4 w-4 mr-2" />
+                      편집
+                    </Button>
+                    <Button onClick={() => sendJournalMutation.mutate(selectedJournal.id)}>
+                      <Send className="h-4 w-4 mr-2" />
+                      전송
+                    </Button>
+                  </>
+                )}
+              </DialogFooter>
             </>
           )}
         </DialogContent>

@@ -1,751 +1,706 @@
-import { useState } from 'react';
-import { useAuth } from '../../SimpleApp';
+import React, { useState } from 'react';
+import { useQuery, useMutation } from '@tanstack/react-query';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from '@/components/ui/dialog';
 import { 
-  ChevronRight, 
-  Edit, 
-  FileEdit, 
-  Trash2, 
-  Plus, 
-  Users, 
-  Calendar, 
-  BookOpen
+  BookOpen, 
+  Plus,
+  Search, 
+  Calendar,
+  Clock,
+  Users,
+  DollarSign,
+  Eye,
+  Edit,
+  Trash2,
+  CheckCircle,
+  XCircle,
+  AlertCircle,
+  Send,
+  Star,
+  Award,
+  TrendingUp
 } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
+import { useToast } from '@/hooks/use-toast';
+import { queryClient } from '@/lib/queryClient';
 
-// 모달 타입 정의
-type ModalType = 'create' | 'edit' | 'delete' | 'details' | 'students' | null;
-
-// 강의 인터페이스
 interface Course {
   id: number;
   title: string;
-  type: '그룹' | '1:1' | '온라인';
-  startDate: string;
-  endDate: string;
-  students: number;
-  maxStudents: number | null;
-  status: '준비중' | '모집중' | '진행중' | '완료' | '취소';
-  price: number;
   description: string;
-  approvalStatus?: '승인대기' | '기관승인' | '최종승인' | '반려';
-  approvalNote?: string;
+  category: string;
+  level: 'beginner' | 'intermediate' | 'advanced';
+  duration: string;
+  maxStudents: number;
+  price: number;
+  status: 'draft' | 'pending' | 'approved' | 'rejected' | 'active' | 'completed';
+  createdAt: string;
+  updatedAt: string;
+  submittedAt?: string;
+  approvedAt?: string;
+  rejectedAt?: string;
+  trainer: {
+    id: number;
+    name: string;
+    email: string;
+  };
+  objectives: string[];
+  requirements: string;
+  curriculum: {
+    week: number;
+    topic: string;
+    content: string;
+    objectives: string[];
+  }[];
+  enrolledStudents: number;
+  completedStudents: number;
+  averageRating: number;
+  totalRevenue: number;
+  reviewComments?: string;
 }
 
-export default function TrainerCourses() {
-  const auth = useAuth();
-  const isAuthenticated = auth.isAuthenticated;
-  const user = { name: auth.userName };
-  const [activeTab, setActiveTab] = useState<string>('active');
+export default function TrainerCoursesPage() {
+  const { userRole, isAuthenticated } = useAuth();
+  const { toast } = useToast();
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
-  const [activeModal, setActiveModal] = useState<ModalType>(null);
-  const [approvalStatus, setApprovalStatus] = useState<string>('승인대기');
-  const [newCourse, setNewCourse] = useState<Partial<Course>>({
-    title: '',
-    type: '그룹',
-    startDate: '',
-    endDate: '',
-    students: 0,
-    maxStudents: 0,
-    status: '준비중',
-    price: 0,
-    description: ''
+  const [isCourseDetailOpen, setIsCourseDetailOpen] = useState(false);
+  const [isCreateCourseOpen, setIsCreateCourseOpen] = useState(false);
+  const [isEditCourseOpen, setIsEditCourseOpen] = useState(false);
+
+  // 강좌 목록 조회
+  const { data: courses, isLoading: coursesLoading } = useQuery({
+    queryKey: ['/api/trainer/courses'],
+    queryFn: async () => {
+      return [
+        {
+          id: 1,
+          title: "기초 복종 훈련",
+          description: "반려견의 기본적인 복종 훈련을 위한 8주 과정입니다. 앉기, 기다리기, 이리와 등의 기본 명령어를 학습합니다.",
+          category: "기초훈련",
+          level: 'beginner',
+          duration: "8주",
+          maxStudents: 10,
+          price: 350000,
+          status: 'approved',
+          createdAt: "2025-01-15T10:00:00Z",
+          updatedAt: "2025-01-20T14:30:00Z",
+          submittedAt: "2025-01-16T09:00:00Z",
+          approvedAt: "2025-01-20T14:30:00Z",
+          trainer: { id: 1, name: "김민수", email: "kim@example.com" },
+          objectives: ["기본 명령어 이해", "집중력 향상", "사회성 기초 함양"],
+          requirements: "건강한 반려견, 최신 예방접종 완료",
+          curriculum: [
+            {
+              week: 1,
+              topic: "기본 자세 훈련",
+              content: "앉기, 기다리기 기본 자세 훈련",
+              objectives: ["올바른 앉기 자세", "5초간 기다리기"]
+            },
+            {
+              week: 2,
+              topic: "호명 반응 훈련",
+              content: "이름 부르기 반응 및 시선 집중 훈련",
+              objectives: ["이름 반응률 90%", "아이컨택 유지"]
+            }
+          ],
+          enrolledStudents: 8,
+          completedStudents: 3,
+          averageRating: 4.8,
+          totalRevenue: 2800000
+        },
+        {
+          id: 2,
+          title: "어질리티 기초",
+          description: "반려견의 운동능력 향상을 위한 어질리티 훈련 과정입니다.",
+          category: "운동훈련",
+          level: 'intermediate',
+          duration: "6주",
+          maxStudents: 8,
+          price: 280000,
+          status: 'pending',
+          createdAt: "2025-01-20T14:30:00Z",
+          updatedAt: "2025-01-20T14:30:00Z",
+          submittedAt: "2025-01-20T15:00:00Z",
+          trainer: { id: 1, name: "김민수", email: "kim@example.com" },
+          objectives: ["운동능력 향상", "협응력 개발", "자신감 증진"],
+          requirements: "기초 복종 훈련 수료, 관절 건강 양호",
+          curriculum: [
+            {
+              week: 1,
+              topic: "장애물 익숙해지기",
+              content: "기본 장애물 소개 및 적응 훈련",
+              objectives: ["장애물 두려움 극복", "기본 통과"]
+            },
+            {
+              week: 2,
+              topic: "점프 훈련",
+              content: "높이별 점프 연습",
+              objectives: ["안전한 점프", "높이 적응"]
+            }
+          ],
+          enrolledStudents: 0,
+          completedStudents: 0,
+          averageRating: 0,
+          totalRevenue: 0,
+          reviewComments: "승인 대기 중입니다. 커리큘럼이 잘 구성되어 있습니다."
+        },
+        {
+          id: 3,
+          title: "문제행동 교정",
+          description: "짖기, 물기 등의 문제행동을 교정하는 전문 과정입니다.",
+          category: "행동교정",
+          level: 'advanced',
+          duration: "12주",
+          maxStudents: 6,
+          price: 480000,
+          status: 'draft',
+          createdAt: "2025-01-18T09:00:00Z",
+          updatedAt: "2025-01-21T11:00:00Z",
+          trainer: { id: 1, name: "김민수", email: "kim@example.com" },
+          objectives: ["문제행동 분석", "교정 기법 적용", "예방법 교육"],
+          requirements: "문제행동 진단서, 수의사 소견서",
+          curriculum: [
+            {
+              week: 1,
+              topic: "행동 분석",
+              content: "문제행동의 원인 분석 및 평가",
+              objectives: ["행동 패턴 파악", "원인 규명"]
+            }
+          ],
+          enrolledStudents: 0,
+          completedStudents: 0,
+          averageRating: 0,
+          totalRevenue: 0
+        }
+      ] as Course[];
+    },
+    enabled: isAuthenticated
   });
 
-  // 샘플 강의 데이터
-  const courses: Course[] = [
-    {
-      id: 1,
-      title: '반려견 기초 훈련 마스터하기',
-      type: '그룹',
-      startDate: '2025.04.15',
-      endDate: '2025.06.15',
-      students: 12,
-      maxStudents: 15,
-      status: '진행중',
-      price: 240000,
-      description: '반려견의 기초 복종 훈련과 사회화 교육을 진행하는 그룹 강의입니다. 8주 과정으로 앉기, 기다리기, 엎드리기 등 기본 명령어를 학습합니다.',
-      approvalStatus: '최종승인'
-    },
-    {
-      id: 2,
-      title: '문제행동 교정 과정',
-      type: '1:1',
-      startDate: '2025.04.28',
-      endDate: '2025.05.28',
-      students: 5,
-      maxStudents: null,
-      status: '진행중',
-      price: 280000,
-      description: '짖음, 물기, 분리불안 등 반려견의 문제행동을 개선하는 1:1 맞춤형 과정입니다. 반려견의 특성과 환경을 고려한 맞춤형 솔루션을 제공합니다.',
-      approvalStatus: '최종승인'
-    },
-    {
-      id: 3,
-      title: '반려견 어질리티 입문',
-      type: '그룹',
-      startDate: '2025.05.20',
-      endDate: '2025.07.20',
-      students: 6,
-      maxStudents: 10,
-      status: '모집중',
-      price: 320000,
-      description: '어질리티 훈련의 기초를 배우는 과정입니다. 장애물 통과, 터널, 점프 등 기본 어질리티 과정을 훈련합니다.',
-      approvalStatus: '기관승인',
-      approvalNote: '최종 관리자 승인 대기 중입니다.'
-    },
-    {
-      id: 4,
-      title: '반려견 트릭 트레이닝',
-      type: '온라인',
-      startDate: '2025.06.05',
-      endDate: '2025.07.05',
-      students: 0,
-      maxStudents: 30,
-      status: '준비중',
-      price: 180000,
-      description: '재미있는 트릭을 가르치는 온라인 과정입니다. 손 흔들기, 하이파이브, 돌기 등 다양한 트릭을 배웁니다.',
-      approvalStatus: '승인대기'
-    },
-    {
-      id: 5,
-      title: '반려견 수영 기초',
-      type: '그룹',
-      startDate: '2025.07.10',
-      endDate: '2025.08.15',
-      students: 0,
-      maxStudents: 8,
-      status: '준비중',
-      price: 350000,
-      description: '반려견의 수영 기초부터 안전한 물놀이 방법까지 배우는 특별 여름 강좌입니다. 시원한 실내 수영장에서 진행됩니다.',
-      approvalStatus: '반려',
-      approvalNote: '안전 관련 서류가 부족합니다. 수정 후 재신청해주세요.'
-    }
-  ];
+  // 필터링된 강좌 목록
+  const filteredCourses = courses?.filter(course => {
+    const matchesSearch = course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         course.description.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus = statusFilter === 'all' || course.status === statusFilter;
+    return matchesSearch && matchesStatus;
+  });
 
-  // 현재 탭에 따른 강의 필터링
-  const filteredCourses = courses.filter(course => {
-    switch (activeTab) {
+  // 강좌 제출 (승인 요청)
+  const submitCourseMutation = useMutation({
+    mutationFn: async (courseId: number) => {
+      console.log('강좌 승인 요청:', courseId);
+      return { success: true };
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/trainer/courses'] });
+      toast({
+        title: "승인 요청 완료",
+        description: "강좌가 승인 요청되었습니다. 검토 후 결과를 알려드리겠습니다."
+      });
+    }
+  });
+
+  // 강좌 삭제
+  const deleteCourseMutation = useMutation({
+    mutationFn: async (courseId: number) => {
+      console.log('강좌 삭제:', courseId);
+      return { success: true };
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/trainer/courses'] });
+      toast({
+        title: "강좌 삭제 완료",
+        description: "강좌가 성공적으로 삭제되었습니다."
+      });
+    }
+  });
+
+  const getStatusBadge = (status: Course['status']) => {
+    switch (status) {
+      case 'draft':
+        return <Badge variant="secondary">임시저장</Badge>;
+      case 'pending':
+        return <Badge variant="warning">승인대기</Badge>;
+      case 'approved':
+        return <Badge variant="success">승인완료</Badge>;
+      case 'rejected':
+        return <Badge variant="danger">승인거부</Badge>;
       case 'active':
-        return course.status === '진행중';
-      case 'recruiting':
-        return course.status === '모집중';
-      case 'preparing':
-        return course.status === '준비중';
+        return <Badge variant="default">진행중</Badge>;
       case 'completed':
-        return course.status === '완료';
-      case 'all':
-        return true;
+        return <Badge variant="outline">완료</Badge>;
       default:
-        return false;
+        return <Badge variant="secondary">{status}</Badge>;
     }
-  });
+  };
 
-  const openModal = (type: ModalType, course: Course | null = null) => {
+  const handleCourseClick = (course: Course) => {
     setSelectedCourse(course);
-    setActiveModal(type);
+    setIsCourseDetailOpen(true);
   };
 
-  const closeModal = () => {
-    setActiveModal(null);
-    setSelectedCourse(null);
-  };
-
-  const handleDelete = (courseId: number) => {
-    // 실제 구현에서는 API 호출
-    console.log(`강의 ID ${courseId} 삭제 요청`);
-    closeModal();
+  const handleEditCourse = (course: Course) => {
+    setSelectedCourse(course);
+    setIsEditCourseOpen(true);
   };
 
   return (
-    <div className="container py-8">
-      <div className="flex justify-between items-center mb-6">
+    <div className="p-6 space-y-6">
+      <div className="flex justify-between items-start">
         <div>
-          <h1 className="text-2xl font-bold">강의 관리</h1>
-          <p className="text-gray-500 mt-1">모든 강의를 관리하고 새 강의를 등록하세요.</p>
+          <h1 className="text-3xl font-bold">내 강좌 관리</h1>
+          <p className="text-gray-600 dark:text-gray-400 mt-2">
+            강좌 등록, 관리 및 승인 현황을 확인하세요
+          </p>
         </div>
-        <Button onClick={() => openModal('create')}>
-          <Plus className="mr-2 h-4 w-4" /> 새 강의 등록
-        </Button>
+        <Dialog open={isCreateCourseOpen} onOpenChange={setIsCreateCourseOpen}>
+          <DialogTrigger asChild>
+            <Button>
+              <Plus className="h-4 w-4 mr-2" />
+              새 강좌 등록
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>새 강좌 등록</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="title">강좌명</Label>
+                  <Input id="title" placeholder="강좌명을 입력하세요" />
+                </div>
+                <div>
+                  <Label htmlFor="category">카테고리</Label>
+                  <Select>
+                    <SelectTrigger>
+                      <SelectValue placeholder="카테고리 선택" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="basic">기초훈련</SelectItem>
+                      <SelectItem value="agility">어질리티</SelectItem>
+                      <SelectItem value="behavior">행동교정</SelectItem>
+                      <SelectItem value="social">사회화</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div>
+                <Label htmlFor="description">강좌 설명</Label>
+                <Textarea id="description" placeholder="강좌에 대한 상세 설명을 입력하세요" rows={3} />
+              </div>
+              <div className="grid grid-cols-3 gap-4">
+                <div>
+                  <Label htmlFor="duration">수강 기간</Label>
+                  <Input id="duration" placeholder="예: 8주" />
+                </div>
+                <div>
+                  <Label htmlFor="maxStudents">최대 수강생</Label>
+                  <Input id="maxStudents" type="number" placeholder="10" />
+                </div>
+                <div>
+                  <Label htmlFor="price">수강료 (원)</Label>
+                  <Input id="price" type="number" placeholder="350000" />
+                </div>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setIsCreateCourseOpen(false)}>
+                취소
+              </Button>
+              <Button variant="secondary">
+                임시저장
+              </Button>
+              <Button>
+                등록 및 승인요청
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
 
-      <Card>
-        <CardHeader className="pb-1">
-          <CardTitle>강의 목록</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Tabs defaultValue="active" value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="mb-4">
-              <TabsTrigger value="active">진행 중 ({courses.filter(c => c.status === '진행중').length})</TabsTrigger>
-              <TabsTrigger value="recruiting">모집 중 ({courses.filter(c => c.status === '모집중').length})</TabsTrigger>
-              <TabsTrigger value="preparing">준비 중 ({courses.filter(c => c.status === '준비중').length})</TabsTrigger>
-              <TabsTrigger value="completed">완료 ({courses.filter(c => c.status === '완료').length})</TabsTrigger>
-              <TabsTrigger value="all">전체 ({courses.length})</TabsTrigger>
-            </TabsList>
+      {/* 강좌 현황 통계 */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600">총 강좌</p>
+                <p className="text-2xl font-bold">{courses?.length || 0}</p>
+              </div>
+              <BookOpen className="h-8 w-8 text-blue-500" />
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600">승인 대기</p>
+                <p className="text-2xl font-bold text-yellow-600">
+                  {courses?.filter(c => c.status === 'pending').length || 0}
+                </p>
+              </div>
+              <Clock className="h-8 w-8 text-yellow-500" />
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600">진행 중</p>
+                <p className="text-2xl font-bold text-green-600">
+                  {courses?.filter(c => c.status === 'approved' || c.status === 'active').length || 0}
+                </p>
+              </div>
+              <CheckCircle className="h-8 w-8 text-green-500" />
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600">총 수익</p>
+                <p className="text-2xl font-bold text-purple-600">
+                  {(courses?.reduce((sum, c) => sum + c.totalRevenue, 0) || 0).toLocaleString()}원
+                </p>
+              </div>
+              <TrendingUp className="h-8 w-8 text-purple-500" />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
 
-            <TabsContent value={activeTab}>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>강의명</TableHead>
-                    <TableHead>유형</TableHead>
-                    <TableHead>기간</TableHead>
-                    <TableHead>수강생</TableHead>
-                    <TableHead>가격</TableHead>
-                    <TableHead>상태</TableHead>
-                    <TableHead>액션</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredCourses.length > 0 ? (
-                    filteredCourses.map((course) => (
-                      <TableRow key={course.id}>
-                        <TableCell className="font-medium">{course.title}</TableCell>
-                        <TableCell>{course.type}</TableCell>
-                        <TableCell>{course.startDate} ~ {course.endDate}</TableCell>
-                        <TableCell>
-                          {course.students}명
-                          {course.maxStudents ? ` / ${course.maxStudents}명` : ''}
-                        </TableCell>
-                        <TableCell>{course.price.toLocaleString()}원</TableCell>
-                        <TableCell>
-                          <Badge
-                            variant={
-                              course.status === '진행중' ? 'success' :
-                              course.status === '모집중' ? 'info' :
-                              course.status === '준비중' ? 'warning' :
-                              course.status === '완료' ? 'secondary' : 'outline'
-                            }
-                          >
-                            {course.status}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex space-x-1">
-                            <Button
-                              variant="outline"
-                              size="icon"
-                              onClick={() => openModal('details', course)}
-                              title="상세보기"
-                            >
-                              <ChevronRight className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="icon"
-                              onClick={() => openModal('edit', course)}
-                              title="수정하기"
-                            >
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                            {course.status !== '진행중' && (
-                              <Button
-                                variant="outline"
-                                size="icon"
-                                onClick={() => openModal('delete', course)}
-                                title="삭제하기"
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            )}
-                            {(course.status === '진행중' || course.status === '모집중') && (
-                              <Button
-                                variant="outline"
-                                size="icon"
-                                onClick={() => openModal('students', course)}
-                                title="수강생 관리"
-                              >
-                                <Users className="h-4 w-4" />
-                              </Button>
-                            )}
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  ) : (
-                    <TableRow>
-                      <TableCell colSpan={7} className="text-center py-4">
-                        선택한 상태의 강의가 없습니다.
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            </TabsContent>
-          </Tabs>
+      {/* 검색 및 필터 */}
+      <Card>
+        <CardContent className="p-4">
+          <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex-1">
+              <div className="relative">
+                <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                <Input
+                  placeholder="강좌명 또는 설명으로 검색..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+            </div>
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="w-40">
+                <SelectValue placeholder="상태 필터" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">전체</SelectItem>
+                <SelectItem value="draft">임시저장</SelectItem>
+                <SelectItem value="pending">승인대기</SelectItem>
+                <SelectItem value="approved">승인완료</SelectItem>
+                <SelectItem value="rejected">승인거부</SelectItem>
+                <SelectItem value="active">진행중</SelectItem>
+                <SelectItem value="completed">완료</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </CardContent>
       </Card>
 
-      {/* 강의 상세 모달 */}
-      <Dialog open={activeModal === 'details'} onOpenChange={() => activeModal === 'details' && closeModal()}>
-        <DialogContent className="sm:max-w-[800px]">
-          <DialogHeader>
-            <DialogTitle>강의 상세 정보</DialogTitle>
-            <DialogDescription>
-              {selectedCourse?.title}의 상세 정보입니다.
-            </DialogDescription>
-          </DialogHeader>
-
-          {selectedCourse && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-md flex items-center">
-                      <BookOpen className="mr-2 h-5 w-5" /> 강의 기본 정보
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <dl className="space-y-2">
-                      <div className="flex justify-between">
-                        <dt className="text-sm font-medium text-gray-500">강의명:</dt>
-                        <dd>{selectedCourse.title}</dd>
-                      </div>
-                      <div className="flex justify-between">
-                        <dt className="text-sm font-medium text-gray-500">강의 유형:</dt>
-                        <dd>{selectedCourse.type}</dd>
-                      </div>
-                      <div className="flex justify-between">
-                        <dt className="text-sm font-medium text-gray-500">강의 기간:</dt>
-                        <dd>{selectedCourse.startDate} ~ {selectedCourse.endDate}</dd>
-                      </div>
-                      <div className="flex justify-between">
-                        <dt className="text-sm font-medium text-gray-500">강의 가격:</dt>
-                        <dd>{selectedCourse.price.toLocaleString()}원</dd>
-                      </div>
-                      <div className="flex justify-between">
-                        <dt className="text-sm font-medium text-gray-500">현재 상태:</dt>
-                        <dd>
-                          <Badge
-                            variant={
-                              selectedCourse.status === '진행중' ? 'success' :
-                              selectedCourse.status === '모집중' ? 'info' :
-                              selectedCourse.status === '준비중' ? 'warning' :
-                              selectedCourse.status === '완료' ? 'secondary' : 'outline'
-                            }
-                          >
-                            {selectedCourse.status}
-                          </Badge>
-                        </dd>
-                      </div>
-                    </dl>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-md flex items-center">
-                      <Users className="mr-2 h-5 w-5" /> 수강생 현황
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <dl className="space-y-2">
-                      <div className="flex justify-between">
-                        <dt className="text-sm font-medium text-gray-500">현재 수강생:</dt>
-                        <dd>{selectedCourse.students}명</dd>
-                      </div>
-                      {selectedCourse.maxStudents && (
-                        <>
-                          <div className="flex justify-between">
-                            <dt className="text-sm font-medium text-gray-500">최대 인원:</dt>
-                            <dd>{selectedCourse.maxStudents}명</dd>
-                          </div>
-                          <div className="flex justify-between">
-                            <dt className="text-sm font-medium text-gray-500">남은 자리:</dt>
-                            <dd>{selectedCourse.maxStudents - selectedCourse.students}명</dd>
-                          </div>
-                          <div className="flex justify-between">
-                            <dt className="text-sm font-medium text-gray-500">등록률:</dt>
-                            <dd>{Math.round((selectedCourse.students / selectedCourse.maxStudents) * 100)}%</dd>
-                          </div>
-                        </>
-                      )}
-                      <div className="flex justify-between">
-                        <dt className="text-sm font-medium text-gray-500">예상 수익:</dt>
-                        <dd>{(selectedCourse.price * selectedCourse.students).toLocaleString()}원</dd>
-                      </div>
-                    </dl>
-                  </CardContent>
-                </Card>
-              </div>
-
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-md flex items-center">
-                    <FileEdit className="mr-2 h-5 w-5" /> 강의 설명
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-gray-700">{selectedCourse.description}</p>
+      {/* 강좌 목록 */}
+      <div className="grid gap-4">
+        {coursesLoading ? (
+          <div className="space-y-4">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <Card key={i} className="animate-pulse">
+                <CardContent className="p-6">
+                  <div className="h-6 bg-gray-200 rounded w-1/3 mb-2"></div>
+                  <div className="h-4 bg-gray-200 rounded w-2/3 mb-4"></div>
+                  <div className="h-4 bg-gray-200 rounded w-1/2"></div>
                 </CardContent>
               </Card>
-
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-md flex items-center">
-                    <Calendar className="mr-2 h-5 w-5" /> 강의 일정
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>회차</TableHead>
-                        <TableHead>날짜</TableHead>
-                        <TableHead>시간</TableHead>
-                        <TableHead>주제</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      <TableRow>
-                        <TableCell>1회차</TableCell>
-                        <TableCell>2025.04.15</TableCell>
-                        <TableCell>19:00-21:00</TableCell>
-                        <TableCell>오리엔테이션 및 강의 소개</TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell>2회차</TableCell>
-                        <TableCell>2025.04.22</TableCell>
-                        <TableCell>19:00-21:00</TableCell>
-                        <TableCell>기초 복종 훈련 - 앉기, 기다리기</TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell>3회차</TableCell>
-                        <TableCell>2025.04.29</TableCell>
-                        <TableCell>19:00-21:00</TableCell>
-                        <TableCell>기초 복종 훈련 - 엎드리기, 일어서기</TableCell>
-                      </TableRow>
-                    </TableBody>
-                  </Table>
-                </CardContent>
-              </Card>
-            </div>
-          )}
-
-          <DialogFooter>
-            <Button onClick={closeModal}>닫기</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* 삭제 확인 모달 */}
-      <Dialog open={activeModal === 'delete'} onOpenChange={() => activeModal === 'delete' && closeModal()}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>강의 삭제</DialogTitle>
-            <DialogDescription>
-              정말로 "{selectedCourse?.title}" 강의를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button variant="outline" onClick={closeModal}>취소</Button>
-            <Button variant="destructive" onClick={() => selectedCourse && handleDelete(selectedCourse.id)}>삭제</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* 수강생 관리 모달 */}
-      {/* 강의 생성 모달 */}
-      <Dialog open={activeModal === 'create'} onOpenChange={() => activeModal === 'create' && closeModal()}>
-        <DialogContent className="sm:max-w-[600px]">
-          <DialogHeader>
-            <DialogTitle>새 강의 등록</DialogTitle>
-            <DialogDescription>
-              새로운 강의를 등록합니다. 승인 절차를 통해 최종 확정됩니다.
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-4 items-center gap-4">
-              <label htmlFor="title" className="text-right font-medium">
-                강의명
-              </label>
-              <input
-                id="title"
-                className="col-span-3 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                value={newCourse.title}
-                onChange={(e) => setNewCourse({...newCourse, title: e.target.value})}
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <label htmlFor="type" className="text-right font-medium">
-                유형
-              </label>
-              <select
-                id="type"
-                className="col-span-3 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                value={newCourse.type}
-                onChange={(e) => setNewCourse({...newCourse, type: e.target.value as '그룹' | '1:1' | '온라인'})}
-              >
-                <option value="그룹">그룹</option>
-                <option value="1:1">1:1</option>
-                <option value="온라인">온라인</option>
-              </select>
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <label htmlFor="startDate" className="text-right font-medium">
-                시작일
-              </label>
-              <input
-                id="startDate"
-                type="date"
-                className="col-span-3 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                value={newCourse.startDate}
-                onChange={(e) => setNewCourse({...newCourse, startDate: e.target.value})}
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <label htmlFor="endDate" className="text-right font-medium">
-                종료일
-              </label>
-              <input
-                id="endDate"
-                type="date"
-                className="col-span-3 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                value={newCourse.endDate}
-                onChange={(e) => setNewCourse({...newCourse, endDate: e.target.value})}
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <label htmlFor="maxStudents" className="text-right font-medium">
-                최대 인원
-              </label>
-              <input
-                id="maxStudents"
-                type="number"
-                className="col-span-3 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                value={newCourse.maxStudents || ''}
-                onChange={(e) => setNewCourse({...newCourse, maxStudents: parseInt(e.target.value) || null})}
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <label htmlFor="price" className="text-right font-medium">
-                가격 (원)
-              </label>
-              <input
-                id="price"
-                type="number"
-                className="col-span-3 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                value={newCourse.price}
-                onChange={(e) => setNewCourse({...newCourse, price: parseInt(e.target.value)})}
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <label htmlFor="description" className="text-right font-medium">
-                강의 설명
-              </label>
-              <textarea
-                id="description"
-                className="col-span-3 flex h-20 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                value={newCourse.description}
-                onChange={(e) => setNewCourse({...newCourse, description: e.target.value})}
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <label className="text-right font-medium">승인 프로세스</label>
-              <div className="col-span-3 text-sm text-gray-600">
-                <p>1. 강의 등록 시 <Badge variant="warning">승인대기</Badge> 상태로 시작</p>
-                <p>2. 기관 관리자 검토 후 <Badge variant="info">기관승인</Badge> 또는 <Badge variant="danger">반려</Badge></p>
-                <p>3. 시스템 관리자 검토 후 <Badge variant="success">최종승인</Badge> 완료</p>
-              </div>
-            </div>
+            ))}
           </div>
+        ) : filteredCourses && filteredCourses.length > 0 ? (
+          filteredCourses.map((course: Course) => (
+            <Card 
+              key={course.id} 
+              className="cursor-pointer hover:shadow-lg transition-shadow"
+              onClick={() => handleCourseClick(course)}
+            >
+              <CardContent className="p-6">
+                <div className="flex justify-between items-start">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-2">
+                      <h3 className="text-xl font-semibold">{course.title}</h3>
+                      {getStatusBadge(course.status)}
+                      <Badge variant="outline">{course.category}</Badge>
+                      <Badge variant="secondary">{course.level}</Badge>
+                    </div>
+                    
+                    <p className="text-gray-600 dark:text-gray-400 mb-3">{course.description}</p>
+                    
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                      <div className="flex items-center gap-1">
+                        <Clock className="h-4 w-4" />
+                        <span>{course.duration}</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Users className="h-4 w-4" />
+                        <span>최대 {course.maxStudents}명</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <DollarSign className="h-4 w-4" />
+                        <span>{course.price.toLocaleString()}원</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Star className="h-4 w-4 text-yellow-400" />
+                        <span>{course.averageRating > 0 ? course.averageRating.toFixed(1) : 'N/A'}</span>
+                      </div>
+                    </div>
 
-          <DialogFooter>
-            <Button variant="outline" onClick={closeModal}>취소</Button>
-            <Button onClick={() => {
-              // 실제 구현에서는 API 호출
-              console.log('새 강의 등록:', {...newCourse, approvalStatus: '승인대기'});
-              closeModal();
-            }}>등록하기</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+                    {course.status === 'approved' && course.enrolledStudents > 0 && (
+                      <div className="mt-3 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                        <div className="flex justify-between items-center text-sm">
+                          <span>수강생: {course.enrolledStudents}명</span>
+                          <span>수료생: {course.completedStudents}명</span>
+                          <span>수익: {course.totalRevenue.toLocaleString()}원</span>
+                        </div>
+                      </div>
+                    )}
 
-      {/* 강의 수정 모달 */}
-      <Dialog open={activeModal === 'edit'} onOpenChange={() => activeModal === 'edit' && closeModal()}>
-        <DialogContent className="sm:max-w-[600px]">
-          <DialogHeader>
-            <DialogTitle>강의 정보 수정</DialogTitle>
-            <DialogDescription>
-              {selectedCourse?.title}의 정보를 수정합니다.
-            </DialogDescription>
-          </DialogHeader>
+                    {course.status === 'pending' && course.reviewComments && (
+                      <div className="mt-3 p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
+                        <p className="text-sm text-yellow-800 dark:text-yellow-200">
+                          <AlertCircle className="h-4 w-4 inline mr-1" />
+                          {course.reviewComments}
+                        </p>
+                      </div>
+                    )}
 
-          {selectedCourse && (
-            <div className="grid gap-4 py-4">
-              <div className="grid grid-cols-4 items-center gap-4">
-                <label htmlFor="edit-title" className="text-right font-medium">
-                  강의명
-                </label>
-                <input
-                  id="edit-title"
-                  className="col-span-3 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                  defaultValue={selectedCourse.title}
-                />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <label htmlFor="edit-type" className="text-right font-medium">
-                  유형
-                </label>
-                <select
-                  id="edit-type"
-                  className="col-span-3 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                  defaultValue={selectedCourse.type}
-                >
-                  <option value="그룹">그룹</option>
-                  <option value="1:1">1:1</option>
-                  <option value="온라인">온라인</option>
-                </select>
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <label htmlFor="edit-status" className="text-right font-medium">
-                  상태
-                </label>
-                <select
-                  id="edit-status"
-                  className="col-span-3 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                  defaultValue={selectedCourse.status}
-                >
-                  <option value="준비중">준비중</option>
-                  <option value="모집중">모집중</option>
-                  <option value="진행중">진행중</option>
-                  <option value="완료">완료</option>
-                  <option value="취소">취소</option>
-                </select>
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <label htmlFor="edit-startDate" className="text-right font-medium">
-                  시작일
-                </label>
-                <input
-                  id="edit-startDate"
-                  type="text"
-                  className="col-span-3 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                  defaultValue={selectedCourse.startDate}
-                />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <label htmlFor="edit-endDate" className="text-right font-medium">
-                  종료일
-                </label>
-                <input
-                  id="edit-endDate"
-                  type="text"
-                  className="col-span-3 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                  defaultValue={selectedCourse.endDate}
-                />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <label htmlFor="edit-price" className="text-right font-medium">
-                  가격 (원)
-                </label>
-                <input
-                  id="edit-price"
-                  type="number"
-                  className="col-span-3 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                  defaultValue={selectedCourse.price}
-                />
-              </div>
-              
-              {selectedCourse.approvalStatus && (
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <label className="text-right font-medium">
-                    승인 상태
-                  </label>
-                  <div className="col-span-3">
-                    <Badge 
-                      variant={
-                        selectedCourse.approvalStatus === '승인대기' ? 'warning' :
-                        selectedCourse.approvalStatus === '기관승인' ? 'info' :
-                        selectedCourse.approvalStatus === '최종승인' ? 'success' :
-                        'danger'
-                      }
-                    >
-                      {selectedCourse.approvalStatus}
-                    </Badge>
-                    {selectedCourse.approvalNote && (
-                      <p className="mt-1 text-sm text-gray-600">{selectedCourse.approvalNote}</p>
+                    {course.status === 'rejected' && course.reviewComments && (
+                      <div className="mt-3 p-3 bg-red-50 dark:bg-red-900/20 rounded-lg">
+                        <p className="text-sm text-red-800 dark:text-red-200">
+                          <XCircle className="h-4 w-4 inline mr-1" />
+                          거부 사유: {course.reviewComments}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                  
+                  <div className="flex flex-col gap-2 ml-4">
+                    <Button variant="outline" size="sm">
+                      <Eye className="h-4 w-4 mr-2" />
+                      상세보기
+                    </Button>
+                    
+                    {course.status === 'draft' && (
+                      <>
+                        <Button variant="outline" size="sm" onClick={(e) => {
+                          e.stopPropagation();
+                          handleEditCourse(course);
+                        }}>
+                          <Edit className="h-4 w-4 mr-2" />
+                          편집
+                        </Button>
+                        <Button size="sm" onClick={(e) => {
+                          e.stopPropagation();
+                          submitCourseMutation.mutate(course.id);
+                        }}>
+                          <Send className="h-4 w-4 mr-2" />
+                          승인요청
+                        </Button>
+                      </>
+                    )}
+                    
+                    {(course.status === 'draft' || course.status === 'rejected') && (
+                      <Button 
+                        variant="destructive" 
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (confirm('정말로 삭제하시겠습니까?')) {
+                            deleteCourseMutation.mutate(course.id);
+                          }
+                        }}
+                      >
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        삭제
+                      </Button>
                     )}
                   </div>
                 </div>
+              </CardContent>
+            </Card>
+          ))
+        ) : (
+          <Card>
+            <CardContent className="text-center py-8">
+              <BookOpen className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-gray-600 mb-2">
+                {searchTerm || statusFilter !== 'all' ? 
+                  '검색 조건에 맞는 강좌가 없습니다' : 
+                  '등록된 강좌가 없습니다'
+                }
+              </h3>
+              <p className="text-gray-500 mb-4">
+                {searchTerm || statusFilter !== 'all' ? 
+                  '다른 검색어나 필터를 시도해보세요' : 
+                  '첫 번째 강좌를 등록해보세요'
+                }
+              </p>
+              {!searchTerm && statusFilter === 'all' && (
+                <Button onClick={() => setIsCreateCourseOpen(true)}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  새 강좌 등록
+                </Button>
               )}
-              
-              <div className="grid grid-cols-4 items-center gap-4">
-                <label htmlFor="edit-description" className="text-right font-medium">
-                  강의 설명
-                </label>
-                <textarea
-                  id="edit-description"
-                  className="col-span-3 flex h-20 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                  defaultValue={selectedCourse.description}
-                />
-              </div>
-            </div>
+            </CardContent>
+          </Card>
+        )}
+      </div>
+
+      {/* 강좌 상세 모달 */}
+      <Dialog open={isCourseDetailOpen} onOpenChange={setIsCourseDetailOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          {selectedCourse && (
+            <>
+              <DialogHeader>
+                <div className="flex justify-between items-start">
+                  <div>
+                    <DialogTitle className="text-xl flex items-center gap-2">
+                      <BookOpen className="h-6 w-6" />
+                      {selectedCourse.title}
+                    </DialogTitle>
+                    <div className="flex items-center gap-2 mt-2">
+                      {getStatusBadge(selectedCourse.status)}
+                      <Badge variant="outline">{selectedCourse.category}</Badge>
+                      <Badge variant="secondary">{selectedCourse.level}</Badge>
+                    </div>
+                  </div>
+                </div>
+              </DialogHeader>
+
+              <Tabs defaultValue="basic" className="w-full">
+                <TabsList className="grid w-full grid-cols-4">
+                  <TabsTrigger value="basic">기본 정보</TabsTrigger>
+                  <TabsTrigger value="curriculum">커리큘럼</TabsTrigger>
+                  <TabsTrigger value="students">수강생</TabsTrigger>
+                  <TabsTrigger value="stats">통계</TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="basic" className="space-y-4">
+                  <div>
+                    <h4 className="font-semibold mb-2">강좌 설명</h4>
+                    <p className="text-gray-700 dark:text-gray-300 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                      {selectedCourse.description}
+                    </p>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <h4 className="font-semibold mb-2">강좌 목표</h4>
+                      <div className="space-y-1">
+                        {selectedCourse.objectives.map((objective, idx) => (
+                          <div key={idx} className="flex items-center gap-2">
+                            <CheckCircle className="h-4 w-4 text-green-500" />
+                            <span className="text-sm">{objective}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                    <div>
+                      <h4 className="font-semibold mb-2">참가 요건</h4>
+                      <p className="text-sm text-gray-600 p-3 bg-gray-50 dark:bg-gray-800 rounded">
+                        {selectedCourse.requirements}
+                      </p>
+                    </div>
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="curriculum" className="space-y-4">
+                  <div>
+                    <h4 className="font-semibold mb-3">주차별 커리큘럼</h4>
+                    <div className="space-y-3">
+                      {selectedCourse.curriculum.map((item, idx) => (
+                        <Card key={idx}>
+                          <CardContent className="p-4">
+                            <div className="flex justify-between items-start mb-2">
+                              <h5 className="font-medium">{item.week}주차: {item.topic}</h5>
+                            </div>
+                            <p className="text-sm text-gray-600 mb-2">{item.content}</p>
+                            <div className="flex flex-wrap gap-1">
+                              {item.objectives.map((obj, objIdx) => (
+                                <Badge key={objIdx} variant="outline" className="text-xs">{obj}</Badge>
+                              ))}
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="students" className="space-y-4">
+                  <div className="grid grid-cols-3 gap-4">
+                    <div className="text-center p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                      <div className="text-2xl font-bold text-blue-600">{selectedCourse.enrolledStudents}</div>
+                      <div className="text-sm text-gray-600">현재 수강생</div>
+                    </div>
+                    <div className="text-center p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                      <div className="text-2xl font-bold text-green-600">{selectedCourse.completedStudents}</div>
+                      <div className="text-sm text-gray-600">수료생</div>
+                    </div>
+                    <div className="text-center p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+                      <div className="text-2xl font-bold text-purple-600">{selectedCourse.maxStudents}</div>
+                      <div className="text-sm text-gray-600">최대 정원</div>
+                    </div>
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="stats" className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="text-center p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
+                      <div className="text-2xl font-bold text-yellow-600">
+                        {selectedCourse.averageRating > 0 ? selectedCourse.averageRating.toFixed(1) : 'N/A'}
+                      </div>
+                      <div className="text-sm text-gray-600">평균 평점</div>
+                    </div>
+                    <div className="text-center p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                      <div className="text-2xl font-bold text-green-600">
+                        {selectedCourse.totalRevenue.toLocaleString()}원
+                      </div>
+                      <div className="text-sm text-gray-600">총 수익</div>
+                    </div>
+                  </div>
+                </TabsContent>
+              </Tabs>
+
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setIsCourseDetailOpen(false)}>
+                  닫기
+                </Button>
+                {selectedCourse.status === 'draft' && (
+                  <Button onClick={() => {
+                    setIsCourseDetailOpen(false);
+                    handleEditCourse(selectedCourse);
+                  }}>
+                    <Edit className="h-4 w-4 mr-2" />
+                    편집
+                  </Button>
+                )}
+              </DialogFooter>
+            </>
           )}
-
-          <DialogFooter>
-            <Button variant="outline" onClick={closeModal}>취소</Button>
-            <Button onClick={() => {
-              // 실제 구현에서는 API 호출
-              console.log(`강의 ID ${selectedCourse?.id} 정보 업데이트 요청`);
-              closeModal();
-            }}>저장하기</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={activeModal === 'students'} onOpenChange={() => activeModal === 'students' && closeModal()}>
-        <DialogContent className="sm:max-w-[800px]">
-          <DialogHeader>
-            <DialogTitle>수강생 관리</DialogTitle>
-            <DialogDescription>
-              {selectedCourse?.title}의 수강생 목록입니다.
-            </DialogDescription>
-          </DialogHeader>
-
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>이름</TableHead>
-                <TableHead>연락처</TableHead>
-                <TableHead>반려견</TableHead>
-                <TableHead>등록일</TableHead>
-                <TableHead>출석률</TableHead>
-                <TableHead>액션</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              <TableRow>
-                <TableCell className="font-medium">이지은</TableCell>
-                <TableCell>010-1234-5678</TableCell>
-                <TableCell>몽이 (말티즈)</TableCell>
-                <TableCell>2025.04.10</TableCell>
-                <TableCell>100%</TableCell>
-                <TableCell>
-                  <Button variant="outline" size="sm">상세</Button>
-                </TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell className="font-medium">김민준</TableCell>
-                <TableCell>010-2345-6789</TableCell>
-                <TableCell>코코 (푸들)</TableCell>
-                <TableCell>2025.04.12</TableCell>
-                <TableCell>100%</TableCell>
-                <TableCell>
-                  <Button variant="outline" size="sm">상세</Button>
-                </TableCell>
-              </TableRow>
-            </TableBody>
-          </Table>
-
-          <DialogFooter>
-            <Button onClick={closeModal}>닫기</Button>
-          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
