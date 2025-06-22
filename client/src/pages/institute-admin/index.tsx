@@ -495,7 +495,7 @@ export default function InstituteAdminPage() {
                                trainer.status === 'inactive' ? '비활성' : '정지'}
                             </Badge>
                             {trainer.pendingApprovals > 0 && (
-                              <Badge variant="destructive" className="text-xs">
+                              <Badge variant="danger" className="text-xs">
                                 승인대기 {trainer.pendingApprovals}
                               </Badge>
                             )}
