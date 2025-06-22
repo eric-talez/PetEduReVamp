@@ -33,7 +33,11 @@ import {
   Download,
   Send,
   Star,
-  Award
+  Award,
+  User,
+  DollarSign,
+  Heart,
+  GraduationCap
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { ko } from 'date-fns/locale';
@@ -1311,6 +1315,397 @@ export default function InstituteAdminPage() {
                     </Button>
                   </>
                 )}
+              </DialogFooter>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* 강좌 상세 모달 */}
+      <Dialog open={isCourseDialogOpen} onOpenChange={setIsCourseDialogOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          {selectedCourse && (
+            <>
+              <DialogHeader>
+                <div className="flex justify-between items-start">
+                  <div>
+                    <DialogTitle className="text-xl flex items-center gap-2">
+                      <BookOpen className="h-6 w-6 text-blue-600" />
+                      {selectedCourse.title}
+                    </DialogTitle>
+                    <div className="flex items-center gap-2 mt-2">
+                      <Badge variant="outline">{selectedCourse.category}</Badge>
+                      <Badge variant="secondary">{selectedCourse.level}</Badge>
+                      <Badge variant="warning">승인 대기</Badge>
+                    </div>
+                  </div>
+                </div>
+              </DialogHeader>
+
+              <div className="space-y-6">
+                {/* 기본 정보 */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <h4 className="font-semibold mb-2">강좌 정보</h4>
+                    <div className="space-y-2 text-sm">
+                      <div><span className="font-medium">기간:</span> {selectedCourse.duration}</div>
+                      <div><span className="font-medium">최대 수강생:</span> {selectedCourse.maxStudents}명</div>
+                      <div><span className="font-medium">수강료:</span> {selectedCourse.price.toLocaleString()}원</div>
+                      <div><span className="font-medium">제출일:</span> {new Date(selectedCourse.submittedAt).toLocaleDateString()}</div>
+                    </div>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold mb-2">담당 훈련사</h4>
+                    <div className="space-y-2 text-sm">
+                      <div><span className="font-medium">이름:</span> {selectedCourse.trainer.name}</div>
+                      <div><span className="font-medium">이메일:</span> {selectedCourse.trainer.email}</div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 강좌 설명 */}
+                <div>
+                  <h4 className="font-semibold mb-2">강좌 설명</h4>
+                  <p className="text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-800 p-3 rounded-lg">
+                    {selectedCourse.description}
+                  </p>
+                </div>
+
+                {/* 강좌 목표 */}
+                <div>
+                  <h4 className="font-semibold mb-2">강좌 목표</h4>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedCourse.objectives.map((obj: string, idx: number) => (
+                      <Badge key={idx} variant="outline" className="text-sm">{obj}</Badge>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 참가 요건 */}
+                <div>
+                  <h4 className="font-semibold mb-2">참가 요건</h4>
+                  <p className="text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-800 p-3 rounded-lg">
+                    {selectedCourse.requirements}
+                  </p>
+                </div>
+
+                {/* 커리큘럼 */}
+                <div>
+                  <h4 className="font-semibold mb-2">커리큘럼</h4>
+                  <div className="space-y-2">
+                    {selectedCourse.curriculum.map((item: any, idx: number) => (
+                      <div key={idx} className="border rounded-lg p-3">
+                        <div className="flex justify-between items-start mb-2">
+                          <span className="font-medium">{item.week}주차: {item.topic}</span>
+                        </div>
+                        <p className="text-sm text-gray-600">{item.content}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <DialogFooter className="flex gap-2">
+                <Button 
+                  variant="outline" 
+                  onClick={() => setIsCourseDialogOpen(false)}
+                >
+                  닫기
+                </Button>
+                <Button 
+                  variant="destructive"
+                  onClick={() => courseApproveMutation.mutate({ id: selectedCourse.id, action: 'reject' })}
+                  disabled={courseApproveMutation.isPending}
+                >
+                  <X className="h-4 w-4 mr-2" />
+                  거부
+                </Button>
+                <Button 
+                  variant="default"
+                  onClick={() => courseApproveMutation.mutate({ id: selectedCourse.id, action: 'approve' })}
+                  disabled={courseApproveMutation.isPending}
+                >
+                  <Check className="h-4 w-4 mr-2" />
+                  승인
+                </Button>
+              </DialogFooter>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* 알림장 상세 모달 */}
+      <Dialog open={isJournalDialogOpen} onOpenChange={setIsJournalDialogOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          {selectedJournal && (
+            <>
+              <DialogHeader>
+                <div className="flex justify-between items-start">
+                  <div>
+                    <DialogTitle className="text-xl flex items-center gap-2">
+                      <FileText className="h-6 w-6 text-green-600" />
+                      {selectedJournal.title}
+                    </DialogTitle>
+                    <div className="flex items-center gap-2 mt-2">
+                      <Badge variant={selectedJournal.status === 'sent' ? 'default' : 'secondary'}>
+                        {selectedJournal.status === 'sent' ? '전송됨' : '읽음'}
+                      </Badge>
+                      <span className="text-sm text-gray-500">
+                        {new Date(selectedJournal.createdAt).toLocaleDateString()}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </DialogHeader>
+
+              <div className="space-y-6">
+                {/* 기본 정보 */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <h4 className="font-semibold mb-2">훈련 정보</h4>
+                    <div className="space-y-2 text-sm">
+                      <div><span className="font-medium">훈련사:</span> {selectedJournal.trainer.name}</div>
+                      <div><span className="font-medium">강좌:</span> {selectedJournal.course.title}</div>
+                      <div><span className="font-medium">훈련일:</span> {selectedJournal.trainingDate}</div>
+                      <div><span className="font-medium">훈련 시간:</span> {selectedJournal.trainingDuration}분</div>
+                    </div>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold mb-2">학생 및 반려동물</h4>
+                    <div className="space-y-2 text-sm">
+                      <div><span className="font-medium">학생:</span> {selectedJournal.student.name}</div>
+                      <div><span className="font-medium">반려동물:</span> {selectedJournal.student.pet.name}</div>
+                      <div><span className="font-medium">품종:</span> {selectedJournal.student.pet.breed}</div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 훈련 내용 */}
+                <div>
+                  <h4 className="font-semibold mb-2">훈련 내용</h4>
+                  <p className="text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-800 p-4 rounded-lg whitespace-pre-wrap">
+                    {selectedJournal.content}
+                  </p>
+                </div>
+
+                {/* 평가 및 특이사항 */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <h4 className="font-semibold mb-2">진도 평가</h4>
+                    <div className="flex items-center gap-2">
+                      {Array.from({ length: 5 }).map((_, i) => (
+                        <Star
+                          key={i}
+                          className={`h-5 w-5 ${
+                            i < selectedJournal.progressRating ? 'text-yellow-400 fill-current' : 'text-gray-300'
+                          }`}
+                        />
+                      ))}
+                      <span className="text-sm font-medium">({selectedJournal.progressRating}/5)</span>
+                    </div>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold mb-2">행동 특이사항</h4>
+                    <p className="text-sm text-gray-600 bg-gray-50 dark:bg-gray-800 p-2 rounded">
+                      {selectedJournal.behaviorNotes}
+                    </p>
+                  </div>
+                </div>
+
+                {/* 숙제 및 다음 목표 */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <h4 className="font-semibold mb-2">숙제 지시사항</h4>
+                    <p className="text-sm text-gray-600 bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg">
+                      {selectedJournal.homeworkInstructions}
+                    </p>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold mb-2">다음 훈련 목표</h4>
+                    <p className="text-sm text-gray-600 bg-green-50 dark:bg-green-900/20 p-3 rounded-lg">
+                      {selectedJournal.nextGoals}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <DialogFooter>
+                <Button 
+                  variant="outline" 
+                  onClick={() => setIsJournalDialogOpen(false)}
+                >
+                  닫기
+                </Button>
+              </DialogFooter>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* 학생 상세 모달 */}
+      <Dialog open={isStudentDialogOpen} onOpenChange={setIsStudentDialogOpen}>
+        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+          {selectedStudent && (
+            <>
+              <DialogHeader>
+                <div className="flex justify-between items-start">
+                  <div>
+                    <DialogTitle className="text-xl flex items-center gap-2">
+                      <GraduationCap className="h-6 w-6 text-blue-600" />
+                      {selectedStudent.name} 학생 정보
+                    </DialogTitle>
+                    <div className="flex items-center gap-2 mt-2">
+                      <Badge variant={selectedStudent.status === 'active' ? 'default' : 'secondary'}>
+                        {selectedStudent.status === 'active' ? '수강중' : '휴강'}
+                      </Badge>
+                      <span className="text-sm text-gray-500">
+                        가입일: {selectedStudent.joinDate}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-2xl font-bold text-green-600">
+                      {selectedStudent.attendance.attendanceRate}%
+                    </div>
+                    <div className="text-sm text-gray-500">출석률</div>
+                  </div>
+                </div>
+              </DialogHeader>
+
+              <div className="space-y-6">
+                {/* 기본 정보 */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <h4 className="font-semibold mb-3">학생 정보</h4>
+                    <div className="space-y-2 text-sm bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
+                      <div><span className="font-medium">이름:</span> {selectedStudent.name}</div>
+                      <div><span className="font-medium">이메일:</span> {selectedStudent.email}</div>
+                      <div><span className="font-medium">전화번호:</span> {selectedStudent.phone}</div>
+                      <div><span className="font-medium">주소:</span> {selectedStudent.address}</div>
+                    </div>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold mb-3">반려동물 정보</h4>
+                    <div className="space-y-2 text-sm bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
+                      <div><span className="font-medium">이름:</span> {selectedStudent.pet.name}</div>
+                      <div><span className="font-medium">품종:</span> {selectedStudent.pet.breed}</div>
+                      <div><span className="font-medium">나이:</span> {selectedStudent.pet.age}살</div>
+                      <div><span className="font-medium">체중:</span> {selectedStudent.pet.weight}kg</div>
+                      <div><span className="font-medium">성별:</span> {selectedStudent.pet.gender}</div>
+                      <div><span className="font-medium">중성화:</span> {selectedStudent.pet.neutered ? '완료' : '미완료'}</div>
+                      <div><span className="font-medium">건강상태:</span> {selectedStudent.pet.healthStatus}</div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 특이사항 */}
+                <div>
+                  <h4 className="font-semibold mb-2">반려동물 특이사항</h4>
+                  <p className="text-gray-700 dark:text-gray-300 bg-yellow-50 dark:bg-yellow-900/20 p-3 rounded-lg">
+                    {selectedStudent.pet.specialNotes}
+                  </p>
+                </div>
+
+                {/* 수강 정보 */}
+                <div>
+                  <h4 className="font-semibold mb-3">수강 정보</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
+                      <div className="space-y-2 text-sm">
+                        <div><span className="font-medium">강좌명:</span> {selectedStudent.course.title}</div>
+                        <div><span className="font-medium">담당 훈련사:</span> {selectedStudent.trainer.name}</div>
+                        <div><span className="font-medium">수강 기간:</span> {selectedStudent.course.startDate} ~ {selectedStudent.course.endDate}</div>
+                      </div>
+                    </div>
+                    <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg">
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-green-600 mb-1">
+                          {selectedStudent.progress.overallRating}
+                        </div>
+                        <div className="text-sm text-gray-600">종합 평점 (5점 만점)</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 출석 현황 */}
+                <div>
+                  <h4 className="font-semibold mb-3">출석 현황</h4>
+                  <div className="grid grid-cols-4 gap-4 mb-4">
+                    <div className="text-center p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                      <div className="text-2xl font-bold text-blue-600">{selectedStudent.attendance.totalSessions}</div>
+                      <div className="text-sm text-gray-600">총 수업</div>
+                    </div>
+                    <div className="text-center p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                      <div className="text-2xl font-bold text-green-600">{selectedStudent.attendance.attendedSessions}</div>
+                      <div className="text-sm text-gray-600">출석</div>
+                    </div>
+                    <div className="text-center p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
+                      <div className="text-2xl font-bold text-yellow-600">{selectedStudent.attendance.lateArrivals}</div>
+                      <div className="text-sm text-gray-600">지각</div>
+                    </div>
+                    <div className="text-center p-4 bg-red-50 dark:bg-red-900/20 rounded-lg">
+                      <div className="text-2xl font-bold text-red-600">{selectedStudent.attendance.absences}</div>
+                      <div className="text-sm text-gray-600">결석</div>
+                    </div>
+                  </div>
+
+                  {/* 최근 출석 기록 */}
+                  <div>
+                    <h5 className="font-medium mb-2">최근 출석 기록</h5>
+                    <div className="space-y-2">
+                      {selectedStudent.attendance.recentAttendance.map((record: any, idx: number) => (
+                        <div key={idx} className="flex justify-between items-center p-2 border rounded">
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-medium">{record.date}</span>
+                            <Badge 
+                              variant={
+                                record.status === 'attended' ? 'default' : 
+                                record.status === 'late' ? 'warning' : 'destructive'
+                              }
+                              className="text-xs"
+                            >
+                              {record.status === 'attended' ? '출석' : 
+                               record.status === 'late' ? '지각' : '결석'}
+                            </Badge>
+                          </div>
+                          <span className="text-sm text-gray-600">{record.notes}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* 학습 성과 평가 */}
+                <div>
+                  <h4 className="font-semibold mb-3">학습 성과 평가</h4>
+                  <div className="space-y-3">
+                    {selectedStudent.progress.skillAssessments.map((skill: any, idx: number) => (
+                      <div key={idx} className="p-4 border rounded-lg">
+                        <div className="flex justify-between items-center mb-2">
+                          <span className="font-medium">{skill.skill}</span>
+                          <span className="text-lg font-bold text-blue-600">{skill.score}점</span>
+                        </div>
+                        <div className="w-full h-3 bg-gray-200 rounded-full mb-2">
+                          <div 
+                            className="h-3 bg-blue-500 rounded-full transition-all duration-300" 
+                            style={{ width: `${skill.score}%` }}
+                          ></div>
+                        </div>
+                        <p className="text-sm text-gray-600">{skill.notes}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <DialogFooter>
+                <Button 
+                  variant="outline" 
+                  onClick={() => setIsStudentDialogOpen(false)}
+                >
+                  닫기
+                </Button>
               </DialogFooter>
             </>
           )}
