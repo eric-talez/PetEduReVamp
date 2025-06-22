@@ -105,9 +105,59 @@ export default function JournalsPage() {
     description: '',
     urgency: 'normal'
   });
+  const [journals, setJournals] = useState<TrainingJournal[]>([]);
+  const [serviceRequests, setServiceRequests] = useState<ServiceRequest[]>([]);
+
+  // Click handlers for journal functionality
+  const handleDeleteJournal = (journalId: number) => {
+    console.log('일지 삭제 클릭:', journalId);
+    setJournals(prev => prev.filter(j => j.id !== journalId));
+    toast({
+      title: "삭제 완료",
+      description: "알림장이 삭제되었습니다."
+    });
+  };
+
+  const handleEditJournal = (journalId: number) => {
+    console.log('일지 수정 클릭:', journalId);
+    setIsCreateOpen(true);
+  };
+
+  const handleRequestService = (journalId: number, serviceType: 'consultation' | 'message' | 'booking') => {
+    console.log('서비스 요청 클릭:', journalId, serviceType);
+    const newRequest = {
+      id: Date.now(),
+      journalId,
+      serviceType,
+      title: `${serviceType === 'consultation' ? '상담' : serviceType === 'message' ? '메시지' : '예약'} 요청`,
+      description: '새로운 서비스 요청입니다.',
+      urgency: 'normal' as const,
+      status: 'pending' as const,
+      createdAt: new Date().toISOString()
+    };
+    setServiceRequests(prev => [...prev, newRequest]);
+    toast({
+      title: "요청 완료",
+      description: "서비스 요청이 전송되었습니다."
+    });
+  };
+
+  const handleApproveRequest = (requestId: number) => {
+    console.log('요청 승인 클릭:', requestId);
+    setServiceRequests(prev =>
+      prev.map(req => req.id === requestId ? { ...req, status: 'approved' as const } : req)
+    );
+  };
+
+  const handleRejectRequest = (requestId: number) => {
+    console.log('요청 거부 클릭:', requestId);
+    setServiceRequests(prev =>
+      prev.map(req => req.id === requestId ? { ...req, status: 'rejected' as const } : req)
+    );
+  };
 
   // 알림장 목록 조회
-  const { data: journals, isLoading } = useQuery({
+  const { data: journalsData, isLoading } = useQuery({
     queryKey: ['/api/training-journals', user?.role],
     queryFn: async () => {
       // Mock data for demonstration
@@ -522,7 +572,7 @@ export default function JournalsPage() {
                   <div className="flex items-center gap-2 mb-2">
                     <CardTitle className="text-lg">{journal.title}</CardTitle>
                     {!journal.isRead && user?.role === 'pet-owner' && (
-                      <Badge variant="destructive" className="text-xs">NEW</Badge>
+                      <Badge variant="danger" className="text-xs">NEW</Badge>
                     )}
                     {getStatusBadge(journal.status)}
                   </div>
@@ -744,7 +794,7 @@ export default function JournalsPage() {
                           </div>
                           <div className="flex items-center gap-2">
                             <Badge 
-                              variant={request.urgency === 'urgent' ? 'destructive' : 'outline'}
+                              variant={request.urgency === 'urgent' ? 'danger' : 'outline'}
                               className="text-xs"
                             >
                               {request.urgency}
