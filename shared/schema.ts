@@ -266,6 +266,57 @@ export const banners = pgTable("banners", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// 알림장 테이블 - 훈련사가 견주에게 보내는 훈련 알림
+export const trainingJournals = pgTable("training_journals", {
+  id: serial("id").primaryKey(),
+  trainerId: integer("trainer_id").references(() => users.id).notNull(),
+  petOwnerId: integer("pet_owner_id").references(() => users.id).notNull(),
+  petId: integer("pet_id").references(() => pets.id).notNull(),
+  title: varchar("title", { length: 200 }).notNull(),
+  content: text("content").notNull(),
+  trainingDate: timestamp("training_date").notNull(),
+  trainingDuration: integer("training_duration"), // 훈련 시간 (분)
+  trainingType: varchar("training_type", { length: 100 }), // 훈련 유형
+  progressRating: integer("progress_rating"), // 진행도 평가 (1-5)
+  behaviorNotes: text("behavior_notes"), // 행동 관찰 노트
+  homeworkInstructions: text("homework_instructions"), // 집에서 할 숙제
+  nextGoals: text("next_goals"), // 다음 목표
+  attachments: text("attachments").array(), // 첨부파일 URL 배열
+  isRead: boolean("is_read").default(false), // 견주 읽음 여부
+  readAt: timestamp("read_at"),
+  status: varchar("status", { length: 20 }).default("sent"), // sent, read, replied
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// 알림장 댓글 테이블 - 견주의 응답
+export const journalComments: any = pgTable("journal_comments", {
+  id: serial("id").primaryKey(),
+  journalId: integer("journal_id").references(() => trainingJournals.id).notNull(),
+  authorId: integer("author_id").references(() => users.id).notNull(),
+  content: text("content").notNull(),
+  attachments: text("attachments").array(), // 첨부파일
+  parentCommentId: integer("parent_comment_id"), // 대댓글 - 순환 참조 제거
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// 알림장 서비스 요청 테이블 - 견주가 추가 서비스 요청
+export const journalServiceRequests = pgTable("journal_service_requests", {
+  id: serial("id").primaryKey(),
+  journalId: integer("journal_id").references(() => trainingJournals.id).notNull(),
+  requesterId: integer("requester_id").references(() => users.id).notNull(),
+  serviceType: varchar("service_type", { length: 50 }).notNull(), // consultation, message, booking
+  title: varchar("title", { length: 200 }).notNull(),
+  description: text("description"),
+  preferredDate: timestamp("preferred_date"),
+  urgency: varchar("urgency", { length: 20 }).default("normal"), // low, normal, high, urgent
+  status: varchar("status", { length: 20 }).default("pending"), // pending, approved, rejected, completed
+  responseMessage: text("response_message"),
+  respondedBy: integer("responded_by").references(() => users.id),
+  respondedAt: timestamp("responded_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Type definitions
 export type UserRole = "admin" | "trainer" | "institute-admin" | "pet-owner";
 
@@ -293,3 +344,77 @@ export type EventAttendance = typeof eventAttendances.$inferSelect;
 
 export type Banner = typeof banners.$inferSelect;
 export type InsertBanner = typeof banners.$inferInsert;
+
+export type TrainingJournal = typeof trainingJournals.$inferSelect;
+export type InsertTrainingJournal = typeof trainingJournals.$inferInsert;
+
+export type JournalComment = typeof journalComments.$inferSelect;
+export type InsertJournalComment = typeof journalComments.$inferInsert;
+
+export type JournalServiceRequest = typeof journalServiceRequests.$inferSelect;
+export type InsertJournalServiceRequest = typeof journalServiceRequests.$inferInsert;
+
+// 컨텐츠 승인 시스템 테이블
+export const contentApprovals = pgTable("content_approvals", {
+  id: serial("id").primaryKey(),
+  contentType: varchar("content_type", { length: 50 }).notNull(), // course, curriculum, product
+  contentId: integer("content_id").notNull(), // 해당 컨텐츠 ID
+  submitterId: integer("submitter_id").references(() => users.id).notNull(), // 제출자 (훈련사)
+  instituteId: integer("institute_id").references(() => institutes.id).notNull(),
+  title: varchar("title", { length: 200 }).notNull(),
+  description: text("description"),
+  content: jsonb("content"), // 컨텐츠 상세 정보
+  attachments: text("attachments").array(),
+  
+  // 승인 단계별 상태
+  trainerStatus: varchar("trainer_status", { length: 20 }).default("submitted"), // submitted
+  instituteStatus: varchar("institute_status", { length: 20 }).default("pending"), // pending, approved, rejected
+  adminStatus: varchar("admin_status", { length: 20 }).default("pending"), // pending, approved, rejected
+  
+  // 승인자 정보
+  instituteReviewerId: integer("institute_reviewer_id").references(() => users.id),
+  adminReviewerId: integer("admin_reviewer_id").references(() => users.id),
+  
+  // 승인/거부 메시지
+  instituteComment: text("institute_comment"),
+  adminComment: text("admin_comment"),
+  
+  // 승인 날짜
+  instituteReviewedAt: timestamp("institute_reviewed_at"),
+  adminReviewedAt: timestamp("admin_reviewed_at"),
+  
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// 훈련사-기관 관계 테이블
+export const trainerInstitutes = pgTable("trainer_institutes", {
+  id: serial("id").primaryKey(),
+  trainerId: integer("trainer_id").references(() => users.id).notNull(),
+  instituteId: integer("institute_id").references(() => institutes.id).notNull(),
+  role: varchar("role", { length: 50 }).default("trainer"), // trainer, head-trainer, supervisor
+  status: varchar("status", { length: 20 }).default("active"), // active, inactive, suspended
+  joinDate: timestamp("join_date").defaultNow(),
+  permissions: text("permissions").array(), // 권한 배열
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// 커리큘럼 테이블
+export const curriculums = pgTable("curriculums", {
+  id: serial("id").primaryKey(),
+  title: varchar("title", { length: 200 }).notNull(),
+  description: text("description"),
+  creatorId: integer("creator_id").references(() => users.id).notNull(),
+  instituteId: integer("institute_id").references(() => institutes.id),
+  targetLevel: varchar("target_level", { length: 50 }), // beginner, intermediate, advanced
+  duration: integer("duration"), // 총 소요 시간 (시간)
+  sessions: jsonb("sessions"), // 세션별 상세 내용
+  prerequisites: text("prerequisites").array(),
+  learningObjectives: text("learning_objectives").array(),
+  materials: text("materials").array(),
+  assessmentMethods: text("assessment_methods").array(),
+  isPublic: boolean("is_public").default(false),
+  status: varchar("status", { length: 20 }).default("draft"), // draft, pending, approved, rejected
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
