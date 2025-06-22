@@ -54,6 +54,45 @@ export default function ConsultationStatusPage() {
     }, 1000);
   }, []);
 
+  // Click handlers for consultation functionality
+  const handleNewConsultation = () => {
+    console.log('새 상담 예약 클릭');
+    setShowBooking(true);
+  };
+
+  const handleViewDetails = (consultation: Consultation) => {
+    console.log('상담 상세보기 클릭:', consultation.id);
+    setSelectedConsultation(consultation);
+    setShowDetails(true);
+  };
+
+  const handleJoinConsultation = (consultation: Consultation) => {
+    console.log('상담 참여하기 클릭:', consultation.id);
+    // 화상상담 참여 로직
+    if (consultation.type === 'video') {
+      window.open(`/video-call/${consultation.id}`, '_blank');
+    } else if (consultation.type === 'phone') {
+      alert(`전화상담이 곧 시작됩니다. 연락처: ${consultation.trainerName}`);
+    }
+  };
+
+  const handleCancelConsultation = (consultationId: string) => {
+    console.log('상담 취소 클릭:', consultationId);
+    setConsultations(prev => 
+      prev.map(c => 
+        c.id === consultationId 
+          ? { ...c, status: 'cancelled' as const }
+          : c
+      )
+    );
+  };
+
+  const handleRescheduleConsultation = (consultationId: string) => {
+    console.log('상담 일정 변경 클릭:', consultationId);
+    // 일정 변경 모달 또는 페이지로 이동
+    setShowBooking(true);
+  };
+
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'scheduled': return <Clock className="h-4 w-4" />;
@@ -227,14 +266,24 @@ export default function ConsultationStatusPage() {
                     </div>
                     <div className="flex gap-2">
                       {consultation.status === 'scheduled' && consultation.type === 'video' && (
-                        <Button size="sm">
+                        <Button size="sm" onClick={() => handleJoinConsultation(consultation)}>
                           <Video className="h-4 w-4 mr-1" />
                           참여하기
                         </Button>
                       )}
-                      <Button variant="outline" size="sm">
+                      <Button variant="outline" size="sm" onClick={() => handleViewDetails(consultation)}>
                         상세보기
                       </Button>
+                      {consultation.status === 'scheduled' && (
+                        <>
+                          <Button variant="outline" size="sm" onClick={() => handleRescheduleConsultation(consultation.id)}>
+                            수정
+                          </Button>
+                          <Button variant="destructive" size="sm" onClick={() => handleCancelConsultation(consultation.id)}>
+                            취소
+                          </Button>
+                        </>
+                      )}
                     </div>
                   </div>
                 </CardContent>

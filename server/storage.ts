@@ -631,36 +631,9 @@ export class MemoryStorage implements IStorage{
     this.checkups.set(checkup3.id, checkup3);
     this.checkups.set(checkup4.id, checkup4);
 
-    // 의료 이력 및 알레르기 정보 업데이트
-    samplePet1.medicalHistory = [
-      {
-        date: '2023-07-15',
-        condition: '위장 불편감',
-        treatment: '처방식 사료, 소화제',
-        outcome: '완전 회복'
-      },
-      {
-        date: '2023-03-10',
-        condition: '정기 중성화 수술',
-        treatment: '외과 수술',
-        outcome: '성공적 회복'
-      }
-    ];
-
-    samplePet2.medicalHistory = [
-      {
-        date: '2023-12-10',
-        condition: '상기도 감염',
-        treatment: '항생제 치료',
-        outcome: '완전 회복'
-      },
-      {
-        date: '2023-05-20',
-        condition: '정기 중성화 수술',
-        treatment: '외과 수술',
-        outcome: '성공적 회복'
-      }
-    ];
+    // 의료 이력 및 알레르기 정보 업데이트 (주석 처리 - 스키마에 없는 필드)
+    // samplePet1.medicalHistory = [...];
+    // samplePet2.medicalHistory = [...];
 
     // 건강 관리 일정 추가
     const healthSchedule = new Map();
@@ -902,13 +875,14 @@ export class MemoryStorage implements IStorage{
     });
 
     // 예방접종 기록을 vaccinations 맵에 저장
-    this.vaccinations.set(vaccination1.id, vaccination1);
-    this.vaccinations.set(vaccination2.id, vaccination2);
-    this.vaccinations.set(vaccination3.id, vaccination3);
-    this.vaccinations.set(vaccination4.id, vaccination4);
-    this.vaccinations.set(vaccination5.id, vaccination5);
+    vaccinations.set(vaccination1.id, vaccination1);
+    vaccinations.set(vaccination2.id, vaccination2);
+    vaccinations.set(vaccination3.id, vaccination3);
+    vaccinations.set(vaccination4.id, vaccination4);
+    vaccinations.set(vaccination5.id, vaccination5);
 
     // 모든 샘플 데이터를 인스턴스 변수에 저장
+    this.vaccinations = vaccinations;
     this.weightRecords = weightRecords;
     this.medicationRecords = medicationRecords;
     this.nutritionPlans = nutritionPlans;
@@ -918,10 +892,10 @@ export class MemoryStorage implements IStorage{
     console.log('✅ 건강관리 샘플 데이터 초기화 완료');
     console.log(`   - 예방접종 기록: ${this.vaccinations.size}건`);
     console.log(`   - 건강검진 기록: ${this.checkups.size}건`);
-    console.log(`   - 체중 기록: ${weightRecords.size}개`);
-    console.log(`   - 약물 기록: ${medicationRecords.size}개`);
-    console.log(`   - 영양 계획: ${nutritionPlans.size}개`);
-    console.log(`   - 건강 리마인더: ${healthReminders.size}개`);
+    console.log(`   - 체중 기록: ${this.weightRecords.size}개`);
+    console.log(`   - 약물 기록: ${this.medicationRecords.size}개`);
+    console.log(`   - 영양 계획: ${this.nutritionPlans.size}개`);
+    console.log(`   - 건강 리마인더: ${this.healthReminders.size}개`);
 
     // 샘플 알림장 기록
     const journal1 = {
@@ -1051,11 +1025,11 @@ export class MemoryStorage implements IStorage{
   getInstitutes() { return Array.from(this.institutes.values()); }
   getTrainers() { return Array.from(this.trainers.values()); }
   getProducts() { return Array.from(this.products.values()); }
-  getNotifications() { return Array.from(this.notifications.values()); }
+  getNotificationsArray() { return Array.from(this.notifications.values()); }
   getConversations() { return Array.from(this.conversations.values()); }
-  getMessages() { return Array.from(this.messages.values()); }
-  getCommissionPolicies() { return Array.from(this.commissionPolicies.values()); }
-  getCommissionTransactions() { return Array.from(this.commissionTransactions.values()); }
+  getMessagesArray() { return Array.from(this.messages.values()); }
+  getCommissionPoliciesArray() { return Array.from(this.commissionPolicies.values()); }
+  getCommissionTransactionsArray() { return Array.from(this.commissionTransactions.values()); }
 
   // 특정 데이터 조회
   getUserById(id: number) { return this.users.get(id); }
@@ -1674,8 +1648,8 @@ export class DatabaseStorage implements IStorage {
   // 건강 관리 메서드 구현
   async getVaccinations(petId: number): Promise<any[]> {
     // 메모리에서 해당 반려동물의 예방접종 기록 조회
-    const vaccinations = Array.from(this.checkups.values()).filter(
-      (v: any) => v.petId === petId && v.type === 'vaccination'
+    const vaccinations = Array.from(this.vaccinations.values()).filter(
+      (v: any) => v.petId === petId
     );
     
     // 샘플 예방접종 데이터 반환
