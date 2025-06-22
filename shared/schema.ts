@@ -354,6 +354,15 @@ export type InsertJournalComment = typeof journalComments.$inferInsert;
 export type JournalServiceRequest = typeof journalServiceRequests.$inferSelect;
 export type InsertJournalServiceRequest = typeof journalServiceRequests.$inferInsert;
 
+export type ContentApproval = typeof contentApprovals.$inferSelect;
+export type InsertContentApproval = typeof contentApprovals.$inferInsert;
+
+export type TrainerInstitute = typeof trainerInstitutes.$inferSelect;
+export type InsertTrainerInstitute = typeof trainerInstitutes.$inferInsert;
+
+export type Curriculum = typeof curriculums.$inferSelect;
+export type InsertCurriculum = typeof curriculums.$inferInsert;
+
 // 컨텐츠 승인 시스템 테이블
 export const contentApprovals = pgTable("content_approvals", {
   id: serial("id").primaryKey(),
