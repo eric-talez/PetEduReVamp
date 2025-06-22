@@ -1661,7 +1661,7 @@ export default function InstituteAdminPage() {
                             <Badge 
                               variant={
                                 record.status === 'attended' ? 'default' : 
-                                record.status === 'late' ? 'warning' : 'destructive'
+                                record.status === 'late' ? 'warning' : 'danger'
                               }
                               className="text-xs"
                             >
