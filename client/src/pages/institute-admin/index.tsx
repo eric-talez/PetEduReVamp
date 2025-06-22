@@ -438,7 +438,7 @@ export default function InstituteAdminPage() {
                       
                       <div className="flex items-center gap-2">
                         {approval.instituteStatus === 'pending' && (
-                          <Badge variant="destructive" className="text-xs">검토 필요</Badge>
+                          <Badge variant="danger" className="text-xs">검토 필요</Badge>
                         )}
                         <Eye className="h-4 w-4 text-gray-400" />
                       </div>

@@ -105,13 +105,13 @@ export default function JournalsPage() {
     description: '',
     urgency: 'normal'
   });
-  const [journals, setJournals] = useState<TrainingJournal[]>([]);
-  const [serviceRequests, setServiceRequests] = useState<ServiceRequest[]>([]);
+  const [journalsList, setJournalsList] = useState<TrainingJournal[]>([]);
+  const [serviceRequestsList, setServiceRequestsList] = useState<ServiceRequest[]>([]);
 
   // Click handlers for journal functionality
   const handleDeleteJournal = (journalId: number) => {
     console.log('일지 삭제 클릭:', journalId);
-    setJournals(prev => prev.filter(j => j.id !== journalId));
+    setJournalsList(prev => prev.filter(j => j.id !== journalId));
     toast({
       title: "삭제 완료",
       description: "알림장이 삭제되었습니다."
@@ -135,7 +135,7 @@ export default function JournalsPage() {
       status: 'pending' as const,
       createdAt: new Date().toISOString()
     };
-    setServiceRequests(prev => [...prev, newRequest]);
+    setServiceRequestsList(prev => [...prev, newRequest]);
     toast({
       title: "요청 완료",
       description: "서비스 요청이 전송되었습니다."
@@ -144,14 +144,14 @@ export default function JournalsPage() {
 
   const handleApproveRequest = (requestId: number) => {
     console.log('요청 승인 클릭:', requestId);
-    setServiceRequests(prev =>
+    setServiceRequestsList(prev =>
       prev.map(req => req.id === requestId ? { ...req, status: 'approved' as const } : req)
     );
   };
 
   const handleRejectRequest = (requestId: number) => {
     console.log('요청 거부 클릭:', requestId);
-    setServiceRequests(prev =>
+    setServiceRequestsList(prev =>
       prev.map(req => req.id === requestId ? { ...req, status: 'rejected' as const } : req)
     );
   };
@@ -558,7 +558,7 @@ export default function JournalsPage() {
 
       {/* 알림장 목록 */}
       <div className="grid gap-4">
-        {journals?.map((journal: TrainingJournal) => (
+        {(journalsData || journalsList)?.map((journal: TrainingJournal) => (
           <Card 
             key={journal.id}
             className={`cursor-pointer transition-all duration-200 hover:shadow-md hover:border-primary ${
@@ -784,7 +784,7 @@ export default function JournalsPage() {
                 <TabsContent value="services" className="space-y-4">
                   {/* 기존 서비스 요청 목록 */}
                   <div className="space-y-3">
-                    {serviceRequests?.map((request: ServiceRequest) => (
+                    {(serviceRequests || serviceRequestsList)?.map((request: ServiceRequest) => (
                       <div key={request.id} className="p-3 border rounded-lg">
                         <div className="flex items-center justify-between mb-2">
                           <div className="flex items-center gap-2">
