@@ -376,6 +376,232 @@ export function registerShoppingRoutes(app: Express) {
     }
   });
 
+  // 관리자 상품 등록 API
+  app.post("/api/admin/products", async (req, res) => {
+    try {
+      // 관리자 권한 확인
+      if (!req.isAuthenticated() || !req.user) {
+        return res.status(401).json({ message: 'Authentication required' });
+      }
+
+      const userRole = req.user.role;
+      if (userRole !== 'admin') {
+        return res.status(403).json({ message: 'Admin access required' });
+      }
+
+      const {
+        name,
+        description,
+        price,
+        discountPrice,
+        categoryId,
+        images,
+        tags,
+        stock,
+        specifications,
+        brand,
+        model,
+        weight,
+        dimensions
+      } = req.body;
+
+      // 필수 필드 검증
+      if (!name || !price || !categoryId) {
+        return res.status(400).json({ 
+          message: 'Missing required fields: name, price, categoryId' 
+        });
+      }
+
+      // 새 상품 생성
+      const newProduct = await db
+        .insert(products)
+        .values({
+          name,
+          description,
+          price,
+          discountPrice,
+          categoryId,
+          images: images || [],
+          tags: tags || [],
+          stock: stock || 0,
+          specifications: specifications || {},
+          brand,
+          model,
+          weight,
+          dimensions,
+          isActive: true,
+          rating: 0,
+          reviewCount: 0,
+          createdAt: new Date(),
+          updatedAt: new Date()
+        })
+        .returning();
+
+      console.log('새 상품 등록됨:', newProduct[0]);
+
+      res.status(201).json({
+        message: 'Product created successfully',
+        product: newProduct[0]
+      });
+    } catch (error) {
+      console.error('Error creating product:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  });
+
+  // 관리자 상품 수정 API
+  app.put("/api/admin/products/:id", async (req, res) => {
+    try {
+      // 관리자 권한 확인
+      if (!req.isAuthenticated() || !req.user) {
+        return res.status(401).json({ message: 'Authentication required' });
+      }
+
+      const userRole = req.user.role;
+      if (userRole !== 'admin') {
+        return res.status(403).json({ message: 'Admin access required' });
+      }
+
+      const productId = parseInt(req.params.id);
+      const updateData = { ...req.body, updatedAt: new Date() };
+
+      const updatedProduct = await db
+        .update(products)
+        .set(updateData)
+        .where(eq(products.id, productId))
+        .returning();
+
+      if (!updatedProduct[0]) {
+        return res.status(404).json({ message: 'Product not found' });
+      }
+
+      console.log('상품 수정됨:', updatedProduct[0]);
+
+      res.json({
+        message: 'Product updated successfully',
+        product: updatedProduct[0]
+      });
+    } catch (error) {
+      console.error('Error updating product:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  });
+
+  // 관리자 상품 삭제 API
+  app.delete("/api/admin/products/:id", async (req, res) => {
+    try {
+      // 관리자 권한 확인
+      if (!req.isAuthenticated() || !req.user) {
+        return res.status(401).json({ message: 'Authentication required' });
+      }
+
+      const userRole = req.user.role;
+      if (userRole !== 'admin') {
+        return res.status(403).json({ message: 'Admin access required' });
+      }
+
+      const productId = parseInt(req.params.id);
+
+      // 상품을 완전히 삭제하지 않고 비활성화
+      const deactivatedProduct = await db
+        .update(products)
+        .set({ 
+          isActive: false,
+          updatedAt: new Date()
+        })
+        .where(eq(products.id, productId))
+        .returning();
+
+      if (!deactivatedProduct[0]) {
+        return res.status(404).json({ message: 'Product not found' });
+      }
+
+      console.log('상품 비활성화됨:', deactivatedProduct[0]);
+
+      res.json({
+        message: 'Product deactivated successfully',
+        product: deactivatedProduct[0]
+      });
+    } catch (error) {
+      console.error('Error deactivating product:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  });
+
+  // 관리자 상품 목록 조회 (비활성화된 상품 포함)
+  app.get("/api/admin/products", async (req, res) => {
+    try {
+      // 관리자 권한 확인
+      if (!req.isAuthenticated() || !req.user) {
+        return res.status(401).json({ message: 'Authentication required' });
+      }
+
+      const userRole = req.user.role;
+      if (userRole !== 'admin') {
+        return res.status(403).json({ message: 'Admin access required' });
+      }
+
+      const { page = 1, limit = 20, search, category, status } = req.query;
+
+      let whereConditions: any[] = [];
+
+      // 검색 조건
+      if (search) {
+        whereConditions.push(
+          or(
+            like(products.name, `%${search}%`),
+            like(products.description, `%${search}%`),
+            like(products.brand, `%${search}%`)
+          )
+        );
+      }
+
+      // 카테고리 필터
+      if (category && category !== 'all') {
+        whereConditions.push(eq(products.categoryId, parseInt(category as string)));
+      }
+
+      // 상태 필터
+      if (status === 'active') {
+        whereConditions.push(eq(products.isActive, true));
+      } else if (status === 'inactive') {
+        whereConditions.push(eq(products.isActive, false));
+      }
+
+      const whereClause = whereConditions.length > 0 ? and(...whereConditions) : undefined;
+
+      // 전체 개수 조회
+      const totalResult = await db
+        .select({ count: count() })
+        .from(products)
+        .where(whereClause);
+
+      const total = totalResult[0]?.count || 0;
+
+      // 페이지네이션과 함께 상품 목록 조회
+      const offset = (Number(page) - 1) * Number(limit);
+
+      const productList = await db
+        .select()
+        .from(products)
+        .where(whereClause)
+        .orderBy(desc(products.createdAt))
+        .limit(Number(limit))
+        .offset(offset);
+
+      res.json({
+        products: productList,
+        total,
+        page: Number(page),
+        limit: Number(limit),
+        totalPages: Math.ceil(total / Number(limit))
+      });
+    } catch (error) {
+      console.error('Error fetching admin products:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  });
+
   // 추천인 코드 유효성 검사
   app.post("/api/shopping/referral/validate", async (req, res) => {
     try {

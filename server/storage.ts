@@ -195,6 +195,14 @@ export class MemoryStorage implements IStorage{
   private tierId = 1;
   private transactionId = 1;
   private reportId = 1;
+  
+  // Health management data stores
+  private vaccinations = new Map<number, any>();
+  private weightRecords = new Map<number, any>();
+  private medicationRecords = new Map<number, any>();
+  private nutritionPlans = new Map<number, any>();
+  private healthReminders = new Map<number, any>();
+  private healthSchedule = new Map<number, any>();
 
   constructor() {
     console.log('🔄 운영 환경용 메모리 저장소 초기화...');
@@ -372,92 +380,548 @@ export class MemoryStorage implements IStorage{
     this.pets.set(samplePet1.id, samplePet1);
     this.pets.set(samplePet2.id, samplePet2);
 
-    // 샘플 예방접종 기록
+    // 샘플 예방접종 기록 - 더 상세한 데이터
     const vaccination1 = {
       id: 1,
       petId: samplePet1.id,
-      vaccineName: 'DHPPL',
+      vaccineName: 'DHPPL (5종 종합백신)',
       vaccineType: '종합백신',
       vaccineDate: '2024-01-15',
       nextDueDate: '2025-01-15',
       veterinarian: '박수의사',
       clinicName: '강남동물병원',
-      notes: '정상적으로 접종 완료. 부작용 없음',
-      createdAt: new Date(),
-      updatedAt: new Date()
+      notes: '정상적으로 접종 완료. 부작용 없음. 체중 25kg 상태 양호',
+      batchNumber: 'VX240115001',
+      manufacturer: '한국백신(주)',
+      dosage: '1ml',
+      injectionSite: '목 뒤쪽 피하',
+      temperature: '38.1°C (정상)',
+      cost: 45000,
+      createdAt: new Date('2024-01-15'),
+      updatedAt: new Date('2024-01-15')
     };
 
     const vaccination2 = {
       id: 2,
       petId: samplePet1.id,
-      vaccineName: '광견병 백신',
+      vaccineName: '광견병 백신 (Rabisin)',
       vaccineType: '광견병',
       vaccineDate: '2024-01-15',
       nextDueDate: '2025-01-15',
       veterinarian: '박수의사',
       clinicName: '강남동물병원',
-      notes: '광견병 예방접종 완료',
-      createdAt: new Date(),
-      updatedAt: new Date()
+      notes: '광견병 예방접종 완료. 이상 반응 없음',
+      batchNumber: 'RAB240115002',
+      manufacturer: '메리알코리아',
+      dosage: '1ml',
+      injectionSite: '왼쪽 어깨 피하',
+      temperature: '38.2°C (정상)',
+      cost: 35000,
+      createdAt: new Date('2024-01-15'),
+      updatedAt: new Date('2024-01-15')
     };
 
     const vaccination3 = {
       id: 3,
       petId: samplePet2.id,
-      vaccineName: 'FVRCP',
+      vaccineName: 'FVRCP (고양이 3종)',
       vaccineType: '종합백신',
       vaccineDate: '2024-02-10',
       nextDueDate: '2025-02-10',
       veterinarian: '이수의사',
       clinicName: '서초동물병원',
-      notes: '고양이 종합백신 접종 완료',
-      createdAt: new Date(),
-      updatedAt: new Date()
+      notes: '고양이 종합백신 접종 완료. 스트레스 반응 최소화',
+      batchNumber: 'CAT240210001',
+      manufacturer: '조에티스코리아',
+      dosage: '1ml',
+      injectionSite: '목 뒤쪽 피하',
+      temperature: '38.4°C (정상)',
+      cost: 42000,
+      createdAt: new Date('2024-02-10'),
+      updatedAt: new Date('2024-02-10')
     };
 
-    // 샘플 건강검진 기록
+    const vaccination4 = {
+      id: 4,
+      petId: samplePet1.id,
+      vaccineName: '켄넬코프 백신',
+      vaccineType: '켄넬코프',
+      vaccineDate: '2024-03-01',
+      nextDueDate: '2025-03-01',
+      veterinarian: '김영희수의사',
+      clinicName: '강남동물병원',
+      notes: '켄넬코프 예방접종 완료. 기침 예방을 위한 추가 접종',
+      batchNumber: 'KC240301001',
+      manufacturer: '한국백신(주)',
+      dosage: '1ml',
+      injectionSite: '코 분무',
+      temperature: '37.9°C (정상)',
+      cost: 38000,
+      createdAt: new Date('2024-03-01'),
+      updatedAt: new Date('2024-03-01')
+    };
+
+    const vaccination5 = {
+      id: 5,
+      petId: samplePet2.id,
+      vaccineName: '고양이 백혈병 백신',
+      vaccineType: '백혈병',
+      vaccineDate: '2024-03-15',
+      nextDueDate: '2025-03-15',
+      veterinarian: '이수의사',
+      clinicName: '서초동물병원',
+      notes: '고양이 백혈병 예방접종 완료. 실외 활동 대비 접종',
+      batchNumber: 'FLV240315001',
+      manufacturer: '조에티스코리아',
+      dosage: '1ml',
+      injectionSite: '왼쪽 어깨 피하',
+      temperature: '38.3°C (정상)',
+      cost: 55000,
+      createdAt: new Date('2024-03-15'),
+      updatedAt: new Date('2024-03-15')
+    };
+
+    // 예방접종 기록 저장
+    const vaccinations = new Map();
+    vaccinations.set(vaccination1.id, vaccination1);
+    vaccinations.set(vaccination2.id, vaccination2);
+    vaccinations.set(vaccination3.id, vaccination3);
+    vaccinations.set(vaccination4.id, vaccination4);
+    vaccinations.set(vaccination5.id, vaccination5);
+
+    // 샘플 건강검진 기록 - 상세한 의료 데이터
     const checkup1 = {
       id: this.checkupId++,
       petId: samplePet1.id,
       checkupDate: '2024-01-20',
-      weight: 25000,
+      weight: 25000, // 그램 단위
       temperature: '38.2°C',
-      diagnosis: '정상',
-      treatment: '정기검진, 특별한 치료 불필요',
+      diagnosis: '정상 - 우수한 건강 상태',
+      treatment: '정기검진, 특별한 치료 불필요. 예방 관리 지속',
       veterinarian: '박수의사',
       clinicName: '강남동물병원',
-      notes: '전반적으로 건강상태 양호. 다음 검진까지 현재 사료 유지',
+      notes: '전반적으로 건강상태 양호. 다음 검진까지 현재 사료 유지. 운동량 적절',
       nextCheckupDate: '2024-07-20',
-      bloodPressure: '정상',
+      bloodPressure: '정상 (120/80 mmHg)',
       heartRate: '80bpm',
-      eyeExam: '정상',
-      dentalCheck: '치석 약간 있음, 양치 권장',
-      createdAt: new Date(),
-      updatedAt: new Date()
+      respiratoryRate: '24회/분',
+      eyeExam: '정상 - 결막 깨끗, 각막 투명',
+      dentalCheck: '치석 약간 있음, 일주일에 2-3회 양치 권장',
+      earExam: '정상 - 이물질 없음',
+      skinCondition: '양호 - 피부 탄력성 좋음',
+      abdominalPalpation: '정상 - 이상 종괴 없음',
+      lymphNodes: '정상 크기',
+      urinalysis: 'SG: 1.025, 단백질(-), 당(-), 케톤(-)',
+      bloodWork: {
+        RBC: '6.8 M/μL',
+        WBC: '7.2 K/μL',
+        HCT: '45%',
+        PLT: '350 K/μL',
+        ALT: '32 U/L',
+        BUN: '18 mg/dL',
+        CREA: '1.0 mg/dL'
+      },
+      vaccineStatus: '최신 상태',
+      parasiteCheck: '음성',
+      recommendations: [
+        '정기적인 운동 지속',
+        '체중 관리 유지',
+        '치석 제거를 위한 스케일링 고려',
+        '6개월 후 정기검진'
+      ],
+      cost: 180000,
+      createdAt: new Date('2024-01-20'),
+      updatedAt: new Date('2024-01-20')
     };
 
     const checkup2 = {
       id: this.checkupId++,
       petId: samplePet2.id,
       checkupDate: '2024-02-15',
-      weight: 4500,
+      weight: 4500, // 그램 단위
       temperature: '38.5°C',
-      diagnosis: '정상',
-      treatment: '정기검진, 털갈이 관리 권장',
+      diagnosis: '정상 - 건강 상태 우수',
+      treatment: '정기검진, 털갈이 관리 및 스트레스 관리 권장',
       veterinarian: '이수의사',
       clinicName: '서초동물병원',
-      notes: '건강상태 우수. 털갈이 시기로 브러싱 자주 해주세요',
+      notes: '건강상태 우수. 털갈이 시기로 브러싱 자주 해주세요. 실내 환경 관리 중요',
       nextCheckupDate: '2024-08-15',
-      bloodPressure: '정상',
+      bloodPressure: '정상 (110/75 mmHg)',
       heartRate: '120bpm',
-      eyeExam: '정상',
-      dentalCheck: '양호',
-      createdAt: new Date(),
-      updatedAt: new Date()
+      respiratoryRate: '30회/분',
+      eyeExam: '정상 - 눈물량 적절, 각막 깨끗',
+      dentalCheck: '양호 - 치아 상태 깨끗',
+      earExam: '정상 - 귀지 적당량',
+      skinCondition: '건조 - 털갈이로 인한 일시적 현상',
+      abdominalPalpation: '정상 - 이상 없음',
+      lymphNodes: '정상 크기',
+      urinalysis: 'SG: 1.030, 단백질(-), 당(-), 케톤(-)',
+      bloodWork: {
+        RBC: '7.2 M/μL',
+        WBC: '6.8 K/μL',
+        HCT: '42%',
+        PLT: '380 K/μL',
+        ALT: '28 U/L',
+        BUN: '20 mg/dL',
+        CREA: '1.2 mg/dL'
+      },
+      vaccineStatus: '최신 상태',
+      parasiteCheck: '음성',
+      recommendations: [
+        '털갈이 시기 브러싱 강화',
+        '습도 조절 (40-60%)',
+        '스트레스 관리',
+        '고품질 단백질 사료 급여'
+      ],
+      cost: 165000,
+      createdAt: new Date('2024-02-15'),
+      updatedAt: new Date('2024-02-15')
     };
 
+    // 추가 건강검진 기록들
+    const checkup3 = {
+      id: this.checkupId++,
+      petId: samplePet1.id,
+      checkupDate: '2023-07-15',
+      weight: 24500,
+      temperature: '38.0°C',
+      diagnosis: '경미한 위장 불편감',
+      treatment: '처방식 사료 2주간 급여, 소화제 투약',
+      veterinarian: '김영희수의사',
+      clinicName: '강남동물병원',
+      notes: '일시적인 소화불량. 새로운 간식 급여 후 증상 발생. 기존 사료로 복귀',
+      nextCheckupDate: '2023-08-01',
+      bloodPressure: '정상',
+      heartRate: '85bpm',
+      eyeExam: '정상',
+      dentalCheck: '양호',
+      treatment_outcome: '완전 회복',
+      medications: ['소화제 (7일간)', '프로바이오틱스 (14일간)'],
+      cost: 95000,
+      createdAt: new Date('2023-07-15'),
+      updatedAt: new Date('2023-07-15')
+    };
+
+    const checkup4 = {
+      id: this.checkupId++,
+      petId: samplePet2.id,
+      checkupDate: '2023-12-10',
+      weight: 4200,
+      temperature: '38.8°C',
+      diagnosis: '상기도 감염 (경미)',
+      treatment: '항생제 치료 5일간, 면역력 강화제',
+      veterinarian: '정철수수의사',
+      clinicName: '서초동물병원',
+      notes: '계절 변화로 인한 경미한 감기 증상. 치료 후 빠른 회복',
+      nextCheckupDate: '2023-12-20',
+      bloodPressure: '정상',
+      heartRate: '130bpm',
+      eyeExam: '약간의 눈물',
+      dentalCheck: '양호',
+      treatment_outcome: '완전 회복',
+      medications: ['아목시실린 (5일간)', '면역 강화제 (10일간)'],
+      cost: 125000,
+      createdAt: new Date('2023-12-10'),
+      updatedAt: new Date('2023-12-10')
+    };
+
+    // 건강검진 기록 저장
     this.checkups.set(checkup1.id, checkup1);
     this.checkups.set(checkup2.id, checkup2);
+    this.checkups.set(checkup3.id, checkup3);
+    this.checkups.set(checkup4.id, checkup4);
+
+    // 의료 이력 및 알레르기 정보 업데이트
+    samplePet1.medicalHistory = [
+      {
+        date: '2023-07-15',
+        condition: '위장 불편감',
+        treatment: '처방식 사료, 소화제',
+        outcome: '완전 회복'
+      },
+      {
+        date: '2023-03-10',
+        condition: '정기 중성화 수술',
+        treatment: '외과 수술',
+        outcome: '성공적 회복'
+      }
+    ];
+
+    samplePet2.medicalHistory = [
+      {
+        date: '2023-12-10',
+        condition: '상기도 감염',
+        treatment: '항생제 치료',
+        outcome: '완전 회복'
+      },
+      {
+        date: '2023-05-20',
+        condition: '정기 중성화 수술',
+        treatment: '외과 수술',
+        outcome: '성공적 회복'
+      }
+    ];
+
+    // 건강 관리 일정 추가
+    const healthSchedule = new Map();
+    healthSchedule.set(1, {
+      petId: samplePet1.id,
+      type: 'vaccination',
+      dueDate: '2025-01-15',
+      description: 'DHPPL 종합백신 재접종',
+      priority: 'high'
+    });
+    healthSchedule.set(2, {
+      petId: samplePet1.id,
+      type: 'checkup',
+      dueDate: '2024-07-20',
+      description: '정기 건강검진',
+      priority: 'medium'
+    });
+    healthSchedule.set(3, {
+      petId: samplePet2.id,
+      type: 'vaccination',
+      dueDate: '2025-02-10',
+      description: 'FVRCP 고양이 종합백신',
+      priority: 'high'
+    });
+
+    // 체중 추적 기록 생성
+    const weightRecords = new Map();
+    const weightData = [
+      // 멍멍이(강아지) 체중 기록
+      { date: '2023-01-15', weight: 23500, note: '겨울철 약간 증가' },
+      { date: '2023-03-15', weight: 24000, note: '봄철 운동량 증가로 근육량 향상' },
+      { date: '2023-06-15', weight: 24800, note: '여름철 활동적' },
+      { date: '2023-09-15', weight: 25200, note: '가을철 식욕 증가' },
+      { date: '2023-12-15', weight: 24500, note: '겨울철 운동 부족' },
+      { date: '2024-01-20', weight: 25000, note: '건강검진 시 측정' },
+      { date: '2024-03-01', weight: 25100, note: '현재 이상적 체중 유지' }
+    ];
+
+    weightData.forEach((record, index) => {
+      weightRecords.set(index + 1, {
+        id: index + 1,
+        petId: samplePet1.id,
+        date: record.date,
+        weight: record.weight,
+        bodyConditionScore: record.weight > 25000 ? 4 : 3.5, // 1-5 스케일
+        muscleCondition: 'good',
+        notes: record.note,
+        measuredBy: '박수의사',
+        location: '강남동물병원'
+      });
+    });
+
+    // 나비(고양이) 체중 기록
+    const catWeightData = [
+      { date: '2023-02-10', weight: 4100, note: '겨울철 털 두껍다' },
+      { date: '2023-05-10', weight: 4300, note: '털갈이 후 체중 증가' },
+      { date: '2023-08-10', weight: 4400, note: '여름철 활동량 감소' },
+      { date: '2023-11-10', weight: 4200, note: '가을 털갈이 시기' },
+      { date: '2024-02-15', weight: 4500, note: '건강검진 시 측정' },
+      { date: '2024-04-01', weight: 4450, note: '현재 적정 체중' }
+    ];
+
+    catWeightData.forEach((record, index) => {
+      weightRecords.set(weightData.length + index + 1, {
+        id: weightData.length + index + 1,
+        petId: samplePet2.id,
+        date: record.date,
+        weight: record.weight,
+        bodyConditionScore: 3.5, // 고양이 이상적 점수
+        muscleCondition: 'excellent',
+        notes: record.note,
+        measuredBy: '이수의사',
+        location: '서초동물병원'
+      });
+    });
+
+    // 약물 복용 기록
+    const medicationRecords = new Map();
+    medicationRecords.set(1, {
+      id: 1,
+      petId: samplePet1.id,
+      medicationName: '관절영양제 (글루코사민)',
+      dosage: '1정',
+      frequency: '1일 1회',
+      startDate: '2024-01-01',
+      endDate: '2024-06-30',
+      purpose: '관절 건강 유지',
+      prescribedBy: '박수의사',
+      instructions: '식후 30분 이내 복용',
+      sideEffects: '없음',
+      status: 'active',
+      notes: '대형견 관절 예방 차원에서 복용'
+    });
+
+    medicationRecords.set(2, {
+      id: 2,
+      petId: samplePet1.id,
+      medicationName: '심장사상충 예방약 (하트가드)',
+      dosage: '1정',
+      frequency: '월 1회',
+      startDate: '2024-03-01',
+      endDate: '2024-11-30',
+      purpose: '심장사상충 예방',
+      prescribedBy: '박수의사',
+      instructions: '매월 1일 복용',
+      sideEffects: '없음',
+      status: 'active',
+      notes: '모기 활동 시기 예방'
+    });
+
+    medicationRecords.set(3, {
+      id: 3,
+      petId: samplePet2.id,
+      medicationName: '헤어볼 제거제',
+      dosage: '2-3cm',
+      frequency: '주 2회',
+      startDate: '2024-02-01',
+      endDate: null,
+      purpose: '헤어볼 예방 및 제거',
+      prescribedBy: '이수의사',
+      instructions: '간식처럼 급여',
+      sideEffects: '없음',
+      status: 'active',
+      notes: '장모 고양이 필수 관리'
+    });
+
+    medicationRecords.set(4, {
+      id: 4,
+      petId: samplePet2.id,
+      medicationName: '아목시실린',
+      dosage: '62.5mg',
+      frequency: '1일 2회',
+      startDate: '2023-12-10',
+      endDate: '2023-12-15',
+      purpose: '상기도 감염 치료',
+      prescribedBy: '정철수수의사',
+      instructions: '12시간 간격 복용',
+      sideEffects: '없음',
+      status: 'completed',
+      notes: '5일간 완료 치료'
+    });
+
+    // 영양 관리 계획
+    const nutritionPlans = new Map();
+    nutritionPlans.set(1, {
+      id: 1,
+      petId: samplePet1.id,
+      planName: '대형견 성견 표준 식단',
+      dailyCalories: 1800,
+      mealFrequency: 2,
+      mainFood: {
+        brand: '로얄캐닌',
+        product: '맥시 어덜트',
+        dailyAmount: '300g',
+        mealAmount: '150g × 2회'
+      },
+      treats: [
+        { name: '덴탈껌', amount: '1개', frequency: '주 3회' },
+        { name: '동결건조 간', amount: '10g', frequency: '주 2회' }
+      ],
+      supplements: [
+        { name: '글루코사민', amount: '1정', frequency: '1일 1회' },
+        { name: '오메가3', amount: '1캡슐', frequency: '1일 1회' }
+      ],
+      restrictions: ['초콜릿', '양파', '포도', '마카다미아'],
+      feedingSchedule: ['오전 8시', '오후 6시'],
+      waterIntake: '1.5-2L/일',
+      specialNotes: '운동 후 30분 뒤 급여, 체중 관리 중요',
+      createdBy: '박수의사',
+      createdDate: '2024-01-15',
+      reviewDate: '2024-07-15'
+    });
+
+    nutritionPlans.set(2, {
+      id: 2,
+      petId: samplePet2.id,
+      planName: '중형 성묘 헤어볼 관리 식단',
+      dailyCalories: 300,
+      mealFrequency: 3,
+      mainFood: {
+        brand: '힐스',
+        product: '사이언스 다이어트 헤어볼',
+        dailyAmount: '70g',
+        mealAmount: '25g × 3회'
+      },
+      treats: [
+        { name: '참치 간식', amount: '5g', frequency: '주 2회' },
+        { name: '캣그라스', amount: '자유롭게', frequency: '매일' }
+      ],
+      supplements: [
+        { name: '헤어볼 젤', amount: '2-3cm', frequency: '주 2회' },
+        { name: '프로바이오틱스', amount: '1/2티스푼', frequency: '주 3회' }
+      ],
+      restrictions: ['우유', '생선뼈', '양파', '마늘'],
+      feedingSchedule: ['오전 7시', '오후 1시', '오후 7시'],
+      waterIntake: '200-300ml/일',
+      specialNotes: '털갈이 시기 브러싱 강화, 물 섭취량 확인',
+      createdBy: '이수의사',
+      createdDate: '2024-02-15',
+      reviewDate: '2024-08-15'
+    });
+
+    // 건강 알림 및 리마인더
+    const healthReminders = new Map();
+    healthReminders.set(1, {
+      id: 1,
+      petId: samplePet1.id,
+      type: 'vaccination',
+      title: 'DHPPL 백신 접종 예정',
+      description: '연간 종합백신 접종이 다가왔습니다',
+      dueDate: '2025-01-15',
+      isCompleted: false,
+      priority: 'high',
+      reminderDays: [30, 14, 7, 1]
+    });
+
+    healthReminders.set(2, {
+      id: 2,
+      petId: samplePet1.id,
+      type: 'medication',
+      title: '심장사상충 예방약 복용',
+      description: '월간 심장사상충 예방약 복용 시기입니다',
+      dueDate: '2024-07-01',
+      isCompleted: false,
+      priority: 'medium',
+      reminderDays: [3, 1]
+    });
+
+    healthReminders.set(3, {
+      id: 3,
+      petId: samplePet2.id,
+      type: 'grooming',
+      title: '털갈이 시즌 브러싱',
+      description: '털갈이 시즌 집중 브러싱이 필요합니다',
+      dueDate: '2024-06-30',
+      isCompleted: false,
+      priority: 'low',
+      reminderDays: [7, 3]
+    });
+
+    // 예방접종 기록을 vaccinations 맵에 저장
+    this.vaccinations.set(vaccination1.id, vaccination1);
+    this.vaccinations.set(vaccination2.id, vaccination2);
+    this.vaccinations.set(vaccination3.id, vaccination3);
+    this.vaccinations.set(vaccination4.id, vaccination4);
+    this.vaccinations.set(vaccination5.id, vaccination5);
+
+    // 모든 샘플 데이터를 인스턴스 변수에 저장
+    this.weightRecords = weightRecords;
+    this.medicationRecords = medicationRecords;
+    this.nutritionPlans = nutritionPlans;
+    this.healthReminders = healthReminders;
+    this.healthSchedule = healthSchedule;
+
+    console.log('✅ 건강관리 샘플 데이터 초기화 완료');
+    console.log(`   - 예방접종 기록: ${this.vaccinations.size}건`);
+    console.log(`   - 건강검진 기록: ${this.checkups.size}건`);
+    console.log(`   - 체중 기록: ${weightRecords.size}개`);
+    console.log(`   - 약물 기록: ${medicationRecords.size}개`);
+    console.log(`   - 영양 계획: ${nutritionPlans.size}개`);
+    console.log(`   - 건강 리마인더: ${healthReminders.size}개`);
 
     // 샘플 알림장 기록
     const journal1 = {

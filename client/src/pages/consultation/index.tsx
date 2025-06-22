@@ -20,6 +20,9 @@ interface Consultation {
 export default function ConsultationStatusPage() {
   const [consultations, setConsultations] = useState<Consultation[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedConsultation, setSelectedConsultation] = useState<Consultation | null>(null);
+  const [showDetails, setShowDetails] = useState(false);
+  const [showBooking, setShowBooking] = useState(false);
 
   useEffect(() => {
     // 임시 데이터 로딩
@@ -109,7 +112,7 @@ export default function ConsultationStatusPage() {
           <h1 className="text-3xl font-bold">내 상담 현황</h1>
           <p className="text-muted-foreground">전문가와의 상담 일정과 이력을 확인하세요</p>
         </div>
-        <Button>
+        <Button onClick={() => handleNewConsultation()}>
           <Calendar className="h-4 w-4 mr-2" />
           새 상담 예약
         </Button>
