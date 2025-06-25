@@ -13,6 +13,7 @@ interface CourseDetailProps {
 export default function CourseDetail({ courseId }: CourseDetailProps) {
   // 수강신청 핸들러
   const handleEnrollment = async (courseId: number) => {
+    console.log('강좌 수강신청 클릭:', courseId);
     try {
       const response = await fetch('/api/courses/enroll', {
         method: 'POST',
@@ -23,13 +24,40 @@ export default function CourseDetail({ courseId }: CourseDetailProps) {
       });
 
       if (response.ok) {
+        console.log('수강신청 성공:', courseId);
         alert('수강신청이 완료되었습니다!');
         // 결제 페이지로 이동하거나 추가 처리
+        window.location.href = `/payment/course/${courseId}`;
       } else {
+        console.error('수강신청 실패:', courseId);
         alert('수강신청에 실패했습니다. 다시 시도해주세요.');
       }
     } catch (error) {
       console.error('수강신청 오류:', error);
+      alert('네트워크 오류가 발생했습니다.');
+    }
+  };
+
+  // 강좌 참여하기 핸들러
+  const handleJoinClass = async (courseId: number) => {
+    console.log('강좌 참여하기 클릭:', courseId);
+    try {
+      const response = await fetch(`/api/courses/${courseId}/join`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        console.log('강좌 참여 성공:', courseId);
+        alert('강좌에 참여했습니다!');
+        window.location.href = `/my-courses/${courseId}`;
+      } else {
+        alert('강좌 참여에 실패했습니다.');
+      }
+    } catch (error) {
+      console.error('강좌 참여 오류:', error);
       alert('네트워크 오류가 발생했습니다.');
     }
   };
@@ -194,6 +222,23 @@ export default function CourseDetail({ courseId }: CourseDetailProps) {
               >
                 수강 신청하기
               </Button>
+              
+              <div className="flex gap-2">
+                <Button 
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => handleJoinClass(course.id)}
+                >
+                  참여하기
+                </Button>
+                <Button 
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => handleAddToCart(course)}
+                >
+                  장바구니
+                </Button>
+              </div>
               <Button 
                 variant="outline" 
                 className="w-full"

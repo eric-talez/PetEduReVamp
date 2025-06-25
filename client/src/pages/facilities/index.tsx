@@ -18,14 +18,19 @@ import {
   Filter,
   Navigation,
   Map,
-  List
+  List,
+  TreePine,
+  Scissors,
+  GraduationCap,
+  Heart,
+  Hospital
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface Facility {
   id: number;
   name: string;
-  type: 'training' | 'cafe' | 'pension' | 'hospital' | 'grooming';
+  type: 'training' | 'grooming' | 'hospital' | 'hotel' | 'daycare' | 'park' | 'cafe';
   description: string;
   address: string;
   phone: string;
@@ -45,6 +50,8 @@ interface Facility {
     lat: number;
     lng: number;
   };
+  specialFeatures?: string[];
+  bookingAvailable?: boolean;
 }
 
 export default function FacilitiesPage() {
@@ -61,7 +68,7 @@ export default function FacilitiesPage() {
   const mapInstance = useRef<any>(null);
   const { toast } = useToast();
 
-  // 샘플 시설 데이터
+  // 샘플 시설 데이터 - 실제 서울 지역 위치 기반
   const sampleFacilities: Facility[] = [
     {
       id: 1,
@@ -79,64 +86,12 @@ export default function FacilitiesPage() {
       services: ['기본 순종 훈련', '행동 교정', '사회화 훈련', '어질리티'],
       priceRange: '50,000원 - 150,000원',
       isPartner: true,
-      coordinates: { lat: 37.5665, lng: 126.9780 }
+      coordinates: { lat: 37.5013, lng: 127.0396 },
+      specialFeatures: ['1:1 전담 트레이너', '주말 특별 프로그램'],
+      bookingAvailable: true
     },
     {
       id: 2,
-      name: '해피독 카페',
-      type: 'cafe',
-      description: '반려견과 함께 즐길 수 있는 아늑한 카페입니다.',
-      address: '서울시 홍대입구역 근처',
-      phone: '02-234-5678',
-      rating: 4.5,
-      reviewCount: 89,
-      distance: 1.2,
-      operatingHours: { open: '10:00', close: '22:00' },
-      amenities: ['반려견 놀이터', 'Wi-Fi', '주차장', '테라스'],
-      images: ['https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=400'],
-      services: ['반려견 메뉴', '생일파티', '사진촬영', '놀이시설'],
-      priceRange: '8,000원 - 25,000원',
-      isPartner: true,
-      coordinates: { lat: 37.5563, lng: 126.9236 }
-    },
-    {
-      id: 3,
-      name: '펫 리조트 펜션',
-      type: 'pension',
-      description: '반려견과 함께 머물 수 있는 프리미엄 펜션입니다.',
-      address: '경기도 가평군 청평면',
-      phone: '031-345-6789',
-      rating: 4.9,
-      reviewCount: 234,
-      distance: 45.6,
-      operatingHours: { open: '15:00', close: '11:00' },
-      amenities: ['개별 정원', '수영장', '바베큐장', '산책로'],
-      images: ['https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=400'],
-      services: ['숙박', '반려견 용품 대여', '산책 서비스', '케어 서비스'],
-      priceRange: '120,000원 - 300,000원',
-      isPartner: false,
-      coordinates: { lat: 37.7556, lng: 127.4306 }
-    },
-    {
-      id: 4,
-      name: '24시 반려동물 병원',
-      type: 'hospital',
-      description: '24시간 응급 진료가 가능한 반려동물 전문 병원입니다.',
-      address: '서울시 서초구 반포대로 45',
-      phone: '02-456-7890',
-      rating: 4.7,
-      reviewCount: 312,
-      distance: 2.3,
-      operatingHours: { open: '24시간', close: '24시간' },
-      amenities: ['응급실', 'CT/MRI', '입원실', '주차장'],
-      images: ['https://images.unsplash.com/photo-1629909613654-28e377c37b09?w=400'],
-      services: ['응급 진료', '건강검진', '수술', '입원 치료'],
-      priceRange: '30,000원 - 500,000원',
-      isPartner: true,
-      coordinates: { lat: 37.5047, lng: 127.0051 }
-    },
-    {
-      id: 5,
       name: '프리미엄 펫 그루밍',
       type: 'grooming',
       description: '전문 그루머가 제공하는 프리미엄 미용 서비스입니다.',
@@ -151,7 +106,109 @@ export default function FacilitiesPage() {
       services: ['기본 미용', '스타일링', '스파', '네일 케어'],
       priceRange: '25,000원 - 80,000원',
       isPartner: true,
-      coordinates: { lat: 37.5636, lng: 126.9253 }
+      coordinates: { lat: 37.5636, lng: 126.9253 },
+      specialFeatures: ['친환경 제품 사용', '스트레스 완화 아로마'],
+      bookingAvailable: true
+    },
+    {
+      id: 3,
+      name: '24시 반려동물 병원',
+      type: 'hospital',
+      description: '24시간 응급 진료가 가능한 반려동물 전문 병원입니다.',
+      address: '서울시 서초구 반포대로 45',
+      phone: '02-456-7890',
+      rating: 4.7,
+      reviewCount: 312,
+      distance: 2.3,
+      operatingHours: { open: '24시간', close: '24시간' },
+      amenities: ['응급실', 'CT/MRI', '입원실', '주차장'],
+      images: ['https://images.unsplash.com/photo-1629909613654-28e377c37b09?w=400'],
+      services: ['응급 진료', '건강검진', '수술', '입원 치료'],
+      priceRange: '30,000원 - 500,000원',
+      isPartner: true,
+      coordinates: { lat: 37.5047, lng: 127.0051 },
+      specialFeatures: ['24시간 응급실', '전문의 상주'],
+      bookingAvailable: true
+    },
+    {
+      id: 4,
+      name: '펫 리조트 펜션',
+      type: 'hotel',
+      description: '반려견과 함께 머물 수 있는 프리미엄 펜션입니다.',
+      address: '경기도 가평군 청평면',
+      phone: '031-345-6789',
+      rating: 4.9,
+      reviewCount: 234,
+      distance: 45.6,
+      operatingHours: { open: '15:00', close: '11:00' },
+      amenities: ['개별 정원', '수영장', '바베큐장', '산책로'],
+      images: ['https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=400'],
+      services: ['숙박', '반려견 용품 대여', '산책 서비스', '케어 서비스'],
+      priceRange: '120,000원 - 300,000원',
+      isPartner: false,
+      coordinates: { lat: 37.7556, lng: 127.4306 },
+      specialFeatures: ['자연 친화적 환경', '개별 놀이공간'],
+      bookingAvailable: true
+    },
+    {
+      id: 5,
+      name: '도심 펫 위탁센터',
+      type: 'daycare',
+      description: '낮 시간 반려견 위탁 관리 전문 센터입니다.',
+      address: '서울시 용산구 이태원로 67',
+      phone: '02-789-0123',
+      rating: 4.4,
+      reviewCount: 92,
+      distance: 1.8,
+      operatingHours: { open: '07:00', close: '20:00' },
+      amenities: ['놀이방', '산책서비스', 'CCTV', '픽업서비스'],
+      images: ['https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=400'],
+      services: ['일일 돌봄', '사회화 프로그램', '간식 제공', '건강 체크'],
+      priceRange: '30,000원 - 70,000원',
+      isPartner: true,
+      coordinates: { lat: 37.5400, lng: 126.9921 },
+      specialFeatures: ['소규모 그룹 관리', '실시간 알림 서비스'],
+      bookingAvailable: true
+    },
+    {
+      id: 6,
+      name: '한강 반려견 놀이공원',
+      type: 'park',
+      description: '넓은 야외 공간에서 자유롭게 뛰어놀 수 있는 놀이공원입니다.',
+      address: '서울시 영등포구 여의도동 한강공원',
+      phone: '02-345-6789',
+      rating: 4.3,
+      reviewCount: 445,
+      distance: 4.2,
+      operatingHours: { open: '06:00', close: '22:00' },
+      amenities: ['대형 운동장', '어질리티 시설', '음수대', '그늘막'],
+      images: ['https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=400'],
+      services: ['자유 놀이', '어질리티 체험', '산책로', '소셜라이징'],
+      priceRange: '5,000원 - 15,000원',
+      isPartner: false,
+      coordinates: { lat: 37.5274, lng: 126.9340 },
+      specialFeatures: ['한강 뷰', '대형견 전용 구역'],
+      bookingAvailable: false
+    },
+    {
+      id: 7,
+      name: '해피독 카페',
+      type: 'cafe',
+      description: '반려견과 함께 즐길 수 있는 아늑한 카페입니다.',
+      address: '서울시 홍대입구역 근처',
+      phone: '02-234-5678',
+      rating: 4.5,
+      reviewCount: 89,
+      distance: 1.2,
+      operatingHours: { open: '10:00', close: '22:00' },
+      amenities: ['반려견 놀이터', 'Wi-Fi', '주차장', '테라스'],
+      images: ['https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=400'],
+      services: ['반려견 메뉴', '생일파티', '사진촬영', '놀이시설'],
+      priceRange: '8,000원 - 25,000원',
+      isPartner: true,
+      coordinates: { lat: 37.5563, lng: 126.9236 },
+      specialFeatures: ['펫 프렌들리 메뉴', '인스타 포토존'],
+      bookingAvailable: true
     }
   ];
 

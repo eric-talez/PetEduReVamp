@@ -332,6 +332,17 @@ function AppLayout({ children }: { children: ReactNode }) {
                     }}
                   </Route>
 
+                  <Route path="/courses/:id/preview">
+                    {(params) => {
+                      const CoursePreview = lazy(() => import('./pages/courses/preview'));
+                      return (
+                        <Suspense fallback={<div className="p-8 text-center">미리보기 로딩 중...</div>}>
+                          <CoursePreview courseId={params.id} />
+                        </Suspense>
+                      );
+                    }}
+                  </Route>
+
                   {/* 프로필 페이지 */}
                   <Route path="/profile">
                     {() => (
@@ -1604,6 +1615,19 @@ function AuthenticatedRoutes() {
                 <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
               </div>}>
                 <FacilitiesPage />
+              </Suspense>
+            );
+          }}
+        </Route>
+
+        <Route path="/location-finder">
+          {() => {
+            const LocationFinderPage = lazy(() => import('./pages/location-finder/index'));
+            return (
+              <Suspense fallback={<div className="p-8 flex justify-center items-center">
+                <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
+              </div>}>
+                <LocationFinderPage />
               </Suspense>
             );
           }}

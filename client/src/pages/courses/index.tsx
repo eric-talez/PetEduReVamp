@@ -18,6 +18,7 @@ export default function Courses(props?: CoursesPageProps) {
 
   // 수강 신청 처리 함수
   const handleEnrollment = async (courseId: number) => {
+    console.log('수강 신청 클릭:', courseId);
     try {
       const response = await fetch(`/api/courses/${courseId}/enroll`, {
         method: 'POST',
@@ -28,17 +29,37 @@ export default function Courses(props?: CoursesPageProps) {
       });
 
       if (response.ok) {
+        console.log('수강 신청 성공:', courseId);
         alert('수강 신청이 완료되었습니다!');
-        // 페이지 새로고침 또는 상태 업데이트
         window.location.reload();
       } else {
         const error = await response.text();
+        console.error('수강 신청 실패:', error);
         alert(`수강 신청 실패: ${error}`);
       }
     } catch (error) {
       console.error('수강 신청 오류:', error);
       alert('수강 신청 중 오류가 발생했습니다.');
     }
+  };
+
+  // 강좌 상세보기 핸들러
+  const handleCourseDetail = (courseId: number) => {
+    console.log('강좌 상세보기 클릭:', courseId);
+    window.location.href = `/courses/${courseId}`;
+  };
+
+  // 강좌 참여하기 핸들러
+  const handleJoinCourse = (courseId: number) => {
+    console.log('강좌 참여하기 클릭:', courseId);
+    // 로그인 체크 후 수강 신청 프로세스 시작
+    handleEnrollment(courseId);
+  };
+
+  // 미리보기 핸들러
+  const handlePreview = (courseId: number) => {
+    console.log('미리보기 클릭:', courseId);
+    window.location.href = `/courses/${courseId}/preview`;
   };
 
   const courses = [
