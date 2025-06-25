@@ -24,14 +24,33 @@ export default function AdminTrainers() {
   });
 
   // 훈련사 추가 함수
-  const handleAddTrainer = () => {
+  const handleAddTrainer = async () => {
     if (!newTrainer.name || !newTrainer.email || !newTrainer.institute || !newTrainer.certification) {
       alert("필수 필드를 모두 입력해주세요.");
       return;
     }
     
-    console.log("새 훈련사 추가:", newTrainer);
-    // 여기서 실제 API 호출 구현
+    try {
+      const response = await fetch('/api/trainers/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newTrainer),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        alert("훈련사가 성공적으로 등록되었습니다! 전문가 찾기 페이지에서 확인할 수 있습니다.");
+        console.log("새 훈련사 등록 완료:", result.data);
+      } else {
+        throw new Error(result.error || '훈련사 등록에 실패했습니다.');
+      }
+    } catch (error) {
+      console.error('훈련사 등록 오류:', error);
+      alert("훈련사 등록 중 오류가 발생했습니다.");
+    }
     
     // 폼 초기화
     setNewTrainer({
