@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { useToast } from "@/hooks/use-toast";
-import { Calendar, Clock, Video, MessageCircle, Phone, User, CheckCircle, AlertCircle, Send } from "lucide-react";
+import { Calendar, Clock, Video, MessageCircle, Phone, User, CheckCircle, AlertCircle, Send, Timer } from "lucide-react";
 
 interface Consultation {
   id: string;
@@ -23,6 +23,93 @@ interface Consultation {
   topic: string;
   notes?: string;
 }
+
+// 참여하기 버튼 컴포넌트
+const JoinButton = ({ consultation, onJoin }: { consultation: Consultation; onJoin: (consultation: Consultation) => void }) => {
+  const [timeStatus, setTimeStatus] = useState<'early' | 'ready' | 'active' | 'late'>('early');
+  const [timeLeft, setTimeLeft] = useState('');
+
+  useEffect(() => {
+    const updateTimeStatus = () => {
+      const now = new Date();
+      const consultationDateTime = new Date(`${consultation.date} ${consultation.time}`);
+      const timeDiff = consultationDateTime.getTime() - now.getTime();
+      const minutesDiff = Math.floor(timeDiff / (1000 * 60));
+
+      if (minutesDiff > 15) {
+        setTimeStatus('early');
+        const hours = Math.floor(minutesDiff / 60);
+        const minutes = minutesDiff % 60;
+        setTimeLeft(`${hours}시간 ${minutes}분 후`);
+      } else if (minutesDiff >= -5) {
+        setTimeStatus('ready');
+        if (minutesDiff > 0) {
+          setTimeLeft(`${minutesDiff}분 후 시작`);
+        } else {
+          setTimeLeft('진행 중');
+        }
+      } else if (minutesDiff >= -120) {
+        setTimeStatus('active');
+        setTimeLeft('진행 중');
+      } else {
+        setTimeStatus('late');
+        setTimeLeft('종료됨');
+      }
+    };
+
+    updateTimeStatus();
+    const interval = setInterval(updateTimeStatus, 60000); // 1분마다 업데이트
+
+    return () => clearInterval(interval);
+  }, [consultation.date, consultation.time]);
+
+  const getButtonVariant = () => {
+    switch (timeStatus) {
+      case 'ready':
+      case 'active':
+        return 'default';
+      case 'early':
+        return 'outline';
+      case 'late':
+        return 'secondary';
+      default:
+        return 'outline';
+    }
+  };
+
+  const getButtonText = () => {
+    switch (timeStatus) {
+      case 'ready':
+      case 'active':
+        return '참여하기';
+      case 'early':
+        return `대기 중 (${timeLeft})`;
+      case 'late':
+        return '종료됨';
+      default:
+        return '참여하기';
+    }
+  };
+
+  const isDisabled = timeStatus === 'early' || timeStatus === 'late';
+
+  return (
+    <Button 
+      size="sm" 
+      variant={getButtonVariant()}
+      onClick={() => onJoin(consultation)}
+      disabled={isDisabled}
+      className={timeStatus === 'ready' || timeStatus === 'active' ? 'animate-pulse' : ''}
+    >
+      {timeStatus === 'ready' || timeStatus === 'active' ? (
+        <Video className="h-4 w-4 mr-1" />
+      ) : (
+        <Timer className="h-4 w-4 mr-1" />
+      )}
+      {getButtonText()}
+    </Button>
+  );
+};
 
 export default function ConsultationStatusPage() {
   const { toast } = useToast();
@@ -61,14 +148,20 @@ export default function ConsultationStatusPage() {
   });
 
   useEffect(() => {
-    // 상담 데이터 로딩
+    // 상담 데이터 로딩 (현재 날짜 기준으로 설정)
     setTimeout(() => {
+      const today = new Date();
+      const tomorrow = new Date(today);
+      tomorrow.setDate(today.getDate() + 1);
+      const nextWeek = new Date(today);
+      nextWeek.setDate(today.getDate() + 7);
+      
       setConsultations([
         {
           id: '1',
           trainerName: '김훈련사',
           petName: '멍멍이',
-          date: '2024-06-20',
+          date: tomorrow.toISOString().split('T')[0],
           time: '14:00',
           status: 'scheduled',
           type: 'video',
@@ -78,12 +171,22 @@ export default function ConsultationStatusPage() {
           id: '2',
           trainerName: '박전문가',
           petName: '멍멍이',
-          date: '2024-06-15',
+          date: today.toISOString().split('T')[0],
           time: '10:00',
           status: 'completed',
           type: 'video',
           topic: '분리불안 행동교정',
           notes: '상당한 진전이 있었습니다. 다음 주에 추가 상담 권장.'
+        },
+        {
+          id: '3',
+          trainerName: '최예린 행동분석가',
+          petName: '멍멍이',
+          date: today.toISOString().split('T')[0],
+          time: new Date(Date.now() + 30 * 60 * 1000).toTimeString().slice(0, 5), // 30분 후
+          status: 'scheduled',
+          type: 'video',
+          topic: '분리불안 상담'
         }
       ]);
       setLoading(false);
@@ -120,9 +223,55 @@ export default function ConsultationStatusPage() {
 
   const handleJoinConsultation = (consultation: Consultation) => {
     console.log('상담 참여하기 클릭:', consultation.id);
+    
+    // 현재 시간과 상담 시간 비교
+    const now = new Date();
+    const consultationDateTime = new Date(`${consultation.date} ${consultation.time}`);
+    const timeDiff = consultationDateTime.getTime() - now.getTime();
+    const minutesDiff = Math.floor(timeDiff / (1000 * 60));
+    
+    // 상담 시간 15분 전부터 참여 가능
+    if (minutesDiff > 15) {
+      toast({
+        title: "아직 참여할 수 없습니다",
+        description: `상담 시작 15분 전부터 참여 가능합니다. (${Math.floor(minutesDiff / 60)}시간 ${minutesDiff % 60}분 남음)`,
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // 상담 시간이 2시간 이상 지났으면 참여 불가
+    if (minutesDiff < -120) {
+      toast({
+        title: "상담 시간이 지났습니다",
+        description: "상담 종료 후 2시간이 지나 참여할 수 없습니다.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     // 화상상담 참여 로직
     if (consultation.type === 'video') {
-      window.open(`/video-call/${consultation.id}`, '_blank');
+      // 실제 Zoom 링크로 연결 (훈련사별 고정 Zoom 룸)
+      const zoomLinks: { [key: string]: string } = {
+        '김훈련사': 'https://zoom.us/j/123456789?pwd=abcd1234',
+        '박전문가': 'https://zoom.us/j/987654321?pwd=efgh5678',
+        '이준호 어질리티 코치': 'https://zoom.us/j/555666777?pwd=ijkl9012',
+        '최예린 행동분석가': 'https://zoom.us/j/111222333?pwd=mnop3456'
+      };
+      
+      const zoomUrl = zoomLinks[consultation.trainerName] || 'https://zoom.us/j/default';
+      
+      toast({
+        title: "화상상담 연결 중",
+        description: `${consultation.trainerName}의 Zoom 룸으로 연결합니다.`,
+      });
+      
+      // Zoom 앱으로 연결 시도, 실패시 웹 브라우저로 연결
+      setTimeout(() => {
+        window.open(zoomUrl, '_blank');
+      }, 1000);
+      
     } else if (consultation.type === 'phone') {
       alert(`전화상담이 곧 시작됩니다. 연락처: ${consultation.trainerName}`);
     }
@@ -461,10 +610,7 @@ export default function ConsultationStatusPage() {
                     </div>
                     <div className="flex gap-2">
                       {consultation.status === 'scheduled' && consultation.type === 'video' && (
-                        <Button size="sm" onClick={() => handleJoinConsultation(consultation)}>
-                          <Video className="h-4 w-4 mr-1" />
-                          참여하기
-                        </Button>
+                        <JoinButton consultation={consultation} onJoin={handleJoinConsultation} />
                       )}
                       <Button variant="outline" size="sm" onClick={() => handleViewDetails(consultation)}>
                         상세보기

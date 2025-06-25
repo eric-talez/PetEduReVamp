@@ -586,6 +586,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // 상담 Zoom 링크 조회 API
+  app.get("/api/consultations/:id/zoom", async (req, res) => {
+    try {
+      const consultationId = req.params.id;
+      
+      // 상담 정보 조회 (실제로는 데이터베이스에서 조회)
+      const consultation = {
+        id: consultationId,
+        trainerName: "김훈련사",
+        zoomUrl: "https://zoom.us/j/123456789?pwd=abcd1234",
+        meetingId: "123 456 789",
+        passcode: "abcd1234",
+        status: "scheduled",
+        startTime: new Date().toISOString()
+      };
+
+      res.json({ 
+        success: true, 
+        consultation: consultation
+      });
+    } catch (error) {
+      console.error('Zoom 링크 조회 오류:', error);
+      res.status(500).json({ error: "Zoom 링크 조회 중 오류가 발생했습니다" });
+    }
+  });
+
   app.post("/api/consultations/:id/join", async (req, res) => {
     try {
       const consultationId = req.params.id;
