@@ -6,9 +6,12 @@ import { Avatar } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Search, MessageSquare, TrendingUp, MessageCircle, Filter } from 'lucide-react';
+import { CommunityPostForm } from '@/components/CommunityPostForm';
 
 export default function Community() {
   const [searchTerm, setSearchTerm] = useState('');
+  const [isPostFormOpen, setIsPostFormOpen] = useState(false);
+  const [posts, setPosts] = useState(communityPosts);
   
   // Mock community posts data
   const communityPosts = [

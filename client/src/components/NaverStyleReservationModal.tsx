@@ -25,7 +25,8 @@ import {
   AlertCircle,
   CreditCard,
   Shield,
-  Users
+  Users,
+  Building
 } from 'lucide-react';
 
 interface ReservationModalProps {
