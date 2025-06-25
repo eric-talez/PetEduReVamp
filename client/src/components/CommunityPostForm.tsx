@@ -93,14 +93,16 @@ export function CommunityPostForm({ isOpen, onOpenChange, onPostCreated }: Commu
     setIsSubmitting(true);
 
     try {
-      // 실제 구현에서는 API 호출
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      console.log('새 게시글 작성:', formData);
+      
+      // 시뮬레이션된 API 호출
+      await new Promise(resolve => setTimeout(resolve, 500));
 
       const newPost = {
         id: Date.now(),
         user: {
           image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100",
-          name: "반려인", // 실제로는 현재 사용자 정보
+          name: "반려인",
           time: "방금 전"
         },
         title: formData.title,
@@ -116,7 +118,7 @@ export function CommunityPostForm({ isOpen, onOpenChange, onPostCreated }: Commu
         createdAt: new Date().toISOString()
       };
 
-      console.log('새 게시글 작성 성공:', newPost);
+      console.log('새 게시글 작성 완료:', newPost);
       
       // 부모 컴포넌트에 새 게시글 전달
       if (onPostCreated) {

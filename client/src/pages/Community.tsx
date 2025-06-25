@@ -295,10 +295,10 @@ export default function Community() {
         isOpen={isPostFormOpen}
         onOpenChange={setIsPostFormOpen}
         onPostCreated={(newPost) => {
-          console.log('새 게시글 추가:', newPost);
+          console.log('커뮤니티 - 새 게시글 추가:', newPost);
           setPosts(prev => {
             const updatedPosts = [newPost, ...prev];
-            console.log('업데이트된 posts:', updatedPosts);
+            console.log('커뮤니티 - 업데이트된 posts 수:', updatedPosts.length);
             return updatedPosts;
           });
         }}
