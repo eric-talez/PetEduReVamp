@@ -28,8 +28,10 @@ import {
   Car,
   CreditCard,
   Shield,
-  X
+  X,
+  UserCheck
 } from 'lucide-react';
+import { TrainerConsultationModal } from './TrainerConsultationModal';
 
 interface LocationItem {
   id: number;
@@ -68,6 +70,8 @@ export function LocationDetailModal({ location, isOpen, onOpenChange, onReservat
   const [activeTab, setActiveTab] = useState('overview');
   const [isFavorite, setIsFavorite] = useState(false);
   const [mapLoaded, setMapLoaded] = useState(false);
+  const [showTrainerConsultation, setShowTrainerConsultation] = useState(false);
+  const [selectedTrainer, setSelectedTrainer] = useState(null);
 
   const getTypeIcon = (type: string) => {
     switch (type) {
@@ -243,6 +247,85 @@ export function LocationDetailModal({ location, isOpen, onOpenChange, onReservat
                       ))}
                     </div>
                   </div>
+
+                  {/* 전문 훈련사 섹션 (훈련소인 경우만) */}
+                  {location.type === 'training' && (
+                    <div>
+                      <h3 className="text-lg font-semibold mb-3">전문 훈련사</h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {[
+                          {
+                            id: 1,
+                            name: '김민수 전문 훈련사',
+                            specialty: ['기본 복종 훈련', '사회화 훈련'],
+                            experience: '10년+',
+                            rating: 4.9,
+                            reviews: 156,
+                            avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100',
+                            bio: '10년 이상의 경력을 가진 전문 훈련사입니다.',
+                            certifications: ['국제 반려견 훈련사 자격증', 'KKF 공인 훈련사'],
+                            availableSlots: {
+                              '2025-06-26': ['10:00', '14:00', '16:00'],
+                              '2025-06-27': ['09:00', '11:00', '15:00'],
+                              '2025-06-28': ['10:30', '13:30', '16:30']
+                            }
+                          },
+                          {
+                            id: 2,
+                            name: '박지혜 행동교정사',
+                            specialty: ['행동 교정', '문제행동 해결'],
+                            experience: '8년+',
+                            rating: 4.8,
+                            reviews: 132,
+                            avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b4c0?w=100',
+                            bio: '문제행동 전문가로 공격성, 분리불안 등의 해결에 특화되어 있습니다.',
+                            certifications: ['동물행동학 석사', 'CCPDT 공인 훈련사'],
+                            availableSlots: {
+                              '2025-06-26': ['11:00', '15:00'],
+                              '2025-06-27': ['10:00', '14:00', '16:00'],
+                              '2025-06-29': ['09:30', '13:00', '15:30']
+                            }
+                          }
+                        ].map((trainer) => (
+                          <Card key={trainer.id} className="p-4">
+                            <div className="flex items-start gap-3">
+                              <img 
+                                src={trainer.avatar} 
+                                alt={trainer.name}
+                                className="w-12 h-12 rounded-full object-cover"
+                              />
+                              <div className="flex-1">
+                                <h4 className="font-semibold text-sm">{trainer.name}</h4>
+                                <div className="flex items-center gap-1 mb-1">
+                                  <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
+                                  <span className="text-xs">{trainer.rating}</span>
+                                  <span className="text-xs text-gray-500">({trainer.reviews})</span>
+                                </div>
+                                <div className="flex flex-wrap gap-1 mb-2">
+                                  {trainer.specialty.slice(0, 2).map((spec, i) => (
+                                    <Badge key={i} variant="secondary" className="text-xs px-1 py-0">
+                                      {spec}
+                                    </Badge>
+                                  ))}
+                                </div>
+                                <Button 
+                                  size="sm" 
+                                  className="w-full"
+                                  onClick={() => {
+                                    setSelectedTrainer(trainer);
+                                    setShowTrainerConsultation(true);
+                                  }}
+                                >
+                                  <UserCheck className="h-3 w-3 mr-1" />
+                                  상담 예약
+                                </Button>
+                              </div>
+                            </div>
+                          </Card>
+                        ))}
+                      </div>
+                    </div>
+                  )}
 
                   <div>
                     <h3 className="text-lg font-semibold mb-3">편의시설</h3>
