@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { MessageSquare, Heart, Eye, Clock, Tag, Plus, ArrowLeft, MoreVertical, Edit, Trash2, X } from 'lucide-react';
+import { MessageSquare, Heart, Eye, Clock, Tag, Plus, ArrowLeft, MoreVertical, Edit, Trash2, X, Search, Grid, List } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -109,6 +109,8 @@ function CommunityPage() {
   const [activeTab, setActiveTab] = useState('latest');
   const [currentPage, setCurrentPage] = useState(1);
   const [isCreatePostOpen, setIsCreatePostOpen] = useState(false);
+  const [viewType, setViewType] = useState<'card' | 'list'>('card');
+  const [searchQuery, setSearchQuery] = useState('');
   const [newPost, setNewPost] = useState({
     title: "",
     content: "",
@@ -158,7 +160,15 @@ function CommunityPage() {
 
       return response.json();
     },
-    onSuccess: () => {
+    onSuccess: (newPostData) => {
+      // 즉시 캐시 업데이트
+      queryClient.setQueryData(['/api/community/posts'], (oldData: any) => {
+        if (Array.isArray(oldData)) {
+          return [newPostData, ...oldData];
+        }
+        return [newPostData];
+      });
+      
       queryClient.invalidateQueries({ queryKey: ['/api/community/posts'] });
       
       toast({
@@ -216,11 +226,15 @@ function CommunityPage() {
     const matchesTab = activeTab === 'latest' ? true : 
                        activeTab === 'popular' ? (post.likes || 0) > 10 :
                        activeTab === 'notices' ? post.isNotice :
+                       activeTab === 'training' ? post.category === '훈련팁' :
+                       activeTab === 'survey' ? post.category === '설문' :
+                       activeTab === 'info' ? post.category === '정보공유' :
                        true;
     
-    const matchesSearch = searchTerm === '' || 
-      (post.title && post.title.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (post.content && post.content.toLowerCase().includes(searchTerm.toLowerCase()));
+    const matchesSearch = searchQuery === '' || 
+      (post.title && post.title.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      (post.content && post.content.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      (post.user?.name && post.user.name.toLowerCase().includes(searchQuery.toLowerCase()));
     
     const matchesCategory = selectedCategory === 'all' || post.category === selectedCategory;
     
@@ -247,7 +261,7 @@ function CommunityPage() {
     });
   };
 
-  const categories = ['일반', '훈련팁', '건강관리', '행동교정', '영양정보', '놀이활동', '질문답변', '후기공유'];
+  const categories = ['일반', '훈련팁', '건강관리', '행동교정', '영양정보', '놀이활동', '질문답변', '후기공유', '설문', '정보공유'];
 
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 max-w-7xl">
@@ -334,10 +348,44 @@ function CommunityPage() {
         </Dialog>
       </div>
 
+      {/* 검색 및 뷰 컨트롤 */}
+      <div className="flex flex-col sm:flex-row gap-4 mb-6">
+        <div className="flex-1 relative">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+          <Input
+            placeholder="게시글 제목, 내용, 작성자로 검색..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-10"
+          />
+        </div>
+        <div className="flex gap-2">
+          <Button
+            variant={viewType === 'card' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setViewType('card')}
+          >
+            <Grid className="h-4 w-4 mr-2" />
+            카드형
+          </Button>
+          <Button
+            variant={viewType === 'list' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setViewType('list')}
+          >
+            <List className="h-4 w-4 mr-2" />
+            리스트
+          </Button>
+        </div>
+      </div>
+
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="latest">최신 글</TabsTrigger>
           <TabsTrigger value="popular">인기 글</TabsTrigger>
+          <TabsTrigger value="training">훈련팁</TabsTrigger>
+          <TabsTrigger value="survey">설문</TabsTrigger>
+          <TabsTrigger value="info">정보공유</TabsTrigger>
           <TabsTrigger value="notices">공지사항</TabsTrigger>
         </TabsList>
 
@@ -367,15 +415,54 @@ function CommunityPage() {
 
           {!isLoading && !error && paginatedPosts && paginatedPosts.length > 0 && (
             <>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {paginatedPosts.map((post: any) => (
-                  <PostCard
-                    key={post.id}
-                    post={post}
-                    onClick={handlePostClick}
-                  />
-                ))}
-              </div>
+              {viewType === 'card' ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {paginatedPosts.map((post: any) => (
+                    <PostCard
+                      key={post.id}
+                      post={post}
+                      onClick={handlePostClick}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {paginatedPosts.map((post: any) => (
+                    <Card key={post.id} className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => handlePostClick(post)}>
+                      <CardContent className="p-4">
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-2">
+                              <Badge variant="secondary" className="text-xs">
+                                {post.tag?.text || post.category}
+                              </Badge>
+                              <span className="text-xs text-gray-500">
+                                {post.user?.name || '익명'} • {post.user?.time || '방금 전'}
+                              </span>
+                            </div>
+                            <h3 className="font-semibold text-lg mb-2 line-clamp-1">{post.title}</h3>
+                            <p className="text-gray-600 text-sm mb-3 line-clamp-2">{post.content}</p>
+                            <div className="flex items-center gap-4 text-xs text-gray-500">
+                              <div className="flex items-center gap-1">
+                                <Heart className="h-3 w-3" />
+                                <span>{post.likes || 0}</span>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <MessageSquare className="h-3 w-3" />
+                                <span>{post.comments || 0}</span>
+                              </div>
+                            </div>
+                          </div>
+                          <Avatar className="h-10 w-10 ml-4">
+                            <AvatarImage src={post.user?.image} alt={post.user?.name} />
+                            <AvatarFallback>{post.user?.name?.[0] || 'U'}</AvatarFallback>
+                          </Avatar>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
 
               {totalPages > 1 && (
                 <div className="mt-8 flex justify-center">
@@ -409,17 +496,276 @@ function CommunityPage() {
         </TabsContent>
 
         <TabsContent value="popular" className="mt-6">
-          <div className="text-center py-12">
-            <p className="text-xl mb-2">인기 게시글</p>
-            <p className="text-muted-foreground">좋아요가 많은 게시글들이 여기에 표시됩니다.</p>
-          </div>
+          {/* 인기 게시글 탭 내용 - 동일한 구조 사용 */}
+          {!isLoading && !error && paginatedPosts && paginatedPosts.length > 0 ? (
+            <>
+              {viewType === 'card' ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {paginatedPosts.map((post: any) => (
+                    <PostCard key={post.id} post={post} onClick={handlePostClick} />
+                  ))}
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {paginatedPosts.map((post: any) => (
+                    <Card key={post.id} className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => handlePostClick(post)}>
+                      <CardContent className="p-4">
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-2">
+                              <Badge variant="secondary" className="text-xs">
+                                {post.tag?.text || post.category}
+                              </Badge>
+                              <span className="text-xs text-gray-500">
+                                {post.user?.name || '익명'} • {post.user?.time || '방금 전'}
+                              </span>
+                            </div>
+                            <h3 className="font-semibold text-lg mb-2 line-clamp-1">{post.title}</h3>
+                            <p className="text-gray-600 text-sm mb-3 line-clamp-2">{post.content}</p>
+                            <div className="flex items-center gap-4 text-xs text-gray-500">
+                              <div className="flex items-center gap-1">
+                                <Heart className="h-3 w-3" />
+                                <span>{post.likes || 0}</span>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <MessageSquare className="h-3 w-3" />
+                                <span>{post.comments || 0}</span>
+                              </div>
+                            </div>
+                          </div>
+                          <Avatar className="h-10 w-10 ml-4">
+                            <AvatarImage src={post.user?.image} alt={post.user?.name} />
+                            <AvatarFallback>{post.user?.name?.[0] || 'U'}</AvatarFallback>
+                          </Avatar>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </>
+          ) : (
+            <div className="text-center py-12">
+              <p className="text-xl mb-2">인기 게시글이 없습니다</p>
+              <p className="text-muted-foreground">좋아요가 10개 이상인 게시글이 여기에 표시됩니다.</p>
+            </div>
+          )}
+        </TabsContent>
+
+        <TabsContent value="training" className="mt-6">
+          {!isLoading && !error && paginatedPosts && paginatedPosts.length > 0 ? (
+            <>
+              {viewType === 'card' ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {paginatedPosts.map((post: any) => (
+                    <PostCard key={post.id} post={post} onClick={handlePostClick} />
+                  ))}
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {paginatedPosts.map((post: any) => (
+                    <Card key={post.id} className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => handlePostClick(post)}>
+                      <CardContent className="p-4">
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-2">
+                              <Badge variant="secondary" className="text-xs">훈련팁</Badge>
+                              <span className="text-xs text-gray-500">
+                                {post.user?.name || '익명'} • {post.user?.time || '방금 전'}
+                              </span>
+                            </div>
+                            <h3 className="font-semibold text-lg mb-2 line-clamp-1">{post.title}</h3>
+                            <p className="text-gray-600 text-sm mb-3 line-clamp-2">{post.content}</p>
+                            <div className="flex items-center gap-4 text-xs text-gray-500">
+                              <div className="flex items-center gap-1">
+                                <Heart className="h-3 w-3" />
+                                <span>{post.likes || 0}</span>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <MessageSquare className="h-3 w-3" />
+                                <span>{post.comments || 0}</span>
+                              </div>
+                            </div>
+                          </div>
+                          <Avatar className="h-10 w-10 ml-4">
+                            <AvatarImage src={post.user?.image} alt={post.user?.name} />
+                            <AvatarFallback>{post.user?.name?.[0] || 'U'}</AvatarFallback>
+                          </Avatar>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </>
+          ) : (
+            <div className="text-center py-12">
+              <p className="text-xl mb-2">훈련팁이 없습니다</p>
+              <p className="text-muted-foreground">펫 훈련 관련 팁과 노하우를 공유해주세요!</p>
+            </div>
+          )}
+        </TabsContent>
+
+        <TabsContent value="survey" className="mt-6">
+          {!isLoading && !error && paginatedPosts && paginatedPosts.length > 0 ? (
+            <>
+              {viewType === 'card' ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {paginatedPosts.map((post: any) => (
+                    <PostCard key={post.id} post={post} onClick={handlePostClick} />
+                  ))}
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {paginatedPosts.map((post: any) => (
+                    <Card key={post.id} className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => handlePostClick(post)}>
+                      <CardContent className="p-4">
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-2">
+                              <Badge variant="secondary" className="text-xs">설문</Badge>
+                              <span className="text-xs text-gray-500">
+                                {post.user?.name || '익명'} • {post.user?.time || '방금 전'}
+                              </span>
+                            </div>
+                            <h3 className="font-semibold text-lg mb-2 line-clamp-1">{post.title}</h3>
+                            <p className="text-gray-600 text-sm mb-3 line-clamp-2">{post.content}</p>
+                            <div className="flex items-center gap-4 text-xs text-gray-500">
+                              <div className="flex items-center gap-1">
+                                <Heart className="h-3 w-3" />
+                                <span>{post.likes || 0}</span>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <MessageSquare className="h-3 w-3" />
+                                <span>{post.comments || 0}</span>
+                              </div>
+                            </div>
+                          </div>
+                          <Avatar className="h-10 w-10 ml-4">
+                            <AvatarImage src={post.user?.image} alt={post.user?.name} />
+                            <AvatarFallback>{post.user?.name?.[0] || 'U'}</AvatarFallback>
+                          </Avatar>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </>
+          ) : (
+            <div className="text-center py-12">
+              <p className="text-xl mb-2">설문이 없습니다</p>
+              <p className="text-muted-foreground">커뮤니티 의견을 묻는 설문을 만들어보세요!</p>
+            </div>
+          )}
+        </TabsContent>
+
+        <TabsContent value="info" className="mt-6">
+          {!isLoading && !error && paginatedPosts && paginatedPosts.length > 0 ? (
+            <>
+              {viewType === 'card' ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {paginatedPosts.map((post: any) => (
+                    <PostCard key={post.id} post={post} onClick={handlePostClick} />
+                  ))}
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {paginatedPosts.map((post: any) => (
+                    <Card key={post.id} className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => handlePostClick(post)}>
+                      <CardContent className="p-4">
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-2">
+                              <Badge variant="secondary" className="text-xs">정보공유</Badge>
+                              <span className="text-xs text-gray-500">
+                                {post.user?.name || '익명'} • {post.user?.time || '방금 전'}
+                              </span>
+                            </div>
+                            <h3 className="font-semibold text-lg mb-2 line-clamp-1">{post.title}</h3>
+                            <p className="text-gray-600 text-sm mb-3 line-clamp-2">{post.content}</p>
+                            <div className="flex items-center gap-4 text-xs text-gray-500">
+                              <div className="flex items-center gap-1">
+                                <Heart className="h-3 w-3" />
+                                <span>{post.likes || 0}</span>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <MessageSquare className="h-3 w-3" />
+                                <span>{post.comments || 0}</span>
+                              </div>
+                            </div>
+                          </div>
+                          <Avatar className="h-10 w-10 ml-4">
+                            <AvatarImage src={post.user?.image} alt={post.user?.name} />
+                            <AvatarFallback>{post.user?.name?.[0] || 'U'}</AvatarFallback>
+                          </Avatar>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </>
+          ) : (
+            <div className="text-center py-12">
+              <p className="text-xl mb-2">정보공유 게시글이 없습니다</p>
+              <p className="text-muted-foreground">유용한 정보와 지식을 커뮤니티와 공유해주세요!</p>
+            </div>
+          )}
         </TabsContent>
 
         <TabsContent value="notices" className="mt-6">
-          <div className="text-center py-12">
-            <p className="text-xl mb-2">공지사항</p>
-            <p className="text-muted-foreground">중요한 공지사항들이 여기에 표시됩니다.</p>
-          </div>
+          {!isLoading && !error && paginatedPosts && paginatedPosts.length > 0 ? (
+            <>
+              {viewType === 'card' ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {paginatedPosts.map((post: any) => (
+                    <PostCard key={post.id} post={post} onClick={handlePostClick} />
+                  ))}
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {paginatedPosts.map((post: any) => (
+                    <Card key={post.id} className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => handlePostClick(post)}>
+                      <CardContent className="p-4">
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-2">
+                              <Badge variant="destructive" className="text-xs">공지사항</Badge>
+                              <span className="text-xs text-gray-500">
+                                {post.user?.name || '관리자'} • {post.user?.time || '방금 전'}
+                              </span>
+                            </div>
+                            <h3 className="font-semibold text-lg mb-2 line-clamp-1">{post.title}</h3>
+                            <p className="text-gray-600 text-sm mb-3 line-clamp-2">{post.content}</p>
+                            <div className="flex items-center gap-4 text-xs text-gray-500">
+                              <div className="flex items-center gap-1">
+                                <Heart className="h-3 w-3" />
+                                <span>{post.likes || 0}</span>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <MessageSquare className="h-3 w-3" />
+                                <span>{post.comments || 0}</span>
+                              </div>
+                            </div>
+                          </div>
+                          <Avatar className="h-10 w-10 ml-4">
+                            <AvatarImage src={post.user?.image} alt={post.user?.name} />
+                            <AvatarFallback>{post.user?.name?.[0] || 'A'}</AvatarFallback>
+                          </Avatar>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </>
+          ) : (
+            <div className="text-center py-12">
+              <p className="text-xl mb-2">공지사항이 없습니다</p>
+              <p className="text-muted-foreground">중요한 공지사항들이 여기에 표시됩니다.</p>
+            </div>
+          )}
         </TabsContent>
       </Tabs>
     </div>
