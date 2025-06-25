@@ -72,6 +72,8 @@ export function LocationDetailModal({ location, isOpen, onOpenChange, onReservat
   const [mapLoaded, setMapLoaded] = useState(false);
   const [showTrainerConsultation, setShowTrainerConsultation] = useState(false);
   const [selectedTrainer, setSelectedTrainer] = useState(null);
+  const [institutionTrainers, setInstitutionTrainers] = useState([]);
+  const [loadingTrainers, setLoadingTrainers] = useState(false);
 
   const getTypeIcon = (type: string) => {
     switch (type) {
@@ -126,7 +128,122 @@ export function LocationDetailModal({ location, isOpen, onOpenChange, onReservat
     console.log('전화 연결:', location.phone);
   };
 
-  // 가상의 카카오맵 초기화 (실제 구현시 카카오맵 API 사용)
+  // 기관 소속 훈련사 정보 가져오기
+  const fetchInstitutionTrainers = async () => {
+    if (location.type !== 'training') return;
+    
+    setLoadingTrainers(true);
+    try {
+      // 실제 구현에서는 API 호출: `/api/locations/${location.id}/trainers`
+      await new Promise(resolve => setTimeout(resolve, 800));
+      
+      // 기관별 실제 소속 훈련사 데이터
+      const trainersData = {
+        1: [ // 서울 펫 트레이닝 센터
+          {
+            id: 1,
+            name: '김민수 수석 훈련사',
+            position: '수석 훈련사',
+            specialty: ['기본 복종 훈련', '사회화 훈련', '어질리티', '공격성 교정'],
+            experience: '10년+',
+            rating: 4.9,
+            reviews: 156,
+            avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400',
+            bio: '서울 펫 트레이닝 센터의 수석 훈련사로 10년 이상의 풍부한 경험을 보유하고 있습니다. 특히 문제행동 교정과 기본 복종훈련 분야에서 탁월한 실력을 인정받고 있으며, 수많은 반려견들의 행동 개선에 성공했습니다.',
+            certifications: ['국제 반려견 훈련사 자격증', 'KKF 공인 훈련사', '동물행동학 학사', 'CCPDT 인증'],
+            institutionRole: '수석 훈련사 및 교육팀장',
+            joinDate: '2014-03-01',
+            successStories: 156,
+            availableSlots: {
+              '2025-06-26': ['10:00', '14:00', '16:00'],
+              '2025-06-27': ['09:00', '11:00', '15:00'],
+              '2025-06-28': ['10:30', '13:30', '16:30']
+            },
+            achievements: [
+              '전국 훈련사 대회 1위 (2023)',
+              '우수 훈련사 상 수상 (2022)',
+              '반려견 행동교정 전문가 인증',
+              '서울시 모범 훈련사 표창 (2021)'
+            ],
+            consultationPrice: '60,000원',
+            trainingPrice: '100,000원 - 150,000원'
+          },
+          {
+            id: 2,
+            name: '박지혜 행동교정 전문가',
+            position: '선임 행동교정사',
+            specialty: ['행동 교정', '분리불안 치료', '공격성 교정', '사회화 훈련'],
+            experience: '8년+',
+            rating: 4.8,
+            reviews: 132,
+            avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b4c0?w=400',
+            bio: '동물행동학 석사 학위를 보유한 전문가로, 서울 펫 트레이닝 센터에서 행동교정 분야를 담당하고 있습니다. 특히 분리불안, 공격성 등 복잡한 문제행동 해결에 특화되어 있으며, 개별 맞춤형 치료 프로그램을 제공합니다.',
+            certifications: ['동물행동학 석사', 'CCPDT 공인 훈련사', '반려동물 심리상담사', '행동치료 전문가'],
+            institutionRole: '행동교정팀 리더',
+            joinDate: '2016-06-01',
+            successStories: 98,
+            availableSlots: {
+              '2025-06-26': ['11:00', '15:00'],
+              '2025-06-27': ['10:00', '14:00', '16:00'],
+              '2025-06-29': ['09:30', '13:00', '15:30']
+            },
+            achievements: [
+              '행동교정 전문가 인증 (2021)',
+              '우수 상담사 표창 (2023)',
+              '반려견 심리치료 연구논문 발표',
+              '분리불안 치료 성공률 95% 달성'
+            ],
+            consultationPrice: '70,000원',
+            trainingPrice: '120,000원 - 180,000원'
+          },
+          {
+            id: 3,
+            name: '이준호 어질리티 코치',
+            position: '스포츠 훈련 전문가',
+            specialty: ['어질리티 훈련', '스포츠 훈련', '체력 증진', '경기견 훈련'],
+            experience: '12년+',
+            rating: 4.9,
+            reviews: 89,
+            avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400',
+            bio: '서울 펫 트레이닝 센터의 스포츠 훈련 전문가로, 반려견 어질리티와 각종 스포츠 분야에서 12년간의 경험을 쌓았습니다. 국제 대회 출전견들을 지도한 경력이 있으며, 일반 반려견들의 건강한 운동과 체력 증진을 위한 프로그램도 운영합니다.',
+            certifications: ['국제 어질리티 심판 자격증', '반려견 스포츠 코치', '체육학 학사', '펫 피트니스 전문가'],
+            institutionRole: '스포츠훈련팀 코치',
+            joinDate: '2012-09-01',
+            successStories: 67,
+            availableSlots: {
+              '2025-06-26': ['09:00', '13:00', '17:00'],
+              '2025-06-28': ['10:00', '14:00'],
+              '2025-06-30': ['11:00', '15:00', '16:30']
+            },
+            achievements: [
+              '전국 어질리티 대회 지도자상 (2022)',
+              '올림픽 어질리티 코치 경력',
+              '국제 대회 우승견 배출 다수',
+              '어질리티 코치 양성 프로그램 개발'
+            ],
+            consultationPrice: '80,000원',
+            trainingPrice: '130,000원 - 200,000원'
+          }
+        ],
+        2: [ // 프리미엄 펫 그루밍 (미용실 - 훈련사 없음)
+        ],
+        3: [ // 24시 반려동물 병원 (병원 - 수의사는 있지만 훈련사 아님)
+        ]
+      };
+
+      const trainers = trainersData[location.id] || [];
+      setInstitutionTrainers(trainers);
+      console.log(`${location.name} 소속 훈련사 ${trainers.length}명 로드됨`);
+      
+    } catch (error) {
+      console.error('훈련사 정보 로드 오류:', error);
+      setInstitutionTrainers([]);
+    } finally {
+      setLoadingTrainers(false);
+    }
+  };
+
+  // 지도 로드
   useEffect(() => {
     if (isOpen && activeTab === 'map') {
       const timer = setTimeout(() => {
@@ -136,6 +253,13 @@ export function LocationDetailModal({ location, isOpen, onOpenChange, onReservat
       return () => clearTimeout(timer);
     }
   }, [isOpen, activeTab, location.name]);
+
+  // 훈련사 탭 활성화시 기관 소속 훈련사 정보 로드
+  useEffect(() => {
+    if (isOpen && activeTab === 'trainers' && location.type === 'training') {
+      fetchInstitutionTrainers();
+    }
+  }, [isOpen, activeTab, location.id, location.type]);
 
   const sampleReviews = [
     {

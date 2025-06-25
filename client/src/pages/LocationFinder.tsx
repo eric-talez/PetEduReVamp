@@ -204,10 +204,9 @@ export default function LocationFinder() {
           }
         }, 100);
       } else {
-        // 다른 시설들은 전화 연결 또는 외부 예약 시스템
-        if (confirm(`${location.name}에 예약하시겠습니까? 전화로 연결됩니다.`)) {
-          window.open(`tel:${location.phone}`, '_self');
-        }
+        // 다른 시설들은 네이버 스타일 예약 시스템
+        setSelectedLocation(location);
+        setShowNaverReservation(true);
       }
     }
   };
