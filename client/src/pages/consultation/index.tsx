@@ -3,7 +3,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar, Clock, Video, MessageCircle, Phone, User, CheckCircle, AlertCircle } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
+import { useToast } from "@/hooks/use-toast";
+import { Calendar, Clock, Video, MessageCircle, Phone, User, CheckCircle, AlertCircle, Send } from "lucide-react";
 
 interface Consultation {
   id: string;
@@ -18,11 +25,27 @@ interface Consultation {
 }
 
 export default function ConsultationStatusPage() {
+  const { toast } = useToast();
   const [consultations, setConsultations] = useState<Consultation[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedConsultation, setSelectedConsultation] = useState<Consultation | null>(null);
   const [showDetails, setShowDetails] = useState(false);
   const [showBooking, setShowBooking] = useState(false);
+  
+  // 예약 폼 상태
+  const [selectedTrainer, setSelectedTrainer] = useState('');
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
+  const [selectedTime, setSelectedTime] = useState('');
+  const [consultationType, setConsultationType] = useState<'video' | 'phone' | 'in-person'>('video');
+  const [bookingForm, setBookingForm] = useState({
+    petName: '',
+    petAge: '',
+    petBreed: '',
+    concerns: '',
+    phone: '',
+    email: '',
+    notes: ''
+  });
 
   useEffect(() => {
     // 임시 데이터 로딩
@@ -92,6 +115,82 @@ export default function ConsultationStatusPage() {
     // 일정 변경 모달 또는 페이지로 이동
     setShowBooking(true);
   };
+
+  // 예약 제출 핸들러
+  const handleBookingSubmit = async () => {
+    if (!selectedTrainer || !selectedDate || !selectedTime || !bookingForm.petName || !bookingForm.phone) {
+      toast({
+        title: "필수 정보를 입력해주세요",
+        description: "훈련사, 날짜, 시간, 반려동물 이름, 연락처는 필수입니다.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/consultation/request', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          trainerId: selectedTrainer,
+          date: selectedDate.toISOString().split('T')[0],
+          time: selectedTime,
+          type: consultationType,
+          ...bookingForm
+        }),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        toast({
+          title: "상담 예약 완료",
+          description: "상담 예약이 성공적으로 접수되었습니다.",
+        });
+        
+        // 폼 초기화
+        setSelectedTrainer('');
+        setSelectedDate(undefined);
+        setSelectedTime('');
+        setBookingForm({
+          petName: '',
+          petAge: '',
+          petBreed: '',
+          concerns: '',
+          phone: '',
+          email: '',
+          notes: ''
+        });
+        setShowBooking(false);
+        
+        // 상담 목록 새로고침
+        // TODO: 실제 API 호출로 상담 목록 업데이트
+      } else {
+        throw new Error(result.error || '예약 실패');
+      }
+    } catch (error) {
+      toast({
+        title: "예약 실패",
+        description: "상담 예약 중 오류가 발생했습니다.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // 가능한 훈련사 목록
+  const availableTrainers = [
+    { id: '1', name: '김민수 전문 훈련사', specialty: '기본 훈련' },
+    { id: '2', name: '박지혜 펫 트레이너', specialty: '행동 교정' },
+    { id: '3', name: '이준호 어질리티 코치', specialty: '어질리티 훈련' },
+    { id: '4', name: '최예린 행동분석가', specialty: '분리불안 치료' },
+  ];
+
+  // 가능한 시간대
+  const availableTimes = [
+    '09:00', '10:00', '11:00', '14:00', '15:00', '16:00', '17:00', '18:00'
+  ];
 
   const getStatusIcon = (status: string) => {
     switch (status) {
