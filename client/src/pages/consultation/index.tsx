@@ -31,6 +31,19 @@ export default function ConsultationStatusPage() {
   const [selectedConsultation, setSelectedConsultation] = useState<Consultation | null>(null);
   const [showDetails, setShowDetails] = useState(false);
   const [showBooking, setShowBooking] = useState(false);
+  const [showPetRegistration, setShowPetRegistration] = useState(false);
+  
+  // 반려동물 관련 상태
+  const [pets, setPets] = useState<any[]>([]);
+  const [selectedPetId, setSelectedPetId] = useState('');
+  const [newPet, setNewPet] = useState({
+    name: '',
+    age: '',
+    breed: '',
+    gender: '수컷',
+    weight: '',
+    description: ''
+  });
   
   // 예약 폼 상태
   const [selectedTrainer, setSelectedTrainer] = useState('');
@@ -48,7 +61,7 @@ export default function ConsultationStatusPage() {
   });
 
   useEffect(() => {
-    // 임시 데이터 로딩
+    // 상담 데이터 로딩
     setTimeout(() => {
       setConsultations([
         {
@@ -75,7 +88,23 @@ export default function ConsultationStatusPage() {
       ]);
       setLoading(false);
     }, 1000);
+
+    // 반려동물 목록 로딩
+    loadPets();
   }, []);
+
+  // 반려동물 목록 로딩
+  const loadPets = async () => {
+    try {
+      const response = await fetch('/api/pets');
+      const result = await response.json();
+      if (result.success) {
+        setPets(result.pets);
+      }
+    } catch (error) {
+      console.error('반려동물 목록 로딩 오류:', error);
+    }
+  };
 
   // Click handlers for consultation functionality
   const handleNewConsultation = () => {
@@ -191,6 +220,73 @@ export default function ConsultationStatusPage() {
   const availableTimes = [
     '09:00', '10:00', '11:00', '14:00', '15:00', '16:00', '17:00', '18:00'
   ];
+
+  // 반려동물 등록 핸들러
+  const handlePetRegistration = async () => {
+    if (!newPet.name || !newPet.breed) {
+      toast({
+        title: "필수 정보를 입력해주세요",
+        description: "반려동물 이름과 견종은 필수입니다.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/pets', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newPet),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        toast({
+          title: "반려동물 등록 완료",
+          description: "반려동물이 성공적으로 등록되었습니다.",
+        });
+        
+        // 폼 초기화
+        setNewPet({
+          name: '',
+          age: '',
+          breed: '',
+          gender: '수컷',
+          weight: '',
+          description: ''
+        });
+        setShowPetRegistration(false);
+        
+        // 반려동물 목록 새로고침
+        loadPets();
+      } else {
+        throw new Error(result.error || '등록 실패');
+      }
+    } catch (error) {
+      toast({
+        title: "등록 실패",
+        description: "반려동물 등록 중 오류가 발생했습니다.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // 선택된 반려동물 정보로 폼 자동 입력
+  const handlePetSelection = (petId: string) => {
+    const selectedPet = pets.find(pet => pet.id.toString() === petId);
+    if (selectedPet) {
+      setBookingForm({
+        ...bookingForm,
+        petName: selectedPet.name,
+        petAge: selectedPet.age,
+        petBreed: selectedPet.breed
+      });
+    }
+    setSelectedPetId(petId);
+  };
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -577,7 +673,36 @@ export default function ConsultationStatusPage() {
 
             {/* 반려동물 정보 */}
             <div className="space-y-4">
-              <h4 className="font-medium">반려동물 정보</h4>
+              <div className="flex items-center justify-between">
+                <h4 className="font-medium">반려동물 정보</h4>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowPetRegistration(true)}
+                >
+                  새 반려동물 등록
+                </Button>
+              </div>
+              
+              {/* 등록된 반려동물 선택 */}
+              {pets.length > 0 && (
+                <div className="space-y-2">
+                  <Label>등록된 반려동물 선택</Label>
+                  <Select value={selectedPetId} onValueChange={handlePetSelection}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="등록된 반려동물을 선택하세요" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {pets.map((pet) => (
+                        <SelectItem key={pet.id} value={pet.id.toString()}>
+                          {pet.name} ({pet.breed}, {pet.age})
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+
               <div className="grid grid-cols-3 gap-4">
                 <div>
                   <Label htmlFor="petName">이름 *</Label>

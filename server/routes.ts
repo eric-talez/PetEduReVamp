@@ -506,6 +506,86 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // 반려동물 목록 조회 API
+  app.get("/api/pets", async (req, res) => {
+    try {
+      console.log('반려동물 목록 조회 요청');
+      
+      // 메모리에서 반려동물 목록 조회 (실제로는 데이터베이스에서 조회)
+      if (!global.petsData) {
+        global.petsData = [
+          {
+            id: 1,
+            name: "멍멍이",
+            age: "2살",
+            breed: "골든리트리버",
+            gender: "수컷",
+            weight: "25kg",
+            image: "https://images.unsplash.com/photo-1552053831-71594a27632d?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=300",
+            description: "활발하고 친근한 성격",
+            createdAt: new Date().toISOString()
+          },
+          {
+            id: 2,
+            name: "야옹이",
+            age: "1살",
+            breed: "페르시안",
+            gender: "암컷",
+            weight: "4kg",
+            image: "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=300",
+            description: "조용하고 우아한 성격",
+            createdAt: new Date().toISOString()
+          }
+        ];
+      }
+
+      res.json({ 
+        success: true, 
+        pets: global.petsData
+      });
+    } catch (error) {
+      console.error('반려동물 목록 조회 오류:', error);
+      res.status(500).json({ error: "반려동물 목록 조회 중 오류가 발생했습니다" });
+    }
+  });
+
+  // 반려동물 등록 API
+  app.post("/api/pets", async (req, res) => {
+    try {
+      const { name, age, breed, gender, weight, description } = req.body;
+      
+      console.log('반려동물 등록 요청:', { name, breed, age });
+      
+      const petId = Date.now();
+      const petData = {
+        id: petId,
+        name: name,
+        age: age,
+        breed: breed,
+        gender: gender || '수컷',
+        weight: weight || '',
+        image: "https://images.unsplash.com/photo-1552053831-71594a27632d?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=300",
+        description: description || '',
+        createdAt: new Date().toISOString()
+      };
+
+      // 메모리에 반려동물 추가 (실제로는 데이터베이스에 저장)
+      if (!global.petsData) {
+        global.petsData = [];
+      }
+      global.petsData.push(petData);
+
+      res.json({ 
+        success: true, 
+        message: "반려동물이 성공적으로 등록되었습니다.",
+        pet: petData
+      });
+    } catch (error) {
+      console.error('반려동물 등록 오류:', error);
+      res.status(500).json({ error: "반려동물 등록 중 오류가 발생했습니다" });
+    }
+  });
+
   app.post("/api/consultations/:id/join", async (req, res) => {
     try {
       const consultationId = req.params.id;
