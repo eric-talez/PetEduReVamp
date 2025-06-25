@@ -21,7 +21,8 @@ import {
   Coffee,
   Users,
   Calendar,
-  MessageCircle
+  MessageCircle,
+  Eye
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
