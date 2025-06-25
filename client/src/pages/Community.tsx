@@ -146,7 +146,7 @@ export default function Community() {
         <TabsContent value="popular" className="mt-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredPosts.map((post) => (
-              <CommunityCard
+              <Card
                 key={post.id}
                 user={post.user}
                 title={post.title}

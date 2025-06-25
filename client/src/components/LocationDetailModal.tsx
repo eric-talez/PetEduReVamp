@@ -592,6 +592,19 @@ export function LocationDetailModal({ location, isOpen, onOpenChange, onReservat
             예약하기
           </Button>
         </div>
+
+        {/* Trainer Consultation Modal */}
+        {selectedTrainer && (
+          <TrainerConsultationModal
+            trainer={selectedTrainer}
+            isOpen={showTrainerConsultation}
+            onOpenChange={setShowTrainerConsultation}
+            onBookingComplete={(bookingData) => {
+              console.log('상담 예약 완료:', bookingData);
+              // 예약 완료 처리 로직
+            }}
+          />
+        )}
       </DialogContent>
     </Dialog>
   );

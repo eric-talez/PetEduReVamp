@@ -283,6 +283,16 @@ function AppLayout({ children }: { children: ReactNode }) {
                   <Route path="/admin/commissions" component={AdminCommissionPage} />
                   <Route path="/admin/commission-settings" component={AdminCommissionSettings} />
                   <Route path="/admin/shop" component={AdminShop} />
+                  <Route path="/admin/locations">
+                    {() => {
+                      const LocationManagement = lazy(() => import('./pages/admin/LocationManagement'));
+                      return (
+                        <Suspense fallback={<div className="p-8 text-center">위치 관리 로딩 중...</div>}>
+                          <ProtectedAdminRoute component={LocationManagement} />
+                        </Suspense>
+                      );
+                    }}
+                  </Route>
                   <Route path="/admin/settings" component={AdminSettings} />
                   <Route path="/admin/contents" component={AdminContents} />
                   <Route path="/admin/spring-boot-test" component={SpringBootTestPage} />
