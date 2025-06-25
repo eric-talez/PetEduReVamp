@@ -114,6 +114,7 @@ function CommunityPage() {
   const [selectedPost, setSelectedPost] = useState<any>(null);
   const [isPostDetailOpen, setIsPostDetailOpen] = useState(false);
   const [newComment, setNewComment] = useState('');
+  const [comments, setComments] = useState<any[]>([]);
   const [newPost, setNewPost] = useState({
     title: "",
     content: "",
@@ -266,6 +267,20 @@ function CommunityPage() {
   const handlePostClick = (post: any) => {
     setSelectedPost(post);
     setIsPostDetailOpen(true);
+    
+    // 샘플 댓글 데이터 설정
+    setComments([
+      {
+        id: 1,
+        user: {
+          name: "댓글러",
+          image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100"
+        },
+        content: "좋은 정보 감사합니다! 우리 강아지에게도 적용해봐야겠어요.",
+        likes: 3,
+        createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString() // 2시간 전
+      }
+    ]);
   };
 
   // 댓글 작성 핸들러
@@ -277,6 +292,21 @@ function CommunityPage() {
       });
       return;
     }
+
+    // 새 댓글 객체 생성
+    const newCommentObj = {
+      id: Date.now(),
+      user: {
+        name: user?.name || "반려인",
+        image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100"
+      },
+      content: newComment,
+      likes: 0,
+      createdAt: new Date().toISOString()
+    };
+
+    // 댓글 목록에 추가
+    setComments(prev => [newCommentObj, ...prev]);
 
     // 선택된 게시글의 댓글 수 증가
     if (selectedPost) {
@@ -938,28 +968,55 @@ function CommunityPage() {
                   
                   {/* 댓글 목록 */}
                   <div className="space-y-4">
-                    <div className="bg-gray-50 rounded-lg p-3">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Avatar className="h-6 w-6">
-                          <AvatarImage src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100" />
-                          <AvatarFallback>댓</AvatarFallback>
-                        </Avatar>
-                        <span className="text-sm font-medium">댓글러</span>
-                        <span className="text-xs text-gray-500">2시간 전</span>
+                    {comments.length === 0 ? (
+                      <div className="text-center py-8 text-gray-500">
+                        <MessageSquare className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                        <p>아직 댓글이 없습니다.</p>
+                        <p className="text-sm">첫 번째 댓글을 작성해보세요!</p>
                       </div>
-                      <p className="text-sm text-gray-700">
-                        좋은 정보 감사합니다! 우리 강아지에게도 적용해봐야겠어요.
-                      </p>
-                      <div className="flex items-center gap-2 mt-2">
-                        <Button variant="ghost" size="sm" className="text-xs h-6 px-2">
-                          <Heart className="h-3 w-3 mr-1" />
-                          3
-                        </Button>
-                        <Button variant="ghost" size="sm" className="text-xs h-6 px-2">
-                          답글
-                        </Button>
-                      </div>
-                    </div>
+                    ) : (
+                      comments.map((comment) => (
+                        <div key={comment.id} className="bg-gray-50 rounded-lg p-3">
+                          <div className="flex items-center gap-2 mb-2">
+                            <Avatar className="h-6 w-6">
+                              <AvatarImage src={comment.user.image} />
+                              <AvatarFallback>{comment.user.name?.[0] || 'U'}</AvatarFallback>
+                            </Avatar>
+                            <span className="text-sm font-medium">{comment.user.name}</span>
+                            <span className="text-xs text-gray-500">
+                              {formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true, locale: ko })}
+                            </span>
+                          </div>
+                          <p className="text-sm text-gray-700 whitespace-pre-wrap">
+                            {comment.content}
+                          </p>
+                          <div className="flex items-center gap-2 mt-2">
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              className="text-xs h-6 px-2 hover:text-red-500"
+                              onClick={() => {
+                                // 댓글 좋아요 기능
+                                const updatedComments = comments.map(c => 
+                                  c.id === comment.id ? { ...c, likes: (c.likes || 0) + 1 } : c
+                                );
+                                setComments(updatedComments);
+                                toast({
+                                  title: "댓글 좋아요",
+                                  description: "댓글에 좋아요를 눌렀습니다.",
+                                });
+                              }}
+                            >
+                              <Heart className="h-3 w-3 mr-1" />
+                              {comment.likes || 0}
+                            </Button>
+                            <Button variant="ghost" size="sm" className="text-xs h-6 px-2">
+                              답글
+                            </Button>
+                          </div>
+                        </div>
+                      ))
+                    )}
                   </div>
                 </div>
               </div>
