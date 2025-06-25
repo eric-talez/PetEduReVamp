@@ -400,6 +400,64 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // 메시지 전송 API
+  app.post("/api/messages/send", async (req, res) => {
+    try {
+      const { trainerId, message } = req.body;
+      
+      console.log('메시지 전송 요청:', { trainerId, message });
+      
+      const messageId = Date.now();
+      const messageData = {
+        id: messageId,
+        trainerId: trainerId,
+        senderId: 'user',
+        message: message,
+        timestamp: new Date().toISOString(),
+        status: 'sent'
+      };
+
+      res.json({ 
+        success: true, 
+        message: "메시지가 성공적으로 전송되었습니다.",
+        data: messageData
+      });
+    } catch (error) {
+      console.error('메시지 전송 오류:', error);
+      res.status(500).json({ error: "메시지 전송 중 오류가 발생했습니다" });
+    }
+  });
+
+  // 예약 생성 API
+  app.post("/api/reservations/create", async (req, res) => {
+    try {
+      const { trainerId, date, time, notes } = req.body;
+      
+      console.log('예약 생성 요청:', { trainerId, date, time, notes });
+      
+      const reservationId = Date.now();
+      const reservationData = {
+        id: reservationId,
+        trainerId: trainerId,
+        userId: 'user',
+        date: date,
+        time: time,
+        notes: notes,
+        status: 'pending',
+        createdAt: new Date().toISOString()
+      };
+
+      res.json({ 
+        success: true, 
+        message: "예약 요청이 성공적으로 전송되었습니다.",
+        data: reservationData
+      });
+    } catch (error) {
+      console.error('예약 생성 오류:', error);
+      res.status(500).json({ error: "예약 생성 중 오류가 발생했습니다" });
+    }
+  });
+
   app.post("/api/consultations/:id/join", async (req, res) => {
     try {
       const consultationId = req.params.id;
