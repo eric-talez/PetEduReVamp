@@ -100,7 +100,7 @@ const PostCardSkeleton = () => (
 );
 
 // 메인 커뮤니티 페이지 컴포넌트
-export default function CommunityPage() {
+function CommunityPage() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const { user, isLoading: authLoading } = useAuth();
@@ -425,3 +425,5 @@ export default function CommunityPage() {
     </div>
   );
 }
+
+export default CommunityPage;

@@ -469,7 +469,16 @@ function AppLayout({ children }: { children: ReactNode }) {
                   </Route>
 
                   {/* 커뮤니티 */}
-                  <Route path="/community" component={lazy(() => import('./pages/community/CommunityFixed'))} />
+                  <Route path="/community">
+                    {() => {
+                      const CommunityPage = lazy(() => import('./pages/community/CommunityFixed'));
+                      return (
+                        <Suspense fallback={<div className="p-8 text-center">커뮤니티 로딩 중...</div>}>
+                          <CommunityPage />
+                        </Suspense>
+                      );
+                    }}
+                  </Route>
                   <Route path="/community/post/:id" component={CommunityPostDetail} />
 
                   {/* 쇼핑 */}
