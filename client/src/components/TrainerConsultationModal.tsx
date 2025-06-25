@@ -77,7 +77,8 @@ export function TrainerConsultationModal({
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const availableDates = Object.keys(trainer.availableSlots);
+  const availableDates = trainer?.availableSlots ? Object.keys(trainer.availableSlots) : [];
+  const availableTimes = selectedDate && trainer?.availableSlots ? trainer.availableSlots[selectedDate] || [] : [];
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({

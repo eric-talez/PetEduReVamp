@@ -57,20 +57,55 @@ export function NaverStyleReservationModal({
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // 날짜 생성 (다음 30일)
-  const generateAvailableDates = () => {
-    const dates = [];
+  // 달력 생성 (다음 2개월)
+  const generateCalendarDates = () => {
     const today = new Date();
-    for (let i = 1; i <= 30; i++) {
-      const date = new Date(today);
-      date.setDate(today.getDate() + i);
-      dates.push({
-        date: date.toISOString().split('T')[0],
-        dayName: date.toLocaleDateString('ko-KR', { weekday: 'short' }),
-        day: date.getDate(),
-        month: date.getMonth() + 1,
-        isWeekend: date.getDay() === 0 || date.getDay() === 6
-      });
+    const currentMonth = today.getMonth();
+    const currentYear = today.getFullYear();
+    const dates = [];
+
+    // 현재 달과 다음 달
+    for (let monthOffset = 0; monthOffset < 2; monthOffset++) {
+      const targetDate = new Date(currentYear, currentMonth + monthOffset, 1);
+      const month = targetDate.getMonth();
+      const year = targetDate.getFullYear();
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+      const firstDayOfWeek = new Date(year, month, 1).getDay();
+      
+      // 월 정보
+      const monthInfo = {
+        year,
+        month,
+        monthName: targetDate.toLocaleDateString('ko-KR', { year: 'numeric', month: 'long' }),
+        dates: []
+      };
+
+      // 빈 칸 추가 (첫 주 시작 전)
+      for (let i = 0; i < firstDayOfWeek; i++) {
+        monthInfo.dates.push(null);
+      }
+
+      // 실제 날짜들
+      for (let day = 1; day <= daysInMonth; day++) {
+        const date = new Date(year, month, day);
+        const dateString = date.toISOString().split('T')[0];
+        const isPast = date < today;
+        const isToday = dateString === today.toISOString().split('T')[0];
+        const isWeekend = date.getDay() === 0 || date.getDay() === 6;
+        const isAvailable = !isPast && Math.random() > 0.2; // 80% 확률로 예약 가능
+
+        monthInfo.dates.push({
+          date: dateString,
+          day,
+          isPast,
+          isToday,
+          isWeekend,
+          isAvailable,
+          dayName: date.toLocaleDateString('ko-KR', { weekday: 'short' })
+        });
+      }
+
+      dates.push(monthInfo);
     }
     return dates;
   };
@@ -129,7 +164,7 @@ export function NaverStyleReservationModal({
     return serviceMap[location.type] || [];
   };
 
-  const dates = generateAvailableDates();
+  const calendarData = generateCalendarDates();
   const timeSlots = generateTimeSlots();
   const services = getServiceOptions();
 
@@ -144,7 +179,8 @@ export function NaverStyleReservationModal({
   const handleSubmit = async () => {
     setIsSubmitting(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // 시뮬레이션된 API 호출
+      await new Promise(resolve => setTimeout(resolve, 1500));
       
       const reservation = {
         id: Date.now(),
@@ -167,11 +203,19 @@ export function NaverStyleReservationModal({
         createdAt: new Date().toISOString()
       };
 
-      onReservationComplete(reservation);
+      console.log('예약 완료:', reservation);
+      
+      // 부모 컴포넌트에 전달
+      if (onReservationComplete) {
+        onReservationComplete(reservation);
+      }
+      
+      // 모달 닫기
       onOpenChange(false);
       
       // 성공 알림
-      alert(`${location.name} 예약이 완료되었습니다!\n\n예약 정보:\n날짜: ${selectedDate}\n시간: ${selectedTime}\n서비스: ${services.find(s => s.id === selectedService)?.name}`);
+      const serviceName = services.find(s => s.id === selectedService)?.name || '서비스';
+      alert(`${location.name} 예약이 완료되었습니다!\n\n예약 정보:\n날짜: ${selectedDate}\n시간: ${selectedTime}\n서비스: ${serviceName}`);
       
     } catch (error) {
       console.error('예약 실패:', error);
@@ -245,23 +289,89 @@ export function NaverStyleReservationModal({
 
                 <div>
                   <h3 className="text-lg font-semibold mb-4">날짜 선택</h3>
-                  <div className="grid grid-cols-7 gap-2">
-                    {dates.slice(0, 14).map((dateInfo) => (
-                      <Card 
-                        key={dateInfo.date}
-                        className={`cursor-pointer transition-all ${
-                          selectedDate === dateInfo.date 
-                            ? 'ring-2 ring-blue-600 bg-blue-50' 
-                            : 'hover:shadow-md'
-                        } ${dateInfo.isWeekend ? 'bg-red-50' : ''}`}
-                        onClick={() => setSelectedDate(dateInfo.date)}
-                      >
-                        <CardContent className="p-3 text-center">
-                          <div className="text-xs text-gray-500">{dateInfo.dayName}</div>
-                          <div className="text-sm font-semibold">{dateInfo.month}/{dateInfo.day}</div>
-                        </CardContent>
-                      </Card>
+                  <div className="space-y-6">
+                    {calendarData.map((monthData, monthIndex) => (
+                      <div key={monthIndex} className="border rounded-lg p-4">
+                        <h4 className="text-center font-semibold mb-4 text-gray-800">
+                          {monthData.monthName}
+                        </h4>
+                        
+                        {/* 요일 헤더 */}
+                        <div className="grid grid-cols-7 gap-1 mb-2">
+                          {['일', '월', '화', '수', '목', '금', '토'].map((day, i) => (
+                            <div key={i} className={`text-center text-xs font-medium py-2 ${
+                              i === 0 ? 'text-red-500' : i === 6 ? 'text-blue-500' : 'text-gray-600'
+                            }`}>
+                              {day}
+                            </div>
+                          ))}
+                        </div>
+                        
+                        {/* 날짜 그리드 */}
+                        <div className="grid grid-cols-7 gap-1">
+                          {monthData.dates.map((dateInfo, dateIndex) => {
+                            if (!dateInfo) {
+                              return <div key={dateIndex} className="h-10"></div>;
+                            }
+                            
+                            const isSelected = selectedDate === dateInfo.date;
+                            const canSelect = !dateInfo.isPast && dateInfo.isAvailable;
+                            
+                            return (
+                              <button
+                                key={dateIndex}
+                                disabled={!canSelect}
+                                onClick={() => canSelect && setSelectedDate(dateInfo.date)}
+                                className={`
+                                  h-10 w-full rounded-lg text-sm font-medium transition-all relative
+                                  ${isSelected 
+                                    ? 'bg-blue-600 text-white ring-2 ring-blue-300' 
+                                    : canSelect
+                                      ? 'hover:bg-blue-50 text-gray-700'
+                                      : 'text-gray-300 cursor-not-allowed'
+                                  }
+                                  ${dateInfo.isToday ? 'ring-2 ring-orange-400' : ''}
+                                  ${dateInfo.isWeekend && canSelect ? 'text-red-600' : ''}
+                                  ${!dateInfo.isAvailable && !dateInfo.isPast ? 'bg-gray-100 text-gray-400' : ''}
+                                `}
+                              >
+                                {dateInfo.day}
+                                {dateInfo.isToday && (
+                                  <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-orange-400 rounded-full"></div>
+                                )}
+                                {!dateInfo.isAvailable && !dateInfo.isPast && (
+                                  <div className="absolute inset-0 flex items-center justify-center">
+                                    <div className="w-0.5 h-6 bg-gray-400 rotate-45"></div>
+                                  </div>
+                                )}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
                     ))}
+                  </div>
+                  
+                  {/* 날짜 선택 안내 */}
+                  <div className="mt-4 p-3 bg-blue-50 rounded-lg">
+                    <div className="flex items-center gap-4 text-xs">
+                      <div className="flex items-center gap-1">
+                        <div className="w-3 h-3 bg-blue-600 rounded"></div>
+                        <span>선택됨</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <div className="w-3 h-3 border-2 border-orange-400 rounded"></div>
+                        <span>오늘</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <div className="w-3 h-3 bg-gray-100 rounded relative">
+                          <div className="absolute inset-0 flex items-center justify-center">
+                            <div className="w-0.5 h-2 bg-gray-400 rotate-45"></div>
+                          </div>
+                        </div>
+                        <span>예약불가</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
