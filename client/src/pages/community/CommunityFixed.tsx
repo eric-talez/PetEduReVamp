@@ -115,6 +115,8 @@ function CommunityPage() {
   const [isPostDetailOpen, setIsPostDetailOpen] = useState(false);
   const [newComment, setNewComment] = useState('');
   const [comments, setComments] = useState<any[]>([]);
+  const [replyingTo, setReplyingTo] = useState<number | null>(null);
+  const [replyText, setReplyText] = useState('');
   const [newPost, setNewPost] = useState({
     title: "",
     content: "",
@@ -278,7 +280,8 @@ function CommunityPage() {
         },
         content: "좋은 정보 감사합니다! 우리 강아지에게도 적용해봐야겠어요.",
         likes: 3,
-        createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString() // 2시간 전
+        createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), // 2시간 전
+        replies: []
       }
     ]);
   };
@@ -302,7 +305,8 @@ function CommunityPage() {
       },
       content: newComment,
       likes: 0,
-      createdAt: new Date().toISOString()
+      createdAt: new Date().toISOString(),
+      replies: []
     };
 
     // 댓글 목록에 추가
@@ -1010,10 +1014,97 @@ function CommunityPage() {
                               <Heart className="h-3 w-3 mr-1" />
                               {comment.likes || 0}
                             </Button>
-                            <Button variant="ghost" size="sm" className="text-xs h-6 px-2">
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              className="text-xs h-6 px-2"
+                              onClick={() => {
+                                setReplyingTo(replyingTo === comment.id ? null : comment.id);
+                                setReplyText('');
+                              }}
+                            >
                               답글
                             </Button>
                           </div>
+                          
+                          {/* 답글 작성 폼 */}
+                          {replyingTo === comment.id && (
+                            <div className="mt-3 ml-6 p-3 bg-white rounded-lg border">
+                              <Textarea
+                                placeholder="답글을 작성해주세요..."
+                                value={replyText}
+                                onChange={(e) => setReplyText(e.target.value)}
+                                rows={2}
+                                className="mb-2"
+                              />
+                              <div className="flex justify-end gap-2">
+                                <Button 
+                                  variant="outline" 
+                                  size="sm"
+                                  onClick={() => {
+                                    setReplyingTo(null);
+                                    setReplyText('');
+                                  }}
+                                >
+                                  취소
+                                </Button>
+                                <Button 
+                                  size="sm"
+                                  onClick={() => handleReplySubmit(comment.id)}
+                                >
+                                  답글 작성
+                                </Button>
+                              </div>
+                            </div>
+                          )}
+                          
+                          {/* 답글 목록 */}
+                          {comment.replies && comment.replies.length > 0 && (
+                            <div className="mt-3 ml-6 space-y-3">
+                              {comment.replies.map((reply: any) => (
+                                <div key={reply.id} className="bg-white rounded-lg p-3 border-l-2 border-blue-200">
+                                  <div className="flex items-center gap-2 mb-2">
+                                    <Avatar className="h-5 w-5">
+                                      <AvatarImage src={reply.user.image} />
+                                      <AvatarFallback>{reply.user.name?.[0] || 'U'}</AvatarFallback>
+                                    </Avatar>
+                                    <span className="text-sm font-medium">{reply.user.name}</span>
+                                    <span className="text-xs text-gray-500">
+                                      {formatDistanceToNow(new Date(reply.createdAt), { addSuffix: true, locale: ko })}
+                                    </span>
+                                  </div>
+                                  <p className="text-sm text-gray-700 whitespace-pre-wrap">
+                                    {reply.content}
+                                  </p>
+                                  <div className="flex items-center gap-2 mt-2">
+                                    <Button 
+                                      variant="ghost" 
+                                      size="sm" 
+                                      className="text-xs h-5 px-2 hover:text-red-500"
+                                      onClick={() => {
+                                        // 답글 좋아요 기능
+                                        setComments(prev => prev.map(c => 
+                                          c.id === comment.id ? {
+                                            ...c,
+                                            replies: c.replies.map((r: any) => 
+                                              r.id === reply.id ? { ...r, likes: (r.likes || 0) + 1 } : r
+                                            )
+                                          } : c
+                                        ));
+                                        toast({
+                                          title: "답글 좋아요",
+                                          description: "답글에 좋아요를 눌렀습니다.",
+                                        });
+                                      }}
+                                    >
+                                      <Heart className="h-3 w-3 mr-1" />
+                                      {reply.likes || 0}
+                                    </Button>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
                         </div>
                       ))
                     )}
