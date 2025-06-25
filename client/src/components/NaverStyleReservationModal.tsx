@@ -410,8 +410,6 @@ export function NaverStyleReservationModal({
                     </div>
                   </div>
                 </div>
-                        
-                        {/* 요일 헤더 */}
                         <div className="grid grid-cols-7 gap-1 mb-2">
                           {['일', '월', '화', '수', '목', '금', '토'].map((day, i) => (
                             <div key={i} className={`text-center text-xs font-medium py-2 ${
