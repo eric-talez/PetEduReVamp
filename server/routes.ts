@@ -917,14 +917,14 @@ app.get('/api/search', async (req, res) => {
 
   // 알림 라우트 등록 (WebSocket 설정 문제로 임시 비활성화)
 
-// 건강 관리 라우트
-  setupHealthRoutes(app);
+// 건강 관리 라우트 (임시 비활성화)
+  // setupHealthRoutes(app);
 
   // 분석 라우트  
-  setupAnalyticsRoutes(app);
+  registerAnalyticsRoutes(app);
 
-  // 소셜/커뮤니티 라우트
-  setupSocialRoutes(app);
+  // 소셜/커뮤니티 라우트 (임시 비활성화)
+  // setupSocialRoutes(app);
 
   // 서비스 검수 API
   app.get('/api/service/inspection', async (req, res) => {

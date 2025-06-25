@@ -110,34 +110,7 @@ export function registerAnalyticsRoutes(app: Express) {
         { month: '6월', sessions: 28, avgScore: 89 }
       ];
       
-      // 월별로 그룹핑
-      const monthlyProgress = monthlyData.reduce((acc, session) => {
-        const month = new Date(session.month).toLocaleDateString('ko-KR', { month: 'long' });
-        
-        if (!acc[month]) {
-          acc[month] = {
-            month,
-            sessions: 0,
-            totalScore: 0,
-            sessionCount: 0
-          };
-        }
-        
-        acc[month].sessions += Number(session.sessions);
-        acc[month].totalScore += Number(session.avgScore) || 0;
-        acc[month].sessionCount++;
-        
-        return acc;
-      }, {} as Record<string, any>);
-      
-      // 평균 점수 계산 및 배열로 변환
-      const result = Object.values(monthlyProgress).map((data: any) => ({
-        month: data.month,
-        sessions: data.sessions,
-        score: Math.round(data.sessionCount > 0 ? data.totalScore / data.sessionCount : 0)
-      }));
-      
-      res.json(result);
+      res.json(monthlyProgress);
     } catch (error) {
       console.error('Error fetching monthly progress:', error);
       res.status(500).json({ error: 'Failed to fetch monthly progress' });
