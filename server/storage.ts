@@ -195,7 +195,7 @@ export class MemoryStorage implements IStorage{
   private tierId = 1;
   private transactionId = 1;
   private reportId = 1;
-  
+
   // Health management data stores
   private vaccinations = new Map<number, any>();
   private weightRecords = new Map<number, any>();
@@ -1529,7 +1529,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async removeFromCart(id: number): Promise<boolean> {
-    await db.delete(cartItems).where(eq(cartItems.id, id));
+    Adding getTrainersByInstitute method to DatabaseStorage class.    await db.delete(cartItems).where(eq(cartItems.id, id));
     return true;
   }
 
@@ -1645,13 +1645,17 @@ export class DatabaseStorage implements IStorage {
         return false;
     }
 
+    async getTrainersByInstitute(instituteId: number): Promise<any[]> {
+        return [];
+    }
+
   // 건강 관리 메서드 구현
   async getVaccinations(petId: number): Promise<any[]> {
     // 메모리에서 해당 반려동물의 예방접종 기록 조회
     const vaccinations = Array.from(this.vaccinations.values()).filter(
       (v: any) => v.petId === petId
     );
-    
+
     // 샘플 예방접종 데이터 반환
     return [
       {
