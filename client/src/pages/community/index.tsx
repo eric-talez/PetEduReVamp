@@ -339,32 +339,25 @@ function CommunityPage() {
 
   // 게시글 목록 조회 API 호출
   const {
-    data: postsData,
+    data: postsData = [],
     isLoading,
     isError,
     error
   } = useQuery({
-    queryKey: ['/api/community/posts', activeTab, activeCategory, currentPage],
+    queryKey: ['/api/community/posts'],
     queryFn: async () => {
-      const params = new URLSearchParams({
-        page: currentPage.toString(),
-        limit: '12',
-      });
-
-      if (activeCategory !== 'all') {
-        params.append('category', activeCategory);
+      try {
+        const response = await fetch('/api/community/posts');
+        if (!response.ok) {
+          throw new Error('게시글을 불러오는데 실패했습니다.');
+        }
+        const data = await response.json();
+        console.log('API에서 받은 데이터:', data);
+        return Array.isArray(data) ? data : [];
+      } catch (error) {
+        console.error('게시글 조회 오류:', error);
+        throw error;
       }
-
-      if (activeTab === 'popular') {
-        params.append('sort', 'popular');
-      }
-
-      // 새로운 커뮤니티 API 경로 사용
-      const response = await fetch(`/api/community/posts?${params.toString()}`);
-      if (!response.ok) {
-        throw new Error('게시글을 불러오는데 실패했습니다.');
-      }
-      return await response.json();
     }
   });
 
