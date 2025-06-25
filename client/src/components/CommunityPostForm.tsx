@@ -94,7 +94,7 @@ export function CommunityPostForm({ isOpen, onOpenChange, onPostCreated }: Commu
 
     try {
       // 실제 구현에서는 API 호출
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      await new Promise(resolve => setTimeout(resolve, 1000));
 
       const newPost = {
         id: Date.now(),
@@ -116,9 +116,7 @@ export function CommunityPostForm({ isOpen, onOpenChange, onPostCreated }: Commu
         createdAt: new Date().toISOString()
       };
 
-      console.log('새 게시글 작성:', newPost);
-      onPostCreated(newPost);
-      onOpenChange(false);
+      console.log('새 게시글 작성 성공:', newPost);
       
       // 폼 초기화
       setFormData({
@@ -128,7 +126,12 @@ export function CommunityPostForm({ isOpen, onOpenChange, onPostCreated }: Commu
         tags: ''
       });
       
-      alert('게시글이 성공적으로 작성되었습니다!');
+      // 부모 컴포넌트에 새 게시글 전달
+      onPostCreated(newPost);
+      
+      // 모달 닫기
+      onOpenChange(false);
+      
     } catch (error) {
       console.error('게시글 작성 오류:', error);
       alert('게시글 작성 중 오류가 발생했습니다. 다시 시도해주세요.');

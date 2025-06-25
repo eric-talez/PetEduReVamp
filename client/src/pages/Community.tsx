@@ -295,8 +295,8 @@ export default function Community() {
         isOpen={isPostFormOpen}
         onOpenChange={setIsPostFormOpen}
         onPostCreated={(newPost) => {
+          console.log('새 게시글 추가:', newPost);
           setPosts(prev => [newPost, ...prev]);
-          setIsPostFormOpen(false);
         }}
       />
     </div>

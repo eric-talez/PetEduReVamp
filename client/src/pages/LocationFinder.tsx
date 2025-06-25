@@ -147,6 +147,9 @@ export default function LocationFinder() {
   const [filter, setFilter] = useState('all');
   const [selectedLocation, setSelectedLocation] = useState<LocationItem | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [showTrainerConsultation, setShowTrainerConsultation] = useState(false);
+  const [selectedTrainer, setSelectedTrainer] = useState(null);
+  const [showNaverReservation, setShowNaverReservation] = useState(false);
 
   console.log('LocationFinder 컴포넌트 렌더링됨');
   
