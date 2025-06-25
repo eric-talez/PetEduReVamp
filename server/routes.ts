@@ -837,6 +837,73 @@ app.get('/api/search', async (req, res) => {
 
   // 알림 관련 라우트 (// 임시 비활성화)
   // registerNotificationRoutes(app);
+  // Community API routes
+  app.get("/api/community/posts", async (req, res) => {
+    try {
+      console.log('커뮤니티 게시글 조회 요청');
+      
+      const mockPosts = [
+        {
+          id: 1,
+          user: {
+            image: "https://images.unsplash.com/photo-1580489944761-15a19d654956?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100",
+            name: "최견주",
+            time: "3시간 전"
+          },
+          title: "산책 중 다른 강아지 만났을 때 대처법",
+          content: "오늘 산책 중 크고 활발한 강아지를 만났는데, 우리집 강아지가 너무 긴장하더라구요.",
+          likes: 28,
+          comments: 12,
+          tag: { text: "산책팁", variant: "blue" }
+        }
+      ];
+      
+      res.setHeader('Content-Type', 'application/json');
+      res.json(mockPosts);
+    } catch (error: any) {
+      console.error('커뮤니티 게시글 조회 오류:', error);
+      res.status(500).json({ message: "커뮤니티 게시글 조회 실패: " + error.message });
+    }
+  });
+
+  app.post("/api/community/posts", async (req, res) => {
+    try {
+      const { title, content, category, tags } = req.body;
+      console.log('서버 - 새 게시글 작성 요청:', { title, content, category, tags });
+      
+      if (!title || !content) {
+        return res.status(400).json({ message: "제목과 내용은 필수입니다." });
+      }
+
+      const newPost = {
+        id: Date.now(),
+        user: {
+          image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100",
+          name: "반려인",
+          time: "방금 전"
+        },
+        title,
+        content,
+        likes: 0,
+        comments: 0,
+        tag: {
+          text: category || '일반',
+          variant: 'blue'
+        },
+        category: category || '일반',
+        tags: Array.isArray(tags) ? tags : [],
+        createdAt: new Date().toISOString()
+      };
+
+      console.log('서버 - 새 게시글 생성 완료:', newPost);
+      res.setHeader('Content-Type', 'application/json');
+      res.status(201).json(newPost);
+    } catch (error: any) {
+      console.error('서버 - 게시글 작성 오류:', error);
+      res.status(500).json({ message: "게시글 작성 실패: " + error.message });
+    }
+  });
+
   // 파일 업로드 라우트
   registerUploadRoutes(app);
 
