@@ -961,6 +961,188 @@ export default function ConsultationStatusPage() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* 상담 상세보기 모달 */}
+      <Dialog open={showDetails} onOpenChange={setShowDetails}>
+        <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>상담 상세 정보</DialogTitle>
+            <DialogDescription>
+              상담 예약 및 진행 상태를 확인하세요.
+            </DialogDescription>
+          </DialogHeader>
+          {selectedConsultation && (
+            <div className="space-y-6 py-4">
+              {/* 상담 기본 정보 */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-4">
+                  <div>
+                    <Label className="text-sm font-medium text-muted-foreground">상담 주제</Label>
+                    <p className="text-lg font-semibold">{selectedConsultation.topic}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-muted-foreground">담당 훈련사</Label>
+                    <p className="flex items-center gap-2">
+                      <User className="h-4 w-4" />
+                      {selectedConsultation.trainerName}
+                    </p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-muted-foreground">반려동물</Label>
+                    <p>{selectedConsultation.petName}</p>
+                  </div>
+                </div>
+                <div className="space-y-4">
+                  <div>
+                    <Label className="text-sm font-medium text-muted-foreground">예약 날짜</Label>
+                    <p className="flex items-center gap-2">
+                      <Calendar className="h-4 w-4" />
+                      {new Date(selectedConsultation.date).toLocaleDateString('ko-KR', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                        weekday: 'long'
+                      })}
+                    </p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-muted-foreground">예약 시간</Label>
+                    <p className="flex items-center gap-2">
+                      <Clock className="h-4 w-4" />
+                      {selectedConsultation.time}
+                    </p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-muted-foreground">상담 방식</Label>
+                    <p className="flex items-center gap-2">
+                      {selectedConsultation.type === 'video' && <Video className="h-4 w-4" />}
+                      {selectedConsultation.type === 'phone' && <Phone className="h-4 w-4" />}
+                      {selectedConsultation.type === 'in-person' && <User className="h-4 w-4" />}
+                      {selectedConsultation.type === 'video' ? '화상상담' : 
+                       selectedConsultation.type === 'phone' ? '전화상담' : '대면상담'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* 상담 상태 */}
+              <div className="p-4 bg-muted rounded-lg">
+                <Label className="text-sm font-medium text-muted-foreground">상담 상태</Label>
+                <div className="flex items-center gap-2 mt-2">
+                  {selectedConsultation.status === 'scheduled' && (
+                    <>
+                      <Clock className="h-5 w-5 text-blue-500" />
+                      <Badge className="bg-blue-100 text-blue-800">예정됨</Badge>
+                    </>
+                  )}
+                  {selectedConsultation.status === 'completed' && (
+                    <>
+                      <CheckCircle className="h-5 w-5 text-green-500" />
+                      <Badge className="bg-green-100 text-green-800">완료됨</Badge>
+                    </>
+                  )}
+                  {selectedConsultation.status === 'cancelled' && (
+                    <>
+                      <AlertCircle className="h-5 w-5 text-red-500" />
+                      <Badge className="bg-red-100 text-red-800">취소됨</Badge>
+                    </>
+                  )}
+                  {selectedConsultation.status === 'in-progress' && (
+                    <>
+                      <Video className="h-5 w-5 text-purple-500" />
+                      <Badge className="bg-purple-100 text-purple-800">진행 중</Badge>
+                    </>
+                  )}
+                </div>
+              </div>
+
+              {/* Zoom 정보 (화상상담인 경우) */}
+              {selectedConsultation.type === 'video' && selectedConsultation.status === 'scheduled' && (
+                <div className="p-4 bg-blue-50 rounded-lg">
+                  <Label className="text-sm font-medium text-muted-foreground">화상상담 정보</Label>
+                  <div className="space-y-2 mt-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm">미팅 ID:</span>
+                      <code className="bg-white px-2 py-1 rounded text-sm">123 456 789</code>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm">비밀번호:</span>
+                      <code className="bg-white px-2 py-1 rounded text-sm">abcd1234</code>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-2">
+                      상담 시작 15분 전부터 참여 가능합니다.
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* 상담 메모 (완료된 상담인 경우) */}
+              {selectedConsultation.notes && (
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium text-muted-foreground">상담 메모</Label>
+                  <div className="p-4 bg-muted rounded-lg">
+                    <p className="text-sm">{selectedConsultation.notes}</p>
+                  </div>
+                </div>
+              )}
+
+              {/* 훈련사 정보 */}
+              <div className="border-t pt-4">
+                <Label className="text-sm font-medium text-muted-foreground">훈련사 정보</Label>
+                <div className="flex items-center gap-4 mt-2 p-4 bg-muted rounded-lg">
+                  <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                    <User className="h-6 w-6 text-blue-600" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-medium">{selectedConsultation.trainerName}</p>
+                    <p className="text-sm text-muted-foreground">전문 반려동물 훈련사</p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <div className="flex">
+                        {[1, 2, 3, 4, 5].map((star) => (
+                          <div key={star} className="w-3 h-3 text-yellow-400">⭐</div>
+                        ))}
+                      </div>
+                      <span className="text-xs text-muted-foreground">4.9점 (127개 리뷰)</span>
+                    </div>
+                  </div>
+                  <Button variant="outline" size="sm">
+                    <MessageCircle className="h-4 w-4 mr-1" />
+                    메시지
+                  </Button>
+                </div>
+              </div>
+
+              {/* 예약 정보 */}
+              <div className="grid grid-cols-2 gap-4 pt-4 border-t">
+                <div>
+                  <Label className="text-sm font-medium text-muted-foreground">예약 일시</Label>
+                  <p className="text-sm">{new Date().toLocaleDateString('ko-KR')} 예약됨</p>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium text-muted-foreground">예약 번호</Label>
+                  <p className="text-sm font-mono">#{selectedConsultation.id.padStart(8, '0')}</p>
+                </div>
+              </div>
+            </div>
+          )}
+          <div className="flex justify-end space-x-2">
+            <Button 
+              variant="outline" 
+              onClick={() => setShowDetails(false)}
+            >
+              닫기
+            </Button>
+            {selectedConsultation?.status === 'scheduled' && selectedConsultation.type === 'video' && (
+              <JoinButton consultation={selectedConsultation} onJoin={handleJoinConsultation} />
+            )}
+            {selectedConsultation?.status === 'completed' && (
+              <Button variant="outline">
+                리뷰 작성
+              </Button>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
