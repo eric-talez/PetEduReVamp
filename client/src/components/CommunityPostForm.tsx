@@ -143,6 +143,7 @@ export function CommunityPostForm({ isOpen, onOpenChange, onPostCreated }: Commu
       
     } catch (error) {
       console.error('게시글 작성 오류:', error);
+      setErrors({ submit: '게시글 작성 중 오류가 발생했습니다.' });
       alert('게시글 작성 중 오류가 발생했습니다. 다시 시도해주세요.');
     } finally {
       setIsSubmitting(false);

@@ -11,7 +11,10 @@ import { CommunityPostForm } from '@/components/CommunityPostForm';
 export default function Community() {
   const [searchTerm, setSearchTerm] = useState('');
   const [isPostFormOpen, setIsPostFormOpen] = useState(false);
-  const [posts, setPosts] = useState(communityPosts);
+  const [posts, setPosts] = useState(() => {
+    console.log('Community 컴포넌트 - 초기 게시글 데이터 로드:', communityPosts.length);
+    return communityPosts;
+  });
   
   // Mock community posts data
   const communityPosts = [
