@@ -56,16 +56,17 @@ export function NaverStyleReservationModal({
     requests: ''
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [currentCalendarMonth, setCurrentCalendarMonth] = useState(0); // 0: 이번달, 1: 다음달
 
-  // 달력 생성 (다음 2개월)
+  // 달력 생성 (다음 3개월까지 생성)
   const generateCalendarDates = () => {
     const today = new Date();
     const currentMonth = today.getMonth();
     const currentYear = today.getFullYear();
     const dates = [];
 
-    // 현재 달과 다음 달
-    for (let monthOffset = 0; monthOffset < 2; monthOffset++) {
+    // 현재 달부터 3개월
+    for (let monthOffset = 0; monthOffset < 3; monthOffset++) {
       const targetDate = new Date(currentYear, currentMonth + monthOffset, 1);
       const month = targetDate.getMonth();
       const year = targetDate.getFullYear();
@@ -108,6 +109,14 @@ export function NaverStyleReservationModal({
       dates.push(monthInfo);
     }
     return dates;
+  };
+
+  const handlePrevMonth = () => {
+    setCurrentCalendarMonth(prev => Math.max(0, prev - 1));
+  };
+
+  const handleNextMonth = () => {
+    setCurrentCalendarMonth(prev => Math.min(2, prev + 1));
   };
 
   // 시간대 생성
@@ -289,12 +298,118 @@ export function NaverStyleReservationModal({
 
                 <div>
                   <h3 className="text-lg font-semibold mb-4">날짜 선택</h3>
-                  <div className="space-y-6">
-                    {calendarData.map((monthData, monthIndex) => (
-                      <div key={monthIndex} className="border rounded-lg p-4">
-                        <h4 className="text-center font-semibold mb-4 text-gray-800">
-                          {monthData.monthName}
-                        </h4>
+                  
+                  {/* 월 네비게이션 */}
+                  <div className="flex items-center justify-between mb-4">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handlePrevMonth}
+                      disabled={currentCalendarMonth === 0}
+                      className="flex items-center gap-1"
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                      이전
+                    </Button>
+                    
+                    <h4 className="text-lg font-semibold text-gray-800">
+                      {calendarData[currentCalendarMonth]?.monthName}
+                    </h4>
+                    
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleNextMonth}
+                      disabled={currentCalendarMonth === 2}
+                      className="flex items-center gap-1"
+                    >
+                      다음
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                  </div>
+
+                  {/* 현재 선택된 월의 캘린더만 표시 */}
+                  <div className="border rounded-lg p-4">
+                    {calendarData[currentCalendarMonth] && (
+                      <>
+                        {/* 요일 헤더 */}
+                        <div className="grid grid-cols-7 gap-1 mb-2">
+                          {['일', '월', '화', '수', '목', '금', '토'].map((day, i) => (
+                            <div key={i} className={`text-center text-xs font-medium py-2 ${
+                              i === 0 ? 'text-red-500' : i === 6 ? 'text-blue-500' : 'text-gray-600'
+                            }`}>
+                              {day}
+                            </div>
+                          ))}
+                        </div>
+                        
+                        {/* 날짜 그리드 */}
+                        <div className="grid grid-cols-7 gap-1">
+                          {calendarData[currentCalendarMonth].dates.map((dateInfo, dateIndex) => {
+                            if (!dateInfo) {
+                              return <div key={dateIndex} className="h-10"></div>;
+                            }
+                            
+                            const isSelected = selectedDate === dateInfo.date;
+                            const canSelect = !dateInfo.isPast && dateInfo.isAvailable;
+                            
+                            return (
+                              <button
+                                key={dateIndex}
+                                disabled={!canSelect}
+                                onClick={() => canSelect && setSelectedDate(dateInfo.date)}
+                                className={`
+                                  h-10 w-full rounded-lg text-sm font-medium transition-all relative
+                                  ${isSelected 
+                                    ? 'bg-blue-600 text-white ring-2 ring-blue-300' 
+                                    : canSelect
+                                      ? 'hover:bg-blue-50 text-gray-700'
+                                      : 'text-gray-300 cursor-not-allowed'
+                                  }
+                                  ${dateInfo.isToday ? 'ring-2 ring-orange-400' : ''}
+                                  ${dateInfo.isWeekend && canSelect ? 'text-red-600' : ''}
+                                  ${!dateInfo.isAvailable && !dateInfo.isPast ? 'bg-gray-100 text-gray-400' : ''}
+                                `}
+                              >
+                                {dateInfo.day}
+                                {dateInfo.isToday && (
+                                  <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-orange-400 rounded-full"></div>
+                                )}
+                                {!dateInfo.isAvailable && !dateInfo.isPast && (
+                                  <div className="absolute inset-0 flex items-center justify-center">
+                                    <div className="w-0.5 h-6 bg-gray-400 rotate-45"></div>
+                                  </div>
+                                )}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </>
+                    )}
+                  </div>
+                  
+                  {/* 날짜 선택 안내 */}
+                  <div className="mt-4 p-3 bg-blue-50 rounded-lg">
+                    <div className="flex items-center gap-4 text-xs">
+                      <div className="flex items-center gap-1">
+                        <div className="w-3 h-3 bg-blue-600 rounded"></div>
+                        <span>선택됨</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <div className="w-3 h-3 border-2 border-orange-400 rounded"></div>
+                        <span>오늘</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <div className="w-3 h-3 bg-gray-100 rounded relative">
+                          <div className="absolute inset-0 flex items-center justify-center">
+                            <div className="w-0.5 h-2 bg-gray-400 rotate-45"></div>
+                          </div>
+                        </div>
+                        <span>예약불가</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
                         
                         {/* 요일 헤더 */}
                         <div className="grid grid-cols-7 gap-1 mb-2">
