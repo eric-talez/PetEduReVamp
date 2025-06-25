@@ -119,6 +119,7 @@ export default function Community() {
               variant="outline" 
               size="sm" 
               className="flex items-center gap-1"
+              onClick={() => setIsPostFormOpen(true)}
             >
               <MessageSquare className="w-4 h-4" />
               글쓰기
@@ -162,15 +163,50 @@ export default function Community() {
         <TabsContent value="recent" className="mt-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[...filteredPosts].sort((a, b) => b.id - a.id).map((post) => (
-              <CommunityCard
-                key={post.id}
-                user={post.user}
-                title={post.title}
-                content={post.content}
-                likes={post.likes}
-                comments={post.comments}
-                tag={post.tag}
-              />
+              <Card key={post.id} className="p-4 hover:shadow-lg transition-shadow">
+                <CardContent className="p-0">
+                  <div className="flex items-start space-x-3 mb-3">
+                    <img 
+                      src={post.user.image} 
+                      alt={post.user.name}
+                      className="w-10 h-10 rounded-full object-cover"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center space-x-2">
+                        <span className="font-medium text-sm">{post.user.name}</span>
+                        <span className="text-xs text-gray-500">{post.user.time}</span>
+                      </div>
+                      <Badge 
+                        variant={post.tag.variant as any} 
+                        className="text-xs mt-1"
+                      >
+                        {post.tag.text}
+                      </Badge>
+                    </div>
+                  </div>
+                  
+                  <h3 className="font-semibold text-base mb-2 line-clamp-2">
+                    {post.title}
+                  </h3>
+                  
+                  <p className="text-sm text-gray-600 mb-3 line-clamp-3">
+                    {post.content}
+                  </p>
+                  
+                  <div className="flex items-center justify-between text-sm text-gray-500">
+                    <div className="flex items-center space-x-4">
+                      <div className="flex items-center space-x-1">
+                        <span>👍</span>
+                        <span>{post.likes}</span>
+                      </div>
+                      <div className="flex items-center space-x-1">
+                        <MessageCircle className="w-4 h-4" />
+                        <span>{post.comments}</span>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             ))}
           </div>
         </TabsContent>
