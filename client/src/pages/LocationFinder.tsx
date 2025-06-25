@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { LocationDetailModal } from '@/components/LocationDetailModal';
 import { 
   MapPin, 
   Star, 
@@ -115,6 +116,7 @@ export default function LocationFinder() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filter, setFilter] = useState('all');
   const [selectedLocation, setSelectedLocation] = useState<LocationItem | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   console.log('LocationFinder 컴포넌트 렌더링됨');
   
@@ -143,11 +145,16 @@ export default function LocationFinder() {
   const handleLocationClick = (location: LocationItem) => {
     console.log('위치 클릭:', location.name);
     setSelectedLocation(location);
+    setIsModalOpen(true);
   };
 
   const handleLocationDetail = (locationId: number) => {
     console.log('위치 상세보기 클릭:', locationId);
-    window.location.href = `/location/${locationId}`;
+    const location = locations.find(loc => loc.id === locationId);
+    if (location) {
+      setSelectedLocation(location);
+      setIsModalOpen(true);
+    }
   };
 
   const handleReservation = (locationId: number) => {
@@ -385,103 +392,14 @@ export default function LocationFinder() {
         </CardContent>
       </Card>
 
-      {/* Selected Location Detail */}
+      {/* Location Detail Modal */}
       {selectedLocation && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              {getTypeIcon(selectedLocation.type)}
-              {selectedLocation.name}
-            </CardTitle>
-            <div className="flex items-center gap-4">
-              <Badge variant="outline">{getTypeName(selectedLocation.type)}</Badge>
-              {selectedLocation.isPartner && (
-                <Badge className="bg-blue-600">테일즈 파트너</Badge>
-              )}
-              <div className="flex items-center gap-1">
-                <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                <span className="font-medium">{selectedLocation.rating}</span>
-                <span className="text-gray-500">({selectedLocation.reviewCount})</span>
-              </div>
-              <Badge variant="outline" className="text-xs">
-                {selectedLocation.distance}km
-              </Badge>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <div className="lg:col-span-2">
-                <p className="text-gray-700 mb-4">{selectedLocation.description}</p>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-3">
-                      <MapPin className="h-5 w-5 text-gray-400" />
-                      <span className="text-gray-700">{selectedLocation.address}</span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <Phone className="h-5 w-5 text-gray-400" />
-                      <span className="text-gray-700">{selectedLocation.phone}</span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <Clock className="h-5 w-5 text-gray-400" />
-                      <span className="text-gray-700">
-                        {selectedLocation.operatingHours.open} - {selectedLocation.operatingHours.close}
-                      </span>
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <h4 className="font-semibold mb-2">제공 서비스</h4>
-                    <div className="flex flex-wrap gap-2">
-                      {selectedLocation.services.map((service, index) => (
-                        <Badge key={index} variant="secondary" className="text-xs">
-                          {service}
-                        </Badge>
-                      ))}
-                    </div>
-                    <div className="mt-3">
-                      <h4 className="font-semibold mb-1">가격대</h4>
-                      <p className="text-sm text-gray-600">{selectedLocation.priceRange}</p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex gap-3">
-                  <Button
-                    onClick={() => handleLocationDetail(selectedLocation.id)}
-                    className="flex-1"
-                  >
-                    <Eye className="h-4 w-4 mr-2" />
-                    상세보기
-                  </Button>
-                  <Button
-                    variant="outline"
-                    onClick={() => window.open(`https://map.kakao.com/link/to/${selectedLocation.name}`, '_blank')}
-                    className="flex-1"
-                  >
-                    <Navigation className="h-4 w-4 mr-2" />
-                    길찾기
-                  </Button>
-                  <Button
-                    onClick={() => handleReservation(selectedLocation.id)}
-                    className="flex-1 bg-orange-500 hover:bg-orange-600"
-                  >
-                    예약하기
-                  </Button>
-                </div>
-              </div>
-
-              <div>
-                <img
-                  src={selectedLocation.image}
-                  alt={selectedLocation.name}
-                  className="w-full h-48 object-cover rounded-xl mb-4"
-                />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <LocationDetailModal
+          location={selectedLocation}
+          isOpen={isModalOpen}
+          onOpenChange={setIsModalOpen}
+          onReservation={handleReservation}
+        />
       )}
 
       {/* Pagination */}
