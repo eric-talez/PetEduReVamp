@@ -1596,6 +1596,19 @@ function AuthenticatedRoutes() {
           }}
         </Route>
 
+        <Route path="/facilities">
+          {() => {
+            const FacilitiesPage = lazy(() => import('./pages/facilities'));
+            return (
+              <Suspense fallback={<div className="p-8 flex justify-center items-center">
+                <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
+              </div>}>
+                <FacilitiesPage />
+              </Suspense>
+            );
+          }}
+        </Route>
+
         <Route path="/admin/analytics">
           {() => {
             const AnalyticsPage = lazy(() => import('./pages/admin/analytics'));

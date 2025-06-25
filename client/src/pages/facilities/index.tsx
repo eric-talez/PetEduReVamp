@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   MapPin, 
   Star, 
@@ -15,7 +16,9 @@ import {
   Building,
   Search,
   Filter,
-  Navigation
+  Navigation,
+  Map,
+  List
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
@@ -52,6 +55,10 @@ export default function FacilitiesPage() {
   const [typeFilter, setTypeFilter] = useState('all');
   const [sortBy, setSortBy] = useState('distance');
   const [userLocation, setUserLocation] = useState<{lat: number, lng: number} | null>(null);
+  const [selectedFacility, setSelectedFacility] = useState<Facility | null>(null);
+  const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
+  const mapRef = useRef<HTMLDivElement>(null);
+  const mapInstance = useRef<any>(null);
   const { toast } = useToast();
 
   // 샘플 시설 데이터
@@ -157,6 +164,18 @@ export default function FacilitiesPage() {
     filterAndSortFacilities();
   }, [facilities, searchTerm, typeFilter, sortBy, userLocation]);
 
+  useEffect(() => {
+    if (viewMode === 'map' && mapRef.current && !mapInstance.current) {
+      initializeMap();
+    }
+  }, [viewMode, filteredFacilities, userLocation]);
+
+  useEffect(() => {
+    if (mapInstance.current && filteredFacilities.length > 0) {
+      updateMapMarkers();
+    }
+  }, [filteredFacilities]);
+
   const loadFacilities = async () => {
     try {
       setIsLoading(true);
@@ -261,6 +280,112 @@ export default function FacilitiesPage() {
     window.location.href = `/reservation/${facilityId}`;
   };
 
+  const initializeMap = () => {
+    if (!window.kakao || !window.kakao.maps) {
+      console.error('Kakao Maps API not loaded');
+      return;
+    }
+
+    const container = mapRef.current;
+    const options = {
+      center: new window.kakao.maps.LatLng(
+        userLocation?.lat || 37.5665, 
+        userLocation?.lng || 126.9780
+      ),
+      level: 5
+    };
+
+    mapInstance.current = new window.kakao.maps.Map(container, options);
+    updateMapMarkers();
+  };
+
+  const updateMapMarkers = () => {
+    if (!mapInstance.current || !window.kakao) return;
+
+    // 기존 마커 제거 (실제로는 마커 배열을 관리해야 함)
+    
+    // 사용자 위치 마커
+    if (userLocation) {
+      const userMarkerPosition = new window.kakao.maps.LatLng(userLocation.lat, userLocation.lng);
+      const userMarker = new window.kakao.maps.Marker({
+        position: userMarkerPosition,
+        map: mapInstance.current
+      });
+
+      const userInfoWindow = new window.kakao.maps.InfoWindow({
+        content: '<div style="padding:5px;">내 위치</div>'
+      });
+      userInfoWindow.open(mapInstance.current, userMarker);
+    }
+
+    // 시설 마커들
+    filteredFacilities.forEach((facility) => {
+      const markerPosition = new window.kakao.maps.LatLng(
+        facility.coordinates.lat, 
+        facility.coordinates.lng
+      );
+      
+      const marker = new window.kakao.maps.Marker({
+        position: markerPosition,
+        map: mapInstance.current
+      });
+
+      const infoContent = `
+        <div style="padding:10px; min-width:200px;">
+          <h4 style="margin:0 0 5px 0; font-weight:bold;">${facility.name}</h4>
+          <p style="margin:0 0 5px 0; font-size:12px; color:#666;">${getTypeName(facility.type)}</p>
+          <p style="margin:0 0 5px 0; font-size:12px;">${facility.address}</p>
+          <div style="display:flex; align-items:center; margin:5px 0;">
+            <span style="color:#ffc107;">★</span>
+            <span style="font-size:12px; margin-left:2px;">${facility.rating} (${facility.reviewCount})</span>
+            <span style="font-size:12px; margin-left:10px; color:#007bff;">${facility.distance}km</span>
+          </div>
+          <button 
+            onclick="window.open('tel:${facility.phone}')" 
+            style="background:#007bff; color:white; border:none; padding:4px 8px; border-radius:4px; font-size:12px; cursor:pointer; margin-right:5px;"
+          >
+            전화
+          </button>
+          <button 
+            onclick="window.location.href='/reservation/${facility.id}'" 
+            style="background:#28a745; color:white; border:none; padding:4px 8px; border-radius:4px; font-size:12px; cursor:pointer;"
+          >
+            예약
+          </button>
+        </div>
+      `;
+
+      const infoWindow = new window.kakao.maps.InfoWindow({
+        content: infoContent
+      });
+
+      window.kakao.maps.event.addListener(marker, 'click', () => {
+        infoWindow.open(mapInstance.current, marker);
+        setSelectedFacility(facility);
+      });
+
+      // 파트너 시설은 다른 색상 마커 사용 (실제로는 커스텀 마커 이미지 필요)
+      if (facility.isPartner) {
+        // 파트너 마커 스타일링 로직
+      }
+    });
+
+    // 지도 범위 조정
+    if (filteredFacilities.length > 0) {
+      const bounds = new window.kakao.maps.LatLngBounds();
+      
+      if (userLocation) {
+        bounds.extend(new window.kakao.maps.LatLng(userLocation.lat, userLocation.lng));
+      }
+      
+      filteredFacilities.forEach(facility => {
+        bounds.extend(new window.kakao.maps.LatLng(facility.coordinates.lat, facility.coordinates.lng));
+      });
+      
+      mapInstance.current.setBounds(bounds);
+    }
+  };
+
   return (
     <div className="container mx-auto px-4 py-8 max-w-7xl">
       <div className="mb-8">
@@ -271,7 +396,7 @@ export default function FacilitiesPage() {
       {/* 필터 및 검색 */}
       <Card className="mb-6">
         <CardContent className="p-6">
-          <div className="flex flex-col md:flex-row gap-4">
+          <div className="flex flex-col md:flex-row gap-4 mb-4">
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
               <Input
@@ -305,11 +430,27 @@ export default function FacilitiesPage() {
               </SelectContent>
             </Select>
           </div>
+          
+          {/* 보기 모드 선택 */}
+          <Tabs value={viewMode} onValueChange={(value) => setViewMode(value as 'list' | 'map')}>
+            <TabsList className="grid w-full grid-cols-2 max-w-md">
+              <TabsTrigger value="list" className="flex items-center gap-2">
+                <List className="h-4 w-4" />
+                목록보기
+              </TabsTrigger>
+              <TabsTrigger value="map" className="flex items-center gap-2">
+                <Map className="h-4 w-4" />
+                지도보기
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
         </CardContent>
       </Card>
 
-      {/* 시설 목록 */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {/* 컨텐츠 영역 */}
+      <Tabs value={viewMode} onValueChange={(value) => setViewMode(value as 'list' | 'map')}>
+        <TabsContent value="list">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {isLoading ? (
           Array.from({ length: 6 }).map((_, i) => (
             <Card key={i} className="animate-pulse">
@@ -421,7 +562,120 @@ export default function FacilitiesPage() {
             </Card>
           ))
         )}
-      </div>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="map">
+          {/* 지도 보기 */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* 지도 영역 */}
+            <div className="lg:col-span-2">
+              <Card>
+                <CardContent className="p-0">
+                  <div
+                    ref={mapRef}
+                    className="w-full h-[600px] rounded-lg"
+                    style={{ background: '#f0f0f0' }}
+                  />
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* 선택된 시설 정보 */}
+            <div className="lg:col-span-1">
+              {selectedFacility ? (
+                <Card>
+                  <CardContent className="p-4">
+                    <div className="relative mb-4">
+                      <img
+                        src={selectedFacility.images[0]}
+                        alt={selectedFacility.name}
+                        className="w-full h-48 object-cover rounded-lg"
+                      />
+                      {selectedFacility.isPartner && (
+                        <Badge className="absolute top-2 right-2 bg-blue-600">인증 파트너</Badge>
+                      )}
+                    </div>
+
+                    <div className="flex items-start justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        {getTypeIcon(selectedFacility.type)}
+                        <h3 className="font-semibold text-lg">{selectedFacility.name}</h3>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                        <span className="text-sm font-medium">{selectedFacility.rating}</span>
+                      </div>
+                    </div>
+
+                    <p className="text-sm text-gray-600 mb-3">
+                      {selectedFacility.description}
+                    </p>
+
+                    <div className="space-y-2 mb-4">
+                      <div className="flex items-center gap-2 text-sm">
+                        <MapPin className="h-4 w-4 text-gray-400" />
+                        <span className="text-gray-600">{selectedFacility.address}</span>
+                      </div>
+                      
+                      <div className="flex items-center gap-2 text-sm">
+                        <Phone className="h-4 w-4 text-gray-400" />
+                        <span className="text-gray-600">{selectedFacility.phone}</span>
+                      </div>
+
+                      <div className="flex items-center gap-2 text-sm">
+                        <Clock className="h-4 w-4 text-gray-400" />
+                        <span className="text-gray-600">
+                          {selectedFacility.operatingHours.open} - {selectedFacility.operatingHours.close}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-wrap gap-1 mb-4">
+                      {selectedFacility.amenities.map((amenity, index) => (
+                        <Badge key={index} variant="outline" className="text-xs">
+                          {amenity}
+                        </Badge>
+                      ))}
+                    </div>
+
+                    <div className="text-sm text-gray-600 mb-4">
+                      <strong>가격대:</strong> {selectedFacility.priceRange}
+                    </div>
+
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleNavigate(selectedFacility)}
+                        className="flex-1"
+                      >
+                        <Navigation className="h-4 w-4 mr-1" />
+                        길찾기
+                      </Button>
+                      <Button
+                        size="sm"
+                        onClick={() => handleReservation(selectedFacility.id)}
+                        className="flex-1"
+                      >
+                        예약하기
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ) : (
+                <Card>
+                  <CardContent className="p-8 text-center">
+                    <MapPin className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                    <p className="text-gray-500">지도에서 시설을 클릭하면</p>
+                    <p className="text-gray-500">상세 정보가 표시됩니다.</p>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+          </div>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

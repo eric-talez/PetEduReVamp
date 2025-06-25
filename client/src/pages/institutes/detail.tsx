@@ -1,400 +1,496 @@
-import { useState, useEffect } from "react";
-import { useRoute } from "wouter";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { useToast } from "@/hooks/use-toast";
-import { DogLoading } from "../../components/DogLoading";
-import { KakaoMapView } from "@/components/KakaoMapView";
+import React, { useState, useEffect } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
-  Star, MapPin, Calendar, Building, Users, 
-  BookOpen, Phone, Mail, ArrowLeft, Shield, 
-  Sparkles, ArrowRight, Heart, MessageSquare
-} from "lucide-react";
+  MapPin, 
+  Star, 
+  Phone, 
+  Clock, 
+  Users,
+  Building,
+  Calendar,
+  Award,
+  MessageCircle,
+  Heart,
+  Share
+} from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
-export default function InstituteDetail() {
-  const [_, params] = useRoute('/institutes/:id');
-  const instituteId = params?.id;
-  const [institute, setInstitute] = useState<any | null>(null);
-  const [loading, setLoading] = useState(true);
+interface Trainer {
+  id: number;
+  name: string;
+  avatar: string;
+  specialization: string[];
+  experience: number;
+  rating: number;
+  reviewCount: number;
+  bio: string;
+  certifications: string[];
+  availableSlots: string[];
+  priceRange: string;
+}
+
+interface Institute {
+  id: number;
+  name: string;
+  description: string;
+  address: string;
+  phone: string;
+  website: string;
+  rating: number;
+  reviewCount: number;
+  images: string[];
+  facilities: string[];
+  services: string[];
+  operatingHours: {
+    weekday: { open: string; close: string };
+    weekend: { open: string; close: string };
+  };
+  trainers: Trainer[];
+  isVerified: boolean;
+  establishedYear: number;
+  coordinates: {
+    lat: number;
+    lng: number;
+  };
+}
+
+interface InstituteDetailProps {
+  instituteId: string;
+}
+
+export default function InstituteDetail({ instituteId }: InstituteDetailProps) {
+  const [institute, setInstitute] = useState<Institute | null>(null);
+  const [selectedTrainer, setSelectedTrainer] = useState<Trainer | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('overview');
   const { toast } = useToast();
-  
-  // 로그인 상태 확인 함수
-  const isAuthenticated = (): boolean => {
-    const storedAuth = localStorage.getItem('petedu_auth');
-    return storedAuth !== null;
+
+  // 샘플 기관 데이터
+  const sampleInstitute: Institute = {
+    id: parseInt(instituteId),
+    name: '서울 펫 트레이닝 아카데미',
+    description: '20년 전통의 반려견 전문 교육 기관으로, 체계적이고 과학적인 훈련 프로그램을 제공합니다.',
+    address: '서울시 강남구 테헤란로 123, 펫타워 5층',
+    phone: '02-1234-5678',
+    website: 'www.seouldogacademy.com',
+    rating: 4.8,
+    reviewCount: 324,
+    images: [
+      'https://images.unsplash.com/photo-1544568100-847a948585b9?w=600',
+      'https://images.unsplash.com/photo-1560807707-8cc77767d783?w=600',
+      'https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?w=600'
+    ],
+    facilities: ['실내 훈련장', '야외 운동장', '개별 상담실', 'CCTV 모니터링', '주차장', '대기실'],
+    services: ['기본 훈련', '행동 교정', '사회화 훈련', '어질리티', '그루밍', '호텔링'],
+    operatingHours: {
+      weekday: { open: '09:00', close: '20:00' },
+      weekend: { open: '10:00', close: '18:00' }
+    },
+    trainers: [
+      {
+        id: 1,
+        name: '김민수',
+        avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100',
+        specialization: ['행동 교정', '기본 순종 훈련'],
+        experience: 12,
+        rating: 4.9,
+        reviewCount: 89,
+        bio: '동물행동학 석사 출신으로 12년간 1000마리 이상의 반려견을 성공적으로 훈련시킨 경험이 있습니다.',
+        certifications: ['KKF 공인 훈련사', '동물행동전문가', 'CCPDT 인증'],
+        availableSlots: ['10:00-11:00', '14:00-15:00', '16:00-17:00'],
+        priceRange: '80,000원 - 150,000원'
+      },
+      {
+        id: 2,
+        name: '박지혜',
+        avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b000?w=100',
+        specialization: ['소형견 전문', '사회화 훈련'],
+        experience: 8,
+        rating: 4.7,
+        reviewCount: 67,
+        bio: '소형견 전문 훈련사로 예민하고 까다로운 소형견들의 행동 교정에 특화되어 있습니다.',
+        certifications: ['KKF 공인 훈련사', '소형견 전문가'],
+        availableSlots: ['11:00-12:00', '15:00-16:00', '17:00-18:00'],
+        priceRange: '70,000원 - 120,000원'
+      },
+      {
+        id: 3,
+        name: '이준호',
+        avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100',
+        specialization: ['어질리티', '고급 훈련'],
+        experience: 15,
+        rating: 4.8,
+        reviewCount: 123,
+        bio: '국제 어질리티 대회 출신으로 경쟁견 훈련 및 고급 스포츠 훈련을 전문으로 합니다.',
+        certifications: ['국제 어질리티 심판', 'KKF 마스터 트레이너'],
+        availableSlots: ['09:00-10:00', '13:00-14:00', '18:00-19:00'],
+        priceRange: '100,000원 - 200,000원'
+      }
+    ],
+    isVerified: true,
+    establishedYear: 2003,
+    coordinates: { lat: 37.5665, lng: 126.9780 }
   };
-  
-  // 로그인 유도 함수
-  const promptLogin = () => {
-    toast({
-      title: "로그인이 필요합니다",
-      description: "이 기능을 사용하려면 로그인이 필요합니다.",
-      variant: "destructive",
-    });
-    
-    // 2초 후 로그인 페이지로 이동
-    setTimeout(() => {
-      window.location.href = "/auth/login";
-    }, 2000);
-  };
-  
-  // 예약하기 기능 - 로그인 필요
-  const handleReservation = () => {
-    if (isAuthenticated()) {
-      toast({
-        title: "예약 요청",
-        description: "예약이 요청되었습니다. 담당자 확인 후 연락드립니다.",
-      });
-    } else {
-      promptLogin();
-    }
-  };
-  
-  // 리뷰 작성 기능 - 로그인 필요
-  const handleReviewWrite = () => {
-    if (isAuthenticated()) {
-      toast({
-        title: "리뷰 작성",
-        description: "리뷰 작성 페이지로 이동합니다.",
-      });
-    } else {
-      promptLogin();
-    }
-  };
-  
-  // 문의하기 기능 - 로그인 필요
-  const handleInquiry = () => {
-    if (isAuthenticated()) {
-      toast({
-        title: "문의하기",
-        description: "문의 메시지가 전송되었습니다.",
-      });
-    } else {
-      promptLogin();
-    }
-  };
-  
+
   useEffect(() => {
-    // 데이터 가져오기 (실제로는 API 호출)
-    const fetchInstituteData = () => {
-      setLoading(true);
-      
-      // 모의 데이터 - 실제로는 API 호출로 대체
-      setTimeout(() => {
-        const mockInstitute = {
-          id: parseInt(instituteId || "1"),
-          name: "행복한 반려견 교육 센터",
-          description: "체계적인 커리큘럼과 전문 훈련사들의 1:1 맞춤형 교육으로 반려견의 행동 교정과 견주의 올바른 반려견 교육 방법을 안내합니다. 다양한 프로그램을 통해 반려견의 사회화와 기본 훈련을 도와드립니다.",
-          detailedDescription: "행복한 반려견 교육 센터는 2015년 설립된 이래 수천 명의 견주와 반려견에게 최고의 교육 서비스를 제공해 왔습니다. 저희 센터는 과학적인 방법론에 기반한 교육 프로그램으로 반려견의 행동 문제를 해결하고, 인간과 개 사이의 더 강한 유대 관계를 형성하는 것을 목표로 합니다. 넓은 실내 훈련장과 야외 훈련장을 갖추고 있어 날씨에 관계없이 다양한 교육 활동을 진행할 수 있습니다.",
-          image: "https://images.unsplash.com/photo-1587300003388-59208cc962cb?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=450",
-          location: "서울시 강남구 역삼동 123-45",
-          phone: "02-1234-5678",
-          email: "info@happydogcenter.com",
-          rating: 4.9,
-          reviews: 86,
-          trainers: 8,
-          courses: 12,
-          facilities: ["실내 훈련장", "야외 훈련장", "대기실", "상담실", "카페테리아"],
-          openingHours: "평일 10:00 - 20:00, 주말 10:00 - 18:00",
-          category: "교육 센터",
-          region: "서울",
-          breedSupport: ["소형견", "중형견", "대형견"],
-          certification: true,
-          premium: true,
-          established: "2015년",
-          coordinates: {
-            lat: 37.5665 + (parseInt(instituteId || "1") * 0.005),
-            lng: 126.9780 + (parseInt(instituteId || "1") * 0.005),
-          },
-          images: [
-            "https://images.unsplash.com/photo-1587300003388-59208cc962cb?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=450",
-            "https://images.unsplash.com/photo-1548199973-03cce0bbc87b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=450",
-            "https://images.unsplash.com/photo-1601758177266-bc599de87707?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=450"
-          ],
-          programs: [
-            {
-              id: 1,
-              name: "기본 복종 훈련",
-              price: 150000,
-              duration: "4주",
-              description: "앉아, 엎드려, 기다려 등 기본 명령어 교육"
-            },
-            {
-              id: 2,
-              name: "사회화 프로그램",
-              price: 200000,
-              duration: "8주",
-              description: "다른 개, 사람들과의 상호작용 교육"
-            },
-            {
-              id: 3,
-              name: "문제 행동 교정",
-              price: 250000,
-              duration: "6주",
-              description: "짖음, 물기, 분리불안 등 교정"
-            }
-          ],
-          reviewList: [
-            {
-              id: 1,
-              userName: "김철수",
-              rating: 5,
-              date: "2023-10-15",
-              content: "정말 좋은 교육을 받았습니다. 우리 강아지의 행동이 많이 개선되었어요."
-            },
-            {
-              id: 2,
-              userName: "이영희",
-              rating: 4.5,
-              date: "2023-09-22",
-              content: "전문적인 트레이너분들이 꼼꼼하게 지도해주셔서 만족스러워요."
-            }
-          ]
-        };
-        
-        setInstitute(mockInstitute);
-        setLoading(false);
-      }, 800);
-    };
-    
-    fetchInstituteData();
+    loadInstituteDetails();
   }, [instituteId]);
 
-  if (loading) {
+  const loadInstituteDetails = async () => {
+    try {
+      setIsLoading(true);
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      setInstitute(sampleInstitute);
+    } catch (error) {
+      console.error('기관 정보 로딩 실패:', error);
+      toast({
+        title: "데이터 로딩 실패",
+        description: "기관 정보를 불러올 수 없습니다.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleTrainerReservation = (trainer: Trainer) => {
+    window.location.href = `/reservation/trainer/${trainer.id}`;
+  };
+
+  const handleTrainerContact = (trainer: Trainer) => {
+    window.location.href = `/messages/new?trainerId=${trainer.id}`;
+  };
+
+  if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <DogLoading message="기관 정보 로딩 중..." size="large" />
+      <div className="container mx-auto px-4 py-8 max-w-7xl">
+        <div className="animate-pulse">
+          <div className="h-64 bg-gray-200 rounded-lg mb-8"></div>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-2 space-y-6">
+              <div className="h-32 bg-gray-200 rounded-lg"></div>
+              <div className="h-48 bg-gray-200 rounded-lg"></div>
+            </div>
+            <div className="space-y-6">
+              <div className="h-48 bg-gray-200 rounded-lg"></div>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
 
   if (!institute) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen">
-        <h1 className="text-2xl font-bold mb-4">위치 서비스를 찾을 수 없습니다</h1>
-        <p className="text-gray-500 mb-6">요청하신 위치 서비스 정보가 존재하지 않습니다.</p>
-        <Button onClick={() => window.history.back()}>
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          이전으로 돌아가기
-        </Button>
+      <div className="container mx-auto px-4 py-8 max-w-7xl text-center">
+        <Building className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+        <h2 className="text-2xl font-bold text-gray-600 mb-2">기관을 찾을 수 없습니다</h2>
+        <p className="text-gray-500">요청하신 기관 정보가 존재하지 않습니다.</p>
       </div>
     );
   }
 
-  // 위치 정보를 지도 컴포넌트 형식으로 변환
-  const locationData = {
-    lat: institute.coordinates.lat,
-    lng: institute.coordinates.lng,
-    name: institute.name,
-    address: institute.location
-  };
-
   return (
-    <div className="container mx-auto px-4 py-8">
-      {/* 상단 내비게이션 */}
-      <div className="mb-6">
-        <Button variant="outline" onClick={() => window.history.back()} className="mb-4">
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          위치 서비스 목록으로 돌아가기
-        </Button>
-        
-        <div className="flex flex-wrap justify-between items-center gap-4">
-          <h1 className="text-3xl font-bold">{institute.name}</h1>
-          
-          <div className="flex items-center gap-2">
-            {institute.certification && (
-              <Badge variant="success" className="flex items-center">
-                <Shield className="h-3 w-3 mr-1" />
-                인증
-              </Badge>
-            )}
-            {institute.premium && (
-              <Badge variant="warning" className="flex items-center">
-                <Sparkles className="h-3 w-3 mr-1" />
-                프리미엄
-              </Badge>
+    <div className="container mx-auto px-4 py-8 max-w-7xl">
+      {/* 헤더 이미지 */}
+      <div className="relative rounded-xl overflow-hidden mb-8">
+        <img
+          src={institute.images[0]}
+          alt={institute.name}
+          className="w-full h-64 md:h-80 object-cover"
+        />
+        <div className="absolute inset-0 bg-black/40" />
+        <div className="absolute bottom-4 left-4 text-white">
+          <div className="flex items-center gap-2 mb-2">
+            <h1 className="text-3xl font-bold">{institute.name}</h1>
+            {institute.isVerified && (
+              <Badge className="bg-blue-600">테일즈 인증 기관</Badge>
             )}
           </div>
-        </div>
-        
-        <div className="flex items-center mt-2">
-          <MapPin className="w-4 h-4 text-gray-500 mr-1" />
-          <span className="text-gray-600 dark:text-gray-400">{institute.location}</span>
-          <span className="mx-2">•</span>
-          <Star className="w-4 h-4 text-yellow-500 fill-yellow-500 mr-1" />
-          <span className="text-gray-600 dark:text-gray-400">{institute.rating} ({institute.reviews} 후기)</span>
-        </div>
-      </div>
-      
-      {/* 이미지 갤러리 */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-        {institute.images.map((image: string, idx: number) => (
-          <div key={idx} className={idx === 0 ? "col-span-2 row-span-2 md:col-span-2" : ""}>
-            <img 
-              src={image} 
-              alt={`${institute.name} ${idx + 1}`} 
-              className="w-full h-full object-cover rounded-lg"
-              style={{ height: idx === 0 ? "400px" : "195px" }}
-            />
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-1">
+              <Star className="h-5 w-5 fill-yellow-400 text-yellow-400" />
+              <span className="font-medium">{institute.rating}</span>
+              <span className="text-gray-300">({institute.reviewCount})</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <MapPin className="h-4 w-4" />
+              <span>{institute.address}</span>
+            </div>
           </div>
-        ))}
+        </div>
       </div>
-      
-      {/* 콘텐츠 영역 */}
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* 왼쪽 컬럼 - 상세 정보 */}
+        {/* 메인 컨텐츠 */}
         <div className="lg:col-span-2">
-          <Card className="mb-8">
-            <div className="p-6">
-              <h2 className="text-xl font-semibold mb-4">소개</h2>
-              <p className="text-gray-700 dark:text-gray-300 mb-6">{institute.detailedDescription}</p>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <h3 className="text-md font-medium mb-3">시설 정보</h3>
-                  <ul className="space-y-2">
-                    {institute.facilities.map((facility: string, idx: number) => (
-                      <li key={idx} className="flex items-center">
-                        <Building className="w-4 h-4 text-primary mr-2" />
-                        <span>{facility}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-                
-                <div>
-                  <h3 className="text-md font-medium mb-3">운영 정보</h3>
-                  <div className="space-y-2">
-                    <div className="flex items-center">
-                      <Calendar className="w-4 h-4 text-primary mr-2" />
-                      <span>{institute.openingHours}</span>
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
+            <TabsList className="grid w-full grid-cols-4">
+              <TabsTrigger value="overview">개요</TabsTrigger>
+              <TabsTrigger value="trainers">훈련사</TabsTrigger>
+              <TabsTrigger value="facilities">시설</TabsTrigger>
+              <TabsTrigger value="reviews">후기</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="overview" className="mt-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>기관 소개</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-gray-700 mb-6">{institute.description}</p>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <h4 className="font-semibold mb-3">제공 서비스</h4>
+                      <div className="space-y-2">
+                        {institute.services.map((service, index) => (
+                          <div key={index} className="flex items-center gap-2">
+                            <div className="w-2 h-2 bg-primary rounded-full" />
+                            <span className="text-sm">{service}</span>
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                    <div className="flex items-center">
-                      <Users className="w-4 h-4 text-primary mr-2" />
-                      <span>전문 트레이너 {institute.trainers}명</span>
-                    </div>
-                    <div className="flex items-center">
-                      <BookOpen className="w-4 h-4 text-primary mr-2" />
-                      <span>교육 프로그램 {institute.courses}개</span>
-                    </div>
-                    <div className="flex items-center">
-                      <Phone className="w-4 h-4 text-primary mr-2" />
-                      <span>{institute.phone}</span>
-                    </div>
-                    <div className="flex items-center">
-                      <Mail className="w-4 h-4 text-primary mr-2" />
-                      <span>{institute.email}</span>
+                    
+                    <div>
+                      <h4 className="font-semibold mb-3">운영 시간</h4>
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between">
+                          <span>평일:</span>
+                          <span>{institute.operatingHours.weekday.open} - {institute.operatingHours.weekday.close}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>주말:</span>
+                          <span>{institute.operatingHours.weekend.open} - {institute.operatingHours.weekend.close}</span>
+                        </div>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </div>
-            </div>
-          </Card>
-          
-          {/* 교육 프로그램 */}
-          {institute.programs && (
-            <Card className="mb-8">
-              <div className="p-6">
-                <h2 className="text-xl font-semibold mb-4">교육 프로그램</h2>
-                <div className="space-y-4">
-                  {institute.programs.map((program: any) => (
-                    <div key={program.id} className="border-b pb-4 last:border-0">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <h3 className="font-medium">{program.name}</h3>
-                          <p className="text-sm text-gray-600 dark:text-gray-400">{program.description}</p>
-                        </div>
-                        <div className="text-right">
-                          <p className="font-medium">{program.price.toLocaleString()}원</p>
-                          <p className="text-sm text-gray-500">{program.duration}</p>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="trainers" className="mt-6">
+              <div className="space-y-6">
+                <div className="flex justify-between items-center">
+                  <h3 className="text-xl font-bold">소속 훈련사 ({institute.trainers.length}명)</h3>
                 </div>
                 
-                <Button className="w-full mt-4" onClick={handleReservation}>
-                  예약/문의하기
-                </Button>
-              </div>
-            </Card>
-          )}
-          
-          {/* 리뷰 */}
-          {institute.reviewList && (
-            <Card className="mb-8">
-              <div className="p-6">
-                <div className="flex justify-between items-center mb-4">
-                  <h2 className="text-xl font-semibold">리뷰</h2>
-                  <Button variant="outline" size="sm" onClick={handleReviewWrite}>
-                    리뷰 작성하기
-                  </Button>
-                </div>
-                
-                <div className="space-y-6">
-                  {institute.reviewList.map((review: any) => (
-                    <div key={review.id} className="border-b pb-4 last:border-0">
-                      <div className="flex items-center mb-2">
-                        <div className="bg-primary/10 rounded-full w-8 h-8 flex items-center justify-center mr-2">
-                          {review.userName.charAt(0)}
+                {institute.trainers.map((trainer) => (
+                  <Card key={trainer.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+                    <CardContent className="p-6">
+                      <div className="flex flex-col md:flex-row gap-6">
+                        <div className="flex-shrink-0">
+                          <Avatar className="w-24 h-24">
+                            <AvatarImage src={trainer.avatar} alt={trainer.name} />
+                            <AvatarFallback>{trainer.name[0]}</AvatarFallback>
+                          </Avatar>
                         </div>
-                        <span className="font-medium">{review.userName}</span>
-                        <span className="mx-2 text-gray-300">•</span>
-                        <div className="flex items-center">
-                          <Star className="w-4 h-4 text-yellow-500 fill-yellow-500 mr-1" />
-                          <span>{review.rating}</span>
+                        
+                        <div className="flex-1">
+                          <div className="flex items-start justify-between mb-3">
+                            <div>
+                              <h4 className="text-xl font-semibold">{trainer.name}</h4>
+                              <p className="text-gray-600">경력 {trainer.experience}년</p>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                              <span className="font-medium">{trainer.rating}</span>
+                              <span className="text-gray-500 text-sm">({trainer.reviewCount})</span>
+                            </div>
+                          </div>
+                          
+                          <p className="text-gray-700 mb-4">{trainer.bio}</p>
+                          
+                          <div className="mb-4">
+                            <h5 className="font-medium mb-2">전문 분야</h5>
+                            <div className="flex flex-wrap gap-2">
+                              {trainer.specialization.map((spec, index) => (
+                                <Badge key={index} variant="secondary">{spec}</Badge>
+                              ))}
+                            </div>
+                          </div>
+                          
+                          <div className="mb-4">
+                            <h5 className="font-medium mb-2">자격증</h5>
+                            <div className="flex flex-wrap gap-2">
+                              {trainer.certifications.map((cert, index) => (
+                                <Badge key={index} variant="outline">{cert}</Badge>
+                              ))}
+                            </div>
+                          </div>
+                          
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <p className="text-sm text-gray-600">가격대</p>
+                              <p className="font-medium">{trainer.priceRange}</p>
+                            </div>
+                            <div className="flex gap-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleTrainerContact(trainer)}
+                              >
+                                <MessageCircle className="h-4 w-4 mr-1" />
+                                문의
+                              </Button>
+                              <Button
+                                size="sm"
+                                onClick={() => handleTrainerReservation(trainer)}
+                              >
+                                <Calendar className="h-4 w-4 mr-1" />
+                                예약하기
+                              </Button>
+                            </div>
+                          </div>
                         </div>
-                        <span className="ml-auto text-sm text-gray-500">{review.date}</span>
                       </div>
-                      <p className="text-gray-700 dark:text-gray-300">{review.content}</p>
-                    </div>
-                  ))}
-                </div>
+                    </CardContent>
+                  </Card>
+                ))}
               </div>
-            </Card>
-          )}
+            </TabsContent>
+
+            <TabsContent value="facilities" className="mt-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>시설 안내</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    {institute.facilities.map((facility, index) => (
+                      <div key={index} className="flex items-center gap-3 p-3 border rounded-lg">
+                        <Building className="h-5 w-5 text-primary" />
+                        <span>{facility}</span>
+                      </div>
+                    ))}
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {institute.images.slice(1).map((image, index) => (
+                      <img
+                        key={index}
+                        src={image}
+                        alt={`시설 이미지 ${index + 1}`}
+                        className="w-full h-48 object-cover rounded-lg"
+                      />
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="reviews" className="mt-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>이용 후기</CardTitle>
+                  <CardDescription>실제 이용자들의 생생한 후기를 확인하세요.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-center py-12">
+                    <MessageCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                    <p className="text-gray-500">아직 등록된 후기가 없습니다.</p>
+                    <p className="text-gray-500">첫 번째 후기를 남겨보세요!</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
         </div>
-        
-        {/* 오른쪽 컬럼 - 지도 & 연락처 */}
-        <div className="lg:col-span-1">
-          <Card className="sticky top-24">
-            <div className="p-6">
-              {/* 지도 */}
-              <h2 className="text-lg font-medium mb-3">위치 정보</h2>
-              <div className="h-[300px] mb-6">
-                <KakaoMapView selectedLocation={locationData} />
+
+        {/* 사이드바 */}
+        <div className="space-y-6">
+          {/* 연락처 정보 */}
+          <Card>
+            <CardHeader>
+              <CardTitle>연락처 정보</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center gap-3">
+                <Phone className="h-5 w-5 text-gray-400" />
+                <span>{institute.phone}</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <MapPin className="h-5 w-5 text-gray-400" />
+                <span className="text-sm">{institute.address}</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <Building className="h-5 w-5 text-gray-400" />
+                <span className="text-sm">설립: {institute.establishedYear}년</span>
               </div>
               
-              {/* CTA 버튼 */}
-              <div className="space-y-3">
-                <Button onClick={handleInquiry} className="w-full">
-                  <MessageSquare className="w-4 h-4 mr-2" />
-                  문의하기
+              <div className="pt-4 space-y-2">
+                <Button className="w-full">
+                  <Phone className="h-4 w-4 mr-2" />
+                  전화 문의
                 </Button>
-                
-                <Button variant="outline" onClick={() => {
-                  if (isAuthenticated()) {
-                    toast({
-                      title: "관심 등록",
-                      description: "관심 목록에 추가되었습니다.",
-                    });
-                  } else {
-                    promptLogin();
-                  }
-                }} className="w-full">
-                  <Heart className="w-4 h-4 mr-2" />
-                  관심 등록
-                </Button>
-                
-                <Button variant="ghost" onClick={() => {
-                  window.location.href = `/institutes`;
-                }} className="w-full">
-                  <ArrowRight className="w-4 h-4 mr-2" />
-                  다른 위치 서비스 보기
+                <Button variant="outline" className="w-full">
+                  <MessageCircle className="h-4 w-4 mr-2" />
+                  메시지 문의
                 </Button>
               </div>
-            </div>
+            </CardContent>
+          </Card>
+
+          {/* 빠른 예약 */}
+          <Card>
+            <CardHeader>
+              <CardTitle>빠른 예약</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                <p className="text-sm text-gray-600">
+                  원하는 훈련사를 선택하여 바로 예약하세요.
+                </p>
+                {institute.trainers.slice(0, 2).map((trainer) => (
+                  <Button
+                    key={trainer.id}
+                    variant="outline"
+                    className="w-full justify-start"
+                    onClick={() => handleTrainerReservation(trainer)}
+                  >
+                    <Avatar className="w-6 h-6 mr-2">
+                      <AvatarImage src={trainer.avatar} />
+                      <AvatarFallback>{trainer.name[0]}</AvatarFallback>
+                    </Avatar>
+                    {trainer.name} 예약
+                  </Button>
+                ))}
+                <Button variant="outline" className="w-full">
+                  모든 훈련사 보기
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* 기관 통계 */}
+          <Card>
+            <CardHeader>
+              <CardTitle>기관 정보</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex justify-between">
+                <span className="text-gray-600">소속 훈련사</span>
+                <span className="font-medium">{institute.trainers.length}명</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600">평균 평점</span>
+                <span className="font-medium">{institute.rating}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600">후기 수</span>
+                <span className="font-medium">{institute.reviewCount}개</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600">설립년도</span>
+                <span className="font-medium">{institute.establishedYear}년</span>
+              </div>
+            </CardContent>
           </Card>
         </div>
       </div>

@@ -1143,8 +1143,8 @@ app.get('/api/search', async (req, res) => {
     }
   });
 
-  // Global error handler
-  app.use(errorHandler);
+  // Global error handler (commented out for now)
+  // app.use(errorHandler);
 
   return httpServer;
 }
