@@ -303,9 +303,10 @@ function CommunityPage() {
       setCurrentPage(1);
     },
     onError: (error: Error) => {
+      console.error('게시글 작성 실패:', error);
       toast({
         title: "작성 실패",
-        description: error.message,
+        description: error.message || "게시글 작성에 실패했습니다.",
         variant: "destructive",
       });
     }
@@ -320,6 +321,10 @@ function CommunityPage() {
         variant: "destructive",
       });
       return;
+    }
+
+    if (createPostMutation.isPending) {
+      return; // 중복 제출 방지
     }
 
     console.log("새 게시글 작성:", newPost);

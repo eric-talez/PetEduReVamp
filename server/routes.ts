@@ -11,12 +11,16 @@ import { registerUploadRoutes } from "./routes/upload";
 import { storage } from "./storage";
 import { courses, users, institutes } from "@shared/schema";
 import { ilike, or } from "drizzle-orm";
+import { setupCommissionRoutes } from './commission/routes';
+import { setupHealthRoutes } from './routes/health';
+import { setupAnalyticsRoutes } from './routes/analytics';
+import { setupSocialRoutes } from './routes/social';
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  
+
   // 대시보드 라우트 등록
   registerDashboardRoutes(app);
-  
+
   // 관리자 라우트 등록
   registerAdminRoutes(app);
 
@@ -841,7 +845,7 @@ app.get('/api/search', async (req, res) => {
   app.get("/api/community/posts", async (req, res) => {
     try {
       console.log('커뮤니티 게시글 조회 요청');
-      
+
       const mockPosts = [
         {
           id: 1,
@@ -857,7 +861,7 @@ app.get('/api/search', async (req, res) => {
           tag: { text: "산책팁", variant: "blue" }
         }
       ];
-      
+
       res.setHeader('Content-Type', 'application/json');
       res.json(mockPosts);
     } catch (error: any) {
@@ -870,7 +874,7 @@ app.get('/api/search', async (req, res) => {
     try {
       const { title, content, category, tags } = req.body;
       console.log('서버 - 새 게시글 작성 요청:', { title, content, category, tags });
-      
+
       if (!title || !content) {
         return res.status(400).json({ message: "제목과 내용은 필수입니다." });
       }
@@ -912,6 +916,15 @@ app.get('/api/search', async (req, res) => {
   registerMessagingRoutes(app, httpServer);
 
   // 알림 라우트 등록 (WebSocket 설정 문제로 임시 비활성화)
+
+// 건강 관리 라우트
+  setupHealthRoutes(app);
+
+  // 분석 라우트  
+  setupAnalyticsRoutes(app);
+
+  // 소셜/커뮤니티 라우트
+  setupSocialRoutes(app);
 
   // 서비스 검수 API
   app.get('/api/service/inspection', async (req, res) => {
