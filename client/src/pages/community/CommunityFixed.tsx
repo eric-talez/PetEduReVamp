@@ -177,8 +177,8 @@ function CommunityPage() {
         return [newPostData];
       });
       
-      // 캐시 무효화로 최신 데이터 다시 가져오기
-      queryClient.invalidateQueries({ queryKey: ['/api/community/posts'] });
+      // 캐시 무효화를 제거하고 수동 업데이트만 사용
+      // queryClient.invalidateQueries({ queryKey: ['/api/community/posts'] });
       
       toast({
         title: "게시글 작성 완료",
@@ -278,7 +278,25 @@ function CommunityPage() {
       return;
     }
 
-    // 임시로 댓글 추가 (실제로는 API 호출)
+    // 선택된 게시글의 댓글 수 증가
+    if (selectedPost) {
+      const updatedPost = {
+        ...selectedPost,
+        comments: (selectedPost.comments || 0) + 1
+      };
+      setSelectedPost(updatedPost);
+
+      // 캐시도 업데이트
+      queryClient.setQueryData(['/api/community/posts'], (oldData: any) => {
+        if (Array.isArray(oldData)) {
+          return oldData.map(post => 
+            post.id === selectedPost.id ? updatedPost : post
+          );
+        }
+        return oldData;
+      });
+    }
+
     toast({
       title: "댓글 작성 완료",
       description: "댓글이 성공적으로 작성되었습니다.",
@@ -289,10 +307,28 @@ function CommunityPage() {
 
   // 좋아요 토글 핸들러
   const handleLikeToggle = (postId: number) => {
-    toast({
-      title: "좋아요",
-      description: "좋아요가 반영되었습니다.",
-    });
+    if (selectedPost) {
+      const updatedPost = {
+        ...selectedPost,
+        likes: (selectedPost.likes || 0) + 1
+      };
+      setSelectedPost(updatedPost);
+
+      // 캐시도 업데이트
+      queryClient.setQueryData(['/api/community/posts'], (oldData: any) => {
+        if (Array.isArray(oldData)) {
+          return oldData.map(post => 
+            post.id === postId ? updatedPost : post
+          );
+        }
+        return oldData;
+      });
+
+      toast({
+        title: "좋아요",
+        description: "좋아요가 반영되었습니다.",
+      });
+    }
   };
 
   const categories = ['일반', '훈련팁', '설문', '정보공유', '건강관리', '행동교정', '영양정보', '놀이활동', '질문답변', '후기공유'];
@@ -892,9 +928,11 @@ function CommunityPage() {
                       placeholder="댓글을 작성해주세요..." 
                       className="mb-2"
                       rows={3}
+                      value={newComment}
+                      onChange={(e) => setNewComment(e.target.value)}
                     />
                     <div className="flex justify-end">
-                      <Button size="sm">댓글 작성</Button>
+                      <Button size="sm" onClick={handleCommentSubmit}>댓글 작성</Button>
                     </div>
                   </div>
                   
