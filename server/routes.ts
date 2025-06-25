@@ -12,9 +12,9 @@ import { storage } from "./storage";
 import { courses, users, institutes } from "@shared/schema";
 import { ilike, or } from "drizzle-orm";
 import { setupCommissionRoutes } from './commission/routes';
-import { setupHealthRoutes } from './routes/health';
+// import { setupHealthRoutes } from './routes/health';
 import { registerAnalyticsRoutes } from './routes/analytics';
-import { setupSocialRoutes } from './routes/social';
+// import { setupSocialRoutes } from './routes/social';
 
 export async function registerRoutes(app: Express): Promise<Server> {
 
