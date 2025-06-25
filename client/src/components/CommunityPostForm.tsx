@@ -95,30 +95,26 @@ export function CommunityPostForm({ isOpen, onOpenChange, onPostCreated }: Commu
     try {
       console.log('새 게시글 작성:', formData);
       
-      // 시뮬레이션된 API 호출
-      await new Promise(resolve => setTimeout(resolve, 500));
-
-      const newPost = {
-        id: Date.now(),
-        user: {
-          image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100",
-          name: "반려인",
-          time: "방금 전"
+      // 실제 API 호출
+      const response = await fetch('/api/community/posts', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
         },
-        title: formData.title,
-        content: formData.content,
-        likes: 0,
-        comments: 0,
-        tag: {
-          text: categories.find(cat => cat.value === formData.category)?.label || '일반',
-          variant: 'blue'
-        },
-        category: formData.category,
-        tags: formData.tags.split(',').map(tag => tag.trim()).filter(tag => tag),
-        createdAt: new Date().toISOString()
-      };
+        body: JSON.stringify({
+          title: formData.title,
+          content: formData.content,
+          category: formData.category,
+          tags: formData.tags.split(',').map(tag => tag.trim()).filter(tag => tag)
+        })
+      });
 
-      console.log('새 게시글 작성 완료:', newPost);
+      if (!response.ok) {
+        throw new Error('서버 응답 오류');
+      }
+
+      const newPost = await response.json();
+      console.log('서버에서 받은 새 게시글:', newPost);
       
       // 부모 컴포넌트에 즉시 전달
       onPostCreated(newPost);
