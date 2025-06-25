@@ -361,7 +361,36 @@ function CommunityPage() {
     }
   });
 
-  // 기존 페이지 이동 핸들러 제거 (모달로 대체)
+  // 검색 및 필터링
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('all');
+
+  // 페이지네이션
+  const itemsPerPage = 12;
+
+  // 필터링된 게시글
+  const filteredPosts = (Array.isArray(postsData) ? postsData : []).filter(post => {
+    if (!post) return false;
+    
+    const matchesTab = activeTab === 'latest' ? true : 
+                       activeTab === 'popular' ? (post.likes || 0) > 10 :
+                       activeTab === 'notices' ? post.isNotice :
+                       true;
+    
+    const matchesSearch = searchTerm === '' || 
+      (post.title && post.title.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (post.content && post.content.toLowerCase().includes(searchTerm.toLowerCase()));
+    
+    const matchesCategory = selectedCategory === 'all' || post.category === selectedCategory;
+    
+    return matchesTab && matchesSearch && matchesCategory;
+  });
+
+  // 페이지네이션 계산
+  const totalItems = filteredPosts?.length || 0;
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const paginatedPosts = filteredPosts?.slice(startIndex, startIndex + itemsPerPage) || [];
 
   // 페이지 변경 핸들러
   const handlePageChange = (page: number) => {
