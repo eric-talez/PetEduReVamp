@@ -418,6 +418,16 @@ function AppLayout({ children }: { children: ReactNode }) {
 
                   {/* 위치 및 이벤트 */}
                   <Route path="/locations" component={LocationsPage} />
+                  <Route path="/location-finder">
+                    {() => {
+                      const LocationFinderPage = lazy(() => import('./pages/LocationFinder'));
+                      return (
+                        <Suspense fallback={<div className="p-8 text-center">위치 찾기 로딩 중...</div>}>
+                          <LocationFinderPage />
+                        </Suspense>
+                      );
+                    }}
+                  </Route>
                   <Route path="/events" component={EventsPage} />
                   <Route path="/events/calendar" component={EventCalendarPage} />
                   <Route path="/events/:id" component={EventDetailPage} />

@@ -35,6 +35,20 @@ export default function LocationFinder() {
   ]);
 
   console.log('LocationFinder 컴포넌트 렌더링됨');
+  
+  const handleLocationClick = (locationId: number) => {
+    console.log('위치 클릭:', locationId);
+  };
+
+  const handleLocationDetail = (locationId: number) => {
+    console.log('위치 상세보기 클릭:', locationId);
+    window.location.href = `/location/${locationId}`;
+  };
+
+  const handleReservation = (locationId: number) => {
+    console.log('예약하기 클릭:', locationId);
+    window.location.href = `/reservation/${locationId}`;
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 p-4">
@@ -74,6 +88,7 @@ export default function LocationFinder() {
                   <div 
                     key={location.id}
                     className="p-4 rounded-lg bg-gray-50 hover:bg-gray-100 border-2 border-transparent hover:border-blue-500 cursor-pointer transition-all"
+                    onClick={() => handleLocationClick(location.id)}
                   >
                     <div className="font-bold text-gray-800 mb-1">
                       {location.name}
@@ -89,6 +104,29 @@ export default function LocationFinder() {
                           {location.distance}km
                         </Badge>
                       </div>
+                    </div>
+                    <div className="flex gap-2 mt-3">
+                      <Button
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleLocationDetail(location.id);
+                        }}
+                        className="flex-1"
+                      >
+                        상세보기
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleReservation(location.id);
+                        }}
+                        className="flex-1"
+                      >
+                        예약하기
+                      </Button>
                     </div>
                   </div>
                 ))}
