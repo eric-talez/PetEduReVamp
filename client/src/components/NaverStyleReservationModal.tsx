@@ -410,19 +410,6 @@ export function NaverStyleReservationModal({
                     </div>
                   </div>
                 </div>
-                        <div className="grid grid-cols-7 gap-1 mb-2">
-                          {['일', '월', '화', '수', '목', '금', '토'].map((day, i) => (
-                            <div key={i} className={`text-center text-xs font-medium py-2 ${
-                              i === 0 ? 'text-red-500' : i === 6 ? 'text-blue-500' : 'text-gray-600'
-                            }`}>
-                              {day}
-                            </div>
-                          ))}
-                        </div>
-                        
-                        {/* 날짜 그리드 */}
-                        <div className="grid grid-cols-7 gap-1">
-                          {monthData.dates.map((dateInfo, dateIndex) => {
                             if (!dateInfo) {
                               return <div key={dateIndex} className="h-10"></div>;
                             }
