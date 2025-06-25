@@ -3,7 +3,8 @@ import { createServer, type Server } from "http";
 import { db } from "./db";
 import { registerMessagingRoutes } from "./routes/messaging";
 import { registerDashboardRoutes } from "./routes/dashboard";
-import { errorHandler } from "./middleware/error-handler";
+import { registerAdminRoutes } from "./routes/admin";
+// import { errorHandler } from "./middleware/error-handler";
 import { registerShoppingRoutes } from "./routes/shopping";
 // import { registerNotificationRoutes } from "./routes/notification-routes";
 import { registerUploadRoutes } from "./routes/upload";
@@ -15,6 +16,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // 대시보드 라우트 등록
   registerDashboardRoutes(app);
+  
+  // 관리자 라우트 등록
+  registerAdminRoutes(app);
 
   // 실시간 인기 통계 API
   app.get("/api/popular-stats", async (req, res) => {

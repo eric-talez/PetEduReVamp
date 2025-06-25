@@ -136,7 +136,12 @@ export default function AdminDashboard({ onAction }: AdminDashboardProps) {
           <div className="mt-4">
             <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400">
               <span>사용자 및 기관 승인</span>
-              <a href="/admin/approvals" className="text-primary hover:text-primary/80">검토</a>
+              <button 
+                onClick={() => window.location.href = '/admin/approvals'}
+                className="text-primary hover:text-primary/80 text-xs font-medium"
+              >
+                검토
+              </button>
             </div>
           </div>
         </Card>
