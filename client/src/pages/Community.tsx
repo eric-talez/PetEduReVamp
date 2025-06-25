@@ -296,8 +296,11 @@ export default function Community() {
         onOpenChange={setIsPostFormOpen}
         onPostCreated={(newPost) => {
           console.log('새 게시글 추가:', newPost);
-          setPosts(prev => [newPost, ...prev]);
-          alert('게시글이 성공적으로 작성되었습니다!');
+          setPosts(prev => {
+            const updatedPosts = [newPost, ...prev];
+            console.log('업데이트된 posts:', updatedPosts);
+            return updatedPosts;
+          });
         }}
       />
     </div>

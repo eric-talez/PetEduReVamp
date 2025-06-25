@@ -118,8 +118,13 @@ export function CommunityPostForm({ isOpen, onOpenChange, onPostCreated }: Commu
 
       console.log('새 게시글 작성 성공:', newPost);
       
-      // 부모 컴포넌트에 새 게시글 전달 (먼저 실행)
-      onPostCreated(newPost);
+      // 부모 컴포넌트에 새 게시글 전달
+      if (onPostCreated) {
+        onPostCreated(newPost);
+      }
+      
+      // 성공 메시지
+      alert('게시글이 성공적으로 작성되었습니다!');
       
       // 폼 초기화
       setFormData({

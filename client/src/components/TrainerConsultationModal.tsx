@@ -49,8 +49,21 @@ export function TrainerConsultationModal({
   trainer, 
   isOpen, 
   onOpenChange, 
-  onBookingComplete 
-}: TrainerConsultationModalProps) {
+  onConsultationBooked 
+}: any) {
+  // trainer가 null이면 빈 모달 반환
+  if (!trainer) {
+    return (
+      <Dialog open={isOpen} onOpenChange={onOpenChange}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>훈련사 정보 없음</DialogTitle>
+          </DialogHeader>
+          <p>선택된 훈련사 정보가 없습니다.</p>
+        </DialogContent>
+      </Dialog>
+    );
+  }
   const [selectedDate, setSelectedDate] = useState('');
   const [selectedTime, setSelectedTime] = useState('');
   const [formData, setFormData] = useState({
