@@ -95,7 +95,7 @@ export default function Community() {
     }
   ];
   
-  const filteredPosts = communityPosts.filter(post => 
+  const filteredPosts = posts.filter(post => 
     post.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
     post.content.toLowerCase().includes(searchTerm.toLowerCase()) ||
     post.user.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -289,6 +289,16 @@ export default function Community() {
           </CardContent>
         </Card>
       </div>
+
+      {/* 글쓰기 모달 */}
+      <CommunityPostForm
+        isOpen={isPostFormOpen}
+        onOpenChange={setIsPostFormOpen}
+        onPostCreated={(newPost) => {
+          setPosts(prev => [newPost, ...prev]);
+          setIsPostFormOpen(false);
+        }}
+      />
     </div>
   );
 }

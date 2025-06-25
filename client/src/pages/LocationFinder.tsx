@@ -492,6 +492,29 @@ export default function LocationFinder() {
           </Button>
         </nav>
       </div>
+      {/* 훈련사 상담 모달 */}
+      <TrainerConsultationModal
+        isOpen={showTrainerConsultation}
+        onOpenChange={setShowTrainerConsultation}
+        trainer={selectedTrainer}
+        onConsultationBooked={(consultation) => {
+          console.log('상담 예약 완료:', consultation);
+          setShowTrainerConsultation(false);
+        }}
+      />
+
+      {/* 네이버 스타일 예약 모달 */}
+      {selectedLocation && (
+        <NaverStyleReservationModal
+          isOpen={showNaverReservation}
+          onOpenChange={setShowNaverReservation}
+          location={selectedLocation}
+          onReservationComplete={(reservation) => {
+            console.log('예약 완료:', reservation);
+            setShowNaverReservation(false);
+          }}
+        />
+      )}
     </div>
   );
 }
