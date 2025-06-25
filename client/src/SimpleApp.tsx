@@ -807,9 +807,72 @@ function AppLayout({ children }: { children: ReactNode }) {
                   {/* 도움말 */}
                   <Route path="/help/faq" component={FAQPage} />
 
+                  <Route path="/location-finder">
+          {() => {
+            const LocationFinder = lazy(() => import('./pages/LocationFinder'));
+            return (
+              <Suspense fallback={<div className="p-8 flex justify-center items-center">
+                <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
+              </div>}>
+                <LocationFinder />
+              </Suspense>
+            );
+          }}
+        </Route>
+
+        <Route path="/alerts">
+          {() => {
+            const AlertsPage = lazy(() => import('./pages/alerts/index'));
+            return (
+              <Suspense fallback={<div className="p-8 flex justify-center items-center">
+                <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
+              </div>}>
+                <AlertsPage />
+              </Suspense>
+            );
+          }}
+        </Route>
+
+        <Route path="/ai-analysis">
+          {() => {
+            const AIAnalysisPage = lazy(() => import('./pages/ai-analysis/index'));
+            return (
+              <Suspense fallback={<div className="p-8 flex justify-center items-center">
+                <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
+              </div>}>
+                <AIAnalysisPage />
+              </Suspense>
+            );
+          }}
+        </Route>
+
                   {/* 404 페이지 */}
-                  <Route component={NotFound} />
-                </Switch>
+                  <Route path="/not-found">
+          {() => {
+            const NotFoundPage = lazy(() => import('./pages/not-found'));
+            return (
+              <Suspense fallback={<div className="p-8 flex justify-center items-center">
+                <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
+              </div>}>
+                <NotFoundPage />
+              </Suspense>
+            );
+          }}
+        </Route>
+
+        {/* 404 캐치-올 라우트 */}
+        <Route>
+          {() => {
+            const NotFoundPage = lazy(() => import('./pages/not-found'));
+            return (
+              <Suspense fallback={<div className="p-8 flex justify-center items-center">
+                <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
+              </div>}>
+                <NotFoundPage />
+              </Suspense>
+            );
+          }}
+        </Route>
               </ErrorBoundary>
             </main>
 
@@ -1659,7 +1722,7 @@ function AuthenticatedRoutes() {
             return (
               <Suspense fallback={<div className="p-8 flex justify-center items-center">
                 <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
-                <span className="ml-2">관리자 알림 로딩 중...</span>
+                <span className="ml-2">관리자 알림딩 중...</span>
               </div>}>
                 <ProtectedAdminRoute component={AdminNotifications} />
               </Suspense>

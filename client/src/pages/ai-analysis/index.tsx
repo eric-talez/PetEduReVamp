@@ -1134,3 +1134,154 @@ export default function AIAnalysisPage() {
     </div>
   );
 }
+import React, { useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Brain, Camera, Upload, BarChart3, TrendingUp, Eye } from "lucide-react";
+
+export default function AIAnalysisPage() {
+  const [analysisType, setAnalysisType] = useState<string>('');
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+
+  const analysisOptions = [
+    {
+      id: 'behavior',
+      title: '행동 패턴 분석',
+      description: '반려동물의 행동을 분석하여 건강 상태와 훈련 필요도를 평가합니다.',
+      icon: <Brain className="h-6 w-6" />,
+      color: 'bg-blue-100 text-blue-600'
+    },
+    {
+      id: 'photo',
+      title: '사진 분석',
+      description: '반려동물 사진을 통해 건강 상태, 감정 상태를 AI로 분석합니다.',
+      icon: <Camera className="h-6 w-6" />,
+      color: 'bg-green-100 text-green-600'
+    },
+    {
+      id: 'video',
+      title: '동영상 분석',
+      description: '반려동물의 움직임을 분석하여 운동량과 활동 패턴을 측정합니다.',
+      icon: <Eye className="h-6 w-6" />,
+      color: 'bg-purple-100 text-purple-600'
+    }
+  ];
+
+  const recentAnalyses = [
+    {
+      id: '1',
+      type: '행동 분석',
+      pet: '뽀삐',
+      date: '2025-01-25',
+      result: '정상 범위',
+      score: 85
+    },
+    {
+      id: '2',
+      type: '사진 분석',
+      pet: '몽이',
+      date: '2025-01-24',
+      result: '관찰 필요',
+      score: 72
+    }
+  ];
+
+  const startAnalysis = (type: string) => {
+    setAnalysisType(type);
+    setIsAnalyzing(true);
+    
+    // 시뮬레이션: 3초 후 분석 완료
+    setTimeout(() => {
+      setIsAnalyzing(false);
+      alert('분석이 완료되었습니다!');
+    }, 3000);
+  };
+
+  return (
+    <div className="container mx-auto p-6">
+      <div className="flex items-center gap-3 mb-6">
+        <Brain className="h-6 w-6" />
+        <h1 className="text-2xl font-bold">AI 도우미</h1>
+        <Badge variant="secondary">Beta</Badge>
+      </div>
+
+      <div className="grid md:grid-cols-2 gap-6 mb-8">
+        {/* 분석 옵션 */}
+        <div>
+          <h2 className="text-lg font-semibold mb-4">분석 유형 선택</h2>
+          <div className="space-y-3">
+            {analysisOptions.map((option) => (
+              <Card 
+                key={option.id} 
+                className="cursor-pointer hover:shadow-md transition-shadow"
+                onClick={() => startAnalysis(option.id)}
+              >
+                <CardContent className="p-4">
+                  <div className="flex items-start gap-3">
+                    <div className={`p-2 rounded-lg ${option.color}`}>
+                      {option.icon}
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-semibold mb-1">{option.title}</h3>
+                      <p className="text-sm text-gray-600">{option.description}</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+
+        {/* 분석 결과 영역 */}
+        <div>
+          <h2 className="text-lg font-semibold mb-4">분석 결과</h2>
+          {isAnalyzing ? (
+            <Card>
+              <CardContent className="p-6 text-center">
+                <div className="animate-spin w-12 h-12 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
+                <h3 className="font-semibold mb-2">AI 분석 중...</h3>
+                <p className="text-gray-600">잠시만 기다려주세요.</p>
+              </CardContent>
+            </Card>
+          ) : (
+            <Card>
+              <CardContent className="p-6 text-center">
+                <Upload className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <h3 className="font-semibold mb-2">분석을 시작해보세요</h3>
+                <p className="text-gray-600">위에서 분석 유형을 선택하면 AI 분석이 시작됩니다.</p>
+              </CardContent>
+            </Card>
+          )}
+        </div>
+      </div>
+
+      {/* 최근 분석 기록 */}
+      <div>
+        <h2 className="text-lg font-semibold mb-4">최근 분석 기록</h2>
+        <div className="space-y-3">
+          {recentAnalyses.map((analysis) => (
+            <Card key={analysis.id}>
+              <CardContent className="p-4">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <h3 className="font-semibold">{analysis.type} - {analysis.pet}</h3>
+                    <p className="text-sm text-gray-600">{analysis.date}</p>
+                  </div>
+                  <div className="text-right">
+                    <Badge 
+                      variant={analysis.score >= 80 ? "default" : "secondary"}
+                    >
+                      {analysis.result}
+                    </Badge>
+                    <p className="text-sm text-gray-600 mt-1">점수: {analysis.score}/100</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}

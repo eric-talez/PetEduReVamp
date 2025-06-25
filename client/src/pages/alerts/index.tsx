@@ -205,3 +205,135 @@ const AlertsPage = () => {
 };
 
 export default AlertsPage;
+import React, { useState, useEffect } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Bell, CheckCircle, AlertCircle, Info, X } from "lucide-react";
+
+interface Notification {
+  id: string;
+  type: 'info' | 'success' | 'warning' | 'error';
+  title: string;
+  message: string;
+  timestamp: Date;
+  read: boolean;
+}
+
+export default function AlertsPage() {
+  const [notifications, setNotifications] = useState<Notification[]>([
+    {
+      id: '1',
+      type: 'info',
+      title: '새로운 강의 추천',
+      message: '김훈련사님의 새로운 기초 훈련 강의가 추가되었습니다.',
+      timestamp: new Date(Date.now() - 1000 * 60 * 30),
+      read: false
+    },
+    {
+      id: '2',
+      type: 'success',
+      title: '예약 확정',
+      message: '내일 오후 2시 화상 상담이 확정되었습니다.',
+      timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2),
+      read: false
+    },
+    {
+      id: '3',
+      type: 'warning',
+      title: '건강검진 알림',
+      message: '반려견 뽀삐의 건강검진 예정일이 다가왔습니다.',
+      timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24),
+      read: true
+    }
+  ]);
+
+  const getIcon = (type: string) => {
+    switch (type) {
+      case 'success': return <CheckCircle className="h-5 w-5 text-green-500" />;
+      case 'warning': return <AlertCircle className="h-5 w-5 text-yellow-500" />;
+      case 'error': return <X className="h-5 w-5 text-red-500" />;
+      default: return <Info className="h-5 w-5 text-blue-500" />;
+    }
+  };
+
+  const markAsRead = (id: string) => {
+    setNotifications(prev => 
+      prev.map(notif => 
+        notif.id === id ? { ...notif, read: true } : notif
+      )
+    );
+  };
+
+  const markAllAsRead = () => {
+    setNotifications(prev => 
+      prev.map(notif => ({ ...notif, read: true }))
+    );
+  };
+
+  const unreadCount = notifications.filter(n => !n.read).length;
+
+  return (
+    <div className="container mx-auto p-6">
+      <div className="flex justify-between items-center mb-6">
+        <div className="flex items-center gap-3">
+          <Bell className="h-6 w-6" />
+          <h1 className="text-2xl font-bold">알림</h1>
+          {unreadCount > 0 && (
+            <Badge variant="destructive">{unreadCount}</Badge>
+          )}
+        </div>
+        {unreadCount > 0 && (
+          <Button onClick={markAllAsRead} variant="outline" size="sm">
+            모두 읽음 처리
+          </Button>
+        )}
+      </div>
+
+      <div className="space-y-4">
+        {notifications.map((notification) => (
+          <Card 
+            key={notification.id} 
+            className={`cursor-pointer transition-colors ${
+              !notification.read ? 'bg-blue-50 border-blue-200' : ''
+            }`}
+            onClick={() => markAsRead(notification.id)}
+          >
+            <CardContent className="p-4">
+              <div className="flex items-start gap-3">
+                {getIcon(notification.type)}
+                <div className="flex-1">
+                  <div className="flex justify-between items-start mb-1">
+                    <h3 className="font-semibold">{notification.title}</h3>
+                    <span className="text-sm text-gray-500">
+                      {notification.timestamp.toLocaleTimeString('ko-KR', {
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })}
+                    </span>
+                  </div>
+                  <p className="text-gray-600">{notification.message}</p>
+                  {!notification.read && (
+                    <Badge variant="secondary" className="mt-2">
+                      읽지 않음
+                    </Badge>
+                  )}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      {notifications.length === 0 && (
+        <Card>
+          <CardContent className="p-8 text-center">
+            <Bell className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-lg font-semibold mb-2">알림이 없습니다</h3>
+            <p className="text-gray-600">새로운 알림이 있으면 여기에 표시됩니다.</p>
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  );
+}

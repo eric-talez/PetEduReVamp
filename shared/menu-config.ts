@@ -81,6 +81,18 @@ export const DEFAULT_MENU_ITEMS: MenuItem[] = [
     isPublic: true
   },
   {
+    id: 'location-finder',
+    title: '위치 찾기',
+    path: '/location-finder',
+    icon: 'MapPin',
+    type: 'internal',
+    category: 'main',
+    roles: ['user', 'pet-owner', 'trainer', 'institute-admin', 'admin'],
+    orderIndex: 3,
+    isActive: true,
+    isPublic: true
+  },
+  {
     id: 'trainers',
     title: '전문가 찾기',
     path: '/trainers',

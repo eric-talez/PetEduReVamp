@@ -35,7 +35,9 @@ import {
   VideoIcon,
   Users,
   CheckCircle,
-  AlertCircle
+  AlertCircle,
+  GraduationCap,
+  Scissors
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useLocation } from 'wouter';
@@ -605,40 +607,42 @@ export default function LocationFinder() {
                         </div>
 
                         
-                    <div className="flex gap-2">
-                      <Button 
-                        size="sm" 
-                        onClick={() => handleLocationClick(location)}
-                        className="flex-1"
-                      >
-                        상세보기
-                      </Button>
-                      {location.type === 'institute' && location.isCertified && (
-                        <Button 
-                          size="sm" 
-                          variant="outline"
-                          onClick={() => handleViewTrainers(location)}
-                          className="flex-1"
-                        >
-                          <Users className="h-4 w-4 mr-1" />
-                          훈련사 보기
-                        </Button>
-                      )}
-                      {location.type === 'institute' && (
-                        <Button 
-                          size="sm" 
-                          variant="outline"
-                          onClick={() => {
-                            console.log('예약하기 클릭:', location.id);
-                            setSelectedLocation(location);
-                            setShowReservation(true);
-                          }}
-                          className="flex-1"
-                        >
-                          예약하기
-                        </Button>
-                      )}
-                    </div>
+                    <div className="p-4 border-t">
+                          <div className="flex gap-2">
+                            <Button 
+                              size="sm" 
+                              onClick={() => handleLocationClick(location)}
+                              className="flex-1"
+                            >
+                              상세보기
+                            </Button>
+                            {location.type === 'institute' && location.isCertified && (
+                              <Button 
+                                size="sm" 
+                                variant="outline"
+                                onClick={() => handleViewTrainers(location)}
+                                className="flex-1"
+                              >
+                                <Users className="h-4 w-4 mr-1" />
+                                훈련사 보기
+                              </Button>
+                            )}
+                            {(location.type === 'institute' || location.type === 'training') && (
+                              <Button 
+                                size="sm" 
+                                variant="outline"
+                                onClick={() => {
+                                  console.log('예약하기 클릭:', location.id);
+                                  setSelectedLocation(location);
+                                  setShowReservation(true);
+                                }}
+                                className="flex-1"
+                              >
+                                예약하기
+                              </Button>
+                            )}
+                          </div>
+                        </div>
                       </Card>
                     ))}
                   </div>
@@ -648,6 +652,189 @@ export default function LocationFinder() {
           </div>
         </div>
       </div>
+
+      {/* 위치 상세 정보 모달 */}
+      <Dialog open={showDetails} onOpenChange={setShowDetails}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              {selectedLocation && getTypeIcon(selectedLocation.type)}
+              {selectedLocation?.name} - 상세 정보
+            </DialogTitle>
+            <DialogDescription>
+              {selectedLocation?.description}
+            </DialogDescription>
+          </DialogHeader>
+
+          {selectedLocation && (
+            <div className="grid gap-6 py-4">
+              {/* 기본 정보 */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3">
+                    <MapPin className="h-5 w-5 text-gray-500" />
+                    <span>{selectedLocation.address}</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Phone className="h-5 w-5 text-gray-500" />
+                    <span>{selectedLocation.phone}</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Clock className="h-5 w-5 text-gray-500" />
+                    <span>{selectedLocation.operatingHours.open} - {selectedLocation.operatingHours.close}</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Star className="h-5 w-5 text-yellow-500 fill-yellow-500" />
+                    <span>{selectedLocation.rating} ({selectedLocation.reviewCount} 리뷰)</span>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <div>
+                    <h4 className="font-semibold mb-2">제공 서비스</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {selectedLocation.services.map((service, index) => (
+                        <Badge key={index} variant="secondary">
+                          {service}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold mb-2">가격대</h4>
+                    <span className="text-sm text-gray-600">{selectedLocation.priceRange}</span>
+                  </div>
+                  {selectedLocation.isCertified && (
+                    <Badge className="bg-green-500">
+                      <CheckCircle className="h-3 w-3 mr-1" />
+                      테일즈 인증 업체
+                    </Badge>
+                  )}
+                </div>
+              </div>
+
+              {/* 인증 업체인 경우 훈련사 정보 표시 */}
+              {selectedLocation.type === 'institute' && selectedLocation.isCertified && (
+                <div className="mt-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-semibold flex items-center gap-2">
+                      <Users className="h-5 w-5" />
+                      소속 훈련사 정보
+                    </h3>
+                    <Button 
+                      onClick={() => {
+                        setShowDetails(false);
+                        handleViewTrainers(selectedLocation);
+                      }}
+                      variant="outline"
+                      size="sm"
+                    >
+                      전체 훈련사 보기
+                    </Button>
+                  </div>
+                  
+                  <div className="grid gap-4">
+                    {/* 샘플 훈련사 정보 표시 */}
+                    <Card className="p-4">
+                      <div className="flex items-start gap-4">
+                        <Avatar className="h-12 w-12">
+                          <AvatarImage src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=300&q=80" />
+                          <AvatarFallback>김</AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1">
+                          <h4 className="font-semibold">김민수 전문 훈련사</h4>
+                          <div className="flex items-center gap-2 mt-1">
+                            <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                            <span className="text-sm">4.9</span>
+                            <span className="text-sm text-gray-500">(156 리뷰)</span>
+                            <Badge variant="outline" className="ml-2">경력 10년+</Badge>
+                          </div>
+                          <div className="flex flex-wrap gap-1 mt-2">
+                            <Badge variant="secondary" className="text-xs">기본 복종 훈련</Badge>
+                            <Badge variant="secondary" className="text-xs">사회화 훈련</Badge>
+                          </div>
+                          <p className="text-sm text-gray-600 mt-2">
+                            10년 이상의 경력을 가진 전문 훈련사로서 수천 마리의 반려견을 교육했습니다.
+                          </p>
+                        </div>
+                        <Button 
+                          size="sm"
+                          onClick={() => {
+                            setShowDetails(false);
+                            handleViewTrainers(selectedLocation);
+                          }}
+                        >
+                          상담 예약
+                        </Button>
+                      </div>
+                    </Card>
+
+                    <Card className="p-4">
+                      <div className="flex items-start gap-4">
+                        <Avatar className="h-12 w-12">
+                          <AvatarImage src="https://images.unsplash.com/photo-1494790108755-2616b612b4c0?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=300&q=80" />
+                          <AvatarFallback>박</AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1">
+                          <h4 className="font-semibold">박지혜 행동교정사</h4>
+                          <div className="flex items-center gap-2 mt-1">
+                            <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                            <span className="text-sm">4.8</span>
+                            <span className="text-sm text-gray-500">(132 리뷰)</span>
+                            <Badge variant="outline" className="ml-2">경력 8년+</Badge>
+                          </div>
+                          <div className="flex flex-wrap gap-1 mt-2">
+                            <Badge variant="secondary" className="text-xs">행동 교정</Badge>
+                            <Badge variant="secondary" className="text-xs">문제행동 해결</Badge>
+                          </div>
+                          <p className="text-sm text-gray-600 mt-2">
+                            문제행동 전문가로 공격성, 분리불안 등의 해결에 특화되어 있습니다.
+                          </p>
+                        </div>
+                        <Button 
+                          size="sm"
+                          onClick={() => {
+                            setShowDetails(false);
+                            handleViewTrainers(selectedLocation);
+                          }}
+                        >
+                          상담 예약
+                        </Button>
+                      </div>
+                    </Card>
+                  </div>
+                </div>
+              )}
+
+              {/* 이미지 */}
+              {selectedLocation.image && (
+                <div className="mt-4">
+                  <img 
+                    src={selectedLocation.image} 
+                    alt={selectedLocation.name}
+                    className="w-full h-64 object-cover rounded-lg"
+                  />
+                </div>
+              )}
+            </div>
+          )}
+
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setShowDetails(false)}>
+              닫기
+            </Button>
+            {selectedLocation?.type === 'institute' && (
+              <Button onClick={() => {
+                setShowDetails(false);
+                setSelectedLocation(selectedLocation);
+                setShowReservation(true);
+              }}>
+                예약하기
+              </Button>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* 훈련사 목록 모달 */}
       <Dialog open={showTrainers} onOpenChange={setShowTrainers}>
