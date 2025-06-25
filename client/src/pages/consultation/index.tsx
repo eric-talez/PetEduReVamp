@@ -483,6 +483,213 @@ export default function ConsultationStatusPage() {
           ))}
         </TabsContent>
       </Tabs>
+
+      {/* 상담 예약 모달 */}
+      <Dialog open={showBooking} onOpenChange={setShowBooking}>
+        <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>새 상담 예약</DialogTitle>
+            <DialogDescription>
+              전문 훈련사와의 상담을 예약하세요.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-6 py-4">
+            {/* 훈련사 선택 */}
+            <div className="space-y-2">
+              <Label htmlFor="trainer">훈련사 선택</Label>
+              <Select value={selectedTrainer} onValueChange={setSelectedTrainer}>
+                <SelectTrigger>
+                  <SelectValue placeholder="훈련사를 선택하세요" />
+                </SelectTrigger>
+                <SelectContent>
+                  {availableTrainers.map((trainer) => (
+                    <SelectItem key={trainer.id} value={trainer.id}>
+                      {trainer.name} - {trainer.specialty}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* 상담 유형 */}
+            <div className="space-y-2">
+              <Label>상담 유형</Label>
+              <div className="flex gap-4">
+                <Button
+                  variant={consultationType === 'video' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setConsultationType('video')}
+                >
+                  <Video className="h-4 w-4 mr-2" />
+                  화상상담
+                </Button>
+                <Button
+                  variant={consultationType === 'phone' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setConsultationType('phone')}
+                >
+                  <Phone className="h-4 w-4 mr-2" />
+                  전화상담
+                </Button>
+                <Button
+                  variant={consultationType === 'in-person' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setConsultationType('in-person')}
+                >
+                  <User className="h-4 w-4 mr-2" />
+                  대면상담
+                </Button>
+              </div>
+            </div>
+
+            {/* 날짜 선택 */}
+            <div className="space-y-2">
+              <Label>날짜 선택</Label>
+              <CalendarComponent
+                mode="single"
+                selected={selectedDate}
+                onSelect={setSelectedDate}
+                disabled={(date) => date < new Date() || date.getDay() === 0} // 과거 날짜와 일요일 비활성화
+                className="rounded-md border w-full"
+              />
+            </div>
+
+            {/* 시간 선택 */}
+            {selectedDate && (
+              <div className="space-y-2">
+                <Label>시간 선택</Label>
+                <div className="grid grid-cols-4 gap-2">
+                  {availableTimes.map((time) => (
+                    <Button
+                      key={time}
+                      variant={selectedTime === time ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setSelectedTime(time)}
+                      className="text-sm"
+                    >
+                      <Clock className="h-4 w-4 mr-1" />
+                      {time}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* 반려동물 정보 */}
+            <div className="space-y-4">
+              <h4 className="font-medium">반려동물 정보</h4>
+              <div className="grid grid-cols-3 gap-4">
+                <div>
+                  <Label htmlFor="petName">이름 *</Label>
+                  <Input
+                    id="petName"
+                    value={bookingForm.petName}
+                    onChange={(e) => setBookingForm({...bookingForm, petName: e.target.value})}
+                    placeholder="반려동물 이름"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="petAge">나이</Label>
+                  <Input
+                    id="petAge"
+                    value={bookingForm.petAge}
+                    onChange={(e) => setBookingForm({...bookingForm, petAge: e.target.value})}
+                    placeholder="예: 2살"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="petBreed">견종</Label>
+                  <Input
+                    id="petBreed"
+                    value={bookingForm.petBreed}
+                    onChange={(e) => setBookingForm({...bookingForm, petBreed: e.target.value})}
+                    placeholder="예: 골든리트리버"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* 상담 내용 */}
+            <div className="space-y-2">
+              <Label htmlFor="concerns">상담하고 싶은 내용</Label>
+              <Textarea
+                id="concerns"
+                value={bookingForm.concerns}
+                onChange={(e) => setBookingForm({...bookingForm, concerns: e.target.value})}
+                placeholder="어떤 문제나 궁금한 점이 있으신지 자세히 적어주세요"
+                rows={3}
+              />
+            </div>
+
+            {/* 연락처 정보 */}
+            <div className="space-y-4">
+              <h4 className="font-medium">연락처 정보</h4>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="phone">전화번호 *</Label>
+                  <Input
+                    id="phone"
+                    value={bookingForm.phone}
+                    onChange={(e) => setBookingForm({...bookingForm, phone: e.target.value})}
+                    placeholder="010-0000-0000"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="email">이메일</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    value={bookingForm.email}
+                    onChange={(e) => setBookingForm({...bookingForm, email: e.target.value})}
+                    placeholder="example@email.com"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* 추가 요청사항 */}
+            <div className="space-y-2">
+              <Label htmlFor="notes">추가 요청사항</Label>
+              <Textarea
+                id="notes"
+                value={bookingForm.notes}
+                onChange={(e) => setBookingForm({...bookingForm, notes: e.target.value})}
+                placeholder="특별한 요청사항이 있으시면 적어주세요"
+                rows={2}
+              />
+            </div>
+
+            {/* 예약 정보 요약 */}
+            {selectedTrainer && selectedDate && selectedTime && (
+              <div className="p-4 bg-blue-50 rounded-lg">
+                <h4 className="font-medium mb-2">예약 정보 확인</h4>
+                <div className="space-y-1 text-sm">
+                  <p><span className="font-medium">훈련사:</span> {availableTrainers.find(t => t.id === selectedTrainer)?.name}</p>
+                  <p><span className="font-medium">날짜:</span> {selectedDate.toLocaleDateString('ko-KR')}</p>
+                  <p><span className="font-medium">시간:</span> {selectedTime}</p>
+                  <p><span className="font-medium">상담방식:</span> {
+                    consultationType === 'video' ? '화상상담' :
+                    consultationType === 'phone' ? '전화상담' : '대면상담'
+                  }</p>
+                  <p><span className="font-medium">반려동물:</span> {bookingForm.petName}</p>
+                </div>
+              </div>
+            )}
+          </div>
+          <div className="flex justify-end space-x-2">
+            <Button 
+              variant="outline" 
+              onClick={() => setShowBooking(false)}
+            >
+              취소
+            </Button>
+            <Button onClick={handleBookingSubmit}>
+              <Send className="h-4 w-4 mr-2" />
+              예약 신청
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
