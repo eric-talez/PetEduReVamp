@@ -111,6 +111,8 @@ function CommunityPage() {
   const [isCreatePostOpen, setIsCreatePostOpen] = useState(false);
   const [viewType, setViewType] = useState<'card' | 'list'>('card');
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedPost, setSelectedPost] = useState<any>(null);
+  const [isPostDetailOpen, setIsPostDetailOpen] = useState(false);
   const [newPost, setNewPost] = useState({
     title: "",
     content: "",
@@ -253,15 +255,13 @@ function CommunityPage() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // 게시글 클릭 핸들러 (간단한 알림으로 처리)
+  // 게시글 클릭 핸들러 (상세보기 모달 열기)
   const handlePostClick = (post: any) => {
-    toast({
-      title: post.title,
-      description: post.content.substring(0, 100) + (post.content.length > 100 ? '...' : ''),
-    });
+    setSelectedPost(post);
+    setIsPostDetailOpen(true);
   };
 
-  const categories = ['일반', '훈련팁', '건강관리', '행동교정', '영양정보', '놀이활동', '질문답변', '후기공유', '설문', '정보공유'];
+  const categories = ['일반', '훈련팁', '설문', '정보공유', '건강관리', '행동교정', '영양정보', '놀이활동', '질문답변', '후기공유'];
 
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 max-w-7xl">
@@ -768,6 +768,125 @@ function CommunityPage() {
           )}
         </TabsContent>
       </Tabs>
+
+      {/* 게시글 상세보기 모달 */}
+      <Dialog open={isPostDetailOpen} onOpenChange={setIsPostDetailOpen}>
+        <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
+          {selectedPost && (
+            <>
+              <DialogHeader>
+                <div className="flex items-center gap-2 mb-2">
+                  <Badge variant="secondary" className="text-xs">
+                    {selectedPost.tag?.text || selectedPost.category}
+                  </Badge>
+                  <span className="text-sm text-gray-500">
+                    {selectedPost.user?.time || '방금 전'}
+                  </span>
+                </div>
+                <DialogTitle className="text-xl font-bold leading-tight">
+                  {selectedPost.title}
+                </DialogTitle>
+                <div className="flex items-center gap-2 pt-2">
+                  <Avatar className="h-8 w-8">
+                    <AvatarImage src={selectedPost.user?.image} alt={selectedPost.user?.name} />
+                    <AvatarFallback>{selectedPost.user?.name?.[0] || 'U'}</AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <p className="text-sm font-medium">{selectedPost.user?.name || '익명'}</p>
+                    <p className="text-xs text-gray-500">
+                      {selectedPost.createdAt ? new Date(selectedPost.createdAt).toLocaleDateString('ko-KR') : '날짜 정보 없음'}
+                    </p>
+                  </div>
+                </div>
+              </DialogHeader>
+              
+              <div className="mt-6">
+                <div className="prose prose-sm max-w-none">
+                  <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
+                    {selectedPost.content}
+                  </p>
+                </div>
+                
+                {selectedPost.tags && selectedPost.tags.length > 0 && (
+                  <div className="mt-4 pt-4 border-t">
+                    <div className="flex flex-wrap gap-2">
+                      {selectedPost.tags.map((tag: string, index: number) => (
+                        <Badge key={index} variant="outline" className="text-xs">
+                          #{tag}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
+                <div className="mt-6 pt-4 border-t flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <Button variant="ghost" size="sm" className="text-gray-600 hover:text-red-500">
+                      <Heart className="h-4 w-4 mr-1" />
+                      좋아요 {selectedPost.likes || 0}
+                    </Button>
+                    <Button variant="ghost" size="sm" className="text-gray-600 hover:text-blue-500">
+                      <MessageSquare className="h-4 w-4 mr-1" />
+                      댓글 {selectedPost.comments || 0}
+                    </Button>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button variant="outline" size="sm">
+                      공유
+                    </Button>
+                    <Button variant="outline" size="sm">
+                      신고
+                    </Button>
+                  </div>
+                </div>
+                
+                {/* 댓글 섹션 */}
+                <div className="mt-6 pt-4 border-t">
+                  <h4 className="font-medium mb-4">댓글 {selectedPost.comments || 0}개</h4>
+                  
+                  {/* 댓글 작성 */}
+                  <div className="mb-4">
+                    <Textarea 
+                      placeholder="댓글을 작성해주세요..." 
+                      className="mb-2"
+                      rows={3}
+                    />
+                    <div className="flex justify-end">
+                      <Button size="sm">댓글 작성</Button>
+                    </div>
+                  </div>
+                  
+                  {/* 댓글 목록 */}
+                  <div className="space-y-4">
+                    <div className="bg-gray-50 rounded-lg p-3">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Avatar className="h-6 w-6">
+                          <AvatarImage src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100" />
+                          <AvatarFallback>댓</AvatarFallback>
+                        </Avatar>
+                        <span className="text-sm font-medium">댓글러</span>
+                        <span className="text-xs text-gray-500">2시간 전</span>
+                      </div>
+                      <p className="text-sm text-gray-700">
+                        좋은 정보 감사합니다! 우리 강아지에게도 적용해봐야겠어요.
+                      </p>
+                      <div className="flex items-center gap-2 mt-2">
+                        <Button variant="ghost" size="sm" className="text-xs h-6 px-2">
+                          <Heart className="h-3 w-3 mr-1" />
+                          3
+                        </Button>
+                        <Button variant="ghost" size="sm" className="text-xs h-6 px-2">
+                          답글
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
