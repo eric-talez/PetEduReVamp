@@ -365,6 +365,43 @@ function CommunityPage() {
     }
   };
 
+  // 답글 작성 핸들러
+  const handleReplySubmit = (parentCommentId: number) => {
+    if (!replyText.trim()) {
+      toast({
+        title: "답글 내용을 입력해주세요",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const newReply = {
+      id: Date.now(),
+      user: {
+        name: user?.name || "반려인",
+        image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100"
+      },
+      content: replyText,
+      likes: 0,
+      createdAt: new Date().toISOString()
+    };
+
+    // 해당 댓글에 답글 추가
+    setComments(prev => prev.map(comment => 
+      comment.id === parentCommentId 
+        ? { ...comment, replies: [...(comment.replies || []), newReply] }
+        : comment
+    ));
+
+    toast({
+      title: "답글 작성 완료",
+      description: "답글이 성공적으로 작성되었습니다.",
+    });
+
+    setReplyText('');
+    setReplyingTo(null);
+  };
+
   const categories = ['일반', '훈련팁', '설문', '정보공유', '건강관리', '행동교정', '영양정보', '놀이활동', '질문답변', '후기공유'];
 
   return (
