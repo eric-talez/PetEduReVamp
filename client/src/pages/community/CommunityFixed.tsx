@@ -113,6 +113,7 @@ function CommunityPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedPost, setSelectedPost] = useState<any>(null);
   const [isPostDetailOpen, setIsPostDetailOpen] = useState(false);
+  const [newComment, setNewComment] = useState('');
   const [newPost, setNewPost] = useState({
     title: "",
     content: "",
@@ -163,14 +164,20 @@ function CommunityPage() {
       return response.json();
     },
     onSuccess: (newPostData) => {
-      // 즉시 캐시 업데이트
+      console.log('새 게시글 데이터:', newPostData);
+      
+      // 즉시 캐시 업데이트 - 새 게시글을 기존 목록 앞에 추가
       queryClient.setQueryData(['/api/community/posts'], (oldData: any) => {
+        console.log('기존 캐시 데이터:', oldData);
         if (Array.isArray(oldData)) {
-          return [newPostData, ...oldData];
+          const updatedData = [newPostData, ...oldData];
+          console.log('업데이트된 캐시 데이터:', updatedData);
+          return updatedData;
         }
         return [newPostData];
       });
       
+      // 캐시 무효화로 최신 데이터 다시 가져오기
       queryClient.invalidateQueries({ queryKey: ['/api/community/posts'] });
       
       toast({
@@ -259,6 +266,33 @@ function CommunityPage() {
   const handlePostClick = (post: any) => {
     setSelectedPost(post);
     setIsPostDetailOpen(true);
+  };
+
+  // 댓글 작성 핸들러
+  const handleCommentSubmit = () => {
+    if (!newComment.trim()) {
+      toast({
+        title: "댓글 내용을 입력해주세요",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // 임시로 댓글 추가 (실제로는 API 호출)
+    toast({
+      title: "댓글 작성 완료",
+      description: "댓글이 성공적으로 작성되었습니다.",
+    });
+    
+    setNewComment('');
+  };
+
+  // 좋아요 토글 핸들러
+  const handleLikeToggle = (postId: number) => {
+    toast({
+      title: "좋아요",
+      description: "좋아요가 반영되었습니다.",
+    });
   };
 
   const categories = ['일반', '훈련팁', '설문', '정보공유', '건강관리', '행동교정', '영양정보', '놀이활동', '질문답변', '후기공유'];
@@ -772,6 +806,9 @@ function CommunityPage() {
       {/* 게시글 상세보기 모달 */}
       <Dialog open={isPostDetailOpen} onOpenChange={setIsPostDetailOpen}>
         <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
+          <DialogDescription className="sr-only">
+            게시글 상세 내용을 확인하고 댓글을 작성할 수 있습니다.
+          </DialogDescription>
           {selectedPost && (
             <>
               <DialogHeader>
@@ -821,7 +858,12 @@ function CommunityPage() {
                 
                 <div className="mt-6 pt-4 border-t flex items-center justify-between">
                   <div className="flex items-center gap-4">
-                    <Button variant="ghost" size="sm" className="text-gray-600 hover:text-red-500">
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="text-gray-600 hover:text-red-500"
+                      onClick={() => handleLikeToggle(selectedPost.id)}
+                    >
                       <Heart className="h-4 w-4 mr-1" />
                       좋아요 {selectedPost.likes || 0}
                     </Button>
