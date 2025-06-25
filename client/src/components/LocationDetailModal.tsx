@@ -221,8 +221,11 @@ export function LocationDetailModal({ location, isOpen, onOpenChange, onReservat
 
         <div className="mt-6">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-4">
+            <TabsList className="grid w-full grid-cols-5">
               <TabsTrigger value="overview">개요</TabsTrigger>
+              <TabsTrigger value="trainers" disabled={location.type !== 'training'}>
+                훈련사
+              </TabsTrigger>
               <TabsTrigger value="map">지도</TabsTrigger>
               <TabsTrigger value="reviews">후기</TabsTrigger>
               <TabsTrigger value="photos">사진</TabsTrigger>
@@ -248,10 +251,19 @@ export function LocationDetailModal({ location, isOpen, onOpenChange, onReservat
                     </div>
                   </div>
 
-                  {/* 전문 훈련사 섹션 (훈련소인 경우만) */}
+                  {/* 전문 훈련사 미리보기 (훈련소인 경우만) */}
                   {location.type === 'training' && (
                     <div>
-                      <h3 className="text-lg font-semibold mb-3">전문 훈련사</h3>
+                      <div className="flex items-center justify-between mb-3">
+                        <h3 className="text-lg font-semibold">전문 훈련사</h3>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => setActiveTab('trainers')}
+                        >
+                          전체 보기
+                        </Button>
+                      </div>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {[
                           {
@@ -286,7 +298,7 @@ export function LocationDetailModal({ location, isOpen, onOpenChange, onReservat
                               '2025-06-29': ['09:30', '13:00', '15:30']
                             }
                           }
-                        ].map((trainer) => (
+                        ].slice(0, 2).map((trainer) => (
                           <Card key={trainer.id} className="p-4">
                             <div className="flex items-start gap-3">
                               <img 
@@ -585,11 +597,17 @@ export function LocationDetailModal({ location, isOpen, onOpenChange, onReservat
             길찾기
           </Button>
           <Button
-            onClick={() => onReservation(location.id)}
+            onClick={() => {
+              if (location.type === 'training') {
+                setActiveTab('trainers');
+              } else {
+                onReservation(location.id);
+              }
+            }}
             className="flex-1 bg-orange-500 hover:bg-orange-600"
           >
             <Calendar className="h-4 w-4 mr-2" />
-            예약하기
+            {location.type === 'training' ? '상담 예약' : '예약하기'}
           </Button>
         </div>
 

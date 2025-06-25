@@ -187,7 +187,29 @@ export default function LocationFinder() {
 
   const handleReservation = (locationId: number) => {
     console.log('예약하기 클릭:', locationId);
-    window.location.href = `/reservation/${locationId}`;
+    const location = locations.find(loc => loc.id === locationId);
+    if (location) {
+      // 훈련소인 경우 상담 예약으로 연결
+      if (location.type === 'training') {
+        setSelectedLocation(location);
+        setIsModalOpen(true);
+        // 모달이 열린 후 훈련사 탭으로 이동
+        setTimeout(() => {
+          const modal = document.querySelector('[data-state="open"]');
+          if (modal) {
+            const trainersTab = modal.querySelector('[value="trainers"]');
+            if (trainersTab) {
+              (trainersTab as HTMLElement).click();
+            }
+          }
+        }, 100);
+      } else {
+        // 다른 시설들은 전화 연결 또는 외부 예약 시스템
+        if (confirm(`${location.name}에 예약하시겠습니까? 전화로 연결됩니다.`)) {
+          window.open(`tel:${location.phone}`, '_self');
+        }
+      }
+    }
   };
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
