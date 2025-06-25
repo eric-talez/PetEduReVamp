@@ -52,7 +52,7 @@ interface LocationItem {
   specialFeatures?: string[];
 }
 
-export default function LocationFinderPage() {
+export default function LocationFinder() {
   const [locations, setLocations] = useState<LocationItem[]>([]);
   const [filteredLocations, setFilteredLocations] = useState<LocationItem[]>([]);
   const [selectedLocation, setSelectedLocation] = useState<LocationItem | null>(null);
@@ -63,6 +63,8 @@ export default function LocationFinderPage() {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstance = useRef<any>(null);
   const { toast } = useToast();
+
+  console.log('LocationFinder 컴포넌트 마운트됨');
 
   // 샘플 위치 데이터
   const sampleLocations: LocationItem[] = [
@@ -122,63 +124,6 @@ export default function LocationFinderPage() {
       description: '24시간 응급 진료가 가능한 반려동물 전문 병원입니다.',
       images: ['https://images.unsplash.com/photo-1629909613654-28e377c37b09?w=400'],
       specialFeatures: ['24시간 응급실', '전문의 상주']
-    },
-    {
-      id: 4,
-      name: '펫 리조트 펜션',
-      type: 'hotel',
-      address: '경기도 가평군 청평면',
-      phone: '031-345-6789',
-      rating: 4.9,
-      reviewCount: 234,
-      distance: 45.6,
-      coordinates: { lat: 37.7556, lng: 127.4306 },
-      operatingHours: { open: '15:00', close: '11:00' },
-      services: ['숙박', '반려견 용품 대여', '산책 서비스', '케어 서비스'],
-      amenities: ['개별 정원', '수영장', '바베큐장', '산책로'],
-      priceRange: '120,000원 - 300,000원',
-      isPartner: false,
-      description: '반려견과 함께 머물 수 있는 프리미엄 펜션입니다.',
-      images: ['https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=400'],
-      specialFeatures: ['자연 친화적 환경', '개별 놀이공간']
-    },
-    {
-      id: 5,
-      name: '도심 펫 위탁센터',
-      type: 'daycare',
-      address: '서울시 용산구 이태원로 67',
-      phone: '02-789-0123',
-      rating: 4.4,
-      reviewCount: 92,
-      distance: 1.8,
-      coordinates: { lat: 37.5400, lng: 126.9921 },
-      operatingHours: { open: '07:00', close: '20:00' },
-      services: ['일일 돌봄', '사회화 프로그램', '간식 제공', '건강 체크'],
-      amenities: ['놀이방', '산책서비스', 'CCTV', '픽업서비스'],
-      priceRange: '30,000원 - 70,000원',
-      isPartner: true,
-      description: '낮 시간 반려견 위탁 관리 전문 센터입니다.',
-      images: ['https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=400'],
-      specialFeatures: ['소규모 그룹 관리', '실시간 알림 서비스']
-    },
-    {
-      id: 6,
-      name: '한강 반려견 놀이공원',
-      type: 'park',
-      address: '서울시 영등포구 여의도동 한강공원',
-      phone: '02-345-6789',
-      rating: 4.3,
-      reviewCount: 445,
-      distance: 4.2,
-      coordinates: { lat: 37.5274, lng: 126.9340 },
-      operatingHours: { open: '06:00', close: '22:00' },
-      services: ['자유 놀이', '어질리티 체험', '산책로', '소셜라이징'],
-      amenities: ['대형 운동장', '어질리티 시설', '음수대', '그늘막'],
-      priceRange: '5,000원 - 15,000원',
-      isPartner: false,
-      description: '넓은 야외 공간에서 자유롭게 뛰어놀 수 있는 놀이공원입니다.',
-      images: ['https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=400'],
-      specialFeatures: ['한강 뷰', '대형견 전용 구역']
     }
   ];
 
@@ -191,23 +136,13 @@ export default function LocationFinderPage() {
     filterLocations();
   }, [locations, searchTerm, activeFilters]);
 
-  useEffect(() => {
-    if (mapRef.current && !mapInstance.current) {
-      initializeMap();
-    }
-  }, [userLocation]);
-
-  useEffect(() => {
-    if (mapInstance.current && filteredLocations.length > 0) {
-      updateMapMarkers();
-    }
-  }, [filteredLocations, selectedLocation]);
-
   const loadLocations = async () => {
     try {
       setIsLoading(true);
+      console.log('위치 데이터 로딩 시작');
       await new Promise(resolve => setTimeout(resolve, 1000));
       setLocations(sampleLocations);
+      console.log('위치 데이터 로딩 완료:', sampleLocations.length, '개');
     } catch (error) {
       console.error('위치 데이터 로딩 실패:', error);
       toast({
@@ -221,21 +156,28 @@ export default function LocationFinderPage() {
   };
 
   const getCurrentLocation = () => {
+    console.log('사용자 위치 가져오기 시도');
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
-          setUserLocation({
+          const userPos = {
             lat: position.coords.latitude,
             lng: position.coords.longitude
-          });
+          };
+          setUserLocation(userPos);
+          console.log('사용자 위치 설정:', userPos);
         },
         (error) => {
           console.log('위치 정보를 가져올 수 없습니다:', error);
-          setUserLocation({ lat: 37.5665, lng: 126.9780 });
+          const defaultPos = { lat: 37.5665, lng: 126.9780 };
+          setUserLocation(defaultPos);
+          console.log('기본 위치 설정:', defaultPos);
         }
       );
     } else {
-      setUserLocation({ lat: 37.5665, lng: 126.9780 });
+      const defaultPos = { lat: 37.5665, lng: 126.9780 };
+      setUserLocation(defaultPos);
+      console.log('Geolocation 미지원, 기본 위치 설정:', defaultPos);
     }
   };
 
@@ -256,128 +198,11 @@ export default function LocationFinderPage() {
 
     filtered.sort((a, b) => a.distance - b.distance);
     setFilteredLocations(filtered);
-  };
-
-  const initializeMap = () => {
-    if (!window.kakao || !window.kakao.maps) {
-      console.error('Kakao Maps API not loaded');
-      return;
-    }
-
-    const container = mapRef.current;
-    const options = {
-      center: new window.kakao.maps.LatLng(
-        userLocation?.lat || 37.5665, 
-        userLocation?.lng || 126.9780
-      ),
-      level: 6
-    };
-
-    mapInstance.current = new window.kakao.maps.Map(container, options);
-    updateMapMarkers();
-  };
-
-  const updateMapMarkers = () => {
-    if (!mapInstance.current || !window.kakao) return;
-
-    // 사용자 위치 마커
-    if (userLocation) {
-      const userMarkerPosition = new window.kakao.maps.LatLng(userLocation.lat, userLocation.lng);
-      const userMarker = new window.kakao.maps.Marker({
-        position: userMarkerPosition,
-        map: mapInstance.current
-      });
-
-      const userInfoWindow = new window.kakao.maps.InfoWindow({
-        content: '<div style="padding:8px; font-weight:bold; color:#007bff;">📍 내 위치</div>'
-      });
-      userInfoWindow.open(mapInstance.current, userMarker);
-    }
-
-    // 시설 마커들
-    filteredLocations.forEach((location) => {
-      const markerPosition = new window.kakao.maps.LatLng(
-        location.coordinates.lat, 
-        location.coordinates.lng
-      );
-      
-      const marker = new window.kakao.maps.Marker({
-        position: markerPosition,
-        map: mapInstance.current
-      });
-
-      const infoContent = `
-        <div style="padding:15px; min-width:280px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;">
-          <div style="font-weight:bold; font-size:16px; margin-bottom:8px; color:#333;">
-            ${getTypeIcon(location.type)} ${location.name}
-          </div>
-          <div style="font-size:12px; color:#666; margin-bottom:6px;">
-            ${getTypeName(location.type)} • ${location.address}
-          </div>
-          <div style="display:flex; align-items:center; margin-bottom:8px;">
-            <span style="color:#ffc107; margin-right:4px;">⭐</span>
-            <span style="font-size:14px; font-weight:500;">${location.rating}</span>
-            <span style="font-size:12px; color:#666; margin-left:4px;">(${location.reviewCount})</span>
-            <span style="font-size:12px; color:#007bff; margin-left:10px; font-weight:500;">${location.distance}km</span>
-          </div>
-          <div style="font-size:12px; color:#666; margin-bottom:10px;">
-            ${location.operatingHours.open} - ${location.operatingHours.close}
-          </div>
-          <div style="display:flex; gap:6px;">
-            <button 
-              onclick="window.open('tel:${location.phone}')" 
-              style="background:#007bff; color:white; border:none; padding:6px 12px; border-radius:6px; font-size:12px; cursor:pointer;"
-            >
-              📞 전화
-            </button>
-            <button 
-              onclick="handleLocationDetail(${location.id})" 
-              style="background:#28a745; color:white; border:none; padding:6px 12px; border-radius:6px; font-size:12px; cursor:pointer;"
-            >
-              📍 상세보기
-            </button>
-            <button 
-              onclick="handleReservation(${location.id})" 
-              style="background:#fd7e14; color:white; border:none; padding:6px 12px; border-radius:6px; font-size:12px; cursor:pointer;"
-            >
-              📅 예약
-            </button>
-          </div>
-        </div>
-      `;
-
-      const infoWindow = new window.kakao.maps.InfoWindow({
-        content: infoContent
-      });
-
-      window.kakao.maps.event.addListener(marker, 'click', () => {
-        infoWindow.open(mapInstance.current, marker);
-        setSelectedLocation(location);
-      });
-
-      // 선택된 위치 하이라이트
-      if (selectedLocation && selectedLocation.id === location.id) {
-        infoWindow.open(mapInstance.current, marker);
-      }
-    });
-
-    // 지도 범위 조정
-    if (filteredLocations.length > 0) {
-      const bounds = new window.kakao.maps.LatLngBounds();
-      
-      if (userLocation) {
-        bounds.extend(new window.kakao.maps.LatLng(userLocation.lat, userLocation.lng));
-      }
-      
-      filteredLocations.forEach(location => {
-        bounds.extend(new window.kakao.maps.LatLng(location.coordinates.lat, location.coordinates.lng));
-      });
-      
-      mapInstance.current.setBounds(bounds);
-    }
+    console.log('필터링된 위치:', filtered.length, '개');
   };
 
   const handleFilterChange = (type: string, checked: boolean) => {
+    console.log('필터 변경:', type, checked);
     if (checked) {
       setActiveFilters(prev => [...prev, type]);
     } else {
@@ -386,12 +211,8 @@ export default function LocationFinderPage() {
   };
 
   const handleLocationClick = (location: LocationItem) => {
+    console.log('위치 클릭:', location.name);
     setSelectedLocation(location);
-    if (mapInstance.current) {
-      const moveLatLng = new window.kakao.maps.LatLng(location.coordinates.lat, location.coordinates.lng);
-      mapInstance.current.setCenter(moveLatLng);
-      mapInstance.current.setLevel(4);
-    }
   };
 
   const handleLocationDetail = (locationId: number) => {
@@ -405,6 +226,7 @@ export default function LocationFinderPage() {
   };
 
   const handleNavigation = (location: LocationItem) => {
+    console.log('길찾기 클릭:', location.name);
     const url = `https://map.kakao.com/link/to/${location.name},${location.coordinates.lat},${location.coordinates.lng}`;
     window.open(url, '_blank');
   };
@@ -446,12 +268,6 @@ export default function LocationFinderPage() {
       total: filteredLocations.length
     };
   };
-
-  // 전역 함수로 등록 (지도 마커에서 사용)
-  useEffect(() => {
-    (window as any).handleLocationDetail = handleLocationDetail;
-    (window as any).handleReservation = handleReservation;
-  }, []);
 
   const stats = getStats();
 
@@ -586,9 +402,16 @@ export default function LocationFinderPage() {
           <div className="lg:col-span-3 backdrop-blur-md bg-white/95 rounded-2xl shadow-xl overflow-hidden">
             <div
               ref={mapRef}
-              className="w-full h-full"
+              className="w-full h-full flex items-center justify-center"
               style={{ minHeight: '700px', background: '#f0f0f0' }}
-            />
+            >
+              <div className="text-center text-gray-500">
+                <MapPin className="h-16 w-16 mx-auto mb-4 text-gray-300" />
+                <p className="text-lg font-medium mb-2">지도 영역</p>
+                <p className="text-sm">카카오맵 API 연동 예정</p>
+                <p className="text-xs mt-2">현재는 목록 기반으로 위치를 확인할 수 있습니다</p>
+              </div>
+            </div>
           </div>
         </div>
 
