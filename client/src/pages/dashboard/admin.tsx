@@ -1,4 +1,4 @@
-// import { useAuth } from "../../SimpleApp";
+import { useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -7,19 +7,79 @@ import {
   Users, Shield, Bell, CheckSquare, Settings, 
   TrendingUp, Database, BarChart3, Activity, Globe, Building
 } from "lucide-react";
+import { apiRequest } from "@/lib/queryClient";
 
 interface AdminDashboardProps {
   onAction: (action: string, data?: any) => void;
 }
 
+interface AdminStats {
+  totalUsers: number;
+  totalCourses: number;
+  totalInstitutes: number;
+  totalTrainers: number;
+  totalEvents: number;
+  totalProducts: number;
+  pendingApprovals: number;
+  unreadReports: number;
+  activeUsers: number;
+  systemHealth: {
+    uptime: number;
+    memoryUsage: any;
+    activeConnections: number;
+    errorRate: number;
+  };
+  recentActivity: {
+    newUsersToday: number;
+    newCoursesToday: number;
+    totalMessages: number;
+  };
+}
+
 export default function AdminDashboard({ onAction }: AdminDashboardProps) {
-  // Mock user data for development
-  const user = {
-    id: 1,
-    name: "관리자",
-    email: "admin@example.com",
-    role: "admin",
-    avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100"
+  const [stats, setStats] = useState<AdminStats | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    fetchAdminStats();
+  }, []);
+
+  const fetchAdminStats = async () => {
+    try {
+      setIsLoading(true);
+      const response = await apiRequest('GET', '/api/dashboard/admin/stats');
+      if (response.ok) {
+        const data = await response.json();
+        setStats(data.data);
+      }
+    } catch (error) {
+      console.error('관리자 통계 조회 실패:', error);
+      // 연결 실패 시 기본값 설정
+      setStats({
+        totalUsers: 0,
+        totalCourses: 0,
+        totalInstitutes: 0,
+        totalTrainers: 0,
+        totalEvents: 0,
+        totalProducts: 0,
+        pendingApprovals: 0,
+        unreadReports: 0,
+        activeUsers: 0,
+        systemHealth: {
+          uptime: 0,
+          memoryUsage: {},
+          activeConnections: 0,
+          errorRate: 0
+        },
+        recentActivity: {
+          newUsersToday: 0,
+          newCoursesToday: 0,
+          totalMessages: 0
+        }
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -68,12 +128,14 @@ export default function AdminDashboard({ onAction }: AdminDashboardProps) {
             </div>
             <div className="ml-4">
               <h2 className="text-sm font-medium text-gray-500 dark:text-gray-400">승인 대기</h2>
-              <p className="text-2xl font-semibold text-gray-800 dark:text-white">12건</p>
+              <p className="text-2xl font-semibold text-gray-800 dark:text-white">
+                {isLoading ? "..." : `${stats?.pendingApprovals || 0}건`}
+              </p>
             </div>
           </div>
           <div className="mt-4">
             <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400">
-              <span>훈련사 8, 기관 4</span>
+              <span>사용자 및 기관 승인</span>
               <a href="/admin/approvals" className="text-primary hover:text-primary/80">검토</a>
             </div>
           </div>
@@ -86,12 +148,14 @@ export default function AdminDashboard({ onAction }: AdminDashboardProps) {
             </div>
             <div className="ml-4">
               <h2 className="text-sm font-medium text-gray-500 dark:text-gray-400">미해결 신고</h2>
-              <p className="text-2xl font-semibold text-gray-800 dark:text-white">5건</p>
+              <p className="text-2xl font-semibold text-gray-800 dark:text-white">
+                {isLoading ? "..." : `${stats?.unreadReports || 0}건`}
+              </p>
             </div>
           </div>
           <div className="mt-4">
             <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400">
-              <span>긴급 처리 필요 2건</span>
+              <span>처리 대기 중</span>
               <a href="/admin/reports" className="text-primary hover:text-primary/80">처리</a>
             </div>
           </div>

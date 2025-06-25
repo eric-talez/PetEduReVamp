@@ -2,6 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { db } from "./db";
 import { registerMessagingRoutes } from "./routes/messaging";
+import { registerDashboardRoutes } from "./routes/dashboard";
 import { errorHandler } from "./middleware/error-handler";
 import { registerShoppingRoutes } from "./routes/shopping";
 // import { registerNotificationRoutes } from "./routes/notification-routes";
@@ -11,6 +12,9 @@ import { courses, users, institutes } from "@shared/schema";
 import { ilike, or } from "drizzle-orm";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  
+  // 대시보드 라우트 등록
+  registerDashboardRoutes(app);
 
   // 실시간 인기 통계 API
   app.get("/api/popular-stats", async (req, res) => {

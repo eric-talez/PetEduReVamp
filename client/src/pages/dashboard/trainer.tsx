@@ -1,16 +1,70 @@
+import { useEffect, useState } from "react";
 import { useAuth } from "../../SimpleApp";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar } from "@/components/ui/avatar";
 import { Users, BookOpen, Calendar, DollarSign, TrendingUp, Award, BarChart3 } from "lucide-react";
+import { apiRequest } from "@/lib/queryClient";
 
 interface TrainerDashboardProps {
   onAction: (action: string, data?: any) => void;
 }
 
+interface TrainerStats {
+  activeCourses: number;
+  totalStudents: number;
+  monthlyRevenue: number;
+  totalReservations: number;
+  pendingReservations: number;
+  completedReservations: number;
+  rating: number;
+  unreadMessages: number;
+  unreadNotifications: number;
+  recentActivity: {
+    newStudentsThisWeek: number;
+    completedSessionsThisWeek: number;
+  };
+}
+
 export default function TrainerDashboard({ onAction }: TrainerDashboardProps) {
   const { userName } = useAuth();
+  const [stats, setStats] = useState<TrainerStats | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    fetchTrainerStats();
+  }, []);
+
+  const fetchTrainerStats = async () => {
+    try {
+      setIsLoading(true);
+      const response = await apiRequest('GET', '/api/dashboard/trainer/stats');
+      if (response.ok) {
+        const data = await response.json();
+        setStats(data.data);
+      }
+    } catch (error) {
+      console.error('훈련사 통계 조회 실패:', error);
+      setStats({
+        activeCourses: 0,
+        totalStudents: 0,
+        monthlyRevenue: 0,
+        totalReservations: 0,
+        pendingReservations: 0,
+        completedReservations: 0,
+        rating: 0,
+        unreadMessages: 0,
+        unreadNotifications: 0,
+        recentActivity: {
+          newStudentsThisWeek: 0,
+          completedSessionsThisWeek: 0
+        }
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div className="py-8 px-4 sm:px-6 lg:px-8">
@@ -56,12 +110,14 @@ export default function TrainerDashboard({ onAction }: TrainerDashboardProps) {
             </div>
             <div className="ml-4">
               <h2 className="text-sm font-medium text-gray-500 dark:text-gray-400">진행 중인 강의</h2>
-              <p className="text-2xl font-semibold text-gray-800 dark:text-white">5개</p>
+              <p className="text-2xl font-semibold text-gray-800 dark:text-white">
+                {isLoading ? "..." : `${stats?.activeCourses || 0}개`}
+              </p>
             </div>
           </div>
           <div className="mt-4">
             <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400">
-              <span>지난 달 +1</span>
+              <span>활성 강좌</span>
               <a href="/trainer/courses" className="text-primary hover:text-primary/80">관리</a>
             </div>
           </div>
@@ -74,12 +130,14 @@ export default function TrainerDashboard({ onAction }: TrainerDashboardProps) {
             </div>
             <div className="ml-4">
               <h2 className="text-sm font-medium text-gray-500 dark:text-gray-400">수강생</h2>
-              <p className="text-2xl font-semibold text-gray-800 dark:text-white">42명</p>
+              <p className="text-2xl font-semibold text-gray-800 dark:text-white">
+                {isLoading ? "..." : `${stats?.totalStudents || 0}명`}
+              </p>
             </div>
           </div>
           <div className="mt-4">
             <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400">
-              <span>지난 달 +8명</span>
+              <span>이번 주 +{stats?.recentActivity.newStudentsThisWeek || 0}명</span>
               <a href="/trainer/students" className="text-primary hover:text-primary/80">상세</a>
             </div>
           </div>
@@ -92,12 +150,14 @@ export default function TrainerDashboard({ onAction }: TrainerDashboardProps) {
             </div>
             <div className="ml-4">
               <h2 className="text-sm font-medium text-gray-500 dark:text-gray-400">월 수익</h2>
-              <p className="text-2xl font-semibold text-gray-800 dark:text-white">1,234,000원</p>
+              <p className="text-2xl font-semibold text-gray-800 dark:text-white">
+                {isLoading ? "..." : `${(stats?.monthlyRevenue || 0).toLocaleString()}원`}
+              </p>
             </div>
           </div>
           <div className="mt-4">
             <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400">
-              <span>지난 달 +18.2%</span>
+              <span>실시간 수익</span>
               <a href="/trainer/earnings" className="text-primary hover:text-primary/80">내역</a>
             </div>
           </div>
