@@ -119,6 +119,16 @@ export default function ConsultationStatusPage() {
   const [showDetails, setShowDetails] = useState(false);
   const [showBooking, setShowBooking] = useState(false);
   const [showPetRegistration, setShowPetRegistration] = useState(false);
+  const [showMessage, setShowMessage] = useState(false);
+  const [showReview, setShowReview] = useState(false);
+  const [selectedTrainerName, setSelectedTrainerName] = useState('');
+  const [messageText, setMessageText] = useState('');
+  const [reviewForm, setReviewForm] = useState({
+    rating: 5,
+    title: '',
+    content: '',
+    tags: [] as string[]
+  });
   
   // 반려동물 관련 상태
   const [pets, setPets] = useState<any[]>([]);
@@ -436,6 +446,130 @@ export default function ConsultationStatusPage() {
     }
     setSelectedPetId(petId);
   };
+
+  // 메시지 모달 열기
+  const handleOpenMessage = (trainerName: string) => {
+    setSelectedTrainerName(trainerName);
+    setShowMessage(true);
+  };
+
+  // 메시지 전송
+  const handleSendMessage = async () => {
+    if (!messageText.trim()) {
+      toast({
+        title: "메시지를 입력해주세요",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          receiverId: 2, // 훈련사 ID (실제로는 selectedTrainer의 ID 사용)
+          content: messageText,
+          type: 'text'
+        }),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        toast({
+          title: "메시지 전송 완료",
+          description: `${selectedTrainerName}에게 메시지를 보냈습니다.`,
+        });
+        setMessageText('');
+        setShowMessage(false);
+      } else {
+        throw new Error(result.error || '메시지 전송 실패');
+      }
+    } catch (error) {
+      toast({
+        title: "메시지 전송 실패",
+        description: "메시지 전송 중 오류가 발생했습니다.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // 리뷰 작성 모달 열기
+  const handleWriteReview = (consultation: Consultation) => {
+    setSelectedConsultation(consultation);
+    setShowReview(true);
+  };
+
+  // 리뷰 제출
+  const handleSubmitReview = async () => {
+    if (!reviewForm.title || !reviewForm.content) {
+      toast({
+        title: "리뷰 제목과 내용을 입력해주세요",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/reviews', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          consultationId: selectedConsultation?.id,
+          trainerName: selectedConsultation?.trainerName,
+          rating: reviewForm.rating,
+          title: reviewForm.title,
+          content: reviewForm.content,
+          tags: reviewForm.tags
+        }),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        toast({
+          title: "리뷰 작성 완료",
+          description: "소중한 후기를 남겨주셔서 감사합니다.",
+        });
+        setReviewForm({
+          rating: 5,
+          title: '',
+          content: '',
+          tags: []
+        });
+        setShowReview(false);
+      } else {
+        throw new Error(result.error || '리뷰 작성 실패');
+      }
+    } catch (error) {
+      toast({
+        title: "리뷰 작성 실패",
+        description: "리뷰 작성 중 오류가 발생했습니다.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // 리뷰 태그 선택
+  const toggleReviewTag = (tag: string) => {
+    setReviewForm(prev => ({
+      ...prev,
+      tags: prev.tags.includes(tag) 
+        ? prev.tags.filter(t => t !== tag)
+        : [...prev.tags, tag]
+    }));
+  };
+
+  // 리뷰 태그 옵션
+  const reviewTags = [
+    '친절함', '전문성', '시간준수', '효과적', '소통 원활', 
+    '실력 우수', '추천함', '만족', '재이용 의향', '성과 좋음'
+  ];
 
   const getStatusIcon = (status: string) => {
     switch (status) {

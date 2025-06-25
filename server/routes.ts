@@ -612,6 +612,167 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // 리뷰 작성 API
+  app.post("/api/reviews", async (req, res) => {
+    try {
+      const { consultationId, trainerName, rating, title, content, tags } = req.body;
+      
+      console.log('리뷰 작성 요청:', { consultationId, trainerName, rating });
+      
+      const reviewId = Date.now();
+      const reviewData = {
+        id: reviewId,
+        consultationId: consultationId,
+        trainerName: trainerName,
+        rating: rating,
+        title: title,
+        content: content,
+        tags: tags || [],
+        authorName: '반려인',
+        createdAt: new Date().toISOString(),
+        helpful: 0,
+        verified: true
+      };
+
+      // 메모리에 리뷰 추가 (실제로는 데이터베이스에 저장)
+      if (!global.reviewsData) {
+        global.reviewsData = [];
+      }
+      global.reviewsData.push(reviewData);
+
+      res.json({ 
+        success: true, 
+        message: "리뷰가 성공적으로 작성되었습니다.",
+        review: reviewData
+      });
+    } catch (error) {
+      console.error('리뷰 작성 오류:', error);
+      res.status(500).json({ error: "리뷰 작성 중 오류가 발생했습니다" });
+    }
+  });
+
+  // 리뷰 목록 조회 API
+  app.get("/api/reviews", async (req, res) => {
+    try {
+      const { trainerName, limit = 10, offset = 0 } = req.query;
+      
+      console.log('리뷰 목록 조회 요청:', { trainerName, limit, offset });
+      
+      // 메모리에서 리뷰 목록 조회 (실제로는 데이터베이스에서 조회)
+      if (!global.reviewsData) {
+        global.reviewsData = [
+          {
+            id: 1,
+            consultationId: '2',
+            trainerName: '박전문가',
+            rating: 5,
+            title: '정말 만족스러운 상담이었습니다',
+            content: '분리불안 문제로 고민이 많았는데, 전문적인 조언과 실질적인 해결방법을 제시해주셔서 큰 도움이 되었습니다. 강아지도 많이 안정되었어요.',
+            tags: ['전문성', '친절함', '효과적', '추천함'],
+            authorName: '반려인',
+            createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(),
+            helpful: 15,
+            verified: true
+          }
+        ];
+      }
+
+      let filteredReviews = global.reviewsData;
+      
+      if (trainerName) {
+        filteredReviews = filteredReviews.filter(review => 
+          review.trainerName === trainerName
+        );
+      }
+
+      const paginatedReviews = filteredReviews
+        .slice(parseInt(offset as string), parseInt(offset as string) + parseInt(limit as string));
+
+      res.json({ 
+        success: true, 
+        reviews: paginatedReviews,
+        total: filteredReviews.length
+      });
+    } catch (error) {
+      console.error('리뷰 목록 조회 오류:', error);
+      res.status(500).json({ error: "리뷰 목록 조회 중 오류가 발생했습니다" });
+    }
+  });
+
+  // 댓글 작성 API
+  app.post("/api/comments", async (req, res) => {
+    try {
+      const { parentType, parentId, content, parentCommentId } = req.body;
+      
+      console.log('댓글 작성 요청:', { parentType, parentId, content });
+      
+      const commentId = Date.now();
+      const commentData = {
+        id: commentId,
+        parentType: parentType, // 'review', 'course', 'post' 등
+        parentId: parentId,
+        parentCommentId: parentCommentId || null, // 대댓글인 경우
+        content: content,
+        authorName: '반려인',
+        authorRole: 'pet-owner',
+        createdAt: new Date().toISOString(),
+        likes: 0,
+        replies: []
+      };
+
+      // 메모리에 댓글 추가 (실제로는 데이터베이스에 저장)
+      if (!global.commentsData) {
+        global.commentsData = [];
+      }
+      global.commentsData.push(commentData);
+
+      res.json({ 
+        success: true, 
+        message: "댓글이 성공적으로 작성되었습니다.",
+        comment: commentData
+      });
+    } catch (error) {
+      console.error('댓글 작성 오류:', error);
+      res.status(500).json({ error: "댓글 작성 중 오류가 발생했습니다" });
+    }
+  });
+
+  // 댓글 목록 조회 API
+  app.get("/api/comments", async (req, res) => {
+    try {
+      const { parentType, parentId } = req.query;
+      
+      console.log('댓글 목록 조회 요청:', { parentType, parentId });
+      
+      // 메모리에서 댓글 목록 조회 (실제로는 데이터베이스에서 조회)
+      if (!global.commentsData) {
+        global.commentsData = [];
+      }
+
+      const comments = global.commentsData.filter(comment => 
+        comment.parentType === parentType && 
+        comment.parentId === parentId &&
+        !comment.parentCommentId // 최상위 댓글만
+      );
+
+      // 각 댓글에 대댓글 추가
+      const commentsWithReplies = comments.map(comment => ({
+        ...comment,
+        replies: global.commentsData.filter(reply => 
+          reply.parentCommentId === comment.id
+        )
+      }));
+
+      res.json({ 
+        success: true, 
+        comments: commentsWithReplies
+      });
+    } catch (error) {
+      console.error('댓글 목록 조회 오류:', error);
+      res.status(500).json({ error: "댓글 목록 조회 중 오류가 발생했습니다" });
+    }
+  });
+
   app.post("/api/consultations/:id/join", async (req, res) => {
     try {
       const consultationId = req.params.id;
