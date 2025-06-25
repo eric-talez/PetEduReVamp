@@ -17,7 +17,7 @@ import FAQPage from "@/pages/help/faq";
 import CourseDetail from "@/pages/course-detail";
 import Trainers from "@/pages/trainers/index";
 import Institutes from "@/pages/institutes";
-import Community from "@/pages/community";
+import Community from "@/pages/community/CommunityFixed";
 import CommunityPostDetail from "@/pages/community/post/[id]";
 import MyCourses from "@/pages/my-courses";
 import MyPets from "@/pages/my-pets";
@@ -469,7 +469,7 @@ function AppLayout({ children }: { children: ReactNode }) {
                   </Route>
 
                   {/* 커뮤니티 */}
-                  <Route path="/community" component={Community} />
+                  <Route path="/community" component={lazy(() => import('./pages/community/CommunityFixed'))} />
                   <Route path="/community/post/:id" component={CommunityPostDetail} />
 
                   {/* 쇼핑 */}
