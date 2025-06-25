@@ -295,12 +295,20 @@ export default function Community() {
         isOpen={isPostFormOpen}
         onOpenChange={setIsPostFormOpen}
         onPostCreated={(newPost) => {
-          console.log('커뮤니티 - 새 게시글 추가:', newPost);
-          setPosts(prev => {
-            const updatedPosts = [newPost, ...prev];
-            console.log('커뮤니티 - 업데이트된 posts 수:', updatedPosts.length);
+          console.log('커뮤니티 - 새 게시글 추가됨:', newPost);
+          
+          // 새 게시글을 맨 앞에 추가
+          setPosts(prevPosts => {
+            const updatedPosts = [newPost, ...prevPosts];
+            console.log('커뮤니티 - 전체 게시글 수:', updatedPosts.length);
+            console.log('커뮤니티 - 첫 번째 게시글:', updatedPosts[0]?.title);
             return updatedPosts;
           });
+          
+          // 성공 알림
+          setTimeout(() => {
+            alert('게시글이 성공적으로 작성되었습니다!');
+          }, 100);
         }}
       />
     </div>

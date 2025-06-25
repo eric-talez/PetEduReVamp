@@ -120,24 +120,26 @@ export function CommunityPostForm({ isOpen, onOpenChange, onPostCreated }: Commu
 
       console.log('새 게시글 작성 완료:', newPost);
       
-      // 부모 컴포넌트에 새 게시글 전달
-      if (onPostCreated) {
-        onPostCreated(newPost);
-      }
+      // 부모 컴포넌트에 즉시 전달
+      onPostCreated(newPost);
       
-      // 성공 메시지
-      alert('게시글이 성공적으로 작성되었습니다!');
       
       // 폼 초기화
       setFormData({
         title: '',
         content: '',
-        category: '',
+        category: '일반',
         tags: ''
       });
       
+      // 에러 초기화
+      setErrors({});
+      
       // 모달 닫기
       onOpenChange(false);
+      
+      // 성공 메시지
+      console.log('게시글 작성 완료 - 폼 초기화 및 모달 닫기 처리됨');
       
     } catch (error) {
       console.error('게시글 작성 오류:', error);
