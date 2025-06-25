@@ -118,6 +118,9 @@ export function CommunityPostForm({ isOpen, onOpenChange, onPostCreated }: Commu
 
       console.log('새 게시글 작성 성공:', newPost);
       
+      // 부모 컴포넌트에 새 게시글 전달 (먼저 실행)
+      onPostCreated(newPost);
+      
       // 폼 초기화
       setFormData({
         title: '',
@@ -125,9 +128,6 @@ export function CommunityPostForm({ isOpen, onOpenChange, onPostCreated }: Commu
         category: '',
         tags: ''
       });
-      
-      // 부모 컴포넌트에 새 게시글 전달
-      onPostCreated(newPost);
       
       // 모달 닫기
       onOpenChange(false);

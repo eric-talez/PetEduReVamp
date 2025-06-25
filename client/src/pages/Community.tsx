@@ -297,6 +297,7 @@ export default function Community() {
         onPostCreated={(newPost) => {
           console.log('새 게시글 추가:', newPost);
           setPosts(prev => [newPost, ...prev]);
+          alert('게시글이 성공적으로 작성되었습니다!');
         }}
       />
     </div>
