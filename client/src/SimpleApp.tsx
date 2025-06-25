@@ -873,6 +873,7 @@ function AppLayout({ children }: { children: ReactNode }) {
             );
           }}
         </Route>
+      </Switch>
               </ErrorBoundary>
             </main>
 

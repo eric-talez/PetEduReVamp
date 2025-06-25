@@ -1529,7 +1529,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async removeFromCart(id: number): Promise<boolean> {
-    Adding getTrainersByInstitute method to DatabaseStorage class.    await db.delete(cartItems).where(eq(cartItems.id, id));
+    await db.delete(cartItems).where(eq(cartItems.id, id));
     return true;
   }
 
