@@ -205,22 +205,6 @@ const AlertsPage = () => {
 };
 
 export default AlertsPage;
-import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Bell, CheckCircle, AlertCircle, Info, X } from "lucide-react";
-
-interface Notification {
-  id: string;
-  type: 'info' | 'success' | 'warning' | 'error';
-  title: string;
-  message: string;
-  timestamp: Date;
-  read: boolean;
-}
-
-export default function AlertsPage() {
   const [notifications, setNotifications] = useState<Notification[]>([
     {
       id: '1',

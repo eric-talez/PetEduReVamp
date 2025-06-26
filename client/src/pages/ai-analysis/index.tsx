@@ -1140,7 +1140,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Brain, Camera, Upload, BarChart3, TrendingUp, Eye } from "lucide-react";
 
-export default function AIAnalysisPage() {
+function AIAnalysisPageAlternative() {
   const [analysisType, setAnalysisType] = useState<string>('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
 
