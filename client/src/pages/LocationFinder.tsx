@@ -256,16 +256,73 @@ export default function LocationFinder() {
     setEditingLocation(location);
   };
 
-  const handleUpdateLocation = () => {
+  const handleUpdateLocation = async () => {
     if (!editingLocationItem) return;
 
-    setLocations(locations.map(loc => 
-      loc.id === editingLocationItem.id 
-        ? { ...editingLocationItem, updatedAt: new Date().toISOString().split('T')[0] }
-        : loc
-    ));
-    setEditingLocation(null);
-    console.log('위치 정보 업데이트:', editingLocationItem);
+    try {
+      // 새로운 이미지가 업로드된 경우 처리
+      let updatedImageUrl = editingLocationItem.image;
+      
+      if (uploadedImages.length > 0) {
+        toast({
+          title: "이미지 업로드 중",
+          description: "이미지를 업로드하고 있습니다. 잠시만 기다려주세요.",
+        });
+        
+        const imageUrls = await uploadImages();
+        if (imageUrls.length > 0) {
+          updatedImageUrl = imageUrls[0]; // 첫 번째 이미지를 메인 이미지로 설정
+        }
+      }
+
+      const updatedLocation = {
+        ...editingLocationItem,
+        image: updatedImageUrl,
+        updatedAt: new Date().toISOString().split('T')[0]
+      };
+
+      // 로컬 상태 업데이트
+      setLocations(locations.map(loc => 
+        loc.id === editingLocationItem.id ? updatedLocation : loc
+      ));
+
+      // 서버에 업데이트 요청 (필요한 경우)
+      try {
+        await fetch(`/api/admin/locations/${editingLocationItem.id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            ...updatedLocation,
+            images: uploadedImages.length > 0 ? await uploadImages() : [updatedLocation.image]
+          })
+        });
+      } catch (error) {
+        console.warn('서버 업데이트 실패, 로컬에서만 업데이트됨:', error);
+      }
+
+      toast({
+        title: "업체 정보 수정 완료",
+        description: "업체 정보가 성공적으로 수정되었습니다.",
+      });
+
+      // 업로드된 이미지 정리
+      uploadedImages.forEach(imageData => {
+        URL.revokeObjectURL(imageData.preview);
+      });
+      setUploadedImages([]);
+      setEditingLocation(null);
+
+      console.log('위치 정보 업데이트:', updatedLocation);
+    } catch (error) {
+      console.error('업체 정보 수정 오류:', error);
+      toast({
+        title: "수정 실패",
+        description: "업체 정보 수정 중 오류가 발생했습니다.",
+        variant: "destructive"
+      });
+    }
   };
 
   const handleDeleteLocation = (id: number) => {
@@ -968,11 +1025,101 @@ export default function LocationFinder() {
                 />
               </div>
 
+              {/* 이미지 업로드 섹션 */}
+              <div>
+                <label className="block text-sm font-medium mb-2">업체 이미지 (최대 7개)</label>
+                <div className="space-y-4">
+                  {/* 현재 이미지 표시 */}
+                  {editingLocationItem.image && (
+                    <div className="mb-4">
+                      <p className="text-sm text-gray-600 mb-2">현재 이미지:</p>
+                      <div className="relative inline-block">
+                        <img
+                          src={editingLocationItem.image}
+                          alt="현재 업체 이미지"
+                          className="w-32 h-24 object-cover rounded-lg"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setEditingLocation({...editingLocationItem, image: ''})}
+                          className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* 새 이미지 업로드 */}
+                  <div className="flex items-center justify-center w-full">
+                    <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100">
+                      <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                        <svg className="w-8 h-8 mb-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                        </svg>
+                        <p className="mb-2 text-sm text-gray-500">
+                          <span className="font-semibold">클릭하여 새 이미지 업로드</span>
+                        </p>
+                        <p className="text-xs text-gray-500">PNG, JPG, JPEG (최대 5MB)</p>
+                      </div>
+                      <input
+                        type="file"
+                        className="hidden"
+                        accept="image/*"
+                        multiple
+                        onChange={handleImageUpload}
+                      />
+                    </label>
+                  </div>
+                  
+                  {/* 업로드된 새 이미지 미리보기 */}
+                  {uploadedImages.length > 0 && (
+                    <div>
+                      <p className="text-sm text-gray-600 mb-2">새로 업로드된 이미지:</p>
+                      <div className="grid grid-cols-3 gap-4">
+                        {uploadedImages.map((image, index) => (
+                          <div key={index} className="relative">
+                            <img
+                              src={image.preview}
+                              alt={`새 이미지 ${index + 1}`}
+                              className="w-full h-24 object-cover rounded-lg"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => removeImage(index)}
+                              className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600"
+                            >
+                              ✕
+                            </button>
+                            <div className="text-xs text-gray-500 mt-1 truncate">
+                              {image.file.name}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  
+                  {uploadedImages.length >= 7 && (
+                    <p className="text-sm text-orange-600">
+                      최대 7개의 이미지만 업로드할 수 있습니다.
+                    </p>
+                  )}
+                </div>
+              </div>
+
               <div className="flex gap-3 pt-4">
                 <Button
                   variant="outline"
                   className="flex-1"
-                  onClick={() => setEditingLocation(null)}
+                  onClick={() => {
+                    // 편집 취소 시 업로드된 이미지들 정리
+                    uploadedImages.forEach(imageData => {
+                      URL.revokeObjectURL(imageData.preview);
+                    });
+                    setUploadedImages([]);
+                    setEditingLocation(null);
+                  }}
                 >
                   취소
                 </Button>

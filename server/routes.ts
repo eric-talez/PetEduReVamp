@@ -1729,8 +1729,7 @@ app.get('/api/search', async (req, res) => {
 
       const locationIndex = global.adminLocations.findIndex(loc => loc.id === locationId);
       if (locationIndex === -1) {
-        return res.status(404).json({ 
-          error: '업체를 찾을 수 없습니다.' 
+        return res.status(404).json({          error: '업체를 찾을 수 없습니다.' 
         });
       }
 
@@ -1750,40 +1749,62 @@ app.get('/api/search', async (req, res) => {
     }
   });
 
-  // 관리자 - 업체 상태 변경
-  app.patch('/api/admin/locations/:id/status', requireAuth('admin'), async (req, res) => {
-    try {
-      const locationId = parseInt(req.params.id);
-      const { status } = req.body;
+  // 업체 정보 수정
+    app.put('/api/admin/locations/:id', requireAuth('admin'), (req, res) => {
+      try {
+        const locationId = parseInt(req.params.id);
+        const updateData = req.body;
 
-      if (!global.adminLocations) {
-        global.adminLocations = [];
-      }
+        const locationIndex = global.adminLocations.findIndex(loc => loc.id === locationId);
+        if (locationIndex === -1) {
+          return res.status(404).json({ 
+            error: '업체를 찾을 수 없습니다.' 
+          });
+        }
 
-      const locationIndex = global.adminLocations.findIndex(loc => loc.id === locationId);
-      if (locationIndex === -1) {
-        return res.status(404).json({ 
-          error: '업체를 찾을 수 없습니다.' 
+        // 업체 정보 업데이트
+        global.adminLocations[locationIndex] = {
+          ...global.adminLocations[locationIndex],
+          ...updateData,
+          id: locationId, // ID는 변경되지 않도록
+          updatedAt: new Date().toISOString()
+        };
+
+        res.json({ 
+          message: '업체 정보가 수정되었습니다.',
+          location: global.adminLocations[locationIndex]
         });
+      } catch (error) {
+        console.error('업체 정보 수정 오류:', error);
+        res.status(500).json({ error: '업체 정보 수정 중 오류가 발생했습니다.' });
       }
+    });
 
-      global.adminLocations[locationIndex].status = status;
-      global.adminLocations[locationIndex].updatedAt = new Date().toISOString();
+    // 업체 상태 변경
+    app.patch('/api/admin/locations/:id/status', requireAuth('admin'), (req, res) => {
+      try {
+        const locationId = parseInt(req.params.id);
+        const { status } = req.body;
 
-      res.json({
-        success: true,
-        message: '업체 상태가 성공적으로 변경되었습니다.',
-        location: global.adminLocations[locationIndex]
-      });
+        const locationIndex = global.adminLocations.findIndex(loc => loc.id === locationId);
+        if (locationIndex === -1) {
+          return res.status(404).json({ 
+            error: '업체를 찾을 수 없습니다.' 
+          });
+        }
 
-      console.log('업체 상태 변경:', locationId, status);
-    } catch (error) {
-      console.error('업체 상태 변경 오류:', error);
-      res.status(500).json({ 
-        error: '업체 상태 변경에 실패했습니다.' 
-      });
-    }
-  });
+        global.adminLocations[locationIndex].status = status;
+        global.adminLocations[locationIndex].updatedAt = new Date().toISOString();
+
+        res.json({ 
+          message: '업체 상태가 변경되었습니다.',
+          location: global.adminLocations[locationIndex]
+        });
+      } catch (error) {
+        console.error('업체 상태 변경 오류:', error);
+        res.status(500).json({ error: '업체 상태 변경 중 오류가 발생했습니다.' });
+      }
+    });
 
   const multer = require('multer');
   const path = require('path');
@@ -1878,7 +1899,7 @@ app.get('/api/search', async (req, res) => {
       res.status(500).json({ error: '위치 기반 장소 조회에 실패했습니다.' });
     }
   });
-  
+
 
   // Global error handler (commented out for now)
   // app.use(errorHandler);
