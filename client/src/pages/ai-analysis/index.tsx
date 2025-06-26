@@ -1134,37 +1134,6 @@ export default function AIAnalysisPage() {
     </div>
   );
 }
-import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Brain, Camera, Upload, BarChart3, TrendingUp, Eye } from "lucide-react";
-
-function AIAnalysisPageAlternative() {
-  const [analysisType, setAnalysisType] = useState<string>('');
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
-
-  const analysisOptions = [
-    {
-      id: 'behavior',
-      title: '행동 패턴 분석',
-      description: '반려동물의 행동을 분석하여 건강 상태와 훈련 필요도를 평가합니다.',
-      icon: <Brain className="h-6 w-6" />,
-      color: 'bg-blue-100 text-blue-600'
-    },
-    {
-      id: 'photo',
-      title: '사진 분석',
-      description: '반려동물 사진을 통해 건강 상태, 감정 상태를 AI로 분석합니다.',
-      icon: <Camera className="h-6 w-6" />,
-      color: 'bg-green-100 text-green-600'
-    },
-    {
-      id: 'video',
-      title: '동영상 분석',
-      description: '반려동물의 움직임을 분석하여 운동량과 활동 패턴을 측정합니다.',
-      icon: <Eye className="h-6 w-6" />,
-      color: 'bg-purple-100 text-purple-600'
     }
   ];
 
