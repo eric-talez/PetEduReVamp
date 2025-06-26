@@ -1239,7 +1239,11 @@ export default function ConsultationStatusPage() {
                       <span className="text-xs text-muted-foreground">4.9점 (127개 리뷰)</span>
                     </div>
                   </div>
-                  <Button variant="outline" size="sm">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => handleOpenMessage(selectedConsultation.trainerName)}
+                  >
                     <MessageCircle className="h-4 w-4 mr-1" />
                     메시지
                   </Button>
@@ -1270,10 +1274,146 @@ export default function ConsultationStatusPage() {
               <JoinButton consultation={selectedConsultation} onJoin={handleJoinConsultation} />
             )}
             {selectedConsultation?.status === 'completed' && (
-              <Button variant="outline">
+              <Button 
+                variant="outline"
+                onClick={() => handleWriteReview(selectedConsultation)}
+              >
                 리뷰 작성
               </Button>
             )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* 메시지 모달 */}
+      <Dialog open={showMessage} onOpenChange={setShowMessage}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>{selectedTrainerName}에게 메시지 보내기</DialogTitle>
+            <DialogDescription>
+              훈련사와 직접 소통하세요.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div>
+              <Label htmlFor="messageContent">메시지 내용</Label>
+              <Textarea
+                id="messageContent"
+                value={messageText}
+                onChange={(e) => setMessageText(e.target.value)}
+                placeholder="궁금한 점이나 요청사항을 자유롭게 작성해주세요"
+                rows={4}
+              />
+            </div>
+          </div>
+          <div className="flex justify-end space-x-2">
+            <Button 
+              variant="outline" 
+              onClick={() => setShowMessage(false)}
+            >
+              취소
+            </Button>
+            <Button onClick={handleSendMessage}>
+              <Send className="h-4 w-4 mr-2" />
+              전송
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* 리뷰 작성 모달 */}
+      <Dialog open={showReview} onOpenChange={setShowReview}>
+        <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>상담 후기 작성</DialogTitle>
+            <DialogDescription>
+              {selectedConsultation?.trainerName}와의 상담은 어떠셨나요?
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-6 py-4">
+            {/* 별점 */}
+            <div className="space-y-2">
+              <Label>만족도 평가</Label>
+              <div className="flex items-center gap-2">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <button
+                    key={star}
+                    onClick={() => setReviewForm({...reviewForm, rating: star})}
+                    className={`text-2xl ${star <= reviewForm.rating ? 'text-yellow-400' : 'text-gray-300'}`}
+                  >
+                    ⭐
+                  </button>
+                ))}
+                <span className="ml-2 text-sm text-muted-foreground">
+                  {reviewForm.rating}점
+                </span>
+              </div>
+            </div>
+
+            {/* 리뷰 제목 */}
+            <div>
+              <Label htmlFor="reviewTitle">리뷰 제목</Label>
+              <Input
+                id="reviewTitle"
+                value={reviewForm.title}
+                onChange={(e) => setReviewForm({...reviewForm, title: e.target.value})}
+                placeholder="상담에 대한 한줄 평가를 작성해주세요"
+              />
+            </div>
+
+            {/* 리뷰 내용 */}
+            <div>
+              <Label htmlFor="reviewContent">상세 후기</Label>
+              <Textarea
+                id="reviewContent"
+                value={reviewForm.content}
+                onChange={(e) => setReviewForm({...reviewForm, content: e.target.value})}
+                placeholder="상담 경험을 자세히 공유해주세요. 다른 견주들에게 도움이 됩니다."
+                rows={4}
+              />
+            </div>
+
+            {/* 태그 선택 */}
+            <div>
+              <Label>추천 태그 (선택사항)</Label>
+              <div className="flex flex-wrap gap-2 mt-2">
+                {reviewTags.map((tag) => (
+                  <Button
+                    key={tag}
+                    variant={reviewForm.tags.includes(tag) ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => toggleReviewTag(tag)}
+                  >
+                    {tag}
+                  </Button>
+                ))}
+              </div>
+            </div>
+
+            {/* 상담 정보 요약 */}
+            {selectedConsultation && (
+              <div className="p-4 bg-muted rounded-lg">
+                <h4 className="font-medium mb-2">상담 정보</h4>
+                <div className="space-y-1 text-sm">
+                  <p><span className="font-medium">주제:</span> {selectedConsultation.topic}</p>
+                  <p><span className="font-medium">날짜:</span> {selectedConsultation.date}</p>
+                  <p><span className="font-medium">시간:</span> {selectedConsultation.time}</p>
+                  <p><span className="font-medium">반려동물:</span> {selectedConsultation.petName}</p>
+                </div>
+              </div>
+            )}
+          </div>
+          <div className="flex justify-end space-x-2">
+            <Button 
+              variant="outline" 
+              onClick={() => setShowReview(false)}
+            >
+              취소
+            </Button>
+            <Button onClick={handleSubmitReview}>
+              <Send className="h-4 w-4 mr-2" />
+              리뷰 작성
+            </Button>
           </div>
         </DialogContent>
       </Dialog>

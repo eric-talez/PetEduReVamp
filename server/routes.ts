@@ -15,6 +15,8 @@ import { setupCommissionRoutes } from './commission/routes';
 // import { setupHealthRoutes } from './routes/health';
 import { registerAnalyticsRoutes } from './routes/analytics';
 // import { setupSocialRoutes } from './routes/social';
+import multer from 'multer';
+import path from 'path';
 
 // requireAuth 미들웨어 함수
 function requireAuth(role?: string) {
@@ -1805,9 +1807,6 @@ app.get('/api/search', async (req, res) => {
         res.status(500).json({ error: '업체 상태 변경 중 오류가 발생했습니다.' });
       }
     });
-
-  import multer from 'multer';
-  import path from 'path';
 
   // Multer Storage 설정
   const storageConfig = multer.diskStorage({
