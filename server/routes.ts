@@ -1806,8 +1806,8 @@ app.get('/api/search', async (req, res) => {
       }
     });
 
-  const multer = require('multer');
-  const path = require('path');
+  import multer from 'multer';
+  import path from 'path';
 
   // Multer Storage 설정
   const storageConfig = multer.diskStorage({
