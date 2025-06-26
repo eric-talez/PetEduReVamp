@@ -16,6 +16,26 @@ import { setupCommissionRoutes } from './commission/routes';
 import { registerAnalyticsRoutes } from './routes/analytics';
 // import { setupSocialRoutes } from './routes/social';
 
+// requireAuth 미들웨어 함수
+function requireAuth(role?: string) {
+  return (req: any, res: any, next: any) => {
+    // 개발 환경에서는 간단한 인증 체크
+    if (process.env.NODE_ENV === 'development') {
+      req.user = { id: 'admin', role: role || 'admin' };
+      return next();
+    }
+    
+    // 실제 프로덕션에서는 세션/토큰 기반 인증 구현
+    const userRole = req.session?.user?.role || 'guest';
+    
+    if (role && userRole !== role) {
+      return res.status(403).json({ error: '권한이 없습니다.' });
+    }
+    
+    next();
+  };
+}
+
 export async function registerRoutes(app: Express): Promise<Server> {
 
   // 대시보드 라우트 등록
