@@ -1,26 +1,31 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { LocationDetailModal } from '@/components/LocationDetailModal';
-import { TrainerConsultationModal } from '@/components/TrainerConsultationModal';
-import { NaverStyleReservationModal } from '@/components/NaverStyleReservationModal';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
 import { 
   MapPin, 
-  Star, 
-  Search, 
-  SlidersHorizontal,
-  GraduationCap,
-  Scissors,
-  Hospital,
-  Home,
-  Heart,
-  TreePine,
-  Phone,
+  Search,
+  Filter,
+  Star,
   Clock,
-  Eye
+  Phone,
+  Navigation,
+  Heart,
+  Share2,
+  Plus,
+  Building,
+  Save
 } from 'lucide-react';
+import { KakaoMapView } from '@/components/KakaoMapView';
+import { LocationDetailModal } from '@/components/LocationDetailModal';
+import { useAuth } from '../SimpleApp';
+import { toast } from '@/hooks/use-toast';
 
 interface LocationItem {
   id: number;
@@ -43,7 +48,7 @@ interface LocationItem {
 }
 
 export default function LocationFinder() {
-  const [locations] = useState<LocationItem[]>([
+  const [locations, setLocations] = useState<LocationItem[]>([
     {
       id: 1,
       name: '서울 펫 트레이닝 센터',
@@ -141,383 +146,270 @@ export default function LocationFinder() {
       image: 'https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=400'
     }
   ]);
-
+  const [selectedLocation, setSelectedLocation] = useState<{ lat: number; lng: number; name: string; address: string } | null>(null);
   const [filteredLocations, setFilteredLocations] = useState<LocationItem[]>(locations);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filter, setFilter] = useState('all');
-  const [selectedLocation, setSelectedLocation] = useState<LocationItem | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [showTrainerConsultation, setShowTrainerConsultation] = useState(false);
-  const [selectedTrainer, setSelectedTrainer] = useState(null);
-  const [showNaverReservation, setShowNaverReservation] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [selectedLocationForModal, setSelectedLocationForModal] = useState<LocationItem | null>(null);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [newLocation, setNewLocation] = useState({
+    name: '',
+    type: 'training' as const,
+    address: '',
+    phone: '',
+    description: '',
+    services: [] as string[],
+    priceRange: '',
+    operatingHours: { open: '09:00', close: '18:00' },
+    image: '',
+    latitude: 37.5665,
+    longitude: 126.9780
+  });
 
-  console.log('LocationFinder 컴포넌트 렌더링됨');
-  
-  useEffect(() => {
-    let filtered = locations;
-
-    // 검색 필터링
-    if (searchTerm) {
-      filtered = filtered.filter(location =>
-        location.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        location.address.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        location.description.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-
-    // 타입 필터링
-    if (filter !== 'all') {
-      filtered = filtered.filter(location => location.type === filter);
-    }
-
-    // 거리순 정렬
-    filtered.sort((a, b) => a.distance - b.distance);
-    setFilteredLocations(filtered);
-  }, [locations, searchTerm, filter]);
+  const { userRole } = useAuth();
 
   const handleLocationClick = (location: LocationItem) => {
     console.log('위치 클릭:', location.name);
-    setSelectedLocation(location);
-    setIsModalOpen(true);
+    setSelectedLocation({
+      lat: 37.5665 + (Math.random() - 0.5) * 0.01,
+      lng: 126.9780 + (Math.random() - 0.5) * 0.01,
+      name: location.name,
+      address: location.address
+    });
   };
 
-  const handleLocationDetail = (locationId: number) => {
-    console.log('위치 상세보기 클릭:', locationId);
-    const location = locations.find(loc => loc.id === locationId);
-    if (location) {
-      setSelectedLocation(location);
-      setIsModalOpen(true);
-    }
-  };
+  const handleAddLocation = async () => {
+    try {
+      // 새 업체 등록 API 호출
+      const response = await fetch('/api/admin/locations', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...newLocation,
+          isPartner: true, // 관리자가 등록하는 업체는 파트너로 설정
+          status: 'active'
+        }),
+      });
 
-  const handleReservation = (locationId: number) => {
-    console.log('예약하기 클릭:', locationId);
-    const location = locations.find(loc => loc.id === locationId);
-    if (location) {
-      // 훈련소인 경우 상담 예약으로 연결
-      if (location.type === 'training') {
-        setSelectedLocation(location);
-        setIsModalOpen(true);
-        // 모달이 열린 후 훈련사 탭으로 이동
-        setTimeout(() => {
-          const modal = document.querySelector('[data-state="open"]');
-          if (modal) {
-            const trainersTab = modal.querySelector('[value="trainers"]');
-            if (trainersTab) {
-              (trainersTab as HTMLElement).click();
-            }
-          }
-        }, 100);
+      if (response.ok) {
+        const addedLocation = await response.json();
+
+        // 새로운 ID 생성
+        const newId = Math.max(...locations.map(l => l.id)) + 1;
+        const locationToAdd: LocationItem = {
+          id: newId,
+          name: newLocation.name,
+          type: newLocation.type,
+          address: newLocation.address,
+          phone: newLocation.phone,
+          rating: 0,
+          reviewCount: 0,
+          distance: 0,
+          operatingHours: newLocation.operatingHours,
+          services: newLocation.services,
+          priceRange: newLocation.priceRange,
+          isPartner: true,
+          description: newLocation.description,
+          image: newLocation.image || 'https://images.unsplash.com/photo-1560807707-8cc77767d783?w=400'
+        };
+
+        // 로컬 상태 업데이트 (실제로는 서버에서 받은 데이터 사용)
+        setLocations([...locations, locationToAdd]);
+        setFilteredLocations([...filteredLocations, locationToAdd]);
+
+        // 폼 초기화
+        setNewLocation({
+          name: '',
+          type: 'training',
+          address: '',
+          phone: '',
+          description: '',
+          services: [],
+          priceRange: '',
+          operatingHours: { open: '09:00', close: '18:00' },
+          image: '',
+          latitude: 37.5665,
+          longitude: 126.9780
+        });
+
+        setIsAddModalOpen(false);
+
+        toast({
+          title: "업체 등록 완료",
+          description: `${newLocation.name}이(가) 성공적으로 등록되었습니다.`,
+        });
       } else {
-        // 다른 시설들은 네이버 스타일 예약 시스템
-        setSelectedLocation(location);
-        setShowNaverReservation(true);
+        throw new Error('업체 등록 실패');
       }
-    }
-  };
-
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(e.target.value);
-    console.log('검색어 변경:', e.target.value);
-  };
-
-  const getTypeIcon = (type: string) => {
-    switch (type) {
-      case 'training': return <GraduationCap className="h-4 w-4" />;
-      case 'grooming': return <Scissors className="h-4 w-4" />;
-      case 'hospital': return <Hospital className="h-4 w-4" />;
-      case 'hotel': return <Home className="h-4 w-4" />;
-      case 'daycare': return <Heart className="h-4 w-4" />;
-      case 'park': return <TreePine className="h-4 w-4" />;
-      default: return <MapPin className="h-4 w-4" />;
-    }
-  };
-
-  const getTypeName = (type: string) => {
-    switch (type) {
-      case 'training': return '훈련소';
-      case 'grooming': return '미용실';
-      case 'hospital': return '동물병원';
-      case 'hotel': return '펜션/호텔';
-      case 'daycare': return '위탁관리';
-      case 'park': return '놀이공원';
-      default: return '기타';
+    } catch (error) {
+      console.error('업체 등록 오류:', error);
+      toast({
+        title: "등록 실패",
+        description: "업체 등록 중 오류가 발생했습니다. 다시 시도해주세요.",
+        variant: "destructive"
+      });
     }
   };
 
   return (
-    <div className="py-8 px-4 sm:px-6 lg:px-8">
-      {/* Banner */}
-      <div className="relative rounded-xl overflow-hidden h-48 md:h-64 mb-8 shadow-lg">
-        <img 
-          src="https://images.unsplash.com/photo-1548199973-03cce0bbc87b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=400" 
-          alt="위치 찾기"
-          className="w-full h-full object-cover absolute"
-        />
-        <div className="relative h-full flex flex-col justify-center px-6 md:px-10">
-          <h1 className="text-primary dark:text-white text-xl md:text-3xl font-bold mb-2 md:mb-4 max-w-xl bg-white/90 dark:bg-gray-800/90 p-2 rounded-lg">
-            🐕 반려견 서비스 위치 찾기
-          </h1>
-          <p className="text-gray-800 dark:text-gray-200 text-sm md:text-base max-w-xl mb-4 bg-white/90 dark:bg-gray-800/90 p-2 rounded-lg">
-            주변의 훈련소, 미용실, 병원, 펜션 등 반려견 관련 서비스를 쉽게 찾아보세요.
-          </p>
-
-          {/* Search Bar */}
-          <div className="max-w-lg bg-white dark:bg-gray-800 rounded-lg flex items-center p-1">
-            <div className="px-2">
-              <Search className="h-5 w-5 text-gray-400" />
-            </div>
-            <input 
-              type="text" 
-              placeholder="지역명이나 업체명을 검색하세요" 
-              value={searchTerm}
-              onChange={handleSearchChange}
-              className="flex-1 py-2 px-2 bg-transparent focus:outline-none text-gray-800 dark:text-gray-200"
-            />
-            <Button className="ml-2">
-              검색
-            </Button>
-          </div>
+    
+      {/* Header */}
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">위치 찾기</h1>
+          <p className="text-gray-600 dark:text-gray-400">내 주변의 반려견 관련 시설을 찾아보세요</p>
         </div>
-      </div>
 
-      {/* Filters */}
-      <div className="flex flex-wrap items-center gap-4 mb-6">
-        <Button
-          variant={filter === "all" ? "default" : "outline"}
-          size="sm"
-          onClick={() => setFilter("all")}
-          className="text-xs"
-        >
-          전체
-        </Button>
-
-        <Button
-          variant={filter === "training" ? "default" : "outline"}
-          size="sm"
-          onClick={() => setFilter("training")}
-          className="text-xs"
-        >
-          🎓 훈련소
-        </Button>
-
-        <Button
-          variant={filter === "grooming" ? "default" : "outline"}
-          size="sm"
-          onClick={() => setFilter("grooming")}
-          className="text-xs"
-        >
-          ✂️ 미용실
-        </Button>
-
-        <Button
-          variant={filter === "hospital" ? "default" : "outline"}
-          size="sm"
-          onClick={() => setFilter("hospital")}
-          className="text-xs"
-        >
-          🏥 병원
-        </Button>
-
-        <Button
-          variant={filter === "hotel" ? "default" : "outline"}
-          size="sm"
-          onClick={() => setFilter("hotel")}
-          className="text-xs"
-        >
-          🏨 펜션
-        </Button>
-
-        <Button
-          variant={filter === "daycare" ? "default" : "outline"}
-          size="sm"
-          onClick={() => setFilter("daycare")}
-          className="text-xs"
-        >
-          💖 위탁관리
-        </Button>
-
-        <Button
-          variant={filter === "park" ? "default" : "outline"}
-          size="sm"
-          onClick={() => setFilter("park")}
-          className="text-xs"
-        >
-          🌳 공원
-        </Button>
-
-        <Button
-          variant="outline"
-          size="sm"
-          className="ml-auto text-xs"
-        >
-          <SlidersHorizontal className="h-3.5 w-3.5 mr-1" />
-          고급 필터
-        </Button>
-      </div>
-
-      {/* Location Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
-        {filteredLocations.map((location) => (
-          <Card key={location.id} className="overflow-hidden border border-gray-100 dark:border-gray-700 hover:shadow-md transition-shadow cursor-pointer"
-                onClick={() => handleLocationClick(location)}>
-            <div className="relative h-40">
-              <img 
-                src={location.image} 
-                alt={location.name} 
-                className="w-full h-full object-cover"
-              />
-              {location.isPartner && (
-                <Badge className="absolute top-2 right-2 bg-blue-600">
-                  파트너
-                </Badge>
-              )}
-            </div>
-            <div className="p-5">
-              <div className="flex items-center gap-2 mb-2">
-                {getTypeIcon(location.type)}
-                <Badge variant="outline" className="text-xs">
-                  {getTypeName(location.type)}
-                </Badge>
-              </div>
-              
-              <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-1">{location.name}</h3>
-
-              <div className="flex items-center mb-2">
-                <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
-                <span className="text-sm text-gray-700 dark:text-gray-300 ml-1 mr-2">
-                  {location.rating}
-                </span>
-                <span className="text-xs text-gray-500 dark:text-gray-400">
-                  ({location.reviewCount} 후기)
-                </span>
-                <Badge variant="outline" className="ml-auto text-xs">
-                  {location.distance}km
-                </Badge>
-              </div>
-
-              <p className="text-sm text-gray-600 dark:text-gray-300 mb-3 line-clamp-2">
-                {location.description}
-              </p>
-
-              <div className="space-y-2 mb-4 text-xs text-gray-600">
-                <div className="flex items-center gap-2">
-                  <MapPin className="h-3 w-3" />
-                  <span>{location.address}</span>
+        {/* 관리자 권한 업체 등록 버튼 */}
+        {userRole === 'admin' && (
+          <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
+            <DialogTrigger asChild>
+              <Button className="bg-blue-600 hover:bg-blue-700">
+                <Plus className="h-4 w-4 mr-2" />
+                업체 등록
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2">
+                  <Building className="h-5 w-5" />
+                  새 업체 등록
+                </DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="name">업체명 *</Label>
+                    <Input
+                      id="name"
+                      value={newLocation.name}
+                      onChange={(e) => setNewLocation({...newLocation, name: e.target.value})}
+                      placeholder="업체명을 입력하세요"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="type">업체 유형 *</Label>
+                    <Select
+                      value={newLocation.type}
+                      onValueChange={(value) => setNewLocation({...newLocation, type: value as any})}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="training">훈련소</SelectItem>
+                        <SelectItem value="grooming">미용실</SelectItem>
+                        <SelectItem value="hospital">동물병원</SelectItem>
+                        <SelectItem value="hotel">펜션/호텔</SelectItem>
+                        <SelectItem value="daycare">위탁관리</SelectItem>
+                        <SelectItem value="park">놀이공원</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Clock className="h-3 w-3" />
-                  <span>{location.operatingHours.open} - {location.operatingHours.close}</span>
+
+                <div>
+                  <Label htmlFor="address">주소 *</Label>
+                  <Input
+                    id="address"
+                    value={newLocation.address}
+                    onChange={(e) => setNewLocation({...newLocation, address: e.target.value})}
+                    placeholder="주소를 입력하세요"
+                  />
                 </div>
-                <div className="flex items-center gap-2">
-                  <Phone className="h-3 w-3" />
-                  <span>{location.phone}</span>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="phone">전화번호</Label>
+                    <Input
+                      id="phone"
+                      value={newLocation.phone}
+                      onChange={(e) => setNewLocation({...newLocation, phone: e.target.value})}
+                      placeholder="02-000-0000"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="priceRange">가격대</Label>
+                    <Input
+                      id="priceRange"
+                      value={newLocation.priceRange}
+                      onChange={(e) => setNewLocation({...newLocation, priceRange: e.target.value})}
+                      placeholder="예: 30,000원 - 80,000원"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="openTime">운영 시작 시간</Label>
+                    <Input
+                      id="openTime"
+                      type="time"
+                      value={newLocation.operatingHours.open}
+                      onChange={(e) => setNewLocation({
+                        ...newLocation, 
+                        operatingHours: {...newLocation.operatingHours, open: e.target.value}
+                      })}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="closeTime">운영 종료 시간</Label>
+                    <Input
+                      id="closeTime"
+                      type="time"
+                      value={newLocation.operatingHours.close}
+                      onChange={(e) => setNewLocation({
+                        ...newLocation, 
+                        operatingHours: {...newLocation.operatingHours, close: e.target.value}
+                      })}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <Label htmlFor="description">업체 설명</Label>
+                  <Textarea
+                    id="description"
+                    value={newLocation.description}
+                    onChange={(e) => setNewLocation({...newLocation, description: e.target.value})}
+                    placeholder="업체에 대한 자세한 설명을 입력하세요"
+                    rows={3}
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="image">이미지 URL</Label>
+                  <Input
+                    id="image"
+                    value={newLocation.image}
+                    onChange={(e) => setNewLocation({...newLocation, image: e.target.value})}
+                    placeholder="https://example.com/image.jpg"
+                  />
+                </div>
+
+                <div className="flex gap-3 pt-4">
+                  <Button
+                    variant="outline"
+                    className="flex-1"
+                    onClick={() => setIsAddModalOpen(false)}
+                  >
+                    취소
+                  </Button>
+                  <Button
+                    className="flex-1"
+                    onClick={handleAddLocation}
+                    disabled={!newLocation.name || !newLocation.address}
+                  >
+                    <Save className="h-4 w-4 mr-2" />
+                    등록하기
+                  </Button>
                 </div>
               </div>
-
-              <div className="flex gap-2">
-                <Button 
-                  size="sm" 
-                  className="flex-1"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleLocationDetail(location.id);
-                  }}
-                >
-                  <Eye className="h-3 w-3 mr-1" />
-                  상세보기
-                </Button>
-                <Button 
-                  size="sm" 
-                  variant="outline"
-                  className="flex-1"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleReservation(location.id);
-                  }}
-                >
-                  예약하기
-                </Button>
-              </div>
-            </div>
-          </Card>
-        ))}
+            </DialogContent>
+          </Dialog>
+        )}
       </div>
-
-      {/* Map Section */}
-      <Card className="mb-8">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <MapPin className="h-5 w-5" />
-            지도에서 보기
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="h-96 bg-gray-100 rounded-lg flex items-center justify-center">
-            <div className="text-center text-gray-500">
-              <MapPin className="h-16 w-16 mx-auto mb-4 text-gray-300" />
-              <p className="text-lg font-medium mb-2">지도 영역</p>
-              <p className="text-sm">카카오맵 API 연동 예정</p>
-              <p className="text-xs mt-2">현재는 목록 기반으로 위치를 확인할 수 있습니다</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Location Detail Modal */}
-      {selectedLocation && (
-        <LocationDetailModal
-          location={selectedLocation}
-          isOpen={isModalOpen}
-          onOpenChange={setIsModalOpen}
-          onReservation={handleReservation}
-        />
-      )}
-
-      {/* Pagination */}
-      <div className="mt-10 flex justify-center">
-        <nav className="flex items-center space-x-2">
-          <Button variant="outline" size="sm" className="text-sm">
-            이전
-          </Button>
-          <Button variant="default" size="sm" className="text-sm">
-            1
-          </Button>
-          <Button variant="outline" size="sm" className="text-sm">
-            2
-          </Button>
-          <Button variant="outline" size="sm" className="text-sm">
-            3
-          </Button>
-          <span className="px-2 text-gray-500 dark:text-gray-400">...</span>
-          <Button variant="outline" size="sm" className="text-sm">
-            다음
-          </Button>
-        </nav>
-      </div>
-      {/* 훈련사 상담 모달 */}
-      <TrainerConsultationModal
-        isOpen={showTrainerConsultation}
-        onOpenChange={setShowTrainerConsultation}
-        trainer={selectedTrainer}
-        onConsultationBooked={(consultation) => {
-          console.log('상담 예약 완료:', consultation);
-          setShowTrainerConsultation(false);
-        }}
-      />
-
-      {/* 네이버 스타일 예약 모달 */}
-      {selectedLocation && (
-        <NaverStyleReservationModal
-          isOpen={showNaverReservation}
-          onOpenChange={setShowNaverReservation}
-          location={selectedLocation}
-          onReservationComplete={(reservation) => {
-            console.log('예약 완료:', reservation);
-            setShowNaverReservation(false);
-          }}
-        />
-      )}
-    </div>
+    
   );
 }

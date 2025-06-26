@@ -404,9 +404,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/messages/send", async (req, res) => {
     try {
       const { trainerId, message } = req.body;
-      
+
       console.log('메시지 전송 요청:', { trainerId, message });
-      
+
       const messageId = Date.now();
       const messageData = {
         id: messageId,
@@ -432,9 +432,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/reservations/create", async (req, res) => {
     try {
       const { trainerId, date, time, notes } = req.body;
-      
+
       console.log('예약 생성 요청:', { trainerId, date, time, notes });
-      
+
       const reservationId = Date.now();
       const reservationData = {
         id: reservationId,
@@ -462,9 +462,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/trainers/register", async (req, res) => {
     try {
       const { name, email, phone, institute, certification, experience, specialties, bio, location } = req.body;
-      
+
       console.log('훈련사 등록 요청:', { name, email, institute });
-      
+
       const trainerId = Date.now();
       const trainerData = {
         id: trainerId,
@@ -510,7 +510,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/pets", async (req, res) => {
     try {
       console.log('반려동물 목록 조회 요청');
-      
+
       // 메모리에서 반려동물 목록 조회 (실제로는 데이터베이스에서 조회)
       if (!global.petsData) {
         global.petsData = [
@@ -553,9 +553,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/pets", async (req, res) => {
     try {
       const { name, age, breed, gender, weight, description } = req.body;
-      
+
       console.log('반려동물 등록 요청:', { name, breed, age });
-      
+
       const petId = Date.now();
       const petData = {
         id: petId,
@@ -590,7 +590,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/consultations/:id/zoom", async (req, res) => {
     try {
       const consultationId = req.params.id;
-      
+
       // 상담 정보 조회 (실제로는 데이터베이스에서 조회)
       const consultation = {
         id: consultationId,
@@ -616,9 +616,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/reviews", async (req, res) => {
     try {
       const { consultationId, trainerName, rating, title, content, tags } = req.body;
-      
+
       console.log('리뷰 작성 요청:', { consultationId, trainerName, rating });
-      
+
       const reviewId = Date.now();
       const reviewData = {
         id: reviewId,
@@ -655,9 +655,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/reviews", async (req, res) => {
     try {
       const { trainerName, limit = 10, offset = 0 } = req.query;
-      
+
       console.log('리뷰 목록 조회 요청:', { trainerName, limit, offset });
-      
+
       // 메모리에서 리뷰 목록 조회 (실제로는 데이터베이스에서 조회)
       if (!global.reviewsData) {
         global.reviewsData = [
@@ -678,7 +678,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       let filteredReviews = global.reviewsData;
-      
+
       if (trainerName) {
         filteredReviews = filteredReviews.filter(review => 
           review.trainerName === trainerName
@@ -703,9 +703,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/comments", async (req, res) => {
     try {
       const { parentType, parentId, content, parentCommentId } = req.body;
-      
+
       console.log('댓글 작성 요청:', { parentType, parentId, content });
-      
+
       const commentId = Date.now();
       const commentData = {
         id: commentId,
@@ -741,9 +741,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/comments", async (req, res) => {
     try {
       const { parentType, parentId } = req.query;
-      
+
       console.log('댓글 목록 조회 요청:', { parentType, parentId });
-      
+
       // 메모리에서 댓글 목록 조회 (실제로는 데이터베이스에서 조회)
       if (!global.commentsData) {
         global.commentsData = [];
@@ -1593,6 +1593,101 @@ app.get('/api/search', async (req, res) => {
     } catch (error: any) {
       console.error("Get courses error:", error);
       return res.status(500).json({ message: "강좌 조회 중 오류가 발생했습니다." });
+    }
+  });
+
+// 관리자 - 배너 관리
+  app.get('/api/admin/banners', requireAuth('admin'), async (req, res) => {
+    try {
+      const banners = await storage.getAllBanners();
+      res.json(banners);
+    } catch (error) {
+      console.error('배너 조회 오류:', error);
+      res.status(500).json({ error: '배너 조회에 실패했습니다.' });
+    }
+  });
+
+  // 관리자 - 업체 등록
+  app.post('/api/admin/locations', requireAuth('admin'), async (req, res) => {
+    try {
+      const {
+        name,
+        type,
+        address,
+        phone,
+        description,
+        services,
+        priceRange,
+        operatingHours,
+        image,
+        latitude,
+        longitude,
+        isPartner,
+        status
+      } = req.body;
+
+      // 필수 필드 검증
+      if (!name || !type || !address) {
+        return res.status(400).json({ 
+          error: '업체명, 유형, 주소는 필수 항목입니다.' 
+        });
+      }
+
+      // 새 업체 정보 생성
+      const newLocation = {
+        id: Date.now(), // 실제로는 DB에서 생성된 ID 사용
+        name,
+        type,
+        address,
+        phone: phone || '',
+        description: description || '',
+        services: services || [],
+        priceRange: priceRange || '',
+        operatingHours: operatingHours || { open: '09:00', close: '18:00' },
+        image: image || 'https://images.unsplash.com/photo-1560807707-8cc77767d783?w=400',
+        latitude: latitude || 37.5665,
+        longitude: longitude || 126.9780,
+        isPartner: isPartner || true,
+        status: status || 'active',
+        rating: 0,
+        reviewCount: 0,
+        distance: 0,
+        createdAt: new Date().toISOString(),
+        createdBy: req.user?.id || 'admin'
+      };
+
+      // 실제로는 데이터베이스에 저장
+      console.log('새 업체 등록:', newLocation);
+
+      res.status(201).json({
+        success: true,
+        message: '업체가 성공적으로 등록되었습니다.',
+        location: newLocation
+      });
+
+    } catch (error) {
+      console.error('업체 등록 오류:', error);
+      res.status(500).json({ 
+        error: '업체 등록 중 오류가 발생했습니다.' 
+      });
+    }
+  });
+
+  // 관리자 - 업체 목록 조회
+  app.get('/api/admin/locations', requireAuth('admin'), async (req, res) => {
+    try {
+      // 실제로는 데이터베이스에서 조회
+      const locations = []; // storage.getAllLocations() 등의 메서드 사용
+
+      res.json({
+        success: true,
+        locations
+      });
+    } catch (error) {
+      console.error('업체 목록 조회 오류:', error);
+      res.status(500).json({ 
+        error: '업체 목록 조회에 실패했습니다.' 
+      });
     }
   });
 
