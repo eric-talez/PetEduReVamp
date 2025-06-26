@@ -160,6 +160,13 @@ export default function LocationFinder() {
     isPartner: true
   });
 
+  const [uploadedImages, setUploadedImages] = useState<{
+    file: File;
+    preview: string;
+    uploaded?: boolean;
+    url?: string;
+  }[]>([]);
+
   console.log('LocationFinder 컴포넌트 렌더링됨');
 
   const filteredLocations = locations.filter(location => {
@@ -279,6 +286,99 @@ export default function LocationFinder() {
 
   const { toast } = useToast();
 
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    
+    if (uploadedImages.length + files.length > 7) {
+      toast({
+        title: "업로드 제한",
+        description: "최대 7개의 이미지만 업로드할 수 있습니다.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const newImages = files.map(file => {
+      // 파일 크기 체크 (5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        toast({
+          title: "파일 크기 오류",
+          description: `${file.name}이 너무 큽니다. 5MB 이하의 파일을 선택해주세요.`,
+          variant: "destructive"
+        });
+        return null;
+      }
+
+      // 파일 타입 체크
+      if (!file.type.startsWith('image/')) {
+        toast({
+          title: "파일 형식 오류",
+          description: `${file.name}은 이미지 파일이 아닙니다.`,
+          variant: "destructive"
+        });
+        return null;
+      }
+
+      return {
+        file,
+        preview: URL.createObjectURL(file),
+        uploaded: false
+      };
+    }).filter(Boolean) as {
+      file: File;
+      preview: string;
+      uploaded: boolean;
+    }[];
+
+    setUploadedImages(prev => [...prev, ...newImages]);
+  };
+
+  const removeImage = (index: number) => {
+    setUploadedImages(prev => {
+      const newImages = [...prev];
+      // 미리보기 URL 정리
+      URL.revokeObjectURL(newImages[index].preview);
+      newImages.splice(index, 1);
+      return newImages;
+    });
+  };
+
+  const uploadImages = async (): Promise<string[]> => {
+    const uploadPromises = uploadedImages.map(async (imageData) => {
+      if (imageData.uploaded && imageData.url) {
+        return imageData.url;
+      }
+
+      const formData = new FormData();
+      formData.append('file', imageData.file);
+
+      try {
+        const response = await fetch('/api/upload', {
+          method: 'POST',
+          body: formData
+        });
+
+        if (response.ok) {
+          const result = await response.json();
+          return result.url;
+        } else {
+          throw new Error('업로드 실패');
+        }
+      } catch (error) {
+        console.error('이미지 업로드 오류:', error);
+        toast({
+          title: "이미지 업로드 실패",
+          description: `${imageData.file.name} 업로드에 실패했습니다.`,
+          variant: "destructive"
+        });
+        return null;
+      }
+    });
+
+    const results = await Promise.all(uploadPromises);
+    return results.filter(Boolean) as string[];
+  };
+
   const handleAdminLocationSave = async () => {
     try {
       // 필수 필드 검증
@@ -291,12 +391,26 @@ export default function LocationFinder() {
         return;
       }
 
+      // 이미지 업로드 처리
+      let imageUrls: string[] = [];
+      if (uploadedImages.length > 0) {
+        toast({
+          title: "이미지 업로드 중",
+          description: "이미지를 업로드하고 있습니다. 잠시만 기다려주세요.",
+        });
+        
+        imageUrls = await uploadImages();
+      }
+
       const response = await fetch('/api/admin/locations', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(newLocationData)
+        body: JSON.stringify({
+          ...newLocationData,
+          images: imageUrls
+        })
       });
 
       if (response.ok) {
@@ -331,6 +445,13 @@ export default function LocationFinder() {
           operatingHours: { open: '09:00', close: '18:00' },
           isPartner: true
         });
+        
+        // 업로드된 이미지 정리
+        uploadedImages.forEach(imageData => {
+          URL.revokeObjectURL(imageData.preview);
+        });
+        setUploadedImages([]);
+        
         setShowAdminDialog(false);
       } else {
         const errorData = await response.json().catch(() => ({ error: '서버 응답 파싱 실패' }));
@@ -970,6 +1091,64 @@ export default function LocationFinder() {
                         <span className="text-sm">{service}</span>
                       </label>
                     ))}
+                  </div>
+                </div>
+
+                {/* 이미지 업로드 섹션 */}
+                <div>
+                  <label className="block text-sm font-medium mb-2">업체 이미지 (최대 7개)</label>
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-center w-full">
+                      <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100">
+                        <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                          <svg className="w-8 h-8 mb-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                          </svg>
+                          <p className="mb-2 text-sm text-gray-500">
+                            <span className="font-semibold">클릭하여 업로드</span> 또는 드래그 & 드롭
+                          </p>
+                          <p className="text-xs text-gray-500">PNG, JPG, JPEG (최대 5MB)</p>
+                        </div>
+                        <input
+                          type="file"
+                          className="hidden"
+                          accept="image/*"
+                          multiple
+                          onChange={handleImageUpload}
+                        />
+                      </label>
+                    </div>
+                    
+                    {/* 업로드된 이미지 미리보기 */}
+                    {uploadedImages.length > 0 && (
+                      <div className="grid grid-cols-3 gap-4">
+                        {uploadedImages.map((image, index) => (
+                          <div key={index} className="relative">
+                            <img
+                              src={image.preview}
+                              alt={`업체 이미지 ${index + 1}`}
+                              className="w-full h-24 object-cover rounded-lg"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => removeImage(index)}
+                              className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600"
+                            >
+                              ✕
+                            </button>
+                            <div className="text-xs text-gray-500 mt-1 truncate">
+                              {image.file.name}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    
+                    {uploadedImages.length >= 7 && (
+                      <p className="text-sm text-orange-600">
+                        최대 7개의 이미지만 업로드할 수 있습니다.
+                      </p>
+                    )}
                   </div>
                 </div>
 

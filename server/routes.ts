@@ -821,8 +821,7 @@ app.get('/api/search', async (req, res) => {
       location = 'all',
       difficulty = 'all',
       minPrice = 0,
-      maxPrice = 1000000,```tool_code
-
+      maxPrice = 1000000,
       startDate,
       endDate,
       features = [],
@@ -1785,6 +1784,101 @@ app.get('/api/search', async (req, res) => {
       });
     }
   });
+
+  const multer = require('multer');
+  const path = require('path');
+
+  // Multer Storage 설정
+  const storageConfig = multer.diskStorage({
+    destination: (req: any, file: any, cb: any) => {
+      cb(null, 'public/uploads/'); // 파일 저장 경로
+    },
+    filename: (req: any, file: any, cb: any) => {
+      const ext = path.extname(file.originalname);
+      const filename = path.basename(file.originalname, ext) + '-' + Date.now() + ext;
+      cb(null, filename); // 저장될 파일명
+    }
+  });
+
+  // Multer 업로드 미들웨어 생성
+  const upload = multer({ 
+    storage: storageConfig,
+    limits: { fileSize: 10 * 1024 * 1024 } // 파일 크기 제한: 10MB
+  });
+
+  // 이미지 업로드 라우트
+  const uploadSingle = upload.single('image'); // 'image' 필드명으로 파일 업로드 받음
+  // 이미지 업로드 라우트
+  app.post('/api/upload', (req: any, res: any) => {
+    uploadSingle(req, res, (err: any) => {
+      if (err) {
+        console.error('업로드 오류:', err);
+        return res.status(400).json({ 
+          error: err.message || '파일 업로드에 실패했습니다.' 
+        });
+      }
+
+      if (!req.file) {
+        return res.status(400).json({ 
+          error: '업로드할 파일이 없습니다.' 
+        });
+      }
+
+      // 파일 정보 반환
+      const fileInfo = {
+        filename: req.file.filename,
+        originalName: req.file.originalname,
+        url: req.file.path.replace(process.cwd() + '/public', ''),
+        size: req.file.size,
+        mimetype: req.file.mimetype
+      };
+
+      res.json({
+        message: '파일 업로드 성공',
+        url: fileInfo.url,
+        file: fileInfo
+      });
+    });
+  });
+
+  // 위치 기반 서비스 라우트
+  app.get('/api/places/nearby', async (req, res) => {
+    try {
+      const { latitude, longitude, radius = 1000 } = req.query;
+
+      if (!latitude || !longitude) {
+        return res.status(400).json({ error: '위도와 경도가 필요합니다.' });
+      }
+
+      // 실제로는 데이터베이스에서 위치 기반 검색 실행
+      const nearbyPlaces = [
+        {
+          id: 1,
+          name: "Talez 펫 플레이스",
+          type: "카페",
+          address: "서울시 강남구 테헤란로 427",
+          latitude: 37.5034,
+          longitude: 127.0448,
+          distance: 0.5
+        },
+        {
+          id: 2,
+          name: "Talez 동물병원",
+          type: "병원",
+          address: "서울시 강남구 삼성동 123-45",
+          latitude: 37.5133,
+          longitude: 127.0585,
+          distance: 0.8
+        }
+      ];
+
+      res.json(nearbyPlaces);
+    } catch (error) {
+      console.error('위치 기반 장소 조회 오류:', error);
+      res.status(500).json({ error: '위치 기반 장소 조회에 실패했습니다.' });
+    }
+  });
+  
 
   // Global error handler (commented out for now)
   // app.use(errorHandler);
