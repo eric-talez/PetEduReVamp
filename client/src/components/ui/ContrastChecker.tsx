@@ -13,6 +13,7 @@ import {
   themeColorPairs,
   type ContrastResult 
 } from '@/utils/contrast-checker';
+import { validateColorTheme } from '@/utils/color-utils';
 import { 
   Eye, 
   AlertTriangle, 

@@ -1,9 +1,9 @@
 :root {
-  --primary-color: #4F46E5;
-  --primary-hover: #4338CA;
-  --success-color: #10B981;
-  --warning-color: #F59E0B;
-  --error-color: #EF4444;
+  --primary-color: hsl(var(--primary));
+  --primary-hover: hsl(var(--primary) / 0.9);
+  --success-color: hsl(142 71% 45%);
+  --warning-color: hsl(30 84% 45%);
+  --error-color: hsl(0 84% 45%);
   --text-color: #111827;
   --bg-color: #F9FAFB;
   --card-bg: #FFFFFF;

@@ -55,9 +55,9 @@ export function ThemeToggle() {
       aria-label={isDarkMode ? "라이트 모드로 전환" : "다크 모드로 전환"}
     >
       {isDarkMode ? (
-        <Moon className="h-5 w-5 text-indigo-400" />
+        <Moon className="h-5 w-5 text-primary" />
       ) : (
-        <Sun className="h-5 w-5 text-amber-400" />
+        <Sun className="h-5 w-5 text-primary" />
       )}
     </button>
   );
