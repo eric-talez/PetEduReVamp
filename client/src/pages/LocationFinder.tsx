@@ -253,7 +253,7 @@ export default function LocationFinder() {
   };
 
   return (
-    
+    <div className="container mx-auto p-4">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
         <div>
@@ -410,6 +410,157 @@ export default function LocationFinder() {
           </Dialog>
         )}
       </div>
+
+      {/* Filters and Search */}
+      <div className="mb-6 space-y-4">
+        <div className="flex flex-wrap gap-4">
+          <div className="flex-1 min-w-64">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+              <Input
+                placeholder="지역, 업체명으로 검색..."
+                className="pl-10"
+              />
+            </div>
+          </div>
+          <Select defaultValue="all">
+            <SelectTrigger className="w-48">
+              <SelectValue placeholder="업체 유형" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">전체</SelectItem>
+              <SelectItem value="training">훈련소</SelectItem>
+              <SelectItem value="grooming">미용실</SelectItem>
+              <SelectItem value="hospital">동물병원</SelectItem>
+              <SelectItem value="hotel">펜션/호텔</SelectItem>
+              <SelectItem value="daycare">위탁관리</SelectItem>
+              <SelectItem value="park">놀이공원</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      {/* Map and List Layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Location List */}
+        <div className="space-y-4">
+          {filteredLocations.map((location) => (
+            <Card key={location.id} className="hover:shadow-lg transition-shadow duration-200">
+              <CardContent className="p-4">
+                <div className="flex justify-between items-start mb-3">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <h3 className="font-semibold text-lg">{location.name}</h3>
+                      {location.isPartner && (
+                        <Badge variant="secondary" className="bg-blue-100 text-blue-800">
+                          파트너
+                        </Badge>
+                      )}
+                    </div>
+                    <div className="flex items-center text-gray-600 text-sm mb-2">
+                      <MapPin className="h-4 w-4 mr-1" />
+                      {location.address}
+                    </div>
+                    <div className="flex items-center gap-4 text-sm text-gray-600">
+                      <div className="flex items-center">
+                        <Star className="h-4 w-4 mr-1 text-yellow-500 fill-current" />
+                        {location.rating} ({location.reviewCount})
+                      </div>
+                      <div className="flex items-center">
+                        <Clock className="h-4 w-4 mr-1" />
+                        {location.operatingHours.open} - {location.operatingHours.close}
+                      </div>
+                      <div className="flex items-center">
+                        <Navigation className="h-4 w-4 mr-1" />
+                        {location.distance}km
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap gap-1 mb-3">
+                  {location.services.slice(0, 3).map((service, index) => (
+                    <Badge key={index} variant="outline" className="text-xs">
+                      {service}
+                    </Badge>
+                  ))}
+                  {location.services.length > 3 && (
+                    <Badge variant="outline" className="text-xs">
+                      +{location.services.length - 3}
+                    </Badge>
+                  )}
+                </div>
+
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-600 font-medium">
+                    {location.priceRange}
+                  </span>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleLocationClick(location)}
+                    >
+                      지도에서 보기
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setSelectedLocationForModal(location);
+                        setShowModal(true);
+                      }}
+                    >
+                      상세보기
+                    </Button>
+                    <Button variant="outline" size="sm">
+                      <Phone className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        {/* Map */}
+        <div className="h-96 lg:h-full">
+          <KakaoMapView
+            center={{ lat: 37.5665, lng: 126.9780 }}
+            markers={locations.map(loc => ({
+              position: {
+                lat: 37.5665 + (Math.random() - 0.5) * 0.01,
+                lng: 126.9780 + (Math.random() - 0.5) * 0.01
+              },
+              title: loc.name,
+              content: `
+                <div style="padding: 10px; min-width: 200px;">
+                  <h4 style="margin: 0 0 5px 0; font-weight: bold;">${loc.name}</h4>
+                  <p style="margin: 0; font-size: 12px; color: #666;">${loc.address}</p>
+                  <p style="margin: 5px 0 0 0; font-size: 12px;">⭐ ${loc.rating} (${loc.reviewCount})</p>
+                </div>
+              `
+            }))}
+            selectedLocation={selectedLocation}
+            onLocationClick={(position) => {
+              console.log('지도 위치 클릭:', position);
+            }}
+          />
+        </div>
+      </div>
+
+      {/* Location Detail Modal */}
+      {showModal && selectedLocationForModal && (
+        <LocationDetailModal
+          location={selectedLocationForModal}
+          isOpen={showModal}
+          onClose={() => {
+            setShowModal(false);
+            setSelectedLocationForModal(null);
+          }}
+        />
+      )}
+    </div>
     
   );
 }
