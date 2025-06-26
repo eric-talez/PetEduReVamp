@@ -51,8 +51,6 @@ export function LocationMap({
   const [selectedLocation, setSelectedLocation] = useState<LocationData | null>(null);
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
   const [isLoadingLocation, setIsLoadingLocation] = useState(false);
-  const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
-  const [selectedLocation, setSelectedLocation] = useState<LocationData | null>(null);
 
   // Custom icons for different location types
   const getLocationIcon = (type: string) => {
@@ -198,6 +196,27 @@ export function LocationMap({
     return labels[type as keyof typeof labels] || type;
   };
 
+  // Calculate distance between two coordinates
+  const calculateDistance = (lat1: number, lng1: number, lat2: number, lng2: number) => {
+    const R = 6371; // Earth's radius in kilometers
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLng = (lng2 - lng1) * Math.PI / 180;
+    const a = 
+      Math.sin(dLat/2) * Math.sin(dLat/2) +
+      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+      Math.sin(dLng/2) * Math.sin(dLng/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return R * c;
+  };
+
+  // Get locations with distances if user location is available
+  const locationsWithDistance = userLocation 
+    ? locations.map(location => ({
+        ...location,
+        distance: calculateDistance(userLocation[0], userLocation[1], location.lat, location.lng)
+      })).sort((a, b) => (a.distance || 0) - (b.distance || 0))
+    : locations;
+
   const getLocationTypeBadgeColor = (type: string) => {
     const colors = {
       'training-center': 'bg-green-100 text-green-800',
@@ -299,18 +318,38 @@ export function LocationMap({
                       </div>
                     </div>
                     
-                    {location.distance && (
-                      <div className="text-sm text-gray-500">
-                        {location.distance < 1 ? 
-                          `${Math.round(location.distance * 1000)}m` : 
-                          `${location.distance.toFixed(1)}km`
-                        }
-                      </div>
-                    )}
+                    <div className="text-right">
+                      {location.distance && (
+                        <div className="text-sm font-medium text-primary">
+                          {location.distance < 1 
+                            ? `${Math.round(location.distance * 1000)}m`
+                            : `${location.distance.toFixed(1)}km`
+                          }
+                        </div>
+                      )}
+                    </div>
                   </div>
+                  
+                  {location.description && (
+                    <p className="text-xs text-gray-500 mt-2 line-clamp-2">
+                      {location.description}
+                    </p>
+                  )}
                 </div>
               ))}
             </div>
+          </CardContent>
+        </Card>
+      )}
+      
+      {showLocationList && locations.length === 0 && (
+        <Card>
+          <CardContent className="text-center py-8">
+            <MapPin className="w-12 h-12 mx-auto text-gray-400 mb-4" />
+            <p className="text-gray-500">표시할 위치가 없습니다.</p>
+            <p className="text-sm text-gray-400 mt-1">
+              내 위치를 설정하면 주변 장소를 찾을 수 있습니다.
+            </p>
           </CardContent>
         </Card>
       )}
