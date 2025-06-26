@@ -115,6 +115,11 @@ TALEZ is a comprehensive pet education and e-commerce platform that combines AI-
 
 ## Changelog
 
+- June 26, 2025. Updated color scheme to match Figma design specifications:
+  - Primary: #2BAA61 (HSL 142 61% 42%)
+  - Secondary: #FFA726 (HSL 36 100% 58%)
+  - Information: #29B5F6 (HSL 198 86% 58%)
+  - Danger: #E74D3C (HSL 4 78% 56%)
 - June 25, 2025. Initial setup
 
 ## User Preferences

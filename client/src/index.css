@@ -310,25 +310,25 @@
     --popover: 0 0% 100%;
     --popover-foreground: 220 13% 9%;
 
-    /* 주 색상 - PetEdu 브랜드 색상 */
-    --primary: 220 91% 55%;  /* 브랜드 블루 색상 */
+    /* 주 색상 - Figma 디자인 Primary #2BAA61 */
+    --primary: 142 61% 42%;  /* #2BAA61 */
     --primary-foreground: 0 0% 100%;  /* 흰색으로 대비 향상 */
 
-    /* 보조 색상 - 대비 개선 */
-    --secondary: 210 30% 96%;  /* 연한 회색 배경 */
-    --secondary-foreground: 220 13% 9%;  /* 어두운 텍스트 */
+    /* 보조 색상 - Figma 디자인 Secondary #FFA726 */
+    --secondary: 36 100% 58%;  /* #FFA726 */
+    --secondary-foreground: 0 0% 0%;  /* 검은색 텍스트 */
 
-    /* 상태 색상 - WCAG AA 준수 */
-    --success: 142 71% 40%;  /* 성공 상태 - 더 어두움 */
+    /* 상태 색상 - Figma 디자인 기준 */
+    --success: 142 61% 42%;  /* Primary와 동일 #2BAA61 */
     --success-foreground: 0 0% 100%;
 
-    --info: 217 91% 45%;    /* 정보 상태 - 더 어두움 */
+    --info: 198 86% 58%;    /* Information #29B5F6 */
     --info-foreground: 0 0% 100%;
 
-    --warning: 30 84% 40%;  /* 경고 상태 - 더 어두움 */
-    --warning-foreground: 0 0% 100%;
+    --warning: 36 100% 58%;  /* Secondary와 동일 #FFA726 */
+    --warning-foreground: 0 0% 0%;
 
-    --error: 0 84% 45%;     /* 오류 상태 */
+    --error: 4 78% 56%;     /* Danger #E74D3C */
     --error-foreground: 0 0% 100%;
 
     /* 뮤트 색상 - 가독성 향상 */
@@ -339,14 +339,14 @@
     --accent: 210 30% 96%;
     --accent-foreground: 220 13% 9%;
 
-    /* 파괴적 액션 색상 */
-    --destructive: 0 84% 45%;
+    /* 파괴적 액션 색상 - Figma Danger */
+    --destructive: 4 78% 56%;  /* #E74D3C */
     --destructive-foreground: 0 0% 100%;
 
     /* 경계선 및 입력 필드 관련 - 더 명확한 경계 */
     --border: 214.3 31.8% 85%;  /* 더 어두운 경계선 */
     --input: 214.3 31.8% 96%;   /* 입력 필드 배경 */
-    --ring: 220 91% 55%;        /* 포커스 링 */
+    --ring: 142 61% 42%;        /* 포커스 링 - Primary 색상 */
 
     /* 추가 색상 변수 */
     --hover: 210 30% 92%;       /* 호버 상태 */
@@ -382,25 +382,25 @@
     --popover: 220 13% 12%;
     --popover-foreground: 0 0% 95%;
 
-    /* 다크 모드 브랜드 색상 - 접근성 향상 */
-    --primary: 220 91% 70%;       /* 밝은 브랜드 블루 색상 */
+    /* 다크 모드 브랜드 색상 - Figma Primary (밝게 조정) */
+    --primary: 142 61% 55%;       /* #2BAA61의 밝은 버전 */
     --primary-foreground: 220 13% 9%;  /* 어두운 텍스트 */
 
-    /* 다크 모드 보조 색상 */
-    --secondary: 217.2 32.6% 17.5%;
+    /* 다크 모드 보조 색상 - Figma Secondary (어둡게 조정) */
+    --secondary: 36 80% 35%;
     --secondary-foreground: 0 0% 95%;
 
-    /* 다크 모드 상태 색상 - WCAG AA 준수 */
-    --success: 142 71% 55%;       /* 밝은 성공 색상 */
+    /* 다크 모드 상태 색상 - Figma 색상 밝게 조정 */
+    --success: 142 61% 55%;       /* Primary 밝은 버전 */
     --success-foreground: 220 13% 9%;
 
-    --info: 217 91% 70%;          /* 밝은 정보 색상 */
+    --info: 198 86% 70%;          /* Information 밝은 버전 */
     --info-foreground: 220 13% 9%;
 
-    --warning: 30 84% 65%;        /* 밝은 경고 색상 */
+    --warning: 36 100% 70%;       /* Secondary 밝은 버전 */
     --warning-foreground: 220 13% 9%;
 
-    --error: 0 84% 65%;           /* 밝은 오류 색상 */
+    --error: 4 78% 70%;           /* Danger 밝은 버전 */
     --error-foreground: 220 13% 9%;
 
     /* 다크 모드 뮤트 색상 - 가독성 향상 */
@@ -411,14 +411,14 @@
     --accent: 217.2 32.6% 17.5%;
     --accent-foreground: 0 0% 95%;
 
-    /* 다크 모드 파괴적 액션 색상 */
-    --destructive: 0 84% 65%;
+    /* 다크 모드 파괴적 액션 색상 - Figma Danger */
+    --destructive: 4 78% 70%;
     --destructive-foreground: 220 13% 9%;
 
     /* 다크 모드 경계선 및 입력 필드 - 더 명확한 경계 */
     --border: 217.2 32.6% 20%;    /* 더 밝은 경계선 */
     --input: 217.2 32.6% 15%;     /* 입력 필드 배경 */
-    --ring: 220 91% 70%;          /* 포커스 링 */
+    --ring: 142 61% 55%;          /* 포커스 링 - Primary 색상 */
 
     /* 다크 모드 추가 색상 */
     --hover: 217.2 32.6% 20%;     /* 호버 상태 */
@@ -571,7 +571,7 @@ html:not(.dark) * {
   --card-foreground: 0 0% 0%;
   --popover: 0 0% 100%;
   --popover-foreground: 0 0% 0%;
-  --primary: 0 0% 0%;
+  --primary: 142 61% 30%;  /* 고대비 Primary */
   --primary-foreground: 0 0% 100%;
   --secondary: 0 0% 90%;
   --secondary-foreground: 0 0% 0%;
@@ -579,11 +579,11 @@ html:not(.dark) * {
   --muted-foreground: 0 0% 0%;
   --accent: 0 0% 90%;
   --accent-foreground: 0 0% 0%;
-  --destructive: 0 84% 20%;
+  --destructive: 4 78% 35%;  /* 고대비 Danger */
   --destructive-foreground: 0 0% 100%;
   --border: 0 0% 20%;
   --input: 0 0% 90%;
-  --ring: 0 0% 0%;
+  --ring: 142 61% 30%;
 }
 
 .high-contrast button,
