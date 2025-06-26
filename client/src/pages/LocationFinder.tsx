@@ -1,24 +1,23 @@
-
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogDescription
 } from '@/components/ui/dialog';
-import { 
-  MapPin, 
-  Plus, 
-  Edit, 
-  Trash2, 
+import { Textarea } from '@/components/ui/textarea';
+import {
+  MapPin,
+  Plus,
+  Edit,
+  Trash2,
   Search,
   Phone,
   Clock,
@@ -31,9 +30,14 @@ import {
   Calendar,
   CheckCircle,
   AlertCircle,
-  Settings
+  Settings,
+  Edit2
 } from 'lucide-react';
 import { useGlobalAuth } from '@/hooks/useGlobalAuth';
+import { useAuth } from '@/hooks/use-auth';
+import { useToast } from '@/hooks/use-toast';
+import { KakaoMapView } from '@/components/KakaoMapView';
+import { LocationDetailModal } from '@/components/LocationDetailModal';
 
 interface LocationItem {
   id: number;
@@ -56,6 +60,23 @@ interface LocationItem {
   status: 'active' | 'pending' | 'inactive';
   createdAt: string;
   updatedAt: string;
+}
+
+interface Location {
+  id: number;
+  name: string;
+  type: string;
+  address: string;
+  phone: string;
+  description: string;
+  services: string[];
+  priceRange: string;
+  operatingHours: { open: string; close: string };
+  isPartner: boolean;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+  image?: string;
 }
 
 export default function LocationFinder() {
@@ -107,7 +128,7 @@ export default function LocationFinder() {
   const [selectedLocation, setSelectedLocation] = useState<LocationItem | null>(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [editingLocation, setEditingLocation] = useState<LocationItem | null>(null);
+  const [editingLocationItem, setEditingLocation] = useState<LocationItem | null>(null);
   const [newLocation, setNewLocation] = useState({
     name: '',
     type: 'training' as const,
@@ -121,6 +142,24 @@ export default function LocationFinder() {
     image: ''
   });
 
+  const [showAdminDialog, setShowAdminDialog] = useState(false);
+  const [showManagementDialog, setShowManagementDialog] = useState(false);
+  const [managementSearchTerm, setManagementSearchTerm] = useState('');
+  const [managementFilterType, setManagementFilterType] = useState('all');
+  const [managedLocations, setManagedLocations] = useState<Location[]>([]);
+  const [editingLocationInner, setEditingLocationInner] = useState<Location | null>(null);
+  const [newLocationData, setNewLocationData] = useState({
+    name: '',
+    type: '',
+    address: '',
+    phone: '',
+    description: '',
+    services: [] as string[],
+    priceRange: '',
+    operatingHours: { open: '09:00', close: '18:00' },
+    isPartner: true
+  });
+
   console.log('LocationFinder 컴포넌트 렌더링됨');
 
   const filteredLocations = locations.filter(location => {
@@ -128,7 +167,7 @@ export default function LocationFinder() {
                          location.address.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesType = filterType === 'all' || location.type === filterType;
     const matchesStatus = filterStatus === 'all' || location.status === filterStatus;
-    
+
     return matchesSearch && matchesType && matchesStatus;
   });
 
@@ -206,20 +245,20 @@ export default function LocationFinder() {
     console.log('새 위치 등록:', location);
   };
 
-  const handleEditLocation = (location: LocationItem) => {
+  const handleEditLocationItem = (location: LocationItem) => {
     setEditingLocation(location);
   };
 
   const handleUpdateLocation = () => {
-    if (!editingLocation) return;
+    if (!editingLocationItem) return;
 
     setLocations(locations.map(loc => 
-      loc.id === editingLocation.id 
-        ? { ...editingLocation, updatedAt: new Date().toISOString().split('T')[0] }
+      loc.id === editingLocationItem.id 
+        ? { ...editingLocationItem, updatedAt: new Date().toISOString().split('T')[0] }
         : loc
     ));
     setEditingLocation(null);
-    console.log('위치 정보 업데이트:', editingLocation);
+    console.log('위치 정보 업데이트:', editingLocationItem);
   };
 
   const handleDeleteLocation = (id: number) => {
@@ -238,6 +277,169 @@ export default function LocationFinder() {
     console.log('위치 상태 변경:', id, status);
   };
 
+  const handleAdminLocationSave = async () => {
+    try {
+      const response = await fetch('/api/admin/locations', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newLocationData)
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        const newLocation = result.location;
+
+        // Add to managed locations
+        setManagedLocations(prev => [...prev, newLocation]);
+
+        // Add to main locations list
+        setLocations(prev => [...prev, {
+          ...newLocation,
+          rating: 0,
+          reviewCount: 0,
+          distance: 0
+        }]);
+
+        useToast().toast({
+          title: "업체 등록 완료",
+          description: "새 업체가 성공적으로 등록되었습니다.",
+        });
+
+        // Reset form and close dialog
+        setNewLocationData({
+          name: '',
+          type: '',
+          address: '',
+          phone: '',
+          description: '',
+          services: [],
+          priceRange: '',
+          operatingHours: { open: '09:00', close: '18:00' },
+          isPartner: true
+        });
+        setShowAdminDialog(false);
+      } else {
+        throw new Error('업체 등록에 실패했습니다.');
+      }
+    } catch (error) {
+      console.error('업체 등록 오류:', error);
+      useToast().toast({
+        title: "등록 실패",
+        description: "업체 등록 중 오류가 발생했습니다.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const loadManagedLocations = async () => {
+    try {
+      const response = await fetch('/api/admin/locations');
+      if (response.ok) {
+        const result = await response.json();
+        setManagedLocations(result.locations || []);
+      }
+    } catch (error) {
+      console.error('업체 목록 로딩 오류:', error);
+    }
+  };
+
+  const getFilteredManagementLocations = () => {
+    let filtered = managedLocations;
+
+    if (managementSearchTerm) {
+      filtered = filtered.filter(location =>
+        location.name.toLowerCase().includes(managementSearchTerm.toLowerCase()) ||
+        location.address.toLowerCase().includes(managementSearchTerm.toLowerCase())
+      );
+    }
+
+    if (managementFilterType !== 'all') {
+      filtered = filtered.filter(location => location.type === managementFilterType);
+    }
+
+    return filtered;
+  };
+
+  const handleEditLocationInner = (location: Location) => {
+    setEditingLocationInner(location);
+    // 편집 모달을 여기서 구현하거나 별도 상태로 관리
+  };
+
+  const handleDeleteLocationInner = async (locationId: number) => {
+    if (!confirm('정말로 이 업체를 삭제하시겠습니까?')) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/admin/locations/${locationId}`, {
+        method: 'DELETE'
+      });
+
+      if (response.ok) {
+        setManagedLocations(prev => prev.filter(loc => loc.id !== locationId));
+        setLocations(prev => prev.filter(loc => loc.id !== locationId));
+
+        useToast().toast({
+          title: "업체 삭제 완료",
+          description: "업체가 성공적으로 삭제되었습니다.",
+        });
+      }
+    } catch (error) {
+      console.error('업체 삭제 오류:', error);
+      useToast().toast({
+        title: "삭제 실패",
+        description: "업체 삭제 중 오류가 발생했습니다.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleToggleLocationStatus = async (locationId: number) => {
+    try {
+      const location = managedLocations.find(loc => loc.id === locationId);
+      if (!location) return;
+
+      const newStatus = location.status === 'active' ? 'inactive' : 'active';
+
+      const response = await fetch(`/api/admin/locations/${locationId}/status`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ status: newStatus })
+      });
+
+      if (response.ok) {
+        setManagedLocations(prev =>
+          prev.map(loc =>
+            loc.id === locationId ? { ...loc, status: newStatus } : loc
+          )
+        );
+
+        useToast().toast({
+          title: "상태 변경 완료",
+          description: `업체가 ${newStatus === 'active' ? '활성화' : '비활성화'}되었습니다.`,
+        });
+      }
+    } catch (error) {
+      console.error('상태 변경 오류:', error);
+      useToast().toast({
+        title: "상태 변경 실패",
+        description: "상태 변경 중 오류가 발생했습니다.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  // Load managed locations when management dialog opens
+  useEffect(() => {
+    if (showManagementDialog) {
+      loadManagedLocations();
+    }
+  }, [showManagementDialog]);
+
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
@@ -249,154 +451,23 @@ export default function LocationFinder() {
 
         {/* 관리자용 업체 등록 버튼 */}
         {userRole === 'admin' && (
-          <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
-            <DialogTrigger asChild>
-              <Button className="bg-blue-600 hover:bg-blue-700">
+            <div className="flex gap-2">
+              <Button 
+                onClick={() => setShowAdminDialog(true)}
+                className="bg-green-600 hover:bg-green-700"
+              >
                 <Plus className="h-4 w-4 mr-2" />
-                새 업체 등록
+                업체 등록
               </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-              <DialogHeader>
-                <DialogTitle>새 업체 등록</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium mb-2">업체명 *</label>
-                    <Input
-                      value={newLocation.name}
-                      onChange={(e) => setNewLocation({...newLocation, name: e.target.value})}
-                      placeholder="업체명을 입력하세요"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-2">업체 유형 *</label>
-                    <Select
-                      value={newLocation.type}
-                      onValueChange={(value) => setNewLocation({...newLocation, type: value as any})}
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="training">훈련소</SelectItem>
-                        <SelectItem value="grooming">미용실</SelectItem>
-                        <SelectItem value="hospital">동물병원</SelectItem>
-                        <SelectItem value="hotel">펜션/호텔</SelectItem>
-                        <SelectItem value="daycare">위탁관리</SelectItem>
-                        <SelectItem value="park">놀이공원</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-2">주소 *</label>
-                  <Input
-                    value={newLocation.address}
-                    onChange={(e) => setNewLocation({...newLocation, address: e.target.value})}
-                    placeholder="주소를 입력하세요"
-                  />
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium mb-2">전화번호</label>
-                    <Input
-                      value={newLocation.phone}
-                      onChange={(e) => setNewLocation({...newLocation, phone: e.target.value})}
-                      placeholder="02-000-0000"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-2">가격대</label>
-                    <Input
-                      value={newLocation.priceRange}
-                      onChange={(e) => setNewLocation({...newLocation, priceRange: e.target.value})}
-                      placeholder="예: 30,000원 - 80,000원"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium mb-2">운영 시작 시간</label>
-                    <Input
-                      type="time"
-                      value={newLocation.operatingHours.open}
-                      onChange={(e) => setNewLocation({
-                        ...newLocation, 
-                        operatingHours: {...newLocation.operatingHours, open: e.target.value}
-                      })}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-2">운영 종료 시간</label>
-                    <Input
-                      type="time"
-                      value={newLocation.operatingHours.close}
-                      onChange={(e) => setNewLocation({
-                        ...newLocation, 
-                        operatingHours: {...newLocation.operatingHours, close: e.target.value}
-                      })}
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-2">업체 설명</label>
-                  <Textarea
-                    value={newLocation.description}
-                    onChange={(e) => setNewLocation({...newLocation, description: e.target.value})}
-                    placeholder="업체에 대한 자세한 설명을 입력하세요"
-                    rows={3}
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-2">이미지 URL</label>
-                  <Input
-                    value={newLocation.image}
-                    onChange={(e) => setNewLocation({...newLocation, image: e.target.value})}
-                    placeholder="https://example.com/image.jpg"
-                  />
-                </div>
-
-                <div className="flex items-center space-x-2">
-                  <input
-                    type="checkbox"
-                    id="isPartner"
-                    checked={newLocation.isPartner}
-                    onChange={(e) => setNewLocation({...newLocation, isPartner: e.target.checked})}
-                    className="rounded"
-                  />
-                  <label htmlFor="isPartner" className="text-sm font-medium">
-                    테일즈 파트너 업체
-                  </label>
-                </div>
-
-                <div className="flex gap-3 pt-4">
-                  <Button
-                    variant="outline"
-                    className="flex-1"
-                    onClick={() => setIsAddModalOpen(false)}
-                  >
-                    취소
-                  </Button>
-                  <Button
-                    className="flex-1"
-                    onClick={handleAddLocation}
-                    disabled={!newLocation.name || !newLocation.address}
-                  >
-                    <Save className="h-4 w-4 mr-2" />
-                    등록하기
-                  </Button>
-                </div>
-              </div>
-            </DialogContent>
-          </Dialog>
-        )}
+              <Button 
+                onClick={() => setShowManagementDialog(true)}
+                variant="outline"
+              >
+                <Settings className="h-4 w-4 mr-2" />
+                업체 관리
+              </Button>
+            </div>
+          )}
       </div>
 
       {/* 관리자용 통계 카드 */}
@@ -567,7 +638,7 @@ export default function LocationFinder() {
                   <Eye className="h-3 w-3 mr-1" />
                   상세보기
                 </Button>
-                
+
                 {userRole === 'admin' && (
                   <>
                     <Button
@@ -575,7 +646,7 @@ export default function LocationFinder() {
                       variant="outline"
                       onClick={(e) => {
                         e.stopPropagation();
-                        handleEditLocation(location);
+                        handleEditLocationItem(location);
                       }}
                     >
                       <Edit className="h-3 w-3 mr-1" />
@@ -649,7 +720,7 @@ export default function LocationFinder() {
                 alt={selectedLocation.name}
                 className="w-full h-64 object-cover rounded-md"
               />
-              
+
               <div className="space-y-3">
                 <div className="flex items-center gap-2">
                   <MapPin className="h-4 w-4" />
@@ -693,8 +764,8 @@ export default function LocationFinder() {
       )}
 
       {/* 편집 모달 */}
-      {editingLocation && (
-        <Dialog open={!!editingLocation} onOpenChange={() => setEditingLocation(null)}>
+      {editingLocationItem && (
+        <Dialog open={!!editingLocationItem} onOpenChange={() => setEditingLocation(null)}>
           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>업체 정보 수정</DialogTitle>
@@ -704,15 +775,15 @@ export default function LocationFinder() {
                 <div>
                   <label className="block text-sm font-medium mb-2">업체명</label>
                   <Input
-                    value={editingLocation.name}
-                    onChange={(e) => setEditingLocation({...editingLocation, name: e.target.value})}
+                    value={editingLocationItem.name}
+                    onChange={(e) => setEditingLocation({...editingLocationItem, name: e.target.value})}
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-2">업체 유형</label>
                   <Select
-                    value={editingLocation.type}
-                    onValueChange={(value) => setEditingLocation({...editingLocation, type: value as any})}
+                    value={editingLocationItem.type}
+                    onValueChange={(value) => setEditingLocation({...editingLocationItem, type: value as any})}
                   >
                     <SelectTrigger>
                       <SelectValue />
@@ -732,8 +803,8 @@ export default function LocationFinder() {
               <div>
                 <label className="block text-sm font-medium mb-2">주소</label>
                 <Input
-                  value={editingLocation.address}
-                  onChange={(e) => setEditingLocation({...editingLocation, address: e.target.value})}
+                  value={editingLocationItem.address}
+                  onChange={(e) => setEditingLocation({...editingLocationItem, address: e.target.value})}
                 />
               </div>
 
@@ -741,15 +812,15 @@ export default function LocationFinder() {
                 <div>
                   <label className="block text-sm font-medium mb-2">전화번호</label>
                   <Input
-                    value={editingLocation.phone}
-                    onChange={(e) => setEditingLocation({...editingLocation, phone: e.target.value})}
+                    value={editingLocationItem.phone}
+                    onChange={(e) => setEditingLocation({...editingLocationItem, phone: e.target.value})}
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-2">가격대</label>
                   <Input
-                    value={editingLocation.priceRange}
-                    onChange={(e) => setEditingLocation({...editingLocation, priceRange: e.target.value})}
+                    value={editingLocationItem.priceRange}
+                    onChange={(e) => setEditingLocation({...editingLocationItem, priceRange: e.target.value})}
                   />
                 </div>
               </div>
@@ -757,8 +828,8 @@ export default function LocationFinder() {
               <div>
                 <label className="block text-sm font-medium mb-2">업체 설명</label>
                 <Textarea
-                  value={editingLocation.description}
-                  onChange={(e) => setEditingLocation({...editingLocation, description: e.target.value})}
+                  value={editingLocationItem.description}
+                  onChange={(e) => setEditingLocation({...editingLocationItem, description: e.target.value})}
                   rows={3}
                 />
               </div>
@@ -783,6 +854,274 @@ export default function LocationFinder() {
           </DialogContent>
         </Dialog>
       )}
+      
+      
+        {showAdminDialog && (
+          <Dialog open={showAdminDialog} onOpenChange={setShowAdminDialog}>
+            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle>새 업체 등록</DialogTitle>
+                <DialogDescription>
+                  위치 찾기에 표시될 새로운 업체를 등록합니다.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-2">업체명 *</label>
+                    <Input
+                      placeholder="업체명을 입력하세요"
+                      value={newLocationData.name}
+                      onChange={(e) => setNewLocationData(prev => ({ ...prev, name: e.target.value }))}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">업체 유형 *</label>
+                    <Select onValueChange={(value) => setNewLocationData(prev => ({ ...prev, type: value }))}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="업체 유형 선택" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="training">훈련소</SelectItem>
+                        <SelectItem value="grooming">미용실</SelectItem>
+                        <SelectItem value="hospital">동물병원</SelectItem>
+                        <SelectItem value="hotel">펜션/호텔</SelectItem>
+                        <SelectItem value="daycare">위탁관리</SelectItem>
+                        <SelectItem value="park">놀이공원</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-2">주소 *</label>
+                  <Input
+                    placeholder="업체 주소를 입력하세요"
+                    value={newLocationData.address}
+                    onChange={(e) => setNewLocationData(prev => ({ ...prev, address: e.target.value }))}
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-2">전화번호</label>
+                    <Input
+                      placeholder="예: 02-1234-5678"
+                      value={newLocationData.phone}
+                      onChange={(e) => setNewLocationData(prev => ({ ...prev, phone: e.target.value }))}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">가격대</label>
+                    <Input
+                      placeholder="예: 10만원-20만원"
+                      value={newLocationData.priceRange}
+                      onChange={(e) => setNewLocationData(prev => ({ ...prev, priceRange: e.target.value }))}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-2">업체 설명</label>
+                  <Textarea
+                    placeholder="업체에 대한 상세 설명을 입력하세요"
+                    value={newLocationData.description}
+                    onChange={(e) => setNewLocationData(prev => ({ ...prev, description: e.target.value }))}
+                    rows={3}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-2">제공 서비스</label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {['기본 훈련', '행동 교정', '사회화 훈련', '아젤리티', '퍼피 클래스', '그루밍', '호텔링', '데이케어'].map((service) => (
+                      <label key={service} className="flex items-center space-x-2">
+                        <input
+                          type="checkbox"
+                          checked={newLocationData.services.includes(service)}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setNewLocationData(prev => ({
+                                ...prev,
+                                services: [...prev.services, service]
+                              }));
+                            } else {
+                              setNewLocationData(prev => ({
+                                ...prev,
+                                services: prev.services.filter(s => s !== service)
+                              }));
+                            }
+                          }}
+                          className="rounded"
+                        />
+                        <span className="text-sm">{service}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-2">운영 시간 (시작)</label>
+                    <Input
+                      type="time"
+                      value={newLocationData.operatingHours.open}
+                      onChange={(e) => setNewLocationData(prev => ({
+                        ...prev,
+                        operatingHours: { ...prev.operatingHours, open: e.target.value }
+                      }))}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">운영 시간 (종료)</label>
+                    <Input
+                      type="time"
+                      value={newLocationData.operatingHours.close}
+                      onChange={(e) => setNewLocationData(prev => ({
+                        ...prev,
+                        operatingHours: { ...prev.operatingHours, close: e.target.value }
+                      }))}
+                    />
+                  </div>
+                </div>
+
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    id="isPartner"
+                    checked={newLocationData.isPartner}
+                    onChange={(e) => setNewLocationData(prev => ({ ...prev, isPartner: e.target.checked }))}
+                    className="rounded"
+                  />
+                  <label htmlFor="isPartner" className="text-sm font-medium">
+                    공식 파트너 업체로 등록
+                  </label>
+                </div>
+
+                <div className="flex justify-end space-x-2 pt-4">
+                  <Button variant="outline" onClick={() => setShowAdminDialog(false)}>
+                    취소
+                  </Button>
+                  <Button onClick={handleAdminLocationSave} disabled={!newLocationData.name || !newLocationData.type || !newLocationData.address}>
+                    등록하기
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+        )}
+
+        
+        {showManagementDialog && (
+          <Dialog open={showManagementDialog} onOpenChange={setShowManagementDialog}>
+            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle>등록된 업체 관리</DialogTitle>
+                <DialogDescription>
+                  등록된 업체들을 관리하고 수정할 수 있습니다.
+                </DialogDescription>
+              </DialogHeader>
+
+              <div className="space-y-4">
+                
+                <div className="flex gap-4">
+                  <div className="flex-1">
+                    <Input
+                      placeholder="업체명으로 검색..."
+                      value={managementSearchTerm}
+                      onChange={(e) => setManagementSearchTerm(e.target.value)}
+                    />
+                  </div>
+                  <Select onValueChange={(value) => setManagementFilterType(value)}>
+                    <SelectTrigger className="w-48">
+                      <SelectValue placeholder="업체 유형" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">전체</SelectItem>
+                      <SelectItem value="training">훈련소</SelectItem>
+                      <SelectItem value="grooming">미용실</SelectItem>
+                      <SelectItem value="hospital">동물병원</SelectItem>
+                      <SelectItem value="hotel">펜션/호텔</SelectItem>
+                      <SelectItem value="daycare">위탁관리</SelectItem>
+                      <SelectItem value="park">놀이공원</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                
+                <div className="grid gap-4 max-h-96 overflow-y-auto">
+                  {getFilteredManagementLocations().map((location) => (
+                    <Card key={location.id} className="border">
+                      <CardContent className="p-4">
+                        <div className="flex justify-between items-start">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-2">
+                              <h3 className="font-semibold">{location.name}</h3>
+                              <Badge variant={location.isPartner ? "default" : "secondary"}>
+                                {location.isPartner ? "파트너" : "일반"}
+                              </Badge>
+                              <Badge variant={
+                                location.status === 'active' ? "default" : 
+                                location.status === 'pending' ? "secondary" : "destructive"
+                              }>
+                                {location.status === 'active' ? "활성" : 
+                                 location.status === 'pending' ? "승인대기" : "비활성"}
+                              </Badge>
+                            </div>
+                            <p className="text-sm text-gray-600 mb-1">{location.address}</p>
+                            <p className="text-sm text-gray-500">{location.phone}</p>
+                            <div className="flex flex-wrap gap-1 mt-2">
+                              {location.services.slice(0, 3).map((service, index) => (
+                                <Badge key={index} variant="outline" className="text-xs">
+                                  {service}
+                                </Badge>
+                              ))}
+                              {location.services.length > 3 && (
+                                <Badge variant="outline" className="text-xs">
+                                  +{location.services.length - 3}
+                                </Badge>
+                              )}
+                            </div>
+                          </div>
+                          <div className="flex gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleEditLocationInner(location)}
+                            >
+                              <Edit2 className="h-3 w-3 mr-1" />
+                              수정
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleToggleLocationStatus(location.id)}
+                            >
+                              {location.status === 'active' ? '비활성화' : '활성화'}
+                            </Button>
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                              onClick={() => handleDeleteLocationInner(location.id)}
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex justify-end pt-4">
+                <Button variant="outline" onClick={() => setShowManagementDialog(false)}>
+                  닫기
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+        )}
     </div>
   );
 }

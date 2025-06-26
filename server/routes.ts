@@ -1676,7 +1676,12 @@ app.get('/api/search', async (req, res) => {
         createdBy: req.user?.id || 'admin'
       };
 
-      // 실제로는 데이터베이스에 저장
+      // 메모리 저장소에 저장 (실제로는 데이터베이스 사용)
+      if (!global.adminLocations) {
+        global.adminLocations = [];
+      }
+      global.adminLocations.push(newLocation);
+
       console.log('새 업체 등록:', newLocation);
 
       res.status(201).json({
@@ -1696,17 +1701,86 @@ app.get('/api/search', async (req, res) => {
   // 관리자 - 업체 목록 조회
   app.get('/api/admin/locations', requireAuth('admin'), async (req, res) => {
     try {
-      // 실제로는 데이터베이스에서 조회
-      const locations = []; // storage.getAllLocations() 등의 메서드 사용
+      // 실제로는 데이터베이스에서 조회, 임시로 메모리 저장소 사용
+      if (!global.adminLocations) {
+        global.adminLocations = [];
+      }
 
       res.json({
         success: true,
-        locations
+        locations: global.adminLocations
       });
     } catch (error) {
       console.error('업체 목록 조회 오류:', error);
       res.status(500).json({ 
         error: '업체 목록 조회에 실패했습니다.' 
+      });
+    }
+  });
+
+  // 관리자 - 업체 삭제
+  app.delete('/api/admin/locations/:id', requireAuth('admin'), async (req, res) => {
+    try {
+      const locationId = parseInt(req.params.id);
+
+      if (!global.adminLocations) {
+        global.adminLocations = [];
+      }
+
+      const locationIndex = global.adminLocations.findIndex(loc => loc.id === locationId);
+      if (locationIndex === -1) {
+        return res.status(404).json({ 
+          error: '업체를 찾을 수 없습니다.' 
+        });
+      }
+
+      global.adminLocations.splice(locationIndex, 1);
+
+      res.json({
+        success: true,
+        message: '업체가 성공적으로 삭제되었습니다.'
+      });
+
+      console.log('업체 삭제:', locationId);
+    } catch (error) {
+      console.error('업체 삭제 오류:', error);
+      res.status(500).json({ 
+        error: '업체 삭제에 실패했습니다.' 
+      });
+    }
+  });
+
+  // 관리자 - 업체 상태 변경
+  app.patch('/api/admin/locations/:id/status', requireAuth('admin'), async (req, res) => {
+    try {
+      const locationId = parseInt(req.params.id);
+      const { status } = req.body;
+
+      if (!global.adminLocations) {
+        global.adminLocations = [];
+      }
+
+      const locationIndex = global.adminLocations.findIndex(loc => loc.id === locationId);
+      if (locationIndex === -1) {
+        return res.status(404).json({ 
+          error: '업체를 찾을 수 없습니다.' 
+        });
+      }
+
+      global.adminLocations[locationIndex].status = status;
+      global.adminLocations[locationIndex].updatedAt = new Date().toISOString();
+
+      res.json({
+        success: true,
+        message: '업체 상태가 성공적으로 변경되었습니다.',
+        location: global.adminLocations[locationIndex]
+      });
+
+      console.log('업체 상태 변경:', locationId, status);
+    } catch (error) {
+      console.error('업체 상태 변경 오류:', error);
+      res.status(500).json({ 
+        error: '업체 상태 변경에 실패했습니다.' 
       });
     }
   });
