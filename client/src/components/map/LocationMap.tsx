@@ -90,14 +90,35 @@ export function LocationMap({
   useEffect(() => {
     if (!mapRef.current || mapInstanceRef.current) return;
 
-    const map = L.map(mapRef.current).setView(center, zoom);
-    
-    // Add tile layer (OpenStreetMap)
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap contributors'
-    }).addTo(map);
+    // Delay initialization to ensure container is properly sized
+    const initMap = () => {
+      const map = L.map(mapRef.current!, {
+        center: center,
+        zoom: zoom,
+        zoomControl: true,
+        attributionControl: true
+      });
+      
+      // Add tile layer (OpenStreetMap)
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors',
+        maxZoom: 19
+      }).addTo(map);
 
-    mapInstanceRef.current = map;
+      mapInstanceRef.current = map;
+
+      // Force resize to fix display issues
+      setTimeout(() => {
+        if (mapInstanceRef.current) {
+          mapInstanceRef.current.invalidateSize();
+        }
+      }, 100);
+    };
+
+    // Use requestAnimationFrame to ensure DOM is ready
+    requestAnimationFrame(() => {
+      setTimeout(initMap, 50);
+    });
 
     return () => {
       if (mapInstanceRef.current) {
@@ -242,9 +263,24 @@ export function LocationMap({
       <div className="relative">
         <div 
           ref={mapRef} 
-          style={{ height, width: '100%' }}
-          className="rounded-lg border border-gray-200 dark:border-gray-700"
+          style={{ 
+            height, 
+            width: '100%',
+            minHeight: '400px',
+            backgroundColor: '#f8f9fa'
+          }}
+          className="rounded-lg border border-gray-200 dark:border-gray-700 leaflet-container"
         />
+        
+        {/* Loading indicator */}
+        {!mapInstanceRef.current && (
+          <div className="absolute inset-0 flex items-center justify-center bg-gray-50 rounded-lg">
+            <div className="text-center">
+              <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full mx-auto mb-2"></div>
+              <p className="text-sm text-gray-600">지도를 불러오는 중...</p>
+            </div>
+          </div>
+        )}
         
         {/* Map CSS for animations */}
         <style>{`
@@ -252,6 +288,10 @@ export function LocationMap({
             0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7); }
             70% { box-shadow: 0 0 0 10px rgba(59, 130, 246, 0); }
             100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
+          }
+          
+          .leaflet-container {
+            background: #f8f9fa !important;
           }
         `}</style>
       </div>
