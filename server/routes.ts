@@ -24,14 +24,14 @@ function requireAuth(role?: string) {
       req.user = { id: 'admin', role: role || 'admin' };
       return next();
     }
-    
+
     // 실제 프로덕션에서는 세션/토큰 기반 인증 구현
     const userRole = req.session?.user?.role || 'guest';
-    
+
     if (role && userRole !== role) {
       return res.status(403).json({ error: '권한이 없습니다.' });
     }
-    
+
     next();
   };
 }
@@ -821,7 +821,8 @@ app.get('/api/search', async (req, res) => {
       location = 'all',
       difficulty = 'all',
       minPrice = 0,
-      maxPrice = 1000000,
+      maxPrice = 1000000,```tool_code
+
       startDate,
       endDate,
       features = [],
@@ -1730,7 +1731,7 @@ app.get('/api/search', async (req, res) => {
       const locationIndex = global.adminLocations.findIndex(loc => loc.id === locationId);
       if (locationIndex === -1) {
         return res.status(404).json({ 
-          error: '업체를 찾을 수 없습니다.' 
+          error: '업체를 찾을 수 없습니다.'/ 
         });
       }
 

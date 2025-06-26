@@ -277,6 +277,8 @@ export default function LocationFinder() {
     console.log('위치 상태 변경:', id, status);
   };
 
+  const { toast } = useToast();
+
   const handleAdminLocationSave = async () => {
     try {
       const response = await fetch('/api/admin/locations', {
@@ -297,12 +299,12 @@ export default function LocationFinder() {
         // Add to main locations list
         setLocations(prev => [...prev, {
           ...newLocation,
-          rating: 0,
-          reviewCount: 0,
-          distance: 0
+          rating: newLocation.rating || 0,
+          reviewCount: newLocation.reviewCount || 0,
+          distance: newLocation.distance || 0
         }]);
 
-        useToast().toast({
+        toast({
           title: "업체 등록 완료",
           description: "새 업체가 성공적으로 등록되었습니다.",
         });
@@ -321,13 +323,14 @@ export default function LocationFinder() {
         });
         setShowAdminDialog(false);
       } else {
-        throw new Error('업체 등록에 실패했습니다.');
+        const errorData = await response.json();
+        throw new Error(errorData.message || '업체 등록에 실패했습니다.');
       }
     } catch (error) {
       console.error('업체 등록 오류:', error);
-      useToast().toast({
+      toast({
         title: "등록 실패",
-        description: "업체 등록 중 오류가 발생했습니다.",
+        description: error.message || "업체 등록 중 오류가 발생했습니다.",
         variant: "destructive"
       });
     }
@@ -381,14 +384,14 @@ export default function LocationFinder() {
         setManagedLocations(prev => prev.filter(loc => loc.id !== locationId));
         setLocations(prev => prev.filter(loc => loc.id !== locationId));
 
-        useToast().toast({
+        toast({
           title: "업체 삭제 완료",
           description: "업체가 성공적으로 삭제되었습니다.",
         });
       }
     } catch (error) {
       console.error('업체 삭제 오류:', error);
-      useToast().toast({
+      toast({
         title: "삭제 실패",
         description: "업체 삭제 중 오류가 발생했습니다.",
         variant: "destructive"
@@ -418,14 +421,14 @@ export default function LocationFinder() {
           )
         );
 
-        useToast().toast({
+        toast({
           title: "상태 변경 완료",
           description: `업체가 ${newStatus === 'active' ? '활성화' : '비활성화'}되었습니다.`,
         });
       }
     } catch (error) {
       console.error('상태 변경 오류:', error);
-      useToast().toast({
+      toast({
         title: "상태 변경 실패",
         description: "상태 변경 중 오류가 발생했습니다.",
         variant: "destructive"
