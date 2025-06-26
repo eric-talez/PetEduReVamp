@@ -77,7 +77,7 @@ const AlertsPage = () => {
           <Bell className="h-6 w-6" />
           <h1 className="text-2xl font-bold">알림</h1>
           {unreadCount > 0 && (
-            <Badge variant="destructive">{unreadCount}</Badge>
+            <Badge variant="danger">{unreadCount}</Badge>
           )}
         </div>
         {unreadCount > 0 && (
