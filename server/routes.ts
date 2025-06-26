@@ -1731,7 +1731,7 @@ app.get('/api/search', async (req, res) => {
       const locationIndex = global.adminLocations.findIndex(loc => loc.id === locationId);
       if (locationIndex === -1) {
         return res.status(404).json({ 
-          error: '업체를 찾을 수 없습니다.'/ 
+          error: '업체를 찾을 수 없습니다.' 
         });
       }
 

@@ -281,6 +281,16 @@ export default function LocationFinder() {
 
   const handleAdminLocationSave = async () => {
     try {
+      // 필수 필드 검증
+      if (!newLocationData.name || !newLocationData.type || !newLocationData.address) {
+        toast({
+          title: "입력 오류",
+          description: "업체명, 유형, 주소는 필수 항목입니다.",
+          variant: "destructive"
+        });
+        return;
+      }
+
       const response = await fetch('/api/admin/locations', {
         method: 'POST',
         headers: {
@@ -323,14 +333,14 @@ export default function LocationFinder() {
         });
         setShowAdminDialog(false);
       } else {
-        const errorData = await response.json();
-        throw new Error(errorData.message || '업체 등록에 실패했습니다.');
+        const errorData = await response.json().catch(() => ({ error: '서버 응답 파싱 실패' }));
+        throw new Error(errorData.error || errorData.message || '업체 등록에 실패했습니다.');
       }
     } catch (error) {
       console.error('업체 등록 오류:', error);
       toast({
         title: "등록 실패",
-        description: error.message || "업체 등록 중 오류가 발생했습니다.",
+        description: error instanceof Error ? error.message : "업체 등록 중 오류가 발생했습니다.",
         variant: "destructive"
       });
     }
