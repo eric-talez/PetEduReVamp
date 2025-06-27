@@ -90,34 +90,60 @@ export function LocationMap({
   useEffect(() => {
     if (!mapRef.current || mapInstanceRef.current) return;
 
+    console.log('지도 초기화 시작...');
+
     // Delay initialization to ensure container is properly sized
     const initMap = () => {
-      const map = L.map(mapRef.current!, {
-        center: center,
-        zoom: zoom,
-        zoomControl: true,
-        attributionControl: true
-      });
-      
-      // Add tile layer (OpenStreetMap)
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap contributors',
-        maxZoom: 19
-      }).addTo(map);
+      try {
+        console.log('지도 컨테이너 생성 중...');
+        const map = L.map(mapRef.current!, {
+          center: center,
+          zoom: zoom,
+          zoomControl: true,
+          attributionControl: true,
+          preferCanvas: false
+        });
+        
+        console.log('타일 레이어 추가 중...');
+        // Add tile layer with error handling
+        const tileLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '© OpenStreetMap contributors',
+          maxZoom: 19,
+          crossOrigin: true
+        });
+        
+        tileLayer.on('tileerror', (e) => {
+          console.error('타일 로드 오류:', e);
+        });
+        
+        tileLayer.on('tileloadstart', () => {
+          console.log('타일 로드 시작');
+        });
+        
+        tileLayer.on('tileload', () => {
+          console.log('타일 로드 완료');
+        });
+        
+        tileLayer.addTo(map);
 
-      mapInstanceRef.current = map;
+        mapInstanceRef.current = map;
+        console.log('지도 초기화 완료');
 
-      // Force resize to fix display issues
-      setTimeout(() => {
-        if (mapInstanceRef.current) {
-          mapInstanceRef.current.invalidateSize();
-        }
-      }, 100);
+        // Force resize to fix display issues
+        setTimeout(() => {
+          if (mapInstanceRef.current) {
+            console.log('지도 크기 조정 중...');
+            mapInstanceRef.current.invalidateSize();
+          }
+        }, 200);
+      } catch (error) {
+        console.error('지도 초기화 오류:', error);
+      }
     };
 
     // Use requestAnimationFrame to ensure DOM is ready
     requestAnimationFrame(() => {
-      setTimeout(initMap, 50);
+      setTimeout(initMap, 100);
     });
 
     return () => {

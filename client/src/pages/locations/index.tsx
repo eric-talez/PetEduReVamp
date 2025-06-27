@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { LocationMap } from '@/components/map/LocationMap';
+import { SimpleMap } from '@/components/map/SimpleMap';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -313,13 +313,10 @@ export default function LocationsPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Map */}
         <div className="lg:col-span-1">
-          <LocationMap
+          <SimpleMap
             locations={filteredLocations}
-            center={userLocation || [37.5665, 126.9780]}
-            zoom={userLocation ? 14 : 12}
             height="600px"
-            showLocationList={false}
-            onLocationSelect={handleLocationSelect}
+            onLocationClick={handleLocationSelect}
           />
         </div>
 

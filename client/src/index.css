@@ -5,6 +5,43 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Fix Leaflet map display issues */
+.leaflet-container {
+  height: 100% !important;
+  width: 100% !important;
+  background: #f1f5f9 !important;
+  z-index: 1 !important;
+}
+
+.leaflet-tile-pane {
+  z-index: 1 !important;
+}
+
+.leaflet-map-pane {
+  z-index: 1 !important;
+}
+
+.leaflet-control-container {
+  z-index: 1000 !important;
+}
+
+/* Ensure proper sizing */
+.leaflet-container .leaflet-tile {
+  pointer-events: auto !important;
+}
+
+/* Fix marker display */
+.leaflet-marker-icon {
+  margin-left: -12px !important;
+  margin-top: -41px !important;
+}
+
+/* Custom div icon styling */
+.custom-div-icon {
+  background: transparent !important;
+  border: none !important;
+}
+
 /* Leaflet map fixes */
 .leaflet-container {
   height: 100%;
