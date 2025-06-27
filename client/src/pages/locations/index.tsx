@@ -5,6 +5,7 @@ import { BusinessCard } from '@/components/business/BusinessCard';
 import { TrainerSelectionDialog } from '@/components/business/TrainerSelectionDialog';
 import { TrainerProfileDialog } from '@/components/business/TrainerProfileDialog';
 import { InfoCorrectionDialog } from '@/components/business/InfoCorrectionDialog';
+import { ReviewDetailDialog } from '@/components/business/ReviewDetailDialog';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -231,6 +232,9 @@ export default function LocationsPage() {
   const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
   const [sortBy, setSortBy] = useState<'distance' | 'rating' | 'name'>('distance');
   const [isSmartSearchEnabled, setIsSmartSearchEnabled] = useState(false);
+  const [correctionDialogOpen, setCorrectionDialogOpen] = useState(false);
+  const [reviewDetailOpen, setReviewDetailOpen] = useState(false);
+  const [selectedReview, setSelectedReview] = useState<Review | null>(null);
 
   const { toast } = useToast();
 
