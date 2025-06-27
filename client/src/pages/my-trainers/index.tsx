@@ -8,6 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
+import { TalezTrainerCertificationBadge } from '@/components/business/TalezTrainerCertificationBadge';
 import { useToast } from '@/hooks/use-toast';
 import { Star, MessageCircle, Calendar, Phone, Mail, MapPin, Send, Clock } from 'lucide-react';
 
@@ -211,6 +212,19 @@ const MyTrainersPage = () => {
                         <span className="text-sm text-gray-500">
                           ({trainer.reviews}개 리뷰)
                         </span>
+                      </div>
+                      <div className="mt-2">
+                        <TalezTrainerCertificationBadge 
+                          trainerData={{
+                            id: trainer.id.toString(),
+                            name: trainer.name,
+                            talezCertificationStatus: 'verified',
+                            talezCertificationLevel: 'expert',
+                            talezCertificationDate: '2024-01-15',
+                            licenseNumber: `TZ-${trainer.id.toString().padStart(4, '0')}`
+                          }}
+                          size="sm"
+                        />
                       </div>
                     </div>
                   </div>
