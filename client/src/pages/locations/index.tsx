@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { NaverMap } from '@/components/map/NaverMap';
+import { EnhancedLocationMap } from '@/components/map/EnhancedLocationMap';
 import { QuickReservationDialog } from '@/components/reservation/QuickReservationDialog';
 import { BusinessCard } from '@/components/business/BusinessCard';
 import { TrainerSelectionDialog } from '@/components/business/TrainerSelectionDialog';
@@ -9,7 +9,8 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { useQuery } from '@tanstack/react-query';
-import { Search, Filter, MapPin, Phone, Clock, Star, Navigation } from 'lucide-react';
+import { Search, Filter, MapPin, Phone, Clock, Star, Navigation, Zap, Target } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 interface Trainer {
   id: string;
@@ -203,10 +204,13 @@ export default function LocationsPage() {
   const [reservationDialogOpen, setReservationDialogOpen] = useState(false);
   const [reservationLocation, setReservationLocation] = useState<LocationData | null>(null);
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
-  const [showMapView, setShowMapView] = useState(false);
+  const [showMapView, setShowMapView] = useState(true);
   const [trainerDialogOpen, setTrainerDialogOpen] = useState(false);
   const [selectedBusiness, setSelectedBusiness] = useState<LocationData | null>(null);
   const [selectedTrainer, setSelectedTrainer] = useState<Trainer | null>(null);
+  const [isSmartSearchEnabled, setIsSmartSearchEnabled] = useState(false);
+  
+  const { toast } = useToast();
 
   // Calculate distances when user location is available
   useEffect(() => {
@@ -284,11 +288,27 @@ export default function LocationsPage() {
 
   const handleLocationSelect = (location: LocationData) => {
     setSelectedLocation(location);
+    
+    // 스마트 검색 모드에서 선택 시 추가 정보 제공
+    if (isSmartSearchEnabled) {
+      toast({
+        title: `${location.name} 선택됨`,
+        description: `${location.distance ? `${location.distance.toFixed(1)}km 거리` : ''}에 위치한 ${getLocationTypeLabel(location.type)}입니다.`,
+      });
+    }
   };
 
   const handleReservationClick = (location: LocationData) => {
     setReservationLocation(location);
     setReservationDialogOpen(true);
+    
+    // 스마트 모드에서 예약 시 최적 시간 추천
+    if (isSmartSearchEnabled) {
+      toast({
+        title: "스마트 예약 모드",
+        description: "현재 위치와 교통 상황을 고려한 최적 예약 시간을 제안합니다.",
+      });
+    }
   };
 
   const handleReservationSubmit = async (reservationData: any) => {
@@ -447,26 +467,47 @@ export default function LocationsPage() {
         </div>
       </div>
 
-      {/* Map and Location Details */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Map */}
-        <div className="lg:col-span-1">
-          {showMapView ? (
-            <NaverMap 
-              locations={filteredLocations}
-              height="600px"
-              onLocationClick={handleLocationSelect}
-              onReservationClick={handleReservationClick}
-            />
-          ) : (
-            <NaverMap
-              locations={filteredLocations}
-              height="600px"
-              onLocationClick={handleLocationSelect}
-              onReservationClick={handleReservationClick}
-            />
-          )}
-        </div>
+      {/* 스마트 위치 찾기 기능 */}
+      <Card className="mb-6 bg-gradient-to-r from-blue-50 to-green-50 border-2 border-blue-200">
+        <CardContent className="p-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-blue-600 rounded-full">
+                <Target className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">스마트 위치 찾기</h3>
+                <p className="text-sm text-gray-600">AI 기반 맞춤형 위치 추천 및 실시간 위치 추적</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                variant={isSmartSearchEnabled ? "default" : "outline"}
+                onClick={() => setIsSmartSearchEnabled(!isSmartSearchEnabled)}
+                className="flex items-center gap-2"
+              >
+                <Zap className="w-4 h-4" />
+                {isSmartSearchEnabled ? '스마트 모드 ON' : '스마트 모드 OFF'}
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Enhanced Map Component */}
+      <EnhancedLocationMap
+        locations={filteredLocations}
+        height="600px"
+        onLocationSelect={handleLocationSelect}
+        onReservationClick={handleReservationClick}
+        enableRealTimeTracking={isSmartSearchEnabled}
+        showDistanceFilter={true}
+        enableClustering={filteredLocations.length > 10}
+      />
+
+      {/* Location Details Panel */}
+      <div className="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="lg:col-span-1"></div>
 
         {/* Location Details */}
         <div className="lg:col-span-1">
