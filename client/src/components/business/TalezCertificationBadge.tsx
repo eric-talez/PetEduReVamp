@@ -23,11 +23,11 @@ export function TalezCertificationBadge({
   const getCertificationColor = () => {
     switch (businessData.certificationStatus) {
       case 'verified':
-        return 'bg-gradient-to-r from-[#2BAA61] to-[#229954] text-white border-[#2BAA61] shadow-lg shadow-[#2BAA61]/25';
+        return 'bg-gradient-to-r from-[#2BAA61] via-[#34D473] to-[#2BAA61] text-white border-2 border-[#2BAA61] shadow-xl shadow-[#2BAA61]/30 hover:shadow-[#2BAA61]/40 transition-all duration-300';
       case 'pending':
-        return 'bg-gradient-to-r from-[#FFA726] to-[#FF9800] text-white border-[#FFA726] shadow-lg shadow-[#FFA726]/25';
+        return 'bg-gradient-to-r from-[#FFA726] via-[#FFB74D] to-[#FFA726] text-white border-2 border-[#FFA726] shadow-xl shadow-[#FFA726]/30 hover:shadow-[#FFA726]/40 transition-all duration-300';
       case 'rejected':
-        return 'bg-gradient-to-r from-[#E74D3C] to-[#C0392B] text-white border-[#E74D3C] shadow-lg shadow-[#E74D3C]/25';
+        return 'bg-gradient-to-r from-[#E74D3C] via-[#EC7063] to-[#E74D3C] text-white border-2 border-[#E74D3C] shadow-xl shadow-[#E74D3C]/30 hover:shadow-[#E74D3C]/40 transition-all duration-300';
       default:
         return 'bg-gray-100 text-gray-600 border-gray-200';
     }
@@ -78,14 +78,18 @@ export function TalezCertificationBadge({
         className={`
           ${getCertificationColor()} 
           ${sizeClasses[size]}
-          border flex items-center gap-1.5 font-medium relative overflow-visible
-          ${businessData.certificationStatus === 'verified' ? 'animate-pulse' : ''}
+          border flex items-center gap-1.5 font-bold relative overflow-visible
+          rounded-full backdrop-blur-sm
+          ${businessData.certificationStatus === 'verified' ? 'ring-2 ring-[#2BAA61]/50 ring-offset-1' : ''}
         `}
       >
         {getCertificationIcon()}
-        {getCertificationText()}
+        <span className="font-extrabold tracking-wide">{getCertificationText()}</span>
         {businessData.certificationStatus === 'verified' && (
-          <div className="absolute -top-1 -right-1 w-2 h-2 bg-white rounded-full border border-[#2BAA61]"></div>
+          <>
+            <div className="absolute -top-1 -right-1 w-3 h-3 bg-yellow-400 rounded-full border-2 border-white animate-bounce"></div>
+            <div className="absolute inset-0 rounded-full bg-gradient-to-r from-transparent via-white/20 to-transparent animate-pulse"></div>
+          </>
         )}
       </Badge>
       
