@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { NaverMap } from '@/components/map/NaverMap';
 import { QuickReservationDialog } from '@/components/reservation/QuickReservationDialog';
+import { BusinessCard } from '@/components/business/BusinessCard';
+import { TrainerSelectionDialog } from '@/components/business/TrainerSelectionDialog';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
