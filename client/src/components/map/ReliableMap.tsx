@@ -190,72 +190,73 @@ export function ReliableMap({ locations, height = "400px", onLocationClick }: Re
                   <p className="text-sm text-gray-600">{filteredBySearch.length}개 장소</p>
                 </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {filteredBySearch.map(location => {
-                  const distance = calculateDistance(
-                    seoulCenter.lat, seoulCenter.lng, 
-                    location.lat, location.lng
-                  );
-                  
-                  return (
-                    <div
-                      key={location.id}
-                      className={`p-3 rounded-lg border-2 cursor-pointer transition-all hover:shadow-md ${
-                        selectedLocationId === location.id 
-                          ? 'border-blue-400 bg-blue-50' 
-                          : 'border-gray-200 bg-white hover:border-gray-300'
-                      }`}
-                      onClick={() => handleLocationClick(location)}
-                    >
-                      <div className="flex items-start space-x-3">
-                        <div 
-                          className="w-4 h-4 rounded-full mt-1 flex-shrink-0"
-                          style={{ backgroundColor: getLocationTypeColor(location.type) }}
-                        />
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center space-x-2 mb-1">
-                            <h4 className="font-medium text-gray-900 truncate">{location.name}</h4>
-                            <span className="text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-600">
-                              {getLocationTypeLabel(location.type)}
-                            </span>
-                          </div>
-                          
-                          <p className="text-sm text-gray-600 mb-2">{location.address}</p>
-                          
-                          <div className="flex items-center justify-between text-xs text-gray-500">
-                            <span>{distance.toFixed(1)}km</span>
-                            {location.rating && (
-                              <div className="flex items-center">
-                                <Star className="w-3 h-3 text-yellow-400 mr-1" />
-                                <span>{location.rating}</span>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {filteredBySearch.map(location => {
+                    const distance = calculateDistance(
+                      seoulCenter.lat, seoulCenter.lng, 
+                      location.lat, location.lng
+                    );
+                    
+                    return (
+                      <div
+                        key={location.id}
+                        className={`p-3 rounded-lg border-2 cursor-pointer transition-all hover:shadow-md ${
+                          selectedLocationId === location.id 
+                            ? 'border-blue-400 bg-blue-50' 
+                            : 'border-gray-200 bg-white hover:border-gray-300'
+                        }`}
+                        onClick={() => handleLocationClick(location)}
+                      >
+                        <div className="flex items-start space-x-3">
+                          <div 
+                            className="w-4 h-4 rounded-full mt-1 flex-shrink-0"
+                            style={{ backgroundColor: getLocationTypeColor(location.type) }}
+                          />
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center space-x-2 mb-1">
+                              <h4 className="font-medium text-gray-900 truncate">{location.name}</h4>
+                              <span className="text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-600">
+                                {getLocationTypeLabel(location.type)}
+                              </span>
+                            </div>
+                            
+                            <p className="text-sm text-gray-600 mb-2">{location.address}</p>
+                            
+                            <div className="flex items-center justify-between text-xs text-gray-500">
+                              <span>{distance.toFixed(1)}km</span>
+                              {location.rating && (
+                                <div className="flex items-center">
+                                  <Star className="w-3 h-3 text-yellow-400 mr-1" />
+                                  <span>{location.rating}</span>
+                                </div>
+                              )}
+                            </div>
+                            
+                            {selectedLocationId === location.id && (
+                              <div className="mt-3 pt-3 border-t border-gray-200 space-y-2">
+                                {location.phone && (
+                                  <div className="flex items-center text-sm text-gray-600">
+                                    <Phone className="w-4 h-4 mr-2" />
+                                    {location.phone}
+                                  </div>
+                                )}
+                                {location.hours && (
+                                  <div className="flex items-center text-sm text-gray-600">
+                                    <Clock className="w-4 h-4 mr-2" />
+                                    {location.hours}
+                                  </div>
+                                )}
+                                {location.description && (
+                                  <p className="text-sm text-gray-700 mt-2">{location.description}</p>
+                                )}
                               </div>
                             )}
                           </div>
-                          
-                          {selectedLocationId === location.id && (
-                            <div className="mt-3 pt-3 border-t border-gray-200 space-y-2">
-                              {location.phone && (
-                                <div className="flex items-center text-sm text-gray-600">
-                                  <Phone className="w-4 h-4 mr-2" />
-                                  {location.phone}
-                                </div>
-                              )}
-                              {location.hours && (
-                                <div className="flex items-center text-sm text-gray-600">
-                                  <Clock className="w-4 h-4 mr-2" />
-                                  {location.hours}
-                                </div>
-                              )}
-                              {location.description && (
-                                <p className="text-sm text-gray-700 mt-2">{location.description}</p>
-                              )}
-                            </div>
-                          )}
                         </div>
                       </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
+                </div>
               </div>
             )}
           </div>
