@@ -272,6 +272,22 @@ export function ReviewSubmissionDialog({
           </div>
         </div>
 
+        {/* 버튼 활성화 상태 안내 */}
+        {(rating === 0 || comment.trim().length < 10) && (
+          <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
+            <div className="flex items-center gap-2 text-amber-800">
+              <div className="w-2 h-2 bg-amber-400 rounded-full"></div>
+              <span className="text-sm font-medium">리뷰 등록을 위해 필요한 정보</span>
+            </div>
+            <ul className="mt-2 text-sm text-amber-700 space-y-1">
+              {rating === 0 && <li>• 별점을 선택해주세요</li>}
+              {comment.trim().length < 10 && (
+                <li>• 리뷰 내용을 최소 10자 이상 작성해주세요 (현재: {comment.trim().length}자)</li>
+              )}
+            </ul>
+          </div>
+        )}
+
         {/* 액션 버튼 */}
         <div className="flex justify-end gap-3 pt-4 border-t">
           <Button 

@@ -108,6 +108,53 @@ const sampleLocations: LocationData[] = [
         bio: '젊은 강아지 교육 전문가로, 사회화 훈련과 기초 복종 훈련을 전문으로 합니다.',
         price: 65000
       }
+    ],
+    reviews: [
+      {
+        id: 'r1',
+        authorName: '김반려',
+        rating: 5,
+        comment: '우리 강아지 짖음 문제가 심했는데, 김훈련사님 덕분에 완전히 해결됐어요! 정말 전문적이고 친절하게 가르쳐주셔서 감사합니다. 강력 추천드려요!',
+        date: '2024-06-20T00:00:00Z',
+        helpful: 12,
+        photos: []
+      },
+      {
+        id: 'r2',
+        authorName: '박주인',
+        rating: 4,
+        comment: '퍼피클래스 수강했는데 정말 좋았어요. 사회화 훈련 덕분에 우리 강아지가 다른 개들과 잘 어울려 놀게 되었습니다. 시설도 깨끗하고 훈련사분들도 전문적이에요.',
+        date: '2024-06-15T00:00:00Z',
+        helpful: 8,
+        photos: []
+      },
+      {
+        id: 'r3',
+        authorName: '이펫맘',
+        rating: 5,
+        comment: '행동교정 훈련 받았는데 결과가 정말 만족스러워요. 전에는 산책할 때마다 줄을 당기고 난리였는데 이제는 차분하게 옆에서 걸어요. 가격은 조금 비싸지만 그만한 가치가 있습니다.',
+        date: '2024-06-10T00:00:00Z',
+        helpful: 15,
+        photos: []
+      },
+      {
+        id: 'r4',
+        authorName: '최독키',
+        rating: 4,
+        comment: '기본 훈련 프로그램 완주했어요. 앉기, 기다리기, 손 등 기본 명령어를 확실히 배웠습니다. 훈련사님이 개별적으로 세심하게 봐주셔서 좋았어요.',
+        date: '2024-06-05T00:00:00Z',
+        helpful: 6,
+        photos: []
+      },
+      {
+        id: 'r5',
+        authorName: '황펫러버',
+        rating: 3,
+        comment: '전체적으로는 만족하지만 예약이 너무 어려워요. 인기가 많아서 그런 것 같긴 한데, 좀 더 시간대를 늘려주시면 좋겠어요. 훈련 자체는 효과적이었습니다.',
+        date: '2024-05-30T00:00:00Z',
+        helpful: 4,
+        photos: []
+      }
     ]
   },
   {
@@ -931,6 +978,156 @@ export default function LocationsPage() {
                           </div>
                         </>
                       )}
+
+                      {/* 리뷰 섹션 */}
+                      <Separator />
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <h3 className="font-semibold text-gray-900 flex items-center gap-2">
+                            <Star className="w-4 h-4" />
+                            리뷰 ({selectedLocation.reviews?.length || 0})
+                          </h3>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleWriteReview(selectedLocation)}
+                            className="text-xs"
+                          >
+                            리뷰 작성
+                          </Button>
+                        </div>
+
+                        {/* 평점 요약 */}
+                        {selectedLocation.rating && (
+                          <div className="bg-gray-50 rounded-lg p-4">
+                            <div className="flex items-center gap-3">
+                              <div className="text-center">
+                                <div className="text-2xl font-bold text-gray-900">
+                                  {selectedLocation.rating.toFixed(1)}
+                                </div>
+                                <div className="flex items-center justify-center gap-1 mb-1">
+                                  {[1, 2, 3, 4, 5].map((star) => (
+                                    <Star
+                                      key={star}
+                                      className={`w-3 h-3 ${
+                                        star <= Math.round(selectedLocation.rating || 0)
+                                          ? 'fill-yellow-400 text-yellow-400'
+                                          : 'text-gray-300'
+                                      }`}
+                                    />
+                                  ))}
+                                </div>
+                                <div className="text-xs text-gray-600">
+                                  {selectedLocation.reviewCount || 0}개 리뷰
+                                </div>
+                              </div>
+                              <div className="flex-1">
+                                {[5, 4, 3, 2, 1].map((rating) => {
+                                  const count = selectedLocation.reviews?.filter(r => Math.round(r.rating) === rating).length || 0;
+                                  const total = selectedLocation.reviews?.length || 1;
+                                  const percentage = (count / total) * 100;
+                                  
+                                  return (
+                                    <div key={rating} className="flex items-center gap-2 text-xs">
+                                      <span className="w-4">{rating}</span>
+                                      <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+                                      <div className="flex-1 bg-gray-200 rounded-full h-2">
+                                        <div
+                                          className="bg-yellow-400 h-2 rounded-full"
+                                          style={{ width: `${percentage}%` }}
+                                        />
+                                      </div>
+                                      <span className="w-6 text-gray-600">{count}</span>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* 리뷰 목록 */}
+                        <div className="space-y-3 max-h-80 overflow-y-auto">
+                          {selectedLocation.reviews && selectedLocation.reviews.length > 0 ? (
+                            selectedLocation.reviews.slice(0, 3).map((review) => (
+                              <div key={review.id} className="border rounded-lg p-3 bg-white">
+                                <div className="flex items-start justify-between mb-2">
+                                  <div className="flex items-center gap-2">
+                                    <span className="font-medium text-sm">{review.authorName}</span>
+                                    <div className="flex items-center gap-1">
+                                      {[1, 2, 3, 4, 5].map((star) => (
+                                        <Star
+                                          key={star}
+                                          className={`w-3 h-3 ${
+                                            star <= review.rating
+                                              ? 'fill-yellow-400 text-yellow-400'
+                                              : 'text-gray-300'
+                                          }`}
+                                        />
+                                      ))}
+                                    </div>
+                                  </div>
+                                  <span className="text-xs text-gray-500">
+                                    {new Date(review.date).toLocaleDateString()}
+                                  </span>
+                                </div>
+                                <p className="text-sm text-gray-700 mb-2 line-clamp-3">
+                                  {review.comment}
+                                </p>
+                                {review.photos && review.photos.length > 0 && (
+                                  <div className="flex gap-2 mb-2">
+                                    {review.photos.slice(0, 3).map((photo, index) => (
+                                      <img
+                                        key={index}
+                                        src={photo}
+                                        alt={`리뷰 사진 ${index + 1}`}
+                                        className="w-12 h-12 object-cover rounded border"
+                                      />
+                                    ))}
+                                    {review.photos.length > 3 && (
+                                      <div className="w-12 h-12 bg-gray-100 rounded border flex items-center justify-center text-xs text-gray-500">
+                                        +{review.photos.length - 3}
+                                      </div>
+                                    )}
+                                  </div>
+                                )}
+                                <div className="flex items-center justify-between">
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="text-xs p-1 h-auto"
+                                  >
+                                    도움됨 {review.helpful || 0}
+                                  </Button>
+                                </div>
+                              </div>
+                            ))
+                          ) : (
+                            <div className="text-center py-8 text-gray-500">
+                              <Star className="w-8 h-8 mx-auto mb-2 text-gray-300" />
+                              <p className="text-sm">아직 리뷰가 없습니다</p>
+                              <p className="text-xs">첫 번째 리뷰를 작성해보세요!</p>
+                            </div>
+                          )}
+
+                          {selectedLocation.reviews && selectedLocation.reviews.length > 3 && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="w-full"
+                              onClick={() => {
+                                // TODO: 모든 리뷰 보기 기능 구현
+                                toast({
+                                  title: "전체 리뷰 보기",
+                                  description: "모든 리뷰를 확인할 수 있습니다."
+                                });
+                              }}
+                            >
+                              모든 리뷰 보기 ({selectedLocation.reviews.length}개)
+                            </Button>
+                          )}
+                        </div>
+                      </div>
                     </div>
                   </ScrollArea>
 
