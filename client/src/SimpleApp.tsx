@@ -46,9 +46,11 @@ import AdminTrainers from "./pages/admin/AdminTrainers";
 import AdminCourses from "./pages/admin/AdminCourses";
 import AdminMenuManagement from "./pages/admin/menu-management";
 import AdminCommissionPage from "./pages/admin/commission";
-import AdminCommissionSettings from "./pages/admin/commission-settings";
-import AdminShop from "./pages/admin/shop";
-import AdminSettings from "./pages/admin/AdminSettings";
+import AdminApprovals from './pages/admin/AdminApprovals';
+import AdminReports from './pages/admin/AdminReports';
+import AdminShop from './pages/admin/AdminShop';
+import AdminSettings from './pages/admin/AdminSettings';
+import LocationManagement from './pages/admin/LocationManagement';
 import SpringBootTestPage from "./pages/SpringBootTest";
 import AdminContents from "./pages/admin/AdminContents";
 
@@ -276,23 +278,13 @@ function AppLayout({ children }: { children: ReactNode }) {
                   {/* 관리자 메뉴 */}
                   <Route path="/admin/dashboard" component={AdminHome} />
                   <Route path="/admin/users" component={AdminUsers} />
-                  <Route path="/admin/institutes" component={AdminInstitutes} />
                   <Route path="/admin/trainers" component={AdminTrainers} />
-                  <Route path="/admin/courses" component={AdminCourses} />
-                  <Route path="/admin/menu-management" component={AdminMenuManagement} />
-                  <Route path="/admin/commissions" component={AdminCommissionPage} />
+                  <Route path="/admin/institutes" component={AdminInstitutes} />
+                  <Route path="/admin/locations" component={LocationManagement} />
+                  <Route path="/admin/commission" component={AdminCommissionPage} />
                   <Route path="/admin/commission-settings" component={AdminCommissionSettings} />
                   <Route path="/admin/shop" component={AdminShop} />
-                  <Route path="/admin/locations">
-                    {() => {
-                      const LocationManagement = lazy(() => import('./pages/admin/LocationManagement'));
-                      return (
-                        <Suspense fallback={<div className="p-8 text-center">위치 관리 로딩 중...</div>}>
-                          <ProtectedAdminRoute component={LocationManagement} />
-                        </Suspense>
-                      );
-                    }}
-                  </Route>
+                  <Route path="/admin/locations" component={LocationManagement} />
                   <Route path="/admin/settings" component={AdminSettings} />
                   <Route path="/admin/contents" component={AdminContents} />
                   <Route path="/admin/spring-boot-test" component={SpringBootTestPage} />
@@ -1736,7 +1728,8 @@ function AuthenticatedRoutes() {
             return null;
           }}
         </Route>
-        <Route path="/admin/alerts">
+        <The code has been modified to include location management features for administrators, including route additions and component imports.
+```Route path="/admin/alerts">
           {() => {
             const AdminNotifications = lazy(() => import('./pages/admin/AdminNotifications'));
             return (

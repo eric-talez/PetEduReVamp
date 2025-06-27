@@ -246,7 +246,7 @@ export function Sidebar({
       const updatedMenuGroups = {
         ...prevGroups,
         trainer: isTrainer || isAdmin,
-        institute: isInstituteAdmin || isAdmin,
+        institute: isInstituteAdmin || isAdmin || isAdmin,
         admin: isAdmin,
         // 로그인 상태에 따라 메뉴 그룹 표시/숨김 처리
         myLearning: isAuthenticated ? prevGroups.myLearning : false,

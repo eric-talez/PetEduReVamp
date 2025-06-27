@@ -84,43 +84,69 @@ export function registerLocationRoutes(app: Express) {
       if (type === 'institute') {
         // 기관 데이터 가져오기
         const institutes = await storage.getAllInstitutes();
-        results = institutes.map(institute => ({
-          id: `institute_${institute.id}`,
-          name: institute.name,
-          type: 'institute',
-          location: {
-            latitude: institute.latitude || 37.5665, // 기본값: 서울 중심
-            longitude: institute.longitude || 126.9780,
-            address: institute.address || '',
-          },
-          contact: institute.phone || null,
-          distance: calculateDistance(lat, lng, institute.latitude || 37.5665, institute.longitude || 126.9780),
-          photo: institute.logo || null,
-          description: institute.description || '',
-          isCertified: institute.isVerified || false,
-          certificationDate: institute.verifiedAt ? new Date(institute.verifiedAt).toLocaleDateString() : undefined,
-          certificationLevel: institute.certLevel || 'standard',
-        }));
+        results = institutes
+          .filter(institute => {
+            // 테일즈 인증 기관만 표시하거나 모든 기관 표시
+            if (certifiedOnly === 'true') {
+              return institute.isVerified === true;
+            }
+            return true;
+          })
+          .map(institute => ({
+            id: `institute_${institute.id}`,
+            name: institute.name,
+            type: 'institute',
+            location: {
+              latitude: institute.latitude || 37.5665, // 기본값: 서울 중심
+              longitude: institute.longitude || 126.9780,
+              address: institute.address || '',
+            },
+            contact: institute.phone || null,
+            distance: calculateDistance(lat, lng, institute.latitude || 37.5665, institute.longitude || 126.9780),
+            photo: institute.logo || null,
+            description: institute.description || '',
+            isCertified: institute.isVerified || false,
+            certificationDate: institute.verifiedAt ? new Date(institute.verifiedAt).toLocaleDateString() : undefined,
+            certificationLevel: institute.certLevel || 'standard',
+            businessNumber: institute.businessNumber || '',
+            certificationStatus: institute.isVerified ? 'verified' : 'pending',
+            businessType: '반려동물 교육기관',
+            talezPartner: institute.isVerified || false,
+          }));
       } else if (type === 'trainer') {
         // 트레이너 데이터 가져오기
         const trainers = await storage.getAllTrainers();
-        results = trainers.map(trainer => ({
-          id: `trainer_${trainer.id}`,
-          name: trainer.name,
-          type: 'trainer',
-          location: {
-            latitude: trainer.latitude || 37.5665, // 기본값: 서울 중심
-            longitude: trainer.longitude || 126.9780,
-            address: trainer.address || '',
-          },
-          contact: trainer.phone || null,
-          distance: calculateDistance(lat, lng, trainer.latitude || 37.5665, trainer.longitude || 126.9780),
-          photo: trainer.photo || null,
-          description: trainer.bio || '',
-          isCertified: trainer.isVerified || false,
-          certificationDate: trainer.verifiedAt ? new Date(trainer.verifiedAt).toLocaleDateString() : undefined,
-          certificationLevel: trainer.certLevel || 'standard',
-        }));
+        results = trainers
+          .filter(trainer => {
+            // 테일즈 인증 훈련사만 표시하거나 모든 훈련사 표시
+            if (certifiedOnly === 'true') {
+              return trainer.isVerified === true;
+            }
+            return true;
+          })
+          .map(trainer => ({
+            id: `trainer_${trainer.id}`,
+            name: trainer.name,
+            type: 'trainer',
+            location: {
+              latitude: trainer.latitude || 37.5665, // 기본값: 서울 중심
+              longitude: trainer.longitude || 126.9780,
+              address: trainer.address || '',
+            },
+            contact: trainer.phone || null,
+            distance: calculateDistance(lat, lng, trainer.latitude || 37.5665, trainer.longitude || 126.9780),
+            photo: trainer.photo || null,
+            description: trainer.bio || '',
+            isCertified: trainer.isVerified || false,
+            certificationDate: trainer.verifiedAt ? new Date(trainer.verifiedAt).toLocaleDateString() : undefined,
+            certificationLevel: trainer.certLevel || 'standard',
+            businessNumber: trainer.businessNumber || '',
+            certificationStatus: trainer.isVerified ? 'verified' : 'pending',
+            businessType: '반려동물 전문 훈련사',
+            talezPartner: trainer.isVerified || false,
+            specialties: trainer.specialties || [],
+            experience: trainer.experience || 0,
+          }));
       } else {
         // 그 외의 경우 샘플 데이터 반환
         console.warn(`외부 API 키가 없어 ${type} 유형에 대한 샘플 데이터를 반환합니다.`);

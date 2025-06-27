@@ -161,35 +161,52 @@ export default function LocationManagement() {
     }
   };
 
-  const handleAddLocation = () => {
-    const id = Math.max(...locations.map(l => l.id)) + 1;
-    const location: Location = {
-      ...newLocation,
-      id,
-      rating: 0,
-      reviewCount: 0,
-      distance: 0,
-      status: 'pending',
-      createdAt: new Date().toISOString().split('T')[0],
-      updatedAt: new Date().toISOString().split('T')[0]
-    };
+  const handleAddLocation = async () => {
+    try {
+      const response = await fetch('/api/admin/locations', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...newLocation,
+          isCertified: newLocation.isPartner, // 테일즈 파트너면 인증됨
+          certificationStatus: newLocation.isPartner ? 'verified' : 'pending',
+          talezPartner: newLocation.isPartner,
+        })
+      });
 
-    setLocations([...locations, location]);
-    setIsAddModalOpen(false);
-    setNewLocation({
-      name: '',
-      type: 'training',
-      address: '',
-      phone: '',
-      description: '',
-      services: [],
-      priceRange: '',
-      operatingHours: { open: '09:00', close: '18:00' },
-      isPartner: false,
-      image: ''
-    });
+      if (response.ok) {
+        const result = await response.json();
+        const location: Location = {
+          ...result.location,
+          rating: 0,
+          reviewCount: 0,
+          distance: 0,
+        };
 
-    console.log('새 위치 등록:', location);
+        setLocations([...locations, location]);
+        setIsAddModalOpen(false);
+        setNewLocation({
+          name: '',
+          type: 'training',
+          address: '',
+          phone: '',
+          description: '',
+          services: [],
+          priceRange: '',
+          operatingHours: { open: '09:00', close: '18:00' },
+          isPartner: false,
+          image: ''
+        });
+
+        console.log('새 위치 등록 성공:', location);
+      } else {
+        console.error('위치 등록 실패:', await response.text());
+      }
+    } catch (error) {
+      console.error('위치 등록 중 오류:', error);
+    }
   };
 
   const handleEditLocation = (location: Location) => {
