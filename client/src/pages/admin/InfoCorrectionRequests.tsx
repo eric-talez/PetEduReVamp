@@ -8,29 +8,33 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, Eye, Check, X, Clock, AlertTriangle, FileText, Phone, MapPin, Building2 } from 'lucide-react';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Separator } from '@/components/ui/separator';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { Search, Check, X, Clock, AlertTriangle, Edit, Eye, Calendar, Filter, FileText, Building, Phone, MapPin, AlertCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { formatDistanceToNow } from 'date-fns';
+import { ko } from 'date-fns/locale';
 
 interface CorrectionRequest {
   id: string;
   businessId: string;
   businessName: string;
-  field: string;
+  businessType: string;
+  requesterName: string;
+  requesterEmail: string;
+  requesterPhone?: string;
+  correctionType: 'address' | 'phone' | 'hours' | 'description' | 'services' | 'other';
   currentValue: string;
-  suggestedValue: string;
+  proposedValue: string;
   reason: string;
-  reporterName: string;
-  reporterEmail: string;
+  evidence?: string[];
+  status: 'pending' | 'approved' | 'rejected' | 'in-review';
   submittedAt: string;
-  status: 'pending' | 'reviewing' | 'approved' | 'rejected';
-  adminNotes?: string;
   reviewedAt?: string;
   reviewedBy?: string;
-  evidence?: {
-    name: string;
-    type: string;
-    size: number;
-  }[];
+  adminNotes?: string;
+  priority: 'low' | 'medium' | 'high' | 'urgent';
 }
 
 export default function InfoCorrectionRequests() {
@@ -38,244 +42,316 @@ export default function InfoCorrectionRequests() {
   const [filteredRequests, setFilteredRequests] = useState<CorrectionRequest[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [priorityFilter, setPriorityFilter] = useState<string>('all');
+  const [typeFilter, setTypeFilter] = useState<string>('all');
   const [selectedRequest, setSelectedRequest] = useState<CorrectionRequest | null>(null);
-  const [isReviewDialogOpen, setIsReviewDialogOpen] = useState(false);
+  const [reviewDialogOpen, setReviewDialogOpen] = useState(false);
   const [reviewAction, setReviewAction] = useState<'approve' | 'reject' | null>(null);
   const [adminNotes, setAdminNotes] = useState('');
-  const [loading, setLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
 
-  // 샘플 데이터 로드
-  useEffect(() => {
-    const sampleRequests: CorrectionRequest[] = [
-      {
-        id: 'req001',
-        businessId: 'tc1',
-        businessName: '서울 펫 트레이닝 센터',
-        field: 'phone',
-        currentValue: '02-1234-5678',
-        suggestedValue: '02-1234-9999',
-        reason: '전화번호가 변경되었습니다. 현재 번호로는 연결되지 않습니다.',
-        reporterName: '김고객',
-        reporterEmail: 'kim@example.com',
-        submittedAt: '2024-06-26T10:30:00Z',
-        status: 'pending',
-        evidence: [
-          { name: '전화번호_변경_공지.jpg', type: 'image/jpeg', size: 245000 }
-        ]
-      },
-      {
-        id: 'req002',
-        businessId: 'tc2',
-        businessName: '스마트독 교육센터',
-        field: 'hours',
-        currentValue: '10:00 - 19:00',
-        suggestedValue: '09:00 - 20:00',
-        reason: '운영시간이 확장되었습니다. 홈페이지에도 변경된 시간이 공지되어 있습니다.',
-        reporterName: '박반려',
-        reporterEmail: 'park@example.com',
-        submittedAt: '2024-06-25T14:20:00Z',
-        status: 'reviewing',
-        adminNotes: '홈페이지 확인 중',
-        reviewedBy: '관리자'
-      },
-      {
-        id: 'req003',
-        businessId: 'ps1',
-        businessName: '펫프렌즈 강남점',
-        field: 'address',
-        currentValue: '서울특별시 강남구 역삼동 789',
-        suggestedValue: '서울특별시 강남구 역삼로 123',
-        reason: '주소가 부정확합니다. 실제로는 역삼로에 위치해 있습니다.',
-        reporterName: '이애견',
-        reporterEmail: 'lee@example.com',
-        submittedAt: '2024-06-24T16:45:00Z',
-        status: 'approved',
-        adminNotes: '주소 확인 완료, 정보 업데이트됨',
-        reviewedAt: '2024-06-25T09:15:00Z',
-        reviewedBy: '관리자',
-        evidence: [
-          { name: '건물_외관.jpg', type: 'image/jpeg', size: 180000 },
-          { name: '도로명_주소.pdf', type: 'application/pdf', size: 95000 }
-        ]
-      },
-      {
-        id: 'req004',
-        businessId: 'vet1',
-        businessName: '서울동물병원',
-        field: 'services',
-        currentValue: '일반 진료, 응급 진료',
-        suggestedValue: '일반 진료, 응급 진료, 수술, 치과, 예방접종, 건강검진',
-        reason: '제공 서비스가 누락되어 있습니다. 실제로는 더 많은 서비스를 제공하고 있습니다.',
-        reporterName: '최돌봄',
-        reporterEmail: 'choi@example.com',
-        submittedAt: '2024-06-23T11:20:00Z',
-        status: 'rejected',
-        adminNotes: '업체 측에서 현재 서비스 범위를 확인한 결과 기존 정보가 정확함',
-        reviewedAt: '2024-06-24T13:30:00Z',
-        reviewedBy: '관리자'
-      }
-    ];
+  // 샘플 데이터
+  const sampleRequests: CorrectionRequest[] = [
+    {
+      id: 'req-001',
+      businessId: 'biz-001',
+      businessName: '서울 펫 트레이닝 센터',
+      businessType: 'training-center',
+      requesterName: '김철수',
+      requesterEmail: 'kimcs@example.com',
+      requesterPhone: '010-1234-5678',
+      correctionType: 'address',
+      currentValue: '서울특별시 강남구 테헤란로 123',
+      proposedValue: '서울특별시 강남구 테헤란로 456',
+      reason: '업체가 이전했습니다. 새로운 주소로 변경 요청드립니다.',
+      evidence: ['image1.jpg', 'lease_contract.pdf'],
+      status: 'pending',
+      submittedAt: '2024-01-15T10:30:00Z',
+      priority: 'high'
+    },
+    {
+      id: 'req-002',
+      businessId: 'biz-002',
+      businessName: '해피독 동물병원',
+      businessType: 'veterinary',
+      requesterName: '박영희',
+      requesterEmail: 'parkyh@example.com',
+      correctionType: 'phone',
+      currentValue: '02-1234-5678',
+      proposedValue: '02-9876-5432',
+      reason: '전화번호가 변경되었습니다.',
+      status: 'approved',
+      submittedAt: '2024-01-14T14:20:00Z',
+      reviewedAt: '2024-01-14T16:45:00Z',
+      reviewedBy: '관리자',
+      adminNotes: '확인 완료 후 승인처리',
+      priority: 'medium'
+    },
+    {
+      id: 'req-003',
+      businessId: 'biz-003',
+      businessName: '스마트독 교육센터',
+      businessType: 'training-center',
+      requesterName: '이민수',
+      requesterEmail: 'leems@example.com',
+      correctionType: 'hours',
+      currentValue: '09:00 - 18:00',
+      proposedValue: '10:00 - 20:00',
+      reason: '운영시간이 변경되었습니다.',
+      status: 'rejected',
+      submittedAt: '2024-01-13T11:15:00Z',
+      reviewedAt: '2024-01-13T15:30:00Z',
+      reviewedBy: '관리자',
+      adminNotes: '증빙자료 부족으로 반려',
+      priority: 'low'
+    },
+    {
+      id: 'req-004',
+      businessId: 'biz-004',
+      businessName: '펫월드 용품점',
+      businessType: 'pet-store',
+      requesterName: '최은정',
+      requesterEmail: 'choi@example.com',
+      correctionType: 'services',
+      currentValue: '사료 판매, 용품 판매',
+      proposedValue: '사료 판매, 용품 판매, 미용 서비스, 호텔 서비스',
+      reason: '새로운 서비스를 추가했습니다.',
+      evidence: ['service_menu.jpg'],
+      status: 'in-review',
+      submittedAt: '2024-01-12T09:45:00Z',
+      priority: 'medium'
+    }
+  ];
 
+  useEffect(() => {
     setRequests(sampleRequests);
     setFilteredRequests(sampleRequests);
-    setLoading(false);
   }, []);
 
   // 필터링
   useEffect(() => {
     let filtered = requests;
 
-    if (statusFilter !== 'all') {
-      filtered = filtered.filter(req => req.status === statusFilter);
-    }
-
     if (searchTerm) {
-      filtered = filtered.filter(req =>
-        req.businessName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        req.reporterName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        req.field.toLowerCase().includes(searchTerm.toLowerCase())
+      filtered = filtered.filter(request =>
+        request.businessName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        request.requesterName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        request.reason.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
+    if (statusFilter !== 'all') {
+      filtered = filtered.filter(request => request.status === statusFilter);
+    }
+
+    if (priorityFilter !== 'all') {
+      filtered = filtered.filter(request => request.priority === priorityFilter);
+    }
+
+    if (typeFilter !== 'all') {
+      filtered = filtered.filter(request => request.correctionType === typeFilter);
+    }
+
     setFilteredRequests(filtered);
-  }, [requests, statusFilter, searchTerm]);
-
-  const getStatusBadge = (status: string) => {
-    const variants = {
-      pending: { color: 'bg-yellow-100 text-yellow-800', label: '대기 중' },
-      reviewing: { color: 'bg-blue-100 text-blue-800', label: '검토 중' },
-      approved: { color: 'bg-green-100 text-green-800', label: '승인' },
-      rejected: { color: 'bg-red-100 text-red-800', label: '거부' }
-    };
-    const variant = variants[status as keyof typeof variants];
-    return <Badge className={variant.color}>{variant.label}</Badge>;
-  };
-
-  const getFieldIcon = (field: string) => {
-    const icons = {
-      phone: Phone,
-      address: MapPin,
-      hours: Clock,
-      description: FileText,
-      services: Building2
-    };
-    const Icon = icons[field as keyof typeof icons] || FileText;
-    return <Icon className="w-4 h-4" />;
-  };
-
-  const getFieldLabel = (field: string) => {
-    const labels = {
-      phone: '전화번호',
-      address: '주소',
-      hours: '운영시간',
-      description: '업체 설명',
-      services: '제공 서비스'
-    };
-    return labels[field as keyof typeof labels] || field;
-  };
+  }, [requests, searchTerm, statusFilter, priorityFilter, typeFilter]);
 
   const handleReviewRequest = (request: CorrectionRequest, action: 'approve' | 'reject') => {
     setSelectedRequest(request);
     setReviewAction(action);
     setAdminNotes('');
-    setIsReviewDialogOpen(true);
+    setReviewDialogOpen(true);
   };
 
   const handleSubmitReview = async () => {
     if (!selectedRequest || !reviewAction) return;
 
+    setIsSubmitting(true);
     try {
-      const updatedRequest: CorrectionRequest = {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      const updatedRequest = {
         ...selectedRequest,
-        status: reviewAction === 'approve' ? 'approved' : 'rejected',
-        adminNotes,
+        status: reviewAction === 'approve' ? 'approved' : 'rejected' as const,
         reviewedAt: new Date().toISOString(),
-        reviewedBy: '관리자'
+        reviewedBy: '관리자',
+        adminNotes
       };
 
-      setRequests(prev => prev.map(req => 
-        req.id === selectedRequest.id ? updatedRequest : req
-      ));
+      setRequests(prev => 
+        prev.map(req => req.id === selectedRequest.id ? updatedRequest : req)
+      );
 
       toast({
-        title: reviewAction === 'approve' ? '요청 승인' : '요청 거부',
-        description: `${selectedRequest.businessName}의 정보 수정 요청을 ${reviewAction === 'approve' ? '승인' : '거부'}했습니다.`
+        title: reviewAction === 'approve' ? "요청 승인 완료" : "요청 반려 완료",
+        description: `${selectedRequest.businessName}의 정보 수정 요청이 ${reviewAction === 'approve' ? '승인' : '반려'}되었습니다.`
       });
 
-      setIsReviewDialogOpen(false);
-      setSelectedRequest(null);
-      setReviewAction(null);
-      setAdminNotes('');
+      setReviewDialogOpen(false);
     } catch (error) {
       toast({
-        title: '처리 실패',
-        description: '요청 처리 중 오류가 발생했습니다.',
-        variant: 'destructive'
+        title: "처리 실패",
+        description: "요청 처리 중 오류가 발생했습니다.",
+        variant: "destructive"
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  const handleViewDetails = (request: CorrectionRequest) => {
-    setSelectedRequest(request);
-  };
+  const getStatusBadge = (status: string) => {
+    const variants = {
+      pending: 'default',
+      'in-review': 'secondary',
+      approved: 'success',
+      rejected: 'destructive'
+    } as const;
 
-  const getRequestCounts = () => {
-    return {
-      all: requests.length,
-      pending: requests.filter(r => r.status === 'pending').length,
-      reviewing: requests.filter(r => r.status === 'reviewing').length,
-      approved: requests.filter(r => r.status === 'approved').length,
-      rejected: requests.filter(r => r.status === 'rejected').length
+    const labels = {
+      pending: '대기 중',
+      'in-review': '검토 중',
+      approved: '승인',
+      rejected: '반려'
     };
+
+    return (
+      <Badge variant={variants[status as keyof typeof variants] || 'default'}>
+        {labels[status as keyof typeof labels] || status}
+      </Badge>
+    );
   };
 
-  const counts = getRequestCounts();
+  const getPriorityBadge = (priority: string) => {
+    const variants = {
+      low: 'outline',
+      medium: 'secondary',
+      high: 'warning',
+      urgent: 'destructive'
+    } as const;
 
-  if (loading) {
+    const labels = {
+      low: '낮음',
+      medium: '보통',
+      high: '높음',
+      urgent: '긴급'
+    };
+
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full" />
-      </div>
+      <Badge variant={variants[priority as keyof typeof variants] || 'outline'}>
+        {labels[priority as keyof typeof labels] || priority}
+      </Badge>
     );
-  }
+  };
+
+  const getCorrectionTypeLabel = (type: string) => {
+    const labels = {
+      address: '주소',
+      phone: '전화번호',
+      hours: '운영시간',
+      description: '설명',
+      services: '서비스',
+      other: '기타'
+    };
+    return labels[type as keyof typeof labels] || type;
+  };
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">정보 수정 요청 관리</h1>
-          <p className="text-gray-600 mt-1">업체 정보 수정 요청을 검토하고 처리합니다</p>
+          <p className="text-gray-600 mt-1">업체 정보 수정 요청을 검토하고 승인/반려할 수 있습니다</p>
         </div>
       </div>
 
-      {/* 검색 및 필터 */}
+      {/* 필터 및 검색 */}
       <Card>
-        <CardContent className="p-4">
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="flex-1">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Filter className="w-5 h-5" />
+            필터 및 검색
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+            <div>
+              <Label htmlFor="search">검색</Label>
               <div className="relative">
-                <Search className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
+                <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="업체명, 신고자, 수정 항목으로 검색..."
+                  id="search"
+                  placeholder="업체명, 요청자, 사유 검색..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
+                  className="pl-8"
                 />
               </div>
             </div>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-40">
-                <SelectValue placeholder="상태 필터" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">전체 ({counts.all})</SelectItem>
-                <SelectItem value="pending">대기 중 ({counts.pending})</SelectItem>
-                <SelectItem value="reviewing">검토 중 ({counts.reviewing})</SelectItem>
-                <SelectItem value="approved">승인 ({counts.approved})</SelectItem>
-                <SelectItem value="rejected">거부 ({counts.rejected})</SelectItem>
-              </SelectContent>
-            </Select>
+            
+            <div>
+              <Label htmlFor="status">상태</Label>
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">전체</SelectItem>
+                  <SelectItem value="pending">대기 중</SelectItem>
+                  <SelectItem value="in-review">검토 중</SelectItem>
+                  <SelectItem value="approved">승인</SelectItem>
+                  <SelectItem value="rejected">반려</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label htmlFor="priority">우선순위</Label>
+              <Select value={priorityFilter} onValueChange={setPriorityFilter}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">전체</SelectItem>
+                  <SelectItem value="urgent">긴급</SelectItem>
+                  <SelectItem value="high">높음</SelectItem>
+                  <SelectItem value="medium">보통</SelectItem>
+                  <SelectItem value="low">낮음</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label htmlFor="type">수정 유형</Label>
+              <Select value={typeFilter} onValueChange={setTypeFilter}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">전체</SelectItem>
+                  <SelectItem value="address">주소</SelectItem>
+                  <SelectItem value="phone">전화번호</SelectItem>
+                  <SelectItem value="hours">운영시간</SelectItem>
+                  <SelectItem value="description">설명</SelectItem>
+                  <SelectItem value="services">서비스</SelectItem>
+                  <SelectItem value="other">기타</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex items-end">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setSearchTerm('');
+                  setStatusFilter('all');
+                  setPriorityFilter('all');
+                  setTypeFilter('all');
+                }}
+              >
+                초기화
+              </Button>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -283,73 +359,127 @@ export default function InfoCorrectionRequests() {
       {/* 요청 목록 */}
       <div className="grid gap-4">
         {filteredRequests.map((request) => (
-          <Card key={request.id} className="hover:shadow-md transition-shadow">
+          <Card key={request.id}>
             <CardContent className="p-6">
               <div className="flex items-start justify-between">
                 <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-2">
+                  <div className="flex items-center gap-2 mb-2">
                     <h3 className="font-semibold text-lg">{request.businessName}</h3>
                     {getStatusBadge(request.status)}
-                  </div>
-                  
-                  <div className="flex items-center gap-2 mb-2">
-                    {getFieldIcon(request.field)}
-                    <span className="font-medium">{getFieldLabel(request.field)} 수정 요청</span>
+                    {getPriorityBadge(request.priority)}
+                    <Badge variant="outline">
+                      {getCorrectionTypeLabel(request.correctionType)}
+                    </Badge>
                   </div>
 
-                  <div className="grid md:grid-cols-2 gap-4 text-sm">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                     <div>
-                      <span className="text-gray-500">현재:</span>
-                      <p className="font-mono bg-gray-50 p-2 rounded mt-1">{request.currentValue}</p>
+                      <Label className="text-sm font-medium text-gray-600">요청자 정보</Label>
+                      <div className="flex items-center gap-2 mt-1">
+                        <Avatar className="w-6 h-6">
+                          <AvatarFallback className="text-xs">
+                            {request.requesterName.charAt(0)}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className="text-sm">{request.requesterName}</span>
+                        <span className="text-xs text-gray-500">({request.requesterEmail})</span>
+                      </div>
                     </div>
+
                     <div>
-                      <span className="text-gray-500">제안:</span>
-                      <p className="font-mono bg-blue-50 p-2 rounded mt-1">{request.suggestedValue}</p>
+                      <Label className="text-sm font-medium text-gray-600">제출일</Label>
+                      <div className="flex items-center gap-2 mt-1">
+                        <Calendar className="w-4 h-4 text-gray-400" />
+                        <span className="text-sm">
+                          {formatDistanceToNow(new Date(request.submittedAt), {
+                            addSuffix: true,
+                            locale: ko
+                          })}
+                        </span>
+                      </div>
                     </div>
                   </div>
 
-                  <div className="mt-3">
-                    <span className="text-gray-500 text-sm">사유:</span>
-                    <p className="text-sm mt-1">{request.reason}</p>
-                  </div>
+                  <div className="space-y-3">
+                    <div>
+                      <Label className="text-sm font-medium text-gray-600">현재 정보</Label>
+                      <p className="text-sm mt-1 p-2 bg-gray-50 rounded">{request.currentValue}</p>
+                    </div>
 
-                  <div className="flex items-center gap-4 text-xs text-gray-500 mt-3">
-                    <span>신고자: {request.reporterName}</span>
-                    <span>접수일: {new Date(request.submittedAt).toLocaleDateString('ko-KR')}</span>
+                    <div>
+                      <Label className="text-sm font-medium text-gray-600">수정 요청 정보</Label>
+                      <p className="text-sm mt-1 p-2 bg-blue-50 rounded">{request.proposedValue}</p>
+                    </div>
+
+                    <div>
+                      <Label className="text-sm font-medium text-gray-600">요청 사유</Label>
+                      <p className="text-sm mt-1">{request.reason}</p>
+                    </div>
+
                     {request.evidence && request.evidence.length > 0 && (
-                      <span>증빙 자료: {request.evidence.length}개</span>
+                      <div>
+                        <Label className="text-sm font-medium text-gray-600">첨부 파일</Label>
+                        <div className="flex gap-2 mt-1">
+                          {request.evidence.map((file, index) => (
+                            <Badge key={index} variant="outline" className="flex items-center gap-1">
+                              <FileText className="w-3 h-3" />
+                              {file}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {request.adminNotes && (
+                      <div>
+                        <Label className="text-sm font-medium text-gray-600">관리자 메모</Label>
+                        <p className="text-sm mt-1 p-2 bg-yellow-50 rounded">{request.adminNotes}</p>
+                        {request.reviewedBy && request.reviewedAt && (
+                          <p className="text-xs text-gray-500 mt-1">
+                            {request.reviewedBy} • {formatDistanceToNow(new Date(request.reviewedAt), {
+                              addSuffix: true,
+                              locale: ko
+                            })}
+                          </p>
+                        )}
+                      </div>
                     )}
                   </div>
                 </div>
 
-                <div className="flex gap-2 ml-4">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleViewDetails(request)}
-                  >
-                    <Eye className="w-4 h-4" />
-                  </Button>
-                  
-                  {request.status === 'pending' && (
+                <div className="flex flex-col gap-2 ml-4">
+                  {request.status === 'pending' || request.status === 'in-review' ? (
                     <>
                       <Button
-                        variant="outline"
                         size="sm"
-                        className="text-green-600 border-green-200 hover:bg-green-50"
                         onClick={() => handleReviewRequest(request, 'approve')}
+                        className="flex items-center gap-1"
                       >
                         <Check className="w-4 h-4" />
+                        승인
                       </Button>
                       <Button
-                        variant="outline"
                         size="sm"
-                        className="text-red-600 border-red-200 hover:bg-red-50"
+                        variant="outline"
                         onClick={() => handleReviewRequest(request, 'reject')}
+                        className="flex items-center gap-1"
                       >
                         <X className="w-4 h-4" />
+                        반려
                       </Button>
                     </>
+                  ) : (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        setSelectedRequest(request);
+                        // 상세 보기 로직
+                      }}
+                    >
+                      <Eye className="w-4 h-4 mr-1" />
+                      상세 보기
+                    </Button>
                   )}
                 </div>
               </div>
@@ -359,81 +489,69 @@ export default function InfoCorrectionRequests() {
 
         {filteredRequests.length === 0 && (
           <Card>
-            <CardContent className="text-center py-12">
-              <AlertTriangle className="w-12 h-12 mx-auto text-gray-400 mb-4" />
-              <h3 className="font-medium text-gray-900 mb-2">요청이 없습니다</h3>
-              <p className="text-gray-600">현재 조건에 맞는 정보 수정 요청이 없습니다.</p>
+            <CardContent className="p-8 text-center">
+              <AlertCircle className="w-12 h-12 mx-auto text-gray-400 mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">요청이 없습니다</h3>
+              <p className="text-gray-600">
+                {searchTerm || statusFilter !== 'all' || priorityFilter !== 'all' || typeFilter !== 'all'
+                  ? '검색 조건에 맞는 요청이 없습니다.'
+                  : '아직 정보 수정 요청이 없습니다.'}
+              </p>
             </CardContent>
           </Card>
         )}
       </div>
 
       {/* 검토 다이얼로그 */}
-      <Dialog open={isReviewDialogOpen} onOpenChange={setIsReviewDialogOpen}>
-        <DialogContent className="max-w-2xl">
+      <Dialog open={reviewDialogOpen} onOpenChange={setReviewDialogOpen}>
+        <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>
-              {reviewAction === 'approve' ? '요청 승인' : '요청 거부'} - {selectedRequest?.businessName}
+              요청 {reviewAction === 'approve' ? '승인' : '반려'}
             </DialogTitle>
           </DialogHeader>
-
-          {selectedRequest && (
-            <div className="space-y-4 py-4">
-              <div className="grid md:grid-cols-2 gap-4">
-                <div>
-                  <Label className="text-sm font-medium text-gray-700">현재 정보</Label>
-                  <p className="font-mono bg-gray-50 p-3 rounded mt-1 text-sm">
-                    {selectedRequest.currentValue}
-                  </p>
-                </div>
-                <div>
-                  <Label className="text-sm font-medium text-gray-700">제안된 정보</Label>
-                  <p className="font-mono bg-blue-50 p-3 rounded mt-1 text-sm">
-                    {selectedRequest.suggestedValue}
-                  </p>
-                </div>
-              </div>
-
-              <div>
-                <Label className="text-sm font-medium text-gray-700">수정 사유</Label>
-                <p className="bg-gray-50 p-3 rounded mt-1 text-sm">
-                  {selectedRequest.reason}
-                </p>
-              </div>
-
-              <div>
-                <Label htmlFor="admin-notes">관리자 메모 *</Label>
-                <Textarea
-                  id="admin-notes"
-                  value={adminNotes}
-                  onChange={(e) => setAdminNotes(e.target.value)}
-                  placeholder={reviewAction === 'approve' 
-                    ? '승인 사유를 입력하세요...' 
-                    : '거부 사유를 입력하세요...'
-                  }
-                  rows={3}
-                />
-              </div>
+          
+          <div className="space-y-4">
+            <div>
+              <Label>업체명</Label>
+              <p className="text-sm font-medium">{selectedRequest?.businessName}</p>
             </div>
-          )}
+            
+            <div>
+              <Label>수정 유형</Label>
+              <p className="text-sm">
+                {selectedRequest && getCorrectionTypeLabel(selectedRequest.correctionType)}
+              </p>
+            </div>
+            
+            <div>
+              <Label htmlFor="adminNotes">관리자 메모</Label>
+              <Textarea
+                id="adminNotes"
+                value={adminNotes}
+                onChange={(e) => setAdminNotes(e.target.value)}
+                placeholder={reviewAction === 'approve' 
+                  ? "승인 사유를 입력하세요..." 
+                  : "반려 사유를 입력하세요..."}
+                rows={3}
+              />
+            </div>
+          </div>
 
-          <div className="flex gap-3 pt-4 border-t">
+          <div className="flex justify-end gap-2 pt-4">
             <Button
               variant="outline"
-              onClick={() => setIsReviewDialogOpen(false)}
-              className="flex-1"
+              onClick={() => setReviewDialogOpen(false)}
+              disabled={isSubmitting}
             >
               취소
             </Button>
             <Button
               onClick={handleSubmitReview}
-              className={`flex-1 ${reviewAction === 'approve' 
-                ? 'bg-green-600 hover:bg-green-700' 
-                : 'bg-red-600 hover:bg-red-700'
-              }`}
-              disabled={!adminNotes.trim()}
+              disabled={isSubmitting}
+              variant={reviewAction === 'approve' ? 'default' : 'destructive'}
             >
-              {reviewAction === 'approve' ? '승인 처리' : '거부 처리'}
+              {isSubmitting ? '처리 중...' : (reviewAction === 'approve' ? '승인' : '반려')}
             </Button>
           </div>
         </DialogContent>
