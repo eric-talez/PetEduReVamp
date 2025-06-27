@@ -1692,6 +1692,28 @@ function AuthenticatedRoutes() {
           }}
         </Route>
 
+        <Route path="/admin/info-correction-requests">
+          {() => {
+            const InfoCorrectionRequests = lazy(() => import('./pages/admin/InfoCorrectionRequests'));
+            return (
+              <Suspense fallback={<div className="p-8 text-center">정보 수정 요청 관리 로딩 중...</div>}>
+                <ProtectedAdminRoute component={InfoCorrectionRequests} />
+              </Suspense>
+            );
+          }}
+        </Route>
+
+        <Route path="/admin/review-management">
+          {() => {
+            const ReviewManagement = lazy(() => import('./pages/admin/ReviewManagement'));
+            return (
+              <Suspense fallback={<div className="p-8 text-center">리뷰 관리 로딩 중...</div>}>
+                <ProtectedAdminRoute component={ReviewManagement} />
+              </Suspense>
+            );
+          }}
+        </Route>
+
         <Route path="/facilities">
           {() => {
             const FacilitiesPage = lazy(() => import('./pages/facilities'));
