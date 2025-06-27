@@ -122,11 +122,14 @@ export function ReviewSubmissionDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto" aria-describedby="review-dialog-description">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold">
             {businessName} 리뷰 작성
           </DialogTitle>
+          <p id="review-dialog-description" className="text-sm text-gray-600">
+            이용하신 서비스에 대한 솔직한 후기를 남겨주세요.
+          </p>
         </DialogHeader>
 
         <div className="space-y-6 py-4">
