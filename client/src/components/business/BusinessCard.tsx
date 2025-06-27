@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { TalezCertificationBadge } from './TalezCertificationBadge';
+import { TalezTrainerCertificationBadge } from './TalezTrainerCertificationBadge';
 import { 
   MapPin, 
   Phone, 
@@ -136,6 +137,20 @@ export function BusinessCard({
                         <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
                         <span className="text-xs">{trainer.rating}</span>
                       </div>
+                    </div>
+                    
+                    <div className="mb-2">
+                      <TalezTrainerCertificationBadge 
+                        trainerData={{
+                          id: trainer.id,
+                          name: trainer.name,
+                          talezCertificationStatus: 'verified',
+                          talezCertificationLevel: 'advanced',
+                          talezCertificationDate: '2024-01-15',
+                          licenseNumber: `TZ-${trainer.id.slice(-4).toUpperCase()}`
+                        }}
+                        size="sm"
+                      />
                     </div>
                     
                     <div className="flex flex-wrap gap-1 mb-2">

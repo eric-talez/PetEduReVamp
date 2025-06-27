@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Star, MapPin, Search, Filter, Briefcase, Award, Sparkles, Loader2 } from 'lucide-react';
 import { NewTrainerProfileModal, type Trainer } from '@/components/NewTrainerProfileModal';
+import { TalezTrainerCertificationBadge } from '@/components/business/TalezTrainerCertificationBadge';
 import { useQuery } from '@tanstack/react-query';
 
 export default function Trainers() {
@@ -234,9 +235,20 @@ export default function Trainers() {
                     />
                     <AvatarFallback className="text-lg bg-primary text-white">{trainer.name.charAt(0)}</AvatarFallback>
                   </Avatar>
-                  <div className="ml-4 pb-1">
+                  <div className="ml-4 pb-1 flex-1">
                     <h3 className="text-lg font-semibold text-gray-800 dark:text-white">{trainer.name}</h3>
-                    <p className="text-sm text-primary">{trainer.specialty}</p>
+                    <p className="text-sm text-primary mb-2">{trainer.specialty}</p>
+                    <TalezTrainerCertificationBadge 
+                      trainerData={{
+                        id: trainer.id,
+                        name: trainer.name,
+                        talezCertificationStatus: 'verified',
+                        talezCertificationLevel: 'expert',
+                        talezCertificationDate: '2024-01-15',
+                        licenseNumber: `TZ-${trainer.id.slice(-4).toUpperCase()}`
+                      }}
+                      size="sm"
+                    />
                   </div>
                 </div>
 
