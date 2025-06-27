@@ -183,6 +183,7 @@ export interface IStorage {
 // 실제 운영에서는 데이터베이스를 사용하되, 초기 데이터용 임시 저장소
 
 export class MemoryStorage implements IStorage{
+  // Storage maps for core data
   private users = new Map();
   private pets = new Map();
   private courses = new Map();
@@ -197,12 +198,45 @@ export class MemoryStorage implements IStorage{
   private conversations = new Map();
   private messages = new Map();
   private checkups = new Map();
+  
+  // Commission and settlement data stores
   private commissionPolicies = new Map();
   private commissionTiers = new Map();
   private commissionTransactions = new Map();
   private settlementReports = new Map();
 
-  // ID 카운터들
+  // Additional data stores (arrays)
+  private communityPosts: CommunityPost[] = [];
+  private shoppingItems: ShoppingItem[] = [];
+  private reservations: Reservation[] = [];
+  private consultations: Consultation[] = [];
+  private notebookEntries: NotebookEntry[] = [];
+  private commissions: Commission[] = [];
+  private invoices: Invoice[] = [];
+  private transactions: Transaction[] = [];
+  private promotions: Promotion[] = [];
+
+  // Health management data stores
+  private healthRecords: HealthRecord[] = [];
+  private vaccinations: Vaccination[] = [];
+  private weightRecords: WeightRecord[] = [];
+  private medications: Medication[] = [];
+  private nutritionPlans: NutritionPlan[] = [];
+  private healthReminders: HealthReminder[] = [];
+
+  // Training management data stores
+  private trainingSessions: any[] = [];
+  private achievements: any[] = [];
+
+  // Community related data stores
+  private postLikes: any[] = [];
+  private comments: any[] = [];
+  private postShares: any[] = [];
+  private bookmarks: any[] = [];
+  private follows: any[] = [];
+  private reports: any[] = [];
+
+  // ID counters
   private userId = 1;
   private petId = 1;
   private courseId = 1;
@@ -221,51 +255,6 @@ export class MemoryStorage implements IStorage{
   private tierId = 1;
   private transactionId = 1;
   private reportId = 1;
-
-  // Health management data stores
-  private vaccinations = new Map<number, any>();
-  private weightRecords = new Map<number, any>();
-  private medicationRecords = new Map<number, any>();
-  private nutritionPlans = new Map<number, any>();
-  private healthReminders = new Map<number, any>();
-  private healthSchedule = new Map<number, any>();
-
-  private pets: Pet[] = [];
-  private communityPosts: CommunityPost[] = [];
-  private shoppingItems: ShoppingItem[] = [];
-  private courses: Course[] = [];
-  private reservations: Reservation[] = [];
-  private consultations: Consultation[] = [];
-  private trainers: Trainer[] = [];
-  private institutes: Institute[] = [];
-  private notebookEntries: NotebookEntry[] = [];
-  private messages: Message[] = [];
-  private notifications: Notification[] = [];
-  private commissions: Commission[] = [];
-  private invoices: Invoice[] = [];
-  private transactions: Transaction[] = [];
-  private events: Event[] = [];
-  private promotions: Promotion[] = [];
-
-    // 건강 관리 데이터
-    private healthRecords: HealthRecord[] = [];
-    private vaccinations: Vaccination[] = [];
-    private weightRecords: WeightRecord[] = [];
-    private medications: Medication[] = [];
-    private nutritionPlans: NutritionPlan[] = [];
-    private healthReminders: HealthReminder[] = [];
-
-    // 훈련 관리 데이터
-    private trainingSessions: any[] = [];
-    private achievements: any[] = [];
-
-    // 커뮤니티 관련 데이터
-    private postLikes: any[] = [];
-    private comments: any[] = [];
-    private postShares: any[] = [];
-    private bookmarks: any[] = [];
-    private follows: any[] = [];
-    private reports: any[] = [];
 
 
   constructor() {
