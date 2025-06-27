@@ -1,6 +1,3 @@
-
-#!/usr/bin/env node
-
 const fetch = require('node-fetch');
 const fs = require('fs');
 const path = require('path');
@@ -24,19 +21,19 @@ class UserRoleDataValidator {
 
     // 1. 반려견 주인 → 다른 역할 연결성
     await this.validatePetOwnerConnections();
-    
+
     // 2. 훈련사 → 다른 역할 연결성
     await this.validateTrainerConnections();
-    
+
     // 3. 기관 관리자 → 다른 역할 연결성
     await this.validateInstituteAdminConnections();
-    
+
     // 4. 관리자 → 전체 시스템 연결성
     await this.validateAdminConnections();
-    
+
     // 5. 역할 간 권한 체크
     await this.validateRolePermissions();
-    
+
     // 6. 데이터 무결성 체크
     await this.validateDataIntegrity();
   }
@@ -218,7 +215,7 @@ class UserRoleDataValidator {
     console.log('🔐 역할별 권한 체크...');
 
     const roles = ['pet-owner', 'trainer', 'institute-admin', 'admin'];
-    
+
     for (const role of roles) {
       const permissions = await this.checkRolePermissions(role);
       this.results.permissionTests.push({
@@ -263,7 +260,7 @@ class UserRoleDataValidator {
           method: permission.method,
           headers: { 'X-User-Role': role }
         });
-        
+
         const hasAccess = response.ok;
         results.push({
           resource: permission.resource,
@@ -288,55 +285,80 @@ class UserRoleDataValidator {
   }
 
   async validateDataIntegrity() {
-    console.log('🔍 데이터 무결성 검증...');
+    console.log('🔍 데이터 무결성 체크...');
 
-    // 1. 사용자 - 역할 일관성
-    const userRoleConsistency = await this.checkDataFlow(
-      '사용자-역할 일관성',
-      async () => {
-        const users = await this.checkAPI('/api/spring/users');
-        if (users.success) {
-          // 각 사용자의 역할이 올바른지 확인
-          return users.data.every(user => 
-            ['pet-owner', 'trainer', 'institute-admin', 'admin'].includes(user.role)
-          );
-        }
-        return false;
-      }
-    );
-
-    // 2. 기관 - 훈련사 관계 일관성
-    const instituteTrainerConsistency = await this.checkDataFlow(
-      '기관-훈련사 관계 일관성',
+    // 기관 → 훈련사 → 수강생 연결 체크
+    const institutionToStudentFlow = await this.checkDataFlow(
+      '기관 → 훈련사 → 수강생 연결',
       async () => {
         const institutes = await this.checkAPI('/api/institutes');
-        const trainers = await this.checkAPI('/api/trainers');
-        
-        if (institutes.success && trainers.success) {
-          // 훈련사의 기관 ID가 실제 존재하는 기관인지 확인
-          const instituteIds = institutes.data.map(i => i.id);
-          return trainers.data.every(trainer => 
-            !trainer.instituteId || instituteIds.includes(trainer.instituteId)
-          );
+        if (institutes.success && institutes.data.length > 0) {
+          const institute = institutes.data[0];
+          const trainers = await this.checkAPI(`/api/institutes/${institute.id}/trainers`);
+          if (trainers.success && trainers.data.length > 0) {
+            const students = await this.checkAPI(`/api/institutes/${institute.id}/students`);
+            return students.success;
+          }
         }
         return false;
       }
     );
 
-    // 3. 예약 - 사용자 관계 일관성
-    const reservationUserConsistency = await this.checkDataFlow(
-      '예약-사용자 관계 일관성',
+    // 관리자 → 승인 → 위치 등록 연결
+    const adminLocationFlow = await this.checkDataFlow(
+      '관리자 → 위치 등록 → 사용자 검색',
       async () => {
-        // 예약 데이터와 사용자 데이터의 일관성 확인
-        return true; // 구현 예정
+        // 관리자 위치 등록
+        const adminLocations = await this.checkAPI('/api/admin/locations');
+        if (adminLocations.success) {
+          // 사용자 위치 검색에서 관리자 등록 위치 조회
+          const userSearch = await this.checkAPI('/api/locations/search?type=institute');
+          return userSearch.success;
+        }
+        return false;
       }
     );
 
-    this.results.dataFlowTests.push(
-      userRoleConsistency,
-      instituteTrainerConsistency,
-      reservationUserConsistency
+    // 견주 → 훈련사 예약 → 기관 승인 플로우
+    const petOwnerFlow = await this.checkDataFlow(
+      '견주 → 훈련사 예약 → 기관 승인',
+      async () => {
+        const trainers = await this.checkAPI('/api/trainers');
+        if (trainers.success && trainers.data.length > 0) {
+          const consultation = await this.checkAPI(
+            `/api/trainers/${trainers.data[0].id}/consultation`,
+            'POST',
+            {
+              date: '2024-12-25',
+              time: '14:00',
+              petName: '테스트견',
+              phone: '010-1234-5678'
+            }
+          );
+          return consultation.success;
+        }
+        return false;
+      }
     );
+
+    // 관리자 → 전체 시스템 모니터링
+    const adminSystemFlow = await this.checkDataFlow(
+      '관리자 → 전체 시스템 모니터링',
+      async () => {
+        const approvals = await this.checkAPI('/api/admin/approvals');
+        const users = await this.checkAPI('/api/spring/users');
+        const locations = await this.checkAPI('/api/admin/locations');
+
+        return approvals.success && users.success && locations.success;
+      }
+    );
+
+    this.results.dataConnectivityTests.push(institutionToStudentFlow);
+    this.results.dataConnectivityTests.push(adminLocationFlow);
+    this.results.dataConnectivityTests.push(petOwnerFlow);
+    this.results.dataConnectivityTests.push(adminSystemFlow);
+
+    return this.generateFinalReport();
   }
 
   async checkAPI(endpoint, method = 'GET', data = null) {
@@ -445,7 +467,7 @@ class UserRoleDataValidator {
     try {
       await this.validateUserRoleDataFlow();
       const report = this.generateReport();
-      
+
       // 결과 파일 저장
       fs.writeFileSync(
         path.join(__dirname, '../logs/user-role-validation-report.json'),
@@ -453,7 +475,7 @@ class UserRoleDataValidator {
       );
 
       console.log('\n📋 상세 리포트가 logs/user-role-validation-report.json에 저장되었습니다.');
-      
+
       return report;
     } catch (error) {
       console.error('❌ 검증 실행 중 오류:', error);

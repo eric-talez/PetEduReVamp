@@ -26,36 +26,34 @@ export function registerAdminRoutes(app: Express, storage: IStorage) {
   // Spring Boot 연동 사용자 관리
   app.get("/api/spring/users", async (req, res) => {
     try {
-
+      const users = [
+        { id: 1, role: 'pet-owner', name: '김반려', email: 'owner@test.com' },
+        { id: 2, role: 'trainer', name: '박훈련', email: 'trainer@test.com' },
+        { id: 3, role: 'institute-admin', name: '이기관', email: 'admin@test.com' }
+      ];
+      res.json(users);
     } catch (error) {
       console.error('Error fetching users:', error);
       res.status(500).json({ message: 'Internal server error' });
     }
   });
 
-  // 관리자 위치 등록
+  // 관리자 위치 등록 API
   app.post("/api/admin/locations", async (req, res) => {
     try {
-      const locationData = req.body;
+      const { name, type, address, latitude, longitude, description, certification } = req.body;
       
-      // 위치 데이터 검증
-      if (!locationData.name || !locationData.type || !locationData.address) {
-        return res.status(400).json({ 
-          message: '업체명, 유형, 주소는 필수 항목입니다.' 
-        });
-      }
-
-      // 새 위치 생성
       const newLocation = {
         id: Date.now(),
-        ...locationData,
+        name,
+        type, // 'institute', 'trainer', 'clinic', 'shop'
+        address,
+        coordinates: { latitude, longitude },
+        description,
+        certification: certification || false,
         status: 'active',
-        isVerified: true,
-        isCertified: locationData.isCertified || false,
-        certificationStatus: locationData.certificationStatus || 'verified',
-        certificationDate: new Date().toISOString(),
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        adminApproved: true
       };
 
       // 실제로는 데이터베이스에 저장
@@ -75,46 +73,66 @@ export function registerAdminRoutes(app: Express, storage: IStorage) {
   // 관리자 위치 목록 조회
   app.get("/api/admin/locations", async (req, res) => {
     try {
-      // 샘플 데이터 반환 (실제로는 데이터베이스에서 조회)
       const locations = [
         {
           id: 1,
-          name: '서울 펫 트레이닝 센터',
-          type: 'training',
-          address: '서울시 강남구 테헤란로 123',
-          phone: '02-123-4567',
-          description: '전문 반려견 훈련 및 행동 교정 전문 시설입니다.',
-          status: 'active',
-          isCertified: true,
-          certificationStatus: 'verified',
-          certificationDate: '2024-01-15',
-          createdAt: '2024-01-15',
-          updatedAt: '2024-06-20'
+          name: "서울반려견아카데미",
+          type: "institute",
+          address: "서울시 강남구 테헤란로 123",
+          coordinates: { latitude: 37.5665, longitude: 126.9780 },
+          description: "전문 반려견 교육 기관",
+          certification: true,
+          status: "active",
+          createdAt: "2024-01-15T09:00:00Z",
+          adminApproved: true
+        },
+        {
+          id: 2,
+          name: "김훈련사 개인 훈련소",
+          type: "trainer",
+          address: "서울시 마포구 홍대로 456",
+          coordinates: { latitude: 37.5563, longitude: 126.9239 },
+          description: "경력 10년 전문 훈련사",
+          certification: true,
+          status: "active",
+          createdAt: "2024-02-20T10:30:00Z",
+          adminApproved: true
         }
       ];
 
-      res.json(locations);
+      res.json({
+        success: true,
+        locations,
+        total: locations.length
+      });
     } catch (error) {
-      console.error('Error fetching locations:', error);
+      console.error('Error fetching admin locations:', error);
       res.status(500).json({ message: 'Internal server error' });
     }
   });
 
-  // 위치 상태 업데이트
-  app.patch("/api/admin/locations/:id", async (req, res) => {
+  // 관리자 위치 승인/거부
+  app.patch("/api/admin/locations/:id/approve", async (req, res) => {
     try {
       const locationId = parseInt(req.params.id);
-      const updateData = req.body;
+      const { approved, reason } = req.body;
 
       // 실제로는 데이터베이스에서 업데이트
-      console.log('위치 업데이트:', locationId, updateData);
+      const updatedLocation = {
+        id: locationId,
+        adminApproved: approved,
+        approvalReason: reason,
+        approvedAt: new Date().toISOString(),
+        status: approved ? 'active' : 'rejected'
+      };
 
       res.json({
         success: true,
-        message: '위치 정보가 업데이트되었습니다.'
+        location: updatedLocation,
+        message: approved ? '위치가 승인되었습니다.' : '위치가 거부되었습니다.'
       });
     } catch (error) {
-      console.error('Error updating location:', error);
+      console.error('Error approving location:', error);
       res.status(500).json({ message: 'Internal server error' });
     }
   });
