@@ -11,10 +11,23 @@ import { Badge } from '@/components/ui/badge';
 import { useQuery } from '@tanstack/react-query';
 import { Search, Filter, MapPin, Phone, Clock, Star, Navigation } from 'lucide-react';
 
+interface Trainer {
+  id: string;
+  name: string;
+  specialties: string[];
+  experience: number;
+  rating: number;
+  certifications: string[];
+  availableSlots: string[];
+  profileImage?: string;
+  bio?: string;
+  price?: number;
+}
+
 interface LocationData {
   id: string;
   name: string;
-  type: 'training-center' | 'pet-store' | 'veterinary' | 'event';
+  type: 'training-center' | 'pet-store' | 'veterinary' | 'event' | 'hospital' | 'training' | 'grooming' | 'hotel' | 'cafe' | 'park';
   address: string;
   lat: number;
   lng: number;
@@ -23,6 +36,13 @@ interface LocationData {
   hours?: string;
   description?: string;
   distance?: number;
+  businessNumber?: string;
+  certificationStatus?: 'pending' | 'verified' | 'rejected';
+  certificationDate?: string;
+  businessType?: string;
+  trainers?: Trainer[];
+  reviewCount?: number;
+  services?: string[];
 }
 
 // Sample location data for Seoul area
@@ -37,7 +57,37 @@ const sampleLocations: LocationData[] = [
     phone: '02-1234-5678',
     rating: 4.8,
     hours: '09:00 - 18:00',
-    description: '전문 반려동물 훈련 서비스를 제공하는 프리미엄 트레이닝 센터입니다.'
+    description: '전문 반려동물 훈련 서비스를 제공하는 프리미엄 트레이닝 센터입니다.',
+    businessNumber: '123-45-67890',
+    certificationStatus: 'verified',
+    certificationDate: '2024-01-15',
+    businessType: '반려동물 훈련업',
+    reviewCount: 156,
+    services: ['기본 훈련', '행동 교정', '퍼피 클래스', '개인 레슨'],
+    trainers: [
+      {
+        id: 't1',
+        name: '김훈련',
+        specialties: ['기본 훈련', '행동 교정', '퍼피 클래스'],
+        experience: 8,
+        rating: 4.9,
+        certifications: ['반려동물행동교정사 1급', 'KKC 공인훈련사'],
+        availableSlots: ['09:00', '11:00', '14:00', '16:00'],
+        bio: '8년 경력의 전문 반려동물 훈련사로, 특히 문제행동 교정에 탁월한 실력을 보유하고 있습니다.',
+        price: 80000
+      },
+      {
+        id: 't2',
+        name: '박전문',
+        specialties: ['퍼피 클래스', '사회화 훈련', '기초 복종'],
+        experience: 5,
+        rating: 4.7,
+        certifications: ['반려동물훈련사 2급', '애견미용사'],
+        availableSlots: ['10:00', '13:00', '15:00', '17:00'],
+        bio: '젊은 강아지 교육 전문가로, 사회화 훈련과 기초 복종 훈련을 전문으로 합니다.',
+        price: 65000
+      }
+    ]
   },
   {
     id: 'tc2',
@@ -49,7 +99,26 @@ const sampleLocations: LocationData[] = [
     phone: '02-2345-6789',
     rating: 4.6,
     hours: '10:00 - 19:00',
-    description: '행동교정 전문 훈련소'
+    description: '행동교정 전문 훈련소',
+    businessNumber: '234-56-78901',
+    certificationStatus: 'verified',
+    certificationDate: '2024-02-20',
+    businessType: '반려동물 훈련업',
+    reviewCount: 89,
+    services: ['행동 교정', '공격성 훈련', '분리불안 해결', '사회화 훈련'],
+    trainers: [
+      {
+        id: 't3',
+        name: '이행동',
+        specialties: ['행동 교정', '공격성 훈련', '분리불안'],
+        experience: 10,
+        rating: 4.8,
+        certifications: ['동물행동학 박사', '반려동물행동교정사 1급'],
+        availableSlots: ['09:00', '11:00', '14:00', '16:00'],
+        bio: '동물행동학 전문가로 10년간 문제행동 교정에 전념해온 경험 많은 훈련사입니다.',
+        price: 120000
+      }
+    ]
   },
   {
     id: 'ps1',
@@ -135,6 +204,9 @@ export default function LocationsPage() {
   const [reservationLocation, setReservationLocation] = useState<LocationData | null>(null);
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
   const [showMapView, setShowMapView] = useState(false);
+  const [trainerDialogOpen, setTrainerDialogOpen] = useState(false);
+  const [selectedBusiness, setSelectedBusiness] = useState<LocationData | null>(null);
+  const [selectedTrainer, setSelectedTrainer] = useState<Trainer | null>(null);
 
   // Calculate distances when user location is available
   useEffect(() => {
@@ -227,6 +299,29 @@ export default function LocationsPage() {
       console.error('예약 실패:', error);
       throw error;
     }
+  };
+
+  // Business card handlers
+  const handleBusinessReservation = (business: LocationData, trainer?: Trainer) => {
+    if (business.type === 'training-center' && business.trainers && business.trainers.length > 0 && !trainer) {
+      setSelectedBusiness(business);
+      setTrainerDialogOpen(true);
+    } else {
+      setReservationLocation(business);
+      setSelectedTrainer(trainer || null);
+      setReservationDialogOpen(true);
+    }
+  };
+
+  const handleBusinessDetails = (business: LocationData) => {
+    setSelectedLocation(business);
+  };
+
+  const handleTrainerSelect = (trainer: Trainer) => {
+    setSelectedTrainer(trainer);
+    setTrainerDialogOpen(false);
+    setReservationLocation(selectedBusiness);
+    setReservationDialogOpen(true);
   };
 
   const getUserLocation = () => {
@@ -457,51 +552,37 @@ export default function LocationsPage() {
         </div>
       </div>
 
-      {/* Location List */}
+      {/* Business List with Talez Certification */}
       <Card className="mt-6">
         <CardHeader>
-          <CardTitle>장소 목록</CardTitle>
+          <CardTitle>TALEZ 인증 업체 목록</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {filteredLocations.map((location) => (
-              <div
+              <BusinessCard
                 key={location.id}
-                className={`p-4 border rounded-lg cursor-pointer transition-colors hover:bg-gray-50 dark:hover:bg-gray-800 ${
-                  selectedLocation?.id === location.id ? 'ring-2 ring-primary' : ''
-                }`}
-                onClick={() => handleLocationSelect(location)}
-              >
-                <div className="flex justify-between items-start mb-2">
-                  <div>
-                    <h4 className="font-medium">{location.name}</h4>
-                    <Badge className={getLocationTypeBadgeColor(location.type)}>
-                      {getLocationTypeLabel(location.type)}
-                    </Badge>
-                  </div>
-                  {location.distance && (
-                    <span className="text-sm text-gray-500">
-                      {location.distance < 1 ? 
-                        `${Math.round(location.distance * 1000)}m` : 
-                        `${location.distance.toFixed(1)}km`}
-                    </span>
-                  )}
-                </div>
-                
-                <div className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
-                  <div className="flex items-center gap-1">
-                    <MapPin className="w-3 h-3" />
-                    <span>{location.address}</span>
-                  </div>
-                  
-                  {location.rating && (
-                    <div className="flex items-center gap-1">
-                      <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
-                      <span>{location.rating}/5</span>
-                    </div>
-                  )}
-                </div>
-              </div>
+                business={{
+                  id: location.id,
+                  name: location.name,
+                  businessNumber: location.businessNumber || '미등록',
+                  certificationStatus: location.certificationStatus || 'pending',
+                  certificationDate: location.certificationDate,
+                  businessType: location.businessType || location.type,
+                  address: location.address,
+                  phone: location.phone || '',
+                  hours: location.hours || '',
+                  rating: location.rating,
+                  reviewCount: location.reviewCount,
+                  description: location.description,
+                  services: location.services || [],
+                  trainers: location.trainers,
+                  images: []
+                }}
+                onReservationClick={handleBusinessReservation}
+                onViewDetails={handleBusinessDetails}
+                showTrainers={location.type === 'training-center'}
+              />
             ))}
           </div>
         </CardContent>
