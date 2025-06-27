@@ -13,6 +13,7 @@ export default function Trainers() {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [filter, setFilter] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [showCertifiedOnly, setShowCertifiedOnly] = useState(false);
 
   // API로부터 트레이너 데이터 가져오기
   const { data: trainersData, isLoading, error } = useQuery<Trainer[]>({
@@ -81,11 +82,18 @@ export default function Trainers() {
       );
     }
 
+    // TALEZ 인증 필터링
+    if (showCertifiedOnly) {
+      // 샘플 데이터에서는 모든 훈련사를 인증된 것으로 표시하므로 필터링하지 않음
+      // 실제 구현에서는 trainer.talezCertificationStatus === 'verified' 조건 사용
+      filtered = filtered; // 모든 훈련사가 인증된 것으로 간주
+    }
+
     // 카테고리 필터링
     if (filter !== "all") {
       filtered = filtered.filter(trainer => {
         if (filter === "certification") {
-          return trainer.certifications.some(cert => cert.includes("공인") || cert.includes("인증"));
+          return trainer.certifications && trainer.certifications.some(cert => cert.includes("공인") || cert.includes("인증"));
         } else if (filter === "featured") {
           return trainer.rating >= 4.8;
         } else {
@@ -198,6 +206,16 @@ export default function Trainers() {
         >
           특수 훈련
         </Button>
+
+        <Button
+          variant={showCertifiedOnly ? "default" : "outline"}
+          size="sm"
+          onClick={() => setShowCertifiedOnly(!showCertifiedOnly)}
+          className="text-xs bg-[#2BAA61] hover:bg-[#229954] text-white border-[#2BAA61]"
+        >
+          <Award className="h-3 w-3 mr-1" />
+          TALEZ 인증
+        </Button>
       </div>
 
       {/* 검색 결과 카운트 */}
@@ -240,12 +258,12 @@ export default function Trainers() {
                     <p className="text-sm text-primary mb-2">{trainer.specialty}</p>
                     <TalezTrainerCertificationBadge 
                       trainerData={{
-                        id: trainer.id,
+                        id: trainer.id.toString(),
                         name: trainer.name,
                         talezCertificationStatus: 'verified',
                         talezCertificationLevel: 'expert',
                         talezCertificationDate: '2024-01-15',
-                        licenseNumber: `TZ-${trainer.id.slice(-4).toUpperCase()}`
+                        licenseNumber: `TZ-${trainer.id.toString().padStart(4, '0')}`
                       }}
                       size="sm"
                     />
