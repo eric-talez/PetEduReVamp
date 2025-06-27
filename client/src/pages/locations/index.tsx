@@ -129,6 +129,7 @@ export default function LocationsPage() {
   const [selectedType, setSelectedType] = useState<string>('all');
   const [selectedLocation, setSelectedLocation] = useState<LocationData | null>(null);
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
+  const [showMapView, setShowMapView] = useState(false);
 
   // Calculate distances when user location is available
   useEffect(() => {
@@ -309,15 +310,59 @@ export default function LocationsPage() {
         </div>
       </div>
 
+      {/* Map View Toggle */}
+      <div className="mb-6">
+        <div className="flex items-center justify-between p-4 bg-gradient-to-r from-blue-50 to-green-50 rounded-lg border-2 border-blue-200">
+          <div className="flex items-center gap-3">
+            <MapPin className="w-6 h-6 text-blue-600" />
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900">지도에서 위치 보기</h3>
+              <p className="text-sm text-gray-600">업체 위치를 지도에서 확인하세요</p>
+            </div>
+          </div>
+          <button
+            onClick={() => setShowMapView(!showMapView)}
+            className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2 font-medium shadow-md transition-colors"
+          >
+            <Navigation className="w-5 h-5" />
+            {showMapView ? '목록으로 돌아가기' : '지도 보기'}
+          </button>
+        </div>
+      </div>
+
       {/* Map and Location Details */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Map */}
         <div className="lg:col-span-1">
-          <ReliableMap
-            locations={filteredLocations}
-            height="600px"
-            onLocationClick={handleLocationSelect}
-          />
+          {showMapView ? (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <MapPin className="w-5 h-5" />
+                  지도 보기
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-0">
+                <div style={{ height: "600px" }}>
+                  <iframe
+                    src={`https://www.google.com/maps/embed/v1/search?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dw7BzKRAg8Y2Jw&q=pet+services+seoul+korea&center=37.5665,126.9780&zoom=11`}
+                    width="100%"
+                    height="100%"
+                    style={{ border: 0, borderRadius: '8px' }}
+                    allowFullScreen
+                    loading="lazy"
+                    referrerPolicy="no-referrer-when-downgrade"
+                  />
+                </div>
+              </CardContent>
+            </Card>
+          ) : (
+            <ReliableMap
+              locations={filteredLocations}
+              height="600px"
+              onLocationClick={handleLocationSelect}
+            />
+          )}
         </div>
 
         {/* Location Details */}

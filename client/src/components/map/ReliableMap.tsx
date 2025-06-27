@@ -30,6 +30,7 @@ export function ReliableMap({ locations, height = "400px", onLocationClick }: Re
   const [filteredBySearch, setFilteredBySearch] = useState<LocationData[]>(locations);
 
   console.log('ReliableMap 렌더링됨 - showMapView:', showMapView);
+  console.log('ReliableMap locations:', locations.length);
 
   // Seoul center coordinates
   const seoulCenter = { lat: 37.5665, lng: 126.9780 };
