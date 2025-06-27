@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Search, Filter, MapPin, Phone, Clock, Star, Navigation, Zap, Target, ChevronRight, Layers, List, Map as MapIcon } from 'lucide-react';
+import { Search, Filter, MapPin, Phone, Clock, Star, Navigation, Zap, Target, ChevronRight, Layers, List, Map as MapIcon, Building2, Award, Users } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface Trainer {
@@ -697,6 +697,30 @@ export default function LocationsPage() {
                           <div className="flex items-center gap-3">
                             <Clock className="w-5 h-5 text-gray-500" />
                             <span className="text-gray-900">{selectedLocation.hours}</span>
+                          </div>
+                        )}
+
+                        {selectedLocation.businessNumber && (
+                          <div className="flex items-center gap-3">
+                            <Building2 className="w-5 h-5 text-gray-500" />
+                            <div>
+                              <span className="text-gray-900">사업자번호: {selectedLocation.businessNumber}</span>
+                              {selectedLocation.businessType && (
+                                <div className="text-sm text-gray-600 mt-1">업종: {selectedLocation.businessType}</div>
+                              )}
+                            </div>
+                          </div>
+                        )}
+
+                        {selectedLocation.certificationStatus === 'verified' && selectedLocation.certificationDate && (
+                          <div className="flex items-center gap-3">
+                            <Award className="w-5 h-5 text-green-600" />
+                            <div>
+                              <span className="text-green-800 font-medium">TALEZ 인증업체</span>
+                              <div className="text-sm text-gray-600 mt-1">
+                                인증일: {new Date(selectedLocation.certificationDate).toLocaleDateString('ko-KR')}
+                              </div>
+                            </div>
                           </div>
                         )}
 
