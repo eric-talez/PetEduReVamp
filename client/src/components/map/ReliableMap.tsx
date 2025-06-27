@@ -25,12 +25,7 @@ interface ReliableMapProps {
 
 export function ReliableMap({ locations, height = "400px", onLocationClick }: ReliableMapProps) {
   const [selectedLocationId, setSelectedLocationId] = useState<string | null>(null);
-  const [mapSearch, setMapSearch] = useState('');
   const [showMapView, setShowMapView] = useState(false);
-  const [filteredBySearch, setFilteredBySearch] = useState<LocationData[]>(locations);
-
-  console.log('ReliableMap 렌더링됨 - showMapView:', showMapView);
-  console.log('ReliableMap locations:', locations.length);
 
   // Seoul center coordinates
   const seoulCenter = { lat: 37.5665, lng: 126.9780 };
@@ -70,30 +65,10 @@ export function ReliableMap({ locations, height = "400px", onLocationClick }: Re
     return value * Math.PI / 180;
   };
 
-  // Filter locations based on map search
-  useEffect(() => {
-    if (!mapSearch.trim()) {
-      setFilteredBySearch(locations);
-    } else {
-      const filtered = locations.filter(location =>
-        location.name.toLowerCase().includes(mapSearch.toLowerCase()) ||
-        location.address.toLowerCase().includes(mapSearch.toLowerCase()) ||
-        location.description?.toLowerCase().includes(mapSearch.toLowerCase()) ||
-        getLocationTypeLabel(location.type).includes(mapSearch)
-      );
-      setFilteredBySearch(filtered);
-    }
-  }, [mapSearch, locations]);
-
   const handleLocationClick = (location: LocationData) => {
     console.log('위치 클릭:', location.name);
     setSelectedLocationId(location.id === selectedLocationId ? null : location.id);
     onLocationClick?.(location);
-  };
-
-  const handleMapSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    // Search is handled by useEffect above
   };
 
   // Create Google Maps embed URL for the area
@@ -119,42 +94,7 @@ export function ReliableMap({ locations, height = "400px", onLocationClick }: Re
         </button>
       </div>
 
-      {/* Map Search Interface */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Search className="w-5 h-5" />
-            업체 검색
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {/* Search Bar */}
-          <form onSubmit={handleMapSearch} className="flex gap-2 mb-4">
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-              <Input
-                type="text"
-                placeholder="업체명, 주소, 서비스 종류로 검색..."
-                value={mapSearch}
-                onChange={(e) => setMapSearch(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-            <Button type="submit" size="sm">
-              <Search className="w-4 h-4" />
-            </Button>
-          </form>
-          
-          {/* Search Results Summary */}
-          {mapSearch && (
-            <div className="mb-4 p-3 bg-blue-50 rounded-lg">
-              <p className="text-sm text-blue-700">
-                "<strong>{mapSearch}</strong>" 검색 결과: {filteredBySearch.length}개 업체
-              </p>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+
 
       {/* Map Container with Interactive Location List */}
       <Card>
@@ -174,9 +114,9 @@ export function ReliableMap({ locations, height = "400px", onLocationClick }: Re
                 />
                 {/* Overlay with location markers */}
                 <div className="absolute top-4 right-4 bg-white rounded-lg shadow-lg p-2 max-w-xs">
-                  <h4 className="font-semibold text-sm mb-2">주변 업체 ({filteredBySearch.length}개)</h4>
+                  <h4 className="font-semibold text-sm mb-2">주변 업체 ({locations.length}개)</h4>
                   <div className="space-y-1 max-h-32 overflow-y-auto">
-                    {filteredBySearch.slice(0, 5).map(location => (
+                    {locations.slice(0, 5).map(location => (
                       <div
                         key={location.id}
                         className="text-xs p-2 bg-gray-50 rounded cursor-pointer hover:bg-gray-100"
@@ -195,11 +135,11 @@ export function ReliableMap({ locations, height = "400px", onLocationClick }: Re
                 <div className="text-center mb-4">
                   <MapPin className="w-8 h-8 mx-auto mb-2 text-blue-500" />
                   <h3 className="text-lg font-semibold text-gray-800">서울 펫 서비스 위치</h3>
-                  <p className="text-sm text-gray-600">{filteredBySearch.length}개 장소</p>
+                  <p className="text-sm text-gray-600">{locations.length}개 장소</p>
                 </div>
               
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {filteredBySearch.map(location => {
+                  {locations.map(location => {
                     const distance = calculateDistance(
                       seoulCenter.lat, seoulCenter.lng, 
                       location.lat, location.lng
