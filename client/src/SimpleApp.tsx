@@ -2228,6 +2228,7 @@ function UnauthenticatedRoutes() {
         {/* 업체 등록 관리 */}
         <Route path="/admin/business-registration">
           {() => {
+            console.log("[DEBUG] 업체 등록 관리 라우트 접근");
             const BusinessRegistration = lazy(() => import('./pages/admin/BusinessRegistration'));
             return (
               <Suspense fallback={<div className="p-8 text-center">업체 등록 관리 로딩 중...</div>}>
@@ -2240,6 +2241,7 @@ function UnauthenticatedRoutes() {
         {/* 리뷰 관리 */}
         <Route path="/admin/review-management">
           {() => {
+            console.log("[DEBUG] 리뷰 관리 라우트 접근");
             const ReviewManagement = lazy(() => import('./pages/admin/ReviewManagement'));
             return (
               <Suspense fallback={<div className="p-8 text-center">리뷰 관리 로딩 중...</div>}>
@@ -2252,6 +2254,7 @@ function UnauthenticatedRoutes() {
         {/* 정보 수정 요청 관리 */}
         <Route path="/admin/info-correction-requests">
           {() => {
+            console.log("[DEBUG] 정보 수정 요청 관리 라우트 접근");
             const InfoCorrectionRequests = lazy(() => import('./pages/admin/InfoCorrectionRequests'));
             return (
               <Suspense fallback={<div className="p-8 text-center">정보 수정 요청 관리 로딩 중...</div>}>
