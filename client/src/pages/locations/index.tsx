@@ -4,6 +4,7 @@ import { NaverMap } from '@/components/map/NaverMap';
 import { QuickReservationDialog } from '@/components/reservation/QuickReservationDialog';
 import { BusinessCard } from '@/components/business/BusinessCard';
 import { TrainerSelectionDialog } from '@/components/business/TrainerSelectionDialog';
+import { TrainerProfileDialog } from '@/components/business/TrainerProfileDialog';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -209,6 +210,8 @@ export default function LocationsPage() {
   const [trainerDialogOpen, setTrainerDialogOpen] = useState(false);
   const [selectedBusiness, setSelectedBusiness] = useState<LocationData | null>(null);
   const [selectedTrainer, setSelectedTrainer] = useState<Trainer | null>(null);
+  const [trainerProfileOpen, setTrainerProfileOpen] = useState(false);
+  const [selectedTrainerProfile, setSelectedTrainerProfile] = useState<Trainer | null>(null);
   const [showMapView, setShowMapView] = useState(false);
   const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
   const [sortBy, setSortBy] = useState<'distance' | 'rating' | 'name'>('distance');
@@ -357,9 +360,8 @@ export default function LocationsPage() {
   };
 
   const handleTrainerProfileClick = (trainer: Trainer) => {
-    setSelectedTrainer(trainer);
-    setReservationLocation(selectedLocation);
-    setReservationDialogOpen(true);
+    setSelectedTrainerProfile(trainer);
+    setTrainerProfileOpen(true);
   };
 
   const handleTrainerReservation = (trainer: Trainer) => {
@@ -842,14 +844,21 @@ export default function LocationsPage() {
         onTrainerSelect={handleTrainerSelect}
       />
 
+      {/* 훈련사 프로필 다이얼로그 */}
+      <TrainerProfileDialog
+        isOpen={trainerProfileOpen}
+        onClose={() => setTrainerProfileOpen(false)}
+        trainer={selectedTrainerProfile}
+        businessName={selectedLocation?.name || ''}
+        onReservationClick={handleTrainerReservation}
+      />
+
       <QuickReservationDialog
         isOpen={reservationDialogOpen}
         onClose={() => setReservationDialogOpen(false)}
         location={reservationLocation as any}
         onReservationSubmit={handleReservationSubmit}
       />
-
-
     </div>
   );
 }
