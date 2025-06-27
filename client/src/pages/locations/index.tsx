@@ -4,6 +4,7 @@ import { QuickReservationDialog } from '@/components/reservation/QuickReservatio
 import { BusinessCard } from '@/components/business/BusinessCard';
 import { TrainerSelectionDialog } from '@/components/business/TrainerSelectionDialog';
 import { TrainerProfileDialog } from '@/components/business/TrainerProfileDialog';
+import { InfoCorrectionDialog } from '@/components/business/InfoCorrectionDialog';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -27,6 +28,17 @@ interface Trainer {
   price?: number;
 }
 
+interface Review {
+  id: string;
+  authorName: string;
+  authorImage?: string;
+  rating: number;
+  comment: string;
+  date: string;
+  helpful?: number;
+  photos?: string[];
+}
+
 interface LocationData {
   id: string;
   name: string;
@@ -46,6 +58,10 @@ interface LocationData {
   trainers?: Trainer[];
   reviewCount?: number;
   services?: string[];
+  photos?: string[];
+  reviews?: Review[];
+  amenities?: string[];
+  priceRange?: string;
 }
 
 // Sample location data for Seoul area
@@ -871,7 +887,6 @@ export default function LocationsPage() {
                       </Button>
                     </div>
                   </div>
-                </div>
                 </div>
               ) : (
                 <div className="h-full flex items-center justify-center">
