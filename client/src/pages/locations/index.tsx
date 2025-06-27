@@ -857,6 +857,7 @@ export default function LocationsPage() {
         isOpen={reservationDialogOpen}
         onClose={() => setReservationDialogOpen(false)}
         location={reservationLocation as any}
+        trainer={selectedTrainer}
         onReservationSubmit={handleReservationSubmit}
       />
     </div>

@@ -16,6 +16,7 @@ interface QuickReservationDialogProps {
   isOpen: boolean;
   onClose: () => void;
   location: any;
+  trainer?: any;
   onReservationSubmit: (reservationData: any) => void;
 }
 
@@ -23,6 +24,7 @@ export function QuickReservationDialog({
   isOpen, 
   onClose, 
   location, 
+  trainer,
   onReservationSubmit 
 }: QuickReservationDialogProps) {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
@@ -34,8 +36,8 @@ export function QuickReservationDialog({
   const [notes, setNotes] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // 예약 가능한 시간대
-  const availableTimeSlots = [
+  // 예약 가능한 시간대 - 훈련사가 있으면 훈련사의 시간을 사용, 없으면 기본 시간
+  const availableTimeSlots = trainer?.availableSlots || [
     '09:00', '09:30', '10:00', '10:30', '11:00', '11:30',
     '13:00', '13:30', '14:00', '14:30', '15:00', '15:30',
     '16:00', '16:30', '17:00', '17:30'
@@ -89,6 +91,8 @@ export function QuickReservationDialog({
         locationName: location?.name,
         locationAddress: location?.address,
         locationPhone: location?.phone,
+        trainerId: trainer?.id,
+        trainerName: trainer?.name,
         date: format(selectedDate, 'yyyy-MM-dd'),
         time: selectedTime,
         service: selectedService,
@@ -143,7 +147,7 @@ export function QuickReservationDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <MapPin className="h-5 w-5 text-blue-500" />
-            {location.name} 예약
+            {trainer ? `${trainer.name} 훈련사 예약` : `${location.name} 예약`}
           </DialogTitle>
           <DialogDescription>
             <div className="space-y-2 text-sm">
@@ -162,6 +166,23 @@ export function QuickReservationDialog({
                 <div className="flex items-center gap-1 text-gray-600">
                   <Phone className="h-4 w-4" />
                   {location.phone}
+                </div>
+              )}
+              {trainer && (
+                <div className="mt-2 p-2 bg-blue-50 rounded">
+                  <div className="flex items-center gap-2 mb-1">
+                    <User className="h-4 w-4 text-blue-600" />
+                    <span className="font-medium text-blue-800">{trainer.name} 훈련사</span>
+                  </div>
+                  {trainer.specialties && (
+                    <div className="flex flex-wrap gap-1">
+                      {trainer.specialties.map((specialty: string, index: number) => (
+                        <Badge key={index} variant="outline" className="text-xs">
+                          {specialty}
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
             </div>
