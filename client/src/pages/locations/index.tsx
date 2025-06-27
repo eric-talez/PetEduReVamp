@@ -689,28 +689,189 @@ export default function LocationsPage() {
                       )}
                     </div>
 
-                    {/* 하단 액션 버튼 */}
-                    <div className="p-6 border-t border-gray-200 bg-white">
-                      <div className="flex gap-3">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setSelectedLocation(null)}
+                      className="self-start"
+                    >
+                      ← 목록으로
+                    </Button>
+                  </div>
+
+                  {/* 상세 정보 콘텐츠 */}
+                  <ScrollArea className="flex-1 px-6">
+                    <div className="space-y-6 pb-6">
+                      
+                      {/* 기본 정보 */}
+                      <div className="space-y-4">
+                        <div className="flex items-center gap-2 text-gray-600">
+                          <MapPin className="w-4 h-4" />
+                          <span className="text-sm">{selectedLocation.address}</span>
+                        </div>
+
+                        {selectedLocation.phone && (
+                          <div className="flex items-center gap-2 text-gray-600">
+                            <Phone className="w-4 h-4" />
+                            <span className="text-sm">{selectedLocation.phone}</span>
+                          </div>
+                        )}
+
+                        {selectedLocation.hours && (
+                          <div className="flex items-center gap-2 text-gray-600">
+                            <Clock className="w-4 h-4" />
+                            <span className="text-sm">{selectedLocation.hours}</span>
+                          </div>
+                        )}
+
+                        {selectedLocation.distance && (
+                          <div className="flex items-center gap-2 text-blue-600">
+                            <Navigation className="w-4 h-4" />
+                            <span className="text-sm font-medium">
+                              거리: {selectedLocation.distance < 1 
+                                ? `${Math.round(selectedLocation.distance * 1000)}m`
+                                : `${selectedLocation.distance.toFixed(1)}km`
+                              }
+                            </span>
+                          </div>
+                        )}
+                      </div>
+
+                      <Separator />
+
+                      {/* TALEZ 인증 정보 */}
+                      {selectedLocation.businessNumber && (
+                        <div className="space-y-3">
+                          <h3 className="font-semibold text-gray-900 flex items-center gap-2">
+                            <Award className="w-4 h-4" />
+                            TALEZ 인증 정보
+                          </h3>
+                          <div className="bg-green-50 p-4 rounded-lg">
+                            <div className="flex items-center justify-between mb-2">
+                              <Badge className="bg-green-600 text-white">
+                                인증업체
+                              </Badge>
+                              {selectedLocation.certificationDate && (
+                                <span className="text-xs text-gray-500">
+                                  인증일: {selectedLocation.certificationDate}
+                                </span>
+                              )}
+                            </div>
+                            <div className="space-y-1 text-sm">
+                              <div>사업자번호: {selectedLocation.businessNumber}</div>
+                              {selectedLocation.businessType && (
+                                <div>업종: {selectedLocation.businessType}</div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* 설명 */}
+                      {selectedLocation.description && (
+                        <>
+                          <Separator />
+                          <div className="space-y-3">
+                            <h3 className="font-semibold text-gray-900">소개</h3>
+                            <p className="text-sm text-gray-600 leading-relaxed">
+                              {selectedLocation.description}
+                            </p>
+                          </div>
+                        </>
+                      )}
+
+                      {/* 서비스 */}
+                      {selectedLocation.services && selectedLocation.services.length > 0 && (
+                        <>
+                          <Separator />
+                          <div className="space-y-3">
+                            <h3 className="font-semibold text-gray-900">제공 서비스</h3>
+                            <div className="flex flex-wrap gap-2">
+                              {selectedLocation.services.map((service, index) => (
+                                <Badge key={index} variant="outline">
+                                  {service}
+                                </Badge>
+                              ))}
+                            </div>
+                          </div>
+                        </>
+                      )}
+
+                      {/* 훈련사 정보 */}
+                      {selectedLocation.trainers && selectedLocation.trainers.length > 0 && (
+                        <>
+                          <Separator />
+                          <div className="space-y-3">
+                            <h3 className="font-semibold text-gray-900 flex items-center gap-2">
+                              <Users className="w-4 h-4" />
+                              전문 훈련사 ({selectedLocation.trainers.length}명)
+                            </h3>
+                            <div className="space-y-3">
+                              {selectedLocation.trainers.map((trainer) => (
+                                <div key={trainer.id} className="border rounded-lg p-3">
+                                  <div className="flex items-center justify-between mb-2">
+                                    <div className="flex items-center gap-2">
+                                      <span className="font-medium">{trainer.name}</span>
+                                      <Badge variant="outline">{trainer.experience}년 경력</Badge>
+                                    </div>
+                                    <div className="flex items-center gap-1">
+                                      <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                                      <span className="text-sm">{trainer.rating}</span>
+                                    </div>
+                                  </div>
+                                  <div className="flex flex-wrap gap-1 mb-2">
+                                    {trainer.specialties.map((specialty, index) => (
+                                      <Badge key={index} variant="secondary" className="text-xs">
+                                        {specialty}
+                                      </Badge>
+                                    ))}
+                                  </div>
+                                  {trainer.price && (
+                                    <div className="text-sm text-blue-600 font-medium">
+                                      1회 {trainer.price.toLocaleString()}원
+                                    </div>
+                                  )}
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="w-full mt-2"
+                                    onClick={() => handleTrainerProfileClick(trainer)}
+                                  >
+                                    프로필 보기
+                                  </Button>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  </ScrollArea>
+
+                  {/* 하단 액션 버튼 */}
+                  <div className="p-6 border-t border-gray-200 bg-white">
+                    <div className="flex gap-3">
+                      {(selectedLocation.type === 'training-center' || selectedLocation.type === 'training' || selectedLocation.type === 'hospital' || selectedLocation.type === 'veterinary') && (
                         <Button
                           className="flex-1"
                           onClick={() => handleReservationClick(selectedLocation)}
                         >
                           예약하기
                         </Button>
-                        <Button
-                          variant="outline"
-                          className="flex-1"
-                          onClick={() => {
-                            const url = `https://map.kakao.com/link/to/${selectedLocation.name},${selectedLocation.lat},${selectedLocation.lng}`;
-                            window.open(url, '_blank');
-                          }}
-                        >
-                          길찾기
-                        </Button>
-                      </div>
+                      )}
+                      <Button
+                        variant="outline"
+                        className="flex-1"
+                        onClick={() => {
+                          const url = `https://map.naver.com/v5/directions/-/-/${selectedLocation.lat},${selectedLocation.lng}`;
+                          window.open(url, '_blank');
+                        }}
+                      >
+                        길찾기
+                      </Button>
                     </div>
                   </div>
+                </div>
                 </div>
               ) : (
                 <div className="h-full flex items-center justify-center">
