@@ -70,7 +70,7 @@ async function startServer() {
   try {
     // Register API routes
     const server = await registerRoutes(app);
-    
+
     // Setup Vite for development or serve static files for production
     if (process.env.NODE_ENV === "development") {
       await setupVite(app, server);

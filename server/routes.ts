@@ -229,111 +229,162 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // 반려동물 관리 API
+  // 반려동물 관리 API - 완성된 버전
   app.get("/api/pets", async (req, res) => {
     try {
-      const pets = [
-        {
-          id: 1,
-          name: "토리",
-          species: "dog",
-          breed: "포메라니안",
-          age: 3,
-          gender: "female",
-          weight: 3.2,
-          color: "흰색",
-          personality: "활발하고 친근한 성격",
-          medicalHistory: "견과류 알레르기",
-          specialNotes: "큰 소리에 예민함",
-          imageUrl: "https://images.unsplash.com/photo-1600077106724-946750eeaf3c?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=300&q=80",
-          isActive: true,
-          createdAt: "2025-01-01T00:00:00.000Z",
-          updatedAt: "2025-06-03T00:00:00.000Z"
-        },
-        {
-          id: 2,
-          name: "몽이",
-          species: "dog",
-          breed: "비숑 프리제",
-          age: 1.5,
-          gender: "male",
-          weight: 4.5,
-          color: "흰색",
-          personality: "호기심이 많고 장난스러운 성격",
-          medicalHistory: "분리불안 초기 증상",
-          specialNotes: "새로운 환경에 잘 적응함",
-          imageUrl: "https://images.unsplash.com/photo-1537151608828-ea2b11777ee8?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=300&q=80",
-          isActive: true,
-          createdAt: "2025-02-15T00:00:00.000Z",
-          updatedAt: "2025-06-03T00:00:00.000Z"
-        }
-      ];
+      const userId = req.session?.user?.id;
+      if (!userId) {
+        return res.status(401).json({ message: 'Authentication required' });
+      }
 
+      const pets = await storage.getPetsByUserId(userId);
       res.json(pets);
     } catch (error) {
-      console.error('반려동물 목록 조회 오류:', error);
-      res.status(500).json({ error: "반려동물 목록을 불러올 수 없습니다" });
+      console.error('Error fetching pets:', error);
+      res.status(500).json({ message: 'Internal server error' });
     }
   });
 
-  // 반려동물 생성
   app.post("/api/pets", async (req, res) => {
     try {
-      const petData = req.body;
+      const userId = req.session?.user?.id;
+      if (!userId) {
+        return res.status(401).json({ message: 'Authentication required' });
+      }
 
-      console.log('반려동물 등록 요청:', petData);
-
-      const newPet = {
-        id: Date.now(),
-        ...petData,
-        isActive: true,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      };
-
-      res.json({ 
-        success: true, 
-        message: "반려동물이 성공적으로 등록되었습니다.",
-        pet: newPet
-      });
+      const petData = { ...req.body, userId };
+      const newPet = await storage.createPet(petData);
+      res.status(201).json(newPet);
     } catch (error) {
-      console.error('반려동물 등록 오류:', error);
-      res.status(500).json({ error: "반려동물 등록 중 오류가 발생했습니다" });
+      console.error('Error creating pet:', error);
+      res.status(500).json({ message: 'Internal server error' });
     }
   });
 
-  // 반려동물 수정
+  app.get("/api/pets/:id", async (req, res) => {
+    try {
+      const petId = parseInt(req.params.id);
+      const pet = await storage.getPet(petId);
+
+      if (!pet) {
+        return res.status(404).json({ message: 'Pet not found' });
+      }
+
+      res.json(pet);
+    } catch (error) {
+      console.error('Error fetching pet:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  });
+
   app.put("/api/pets/:id", async (req, res) => {
     try {
-      const petId = req.params.id;
-      const updateData = req.body;
+      const petId = parseInt(req.params.id);
+      const updatedPet = await storage.updatePet(petId, req.body);
 
-      console.log(`반려동물 ${petId} 수정 요청:`, updateData);
+      if (!updatedPet) {
+        return res.status(404).json({ message: 'Pet not found' });
+      }
 
-      res.json({ 
-        success: true, 
-        message: "반려동물 정보가 성공적으로 수정되었습니다." 
-      });
+      res.json(updatedPet);
     } catch (error) {
-      console.error('반려동물 수정 오류:', error);
-      res.status(500).json({ error: "반려동물 정보 수정 중 오류가 발생했습니다" });
+      console.error('Error updating pet:', error);
+      res.status(500).json({ message: 'Internal server error' });
     }
   });
 
-  // 반려동물 삭제
   app.delete("/api/pets/:id", async (req, res) => {
     try {
-      const petId = req.params.id;
+      const petId = parseInt(req.params.id);
+      const deleted = await storage.deletePet(petId);
 
-      console.log(`반려동물 ${petId} 삭제 요청`);
+      if (!deleted) {
+        return res.status(404).json({ message: 'Pet not found' });
+      }
 
-      res.json({ 
-        success: true, 
-        message: "반려동물이 성공적으로 삭제되었습니다." 
-      });
+      res.json({ message: 'Pet deleted successfully' });
     } catch (error) {
-      console.error('반려동물 삭제 오류:', error);
-      res.status(500).json({ error: "반려동물 삭제 중 오류가 발생했습니다" });
+      console.error('Error deleting pet:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  });
+
+  // 건강 관리 API
+  app.get("/api/pets/:id/health", async (req, res) => {
+    try {
+      const petId = parseInt(req.params.id);
+      const healthRecords = await storage.getPetHealthRecords(petId);
+      res.json(healthRecords);
+    } catch (error) {
+      console.error('Error fetching health records:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  });
+
+  app.post("/api/pets/:id/health-records", async (req, res) => {
+    try {
+      const petId = parseInt(req.params.id);
+      const healthRecord = await storage.createHealthRecord(petId, req.body);
+      res.status(201).json(healthRecord);
+    } catch (error) {
+      console.error('Error creating health record:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  });
+
+  app.get("/api/pets/:id/vaccinations", async (req, res) => {
+    try {
+      const petId = parseInt(req.params.id);
+      const vaccinations = await storage.getPetVaccinations(petId);
+      res.json(vaccinations);
+    } catch (error) {
+      console.error('Error fetching vaccinations:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  });
+
+  app.get("/api/pets/:id/medications", async (req, res) => {
+    try {
+      const petId = parseInt(req.params.id);
+      const medications = await storage.getPetMedications(petId);
+      res.json(medications);
+    } catch (error) {
+      console.error('Error fetching medications:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  });
+
+  // 훈련 관리 API
+  app.get("/api/pets/:id/training-sessions", async (req, res) => {
+    try {
+      const petId = parseInt(req.params.id);
+      const sessions = await storage.getPetTrainingSessions(petId);
+      res.json(sessions);
+    } catch (error) {
+      console.error('Error fetching training sessions:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  });
+
+  app.get("/api/pets/:id/progress", async (req, res) => {
+    try {
+      const petId = parseInt(req.params.id);
+      const progress = await storage.getPetProgress(petId);
+      res.json(progress);
+    } catch (error) {
+      console.error('Error fetching pet progress:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  });
+
+  app.get("/api/pets/:id/achievements", async (req, res) => {
+    try {
+      const petId = parseInt(req.params.id);
+      const achievements = await storage.getPetAchievements(petId);
+      res.json(achievements);
+    } catch (error) {
+      console.error('Error fetching achievements:', error);
+      res.status(500).json({ message: 'Internal server error' });
     }
   });
 
@@ -1236,70 +1287,303 @@ app.get('/api/search', async (req, res) => {
 
   // 알림 관련 라우트 (// 임시 비활성화)
   // registerNotificationRoutes(app);
-  // Community API routes
+
+  // 커뮤니티 API - 완성된 버전
   app.get("/api/community/posts", async (req, res) => {
     try {
-      console.log('커뮤니티 게시글 조회 요청');
-
-      const mockPosts = [
-        {
-          id: 1,
-          user: {
-            image: "https://images.unsplash.com/photo-1580489944761-15a19d654956?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100",
-            name: "최견주",
-            time: "3시간 전"
-          },
-          title: "산책 중 다른 강아지 만났을 때 대처법",
-          content: "오늘 산책 중 크고 활발한 강아지를 만났는데, 우리집 강아지가 너무 긴장하더라구요.",
-          likes: 28,
-          comments: 12,
-          tag: { text: "산책팁", variant: "blue" }
-        }
-      ];
-
-      res.setHeader('Content-Type', 'application/json');
-      res.json(mockPosts);
-    } catch (error: any) {
-      console.error('커뮤니티 게시글 조회 오류:', error);
-      res.status(500).json({ message: "커뮤니티 게시글 조회 실패: " + error.message });
+      const { page = 1, limit = 20, category, search } = req.query;
+      const posts = await storage.getCommunityPosts({
+        page: parseInt(page as string),
+        limit: parseInt(limit as string),
+        category: category as string,
+        search: search as string
+      });
+      res.json(posts);
+    } catch (error) {
+      console.error('Error fetching community posts:', error);
+      res.status(500).json({ message: 'Internal server error' });
     }
   });
 
   app.post("/api/community/posts", async (req, res) => {
     try {
-      const { title, content, category, tags } = req.body;
-      console.log('서버 - 새 게시글 작성 요청:', { title, content, category, tags });
-
-      if (!title || !content) {
-        return res.status(400).json({ message: "제목과 내용은 필수입니다." });
+      const userId = req.session?.user?.id;
+      if (!userId) {
+        return res.status(401).json({ message: 'Authentication required' });
       }
 
-      const newPost = {
-        id: Date.now(),
-        user: {
-          image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100",
-          name: "반려인",
-          time: "방금 전"
-        },
-        title,
-        content,
-        likes: 0,
-        comments: 0,
-        tag: {
-          text: category || '일반',
-          variant: 'blue'
-        },
-        category: category || '일반',
-        tags: Array.isArray(tags) ? tags : [],
-        createdAt: new Date().toISOString()
-      };
-
-      console.log('서버 - 새 게시글 생성 완료:', newPost);
-      res.setHeader('Content-Type', 'application/json');
+      const postData = { ...req.body, authorId: userId };
+      const newPost = await storage.createCommunityPost(postData);
       res.status(201).json(newPost);
-    } catch (error: any) {
-      console.error('서버 - 게시글 작성 오류:', error);
-      res.status(500).json({ message: "게시글 작성 실패: " + error.message });
+    } catch (error) {
+      console.error('Error creating community post:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  });
+
+  app.get("/api/community/posts/:id", async (req, res) => {
+    try {
+      const postId = parseInt(req.params.id);
+      const post = await storage.getCommunityPost(postId);
+
+      if (!post) {
+        return res.status(404).json({ message: 'Post not found' });
+      }
+
+      // 조회수 증가
+      await storage.incrementPostViews(postId);
+
+      res.json(post);
+    } catch (error) {
+      console.error('Error fetching community post:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  });
+
+  app.put("/api/community/posts/:id", async (req, res) => {
+    try {
+      const postId = parseInt(req.params.id);
+      const userId = req.session?.user?.id;
+
+      if (!userId) {
+        return res.status(401).json({ message: 'Authentication required' });
+      }
+
+      const post = await storage.getCommunityPost(postId);
+      if (!post || post.authorId !== userId) {
+        return res.status(403).json({ message: 'Not authorized to edit this post' });
+      }
+
+      const updatedPost = await storage.updateCommunityPost(postId, req.body);
+      res.json(updatedPost);
+    } catch (error) {
+      console.error('Error updating community post:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  });
+
+  app.delete("/api/community/posts/:id", async (req, res) => {
+    try {
+      const postId = parseInt(req.params.id);
+      const userId = req.session?.user?.id;
+
+      if (!userId) {
+        return res.status(401).json({ message: 'Authentication required' });
+      }
+
+      const post = await storage.getCommunityPost(postId);
+      if (!post || (post.authorId !== userId && req.session?.user?.role !== 'admin')) {
+        return res.status(403).json({ message: 'Not authorized to delete this post' });
+      }
+
+      await storage.deleteCommunityPost(postId);
+      res.json({ message: 'Post deleted successfully' });
+    } catch (error) {
+      console.error('Error deleting community post:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  });
+
+  // 사용자 상호작용 API
+  app.post("/api/community/posts/:id/like", async (req, res) => {
+    try {
+      const postId = parseInt(req.params.id);
+      const userId = req.session?.user?.id;
+
+      if (!userId) {
+        return res.status(401).json({ message: 'Authentication required' });
+      }
+
+      const result = await storage.togglePostLike(postId, userId);
+      res.json(result);
+    } catch (error) {
+      console.error('Error toggling post like:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  });
+
+  app.get("/api/community/posts/:id/comments", async (req, res) => {
+    try {
+      const postId = parseInt(req.params.id);
+      const comments = await storage.getPostComments(postId);
+      res.json(comments);
+    } catch (error) {
+      console.error('Error fetching comments:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  });
+
+  app.post("/api/community/posts/:id/comments", async (req, res) => {
+    try {
+      const postId = parseInt(req.params.id);
+      const userId = req.session?.user?.id;
+
+      if (!userId) {
+        return res.status(401).json({ message: 'Authentication required' });
+      }
+
+      const commentData = { ...req.body, postId, authorId: userId };
+      const newComment = await storage.createComment(commentData);
+      res.status(201).json(newComment);
+    } catch (error) {
+      console.error('Error creating comment:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  });
+
+  app.post("/api/community/posts/:id/share", async (req, res) => {
+    try {
+      const postId = parseInt(req.params.id);
+      const userId = req.session?.user?.id;
+
+      if (!userId) {
+        return res.status(401).json({ message: 'Authentication required' });
+      }
+
+      const shareResult = await storage.sharePost(postId, userId);
+      res.json(shareResult);
+    } catch (error) {
+      console.error('Error sharing post:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  });
+
+  app.post("/api/community/posts/:id/bookmark", async (req, res) => {
+    try {
+      const postId = parseInt(req.params.id);
+      const userId = req.session?.user?.id;
+
+      if (!userId) {
+        return res.status(401).json({ message: 'Authentication required' });
+      }
+
+      const bookmarkResult = await storage.toggleBookmark(postId, userId);
+      res.json(bookmarkResult);
+    } catch (error) {
+      console.error('Error toggling bookmark:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  });
+
+  // 소셜 기능 API
+  app.post("/api/community/users/:id/follow", async (req, res) => {
+    try {
+      const targetUserId = parseInt(req.params.id);
+      const userId = req.session?.user?.id;
+
+      if (!userId) {
+        return res.status(401).json({ message: 'Authentication required' });
+      }
+
+      if (userId === targetUserId) {
+        return res.status(400).json({ message: 'Cannot follow yourself' });
+      }
+
+      const followResult = await storage.toggleFollow(userId, targetUserId);
+      res.json(followResult);
+    } catch (error) {
+      console.error('Error toggling follow:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  });
+
+  app.get("/api/community/users/:id/followers", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      const followers = await storage.getUserFollowers(userId);
+      res.json(followers);
+    } catch (error) {
+      console.error('Error fetching followers:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  });
+
+  app.get("/api/community/users/:id/following", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      const following = await storage.getUserFollowing(userId);
+      res.json(following);
+    } catch (error) {
+      console.error('Error fetching following:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  });
+
+  app.get("/api/community/feed", async (req, res) => {
+    try {
+      const userId = req.session?.user?.id;
+
+      if (!userId) {
+        return res.status(401).json({ message: 'Authentication required' });
+      }
+
+      const feed = await storage.getPersonalizedFeed(userId);
+      res.json(feed);
+    } catch (error) {
+      console.error('Error fetching personalized feed:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  });
+
+  app.get("/api/community/trending", async (req, res) => {
+    try {
+      const trendingPosts = await storage.getTrendingPosts();
+      res.json(trendingPosts);
+    } catch (error) {
+      console.error('Error fetching trending posts:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  });
+
+  // 관리 기능 API
+  app.post("/api/community/posts/:id/report", async (req, res) => {
+    try {
+      const postId = parseInt(req.params.id);
+      const userId = req.session?.user?.id;
+
+      if (!userId) {
+        return res.status(401).json({ message: 'Authentication required' });
+      }
+
+      const reportData = { ...req.body, postId, reporterId: userId };
+      const report = await storage.createReport(reportData);
+      res.status(201).json(report);
+    } catch (error) {
+      console.error('Error creating report:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  });
+
+  app.post("/api/community/posts/:id/moderate", async (req, res) => {
+    try {
+      const postId = parseInt(req.params.id);
+      const userId = req.session?.user?.id;
+
+      if (!userId || req.session?.user?.role !== 'admin') {
+        return res.status(403).json({ message: 'Admin access required' });
+      }
+
+      const moderationResult = await storage.moderatePost(postId, req.body);
+      res.json(moderationResult);
+    } catch (error) {
+      console.error('Error moderating post:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  });
+
+  app.get("/api/community/reports", async (req, res) => {
+    try {
+      const userId = req.session?.user?.id;
+
+      if (!userId || req.session?.user?.role !== 'admin') {
+        return res.status(403).json({ message: 'Admin access required' });
+      }
+
+      const reports = await storage.getReports();
+      res.json(reports);
+    } catch (error) {
+      console.error('Error fetching reports:', error);
+      res.status(500).json({ message: 'Internal server error' });
     }
   });
 

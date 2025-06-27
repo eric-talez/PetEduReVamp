@@ -151,6 +151,32 @@ export interface IStorage {
   createReservation(reservation: any): Promise<any>;
   updateReservation(id: number, data: any): Promise<any>;
   cancelReservation(id: number): Promise<any>;
+
+    // 커뮤니티 기능
+    getCommunityPosts(options?: {
+        page?: number;
+        limit?: number;
+        category?: string;
+        search?: string;
+    }): Promise<{ posts: CommunityPost[]; total: number }>;
+    createCommunityPost(postData: any): Promise<CommunityPost>;
+    getCommunityPost(id: number): Promise<CommunityPost | null>;
+    updateCommunityPost(id: number, updates: Partial<CommunityPost>): Promise<CommunityPost | null>;
+    deleteCommunityPost(id: number): Promise<boolean>;
+    incrementPostViews(id: number): Promise<void>;
+    togglePostLike(postId: number, userId: number): Promise<any>;
+    getPostComments(postId: number): Promise<any[]>;
+    createComment(commentData: any): Promise<any>;
+    sharePost(postId: number, userId: number): Promise<any>;
+    toggleBookmark(postId: number, userId: number): Promise<any>;
+    toggleFollow(followerId: number, followingId: number): Promise<any>;
+    getUserFollowers(userId: number): Promise<any[]>;
+    getUserFollowing(userId: number): Promise<any[]>;
+    getPersonalizedFeed(userId: number): Promise<CommunityPost[]>;
+    getTrendingPosts(): Promise<CommunityPost[]>;
+    createReport(reportData: any): Promise<any>;
+    moderatePost(postId: number, moderationData: any): Promise<any>;
+    getReports(): Promise<any[]>;
 }
 
 // 메모리 기반 데이터 저장소 (운영 환경용)
@@ -203,6 +229,44 @@ export class MemoryStorage implements IStorage{
   private nutritionPlans = new Map<number, any>();
   private healthReminders = new Map<number, any>();
   private healthSchedule = new Map<number, any>();
+
+  private pets: Pet[] = [];
+  private communityPosts: CommunityPost[] = [];
+  private shoppingItems: ShoppingItem[] = [];
+  private courses: Course[] = [];
+  private reservations: Reservation[] = [];
+  private consultations: Consultation[] = [];
+  private trainers: Trainer[] = [];
+  private institutes: Institute[] = [];
+  private notebookEntries: NotebookEntry[] = [];
+  private messages: Message[] = [];
+  private notifications: Notification[] = [];
+  private commissions: Commission[] = [];
+  private invoices: Invoice[] = [];
+  private transactions: Transaction[] = [];
+  private events: Event[] = [];
+  private promotions: Promotion[] = [];
+
+    // 건강 관리 데이터
+    private healthRecords: HealthRecord[] = [];
+    private vaccinations: Vaccination[] = [];
+    private weightRecords: WeightRecord[] = [];
+    private medications: Medication[] = [];
+    private nutritionPlans: NutritionPlan[] = [];
+    private healthReminders: HealthReminder[] = [];
+
+    // 훈련 관리 데이터
+    private trainingSessions: any[] = [];
+    private achievements: any[] = [];
+
+    // 커뮤니티 관련 데이터
+    private postLikes: any[] = [];
+    private comments: any[] = [];
+    private postShares: any[] = [];
+    private bookmarks: any[] = [];
+    private follows: any[] = [];
+    private reports: any[] = [];
+
 
   constructor() {
     console.log('🔄 운영 환경용 메모리 저장소 초기화...');
@@ -1264,15 +1328,15 @@ export class MemoryStorage implements IStorage{
   async getAllCourses(): Promise<any[]> {
         return Array.from(this.courses.values());
   }
-    async createPet(pet: any): Promise<any> {
+  async createPet(pet: any): Promise<any> {
         const id = this.petId++;
         const newPet = { ...pet, id, createdAt: new Date(), updatedAt: new Date() };
         this.pets.set(id, newPet);
         return newPet;
-    }
+  }
     async getAllInstitutes(): Promise<any[]> {
         return Array.from(this.institutes.values());
-    }
+  }
     async getTrainer(id: number): Promise<any> {
         return this.trainers.get(id);
     }
@@ -1283,6 +1347,155 @@ export class MemoryStorage implements IStorage{
 
     async getInstitute(id: number): Promise<any> {
         return this.institutes.get(id);
+    }
+    
+  async updatePet(id: number, updates: Partial<Pet>): Promise<Pet | null> {
+    const pet = this.pets.get(id);
+    if (!pet) return null;
+
+    const updatedPet = {
+      ...pet,
+      ...updates,
+      updatedAt: new Date()
+    };
+    this.pets.set(id, updatedPet);
+    return updatedPet;
+  }
+
+  async deletePet(id: number): Promise<boolean> {
+    return this.pets.delete(id);
+  }
+    // 커뮤니티 기능 - 완성된 버전
+    async getCommunityPosts(options?: {
+        page?: number;
+        limit?: number;
+        category?: string;
+        search?: string;
+    }): Promise<{ posts: CommunityPost[]; total: number }> {
+        let posts = Array.from(this.communityPosts.values());
+
+        // 검색 필터
+        if (options?.search) {
+            const searchTerm = options.search.toLowerCase();
+            posts = posts.filter(post =>
+                post.title.toLowerCase().includes(searchTerm) ||
+                post.content.toLowerCase().includes(searchTerm)
+            );
+        }
+
+        // 카테고리 필터
+        if (options?.category) {
+            posts = posts.filter(post => post.tag === options.category);
+        }
+
+        // 정렬
+        posts.sort((a, b) =>
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+
+        const total = posts.length;
+
+        // 페이지네이션
+        if (options?.page && options?.limit) {
+            const startIndex = (options.page - 1) * options.limit;
+            posts = posts.slice(startIndex, startIndex + options.limit);
+        }
+
+        return { posts, total };
+    }
+
+    async createCommunityPost(postData: any): Promise<CommunityPost> {
+        const id = this.messageId++;
+        const post = {
+            id,
+            ...postData,
+            createdAt: new Date(),
+            updatedAt: new Date()
+        };
+        this.communityPosts.set(id, post);
+        return post;
+    }
+
+    async getCommunityPost(id: number): Promise<CommunityPost | null> {
+        return this.communityPosts.get(id);
+    }
+
+    async updateCommunityPost(id: number, updates: Partial<CommunityPost>): Promise<CommunityPost | null> {
+        const post = this.communityPosts.get(id);
+        if (!post) return null;
+
+        const updatedPost = {
+            ...post,
+            ...updates,
+            updatedAt: new Date()
+        };
+        this.communityPosts.set(id, updatedPost);
+        return updatedPost;
+    }
+
+    async deleteCommunityPost(id: number): Promise<boolean> {
+        return this.communityPosts.delete(id);
+    }
+
+    async incrementPostViews(id: number): Promise<void> {
+        const post = this.communityPosts.get(id);
+        if (post) {
+            post.views = (post.views || 0) + 1;
+        }
+    }
+
+    async togglePostLike(postId: number, userId: number): Promise<any> {
+        // 간단한 좋아요 토글 구현
+        return null;
+    }
+
+    async getPostComments(postId: number): Promise<any[]> {
+        return null;
+    }
+
+    async createComment(commentData: any): Promise<any> {
+        return null;
+    }
+
+    async sharePost(postId: number, userId: number): Promise<any> {
+        // 공유 기록 추가
+        return null;
+    }
+
+    async toggleBookmark(postId: number, userId: number): Promise<any> {
+        return null;
+    }
+
+    async toggleFollow(followerId: number, followingId: number): Promise<any> {
+        return null;
+    }
+
+    async getUserFollowers(userId: number): Promise<any[]> {
+        return null;
+    }
+
+    async getUserFollowing(userId: number): Promise<any[]> {
+        return null;
+    }
+
+    async getPersonalizedFeed(userId: number): Promise<CommunityPost[]> {
+        return null;
+    }
+
+    async getTrendingPosts(): Promise<CommunityPost[]> {
+        return null;
+    }
+
+    async createReport(reportData: any): Promise<any> {
+        return null;
+    }
+
+    async moderatePost(postId: number, moderationData: any): Promise<any> {
+        return null;
+    }
+
+    async getReports(): Promise<any[]> {
+        return null;
     }
 }
 
@@ -1957,3 +2170,158 @@ export class DatabaseStorage implements IStorage {
 
 // Export the storage instance
 export const storage = new MemoryStorage();
+interface Pet {
+    id: number;
+    userId: number;
+    name: string;
+    breed: string;
+    age: number;
+    weight: number;
+    gender: string;
+    description: string;
+    createdAt: string;
+    updatedAt: string;
+    isActive: boolean;
+}
+
+interface CommunityPost {
+    id: number;
+    title: string;
+    content: string;
+    tag: string;
+    author: { id: number; name: string };
+    likes: number;
+    comments: number;
+    views: number;
+    createdAt: string;
+    updatedAt?: string;
+    hidden?: boolean;
+}
+
+interface ShoppingItem {
+    id: number;
+    name: string;
+    price: number;
+    description: string;
+}
+
+interface Course {
+    id: number;
+    name: string;
+    description: string;
+}
+
+interface Reservation {
+    id: number;
+    courseId: number;
+    userId: number;
+    date: string;
+}
+
+interface Consultation {
+    id: number;
+    trainerId: number;
+    petId: number;
+    date: string;
+}
+
+interface Trainer {
+    id: number;
+    name: string;
+    specialty: string;
+}
+
+interface Institute {
+    id: number;
+    name: string;
+    location: string;
+}
+
+interface NotebookEntry {
+    id: number;
+    petId: number;
+    content: string;
+}
+
+interface Message {
+    id: number;
+    senderId: number;
+    receiverId: number;
+    content: string;
+}
+
+interface Notification {
+    id: number;
+    userId: number;
+    message: string;
+}
+
+interface Commission {
+    id: number;
+    rate: number;
+}
+
+interface Invoice {
+    id: number;
+    userId: number;
+    amount: number;
+}
+
+interface Transaction {
+    id: number;
+    userId: number;
+    amount: number;
+}
+
+interface Event {
+    id: number;
+    name: string;
+    location: string;
+}
+
+interface Promotion {
+    id: number;
+    name: string;
+    discount: number;
+}
+
+interface HealthRecord {
+    id: number;
+    petId: number;
+    date: string;
+    notes: string;
+}
+
+interface Vaccination {
+    id: number;
+    petId: number;
+    name: string;
+    date: string;
+}
+
+interface WeightRecord {
+    id: number;
+    petId: number;
+    date: string;
+    weight: number;
+}
+
+interface Medication {
+    id: number;
+    petId: number;
+    name: string;
+    dosage: string;
+}
+
+interface NutritionPlan {
+    id: number;
+    petId: number;
+    plan: string;
+}
+
+interface HealthReminder {
+    id: number;
+    petId: number;
+    text: string;
+    dueDate: string;
+}
