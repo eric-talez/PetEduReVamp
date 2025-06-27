@@ -619,8 +619,21 @@ export default function LocationsPage() {
           <div className="p-4 border-b border-gray-100">
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
-                <span className="text-sm font-medium text-gray-700">검색결과</span>
-                <Badge variant="secondary">{filteredLocations.length}</Badge>
+                <span className="text-sm font-medium text-gray-700">
+                  {showCertifiedOnly ? 'TALEZ 인증 업체' : '검색결과'}
+                </span>
+                <Badge 
+                  variant="secondary" 
+                  className={showCertifiedOnly ? "bg-[#2BAA61] text-white" : ""}
+                >
+                  {filteredLocations.length}
+                </Badge>
+                {showCertifiedOnly && (
+                  <div className="flex items-center gap-1 text-xs text-[#2BAA61]">
+                    <Award className="w-3 h-3" />
+                    <span>인증된 업체만 표시</span>
+                  </div>
+                )}
               </div>
               <div className="flex items-center gap-2">
                 <Select value={sortBy} onValueChange={(value) => setSortBy(value as any)}>
