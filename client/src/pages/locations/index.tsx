@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { WorkingMap } from '@/components/map/WorkingMap';
+import { ReliableMap } from '@/components/map/ReliableMap';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -313,7 +313,7 @@ export default function LocationsPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Map */}
         <div className="lg:col-span-1">
-          <WorkingMap
+          <ReliableMap
             locations={filteredLocations}
             height="600px"
             onLocationClick={handleLocationSelect}
