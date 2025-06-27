@@ -282,7 +282,7 @@ function AppLayout({ children }: { children: ReactNode }) {
                   <Route path="/admin/institutes" component={AdminInstitutes} />
                   <Route path="/admin/locations" component={LocationManagement} />
                   <Route path="/admin/commission" component={AdminCommissionPage} />
-                  <Route path="/admin/commission-settings" component={AdminCommissionSettings} />
+                  <Route path="/admin/commission-settings" component={AdminCommissionPage} />
                   <Route path="/admin/shop" component={AdminShop} />
                   <Route path="/admin/locations" component={LocationManagement} />
                   <Route path="/admin/settings" component={AdminSettings} />
@@ -1728,8 +1728,7 @@ function AuthenticatedRoutes() {
             return null;
           }}
         </Route>
-        <The code has been modified to include location management features for administrators, including route additions and component imports.
-```Route path="/admin/alerts">
+        <Route path="/admin/alerts">
           {() => {
             const AdminNotifications = lazy(() => import('./pages/admin/AdminNotifications'));
             return (
