@@ -331,8 +331,17 @@ export default function LocationsPage() {
   };
 
   const handleReservationClick = (location: LocationData) => {
-    setReservationLocation(location);
-    setReservationDialogOpen(true);
+    // 훈련소이고 훈련사가 여러 명인 경우 훈련사 선택 다이얼로그 표시
+    if ((location.type === 'training-center' || location.type === 'training') && 
+        location.trainers && location.trainers.length > 1) {
+      setSelectedBusiness(location);
+      setTrainerDialogOpen(true);
+    } else {
+      // 훈련사가 1명이거나 없는 경우, 또는 다른 업종의 경우 직접 예약
+      setSelectedTrainer(location.trainers && location.trainers.length === 1 ? location.trainers[0] : null);
+      setReservationLocation(location);
+      setReservationDialogOpen(true);
+    }
 
     if (isSmartSearchEnabled) {
       toast({
