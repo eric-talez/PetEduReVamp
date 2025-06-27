@@ -500,23 +500,150 @@ export default function LocationsPage() {
         </CardContent>
       </Card>
 
-      {/* Enhanced Map Component */}
-      <EnhancedLocationMap
-        locations={filteredLocations}
-        height="600px"
-        onLocationSelect={handleLocationSelect}
-        onReservationClick={handleReservationClick}
-        enableRealTimeTracking={isSmartSearchEnabled}
-        showDistanceFilter={true}
-        enableClustering={filteredLocations.length > 10}
-      />
+      {/* Main Content: Map and List Side by Side */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        {/* Enhanced Map Component */}
+        <div className="lg:col-span-1">
+          <EnhancedLocationMap
+            locations={filteredLocations}
+            height="600px"
+            onLocationSelect={handleLocationSelect}
+            onReservationClick={handleReservationClick}
+            enableRealTimeTracking={isSmartSearchEnabled}
+            showDistanceFilter={true}
+            enableClustering={filteredLocations.length > 10}
+          />
+        </div>
+
+        {/* Location List */}
+        <div className="lg:col-span-1">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <MapPin className="w-5 h-5" />
+                위치 목록 ({filteredLocations.length}개)
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3 max-h-[550px] overflow-y-auto">
+                {filteredLocations.map((location) => (
+                  <div
+                    key={location.id}
+                    className={`p-4 border rounded-lg cursor-pointer transition-colors hover:bg-gray-50 dark:hover:bg-gray-800 ${
+                      selectedLocation?.id === location.id ? 'ring-2 ring-primary bg-blue-50' : ''
+                    }`}
+                    onClick={() => handleLocationSelect(location)}
+                  >
+                    <div className="flex justify-between items-start">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-2">
+                          <h4 className="font-medium">{location.name}</h4>
+                          <Badge className={getLocationTypeBadgeColor(location.type)}>
+                            {getLocationTypeLabel(location.type)}
+                          </Badge>
+                          {location.certificationStatus === 'verified' && (
+                            <Badge className="bg-green-100 text-green-800 text-xs">
+                              인증
+                            </Badge>
+                          )}
+                        </div>
+                        
+                        <div className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
+                          <div className="flex items-center gap-1">
+                            <MapPin className="w-3 h-3" />
+                            <span>{location.address}</span>
+                          </div>
+                          
+                          {location.phone && (
+                            <div className="flex items-center gap-1">
+                              <Phone className="w-3 h-3" />
+                              <span>{location.phone}</span>
+                            </div>
+                          )}
+                          
+                          {location.hours && (
+                            <div className="flex items-center gap-1">
+                              <Clock className="w-3 h-3" />
+                              <span>{location.hours}</span>
+                            </div>
+                          )}
+                          
+                          {location.rating && (
+                            <div className="flex items-center gap-1">
+                              <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+                              <span>{location.rating}/5</span>
+                              {location.reviewCount && (
+                                <span className="text-gray-500">({location.reviewCount})</span>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      
+                      <div className="text-right">
+                        {location.distance && (
+                          <div className="text-sm font-medium text-primary">
+                            {location.distance < 1 
+                              ? `${Math.round(location.distance * 1000)}m`
+                              : `${location.distance.toFixed(1)}km`
+                            }
+                          </div>
+                        )}
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          className="mt-2"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleReservationClick(location);
+                          }}
+                        >
+                          예약
+                        </Button>
+                      </div>
+                    </div>
+                    
+                    {location.description && (
+                      <p className="text-xs text-gray-500 mt-2 line-clamp-2">
+                        {location.description}
+                      </p>
+                    )}
+
+                    {/* 서비스 목록 - 선택된 경우에만 표시 */}
+                    {selectedLocation?.id === location.id && location.services && location.services.length > 0 && (
+                      <div className="mt-3 pt-3 border-t">
+                        <h5 className="text-sm font-medium text-gray-800 mb-2">제공 서비스</h5>
+                        <div className="flex flex-wrap gap-1">
+                          {location.services.map((service, index) => (
+                            <Badge key={index} variant="outline" className="text-xs">
+                              {service}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))}
+                
+                {filteredLocations.length === 0 && (
+                  <div className="text-center py-8">
+                    <MapPin className="w-12 h-12 mx-auto text-gray-400 mb-4" />
+                    <p className="text-gray-500">검색 결과가 없습니다.</p>
+                    <p className="text-sm text-gray-400 mt-1">
+                      다른 검색어나 필터를 시도해보세요.
+                    </p>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
 
       {/* Location Details Panel */}
-      <div className="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="lg:col-span-1"></div>
-
+      <div className="grid grid-cols-1 gap-6">
         {/* Location Details */}
-        <div className="lg:col-span-1">
+        <div>
           {selectedLocation ? (
             <Card>
               <CardHeader>
