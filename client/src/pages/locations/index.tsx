@@ -488,6 +488,22 @@ export default function LocationsPage() {
       
       setLocations(updatedLocations);
       
+      // Update selectedLocation if it matches the business being reviewed
+      if (selectedLocation?.id === reviewData.businessId) {
+        const updatedSelected = updatedLocations.find(loc => loc.id === reviewData.businessId);
+        if (updatedSelected) {
+          setSelectedLocation(updatedSelected);
+        }
+      }
+      
+      // Update filtered locations to reflect the changes in the main list
+      setFilteredLocations(current => 
+        current.map(location => {
+          const updatedLoc = updatedLocations.find(ul => ul.id === location.id);
+          return updatedLoc || location;
+        })
+      );
+      
       toast({
         title: "리뷰가 등록되었습니다",
         description: "소중한 후기 감사합니다!"
