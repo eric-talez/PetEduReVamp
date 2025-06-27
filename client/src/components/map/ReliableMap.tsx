@@ -104,15 +104,20 @@ export function ReliableMap({ locations, height = "400px", onLocationClick }: Re
       {/* Map Search Interface */}
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <CardTitle className="flex items-center gap-2">
-              <MapPin className="w-5 h-5" />
+              <MapPin className="w-5 h-5 text-primary" />
               지도에서 업체 찾기
             </CardTitle>
             <Button
               variant={showMapView ? "default" : "outline"}
               size="sm"
               onClick={() => setShowMapView(!showMapView)}
+              className={`w-full sm:w-auto font-medium ${
+                showMapView 
+                  ? 'bg-blue-600 hover:bg-blue-700 text-white' 
+                  : 'bg-white hover:bg-blue-50 text-blue-600 border-blue-600'
+              }`}
             >
               <Navigation className="w-4 h-4 mr-2" />
               {showMapView ? '목록 보기' : '지도 보기'}
