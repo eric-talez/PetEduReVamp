@@ -2212,18 +2212,29 @@ function UnauthenticatedRoutes() {
             );
           }}
         </Route>
+        {/* 업체 등록 관리 */}
+        <Route path="/admin/business-registration">
+          {() => {
+            const BusinessRegistration = lazy(() => import('./pages/admin/BusinessRegistration'));
+            return (
+              <Suspense fallback={<div className="p-8 text-center">업체 등록 관리 로딩 중...</div>}>
+                <ProtectedAdminRoute component={BusinessRegistration} />
+              </Suspense>
+            );
+          }}
+        </Route>
+
         <Route path="/" component={Home} />
+        
+        {/* 404 페이지 */}
         <Route>
           {() => {
-            console.log("404 - 페이지를 찾을 수 없습니다");
-            // 필요한 경우에만 특정 경로로 리디렉션하고, 
-            // 커뮤니티 관련 경로인 경우 리디렉션하지 않음
-            const path = window.location.pathname;
-            if (path.startsWith('/community')) {
-              return <div>페이지를 찾을 수 없습니다.</div>;
-            }
-            window.location.href = "/";
-            return null;
+            const NotFound = lazy(() => import('./pages/NotFound'));
+            return (
+              <Suspense fallback={<div className="p-8 text-center">페이지 로딩 중...</div>}>
+                <NotFound />
+              </Suspense>
+            );
           }}
         </Route>
       </Switch>
