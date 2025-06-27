@@ -84,8 +84,8 @@ export function TrainerConsultationModal({ isOpen, onClose, trainer, onReservati
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const availableDates = trainer?.availableSlots ? Object.keys(trainer.availableSlots) : [];
-  const availableTimes = selectedDate && trainer?.availableSlots ? trainer.availableSlots[selectedDate] || [] : [];
+  const availableDates = ['2024-06-28', '2024-06-29', '2024-06-30']; // Available dates
+  const availableTimes = trainer?.availableSlots || [];
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({

@@ -1,9 +1,9 @@
 
 import React, { useState, useEffect } from 'react';
-import { EnhancedLocationMap } from '@/components/map/EnhancedLocationMap';
+import { NaverMap } from '@/components/map/NaverMap';
 import { QuickReservationDialog } from '@/components/reservation/QuickReservationDialog';
+import { BusinessCard } from '@/components/business/BusinessCard';
 import { TrainerSelectionDialog } from '@/components/business/TrainerSelectionDialog';
-import { TrainerConsultationModal } from '@/components/TrainerConsultationModal';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -209,11 +209,10 @@ export default function LocationsPage() {
   const [trainerDialogOpen, setTrainerDialogOpen] = useState(false);
   const [selectedBusiness, setSelectedBusiness] = useState<LocationData | null>(null);
   const [selectedTrainer, setSelectedTrainer] = useState<Trainer | null>(null);
-  const [trainerProfileOpen, setTrainerProfileOpen] = useState(false);
-  const [selectedTrainerProfile, setSelectedTrainerProfile] = useState<Trainer | null>(null);
-  const [isSmartSearchEnabled, setIsSmartSearchEnabled] = useState(false);
+  const [showMapView, setShowMapView] = useState(false);
   const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
   const [sortBy, setSortBy] = useState<'distance' | 'rating' | 'name'>('distance');
+  const [isSmartSearchEnabled, setIsSmartSearchEnabled] = useState(false);
 
   const { toast } = useToast();
 
@@ -357,17 +356,7 @@ export default function LocationsPage() {
     setReservationDialogOpen(true);
   };
 
-  const handleTrainerProfileClick = (trainer: Trainer) => {
-    setSelectedTrainerProfile(trainer);
-    setTrainerProfileOpen(true);
-  };
 
-  const handleTrainerReservation = (trainer: Trainer) => {
-    setSelectedTrainer(trainer);
-    setReservationLocation(selectedBusiness);
-    setTrainerProfileOpen(false);
-    setReservationDialogOpen(true);
-  };
 
   const getUserLocation = () => {
     if (navigator.geolocation) {
@@ -631,15 +620,11 @@ export default function LocationsPage() {
         {/* 우측 지도 영역 */}
         <div className="flex-1 relative">
           {viewMode === 'map' ? (
-            <EnhancedLocationMap
+            <NaverMap
               locations={filteredLocations}
-              height="100%"
-              onLocationSelect={handleLocationSelect}
+              height="400px"
+              onLocationClick={handleLocationSelect}
               onReservationClick={handleReservationClick}
-              enableRealTimeTracking={isSmartSearchEnabled}
-              showDistanceFilter={false}
-              showLocationList={false}
-              enableClustering={filteredLocations.length > 10}
             />
           ) : (
             /* 상세 정보 패널 */
@@ -853,27 +838,7 @@ export default function LocationsPage() {
         onReservationSubmit={handleReservationSubmit}
       />
 
-      <TrainerConsultationModal
-        isOpen={trainerProfileOpen}
-        onClose={() => setTrainerProfileOpen(false)}
-        trainer={selectedTrainerProfile || {
-          id: '',
-          name: '',
-          avatar: '',
-          rating: 0,
-          reviews: 0,
-          experience: '',
-          bio: '',
-          specialty: [],
-          location: '',
-          price: 0,
-          availableSlots: []
-        }}
-        onReservationClick={(trainer) => {
-          setSelectedBusiness(selectedLocation);
-          handleTrainerReservation(trainer);
-        }}
-      />
+
     </div>
   );
 }
