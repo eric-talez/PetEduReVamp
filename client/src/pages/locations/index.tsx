@@ -129,6 +129,8 @@ export default function LocationsPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedType, setSelectedType] = useState<string>('all');
   const [selectedLocation, setSelectedLocation] = useState<LocationData | null>(null);
+  const [reservationDialogOpen, setReservationDialogOpen] = useState(false);
+  const [reservationLocation, setReservationLocation] = useState<LocationData | null>(null);
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
   const [showMapView, setShowMapView] = useState(false);
 
@@ -208,6 +210,21 @@ export default function LocationsPage() {
 
   const handleLocationSelect = (location: LocationData) => {
     setSelectedLocation(location);
+  };
+
+  const handleReservationClick = (location: LocationData) => {
+    setReservationLocation(location);
+    setReservationDialogOpen(true);
+  };
+
+  const handleReservationSubmit = async (reservationData: any) => {
+    try {
+      console.log('예약 데이터:', reservationData);
+      alert(`${reservationData.locationName}에 ${reservationData.date} ${reservationData.time} 예약이 완료되었습니다.`);
+    } catch (error) {
+      console.error('예약 실패:', error);
+      throw error;
+    }
   };
 
   const getUserLocation = () => {
@@ -336,32 +353,18 @@ export default function LocationsPage() {
         {/* Map */}
         <div className="lg:col-span-1">
           {showMapView ? (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <MapPin className="w-5 h-5" />
-                  지도 보기
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-0">
-                <div style={{ height: "600px" }}>
-                  <iframe
-                    src={`https://www.google.com/maps/embed/v1/search?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dw7BzKRAg8Y2Jw&q=pet+services+seoul+korea&center=37.5665,126.9780&zoom=11`}
-                    width="100%"
-                    height="100%"
-                    style={{ border: 0, borderRadius: '8px' }}
-                    allowFullScreen
-                    loading="lazy"
-                    referrerPolicy="no-referrer-when-downgrade"
-                  />
-                </div>
-              </CardContent>
-            </Card>
-          ) : (
-            <ReliableMap
+            <NaverMap 
               locations={filteredLocations}
               height="600px"
               onLocationClick={handleLocationSelect}
+              onReservationClick={handleReservationClick}
+            />
+          ) : (
+            <NaverMap
+              locations={filteredLocations}
+              height="600px"
+              onLocationClick={handleLocationSelect}
+              onReservationClick={handleReservationClick}
             />
           )}
         </div>

@@ -9,7 +9,7 @@ interface LocationData {
   address: string;
   lat: number;
   lng: number;
-  type: 'hospital' | 'training' | 'grooming' | 'hotel' | 'cafe' | 'park';
+  type: 'hospital' | 'training' | 'grooming' | 'hotel' | 'cafe' | 'park' | 'training-center' | 'pet-store' | 'veterinary' | 'event';
   phone?: string;
   hours?: string;
   rating?: number;
@@ -32,9 +32,13 @@ const getLocationTypeLabel = (type: LocationData['type']): string => {
     grooming: '미용실',
     hotel: '호텔',
     cafe: '펫카페',
-    park: '공원'
+    park: '공원',
+    'training-center': '훈련센터',
+    'pet-store': '펫샵',
+    'veterinary': '동물병원',
+    'event': '이벤트'
   };
-  return typeLabels[type] || type;
+  return typeLabels[type as keyof typeof typeLabels] || type;
 };
 
 // 위치 타입별 색상
@@ -45,9 +49,13 @@ const getLocationTypeColor = (type: LocationData['type']): string => {
     grooming: '#9b59b6',
     hotel: '#e67e22',
     cafe: '#f39c12',
-    park: '#27ae60'
+    park: '#27ae60',
+    'training-center': '#3498db',
+    'pet-store': '#f39c12',
+    'veterinary': '#e74c3c',
+    'event': '#9b59b6'
   };
-  return typeColors[type] || '#95a5a6';
+  return typeColors[type as keyof typeof typeColors] || '#95a5a6';
 };
 
 export function NaverMap({ locations, height = "400px", onLocationClick, onReservationClick }: NaverMapProps) {
@@ -261,7 +269,7 @@ export function NaverMap({ locations, height = "400px", onLocationClick, onReser
                           )}
                         </div>
                         
-                        {(location.type === 'hospital' || location.type === 'training') && (
+                        {(location.type === 'hospital' || location.type === 'training' || location.type === 'veterinary' || location.type === 'training-center') && (
                           <Button
                             size="sm"
                             variant="outline"
