@@ -356,6 +356,18 @@ export default function LocationsPage() {
     setReservationDialogOpen(true);
   };
 
+  const handleTrainerProfileClick = (trainer: Trainer) => {
+    setSelectedTrainer(trainer);
+    setReservationLocation(selectedLocation);
+    setReservationDialogOpen(true);
+  };
+
+  const handleTrainerReservation = (trainer: Trainer) => {
+    setSelectedTrainer(trainer);
+    setReservationLocation(selectedLocation);
+    setReservationDialogOpen(true);
+  };
+
 
 
   const getUserLocation = () => {
@@ -766,7 +778,6 @@ export default function LocationsPage() {
                                     className="text-xs h-7 px-2 flex-1"
                                     onClick={(e) => {
                                       e.stopPropagation();
-                                      setSelectedBusiness(selectedLocation);
                                       handleTrainerReservation(trainer);
                                     }}
                                   >
