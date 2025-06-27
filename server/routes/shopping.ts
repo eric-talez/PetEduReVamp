@@ -3,14 +3,39 @@ import { db } from "../db";
 import { products, shopCategories, cartItems } from "@shared/schema";
 import { eq, desc, and, gte, lte, count, like, or, inArray } from "drizzle-orm";
 
-export function registerShoppingRoutes(app: Express) {
+export function registerShoppingRoutes(app: Express, storage: IStorage) {
+  // 상품 목록 조회
+  app.get("/api/shop/products", async (req, res) => {
+    try {
+      const products = await storage.getProducts();
+      res.json(products || []);
+    } catch (error) {
+      console.error('Error fetching products:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  });
+
+  // 코스 목록 조회 (교육 관련)
+  app.get("/api/courses", async (req, res) => {
+    try {
+      // Implement your logic to fetch courses here
+      // Example:
+      // const courses = await storage.getCourses();
+      // res.json(courses || []);
+      res.status(501).json({ message: 'Not Implemented' });
+    } catch (error) {
+      console.error('Error fetching courses:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  });
+
   // 상품 목록 가져오기 (검색 및 필터링 포함)
   app.get("/api/shopping/products", async (req, res) => {
     try {
       const { search, category, minPrice, maxPrice, page = 1, limit = 12 } = req.query;
-      
+
       let whereConditions: any[] = [];
-      
+
       // 검색 조건 추가
       if (search) {
         whereConditions.push(
@@ -20,12 +45,12 @@ export function registerShoppingRoutes(app: Express) {
           )
         );
       }
-      
+
       // 카테고리 필터
       if (category && category !== 'all') {
         whereConditions.push(eq(products.categoryId, parseInt(category as string)));
       }
-      
+
       // 가격 범위 필터
       if (minPrice) {
         whereConditions.push(gte(products.price, parseInt(minPrice as string)));
@@ -33,23 +58,23 @@ export function registerShoppingRoutes(app: Express) {
       if (maxPrice) {
         whereConditions.push(lte(products.price, parseInt(maxPrice as string)));
       }
-      
+
       // 활성화된 상품만 표시
       whereConditions.push(eq(products.isActive, true));
-      
+
       const whereClause = whereConditions.length > 0 ? and(...whereConditions) : undefined;
-      
+
       // 전체 개수 조회
       const totalResult = await db
         .select({ count: count() })
         .from(products)
         .where(whereClause);
-      
+
       const total = totalResult[0]?.count || 0;
-      
+
       // 페이지네이션과 함께 상품 목록 조회
       const offset = (Number(page) - 1) * Number(limit);
-      
+
       const productList = await db
         .select({
           id: products.id,
@@ -71,7 +96,7 @@ export function registerShoppingRoutes(app: Express) {
         .orderBy(desc(products.createdAt))
         .limit(Number(limit))
         .offset(offset);
-      
+
       res.json({
         products: productList,
         total,
@@ -89,17 +114,17 @@ export function registerShoppingRoutes(app: Express) {
   app.get("/api/shopping/products/:id", async (req, res) => {
     try {
       const productId = parseInt(req.params.id);
-      
+
       const product = await db
         .select()
         .from(products)
         .where(eq(products.id, productId))
         .limit(1);
-      
+
       if (!product[0]) {
         return res.status(404).json({ message: 'Product not found' });
       }
-      
+
       res.json(product[0]);
     } catch (error) {
       console.error('Error fetching product details:', error);
@@ -115,7 +140,7 @@ export function registerShoppingRoutes(app: Express) {
         .from(shopCategories)
         .where(eq(shopCategories.isActive, true))
         .orderBy(shopCategories.sortOrder);
-      
+
       res.json(categories);
     } catch (error) {
       console.error('Error fetching categories:', error);

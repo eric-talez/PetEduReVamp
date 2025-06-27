@@ -1,78 +1,76 @@
 import { Express } from "express";
-import { storage } from "../storage";
 
-export function registerTrainerRoutes(app: Express) {
-  // ===== Trainer Routes =====
-  
-  // Get all trainers
+export function registerTrainerRoutes(app: Express, storage: IStorage) {
+  // 훈련사 목록 조회
   app.get("/api/trainers", async (req, res) => {
     try {
-      const trainers = await storage.getAllTrainers();
-      return res.status(200).json(trainers);
-    } catch (error: any) {
-      console.error("Get trainers error:", error);
-      return res.status(500).json({ message: "Internal server error" });
-    }
-  });
-  
-  // Get trainer by ID
-  app.get("/api/trainers/:id", async (req, res) => {
-    try {
-      const trainerId = parseInt(req.params.id);
-      const trainer = await storage.getTrainer(trainerId);
-      
-      if (!trainer) {
-        return res.status(404).json({ message: "Trainer not found" });
-      }
-      
-      return res.status(200).json(trainer);
-    } catch (error: any) {
-      console.error("Get trainer error:", error);
-      return res.status(500).json({ message: "Internal server error" });
+      const trainers = await storage.getTrainers();
+      res.json(trainers || []);
+    } catch (error) {
+      console.error('Error fetching trainers:', error);
+      res.status(500).json({ message: 'Internal server error' });
     }
   });
 
-  // Book consultation with trainer
+  // 훈련사 상세 조회
+  app.get("/api/trainers/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const trainers = await storage.getTrainers();
+      const trainer = trainers.find(t => t.id === id);
+
+      if (!trainer) {
+        return res.status(404).json({ message: 'Trainer not found' });
+      }
+
+      res.json(trainer);
+    } catch (error) {
+      console.error('Error fetching trainer:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  });
+
+  // 훈련사 수익 조회
+  app.get("/api/trainers/:id/earnings", async (req, res) => {
+    try {
+      const trainerId = parseInt(req.params.id);
+      const earnings = {
+        totalEarnings: 1500000,
+        monthlyEarnings: 300000,
+        pendingPayments: 50000,
+        commissionRate: 0.15
+      };
+
+      res.json(earnings);
+    } catch (error) {
+      console.error('Error fetching trainer earnings:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  });
+
+  // 훈련사 상담 예약
   app.post("/api/trainers/:id/consultation", async (req, res) => {
     try {
       const trainerId = parseInt(req.params.id);
-      const consultationData = req.body;
-      
-      // 훈련사 존재 확인
-      const trainer = await storage.getTrainer(trainerId);
-      if (!trainer) {
-        return res.status(404).json({ message: "Trainer not found" });
-      }
-      
-      // 상담 예약 정보 저장 (실제로는 데이터베이스에 저장)
-      const consultation = {
-        id: Date.now(), // 임시 ID
-        trainerId: trainerId,
-        trainerName: trainer.name,
-        date: consultationData.date,
-        time: consultationData.time,
-        petName: consultationData.petName,
-        petAge: consultationData.petAge,
-        petBreed: consultationData.petBreed,
-        concerns: consultationData.concerns,
-        phone: consultationData.phone,
-        email: consultationData.email,
+      const consultationData = {
+        id: Date.now(),
+        trainerId,
+        ...req.body,
         status: 'pending',
-        createdAt: new Date().toISOString(),
-        institutionId: consultationData.institutionId
+        createdAt: new Date().toISOString()
       };
-      
-      console.log('상담 예약 접수:', consultation);
-      
-      // 성공 응답
-      return res.status(200).json({
+
+      // 실제로는 데이터베이스에 저장
+      console.log('New consultation request:', consultationData);
+
+      res.status(201).json({
         success: true,
-        message: "상담 예약이 완료되었습니다.",
-        consultation: consultation
+        consultation: consultationData,
+        message: '상담 예약이 완료되었습니다.'
       });
-    } catch (error: any) {
-      console.error("Consultation booking error:", error);
-      return res.status(500).json({ message: "Internal server error" });
+    } catch (error) {
+      console.error('Error creating consultation:', error);
+      res.status(500).json({ message: 'Internal server error' });
     }
   });
 }

@@ -1899,6 +1899,37 @@ app.get('/api/search', async (req, res) => {
     }
   });
 
+  // Health check endpoint
+  app.get("/api/health", (req, res) => {
+    res.json({ 
+      status: "ok", 
+      timestamp: new Date(),
+      version: "1.0.0",
+      uptime: process.uptime(),
+      environment: process.env.NODE_ENV || 'development'
+    });
+  });
+
+  // Auth check endpoint
+  app.get("/api/auth/check", (req, res) => {
+    try {
+      if (req.isAuthenticated && req.isAuthenticated()) {
+        res.json({ 
+          authenticated: true, 
+          user: {
+            id: req.user?.id,
+            role: req.user?.role,
+            name: req.user?.name
+          }
+        });
+      } else {
+        res.json({ authenticated: false });
+      }
+    } catch (error) {
+      console.error('Auth check error:', error);
+      res.status(500).json({ error: 'Authentication check failed' });
+    }
+  });
 
   // Global error handler (commented out for now)
   // app.use(errorHandler);

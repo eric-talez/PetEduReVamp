@@ -56,10 +56,10 @@ export function registerLocationRoutes(app: Express) {
   app.get('/api/places/nearby', async (req: Request, res: Response) => {
     try {
       const { lat, lng, type, radius } = nearbySearchParamsSchema.parse(req.query);
-      
+
       // 파라미터에서 필터 옵션 추출
       const { certifiedOnly, petFriendlyLevel, features } = req.query;
-      
+
       // 데이터베이스에서 데이터 가져오기 시도
       let results: Array<{
         id: string;
@@ -80,7 +80,7 @@ export function registerLocationRoutes(app: Express) {
         petFriendlyLevel?: 'low' | 'medium' | 'high';
         features?: string[];
       }> = [];
-      
+
       if (type === 'institute') {
         // 기관 데이터 가져오기
         const institutes = await storage.getAllInstitutes();
@@ -127,7 +127,7 @@ export function registerLocationRoutes(app: Express) {
         // 빈 배열 반환 (실제 구현 시 API 키 필요)
         results = [];
       }
-      
+
       // 샘플 데이터를 위한 장소별 특징과 반려동물 친화도 추가
       results.forEach(place => {
         // 장소 유형에 따라 적절한 특징과 친화도 할당
@@ -145,7 +145,7 @@ export function registerLocationRoutes(app: Express) {
           place.petFriendlyLevel = Math.random() > 0.5 ? 'medium' : Math.random() > 0.3 ? 'low' : 'high';
         }
       });
-      
+
       // 필터링 추가
       results = results
         // 거리 필터
@@ -166,7 +166,7 @@ export function registerLocationRoutes(app: Express) {
         })
         // 거리 기준 정렬
         .sort((a, b) => a.distance - b.distance);
-      
+
       // 결과 반환
       res.status(200).json(results);
     } catch (error) {
@@ -179,7 +179,7 @@ export function registerLocationRoutes(app: Express) {
   app.get('/api/places/search', async (req: Request, res: Response) => {
     try {
       const { keyword, page, size } = keywordSearchParamsSchema.parse(req.query);
-      
+
       // 검색 구현 - 트레이너와 기관 데이터에서 검색
       let results: Array<{
         id: string;
@@ -194,7 +194,7 @@ export function registerLocationRoutes(app: Express) {
         photo: string | null;
         description: string;
       }> = [];
-      
+
       // 트레이너 데이터 검색
       const trainers = await storage.getAllTrainers();
       const matchedTrainers = trainers
@@ -216,7 +216,7 @@ export function registerLocationRoutes(app: Express) {
           photo: trainer.photo || null,
           description: trainer.bio || '',
         }));
-      
+
       // 기관 데이터 검색
       const institutes = await storage.getAllInstitutes();
       const matchedInstitutes = institutes
@@ -237,15 +237,15 @@ export function registerLocationRoutes(app: Express) {
           photo: institute.logo || null,
           description: institute.description || '',
         }));
-      
+
       // 결과 병합
       results = [...matchedTrainers, ...matchedInstitutes];
-      
+
       // 페이지네이션
       const startIndex = (page - 1) * size;
       const endIndex = startIndex + size;
       const paginatedResults = results.slice(startIndex, endIndex);
-      
+
       // 결과 반환
       res.status(200).json({
         meta: {
@@ -266,12 +266,12 @@ export function registerLocationRoutes(app: Express) {
   app.get('/api/geocode', async (req: Request, res: Response) => {
     try {
       const { address } = geocodeParamsSchema.parse(req.query);
-      
+
       // 참고: 실제 구현에는 Kakao API 또는 다른 지오코딩 서비스 필요
       // 현재는 샘플 응답 반환
       if (!process.env.KAKAO_MAPS_API_KEY) {
         console.warn('지오코딩 API 키가 없어 기본 데이터를 반환합니다.');
-        
+
         // 기본 응답 (서울 시청)
         res.status(200).json({
           latitude: 37.5665,
@@ -281,7 +281,7 @@ export function registerLocationRoutes(app: Express) {
         });
         return;
       }
-      
+
       // API 키가 있으면 실제 구현 필요
       res.status(501).json({ error: '기능 구현 중입니다.' });
     } catch (error) {
@@ -294,13 +294,13 @@ export function registerLocationRoutes(app: Express) {
   app.post('/api/directions', async (req: Request, res: Response) => {
     try {
       const { origin, destination } = directionsRequestSchema.parse(req.body);
-      
+
       // 거리 계산
       const distance = calculateDistance(
         origin.latitude, origin.longitude,
         destination.latitude, destination.longitude
       );
-      
+
       // 결과 반환
       res.status(200).json({
         distance: {
