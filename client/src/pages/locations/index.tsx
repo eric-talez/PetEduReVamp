@@ -302,19 +302,21 @@ export default function LocationsPage() {
   };
 
   // Business card handlers
-  const handleBusinessReservation = (business: LocationData, trainer?: Trainer) => {
-    if (business.type === 'training-center' && business.trainers && business.trainers.length > 0 && !trainer) {
-      setSelectedBusiness(business);
+  const handleBusinessReservation = (business: any, trainer?: Trainer) => {
+    const locationBusiness = filteredLocations.find(loc => loc.id === business.id);
+    if (locationBusiness?.type === 'training-center' && locationBusiness.trainers && locationBusiness.trainers.length > 0 && !trainer) {
+      setSelectedBusiness(locationBusiness);
       setTrainerDialogOpen(true);
     } else {
-      setReservationLocation(business);
+      setReservationLocation(locationBusiness || null);
       setSelectedTrainer(trainer || null);
       setReservationDialogOpen(true);
     }
   };
 
-  const handleBusinessDetails = (business: LocationData) => {
-    setSelectedLocation(business);
+  const handleBusinessDetails = (business: any) => {
+    const locationBusiness = filteredLocations.find(loc => loc.id === business.id);
+    setSelectedLocation(locationBusiness || null);
   };
 
   const handleTrainerSelect = (trainer: Trainer) => {
@@ -587,6 +589,15 @@ export default function LocationsPage() {
           </div>
         </CardContent>
       </Card>
+
+      {/* 훈련사 선택 다이얼로그 */}
+      <TrainerSelectionDialog
+        isOpen={trainerDialogOpen}
+        onClose={() => setTrainerDialogOpen(false)}
+        trainers={selectedBusiness?.trainers || []}
+        businessName={selectedBusiness?.name || ''}
+        onTrainerSelect={handleTrainerSelect}
+      />
 
       {/* 예약 다이얼로그 */}
       <QuickReservationDialog

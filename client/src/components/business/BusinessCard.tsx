@@ -40,12 +40,15 @@ interface BusinessData {
   services: string[];
   trainers?: Trainer[];
   images?: string[];
+  type?: string;
+  lat?: number;
+  lng?: number;
 }
 
 interface BusinessCardProps {
   business: BusinessData;
-  onReservationClick: (business: BusinessData, trainer?: Trainer) => void;
-  onViewDetails: (business: BusinessData) => void;
+  onReservationClick: (business: any, trainer?: Trainer) => void;
+  onViewDetails: (business: any) => void;
   showTrainers?: boolean;
 }
 
