@@ -26,7 +26,7 @@ interface LocationData {
 const sampleLocations: LocationData[] = [
   {
     id: 'tc1',
-    name: '해피독 훈련소',
+    name: '서울 펫 트레이닝 센터',
     type: 'training-center',
     address: '서울특별시 강남구 테헤란로 123',
     lat: 37.5012,
@@ -34,7 +34,7 @@ const sampleLocations: LocationData[] = [
     phone: '02-1234-5678',
     rating: 4.8,
     hours: '09:00 - 18:00',
-    description: '전문 반려견 훈련 서비스'
+    description: '전문 반려동물 훈련 서비스를 제공하는 프리미엄 트레이닝 센터입니다.'
   },
   {
     id: 'tc2',
