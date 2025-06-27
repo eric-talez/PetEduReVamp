@@ -504,6 +504,14 @@ export default function LocationsPage() {
           </div>
         </CardContent>
       </Card>
+
+      {/* 예약 다이얼로그 */}
+      <QuickReservationDialog
+        isOpen={reservationDialogOpen}
+        onClose={() => setReservationDialogOpen(false)}
+        location={reservationLocation as any}
+        onReservationSubmit={handleReservationSubmit}
+      />
     </div>
   );
 }

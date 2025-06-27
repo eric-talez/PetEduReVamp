@@ -12,24 +12,10 @@ import { CalendarIcon, Clock, User, Phone, MapPin } from 'lucide-react';
 import { format } from 'date-fns';
 import { ko } from 'date-fns/locale';
 
-interface LocationData {
-  id: string;
-  name: string;
-  address: string;
-  lat: number;
-  lng: number;
-  type: 'hospital' | 'training' | 'grooming' | 'hotel' | 'cafe' | 'park';
-  phone?: string;
-  hours?: string;
-  rating?: number;
-  description?: string;
-  services?: string[];
-}
-
 interface QuickReservationDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  location: LocationData | null;
+  location: any;
   onReservationSubmit: (reservationData: any) => void;
 }
 

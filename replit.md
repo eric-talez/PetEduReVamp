@@ -115,6 +115,13 @@ TALEZ is a comprehensive pet education and e-commerce platform that combines AI-
 
 ## Changelog
 
+- June 27, 2025. Integrated Naver map service and restored reservation functionality:
+  - Replaced Leaflet.js with Naver Maps API for improved map rendering
+  - Added comprehensive reservation system with QuickReservationDialog component
+  - Implemented location-based reservation booking for hospitals, training centers, and veterinary clinics
+  - Enhanced location finder with dual map/list view functionality
+  - Added support for multiple location types (hospital, training, grooming, hotel, cafe, park, training-center, pet-store, veterinary, event)
+  - Environment variable support for VITE_NAVER_MAP_CLIENT_ID
 - June 26, 2025. Updated color scheme to match Figma design specifications:
   - Primary: #2BAA61 (HSL 142 61% 42%)
   - Secondary: #FFA726 (HSL 36 100% 58%)

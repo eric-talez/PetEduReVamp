@@ -18,10 +18,10 @@ interface LocationData {
 }
 
 interface NaverMapProps {
-  locations: LocationData[];
+  locations: any[];
   height?: string;
-  onLocationClick?: (location: LocationData) => void;
-  onReservationClick?: (location: LocationData) => void;
+  onLocationClick?: (location: any) => void;
+  onReservationClick?: (location: any) => void;
 }
 
 // 위치 타입별 한글 라벨
