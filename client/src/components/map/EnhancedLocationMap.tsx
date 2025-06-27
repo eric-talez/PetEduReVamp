@@ -460,38 +460,61 @@ export function EnhancedLocationMap({
 
       // 팝업 내용 생성
       const popupContent = `
-        <div style="min-width: 250px; font-family: sans-serif;">
-          <h3 style="margin: 0 0 8px 0; font-weight: bold; color: #1f2937;">${location.name}</h3>
-          <div style="margin-bottom: 8px;">
-            <span style="display: inline-block; padding: 2px 8px; background: #e5e7eb; border-radius: 12px; font-size: 12px; color: #374151;">
+        <div style="min-width: 280px; max-width: 320px; font-family: sans-serif;">
+          <h3 style="margin: 0 0 8px 0; font-weight: bold; color: #1f2937; font-size: 16px;">${location.name}</h3>
+          <div style="margin-bottom: 8px; display: flex; gap: 4px; flex-wrap: wrap;">
+            <span style="display: inline-block; padding: 2px 8px; background: #e5e7eb; border-radius: 12px; font-size: 11px; color: #374151;">
               ${getLocationTypeLabel(location.type)}
             </span>
+            ${location.certificationStatus === 'verified' ? `
+              <span style="display: inline-block; padding: 2px 8px; background: #dcfce7; border-radius: 12px; font-size: 11px; color: #166534;">
+                TALEZ 인증
+              </span>
+            ` : ''}
           </div>
-          <p style="margin: 4px 0; color: #6b7280; font-size: 14px;">${location.address}</p>
-          ${location.phone ? `<p style="margin: 4px 0; font-size: 14px;"><strong>📞</strong> ${location.phone}</p>` : ''}
-          ${location.hours ? `<p style="margin: 4px 0; font-size: 14px;"><strong>🕒</strong> ${location.hours}</p>` : ''}
-          ${location.rating ? `<p style="margin: 4px 0; font-size: 14px;"><strong>⭐</strong> ${location.rating}/5</p>` : ''}
-          ${location.distance ? `<p style="margin: 4px 0; font-size: 14px;"><strong>📍</strong> ${location.distance < 1 ? `${Math.round(location.distance * 1000)}m` : `${location.distance.toFixed(1)}km`}</p>` : ''}
+          <p style="margin: 4px 0; color: #6b7280; font-size: 13px; line-height: 1.4;">${location.address}</p>
+          ${location.phone ? `<p style="margin: 4px 0; font-size: 13px;"><strong>📞</strong> ${location.phone}</p>` : ''}
+          ${location.hours ? `<p style="margin: 4px 0; font-size: 13px;"><strong>🕒</strong> ${location.hours}</p>` : ''}
+          ${location.rating ? `<p style="margin: 4px 0; font-size: 13px;"><strong>⭐</strong> ${location.rating}/5 ${location.reviewCount ? `(${location.reviewCount}개)` : ''}</p>` : ''}
+          ${location.distance ? `<p style="margin: 4px 0; font-size: 13px;"><strong>📍</strong> ${location.distance < 1 ? `${Math.round(location.distance * 1000)}m` : `${location.distance.toFixed(1)}km`}</p>` : ''}
+          ${location.services && location.services.length > 0 ? `
+            <div style="margin: 8px 0;">
+              <p style="margin: 0 0 4px 0; font-size: 12px; font-weight: bold; color: #374151;">서비스</p>
+              <div style="display: flex; flex-wrap: wrap; gap: 4px;">
+                ${location.services.slice(0, 3).map(service => `
+                  <span style="padding: 2px 6px; background: #f3f4f6; border-radius: 8px; font-size: 10px; color: #4b5563;">${service}</span>
+                `).join('')}
+                ${location.services.length > 3 ? `<span style="font-size: 10px; color: #6b7280;">+${location.services.length - 3}</span>` : ''}
+              </div>
+            </div>
+          ` : ''}
+          ${location.description ? `<p style="margin: 8px 0; color: #6b7280; font-size: 12px; line-height: 1.4; max-height: 40px; overflow: hidden;">${location.description.length > 80 ? location.description.substring(0, 80) + '...' : location.description}</p>` : ''}
           <div style="margin-top: 12px; display: flex; gap: 8px;">
             <button onclick="window.selectLocation('${location.id}')" style="
-              padding: 6px 12px;
+              padding: 8px 12px;
               background: #3b82f6;
               color: white;
               border: none;
-              border-radius: 4px;
+              border-radius: 6px;
               cursor: pointer;
               font-size: 12px;
-            ">상세보기</button>
+              font-weight: 500;
+              flex: 1;
+              transition: background 0.2s;
+            " onmouseover="this.style.background='#2563eb'" onmouseout="this.style.background='#3b82f6'">상세보기</button>
             ${(location.type === 'training-center' || location.type === 'training' || location.type === 'hospital' || location.type === 'veterinary') ? `
               <button onclick="window.reserveLocation('${location.id}')" style="
-                padding: 6px 12px;
+                padding: 8px 12px;
                 background: #10b981;
                 color: white;
                 border: none;
-                border-radius: 4px;
+                border-radius: 6px;
                 cursor: pointer;
                 font-size: 12px;
-              ">예약하기</button>
+                font-weight: 500;
+                flex: 1;
+                transition: background 0.2s;
+              " onmouseover="this.style.background='#059669'" onmouseout="this.style.background='#10b981'">예약하기</button>
             ` : ''}
           </div>
         </div>

@@ -517,15 +517,25 @@ export default function LocationsPage() {
                 <div className="flex items-start justify-between">
                   <div>
                     <CardTitle className="text-xl">{selectedLocation.name}</CardTitle>
-                    <Badge className={getLocationTypeBadgeColor(selectedLocation.type)}>
-                      {getLocationTypeLabel(selectedLocation.type)}
-                    </Badge>
+                    <div className="flex items-center gap-2 mt-2">
+                      <Badge className={getLocationTypeBadgeColor(selectedLocation.type)}>
+                        {getLocationTypeLabel(selectedLocation.type)}
+                      </Badge>
+                      {selectedLocation.certificationStatus === 'verified' && (
+                        <Badge className="bg-green-100 text-green-800">
+                          TALEZ 인증
+                        </Badge>
+                      )}
+                    </div>
                   </div>
                   {selectedLocation.rating && (
                     <div className="flex items-center gap-1">
                       <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
                       <span className="font-medium">{selectedLocation.rating}</span>
                       <span className="text-sm text-gray-500">/5</span>
+                      {selectedLocation.reviewCount && (
+                        <span className="text-sm text-gray-500">({selectedLocation.reviewCount})</span>
+                      )}
                     </div>
                   )}
                 </div>
@@ -560,6 +570,46 @@ export default function LocationsPage() {
                     </span>
                   </div>
                 )}
+
+                {/* 서비스 목록 */}
+                {selectedLocation.services && selectedLocation.services.length > 0 && (
+                  <div className="pt-2 border-t">
+                    <h4 className="text-sm font-medium text-gray-900 mb-2">제공 서비스</h4>
+                    <div className="flex flex-wrap gap-1">
+                      {selectedLocation.services.map((service, index) => (
+                        <Badge key={index} variant="outline" className="text-xs">
+                          {service}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* 훈련사 정보 */}
+                {selectedLocation.trainers && selectedLocation.trainers.length > 0 && (
+                  <div className="pt-2 border-t">
+                    <h4 className="text-sm font-medium text-gray-900 mb-2">전문 훈련사</h4>
+                    <div className="space-y-2">
+                      {selectedLocation.trainers.slice(0, 2).map((trainer, index) => (
+                        <div key={index} className="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
+                          <div>
+                            <p className="text-sm font-medium">{trainer.name}</p>
+                            <p className="text-xs text-gray-600">{trainer.experience}년 경력</p>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+                            <span className="text-xs">{trainer.rating}</span>
+                          </div>
+                        </div>
+                      ))}
+                      {selectedLocation.trainers.length > 2 && (
+                        <p className="text-xs text-gray-500">
+                          외 {selectedLocation.trainers.length - 2}명의 훈련사
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                )}
                 
                 {selectedLocation.description && (
                   <div className="pt-2 border-t">
@@ -568,12 +618,39 @@ export default function LocationsPage() {
                     </p>
                   </div>
                 )}
+
+                {/* 사업자 정보 */}
+                {selectedLocation.businessNumber && (
+                  <div className="pt-2 border-t">
+                    <h4 className="text-sm font-medium text-gray-900 mb-2">사업자 정보</h4>
+                    <div className="space-y-1 text-xs text-gray-600">
+                      <p>사업자 번호: {selectedLocation.businessNumber}</p>
+                      {selectedLocation.businessType && (
+                        <p>업종: {selectedLocation.businessType}</p>
+                      )}
+                      {selectedLocation.certificationDate && (
+                        <p>인증일: {selectedLocation.certificationDate}</p>
+                      )}
+                    </div>
+                  </div>
+                )}
                 
                 <div className="flex gap-2 pt-4">
-                  <Button className="flex-1">
+                  <Button 
+                    className="flex-1"
+                    onClick={() => handleReservationClick(selectedLocation)}
+                  >
                     예약하기
                   </Button>
-                  <Button variant="outline" className="flex-1">
+                  <Button 
+                    variant="outline" 
+                    className="flex-1"
+                    onClick={() => {
+                      // 길찾기 기능 (구글맵 또는 카카오맵 연결)
+                      const url = `https://map.kakao.com/link/to/${selectedLocation.name},${selectedLocation.lat},${selectedLocation.lng}`;
+                      window.open(url, '_blank');
+                    }}
+                  >
                     길찾기
                   </Button>
                 </div>
