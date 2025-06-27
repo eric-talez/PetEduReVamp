@@ -6,6 +6,7 @@ import { TrainerSelectionDialog } from '@/components/business/TrainerSelectionDi
 import { TrainerProfileDialog } from '@/components/business/TrainerProfileDialog';
 import { InfoCorrectionDialog } from '@/components/business/InfoCorrectionDialog';
 import { ReviewDetailDialog } from '@/components/business/ReviewDetailDialog';
+import { ReviewSubmissionDialog } from '@/components/business/ReviewSubmissionDialog';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -235,6 +236,8 @@ export default function LocationsPage() {
   const [correctionDialogOpen, setCorrectionDialogOpen] = useState(false);
   const [reviewDetailOpen, setReviewDetailOpen] = useState(false);
   const [selectedReview, setSelectedReview] = useState<Review | null>(null);
+  const [reviewSubmissionOpen, setReviewSubmissionOpen] = useState(false);
+  const [selectedBusinessForReview, setSelectedBusinessForReview] = useState<LocationData | null>(null);
 
   const { toast } = useToast();
 
@@ -396,6 +399,56 @@ export default function LocationsPage() {
     setSelectedTrainer(trainer);
     setReservationLocation(selectedLocation);
     setReservationDialogOpen(true);
+  };
+
+  const handleWriteReview = (business: LocationData) => {
+    setSelectedBusinessForReview(business);
+    setReviewSubmissionOpen(true);
+  };
+
+  const handleReviewSubmit = async (reviewData: any) => {
+    try {
+      // In a real application, this would send the review data to the backend
+      console.log('리뷰 제출:', reviewData);
+      
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Update the business with the new review (in a real app, this would come from the backend)
+      const updatedLocations = locations.map(location => {
+        if (location.id === reviewData.businessId) {
+          const newReview: Review = {
+            id: `review_${Date.now()}`,
+            authorName: '현재 사용자', // In real app, get from auth context
+            rating: reviewData.rating,
+            comment: reviewData.comment,
+            date: new Date().toISOString(),
+            helpful: 0,
+            photos: reviewData.photos ? reviewData.photos.map((file: File) => URL.createObjectURL(file)) : []
+          };
+          
+          return {
+            ...location,
+            reviews: [...(location.reviews || []), newReview],
+            reviewCount: (location.reviewCount || 0) + 1,
+            rating: location.reviews ? 
+              ((location.rating || 0) * location.reviews.length + reviewData.rating) / (location.reviews.length + 1) :
+              reviewData.rating
+          };
+        }
+        return location;
+      });
+      
+      setLocations(updatedLocations);
+      
+      toast({
+        title: "리뷰가 등록되었습니다",
+        description: "소중한 후기 감사합니다!"
+      });
+    } catch (error) {
+      console.error('리뷰 제출 실패:', error);
+      throw error;
+    }
   };
 
 
@@ -642,6 +695,19 @@ export default function LocationsPage() {
                             예약
                           </Button>
                         )}
+
+                        <Button 
+                          size="sm"
+                          variant="outline"
+                          className="text-xs h-7 px-2 gap-1"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleWriteReview(location);
+                          }}
+                        >
+                          <Star className="w-3 h-3" />
+                          리뷰 작성
+                        </Button>
                       </div>
                     </div>
                   ))}
@@ -935,6 +1001,15 @@ export default function LocationsPage() {
         location={reservationLocation as any}
         trainer={selectedTrainer}
         onReservationSubmit={handleReservationSubmit}
+      />
+
+      {/* 리뷰 작성 다이얼로그 */}
+      <ReviewSubmissionDialog
+        isOpen={reviewSubmissionOpen}
+        onClose={() => setReviewSubmissionOpen(false)}
+        businessId={selectedBusinessForReview?.id || ''}
+        businessName={selectedBusinessForReview?.name || ''}
+        onSubmit={handleReviewSubmit}
       />
     </div>
   );
