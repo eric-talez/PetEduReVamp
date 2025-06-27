@@ -14,7 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Search, Filter, MapPin, Phone, Clock, Star, Navigation, Zap, Target, ChevronRight, Layers, List, Map as MapIcon, Building2, Award, Users } from 'lucide-react';
+import { Search, Filter, MapPin, Phone, Clock, Star, Navigation, Zap, Target, ChevronRight, Layers, List, Map as MapIcon, Building2, Award, Users, Shield } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface Trainer {
@@ -285,6 +285,7 @@ export default function LocationsPage() {
   const [selectedReview, setSelectedReview] = useState<Review | null>(null);
   const [reviewSubmissionOpen, setReviewSubmissionOpen] = useState(false);
   const [selectedBusinessForReview, setSelectedBusinessForReview] = useState<LocationData | null>(null);
+  const [showCertifiedOnly, setShowCertifiedOnly] = useState(false);
 
   const { toast } = useToast();
 
@@ -314,6 +315,11 @@ export default function LocationsPage() {
       filtered = filtered.filter(location => location.type === selectedType);
     }
 
+    // Filter by TALEZ certification
+    if (showCertifiedOnly) {
+      filtered = filtered.filter(location => location.certificationStatus === 'verified');
+    }
+
     // Filter by search term
     if (searchTerm) {
       filtered = filtered.filter(location =>
@@ -338,7 +344,7 @@ export default function LocationsPage() {
     });
 
     setFilteredLocations(filtered);
-  }, [locations, searchTerm, selectedType, sortBy]);
+  }, [locations, searchTerm, selectedType, sortBy, showCertifiedOnly]);
 
   // Calculate distance between two coordinates (Haversine formula)
   const calculateDistance = (lat1: number, lng1: number, lat2: number, lng2: number): number => {
@@ -585,6 +591,16 @@ export default function LocationsPage() {
                   <SelectItem value="park">공원</SelectItem>
                 </SelectContent>
               </Select>
+
+              <Button 
+                onClick={() => setShowCertifiedOnly(!showCertifiedOnly)}
+                variant={showCertifiedOnly ? "default" : "outline"}
+                size="sm"
+                className={showCertifiedOnly ? "bg-[#2BAA61] hover:bg-[#229954] text-white" : ""}
+              >
+                <Award className="w-4 h-4 mr-2" />
+                TALEZ 인증
+              </Button>
 
               <Button onClick={getUserLocation} variant="outline" size="sm">
                 <Navigation className="w-4 h-4 mr-2" />
