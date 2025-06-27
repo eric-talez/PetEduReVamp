@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
 
 // Fix for default markers
@@ -31,6 +31,8 @@ interface SimpleMapProps {
 export function SimpleMap({ locations, height = "400px", onLocationClick }: SimpleMapProps) {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
+  const [mapLoaded, setMapLoaded] = useState(false);
+  const [showFallback, setShowFallback] = useState(false);
 
   useEffect(() => {
     if (!mapRef.current) return;
@@ -43,19 +45,48 @@ export function SimpleMap({ locations, height = "400px", onLocationClick }: Simp
 
     console.log('지도 초기화 중...');
 
-    // Create map with Seoul center
-    const map = L.map(mapRef.current, {
-      center: [37.5665, 126.9780],
-      zoom: 11,
-      zoomControl: true
-    });
+    // Wait for container to be ready
+    setTimeout(() => {
+      if (!mapRef.current) return;
 
-    // Add OpenStreetMap tiles
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap contributors'
-    }).addTo(map);
+      // Create map with Seoul center
+      const map = L.map(mapRef.current, {
+        center: [37.5665, 126.9780],
+        zoom: 11,
+        zoomControl: true,
+        attributionControl: true,
+        preferCanvas: false
+      });
 
-    mapInstanceRef.current = map;
+      // Add multiple tile layer options for better reliability
+      const tileOptions = {
+        attribution: '© OpenStreetMap contributors',
+        maxZoom: 18,
+        crossOrigin: true
+      };
+
+      // Try OpenStreetMap first
+      const osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', tileOptions);
+      
+      // Fallback to alternative tile server
+      const altLayer = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', tileOptions);
+      
+      osmLayer.on('tileerror', () => {
+        console.log('OpenStreetMap 타일 오류, 대체 서버 사용');
+        map.removeLayer(osmLayer);
+        altLayer.addTo(map);
+      });
+
+      osmLayer.addTo(map);
+      mapInstanceRef.current = map;
+
+      // Force map resize after initialization
+      setTimeout(() => {
+        if (mapInstanceRef.current) {
+          mapInstanceRef.current.invalidateSize();
+          console.log('지도 크기 재조정 완료');
+        }
+      }, 100);
 
     // Add markers for locations
     locations.forEach(location => {
