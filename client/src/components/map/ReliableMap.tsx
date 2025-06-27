@@ -29,6 +29,8 @@ export function ReliableMap({ locations, height = "400px", onLocationClick }: Re
   const [showMapView, setShowMapView] = useState(false);
   const [filteredBySearch, setFilteredBySearch] = useState<LocationData[]>(locations);
 
+  console.log('ReliableMap 렌더링됨 - showMapView:', showMapView);
+
   // Seoul center coordinates
   const seoulCenter = { lat: 37.5665, lng: 126.9780 };
 
@@ -101,28 +103,28 @@ export function ReliableMap({ locations, height = "400px", onLocationClick }: Re
 
   return (
     <div className="space-y-4">
+      {/* Map View Toggle - Always Visible */}
+      <div className="flex items-center justify-between p-4 bg-white rounded-lg border shadow-sm">
+        <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+          <MapPin className="w-5 h-5 text-blue-600" />
+          위치 찾기
+        </h2>
+        <button
+          onClick={() => setShowMapView(!showMapView)}
+          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center gap-2 font-medium"
+        >
+          <Navigation className="w-4 h-4" />
+          {showMapView ? '목록 보기' : '지도 보기'}
+        </button>
+      </div>
+
       {/* Map Search Interface */}
       <Card>
         <CardHeader>
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <CardTitle className="flex items-center gap-2">
-              <MapPin className="w-5 h-5 text-primary" />
-              지도에서 업체 찾기
-            </CardTitle>
-            <Button
-              variant={showMapView ? "default" : "outline"}
-              size="sm"
-              onClick={() => setShowMapView(!showMapView)}
-              className={`w-full sm:w-auto font-medium ${
-                showMapView 
-                  ? 'bg-blue-600 hover:bg-blue-700 text-white' 
-                  : 'bg-white hover:bg-blue-50 text-blue-600 border-blue-600'
-              }`}
-            >
-              <Navigation className="w-4 h-4 mr-2" />
-              {showMapView ? '목록 보기' : '지도 보기'}
-            </Button>
-          </div>
+          <CardTitle className="flex items-center gap-2">
+            <Search className="w-5 h-5" />
+            업체 검색
+          </CardTitle>
         </CardHeader>
         <CardContent>
           {/* Search Bar */}
