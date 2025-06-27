@@ -171,9 +171,9 @@ export default function InfoCorrectionRequests() {
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1000));
 
-      const updatedRequest = {
+      const updatedRequest: CorrectionRequest = {
         ...selectedRequest,
-        status: reviewAction === 'approve' ? 'approved' : 'rejected' as const,
+        status: reviewAction === 'approve' ? 'approved' : 'rejected',
         reviewedAt: new Date().toISOString(),
         reviewedBy: '관리자',
         adminNotes
@@ -205,7 +205,7 @@ export default function InfoCorrectionRequests() {
       pending: 'default',
       'in-review': 'secondary',
       approved: 'success',
-      rejected: 'destructive'
+      rejected: 'danger'
     } as const;
 
     const labels = {
@@ -227,7 +227,7 @@ export default function InfoCorrectionRequests() {
       low: 'outline',
       medium: 'secondary',
       high: 'warning',
-      urgent: 'destructive'
+      urgent: 'danger'
     } as const;
 
     const labels = {
