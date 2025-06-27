@@ -209,7 +209,7 @@ export default function LocationsPage() {
   const [selectedBusiness, setSelectedBusiness] = useState<LocationData | null>(null);
   const [selectedTrainer, setSelectedTrainer] = useState<Trainer | null>(null);
   const [isSmartSearchEnabled, setIsSmartSearchEnabled] = useState(false);
-  
+
   const { toast } = useToast();
 
   // Calculate distances when user location is available
@@ -222,7 +222,7 @@ export default function LocationsPage() {
           location.lat, location.lng
         )
       }));
-      
+
       // Sort by distance
       locationsWithDistance.sort((a, b) => (a.distance || 0) - (b.distance || 0));
       setLocations(locationsWithDistance);
@@ -288,7 +288,7 @@ export default function LocationsPage() {
 
   const handleLocationSelect = (location: LocationData) => {
     setSelectedLocation(location);
-    
+
     // 스마트 검색 모드에서 선택 시 추가 정보 제공
     if (isSmartSearchEnabled) {
       toast({
@@ -301,7 +301,7 @@ export default function LocationsPage() {
   const handleReservationClick = (location: LocationData) => {
     setReservationLocation(location);
     setReservationDialogOpen(true);
-    
+
     // 스마트 모드에서 예약 시 최적 시간 추천
     if (isSmartSearchEnabled) {
       toast({
@@ -361,6 +361,12 @@ export default function LocationsPage() {
         }
       );
     }
+  };
+
+  const handleLocationDetailView = (location: LocationData) => {
+    setSelectedLocation(location);
+    // Here you might want to open a modal or navigate to a details page
+    console.log("상세보기", location)
   };
 
   return (
@@ -433,7 +439,7 @@ export default function LocationsPage() {
               </Badge>
             )}
           </div>
-          
+
           <div className="flex gap-2">
             {['training-center', 'pet-store', 'veterinary', 'event'].map(type => {
               const count = filteredLocations.filter(loc => loc.type === type).length;
@@ -545,21 +551,21 @@ export default function LocationsPage() {
                   <MapPin className="w-4 h-4 mt-1 text-gray-500" />
                   <span className="text-sm">{selectedLocation.address}</span>
                 </div>
-                
+
                 {selectedLocation.phone && (
                   <div className="flex items-center gap-2">
                     <Phone className="w-4 h-4 text-gray-500" />
                     <span className="text-sm">{selectedLocation.phone}</span>
                   </div>
                 )}
-                
+
                 {selectedLocation.hours && (
                   <div className="flex items-center gap-2">
                     <Clock className="w-4 h-4 text-gray-500" />
                     <span className="text-sm">{selectedLocation.hours}</span>
                   </div>
                 )}
-                
+
                 {selectedLocation.distance && (
                   <div className="flex items-center gap-2">
                     <Navigation className="w-4 h-4 text-gray-500" />
@@ -610,7 +616,7 @@ export default function LocationsPage() {
                     </div>
                   </div>
                 )}
-                
+
                 {selectedLocation.description && (
                   <div className="pt-2 border-t">
                     <p className="text-sm text-gray-600 dark:text-gray-400">
@@ -634,7 +640,7 @@ export default function LocationsPage() {
                     </div>
                   </div>
                 )}
-                
+
                 <div className="flex gap-2 pt-4">
                   <Button 
                     className="flex-1"
