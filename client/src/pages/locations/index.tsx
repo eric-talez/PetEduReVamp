@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { EnhancedLocationMap } from '@/components/map/EnhancedLocationMap';
 import { QuickReservationDialog } from '@/components/reservation/QuickReservationDialog';
 import { TrainerSelectionDialog } from '@/components/business/TrainerSelectionDialog';
+import { TrainerConsultationModal } from '@/components/TrainerConsultationModal';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -208,6 +209,8 @@ export default function LocationsPage() {
   const [trainerDialogOpen, setTrainerDialogOpen] = useState(false);
   const [selectedBusiness, setSelectedBusiness] = useState<LocationData | null>(null);
   const [selectedTrainer, setSelectedTrainer] = useState<Trainer | null>(null);
+  const [trainerProfileOpen, setTrainerProfileOpen] = useState(false);
+  const [selectedTrainerProfile, setSelectedTrainerProfile] = useState<Trainer | null>(null);
   const [isSmartSearchEnabled, setIsSmartSearchEnabled] = useState(false);
   const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
   const [sortBy, setSortBy] = useState<'distance' | 'rating' | 'name'>('distance');
@@ -351,6 +354,18 @@ export default function LocationsPage() {
     setSelectedTrainer(trainer);
     setTrainerDialogOpen(false);
     setReservationLocation(selectedBusiness);
+    setReservationDialogOpen(true);
+  };
+
+  const handleTrainerProfileClick = (trainer: Trainer) => {
+    setSelectedTrainerProfile(trainer);
+    setTrainerProfileOpen(true);
+  };
+
+  const handleTrainerReservation = (trainer: Trainer) => {
+    setSelectedTrainer(trainer);
+    setReservationLocation(selectedBusiness);
+    setTrainerProfileOpen(false);
     setReservationDialogOpen(true);
   };
 
@@ -729,7 +744,11 @@ export default function LocationsPage() {
                           <h3 className="text-lg font-semibold text-gray-900 mb-3">전문 훈련사</h3>
                           <div className="space-y-3">
                             {selectedLocation.trainers.map((trainer, index) => (
-                              <div key={index} className="p-4 bg-gray-50 rounded-lg">
+                              <div 
+                                key={index} 
+                                className="p-4 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors"
+                                onClick={() => handleTrainerProfileClick(trainer)}
+                              >
                                 <div className="flex items-center justify-between mb-2">
                                   <h4 className="font-medium text-gray-900">{trainer.name}</h4>
                                   <div className="flex items-center gap-1">
@@ -738,12 +757,36 @@ export default function LocationsPage() {
                                   </div>
                                 </div>
                                 <p className="text-sm text-gray-600 mb-2">{trainer.experience}년 경력</p>
-                                <div className="flex flex-wrap gap-1">
+                                <div className="flex flex-wrap gap-1 mb-3">
                                   {trainer.specialties.slice(0, 3).map((specialty, idx) => (
                                     <Badge key={idx} variant="outline" className="text-xs">
                                       {specialty}
                                     </Badge>
                                   ))}
+                                </div>
+                                <div className="flex gap-2">
+                                  <Button 
+                                    size="sm" 
+                                    variant="outline"
+                                    className="text-xs h-7 px-2 flex-1"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleTrainerProfileClick(trainer);
+                                    }}
+                                  >
+                                    프로필 보기
+                                  </Button>
+                                  <Button 
+                                    size="sm"
+                                    className="text-xs h-7 px-2 flex-1"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setSelectedBusiness(selectedLocation);
+                                      handleTrainerReservation(trainer);
+                                    }}
+                                  >
+                                    예약하기
+                                  </Button>
                                 </div>
                               </div>
                             ))}
@@ -808,6 +851,28 @@ export default function LocationsPage() {
         onClose={() => setReservationDialogOpen(false)}
         location={reservationLocation as any}
         onReservationSubmit={handleReservationSubmit}
+      />
+
+      <TrainerConsultationModal
+        isOpen={trainerProfileOpen}
+        onClose={() => setTrainerProfileOpen(false)}
+        trainer={selectedTrainerProfile || {
+          id: '',
+          name: '',
+          avatar: '',
+          rating: 0,
+          reviews: 0,
+          experience: '',
+          bio: '',
+          specialty: [],
+          location: '',
+          price: 0,
+          availableSlots: []
+        }}
+        onReservationClick={(trainer) => {
+          setSelectedBusiness(selectedLocation);
+          handleTrainerReservation(trainer);
+        }}
       />
     </div>
   );

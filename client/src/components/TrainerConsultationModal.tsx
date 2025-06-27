@@ -39,22 +39,29 @@ interface Trainer {
 }
 
 interface TrainerConsultationModalProps {
-  trainer: Trainer;
   isOpen: boolean;
-  onOpenChange: (open: boolean) => void;
-  onBookingComplete: (bookingData: any) => void;
+  onClose: () => void;
+  trainer: {
+    id: string;
+    name: string;
+    avatar?: string;
+    rating: number;
+    reviews: number;
+    experience: string;
+    bio?: string;
+    specialty: string[];
+    location?: string;
+    price?: number;
+    availableSlots: string[];
+  };
+  onReservationClick?: (trainer: any) => void;
 }
 
-export function TrainerConsultationModal({ 
-  trainer, 
-  isOpen, 
-  onOpenChange, 
-  onConsultationBooked 
-}: any) {
+export function TrainerConsultationModal({ isOpen, onClose, trainer, onReservationClick }: TrainerConsultationModalProps) {
   // trainer가 null이면 빈 모달 반환
   if (!trainer) {
     return (
-      <Dialog open={isOpen} onOpenChange={onOpenChange}>
+      <Dialog open={isOpen} onOpenChange={onClose}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>훈련사 정보 없음</DialogTitle>
@@ -89,7 +96,7 @@ export function TrainerConsultationModal({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!selectedDate || !selectedTime) {
       alert('날짜와 시간을 선택해주세요.');
       return;
@@ -116,11 +123,11 @@ export function TrainerConsultationModal({
 
       // 실제 구현에서는 API 호출
       await new Promise(resolve => setTimeout(resolve, 1500));
-      
+
       console.log('상담 예약 완료:', bookingData);
-      onBookingComplete(bookingData);
-      onOpenChange(false);
-      
+      //onBookingComplete(bookingData); // onBookingComplete is not a defined prop anymore, using onClose
+      onClose();
+
       // 폼 초기화
       setFormData({
         petName: '',
@@ -133,7 +140,7 @@ export function TrainerConsultationModal({
       });
       setSelectedDate('');
       setSelectedTime('');
-      
+
       alert('상담 예약이 완료되었습니다! 확인 메시지를 보내드렸습니다.');
     } catch (error) {
       console.error('예약 오류:', error);
@@ -144,7 +151,7 @@ export function TrainerConsultationModal({
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onOpenChange}>
+    <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold">
@@ -346,17 +353,17 @@ export function TrainerConsultationModal({
                 type="button"
                 variant="outline"
                 className="flex-1"
-                onClick={() => onOpenChange(false)}
+                onClick={() => onClose(false)}
                 disabled={isSubmitting}
               >
                 취소
               </Button>
-              <Button
-                type="submit"
-                className="flex-1 bg-green-600 hover:bg-green-700"
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? (
+              <Button 
+                      className="flex-1 bg-green-600 hover:bg-green-700"
+                      disabled={isSubmitting}
+                      onClick={onReservationClick ? () => onReservationClick(trainer) : handleSubmit}
+                    >
+                      {isSubmitting ? (
                   <div className="flex items-center gap-2">
                     <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full" />
                     예약 중...
@@ -364,10 +371,10 @@ export function TrainerConsultationModal({
                 ) : (
                   <div className="flex items-center gap-2">
                     <CheckCircle className="h-4 w-4" />
-                    상담 예약하기
+                    {onReservationClick ? '예약하기' : '상담 예약하기'}
                   </div>
                 )}
-              </Button>
+                    </Button>
             </div>
           </form>
         </div>
