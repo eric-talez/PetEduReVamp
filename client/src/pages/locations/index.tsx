@@ -7,6 +7,7 @@ import { TrainerProfileDialog } from '@/components/business/TrainerProfileDialog
 import { InfoCorrectionDialog } from '@/components/business/InfoCorrectionDialog';
 import { ReviewDetailDialog } from '@/components/business/ReviewDetailDialog';
 import { ReviewSubmissionDialog } from '@/components/business/ReviewSubmissionDialog';
+import { TalezCertificationBadge } from '@/components/business/TalezCertificationBadge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -926,9 +927,18 @@ export default function LocationsPage() {
                           </h3>
                           <div className="bg-green-50 p-4 rounded-lg">
                             <div className="flex items-center justify-between mb-2">
-                              <Badge className="bg-green-600 text-white">
-                                인증업체
-                              </Badge>
+                              <TalezCertificationBadge 
+                                businessData={{
+                                  id: selectedLocation.id,
+                                  name: selectedLocation.name,
+                                  businessNumber: selectedLocation.businessNumber,
+                                  certificationStatus: 'verified',
+                                  certificationDate: selectedLocation.certificationDate || '2024-01-15',
+                                  businessType: selectedLocation.businessType || selectedLocation.type
+                                }}
+                                size="md"
+                                showDetails={false}
+                              />
                               {selectedLocation.certificationDate && (
                                 <span className="text-xs text-gray-500">
                                   인증일: {selectedLocation.certificationDate}
