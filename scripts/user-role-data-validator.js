@@ -1,6 +1,9 @@
-const fetch = require('node-fetch');
+#!/usr/bin/env node
+
 const fs = require('fs');
 const path = require('path');
+
+const fetch = require('node-fetch');
 
 class UserRoleDataValidator {
   constructor() {
@@ -480,6 +483,166 @@ class UserRoleDataValidator {
     } catch (error) {
       console.error('❌ 검증 실행 중 오류:', error);
       return null;
+    }
+  }
+
+  generateFinalReport() {
+    const totalTests = this.results.userRoleTests.reduce((sum, role) => sum + role.connections.length, 0) +
+                      this.results.permissionTests.reduce((sum, role) => sum + role.permissions.length, 0);
+    const successfulTests = this.results.userRoleTests.reduce((sum, role) => 
+      sum + role.connections.filter(c => c.success).length, 0) +
+      this.results.permissionTests.reduce((sum, role) => 
+        sum + role.permissions.filter(p => p.success).length, 0);
+
+    console.log('\n📊 === 사용자 역할별 데이터 연결성 검증 결과 ===');
+    console.log(`✅ 성공: ${successfulTests}/${totalTests} (${(successfulTests/totalTests*100).toFixed(1)}%)`);
+    console.log(`❌ 실패: ${totalTests - successfulTests}/${totalTests}`);
+
+    // 로그 추적
+    this.trackValidationLogs();
+
+    console.log('\n👥 === 역할별 연결성 상세 결과 ===');
+    this.results.userRoleTests.forEach(roleTest => {
+      console.log(`\n[${roleTest.role.toUpperCase()}]`);
+      roleTest.connections.forEach(conn => {
+        const icon = conn.success ? '✅' : '❌';
+        console.log(`  ${icon} ${conn.name} - ${conn.details || conn.error || '완료'}`);
+
+        // 실패한 테스트의 로그 추적
+        if (!conn.success && conn.error) {
+          this.logValidationError(roleTest.role, conn.name, conn.error);
+        }
+      });
+    });
+
+    console.log('\n🔐 === 권한 검증 결과 ===');
+    this.results.permissionTests.forEach(permTest => {
+      console.log(`\n[${permTest.role.toUpperCase()}]`);
+      permTest.permissions.forEach(perm => {
+        const icon = perm.success ? '✅' : '❌';
+        console.log(`  ${icon} ${perm.endpoint} - ${perm.details || perm.error || '완료'}`);
+
+        // 실패한 권한 검증의 로그 추적
+        if (!perm.success && perm.error) {
+          this.logValidationError(permTest.role, perm.endpoint, perm.error);
+        }
+      });
+    });
+
+    // 실패한 테스트에 대한 권장사항
+    const failedTests = [
+      ...this.results.userRoleTests.flatMap(r => r.connections.filter(c => !c.success)),
+      ...this.results.permissionTests.flatMap(r => r.permissions.filter(p => !p.success))
+    ];
+
+    if (failedTests.length > 0) {
+      console.log('\n💡 === 개선 권장사항 ===');
+      failedTests.forEach((test, index) => {
+        console.log(`${index + 1}. ${test.name || test.endpoint} 실패 - ${test.error || '연결 확인 필요'}`);
+      });
+    }
+
+    // 보고서 저장
+    this.saveReport();
+  }
+
+  trackValidationLogs() {
+    console.log('\n🔍 === 검증 과정 로그 추적 ===');
+
+    const logDir = path.join(process.cwd(), 'logs');
+    if (!fs.existsSync(logDir)) {
+      console.log('❌ logs 디렉토리가 존재하지 않습니다.');
+      return;
+    }
+
+    try {
+      // 최근 로그 파일 찾기
+      const logFiles = fs.readdirSync(logDir)
+        .filter(file => file.endsWith('.log'))
+        .map(file => ({
+          name: file,
+          path: path.join(logDir, file),
+          mtime: fs.statSync(path.join(logDir, file)).mtime
+        }))
+        .sort((a, b) => b.mtime - a.mtime);
+
+      if (logFiles.length === 0) {
+        console.log('❌ 로그 파일을 찾을 수 없습니다.');
+        return;
+      }
+
+      const recentLog = logFiles[0];
+      console.log(`📄 최근 로그 파일: ${recentLog.name}`);
+
+      // 로그에서 검증 관련 내용 찾기
+      const logContent = fs.readFileSync(recentLog.path, 'utf-8');
+      const validationLogs = this.extractValidationLogs(logContent);
+
+      if (validationLogs.length > 0) {
+        console.log(`📋 발견된 검증 관련 로그: ${validationLogs.length}개`);
+        validationLogs.slice(0, 10).forEach((log, index) => {
+          console.log(`   ${index + 1}. ${log}`);
+        });
+        if (validationLogs.length > 10) {
+          console.log(`   ... 외 ${validationLogs.length - 10}개 더`);
+        }
+      } else {
+        console.log('ℹ️  검증 관련 로그가 발견되지 않았습니다.');
+      }
+
+    } catch (error) {
+      console.log(`❌ 로그 추적 중 오류: ${error.message}`);
+    }
+  }
+
+  extractValidationLogs(content) {
+    const lines = content.split('\n');
+    const validationKeywords = [
+      'validation',
+      'auth',
+      'permission',
+      'role',
+      'user',
+      'error',
+      'failed',
+      'success',
+      'api',
+      'database',
+      'connection'
+    ];
+
+    return lines.filter(line => {
+      const lowerLine = line.toLowerCase();
+      return validationKeywords.some(keyword => lowerLine.includes(keyword)) &&
+             (lowerLine.includes('error') || lowerLine.includes('warn') || 
+              lowerLine.includes('info') || lowerLine.includes('debug'));
+    }).slice(-50); // 최근 50개만
+  }
+
+  logValidationError(role, testName, error) {
+    const logEntry = {
+      timestamp: new Date().toISOString(),
+      level: 'ERROR',
+      type: 'VALIDATION_FAILED',
+      role: role,
+      test: testName,
+      error: error,
+      details: `${role} 역할의 ${testName} 검증 실패: ${error}`
+    };
+
+    // 검증 오류 로그 저장
+    const logDir = path.join(process.cwd(), 'logs');
+    if (!fs.existsSync(logDir)) {
+      fs.mkdirSync(logDir, { recursive: true });
+    }
+
+    const logPath = path.join(logDir, 'validation-errors.log');
+    const logLine = `${logEntry.timestamp} [${logEntry.level}] ${logEntry.details}\n`;
+
+    try {
+      fs.appendFileSync(logPath, logLine);
+    } catch (error) {
+      console.error(`로그 저장 실패: ${error.message}`);
     }
   }
 }
