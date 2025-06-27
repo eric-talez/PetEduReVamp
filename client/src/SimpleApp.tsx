@@ -430,10 +430,10 @@ function AppLayout({ children }: { children: ReactNode }) {
                   <Route path="/locations" component={LocationsPage} />
                   <Route path="/location-finder">
                     {() => {
-                      const LocationFinderPage = lazy(() => import('./pages/LocationFinder'));
+                      const LocationsPage = lazy(() => import('./pages/locations/index'));
                       return (
                         <Suspense fallback={<div className="p-8 text-center">위치 찾기 로딩 중...</div>}>
-                          <LocationFinderPage />
+                          <LocationsPage />
                         </Suspense>
                       );
                     }}
@@ -828,12 +828,12 @@ function AppLayout({ children }: { children: ReactNode }) {
 
                   <Route path="/location-finder">
           {() => {
-            const LocationFinder = lazy(() => import('./pages/LocationFinder'));
+            const LocationsPage = lazy(() => import('./pages/locations/index'));
             return (
               <Suspense fallback={<div className="p-8 flex justify-center items-center">
                 <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
               </div>}>
-                <LocationFinder />
+                <LocationsPage />
               </Suspense>
             );
           }}
