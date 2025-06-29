@@ -816,7 +816,7 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
                     className="flex items-center space-x-2 focus:outline-none"
                     onClick={() => setUserMenuOpen(!userMenuOpen)}
                   >
-                    <Avatar className="h-8 w-8">
+                    <Avatar className="h-6 w-6">
                       {userRole && (
                         <AvatarImage 
                           src={`https://ui-avatars.com/api/?name=${encodeURIComponent(userName || '')}&background=random&color=fff`} 
@@ -826,8 +826,8 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
                       <AvatarFallback>{userName ? userName.substring(0, 1).toUpperCase() : "U"}</AvatarFallback>
                     </Avatar>
                     <span className="hidden lg:flex items-center space-x-1">
-                      <span className="text-sm font-medium">{userName}</span>
-                      <ChevronDown className="h-4 w-4" />
+                      <span className="text-xs font-medium">{userName}</span>
+                      <ChevronDown className="h-3 w-3" />
                     </span>
                   </button>
 
