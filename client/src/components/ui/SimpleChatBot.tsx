@@ -140,7 +140,7 @@ export function SimpleChatBot() {
     return (
       <Button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-4 right-4 rounded-full p-3 z-50 shadow-lg bg-primary hover:bg-primary/90"
+        className="fixed bottom-4 right-24 rounded-full p-3 z-50 shadow-lg bg-primary hover:bg-primary/90"
         size="lg"
       >
         <Bot size={24} />
@@ -149,7 +149,7 @@ export function SimpleChatBot() {
   }
 
   return (
-    <div className="fixed bottom-4 right-4 w-[350px] h-[500px] bg-background border rounded-lg shadow-lg z-50 flex flex-col">
+    <div className="fixed bottom-4 right-24 w-[350px] h-[500px] bg-background border rounded-lg shadow-lg z-50 flex flex-col">
       {/* 헤더 */}
       <div className="p-3 border-b flex items-center justify-between">
         <div className="flex items-center gap-2">
