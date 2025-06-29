@@ -55,12 +55,12 @@ export default function Home() {
     },
     {
       id: 2,
-      title: "AI 기반 반려견 행동 분석",
-      subtitle: "최신 인공지능 기술로 반려견의 행동과 감정을 분석하고 맞춤형 솔루션을 제공합니다",
-      features: ["영상 기반 분석", "감정 모니터링", "맞춤형 가이드"],
+      title: "TALEZ 체험 서비스 - 회원가입 전 무료 체험",
+      subtitle: "강아지 영상을 업로드하고 AI 분석과 전문가 상담을 미리 체험해보세요",
+      features: ["영상 업로드", "AI 행동 분석", "전문가 상담", "무료 체험"],
       image: "https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
-      primaryAction: { text: "AI 분석 체험", path: "/ai-analysis" },
-      secondaryAction: { text: "기술 소개", path: "/about" }
+      primaryAction: { text: "무료 체험하기", path: "/experience" },
+      secondaryAction: { text: "서비스 안내", path: "/about" }
     },
     {
       id: 3,

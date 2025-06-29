@@ -36,6 +36,7 @@ import AnalyticsPage from "./pages/analytics";
 import EducationSchedulePage from "./pages/education-schedule";
 import SubscriptionsPage from "./pages/subscriptions";
 import SearchPage from "./pages/search";
+import TalezExperiencePage from "./pages/TalezExperience";
 
 // 관리자 페이지 직접 import
 import AdminHome from "./pages/admin/AdminHome";
@@ -2106,6 +2107,21 @@ function UnauthenticatedRoutes() {
       <Switch>
         <Route path="/auth" component={Login} />
         <Route path="/chatbot" component={ChatbotPage} />
+        
+        {/* TALEZ 체험 서비스 */}
+        <Route path="/experience">
+          {() => {
+            console.log("TALEZ 체험 서비스 접근");
+            return (
+              <Suspense fallback={<div className="p-8 flex justify-center items-center">
+                <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
+                <span className="ml-2">체험 서비스 로딩 중...</span>
+              </div>}>
+                <TalezExperiencePage />
+              </Suspense>
+            );
+          }}
+        </Route>
 
         {/* 위치 서비스 */}
         <Route path="/locations">
