@@ -2285,113 +2285,11 @@ function UnauthenticatedRoutes() {
 }
 
 /**
- * 디버그 버튼 컴포넌트
+ * 디버그 버튼 컴포넌트 - 챗봇 버튼 가시성을 위해 비활성화
  */
 function DebugButton() {
-  const handleClearAuth = () => {
-    console.log("Clear auth data manually");
-    localStorage.removeItem('petedu_auth');
-    window.location.reload();
-  };
-
-  const handleLoginAs = (role: 'user' | 'pet-owner' | 'trainer' | 'institute-admin' | 'admin') => {
-    console.log(`Login as ${role}`);
-
-    // 역할에 맞는 표시 이름 설정
-    const displayName = role === 'admin' ? '관리자' 
-               : role === 'trainer' ? '훈련사' 
-               : role === 'institute-admin' ? '기관 관리자' 
-               : role === 'pet-owner' ? '반려인' 
-               : '일반 사용자';
-
-    // 새로운 글로벌 인증 시스템으로 로그인 이벤트 발생
-    const loginEvent = new CustomEvent('login', { 
-      detail: { 
-        role: role, 
-        name: displayName,
-        userRole: role,
-        userName: displayName
-      } 
-    });
-
-    window.dispatchEvent(loginEvent);
-  };
-
-  return (
-    <div style={{ position: 'fixed', bottom: '20px', right: '20px', zIndex: 9999, display: 'flex', flexDirection: 'column', gap: '8px' }}>
-      <button
-        onClick={() => handleLoginAs('pet-owner')}
-        style={{ 
-          padding: '8px 12px',
-          backgroundColor: '#4caf50',
-          color: 'white',
-          border: 'none',
-          borderRadius: '5px',
-          cursor: 'pointer',
-          fontSize: '12px'
-        }}
-      >
-        Login as Pet Owner
-      </button>
-      <button
-        onClick={() => handleLoginAs('trainer')}
-        style={{ 
-          padding: '8px 12px',
-          backgroundColor: '#2196f3',
-          color: 'white',
-          border: 'none',
-          borderRadius: '5px',
-          cursor: 'pointer',
-          fontSize: '12px'
-        }}
-      >
-        Login as Trainer
-      </button>
-      <button
-        onClick={() => handleLoginAs('institute-admin')}
-        style={{ 
-          padding: '8px 12px',
-          backgroundColor: '#ff9800',
-          color: 'white',
-          border: 'none',
-          borderRadius: '5px',
-          cursor: 'pointer',
-          fontSize: '12px'
-        }}
-      >
-        Login as Institute
-      </button>
-      <button
-        onClick={() => handleLoginAs('admin')}
-        style={{ 
-          padding: '8px 12px',
-          backgroundColor: '#9c27b0',
-          color: 'white',
-          border: 'none',
-          borderRadius: '5px',
-          cursor: 'pointer',
-          fontSize: '12px'
-        }}
-      >
-        Login as Admin
-      </button>
-      <button
-        onClick={handleClearAuth}
-        style={{ 
-          padding: '8px 12px',
-          backgroundColor: 'red',
-          color: 'white',
-          border: 'none',
-          borderRadius: '5px',
-          cursor: 'pointer',
-          marginTop: '8px',
-          fontSize: '12px'
-        }}
-      >
-        Logout
-      </button>
-    </div>
-  );
+  // 챗봇 버튼을 보이게 하기 위해 로그인 버튼들을 숨김 처리
+  return null;
 }
 
 /**
