@@ -48,20 +48,20 @@ export function QuickLoginButtons() {
   }
   
   return (
-    <div className="flex flex-col space-y-1 mt-2">
+    <div className="grid grid-cols-2 gap-1 mt-1">
       <Button 
         variant="outline" 
         size="sm"
-        className="bg-green-100 hover:bg-green-200 text-green-800 border-green-300 text-xs py-0.5 h-6 px-2"
+        className="bg-green-100 hover:bg-green-200 text-green-800 border-green-300 text-xs py-0.5 h-5 px-1"
         onClick={() => handleLoginAs('pet-owner')}
       >
-        Pet Owner
+        Owner
       </Button>
       
       <Button 
         variant="outline" 
         size="sm"
-        className="bg-blue-100 hover:bg-blue-200 text-blue-800 border-blue-300 text-xs py-0.5 h-6 px-2"
+        className="bg-blue-100 hover:bg-blue-200 text-blue-800 border-blue-300 text-xs py-0.5 h-5 px-1"
         onClick={() => handleLoginAs('trainer')}
       >
         Trainer
@@ -70,7 +70,7 @@ export function QuickLoginButtons() {
       <Button 
         variant="outline" 
         size="sm"
-        className="bg-yellow-100 hover:bg-yellow-200 text-yellow-800 border-yellow-300 text-xs py-0.5 h-6 px-2"
+        className="bg-yellow-100 hover:bg-yellow-200 text-yellow-800 border-yellow-300 text-xs py-0.5 h-5 px-1"
         onClick={() => handleLoginAs('institute-admin')}
       >
         Institute
@@ -79,7 +79,7 @@ export function QuickLoginButtons() {
       <Button 
         variant="outline" 
         size="sm"
-        className="bg-purple-100 hover:bg-purple-200 text-purple-800 border-purple-300 text-xs py-0.5 h-6 px-2"
+        className="bg-purple-100 hover:bg-purple-200 text-purple-800 border-purple-300 text-xs py-0.5 h-5 px-1"
         onClick={() => handleLoginAs('admin')}
       >
         Admin
@@ -88,7 +88,7 @@ export function QuickLoginButtons() {
       <Button 
         variant="outline" 
         size="sm"
-        className="bg-red-100 hover:bg-red-200 text-red-800 border-red-300 text-xs py-0.5 h-6 px-2"
+        className="bg-red-100 hover:bg-red-200 text-red-800 border-red-300 text-xs py-0.5 h-5 px-1 col-span-2"
         onClick={handleLogout}
       >
         Logout
