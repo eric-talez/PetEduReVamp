@@ -97,8 +97,8 @@ export function SimpleChatBot() {
     } catch (error) {
       console.error('AI 응답 오류:', error);
       
-      // API 오류 시 사용자 입력에 맞는 대체 응답 제공
-      const fallbackResponse = getSimulatedResponse(currentInput);
+      // API 오류 시 사용자 입력에 맞는 지능형 응답 제공
+      const fallbackResponse = getIntelligentResponse(currentInput);
       const errorMessage: Message = {
         id: `fallback-${Date.now()}`,
         role: 'assistant',
@@ -110,27 +110,58 @@ export function SimpleChatBot() {
     }
   };
 
-  // 간단한 모의 응답 생성 함수
-  function getSimulatedResponse(input: string): string {
-    const lowerInput = input.toLowerCase();
-
-    if (lowerInput.includes('안녕') || lowerInput.includes('반가워')) {
-      return '안녕하세요! Talez의 AI 어시스턴트입니다. 반려동물 훈련과 관련해 어떤 도움이 필요하신가요?';
+  // 지능형 대화 시스템 - 사용자 입력 분석 및 맞춤형 응답
+  function getIntelligentResponse(input: string): string {
+    const lowerInput = input.toLowerCase().trim();
+    
+    // 인사 및 일반적인 대화
+    const greetingKeywords = ['안녕', '반가워', '처음', '시작', 'hello', 'hi'];
+    if (greetingKeywords.some(keyword => lowerInput.includes(keyword))) {
+      return '안녕하세요! TALEZ의 AI 전문 어시스턴트입니다. 반려동물의 건강, 훈련, 영양, 행동 문제에 대해 전문적인 조언을 드릴 수 있습니다. 어떤 도움이 필요하신가요?';
     }
     
-    if (lowerInput.includes('강아지') && (lowerInput.includes('짖') || lowerInput.includes('짓'))) {
-      return '강아지가 짖는 것은 의사소통의 한 방법입니다. 과도한 짖음은 불안, 지루함, 영역 방어 등의 이유로 발생할 수 있습니다. 규칙적인 운동과 정신적 자극을 제공하고, 짖지 않을 때 보상하는 방식의 훈련이 도움이 될 수 있습니다.';
+    // 강아지 행동 문제
+    if (lowerInput.includes('강아지') && (lowerInput.includes('짖') || lowerInput.includes('짓') || lowerInput.includes('소음'))) {
+      return '강아지 짖음은 의사소통의 자연스러운 방법이지만, 과도할 경우 문제가 될 수 있습니다.\n\n주요 원인:\n• 불안이나 스트레스\n• 지루함이나 관심 끌기\n• 영역 방어 본능\n• 분리불안\n\n해결 방법:\n• 충분한 운동과 정신적 자극 제공\n• 조용할 때 보상하는 긍정 강화 훈련\n• 규칙적인 일과 유지\n\n지속적인 문제라면 TALEZ 전문 훈련사와 상담해보세요.';
     }
     
-    if (lowerInput.includes('고양이') && (lowerInput.includes('화장실') || lowerInput.includes('배변'))) {
-      return '고양이가 화장실을 사용하지 않는 경우는 스트레스, 건강 문제, 또는 화장실 환경에 불만이 있을 수 있습니다. 화장실을 깨끗하게 유지하고, 조용하고 접근하기 쉬운 장소에 배치하세요. 지속적인 문제라면 수의사 상담을 권장합니다.';
+    // 고양이 화장실/배변 문제
+    if (lowerInput.includes('고양이') && (lowerInput.includes('화장실') || lowerInput.includes('배변') || lowerInput.includes('용변'))) {
+      return '고양이 화장실 문제는 스트레스나 환경 변화로 인해 발생할 수 있습니다.\n\n점검 사항:\n• 화장실 청결도 (매일 청소)\n• 모래의 종류와 깊이 (5-7cm 권장)\n• 화장실 위치 (조용하고 접근 쉬운 곳)\n• 화장실 개수 (고양이 수 + 1개)\n\n갑작스러운 변화나 혈뇨, 변비 증상이 있다면 즉시 수의사 진료를 받으세요.';
     }
     
-    if (lowerInput.includes('훈련') || lowerInput.includes('교육')) {
-      return '효과적인 반려동물 훈련은 일관성, 인내, 그리고 긍정적 강화에 기반합니다. 원하는 행동에 보상을 주고, 짧은 세션으로 자주 훈련하며, 진행 상황을 기록하는 것이 중요합니다. 각 반려동물은 개성이 있으므로 그에 맞는 접근 방식을 찾는 것이 좋습니다.';
+    // 훈련 및 교육
+    if (lowerInput.includes('훈련') || lowerInput.includes('교육') || lowerInput.includes('가르치') || lowerInput.includes('배우')) {
+      return 'TALEZ는 체계적인 반려동물 교육 프로그램을 제공합니다.\n\n주요 훈련 프로그램:\n• 기본 예의교육 (앉아, 기다려, 이리와)\n• 사회화 훈련\n• 문제행동 교정\n• 어질리티 훈련\n• 치료견 훈련\n\n"내 훈련사" 메뉴에서 전문 훈련사를 찾아 맞춤형 상담을 받아보세요. 각 훈련사의 전문 분야와 후기를 확인할 수 있습니다.';
     }
     
-    return '흥미로운 질문이네요. 구체적인 상황이나 반려동물의 종류, 나이 등을 알려주시면 더 도움이 될 수 있는 정보를 제공해 드릴 수 있습니다.';
+    // 건강 관련
+    if (lowerInput.includes('건강') || lowerInput.includes('병원') || lowerInput.includes('아프') || lowerInput.includes('증상') || lowerInput.includes('진료')) {
+      return '반려동물의 건강 관리는 예방이 가장 중요합니다.\n\n정기 관리 항목:\n• 연간 종합건강검진\n• 예방접종 (매년)\n• 심장사상충 예방약\n• 구충제 투여\n• 치과 관리\n\n응급 상황 징후:\n• 호흡곤란, 구토, 설사\n• 식욕부진이 24시간 이상 지속\n• 무기력, 고열\n\n이상 증상 발견 시 즉시 수의사와 상담하세요. TALEZ 건강관리 기능으로 접종 일정을 체계적으로 관리할 수 있습니다.';
+    }
+    
+    // 영양 및 사료
+    if (lowerInput.includes('사료') || lowerInput.includes('먹이') || lowerInput.includes('영양') || lowerInput.includes('급여') || lowerInput.includes('음식')) {
+      return '균형잡힌 영양은 반려동물의 건강한 삶의 기초입니다.\n\n연령별 사료 선택:\n• 퍼피/키튼: 성장기용 고단백 사료\n• 성견/성묘: 활동량에 맞는 유지 사료\n• 시니어: 소화 쉬운 저칼로리 사료\n\n급여 원칙:\n• 정해진 시간에 규칙적으로\n• 적정량 준수 (비만 예방)\n• 충분한 신선한 물 제공\n• 사료 변경 시 점진적으로 (7-10일)\n\n특별한 건강 상태나 알레르기가 있다면 수의사와 상담 후 처방 사료를 고려하세요.';
+    }
+    
+    // 운동 및 산책
+    if (lowerInput.includes('산책') || lowerInput.includes('운동') || lowerInput.includes('활동') || lowerInput.includes('놀이')) {
+      return '규칙적인 운동은 반려동물의 신체적, 정신적 건강에 필수입니다.\n\n견종별 운동량:\n• 소형견: 1일 30분-1시간\n• 중형견: 1일 1-2시간\n• 대형견: 1일 2시간 이상\n\n운동의 효과:\n• 스트레스 해소 및 문제행동 예방\n• 근육과 뼈 건강 유지\n• 면역력 강화\n• 사회화 기회 제공\n\n날씨가 좋지 않을 때는 실내 놀이나 정신적 자극 활동으로 대체할 수 있습니다. 퍼즐 장난감이나 숨바꼭질 게임을 활용해보세요.';
+    }
+    
+    // 행동 문제
+    if (lowerInput.includes('문제') || lowerInput.includes('행동') || lowerInput.includes('교정') || lowerInput.includes('버릇')) {
+      return '반려동물의 문제행동은 대부분 환경적 요인이나 스트레스에서 비롯됩니다.\n\n일반적인 문제행동:\n• 분리불안 (울음, 파괴행동)\n• 공격성 (으르렁거림, 물기)\n• 강박행동 (계속 핥기, 돌기)\n• 배변 실수\n\n해결 접근법:\n• 원인 파악이 우선\n• 일관된 규칙과 루틴\n• 긍정적 강화 훈련\n• 충분한 운동과 자극\n\n심각한 문제행동은 TALEZ의 행동 전문 훈련사와 상담하여 체계적인 교정 프로그램을 받으시기를 권합니다.';
+    }
+    
+    // TALEZ 서비스 관련
+    if (lowerInput.includes('talez') || lowerInput.includes('테일즈') || lowerInput.includes('서비스') || lowerInput.includes('기능')) {
+      return 'TALEZ는 종합 반려동물 케어 플랫폼입니다.\n\n주요 서비스:\n• 전문 훈련사 매칭 및 상담\n• 건강관리 스케줄링\n• 반려동물 프로필 관리\n• 교육 커뮤니티\n• 용품 쇼핑몰\n• AI 상담 서비스\n\n각 메뉴를 통해 맞춤형 서비스를 이용하실 수 있으며, 전문가들의 검증된 정보와 조언을 받을 수 있습니다.';
+    }
+    
+    // 기본 응답
+    return '구체적인 질문을 해주시면 더 정확하고 도움이 되는 답변을 드릴 수 있습니다.\n\n상담 가능한 주제:\n• 반려동물 훈련 및 교육\n• 건강관리 및 응급상황\n• 영양 및 사료 선택\n• 행동 문제 해결\n• 운동 및 놀이 활동\n\nTALEZ의 전문 서비스를 통해 더 전문적인 도움을 받으실 수도 있습니다.';
   }
 
   // 엔터 키로 메시지 전송 (Shift+Enter는 줄바꿈)
