@@ -140,7 +140,8 @@ export function SimpleChatBot() {
     return (
       <Button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-4 right-4 rounded-full p-3 z-50"
+        className="fixed bottom-4 right-4 rounded-full p-3 z-50 shadow-lg bg-primary hover:bg-primary/90"
+        size="lg"
       >
         <Bot size={24} />
       </Button>

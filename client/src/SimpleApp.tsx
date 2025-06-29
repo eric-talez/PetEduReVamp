@@ -2325,7 +2325,7 @@ function SimpleApp() {
                   {auth.isAuthenticated ? <AuthenticatedRoutes /> : <UnauthenticatedRoutes />}
                   <DebugButton />
                   <Toaster />
-                  <AccessibilityFloatingButton />
+
 
                 </>
               </KeyboardShortcutsManager>
