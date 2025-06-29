@@ -115,6 +115,13 @@ TALEZ is a comprehensive pet education and e-commerce platform that combines AI-
 
 ## Changelog
 
+- June 27, 2025. Enhanced TALEZ certification system with improved visual design:
+  - Upgraded TalezCertificationBadge component with premium gradient styling and animations
+  - Added rounded badge design with enhanced shadows and ring effects for verified status
+  - Implemented TalezTrainerCertificationBadge for trainer-specific certification display
+  - Extended certification system to all trainer and business listing pages
+  - Added comprehensive trainer API with certification data including license numbers and levels
+  - Unified certification mark design across location finder, trainer search, and my trainers pages
 - June 27, 2025. Integrated Naver map service and restored reservation functionality:
   - Replaced Leaflet.js with Naver Maps API for improved map rendering
   - Added comprehensive reservation system with QuickReservationDialog component
