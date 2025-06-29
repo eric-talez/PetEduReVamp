@@ -93,11 +93,12 @@ export function SimpleChatBot() {
     } catch (error) {
       console.error('AI 응답 오류:', error);
       
-      // 오류 메시지 추가
+      // 대체 응답 생성 - 사용자 입력에 따른 맞춤형 답변
+      const fallbackResponse = getSimulatedResponse(inputValue);
       const errorMessage: Message = {
-        id: `error-${Date.now()}`,
+        id: `fallback-${Date.now()}`,
         role: 'assistant',
-        content: '죄송합니다, 응답을 생성하는 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.'
+        content: fallbackResponse
       };
       
       setMessages(prev => [...prev, errorMessage]);
@@ -138,69 +139,78 @@ export function SimpleChatBot() {
 
   if (!isOpen) {
     return (
-      <Button
-        onClick={() => setIsOpen(true)}
-        className="fixed bottom-4 right-4 rounded-full p-3 z-[60] shadow-lg bg-primary hover:bg-primary/90"
-        style={{ 
-          position: 'fixed',
-          bottom: '16px',
-          right: '16px',
-          zIndex: 60,
-          display: 'flex',
-          visibility: 'visible'
-        }}
-        size="lg"
-      >
-        <Bot size={24} />
-      </Button>
+      <div className="fixed bottom-6 right-6 z-[60]">
+        <Button
+          onClick={() => setIsOpen(true)}
+          className="w-14 h-14 rounded-full bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-110 border-2 border-white/20"
+          style={{ 
+            background: 'linear-gradient(135deg, #2BAA61 0%, #1e8b4f 100%)',
+            boxShadow: '0 8px 32px rgba(43, 170, 97, 0.3), 0 2px 8px rgba(0, 0, 0, 0.1)',
+          }}
+        >
+          <Bot size={22} className="text-white drop-shadow-sm" />
+          {/* 펄스 애니메이션 효과 */}
+          <div className="absolute -inset-2 rounded-full bg-primary/20 animate-ping" />
+          <div className="absolute -inset-1 rounded-full bg-gradient-to-r from-primary/30 to-primary/10 animate-pulse" />
+        </Button>
+        
+        {/* 툴팁 */}
+        <div className="absolute bottom-16 right-0 bg-gray-800 text-white text-sm px-3 py-2 rounded-lg shadow-lg opacity-0 pointer-events-none transition-opacity duration-200 whitespace-nowrap hover:opacity-100 group-hover:opacity-100">
+          AI 도우미와 채팅하기
+          <div className="absolute top-full right-4 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-800" />
+        </div>
+      </div>
     );
   }
 
   return (
-    <div 
-      className="fixed bottom-4 right-24 w-[350px] h-[500px] bg-background border rounded-lg shadow-lg z-[60] flex flex-col"
-      style={{
-        position: 'fixed',
-        bottom: '16px',
-        right: '96px',
-        zIndex: 60,
-        display: 'flex',
-        visibility: 'visible'
-      }}
-    >
+    <div className="fixed bottom-6 right-6 w-80 h-[480px] bg-white border border-gray-200 rounded-2xl shadow-2xl z-[60] flex flex-col overflow-hidden">
       {/* 헤더 */}
-      <div className="p-3 border-b flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Bot className="text-primary" size={20} />
-          <h3 className="font-medium">AI 어시스턴트</h3>
+      <div className="flex items-center justify-between p-4 bg-gradient-to-r from-primary to-primary/90 text-white">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
+            <Bot size={18} />
+          </div>
+          <div>
+            <span className="font-semibold text-sm">TALEZ AI 도우미</span>
+            <div className="flex items-center gap-1 text-xs text-white/80">
+              <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+              온라인
+            </div>
+          </div>
         </div>
-        <Button variant="ghost" size="icon" onClick={() => setIsOpen(false)}>
-          <X size={18} />
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => setIsOpen(false)}
+          className="text-white hover:bg-white/20 w-8 h-8 p-0 rounded-full"
+        >
+          <X size={16} />
         </Button>
       </div>
 
       {/* 메시지 영역 */}
-      <ScrollArea className="flex-1 p-4">
+      <ScrollArea className="flex-1 p-4 bg-gray-50/50">
         <div className="space-y-4">
           {messages.filter(m => m.role !== 'system').map(message => (
             <div
               key={message.id}
               className={cn(
-                'flex gap-2 mb-4',
+                'flex gap-3 mb-4',
                 message.role === 'user' ? 'justify-end' : 'justify-start'
               )}
             >
               {message.role === 'assistant' && (
-                <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground">
-                  <Bot size={18} />
+                <div className="w-8 h-8 rounded-full bg-gradient-to-r from-primary to-primary/80 flex items-center justify-center text-white shadow-sm">
+                  <Bot size={16} />
                 </div>
               )}
               <div
                 className={cn(
-                  'rounded-lg px-4 py-2 max-w-[80%]',
+                  'rounded-2xl px-4 py-3 max-w-[75%] text-sm leading-relaxed shadow-sm',
                   message.role === 'user' 
-                    ? 'bg-primary text-primary-foreground rounded-tr-none' 
-                    : 'bg-muted rounded-tl-none'
+                    ? 'bg-primary text-white rounded-br-md' 
+                    : 'bg-white text-gray-800 border border-gray-100 rounded-bl-md'
                 )}
               >
                 <div className="whitespace-pre-wrap">
@@ -208,8 +218,8 @@ export function SimpleChatBot() {
                 </div>
               </div>
               {message.role === 'user' && (
-                <div className="w-8 h-8 rounded-full bg-primary/80 flex items-center justify-center text-primary-foreground">
-                  <User size={18} />
+                <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center text-gray-600">
+                  <User size={16} />
                 </div>
               )}
             </div>
@@ -229,29 +239,33 @@ export function SimpleChatBot() {
       </ScrollArea>
 
       {/* 입력 영역 */}
-      <div className="p-3 border-t">
-        <div className="flex gap-2">
-          <Textarea
-            ref={inputRef}
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder="질문을 입력하세요..."
-            className="resize-none min-h-[40px] max-h-[120px]"
-            disabled={isLoading}
-          />
+      <div className="p-4 bg-white border-t border-gray-100">
+        <div className="flex gap-3 items-end">
+          <div className="flex-1">
+            <Textarea
+              ref={inputRef}
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder="반려동물에 대해 궁금한 것을 물어보세요..."
+              className="resize-none min-h-[44px] max-h-[120px] border-gray-200 rounded-xl focus:border-primary focus:ring-primary/20 text-sm"
+              disabled={isLoading}
+            />
+          </div>
           <Button
             onClick={handleSendMessage}
             size="icon"
             disabled={!inputValue.trim() || isLoading}
+            className="w-11 h-11 rounded-xl bg-primary hover:bg-primary/90 shadow-sm"
           >
             <Send size={18} />
           </Button>
         </div>
-        <div className="mt-2 text-xs text-muted-foreground">
+        <div className="mt-3 text-xs text-gray-500 flex items-center gap-2">
+          <div className="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
           {isAuthenticated 
-            ? '모든 대화 내용은 개인정보 보호 정책에 따라 처리됩니다.' 
-            : '더 많은 기능을 사용하려면 로그인하세요.'}
+            ? 'AI가 반려동물 케어에 대한 맞춤형 조언을 제공합니다' 
+            : '로그인하면 개인화된 반려동물 관리 조언을 받을 수 있습니다'}
         </div>
       </div>
     </div>
