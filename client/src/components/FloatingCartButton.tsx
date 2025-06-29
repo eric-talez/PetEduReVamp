@@ -9,13 +9,9 @@ export function FloatingCartButton() {
   const [hasItems, setHasItems] = useState(false);
 
   useEffect(() => {
-    // 스크롤 이벤트 핸들러 - 스크롤 시 버튼을 표시
+    // 스크롤 이벤트 핸들러 - 항상 버튼을 표시
     const handleScroll = () => {
-      if (window.scrollY > 300) {
-        setIsVisible(true);
-      } else {
-        setIsVisible(false);
-      }
+      setIsVisible(true); // 항상 표시
     };
 
     // 장바구니 상태 확인 (실제 구현에서는 API 호출 또는 전역 상태 사용)
