@@ -40,18 +40,19 @@ export function QuickLoginButtons() {
     window.dispatchEvent(logoutEvent);
   };
 
-  // 개발 모드에서만 QuickLogin 버튼을 표시 (숨김 처리)
-  const isDevEnv = false; // 요청에 따라 숨김 처리를 위해 false로 설정
+  // 개발 모드에서만 QuickLogin 버튼을 표시 (현재 표시)
+  const isDevEnv = true; // 버튼 표시를 위해 true로 설정
   
   if (!isDevEnv) {
     return null; // 개발 모드가 아닌 경우 아무것도 렌더링하지 않음
   }
   
   return (
-    <div className="flex flex-col space-y-2 mt-4">
+    <div className="flex flex-col space-y-1.5 mt-3">
       <Button 
         variant="outline" 
-        className="bg-green-100 hover:bg-green-200 text-green-800 border-green-300"
+        size="sm"
+        className="bg-green-100 hover:bg-green-200 text-green-800 border-green-300 text-xs py-1.5 h-8"
         onClick={() => handleLoginAs('pet-owner')}
       >
         Login as Pet Owner
@@ -59,7 +60,8 @@ export function QuickLoginButtons() {
       
       <Button 
         variant="outline" 
-        className="bg-blue-100 hover:bg-blue-200 text-blue-800 border-blue-300"
+        size="sm"
+        className="bg-blue-100 hover:bg-blue-200 text-blue-800 border-blue-300 text-xs py-1.5 h-8"
         onClick={() => handleLoginAs('trainer')}
       >
         Login as Trainer
@@ -67,7 +69,8 @@ export function QuickLoginButtons() {
       
       <Button 
         variant="outline" 
-        className="bg-yellow-100 hover:bg-yellow-200 text-yellow-800 border-yellow-300"
+        size="sm"
+        className="bg-yellow-100 hover:bg-yellow-200 text-yellow-800 border-yellow-300 text-xs py-1.5 h-8"
         onClick={() => handleLoginAs('institute-admin')}
       >
         Login as Institute
@@ -75,7 +78,8 @@ export function QuickLoginButtons() {
       
       <Button 
         variant="outline" 
-        className="bg-purple-100 hover:bg-purple-200 text-purple-800 border-purple-300"
+        size="sm"
+        className="bg-purple-100 hover:bg-purple-200 text-purple-800 border-purple-300 text-xs py-1.5 h-8"
         onClick={() => handleLoginAs('admin')}
       >
         Login as Admin
@@ -83,7 +87,8 @@ export function QuickLoginButtons() {
       
       <Button 
         variant="outline" 
-        className="bg-red-100 hover:bg-red-200 text-red-800 border-red-300"
+        size="sm"
+        className="bg-red-100 hover:bg-red-200 text-red-800 border-red-300 text-xs py-1.5 h-8"
         onClick={handleLogout}
       >
         Logout
