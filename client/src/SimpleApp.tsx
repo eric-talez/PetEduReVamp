@@ -1,7 +1,6 @@
 import { Switch, Route } from "wouter";
 import { RedirectHandler } from './components/RedirectHandler';
 import React, { ReactNode, useState, useEffect, lazy, Suspense } from "react";
-import SimpleChatbot from './components/SimpleChatbot';
 import { SimpleChatBot } from './components/ui/SimpleChatBot';
 import { UserPreferencesProvider } from './hooks/use-user-preferences';
 import { useGlobalShortcuts } from './hooks/use-keyboard-shortcuts';
@@ -934,7 +933,7 @@ function AppLayout({ children }: { children: ReactNode }) {
 
         {/* 챗봇 */}
         <div className="fixed bottom-4 right-4 z-50">
-          <SimpleChatbot />
+
         </div>
       </div>
     </ErrorBoundary>
@@ -2278,8 +2277,8 @@ function UnauthenticatedRoutes() {
           }}
         </Route>
       </Switch>
-      {/* 비로그인 사용자를 위한 AI 챗봇 */}
-      <SimpleChatbot />
+      {/* AI 챗봇 */}
+      <SimpleChatBot />
     </AppLayout>
   );
 }
@@ -2327,7 +2326,7 @@ function SimpleApp() {
                   <DebugButton />
                   <Toaster />
                   <AccessibilityFloatingButton />
-                  <SimpleChatBot />
+
                 </>
               </KeyboardShortcutsManager>
             </NotificationsProvider>
