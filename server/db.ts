@@ -3,7 +3,7 @@ import { drizzle as drizzlePg } from 'drizzle-orm/neon-serverless';
 import { drizzle as drizzleMaria } from 'drizzle-orm/mysql2';
 import mysql from 'mysql2/promise';
 import ws from "ws";
-import * as schema from "@shared/schema";
+import * as schema from "../shared/schema";
 
 // 환경별 데이터베이스 설정
 const isProduction = process.env.NODE_ENV === 'production';

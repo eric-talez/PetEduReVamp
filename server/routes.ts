@@ -9,7 +9,7 @@ import { registerShoppingRoutes } from "./routes/shopping";
 // import { registerNotificationRoutes } from "./routes/notification-routes";
 import { registerUploadRoutes } from "./routes/upload";
 import { storage } from "./storage";
-import { courses, users, institutes } from "@shared/schema";
+import { courses, users, institutes } from "../shared/schema";
 import { ilike, or } from "drizzle-orm";
 // import { setupCommissionRoutes } from './commission/routes';
 // import { setupHealthRoutes } from './routes/health';

@@ -8,7 +8,7 @@ import {
   commissionPolicies, commissionTransactions, settlementReports,
   shopCategories, products, cartItems,
   banners, type Banner, type InsertBanner
-} from "@shared/schema";
+} from "../shared/schema";
 
 // 프로필 업데이트를 위한 인터페이스
 export interface ProfileUpdateData {
