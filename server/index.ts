@@ -1,6 +1,7 @@
 import express from "express";
 import { registerRoutes } from "./routes";
 import { registerAIRoutes } from "./routes/ai";
+import { registerExperienceRoutes } from "./routes/experience";
 import { setupVite, serveStatic } from "./vite";
 import session from "express-session";
 import passport from "passport";
@@ -74,6 +75,9 @@ async function startServer() {
     
     // Register AI routes
     registerAIRoutes(app);
+    
+    // Register experience routes
+    registerExperienceRoutes(app);
 
     // Setup Vite for development or serve static files for production
     if (process.env.NODE_ENV === "development") {
