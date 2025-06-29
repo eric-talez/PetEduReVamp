@@ -1,5 +1,6 @@
 import express from "express";
 import { registerRoutes } from "./routes";
+import { registerAIRoutes } from "./routes/ai";
 import { setupVite, serveStatic } from "./vite";
 import session from "express-session";
 import passport from "passport";
@@ -70,6 +71,9 @@ async function startServer() {
   try {
     // Register API routes
     const server = await registerRoutes(app);
+    
+    // Register AI routes
+    registerAIRoutes(app);
 
     // Setup Vite for development or serve static files for production
     if (process.env.NODE_ENV === "development") {

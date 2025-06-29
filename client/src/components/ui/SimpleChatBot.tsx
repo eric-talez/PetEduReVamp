@@ -12,17 +12,17 @@ interface Message {
   content: string;
 }
 
-// 기본 시스템 메시지
-const DEFAULT_SYSTEM_MESSAGE = {
-  id: 'system-1',
-  role: 'system' as const,
-  content: `당신은 Talez의 AI 어시스턴트입니다. 반려동물 훈련과 교육에 관한 질문에 친절하고 전문적인 답변을 제공합니다.`
+// 기본 환영 메시지
+const DEFAULT_WELCOME_MESSAGE = {
+  id: 'welcome-1',
+  role: 'assistant' as const,
+  content: '안녕하세요! TALEZ의 AI 전문 어시스턴트입니다. 반려동물의 건강, 훈련, 영양, 행동 문제에 대해 전문적인 조언을 드릴 수 있습니다. 어떤 도움이 필요하신가요?'
 };
 
 export function SimpleChatBot() {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
-    DEFAULT_SYSTEM_MESSAGE
+    DEFAULT_WELCOME_MESSAGE
   ]);
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -35,15 +35,17 @@ export function SimpleChatBot() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // 메시지 전송 처리
+  // 메시지 전송 처리 - OpenAI API 사용
   const handleSendMessage = async () => {
     if (!inputValue.trim() || isLoading) return;
 
+    const currentInput = inputValue.trim();
+    
     // 사용자 메시지 생성
     const userMessage: Message = {
       id: `user-${Date.now()}`,
       role: 'user',
-      content: inputValue.trim()
+      content: currentInput
     };
 
     // UI 업데이트
@@ -52,32 +54,34 @@ export function SimpleChatBot() {
     setIsLoading(true);
 
     try {
-      // API 요청 준비
-      const apiMessages = messages.map(msg => ({
+      // 대화 기록 준비 (최근 10개 메시지만 전송하여 컨텍스트 유지)
+      const conversationHistory = messages.slice(-10).map(msg => ({
         role: msg.role,
         content: msg.content
       }));
 
-      apiMessages.push({
-        role: userMessage.role,
-        content: userMessage.content
+      // 현재 사용자 메시지 추가
+      conversationHistory.push({
+        role: 'user',
+        content: currentInput
       });
 
-      // 실제 AI API 호출
+      // OpenAI API 호출
       const response = await fetch('/api/ai/chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          messages: apiMessages,
-          model: 'gpt-4o', // 최신 모델 사용
-          maxTokens: isAuthenticated ? 1000 : 500, // 인증 여부에 따라 다른 토큰 제한
+          messages: conversationHistory,
+          model: 'gpt-4o', // 최신 OpenAI 모델 사용
+          maxTokens: 800, // 적절한 응답 길이 제한
         }),
       });
 
       if (!response.ok) {
-        throw new Error(`API 요청 실패: ${response.status}`);
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `API 요청 실패: ${response.status}`);
       }
 
       const data = await response.json();
@@ -85,7 +89,7 @@ export function SimpleChatBot() {
       const assistantMessage: Message = {
         id: `assistant-${Date.now()}`,
         role: 'assistant',
-        content: data.content || '응답을 받지 못했습니다.'
+        content: data.response || '응답을 받지 못했습니다.'
       };
 
       setMessages(prev => [...prev, assistantMessage]);
@@ -93,8 +97,8 @@ export function SimpleChatBot() {
     } catch (error) {
       console.error('AI 응답 오류:', error);
       
-      // 대체 응답 생성 - 사용자 입력에 따른 맞춤형 답변
-      const fallbackResponse = getSimulatedResponse(inputValue);
+      // API 오류 시 사용자 입력에 맞는 대체 응답 제공
+      const fallbackResponse = getSimulatedResponse(currentInput);
       const errorMessage: Message = {
         id: `fallback-${Date.now()}`,
         role: 'assistant',
