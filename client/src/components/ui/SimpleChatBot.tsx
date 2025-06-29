@@ -140,11 +140,11 @@ export function SimpleChatBot() {
     return (
       <Button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-4 right-24 rounded-full p-3 z-[60] shadow-lg bg-primary hover:bg-primary/90 !important"
+        className="fixed bottom-4 right-4 rounded-full p-3 z-[60] shadow-lg bg-primary hover:bg-primary/90"
         style={{ 
           position: 'fixed',
           bottom: '16px',
-          right: '96px',
+          right: '16px',
           zIndex: 60,
           display: 'flex',
           visibility: 'visible'

@@ -59,7 +59,7 @@ import AdminContents from "./pages/admin/AdminContents";
 import { TopBar } from "@/components/TopBar";
 import { Sidebar } from "@/components/Sidebar";
 import { Toaster } from "@/components/ui/toaster";
-import { FloatingCartButton } from "@/components/FloatingCartButton";
+
 import { ThemeManager } from "@/components/ThemeManager";
 import { AccessibilityFloatingButton } from "@/components/ui/AccessibilityControls";
 import { DogLoading, FullScreenLoading } from "@/components/DogLoading";
@@ -926,15 +926,12 @@ function AppLayout({ children }: { children: ReactNode }) {
               </ErrorBoundary>
             </main>
 
-            {/* 플로팅 장바구니 버튼 */}
-            <FloatingCartButton />
+
           </div>
         </div>
 
-        {/* 챗봇 */}
-        <div className="fixed bottom-4 right-4 z-50">
-
-        </div>
+        {/* AI 챗봇 */}
+        <SimpleChatBot />
       </div>
     </ErrorBoundary>
   );
