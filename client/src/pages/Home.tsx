@@ -7,7 +7,7 @@ import { WeeklyWeatherModal } from '@/components/WeeklyWeatherModal';
 import { ShopPreview } from '@/components/ShopPreview';
 import { SocialLoginButtons } from '@/components/SocialLoginButtons';
 import { RealTimePopularChart } from '@/components/RealTimePopularChart';
-import { useState, lazy, Suspense, useEffect } from 'react';
+import { useState, lazy, Suspense, useEffect, useMemo } from 'react';
 import { Loader2, ChevronDown, ChevronRight, ChevronLeft, Upload, Play, CheckCircle } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { PasswordResetForm } from '@/components/PasswordResetForm';
@@ -297,7 +297,7 @@ export default function Home() {
   });
 
   // 표시할 배너 슬라이드 결정 (사용자 역할에 따라 다른 배너 표시)
-  const getBannerSlides = () => {
+  const bannerSlides = useMemo(() => {
     console.log('[Banner Debug] 인증 상태:', isAuthenticated, '사용자 역할:', userRole);
     // 인증된 훈련사인 경우 훈련사 전용 배너 표시
     if (isAuthenticated && userRole === 'trainer') {
@@ -309,10 +309,14 @@ export default function Home() {
     return adminBanners.length > 0 
       ? adminBanners.map(convertAdminBannerToSlide)
       : defaultBannerSlides;
-  };
+  }, [isAuthenticated, userRole, adminBanners.length]);
   
-  const bannerSlides = getBannerSlides();
   console.log('[Banner Debug] 최종 배너 슬라이드 수:', bannerSlides.length, '첫 번째 배너:', bannerSlides[0]?.title);
+
+  // 배너가 변경될 때 currentSlide 리셋
+  useEffect(() => {
+    setCurrentSlide(0);
+  }, [bannerSlides.length]);
 
   // 서비스 현황 토글 함수
   const toggleServiceStats = () => {
