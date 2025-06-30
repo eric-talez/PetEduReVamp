@@ -40,6 +40,81 @@ function requireAuth(role?: string) {
 
 export async function registerRoutes(app: Express): Promise<Server> {
 
+  // 인증 API 라우트
+  app.post('/api/login', async (req, res) => {
+    try {
+      const { username, password } = req.body;
+      
+      if (!username || !password) {
+        return res.status(400).json({
+          success: false,
+          message: '아이디와 비밀번호를 입력해주세요.'
+        });
+      }
+
+      // 테스트 계정 정보
+      const testAccounts = {
+        'testuser': { password: 'password123', role: 'pet-owner', name: '테스트 사용자' },
+        'trainer01': { password: 'trainer123', role: 'trainer', name: '훈련사' },
+        'admin': { password: 'admin123', role: 'admin', name: '관리자' },
+        'institute01': { password: 'institute123', role: 'institute-admin', name: '기관 관리자' }
+      };
+
+      const account = testAccounts[username as keyof typeof testAccounts];
+      
+      if (!account || account.password !== password) {
+        return res.status(401).json({
+          success: false,
+          message: '아이디 또는 비밀번호가 일치하지 않습니다.'
+        });
+      }
+
+      // 세션에 사용자 정보 저장
+      req.session.user = {
+        id: username,
+        username,
+        role: account.role,
+        name: account.name
+      };
+
+      return res.json({
+        success: true,
+        user: {
+          id: username,
+          username,
+          role: account.role,
+          name: account.name
+        }
+      });
+
+    } catch (error) {
+      console.error('로그인 오류:', error);
+      return res.status(500).json({
+        success: false,
+        message: '로그인 처리 중 오류가 발생했습니다.'
+      });
+    }
+  });
+
+  // 로그아웃 API
+  app.post('/api/logout', (req, res) => {
+    req.session.destroy((err) => {
+      if (err) {
+        return res.status(500).json({ success: false, message: '로그아웃 실패' });
+      }
+      res.clearCookie('connect.sid');
+      return res.json({ success: true, message: '로그아웃 성공' });
+    });
+  });
+
+  // 사용자 정보 확인 API
+  app.get('/api/user', (req, res) => {
+    if (req.session.user) {
+      return res.json(req.session.user);
+    }
+    return res.status(401).json({ message: '인증되지 않은 사용자' });
+  });
+
   // 대시보드 라우트 등록
   registerDashboardRoutes(app);
 
