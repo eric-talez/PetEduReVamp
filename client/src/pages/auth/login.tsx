@@ -65,6 +65,75 @@ export default function Login() {
     );
   }
 
+  // 빠른 로그인 처리 함수
+  const handleQuickLogin = async (testUsername: string, testPassword: string) => {
+    setIsLoading(true);
+    setUsername(testUsername);
+    setPassword(testPassword);
+    
+    try {
+      // 서버에 로그인 요청
+      const response = await fetch('/api/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          username: testUsername,
+          password: testPassword,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || '로그인에 실패했습니다.');
+      }
+
+      const userData = await response.json();
+      
+      if (userData.success) {
+        // 로그인 성공 시 인증 이벤트 발행
+        const loginEvent = new CustomEvent('login', {
+          detail: {
+            role: userData.user.role,
+            name: userData.user.name,
+            userRole: userData.user.role,
+            userName: userData.user.name
+          }
+        });
+        window.dispatchEvent(loginEvent);
+
+        toast({
+          title: "로그인 성공",
+          description: `${userData.user.name}님, 환영합니다!`,
+          variant: "default",
+        });
+
+        // 역할에 따른 대시보드로 이동
+        const dashboardPath = userData.user.role === 'pet-owner' ? '/dashboard' : 
+                             userData.user.role === 'trainer' ? '/trainer/dashboard' : 
+                             userData.user.role === 'institute-admin' ? '/institute/dashboard' : 
+                             userData.user.role === 'admin' ? '/admin/dashboard' : '/dashboard';
+        
+        setTimeout(() => {
+          setLocation(dashboardPath);
+        }, 1000);
+      } else {
+        throw new Error(userData.message || '로그인에 실패했습니다.');
+      }
+
+    } catch (error) {
+      toast({
+        title: "로그인 실패",
+        description: error instanceof Error ? error.message : '알 수 없는 오류가 발생했습니다.',
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   // 로그인 처리 함수
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -83,7 +152,7 @@ export default function Login() {
     
     try {
       // 서버에 로그인 요청
-      const response = await fetch('/api/auth/login', {
+      const response = await fetch('/api/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -96,33 +165,42 @@ export default function Login() {
       });
 
       if (!response.ok) {
-        const errorData = await response.text();
-        throw new Error(errorData || '로그인에 실패했습니다.');
+        const errorData = await response.json();
+        throw new Error(errorData.message || '로그인에 실패했습니다.');
       }
 
       const userData = await response.json();
       
-      // 로그인 성공 시 인증 이벤트 발행
-      const loginEvent = new CustomEvent('login', {
-        detail: {
-          role: userData.role,
-          name: userData.name,
-          userRole: userData.role,
-          userName: userData.name
-        }
-      });
-      window.dispatchEvent(loginEvent);
+      if (userData.success) {
+        // 로그인 성공 시 인증 이벤트 발행
+        const loginEvent = new CustomEvent('login', {
+          detail: {
+            role: userData.user.role,
+            name: userData.user.name,
+            userRole: userData.user.role,
+            userName: userData.user.name
+          }
+        });
+        window.dispatchEvent(loginEvent);
 
-      toast({
-        title: "로그인 성공",
-        description: `${userData.name}님, 환영합니다!`,
-        variant: "default",
-      });
+        toast({
+          title: "로그인 성공",
+          description: `${userData.user.name}님, 환영합니다!`,
+          variant: "default",
+        });
 
-      // 대시보드로 이동
-      setTimeout(() => {
-        window.location.href = '/dashboard';
-      }, 1000);
+        // 역할에 따른 대시보드로 이동
+        const dashboardPath = userData.user.role === 'pet-owner' ? '/dashboard' : 
+                             userData.user.role === 'trainer' ? '/trainer/dashboard' : 
+                             userData.user.role === 'institute-admin' ? '/institute/dashboard' : 
+                             userData.user.role === 'admin' ? '/admin/dashboard' : '/dashboard';
+        
+        setTimeout(() => {
+          setLocation(dashboardPath);
+        }, 1000);
+      } else {
+        throw new Error(userData.message || '로그인에 실패했습니다.');
+      }
 
     } catch (error) {
       toast({
@@ -246,53 +324,45 @@ export default function Login() {
                     type="button"
                     variant="outline"
                     size="sm"
-                    onClick={() => {
-                      setUsername('testuser');
-                      setPassword('password123');
-                    }}
+                    onClick={() => handleQuickLogin('testuser', 'password123')}
+                    disabled={isLoading}
                     className="text-xs"
                   >
-                    테스트 계정
+                    {isLoading ? '로그인 중...' : '테스트 계정'}
                   </Button>
                   <Button
                     type="button"
                     variant="outline"
                     size="sm"
-                    onClick={() => {
-                      setUsername('trainer01');
-                      setPassword('trainer123');
-                    }}
+                    onClick={() => handleQuickLogin('trainer01', 'trainer123')}
+                    disabled={isLoading}
                     className="text-xs"
                   >
-                    훈련사 계정
+                    {isLoading ? '로그인 중...' : '훈련사 계정'}
                   </Button>
                   <Button
                     type="button"
                     variant="outline"
                     size="sm"
-                    onClick={() => {
-                      setUsername('admin');
-                      setPassword('admin123');
-                    }}
+                    onClick={() => handleQuickLogin('admin', 'admin123')}
+                    disabled={isLoading}
                     className="text-xs"
                   >
-                    관리자 계정
+                    {isLoading ? '로그인 중...' : '관리자 계정'}
                   </Button>
                   <Button
                     type="button"
                     variant="outline"
                     size="sm"
-                    onClick={() => {
-                      setUsername('institute01');
-                      setPassword('institute123');
-                    }}
+                    onClick={() => handleQuickLogin('institute01', 'institute123')}
+                    disabled={isLoading}
                     className="text-xs"
                   >
-                    기관 계정
+                    {isLoading ? '로그인 중...' : '기관 계정'}
                   </Button>
                 </div>
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                  계정 정보가 자동으로 입력됩니다. 로그인 버튼을 눌러 완료하세요.
+                  버튼을 클릭하면 바로 로그인됩니다.
                 </p>
               </div>
               
