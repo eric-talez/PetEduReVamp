@@ -73,6 +73,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       req.session.user = {
         id: username,
         username,
+        email: account.email || `${username}@talez.com`,
         role: account.role,
         name: account.name
       };
