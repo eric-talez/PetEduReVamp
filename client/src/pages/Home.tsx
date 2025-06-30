@@ -298,17 +298,21 @@ export default function Home() {
 
   // 표시할 배너 슬라이드 결정 (사용자 역할에 따라 다른 배너 표시)
   const getBannerSlides = () => {
+    console.log('[Banner Debug] 인증 상태:', isAuthenticated, '사용자 역할:', userRole);
     // 인증된 훈련사인 경우 훈련사 전용 배너 표시
     if (isAuthenticated && userRole === 'trainer') {
+      console.log('[Banner Debug] 훈련사 배너 선택됨, 배너 수:', trainerBannerSlides.length);
       return trainerBannerSlides;
     }
     // 관리자 배너가 있으면 우선 표시, 없으면 기본 배너
+    console.log('[Banner Debug] 기본 배너 선택됨, 관리자 배너 수:', adminBanners.length);
     return adminBanners.length > 0 
       ? adminBanners.map(convertAdminBannerToSlide)
       : defaultBannerSlides;
   };
   
   const bannerSlides = getBannerSlides();
+  console.log('[Banner Debug] 최종 배너 슬라이드 수:', bannerSlides.length, '첫 번째 배너:', bannerSlides[0]?.title);
 
   // 서비스 현황 토글 함수
   const toggleServiceStats = () => {
