@@ -209,6 +209,64 @@ const LoginForm = () => {
         </div>
       </div>
 
+      {/* 퀵 로그인 버튼 섹션 */}
+      <div className="border rounded-lg p-4 bg-gray-50 dark:bg-gray-800">
+        <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">빠른 로그인</h3>
+        <div className="grid grid-cols-2 gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              setUsername('testuser');
+              setPassword('password123');
+            }}
+            className="text-xs"
+          >
+            테스트 계정
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              setUsername('trainer01');
+              setPassword('trainer123');
+            }}
+            className="text-xs"
+          >
+            훈련사 계정
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              setUsername('admin');
+              setPassword('admin123');
+            }}
+            className="text-xs"
+          >
+            관리자 계정
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              setUsername('institute01');
+              setPassword('institute123');
+            }}
+            className="text-xs"
+          >
+            기관 계정
+          </Button>
+        </div>
+        <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+          계정 정보가 자동으로 입력됩니다. 로그인 버튼을 눌러 완료하세요.
+        </p>
+      </div>
+
       <div className="flex items-center justify-between">
         <div className="text-sm">
           <a href="#" className="text-primary hover:underline">
