@@ -271,6 +271,8 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
   };
   
   // 검색 기능
+  const { toast } = useToast();
+
   // Debounced search with error handling
   const handleSearch = useCallback(
     debounce(async (query: string) => {

@@ -444,42 +444,53 @@ export default function AnalyticsPage() {
         <TabsContent value="progress" className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <BarChart3 className="h-5 w-5" />
-                스킬별 훈련 진행도
-              </CardTitle>
-              <CardDescription>
-                각 훈련 항목별 성취도와 숙련도를 확인하세요
-              </CardDescription>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="flex items-center gap-2">
+                    <BarChart3 className="h-5 w-5" />
+                    스킬별 훈련 진행도
+                  </CardTitle>
+                  <CardDescription>
+                    각 훈련 항목별 성취도와 숙련도를 확인하세요
+                  </CardDescription>
+                </div>
+                <div className="flex items-center gap-3">
+                  {/* Chart Type Selector */}
+                  <Select value={chartType} onValueChange={setChartType}>
+                    <SelectTrigger className="w-48">
+                      <SelectValue placeholder="차트 유형 선택" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {chartTypes.map((type) => {
+                        const IconComponent = type.icon;
+                        return (
+                          <SelectItem key={type.value} value={type.value}>
+                            <div className="flex items-center gap-2">
+                              <IconComponent className="h-4 w-4" />
+                              <span>{type.label}</span>
+                            </div>
+                          </SelectItem>
+                        );
+                      })}
+                    </SelectContent>
+                  </Select>
+                  
+                  {/* View Mode Toggle */}
+                  <Select value={progressViewMode} onValueChange={setProgressViewMode}>
+                    <SelectTrigger className="w-32">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="detailed">상세 보기</SelectItem>
+                      <SelectItem value="summary">요약 보기</SelectItem>
+                      <SelectItem value="compact">간단 보기</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                {trainingProgressData.map((item, index) => (
-                  <div key={index} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        <h3 className="font-medium">{item.skill}</h3>
-                        <Badge className={getLevelBadgeColor(item.level)}>
-                          {item.level}
-                        </Badge>
-                      </div>
-                      <div className="flex items-center gap-4">
-                        <div className="flex-1">
-                          <Progress value={item.progress} className="h-2" />
-                        </div>
-                        <span className="text-sm text-gray-600 dark:text-gray-400 min-w-[3rem]">
-                          {item.progress}%
-                        </span>
-                      </div>
-                    </div>
-                    <div className="text-right ml-4">
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
-                        {item.sessions}회 세션
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
+              {renderProgressChart()}
             </CardContent>
           </Card>
         </TabsContent>
