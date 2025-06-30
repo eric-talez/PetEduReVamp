@@ -231,6 +231,51 @@ export default function Home() {
       image: "https://images.unsplash.com/photo-1600298881974-6be191ceeda1?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
       primaryAction: { text: "브랜드 만들기", path: "/trainer/brand-builder" },
       secondaryAction: { text: "수익 분석", path: "/trainer/analytics" }
+    },
+    {
+      id: 106,
+      title: "더 많은 반려인들이 당신을 찾고 있습니다.",
+      subtitle: "TALEZ 플랫폼을 통해 더 많은 고객과 만나고 수익을 늘려보세요",
+      features: ["고객 확보", "예약 관리", "리뷰 시스템"],
+      image: "https://images.unsplash.com/photo-1583337130417-3346a1be7dee?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
+      primaryAction: { text: "고객 관리", path: "/trainer/customers" },
+      secondaryAction: { text: "예약 현황", path: "/trainer/bookings" }
+    },
+    {
+      id: 107,
+      title: "전문 훈련사의 가치를 제대로 인정받으세요.",
+      subtitle: "실력에 맞는 정당한 보상과 인정을 받을 수 있는 플랫폼입니다",
+      features: ["공정한 수수료", "투명한 정산", "전문성 인증"],
+      image: "https://images.unsplash.com/photo-1554118811-1e0d58224f24?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
+      primaryAction: { text: "수익 확인", path: "/trainer/earnings" },
+      secondaryAction: { text: "인증 관리", path: "/trainer/certification" }
+    },
+    {
+      id: 108,
+      title: "온라인과 오프라인을 넘나드는 새로운 교육 경험",
+      subtitle: "화상 교육부터 현장 방문까지, 다양한 방식으로 고객을 만나세요",
+      features: ["화상 교육", "현장 방문", "그룹 수업"],
+      image: "https://images.unsplash.com/photo-1516734212186-a967f81ad0d7?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
+      primaryAction: { text: "수업 방식", path: "/trainer/teaching-methods" },
+      secondaryAction: { text: "스케줄 관리", path: "/trainer/schedule" }
+    },
+    {
+      id: 109,
+      title: "훈련사 커뮤니티에서 노하우를 공유하고 성장하세요.",
+      subtitle: "동료 훈련사들과 경험을 나누고 함께 발전하는 전문가 네트워크",
+      features: ["전문가 네트워크", "케이스 스터디", "지식 공유"],
+      image: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
+      primaryAction: { text: "커뮤니티 참여", path: "/trainer/community" },
+      secondaryAction: { text: "사례 공유", path: "/trainer/case-studies" }
+    },
+    {
+      id: 110,
+      title: "반려견 교육의 미래를 함께 만들어갑니다.",
+      subtitle: "혁신적인 교육 방법과 최신 기술로 업계를 선도하는 훈련사가 되세요",
+      features: ["최신 교육법", "기술 활용", "업계 선도"],
+      image: "https://images.unsplash.com/photo-1548199973-03cce0bbc87b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
+      primaryAction: { text: "혁신 참여", path: "/trainer/innovation" },
+      secondaryAction: { text: "기술 지원", path: "/trainer/tech-support" }
     }
   ];
 
