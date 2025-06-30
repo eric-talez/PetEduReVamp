@@ -115,6 +115,16 @@ TALEZ is a comprehensive pet education and e-commerce platform that combines AI-
 
 ## Changelog
 
+- June 30, 2025. Integrated TALEZ Experience Service directly into homepage:
+  - Added complete video upload and AI analysis experience on main homepage
+  - Implemented step-by-step progress indicator (upload → analyzing → results)
+  - Created intuitive drag-and-drop file upload interface with validation
+  - Added real-time analysis progress with loading animations
+  - Integrated comprehensive result display with recommendations
+  - Built seamless flow from analysis to expert consultation signup
+  - Enhanced with prominent gradient banner and call-to-action button
+  - Maintained all security features (file type/size validation, error handling)
+  - Optimized for mobile and desktop responsive design
 - June 29, 2025. Added TALEZ Experience Service for pre-registration AI video analysis:
   - Implemented Google Generative AI video analysis for dog behavior assessment
   - Created comprehensive experience flow: upload → AI analysis → expert consultation

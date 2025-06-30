@@ -8,7 +8,7 @@ import { ShopPreview } from '@/components/ShopPreview';
 import { SocialLoginButtons } from '@/components/SocialLoginButtons';
 import { RealTimePopularChart } from '@/components/RealTimePopularChart';
 import { useState, lazy, Suspense, useEffect } from 'react';
-import { Loader2, ChevronDown, ChevronRight, ChevronLeft } from 'lucide-react';
+import { Loader2, ChevronDown, ChevronRight, ChevronLeft, Upload, Play, CheckCircle } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { PasswordResetForm } from '@/components/PasswordResetForm';
 import { useQuery } from '@tanstack/react-query';
@@ -29,6 +29,13 @@ export default function Home() {
   const [isServiceStatsOpen, setIsServiceStatsOpen] = useState(true);
   const [showPasswordReset, setShowPasswordReset] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
+  
+  // TALEZ 체험 서비스 상태
+  const [showExperience, setShowExperience] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [analysisStep, setAnalysisStep] = useState<'upload' | 'analyzing' | 'result'>('upload');
+  const [analysisResult, setAnalysisResult] = useState<any>(null);
+  const [uploadError, setUploadError] = useState<string>('');
 
   // 관리자가 등록한 배너 데이터 조회
   const { data: adminBanners = [], isLoading: bannersLoading } = useQuery({
@@ -41,6 +48,66 @@ export default function Home() {
       return response.json() as Promise<Banner[]>;
     }
   });
+
+  // 파일 업로드 핸들러
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // 파일 검증
+    const allowedTypes = ['video/mp4', 'video/avi', 'video/mov', 'video/quicktime'];
+    const maxSize = 50 * 1024 * 1024; // 50MB
+
+    if (!allowedTypes.includes(file.type)) {
+      setUploadError('MP4, AVI, MOV 형식의 영상만 업로드 가능합니다.');
+      return;
+    }
+
+    if (file.size > maxSize) {
+      setUploadError('파일 크기는 50MB 이하여야 합니다.');
+      return;
+    }
+
+    setUploadError('');
+    setSelectedFile(file);
+  };
+
+  // 영상 분석 시작
+  const startAnalysis = async () => {
+    if (!selectedFile) return;
+
+    setAnalysisStep('analyzing');
+    const formData = new FormData();
+    formData.append('video', selectedFile);
+
+    try {
+      const response = await fetch('/api/experience/analyze-video', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const result = await response.json();
+      
+      if (response.ok) {
+        setAnalysisResult(result);
+        setAnalysisStep('result');
+      } else {
+        setUploadError(result.error || '분석 중 오류가 발생했습니다.');
+        setAnalysisStep('upload');
+      }
+    } catch (error) {
+      setUploadError('네트워크 오류가 발생했습니다. 다시 시도해주세요.');
+      setAnalysisStep('upload');
+    }
+  };
+
+  // 체험 서비스 초기화
+  const resetExperience = () => {
+    setSelectedFile(null);
+    setAnalysisStep('upload');
+    setAnalysisResult(null);
+    setUploadError('');
+  };
 
   // 기본 배너 데이터 (관리자 배너가 없을 때 사용)
   const defaultBannerSlides = [
@@ -631,6 +698,184 @@ export default function Home() {
                 <Link href="/video-call">화상 교육 체험하기</Link>
               </Button>
             </div>
+          </div>
+        </div>
+
+        {/* TALEZ 체험 서비스 섹션 */}
+        <div className="mb-8">
+          <div className="bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-2xl p-8 border border-blue-200 dark:border-blue-800">
+            <div className="text-center mb-6">
+              <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+                🐕 TALEZ 체험 서비스
+              </h2>
+              <p className="text-lg text-gray-600 dark:text-gray-300">
+                강아지 영상을 업로드하고 AI 분석을 무료로 체험해보세요
+              </p>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                회원가입 없이 바로 이용 가능합니다
+              </p>
+            </div>
+
+            {!showExperience ? (
+              <div className="text-center">
+                <Button 
+                  onClick={() => setShowExperience(true)}
+                  className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white px-8 py-3 text-lg"
+                >
+                  <Play className="mr-2 h-5 w-5" />
+                  무료 체험 시작하기
+                </Button>
+              </div>
+            ) : (
+              <div className="max-w-2xl mx-auto">
+                {/* 단계 표시 */}
+                <div className="flex items-center justify-center mb-6">
+                  <div className="flex items-center space-x-4">
+                    <div className={`flex items-center space-x-2 ${analysisStep === 'upload' ? 'text-blue-600' : 'text-green-600'}`}>
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                        analysisStep === 'upload' ? 'bg-blue-100 text-blue-600' : 'bg-green-100 text-green-600'
+                      }`}>
+                        {analysisStep === 'upload' ? '1' : <CheckCircle className="h-5 w-5" />}
+                      </div>
+                      <span className="text-sm font-medium">영상 업로드</span>
+                    </div>
+                    <div className="w-8 h-0.5 bg-gray-300"></div>
+                    <div className={`flex items-center space-x-2 ${
+                      analysisStep === 'analyzing' ? 'text-blue-600' : 
+                      analysisStep === 'result' ? 'text-green-600' : 'text-gray-400'
+                    }`}>
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                        analysisStep === 'analyzing' ? 'bg-blue-100 text-blue-600' : 
+                        analysisStep === 'result' ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-400'
+                      }`}>
+                        {analysisStep === 'result' ? <CheckCircle className="h-5 w-5" /> : '2'}
+                      </div>
+                      <span className="text-sm font-medium">AI 분석</span>
+                    </div>
+                    <div className="w-8 h-0.5 bg-gray-300"></div>
+                    <div className={`flex items-center space-x-2 ${analysisStep === 'result' ? 'text-blue-600' : 'text-gray-400'}`}>
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                        analysisStep === 'result' ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-400'
+                      }`}>
+                        3
+                      </div>
+                      <span className="text-sm font-medium">결과 확인</span>
+                    </div>
+                  </div>
+                </div>
+
+                {analysisStep === 'upload' && (
+                  <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm">
+                    <h3 className="text-lg font-semibold mb-4">강아지 영상 업로드</h3>
+                    <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-8 text-center">
+                      <Upload className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+                      <div className="space-y-2">
+                        <label htmlFor="video-upload" className="cursor-pointer">
+                          <span className="text-blue-600 hover:text-blue-500 font-medium">
+                            파일을 선택하거나 여기로 드래그하세요
+                          </span>
+                          <input
+                            id="video-upload"
+                            type="file"
+                            accept="video/mp4,video/avi,video/mov,video/quicktime"
+                            onChange={handleFileSelect}
+                            className="hidden"
+                          />
+                        </label>
+                        <p className="text-sm text-gray-500">
+                          MP4, AVI, MOV 형식 / 최대 50MB
+                        </p>
+                      </div>
+                    </div>
+                    
+                    {selectedFile && (
+                      <div className="mt-4 p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="font-medium text-green-800 dark:text-green-200">
+                              {selectedFile.name}
+                            </p>
+                            <p className="text-sm text-green-600 dark:text-green-400">
+                              {(selectedFile.size / 1024 / 1024).toFixed(2)}MB
+                            </p>
+                          </div>
+                          <Button onClick={startAnalysis} className="bg-green-600 hover:bg-green-700">
+                            분석 시작
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                    
+                    {uploadError && (
+                      <div className="mt-4 p-4 bg-red-50 dark:bg-red-900/20 rounded-lg">
+                        <p className="text-red-600 dark:text-red-400">{uploadError}</p>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {analysisStep === 'analyzing' && (
+                  <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm text-center">
+                    <Loader2 className="mx-auto h-12 w-12 text-blue-500 animate-spin mb-4" />
+                    <h3 className="text-lg font-semibold mb-2">AI가 영상을 분석하고 있습니다</h3>
+                    <p className="text-gray-600 dark:text-gray-400">
+                      강아지의 행동과 특성을 분석 중입니다. 잠시만 기다려주세요.
+                    </p>
+                  </div>
+                )}
+
+                {analysisStep === 'result' && analysisResult && (
+                  <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm">
+                    <h3 className="text-lg font-semibold mb-4 flex items-center">
+                      <CheckCircle className="mr-2 h-5 w-5 text-green-500" />
+                      분석 완료
+                    </h3>
+                    
+                    <div className="space-y-4">
+                      <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                        <h4 className="font-medium text-blue-800 dark:text-blue-200 mb-2">
+                          행동 분석 결과
+                        </h4>
+                        <p className="text-sm text-blue-700 dark:text-blue-300">
+                          {analysisResult.analysis || '강아지의 행동을 분석했습니다.'}
+                        </p>
+                      </div>
+                      
+                      <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                        <h4 className="font-medium text-green-800 dark:text-green-200 mb-2">
+                          추천사항
+                        </h4>
+                        <p className="text-sm text-green-700 dark:text-green-300">
+                          {analysisResult.recommendations || '맞춤형 훈련 프로그램을 추천드립니다.'}
+                        </p>
+                      </div>
+                      
+                      <div className="flex space-x-3">
+                        <Button onClick={resetExperience} variant="outline" className="flex-1">
+                          다시 분석하기
+                        </Button>
+                        <Button onClick={() => setLocation('/auth')} className="flex-1">
+                          전문가 상담 받기
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                <div className="text-center mt-4">
+                  <Button 
+                    variant="ghost" 
+                    onClick={() => {
+                      setShowExperience(false);
+                      resetExperience();
+                    }}
+                    className="text-gray-500 hover:text-gray-700"
+                  >
+                    체험 종료
+                  </Button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
