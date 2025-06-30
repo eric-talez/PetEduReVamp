@@ -115,6 +115,15 @@ TALEZ is a comprehensive pet education and e-commerce platform that combines AI-
 
 ## Changelog
 
+- June 30, 2025. Fixed TypeScript compilation errors and updated database schema:
+  - Added missing database columns to users table (subscriptionTier, referralCode, aiUsage, points, fullName)
+  - Created additional database tables (projects, proposals, reviews, messages, files, pointTransactions, forums)
+  - Fixed JSX syntax errors in course index component
+  - Updated Badge component variants from "destructive" to "danger"
+  - Resolved SimpleMap component useEffect structure issues
+  - Created type definitions for session data and user interfaces
+  - Removed corrupted backup files causing compilation errors
+  - Positioned TALEZ experience service section above real-time chart on homepage
 - June 30, 2025. Integrated TALEZ Experience Service directly into homepage:
   - Added complete video upload and AI analysis experience on main homepage
   - Implemented step-by-step progress indicator (upload → analyzing → results)
