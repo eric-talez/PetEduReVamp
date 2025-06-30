@@ -1,0 +1,312 @@
+# TypeScript 에러 일괄 수정 가이드
+
+## 1. 데이터베이스 스키마 문제 (가장 많은 에러)
+
+### 1.1 Missing Database Columns
+다음 컬럼들이 데이터베이스 스키마에 누락되어 있습니다:
+
+```typescript
+// server/db.ts 또는 schema 파일에 추가
+export const users = pgTable('users', {
+  // 기존 컬럼들...
+  createdAt: text('created_at').notNull().default(sql`now()`),
+  subscriptionTier: text('subscription_tier').default('free'),
+  referralCode: text('referral_code'),
+  aiUsage: integer('ai_usage').default(0),
+});
+
+export const projects = pgTable('projects', {
+  // 기존 컬럼들...
+  category: text('category'),
+  views: integer('views').default(0),
+  expectedStartDate: timestamp('expected_start_date'),
+});
+
+export const proposals = pgTable('proposals', {
+  // 기존 컬럼들...
+  title: text('title'),
+  content: text('content'),
+  proposedBudget: decimal('proposed_budget'),
+  proposedTimeline: text('proposed_timeline'),
+});
+
+export const reviews = pgTable('reviews', {
+  id: serial('id').primaryKey(),
+  rating: integer('rating').notNull(),
+  comment: text('comment'),
+  contractId: integer('contract_id'),
+  reviewerId: integer('reviewer_id'),
+  revieweeId: integer('reviewee_id'),
+  createdAt: timestamp('created_at').defaultNow(),
+  // 추가 필요한 컬럼들
+  projectId: integer('project_id'),
+  receiverId: integer('receiver_id'),
+  title: text('title'),
+  content: text('content'),
+  recommendation: text('recommendation'),
+  status: text('status').default('pending'),
+  reviewerRole: text('reviewer_role'),
+  receiverRole: text('receiver_role'),
+});
+
+export const messages = pgTable('messages', {
+  id: serial('id').primaryKey(),
+  senderId: integer('sender_id').notNull(),
+  receiverId: integer('receiver_id').notNull(),
+  content: text('content').notNull(),
+  isRead: boolean('is_read').default(false),
+  createdAt: timestamp('created_at').defaultNow(),
+  // 추가 필요한 컬럼들
+  conversationId: integer('conversation_id'),
+  recipientId: integer('recipient_id'),
+  messageType: text('message_type').default('text'),
+  attachments: text('attachments'),
+});
+
+export const files = pgTable('files', {
+  id: serial('id').primaryKey(),
+  userId: integer('user_id').notNull(),
+  filename: text('filename').notNull(),
+  originalName: text('original_name').notNull(),
+  mimeType: text('mime_type').notNull(),
+  size: integer('size').notNull(),
+  uploadedAt: timestamp('uploaded_at').defaultNow(),
+  // 추가 필요한 컬럼들
+  path: text('path'),
+  createdAt: timestamp('created_at').defaultNow(),
+  isPublic: boolean('is_public').default(false),
+  uploadedBy: integer('uploaded_by'),
+  relatedEntity: text('related_entity'),
+  relatedEntityId: integer('related_entity_id'),
+});
+
+export const pointTransactions = pgTable('point_transactions', {
+  id: serial('id').primaryKey(),
+  userId: integer('user_id').notNull(),
+  amount: integer('amount').notNull(),
+  type: text('type').notNull(),
+  description: text('description'),
+  // 추가 필요한 컬럼들
+  transactionType: text('transaction_type'),
+});
+
+export const forums = pgTable('forums', {
+  id: serial('id').primaryKey(),
+  title: text('title').notNull(),
+  description: text('description'),
+  category: text('category'),
+  createdAt: timestamp('created_at').defaultNow(),
+  popularity: integer('popularity').default(0),
+  // 추가 필요한 컬럼들
+  weekday: text('weekday'),
+});
+```
+
+## 2. TypeScript 인터페이스 및 타입 정의
+
+### 2.1 Session 타입 확장
+```typescript
+// types/session.d.ts 생성 또는 기존 파일에 추가
+declare module 'express-session' {
+  interface SessionData {
+    user?: {
+      id: number;
+      role: 'admin' | 'client' | 'freelancer';
+      email: string;
+      username: string;
+    };
+    csrfToken?: string;
+    lastActivity?: number;
+    aiUsage?: number;
+  }
+}
+```
+
+### 2.2 User 타입 정의
+```typescript
+// types/user.ts
+export interface User {
+  id: number;
+  role: 'admin' | 'client' | 'freelancer';
+  points: number;
+  email: string;
+  password: string;
+  username: string;
+  fullName: string;
+  bio: string;
+  profileImage: string;
+  createdAt: string;
+  updatedAt: Date;
+  subscriptionTier?: string;
+  referralCode?: string;
+}
+```
+
+### 2.3 ProjectType 수정
+```typescript
+// types/project.ts
+export interface ProjectType {
+  id: number; // string에서 number로 변경
+  title: string;
+  description: string;
+  budget: number;
+  deadline: string;
+  category: string;
+  postedDate: string;
+  location: string;
+  clientInfo: {
+    name: string;
+    rating: number;
+    completedProjects: number;
+  };
+  createdAt: string;
+  // 기타 필요한 속성들...
+}
+```
+
+## 3. Button Link Checker 수정
+
+### 3.1 올바른 객체 리터럴 문법 사용
+```typescript
+// client/src/utils/button-link-checker.ts
+// 잘못된 문법:
+// { id?: string: 'some-id', className?: string: 'some-class' }
+
+// 올바른 문법:
+interface ButtonConfig {
+  id?: string;
+  className?: string;
+  expectedPattern?: string;
+  expectedDestination?: string;
+}
+
+const buttonConfigs: ButtonConfig[] = [
+  {
+    id: 'some-id',
+    className: 'some-class',
+    expectedPattern: '/some/pattern',
+    expectedDestination: '/some/destination'
+  },
+  // 나머지 설정들...
+];
+```
+
+## 4. LinkTester 컴포넌트 수정
+
+### 4.1 올바른 반환 타입
+```typescript
+// client/src/components/LinkTester.tsx
+interface TestResult {
+  valid: boolean;
+  items?: any[]; // items 속성 추가
+}
+
+function testLinks(): TestResult {
+  return {
+    valid: true,
+    items: [] // items 속성 포함
+  };
+}
+```
+
+## 5. Database Query 수정
+
+### 5.1 Drizzle ORM 쿼리 문법 수정
+```typescript
+// 잘못된 문법:
+// db.select().from(table).where().orderBy()
+
+// 올바른 문법:
+import { desc, asc, eq } from 'drizzle-orm';
+
+// 예시:
+const projects = await db
+  .select()
+  .from(projectsTable)
+  .where(eq(projectsTable.status, 'active'))
+  .orderBy(desc(projectsTable.createdAt));
+```
+
+### 5.2 SQL 함수 import 추가
+```typescript
+// server/db.ts 상단에 추가
+import { sql } from 'drizzle-orm';
+```
+
+## 6. 함수 인자 수정
+
+### 6.1 함수 호출 시 올바른 인자 개수
+```typescript
+// 에러: Expected 0 arguments, but got 2
+// someFunction(arg1, arg2); // 잘못됨
+
+// 수정: 함수 정의 확인 후 올바른 인자 전달
+// someFunction(); // 또는 함수 정의를 수정
+```
+
+## 7. Storage 및 Memory 관련 수정
+
+### 7.1 MemoryStorage 인터페이스 확장
+```typescript
+// server/storage-extensions.ts
+interface MemStorage {
+  users: any[];
+  pointTransactions: any[];
+  getUser(id: number): any;
+  // 기타 필요한 메서드들...
+}
+
+class MemoryStorage implements MemStorage {
+  public users: any[] = [];
+  public pointTransactions: any[] = [];
+  
+  getUser(id: number) {
+    return this.users.find(user => user.id === id);
+  }
+  
+  // 기타 구현...
+}
+```
+
+## 8. Vite 설정 수정
+
+### 8.1 ServerOptions 타입 수정
+```typescript
+// server/vite.ts
+const viteConfig = {
+  middlewareMode: true, // boolean이 아닌 true로 명시
+  hmr: {
+    server: httpServer
+  },
+  allowedHosts: true // boolean 대신 true 또는 string[] 사용
+};
+```
+
+## 9. 일괄 실행 스크립트
+
+다음 명령어들을 순서대로 실행하세요:
+
+```bash
+# 1. 데이터베이스 마이그레이션 (스키마 업데이트)
+npm run db:migrate
+
+# 2. TypeScript 타입 체크
+npm run type-check
+
+# 3. 린트 및 자동 수정
+npm run lint:fix
+
+# 4. 빌드 테스트
+npm run build
+```
+
+## 10. 우선순위 수정 순서
+
+1. **데이터베이스 스키마 업데이트** (가장 중요)
+2. **TypeScript 인터페이스 정의**
+3. **Button Link Checker 문법 수정**
+4. **Drizzle ORM 쿼리 수정**
+5. **함수 호출 인자 수정**
+6. **나머지 세부 수정사항**
+
+이 가이드를 따라 수정하면 대부분의 TypeScript 에러가 해결될 것입니다.

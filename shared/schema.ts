@@ -1,5 +1,6 @@
 import { pgTable, text, integer, boolean, timestamp, serial, decimal, jsonb, varchar } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
+import { sql } from "drizzle-orm";
 import { z } from "zod";
 
 // 사용자 테이블
@@ -17,6 +18,12 @@ export const users = pgTable("users", {
   emailVerified: boolean("email_verified").default(false),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
+  // Missing columns from error report
+  subscriptionTier: text("subscription_tier").default("free"),
+  referralCode: text("referral_code"),
+  aiUsage: integer("ai_usage").default(0),
+  points: integer("points").default(0),
+  fullName: varchar("full_name", { length: 200 }),
 });
 
 // 강의 테이블
@@ -341,6 +348,105 @@ export type EventLocation = typeof eventLocations.$inferSelect;
 export type InsertEventLocation = typeof eventLocations.$inferInsert;
 
 export type EventAttendance = typeof eventAttendances.$inferSelect;
+
+// Missing tables from error report
+export const projects = pgTable("projects", {
+  id: serial("id").primaryKey(),
+  title: varchar("title", { length: 200 }).notNull(),
+  description: text("description"),
+  budget: decimal("budget", { precision: 10, scale: 2 }),
+  deadline: timestamp("deadline"),
+  status: varchar("status", { length: 50 }).default("active"),
+  clientId: integer("client_id").references(() => users.id),
+  freelancerId: integer("freelancer_id").references(() => users.id),
+  category: text("category"),
+  views: integer("views").default(0),
+  expectedStartDate: timestamp("expected_start_date"),
+  location: text("location"),
+  postedDate: timestamp("posted_date").defaultNow(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const proposals = pgTable("proposals", {
+  id: serial("id").primaryKey(),
+  projectId: integer("project_id").references(() => projects.id),
+  freelancerId: integer("freelancer_id").references(() => users.id),
+  title: text("title"),
+  content: text("content"),
+  proposedBudget: decimal("proposed_budget", { precision: 10, scale: 2 }),
+  proposedTimeline: text("proposed_timeline"),
+  status: varchar("status", { length: 50 }).default("pending"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const reviews = pgTable("reviews", {
+  id: serial("id").primaryKey(),
+  rating: integer("rating").notNull(),
+  comment: text("comment"),
+  contractId: integer("contract_id"),
+  reviewerId: integer("reviewer_id").references(() => users.id),
+  revieweeId: integer("reviewee_id").references(() => users.id),
+  projectId: integer("project_id").references(() => projects.id),
+  receiverId: integer("receiver_id").references(() => users.id),
+  title: text("title"),
+  content: text("content"),
+  recommendation: text("recommendation"),
+  status: text("status").default("pending"),
+  reviewerRole: text("reviewer_role"),
+  receiverRole: text("receiver_role"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const messages = pgTable("messages", {
+  id: serial("id").primaryKey(),
+  senderId: integer("sender_id").references(() => users.id).notNull(),
+  receiverId: integer("receiver_id").references(() => users.id).notNull(),
+  content: text("content").notNull(),
+  isRead: boolean("is_read").default(false),
+  conversationId: integer("conversation_id"),
+  recipientId: integer("recipient_id").references(() => users.id),
+  messageType: text("message_type").default("text"),
+  attachments: text("attachments"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const files = pgTable("files", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  filename: text("filename").notNull(),
+  originalName: text("original_name").notNull(),
+  mimeType: text("mime_type").notNull(),
+  size: integer("size").notNull(),
+  path: text("path"),
+  isPublic: boolean("is_public").default(false),
+  uploadedBy: integer("uploaded_by").references(() => users.id),
+  relatedEntity: text("related_entity"),
+  relatedEntityId: integer("related_entity_id"),
+  uploadedAt: timestamp("uploaded_at").defaultNow(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const pointTransactions = pgTable("point_transactions", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  amount: integer("amount").notNull(),
+  type: text("type").notNull(),
+  description: text("description"),
+  transactionType: text("transaction_type"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const forums = pgTable("forums", {
+  id: serial("id").primaryKey(),
+  title: text("title").notNull(),
+  description: text("description"),
+  category: text("category"),
+  popularity: integer("popularity").default(0),
+  weekday: text("weekday"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
 
 export type Banner = typeof banners.$inferSelect;
 export type InsertBanner = typeof banners.$inferInsert;
