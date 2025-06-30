@@ -14,7 +14,7 @@ import { ilike, or } from "drizzle-orm";
 // import { setupCommissionRoutes } from './commission/routes';
 // import { setupHealthRoutes } from './routes/health';
 import { registerAnalyticsRoutes } from './routes/analytics';
-// import { setupSocialRoutes } from './routes/social';
+import { setupSocialRoutes } from './routes/social';
 import multer from 'multer';
 import path from 'path';
 
@@ -2407,6 +2407,9 @@ app.get('/api/search', async (req, res) => {
       res.status(500).json({ error: "훈련사 목록을 불러올 수 없습니다" });
     }
   });
+
+  // Register social/community routes
+  setupSocialRoutes(app);
 
   // Global error handler (commented out for now)
   // app.use(errorHandler);
