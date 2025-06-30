@@ -398,7 +398,7 @@ export default function CoursePage() {
             </div>
           )}
 
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3"></div>
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {filteredCourses.map((course) => (
               <Card key={course.id} className="hover:shadow-lg transition-shadow overflow-hidden">
                 <div className="relative">
@@ -414,7 +414,7 @@ export default function CoursePage() {
                   )}
                   {course.discountPrice && (
                     <div className="absolute top-2 left-2">
-                      <Badge variant="destructive">할인</Badge>
+                      <Badge variant="danger">할인</Badge>
                     </div>
                   )}
                 </div>
@@ -588,7 +588,7 @@ export default function CoursePage() {
                                         <span className="text-2xl font-bold text-red-600">
                                           {selectedCourse.discountPrice.toLocaleString()}원
                                         </span>
-                                        <Badge variant="destructive">할인</Badge>
+                                        <Badge variant="danger">할인</Badge>
                                       </div>
                                       <span className="text-gray-500 line-through">
                                         {selectedCourse.price.toLocaleString()}원

@@ -115,12 +115,13 @@ export function SimpleMap({ locations, height = "400px", onLocationClick }: Simp
 
     console.log('지도 초기화 완료');
 
-    return () => {
-      if (mapInstanceRef.current) {
-        mapInstanceRef.current.remove();
-        mapInstanceRef.current = null;
-      }
-    };
+      return () => {
+        if (mapInstanceRef.current) {
+          mapInstanceRef.current.remove();
+          mapInstanceRef.current = null;
+        }
+      };
+    }, 300);
   }, [locations, onLocationClick]);
 
   return (
