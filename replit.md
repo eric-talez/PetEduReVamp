@@ -116,11 +116,12 @@ TALEZ is a comprehensive pet education and e-commerce platform that combines AI-
 ## Changelog
 
 - June 30, 2025. Enhanced user accessibility and authentication features:
-  - Added location finder menu visibility for non-logged-in users
-  - Created quick login buttons in authentication page with test accounts
-  - Implemented one-click login for different user roles (test, trainer, admin, institute)
-  - Enhanced sidebar navigation with location finder access for all users
-  - Added intuitive quick login interface with account type selection
+  - Added location finder menu visibility for non-logged-in users in sidebar navigation
+  - Created quick login buttons in main authentication page (login.tsx) with test accounts
+  - Implemented one-click credential filling for different user roles (test, trainer, admin, institute)
+  - Enhanced sidebar navigation with location finder access for all users without authentication
+  - Added intuitive quick login interface with grid layout and clear account type selection
+  - Fixed routing to ensure quick login buttons appear on the correct login page component
 - June 30, 2025. Fixed TypeScript compilation errors and updated database schema:
   - Added missing database columns to users table (subscriptionTier, referralCode, aiUsage, points, fullName)
   - Created additional database tables (projects, proposals, reviews, messages, files, pointTransactions, forums)
