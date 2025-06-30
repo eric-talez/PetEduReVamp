@@ -700,6 +700,8 @@ export default function CoursePage() {
                         )}
                       </DialogContent>
                     </Dialog>
+                    </div>
+                  </div>
                   </div>
                 </CardContent>
               </Card>
