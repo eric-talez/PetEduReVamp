@@ -56,6 +56,15 @@ export interface IStorage {
   updatePet(id: number, pet: any): Promise<any>;
   deletePet(id: number): Promise<boolean>;
 
+  // 건강 관리 관련
+  getPetHealthRecords(petId: number): Promise<any[]>;
+  createHealthRecord(record: any): Promise<any>;
+  getPetVaccinations(petId: number): Promise<any[]>;
+  getPetMedications(petId: number): Promise<any[]>;
+  getPetTrainingSessions(petId: number): Promise<any[]>;
+  getPetProgress(petId: number): Promise<any[]>;
+  getPetAchievements(petId: number): Promise<any[]>;
+
   // 강좌 관련
   getCourse(id: number): Promise<any>;
   getAllCourses(): Promise<any[]>;
@@ -219,13 +228,17 @@ export class MemoryStorage implements IStorage{
   // Health management data stores
   private healthRecords: HealthRecord[] = [];
   private vaccinations: Vaccination[] = [];
+  private vaccinationRecords = new Map();
   private weightRecords: WeightRecord[] = [];
   private medications: Medication[] = [];
+  private medicationRecords = new Map();
   private nutritionPlans: NutritionPlan[] = [];
   private healthReminders: HealthReminder[] = [];
+  private healthSchedule = new Map();
 
   // Training management data stores
   private trainingSessions: any[] = [];
+  private progressRecords = new Map();
   private achievements: any[] = [];
 
   // Community related data stores
@@ -1087,9 +1100,56 @@ export class MemoryStorage implements IStorage{
   // 특정 데이터 조회
   getUserById(id: number) { return this.users.get(id); }
   getPetById(id: number) { return this.pets.get(id); }
+  getPet(id: number) { return this.pets.get(id); }
   getCourseById(id: number) { return this.courses.get(id); }
   getInstituteById(id: number) { return this.institutes.get(id); }
   getProductById(id: number) { return this.products.get(id); }
+
+  // Pet management methods
+  async getPetsByUserId(userId: number) {
+    return Array.from(this.pets.values()).filter(pet => pet.ownerId === userId);
+  }
+
+  // Health record methods
+  async getPetHealthRecords(petId: number) {
+    return Array.from(this.checkups.values()).filter(record => record.petId === petId);
+  }
+
+  async createHealthRecord(record: any) {
+    const newRecord = {
+      id: this.checkupId++,
+      ...record,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    this.checkups.set(newRecord.id, newRecord);
+    return newRecord;
+  }
+
+  // Vaccination methods
+  async getPetVaccinations(petId: number) {
+    return Array.from(this.vaccinationRecords.values()).filter((record: any) => record.petId === petId);
+  }
+
+  // Medication methods
+  async getPetMedications(petId: number) {
+    return Array.from(this.medicationRecords.values()).filter((record: any) => record.petId === petId);
+  }
+
+  // Training session methods
+  async getPetTrainingSessions(petId: number) {
+    return Array.from(this.trainingSessions).filter((session: any) => session.petId === petId);
+  }
+
+  // Progress methods
+  async getPetProgress(petId: number) {
+    return Array.from(this.progressRecords.values()).filter((progress: any) => progress.petId === petId);
+  }
+
+  // Achievement methods
+  async getPetAchievements(petId: number) {
+    return Array.from(this.achievements).filter((achievement: any) => achievement.petId === petId);
+  }
 
   // 사용자 관련 메서드
   getUserByEmail(email: string) {
