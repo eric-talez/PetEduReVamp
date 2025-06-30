@@ -26,7 +26,7 @@ export default function Home() {
   const { isAuthenticated, userRole, userName, logout } = useAuth();
   const [location, setLocation] = useLocation();
   const [isWeatherModalOpen, setIsWeatherModalOpen] = useState(false);
-  const [isServiceStatsOpen, setIsServiceStatsOpen] = useState(true);
+  const [isServiceStatsOpen, setIsServiceStatsOpen] = useState(false);
   const [showPasswordReset, setShowPasswordReset] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
   
@@ -546,7 +546,7 @@ export default function Home() {
 
         {/* 메인 배너 슬라이더 */}
         <div className="mb-8">
-          <div className="relative overflow-hidden rounded-xl h-[168px] bg-gradient-to-r from-primary to-primary/80 shadow-lg">
+          <div className="relative overflow-hidden rounded-xl h-[218px] bg-gradient-to-r from-primary to-primary/80 shadow-lg">
             {/* 배경 이미지 */}
             <div className="absolute inset-0 transition-all duration-500 ease-in-out">
               <img 

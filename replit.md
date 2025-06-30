@@ -115,6 +115,10 @@ TALEZ is a comprehensive pet education and e-commerce platform that combines AI-
 
 ## Changelog
 
+- June 30, 2025. Set service status section to collapsed by default on main homepage:
+  - Modified Home.tsx to set isServiceStatsOpen state to false by default
+  - Service status section now appears collapsed when users first visit the homepage
+  - Users can still expand the section by clicking the toggle button
 - June 30, 2025. Enhanced user accessibility and authentication features:
   - Added location finder menu visibility for non-logged-in users in sidebar navigation
   - Created quick login buttons in main authentication page (login.tsx) with test accounts
