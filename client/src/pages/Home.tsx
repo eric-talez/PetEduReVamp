@@ -371,16 +371,13 @@ export default function Home() {
     window.dispatchEvent(loginEvent);
   };
 
-  // 사용자 역할에 따라 적절한 홈페이지 컴포넌트를 반환
-  if (isAuthenticated) {
+  // 훈련사는 메인 홈페이지에서 전용 배너를 보도록 변경
+  // 다른 역할들은 기존대로 전용 홈페이지로 리다이렉트
+  if (isAuthenticated && userRole !== 'trainer') {
     console.log("Home 컴포넌트: 인증된 사용자, 역할:", userRole);
     let HomeComponent;
 
     switch(userRole) {
-      case 'trainer':
-        console.log("Home 컴포넌트: 훈련사 홈 렌더링");
-        HomeComponent = TrainerHome;
-        break;
       case 'pet-owner':
         console.log("Home 컴포넌트: 반려인 홈 렌더링");
         HomeComponent = PetOwnerHome;
