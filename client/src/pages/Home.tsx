@@ -185,6 +185,55 @@ export default function Home() {
     }
   ];
 
+  // 훈련사 전용 배너 슬라이드
+  const trainerBannerSlides = [
+    {
+      id: 101,
+      title: "스타 훈련사를 위한 무대, TALEZ에서 시작하세요.",
+      subtitle: "당신의 전문성을 인정받고, 더 많은 반려인들과 만나세요",
+      features: ["전문가 네트워크", "브랜드 구축", "수익 증대"],
+      image: "https://images.unsplash.com/photo-1551698618-1dfe5d97d256?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
+      primaryAction: { text: "프로필 관리", path: "/trainer/profile" },
+      secondaryAction: { text: "수업 관리", path: "/trainer/courses" }
+    },
+    {
+      id: 102,
+      title: "훈련사도 브랜드가 되는 시대, TALEZ가 함께합니다.",
+      subtitle: "개인 훈련사에서 전문 브랜드로, TALEZ가 성장을 도와드립니다",
+      features: ["마케팅 지원", "브랜딩 도구", "고객 관리"],
+      image: "https://images.unsplash.com/photo-1560472354-b33ff0c44a43?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
+      primaryAction: { text: "브랜딩 시작", path: "/trainer/branding" },
+      secondaryAction: { text: "성공 사례", path: "/success-stories" }
+    },
+    {
+      id: 103,
+      title: "경험과 실력을 갖춘 훈련사를 발굴하고 세상과 연결합니다.",
+      subtitle: "숨겨진 전문가를 세상에 알리고, 더 많은 기회를 제공합니다",
+      features: ["전문가 발굴", "네트워킹", "기회 확장"],
+      image: "https://images.unsplash.com/photo-1516734212186-a967f81ad0d7?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
+      primaryAction: { text: "네트워크 참여", path: "/trainer/network" },
+      secondaryAction: { text: "기회 보기", path: "/trainer/opportunities" }
+    },
+    {
+      id: 104,
+      title: "전문가가 빛날 수 있도록, TALEZ는 지원합니다.",
+      subtitle: "교육 도구부터 마케팅까지, 훈련사의 성공을 위한 모든 것을 제공합니다",
+      features: ["교육 도구", "마케팅 지원", "기술 지원"],
+      image: "https://images.unsplash.com/photo-1548199973-03cce0bbc87b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
+      primaryAction: { text: "지원 서비스", path: "/trainer/support" },
+      secondaryAction: { text: "도구 사용법", path: "/trainer/tools" }
+    },
+    {
+      id: 105,
+      title: "당신의 훈련 노하우, 스타 브랜드가 됩니다.",
+      subtitle: "오랜 경험과 노하우를 브랜드로 만들어 더 큰 성공을 거두세요",
+      features: ["노하우 브랜딩", "컨텐츠 제작", "수익 모델"],
+      image: "https://images.unsplash.com/photo-1600298881974-6be191ceeda1?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
+      primaryAction: { text: "브랜드 만들기", path: "/trainer/brand-builder" },
+      secondaryAction: { text: "수익 분석", path: "/trainer/analytics" }
+    }
+  ];
+
   // 관리자 배너를 표시 형식으로 변환하는 함수
   const convertAdminBannerToSlide = (banner: Banner) => ({
     id: banner.id,
@@ -202,10 +251,19 @@ export default function Home() {
     }
   });
 
-  // 표시할 배너 슬라이드 결정 (관리자 배너 우선, 없으면 기본 배너)
-  const bannerSlides = adminBanners.length > 0 
-    ? adminBanners.map(convertAdminBannerToSlide)
-    : defaultBannerSlides;
+  // 표시할 배너 슬라이드 결정 (사용자 역할에 따라 다른 배너 표시)
+  const getBannerSlides = () => {
+    // 인증된 훈련사인 경우 훈련사 전용 배너 표시
+    if (isAuthenticated && userRole === 'trainer') {
+      return trainerBannerSlides;
+    }
+    // 관리자 배너가 있으면 우선 표시, 없으면 기본 배너
+    return adminBanners.length > 0 
+      ? adminBanners.map(convertAdminBannerToSlide)
+      : defaultBannerSlides;
+  };
+  
+  const bannerSlides = getBannerSlides();
 
   // 서비스 현황 토글 함수
   const toggleServiceStats = () => {
