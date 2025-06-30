@@ -276,6 +276,51 @@ export default function Home() {
       image: "https://images.unsplash.com/photo-1548199973-03cce0bbc87b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
       primaryAction: { text: "혁신 참여", path: "/trainer/innovation" },
       secondaryAction: { text: "기술 지원", path: "/trainer/tech-support" }
+    },
+    {
+      id: 111,
+      title: "성공하는 훈련사들의 비밀, TALEZ가 알려드립니다.",
+      subtitle: "검증된 성공 사례와 전략으로 당신의 훈련사 비즈니스를 성장시키세요",
+      features: ["성공 전략", "사례 분석", "비즈니스 멘토링"],
+      image: "https://images.unsplash.com/photo-1551698618-1dfe5d97d256?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
+      primaryAction: { text: "성공 전략", path: "/trainer/success-strategies" },
+      secondaryAction: { text: "멘토링 신청", path: "/trainer/mentoring" }
+    },
+    {
+      id: 112,
+      title: "24시간 언제든지 상담 예약이 들어옵니다.",
+      subtitle: "TALEZ 플랫폼으로 시간과 장소에 구애받지 않고 더 많은 수익을 창출하세요",
+      features: ["24시간 예약", "자동 스케줄링", "수익 극대화"],
+      image: "https://images.unsplash.com/photo-1560472354-b33ff0c44a43?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
+      primaryAction: { text: "예약 시스템", path: "/trainer/booking-system" },
+      secondaryAction: { text: "수익 통계", path: "/trainer/revenue" }
+    },
+    {
+      id: 113,
+      title: "전국 어디서든 당신의 전문성을 인정받으세요.",
+      subtitle: "지역 제약 없이 전국의 반려인들에게 서비스를 제공할 수 있습니다",
+      features: ["전국 서비스", "원격 상담", "무제한 고객"],
+      image: "https://images.unsplash.com/photo-1583337130417-3346a1be7dee?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
+      primaryAction: { text: "서비스 확장", path: "/trainer/expand-service" },
+      secondaryAction: { text: "원격 상담", path: "/trainer/remote-consulting" }
+    },
+    {
+      id: 114,
+      title: "프리미엄 훈련사로 차별화된 서비스를 제공하세요.",
+      subtitle: "고급 인증과 특별한 혜택으로 더 높은 수준의 서비스를 제공할 수 있습니다",
+      features: ["프리미엄 인증", "차별화 서비스", "높은 수수료"],
+      image: "https://images.unsplash.com/photo-1554118811-1e0d58224f24?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
+      primaryAction: { text: "프리미엄 등급", path: "/trainer/premium-tier" },
+      secondaryAction: { text: "인증 신청", path: "/trainer/certification-apply" }
+    },
+    {
+      id: 115,
+      title: "AI 기술로 더 효과적인 훈련 결과를 만들어보세요.",
+      subtitle: "최신 AI 분석 도구와 데이터를 활용해 훈련 효과를 극대화하세요",
+      features: ["AI 분석", "데이터 활용", "효과 최적화"],
+      image: "https://images.unsplash.com/photo-1516734212186-a967f81ad0d7?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
+      primaryAction: { text: "AI 도구", path: "/trainer/ai-tools" },
+      secondaryAction: { text: "분석 리포트", path: "/trainer/analytics-report" }
     }
   ];
 
