@@ -22,12 +22,26 @@ import {
   DollarSign,
   ExternalLink
 } from "lucide-react";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useClickAway } from "@/hooks/use-mobile";
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { useToast } from "@/hooks/use-toast";
+
+// Debounce utility function
+const debounce = (func: Function, wait: number) => {
+  let timeout: NodeJS.Timeout;
+  return function executedFunction(...args: any[]) {
+    const later = () => {
+      clearTimeout(timeout);
+      func(...args);
+    };
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+  };
+};
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
 
@@ -257,12 +271,40 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
   };
   
   // 검색 기능
-  const handleSearch = () => {
-    if (!searchQuery.trim()) return;
-    
-    // 검색 페이지로 이동하면서 쿼리 전달
-    setLocation(`/search?q=${encodeURIComponent(searchQuery)}`);
-    setSearchQuery('');
+  // Debounced search with error handling
+  const handleSearch = useCallback(
+    debounce(async (query: string) => {
+      if (!query.trim()) return;
+      
+      setIsSearching(true);
+      try {
+        // Navigate to search page with query
+        setLocation(`/search?q=${encodeURIComponent(query)}`);
+        setSearchQuery('');
+      } catch (error) {
+        console.error('Search navigation error:', error);
+        toast({
+          title: "검색 오류",
+          description: "검색 중 오류가 발생했습니다. 다시 시도해주세요.",
+          variant: "destructive"
+        });
+      } finally {
+        setIsSearching(false);
+      }
+    }, 300),
+    [setLocation, toast]
+  );
+
+  // Enhanced search with validation
+  const handleSearchSubmit = () => {
+    if (!searchQuery.trim()) {
+      toast({
+        title: "검색어를 입력해주세요",
+        variant: "destructive"
+      });
+      return;
+    }
+    handleSearch(searchQuery);
   };
   
   // 엔터 키 처리

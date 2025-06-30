@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAuth } from '@/hooks/useAuth';
 import { useQuery } from '@tanstack/react-query';
 import { queryClient } from '@/lib/queryClient';
@@ -23,7 +24,10 @@ import {
   Target,
   Clock,
   Activity,
-  Zap
+  Zap,
+  LineChart,
+  AreaChart,
+  Radar
 } from 'lucide-react';
 
 // 샘플 데이터 - 실제 환경에서는 API로 가져와야 함
@@ -62,6 +66,8 @@ const recentAchievements = [
 export default function AnalyticsPage() {
   const { userName } = useAuth();
   const [selectedPeriod, setSelectedPeriod] = useState('30일');
+  const [chartType, setChartType] = useState('bar');
+  const [progressViewMode, setProgressViewMode] = useState('detailed');
 
   // 실제 API 데이터 가져오기
   const { data: trainingData, isLoading: trainingLoading } = useQuery({
@@ -91,6 +97,253 @@ export default function AnalyticsPage() {
       default: return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
     }
   };
+
+  // Chart type configuration
+  const chartTypes = [
+    { value: 'bar', label: '막대형 차트', icon: BarChart3 },
+    { value: 'line', label: '선형 차트', icon: LineChart },
+    { value: 'pie', label: '원형 차트', icon: PieChart },
+    { value: 'doughnut', label: '도넛 차트', icon: PieChart },
+    { value: 'radar', label: '레이더 차트', icon: Radar },
+    { value: 'area', label: '영역 차트', icon: AreaChart }
+  ];
+
+  // Render chart based on selected type
+  const renderProgressChart = () => {
+    switch (chartType) {
+      case 'bar':
+        return renderBarChart();
+      case 'line':
+        return renderLineChart();
+      case 'pie':
+        return renderPieChart();
+      case 'doughnut':
+        return renderDoughnutChart();
+      case 'radar':
+        return renderRadarChart();
+      case 'area':
+        return renderAreaChart();
+      default:
+        return renderBarChart();
+    }
+  };
+
+  // Chart rendering functions
+  const renderBarChart = () => (
+    <div className="space-y-4">
+      {trainingProgressData.map((item, index) => (
+        <div key={index} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+          <div className="flex-1">
+            <div className="flex items-center gap-3 mb-2">
+              <h3 className="font-medium">{item.skill}</h3>
+              <Badge className={getLevelBadgeColor(item.level)}>
+                {item.level}
+              </Badge>
+            </div>
+            <div className="flex items-center gap-3">
+              <Progress value={item.progress} className="flex-1" />
+              <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[3rem]">
+                {item.progress}%
+              </span>
+            </div>
+          </div>
+          <div className="text-right ml-4">
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              {item.sessions}회 세션
+            </p>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+
+  const renderLineChart = () => (
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {trainingProgressData.map((item, index) => (
+          <div key={index} className="p-4 border rounded-lg">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="font-medium">{item.skill}</h3>
+              <Badge className={getLevelBadgeColor(item.level)}>{item.level}</Badge>
+            </div>
+            <div className="h-16 bg-gradient-to-r from-blue-100 to-blue-200 dark:from-blue-900 dark:to-blue-800 rounded-lg flex items-end justify-center relative overflow-hidden">
+              <div 
+                className="bg-blue-500 w-full transition-all duration-1000 ease-out flex items-center justify-center text-white text-sm font-medium"
+                style={{ height: `${item.progress}%` }}
+              >
+                {item.progress}%
+              </div>
+            </div>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mt-2 text-center">
+              {item.sessions}회 완료
+            </p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+
+  const renderPieChart = () => (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <div className="space-y-4">
+        <h3 className="font-medium text-lg">훈련 레벨 분포</h3>
+        <div className="flex flex-col space-y-3">
+          {trainingProgressData.map((item, index) => (
+            <div key={index} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+              <div className="flex items-center gap-3">
+                <div 
+                  className="w-4 h-4 rounded-full"
+                  style={{
+                    backgroundColor: index === 0 ? '#8B5CF6' : 
+                                   index === 1 ? '#3B82F6' : 
+                                   index === 2 ? '#10B981' : 
+                                   index === 3 ? '#F59E0B' : '#6B7280'
+                  }}
+                />
+                <span className="font-medium">{item.skill}</span>
+              </div>
+              <span className="text-sm font-medium">{item.progress}%</span>
+            </div>
+          ))}
+        </div>
+      </div>
+      <div className="flex items-center justify-center">
+        <div className="w-48 h-48 rounded-full border-8 border-gray-200 dark:border-gray-700 flex items-center justify-center bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900 dark:to-purple-900">
+          <div className="text-center">
+            <div className="text-2xl font-bold text-gray-800 dark:text-white">
+              {Math.round(trainingProgressData.reduce((acc, item) => acc + item.progress, 0) / trainingProgressData.length)}%
+            </div>
+            <div className="text-sm text-gray-600 dark:text-gray-400">평균 진행도</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderDoughnutChart = () => (
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      {trainingProgressData.map((item, index) => (
+        <div key={index} className="flex flex-col items-center p-4 border rounded-lg">
+          <div className="relative w-24 h-24 mb-3">
+            <div className="absolute inset-0 rounded-full border-4 border-gray-200 dark:border-gray-700"></div>
+            <div 
+              className="absolute inset-0 rounded-full border-4 border-t-transparent border-r-transparent transform -rotate-90 transition-all duration-1000"
+              style={{
+                borderLeftColor: index === 0 ? '#8B5CF6' : 
+                               index === 1 ? '#3B82F6' : 
+                               index === 2 ? '#10B981' : 
+                               index === 3 ? '#F59E0B' : '#6B7280',
+                borderBottomColor: index === 0 ? '#8B5CF6' : 
+                                 index === 1 ? '#3B82F6' : 
+                                 index === 2 ? '#10B981' : 
+                                 index === 3 ? '#F59E0B' : '#6B7280',
+                clipPath: `polygon(50% 50%, 50% 0%, ${50 + (item.progress / 100) * 50}% 0%, ${50 + (item.progress / 100) * 50}% 100%)`
+              }}
+            />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <span className="text-sm font-bold">{item.progress}%</span>
+            </div>
+          </div>
+          <h3 className="font-medium text-center">{item.skill}</h3>
+          <Badge className={`${getLevelBadgeColor(item.level)} mt-1`}>
+            {item.level}
+          </Badge>
+          <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+            {item.sessions}회 세션
+          </p>
+        </div>
+      ))}
+    </div>
+  );
+
+  const renderRadarChart = () => (
+    <div className="space-y-6">
+      <div className="flex items-center justify-center">
+        <div className="relative w-80 h-80 border border-gray-200 dark:border-gray-700 rounded-full">
+          {/* Radar grid lines */}
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="w-full h-full relative">
+              {[20, 40, 60, 80, 100].map((radius) => (
+                <div
+                  key={radius}
+                  className="absolute border border-gray-300 dark:border-gray-600 rounded-full"
+                  style={{
+                    width: `${radius}%`,
+                    height: `${radius}%`,
+                    top: '50%',
+                    left: '50%',
+                    transform: 'translate(-50%, -50%)'
+                  }}
+                />
+              ))}
+              {/* Skill labels */}
+              {trainingProgressData.map((item, index) => {
+                const angle = (index * 360) / trainingProgressData.length - 90;
+                const x = 50 + 45 * Math.cos((angle * Math.PI) / 180);
+                const y = 50 + 45 * Math.sin((angle * Math.PI) / 180);
+                return (
+                  <div
+                    key={index}
+                    className="absolute text-xs font-medium"
+                    style={{
+                      left: `${x}%`,
+                      top: `${y}%`,
+                      transform: 'translate(-50%, -50%)'
+                    }}
+                  >
+                    {item.skill}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+        {trainingProgressData.map((item, index) => (
+          <div key={index} className="text-center p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+            <div className="font-medium text-sm">{item.skill}</div>
+            <div className="text-lg font-bold text-primary">{item.progress}%</div>
+            <Badge className={`${getLevelBadgeColor(item.level)} text-xs mt-1`}>
+              {item.level}
+            </Badge>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+
+  const renderAreaChart = () => (
+    <div className="space-y-6">
+      <div className="h-64 bg-gradient-to-t from-blue-50 to-transparent dark:from-blue-900 border rounded-lg p-4 relative overflow-hidden">
+        <div className="absolute bottom-0 left-0 right-0 h-full flex items-end justify-around">
+          {trainingProgressData.map((item, index) => (
+            <div key={index} className="flex flex-col items-center w-full">
+              <div 
+                className="bg-gradient-to-t from-blue-500 to-blue-300 w-8 transition-all duration-1000 ease-out rounded-t-lg"
+                style={{ height: `${(item.progress / 100) * 200}px` }}
+              />
+              <div className="text-xs font-medium mt-2 text-center">{item.skill}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+        {trainingProgressData.map((item, index) => (
+          <div key={index} className="text-center p-3 border rounded-lg">
+            <div className="font-medium">{item.skill}</div>
+            <div className="text-xl font-bold text-primary">{item.progress}%</div>
+            <Badge className={getLevelBadgeColor(item.level)}>
+              {item.level}
+            </Badge>
+            <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+              {item.sessions}회
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 
   if (isLoading) {
     return (
