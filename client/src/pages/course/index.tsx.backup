@@ -699,28 +699,29 @@ export default function CoursePage() {
                           </div>
                         )}
                       </DialogContent>
-                        </Dialog>
-                      </div>
+                    </Dialog>
                     </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-
-            {filteredCourses.length === 0 && (
-              <Card>
-                <CardContent className="pt-6 text-center">
-                  <p className="text-gray-600">검색 조건에 맞는 강좌가 없습니다.</p>
-                  <Button className="mt-4" onClick={() => {
-                    setSearchTerm('');
-                    setSelectedCategory('');
-                    setSelectedLevel('');
-                  }}>
-                    필터 초기화
-                  </Button>
+                  </div>
+                  </div>
                 </CardContent>
               </Card>
-            )}
+            ))}
+          </div>
+
+          {filteredCourses.length === 0 && (
+            <Card>
+              <CardContent className="pt-6 text-center">
+                <p className="text-gray-600">검색 조건에 맞는 강좌가 없습니다.</p>
+                <Button className="mt-4" onClick={() => {
+                  setSearchTerm('');
+                  setSelectedCategory('');
+                  setSelectedLevel('');
+                }}>
+                  필터 초기화
+                </Button>
+              </CardContent>
+            </Card>
+          )}
         </TabsContent>
       </Tabs>
     </div>
