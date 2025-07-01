@@ -246,7 +246,7 @@ export default function Home() {
       title: "전문 훈련사의 가치를 제대로 인정받으세요",
       subtitle: "투명한 수수료 체계와 공정한 정산으로 전문가로서의 가치를 제대로 평가받으세요",
       features: ["공정한 보상", "투명한 정산", "전문가 대우"],
-      image: "https://images.unsplash.com/photo-1598300042247-d088f8ab3a91?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
+      image: "https://images.unsplash.com/photo-1551717743-49959800b1f6?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
       primaryAction: { text: "수수료 확인", path: "/trainer/commission-info" },
       secondaryAction: { text: "정산 내역", path: "/trainer/settlement" }
     },
@@ -255,7 +255,7 @@ export default function Home() {
       title: "온라인과 오프라인을 넘나드는 새로운 교육 경험",
       subtitle: "디지털 도구와 전통적인 교육 방식을 결합해 혁신적인 훈련 서비스를 제공하세요",
       features: ["하이브리드 교육", "디지털 도구", "혁신적 서비스"],
-      image: "https://images.unsplash.com/photo-1587300003388-59208cc962cb?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
+      image: "https://images.unsplash.com/photo-1548767797-d8c844163c4c?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
       primaryAction: { text: "새로운 교육법", path: "/trainer/hybrid-education" },
       secondaryAction: { text: "디지털 도구", path: "/trainer/digital-tools" }
     },
@@ -264,7 +264,7 @@ export default function Home() {
       title: "훈련사 커뮤니티에서 노하우를 공유하고 성장하세요",
       subtitle: "전국의 전문 훈련사들과 경험을 나누고 함께 성장하는 네트워크에 참여하세요",
       features: ["전문가 네트워크", "노하우 공유", "함께 성장"],
-      image: "https://images.unsplash.com/photo-1544568100-847a948585b9?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
+      image: "https://images.unsplash.com/photo-1548199973-03cce0bbc87b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
       primaryAction: { text: "커뮤니티 참여", path: "/trainer/community" },
       secondaryAction: { text: "노하우 공유", path: "/trainer/knowledge-share" }
     },
@@ -309,7 +309,7 @@ export default function Home() {
       title: "프리미엄 훈련사로 차별화된 서비스를 제공하세요.",
       subtitle: "고급 인증과 특별한 혜택으로 더 높은 수준의 서비스를 제공할 수 있습니다",
       features: ["프리미엄 인증", "차별화 서비스", "높은 수수료"],
-      image: "https://images.unsplash.com/photo-1554118811-1e0d58224f24?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
+      image: "https://images.unsplash.com/photo-1530281700549-e82e7bf110d6?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
       primaryAction: { text: "프리미엄 등급", path: "/trainer/premium-tier" },
       secondaryAction: { text: "인증 신청", path: "/trainer/certification-apply" }
     },
@@ -318,7 +318,7 @@ export default function Home() {
       title: "AI 기술로 더 효과적인 훈련 결과를 만들어보세요.",
       subtitle: "최신 AI 분석 도구와 데이터를 활용해 훈련 효과를 극대화하세요",
       features: ["AI 분석", "데이터 활용", "효과 최적화"],
-      image: "https://images.unsplash.com/photo-1516734212186-a967f81ad0d7?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
+      image: "https://images.unsplash.com/photo-1551717743-49959800b1f6?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
       primaryAction: { text: "AI 도구", path: "/trainer/ai-tools" },
       secondaryAction: { text: "분석 리포트", path: "/trainer/analytics-report" }
     }
