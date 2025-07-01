@@ -237,7 +237,7 @@ export default function Home() {
       title: "더 많은 반려인들이 당신을 찾고 있습니다",
       subtitle: "TALEZ 플랫폼을 통해 전국의 반려인들과 연결되고 안정적인 고객층을 확보하세요",
       features: ["전국 고객 연결", "안정적 수익", "브랜드 인지도"],
-      image: "https://images.unsplash.com/photo-1601758228041-f3b2795255f1?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
+      image: "https://images.unsplash.com/photo-1587300003388-59208cc962cb?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
       primaryAction: { text: "고객 연결", path: "/trainer/customer-connect" },
       secondaryAction: { text: "성공 사례", path: "/trainer/success-stories" }
     },
@@ -246,7 +246,7 @@ export default function Home() {
       title: "전문 훈련사의 가치를 제대로 인정받으세요",
       subtitle: "투명한 수수료 체계와 공정한 정산으로 전문가로서의 가치를 제대로 평가받으세요",
       features: ["공정한 보상", "투명한 정산", "전문가 대우"],
-      image: "https://images.unsplash.com/photo-1551717743-49959800b1f6?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
+      image: "https://images.unsplash.com/photo-1544568100-847a948585b9?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
       primaryAction: { text: "수수료 확인", path: "/trainer/commission-info" },
       secondaryAction: { text: "정산 내역", path: "/trainer/settlement" }
     },
@@ -255,7 +255,7 @@ export default function Home() {
       title: "온라인과 오프라인을 넘나드는 새로운 교육 경험",
       subtitle: "디지털 도구와 전통적인 교육 방식을 결합해 혁신적인 훈련 서비스를 제공하세요",
       features: ["하이브리드 교육", "디지털 도구", "혁신적 서비스"],
-      image: "https://images.unsplash.com/photo-1548767797-d8c844163c4c?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
+      image: "https://images.unsplash.com/photo-1601758228041-f3b2795255f1?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
       primaryAction: { text: "새로운 교육법", path: "/trainer/hybrid-education" },
       secondaryAction: { text: "디지털 도구", path: "/trainer/digital-tools" }
     },
@@ -264,7 +264,7 @@ export default function Home() {
       title: "훈련사 커뮤니티에서 노하우를 공유하고 성장하세요",
       subtitle: "전국의 전문 훈련사들과 경험을 나누고 함께 성장하는 네트워크에 참여하세요",
       features: ["전문가 네트워크", "노하우 공유", "함께 성장"],
-      image: "https://images.unsplash.com/photo-1548199973-03cce0bbc87b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
+      image: "https://images.unsplash.com/photo-1598300042247-d088f8ab3a91?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
       primaryAction: { text: "커뮤니티 참여", path: "/trainer/community" },
       secondaryAction: { text: "노하우 공유", path: "/trainer/knowledge-share" }
     },
@@ -273,7 +273,7 @@ export default function Home() {
       title: "반려견 교육의 미래를 함께 만들어갑니다",
       subtitle: "혁신적인 교육 방법과 최신 기술로 업계를 선도하는 훈련사가 되어보세요",
       features: ["업계 선도", "혁신 기술", "미래 교육"],
-      image: "https://images.unsplash.com/photo-1574158622682-e40e69881006?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
+      image: "https://images.unsplash.com/photo-1560472355-a9a6b515a1a4?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
       primaryAction: { text: "혁신 참여", path: "/trainer/innovation" },
       secondaryAction: { text: "미래 교육", path: "/trainer/future-education" }
     },
@@ -282,7 +282,7 @@ export default function Home() {
       title: "성공하는 훈련사들의 비밀, TALEZ가 알려드립니다.",
       subtitle: "검증된 성공 사례와 전략으로 당신의 훈련사 비즈니스를 성장시키세요",
       features: ["성공 전략", "사례 분석", "비즈니스 멘토링"],
-      image: "https://images.unsplash.com/photo-1559190394-90ddf4b7a4c8?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
+      image: "https://images.unsplash.com/photo-1574158622682-e40e69881006?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
       primaryAction: { text: "성공 전략", path: "/trainer/success-strategies" },
       secondaryAction: { text: "멘토링 신청", path: "/trainer/mentoring" }
     },
@@ -291,7 +291,7 @@ export default function Home() {
       title: "24시간 언제든지 상담 예약이 들어옵니다.",
       subtitle: "TALEZ 플랫폼으로 시간과 장소에 구애받지 않고 더 많은 수익을 창출하세요",
       features: ["24시간 예약", "자동 스케줄링", "수익 극대화"],
-      image: "https://images.unsplash.com/photo-1551717743-49959800b1f6?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
+      image: "https://images.unsplash.com/photo-1551698618-1dfe5d97d256?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
       primaryAction: { text: "예약 시스템", path: "/trainer/booking-system" },
       secondaryAction: { text: "수익 통계", path: "/trainer/revenue" }
     },
@@ -300,7 +300,7 @@ export default function Home() {
       title: "전국 어디서든 당신의 전문성을 인정받으세요.",
       subtitle: "지역 제약 없이 전국의 반려인들에게 서비스를 제공할 수 있습니다",
       features: ["전국 서비스", "원격 상담", "무제한 고객"],
-      image: "https://images.unsplash.com/photo-1552053831-71594a27632d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
+      image: "https://images.unsplash.com/photo-1548199973-03cce0bbc87b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
       primaryAction: { text: "서비스 확장", path: "/trainer/expand-service" },
       secondaryAction: { text: "원격 상담", path: "/trainer/remote-consulting" }
     },
