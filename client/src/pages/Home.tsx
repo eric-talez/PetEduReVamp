@@ -116,7 +116,7 @@ export default function Home() {
       title: "Talez - 반려견과 함께하는 특별한 여정",
       subtitle: "전문 훈련사와 AI 기술로 반려견 교육의 새로운 기준을 만들어갑니다",
       features: ["전문가 1:1 교육", "AI 행동 분석", "실시간 상담", "커뮤니티"],
-      image: "https://images.unsplash.com/photo-1601758124510-52d02ddb7cbd?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
+      image: "https://images.unsplash.com/photo-1591769225440-811ad7d6eab3?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
       primaryAction: { text: "교육 시작하기", path: "/courses" },
       secondaryAction: { text: "서비스 소개", path: "/about" }
     },
@@ -125,7 +125,7 @@ export default function Home() {
       title: "TALEZ 체험 서비스 - 회원가입 전 무료 체험",
       subtitle: "강아지 영상을 업로드하고 AI 분석과 전문가 상담을 미리 체험해보세요",
       features: ["영상 업로드", "AI 행동 분석", "전문가 상담", "무료 체험"],
-      image: "https://images.unsplash.com/photo-1587300003388-59208cc962cb?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
+      image: "https://images.unsplash.com/photo-1583512603805-3cc6b41f3edb?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
       primaryAction: { text: "무료 체험하기", path: "/experience" },
       secondaryAction: { text: "서비스 안내", path: "/about" }
     },
@@ -134,7 +134,7 @@ export default function Home() {
       title: "반려견 친화적 장소 찾기",
       subtitle: "전국의 반려견 동반 가능한 카페, 공원, 펜션을 한눈에 확인하세요",
       features: ["지역별 검색", "실시간 정보", "커뮤니티 리뷰"],
-      image: "https://images.unsplash.com/photo-1544568100-847a948585b9?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
+      image: "https://images.unsplash.com/photo-1592194996308-7b43878e84a6?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
       primaryAction: { text: "장소 찾기", path: "/locations" },
       secondaryAction: { text: "지도 보기", path: "/map" }
     },
@@ -143,7 +143,7 @@ export default function Home() {
       title: "전문 훈련사와 실시간 화상 교육",
       subtitle: "언제 어디서나 편리하게 전문가와 실시간 화상으로 교육받으세요",
       features: ["실시간 화상", "개별 커리큘럼", "녹화 복습"],
-      image: "https://images.unsplash.com/photo-1598300042247-d088f8ab3a91?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
+      image: "https://images.unsplash.com/photo-1593077791793-fcabc92e3b31?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
       primaryAction: { text: "화상 교육", path: "/video-training" },
       secondaryAction: { text: "훈련사 보기", path: "/trainers" }
     },
@@ -179,7 +179,7 @@ export default function Home() {
       title: "기관 및 훈련소 등록",
       subtitle: "전문 교육 기관이나 훈련소를 운영하신다면 Talez와 함께하세요",
       features: ["기관 등록", "코스 관리", "수익 창출"],
-      image: "https://images.unsplash.com/photo-1593134257782-e89567b7718a?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
+      image: "https://images.unsplash.com/photo-1530281700549-e82e7bf110d6?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
       primaryAction: { text: "기관 등록", path: "/institutes/register" },
       secondaryAction: { text: "파트너 안내", path: "/partners" }
     }
