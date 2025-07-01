@@ -116,13 +116,14 @@ TALEZ is a comprehensive pet education and e-commerce platform that combines AI-
 ## Changelog
 
 - June 30, 2025. Enhanced banner systems across homepage and trainer dashboard:
-  - Created dedicated banner content for trainers with 15 comprehensive motivational messages on homepage
+  - Updated trainer banner messages with refined motivational content focusing on core value propositions
+  - Key banner messages now include: "더 많은 반려인들이 당신을 찾고 있습니다", "전문 훈련사의 가치를 제대로 인정받으세요", "온라인과 오프라인을 넘나드는 새로운 교육 경험", "훈련사 커뮤니티에서 노하우를 공유하고 성장하세요", "반려견 교육의 미래를 함께 만들어갑니다"
+  - Synchronized banner content between homepage and trainer dashboard for consistent messaging
   - Added role-based banner selection logic (trainer banners only show for authenticated trainers)
   - Modified home page routing so trainers see main homepage with special banners instead of being redirected to TrainerHome
   - Made banner selection reactive using useMemo to properly update when authentication state changes
   - Increased banner height by 30% from 168px to 218px for better visual impact
   - Added comprehensive banner slider system to trainer dashboard with 5 specialized slides
-  - Trainer dashboard banners include: real-time reservation management, AI-powered training tools, student progress tracking, revenue analytics, and certification management
   - Implemented auto-rotation every 5 seconds with manual navigation controls (arrows and dot indicators)
   - Enhanced trainer experience with personalized branding and growth-focused messaging across multiple touchpoints
 - June 30, 2025. Set service status section to collapsed by default on main homepage:
