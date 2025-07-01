@@ -4,7 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar } from "@/components/ui/avatar";
-import { Users, BookOpen, Calendar, DollarSign, TrendingUp, Award, BarChart3 } from "lucide-react";
+import { Users, BookOpen, Calendar, DollarSign, TrendingUp, Award, BarChart3, ChevronLeft, ChevronRight } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 
 interface TrainerDashboardProps {
@@ -27,14 +27,75 @@ interface TrainerStats {
   };
 }
 
+// 훈련사 대시보드 전용 배너 슬라이드
+const trainerDashboardBanners = [
+  {
+    id: 1,
+    title: "실시간 예약 현황을 확인하세요",
+    subtitle: "오늘의 예약 현황과 다음 상담 일정을 한눈에 파악하세요",
+    image: "https://images.unsplash.com/photo-1583511655826-05700a52f8e4?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=400",
+    action: { text: "예약 관리", path: "/trainer/reservations" }
+  },
+  {
+    id: 2,
+    title: "AI 분석으로 더 나은 훈련 제공하기",
+    subtitle: "최신 AI 기술을 활용해 개별 반려견에 맞는 맞춤형 훈련 프로그램을 설계하세요",
+    image: "https://images.unsplash.com/photo-1516734212186-a967f81ad0d7?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=400",
+    action: { text: "AI 도구 사용", path: "/trainer/ai-tools" }
+  },
+  {
+    id: 3,
+    title: "학생 진도 관리 시스템",
+    subtitle: "각 수강생의 학습 진도와 성취도를 체계적으로 관리하고 피드백을 제공하세요",
+    image: "https://images.unsplash.com/photo-1554118811-1e0d58224f24?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=400",
+    action: { text: "학생 관리", path: "/trainer/students" }
+  },
+  {
+    id: 4,
+    title: "수익 통계 및 분석 리포트",
+    subtitle: "월별 수익 동향과 상세한 분석 리포트를 통해 비즈니스 성장을 추적하세요",
+    image: "https://images.unsplash.com/photo-1551698618-1dfe5d97d256?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=400",
+    action: { text: "수익 분석", path: "/trainer/earnings" }
+  },
+  {
+    id: 5,
+    title: "전문 인증 및 자격 관리",
+    subtitle: "다양한 전문 인증을 취득하고 프로필을 강화해 더 많은 고객을 유치하세요",
+    image: "https://images.unsplash.com/photo-1548199973-03cce0bbc87b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=400",
+    action: { text: "인증 관리", path: "/trainer/certifications" }
+  }
+];
+
 export default function TrainerDashboard({ onAction }: TrainerDashboardProps) {
   const { userName } = useAuth();
   const [stats, setStats] = useState<TrainerStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [currentSlide, setCurrentSlide] = useState(0);
 
   useEffect(() => {
     fetchTrainerStats();
   }, []);
+
+  // 배너 자동 슬라이드 효과
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % trainerDashboardBanners.length);
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  const nextSlide = () => {
+    setCurrentSlide((prev) => (prev + 1) % trainerDashboardBanners.length);
+  };
+
+  const prevSlide = () => {
+    setCurrentSlide((prev) => (prev - 1 + trainerDashboardBanners.length) % trainerDashboardBanners.length);
+  };
+
+  const goToSlide = (index: number) => {
+    setCurrentSlide(index);
+  };
 
   const fetchTrainerStats = async () => {
     try {
@@ -66,30 +127,34 @@ export default function TrainerDashboard({ onAction }: TrainerDashboardProps) {
     }
   };
 
+  const currentBanner = trainerDashboardBanners[currentSlide];
+
   return (
     <div className="py-8 px-4 sm:px-6 lg:px-8">
-      {/* Banner */}
-      <div className="relative rounded-xl overflow-hidden h-60 md:h-80 mb-8 bg-gradient-to-r from-blue-600/80 to-indigo-600/80 shadow-lg">
+      {/* Banner Slider */}
+      <div className="relative rounded-xl overflow-hidden h-60 md:h-80 mb-8 shadow-lg">
         <img 
-          src="https://images.unsplash.com/photo-1583511655826-05700a52f8e4?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=400" 
-          alt="훈련사 대시보드"
+          src={currentBanner.image}
+          alt={currentBanner.title}
           className="w-full h-full object-cover absolute"
         />
         
-        {/* 이미지 필터 제거하여 원본 이미지 표시 */}
+        {/* 배너 오버레이 */}
+        <div className="absolute inset-0 bg-gradient-to-r from-black/60 to-black/30"></div>
         
         <div className="relative h-full flex flex-col justify-center px-8 md:px-12">
           <h1 className="text-white text-2xl md:text-4xl font-bold mb-2 md:mb-4 max-w-xl">
-            반려견 교육의 전문가, {userName || '훈련사'}님
+            {currentBanner.title}
           </h1>
           <p className="text-white text-sm md:text-lg max-w-xl mb-6">
-            Talez에서 귀하의 전문성을 공유하고 더 많은 반려견 가족에게 최고의 교육을 제공하세요.
+            {currentBanner.subtitle}
           </p>
           <div>
             <Button
               className="bg-white text-primary font-semibold hover:bg-gray-50 mr-3"
+              onClick={() => onAction('navigate', currentBanner.action.path)}
             >
-              새 강의 개설하기
+              {currentBanner.action.text}
             </Button>
             <Button
               variant="outline"
@@ -98,6 +163,39 @@ export default function TrainerDashboard({ onAction }: TrainerDashboardProps) {
               전문가 인증 업그레이드
             </Button>
           </div>
+        </div>
+
+        {/* 네비게이션 화살표 */}
+        <Button
+          variant="ghost"
+          size="icon"
+          className="absolute left-4 top-1/2 transform -translate-y-1/2 text-white hover:bg-white/20 h-12 w-12"
+          onClick={prevSlide}
+        >
+          <ChevronLeft className="h-6 w-6" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="absolute right-4 top-1/2 transform -translate-y-1/2 text-white hover:bg-white/20 h-12 w-12"
+          onClick={nextSlide}
+        >
+          <ChevronRight className="h-6 w-6" />
+        </Button>
+
+        {/* 슬라이드 인디케이터 */}
+        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
+          {trainerDashboardBanners.map((_, index) => (
+            <button
+              key={index}
+              className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                index === currentSlide 
+                  ? 'bg-white scale-110' 
+                  : 'bg-white/50 hover:bg-white/70'
+              }`}
+              onClick={() => goToSlide(index)}
+            />
+          ))}
         </div>
       </div>
       
