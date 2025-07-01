@@ -318,7 +318,7 @@ export default function Home() {
       title: "AI 기술로 더 효과적인 훈련 결과를 만들어보세요.",
       subtitle: "최신 AI 분석 도구와 데이터를 활용해 훈련 효과를 극대화하세요",
       features: ["AI 분석", "데이터 활용", "효과 최적화"],
-      image: "https://images.unsplash.com/photo-1544568100-847a948585b9?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
+      image: "https://images.unsplash.com/photo-1587300942307-4f2e1ce14d6b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
       primaryAction: { text: "AI 도구", path: "/trainer/ai-tools" },
       secondaryAction: { text: "분석 리포트", path: "/trainer/analytics-report" }
     }
