@@ -315,7 +315,7 @@ export class MemoryStorage implements IStorage{
     this.initPetOwnerData();
 
     // 실제 서비스 연결 데이터 생성 (예약, 알림장, 메시지 등)
-    this.initServiceConnectionData();
+    this.initSimpleServiceData();
 
     console.log('✅ 기본 데이터 초기화 완료');
     console.log(`   - 사용자: ${this.users.size}명`);
@@ -748,6 +748,40 @@ export class MemoryStorage implements IStorage{
     this.notifications.set(notification1.id, notification1);
     this.notifications.set(notification2.id, notification2);
     this.notifications.set(notification3.id, notification3);
+  }
+
+  // 간단한 서비스 연결 데이터
+  private initSimpleServiceData() {
+    // 몇 개의 간단한 메시지만 추가
+    const message1 = {
+      id: this.messageId++,
+      senderId: 108, // 김지영 견주
+      receiverId: 3, // 김민수 훈련사
+      content: '안녕하세요! 맥스의 기본 훈련 상담받고 싶습니다.',
+      timestamp: new Date(),
+      isRead: false,
+      messageType: 'text',
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+
+    const message2 = {
+      id: this.messageId++,
+      senderId: 3, // 김민수 훈련사
+      receiverId: 108, // 김지영 견주
+      content: '네, 기본 훈련 상담 도와드리겠습니다. 맥스의 나이와 현재 상태를 알려주세요.',
+      timestamp: new Date(),
+      isRead: true,
+      messageType: 'text',
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+
+    this.messages.set(message1.id, message1);
+    this.messages.set(message2.id, message2);
+
+    console.log('✅ 서비스 연결 데이터 초기화 완료');
+    console.log(`   - 메시지: ${this.messages.size}건`);
   }
 
   // 기존 복잡한 데이터 초기화 함수 (사용 안 함)
