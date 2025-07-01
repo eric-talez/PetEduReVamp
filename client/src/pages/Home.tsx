@@ -762,7 +762,7 @@ export default function Home() {
                 <Button
                   size="sm"
                   variant="outline"
-                  className="border-2 border-foreground/60 text-foreground/90 hover:bg-background/80 hover:text-foreground px-4 py-1.5 rounded-lg backdrop-blur-sm"
+                  className="border-2 border-white/60 text-white hover:bg-white/20 hover:text-white px-4 py-1.5 rounded-lg backdrop-blur-sm font-semibold"
                   onClick={() => setLocation(bannerSlides[currentSlide].secondaryAction.path)}
                 >
                   {bannerSlides[currentSlide].secondaryAction.text}
