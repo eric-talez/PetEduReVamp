@@ -309,7 +309,7 @@ export default function Home() {
       title: "프리미엄 훈련사로 차별화된 서비스를 제공하세요.",
       subtitle: "고급 인증과 특별한 혜택으로 더 높은 수준의 서비스를 제공할 수 있습니다",
       features: ["프리미엄 인증", "차별화 서비스", "높은 수수료"],
-      image: "https://images.unsplash.com/photo-1530281700549-e82e7bf110d6?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
+      image: "https://images.unsplash.com/photo-1552053831-71594a27632d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
       primaryAction: { text: "프리미엄 등급", path: "/trainer/premium-tier" },
       secondaryAction: { text: "인증 신청", path: "/trainer/certification-apply" }
     },
@@ -318,7 +318,7 @@ export default function Home() {
       title: "AI 기술로 더 효과적인 훈련 결과를 만들어보세요.",
       subtitle: "최신 AI 분석 도구와 데이터를 활용해 훈련 효과를 극대화하세요",
       features: ["AI 분석", "데이터 활용", "효과 최적화"],
-      image: "https://images.unsplash.com/photo-1551717743-49959800b1f6?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
+      image: "https://images.unsplash.com/photo-1530281700549-e82e7bf110d6?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
       primaryAction: { text: "AI 도구", path: "/trainer/ai-tools" },
       secondaryAction: { text: "분석 리포트", path: "/trainer/analytics-report" }
     }
