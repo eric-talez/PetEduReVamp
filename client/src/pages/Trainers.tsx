@@ -121,10 +121,10 @@ export default function Trainers() {
         {/* 이미지 필터 제거하여 원본 이미지 표시 */}
 
         <div className="relative h-full flex flex-col justify-center px-6 md:px-10">
-          <h1 className="text-primary dark:text-white text-xl md:text-3xl font-bold mb-2 md:mb-4 max-w-xl bg-white/90 dark:bg-gray-800/90 p-2 rounded-lg">
+          <h1 className="text-gray-900 dark:text-white text-xl md:text-3xl font-bold mb-2 md:mb-4 max-w-xl bg-white/95 dark:bg-gray-800/95 p-3 rounded-lg shadow-sm">
             전문 반려견 훈련사를 만나보세요
           </h1>
-          <p className="text-gray-800 dark:text-gray-200 text-sm md:text-base max-w-xl mb-4 bg-white/90 dark:bg-gray-800/90 p-2 rounded-lg">
+          <p className="text-gray-800 dark:text-gray-200 text-sm md:text-base max-w-xl mb-4 bg-white/95 dark:bg-gray-800/95 p-3 rounded-lg shadow-sm">
             경험이 풍부한 훈련사들이 당신과 반려견의 행복한 생활을 도와드립니다.
           </p>
 
@@ -383,7 +383,10 @@ export default function Trainers() {
           <p className="text-gray-500 dark:text-gray-400 max-w-md mx-auto mb-6">
             다른 검색어나 필터를 사용해 보세요. 더 많은 훈련사를 찾을 수 있을 거예요.
           </p>
-          <Button onClick={() => {setFilter("all"); setSearchQuery("");}}>
+          <Button 
+            onClick={() => {setFilter("all"); setSearchQuery("");}}
+            className="bg-primary hover:bg-primary/90 text-white font-semibold border border-primary/10 shadow-sm"
+          >
             모든 훈련사 보기
           </Button>
         </div>

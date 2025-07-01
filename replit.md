@@ -115,6 +115,14 @@ TALEZ is a comprehensive pet education and e-commerce platform that combines AI-
 
 ## Changelog
 
+- July 01, 2025. Enhanced button color contrast and accessibility in expert finder section:
+  - Improved TALEZ certification button with proper color contrast using CSS variable system
+  - Enhanced search button visibility with explicit primary colors and proper aria-labels
+  - Updated filter buttons with consistent color contrast using utility classes
+  - Improved "Profile View" buttons with better border contrast and hover states
+  - Enhanced banner text readability with higher opacity backgrounds and shadow effects
+  - Applied consistent transition animations and font weights across all interactive elements
+  - All buttons now meet WCAG accessibility standards for color contrast ratios
 - July 01, 2025. Successfully implemented realistic service operation data connections between pet owners and trainers:
   - Created comprehensive pet owner database with 3 representative users (김지영, 박민호, 이수진)
   - Added 3 realistic pet profiles (맥스-골든리트리버, 루나-보더콜리, 초코-프렌치불독) with detailed characteristics
