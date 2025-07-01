@@ -217,7 +217,7 @@ export class MemoryStorage implements IStorage{
   // Additional data stores (arrays)
   private communityPosts: CommunityPost[] = [];
   private shoppingItems: ShoppingItem[] = [];
-  private reservations: Reservation[] = [];
+  private reservations = new Map();
   private consultations: Consultation[] = [];
   private notebookEntries: NotebookEntry[] = [];
   private commissions: Commission[] = [];
@@ -268,14 +268,489 @@ export class MemoryStorage implements IStorage{
   private tierId = 1;
   private transactionId = 1;
   private reportId = 1;
+  private reservationId = 1;
 
 
   constructor() {
     console.log('🔄 운영 환경용 메모리 저장소 초기화...');
-    this.initProductionSampleData();
+    this.initBasicData();
   }
 
-  // 운영 환경용 최소 샘플 데이터 초기화
+  // 간소화된 기본 데이터만 초기화
+  private initBasicData() {
+    // 기본 관리자 계정들
+    const adminUser = {
+      id: this.userId++,
+      username: 'admin',
+      email: 'admin@talez.com',
+      name: '관리자',
+      role: 'admin',
+      password: 'hashed_password_here',
+      avatar: '/images/admin-avatar.png',
+      createdAt: new Date(),
+      isVerified: true,
+      instituteId: null
+    };
+
+    const trainerUser = {
+      id: this.userId++,
+      username: 'trainer',
+      email: 'trainer@example.com',
+      name: '훈련사',
+      role: 'trainer',
+      password: 'hashed_password_here',
+      avatar: '/images/trainer-avatar.png',
+      createdAt: new Date(),
+      isVerified: true,
+      instituteId: null
+    };
+
+    this.users.set(adminUser.id, adminUser);
+    this.users.set(trainerUser.id, trainerUser);
+
+    // 5명의 훈련사 데이터 (기존과 동일)
+    this.initTrainerData();
+
+    // 견주 데이터 추가
+    this.initPetOwnerData();
+
+    // 실제 서비스 연결 데이터 생성 (예약, 알림장, 메시지 등)
+    this.initServiceConnectionData();
+
+    console.log('✅ 기본 데이터 초기화 완료');
+    console.log(`   - 사용자: ${this.users.size}명`);
+    console.log(`   - 훈련사: ${this.trainers.size}명`);
+    console.log(`   - 반려동물: ${this.pets.size}마리`);
+    console.log(`   - 예약: ${this.reservations.size}건`);
+    console.log(`   - 메시지: ${this.messages.size}건`);
+  }
+
+  // 훈련사 데이터 초기화
+  private initTrainerData() {
+    const trainer1 = {
+      id: 1,
+      userId: 3,
+      name: '김민수',
+      specialty: '기본훈련 및 행동교정',
+      specialties: ['기본훈련', '행동교정', '어질리티'],
+      experience: 10,
+      rating: 4.8,
+      reviewCount: 156,
+      description: '10년 경력의 전문 반려동물 훈련사입니다. 개별 맞춤 훈련과 행동 교정을 전문으로 합니다.',
+      bio: '10년 경력의 전문 반려동물 훈련사',
+      location: '서울시 강남구',
+      address: '서울시 강남구 테헤란로 123',
+      phone: '010-1234-5678',
+      email: 'trainer@example.com',
+      avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300',
+      certifications: ['반려동물행동교정사 1급', 'KKF 공인 훈련사'],
+      talezCertificationStatus: 'verified',
+      talezCertificationLevel: 'professional',
+      licenseNumber: 'TAL-2024-001',
+      price: 80000,
+      featured: true,
+      isActive: true,
+      availableSlots: ['09:00', '10:00', '14:00', '15:00', '16:00'],
+      workingHours: { start: '09:00', end: '18:00' },
+      workingDays: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'],
+      services: [
+        { name: '기본 훈련', duration: 60, price: 80000 },
+        { name: '행동 교정', duration: 90, price: 120000 },
+        { name: '어질리티 훈련', duration: 60, price: 100000 }
+      ],
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+
+    const trainer2 = {
+      id: 2,
+      userId: 104,
+      name: '박지혜',
+      specialty: '퍼피 교육 및 사회화',
+      specialties: ['퍼피교육', '사회화훈련', '기본훈련'],
+      experience: 7,
+      rating: 4.9,
+      reviewCount: 89,
+      description: '어린 강아지 전문 교육과 사회화 훈련을 전문으로 하는 7년 경력의 훈련사입니다.',
+      bio: '퍼피 교육 전문가',
+      location: '서울시 서초구',
+      address: '서울시 서초구 강남대로 456',
+      phone: '010-2345-6789',
+      email: 'park.trainer@example.com',
+      avatar: 'https://images.unsplash.com/photo-1494790108755-2616b332b1b3?w=300',
+      certifications: ['동물행동학 석사', 'KKF 공인 훈련사'],
+      talezCertificationStatus: 'verified',
+      talezCertificationLevel: 'expert',
+      licenseNumber: 'TAL-2024-002',
+      price: 75000,
+      featured: true,
+      isActive: true,
+      availableSlots: ['10:00', '11:00', '15:00', '16:00', '17:00'],
+      workingHours: { start: '10:00', end: '19:00' },
+      workingDays: ['tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'],
+      services: [
+        { name: '퍼피 교육', duration: 45, price: 75000 },
+        { name: '사회화 훈련', duration: 60, price: 85000 },
+        { name: '기본 복종 훈련', duration: 60, price: 80000 }
+      ],
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+
+    const trainer3 = {
+      id: 3,
+      userId: 105,
+      name: '이준호',
+      specialty: '어질리티 및 스포츠 훈련',
+      specialties: ['어질리티', '스포츠훈련', '고급훈련'],
+      experience: 12,
+      rating: 4.7,
+      reviewCount: 203,
+      description: '어질리티와 반려견 스포츠 분야의 베테랑 훈련사입니다. 경쟁 대회 출전까지 도와드립니다.',
+      bio: '어질리티 전문 베테랑 훈련사',
+      location: '경기도 성남시',
+      address: '경기도 성남시 분당구 정자로 789',
+      phone: '010-3456-7890',
+      email: 'lee.trainer@example.com',
+      avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=300',
+      certifications: ['국제 어질리티 심사위원', 'KKF 공인 훈련사'],
+      talezCertificationStatus: 'verified',
+      talezCertificationLevel: 'master',
+      licenseNumber: 'TAL-2024-003',
+      price: 120000,
+      featured: false,
+      isActive: true,
+      availableSlots: ['08:00', '09:00', '14:00', '15:00'],
+      workingHours: { start: '08:00', end: '17:00' },
+      workingDays: ['monday', 'wednesday', 'friday', 'saturday', 'sunday'],
+      services: [
+        { name: '어질리티 기초', duration: 60, price: 120000 },
+        { name: '어질리티 고급', duration: 90, price: 150000 },
+        { name: '경쟁 대회 준비', duration: 120, price: 200000 }
+      ],
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+
+    const trainer4 = {
+      id: 4,
+      userId: 106,
+      name: '최예린',
+      specialty: '행동 분석 및 문제행동 교정',
+      specialties: ['행동분석', '문제행동교정', '심리치료'],
+      experience: 8,
+      rating: 4.9,
+      reviewCount: 134,
+      description: '동물 행동학 전문가로서 문제 행동의 근본 원인을 찾아 해결하는 전문 훈련사입니다.',
+      bio: '동물 행동학 전문가',
+      location: '서울시 마포구',
+      address: '서울시 마포구 월드컵로 321',
+      phone: '010-4567-8901',
+      email: 'choi.trainer@example.com',
+      avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=300',
+      certifications: ['동물행동학 박사', '임상동물행동학자'],
+      talezCertificationStatus: 'verified',
+      talezCertificationLevel: 'expert',
+      licenseNumber: 'TAL-2024-004',
+      price: 150000,
+      featured: true,
+      isActive: true,
+      availableSlots: ['11:00', '13:00', '15:00', '17:00'],
+      workingHours: { start: '10:00', end: '18:00' },
+      workingDays: ['monday', 'tuesday', 'thursday', 'friday', 'saturday'],
+      services: [
+        { name: '행동 분석', duration: 90, price: 150000 },
+        { name: '공격성 교정', duration: 120, price: 200000 },
+        { name: '분리불안 치료', duration: 90, price: 180000 }
+      ],
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+
+    const trainer5 = {
+      id: 5,
+      userId: 107,
+      name: '정현우',
+      specialty: 'K9 및 전문견 훈련',
+      specialties: ['K9훈련', '경찰견훈련', '전문견양성'],
+      experience: 15,
+      rating: 4.8,
+      reviewCount: 67,
+      description: '전직 경찰견 훈련관 출신으로 전문적이고 체계적인 훈련을 제공합니다.',
+      bio: '전직 경찰견 훈련관',
+      location: '인천시 연수구',
+      address: '인천시 연수구 컨벤시아대로 654',
+      phone: '010-5678-9012',
+      email: 'jung.trainer@example.com',
+      avatar: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=300',
+      certifications: ['경찰견 훈련 자격증', 'K9 전문 훈련사'],
+      talezCertificationStatus: 'verified',
+      talezCertificationLevel: 'professional',
+      licenseNumber: 'TAL-2024-005',
+      price: 100000,
+      featured: false,
+      isActive: true,
+      availableSlots: ['07:00', '08:00', '13:00', '14:00'],
+      workingHours: { start: '07:00', end: '16:00' },
+      workingDays: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'],
+      services: [
+        { name: '기초 복종 훈련', duration: 60, price: 100000 },
+        { name: '보호 훈련', duration: 90, price: 140000 },
+        { name: '전문견 양성', duration: 120, price: 180000 }
+      ],
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+
+    this.trainers.set(trainer1.id, trainer1);
+    this.trainers.set(trainer2.id, trainer2);
+    this.trainers.set(trainer3.id, trainer3);
+    this.trainers.set(trainer4.id, trainer4);
+    this.trainers.set(trainer5.id, trainer5);
+  }
+
+  // 견주 데이터 초기화
+  private initPetOwnerData() {
+    // 견주 사용자들
+    const owner1 = {
+      id: this.userId++,
+      username: 'petowner1',
+      email: 'owner1@example.com',
+      name: '김지영',
+      role: 'pet-owner',
+      password: 'hashed_password_here',
+      avatar: 'https://images.unsplash.com/photo-1580518337843-f959e992563b?w=300',
+      createdAt: new Date(),
+      isVerified: true,
+      instituteId: null
+    };
+
+    const owner2 = {
+      id: this.userId++,
+      username: 'petowner2',
+      email: 'owner2@example.com',
+      name: '박민호',
+      role: 'pet-owner',
+      password: 'hashed_password_here',
+      avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=300',
+      createdAt: new Date(),
+      isVerified: true,
+      instituteId: null
+    };
+
+    const owner3 = {
+      id: this.userId++,
+      username: 'petowner3',
+      email: 'owner3@example.com',
+      name: '이수진',
+      role: 'pet-owner',
+      password: 'hashed_password_here',
+      avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=300',
+      createdAt: new Date(),
+      isVerified: true,
+      instituteId: null
+    };
+
+    this.users.set(owner1.id, owner1);
+    this.users.set(owner2.id, owner2);
+    this.users.set(owner3.id, owner3);
+
+    // 반려동물 데이터
+    const pet1 = {
+      id: this.petId++,
+      ownerId: owner1.id,
+      name: '맥스',
+      breed: '골든 리트리버',
+      age: 3,
+      gender: 'male',
+      weight: 28.5,
+      color: '황금색',
+      description: '활발하고 사람을 좋아하는 성격',
+      profileImage: 'https://images.unsplash.com/photo-1552053831-71594a27632d?w=300',
+      isNeutered: true,
+      vaccinated: true,
+      healthIssues: [],
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+
+    const pet2 = {
+      id: this.petId++,
+      ownerId: owner2.id,
+      name: '루나',
+      breed: '보더 콜리',
+      age: 2,
+      gender: 'female',
+      weight: 18.2,
+      color: '흑백',
+      description: '똑똑하고 에너지가 넘치는 활동적인 성격',
+      profileImage: 'https://images.unsplash.com/photo-1551717743-49959800b1f6?w=300',
+      isNeutered: true,
+      vaccinated: true,
+      healthIssues: [],
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+
+    const pet3 = {
+      id: this.petId++,
+      ownerId: owner3.id,
+      name: '초코',
+      breed: '프렌치 불독',
+      age: 1,
+      gender: 'male',
+      weight: 12.8,
+      color: '갈색',
+      description: '호기심이 많고 애교가 많은 어린 강아지',
+      profileImage: 'https://images.unsplash.com/photo-1583337130417-3346a1be7dee?w=300',
+      isNeutered: false,
+      vaccinated: true,
+      healthIssues: ['호흡기 주의'],
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+
+    this.pets.set(pet1.id, pet1);
+    this.pets.set(pet2.id, pet2);
+    this.pets.set(pet3.id, pet3);
+  }
+
+  // 실제 서비스 연결 데이터 초기화
+  private initServiceConnectionData() {
+    // 예약 데이터 생성
+    const reservation1 = {
+      id: this.reservationId++,
+      userId: 108, // 김지영 (owner1)
+      trainerId: 1, // 김민수 훈련사
+      petId: this.petId - 3, // 맥스
+      serviceType: '기본 훈련',
+      scheduledDate: new Date('2025-01-05 10:00:00'),
+      duration: 60,
+      status: 'confirmed',
+      price: 80000,
+      notes: '기본 복종 훈련 중점으로 진행 요청',
+      meetingType: 'video',
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+
+    const reservation2 = {
+      id: this.reservationId++,
+      userId: 109, // 박민호 (owner2)
+      trainerId: 2, // 박지혜 훈련사
+      petId: this.petId - 2, // 루나
+      serviceType: '사회화 훈련',
+      scheduledDate: new Date('2025-01-06 15:00:00'),
+      duration: 60,
+      status: 'confirmed',
+      price: 85000,
+      notes: '다른 개와의 사회화 훈련 필요',
+      meetingType: 'video',
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+
+    const reservation3 = {
+      id: this.reservationId++,
+      userId: 110, // 이수진 (owner3)
+      trainerId: 4, // 최예린 훈련사
+      petId: this.petId - 1, // 초코
+      serviceType: '행동 분석',
+      scheduledDate: new Date('2025-01-07 13:00:00'),
+      duration: 90,
+      status: 'pending',
+      price: 150000,
+      notes: '밤에 짖는 문제 해결 상담',
+      meetingType: 'video',
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+
+    this.reservations.set(reservation1.id, reservation1);
+    this.reservations.set(reservation2.id, reservation2);
+    this.reservations.set(reservation3.id, reservation3);
+
+    // 메시지 데이터 생성
+    const message1 = {
+      id: this.messageId++,
+      senderId: 108, // 김지영
+      receiverId: 1, // 김민수 훈련사 (userId: 3)
+      content: '안녕하세요! 맥스의 기본 훈련 상담 받고 싶습니다.',
+      timestamp: new Date('2025-01-02 14:30:00'),
+      isRead: true,
+      messageType: 'text',
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+
+    const message2 = {
+      id: this.messageId++,
+      senderId: 3, // 김민수 훈련사
+      receiverId: 108, // 김지영
+      content: '안녕하세요! 맥스의 나이와 현재 훈련 상태를 알려주시면 맞춤 훈련 계획을 제안해드리겠습니다.',
+      timestamp: new Date('2025-01-02 15:00:00'),
+      isRead: true,
+      messageType: 'text',
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+
+    const message3 = {
+      id: this.messageId++,
+      senderId: 109, // 박민호
+      receiverId: 2, // 박지혜 훈련사 (userId: 104)
+      content: '루나가 다른 개들과 잘 어울리지 못하고 있어요. 사회화 훈련이 필요할 것 같습니다.',
+      timestamp: new Date('2025-01-03 09:15:00'),
+      isRead: false,
+      messageType: 'text',
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+
+    this.messages.set(message1.id, message1);
+    this.messages.set(message2.id, message2);
+    this.messages.set(message3.id, message3);
+
+    // 알림 데이터 생성
+    const notification1 = {
+      id: this.notificationId++,
+      userId: 108, // 김지영
+      type: 'reservation_confirmed',
+      title: '예약 확정',
+      message: '김민수 훈련사와의 기본 훈련이 1월 5일 10시에 확정되었습니다.',
+      isRead: false,
+      createdAt: new Date('2025-01-03 16:00:00'),
+      updatedAt: new Date()
+    };
+
+    const notification2 = {
+      id: this.notificationId++,
+      userId: 109, // 박민호
+      type: 'new_message',
+      title: '새 메시지',
+      message: '박지혜 훈련사로부터 새 메시지가 도착했습니다.',
+      isRead: false,
+      createdAt: new Date('2025-01-03 10:30:00'),
+      updatedAt: new Date()
+    };
+
+    const notification3 = {
+      id: this.notificationId++,
+      userId: 110, // 이수진
+      type: 'training_reminder',
+      title: '훈련 알림',
+      message: '초코의 행동 분석 상담이 내일 오후 1시에 예정되어 있습니다.',
+      isRead: false,
+      createdAt: new Date('2025-01-06 09:00:00'),
+      updatedAt: new Date()
+    };
+
+    this.notifications.set(notification1.id, notification1);
+    this.notifications.set(notification2.id, notification2);
+    this.notifications.set(notification3.id, notification3);
+  }
+
+  // 기존 복잡한 데이터 초기화 함수 (사용 안 함)
   private initProductionSampleData() {
     // 기본 관리자 계정만 생성
     const adminUser = {
@@ -874,7 +1349,7 @@ export class MemoryStorage implements IStorage{
 
     const vaccination4 = {
       id: 4,
-      petId: samplePet1.id,
+      petId: pet4_둘리.id,
       vaccineName: '켄넬코프 백신',
       vaccineType: '켄넬코프',
       vaccineDate: '2024-03-01',
