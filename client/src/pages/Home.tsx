@@ -152,7 +152,7 @@ export default function Home() {
       title: "반려견 건강 관리 & 기록",
       subtitle: "반려견의 건강 상태를 체계적으로 관리하고 기록해보세요",
       features: ["건강 기록", "예방접종 알림", "병원 예약"],
-      image: "https://images.unsplash.com/photo-1574158622682-e40e69881006?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
+      image: "https://images.unsplash.com/photo-1601758261049-55d060e1159a?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
       primaryAction: { text: "건강 관리", path: "/health" },
       secondaryAction: { text: "기록 시작", path: "/health-record" }
     },
@@ -161,7 +161,7 @@ export default function Home() {
       title: "반려견 교육 용품 쇼핑몰",
       subtitle: "교육에 필요한 다양한 용품들을 한 곳에서 만나보세요",
       features: ["훈련사 추천", "교육 연계 할인", "빠른 배송"],
-      image: "https://images.unsplash.com/photo-1560472354-b33ff0c44a43?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
+      image: "https://images.unsplash.com/photo-1581594693702-fbdc51b2763b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
       primaryAction: { text: "쇼핑하기", path: "/shop" },
       secondaryAction: { text: "추천 상품", path: "/shop/recommended" }
     },
@@ -170,7 +170,7 @@ export default function Home() {
       title: "반려인 커뮤니티",
       subtitle: "비슷한 고민을 가진 반려인들과 소통하고 정보를 공유하세요",
       features: ["반려인 소통", "경험 공유", "전문가 Q&A"],
-      image: "https://images.unsplash.com/photo-1530281700549-e82e7bf110d6?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
+      image: "https://images.unsplash.com/photo-1601758228041-f3b2795255f1?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
       primaryAction: { text: "커뮤니티", path: "/community" },
       secondaryAction: { text: "게시글 작성", path: "/community/create" }
     },
@@ -179,7 +179,7 @@ export default function Home() {
       title: "기관 및 훈련소 등록",
       subtitle: "전문 교육 기관이나 훈련소를 운영하신다면 Talez와 함께하세요",
       features: ["기관 등록", "코스 관리", "수익 창출"],
-      image: "https://images.unsplash.com/photo-1552053831-71594a27632d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
+      image: "https://images.unsplash.com/photo-1593134257782-e89567b7718a?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
       primaryAction: { text: "기관 등록", path: "/institutes/register" },
       secondaryAction: { text: "파트너 안내", path: "/partners" }
     }
@@ -237,7 +237,7 @@ export default function Home() {
       title: "더 많은 반려인들이 당신을 찾고 있습니다",
       subtitle: "TALEZ 플랫폼을 통해 전국의 반려인들과 연결되고 안정적인 고객층을 확보하세요",
       features: ["전국 고객 연결", "안정적 수익", "브랜드 인지도"],
-      image: "https://images.unsplash.com/photo-1587300003388-59208cc962cb?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
+      image: "https://images.unsplash.com/photo-1593134257782-e89567b7718a?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
       primaryAction: { text: "고객 연결", path: "/trainer/customer-connect" },
       secondaryAction: { text: "성공 사례", path: "/trainer/success-stories" }
     },
@@ -246,7 +246,7 @@ export default function Home() {
       title: "전문 훈련사의 가치를 제대로 인정받으세요",
       subtitle: "투명한 수수료 체계와 공정한 정산으로 전문가로서의 가치를 제대로 평가받으세요",
       features: ["공정한 보상", "투명한 정산", "전문가 대우"],
-      image: "https://images.unsplash.com/photo-1544568100-847a948585b9?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
+      image: "https://images.unsplash.com/photo-1560807707-8cc77767d783?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
       primaryAction: { text: "수수료 확인", path: "/trainer/commission-info" },
       secondaryAction: { text: "정산 내역", path: "/trainer/settlement" }
     },
