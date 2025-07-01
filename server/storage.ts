@@ -348,31 +348,128 @@ export class MemoryStorage implements IStorage{
 
     this.products.set(sampleProduct.id, sampleProduct);
 
-    // 샘플 사용자 (견주) 추가
-    const petOwnerUser = {
+    // 샘플 사용자들 (견주) 추가 - 다양한 프로필
+    const petOwner1 = {
       id: this.userId++,
-      username: 'petowner',
-      email: 'owner@example.com',
-      name: '반려인',
+      username: 'petowner1',
+      email: 'owner1@example.com',
+      name: '김혜진',
       role: 'pet-owner',
       password: 'hashed_password_here',
-      avatar: '/images/pet-owner-avatar.png',
+      avatar: 'https://images.unsplash.com/photo-1494790108755-2616b332b1b3?w=300',
       createdAt: new Date(),
       isVerified: true,
       instituteId: null,
       ci: null,
-      verified: false,
-      verifiedAt: null,
-      verificationName: null,
-      verificationBirth: null,
-      verificationPhone: null,
+      verified: true,
+      verifiedAt: new Date(),
+      verificationName: '김혜진',
+      verificationBirth: '1990-05-15',
+      verificationPhone: '010-1111-2222',
       provider: null,
       socialId: null,
-      bio: '반려동물과 함께하는 행복한 일상',
+      bio: '3년차 골든 리트리버 반려인입니다. 멍멍이와 함께 행복한 일상을 보내고 있어요!',
       location: '서울시 강남구'
     };
 
-    this.users.set(petOwnerUser.id, petOwnerUser);
+    const petOwner2 = {
+      id: this.userId++,
+      username: 'petowner2',
+      email: 'owner2@example.com',
+      name: '박진우',
+      role: 'pet-owner',
+      password: 'hashed_password_here',
+      avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300',
+      createdAt: new Date(),
+      isVerified: true,
+      instituteId: null,
+      ci: null,
+      verified: true,
+      verifiedAt: new Date(),
+      verificationName: '박진우',
+      verificationBirth: '1985-12-08',
+      verificationPhone: '010-3333-4444',
+      provider: null,
+      socialId: null,
+      bio: '초보 견주입니다. 코코의 훈련에 대해 많이 배우고 싶어요.',
+      location: '서울시 서초구'
+    };
+
+    const petOwner3 = {
+      id: this.userId++,
+      username: 'petowner3',
+      email: 'owner3@example.com',
+      name: '이수정',
+      role: 'pet-owner',
+      password: 'hashed_password_here',
+      avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=300',
+      createdAt: new Date(),
+      isVerified: true,
+      instituteId: null,
+      ci: null,
+      verified: true,
+      verifiedAt: new Date(),
+      verificationName: '이수정',
+      verificationBirth: '1992-03-22',
+      verificationPhone: '010-5555-6666',
+      provider: null,
+      socialId: null,
+      bio: '보더콜리 초코와 함께 어질리티에 도전하고 있습니다!',
+      location: '경기도 성남시'
+    };
+
+    const petOwner4 = {
+      id: this.userId++,
+      username: 'petowner4',
+      email: 'owner4@example.com',
+      name: '정민호',
+      role: 'pet-owner',
+      password: 'hashed_password_here',
+      avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=300',
+      createdAt: new Date(),
+      isVerified: true,
+      instituteId: null,
+      ci: null,
+      verified: true,
+      verifiedAt: new Date(),
+      verificationName: '정민호',
+      verificationBirth: '1987-09-14',
+      verificationPhone: '010-7777-8888',
+      provider: null,
+      socialId: null,
+      bio: '문제행동이 있는 둘리와 함께 교정 훈련 중입니다.',
+      location: '서울시 마포구'
+    };
+
+    // 기관 관리자 추가
+    const instituteAdmin = {
+      id: this.userId++,
+      username: 'institute_admin',
+      email: 'institute@talez.com',
+      name: '강민서',
+      role: 'institute-admin',
+      password: 'hashed_password_here',
+      avatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=300',
+      createdAt: new Date(),
+      isVerified: true,
+      instituteId: 1,
+      ci: null,
+      verified: true,
+      verifiedAt: new Date(),
+      verificationName: '강민서',
+      verificationBirth: '1988-07-30',
+      verificationPhone: '010-9999-0000',
+      provider: null,
+      socialId: null,
+      bio: '테일즈 서울 강남센터 관리자입니다.',
+      location: '서울시 강남구'
+    };
+
+    this.users.set(petOwner1.id, petOwner1);
+    this.users.set(petOwner2.id, petOwner2);
+    this.users.set(petOwner3.id, petOwner3);
+    this.users.set(petOwner4.id, petOwner4);
+    this.users.set(instituteAdmin.id, instituteAdmin);
 
     // 샘플 훈련사 추가
     const trainerUser = {
@@ -586,15 +683,15 @@ export class MemoryStorage implements IStorage{
     this.trainers.set(trainer4.id, trainer4);
     this.trainers.set(trainer5.id, trainer5);
 
-    // 샘플 반려동물 추가
-    const samplePet1 = {
+    // 견주별 반려동물들 추가
+    const pet1_멍멍이 = {
       id: this.petId++,
       name: '멍멍이',
       breed: '골든 리트리버',
       age: 3,
-      weight: 25000, // 그램 단위
+      weight: 25000,
       gender: 'male',
-      ownerId: petOwnerUser.id,
+      ownerId: petOwner1.id,
       description: '활발하고 친근한 성격의 골든 리트리버',
       health: '건강함',
       temperament: '온순하고 활발함',
@@ -603,37 +700,121 @@ export class MemoryStorage implements IStorage{
       registrationNumber: 'REG-2024-001',
       birthDate: '2021-03-15',
       adoptionDate: '2021-05-20',
+      trainingStatus: '진행중',
+      assignedTrainerId: trainerUser.id, // 김민수 훈련사와 연결
+      trainingStartDate: '2024-01-15',
+      trainingGoals: ['기본 복종 훈련', '산책 매너', '사회화'],
       createdAt: new Date(),
       updatedAt: new Date()
     };
 
-    const samplePet2 = {
+    const pet2_코코 = {
       id: this.petId++,
-      name: '야옹이',
-      breed: '페르시안',
-      age: 2,
-      weight: 4500, // 그램 단위
+      name: '코코',
+      breed: '웰시코기',
+      age: 1,
+      weight: 12000,
       gender: 'female',
-      ownerId: petOwnerUser.id,
-      description: '조용하고 우아한 성격의 페르시안 고양이',
+      ownerId: petOwner2.id,
+      description: '호기심 많고 장난기 넘치는 어린 웰시코기',
       health: '건강함',
-      temperament: '차분하고 독립적',
-      allergies: '특정 사료에 알레르기',
+      temperament: '활발하고 호기심 많음',
+      allergies: '없음',
       microchipId: 'MC001234567891',
       registrationNumber: 'REG-2024-002',
-      birthDate: '2022-08-10',
-      adoptionDate: '2022-10-15',
+      birthDate: '2023-06-20',
+      adoptionDate: '2023-08-15',
+      trainingStatus: '진행중',
+      assignedTrainerId: 442, // 박지혜 훈련사와 연결 (trainer2)
+      trainingStartDate: '2024-02-01',
+      trainingGoals: ['퍼피 기초 교육', '하우스 트레이닝', '사회화'],
       createdAt: new Date(),
       updatedAt: new Date()
     };
 
-    this.pets.set(samplePet1.id, samplePet1);
-    this.pets.set(samplePet2.id, samplePet2);
+    const pet3_초코 = {
+      id: this.petId++,
+      name: '초코',
+      breed: '보더콜리',
+      age: 2,
+      weight: 18000,
+      gender: 'male',
+      ownerId: petOwner3.id,
+      description: '똑똑하고 운동 능력이 뛰어난 보더콜리',
+      health: '건강함',
+      temperament: '지능적이고 활동적',
+      allergies: '없음',
+      microchipId: 'MC001234567892',
+      registrationNumber: 'REG-2024-003',
+      birthDate: '2022-04-10',
+      adoptionDate: '2022-06-05',
+      trainingStatus: '진행중',
+      assignedTrainerId: 444, // 이준호 훈련사와 연결 (trainer3)
+      trainingStartDate: '2024-01-20',
+      trainingGoals: ['어질리티 기초', '고급 복종 훈련', '스포츠 훈련'],
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+
+    const pet4_둘리 = {
+      id: this.petId++,
+      name: '둘리',
+      breed: '진돗개',
+      age: 4,
+      weight: 22000,
+      gender: 'male',
+      ownerId: petOwner4.id,
+      description: '영리하지만 경계심이 강한 진돗개',
+      health: '건강함',
+      temperament: '독립적이고 경계심 강함',
+      allergies: '없음',
+      microchipId: 'MC001234567893',
+      registrationNumber: 'REG-2024-004',
+      birthDate: '2020-11-25',
+      adoptionDate: '2021-01-10',
+      trainingStatus: '진행중',
+      assignedTrainerId: 445, // 최예린 훈련사와 연결 (trainer4)
+      trainingStartDate: '2024-02-15',
+      trainingGoals: ['공격성 교정', '사회화 훈련', '행동 분석'],
+      behaviorIssues: ['낯선 사람에 대한 경계', '다른 개와의 갈등'],
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+
+    const pet5_별이 = {
+      id: this.petId++,
+      name: '별이',
+      breed: '셰퍼드',
+      age: 3,
+      weight: 30000,
+      gender: 'female',
+      ownerId: petOwner1.id, // 김혜진이 두 마리 키움
+      description: '차분하고 충성심 강한 셰퍼드',
+      health: '건강함',
+      temperament: '차분하고 충성적',
+      allergies: '없음',
+      microchipId: 'MC001234567894',
+      registrationNumber: 'REG-2024-005',
+      birthDate: '2021-08-15',
+      adoptionDate: '2021-10-20',
+      trainingStatus: '진행중',
+      assignedTrainerId: 446, // 정현우 훈련사와 연결 (trainer5)
+      trainingStartDate: '2024-01-10',
+      trainingGoals: ['전문 훈련', '보호 훈련', 'K9 기초'],
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+
+    this.pets.set(pet1_멍멍이.id, pet1_멍멍이);
+    this.pets.set(pet2_코코.id, pet2_코코);
+    this.pets.set(pet3_초코.id, pet3_초코);
+    this.pets.set(pet4_둘리.id, pet4_둘리);
+    this.pets.set(pet5_별이.id, pet5_별이);
 
     // 샘플 예방접종 기록 - 더 상세한 데이터
     const vaccination1 = {
       id: 1,
-      petId: samplePet1.id,
+      petId: pet1_멍멍이.id,
       vaccineName: 'DHPPL (5종 종합백신)',
       vaccineType: '종합백신',
       vaccineDate: '2024-01-15',
@@ -653,7 +834,7 @@ export class MemoryStorage implements IStorage{
 
     const vaccination2 = {
       id: 2,
-      petId: samplePet1.id,
+      petId: pet2_코코.id,
       vaccineName: '광견병 백신 (Rabisin)',
       vaccineType: '광견병',
       vaccineDate: '2024-01-15',
@@ -673,7 +854,7 @@ export class MemoryStorage implements IStorage{
 
     const vaccination3 = {
       id: 3,
-      petId: samplePet2.id,
+      petId: pet3_초코.id,
       vaccineName: 'FVRCP (고양이 3종)',
       vaccineType: '종합백신',
       vaccineDate: '2024-02-10',
@@ -1147,12 +1328,12 @@ export class MemoryStorage implements IStorage{
     console.log(`   - 영양 계획: ${this.nutritionPlans.size}개`);
     console.log(`   - 건강 리마인더: ${this.healthReminders.size}개`);
 
-    // 샘플 알림장 기록
+    // 견주-훈련사별 알림장 기록들
     const journal1 = {
       id: 1,
-      trainerId: trainerUser.id,
-      petOwnerId: petOwnerUser.id,
-      petId: samplePet1.id,
+      trainerId: trainerUser.id, // 김민수 훈련사
+      petOwnerId: petOwner1.id, // 김혜진 견주
+      petId: pet1_멍멍이.id,
       title: '멍멍이 기본 훈련 1회차',
       content: '오늘은 기본적인 앉기와 기다리기 훈련을 진행했습니다. 멍멍이가 처음에는 산만했지만 점차 집중력이 향상되었습니다. 간식을 이용한 긍정적 강화 훈련이 효과적이었습니다.',
       trainingDate: '2024-01-21',
@@ -1169,36 +1350,208 @@ export class MemoryStorage implements IStorage{
       updatedAt: new Date('2024-01-21T14:30:00Z')
     };
 
-    // 메시지 샘플 데이터
+    const journal2 = {
+      id: 2,
+      trainerId: 442, // 박지혜 훈련사
+      petOwnerId: petOwner2.id, // 박진우 견주
+      petId: pet2_코코.id,
+      title: '코코 퍼피 사회화 훈련 1회차',
+      content: '첫 수업이었지만 코코가 정말 영리하네요! 다른 강아지들과의 첫 만남에서 약간 긴장했지만 금세 적응했습니다. 기본적인 앉기 명령을 잘 따르고 있어요.',
+      trainingDate: '2024-02-01',
+      trainingDuration: 45,
+      trainingType: '퍼피 사회화',
+      progressRating: 5,
+      behaviorNotes: '호기심이 많고 학습 의욕이 높음. 다른 강아지들에게 관심이 많지만 공격적이지 않음. 사람을 좋아함.',
+      homeworkInstructions: '매일 10분씩 다양한 소리(청소기, 차 소리 등)에 노출시켜 주세요. 간식과 함께 긍정적인 경험을 만들어주세요.',
+      nextGoals: '다음 시간에는 리드줄 착용 연습과 기본 명령어 확장 훈련을 진행하겠습니다.',
+      isRead: true,
+      readAt: new Date('2024-02-01T18:20:00Z'),
+      status: 'read',
+      createdAt: new Date('2024-02-01T15:30:00Z'),
+      updatedAt: new Date('2024-02-01T15:30:00Z')
+    };
+
+    const journal3 = {
+      id: 3,
+      trainerId: 444, // 이준호 훈련사
+      petOwnerId: petOwner3.id, // 이수정 견주
+      petId: pet3_초코.id,
+      title: '초코 어질리티 기초 평가',
+      content: '초코의 운동 능력이 정말 뛰어나네요! 점프와 터널 통과에 자연스러운 재능을 보입니다. 보더콜리 특유의 지능과 집중력이 돋보였습니다.',
+      trainingDate: '2024-01-20',
+      trainingDuration: 90,
+      trainingType: '어질리티 기초',
+      progressRating: 5,
+      behaviorNotes: '매우 높은 집중력과 학습 능력. 운동에 대한 열정이 높음. 지시를 정확히 이해하고 실행함.',
+      homeworkInstructions: '집에서 간단한 장애물(방석, 상자 등)을 이용해 놀이 형태로 연습해주세요. 하루 15분 정도가 적당합니다.',
+      nextGoals: '정식 어질리티 장비를 이용한 훈련을 시작하겠습니다. 위버폴과 시소 연습을 계획하고 있어요.',
+      isRead: false,
+      readAt: null,
+      status: 'sent',
+      createdAt: new Date('2024-01-20T16:45:00Z'),
+      updatedAt: new Date('2024-01-20T16:45:00Z')
+    };
+
+    const journal4 = {
+      id: 4,
+      trainerId: 445, // 최예린 훈련사
+      petOwnerId: petOwner4.id, // 정민호 견주
+      petId: pet4_둘리.id,
+      title: '둘리 행동 분석 및 교정 1회차',
+      content: '둘리의 행동 패턴을 자세히 관찰했습니다. 경계심은 강하지만 공격적이지는 않고, 주인에 대한 애착이 매우 강해요. 점진적 둔감화 훈련이 효과적일 것 같습니다.',
+      trainingDate: '2024-02-15',
+      trainingDuration: 120,
+      trainingType: '행동 분석',
+      progressRating: 3,
+      behaviorNotes: '낯선 사람에 대한 경계심 강함. 하지만 시간을 두고 접근하면 받아들임. 영리하고 주인의 지시를 잘 따름.',
+      homeworkInstructions: '매일 5분씩 낯선 사람(가족이 아닌 사람)과의 거리 두기 연습을 해주세요. 강제하지 말고 둘리가 편안해할 때까지 기다려주세요.',
+      nextGoals: '사회화 훈련을 단계별로 진행하겠습니다. 먼저 집 근처에서 다른 사람들과의 거리 두기 연습부터 시작하겠습니다.',
+      isRead: true,
+      readAt: new Date('2024-02-15T20:30:00Z'),
+      status: 'read',
+      createdAt: new Date('2024-02-15T17:00:00Z'),
+      updatedAt: new Date('2024-02-15T17:00:00Z')
+    };
+
+    // 견주-훈련사 간 메시지들
     const message1 = {
       id: this.messageId++,
-      senderId: trainerUser.id,
-      receiverId: petOwnerUser.id,
-      subject: '멍멍이 훈련 관련 문의',
-      content: '안녕하세요. 멍멍이의 훈련 진행 상황에 대해 궁금한 점이 있어 연락드립니다.',
+      senderId: trainerUser.id, // 김민수 훈련사
+      receiverId: petOwner1.id, // 김혜진 견주
+      subject: '멍멍이 훈련 진행 상황 공유',
+      content: '안녕하세요, 김혜진님! 멍멍이의 훈련이 순조롭게 진행되고 있습니다. 오늘 알림장을 확인해보시고, 궁금한 점이 있으시면 언제든 연락주세요.',
+      type: 'training',
+      status: 'read',
+      isUrgent: false,
+      createdAt: new Date('2024-01-21T15:00:00Z'),
+      updatedAt: new Date('2024-01-21T15:00:00Z')
+    };
+
+    const message2 = {
+      id: this.messageId++,
+      senderId: petOwner2.id, // 박진우 견주
+      receiverId: 442, // 박지혜 훈련사
+      subject: '코코 훈련 관련 질문',
+      content: '박지혜 선생님, 안녕하세요! 코코가 집에서 하우스 트레이닝을 할 때 조금 어려워하는 것 같은데, 추가 팁이 있을까요?',
       type: 'training',
       status: 'unread',
       isUrgent: false,
-      createdAt: new Date(),
-      updatedAt: new Date()
+      createdAt: new Date('2024-02-02T09:30:00Z'),
+      updatedAt: new Date('2024-02-02T09:30:00Z')
+    };
+
+    const message3 = {
+      id: this.messageId++,
+      senderId: 444, // 이준호 훈련사
+      receiverId: petOwner3.id, // 이수정 견주
+      subject: '초코 어질리티 대회 참가 제안',
+      content: '이수정님, 초코의 실력이 정말 뛰어납니다! 다음 달 초급자 어질리티 대회에 참가해보시는 것은 어떨까요? 충분히 좋은 성과를 낼 수 있을 것 같아요.',
+      type: 'training',
+      status: 'read',
+      isUrgent: false,
+      createdAt: new Date('2024-01-25T14:20:00Z'),
+      updatedAt: new Date('2024-01-25T14:20:00Z')
+    };
+
+    const message4 = {
+      id: this.messageId++,
+      senderId: petOwner4.id, // 정민호 견주
+      receiverId: 445, // 최예린 훈련사
+      subject: '둘리 행동 변화 보고',
+      content: '최예린 선생님, 둘리가 지난 훈련 이후로 낯선 사람을 보면 조금 더 차분해진 것 같아요. 정말 감사합니다!',
+      type: 'training',
+      status: 'unread',
+      isUrgent: false,
+      createdAt: new Date('2024-02-18T16:45:00Z'),
+      updatedAt: new Date('2024-02-18T16:45:00Z')
+    };
+
+    // 기관 관리자와의 메시지
+    const message5 = {
+      id: this.messageId++,
+      senderId: petOwner1.id, // 김혜진 견주
+      receiverId: instituteAdmin.id, // 강민서 기관 관리자
+      subject: '테일즈 센터 시설 이용 문의',
+      content: '안녕하세요! 멍멍이와 별이를 위한 그룹 클래스가 있는지 궁금합니다. 시설 견학도 가능한가요?',
+      type: 'facility',
+      status: 'read',
+      isUrgent: false,
+      createdAt: new Date('2024-01-10T11:00:00Z'),
+      updatedAt: new Date('2024-01-10T11:00:00Z')
     };
 
     this.messages.set(message1.id, message1);
+    this.messages.set(message2.id, message2);
+    this.messages.set(message3.id, message3);
+    this.messages.set(message4.id, message4);
+    this.messages.set(message5.id, message5);
 
-    // 알림 샘플 데이터
+    // 견주별 알림들
     const notification1 = {
       id: this.notificationId++,
-      userId: petOwnerUser.id,
+      userId: petOwner1.id, // 김혜진 견주
       title: '새로운 훈련 알림장이 도착했습니다',
       message: '김민수 훈련사님이 멍멍이의 훈련 알림장을 작성했습니다.',
       type: 'journal',
       status: 'unread',
       linkTo: '/journals',
-      createdAt: new Date(),
-      updatedAt: new Date()
+      createdAt: new Date('2024-01-21T14:35:00Z'),
+      updatedAt: new Date('2024-01-21T14:35:00Z')
+    };
+
+    const notification2 = {
+      id: this.notificationId++,
+      userId: petOwner2.id, // 박진우 견주
+      title: '코코 훈련 일정 알림',
+      message: '내일 오후 2시 박지혜 훈련사님과의 수업이 예정되어 있습니다.',
+      type: 'schedule',
+      status: 'read',
+      linkTo: '/schedule',
+      createdAt: new Date('2024-02-01T18:00:00Z'),
+      updatedAt: new Date('2024-02-01T18:00:00Z')
+    };
+
+    const notification3 = {
+      id: this.notificationId++,
+      userId: petOwner3.id, // 이수정 견주
+      title: '어질리티 대회 참가 제안',
+      message: '이준호 훈련사님이 초코의 어질리티 대회 참가를 제안했습니다.',
+      type: 'message',
+      status: 'unread',
+      linkTo: '/messages',
+      createdAt: new Date('2024-01-25T14:25:00Z'),
+      updatedAt: new Date('2024-01-25T14:25:00Z')
+    };
+
+    const notification4 = {
+      id: this.notificationId++,
+      userId: petOwner4.id, // 정민호 견주
+      title: '둘리 행동 개선 확인',
+      message: '최예린 훈련사님이 둘리의 행동 개선 상황을 문의했습니다.',
+      type: 'message',
+      status: 'read',
+      linkTo: '/messages',
+      createdAt: new Date('2024-02-18T17:00:00Z'),
+      updatedAt: new Date('2024-02-18T17:00:00Z')
+    };
+
+    const notification5 = {
+      id: this.notificationId++,
+      userId: petOwner1.id, // 김혜진 견주 (추가 알림)
+      title: '별이 전문 훈련 시작',
+      message: '정현우 훈련사님과 별이의 K9 전문 훈련이 시작되었습니다.',
+      type: 'training',
+      status: 'unread',
+      linkTo: '/trainings',
+      createdAt: new Date('2024-01-10T10:00:00Z'),
+      updatedAt: new Date('2024-01-10T10:00:00Z')
     };
 
     this.notifications.set(notification1.id, notification1);
+    this.notifications.set(notification2.id, notification2);
+    this.notifications.set(notification3.id, notification3);
+    this.notifications.set(notification4.id, notification4);
+    this.notifications.set(notification5.id, notification5);
 
     // 화상 수업 샘플 데이터
     const videoClass1 = {
@@ -1238,35 +1591,72 @@ export class MemoryStorage implements IStorage{
       ]
     };
 
-    // 예약 샘플 데이터
+    // 견주별 예약 데이터
     const reservation1 = {
       id: 1,
       classId: videoClass1.id,
-      userId: petOwnerUser.id,
-      userName: petOwnerUser.name,
+      userId: petOwner1.id, // 김혜진 견주
+      userName: petOwner1.name,
       reservationDate: '2024-01-27',
       reservationTime: '14:00',
       status: 'confirmed',
       paymentStatus: 'paid',
-      createdAt: new Date(),
-      notes: '강아지 기초 훈련에 대해 배우고 싶습니다.',
+      createdAt: new Date('2024-01-20T10:00:00Z'),
+      notes: '멍멍이 기초 훈련에 대해 배우고 싶습니다.',
       petInfo: {
-        name: samplePet1.name,
-        breed: samplePet1.breed,
-        age: samplePet1.age
+        name: pet1_멍멍이.name,
+        breed: pet1_멍멍이.breed,
+        age: pet1_멍멍이.age
+      }
+    };
+
+    const reservation2 = {
+      id: 2,
+      classId: videoClass1.id,
+      userId: petOwner2.id, // 박진우 견주
+      userName: petOwner2.name,
+      reservationDate: '2024-02-03',
+      reservationTime: '14:00',
+      status: 'confirmed',
+      paymentStatus: 'paid',
+      createdAt: new Date('2024-01-28T15:30:00Z'),
+      notes: '퍼피 사회화에 관심이 있습니다.',
+      petInfo: {
+        name: pet2_코코.name,
+        breed: pet2_코코.breed,
+        age: pet2_코코.age
+      }
+    };
+
+    const reservation3 = {
+      id: 3,
+      classId: videoClass1.id,
+      userId: petOwner3.id, // 이수정 견주
+      userName: petOwner3.name,
+      reservationDate: '2024-02-10',
+      reservationTime: '14:00',
+      status: 'pending',
+      paymentStatus: 'pending',
+      createdAt: new Date('2024-02-05T12:00:00Z'),
+      notes: '어질리티 기초 과정에 참여하고 싶습니다.',
+      petInfo: {
+        name: pet3_초코.name,
+        breed: pet3_초코.breed,
+        age: pet3_초코.age
       }
     };
 
     console.log('✅ 운영 환경용 샘플 데이터 초기화 완료');
-    console.log(`   - 관리자 계정: ${this.users.size}개`);
+    console.log(`   - 사용자 계정: ${this.users.size}개 (견주 4명, 기관관리자 1명, 관리자 3명)`);
     console.log(`   - 훈련사: ${this.trainers.size}명`);
+    console.log(`   - 반려동물: ${this.pets.size}마리 (견주별 1-2마리)`);
+    console.log(`   - 알림장: 4개 (훈련사-견주 연결)`);
+    console.log(`   - 메시지: ${this.messages.size}건 (견주-훈련사-기관 간)`);
+    console.log(`   - 알림: ${this.notifications.size}건 (각 견주별)`);
+    console.log(`   - 예약: 3건 (화상수업)`);
     console.log(`   - 기관: ${this.institutes.size}개`);
     console.log(`   - 수수료 정책: ${this.commissionPolicies.size}개`);
     console.log(`   - 상품: ${this.products.size}개`);
-    console.log(`   - 반려동물: ${this.pets.size}마리`);
-    console.log(`   - 건강검진 기록: ${this.checkups.size}건`);
-    console.log(`   - 메시지: ${this.messages.size}건`);
-    console.log(`   - 알림: ${this.notifications.size}건`);
   }
 
   // Getter 메서드들
