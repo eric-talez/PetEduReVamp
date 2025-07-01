@@ -402,6 +402,190 @@ export class MemoryStorage implements IStorage{
 
     this.users.set(trainerUser.id, trainerUser);
 
+    // 훈련사 프로필 데이터 별도 저장
+    const trainerProfile = {
+      id: this.trainerId++,
+      userId: trainerUser.id,
+      name: '김민수',
+      specialty: '기본훈련 및 행동교정',
+      specialties: ['기본훈련', '행동교정', '어질리티'],
+      experience: 10,
+      rating: 4.8,
+      reviewCount: 156,
+      description: '10년 경력의 전문 반려동물 훈련사입니다. 개별 맞춤 훈련과 행동 교정을 전문으로 합니다.',
+      bio: '10년 경력의 전문 반려동물 훈련사',
+      location: '서울시 강남구',
+      address: '서울시 강남구 테헤란로 123',
+      phone: '010-1234-5678',
+      email: 'trainer@example.com',
+      avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300',
+      certifications: ['반려동물행동교정사 1급', 'KKF 공인 훈련사'],
+      talezCertificationStatus: 'verified',
+      talezCertificationLevel: 'professional',
+      licenseNumber: 'TAL-2024-001',
+      price: 80000,
+      featured: true,
+      isActive: true,
+      availableSlots: ['09:00', '10:00', '14:00', '15:00', '16:00'],
+      workingHours: { start: '09:00', end: '18:00' },
+      workingDays: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'],
+      services: [
+        { name: '기본 훈련', duration: 60, price: 80000 },
+        { name: '행동 교정', duration: 90, price: 120000 },
+        { name: '어질리티 훈련', duration: 60, price: 100000 }
+      ],
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+
+    // 추가 훈련사들
+    const trainer2 = {
+      id: this.trainerId++,
+      userId: this.userId + 100, // 임시 ID
+      name: '박지혜',
+      specialty: '퍼피 교육 및 사회화',
+      specialties: ['퍼피교육', '사회화훈련', '기본훈련'],
+      experience: 7,
+      rating: 4.9,
+      reviewCount: 89,
+      description: '어린 강아지 전문 교육과 사회화 훈련을 전문으로 하는 7년 경력의 훈련사입니다.',
+      bio: '퍼피 교육 전문가',
+      location: '서울시 서초구',
+      address: '서울시 서초구 강남대로 456',
+      phone: '010-2345-6789',
+      email: 'park.trainer@example.com',
+      avatar: 'https://images.unsplash.com/photo-1494790108755-2616b332b1b3?w=300',
+      certifications: ['동물행동학 석사', 'KKF 공인 훈련사'],
+      talezCertificationStatus: 'verified',
+      talezCertificationLevel: 'expert',
+      licenseNumber: 'TAL-2024-002',
+      price: 75000,
+      featured: true,
+      isActive: true,
+      availableSlots: ['10:00', '11:00', '15:00', '16:00', '17:00'],
+      workingHours: { start: '10:00', end: '19:00' },
+      workingDays: ['tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'],
+      services: [
+        { name: '퍼피 교육', duration: 45, price: 75000 },
+        { name: '사회화 훈련', duration: 60, price: 85000 },
+        { name: '기본 복종 훈련', duration: 60, price: 80000 }
+      ],
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+
+    const trainer3 = {
+      id: this.trainerId++,
+      userId: this.userId + 101, // 임시 ID
+      name: '이준호',
+      specialty: '어질리티 및 스포츠 훈련',
+      specialties: ['어질리티', '스포츠훈련', '고급훈련'],
+      experience: 12,
+      rating: 4.7,
+      reviewCount: 203,
+      description: '어질리티와 반려견 스포츠 분야의 베테랑 훈련사입니다. 경쟁 대회 출전까지 도와드립니다.',
+      bio: '어질리티 전문 베테랑 훈련사',
+      location: '경기도 성남시',
+      address: '경기도 성남시 분당구 정자로 789',
+      phone: '010-3456-7890',
+      email: 'lee.trainer@example.com',
+      avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=300',
+      certifications: ['국제 어질리티 심사위원', 'KKF 공인 훈련사'],
+      talezCertificationStatus: 'verified',
+      talezCertificationLevel: 'master',
+      licenseNumber: 'TAL-2024-003',
+      price: 120000,
+      featured: false,
+      isActive: true,
+      availableSlots: ['08:00', '09:00', '14:00', '15:00'],
+      workingHours: { start: '08:00', end: '17:00' },
+      workingDays: ['monday', 'wednesday', 'friday', 'saturday', 'sunday'],
+      services: [
+        { name: '어질리티 기초', duration: 60, price: 120000 },
+        { name: '어질리티 고급', duration: 90, price: 150000 },
+        { name: '경쟁 대회 준비', duration: 120, price: 200000 }
+      ],
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+
+    const trainer4 = {
+      id: this.trainerId++,
+      userId: this.userId + 102, // 임시 ID
+      name: '최예린',
+      specialty: '행동 분석 및 문제행동 교정',
+      specialties: ['행동분석', '문제행동교정', '심리치료'],
+      experience: 8,
+      rating: 4.9,
+      reviewCount: 134,
+      description: '동물 행동학 전문가로서 문제 행동의 근본 원인을 찾아 해결하는 전문 훈련사입니다.',
+      bio: '동물 행동학 전문가',
+      location: '서울시 마포구',
+      address: '서울시 마포구 월드컵로 321',
+      phone: '010-4567-8901',
+      email: 'choi.trainer@example.com',
+      avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=300',
+      certifications: ['동물행동학 박사', '임상동물행동학자'],
+      talezCertificationStatus: 'verified',
+      talezCertificationLevel: 'expert',
+      licenseNumber: 'TAL-2024-004',
+      price: 150000,
+      featured: true,
+      isActive: true,
+      availableSlots: ['11:00', '13:00', '15:00', '17:00'],
+      workingHours: { start: '10:00', end: '18:00' },
+      workingDays: ['monday', 'tuesday', 'thursday', 'friday', 'saturday'],
+      services: [
+        { name: '행동 분석', duration: 90, price: 150000 },
+        { name: '공격성 교정', duration: 120, price: 200000 },
+        { name: '분리불안 치료', duration: 90, price: 180000 }
+      ],
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+
+    const trainer5 = {
+      id: this.trainerId++,
+      userId: this.userId + 103, // 임시 ID
+      name: '정현우',
+      specialty: 'K9 및 전문견 훈련',
+      specialties: ['K9훈련', '경찰견훈련', '전문견양성'],
+      experience: 15,
+      rating: 4.8,
+      reviewCount: 67,
+      description: '전직 경찰견 훈련관 출신으로 전문적이고 체계적인 훈련을 제공합니다.',
+      bio: '전직 경찰견 훈련관',
+      location: '인천시 연수구',
+      address: '인천시 연수구 컨벤시아대로 654',
+      phone: '010-5678-9012',
+      email: 'jung.trainer@example.com',
+      avatar: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=300',
+      certifications: ['경찰견 훈련 자격증', 'K9 전문 훈련사'],
+      talezCertificationStatus: 'verified',
+      talezCertificationLevel: 'professional',
+      licenseNumber: 'TAL-2024-005',
+      price: 100000,
+      featured: false,
+      isActive: true,
+      availableSlots: ['07:00', '08:00', '13:00', '14:00'],
+      workingHours: { start: '07:00', end: '16:00' },
+      workingDays: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'],
+      services: [
+        { name: '기초 복종 훈련', duration: 60, price: 100000 },
+        { name: '보호 훈련', duration: 90, price: 140000 },
+        { name: '전문견 양성', duration: 120, price: 180000 }
+      ],
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+
+    // 훈련사 데이터를 trainers Map에 저장
+    this.trainers.set(trainerProfile.id, trainerProfile);
+    this.trainers.set(trainer2.id, trainer2);
+    this.trainers.set(trainer3.id, trainer3);
+    this.trainers.set(trainer4.id, trainer4);
+    this.trainers.set(trainer5.id, trainer5);
+
     // 샘플 반려동물 추가
     const samplePet1 = {
       id: this.petId++,
@@ -1075,6 +1259,7 @@ export class MemoryStorage implements IStorage{
 
     console.log('✅ 운영 환경용 샘플 데이터 초기화 완료');
     console.log(`   - 관리자 계정: ${this.users.size}개`);
+    console.log(`   - 훈련사: ${this.trainers.size}명`);
     console.log(`   - 기관: ${this.institutes.size}개`);
     console.log(`   - 수수료 정책: ${this.commissionPolicies.size}개`);
     console.log(`   - 상품: ${this.products.size}개`);
@@ -1879,7 +2064,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getAllTrainers(): Promise<any[]> {
-    return [];
+    return Array.from(this.trainers.values());
   }
 
   // 반려동물 관련 메서드 - 임시로 빈 구현
