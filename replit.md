@@ -115,9 +115,11 @@ TALEZ is a comprehensive pet education and e-commerce platform that combines AI-
 
 ## Changelog
 
-- July 01, 2025. Updated trainer banner images and button styling:
-  - Replaced all trainer banner images with dog-specific training and educational content
+- July 01, 2025. Updated all banner images for trainer/training/dog concept consistency:
+  - Replaced all home page banner images with dog-focused training and education content
+  - Updated trainer-specific banner images with professional dog training scenarios
   - Removed any cat-related imagery to focus exclusively on dog training services
+  - Enhanced visual consistency across all banner types (general home banners and trainer banners)
   - Fixed "전문가 인증 업그레이드" button text visibility with explicit white color styling
   - Enhanced button contrast and readability across both homepage and dashboard banners
   - Applied consistent font-semibold styling for better visual prominence
