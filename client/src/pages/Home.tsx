@@ -189,48 +189,48 @@ export default function Home() {
   const trainerBannerSlides = [
     {
       id: 101,
-      title: "스타 훈련사를 위한 무대, TALEZ에서 시작하세요.",
-      subtitle: "당신의 전문성을 인정받고, 더 많은 반려인들과 만나세요",
-      features: ["전문가 네트워크", "브랜드 구축", "수익 증대"],
-      image: "https://images.unsplash.com/photo-1551698618-1dfe5d97d256?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
-      primaryAction: { text: "프로필 관리", path: "/trainer/profile" },
-      secondaryAction: { text: "수업 관리", path: "/trainer/courses" }
+      title: "더 많은 반려인들이 당신을 찾고 있습니다",
+      subtitle: "TALEZ 플랫폼을 통해 전국의 반려인들과 연결되고 안정적인 고객층을 확보하세요",
+      features: ["전국 고객 연결", "안정적 수익", "브랜드 인지도"],
+      image: "https://images.unsplash.com/photo-1583337130417-3346a1be7dee?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
+      primaryAction: { text: "고객 연결", path: "/trainer/customer-connect" },
+      secondaryAction: { text: "성공 사례", path: "/trainer/success-stories" }
     },
     {
       id: 102,
-      title: "훈련사도 브랜드가 되는 시대, TALEZ가 함께합니다.",
-      subtitle: "개인 훈련사에서 전문 브랜드로, TALEZ가 성장을 도와드립니다",
-      features: ["마케팅 지원", "브랜딩 도구", "고객 관리"],
-      image: "https://images.unsplash.com/photo-1560472354-b33ff0c44a43?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
-      primaryAction: { text: "브랜딩 시작", path: "/trainer/branding" },
-      secondaryAction: { text: "성공 사례", path: "/success-stories" }
+      title: "전문 훈련사의 가치를 제대로 인정받으세요",
+      subtitle: "투명한 수수료 체계와 공정한 정산으로 전문가로서의 가치를 제대로 평가받으세요",
+      features: ["공정한 보상", "투명한 정산", "전문가 대우"],
+      image: "https://images.unsplash.com/photo-1554118811-1e0d58224f24?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
+      primaryAction: { text: "수수료 확인", path: "/trainer/commission-info" },
+      secondaryAction: { text: "정산 내역", path: "/trainer/settlement" }
     },
     {
       id: 103,
-      title: "경험과 실력을 갖춘 훈련사를 발굴하고 세상과 연결합니다.",
-      subtitle: "숨겨진 전문가를 세상에 알리고, 더 많은 기회를 제공합니다",
-      features: ["전문가 발굴", "네트워킹", "기회 확장"],
+      title: "온라인과 오프라인을 넘나드는 새로운 교육 경험",
+      subtitle: "디지털 도구와 전통적인 교육 방식을 결합해 혁신적인 훈련 서비스를 제공하세요",
+      features: ["하이브리드 교육", "디지털 도구", "혁신적 서비스"],
       image: "https://images.unsplash.com/photo-1516734212186-a967f81ad0d7?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
-      primaryAction: { text: "네트워크 참여", path: "/trainer/network" },
-      secondaryAction: { text: "기회 보기", path: "/trainer/opportunities" }
+      primaryAction: { text: "새로운 교육법", path: "/trainer/hybrid-education" },
+      secondaryAction: { text: "디지털 도구", path: "/trainer/digital-tools" }
     },
     {
       id: 104,
-      title: "전문가가 빛날 수 있도록, TALEZ는 지원합니다.",
-      subtitle: "교육 도구부터 마케팅까지, 훈련사의 성공을 위한 모든 것을 제공합니다",
-      features: ["교육 도구", "마케팅 지원", "기술 지원"],
-      image: "https://images.unsplash.com/photo-1548199973-03cce0bbc87b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
-      primaryAction: { text: "지원 서비스", path: "/trainer/support" },
-      secondaryAction: { text: "도구 사용법", path: "/trainer/tools" }
+      title: "훈련사 커뮤니티에서 노하우를 공유하고 성장하세요",
+      subtitle: "전국의 전문 훈련사들과 경험을 나누고 함께 성장하는 네트워크에 참여하세요",
+      features: ["전문가 네트워크", "노하우 공유", "함께 성장"],
+      image: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
+      primaryAction: { text: "커뮤니티 참여", path: "/trainer/community" },
+      secondaryAction: { text: "노하우 공유", path: "/trainer/knowledge-share" }
     },
     {
       id: 105,
-      title: "당신의 훈련 노하우, 스타 브랜드가 됩니다.",
-      subtitle: "오랜 경험과 노하우를 브랜드로 만들어 더 큰 성공을 거두세요",
-      features: ["노하우 브랜딩", "컨텐츠 제작", "수익 모델"],
-      image: "https://images.unsplash.com/photo-1600298881974-6be191ceeda1?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
-      primaryAction: { text: "브랜드 만들기", path: "/trainer/brand-builder" },
-      secondaryAction: { text: "수익 분석", path: "/trainer/analytics" }
+      title: "반려견 교육의 미래를 함께 만들어갑니다",
+      subtitle: "혁신적인 교육 방법과 최신 기술로 업계를 선도하는 훈련사가 되어보세요",
+      features: ["업계 선도", "혁신 기술", "미래 교육"],
+      image: "https://images.unsplash.com/photo-1548199973-03cce0bbc87b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=280&q=80",
+      primaryAction: { text: "혁신 참여", path: "/trainer/innovation" },
+      secondaryAction: { text: "미래 교육", path: "/trainer/future-education" }
     },
     {
       id: 106,
@@ -341,20 +341,39 @@ export default function Home() {
     }
   });
 
+  // 훈련사 배너를 슬라이드 형식으로 변환
+  const convertTrainerBannerToSlide = (banner: any) => ({
+    id: banner.id,
+    title: banner.title,
+    subtitle: banner.subtitle,
+    features: banner.features,
+    image: banner.image,
+    primaryAction: banner.primaryAction,
+    secondaryAction: banner.secondaryAction
+  });
+
   // 표시할 배너 슬라이드 결정 (사용자 역할에 따라 다른 배너 표시)
   const bannerSlides = useMemo(() => {
-    console.log('[Banner Debug] 인증 상태:', isAuthenticated, '사용자 역할:', userRole);
+    // 전역 상태에서 인증 정보도 확인
+    const globalAuth = (window as any).__peteduAuthState;
+    const actualIsAuthenticated = isAuthenticated || globalAuth?.isAuthenticated;
+    const actualUserRole = userRole || globalAuth?.userRole;
+    
+    console.log('[Banner Debug] 인증 상태:', actualIsAuthenticated, '사용자 역할:', actualUserRole);
+    console.log('[Banner Debug] useAuth 상태:', { isAuthenticated, userRole });
+    console.log('[Banner Debug] 전역 상태:', globalAuth);
+    
     // 인증된 훈련사인 경우 훈련사 전용 배너 표시
-    if (isAuthenticated && userRole === 'trainer') {
+    if (actualIsAuthenticated && actualUserRole === 'trainer') {
       console.log('[Banner Debug] 훈련사 배너 선택됨, 배너 수:', trainerBannerSlides.length);
-      return trainerBannerSlides;
+      return trainerBannerSlides.map(convertTrainerBannerToSlide);
     }
     // 관리자 배너가 있으면 우선 표시, 없으면 기본 배너
     console.log('[Banner Debug] 기본 배너 선택됨, 관리자 배너 수:', adminBanners.length);
     return adminBanners.length > 0 
       ? adminBanners.map(convertAdminBannerToSlide)
       : defaultBannerSlides;
-  }, [isAuthenticated, userRole, adminBanners.length]);
+  }, [isAuthenticated, userRole, adminBanners.length, trainerBannerSlides.length]);
   
   console.log('[Banner Debug] 최종 배너 슬라이드 수:', bannerSlides.length, '첫 번째 배너:', bannerSlides[0]?.title);
 
