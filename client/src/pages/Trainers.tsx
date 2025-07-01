@@ -7,6 +7,7 @@ import { Star, MapPin, Search, Filter, Briefcase, Award, Sparkles, Loader2 } fro
 import { NewTrainerProfileModal, type Trainer } from '@/components/NewTrainerProfileModal';
 import { TalezTrainerCertificationBadge } from '@/components/business/TalezTrainerCertificationBadge';
 import { useQuery } from '@tanstack/react-query';
+import { cn } from '@/lib/utils';
 
 export default function Trainers() {
   const [selectedTrainer, setSelectedTrainer] = useState<Trainer | null>(null);
@@ -139,7 +140,10 @@ export default function Trainers() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
-            <Button className="ml-2">
+            <Button 
+              className="ml-2 bg-primary hover:bg-primary/90 text-white font-semibold border border-primary/10 shadow-sm"
+              aria-label="훈련사 검색"
+            >
               검색
             </Button>
           </div>
@@ -157,7 +161,12 @@ export default function Trainers() {
           variant={filter === "all" ? "default" : "outline"}
           size="sm"
           onClick={() => setFilter("all")}
-          className="text-xs"
+          className={cn(
+            "text-xs font-medium transition-all duration-200",
+            filter === "all" 
+              ? "bg-primary hover:bg-primary/90 text-white border-primary shadow-sm" 
+              : "border-2 border-input hover:bg-accent hover:text-accent-foreground"
+          )}
         >
           전체
         </Button>
@@ -166,7 +175,12 @@ export default function Trainers() {
           variant={filter === "certification" ? "default" : "outline"}
           size="sm"
           onClick={() => setFilter("certification")}
-          className="text-xs"
+          className={cn(
+            "text-xs font-medium transition-all duration-200",
+            filter === "certification" 
+              ? "bg-primary hover:bg-primary/90 text-white border-primary shadow-sm" 
+              : "border-2 border-input hover:bg-accent hover:text-accent-foreground"
+          )}
         >
           인증 훈련사
         </Button>
@@ -175,7 +189,12 @@ export default function Trainers() {
           variant={filter === "featured" ? "default" : "outline"}
           size="sm"
           onClick={() => setFilter("featured")}
-          className="text-xs"
+          className={cn(
+            "text-xs font-medium transition-all duration-200",
+            filter === "featured" 
+              ? "bg-primary hover:bg-primary/90 text-white border-primary shadow-sm" 
+              : "border-2 border-input hover:bg-accent hover:text-accent-foreground"
+          )}
         >
           추천 훈련사
         </Button>
@@ -184,7 +203,12 @@ export default function Trainers() {
           variant={filter === "기초 훈련" ? "default" : "outline"}
           size="sm"
           onClick={() => setFilter("기초 훈련")}
-          className="text-xs"
+          className={cn(
+            "text-xs font-medium transition-all duration-200",
+            filter === "기초 훈련" 
+              ? "bg-primary hover:bg-primary/90 text-white border-primary shadow-sm" 
+              : "border-2 border-input hover:bg-accent hover:text-accent-foreground"
+          )}
         >
           기본 훈련
         </Button>
@@ -193,7 +217,12 @@ export default function Trainers() {
           variant={filter === "행동 교정" ? "default" : "outline"}
           size="sm"
           onClick={() => setFilter("행동 교정")}
-          className="text-xs"
+          className={cn(
+            "text-xs font-medium transition-all duration-200",
+            filter === "행동 교정" 
+              ? "bg-primary hover:bg-primary/90 text-white border-primary shadow-sm" 
+              : "border-2 border-input hover:bg-accent hover:text-accent-foreground"
+          )}
         >
           행동 교정
         </Button>
@@ -202,7 +231,12 @@ export default function Trainers() {
           variant={filter === "특수 훈련" ? "default" : "outline"}
           size="sm"
           onClick={() => setFilter("특수 훈련")}
-          className="text-xs"
+          className={cn(
+            "text-xs font-medium transition-all duration-200",
+            filter === "특수 훈련" 
+              ? "bg-primary hover:bg-primary/90 text-white border-primary shadow-sm" 
+              : "border-2 border-input hover:bg-accent hover:text-accent-foreground"
+          )}
         >
           특수 훈련
         </Button>
@@ -211,7 +245,12 @@ export default function Trainers() {
           variant={showCertifiedOnly ? "default" : "outline"}
           size="sm"
           onClick={() => setShowCertifiedOnly(!showCertifiedOnly)}
-          className="text-xs bg-[#2BAA61] hover:bg-[#229954] text-white border-[#2BAA61]"
+          className={cn(
+            "text-xs font-semibold transition-all duration-200",
+            showCertifiedOnly 
+              ? "bg-primary hover:bg-primary/90 text-white border-primary shadow-sm" 
+              : "border-2 border-primary text-primary hover:bg-primary hover:text-white"
+          )}
         >
           <Award className="h-3 w-3 mr-1" />
           TALEZ 인증
@@ -322,6 +361,8 @@ export default function Trainers() {
                       setSelectedTrainer(trainer);
                       setIsProfileOpen(true);
                     }}
+                    className="border-2 border-primary text-primary hover:bg-primary hover:text-white font-medium transition-all duration-200"
+                    aria-label={`${trainer.name} 프로필 보기`}
                   >
                     프로필 보기
                   </Button>
