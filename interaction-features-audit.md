@@ -5,17 +5,23 @@
 ### 현재 구현 상태
 - ✅ 커뮤니티 게시글 조회수 (`client/src/pages/community/PostModal.tsx`)
 - ✅ 관리자 콘텐츠 조회수 (`client/src/pages/admin/AdminContents.tsx`)
+- ✅ 자동 조회수 증가 시스템 (`client/src/hooks/useViewCounter.tsx`)
+- ✅ 상품 상세 페이지 조회수 (`client/src/components/product/ProductReviewSection.tsx`)
+
+### 구현된 기능
+- 자동 조회수 증가 (2-3초 지연 후)
+- 세션 기반 중복 조회 방지
+- 다양한 콘텐츠 타입 지원 (post, video, profile, product, course)
+- 조회수 포맷팅 (1K, 1M 등)
 
 ### 누락된 부분
-- ❌ 영상 강의 조회수
-- ❌ 훈련사 프로필 조회수
-- ❌ 상품 상세 페이지 조회수
+- ❌ 영상 강의 조회수 적용
+- ❌ 훈련사 프로필 조회수 적용
 - ❌ 실시간 조회수 업데이트 기능
 
 ### 개선사항
-- 조회수 자동 증가 로직 구현 필요
-- 중복 조회 방지 로직 (세션 기반)
 - 조회수 통계 차트 표시
+- 실시간 동기화 기능
 
 ## 2. 좋아요 (Likes/Hearts) 기능
 
@@ -40,15 +46,18 @@
 ### 현재 구현 상태
 - ✅ 커뮤니티 게시글 댓글 (`client/src/pages/community/PostModal.tsx`, `client/src/pages/community/CommunityFixed.tsx`)
 - ✅ 리뷰 댓글 (`client/src/components/business/ReviewDetailDialog.tsx`)
+- ✅ 댓글 수정/삭제 기능 (`client/src/pages/community/PostModal.tsx`)
+- ✅ 댓글 좋아요 기능 (`client/src/pages/community/PostModal.tsx`)
 
 ### 구현된 기능
-- 댓글 작성
-- 댓글 좋아요
-- 댓글 시간 표시
+- 댓글 작성, 수정, 삭제
+- 댓글 좋아요/취소
+- 댓글 시간 표시 및 포맷팅
 - 댓글 작성자 프로필
+- 권한 기반 수정/삭제 (본인 댓글만)
+- 드롭다운 메뉴를 통한 댓글 관리
 
 ### 누락된 부분
-- ❌ 댓글 수정/삭제
 - ❌ 댓글 신고 기능
 - ❌ 댓글 정렬 (최신순, 인기순)
 - ❌ 댓글 검색 기능
@@ -93,17 +102,20 @@
 - ✅ 훈련사 리뷰 관리 (`client/src/pages/trainer/reviews.tsx`)
 - ✅ 리뷰 상세 보기 (`client/src/components/business/ReviewDetailDialog.tsx`)
 - ✅ 리뷰 작성 (`client/src/components/business/ReviewSubmissionDialog.tsx`)
+- ✅ 상품 리뷰 시스템 (`client/src/components/product/ProductReviewSection.tsx`)
 
 ### 구현된 기능
-- 리뷰 작성 (텍스트, 별점, 사진)
-- 리뷰 조회 및 필터링
-- 리뷰 도움됨 기능
+- 리뷰 작성, 수정, 삭제 (텍스트, 별점)
+- 리뷰 조회 및 다중 정렬 (최신순, 오래된순, 평점순, 도움순)
+- 리뷰 좋아요 및 도움됨 기능
+- 구매 확인 배지 시스템
+- 권한 기반 리뷰 관리 (본인 리뷰만 수정/삭제)
+- 별점 인터랙티브 선택
 - 업체 응답 기능
 
 ### 누락된 부분
-- ❌ 리뷰 수정 기능
 - ❌ 리뷰 신고 기능
-- ❌ 리뷰 정렬 옵션 확장
+- ❌ 리뷰 이미지 업로드
 - ❌ 리뷰 검증 시스템
 
 ## 7. 공통 개선사항
@@ -125,14 +137,21 @@
 
 ## 8. 우선순위 개발 계획
 
+### 완료된 작업 (Completed)
+1. ✅ 조회수 자동 증가 시스템 (`useViewCounter` 훅)
+2. ✅ 댓글 수정/삭제 기능 (커뮤니티 게시글)
+3. ✅ 상품 리뷰 시스템 (ProductReviewSection 컴포넌트)
+4. ✅ 리뷰 좋아요 및 도움됨 기능
+5. ✅ 댓글 좋아요 기능
+
 ### 높음 (High Priority)
-1. 조회수 자동 증가 시스템
-2. 댓글 수정/삭제 기능
-3. 커뮤니티 답글 기능
-4. 상품 리뷰 시스템
+1. 커뮤니티 답글 기능 구현
+2. 영상 강의에 조회수 기능 적용
+3. 훈련사 프로필에 조회수 기능 적용
+4. 상품 리뷰에 이미지 업로드 기능
 
 ### 중간 (Medium Priority)
-1. 영상 강의 상호작용 기능
+1. 영상 강의 상호작용 기능 (좋아요, 댓글)
 2. 평점 분포 차트
 3. 리뷰 검증 시스템
 4. 알림 시스템

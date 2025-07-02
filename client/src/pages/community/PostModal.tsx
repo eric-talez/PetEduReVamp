@@ -247,6 +247,35 @@ export const PostModal: React.FC<PostModalProps> = ({
     }
   });
 
+  // 답글 작성
+  const replyMutation = useMutation({
+    mutationFn: async ({ commentId, content }: { commentId: number; content: string }) => {
+      const response = await fetch(`/api/community/comments/${commentId}/replies`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content })
+      });
+      if (!response.ok) throw new Error('답글 작성에 실패했습니다.');
+      return await response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [`/api/community/posts/${post?.id}/comments`] });
+      setReplyingTo(null);
+      setReplyContent('');
+      toast({
+        title: "성공",
+        description: "답글이 작성되었습니다.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "답글 작성 실패",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  });
+
   const formatDate = (date: string | Date) => {
     return formatDistanceToNow(new Date(date), { addSuffix: true, locale: ko });
   };
@@ -556,13 +585,15 @@ export const PostModal: React.FC<PostModalProps> = ({
                                 <Button
                                   size="sm"
                                   onClick={() => {
-                                    // 답글 작성 로직 구현 예정
-                                    setReplyingTo(null);
-                                    setReplyContent('');
+                                    replyMutation.mutate({
+                                      commentId: comment.id,
+                                      content: replyContent
+                                    });
                                   }}
-                                  disabled={!replyContent.trim()}
+                                  disabled={!replyContent.trim() || replyMutation.isPending}
                                 >
-                                  답글 작성
+                                  <Send className="h-3 w-3 mr-1" />
+                                  {replyMutation.isPending ? '작성 중...' : '답글 작성'}
                                 </Button>
                                 <Button
                                   size="sm"

@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { AutoSubtitleManager } from './AutoSubtitleManager';
+import { useViewCounter } from '@/hooks/useViewCounter';
 
 interface VideoPlayerProps {
   videoUrl: string;
