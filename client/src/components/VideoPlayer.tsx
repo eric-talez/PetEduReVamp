@@ -13,6 +13,7 @@ import {
   AlertCircle
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { AutoSubtitleManager } from './AutoSubtitleManager';
 
 interface VideoPlayerProps {
   videoUrl: string;
@@ -26,6 +27,7 @@ interface VideoPlayerProps {
   autoPlay?: boolean;
   onTimeUpdate?: (currentTime: number) => void;
   subtitlesUrl?: string;
+  showAutoSubtitleManager?: boolean;
 }
 
 interface PlayerState {
@@ -38,6 +40,8 @@ interface PlayerState {
   playbackRate: number;
   buffering: boolean;
   fullscreen: boolean;
+  showSubtitleManager: boolean;
+  generatedSubtitles: string | null;
 }
 
 export const VideoPlayer: React.FC<VideoPlayerProps> = ({
@@ -51,7 +55,8 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
   purchased = false,
   autoPlay = false,
   onTimeUpdate,
-  subtitlesUrl
+  subtitlesUrl,
+  showAutoSubtitleManager = false
 }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const playerContainerRef = useRef<HTMLDivElement>(null);
@@ -66,7 +71,9 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
     subtitles: false,
     playbackRate: 1,
     buffering: false,
-    fullscreen: false
+    fullscreen: false,
+    showSubtitleManager: false,
+    generatedSubtitles: null
   });
   
   const [controlsVisible, setControlsVisible] = useState(true);

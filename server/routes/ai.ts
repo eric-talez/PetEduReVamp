@@ -15,7 +15,7 @@ const upload = multer({
   limits: {
     fileSize: 100 * 1024 * 1024, // 100MB 제한
   },
-  fileFilter: (req, file, cb) => {
+  fileFilter: (req: any, file: any, cb: any) => {
     // 오디오 및 비디오 파일만 허용
     const allowedMimes = [
       'audio/mpeg', 'audio/wav', 'audio/mp3', 'audio/m4a', 'audio/ogg',
