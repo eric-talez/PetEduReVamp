@@ -29,6 +29,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
+import { useViewCounter } from '@/hooks/useViewCounter';
 import { 
   DropdownMenu, 
   DropdownMenuContent, 
@@ -98,6 +99,10 @@ export const PostModal: React.FC<PostModalProps> = ({
   const [newComment, setNewComment] = useState('');
   const [isSubmittingComment, setIsSubmittingComment] = useState(false);
   const [showDeleteAlert, setShowDeleteAlert] = useState(false);
+  const [editingComment, setEditingComment] = useState<number | null>(null);
+  const [editCommentContent, setEditCommentContent] = useState('');
+  const [replyingTo, setReplyingTo] = useState<number | null>(null);
+  const [replyContent, setReplyContent] = useState('');
 
   // 댓글 목록 조회
   const { data: commentsData, isLoading: isCommentsLoading } = useQuery({
@@ -153,6 +158,81 @@ export const PostModal: React.FC<PostModalProps> = ({
     onError: (error: any) => {
       toast({
         title: "댓글 작성 실패",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  });
+
+  // 댓글 수정
+  const editCommentMutation = useMutation({
+    mutationFn: async ({ commentId, content }: { commentId: number; content: string }) => {
+      const response = await fetch(`/api/community/comments/${commentId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content })
+      });
+      if (!response.ok) throw new Error('댓글 수정에 실패했습니다.');
+      return await response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [`/api/community/posts/${post?.id}/comments`] });
+      setEditingComment(null);
+      setEditCommentContent('');
+      toast({
+        title: "성공",
+        description: "댓글이 수정되었습니다.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "댓글 수정 실패",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  });
+
+  // 댓글 삭제
+  const deleteCommentMutation = useMutation({
+    mutationFn: async (commentId: number) => {
+      const response = await fetch(`/api/community/comments/${commentId}`, {
+        method: 'DELETE'
+      });
+      if (!response.ok) throw new Error('댓글 삭제에 실패했습니다.');
+      return await response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [`/api/community/posts/${post?.id}/comments`] });
+      toast({
+        title: "성공",
+        description: "댓글이 삭제되었습니다.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "댓글 삭제 실패",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  });
+
+  // 댓글 좋아요
+  const likeCommentMutation = useMutation({
+    mutationFn: async (commentId: number) => {
+      const response = await fetch(`/api/community/comments/${commentId}/like`, {
+        method: 'POST'
+      });
+      if (!response.ok) throw new Error('좋아요 처리에 실패했습니다.');
+      return await response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [`/api/community/posts/${post?.id}/comments`] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "오류",
         description: error.message,
         variant: "destructive",
       });
@@ -302,8 +382,8 @@ export const PostModal: React.FC<PostModalProps> = ({
                 <div className="space-y-3">
                   <div className="flex gap-3">
                     <Avatar className="h-8 w-8 flex-shrink-0">
-                      <AvatarImage src={user.avatar} alt={user.userName} />
-                      <AvatarFallback>{user.userName?.[0]}</AvatarFallback>
+                      <AvatarImage src="" alt={user.name} />
+                      <AvatarFallback>{user.name?.[0]}</AvatarFallback>
                     </Avatar>
                     <div className="flex-1">
                       <Textarea
@@ -344,38 +424,151 @@ export const PostModal: React.FC<PostModalProps> = ({
                   </div>
                 ) : commentsData?.comments?.length > 0 ? (
                   commentsData.comments.map((comment: Comment) => (
-                    <div key={comment.id} className="flex gap-3">
-                      <Avatar className="h-8 w-8 flex-shrink-0">
-                        <AvatarImage src={comment.author.avatar} alt={comment.author.name} />
-                        <AvatarFallback>{comment.author.name[0]}</AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="font-medium text-sm">{comment.author.name}</span>
-                          <span className="text-xs text-muted-foreground">
-                            {formatDate(comment.createdAt)}
-                          </span>
-                        </div>
-                        <div className="text-sm leading-relaxed mb-2">
-                          {comment.content}
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-6 px-2 text-xs text-muted-foreground hover:text-foreground"
-                          >
-                            <ThumbsUp className="h-3 w-3 mr-1" />
-                            {comment.likes}
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-6 px-2 text-xs text-muted-foreground hover:text-foreground"
-                          >
-                            <Reply className="h-3 w-3 mr-1" />
-                            답글
-                          </Button>
+                    <div key={comment.id} className="space-y-3">
+                      <div className="flex gap-3">
+                        <Avatar className="h-8 w-8 flex-shrink-0">
+                          <AvatarImage src={comment.author.avatar} alt={comment.author.name} />
+                          <AvatarFallback>{comment.author.name[0]}</AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1">
+                          <div className="flex items-center justify-between mb-1">
+                            <div className="flex items-center gap-2">
+                              <span className="font-medium text-sm">{comment.author.name}</span>
+                              <span className="text-xs text-muted-foreground">
+                                {formatDate(comment.createdAt)}
+                              </span>
+                            </div>
+                            {/* 댓글 수정/삭제 메뉴 */}
+                            {user && user.id === comment.author.id && (
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+                                    <MoreVertical className="h-3 w-3" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  <DropdownMenuItem
+                                    onClick={() => {
+                                      setEditingComment(comment.id);
+                                      setEditCommentContent(comment.content);
+                                    }}
+                                  >
+                                    <Edit className="h-3 w-3 mr-2" />
+                                    수정
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem
+                                    onClick={() => deleteCommentMutation.mutate(comment.id)}
+                                    className="text-red-600"
+                                  >
+                                    <Trash2 className="h-3 w-3 mr-2" />
+                                    삭제
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            )}
+                          </div>
+                          
+                          {/* 댓글 내용 */}
+                          {editingComment === comment.id ? (
+                            <div className="space-y-2">
+                              <Textarea
+                                value={editCommentContent}
+                                onChange={(e) => setEditCommentContent(e.target.value)}
+                                className="min-h-[60px]"
+                              />
+                              <div className="flex gap-2">
+                                <Button
+                                  size="sm"
+                                  onClick={() => {
+                                    editCommentMutation.mutate({
+                                      commentId: comment.id,
+                                      content: editCommentContent
+                                    });
+                                  }}
+                                  disabled={editCommentMutation.isPending}
+                                >
+                                  저장
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => {
+                                    setEditingComment(null);
+                                    setEditCommentContent('');
+                                  }}
+                                >
+                                  취소
+                                </Button>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="text-sm leading-relaxed mb-2">
+                              {comment.content}
+                            </div>
+                          )}
+                          
+                          {/* 댓글 액션 */}
+                          {editingComment !== comment.id && (
+                            <div className="flex items-center gap-2">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => likeCommentMutation.mutate(comment.id)}
+                                className={`h-6 px-2 text-xs ${
+                                  comment.isLiked 
+                                    ? 'text-red-500 hover:text-red-600' 
+                                    : 'text-muted-foreground hover:text-foreground'
+                                }`}
+                              >
+                                <ThumbsUp className={`h-3 w-3 mr-1 ${comment.isLiked ? 'fill-current' : ''}`} />
+                                {comment.likes}
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setReplyingTo(replyingTo === comment.id ? null : comment.id)}
+                                className="h-6 px-2 text-xs text-muted-foreground hover:text-foreground"
+                              >
+                                <Reply className="h-3 w-3 mr-1" />
+                                답글
+                              </Button>
+                            </div>
+                          )}
+                          
+                          {/* 답글 작성 폼 */}
+                          {replyingTo === comment.id && (
+                            <div className="mt-3 space-y-2">
+                              <Textarea
+                                placeholder="답글을 작성해주세요..."
+                                value={replyContent}
+                                onChange={(e) => setReplyContent(e.target.value)}
+                                className="min-h-[60px]"
+                              />
+                              <div className="flex gap-2">
+                                <Button
+                                  size="sm"
+                                  onClick={() => {
+                                    // 답글 작성 로직 구현 예정
+                                    setReplyingTo(null);
+                                    setReplyContent('');
+                                  }}
+                                  disabled={!replyContent.trim()}
+                                >
+                                  답글 작성
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => {
+                                    setReplyingTo(null);
+                                    setReplyContent('');
+                                  }}
+                                >
+                                  취소
+                                </Button>
+                              </div>
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>
