@@ -189,7 +189,7 @@ export function QuickReservationDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="grid gap-6 py-4">
+        <div className="grid gap-6 py-4 overflow-y-auto flex-1 pr-2">
           {/* 서비스 선택 */}
           <div className="space-y-2">
             <Label>서비스 선택 *</Label>
@@ -309,7 +309,7 @@ export function QuickReservationDialog({
           )}
         </div>
 
-        <div className="flex justify-end gap-2">
+        <div className="flex justify-end gap-2 flex-shrink-0 mt-4 pt-4 border-t">
           <Button variant="outline" onClick={onClose} disabled={loading}>
             취소
           </Button>

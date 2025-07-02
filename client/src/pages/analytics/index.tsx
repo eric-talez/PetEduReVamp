@@ -1730,15 +1730,15 @@ export default function AnalyticsPage() {
 
       {/* 활성 학생 상세 모달 */}
       <Dialog open={isActiveStudentsOpen} onOpenChange={setIsActiveStudentsOpen}>
-        <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
+        <DialogContent className="max-w-5xl max-h-[90vh] overflow-hidden flex flex-col">
+          <DialogHeader className="flex-shrink-0">
             <DialogTitle className="flex items-center gap-2">
               <GraduationCap className="h-6 w-6" />
               활성 학생 상세 ({activeStudents?.length || 0}명)
             </DialogTitle>
           </DialogHeader>
           
-          <div className="space-y-4">
+          <div className="space-y-4 overflow-y-auto flex-1 pr-2">
             <div className="space-y-3 max-h-96 overflow-y-auto">
               {studentsLoading ? (
                 <div className="space-y-2">
@@ -1805,7 +1805,7 @@ export default function AnalyticsPage() {
             </div>
           </div>
 
-          <DialogFooter>
+          <DialogFooter className="flex-shrink-0 mt-4 pt-4 border-t">
             <Button variant="outline" onClick={() => setIsActiveStudentsOpen(false)}>
               닫기
             </Button>
