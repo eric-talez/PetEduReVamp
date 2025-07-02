@@ -115,6 +115,16 @@ TALEZ is a comprehensive pet education and e-commerce platform that combines AI-
 
 ## Changelog
 
+- July 01, 2025. Implemented automatic subtitle generation for video lecture system:
+  - Added OpenAI Whisper API integration for automatic speech-to-text conversion
+  - Created AutoSubtitleManager component with drag-and-drop file upload interface
+  - Implemented both audio and video file processing with FFmpeg integration
+  - Added SRT and WebVTT subtitle format generation and download functionality
+  - Enhanced VideoPlayer component with automatic subtitle management features
+  - Integrated subtitle toggle button with visual indicators for subtitle availability
+  - Added real-time subtitle generation progress tracking with user feedback
+  - Supports Korean language optimization with accurate transcription results
+  - Created seamless workflow from file upload to subtitle integration in video player
 - July 01, 2025. Enhanced button color contrast and accessibility in expert finder section:
   - Improved TALEZ certification button with proper color contrast using CSS variable system
   - Enhanced search button visibility with explicit primary colors and proper aria-labels
