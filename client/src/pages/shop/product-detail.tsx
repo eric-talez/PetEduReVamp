@@ -64,6 +64,14 @@ export default function ProductDetail() {
   // 리뷰 상태
   const [reviews, setReviews] = useState<any[]>([]);
   const [activeTab, setActiveTab] = useState('details');
+  const [showReviewForm, setShowReviewForm] = useState(false);
+  const [reviewForm, setReviewForm] = useState({
+    rating: 5,
+    content: '',
+    images: []
+  });
+  const [editingReview, setEditingReview] = useState<number | null>(null);
+  const [reviewSortBy, setReviewSortBy] = useState<'newest' | 'oldest' | 'rating'>('newest');
 
   // 추천 코드 상태
   const [referralCode, setReferralCode] = useState('');

@@ -104,6 +104,14 @@ export const PostModal: React.FC<PostModalProps> = ({
   const [replyingTo, setReplyingTo] = useState<number | null>(null);
   const [replyContent, setReplyContent] = useState('');
 
+  // 조회수 자동 증가
+  useViewCounter({
+    itemId: post?.id || 0,
+    itemType: 'post',
+    enabled: !!post && isOpen,
+    delay: 2 // 2초 후 조회수 증가
+  });
+
   // 댓글 목록 조회
   const { data: commentsData, isLoading: isCommentsLoading } = useQuery({
     queryKey: [`/api/community/posts/${post?.id}/comments`],
