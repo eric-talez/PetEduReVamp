@@ -568,8 +568,8 @@ export default function AdminContents() {
 
       {/* Content Modal */}
       <Dialog open={showContentModal} onOpenChange={setShowContentModal}>
-        <DialogContent className="max-w-3xl">
-          <DialogHeader>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-hidden flex flex-col">
+          <DialogHeader className="flex-shrink-0">
             <DialogTitle>
               {modalMode === 'view' && '콘텐츠 상세 정보'}
               {modalMode === 'edit' && '콘텐츠 수정'}
@@ -582,7 +582,7 @@ export default function AdminContents() {
             </DialogDescription>
           </DialogHeader>
           
-          <div className="grid gap-4 py-4">
+          <div className="grid gap-4 py-4 overflow-y-auto flex-1 pr-2">
             {modalMode === 'add' && (
               <div className="grid gap-4">
                 <div className="grid grid-cols-4 items-center gap-4">
@@ -689,7 +689,7 @@ export default function AdminContents() {
             )}
           </div>
           
-          <DialogFooter>
+          <DialogFooter className="flex-shrink-0 mt-4 pt-4 border-t">
             <Button variant="outline" onClick={() => setShowContentModal(false)}>
               취소
             </Button>
@@ -715,15 +715,15 @@ export default function AdminContents() {
 
       {/* Banner Registration Dialog */}
       <Dialog open={showBannerDialog} onOpenChange={setShowBannerDialog}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
+          <DialogHeader className="flex-shrink-0">
             <DialogTitle>새 배너 등록</DialogTitle>
             <DialogDescription>
               메인 페이지에 표시될 배너를 등록하세요.
             </DialogDescription>
           </DialogHeader>
           
-          <div className="grid gap-4 py-4">
+          <div className="grid gap-4 py-4 overflow-y-auto flex-1 pr-2">
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="banner-title" className="text-right">제목 *</Label>
               <Input
@@ -846,7 +846,7 @@ export default function AdminContents() {
             </div>
           </div>
           
-          <DialogFooter>
+          <DialogFooter className="flex-shrink-0 mt-4 pt-4 border-t">
             <Button variant="outline" onClick={() => setShowBannerDialog(false)}>
               취소
             </Button>
