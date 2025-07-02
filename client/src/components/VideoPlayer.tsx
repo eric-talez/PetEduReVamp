@@ -17,6 +17,7 @@ import { AutoSubtitleManager } from './AutoSubtitleManager';
 import { useViewCounter } from '@/hooks/useViewCounter';
 
 interface VideoPlayerProps {
+  videoId?: string | number; // 조회수 추적을 위한 비디오 ID
   videoUrl: string;
   poster?: string;
   title: string;
@@ -46,6 +47,7 @@ interface PlayerState {
 }
 
 export const VideoPlayer: React.FC<VideoPlayerProps> = ({
+  videoId,
   videoUrl,
   poster,
   title,
@@ -80,6 +82,14 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
   const [controlsVisible, setControlsVisible] = useState(true);
   const [mouseInactive, setMouseInactive] = useState(false);
   const inactivityTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // 조회수 추적 (비디오 ID가 있는 경우에만)
+  useViewCounter({
+    itemId: videoId || 0,
+    itemType: 'video',
+    enabled: !!videoId,
+    delay: 5 // 5초 후 조회수 증가
+  });
   
   // 비디오 로드 및 초기화
   useEffect(() => {
