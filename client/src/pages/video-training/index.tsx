@@ -759,24 +759,19 @@ export default function VideoTraining() {
             <div className="p-4">
               <div className="aspect-video bg-gray-900 rounded-lg overflow-hidden">
                 <VideoPlayer
-                  src={selectedVideo.isPremium && !isAuthenticated ? "/api/videos/premium-preview.mp4" : `/api/videos/${selectedVideo.id}.mp4`}
+                  videoUrl={selectedVideo.isPremium && !isAuthenticated ? "/api/videos/premium-preview.mp4" : `/api/videos/${selectedVideo.id}.mp4`}
                   poster={selectedVideo.thumbnail}
-                  onReady={handlePlayerReady}
-                  playing={isPlaying}
-                  onPlayPause={handlePlayPause}
-                  volume={playerState.volume}
-                  onVolumeChange={handleVolumeChange}
-                  muted={playerState.muted}
-                  onMute={handleMute}
-                  currentTime={playerState.currentTime}
-                  duration={playerState.duration}
-                  onSeek={handleSeek}
-                  playbackRate={playerState.playbackRate}
-                  onPlaybackRateChange={handlePlaybackRate}
-                  subtitles={playerState.subtitles}
-                  onSubtitlesToggle={handleSubtitles}
-                  controlsVisible={playerState.controlsVisible}
-                  onControlsVisibility={handleControlsVisibility}
+                  title={selectedVideo.title}
+                  isPremium={selectedVideo.isPremium}
+                  isPreviewMode={selectedVideo.isPremium && !isAuthenticated}
+                  previewTimeLeft={selectedVideo.isPremium && !isAuthenticated ? Math.max(0, 60 - (playerState.currentTime || 0)) : 0}
+                  onPreviewEnd={() => setPreviewEnded(true)}
+                  purchased={isAuthenticated}
+                  autoPlay={false}
+                  onTimeUpdate={(currentTime) => {
+                    setPlayerState(prev => ({ ...prev, currentTime }));
+                  }}
+                  showAutoSubtitleManager={true}
                 />
                 
                 {previewEnded && selectedVideo.isPremium && !isAuthenticated && (

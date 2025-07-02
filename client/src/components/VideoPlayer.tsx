@@ -330,11 +330,12 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
   };
   
   return (
-    <div 
-      ref={playerContainerRef}
-      className={`relative rounded-lg overflow-hidden bg-black ${mouseInactive ? 'cursor-none' : ''}`}
-      style={{ aspectRatio: '16/9' }}
-    >
+    <div className="space-y-4">
+      <div 
+        ref={playerContainerRef}
+        className={`relative rounded-lg overflow-hidden bg-black ${mouseInactive ? 'cursor-none' : ''}`}
+        style={{ aspectRatio: '16/9' }}
+      >
       {/* 비디오 플레이어 */}
       <video
         ref={videoRef}
@@ -489,6 +490,18 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
                 <Subtitles size={18} />
               </Button>
             )}
+
+            {/* 자동 자막 관리자 토글 버튼 */}
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className={`h-8 w-8 ${playerState.showSubtitleManager ? 'text-primary' : 'text-white'}`}
+              onClick={() => setPlayerState(prev => ({ ...prev, showSubtitleManager: !prev.showSubtitleManager }))}
+              title="자동 자막 생성"
+            >
+              <Subtitles size={18} />
+              {!subtitlesUrl && <span className="absolute -top-1 -right-1 w-2 h-2 bg-primary rounded-full" />}
+            </Button>
             
             {/* 전체화면 */}
             <Button 
@@ -517,10 +530,60 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
       )}
       
       {/* 클릭 영역 (빈 공간 클릭 시 재생/일시정지) */}
-      <div 
-        className="absolute inset-0 z-0"
-        onClick={togglePlay}
-      />
+        <div 
+          className="absolute inset-0 z-0"
+          onClick={togglePlay}
+        />
+      </div>
+
+      {/* 자동 자막 관리자 패널 */}
+      {playerState.showSubtitleManager && (
+        <div className="mt-4">
+          <AutoSubtitleManager
+            videoUrl={videoUrl}
+            onSubtitlesGenerated={(subtitles) => {
+              setPlayerState(prev => ({ ...prev, generatedSubtitles: subtitles }));
+              
+              // 생성된 자막을 비디오에 동적으로 추가
+              const video = videoRef.current;
+              if (video && subtitles) {
+                // 기존 자막 트랙 제거
+                const existingTracks = video.textTracks;
+                for (let i = existingTracks.length - 1; i >= 0; i--) {
+                  const track = existingTracks[i];
+                  if (track.label === '자동 생성 자막') {
+                    track.mode = 'disabled';
+                  }
+                }
+                
+                // 새 자막 트랙 생성
+                const blob = new Blob([subtitles], { type: 'text/vtt' });
+                const url = URL.createObjectURL(blob);
+                
+                // track 엘리먼트 생성 및 추가
+                const track = document.createElement('track');
+                track.kind = 'subtitles';
+                track.src = url;
+                track.srclang = 'ko';
+                track.label = '자동 생성 자막';
+                track.default = true;
+                
+                video.appendChild(track);
+                
+                // 자막 활성화
+                setTimeout(() => {
+                  const textTrack = video.textTracks[video.textTracks.length - 1];
+                  if (textTrack) {
+                    textTrack.mode = 'showing';
+                    setPlayerState(prev => ({ ...prev, subtitles: true }));
+                  }
+                }, 100);
+              }
+            }}
+            className="bg-gray-900/90 backdrop-blur-sm border border-gray-700"
+          />
+        </div>
+      )}
     </div>
   );
 };
