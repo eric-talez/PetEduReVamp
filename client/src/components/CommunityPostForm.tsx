@@ -15,7 +15,11 @@ import {
   X,
   Save,
   AlertCircle,
-  CheckCircle
+  CheckCircle,
+  Link,
+  Image,
+  Download,
+  Trash2
 } from 'lucide-react';
 
 interface CommunityPostFormProps {
@@ -29,10 +33,17 @@ export function CommunityPostForm({ isOpen, onOpenChange, onPostCreated }: Commu
     title: '',
     content: '',
     category: '',
-    tags: ''
+    tags: '',
+    linkUrl: '',
+    linkTitle: '',
+    linkDescription: '',
+    linkImage: ''
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [showLinkSection, setShowLinkSection] = useState(false);
+  const [isExtractingLink, setIsExtractingLink] = useState(false);
+  const [submitFailed, setSubmitFailed] = useState(false);
 
   const categories = [
     { value: 'training', label: '훈련 팁' },
@@ -105,7 +116,11 @@ export function CommunityPostForm({ isOpen, onOpenChange, onPostCreated }: Commu
           title: formData.title,
           content: formData.content,
           category: formData.category,
-          tags: formData.tags.split(',').map(tag => tag.trim()).filter(tag => tag)
+          tags: formData.tags.split(',').map(tag => tag.trim()).filter(tag => tag),
+          linkUrl: formData.linkUrl || null,
+          linkTitle: formData.linkTitle || null,
+          linkDescription: formData.linkDescription || null,
+          linkImage: formData.linkImage || null
         })
       });
 
@@ -125,7 +140,11 @@ export function CommunityPostForm({ isOpen, onOpenChange, onPostCreated }: Commu
         title: '',
         content: '',
         category: '일반',
-        tags: ''
+        tags: '',
+        linkUrl: '',
+        linkTitle: '',
+        linkDescription: '',
+        linkImage: ''
       });
       
       // 에러 초기화
@@ -140,7 +159,8 @@ export function CommunityPostForm({ isOpen, onOpenChange, onPostCreated }: Commu
     } catch (error) {
       console.error('게시글 작성 오류:', error);
       setErrors({ submit: '게시글 작성 중 오류가 발생했습니다.' });
-      alert('게시글 작성 중 오류가 발생했습니다. 다시 시도해주세요.');
+      setSubmitFailed(true);
+      setShowLinkSection(true);
     } finally {
       setIsSubmitting(false);
     }
@@ -158,6 +178,61 @@ export function CommunityPostForm({ isOpen, onOpenChange, onPostCreated }: Commu
       question: 'bg-red-100 text-red-800'
     };
     return colors[category] || colors.general;
+  };
+
+  // 링크 정보 추출 함수
+  const extractLinkInfo = async (url: string) => {
+    setIsExtractingLink(true);
+    try {
+      const response = await fetch('/api/extract-link-info', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ url })
+      });
+
+      if (!response.ok) {
+        throw new Error('링크 정보 추출에 실패했습니다.');
+      }
+
+      const linkInfo = await response.json();
+      
+      setFormData(prev => ({
+        ...prev,
+        linkTitle: linkInfo.title || '',
+        linkDescription: linkInfo.description || '',
+        linkImage: linkInfo.image || ''
+      }));
+      
+    } catch (error) {
+      console.error('링크 정보 추출 오류:', error);
+      setErrors(prev => ({
+        ...prev,
+        linkUrl: '링크 정보를 가져올 수 없습니다. URL을 확인해주세요.'
+      }));
+    } finally {
+      setIsExtractingLink(false);
+    }
+  };
+
+  // URL 유효성 검증
+  const isValidUrl = (url: string) => {
+    try {
+      new URL(url);
+      return true;
+    } catch {
+      return false;
+    }
+  };
+
+  // 링크 URL 변경 처리
+  const handleLinkUrlChange = (url: string) => {
+    handleInputChange('linkUrl', url);
+    
+    if (url && isValidUrl(url)) {
+      extractLinkInfo(url);
+    }
   };
 
   return (
@@ -267,6 +342,170 @@ export function CommunityPostForm({ isOpen, onOpenChange, onPostCreated }: Commu
               </div>
             )}
           </div>
+
+          {/* 링크 추가 버튼 */}
+          {!showLinkSection && !submitFailed && (
+            <div className="flex justify-start">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setShowLinkSection(true)}
+                className="flex items-center gap-2"
+              >
+                <Link className="h-4 w-4" />
+                링크 추가
+              </Button>
+            </div>
+          )}
+
+          {/* 링크 정보 섹션 */}
+          {(submitFailed || showLinkSection) && (
+            <div className="border rounded-lg p-4 bg-yellow-50">
+              <div className="flex items-center gap-2 mb-4">
+                <AlertCircle className="h-5 w-5 text-yellow-600" />
+                <h3 className="font-semibold text-yellow-800">
+                  작성 실패 - 링크 정보 추가하기
+                </h3>
+              </div>
+              
+              <div className="space-y-4">
+                {/* 링크 URL */}
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    링크 URL
+                  </label>
+                  <div className="flex gap-2">
+                    <Input
+                      value={formData.linkUrl}
+                      onChange={(e) => handleLinkUrlChange(e.target.value)}
+                      placeholder="https://example.com"
+                      className={errors.linkUrl ? 'border-red-500' : ''}
+                    />
+                    {!showLinkSection && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setShowLinkSection(true)}
+                      >
+                        <Link className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
+                  {errors.linkUrl && (
+                    <div className="flex items-center gap-1 mt-1 text-red-600 text-sm">
+                      <AlertCircle className="h-3 w-3" />
+                      {errors.linkUrl}
+                    </div>
+                  )}
+                  {isExtractingLink && (
+                    <div className="flex items-center gap-2 mt-2 text-sm text-blue-600">
+                      <div className="animate-spin w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full" />
+                      링크 정보를 가져오는 중...
+                    </div>
+                  )}
+                </div>
+
+                {/* 링크 제목 */}
+                {formData.linkTitle && (
+                  <div>
+                    <label className="block text-sm font-medium mb-2">
+                      링크 제목
+                    </label>
+                    <Input
+                      value={formData.linkTitle}
+                      onChange={(e) => handleInputChange('linkTitle', e.target.value)}
+                      placeholder="링크 제목"
+                    />
+                  </div>
+                )}
+
+                {/* 링크 설명 */}
+                {formData.linkDescription && (
+                  <div>
+                    <label className="block text-sm font-medium mb-2">
+                      링크 설명
+                    </label>
+                    <Textarea
+                      value={formData.linkDescription}
+                      onChange={(e) => handleInputChange('linkDescription', e.target.value)}
+                      placeholder="링크 설명"
+                      rows={3}
+                    />
+                  </div>
+                )}
+
+                {/* 링크 이미지 썸네일 */}
+                {formData.linkImage && (
+                  <div>
+                    <label className="block text-sm font-medium mb-2">
+                      썸네일 이미지
+                    </label>
+                    <div className="flex items-center gap-4">
+                      <img
+                        src={formData.linkImage}
+                        alt="링크 썸네일"
+                        className="w-24 h-24 object-cover rounded-lg border"
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none';
+                        }}
+                      />
+                      <div className="flex-1">
+                        <Input
+                          value={formData.linkImage}
+                          onChange={(e) => handleInputChange('linkImage', e.target.value)}
+                          placeholder="이미지 URL"
+                        />
+                        <div className="flex gap-2 mt-2">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleInputChange('linkImage', '')}
+                          >
+                            <Trash2 className="h-3 w-3 mr-1" />
+                            제거
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* 링크 미리보기 */}
+                {formData.linkUrl && (formData.linkTitle || formData.linkDescription) && (
+                  <div className="bg-white border rounded-lg p-4">
+                    <h4 className="font-medium text-sm text-gray-600 mb-2">링크 미리보기</h4>
+                    <div className="flex gap-3">
+                      {formData.linkImage && (
+                        <img
+                          src={formData.linkImage}
+                          alt="썸네일"
+                          className="w-16 h-16 object-cover rounded-lg flex-shrink-0"
+                        />
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <h5 className="font-medium text-sm line-clamp-2">
+                          {formData.linkTitle}
+                        </h5>
+                        <p className="text-xs text-gray-600 mt-1 line-clamp-2">
+                          {formData.linkDescription}
+                        </p>
+                        <a
+                          href={formData.linkUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-xs text-blue-600 hover:underline mt-1 inline-block"
+                        >
+                          {formData.linkUrl}
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* 미리보기 */}
           {formData.title && formData.content && (

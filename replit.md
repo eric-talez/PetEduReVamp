@@ -115,6 +115,16 @@ TALEZ is a comprehensive pet education and e-commerce platform that combines AI-
 
 ## Changelog
 
+- July 03, 2025. Enhanced community post creation with link preview functionality:
+  - Added link information input section that appears after post creation failures
+  - Implemented automatic link metadata extraction with title, description, and thumbnail
+  - Created link preview card component showing extracted information
+  - Added manual link editing capabilities for title, description, and image URL
+  - Integrated thumbnail image display with error handling and removal options
+  - Built comprehensive link validation and error handling system
+  - Enhanced post creation workflow with optional link attachment feature
+  - Added toggle button for voluntary link addition during post creation
+  - Server-side API endpoint for link metadata extraction with URL validation
 - July 01, 2025. Implemented automatic subtitle generation for video lecture system:
   - Added OpenAI Whisper API integration for automatic speech-to-text conversion
   - Created AutoSubtitleManager component with drag-and-drop file upload interface

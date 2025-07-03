@@ -1718,6 +1718,39 @@ app.get('/api/search', async (req, res) => {
     }
   });
 
+  // 링크 정보 추출 API
+  app.post('/api/extract-link-info', async (req, res) => {
+    try {
+      const { url } = req.body;
+      
+      if (!url) {
+        return res.status(400).json({ error: 'URL이 필요합니다.' });
+      }
+
+      // URL 유효성 검증
+      try {
+        new URL(url);
+      } catch {
+        return res.status(400).json({ error: '유효하지 않은 URL입니다.' });
+      }
+
+      // 실제 링크 정보 추출 (간단한 모의 구현)
+      const mockLinkInfo = {
+        title: '반려견 훈련 관련 유용한 정보',
+        description: '이 링크는 반려견 훈련에 도움이 되는 정보를 담고 있습니다.',
+        image: 'https://images.unsplash.com/photo-1551717743-49959800b1f6?w=400&h=300&fit=crop'
+      };
+
+      // 실제로는 웹 스크래핑이나 meta 태그 파싱을 구현
+      // 여기서는 간단한 모의 데이터 반환
+      res.json(mockLinkInfo);
+      
+    } catch (error) {
+      console.error('링크 정보 추출 오류:', error);
+      res.status(500).json({ error: '링크 정보 추출 중 오류가 발생했습니다.' });
+    }
+  });
+
   // 기능별 상태 체크 API
   app.get('/api/service/features', async (req, res) => {
     try {
