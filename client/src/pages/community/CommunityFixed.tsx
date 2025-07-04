@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { MessageSquare, Heart, Eye, Clock, Tag, Plus, ArrowLeft, MoreVertical, Edit, Trash2, X, Search, Grid, List, Link } from 'lucide-react';
+import { MessageSquare, Heart, Eye, Clock, Tag, Plus, ArrowLeft, MoreVertical, Edit, Trash2, X, Search, Grid, List, Link, ExternalLink } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -1131,6 +1131,37 @@ function CommunityPage() {
                     {selectedPost.content}
                   </p>
                 </div>
+                
+                {/* 링크 정보 표시 */}
+                {selectedPost.linkInfo && (
+                  <div className="mt-4 p-4 border rounded-lg bg-gray-50">
+                    <div className="flex items-start gap-3">
+                      {selectedPost.linkInfo.image && (
+                        <img 
+                          src={selectedPost.linkInfo.image} 
+                          alt="링크 썸네일" 
+                          className="w-16 h-16 object-cover rounded"
+                        />
+                      )}
+                      <div className="flex-1">
+                        <h4 className="font-semibold text-sm mb-1">
+                          {selectedPost.linkInfo.title}
+                        </h4>
+                        <p className="text-xs text-gray-600 mb-2">
+                          {selectedPost.linkInfo.description}
+                        </p>
+                        <a 
+                          href={selectedPost.linkInfo.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-xs text-blue-600 hover:text-blue-800 underline"
+                        >
+                          링크 보기
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                )}
                 
                 {selectedPost.tags && selectedPost.tags.length > 0 && (
                   <div className="mt-4 pt-4 border-t">

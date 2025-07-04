@@ -2539,6 +2539,18 @@ export class MemoryStorage implements IStorage{
 
     async createCommunityPost(postData: any): Promise<CommunityPost> {
         const id = this.messageId++;
+        
+        // 링크 정보 처리
+        let linkInfo = undefined;
+        if (postData.linkUrl) {
+            linkInfo = {
+                url: postData.linkUrl,
+                title: postData.linkTitle || '',
+                description: postData.linkDescription || '',
+                image: postData.linkImage || undefined
+            };
+        }
+        
         const post: CommunityPost = {
             id,
             title: postData.title || '',
@@ -2555,8 +2567,10 @@ export class MemoryStorage implements IStorage{
             createdAt: new Date(),
             updatedAt: new Date(),
             hidden: false,
-            linkInfo: postData.linkInfo || undefined
+            linkInfo: linkInfo
         };
+        
+        console.log('링크 정보 처리 완료:', linkInfo);
         this.communityPosts.set(id, post);
         return post;
     }
