@@ -344,7 +344,7 @@ export function CommunityPostForm({ isOpen, onOpenChange, onPostCreated }: Commu
           </div>
 
           {/* 링크 추가 버튼 */}
-          {!showLinkSection && !submitFailed && (
+          {!showLinkSection && (
             <div className="flex justify-start">
               <Button
                 type="button"
@@ -359,14 +359,29 @@ export function CommunityPostForm({ isOpen, onOpenChange, onPostCreated }: Commu
           )}
 
           {/* 링크 정보 섹션 */}
-          {(submitFailed || showLinkSection) && (
-            <div className="border rounded-lg p-4 bg-yellow-50">
-              <div className="flex items-center gap-2 mb-4">
-                <AlertCircle className="h-5 w-5 text-yellow-600" />
-                <h3 className="font-semibold text-yellow-800">
-                  작성 실패 - 링크 정보 추가하기
-                </h3>
+          {showLinkSection && (
+            <div className="border rounded-lg p-4 bg-blue-50">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <Link className="h-5 w-5 text-blue-600" />
+                  <h3 className="font-semibold text-blue-800">
+                    링크 정보 추가
+                  </h3>
+                </div>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowLinkSection(false)}
+                  className="text-blue-600 hover:text-blue-800"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
               </div>
+              
+              <p className="text-blue-700 mb-4">
+                URL을 입력하면 자동으로 링크 정보를 추출하여 게시글을 더 풍부하게 만들 수 있습니다.
+              </p>
               
               <div className="space-y-4">
                 {/* 링크 URL */}
