@@ -215,7 +215,7 @@ export class MemoryStorage implements IStorage{
   private settlementReports = new Map();
 
   // Additional data stores (arrays)
-  private communityPosts: CommunityPost[] = [];
+  private communityPosts = new Map<number, CommunityPost>();
   private shoppingItems: ShoppingItem[] = [];
   private reservations = new Map();
   private consultations: Consultation[] = [];
@@ -2539,11 +2539,23 @@ export class MemoryStorage implements IStorage{
 
     async createCommunityPost(postData: any): Promise<CommunityPost> {
         const id = this.messageId++;
-        const post = {
+        const post: CommunityPost = {
             id,
-            ...postData,
+            title: postData.title || '',
+            content: postData.content || '',
+            tag: postData.tag || postData.category || '일반',
+            author: {
+                id: postData.authorId || 1,
+                name: postData.author || '익명 사용자'
+            },
+            authorId: postData.authorId || 1,
+            likes: 0,
+            comments: 0,
+            views: 0,
             createdAt: new Date(),
-            updatedAt: new Date()
+            updatedAt: new Date(),
+            hidden: false,
+            linkInfo: postData.linkInfo || undefined
         };
         this.communityPosts.set(id, post);
         return post;
@@ -3323,12 +3335,19 @@ interface CommunityPost {
     content: string;
     tag: string;
     author: { id: number; name: string };
+    authorId: number;
     likes: number;
     comments: number;
     views: number;
-    createdAt: string;
-    updatedAt?: string;
+    createdAt: string | Date;
+    updatedAt?: string | Date;
     hidden?: boolean;
+    linkInfo?: {
+        url: string;
+        title: string;
+        description: string;
+        image?: string;
+    };
 }
 
 interface ShoppingItem {

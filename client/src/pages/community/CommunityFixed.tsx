@@ -1053,7 +1053,7 @@ function CommunityPage() {
                         <div className="flex items-start justify-between">
                           <div className="flex-1">
                             <div className="flex items-center gap-2 mb-2">
-                              <Badge variant="destructive" className="text-xs">공지사항</Badge>
+                              <Badge variant="danger" className="text-xs">공지사항</Badge>
                               <span className="text-xs text-gray-500">
                                 {post.user?.name || '관리자'} • {post.user?.time || '방금 전'}
                               </span>
