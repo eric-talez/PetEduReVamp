@@ -11,6 +11,23 @@ import { registerUploadRoutes } from "./routes/upload";
 import { storage } from "./storage";
 import { courses, users, institutes } from "../shared/schema";
 import { ilike, or } from "drizzle-orm";
+import { 
+  analyzePetBehavior, 
+  generateTrainingPlan, 
+  analyzeHealthSymptoms,
+  summarizeArticle,
+  analyzeSentiment,
+  analyzeImage,
+  analyzeVideo,
+  generateImage
+} from "./gemini";
+import {
+  fusedBehaviorAnalysis,
+  fusedTrainingPlan,
+  fusedHealthAnalysis,
+  fusedSentimentAnalysis,
+  compareModelPerformance
+} from "./ai-fusion";
 // import { setupCommissionRoutes } from './commission/routes';
 // import { setupHealthRoutes } from './routes/health';
 import { registerAnalyticsRoutes } from './routes/analytics';
@@ -2450,6 +2467,212 @@ app.get('/api/search', async (req, res) => {
 
   // Register social/community routes
   setupSocialRoutes(app);
+
+  // Gemini AI API endpoints
+  app.post("/api/ai/analyze-behavior", async (req, res) => {
+    try {
+      const { description } = req.body;
+      
+      if (!description) {
+        return res.status(400).json({ error: "행동 설명이 필요합니다." });
+      }
+
+      console.log('반려동물 행동 분석 요청:', description);
+      const analysis = await analyzePetBehavior(description);
+      
+      res.json({ analysis });
+    } catch (error) {
+      console.error('행동 분석 오류:', error);
+      res.status(500).json({ error: "행동 분석 중 오류가 발생했습니다." });
+    }
+  });
+
+  app.post("/api/ai/generate-training-plan", async (req, res) => {
+    try {
+      const { breed, age, issue, experience } = req.body;
+      
+      if (!breed || !age || !issue || !experience) {
+        return res.status(400).json({ error: "모든 정보가 필요합니다." });
+      }
+
+      const petInfo = { breed, age, issue, experience };
+      console.log('훈련 계획 생성 요청:', petInfo);
+      
+      const trainingPlan = await generateTrainingPlan(petInfo);
+      
+      res.json({ trainingPlan });
+    } catch (error) {
+      console.error('훈련 계획 생성 오류:', error);
+      res.status(500).json({ error: "훈련 계획 생성 중 오류가 발생했습니다." });
+    }
+  });
+
+  app.post("/api/ai/analyze-health", async (req, res) => {
+    try {
+      const { symptoms } = req.body;
+      
+      if (!symptoms) {
+        return res.status(400).json({ error: "증상 설명이 필요합니다." });
+      }
+
+      console.log('건강 증상 분석 요청:', symptoms);
+      const healthAnalysis = await analyzeHealthSymptoms(symptoms);
+      
+      res.json({ analysis: healthAnalysis });
+    } catch (error) {
+      console.error('건강 분석 오류:', error);
+      res.status(500).json({ error: "건강 분석 중 오류가 발생했습니다." });
+    }
+  });
+
+  app.post("/api/ai/summarize", async (req, res) => {
+    try {
+      const { text } = req.body;
+      
+      if (!text) {
+        return res.status(400).json({ error: "요약할 텍스트가 필요합니다." });
+      }
+
+      console.log('텍스트 요약 요청');
+      const summary = await summarizeArticle(text);
+      
+      res.json({ summary });
+    } catch (error) {
+      console.error('텍스트 요약 오류:', error);
+      res.status(500).json({ error: "텍스트 요약 중 오류가 발생했습니다." });
+    }
+  });
+
+  app.post("/api/ai/analyze-sentiment", async (req, res) => {
+    try {
+      const { text } = req.body;
+      
+      if (!text) {
+        return res.status(400).json({ error: "분석할 텍스트가 필요합니다." });
+      }
+
+      console.log('감정 분석 요청');
+      const sentiment = await analyzeSentiment(text);
+      
+      res.json(sentiment);
+    } catch (error) {
+      console.error('감정 분석 오류:', error);
+      res.status(500).json({ error: "감정 분석 중 오류가 발생했습니다." });
+    }
+  });
+
+  app.post("/api/ai/generate-image", async (req, res) => {
+    try {
+      const { prompt } = req.body;
+      
+      if (!prompt) {
+        return res.status(400).json({ error: "이미지 생성 프롬프트가 필요합니다." });
+      }
+
+      console.log('이미지 생성 요청:', prompt);
+      const imagePath = `uploads/generated-${Date.now()}.png`;
+      
+      await generateImage(prompt, imagePath);
+      
+      res.json({ imagePath: `/${imagePath}` });
+    } catch (error) {
+      console.error('이미지 생성 오류:', error);
+      res.status(500).json({ error: "이미지 생성 중 오류가 발생했습니다." });
+    }
+  });
+
+  // 멀티모델 융합 AI API 엔드포인트들
+  app.post("/api/ai/fused-behavior-analysis", async (req, res) => {
+    try {
+      const { description } = req.body;
+      
+      if (!description) {
+        return res.status(400).json({ error: "행동 설명이 필요합니다." });
+      }
+
+      console.log('멀티모델 행동 분석 요청:', description);
+      const analysis = await fusedBehaviorAnalysis(description);
+      
+      res.json(analysis);
+    } catch (error) {
+      console.error('멀티모델 행동 분석 오류:', error);
+      res.status(500).json({ error: "멀티모델 행동 분석 중 오류가 발생했습니다." });
+    }
+  });
+
+  app.post("/api/ai/fused-training-plan", async (req, res) => {
+    try {
+      const { breed, age, issue, experience } = req.body;
+      
+      if (!breed || !age || !issue || !experience) {
+        return res.status(400).json({ error: "모든 정보가 필요합니다." });
+      }
+
+      const petInfo = { breed, age, issue, experience };
+      console.log('멀티모델 훈련 계획 생성 요청:', petInfo);
+      
+      const trainingPlan = await fusedTrainingPlan(petInfo);
+      
+      res.json(trainingPlan);
+    } catch (error) {
+      console.error('멀티모델 훈련 계획 생성 오류:', error);
+      res.status(500).json({ error: "멀티모델 훈련 계획 생성 중 오류가 발생했습니다." });
+    }
+  });
+
+  app.post("/api/ai/fused-health-analysis", async (req, res) => {
+    try {
+      const { symptoms } = req.body;
+      
+      if (!symptoms) {
+        return res.status(400).json({ error: "증상 설명이 필요합니다." });
+      }
+
+      console.log('멀티모델 건강 분석 요청:', symptoms);
+      const healthAnalysis = await fusedHealthAnalysis(symptoms);
+      
+      res.json(healthAnalysis);
+    } catch (error) {
+      console.error('멀티모델 건강 분석 오류:', error);
+      res.status(500).json({ error: "멀티모델 건강 분석 중 오류가 발생했습니다." });
+    }
+  });
+
+  app.post("/api/ai/fused-sentiment-analysis", async (req, res) => {
+    try {
+      const { text } = req.body;
+      
+      if (!text) {
+        return res.status(400).json({ error: "분석할 텍스트가 필요합니다." });
+      }
+
+      console.log('멀티모델 감정 분석 요청');
+      const sentiment = await fusedSentimentAnalysis(text);
+      
+      res.json(sentiment);
+    } catch (error) {
+      console.error('멀티모델 감정 분석 오류:', error);
+      res.status(500).json({ error: "멀티모델 감정 분석 중 오류가 발생했습니다." });
+    }
+  });
+
+  app.post("/api/ai/compare-models", async (req, res) => {
+    try {
+      const { input, analysisType } = req.body;
+      
+      if (!input || !analysisType) {
+        return res.status(400).json({ error: "입력과 분석 유형이 필요합니다." });
+      }
+
+      console.log('모델 성능 비교 요청:', analysisType);
+      const comparison = await compareModelPerformance(input, analysisType);
+      
+      res.json(comparison);
+    } catch (error) {
+      console.error('모델 성능 비교 오류:', error);
+      res.status(500).json({ error: "모델 성능 비교 중 오류가 발생했습니다." });
+    }
+  });
 
   // Global error handler (commented out for now)
   // app.use(errorHandler);
