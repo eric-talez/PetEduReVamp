@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Link, useLocation } from 'wouter';
+import { Link as RouterLink, useLocation } from 'wouter';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { MessageSquare, Heart, Eye, Clock, Tag, Plus, ArrowLeft, MoreVertical, Edit, Trash2, X, Search, Grid, List } from 'lucide-react';
+import { MessageSquare, Heart, Eye, Clock, Tag, Plus, ArrowLeft, MoreVertical, Edit, Trash2, X, Search, Grid, List, Link } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -121,8 +121,17 @@ function CommunityPage() {
     title: "",
     content: "",
     category: "일반",
-    tags: ""
+    tags: "",
+    linkUrl: "",
+    linkTitle: "",
+    linkDescription: "",
+    linkImage: ""
   });
+  const [showLinkSection, setShowLinkSection] = useState(false);
+  const [isExtractingLink, setIsExtractingLink] = useState(false);
+
+  // 카테고리 목록
+  const categories = ['일반', '훈련팁', '건강', '행동교정', '사회화', '질문', '후기'];
 
   // 게시글 목록 조회
   const { data: postsData = [], isLoading, error } = useQuery({
@@ -156,7 +165,11 @@ function CommunityPage() {
           title: postData.title,
           content: postData.content,
           category: postData.category,
-          tags: postData.tags.split(',').map(tag => tag.trim()).filter(tag => tag)
+          tags: postData.tags.split(',').map(tag => tag.trim()).filter(tag => tag),
+          linkUrl: postData.linkUrl || null,
+          linkTitle: postData.linkTitle || null,
+          linkDescription: postData.linkDescription || null,
+          linkImage: postData.linkImage || null
         }),
       });
 
@@ -192,8 +205,13 @@ function CommunityPage() {
         title: "",
         content: "",
         category: "일반",
-        tags: ""
+        tags: "",
+        linkUrl: "",
+        linkTitle: "",
+        linkDescription: "",
+        linkImage: ""
       });
+      setShowLinkSection(false);
       setIsCreatePostOpen(false);
       setCurrentPage(1);
     },
@@ -205,6 +223,46 @@ function CommunityPage() {
       });
     }
   });
+
+  // 링크 정보 추출 함수
+  const handleLinkUrlChange = async (url: string) => {
+    setNewPost(prev => ({ ...prev, linkUrl: url }));
+    
+    if (url && isValidUrl(url)) {
+      setIsExtractingLink(true);
+      try {
+        const response = await fetch('/api/extract-link-info', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ url }),
+        });
+        
+        if (response.ok) {
+          const linkInfo = await response.json();
+          setNewPost(prev => ({
+            ...prev,
+            linkTitle: linkInfo.title || '',
+            linkDescription: linkInfo.description || '',
+            linkImage: linkInfo.image || ''
+          }));
+        }
+      } catch (error) {
+        console.error('링크 정보 추출 오류:', error);
+      }
+      setIsExtractingLink(false);
+    }
+  };
+
+  const isValidUrl = (string: string) => {
+    try {
+      new URL(string);
+      return true;
+    } catch {
+      return false;
+    }
+  };
 
   // 게시글 작성 함수
   const handleSubmitPost = () => {
@@ -402,7 +460,7 @@ function CommunityPage() {
     setReplyingTo(null);
   };
 
-  const categories = ['일반', '훈련팁', '설문', '정보공유', '건강관리', '행동교정', '영양정보', '놀이활동', '질문답변', '후기공유'];
+
 
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 max-w-7xl">
@@ -476,6 +534,129 @@ function CommunityPage() {
                   placeholder="태그를 쉼표로 구분하여 입력하세요"
                 />
               </div>
+
+              {/* 링크 추가 버튼 */}
+              {!showLinkSection && (
+                <div className="flex justify-start">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setShowLinkSection(true)}
+                    className="flex items-center gap-2"
+                  >
+                    <Link className="h-4 w-4" />
+                    링크 추가
+                  </Button>
+                </div>
+              )}
+
+              {/* 링크 정보 섹션 */}
+              {showLinkSection && (
+                <div className="border rounded-lg p-4 bg-blue-50">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-2">
+                      <Link className="h-5 w-5 text-blue-600" />
+                      <h3 className="font-semibold text-blue-800">
+                        링크 정보 추가
+                      </h3>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setShowLinkSection(false)}
+                      className="text-blue-600 hover:text-blue-800"
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  
+                  <p className="text-blue-700 mb-4">
+                    URL을 입력하면 자동으로 링크 정보를 추출하여 게시글을 더 풍부하게 만들 수 있습니다.
+                  </p>
+                  
+                  <div className="space-y-4">
+                    {/* 링크 URL */}
+                    <div>
+                      <Label className="block text-sm font-medium mb-2">
+                        링크 URL
+                      </Label>
+                      <div className="flex gap-2">
+                        <Input
+                          value={newPost.linkUrl}
+                          onChange={(e) => handleLinkUrlChange(e.target.value)}
+                          placeholder="https://example.com"
+                          className="flex-1"
+                        />
+                        {isExtractingLink && (
+                          <div className="flex items-center px-3">
+                            <div className="animate-spin w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full"></div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* 링크 정보 미리보기 */}
+                    {(newPost.linkTitle || newPost.linkDescription || newPost.linkImage) && (
+                      <div className="border rounded-lg p-4 bg-white">
+                        <h4 className="font-medium mb-3">링크 미리보기</h4>
+                        
+                        <div className="grid grid-cols-4 items-center gap-4 mb-3">
+                          <Label className="text-right">제목</Label>
+                          <Input
+                            value={newPost.linkTitle}
+                            onChange={(e) => setNewPost(prev => ({ ...prev, linkTitle: e.target.value }))}
+                            placeholder="링크 제목"
+                            className="col-span-3"
+                          />
+                        </div>
+                        
+                        <div className="grid grid-cols-4 items-start gap-4 mb-3">
+                          <Label className="text-right pt-2">설명</Label>
+                          <Textarea
+                            value={newPost.linkDescription}
+                            onChange={(e) => setNewPost(prev => ({ ...prev, linkDescription: e.target.value }))}
+                            placeholder="링크 설명"
+                            className="col-span-3 min-h-[60px]"
+                          />
+                        </div>
+                        
+                        <div className="grid grid-cols-4 items-center gap-4">
+                          <Label className="text-right">이미지 URL</Label>
+                          <div className="col-span-3 space-y-2">
+                            <Input
+                              value={newPost.linkImage}
+                              onChange={(e) => setNewPost(prev => ({ ...prev, linkImage: e.target.value }))}
+                              placeholder="이미지 URL"
+                            />
+                            {newPost.linkImage && (
+                              <div className="relative inline-block">
+                                <img
+                                  src={newPost.linkImage}
+                                  alt="링크 썸네일"
+                                  className="w-20 h-20 object-cover rounded border"
+                                  onError={(e) => {
+                                    e.currentTarget.style.display = 'none';
+                                  }}
+                                />
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => setNewPost(prev => ({ ...prev, linkImage: '' }))}
+                                  className="absolute -top-2 -right-2 w-6 h-6 p-0 rounded-full"
+                                >
+                                  <X className="h-3 w-3" />
+                                </Button>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setIsCreatePostOpen(false)}>
