@@ -41,7 +41,7 @@ interface TrainerProfileModalProps {
 }
 
 export function TrainerProfileModal({ trainer, open, onOpenChange }: TrainerProfileModalProps) {
-  console.log("TrainerProfileModal 렌더링 - 새 디자인 적용됨", { trainer: trainer?.name, open });
+  console.log("🎨 새로운 디자인 모달 렌더링!", { trainer: trainer?.name, open });
   
   if (!trainer) {
     console.log("훈련사 정보 없음, 모달 렌더링 중단");
@@ -54,7 +54,7 @@ export function TrainerProfileModal({ trainer, open, onOpenChange }: TrainerProf
       onOpenChange(value);
     }}>
       <DialogContent className="sm:max-w-[650px] max-h-[90vh] overflow-y-auto p-0">
-        {/* 배경 이미지 헤더 - 업데이트됨 */}
+        {/* 🎨 새로운 배경 이미지 헤더 */}
         <div className="relative h-40 bg-gradient-to-r from-primary to-primary/80 overflow-hidden">
           <div className="absolute inset-0 bg-black/20"></div>
           <div className="absolute bottom-4 left-6 right-6">
@@ -69,11 +69,11 @@ export function TrainerProfileModal({ trainer, open, onOpenChange }: TrainerProf
                     WebkitFilter: 'none !important'
                   }}
                   onLoad={() => {
-                    console.log(`[모달 이미지] 로딩 성공: ${trainer.name}, URL: ${trainer.avatar || trainer.image}`);
+                    console.log(`[새 모달 이미지] 로딩 성공: ${trainer.name}, URL: ${trainer.avatar || trainer.image}`);
                   }}
                   onError={(e) => {
                     const target = e.target as HTMLImageElement;
-                    console.log(`[모달 이미지] 로딩 실패: ${trainer.name}, 원본 URL: ${target.src}`);
+                    console.log(`[새 모달 이미지] 로딩 실패: ${trainer.name}, 원본 URL: ${target.src}`);
                     target.src = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(trainer.name)}&backgroundColor=6366f1&textColor=ffffff`;
                   }}
                 />
@@ -193,7 +193,7 @@ export function TrainerProfileModal({ trainer, open, onOpenChange }: TrainerProf
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                console.log('[Dialog Action] 메시지 보내기 클릭:', trainer.name);
+                console.log('[새 Dialog Action] 메시지 보내기 클릭:', trainer.name);
                 onOpenChange(false);
                 window.location.href = `/messages`;
               }}
@@ -209,29 +209,29 @@ export function TrainerProfileModal({ trainer, open, onOpenChange }: TrainerProf
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                console.log('[Dialog Action] 화상 상담 예약 클릭:', trainer.name);
+                console.log('[새 Dialog Action] 상담 예약 클릭:', trainer.name);
                 onOpenChange(false);
-                window.location.href = `/video-call`;
+                window.location.href = `/book-consultation?trainer=${trainer.id}`;
               }}
             >
-              <VideoIcon className="w-5 h-5 mr-3" />
-              화상 상담 예약
+              <Calendar className="w-5 h-5 mr-3" />
+              상담 예약
             </Button>
             <Button 
               type="button"
               className="w-full h-12 text-base font-semibold" 
-              variant="secondary" 
+              variant="outline" 
               size="default"
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                console.log('[Dialog Action] 수업 일정 보기 클릭:', trainer.name);
+                console.log('[새 Dialog Action] 화상수업 예약 클릭:', trainer.name);
                 onOpenChange(false);
-                window.location.href = `/trainers`;
+                window.location.href = `/video-lesson?trainer=${trainer.id}`;
               }}
             >
-              <Calendar className="w-5 h-5 mr-3" />
-              수업 일정 보기
+              <VideoIcon className="w-5 h-5 mr-3" />
+              화상수업 예약
             </Button>
             {trainer.contactInfo?.phone && (
               <Button 
@@ -242,34 +242,15 @@ export function TrainerProfileModal({ trainer, open, onOpenChange }: TrainerProf
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
-                  console.log('[Dialog Action] 전화 연락 클릭:', trainer.name);
-                  window.open(`tel:${trainer.contactInfo?.phone}`);
+                  console.log('[새 Dialog Action] 전화하기 클릭:', trainer.name);
+                  window.open(`tel:${trainer.contactInfo?.phone}`, '_self');
                 }}
               >
                 <Phone className="w-5 h-5 mr-3" />
-                전화 연락
+                전화하기
               </Button>
             )}
           </div>
-        </div>
-
-        <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700 flex justify-between items-center">
-          <span className="text-sm text-gray-600 dark:text-gray-400">강의 {trainer.coursesCount}개</span>
-          <DialogClose asChild>
-            <Button 
-              type="button"
-              variant="ghost" 
-              size="sm"
-              className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                console.log('[Dialog Action] 닫기 버튼 클릭');
-              }}
-            >
-              닫기
-            </Button>
-          </DialogClose>
         </div>
       </DialogContent>
     </Dialog>
