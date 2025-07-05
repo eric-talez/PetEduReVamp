@@ -1150,12 +1150,22 @@ app.get('/api/search', async (req, res) => {
 
         // 사용자 검색 (추가 훈련사)
         const allUsers = await storage.getAllUsers();
-        const matchedUsers = allUsers.filter(user => 
-          user.role === 'trainer' &&
-          (user.name.toLowerCase().includes(searchQuery) ||
-           (user.bio && user.bio.toLowerCase().includes(searchQuery)) ||
-           (user.location && user.location.toLowerCase().includes(searchQuery)))
-        );
+        console.log(`[검색 디버그] 전체 사용자 수: ${allUsers.length}`);
+        
+        const matchedUsers = allUsers.filter(user => {
+          if (user.role !== 'trainer') return false;
+          
+          const nameMatch = user.name && user.name.includes(searchQuery);
+          const bioMatch = user.bio && user.bio.includes(searchQuery);
+          const locationMatch = user.location && user.location.includes(searchQuery);
+          
+          console.log(`[검색 디버그] 사용자 "${user.name}" (역할: ${user.role}): 이름매칭=${nameMatch}, 바이오매칭=${bioMatch}, 위치매칭=${locationMatch}`);
+          console.log(`[검색 디버그] 사용자 데이터:`, { name: user.name, bio: user.bio, location: user.location, role: user.role });
+          
+          return nameMatch || bioMatch || locationMatch;
+        });
+        
+        console.log(`[검색 디버그] 매칭된 사용자 수: ${matchedUsers.length}`);
 
         if (matchedUsers.length > 0) {
           results.push(...matchedUsers.map(user => ({
