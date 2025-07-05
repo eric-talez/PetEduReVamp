@@ -1060,20 +1060,44 @@ app.get('/api/search', async (req, res) => {
 
         console.log(`[검색 디버그] 매칭된 훈련사 수: ${matchedTrainers.length}`);
         
-        // 위치 데이터 검색 추가
+        // 위치 데이터 검색 (기존 위치 + 기관 데이터)
         const allLocations = await storage.getAllLocations();
-        console.log(`[검색 디버그] 전체 위치 수: ${allLocations.length}`);
+        const instituteData = await storage.getInstitutes();
         
-        allLocations.forEach((location, index) => {
+        console.log(`[검색 디버그] 전체 위치 수: ${allLocations.length}`);
+        console.log(`[검색 디버그] 전체 기관 수: ${instituteData.length}`);
+        
+        // 기관을 위치 형식으로 변환
+        const instituteLocations = instituteData.map(institute => ({
+          id: institute.id,
+          name: institute.name,
+          type: 'institute',
+          address: institute.address,
+          description: institute.description,
+          services: institute.facilities || [],
+          phone: institute.phone,
+          website: institute.website,
+          rating: institute.rating,
+          reviewCount: institute.reviewCount,
+          certification: institute.isVerified,
+          latitude: institute.latitude,
+          longitude: institute.longitude,
+          isActive: institute.isActive
+        }));
+        
+        // 기존 위치와 기관 위치 통합
+        const combinedLocations = [...allLocations, ...instituteLocations];
+        
+        combinedLocations.forEach((location, index) => {
           console.log(`[검색 디버그] 위치 ${index + 1}: ${location.name}, 유형: ${location.type}, 주소: ${location.address}`);
         });
         
-        const matchedLocations = allLocations.filter(location => {
-          const nameMatch = location.name.toLowerCase().includes(searchQuery);
-          const addressMatch = location.address.toLowerCase().includes(searchQuery);
+        const matchedLocations = combinedLocations.filter(location => {
+          const nameMatch = location.name && location.name.toLowerCase().includes(searchQuery);
+          const addressMatch = location.address && location.address.toLowerCase().includes(searchQuery);
           const descriptionMatch = location.description && location.description.toLowerCase().includes(searchQuery);
-          const serviceMatch = location.services && location.services.some(service => 
-            service.toLowerCase().includes(searchQuery)
+          const serviceMatch = location.services && Array.isArray(location.services) && location.services.some(service => 
+            service.toLowerCase && service.toLowerCase().includes(searchQuery)
           );
           
           const isMatch = nameMatch || addressMatch || descriptionMatch || serviceMatch;
@@ -1086,6 +1110,26 @@ app.get('/api/search', async (req, res) => {
         });
 
         console.log(`[검색 디버그] 매칭된 위치 수: ${matchedLocations.length}`);
+
+        // 매칭된 위치를 결과에 추가
+        if (matchedLocations.length > 0) {
+          results.push(...matchedLocations.map(location => ({
+            id: location.id,
+            type: location.type,
+            title: location.name,
+            description: location.description || '전문 펫 서비스 업체',
+            rating: location.rating || 4.5,
+            reviewCount: location.reviewCount || 0,
+            location: location.address,
+            category: location.type,
+            features: Array.isArray(location.services) ? location.services : [],
+            phone: location.phone,
+            website: location.website,
+            certification: location.certification,
+            latitude: location.latitude,
+            longitude: location.longitude
+          })));
+        }
 
         if (matchedTrainers.length > 0) {
           results.push(...matchedTrainers.map(trainer => ({
@@ -1144,8 +1188,8 @@ app.get('/api/search', async (req, res) => {
         }
 
         // 기관 검색
-        const allInstitutes = await storage.getAllInstitutes();
-        const matchedInstitutes = allInstitutes.filter(institute => 
+        const instituteSearchData = await storage.getAllInstitutes();
+        const matchedInstitutes = instituteSearchData.filter(institute => 
           institute.name.toLowerCase().includes(searchQuery) ||
           (institute.description && institute.description.toLowerCase().includes(searchQuery))
         );
@@ -2601,6 +2645,76 @@ app.get('/api/search', async (req, res) => {
       res.status(500).json({
         success: false,
         message: '등록 상태 확인 중 오류가 발생했습니다.'
+      });
+    }
+  });
+
+  // === Location API Routes ===
+
+  // 위치 찾기 API (기관 + 훈련사 + 기타 위치)
+  app.get('/api/locations', async (req, res) => {
+    try {
+      const { search, type, certification } = req.query;
+      
+      // 기관 데이터 가져오기
+      const institutes = await storage.getInstitutes();
+      
+      // 기관을 위치 형식으로 변환
+      let locations = institutes.map(institute => ({
+        id: institute.id,
+        name: institute.name,
+        type: 'institute',
+        address: institute.address,
+        description: institute.description,
+        phone: institute.phone,
+        website: institute.website,
+        rating: institute.rating || 4.5,
+        reviewCount: institute.reviewCount || 0,
+        certification: institute.isVerified,
+        latitude: institute.latitude,
+        longitude: institute.longitude,
+        facilities: institute.facilities || [],
+        operatingHours: institute.operatingHours,
+        isActive: institute.isActive
+      }));
+
+      // 필터링
+      if (search) {
+        const searchTerm = search.toString().trim();
+        console.log(`[위치 검색] 검색어: "${searchTerm}"`);
+        console.log(`[위치 검색] 검색 전 위치 수: ${locations.length}`);
+        
+        locations = locations.filter(location => {
+          const nameMatch = location.name && location.name.includes(searchTerm);
+          const addressMatch = location.address && location.address.includes(searchTerm);
+          const descMatch = location.description && location.description.includes(searchTerm);
+          
+          const isMatch = nameMatch || addressMatch || descMatch;
+          
+          if (isMatch) {
+            console.log(`[위치 검색] 매칭됨: ${location.name} (이름:${nameMatch}, 주소:${addressMatch}, 설명:${descMatch})`);
+          }
+          
+          return isMatch;
+        });
+        
+        console.log(`[위치 검색] 검색 후 위치 수: ${locations.length}`);
+      }
+
+      if (type && type !== 'all') {
+        locations = locations.filter(location => location.type === type);
+      }
+
+      if (certification === 'true') {
+        locations = locations.filter(location => location.certification);
+      }
+
+      res.json(locations);
+    } catch (error) {
+      console.error('위치 목록 조회 실패:', error);
+      res.status(500).json({
+        success: false,
+        message: '위치 목록을 불러오는 중 오류가 발생했습니다.'
       });
     }
   });

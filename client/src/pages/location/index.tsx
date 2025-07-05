@@ -40,8 +40,15 @@ function PlaceSearch() {
 
     setIsSearching(true);
     try {
-      const results = await searchPlacesByKeyword(searchTerm);
+      // 실제 위치 API 호출
+      const response = await fetch(`/api/locations?search=${encodeURIComponent(searchTerm)}`);
+      if (!response.ok) {
+        throw new Error('검색 요청 실패');
+      }
+      const results = await response.json();
       setSearchResults(results);
+      
+      console.log(`[위치 검색] 검색어: "${searchTerm}", 결과: ${results.length}개`);
     } catch (error) {
       console.error("검색 오류:", error);
       toast({
