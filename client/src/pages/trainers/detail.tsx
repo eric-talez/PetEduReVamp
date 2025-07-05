@@ -134,14 +134,14 @@ export default function TrainerDetail({ trainerId }: TrainerDetailProps) {
         <div className="w-full h-64 bg-gradient-to-br from-blue-50 to-purple-50 relative flex items-center justify-center">
           <Avatar className="w-48 h-48 border-4 border-white shadow-xl">
             <AvatarImage 
-              src={trainer.avatar || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(trainer.name)}&backgroundColor=6366f1&textColor=ffffff`} 
-              alt={trainer.name}
+              src={displayData.avatar || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(displayData.name)}&backgroundColor=6366f1&textColor=ffffff`} 
+              alt={displayData.name}
               onError={(e) => {
                 const target = e.target as HTMLImageElement;
-                target.src = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(trainer.name)}&backgroundColor=6366f1&textColor=ffffff`;
+                target.src = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(displayData.name)}&backgroundColor=6366f1&textColor=ffffff`;
               }}
             />
-            <AvatarFallback className="text-4xl bg-primary text-white">{trainer.name.charAt(0)}</AvatarFallback>
+            <AvatarFallback className="text-4xl bg-primary text-white">{displayData.name.charAt(0)}</AvatarFallback>
           </Avatar>
         </div>
         
@@ -230,7 +230,7 @@ export default function TrainerDetail({ trainerId }: TrainerDetailProps) {
               </CardHeader>
               <CardContent>
                 <div className="flex flex-wrap gap-2">
-                  {trainer.specialties.map((specialty, index) => (
+                  {displayData.specialties.map((specialty, index) => (
                     <Badge key={index} variant="outline">
                       {specialty}
                     </Badge>
@@ -246,7 +246,7 @@ export default function TrainerDetail({ trainerId }: TrainerDetailProps) {
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                  {trainer.certifications.map((cert, index) => (
+                  {displayData.certifications.map((cert, index) => (
                     <div key={index} className="flex items-center gap-2 p-3 bg-muted rounded-lg">
                       <Award className="w-5 h-5 text-primary" />
                       <span className="text-sm">{cert}</span>
@@ -260,7 +260,7 @@ export default function TrainerDetail({ trainerId }: TrainerDetailProps) {
 
         <TabsContent value="courses" className="mt-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {trainer.courses.map((course) => (
+            {displayData.courses.map((course) => (
               <Card key={course.id}>
                 <CardHeader>
                   <CardTitle className="text-lg">{course.title}</CardTitle>
@@ -308,7 +308,7 @@ export default function TrainerDetail({ trainerId }: TrainerDetailProps) {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {trainer.schedule.map((schedule, index) => (
+                {displayData.schedule.map((schedule, index) => (
                   <div key={index} className="flex justify-between items-center p-3 bg-muted rounded-lg">
                     <span className="font-medium">{schedule.day}요일</span>
                     <span className="text-muted-foreground">{schedule.time}</span>
