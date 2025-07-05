@@ -569,6 +569,70 @@ export default function AdminCurriculum() {
     }
   };
 
+  // 커리큘럼 미리보기 함수
+  const previewCurriculum = (curriculumId: string) => {
+    // 새 탭에서 미리보기 페이지 열기
+    const previewUrl = `/courses/${curriculumId}/preview`;
+    window.open(previewUrl, '_blank');
+    
+    toast({
+      title: "미리보기",
+      description: "새 탭에서 커리큘럼 미리보기를 열었습니다.",
+      variant: "default"
+    });
+  };
+
+  // 커리큘럼 발행 함수
+  const publishCurriculum = async (curriculumId: string) => {
+    if (!selectedCurriculum) return;
+
+    try {
+      const response = await fetch(`/api/admin/curriculums/${curriculumId}/publish`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(selectedCurriculum)
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        
+        // 커리큘럼 상태 업데이트
+        setSelectedCurriculum(prev => prev ? { ...prev, status: 'published' } : null);
+        
+        // 커리큘럼 목록에서도 상태 업데이트
+        setCurriculums(prev => 
+          prev.map(curr => 
+            curr.id === curriculumId 
+              ? { ...curr, status: 'published' as const }
+              : curr
+          )
+        );
+
+        toast({
+          title: "발행 완료",
+          description: `커리큘럼이 강의로 성공적으로 발행되었습니다. (강의 ID: ${result.courseId})`,
+          variant: "default"
+        });
+
+        // 발행된 강의 페이지로 이동 옵션 제공
+        if (confirm('발행된 강의 페이지를 확인하시겠습니까?')) {
+          window.open(`/courses/${result.courseId}`, '_blank');
+        }
+      } else {
+        throw new Error('발행 실패');
+      }
+    } catch (error) {
+      console.error('커리큘럼 발행 실패:', error);
+      toast({
+        title: "발행 실패",
+        description: "커리큘럼 발행 중 오류가 발생했습니다.",
+        variant: "destructive"
+      });
+    }
+  };
+
   const createCustomCurriculum = async () => {
     if (!newCurriculum.title.trim()) {
       toast({
@@ -642,69 +706,8 @@ export default function AdminCurriculum() {
     }
   };
 
-  // 커리큘럼 미리보기 함수
-  const previewCurriculum = (curriculum: CurriculumData) => {
-    // 새 탭에서 강의 상세 페이지 열기
-    const previewUrl = `/courses/${curriculum.id}/preview`;
-    window.open(previewUrl, '_blank');
-    
-    toast({
-      title: "미리보기 열기",
-      description: "새 탭에서 커리큘럼 미리보기가 열렸습니다.",
-    });
-  };
 
-  // 커리큘럼 발행 함수 (커리큘럼 → 강의 상품화)
-  const publishCurriculum = async (curriculum: CurriculumData) => {
-    try {
-      const response = await fetch(`/api/admin/curriculums/${curriculum.id}/publish`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          title: curriculum.title,
-          description: curriculum.description,
-          category: curriculum.category,
-          difficulty: curriculum.difficulty,
-          duration: curriculum.duration,
-          price: curriculum.price,
-          modules: curriculum.modules,
-          trainerId: curriculum.trainerId,
-          trainerName: curriculum.trainerName
-        })
-      });
 
-      if (response.ok) {
-        const result = await response.json();
-        
-        // 커리큘럼 상태를 published로 업데이트
-        const updatedCurriculum = { ...curriculum, status: 'published' as const };
-        setSelectedCurriculum(updatedCurriculum);
-        
-        // 목록에서도 업데이트
-        setCurriculums(prev => 
-          prev.map(c => c.id === curriculum.id ? updatedCurriculum : c)
-        );
-
-        toast({
-          title: "강의 발행 완료",
-          description: `"${curriculum.title}" 강의가 성공적으로 발행되었습니다. 이제 사용자들이 구매할 수 있습니다.`,
-        });
-
-        // 발행된 강의 상세 페이지로 이동 옵션 제공
-        setTimeout(() => {
-          if (confirm("발행된 강의를 확인하시겠습니까?")) {
-            window.open(`/courses/${result.courseId}`, '_blank');
-          }
-        }, 1000);
-      }
-    } catch (error) {
-      toast({
-        title: "발행 실패",
-        description: "강의 발행 중 오류가 발생했습니다.",
-        variant: "destructive"
-      });
-    }
-  };
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
@@ -1048,25 +1051,50 @@ export default function AdminCurriculum() {
                     </div>
 
                     {/* 커리큘럼 액션 버튼 */}
-                    <div className="flex gap-2 pt-4 border-t">
-                      <Button
-                        onClick={() => setIsEditing(true)}
-                        variant="outline"
-                        size="sm"
-                        className="flex-1"
-                      >
-                        <Edit className="w-4 h-4 mr-1" />
-                        수정
-                      </Button>
-                      <Button
-                        onClick={() => deleteCurriculum(selectedCurriculum.id)}
-                        variant="destructive"
-                        size="sm"
-                        className="flex-1"
-                      >
-                        <Trash2 className="w-4 h-4 mr-1" />
-                        삭제
-                      </Button>
+                    <div className="space-y-3 pt-4 border-t">
+                      {/* 미리보기 및 발행 버튼 */}
+                      <div className="flex gap-2">
+                        <Button
+                          onClick={() => previewCurriculum(selectedCurriculum.id)}
+                          variant="outline"
+                          size="sm"
+                          className="flex-1 border-blue-500 text-blue-600 hover:bg-blue-50"
+                        >
+                          <Eye className="w-4 h-4 mr-1" />
+                          미리보기
+                        </Button>
+                        <Button
+                          onClick={() => publishCurriculum(selectedCurriculum.id)}
+                          size="sm"
+                          className="flex-1 bg-green-600 hover:bg-green-700 text-white"
+                          disabled={selectedCurriculum.status === 'published'}
+                        >
+                          <CheckCircle className="w-4 h-4 mr-1" />
+                          {selectedCurriculum.status === 'published' ? '발행완료' : '강의로 발행'}
+                        </Button>
+                      </div>
+
+                      {/* 기본 액션 버튼 */}
+                      <div className="flex gap-2">
+                        <Button
+                          onClick={() => setIsEditing(true)}
+                          variant="outline"
+                          size="sm"
+                          className="flex-1"
+                        >
+                          <Edit className="w-4 h-4 mr-1" />
+                          수정
+                        </Button>
+                        <Button
+                          onClick={() => deleteCurriculum(selectedCurriculum.id)}
+                          variant="destructive"
+                          size="sm"
+                          className="flex-1"
+                        >
+                          <Trash2 className="w-4 h-4 mr-1" />
+                          삭제
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 </CardContent>

@@ -2403,6 +2403,274 @@ app.get('/api/search', async (req, res) => {
     });
   });
 
+  // === Registration API Routes ===
+
+  // 훈련사 등록 신청
+  app.post('/api/registration/trainer', upload.any(), async (req, res) => {
+    try {
+      const registrationData = JSON.parse(req.body.registrationData);
+      
+      // 파일 처리
+      const files = req.files as Express.Multer.File[];
+      const processedFiles = {
+        profileImage: null as string | null,
+        certificationDocs: [] as string[],
+        portfolioImages: [] as string[]
+      };
+
+      if (files) {
+        files.forEach(file => {
+          const filePath = `/uploads/${file.filename}`;
+          
+          if (file.fieldname === 'profileImage') {
+            processedFiles.profileImage = filePath;
+          } else if (file.fieldname.startsWith('certificationDoc_')) {
+            processedFiles.certificationDocs.push(filePath);
+          } else if (file.fieldname.startsWith('portfolioImage_')) {
+            processedFiles.portfolioImages.push(filePath);
+          }
+        });
+      }
+
+      // 등록 신청 데이터 생성
+      const application = {
+        id: Date.now().toString(),
+        type: 'trainer',
+        applicantInfo: registrationData,
+        documents: processedFiles,
+        status: 'pending',
+        submittedAt: new Date().toISOString(),
+        reviewerId: null,
+        reviewedAt: null,
+        notes: ''
+      };
+
+      // 메모리 저장소에 저장 (실제로는 데이터베이스)
+      if (!global.registrationApplications) {
+        global.registrationApplications = [];
+      }
+      global.registrationApplications.push(application);
+
+      console.log('훈련사 등록 신청:', application);
+
+      res.status(201).json({
+        success: true,
+        message: '훈련사 등록 신청이 접수되었습니다.',
+        applicationId: application.id
+      });
+
+    } catch (error) {
+      console.error('훈련사 등록 실패:', error);
+      res.status(500).json({
+        success: false,
+        message: '등록 신청 처리 중 오류가 발생했습니다.'
+      });
+    }
+  });
+
+  // 기관 등록 신청
+  app.post('/api/registration/institute', upload.any(), async (req, res) => {
+    try {
+      const registrationData = JSON.parse(req.body.registrationData);
+      
+      // 파일 처리
+      const files = req.files as Express.Multer.File[];
+      const processedFiles = {
+        businessLicense: null as string | null,
+        facilityImages: [] as string[],
+        certificationDocs: [] as string[]
+      };
+
+      if (files) {
+        files.forEach(file => {
+          const filePath = `/uploads/${file.filename}`;
+          
+          if (file.fieldname === 'businessLicense') {
+            processedFiles.businessLicense = filePath;
+          } else if (file.fieldname.startsWith('facilityImage_')) {
+            processedFiles.facilityImages.push(filePath);
+          } else if (file.fieldname.startsWith('certificationDoc_')) {
+            processedFiles.certificationDocs.push(filePath);
+          }
+        });
+      }
+
+      // 등록 신청 데이터 생성
+      const application = {
+        id: Date.now().toString(),
+        type: 'institute',
+        applicantInfo: registrationData,
+        documents: processedFiles,
+        status: 'pending',
+        submittedAt: new Date().toISOString(),
+        reviewerId: null,
+        reviewedAt: null,
+        notes: ''
+      };
+
+      // 메모리 저장소에 저장
+      if (!global.registrationApplications) {
+        global.registrationApplications = [];
+      }
+      global.registrationApplications.push(application);
+
+      console.log('기관 등록 신청:', application);
+
+      res.status(201).json({
+        success: true,
+        message: '기관 등록 신청이 접수되었습니다.',
+        applicationId: application.id
+      });
+
+    } catch (error) {
+      console.error('기관 등록 실패:', error);
+      res.status(500).json({
+        success: false,
+        message: '등록 신청 처리 중 오류가 발생했습니다.'
+      });
+    }
+  });
+
+  // 등록 신청 목록 조회 (관리자용)
+  app.get('/api/admin/registrations', requireAuth('admin'), async (req, res) => {
+    try {
+      const { type, status } = req.query;
+      
+      if (!global.registrationApplications) {
+        global.registrationApplications = [];
+      }
+
+      let applications = [...global.registrationApplications];
+
+      // 필터링
+      if (type) {
+        applications = applications.filter(app => app.type === type);
+      }
+      if (status) {
+        applications = applications.filter(app => app.status === status);
+      }
+
+      // 최신순 정렬
+      applications.sort((a, b) => 
+        new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime()
+      );
+
+      res.json({
+        success: true,
+        applications,
+        total: applications.length
+      });
+
+    } catch (error) {
+      console.error('등록 신청 목록 조회 실패:', error);
+      res.status(500).json({
+        success: false,
+        message: '등록 신청 목록 조회 중 오류가 발생했습니다.'
+      });
+    }
+  });
+
+  // 등록 신청 승인/거부 (관리자용)
+  app.put('/api/admin/registrations/:id', requireAuth('admin'), async (req, res) => {
+    try {
+      const applicationId = req.params.id;
+      const { status, notes } = req.body;
+
+      if (!global.registrationApplications) {
+        global.registrationApplications = [];
+      }
+
+      const applicationIndex = global.registrationApplications.findIndex(
+        app => app.id === applicationId
+      );
+
+      if (applicationIndex === -1) {
+        return res.status(404).json({
+          success: false,
+          message: '등록 신청을 찾을 수 없습니다.'
+        });
+      }
+
+      // 상태 업데이트
+      global.registrationApplications[applicationIndex].status = status;
+      global.registrationApplications[applicationIndex].notes = notes || '';
+      global.registrationApplications[applicationIndex].reviewerId = req.user?.id || 'admin';
+      global.registrationApplications[applicationIndex].reviewedAt = new Date().toISOString();
+
+      const application = global.registrationApplications[applicationIndex];
+
+      // 승인된 경우 실제 훈련사/기관으로 등록
+      if (status === 'approved') {
+        if (application.type === 'trainer') {
+          // 훈련사 데이터 생성
+          const trainerData = {
+            id: Date.now(),
+            name: application.applicantInfo.personalInfo.name,
+            email: application.applicantInfo.personalInfo.email,
+            phone: application.applicantInfo.personalInfo.phone,
+            bio: application.applicantInfo.professionalInfo.bio,
+            specialties: application.applicantInfo.professionalInfo.specialties,
+            experience: application.applicantInfo.professionalInfo.experience,
+            certifications: application.applicantInfo.professionalInfo.certifications,
+            price: parseInt(application.applicantInfo.businessInfo.hourlyRate),
+            location: application.applicantInfo.professionalInfo.serviceArea,
+            address: application.applicantInfo.personalInfo.address,
+            profileImage: application.documents.profileImage,
+            rating: 0,
+            reviewCount: 0,
+            featured: false,
+            isActive: true,
+            createdAt: new Date().toISOString()
+          };
+
+          // 훈련사 목록에 추가 (실제로는 데이터베이스)
+          await storage.createTrainer(trainerData);
+          
+        } else if (application.type === 'institute') {
+          // 기관 데이터 생성
+          const instituteData = {
+            id: Date.now(),
+            name: application.applicantInfo.basicInfo.instituteName,
+            email: application.applicantInfo.basicInfo.email,
+            phone: application.applicantInfo.basicInfo.phone,
+            address: application.applicantInfo.locationInfo.address,
+            description: application.applicantInfo.serviceInfo.description,
+            establishedYear: parseInt(application.applicantInfo.basicInfo.establishedYear),
+            capacity: parseInt(application.applicantInfo.facilityInfo.capacity),
+            facilities: application.applicantInfo.facilityInfo.facilities,
+            services: application.applicantInfo.serviceInfo.serviceTypes,
+            operatingHours: application.applicantInfo.serviceInfo.operatingHours,
+            rating: 0,
+            reviewCount: 0,
+            isActive: true,
+            createdAt: new Date().toISOString()
+          };
+
+          // 기관 목록에 추가
+          if (!global.registeredInstitutes) {
+            global.registeredInstitutes = [];
+          }
+          global.registeredInstitutes.push(instituteData);
+        }
+      }
+
+      console.log(`등록 신청 ${status}:`, application);
+
+      res.json({
+        success: true,
+        message: `등록 신청이 ${status === 'approved' ? '승인' : '거부'}되었습니다.`,
+        application
+      });
+
+    } catch (error) {
+      console.error('등록 신청 처리 실패:', error);
+      res.status(500).json({
+        success: false,
+        message: '등록 신청 처리 중 오류가 발생했습니다.'
+      });
+    }
+  });
+
   // 커리큘럼 관리 API
   app.get('/api/courses/curriculum', async (req, res) => {
     try {
