@@ -148,7 +148,7 @@ export default function Trainers() {
   ];
 
   const openTrainerModal = async (trainer: any) => {
-    console.log("프로필 보기 버튼 클릭:", trainer.name);
+    console.log("🔥 새 모달 시스템 - 프로필 보기 버튼 클릭:", trainer.name);
     
     // 최신 훈련사 데이터를 API에서 직접 가져오기
     try {
@@ -161,7 +161,7 @@ export default function Trainers() {
       });
       if (response.ok) {
         const latestTrainer = await response.json();
-        console.log("최신 훈련사 데이터:", { id: latestTrainer.id, name: latestTrainer.name, avatar: latestTrainer.avatar });
+        console.log("🔥 새 모달 시스템 - 최신 훈련사 데이터:", { id: latestTrainer.id, name: latestTrainer.name, avatar: latestTrainer.avatar });
         setSelectedTrainer(latestTrainer);
       } else {
         console.log("API 응답 실패, 기존 데이터 사용:", trainer);
