@@ -3815,6 +3815,31 @@ app.get('/api/search', async (req, res) => {
     }
   });
 
+  // 개별 훈련사 상세 정보 조회
+  app.get("/api/trainers/:id", async (req, res) => {
+    try {
+      const trainerId = parseInt(req.params.id);
+      console.log(`[API] 훈련사 상세 정보 요청 - ID: ${trainerId}`);
+      
+      if (!trainerId || isNaN(trainerId)) {
+        return res.status(400).json({ error: "유효하지 않은 훈련사 ID입니다" });
+      }
+
+      const trainer = await storage.getTrainer(trainerId);
+      
+      if (!trainer) {
+        console.log(`[API] 훈련사 ID ${trainerId}를 찾을 수 없음`);
+        return res.status(404).json({ error: "훈련사를 찾을 수 없습니다" });
+      }
+
+      console.log(`[API] 훈련사 정보 반환:`, trainer.name);
+      res.json(trainer);
+    } catch (error) {
+      console.error('훈련사 상세 정보 조회 오류:', error);
+      res.status(500).json({ error: "훈련사 정보를 불러올 수 없습니다" });
+    }
+  });
+
   // Register social/community routes
   setupSocialRoutes(app);
 

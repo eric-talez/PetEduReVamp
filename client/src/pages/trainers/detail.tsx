@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -10,77 +10,121 @@ interface TrainerDetailProps {
   trainerId: string;
 }
 
+interface TrainerData {
+  id: number;
+  name: string;
+  title?: string;
+  description?: string;
+  bio?: string;
+  category?: string;
+  experience?: string;
+  rating?: number;
+  reviews?: number;
+  students?: number;
+  totalCourses?: number;
+  location?: string;
+  phone?: string;
+  email?: string;
+  avatar?: string;
+  specialties?: string[];
+  certifications?: string[];
+  schedule?: { day: string; time: string }[];
+  courses?: { id: number; title: string; price: number; duration: string }[];
+}
+
 export default function TrainerDetail({ trainerId }: TrainerDetailProps) {
-  // Mock data based on the popular chart data
-  const getTrainerData = (id: string) => {
-    const trainers = {
-      '1': {
-        id: 1,
-        name: "김민수 전문 훈련사",
-        title: "15년 경력의 반려견 행동 교정 전문가",
-        description: "다양한 견종의 훈련 경험을 보유하고 있으며, 개별 맞춤 훈련 프로그램을 제공합니다.",
-        category: "행동교정",
-        experience: "15년",
-        rating: 4.9,
-        reviews: 127,
-        students: 450,
-        totalCourses: 12,
-        location: "서울 강남구",
-        phone: "010-1234-5678",
-        email: "trainer1@example.com",
-        avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=300&q=80",
-        specialties: ["기본훈련", "행동교정", "사회화", "어질리티"],
-        certifications: ["KKF 공인 훈련사", "반려동물 행동 전문가", "펫시터 자격증"],
-        schedule: [
-          { day: "월", time: "09:00-18:00" },
-          { day: "화", time: "09:00-18:00" },
-          { day: "수", time: "09:00-18:00" },
-          { day: "목", time: "09:00-18:00" },
-          { day: "금", time: "09:00-18:00" },
-          { day: "토", time: "10:00-16:00" }
-        ],
-        courses: [
-          { id: 1, title: "기본 훈련 과정", price: 150000, duration: "4주" },
-          { id: 2, title: "행동 교정 과정", price: 200000, duration: "6주" },
-          { id: 3, title: "사회화 훈련", price: 120000, duration: "3주" }
-        ]
-      },
-      '2': {
-        id: 2,
-        name: "박지연 훈련사",
-        title: "소형견 전문 훈련사",
-        description: "소형견의 특성을 이해하고 맞춤형 훈련을 제공하는 전문가입니다.",
-        category: "소형견전문",
-        experience: "8년",
-        rating: 4.8,
-        reviews: 89,
-        students: 320,
-        totalCourses: 8,
-        location: "서울 서초구",
-        phone: "010-2345-6789",
-        email: "trainer2@example.com",
-        avatar: "https://images.unsplash.com/photo-1494790108755-2616b612b5bc?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=300&q=80",
-        specialties: ["소형견훈련", "실내훈련", "분리불안", "짖음교정"],
-        certifications: ["소형견 전문 훈련사", "반려동물 행동 상담사"],
-        schedule: [
-          { day: "월", time: "10:00-17:00" },
-          { day: "화", time: "10:00-17:00" },
-          { day: "수", time: "휴무" },
-          { day: "목", time: "10:00-17:00" },
-          { day: "금", time: "10:00-17:00" },
-          { day: "토", time: "09:00-15:00" }
-        ],
-        courses: [
-          { id: 4, title: "소형견 기본 훈련", price: 130000, duration: "4주" },
-          { id: 5, title: "짖음 교정 과정", price: 180000, duration: "5주" }
-        ]
+  const [trainer, setTrainer] = useState<TrainerData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchTrainerData = async () => {
+      try {
+        console.log(`[TrainerDetail] ID ${trainerId}로 훈련사 데이터 요청`);
+        
+        const response = await fetch(`/api/trainers/${trainerId}`);
+        
+        if (!response.ok) {
+          throw new Error(`훈련사 데이터를 가져올 수 없습니다: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        console.log(`[TrainerDetail] 훈련사 데이터 수신:`, data);
+        
+        setTrainer(data);
+      } catch (err) {
+        console.error('[TrainerDetail] 오류:', err);
+        setError(err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다');
+      } finally {
+        setLoading(false);
       }
     };
-    
-    return trainers[id as keyof typeof trainers] || trainers['1'];
+
+    if (trainerId) {
+      fetchTrainerData();
+    }
+  }, [trainerId]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 py-8">
+        <div className="max-w-4xl mx-auto px-4">
+          <div className="text-center py-12">
+            <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
+            <p className="text-gray-600">훈련사 정보를 불러오는 중...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !trainer) {
+    return (
+      <div className="min-h-screen bg-gray-50 py-8">
+        <div className="max-w-4xl mx-auto px-4">
+          <div className="text-center py-12">
+            <p className="text-red-600 mb-4">{error || '훈련사 정보를 찾을 수 없습니다'}</p>
+            <Button onClick={() => window.history.back()}>돌아가기</Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // 기본값 및 안전한 데이터 접근을 위한 헬퍼 함수
+  const getDisplayData = (trainer: TrainerData) => {
+    return {
+      name: trainer.name || '이름 없음',
+      title: trainer.title || trainer.bio || '전문 훈련사',
+      description: trainer.description || trainer.bio || '전문적인 반려동물 훈련 서비스를 제공합니다.',
+      category: trainer.category || '일반',
+      experience: trainer.experience || '경력 정보 없음',
+      rating: trainer.rating || 4.5,
+      reviews: trainer.reviews || 0,
+      students: trainer.students || 0,
+      totalCourses: trainer.totalCourses || 0,
+      location: trainer.location || '위치 정보 없음',
+      phone: trainer.phone || '연락처 정보 없음',
+      email: trainer.email || '이메일 정보 없음',
+      avatar: trainer.avatar || `https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=300&q=80`,
+      specialties: trainer.specialties || ['기본훈련'],
+      certifications: trainer.certifications || ['전문 훈련사'],
+      schedule: trainer.schedule || [
+        { day: "월", time: "09:00-18:00" },
+        { day: "화", time: "09:00-18:00" },
+        { day: "수", time: "09:00-18:00" },
+        { day: "목", time: "09:00-18:00" },
+        { day: "금", time: "09:00-18:00" },
+        { day: "토", time: "10:00-16:00" }
+      ],
+      courses: trainer.courses || [
+        { id: 1, title: "기본 훈련 과정", price: 150000, duration: "4주" },
+        { id: 2, title: "행동 교정 과정", price: 200000, duration: "6주" }
+      ]
+    };
   };
 
-  const trainer = getTrainerData(trainerId);
+  const displayData = getDisplayData(trainer);
 
   return (
     <div className="container mx-auto p-6 max-w-6xl">
@@ -103,30 +147,30 @@ export default function TrainerDetail({ trainerId }: TrainerDetailProps) {
         
         <CardContent className="pt-6">
           <div className="text-center mb-6">
-            <h1 className="text-3xl font-bold mb-2">{trainer.name}</h1>
-            <p className="text-lg text-muted-foreground mb-3">{trainer.title}</p>
+            <h1 className="text-3xl font-bold mb-2">{displayData.name}</h1>
+            <p className="text-lg text-muted-foreground mb-3">{displayData.title}</p>
             
             <div className="flex justify-center items-center gap-4 text-sm text-muted-foreground mb-4">
               <div className="flex items-center gap-1">
                 <Star className="w-4 h-4 text-yellow-400 fill-current" />
-                <span>{trainer.rating}</span>
-                <span>({trainer.reviews}개 리뷰)</span>
+                <span>{displayData.rating}</span>
+                <span>({displayData.reviews}개 리뷰)</span>
               </div>
               <div className="flex items-center gap-1">
                 <Users className="w-4 h-4" />
-                <span>{trainer.students}명 훈련</span>
+                <span>{displayData.students}명 훈련</span>
               </div>
               <div className="flex items-center gap-1">
                 <BookOpen className="w-4 h-4" />
-                <span>{trainer.totalCourses}개 과정</span>
+                <span>{displayData.totalCourses}개 과정</span>
               </div>
             </div>
             
-            <p className="text-center text-sm mb-6">{trainer.description}</p>
+            <p className="text-center text-sm mb-6">{displayData.description}</p>
             
             <div className="flex flex-wrap justify-center gap-2 mb-6">
-              <Badge variant="secondary">{trainer.category}</Badge>
-              <Badge variant="outline">{trainer.experience} 경력</Badge>
+              <Badge variant="secondary">{displayData.category}</Badge>
+              <Badge variant="outline">{displayData.experience} 경력</Badge>
             </div>
             
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
