@@ -144,13 +144,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const popularStats = {
         trainers: [
-          { id: 1, views: 2847, likes: 156, name: "김민수 전문 훈련사", category: "행동교정" },
-          { id: 2, views: 2341, likes: 142, name: "박지연 훈련사", category: "소형견전문" },
           { id: 6, views: 2156, likes: 134, name: "강동훈 훈련사", category: "국가자격증" }
         ],
         courses: [
-          { id: 1, views: 1923, likes: 98, title: "기본 순종 훈련", category: "기본훈련" },
-          { id: 2, views: 1756, likes: 87, title: "실내 배변 훈련", category: "배변훈련" }
+          { id: "curriculum-basic-obedience", views: 1923, likes: 98, title: "기초 복종훈련 완전정복", category: "기초훈련" }
         ],
         events: [
           { id: 1, views: 1534, likes: 76, title: "펫 케어 워크샵", category: "교육" },

@@ -583,11 +583,7 @@ export class MemoryStorage implements IStorage{
       updatedAt: new Date()
     };
 
-    this.trainers.set(trainer1.id, trainer1);
-    this.trainers.set(trainer2.id, trainer2);
-    this.trainers.set(trainer3.id, trainer3);
-    this.trainers.set(trainer4.id, trainer4);
-    this.trainers.set(trainer5.id, trainer5);
+    // 실제 왕짱스쿨 강동훈 훈련사만 유지
     this.trainers.set(trainer6.id, trainer6);
   }
 
