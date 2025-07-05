@@ -15,7 +15,8 @@ import {
 export interface Trainer {
   id: number;
   name: string;
-  image: string;
+  image?: string;
+  avatar?: string;
   specialty: string;
   description: string;
   rating: number;
@@ -57,7 +58,7 @@ export function TrainerProfileModal({ trainer, open, onOpenChange }: TrainerProf
           <div className="flex items-start gap-6">
             <div className="h-24 w-24 rounded-full overflow-hidden border-4 border-primary/20 shadow-lg bg-white dark:bg-gray-800 flex-shrink-0">
               <img 
-                src={trainer.image || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(trainer.name)}&backgroundColor=6366f1&textColor=ffffff`}
+                src={trainer.avatar || trainer.image || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(trainer.name)}&backgroundColor=6366f1&textColor=ffffff`}
                 alt={trainer.name}
                 className="w-full h-full object-cover" 
                 style={{ 
