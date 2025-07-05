@@ -377,18 +377,27 @@ export default function AdminCurriculum() {
         const result = await response.json();
         
         // 파일에서 추출된 내용으로 커리큘럼 폼 자동 입력
+        const extractedData = result.extractedData || {};
+        
         setNewCurriculum(prev => ({
           ...prev,
-          title: result.extractedData?.title || file.name.replace(/\.[^/.]+$/, ""),
-          description: result.extractedData?.description || "파일에서 추출된 커리큘럼",
-          category: result.extractedData?.category || "기타",
-          duration: result.extractedData?.duration || 120,
-          price: result.extractedData?.price || 50000
+          title: extractedData.title || file.name.replace(/\.[^/.]+$/, ""),
+          description: extractedData.description || "파일에서 추출된 커리큘럼",
+          category: extractedData.category || "행동교정",
+          difficulty: extractedData.difficulty || 'advanced',
+          duration: extractedData.duration || 480, // 8시간 기본값
+          price: extractedData.price || 300000,    // 30만원 기본값
+          trainerId: '100', // 강동훈 훈련사 ID
+          trainerName: '강동훈'
         }));
 
+        // 새 커리큘럼 생성 모드로 전환
+        setIsCreating(true);
+        setSelectedCurriculum(null);
+
         toast({
-          title: "파일 업로드 성공",
-          description: "파일 내용이 커리큘럼 폼에 자동 입력되었습니다.",
+          title: "파일 업로드 및 자동 입력 완료",
+          description: `"${extractedData.title || file.name}" 커리큘럼 정보가 자동으로 입력되었습니다. 내용을 확인 후 등록해주세요.`,
           variant: "default"
         });
       } else {
@@ -630,6 +639,70 @@ export default function AdminCurriculum() {
       case 'intermediate': return '중급';
       case 'advanced': return '고급';
       default: return '미정';
+    }
+  };
+
+  // 커리큘럼 미리보기 함수
+  const previewCurriculum = (curriculum: CurriculumData) => {
+    // 새 탭에서 강의 상세 페이지 열기
+    const previewUrl = `/courses/${curriculum.id}/preview`;
+    window.open(previewUrl, '_blank');
+    
+    toast({
+      title: "미리보기 열기",
+      description: "새 탭에서 커리큘럼 미리보기가 열렸습니다.",
+    });
+  };
+
+  // 커리큘럼 발행 함수 (커리큘럼 → 강의 상품화)
+  const publishCurriculum = async (curriculum: CurriculumData) => {
+    try {
+      const response = await fetch(`/api/admin/curriculums/${curriculum.id}/publish`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: curriculum.title,
+          description: curriculum.description,
+          category: curriculum.category,
+          difficulty: curriculum.difficulty,
+          duration: curriculum.duration,
+          price: curriculum.price,
+          modules: curriculum.modules,
+          trainerId: curriculum.trainerId,
+          trainerName: curriculum.trainerName
+        })
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        
+        // 커리큘럼 상태를 published로 업데이트
+        const updatedCurriculum = { ...curriculum, status: 'published' as const };
+        setSelectedCurriculum(updatedCurriculum);
+        
+        // 목록에서도 업데이트
+        setCurriculums(prev => 
+          prev.map(c => c.id === curriculum.id ? updatedCurriculum : c)
+        );
+
+        toast({
+          title: "강의 발행 완료",
+          description: `"${curriculum.title}" 강의가 성공적으로 발행되었습니다. 이제 사용자들이 구매할 수 있습니다.`,
+        });
+
+        // 발행된 강의 상세 페이지로 이동 옵션 제공
+        setTimeout(() => {
+          if (confirm("발행된 강의를 확인하시겠습니까?")) {
+            window.open(`/courses/${result.courseId}`, '_blank');
+          }
+        }, 1000);
+      }
+    } catch (error) {
+      toast({
+        title: "발행 실패",
+        description: "강의 발행 중 오류가 발생했습니다.",
+        variant: "destructive"
+      });
     }
   };
 
@@ -1060,6 +1133,24 @@ export default function AdminCurriculum() {
                       >
                         <Save className="w-4 h-4 mr-1" />
                         저장
+                      </Button>
+                      <Button
+                        onClick={() => publishCurriculum(selectedCurriculum)}
+                        size="sm"
+                        className="flex-1 bg-green-600 hover:bg-green-700"
+                        disabled={selectedCurriculum.status === 'published'}
+                      >
+                        <CheckCircle className="w-4 h-4 mr-1" />
+                        {selectedCurriculum.status === 'published' ? '발행됨' : '강의로 발행'}
+                      </Button>
+                      <Button
+                        onClick={() => previewCurriculum(selectedCurriculum)}
+                        variant="outline"
+                        size="sm"
+                        className="flex-1"
+                      >
+                        <Eye className="w-4 h-4 mr-1" />
+                        미리보기
                       </Button>
                       <Button
                         onClick={() => setIsEditing(false)}

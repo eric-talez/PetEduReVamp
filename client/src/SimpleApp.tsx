@@ -2086,6 +2086,50 @@ function AuthenticatedRoutes() {
                     }}
                   </Route>
 
+                  <Route path="/courses/:id">
+                    {({ params }) => {
+                      const CourseDetail = lazy(() => import('./pages/courses/CourseDetail'));
+                      return (
+                        <Suspense fallback={<DogLoading />}>
+                          <CourseDetail />
+                        </Suspense>
+                      );
+                    }}
+                  </Route>
+
+                  <Route path="/courses/:id/preview">
+                    {({ params }) => {
+                      const CourseDetail = lazy(() => import('./pages/courses/CourseDetail'));
+                      return (
+                        <Suspense fallback={<DogLoading />}>
+                          <CourseDetail />
+                        </Suspense>
+                      );
+                    }}
+                  </Route>
+
+                  <Route path="/learn/:id">
+                    {({ params }) => {
+                      const VideoPlayerPage = lazy(() => import('./pages/VideoPlayerPage'));
+                      return (
+                        <Suspense fallback={<DogLoading />}>
+                          <VideoPlayerPage />
+                        </Suspense>
+                      );
+                    }}
+                  </Route>
+
+                  <Route path="/process-test">
+                    {({ params }) => {
+                      const ProcessTest = lazy(() => import('./pages/ProcessTest'));
+                      return (
+                        <Suspense fallback={<DogLoading />}>
+                          <ProcessTest />
+                        </Suspense>
+                      );
+                    }}
+                  </Route>
+
                   <Route path="/consultation">
                     {({ params }) => {
                       const ConsultationPage = lazy(() => import('./pages/consultation/index'));

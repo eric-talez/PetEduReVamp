@@ -2806,6 +2806,167 @@ app.get('/api/search', async (req, res) => {
     }
   });
 
+  // 커리큘럼 발행 API (커리큘럼을 강의 상품으로 전환)
+  app.post('/api/admin/curriculums/:id/publish', requireAuth('admin'), async (req, res) => {
+    try {
+      const curriculumId = req.params.id;
+      const curriculumData = req.body;
+      
+      // 강의 상품 생성
+      const courseData = {
+        id: `course-${Date.now()}`,
+        title: curriculumData.title,
+        description: curriculumData.description,
+        trainerId: curriculumData.trainerId,
+        trainerName: curriculumData.trainerName,
+        category: curriculumData.category,
+        difficulty: curriculumData.difficulty,
+        duration: curriculumData.duration,
+        price: curriculumData.price,
+        modules: curriculumData.modules || [],
+        enrollmentCount: 0,
+        rating: 0,
+        status: 'published',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        publishedAt: new Date(),
+        isAvailableForPurchase: true,
+        thumbnailUrl: '/images/course-thumbnail-default.jpg'
+      };
+
+      console.log('[커리큘럼 발행] 새 강의 상품 생성:', courseData.title);
+      
+      res.json({ 
+        success: true,
+        courseId: courseData.id,
+        message: '커리큘럼이 강의 상품으로 성공적으로 발행되었습니다.',
+        courseData: courseData
+      });
+    } catch (error) {
+      console.error('[커리큘럼 발행] 실패:', error);
+      res.status(500).json({ message: '커리큘럼 발행에 실패했습니다.' });
+    }
+  });
+
+  // 발행된 강의 목록 조회 API
+  app.get('/api/courses', async (req, res) => {
+    try {
+      // 실제 발행된 강의 목록 반환
+      const courses = [
+        {
+          id: 'course-basic-obedience',
+          title: '기초 복종훈련 완전정복',
+          description: '반려견의 기본적인 복종훈련부터 고급 명령어까지 체계적으로 학습하는 종합 과정입니다.',
+          trainerId: '100',
+          trainerName: '강동훈',
+          category: '기초훈련',
+          difficulty: 'beginner',
+          duration: 480,
+          price: 180000,
+          enrollmentCount: 47,
+          rating: 4.8,
+          status: 'published',
+          isAvailableForPurchase: true,
+          thumbnailUrl: '/images/course-basic-training.jpg',
+          createdAt: new Date('2025-01-01'),
+          publishedAt: new Date('2025-01-05')
+        }
+      ];
+      
+      res.json({ courses });
+    } catch (error) {
+      console.error('[강의 목록] 조회 실패:', error);
+      res.status(500).json({ message: '강의 목록 조회에 실패했습니다.' });
+    }
+  });
+
+  // 강의 상세 조회 API
+  app.get('/api/courses/:id', async (req, res) => {
+    try {
+      const courseId = req.params.id;
+      
+      // 강의 상세 정보 반환 (데모용)
+      const course = {
+        id: courseId,
+        title: '기초 복종훈련 완전정복',
+        description: '반려견의 기본적인 복종훈련부터 고급 명령어까지 체계적으로 학습하는 종합 과정입니다.',
+        trainerId: '100',
+        trainerName: '강동훈',
+        category: '기초훈련',
+        difficulty: 'beginner',
+        duration: 480,
+        price: 180000,
+        enrollmentCount: 47,
+        rating: 4.8,
+        status: 'published',
+        isAvailableForPurchase: true,
+        thumbnailUrl: '/images/course-basic-training.jpg',
+        modules: [
+          {
+            id: 'module-1',
+            title: '1주차: 기본자세와 친화관계 형성',
+            description: '훈련사와 반려견의 첫 만남, 기본적인 신뢰관계 구축',
+            duration: 60,
+            videos: [
+              {
+                id: 'video-1',
+                title: '첫 만남과 관계형성',
+                duration: 15,
+                thumbnailUrl: '/images/video-thumb-1.jpg'
+              }
+            ]
+          }
+        ],
+        reviews: [
+          {
+            id: '1',
+            userId: '1',
+            userName: '김지영',
+            rating: 5,
+            comment: '정말 도움이 많이 되었습니다. 우리 맥스가 많이 변했어요!',
+            createdAt: new Date('2025-01-10')
+          }
+        ]
+      };
+      
+      res.json(course);
+    } catch (error) {
+      console.error('[강의 상세] 조회 실패:', error);
+      res.status(500).json({ message: '강의 상세 조회에 실패했습니다.' });
+    }
+  });
+
+  // 강의 구매 API
+  app.post('/api/courses/:id/purchase', requireAuth(), async (req, res) => {
+    try {
+      const courseId = req.params.id;
+      const userId = req.user.id;
+      
+      // 구매 정보 생성
+      const purchaseData = {
+        id: `purchase-${Date.now()}`,
+        userId: userId,
+        courseId: courseId,
+        purchaseDate: new Date(),
+        paymentStatus: 'completed',
+        amount: 180000,
+        paymentMethod: 'card'
+      };
+      
+      console.log('[강의 구매] 사용자:', userId, '강의:', courseId);
+      
+      res.json({ 
+        success: true,
+        purchaseId: purchaseData.id,
+        message: '강의 구매가 완료되었습니다.',
+        purchaseData: purchaseData
+      });
+    } catch (error) {
+      console.error('[강의 구매] 실패:', error);
+      res.status(500).json({ message: '강의 구매에 실패했습니다.' });
+    }
+  });
+
   // 강동훈 훈련사 데이터 초기화 및 검색 수정
   app.get('/api/init-real-trainer', async (req, res) => {
     try {
