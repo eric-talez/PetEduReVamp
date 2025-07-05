@@ -502,11 +502,64 @@ export class MemoryStorage implements IStorage{
       updatedAt: new Date()
     };
 
+    // 강동훈 훈련사 (실제 왕짱스쿨 데이터)
+    const trainer6 = {
+      id: 6,
+      userId: 108, // 강동훈 사용자 ID
+      name: '강동훈',
+      specialty: '국가자격증 훈련 및 반려동물 교감 교육',
+      specialties: ['국가자격증 훈련', '정서안정 교육', '문제행동 교정', '퍼피 사회화 교육'],
+      experience: 10,
+      rating: 4.9,
+      reviewCount: 87,
+      description: '국가자격증 훈련부터 반려동물 교감 교육까지! 반려견과 보호자의 "진짜 관계"를 만들어 드립니다.',
+      bio: '반려동물행동지도사 국가자격증 2급 보유. 이해와 신뢰 중심의 훈련 철학으로 반려견과 보호자가 함께 살아가는 법을 교육합니다.',
+      location: '경북 구미시',
+      address: '경북 구미시 구평동 661 (왕짱 스쿨)',
+      phone: '010-4765-1909',
+      email: 'donghoong@wangzzang.com',
+      avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=300',
+      certifications: [
+        '반려동물행동지도사 국가자격증 2급',
+        '경기대학교 대체의학대학원 동물매개자연치유전공 석사',
+        '한국애견연맹 사회공헌위원회 위원',
+        '펫헬스케어아카데미 협회 공동대표'
+      ],
+      talezCertificationStatus: 'verified',
+      talezCertificationLevel: 'expert',
+      licenseNumber: 'TAL-2024-006',
+      price: 70000,
+      featured: true,
+      isActive: true,
+      availableSlots: ['09:00', '10:00', '13:00', '14:00', '15:00', '16:00'],
+      workingHours: { start: '09:00', end: '18:00' },
+      workingDays: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'],
+      services: [
+        { name: '국가자격증 훈련 (오비디언스)', duration: 60, price: 70000 },
+        { name: '정서안정 및 동물교감 교육', duration: 90, price: 90000 },
+        { name: '문제행동 교정', duration: 75, price: 80000 },
+        { name: '퍼피 사회화 교육', duration: 45, price: 60000 }
+      ],
+      businessLocations: [
+        '경북 구미시 구평동 661 (왕짱 스쿨)',
+        '경북 칠곡군 석적읍 북중리 10길 17 (왕짱애견유치원)'
+      ],
+      specialPrograms: [
+        '구미시 2025 미래교육지구 마을학교 "반려꿈터" 운영',
+        '정신건강 및 특수교육 대상자를 위한 교감 활동',
+        '경북소방본부, 교육기관 대상 강의 및 상담',
+        '수제간식 교육 및 반려견 건강식 제안'
+      ],
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+
     this.trainers.set(trainer1.id, trainer1);
     this.trainers.set(trainer2.id, trainer2);
     this.trainers.set(trainer3.id, trainer3);
     this.trainers.set(trainer4.id, trainer4);
     this.trainers.set(trainer5.id, trainer5);
+    this.trainers.set(trainer6.id, trainer6);
   }
 
   // 견주 데이터 초기화
