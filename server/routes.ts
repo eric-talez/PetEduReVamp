@@ -2403,6 +2403,208 @@ app.get('/api/search', async (req, res) => {
     });
   });
 
+  // 테스트 등록 데이터 생성 엔드포인트
+  app.post("/api/test/create-sample-registrations", (req, res) => {
+    try {
+      if (!global.registrationApplications) {
+        global.registrationApplications = [];
+      }
+
+      // 샘플 훈련사 등록 신청 데이터
+      const sampleTrainerApplications = [
+        {
+          id: 'trainer_' + Date.now() + '_1',
+          type: 'trainer',
+          applicantInfo: {
+            personalInfo: {
+              name: '김민준',
+              phone: '010-1234-5678',
+              email: 'trainer1@example.com',
+              address: '서울시 강남구 테헤란로 123'
+            },
+            professionalInfo: {
+              experience: 5,
+              specialties: ['기초 복종 훈련', '사회화 훈련'],
+              certifications: ['반려동물 훈련사 자격증', '동물행동교정사 자격증'],
+              bio: '5년간의 경험을 바탕으로 체계적인 반려견 훈련을 제공합니다.',
+              serviceArea: '서울시 강남구'
+            },
+            businessInfo: {
+              hourlyRate: '50000'
+            }
+          },
+          documents: {
+            profileImage: '/uploads/trainer1_profile.jpg',
+            certificationDocs: ['/uploads/trainer1_cert1.pdf', '/uploads/trainer1_cert2.pdf'],
+            portfolioImages: ['/uploads/trainer1_portfolio1.jpg']
+          },
+          status: 'pending',
+          submittedAt: new Date(Date.now() - 86400000).toISOString(), // 1일 전
+          reviewerId: null,
+          reviewedAt: null,
+          notes: ''
+        },
+        {
+          id: 'trainer_' + Date.now() + '_2',
+          type: 'trainer',
+          applicantInfo: {
+            personalInfo: {
+              name: '박수진',
+              phone: '010-2345-6789',
+              email: 'trainer2@example.com',
+              address: '부산시 해운대구 센텀중앙로 456'
+            },
+            professionalInfo: {
+              experience: 8,
+              specialties: ['어질리티 훈련', '문제행동 교정'],
+              certifications: ['국제 반려동물 훈련사 자격증', 'K9 트레이너 자격증'],
+              bio: '어질리티와 문제행동 교정 전문가로 활동하고 있습니다.',
+              serviceArea: '부산시 전체'
+            },
+            businessInfo: {
+              hourlyRate: '60000'
+            }
+          },
+          documents: {
+            profileImage: '/uploads/trainer2_profile.jpg',
+            certificationDocs: ['/uploads/trainer2_cert1.pdf'],
+            portfolioImages: ['/uploads/trainer2_portfolio1.jpg', '/uploads/trainer2_portfolio2.jpg']
+          },
+          status: 'approved',
+          submittedAt: new Date(Date.now() - 172800000).toISOString(), // 2일 전
+          reviewerId: 'admin',
+          reviewedAt: new Date(Date.now() - 86400000).toISOString(), // 1일 전
+          notes: '우수한 경력과 자격을 갖춘 훈련사입니다. 승인합니다.'
+        }
+      ];
+
+      // 샘플 기관 등록 신청 데이터
+      const sampleInstituteApplications = [
+        {
+          id: 'institute_' + Date.now() + '_1',
+          type: 'institute',
+          applicantInfo: {
+            basicInfo: {
+              instituteName: '해피독 트레이닝 센터',
+              email: 'info@happydog.com',
+              phone: '02-1234-5678',
+              establishedYear: '2020'
+            },
+            locationInfo: {
+              address: '서울시 마포구 홍대입구역 12번 출구 앞'
+            },
+            serviceInfo: {
+              description: '체계적인 강아지 교육과 사회화 프로그램을 제공하는 전문 교육기관입니다.',
+              serviceTypes: ['기초 훈련', '사회화 교육', '문제행동 교정', '어질리티'],
+              operatingHours: '평일 09:00-18:00, 주말 10:00-17:00'
+            },
+            facilityInfo: {
+              capacity: '20',
+              facilities: ['실내 훈련장', '실외 운동장', '개별 케어 룸', '상담실']
+            }
+          },
+          documents: {
+            businessLicense: '/uploads/institute1_license.pdf',
+            facilityImages: ['/uploads/institute1_facility1.jpg', '/uploads/institute1_facility2.jpg']
+          },
+          status: 'pending',
+          submittedAt: new Date(Date.now() - 43200000).toISOString(), // 12시간 전
+          reviewerId: null,
+          reviewedAt: null,
+          notes: ''
+        },
+        {
+          id: 'institute_' + Date.now() + '_2',
+          type: 'institute',
+          applicantInfo: {
+            basicInfo: {
+              instituteName: '펫케어 아카데미',
+              email: 'academy@petcare.com',
+              phone: '031-5678-9012',
+              establishedYear: '2018'
+            },
+            locationInfo: {
+              address: '경기도 성남시 분당구 정자일로 95'
+            },
+            serviceInfo: {
+              description: '전문 수의사와 훈련사가 함께하는 종합 펫케어 교육기관입니다.',
+              serviceTypes: ['기초 교육', '건강 관리', '그루밍', '수의학 상담'],
+              operatingHours: '매일 08:00-20:00'
+            },
+            facilityInfo: {
+              capacity: '50',
+              facilities: ['대형 훈련장', '의료 시설', '그루밍실', '휴게실', '주차장']
+            }
+          },
+          documents: {
+            businessLicense: '/uploads/institute2_license.pdf',
+            facilityImages: ['/uploads/institute2_facility1.jpg', '/uploads/institute2_facility2.jpg', '/uploads/institute2_facility3.jpg']
+          },
+          status: 'rejected',
+          submittedAt: new Date(Date.now() - 259200000).toISOString(), // 3일 전
+          reviewerId: 'admin',
+          reviewedAt: new Date(Date.now() - 172800000).toISOString(), // 2일 전
+          notes: '시설 기준이 미흡합니다. 안전 시설 보완 후 재신청 바랍니다.'
+        }
+      ];
+
+      // 전역 등록 신청 배열에 추가
+      global.registrationApplications.push(
+        ...sampleTrainerApplications,
+        ...sampleInstituteApplications
+      );
+
+      console.log('테스트 등록 데이터 생성 완료:', global.registrationApplications.length, '건');
+
+      res.json({
+        success: true,
+        message: '테스트 등록 데이터가 생성되었습니다.',
+        created: {
+          trainers: sampleTrainerApplications.length,
+          institutes: sampleInstituteApplications.length,
+          total: sampleTrainerApplications.length + sampleInstituteApplications.length
+        }
+      });
+
+    } catch (error) {
+      console.error('테스트 데이터 생성 실패:', error);
+      res.status(500).json({
+        success: false,
+        message: '테스트 데이터 생성 중 오류가 발생했습니다.'
+      });
+    }
+  });
+
+  // 등록 신청 데이터 상태 확인 (인증 없음 - 테스트용)
+  app.get("/api/test/registration-status", (req, res) => {
+    try {
+      const total = global.registrationApplications ? global.registrationApplications.length : 0;
+      const pending = global.registrationApplications ? 
+        global.registrationApplications.filter(app => app.status === 'pending').length : 0;
+      const approved = global.registrationApplications ? 
+        global.registrationApplications.filter(app => app.status === 'approved').length : 0;
+      const rejected = global.registrationApplications ? 
+        global.registrationApplications.filter(app => app.status === 'rejected').length : 0;
+
+      res.json({
+        success: true,
+        data: {
+          total,
+          pending,
+          approved,
+          rejected,
+          applications: global.registrationApplications || []
+        }
+      });
+    } catch (error) {
+      console.error('등록 상태 확인 실패:', error);
+      res.status(500).json({
+        success: false,
+        message: '등록 상태 확인 중 오류가 발생했습니다.'
+      });
+    }
+  });
+
   // === Registration API Routes ===
 
   // 훈련사 등록 신청
