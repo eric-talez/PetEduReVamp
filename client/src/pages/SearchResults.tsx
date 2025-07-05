@@ -111,13 +111,13 @@ export default function SearchResults() {
     // 결과 타입에 따라 적절한 페이지로 이동
     switch (result.type) {
       case 'trainer':
-        setLocation(`/trainers?trainer=${result.id}`);
+        setLocation(`/trainers/${result.id}`);
         break;
       case 'course':
-        setLocation(`/courses?course=${result.id}`);
+        setLocation(`/courses/${result.id}`);
         break;
       case 'institute':
-        setLocation(`/institutes?institute=${result.id}`);
+        setLocation(`/institutes/${result.id}`);
         break;
       default:
         console.log('클릭된 결과:', result);
