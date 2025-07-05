@@ -282,6 +282,14 @@ export default function AdminCurriculum() {
 
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [isProcessingFile, setIsProcessingFile] = useState(false);
+  const [selectedModule, setSelectedModule] = useState<ModuleData | null>(null);
+  const [isAddingVideo, setIsAddingVideo] = useState(false);
+  const [videoUploadProgress, setVideoUploadProgress] = useState(0);
+  const [newVideo, setNewVideo] = useState({
+    title: '',
+    description: '',
+    videoFile: null as File | null
+  });
 
   useEffect(() => {
     loadCurriculums();
@@ -394,6 +402,161 @@ export default function AdminCurriculum() {
       });
     } finally {
       setIsProcessingFile(false);
+    }
+  };
+
+  const updateCurriculum = async (curriculum: CurriculumData) => {
+    try {
+      const response = await fetch(`/api/admin/curriculums/${curriculum.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...curriculum,
+          updatedAt: new Date()
+        })
+      });
+
+      if (response.ok) {
+        const updatedCurriculum = await response.json();
+        setCurriculums(prev => 
+          prev.map(c => c.id === curriculum.id ? updatedCurriculum : c)
+        );
+        setIsEditing(false);
+        toast({
+          title: "성공",
+          description: "커리큘럼이 수정되었습니다.",
+          variant: "default"
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "오류",
+        description: "커리큘럼 수정에 실패했습니다.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const deleteCurriculum = async (curriculumId: string) => {
+    if (!confirm('정말로 이 커리큘럼을 삭제하시겠습니까?')) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/admin/curriculums/${curriculumId}`, {
+        method: 'DELETE'
+      });
+
+      if (response.ok) {
+        setCurriculums(prev => prev.filter(c => c.id !== curriculumId));
+        setSelectedCurriculum(null);
+        setIsEditing(false);
+        toast({
+          title: "성공",
+          description: "커리큘럼이 삭제되었습니다.",
+          variant: "default"
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "오류",
+        description: "커리큘럼 삭제에 실패했습니다.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  // 영상 업로드 함수
+  const uploadVideoToModule = async (moduleId: string) => {
+    if (!newVideo.videoFile || !newVideo.title.trim()) {
+      toast({
+        title: "입력 오류",
+        description: "영상 파일과 제목을 모두 입력해주세요.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      setVideoUploadProgress(0);
+      const formData = new FormData();
+      formData.append('video', newVideo.videoFile);
+      formData.append('title', newVideo.title);
+      formData.append('description', newVideo.description);
+      formData.append('moduleId', moduleId);
+
+      const response = await fetch('/api/admin/curriculum/videos/upload', {
+        method: 'POST',
+        body: formData
+      });
+
+      if (response.ok) {
+        const videoData = await response.json();
+        
+        // 커리큘럼 상태 업데이트
+        if (selectedCurriculum) {
+          const updatedCurriculum = {
+            ...selectedCurriculum,
+            modules: selectedCurriculum.modules.map(module =>
+              module.id === moduleId
+                ? { ...module, videos: [...module.videos, videoData] }
+                : module
+            )
+          };
+          setSelectedCurriculum(updatedCurriculum);
+        }
+
+        setIsAddingVideo(false);
+        setNewVideo({ title: '', description: '', videoFile: null });
+        toast({
+          title: "성공",
+          description: "영상이 성공적으로 업로드되었습니다.",
+          variant: "default"
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "오류",
+        description: "영상 업로드에 실패했습니다.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  // 영상 삭제 함수
+  const deleteVideoFromModule = async (moduleId: string, videoId: string) => {
+    if (!confirm('정말로 이 영상을 삭제하시겠습니까?')) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/admin/curriculum/videos/${videoId}`, {
+        method: 'DELETE'
+      });
+
+      if (response.ok && selectedCurriculum) {
+        const updatedCurriculum = {
+          ...selectedCurriculum,
+          modules: selectedCurriculum.modules.map(module =>
+            module.id === moduleId
+              ? { ...module, videos: module.videos.filter(v => v.id !== videoId) }
+              : module
+          )
+        };
+        setSelectedCurriculum(updatedCurriculum);
+        
+        toast({
+          title: "성공",
+          description: "영상이 삭제되었습니다.",
+          variant: "default"
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "오류",
+        description: "영상 삭제에 실패했습니다.",
+        variant: "destructive"
+      });
     }
   };
 
@@ -741,21 +904,260 @@ export default function AdminCurriculum() {
 
                     <div>
                       <h4 className="font-medium mb-2">모듈 구성</h4>
-                      <div className="space-y-2">
+                      <div className="space-y-3">
                         {selectedCurriculum.modules.map((module, index) => (
-                          <div key={module.id} className="p-3 bg-gray-50 rounded-lg">
-                            <div className="flex items-center justify-between">
-                              <div>
-                                <div className="font-medium">{module.title}</div>
-                                <div className="text-sm text-gray-600">{module.description}</div>
+                          <div key={module.id} className="p-4 bg-gray-50 rounded-lg border">
+                            <div className="flex items-center justify-between mb-3">
+                              <div className="flex-1">
+                                <div className="font-medium text-lg">{module.title}</div>
+                                <div className="text-sm text-gray-600 mt-1">{module.description}</div>
+                                <div className="flex items-center gap-4 mt-2 text-sm text-gray-500">
+                                  <span className="flex items-center gap-1">
+                                    <Clock className="w-4 h-4" />
+                                    {module.duration}분
+                                  </span>
+                                  <span className="flex items-center gap-1">
+                                    <Video className="w-4 h-4" />
+                                    {module.videos?.length || 0}개 영상
+                                  </span>
+                                </div>
                               </div>
-                              <div className="text-sm text-gray-500">
-                                {module.duration}분
-                              </div>
+                              <Button
+                                onClick={() => {
+                                  setSelectedModule(module);
+                                  setIsAddingVideo(true);
+                                }}
+                                size="sm"
+                                variant="outline"
+                                className="ml-3"
+                              >
+                                <Plus className="w-4 h-4 mr-1" />
+                                영상 추가
+                              </Button>
                             </div>
+
+                            {/* 등록된 영상 목록 */}
+                            {module.videos && module.videos.length > 0 && (
+                              <div className="mt-3 pt-3 border-t">
+                                <div className="text-sm font-medium text-gray-700 mb-2">등록된 영상:</div>
+                                <div className="space-y-2">
+                                  {module.videos.map((video) => (
+                                    <div key={video.id} className="flex items-center justify-between p-2 bg-white rounded border">
+                                      <div className="flex items-center gap-2">
+                                        <Play className="w-4 h-4 text-blue-500" />
+                                        <div>
+                                          <div className="font-medium text-sm">{video.title}</div>
+                                          <div className="text-xs text-gray-500">{video.description}</div>
+                                        </div>
+                                      </div>
+                                      <div className="flex items-center gap-2">
+                                        <Badge 
+                                          variant={video.status === 'ready' ? 'default' : 'destructive'}
+                                        >
+                                          {video.status === 'ready' ? '준비완료' : video.status === 'processing' ? '처리중' : '대기중'}
+                                        </Badge>
+                                        <Button
+                                          onClick={() => deleteVideoFromModule(module.id, video.id)}
+                                          size="sm"
+                                          variant="destructive"
+                                        >
+                                          <Trash2 className="w-3 h-3" />
+                                        </Button>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
                           </div>
                         ))}
                       </div>
+                    </div>
+
+                    {/* 커리큘럼 액션 버튼 */}
+                    <div className="flex gap-2 pt-4 border-t">
+                      <Button
+                        onClick={() => setIsEditing(true)}
+                        variant="outline"
+                        size="sm"
+                        className="flex-1"
+                      >
+                        <Edit className="w-4 h-4 mr-1" />
+                        수정
+                      </Button>
+                      <Button
+                        onClick={() => deleteCurriculum(selectedCurriculum.id)}
+                        variant="destructive"
+                        size="sm"
+                        className="flex-1"
+                      >
+                        <Trash2 className="w-4 h-4 mr-1" />
+                        삭제
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* 커리큘럼 편집 모달 */}
+            {isEditing && selectedCurriculum && (
+              <Card className="mt-6 border-blue-200 bg-blue-50">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-blue-700">
+                    <Edit className="w-5 h-5" />
+                    커리큘럼 수정
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <Input
+                      placeholder="커리큘럼 제목"
+                      value={selectedCurriculum.title}
+                      onChange={(e) => setSelectedCurriculum(prev => prev ? { ...prev, title: e.target.value } : null)}
+                    />
+                    <Textarea
+                      placeholder="커리큘럼 설명"
+                      value={selectedCurriculum.description}
+                      onChange={(e) => setSelectedCurriculum(prev => prev ? { ...prev, description: e.target.value } : null)}
+                      rows={4}
+                    />
+                    <div className="grid grid-cols-2 gap-3">
+                      <Input
+                        placeholder="카테고리"
+                        value={selectedCurriculum.category}
+                        onChange={(e) => setSelectedCurriculum(prev => prev ? { ...prev, category: e.target.value } : null)}
+                      />
+                      <Input
+                        type="number"
+                        placeholder="가격"
+                        value={selectedCurriculum.price}
+                        onChange={(e) => setSelectedCurriculum(prev => prev ? { ...prev, price: parseInt(e.target.value) } : null)}
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <Input
+                        type="number"
+                        placeholder="총 시간 (분)"
+                        value={selectedCurriculum.duration}
+                        onChange={(e) => setSelectedCurriculum(prev => prev ? { ...prev, duration: parseInt(e.target.value) } : null)}
+                      />
+                      <select
+                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
+                        value={selectedCurriculum.difficulty}
+                        onChange={(e) => setSelectedCurriculum(prev => prev ? { ...prev, difficulty: e.target.value as 'beginner' | 'intermediate' | 'advanced' } : null)}
+                      >
+                        <option value="beginner">초급</option>
+                        <option value="intermediate">중급</option>
+                        <option value="advanced">고급</option>
+                      </select>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        onClick={() => updateCurriculum(selectedCurriculum)}
+                        size="sm"
+                        className="flex-1"
+                      >
+                        <Save className="w-4 h-4 mr-1" />
+                        저장
+                      </Button>
+                      <Button
+                        onClick={() => setIsEditing(false)}
+                        variant="outline"
+                        size="sm"
+                        className="flex-1"
+                      >
+                        취소
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* 영상 업로드 모달 */}
+            {isAddingVideo && selectedModule && (
+              <Card className="mt-6 border-green-200 bg-green-50">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-green-700">
+                    <Video className="w-5 h-5" />
+                    영상 업로드 - {selectedModule.title}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium mb-2">영상 제목</label>
+                      <Input
+                        placeholder="예: 1강 - 기본자세 익히기"
+                        value={newVideo.title}
+                        onChange={(e) => setNewVideo(prev => ({ ...prev, title: e.target.value }))}
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium mb-2">영상 설명</label>
+                      <Textarea
+                        placeholder="영상 내용에 대한 간단한 설명을 입력해주세요"
+                        value={newVideo.description}
+                        onChange={(e) => setNewVideo(prev => ({ ...prev, description: e.target.value }))}
+                        rows={3}
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium mb-2">영상 파일</label>
+                      <input
+                        type="file"
+                        accept="video/*"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            setNewVideo(prev => ({ ...prev, videoFile: file }));
+                          }
+                        }}
+                        className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">
+                        지원 형식: MP4, AVI, MOV (최대 500MB)
+                      </p>
+                    </div>
+
+                    {videoUploadProgress > 0 && (
+                      <div>
+                        <div className="flex justify-between text-sm mb-1">
+                          <span>업로드 진행률</span>
+                          <span>{videoUploadProgress}%</span>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-2">
+                          <div 
+                            className="bg-green-600 h-2 rounded-full transition-all duration-300"
+                            style={{ width: `${videoUploadProgress}%` }}
+                          ></div>
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="flex gap-2">
+                      <Button
+                        onClick={() => uploadVideoToModule(selectedModule.id)}
+                        className="flex-1"
+                        disabled={!newVideo.videoFile || !newVideo.title.trim()}
+                      >
+                        <Upload className="w-4 h-4 mr-1" />
+                        업로드
+                      </Button>
+                      <Button
+                        onClick={() => {
+                          setIsAddingVideo(false);
+                          setSelectedModule(null);
+                          setNewVideo({ title: '', description: '', videoFile: null });
+                        }}
+                        variant="outline"
+                        className="flex-1"
+                      >
+                        취소
+                      </Button>
                     </div>
                   </div>
                 </CardContent>

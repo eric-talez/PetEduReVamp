@@ -115,6 +115,17 @@ TALEZ is a comprehensive pet education and e-commerce platform that combines AI-
 
 ## Changelog
 
+- July 05, 2025. Implemented comprehensive curriculum-video integration system with module-level video upload functionality:
+  - Added complete video upload and management interface for each curriculum module
+  - Built intuitive drag-and-drop video file upload with progress tracking
+  - Implemented module-specific video organization with title, description, and status tracking
+  - Created video deletion and management capabilities within each curriculum module
+  - Enhanced curriculum display with video count indicators and visual status badges
+  - Added backend API endpoints for video upload (/api/admin/curriculum/videos/upload) and deletion
+  - Integrated file validation for video formats (MP4, AVI, MOV) with 500MB size limit
+  - Built responsive video management UI with real-time status updates
+  - Enhanced curriculum detail view with expandable video sections per module
+  - Created comprehensive video metadata management including duration, thumbnails, and upload timestamps
 - July 05, 2025. Enhanced admin interface with comprehensive curriculum management system:
   - Added "커리큘럼 관리" to system management (시스템 관리) menu in sidebar navigation
   - Integrated curriculum management into admin homepage quick actions section

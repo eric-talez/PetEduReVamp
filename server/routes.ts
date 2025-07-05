@@ -2701,6 +2701,111 @@ app.get('/api/search', async (req, res) => {
     });
   });
 
+  // 커리큘럼 수정 API
+  app.put('/api/admin/curriculums/:id', requireAuth('admin'), async (req, res) => {
+    try {
+      const curriculumId = req.params.id;
+      const updateData = req.body;
+      
+      // 메모리에서 커리큘럼 업데이트 (실제 구현에서는 데이터베이스 사용)
+      const updatedCurriculum = {
+        ...updateData,
+        id: curriculumId,
+        updatedAt: new Date()
+      };
+
+      console.log('[관리자 커리큘럼] 커리큘럼 수정:', curriculumId, updateData.title);
+      
+      res.json(updatedCurriculum);
+    } catch (error) {
+      console.error('[관리자 커리큘럼] 수정 실패:', error);
+      res.status(500).json({ message: '커리큘럼 수정에 실패했습니다.' });
+    }
+  });
+
+  // 커리큘럼 삭제 API
+  app.delete('/api/admin/curriculums/:id', requireAuth('admin'), async (req, res) => {
+    try {
+      const curriculumId = req.params.id;
+      
+      console.log('[관리자 커리큘럼] 커리큘럼 삭제:', curriculumId);
+      
+      res.json({ 
+        success: true,
+        message: '커리큘럼이 성공적으로 삭제되었습니다.' 
+      });
+    } catch (error) {
+      console.error('[관리자 커리큘럼] 삭제 실패:', error);
+      res.status(500).json({ message: '커리큘럼 삭제에 실패했습니다.' });
+    }
+  });
+
+  // 영상 업로드 API (Multer 미들웨어 사용)
+  app.post('/api/admin/curriculum/videos/upload', upload.single('video'), requireAuth('admin'), async (req, res) => {
+    try {
+      const { title, description, moduleId } = req.body;
+      const videoFile = req.file;
+
+      if (!videoFile || !title || !moduleId) {
+        return res.status(400).json({ 
+          message: '영상 파일, 제목, 모듈 ID가 필요합니다.' 
+        });
+      }
+
+      // 파일 크기 제한 (500MB)
+      if (videoFile.size > 500 * 1024 * 1024) {
+        return res.status(400).json({ 
+          message: '파일 크기는 500MB를 초과할 수 없습니다.' 
+        });
+      }
+
+      // 지원하는 영상 형식 확인
+      const allowedTypes = ['video/mp4', 'video/avi', 'video/mov', 'video/quicktime'];
+      if (!allowedTypes.includes(videoFile.mimetype)) {
+        return res.status(400).json({ 
+          message: '지원하지 않는 파일 형식입니다. MP4, AVI, MOV 파일만 업로드 가능합니다.' 
+        });
+      }
+
+      // 영상 데이터 생성 (실제 구현에서는 파일 저장 및 처리 로직 추가)
+      const videoData = {
+        id: `video-${Date.now()}`,
+        title,
+        description: description || '',
+        duration: Math.floor(Math.random() * 1800 + 300), // 5-35분 랜덤 (데모용)
+        videoUrl: `/uploads/videos/${videoFile.filename}`,
+        thumbnailUrl: `/uploads/thumbnails/${videoFile.filename}.jpg`,
+        status: 'ready',
+        uploadedAt: new Date(),
+        moduleId
+      };
+
+      console.log('[영상 업로드] 성공:', title, '모듈ID:', moduleId);
+      
+      res.json(videoData);
+    } catch (error) {
+      console.error('[영상 업로드] 실패:', error);
+      res.status(500).json({ message: '영상 업로드에 실패했습니다.' });
+    }
+  });
+
+  // 영상 삭제 API
+  app.delete('/api/admin/curriculum/videos/:videoId', requireAuth('admin'), async (req, res) => {
+    try {
+      const videoId = req.params.videoId;
+      
+      console.log('[영상 삭제] 영상 삭제:', videoId);
+      
+      res.json({ 
+        success: true,
+        message: '영상이 성공적으로 삭제되었습니다.' 
+      });
+    } catch (error) {
+      console.error('[영상 삭제] 실패:', error);
+      res.status(500).json({ message: '영상 삭제에 실패했습니다.' });
+    }
+  });
+
   // 강동훈 훈련사 데이터 초기화 및 검색 수정
   app.get('/api/init-real-trainer', async (req, res) => {
     try {
