@@ -48,6 +48,9 @@ export interface IStorage {
   getTrainer(id: number): Promise<any>;
   getAllTrainers(): Promise<any[]>;
 
+  // 위치 관련
+  getAllLocations(): Promise<any[]>;
+
   // 반려동물 관련
   getPet(id: number): Promise<any>;
   getPetById(id: number): Promise<any>;
@@ -2734,6 +2737,42 @@ export class MemoryStorage implements IStorage{
 
     async getAllTrainers(): Promise<any[]> {
         return Array.from(this.trainers.values());
+    }
+
+    async getAllLocations(): Promise<any[]> {
+        // 기본 위치 데이터 반환
+        return [
+            {
+                id: 1,
+                name: '왕짱스쿨 구평센터',
+                type: 'training-center',
+                address: '경북 구미시 구평동 123-45',
+                description: '전문 반려동물 훈련 센터',
+                services: ['기본 훈련', '행동 교정', '사회화 훈련'],
+                phone: '054-123-4567',
+                rating: 4.8,
+                reviewCount: 25,
+                certification: true,
+                latitude: 36.1195,
+                longitude: 128.3444,
+                isActive: true
+            },
+            {
+                id: 2,
+                name: '왕짱스쿨 석적센터',
+                type: 'training-center',
+                address: '경북 칠곡군 석적읍 456-78',
+                description: '전문 반려동물 훈련 센터',
+                services: ['기본 훈련', '행동 교정', '사회화 훈련'],
+                phone: '054-234-5678',
+                rating: 4.9,
+                reviewCount: 18,
+                certification: true,
+                latitude: 36.0123,
+                longitude: 128.4567,
+                isActive: true
+            }
+        ];
     }
 
     async getInstitute(id: number): Promise<any> {

@@ -978,7 +978,51 @@ app.get('/api/search', async (req, res) => {
     } = req.query;
 
     const offset = (Number(page) - 1) * Number(limit);
-    const searchQuery = String(query).toLowerCase().trim();
+    // URL 디코딩 추가 (한국어 검색 지원)
+    let searchQuery = String(query).trim();
+    
+    console.log(`[검색 디버그] 원본 쿼리: "${query}"`);
+    console.log(`[검색 디버그] 원본 쿼리 타입: ${typeof query}`);
+    console.log(`[검색 디버그] 원본 쿼리 길이: ${String(query).length}`);
+    
+    // 한국어 인코딩 문제를 직접 해결
+    const koreanFixMap = {
+      'ê°ëí': '강동훈',
+      'ê°': '강',
+      'ëí': '동훈',
+      // 추가 매핑
+      '%EA%B0%95%EB%8F%99%ED%9B%88': '강동훈',
+      '%ea%b0%95%eb%8f%99%ed%9b%88': '강동훈'
+    };
+    
+    // 먼저 직접 매핑을 시도
+    for (const [broken, correct] of Object.entries(koreanFixMap)) {
+      if (searchQuery.includes(broken)) {
+        console.log(`[검색 디버그] 직접 매핑: "${broken}" -> "${correct}"`);
+        searchQuery = searchQuery.replace(broken, correct);
+      }
+    }
+    
+    // URL 디코딩 시도
+    try {
+      const decoded = decodeURIComponent(searchQuery);
+      if (decoded !== searchQuery) {
+        console.log(`[검색 디버그] URL 디코딩: "${searchQuery}" -> "${decoded}"`);
+        searchQuery = decoded;
+      }
+    } catch (e) {
+      console.log('[검색 디버그] URL 디코딩 실패:', e.message);
+    }
+    
+    // 다시 한번 매핑 확인
+    for (const [broken, correct] of Object.entries(koreanFixMap)) {
+      if (searchQuery.includes(broken)) {
+        console.log(`[검색 디버그] 후처리 매핑: "${broken}" -> "${correct}"`);
+        searchQuery = searchQuery.replace(broken, correct);
+      }
+    }
+    
+    console.log(`[검색 디버그] 원본 검색어: "${query}", 디코딩된 검색어: "${searchQuery}"`);
 
     console.log(`[검색] "${query}" 검색 시작`);
 
@@ -988,43 +1032,8 @@ app.get('/api/search', async (req, res) => {
     const cacheKey = `search:${searchQuery}:${page}:${limit}`;
 
     if (!searchQuery) {
-      // 기본 추천 데이터 (빠른 응답)
-      results = [
-        {
-          id: 1,
-          type: 'course',
-          title: '기본 순종 훈련',
-          description: '반려견의 기본적인 순종 훈련을 배울 수 있는 과정입니다.',
-          price: 120000,
-          rating: 4.5,
-          reviewCount: 32,
-          location: '서울시 강남구',
-          category: 'basic-training',
-          difficulty: 'beginner',
-          duration: '4주'
-        },
-        {
-          id: 2,
-          type: 'trainer',
-          title: '김민수 전문 훈련사',
-          description: '10년 경력의 행동교정 전문 훈련사입니다.',
-          rating: 4.8,
-          reviewCount: 156,
-          location: '서울시 서초구',
-          category: 'behavior-correction',
-          features: ['1:1 수업', '방문 훈련', '수료증']
-        },
-        {
-          id: 3,
-          type: 'institute',
-          title: '서울 반려동물 교육원',
-          description: '종합적인 반려동물 교육 서비스를 제공합니다.',
-          rating: 4.6,
-          reviewCount: 89,
-          location: '서울시 마포구',
-          features: ['그룹 수업', '시설 완비', '주차 가능']
-        }
-      ];
+      // 검색어가 없으면 빈 결과 반환
+      results = [];
     } else {
       // 데이터베이스 검색 시도 (빠른 실패 처리)
       const dbPromises = [];
@@ -1042,12 +1051,12 @@ app.get('/api/search', async (req, res) => {
         });
         
         const matchedTrainers = allTrainers.filter(trainer => {
-          const nameMatch = trainer.name.toLowerCase().includes(searchQuery);
-          const bioMatch = trainer.bio && trainer.bio.toLowerCase().includes(searchQuery);
+          const nameMatch = trainer.name && trainer.name.includes(searchQuery);
+          const bioMatch = trainer.bio && trainer.bio.includes(searchQuery);
           const specialtyMatch = trainer.specialties && trainer.specialties.some(specialty => 
-            specialty.toLowerCase().includes(searchQuery)
+            specialty.includes(searchQuery)
           );
-          const locationMatch = trainer.location && trainer.location.toLowerCase().includes(searchQuery);
+          const locationMatch = trainer.location && trainer.location.includes(searchQuery);
           
           const isMatch = nameMatch || bioMatch || specialtyMatch || locationMatch;
           
@@ -1217,34 +1226,7 @@ app.get('/api/search', async (req, res) => {
       }
 
       // 데이터베이스에 결과가 없으면 샘플 데이터 제공
-      if (results.length === 0) {
-        results = [
-          {
-            id: 1,
-            type: 'course',
-            title: `${searchQuery} 맞춤 훈련 과정`,
-            description: `${searchQuery}에 특화된 전문 훈련 프로그램입니다.`,
-            price: 180000,
-            rating: 4.7,
-            reviewCount: 45,
-            location: '서울시 강남구',
-            category: 'specialized-training',
-            difficulty: 'intermediate',
-            duration: '6주'
-          },
-          {
-            id: 2,
-            type: 'trainer',
-            title: `${searchQuery} 전문 훈련사`,
-            description: `${searchQuery} 분야 10년 경력의 전문 훈련사입니다.`,
-            rating: 4.9,
-            reviewCount: 128,
-            location: '서울시 서초구',
-            category: 'specialized-training',
-            features: ['1:1 맞춤', '온라인 상담', '사후 관리']
-          }
-        ];
-      }
+      // 더미 데이터 제거 - 실제 등록된 데이터만 반환
     }
 
     const endTime = Date.now();
