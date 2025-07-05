@@ -65,8 +65,12 @@ export function TrainerProfileModal({ trainer, open, onOpenChange }: TrainerProf
                   filter: 'none !important', 
                   WebkitFilter: 'none !important'
                 }}
+                onLoad={() => {
+                  console.log(`[모달 이미지] 로딩 성공: ${trainer.name}, URL: ${trainer.avatar || trainer.image}`);
+                }}
                 onError={(e) => {
                   const target = e.target as HTMLImageElement;
+                  console.log(`[모달 이미지] 로딩 실패: ${trainer.name}, 원본 URL: ${target.src}`);
                   target.src = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(trainer.name)}&backgroundColor=6366f1&textColor=ffffff`;
                 }}
               />

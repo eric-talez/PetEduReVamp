@@ -1244,7 +1244,7 @@ export class MemoryStorage implements IStorage{
       address: '경상북도 구미시 구평동 (구평점) / 경상북도 칠곡군 석적읍 (석적점)',
       phone: '054-123-4567',
       email: 'wangjjang.school@gmail.com',
-      avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=300',
+      avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=강동훈&backgroundColor=2563eb,16a34a,dc2626,9333ea&radius=50',
       certifications: ['국가공인 동물행동교정사', '반려동물행동교정사 1급', '사회복지사'],
       talezCertificationStatus: 'verified',
       talezCertificationLevel: 'expert',

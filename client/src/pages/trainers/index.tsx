@@ -143,6 +143,12 @@ export default function Trainers() {
 
   const openTrainerModal = (trainer: any) => {
     console.log("훈련사 프로필 열기:", trainer.name);
+    console.log("훈련사 데이터:", { 
+      id: trainer.id, 
+      name: trainer.name, 
+      avatar: trainer.avatar, 
+      image: trainer.image 
+    });
     setSelectedTrainer(trainer);
     setIsModalOpen(true);
   };
