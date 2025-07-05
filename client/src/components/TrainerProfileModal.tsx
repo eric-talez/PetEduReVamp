@@ -41,7 +41,7 @@ interface TrainerProfileModalProps {
 }
 
 export function TrainerProfileModal({ trainer, open, onOpenChange }: TrainerProfileModalProps) {
-  console.log("TrainerProfileModal 렌더링", { trainer: trainer?.name, open });
+  console.log("TrainerProfileModal 렌더링 - 새 디자인 적용됨", { trainer: trainer?.name, open });
   
   if (!trainer) {
     console.log("훈련사 정보 없음, 모달 렌더링 중단");
@@ -54,7 +54,7 @@ export function TrainerProfileModal({ trainer, open, onOpenChange }: TrainerProf
       onOpenChange(value);
     }}>
       <DialogContent className="sm:max-w-[650px] max-h-[90vh] overflow-y-auto p-0">
-        {/* 배경 이미지 헤더 */}
+        {/* 배경 이미지 헤더 - 업데이트됨 */}
         <div className="relative h-40 bg-gradient-to-r from-primary to-primary/80 overflow-hidden">
           <div className="absolute inset-0 bg-black/20"></div>
           <div className="absolute bottom-4 left-6 right-6">
