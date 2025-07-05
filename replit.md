@@ -115,6 +115,14 @@ TALEZ is a comprehensive pet education and e-commerce platform that combines AI-
 
 ## Changelog
 
+- July 05, 2025. Registered real trainer facility - Wangzzang School (왕짱스쿨):
+  - Added real trainer Kang Dong-hoon profile with national certification credentials
+  - Registered actual business locations in Gumi-si and Chilgok-gun, Gyeongbuk
+  - Integrated complete facility information with dual locations (Gupeong and Seokjeok centers)
+  - Added professional credentials including national animal behavior instructor certification
+  - Included specialized programs for disabled individuals and social contribution activities
+  - Connected trainer profile to location finder system with authentic business data
+  - Enhanced system with real business operations data for demonstration purposes
 - July 04, 2025. Implemented comprehensive multi-model AI fusion system combining OpenAI and Gemini for enhanced accuracy:
   - Created ai-fusion.ts with cross-validation and consensus analysis capabilities
   - Added fallback mechanisms when one model is unavailable (API quota/overload)
