@@ -389,7 +389,7 @@ async function startServer() {
       await storage.initializeData();
     }
     
-    // Register other API routes
+    // Register other API routes BEFORE Vite
     const server = await registerRoutes(app);
     
     // Register AI routes
@@ -399,6 +399,7 @@ async function startServer() {
     registerExperienceRoutes(app);
 
     // Setup Vite for development or serve static files for production
+    // This MUST come AFTER API routes to prevent catch-all from intercepting API calls
     if (process.env.NODE_ENV === "development") {
       await setupVite(app, server);
     } else {

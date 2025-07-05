@@ -2605,6 +2605,87 @@ app.get('/api/search', async (req, res) => {
     }
   });
 
+  // === Institute API Routes ===
+
+  // 기관 목록 조회
+  app.get('/api/institutes', async (req, res) => {
+    try {
+      const institutes = await storage.getInstitutes();
+      res.json(institutes);
+    } catch (error) {
+      console.error('기관 목록 조회 실패:', error);
+      res.status(500).json({
+        success: false,
+        message: '기관 목록을 불러오는 중 오류가 발생했습니다.'
+      });
+    }
+  });
+
+  // 기관 상세 조회
+  app.get('/api/institutes/:id', async (req, res) => {
+    try {
+      const institute = await storage.getInstitute(parseInt(req.params.id));
+      if (!institute) {
+        return res.status(404).json({
+          success: false,
+          message: '기관을 찾을 수 없습니다.'
+        });
+      }
+      res.json(institute);
+    } catch (error) {
+      console.error('기관 상세 조회 실패:', error);
+      res.status(500).json({
+        success: false,
+        message: '기관 정보를 불러오는 중 오류가 발생했습니다.'
+      });
+    }
+  });
+
+  // 기관 등록 (관리자 전용)
+  app.post('/api/institutes', requireAuth('admin'), async (req, res) => {
+    try {
+      const institute = await storage.createInstitute(req.body);
+      res.status(201).json(institute);
+    } catch (error) {
+      console.error('기관 등록 실패:', error);
+      res.status(500).json({
+        success: false,
+        message: '기관 등록 중 오류가 발생했습니다.'
+      });
+    }
+  });
+
+  // 기관 수정 (관리자 전용)
+  app.put('/api/institutes/:id', requireAuth('admin'), async (req, res) => {
+    try {
+      const institute = await storage.updateInstitute(parseInt(req.params.id), req.body);
+      res.json(institute);
+    } catch (error) {
+      console.error('기관 수정 실패:', error);
+      res.status(500).json({
+        success: false,
+        message: '기관 수정 중 오류가 발생했습니다.'
+      });
+    }
+  });
+
+  // 기관 삭제 (관리자 전용)
+  app.delete('/api/institutes/:id', requireAuth('admin'), async (req, res) => {
+    try {
+      await storage.deleteInstitute(parseInt(req.params.id));
+      res.json({
+        success: true,
+        message: '기관이 삭제되었습니다.'
+      });
+    } catch (error) {
+      console.error('기관 삭제 실패:', error);
+      res.status(500).json({
+        success: false,
+        message: '기관 삭제 중 오류가 발생했습니다.'
+      });
+    }
+  });
+
   // === Registration API Routes ===
 
   // 훈련사 등록 신청
