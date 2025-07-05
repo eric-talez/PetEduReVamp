@@ -38,6 +38,7 @@ import SubscriptionsPage from "./pages/subscriptions";
 import SearchPage from "./pages/search";
 import TalezExperiencePage from "./pages/TalezExperience";
 import CurriculumManager from "./pages/courses/CurriculumManager";
+import AdminCurriculum from "./pages/admin/AdminCurriculum";
 
 // 관리자 페이지 직접 import
 import AdminHome from "./pages/admin/AdminHome";
@@ -288,6 +289,7 @@ function AppLayout({ children }: { children: ReactNode }) {
                   <Route path="/admin/locations" component={LocationManagement} />
                   <Route path="/admin/settings" component={AdminSettings} />
                   <Route path="/admin/contents" component={AdminContents} />
+                  <Route path="/admin/curriculum" component={AdminCurriculum} />
                   <Route path="/admin/spring-boot-test" component={SpringBootTestPage} />
                   
                   {/* 업체 등록 관리 */}

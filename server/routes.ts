@@ -2114,7 +2114,7 @@ app.get('/api/search', async (req, res) => {
 // 관리자 - 배너 관리
   app.get('/api/admin/banners', requireAuth('admin'), async (req, res) => {
     try {
-      const banners = await storage.getAllBanners();
+      const banners = await storage.getAllTrainers();
       res.json(banners);
     } catch (error) {
       console.error('배너 조회 오류:', error);
@@ -2486,6 +2486,88 @@ app.get('/api/search', async (req, res) => {
     } catch (error) {
       console.error('[커리큘럼] 비디오 업로드 실패:', error);
       res.status(500).json({ message: '비디오 업로드에 실패했습니다.' });
+    }
+  });
+
+  // 관리자 커리큘럼 관리 API
+  app.get('/api/admin/curriculums', requireAuth('admin'), async (req, res) => {
+    try {
+      // 실제 커리큘럼 데이터 반환
+      const curriculums = [
+        {
+          id: 'curriculum-basic-obedience',
+          title: '기초 복종훈련 완전정복',
+          description: '반려견의 기본적인 복종훈련부터 고급 명령어까지 체계적으로 학습하는 종합 과정입니다.',
+          trainerId: '100',
+          trainerName: '강동훈',
+          category: '기초훈련',
+          difficulty: 'beginner',
+          duration: 480,
+          price: 180000,
+          status: 'published',
+          modules: [
+            {
+              id: 'module-week1',
+              title: '1주차: 기본자세와 친화관계 형성',
+              description: '훈련사와 반려견의 첫 만남, 기본적인 신뢰관계 구축',
+              order: 1,
+              duration: 60,
+              objectives: ['반려견과의 신뢰관계 형성', '기본적인 터치 훈련', '이름 부르기 반응 훈련'],
+              isRequired: true,
+              videos: []
+            },
+            {
+              id: 'module-week2',
+              title: '2주차: 앉아, 엎드려 기본 명령어',
+              description: '가장 기본이 되는 앉아와 엎드려 명령어를 완벽하게 마스터',
+              order: 2,
+              duration: 60,
+              objectives: ['앉아 명령어 완전 숙지', '엎드려 명령어 습득', '명령어와 손신호 연결'],
+              isRequired: true,
+              videos: []
+            },
+            {
+              id: 'module-week3',
+              title: '3주차: 기다려와 이리와 명령어',
+              description: '안전을 위한 필수 명령어인 기다려와 이리와를 집중 훈련',
+              order: 3,
+              duration: 60,
+              objectives: ['기다려 명령어로 충동 억제', '이리와 명령어로 리콜 훈련', '긴급상황 대응 능력 개발'],
+              isRequired: true,
+              videos: []
+            }
+          ],
+          createdAt: new Date(),
+          updatedAt: new Date()
+        }
+      ];
+      
+      res.json({ curriculums });
+    } catch (error) {
+      console.error('[관리자 커리큘럼] 조회 실패:', error);
+      res.status(500).json({ message: '커리큘럼 조회에 실패했습니다.' });
+    }
+  });
+
+  app.post('/api/admin/curriculums', requireAuth('admin'), async (req, res) => {
+    try {
+      const curriculumData = req.body;
+      
+      // 새 커리큘럼 ID 생성
+      const newCurriculum = {
+        ...curriculumData,
+        id: `curriculum-${Date.now()}`,
+        status: 'draft',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
+
+      console.log('[관리자 커리큘럼] 새 커리큘럼 생성:', newCurriculum.title);
+      
+      res.json(newCurriculum);
+    } catch (error) {
+      console.error('[관리자 커리큘럼] 생성 실패:', error);
+      res.status(500).json({ message: '커리큘럼 생성에 실패했습니다.' });
     }
   });
 

@@ -20,7 +20,8 @@ import {
   HelpCircle,
   FileText,
   Check,
-  X
+  X,
+  GraduationCap
 } from 'lucide-react';
 import { useLocation } from 'wouter';
 import { Progress } from '@/components/ui/progress';
@@ -491,10 +492,26 @@ export default function AdminHome() {
                 <Button 
                   variant="outline" 
                   className="h-20 flex flex-col items-center justify-center"
+                  onClick={() => setLocation('/admin/curriculum')}
+                >
+                  <BookOpen className="h-5 w-5 mb-1" />
+                  <span>커리큘럼 관리</span>
+                </Button>
+                <Button 
+                  variant="outline" 
+                  className="h-20 flex flex-col items-center justify-center"
                   onClick={handleSystemSettings}
                 >
                   <Settings className="h-5 w-5 mb-1" />
                   <span>시스템 설정</span>
+                </Button>
+                <Button 
+                  variant="outline" 
+                  className="h-20 flex flex-col items-center justify-center"
+                  onClick={() => setLocation('/admin/contents')}
+                >
+                  <FileText className="h-5 w-5 mb-1" />
+                  <span>콘텐츠 관리</span>
                 </Button>
               </CardContent>
             </Card>
