@@ -39,6 +39,7 @@ import SearchPage from "./pages/search";
 import TalezExperiencePage from "./pages/TalezExperience";
 import CurriculumManager from "./pages/courses/CurriculumManager";
 import AdminCurriculum from "./pages/admin/AdminCurriculum";
+import AdminRegistrations from "./pages/admin/AdminRegistrations";
 import TrainerRegistration from "./pages/registration/TrainerRegistration";
 import InstituteRegistration from "./pages/registration/InstituteRegistration";
 
@@ -726,6 +727,13 @@ function AppLayout({ children }: { children: ReactNode }) {
                   {/* 등록 페이지 */}
                   <Route path="/registration/trainer" component={TrainerRegistration} />
                   <Route path="/registration/institute" component={InstituteRegistration} />
+                  
+                  {/* 관리자 등록 관리 */}
+                  <Route path="/admin/registrations">
+                    {() => (
+                      <ProtectedAdminRoute component={AdminRegistrations} />
+                    )}
+                  </Route>
 
                   {/* 나의 학습 메뉴 */}
                   <Route path="/my-courses">
