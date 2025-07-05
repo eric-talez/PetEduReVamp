@@ -518,6 +518,20 @@ export function RealTimePopularChart() {
       location: "서울 용산구",
       detailPath: "/trainers/5",
       imageUrl: "https://api.dicebear.com/7.x/initials/svg?seed=정현우&backgroundColor=ef4444&textColor=ffffff"
+    },
+    {
+      id: 6,
+      title: "강동훈 훈련사",
+      description: "국가자격증 훈련 및 반려동물 교감 교육 전문가입니다.",
+      category: "국가자격증",
+      views: 2156,
+      likes: 134,
+      comments: 78,
+      trend: 'up',
+      changePercent: 15.8,
+      location: "경북 구미시",
+      detailPath: "/trainers/6",
+      imageUrl: "https://api.dicebear.com/7.x/avataaars/svg?seed=강동훈&backgroundColor=2563eb,16a34a,dc2626,9333ea&radius=50"
     }
   ];
 
