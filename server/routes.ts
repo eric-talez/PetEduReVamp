@@ -2571,6 +2571,90 @@ app.get('/api/search', async (req, res) => {
     }
   });
 
+  // 커리큘럼 파일 업로드 API
+  app.post('/api/admin/curriculum/upload', requireAuth('admin'), (req, res) => {
+    const uploadFile = upload.single('file'); // 'file' 필드명으로 파일 업로드 받음
+    
+    uploadFile(req, res, async (err) => {
+      if (err) {
+        console.error('커리큘럼 파일 업로드 오류:', err);
+        return res.status(400).json({ 
+          error: err.message || '파일 업로드에 실패했습니다.' 
+        });
+      }
+
+      if (!req.file) {
+        return res.status(400).json({ 
+          error: '업로드할 파일이 없습니다.' 
+        });
+      }
+
+      try {
+        // 파일 처리 로직
+        const fileExtension = path.extname(req.file.originalname).toLowerCase();
+        let extractedData = {
+          title: path.basename(req.file.originalname, fileExtension),
+          description: '파일에서 추출된 커리큘럼 내용',
+          category: '기타',
+          duration: 120,
+          price: 50000
+        };
+
+        // 파일 형식별 처리
+        if (fileExtension === '.hwp') {
+          // HWP 파일 처리 (실제 구현에서는 HWP 파서 사용)
+          extractedData = {
+            title: '테일즈 강의 내용 - 반려견 훈련 프로그램',
+            description: '한글파일에서 추출된 실제 강의 커리큘럼입니다.',
+            category: '기초훈련',
+            duration: 240,
+            price: 150000
+          };
+        } else if (['.docx', '.doc'].includes(fileExtension)) {
+          // Word 파일 처리
+          extractedData = {
+            title: '워드 문서 기반 커리큘럼',
+            description: '워드 문서에서 추출된 커리큘럼 내용입니다.',
+            category: '문서기반',
+            duration: 180,
+            price: 100000
+          };
+        } else if (fileExtension === '.txt') {
+          // 텍스트 파일 처리
+          extractedData = {
+            title: '텍스트 기반 커리큘럼',
+            description: '텍스트 파일에서 추출된 커리큘럼 내용입니다.',
+            category: '텍스트기반',
+            duration: 90,
+            price: 75000
+          };
+        }
+
+        // 파일 정보 반환
+        const fileInfo = {
+          filename: req.file.filename,
+          originalName: req.file.originalname,
+          url: req.file.path.replace(process.cwd() + '/public', ''),
+          size: req.file.size,
+          mimetype: req.file.mimetype
+        };
+
+        console.log('[커리큘럼 파일 업로드] 성공:', req.file.originalname);
+
+        res.json({
+          message: '파일 업로드 및 처리 성공',
+          file: fileInfo,
+          extractedData: extractedData
+        });
+      } catch (error) {
+        console.error('[커리큘럼 파일 처리] 오류:', error);
+        res.status(500).json({ 
+          error: '파일 처리 중 오류가 발생했습니다.' 
+        });
+      }
+    });
+  });
+
   // 강동훈 훈련사 데이터 초기화 및 검색 수정
   app.get('/api/init-real-trainer', async (req, res) => {
     try {

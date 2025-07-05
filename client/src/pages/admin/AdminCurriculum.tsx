@@ -280,6 +280,9 @@ export default function AdminCurriculum() {
     trainerName: ''
   });
 
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [isProcessingFile, setIsProcessingFile] = useState(false);
+
   useEffect(() => {
     loadCurriculums();
   }, []);
@@ -331,6 +334,66 @@ export default function AdminCurriculum() {
         description: "커리큘럼 생성에 실패했습니다.",
         variant: "destructive"
       });
+    }
+  };
+
+  const handleFileUpload = async (file: File) => {
+    if (!file) return;
+
+    // 파일 타입 검증
+    const allowedTypes = ['.hwp', '.docx', '.doc', '.txt'];
+    const fileExtension = file.name.toLowerCase().slice(file.name.lastIndexOf('.'));
+    
+    if (!allowedTypes.includes(fileExtension)) {
+      toast({
+        title: "파일 형식 오류",
+        description: "지원하는 파일 형식: .hwp, .docx, .doc, .txt",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsProcessingFile(true);
+    setUploadedFile(file);
+
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await fetch('/api/admin/curriculum/upload', {
+        method: 'POST',
+        body: formData
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        
+        // 파일에서 추출된 내용으로 커리큘럼 폼 자동 입력
+        setNewCurriculum(prev => ({
+          ...prev,
+          title: result.extractedData?.title || file.name.replace(/\.[^/.]+$/, ""),
+          description: result.extractedData?.description || "파일에서 추출된 커리큘럼",
+          category: result.extractedData?.category || "기타",
+          duration: result.extractedData?.duration || 120,
+          price: result.extractedData?.price || 50000
+        }));
+
+        toast({
+          title: "파일 업로드 성공",
+          description: "파일 내용이 커리큘럼 폼에 자동 입력되었습니다.",
+          variant: "default"
+        });
+      } else {
+        throw new Error('파일 처리 실패');
+      }
+    } catch (error) {
+      toast({
+        title: "파일 처리 오류",
+        description: "파일을 처리하는 중 오류가 발생했습니다.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsProcessingFile(false);
     }
   };
 
@@ -540,6 +603,47 @@ export default function AdminCurriculum() {
                   <div className="p-4 border border-dashed border-gray-300 rounded-lg">
                     <h4 className="font-medium mb-3">새 커리큘럼 생성</h4>
                     <div className="space-y-3">
+                      {/* 파일 업로드 섹션 */}
+                      <div className="p-3 border-2 border-dashed border-blue-300 rounded-lg bg-blue-50">
+                        <div className="text-center">
+                          <Upload className="w-8 h-8 mx-auto mb-2 text-blue-500" />
+                          <p className="text-sm font-medium text-blue-700 mb-1">파일에서 커리큘럼 생성</p>
+                          <p className="text-xs text-blue-600 mb-3">
+                            한글파일(.hwp), 워드(.docx), 텍스트(.txt) 파일을 업로드하세요
+                          </p>
+                          <input
+                            type="file"
+                            accept=".hwp,.docx,.doc,.txt"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) handleFileUpload(file);
+                            }}
+                            className="hidden"
+                            id="curriculum-file-upload"
+                          />
+                          <label
+                            htmlFor="curriculum-file-upload"
+                            className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 cursor-pointer"
+                          >
+                            <FileText className="w-4 h-4 mr-2" />
+                            파일 선택
+                          </label>
+                          {isProcessingFile && (
+                            <div className="mt-2">
+                              <div className="text-xs text-blue-600">파일 처리 중...</div>
+                            </div>
+                          )}
+                          {uploadedFile && (
+                            <div className="mt-2 text-xs text-green-600">
+                              업로드됨: {uploadedFile.name}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="text-center text-gray-500 text-sm">또는</div>
+
+                      {/* 수동 입력 폼 */}
                       <Input
                         placeholder="커리큘럼 제목"
                         value={newCurriculum.title}
@@ -565,12 +669,25 @@ export default function AdminCurriculum() {
                         />
                       </div>
                       <div className="flex gap-2">
-                        <Button onClick={createCustomCurriculum} size="sm">
+                        <Button onClick={createCustomCurriculum} size="sm" disabled={isProcessingFile}>
                           <Save className="w-4 h-4 mr-1" />
                           생성
                         </Button>
                         <Button 
-                          onClick={() => setIsCreating(false)} 
+                          onClick={() => {
+                            setIsCreating(false);
+                            setUploadedFile(null);
+                            setNewCurriculum({
+                              title: '',
+                              description: '',
+                              category: '',
+                              difficulty: 'beginner',
+                              duration: 0,
+                              price: 0,
+                              trainerId: '',
+                              trainerName: ''
+                            });
+                          }} 
                           variant="outline" 
                           size="sm"
                         >
