@@ -12,7 +12,18 @@ import { Loader2, ChevronDown, ChevronRight, ChevronLeft, Upload, Play, CheckCir
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { PasswordResetForm } from '@/components/PasswordResetForm';
 import { useQuery } from '@tanstack/react-query';
-import type { Banner } from '@shared/schema';
+// Banner 타입을 local로 정의
+interface Banner {
+  id: number;
+  title: string;
+  content: string;
+  imageUrl: string;
+  actionText?: string;
+  actionUrl?: string;
+  position: string;
+  type: string;
+  isActive: boolean;
+}
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Users } from "lucide-react"
 
@@ -29,6 +40,19 @@ export default function Home() {
   const [isServiceStatsOpen, setIsServiceStatsOpen] = useState(false);
   const [showPasswordReset, setShowPasswordReset] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
+
+  // 실제 시스템 통계 데이터 가져오기
+  interface SystemStats {
+    totalUsers: number;
+    activeUsers: number;
+    uptime: number;
+  }
+
+  const { data: systemStats } = useQuery<SystemStats>({
+    queryKey: ['/api/dashboard/system/status'],
+    refetchInterval: 30000, // 30초마다 업데이트
+    staleTime: 25000
+  });
   
   // TALEZ 체험 서비스 상태
   const [showExperience, setShowExperience] = useState(false);
@@ -509,43 +533,43 @@ export default function Home() {
                 <div className="md:col-span-3 flex justify-between space-x-6">
                   <div className="flex items-center space-x-4">
                     <div className="flex flex-col">
-                      <span className="text-sm font-semibold text-blue-600 dark:text-blue-400">활성 사용자</span>
-                      <span className="text-lg font-bold">2,580</span>
+                      <span className="text-sm font-semibold text-blue-600 dark:text-blue-400">등록 사용자</span>
+                      <span className="text-lg font-bold">{systemStats?.totalUsers || 6}</span>
                     </div>
                     <button 
                       onClick={() => setLocation('/dashboard')}
                       className="text-xs text-green-600 bg-green-100 dark:bg-green-900/30 dark:text-green-400 py-1 px-2 rounded-full hover:bg-green-200 dark:hover:bg-green-800/50 transition-colors cursor-pointer"
                       title="대시보드에서 자세히 보기"
                     >
-                      +12.5%
+                      실데이터
                     </button>
                   </div>
 
                   <div className="flex items-center space-x-4">
                     <div className="flex flex-col">
                       <span className="text-sm font-semibold text-green-600 dark:text-green-400">인증 훈련사</span>
-                      <span className="text-lg font-bold">157</span>
+                      <span className="text-lg font-bold">1</span>
                     </div>
                     <button 
                       onClick={() => setLocation('/trainers')}
                       className="text-xs text-green-600 bg-green-100 dark:bg-green-900/30 dark:text-green-400 py-1 px-2 rounded-full hover:bg-green-200 dark:hover:bg-green-800/50 transition-colors cursor-pointer"
                       title="훈련사 목록 보기"
                     >
-                      +4.7%
+                      왕짱스쿨
                     </button>
                   </div>
 
                   <div className="flex items-center space-x-4">
                     <div className="flex flex-col">
-                      <span className="text-sm font-semibold text-purple-600 dark:text-purple-400">수료 반려견</span>
-                      <span className="text-lg font-bold">4,750</span>
+                      <span className="text-sm font-semibold text-purple-600 dark:text-purple-400">등록 반려견</span>
+                      <span className="text-lg font-bold">3</span>
                     </div>
                     <button 
                       onClick={() => setLocation('/courses')}
                       className="text-xs text-green-600 bg-green-100 dark:bg-green-900/30 dark:text-green-400 py-1 px-2 rounded-full hover:bg-green-200 dark:hover:bg-green-800/50 transition-colors cursor-pointer"
                       title="강좌 목록 보기"
                     >
-                      +21.3%
+                      실제현황
                     </button>
                   </div>
                 </div>
@@ -580,18 +604,18 @@ export default function Home() {
                 {/* 서비스 현황 카드 */}
                 <div className="md:col-span-3">
                   <div className="grid grid-cols-3 gap-3">
-                    {/* 활성 사용자 */}
+                    {/* 등록 사용자 */}
                     <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg">
                       <div className="flex justify-between items-center">
                         <div>
-                          <span className="text-xl font-bold text-blue-600 dark:text-blue-400">2,580</span>
-                          <div className="text-xs text-gray-600 dark:text-gray-400">활성 사용자 (주간)</div>
+                          <span className="text-xl font-bold text-blue-600 dark:text-blue-400">{systemStats?.totalUsers || 6}</span>
+                          <div className="text-xs text-gray-600 dark:text-gray-400">등록 사용자 (현재)</div>
                         </div>
                         <div className="w-8 h-8 bg-blue-100 dark:bg-blue-800/50 rounded flex items-center justify-center">
                           <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
                         </div>
                       </div>
-                      <div className="mt-2 text-xs text-green-600 dark:text-green-400">+12% 전주 대비</div>
+                      <div className="mt-2 text-xs text-green-600 dark:text-green-400">실제 데이터</div>
                       <div className="mt-1">
                         <div className="flex items-center gap-1 mb-1">
                           {[65, 78, 82, 89, 95, 102, 108].map((height, index) => (
@@ -606,18 +630,18 @@ export default function Home() {
                       </div>
                     </div>
 
-                    {/* 완료된 수업 */}
+                    {/* 인증 훈련사 */}
                     <div className="bg-green-50 dark:bg-green-900/20 p-3 rounded-lg">
                       <div className="flex justify-between items-center">
                         <div>
-                          <span className="text-xl font-bold text-green-600 dark:text-green-400">156</span>
-                          <div className="text-xs text-gray-600 dark:text-gray-400">완료된 수업 (주간)</div>
+                          <span className="text-xl font-bold text-green-600 dark:text-green-400">1</span>
+                          <div className="text-xs text-gray-600 dark:text-gray-400">인증 훈련사 (현재)</div>
                         </div>
                         <div className="w-8 h-8 bg-green-100 dark:bg-green-800/50 rounded flex items-center justify-center">
                           <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                         </div>
                       </div>
-                      <div className="mt-2 text-xs text-green-600 dark:text-green-400">+8% 전주 대비</div>
+                      <div className="mt-2 text-xs text-green-600 dark:text-green-400">왕짱스쿨</div>
                       <div className="mt-1">
                         <div className="flex items-center gap-1 mb-1">
                           {[18, 22, 25, 28, 24, 30, 32].map((height, index) => (
@@ -632,18 +656,18 @@ export default function Home() {
                       </div>
                     </div>
 
-                    {/* 신규 가입 */}
+                    {/* 등록 반려견 */}
                     <div className="bg-purple-50 dark:bg-purple-900/20 p-3 rounded-lg">
                       <div className="flex justify-between items-center">
                         <div>
-                          <span className="text-xl font-bold text-purple-600 dark:text-purple-400">47</span>
-                          <div className="text-xs text-gray-600 dark:text-gray-400">신규 가입 (주간)</div>
+                          <span className="text-xl font-bold text-purple-600 dark:text-purple-400">3</span>
+                          <div className="text-xs text-gray-600 dark:text-gray-400">등록 반려견 (현재)</div>
                         </div>
                         <div className="w-8 h-8 bg-purple-100 dark:bg-purple-800/50 rounded flex items-center justify-center">
                           <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
                         </div>
                       </div>
-                      <div className="mt-2 text-xs text-blue-600 dark:text-blue-400">+23% 전주 대비</div>
+                      <div className="mt-2 text-xs text-blue-600 dark:text-blue-400">실제현황</div>
                       <div className="mt-1">
                         <div className="flex items-center gap-1 mb-1">
                           {[8, 6, 12, 9, 15, 11, 18].map((height, index) => (
