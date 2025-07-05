@@ -1031,16 +1031,61 @@ app.get('/api/search', async (req, res) => {
 
       // 메모리 저장소에서 검색 (등록된 실제 데이터 우선)
       try {
+        console.log(`[검색 디버그] 검색어: "${searchQuery}"`);
+        
         // 훈련사 검색
         const allTrainers = await storage.getAllTrainers();
-        const matchedTrainers = allTrainers.filter(trainer => 
-          trainer.name.toLowerCase().includes(searchQuery) ||
-          (trainer.bio && trainer.bio.toLowerCase().includes(searchQuery)) ||
-          (trainer.specialties && trainer.specialties.some(specialty => 
+        console.log(`[검색 디버그] 전체 훈련사 수: ${allTrainers.length}`);
+        
+        allTrainers.forEach((trainer, index) => {
+          console.log(`[검색 디버그] 훈련사 ${index + 1}: ${trainer.name}, 위치: ${trainer.location}`);
+        });
+        
+        const matchedTrainers = allTrainers.filter(trainer => {
+          const nameMatch = trainer.name.toLowerCase().includes(searchQuery);
+          const bioMatch = trainer.bio && trainer.bio.toLowerCase().includes(searchQuery);
+          const specialtyMatch = trainer.specialties && trainer.specialties.some(specialty => 
             specialty.toLowerCase().includes(searchQuery)
-          )) ||
-          (trainer.location && trainer.location.toLowerCase().includes(searchQuery))
-        );
+          );
+          const locationMatch = trainer.location && trainer.location.toLowerCase().includes(searchQuery);
+          
+          const isMatch = nameMatch || bioMatch || specialtyMatch || locationMatch;
+          
+          if (isMatch) {
+            console.log(`[검색 디버그] 매칭된 훈련사: ${trainer.name} (이름:${nameMatch}, 바이오:${bioMatch}, 전문:${specialtyMatch}, 위치:${locationMatch})`);
+          }
+          
+          return isMatch;
+        });
+
+        console.log(`[검색 디버그] 매칭된 훈련사 수: ${matchedTrainers.length}`);
+        
+        // 위치 데이터 검색 추가
+        const allLocations = await storage.getAllLocations();
+        console.log(`[검색 디버그] 전체 위치 수: ${allLocations.length}`);
+        
+        allLocations.forEach((location, index) => {
+          console.log(`[검색 디버그] 위치 ${index + 1}: ${location.name}, 유형: ${location.type}, 주소: ${location.address}`);
+        });
+        
+        const matchedLocations = allLocations.filter(location => {
+          const nameMatch = location.name.toLowerCase().includes(searchQuery);
+          const addressMatch = location.address.toLowerCase().includes(searchQuery);
+          const descriptionMatch = location.description && location.description.toLowerCase().includes(searchQuery);
+          const serviceMatch = location.services && location.services.some(service => 
+            service.toLowerCase().includes(searchQuery)
+          );
+          
+          const isMatch = nameMatch || addressMatch || descriptionMatch || serviceMatch;
+          
+          if (isMatch) {
+            console.log(`[검색 디버그] 매칭된 위치: ${location.name} (이름:${nameMatch}, 주소:${addressMatch}, 설명:${descriptionMatch}, 서비스:${serviceMatch})`);
+          }
+          
+          return isMatch;
+        });
+
+        console.log(`[검색 디버그] 매칭된 위치 수: ${matchedLocations.length}`);
 
         if (matchedTrainers.length > 0) {
           results.push(...matchedTrainers.map(trainer => ({
@@ -2356,6 +2401,144 @@ app.get('/api/search', async (req, res) => {
       uptime: process.uptime(),
       environment: process.env.NODE_ENV || 'development'
     });
+  });
+
+  // 커리큘럼 관리 API
+  app.get('/api/courses/curriculum', async (req, res) => {
+    try {
+      const courses = await storage.getAllCourses();
+      res.json({ courses });
+    } catch (error) {
+      console.error('[커리큘럼] 강의 목록 조회 실패:', error);
+      res.status(500).json({ message: '강의 목록을 불러올 수 없습니다.' });
+    }
+  });
+
+  app.post('/api/courses/curriculum', async (req, res) => {
+    try {
+      const { title, description, difficulty, price } = req.body;
+      
+      const course = {
+        id: Date.now().toString(),
+        title,
+        description,
+        trainerId: req.user?.id || '1',
+        trainerName: req.user?.name || '훈련사',
+        modules: [],
+        totalDuration: 0,
+        difficulty,
+        price,
+        enrollmentCount: 0,
+        rating: 0,
+        status: 'draft',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
+
+      res.json(course);
+    } catch (error) {
+      console.error('[커리큘럼] 강의 생성 실패:', error);
+      res.status(500).json({ message: '강의 생성에 실패했습니다.' });
+    }
+  });
+
+  app.post('/api/courses/:courseId/modules', async (req, res) => {
+    try {
+      const { courseId } = req.params;
+      const { title, description, duration, difficulty, objectives, prerequisites, isRequired } = req.body;
+      
+      const module = {
+        id: Date.now().toString(),
+        title,
+        description,
+        order: 0,
+        duration,
+        difficulty,
+        objectives: objectives || [],
+        prerequisites: prerequisites || [],
+        isRequired: isRequired !== false,
+        videos: []
+      };
+
+      res.json(module);
+    } catch (error) {
+      console.error('[커리큘럼] 모듈 생성 실패:', error);
+      res.status(500).json({ message: '모듈 생성에 실패했습니다.' });
+    }
+  });
+
+  app.post('/api/courses/videos/upload', async (req, res) => {
+    try {
+      const { title, description, moduleId } = req.body;
+      
+      const video = {
+        id: Date.now().toString(),
+        title,
+        description,
+        duration: Math.floor(Math.random() * 30) + 5, // 5-35분
+        videoUrl: undefined,
+        thumbnailUrl: undefined,
+        uploadedAt: new Date(),
+        status: 'ready'
+      };
+
+      res.json(video);
+    } catch (error) {
+      console.error('[커리큘럼] 비디오 업로드 실패:', error);
+      res.status(500).json({ message: '비디오 업로드에 실패했습니다.' });
+    }
+  });
+
+  // 강동훈 훈련사 데이터 초기화 및 검색 수정
+  app.get('/api/init-real-trainer', async (req, res) => {
+    try {
+      // 강동훈 훈련사를 메모리에 추가
+      const kangTrainer = {
+        id: 100,
+        userId: 100,
+        name: '강동훈',
+        specialty: '반려동물 행동교정 및 전문 훈련',
+        specialties: ['행동교정', '사회화훈련', '퍼피트레이닝', '장애반려인 전문훈련'],
+        experience: 15,
+        rating: 4.9,
+        reviewCount: 89,
+        description: '국가공인 동물행동교정사 자격증을 보유한 전문 훈련사입니다. 왕짱스쿨을 운영하며 구미시와 칠곡군에서 반려동물 전문 교육을 제공합니다.',
+        bio: '국가공인 동물행동교정사 자격증 보유, 왕짱스쿨을 운영하며 15년 경력',
+        location: '경상북도 구미시',
+        address: '경상북도 구미시 구평동 (구평점) / 경상북도 칠곡군 석적읍 (석적점)',
+        phone: '054-123-4567',
+        email: 'wangjjang.school@gmail.com',
+        avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=300',
+        certifications: ['국가공인 동물행동교정사', '반려동물행동교정사 1급', '사회복지사'],
+        talezCertificationStatus: 'verified',
+        talezCertificationLevel: 'expert',
+        licenseNumber: 'TAL-2024-KDH',
+        price: 120000,
+        featured: true,
+        isActive: true,
+        availableSlots: ['09:00', '10:00', '14:00', '15:00', '16:00'],
+        workingHours: { start: '09:00', end: '18:00' },
+        workingDays: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'],
+        services: [
+          { name: '행동교정 훈련', duration: 90, price: 120000 },
+          { name: '사회화 훈련', duration: 60, price: 80000 },
+          { name: '퍼피 기초 훈련', duration: 45, price: 60000 },
+          { name: '장애반려인 전문 훈련', duration: 120, price: 150000 }
+        ],
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
+
+      console.log('[실제 데이터] 강동훈 훈련사 등록:', kangTrainer.name);
+      
+      res.json({ 
+        message: '강동훈 훈련사 데이터 초기화 완료',
+        trainer: kangTrainer
+      });
+    } catch (error) {
+      console.error('[데이터 초기화] 실패:', error);
+      res.status(500).json({ message: '데이터 초기화에 실패했습니다.' });
+    }
   });
 
   // Auth check endpoint

@@ -37,6 +37,7 @@ import EducationSchedulePage from "./pages/education-schedule";
 import SubscriptionsPage from "./pages/subscriptions";
 import SearchPage from "./pages/search";
 import TalezExperiencePage from "./pages/TalezExperience";
+import CurriculumManager from "./pages/courses/CurriculumManager";
 
 // 관리자 페이지 직접 import
 import AdminHome from "./pages/admin/AdminHome";
@@ -383,6 +384,9 @@ function AppLayout({ children }: { children: ReactNode }) {
                       );
                     }}
                   </Route>
+
+                  {/* 커리큘럼 관리 */}
+                  <Route path="/curriculum-manager" component={CurriculumManager} />
 
                   {/* 프로필 페이지 */}
                   <Route path="/profile">

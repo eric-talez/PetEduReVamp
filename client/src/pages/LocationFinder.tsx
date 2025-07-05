@@ -194,6 +194,8 @@ export default function LocationFinder() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState('all');
   const [filterStatus, setFilterStatus] = useState('all');
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState<LocationItem | null>(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -238,6 +240,49 @@ export default function LocationFinder() {
 
   console.log('LocationFinder 컴포넌트 렌더링됨');
 
+  // API 검색 함수
+  const performApiSearch = async (query: string) => {
+    if (!query.trim()) {
+      setSearchResults([]);
+      return;
+    }
+
+    setIsSearching(true);
+    try {
+      console.log(`[DEBUG] API Request: GET /api/search?q=${encodeURIComponent(query)}&page=1&limit=10`);
+      const response = await fetch(`/api/search?q=${encodeURIComponent(query)}&page=1&limit=10`);
+      
+      if (response.ok) {
+        const data = await response.json();
+        console.log('[DEBUG] API Response: 200 OK');
+        console.log('[DEBUG] Search results:', data);
+        setSearchResults(data.results || []);
+      } else {
+        console.error('[DEBUG] API Error:', response.status);
+        setSearchResults([]);
+      }
+    } catch (error) {
+      console.error('[DEBUG] Search error:', error);
+      setSearchResults([]);
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
+  // 검색어 변경시 API 호출
+  React.useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      if (searchTerm.trim()) {
+        performApiSearch(searchTerm);
+      } else {
+        setSearchResults([]);
+      }
+    }, 300); // 300ms 디바운스
+
+    return () => clearTimeout(timeoutId);
+  }, [searchTerm]);
+
+  // 로컬 필터링과 API 검색 결과 결합
   const filteredLocations = locations.filter(location => {
     const matchesSearch = location.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          location.address.toLowerCase().includes(searchTerm.toLowerCase());
@@ -246,6 +291,34 @@ export default function LocationFinder() {
 
     return matchesSearch && matchesType && matchesStatus;
   });
+
+  // API 검색 결과를 LocationItem 형태로 변환
+  const searchResultsAsLocations = searchResults
+    .filter(result => result.type === 'trainer')
+    .map(result => ({
+      id: result.id + 1000, // ID 충돌 방지
+      name: result.title,
+      type: 'training' as const,
+      address: result.location || '주소 정보 없음',
+      phone: result.phone || '연락처 정보 없음',
+      rating: result.rating || 4.5,
+      reviewCount: result.reviewCount || 0,
+      distance: 0,
+      operatingHours: { open: '09:00', close: '18:00' },
+      services: result.features || [],
+      priceRange: '상담 후 결정',
+      isPartner: true,
+      description: result.description || '',
+      image: 'https://images.unsplash.com/photo-1544568100-847a948585b9?w=400',
+      status: 'active' as const,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    }));
+
+  // 최종 표시할 위치 목록 (로컬 + API 검색결과)
+  const displayLocations = searchTerm.trim() 
+    ? [...searchResultsAsLocations, ...filteredLocations]
+    : filteredLocations;
 
   const getTypeIcon = (type: string) => {
     switch (type) {
@@ -834,7 +907,20 @@ export default function LocationFinder() {
 
       {/* 위치 목록 */}
       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-        {filteredLocations.map((location) => (
+        {isSearching && (
+          <div className="col-span-full text-center py-8">
+            <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
+            <p className="text-gray-600">검색 중...</p>
+          </div>
+        )}
+        {searchTerm.trim() && searchResults.length > 0 && (
+          <div className="col-span-full mb-4">
+            <p className="text-sm text-green-600 font-medium">
+              🔍 "{searchTerm}" 검색 결과 {searchResults.length}개 발견
+            </p>
+          </div>
+        )}
+        {displayLocations.map((location) => (
           <Card key={location.id} className="overflow-hidden cursor-pointer hover:shadow-lg transition-shadow">
             <div className="relative h-48" onClick={() => handleLocationClick(location)}>
               <img

@@ -1036,8 +1036,44 @@ export class MemoryStorage implements IStorage{
 
     this.users.set(강동훈UserAccount.id, 강동훈UserAccount);
 
-    // 강동훈 훈련사의 UserID 연결을 위해 업데이트
-    realTrainer_강동훈.userId = 강동훈UserAccount.id;
+    // 강동훈 훈련사 프로필 생성 (실제 왕짱스쿨 데이터)
+    const realTrainer_강동훈 = {
+      id: this.trainerId++,
+      userId: 강동훈UserAccount.id,
+      name: '강동훈',
+      specialty: '반려동물 행동교정 및 전문 훈련',
+      specialties: ['행동교정', '사회화훈련', '퍼피트레이닝', '장애반려인 전문훈련'],
+      experience: 15,
+      rating: 4.9,
+      reviewCount: 89,
+      description: '국가공인 동물행동교정사 자격증을 보유한 전문 훈련사입니다. 왕짱스쿨을 운영하며 구미시와 칠곡군에서 반려동물 전문 교육을 제공합니다.',
+      bio: '국가공인 동물행동교정사 자격증 보유, 왕짱스쿠를 운영하며 15년 경력',
+      location: '경상북도 구미시',
+      address: '경상북도 구미시 구평동 (구평점) / 경상북도 칠곡군 석적읍 (석적점)',
+      phone: '054-123-4567',
+      email: 'wangjjang.school@gmail.com',
+      avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=300',
+      certifications: ['국가공인 동물행동교정사', '반려동물행동교정사 1급', '사회복지사'],
+      talezCertificationStatus: 'verified',
+      talezCertificationLevel: 'expert',
+      licenseNumber: 'TAL-2024-KDH',
+      price: 120000,
+      featured: true,
+      isActive: true,
+      availableSlots: ['09:00', '10:00', '14:00', '15:00', '16:00'],
+      workingHours: { start: '09:00', end: '18:00' },
+      workingDays: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'],
+      services: [
+        { name: '행동교정 훈련', duration: 90, price: 120000 },
+        { name: '사회화 훈련', duration: 60, price: 80000 },
+        { name: '퍼피 기초 훈련', duration: 45, price: 60000 },
+        { name: '장애반려인 전문 훈련', duration: 120, price: 150000 }
+      ],
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+
+    this.trainers.set(realTrainer_강동훈.id, realTrainer_강동훈);
 
     // 훈련사 프로필 데이터 별도 저장
     const trainerProfile = {
@@ -1216,71 +1252,9 @@ export class MemoryStorage implements IStorage{
       updatedAt: new Date()
     };
 
-    // 실제 훈련사 - 강동훈
-    const realTrainer_강동훈 = {
-      id: this.trainerId++,
-      userId: this.userId + 200, // 임시 ID
-      name: '강동훈',
-      specialty: '국가자격증 훈련 및 동물교감 교육',
-      specialties: ['국가자격증 훈련', '정서안정 교육', '문제행동 교정', '퍼피 사회화', '수제간식 교육'],
-      experience: 8,
-      rating: 4.9,
-      reviewCount: 89,
-      description: '국가자격증 훈련부터 반려동물 교감 교육까지! 반려견과 보호자의 진짜 관계를 만들어 드립니다.',
-      bio: '한국애견연맹 사회공헌위원회 위원이자 반려동물행동지도사 국가자격증 2급 보유. 경기대학교 대체의학대학원 동물매개자연치유전공 석사 졸업. 이해와 신뢰 중심의 훈련 철학으로 반려견과 보호자가 진짜로 함께 살아가는 법을 가르칩니다.',
-      location: '경북 구미시',
-      address: '경북 구미시 구평동 661 (왕짱 스쿨)',
-      secondaryAddress: '경북 칠곡군 석적읍 북중리 10길 17 (왕짱애견유치원)',
-      phone: '010-4765-1909',
-      email: 'wangjjang.school@gmail.com',
-      avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=300',
-      certifications: [
-        '반려동물행동지도사 국가자격증 2급',
-        '경기대학교 대체의학대학원 동물매개자연치유전공 석사',
-        '한국애견연맹 사회공헌위원회 위원',
-        '펫헬스케어아카데미 협회 공동대표'
-      ],
-      qualifications: [
-        '구미시 2025 미래교육지구 마을학교 반려꿈터 운영',
-        '정신건강 및 특수교육 대상자 교감 활동 경험 다수',
-        '경북소방본부, 교육기관 대상 강의 및 상담 진행',
-        '느린학습자, 정신장애인, 위기청소년 대상 훈련 경험'
-      ],
-      talezCertificationStatus: 'verified',
-      talezCertificationLevel: 'expert',
-      licenseNumber: 'TAL-2024-006',
-      price: 100000,
-      featured: true,
-      isActive: true,
-      availableSlots: ['09:00', '10:00', '11:00', '14:00', '15:00', '16:00', '17:00'],
-      workingHours: { start: '09:00', end: '18:00' },
-      workingDays: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'],
-      services: [
-        { name: '국가자격증 오비디언스 훈련', duration: 90, price: 120000 },
-        { name: '정서안정 및 동물교감 교육', duration: 60, price: 100000 },
-        { name: '퍼피 사회화 교육', duration: 60, price: 80000 },
-        { name: '문제행동 교정 훈련', duration: 90, price: 130000 },
-        { name: '보호자 맞춤 컨설팅', duration: 45, price: 70000 },
-        { name: '수제간식 교육', duration: 120, price: 150000 }
-      ],
-      socialProjects: [
-        '정신장애인 대상 동물교감 프로그램',
-        '위기청소년 정서치료 프로그램',
-        '느린학습자 반려동물 교육 프로그램'
-      ],
-      philosophy: '단순한 훈련이 아닌 반려견과 보호자가 진짜로 함께 살아가는 법을 배우는 것',
-      specialFeatures: [
-        '사회적 약자 대상 훈련 경험 풍부',
-        '실전형 훈련 콘텐츠 제작자',
-        '교육 + 훈련 + 보호자 상담의 3박자 케어',
-        '행동 원인 분석부터 교정, 보호자 훈련법까지 통합 지도'
-      ],
-      createdAt: new Date(),
-      updatedAt: new Date()
-    };
-
     // 훈련사 데이터를 trainers Map에 저장
     this.trainers.set(trainerProfile.id, trainerProfile);
+    this.trainers.set(securityTrainer.id, securityTrainer);
     this.trainers.set(trainer2.id, trainer2);
     this.trainers.set(trainer3.id, trainer3);
     this.trainers.set(trainer4.id, trainer4);
