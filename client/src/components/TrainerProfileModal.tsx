@@ -53,55 +53,64 @@ export function TrainerProfileModal({ trainer, open, onOpenChange }: TrainerProf
       console.log("Dialog onOpenChange:", value);
       onOpenChange(value);
     }}>
-      <DialogContent className="sm:max-w-[650px] max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <div className="flex items-start gap-6">
-            <div className="h-24 w-24 rounded-full overflow-hidden border-4 border-primary/20 shadow-lg bg-white dark:bg-gray-800 flex-shrink-0">
-              <img 
-                src={trainer.avatar || trainer.image || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(trainer.name)}&backgroundColor=6366f1&textColor=ffffff`}
-                alt={trainer.name}
-                className="w-full h-full object-cover" 
-                style={{ 
-                  filter: 'none !important', 
-                  WebkitFilter: 'none !important'
-                }}
-                onLoad={() => {
-                  console.log(`[모달 이미지] 로딩 성공: ${trainer.name}, URL: ${trainer.avatar || trainer.image}`);
-                }}
-                onError={(e) => {
-                  const target = e.target as HTMLImageElement;
-                  console.log(`[모달 이미지] 로딩 실패: ${trainer.name}, 원본 URL: ${target.src}`);
-                  target.src = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(trainer.name)}&backgroundColor=6366f1&textColor=ffffff`;
-                }}
-              />
-            </div>
-            <div className="flex-1">
-              <DialogTitle className="text-2xl font-bold text-gray-900 dark:text-white mb-1">
-                {trainer.name} 트레이너
-              </DialogTitle>
-              <DialogDescription className="text-primary font-semibold text-base mb-3">
-                {trainer.specialty}
-              </DialogDescription>
-              <div className="flex flex-wrap items-center gap-4">
-                <div className="flex items-center">
-                  <Star className="w-5 h-5 text-yellow-500 fill-yellow-500" />
-                  <span className="text-sm font-semibold ml-1 text-gray-700 dark:text-gray-300">{trainer.rating}</span>
-                  <span className="text-sm text-gray-500 dark:text-gray-400 ml-1">
-                    ({trainer.reviewCount} 리뷰)
-                  </span>
-                </div>
-                {trainer.location && (
-                  <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
-                    <MapPin className="w-4 h-4 mr-1" />
-                    {trainer.location}
+      <DialogContent className="sm:max-w-[650px] max-h-[90vh] overflow-y-auto p-0">
+        {/* 배경 이미지 헤더 */}
+        <div className="relative h-40 bg-gradient-to-r from-primary to-primary/80 overflow-hidden">
+          <div className="absolute inset-0 bg-black/20"></div>
+          <div className="absolute bottom-4 left-6 right-6">
+            <div className="flex items-end gap-4">
+              <div className="h-20 w-20 rounded-full overflow-hidden border-4 border-white shadow-lg bg-white flex-shrink-0">
+                <img 
+                  src={trainer.avatar || trainer.image || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(trainer.name)}&backgroundColor=6366f1&textColor=ffffff`}
+                  alt={trainer.name}
+                  className="w-full h-full object-cover" 
+                  style={{ 
+                    filter: 'none !important', 
+                    WebkitFilter: 'none !important'
+                  }}
+                  onLoad={() => {
+                    console.log(`[모달 이미지] 로딩 성공: ${trainer.name}, URL: ${trainer.avatar || trainer.image}`);
+                  }}
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    console.log(`[모달 이미지] 로딩 실패: ${trainer.name}, 원본 URL: ${target.src}`);
+                    target.src = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(trainer.name)}&backgroundColor=6366f1&textColor=ffffff`;
+                  }}
+                />
+              </div>
+              <div className="flex-1 pb-1">
+                <DialogTitle className="text-2xl font-bold text-white mb-1 drop-shadow-lg">
+                  {trainer.name} 트레이너
+                </DialogTitle>
+                <DialogDescription className="text-white/90 font-semibold text-base mb-2 drop-shadow-md">
+                  {trainer.specialty}
+                </DialogDescription>
+                <div className="flex flex-wrap items-center gap-4">
+                  <div className="flex items-center">
+                    <Star className="w-5 h-5 text-yellow-400 fill-yellow-400 drop-shadow-sm" />
+                    <span className="text-sm font-semibold ml-1 text-white drop-shadow-sm">{trainer.rating}</span>
+                    <span className="text-sm text-white/80 ml-1 drop-shadow-sm">
+                      ({trainer.reviewCount} 리뷰)
+                    </span>
                   </div>
-                )}
+                  {trainer.location && (
+                    <div className="flex items-center text-sm text-white/90 drop-shadow-sm">
+                      <MapPin className="w-4 h-4 mr-1" />
+                      {trainer.location}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>
+        </div>
+        
+        <DialogHeader className="sr-only">
+          <DialogTitle>{trainer.name} 트레이너</DialogTitle>
+          <DialogDescription>{trainer.specialty}</DialogDescription>
         </DialogHeader>
 
-        <div className="mt-8 space-y-6">
+        <div className="p-6 space-y-6">
           <div>
             <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-3 border-b border-gray-200 dark:border-gray-700 pb-2">
               소개
@@ -172,7 +181,7 @@ export function TrainerProfileModal({ trainer, open, onOpenChange }: TrainerProf
           )}
         </div>
 
-        <div className="mt-8 pt-6 border-t-2 border-gray-200 dark:border-gray-700">
+        <div className="px-6 pb-6 pt-6 border-t-2 border-gray-200 dark:border-gray-700">
           <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
             훈련사에게 연락하기
           </h3>
