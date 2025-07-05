@@ -305,11 +305,37 @@ export class MemoryStorage implements IStorage{
       instituteId: null
     };
 
+    // 강동훈 (기관관리자) - 왕짱스쿨 운영
+    const donghoongUser = {
+      id: 108, // 강동훈 사용자 ID (훈련사와 동일 ID)
+      username: 'donghoong',
+      email: 'donghoong@wangzzang.com',
+      name: '강동훈',
+      role: 'institute-admin', // 기관관리자 역할
+      password: 'hashed_password_here',
+      avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=300',
+      createdAt: new Date(),
+      isVerified: true,
+      instituteId: 1, // 왕짱스쿨 ID
+      phone: '010-4765-1909',
+      bio: '반려동물행동지도사 국가자격증 2급 보유. 이해와 신뢰 중심의 훈련 철학으로 반려견과 보호자가 함께 살아가는 법을 교육합니다.',
+      certifications: [
+        '반려동물행동지도사 국가자격증 2급',
+        '경기대학교 대체의학대학원 동물매개자연치유전공 석사',
+        '한국애견연맹 사회공헌위원회 위원',
+        '펫헬스케어아카데미 협회 공동대표'
+      ]
+    };
+
     this.users.set(adminUser.id, adminUser);
     this.users.set(trainerUser.id, trainerUser);
+    this.users.set(donghoongUser.id, donghoongUser);
 
     // 5명의 훈련사 데이터 (기존과 동일)
     this.initTrainerData();
+
+    // 기관 데이터 초기화
+    this.initInstituteData();
 
     // 견주 데이터 추가
     this.initPetOwnerData();
@@ -560,6 +586,116 @@ export class MemoryStorage implements IStorage{
     this.trainers.set(trainer4.id, trainer4);
     this.trainers.set(trainer5.id, trainer5);
     this.trainers.set(trainer6.id, trainer6);
+  }
+
+  // 기관 데이터 초기화
+  private initInstituteData() {
+    // 왕짱스쿨 기관 데이터 (강동훈 훈련사 연결)
+    const wangzzangSchool = {
+      id: 1,
+      name: '왕짱스쿨',
+      code: 'WANGZZANG001',
+      type: 'training-center',
+      description: '국가자격증 훈련부터 반려동물 교감 교육까지! 반려견과 보호자의 "진짜 관계"를 만들어 드립니다.',
+      address: '경북 구미시 구평동 661',
+      phone: '010-4765-1909',
+      email: 'donghoong@wangzzang.com',
+      website: 'https://wangzzang.com',
+      logo: 'https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=300',
+      capacity: 30,
+      establishedYear: 2020,
+      latitude: 36.1184,
+      longitude: 128.3445,
+      isVerified: true,
+      verifiedAt: new Date('2024-01-15'),
+      certLevel: 'premium',
+      rating: 4.9,
+      reviewCount: 87,
+      featured: true,
+      isActive: true,
+      operatingHours: {
+        monday: { open: '09:00', close: '18:00' },
+        tuesday: { open: '09:00', close: '18:00' },
+        wednesday: { open: '09:00', close: '18:00' },
+        thursday: { open: '09:00', close: '18:00' },
+        friday: { open: '09:00', close: '18:00' },
+        saturday: { open: '09:00', close: '18:00' },
+        sunday: { closed: true }
+      },
+      facilities: [
+        '실내 훈련장 (50평)',
+        '실외 운동장 (100평)',
+        '개별 훈련실 (3개)',
+        '그루밍 시설',
+        '대기실 및 상담실',
+        '주차장 (10대)'
+      ],
+      specialPrograms: [
+        '구미시 2025 미래교육지구 마을학교 "반려꿈터" 운영',
+        '정신건강 및 특수교육 대상자를 위한 교감 활동',
+        '경북소방본부, 교육기관 대상 강의 및 상담',
+        '수제간식 교육 및 반려견 건강식 제안'
+      ],
+      trainerId: 6, // 강동훈 훈련사 ID
+      trainerName: '강동훈',
+      certifications: [
+        '반려동물행동지도사 국가자격증 2급',
+        '동물매개자연치유전공 석사',
+        '한국애견연맹 사회공헌위원회 위원'
+      ],
+      courses: [
+        {
+          id: 1,
+          name: '국가자격증 훈련 (오비디언스)',
+          duration: 60,
+          price: 70000,
+          description: '기본 복종 훈련부터 고급 오비디언스까지'
+        },
+        {
+          id: 2,
+          name: '정서안정 및 동물교감 교육',
+          duration: 90,
+          price: 90000,
+          description: '반려견과 보호자의 정서적 유대감 형성'
+        },
+        {
+          id: 3,
+          name: '문제행동 교정',
+          duration: 75,
+          price: 80000,
+          description: '짖음, 공격성, 분리불안 등 문제행동 교정'
+        },
+        {
+          id: 4,
+          name: '퍼피 사회화 교육',
+          duration: 45,
+          price: 60000,
+          description: '어린 강아지 사회화 및 기본 예절 교육'
+        }
+      ],
+      additionalLocations: [
+        {
+          name: '왕짱애견유치원',
+          address: '경북 칠곡군 석적읍 북중리 10길 17',
+          phone: '010-4765-1909',
+          type: 'daycare',
+          latitude: 36.0089,
+          longitude: 128.4014
+        }
+      ],
+      createdAt: new Date('2024-01-15'),
+      updatedAt: new Date()
+    };
+
+    this.institutes.set(wangzzangSchool.id, wangzzangSchool);
+
+    // 강동훈 훈련사에 기관 ID 연결
+    const trainer6 = this.trainers.get(6);
+    if (trainer6) {
+      trainer6.instituteId = 1;
+      trainer6.instituteName = '왕짱스쿨';
+      this.trainers.set(6, trainer6);
+    }
   }
 
   // 견주 데이터 초기화
