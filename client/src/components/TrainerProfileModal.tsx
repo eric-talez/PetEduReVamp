@@ -52,32 +52,42 @@ export function TrainerProfileModal({ trainer, open, onOpenChange }: TrainerProf
       console.log("Dialog onOpenChange:", value);
       onOpenChange(value);
     }}>
-      <DialogContent className="sm:max-w-[600px] max-h-[85vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[650px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <div className="flex items-start gap-4">
-            <div className="h-20 w-20 rounded-full overflow-hidden border-4 border-primary/20 shadow-lg">
+          <div className="flex items-start gap-6">
+            <div className="h-24 w-24 rounded-full overflow-hidden border-4 border-primary/20 shadow-lg bg-white flex-shrink-0">
               <img 
-                src={trainer.image}
+                src={trainer.image || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(trainer.name)}&backgroundColor=6366f1&textColor=ffffff`}
                 alt={trainer.name}
-                className="w-full h-full object-cover brightness-110 contrast-110" 
+                className="w-full h-full object-cover" 
+                style={{ 
+                  filter: 'none !important', 
+                  WebkitFilter: 'none !important'
+                }}
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.src = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(trainer.name)}&backgroundColor=6366f1&textColor=ffffff`;
+                }}
               />
             </div>
-            <div>
-              <DialogTitle className="text-xl">{trainer.name} 트레이너</DialogTitle>
-              <DialogDescription className="text-primary mt-1">
+            <div className="flex-1">
+              <DialogTitle className="text-2xl font-bold text-gray-900 dark:text-white mb-1">
+                {trainer.name} 트레이너
+              </DialogTitle>
+              <DialogDescription className="text-primary font-semibold text-base mb-3">
                 {trainer.specialty}
               </DialogDescription>
-              <div className="flex items-center mt-2">
-                <div className="flex items-center mr-2">
-                  <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
-                  <span className="text-sm font-medium ml-1">{trainer.rating}</span>
+              <div className="flex flex-wrap items-center gap-4">
+                <div className="flex items-center">
+                  <Star className="w-5 h-5 text-yellow-500 fill-yellow-500" />
+                  <span className="text-sm font-semibold ml-1 text-gray-700 dark:text-gray-300">{trainer.rating}</span>
+                  <span className="text-sm text-gray-500 dark:text-gray-400 ml-1">
+                    ({trainer.reviewCount} 리뷰)
+                  </span>
                 </div>
-                <span className="text-xs text-gray-500 dark:text-gray-400">
-                  ({trainer.reviewCount} 리뷰)
-                </span>
                 {trainer.location && (
-                  <div className="ml-3 flex items-center text-xs text-gray-500 dark:text-gray-400">
-                    <MapPin className="w-3 h-3 mr-1" />
+                  <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
+                    <MapPin className="w-4 h-4 mr-1" />
                     {trainer.location}
                   </div>
                 )}
@@ -86,111 +96,127 @@ export function TrainerProfileModal({ trainer, open, onOpenChange }: TrainerProf
           </div>
         </DialogHeader>
 
-        <div className="mt-6">
-          <h3 className="text-md font-semibold mb-2">소개</h3>
-          <p className="text-sm text-gray-600 dark:text-gray-300">
-            {trainer.description}
-          </p>
-        </div>
-
-        {trainer.experience && (
-          <div className="mt-4">
-            <h3 className="text-md font-semibold mb-2">경력</h3>
-            <p className="text-sm text-gray-600 dark:text-gray-300">
-              {trainer.experience}
+        <div className="mt-8 space-y-6">
+          <div>
+            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-3 border-b border-gray-200 dark:border-gray-700 pb-2">
+              소개
+            </h3>
+            <p className="text-base text-gray-700 dark:text-gray-300 leading-relaxed">
+              {trainer.description}
             </p>
           </div>
-        )}
 
-        <div className="mt-4">
-          <h3 className="text-md font-semibold mb-2">자격증 및 전문분야</h3>
-          <div className="flex flex-wrap gap-2">
-            {trainer.certifications.map((cert, idx) => (
-              <Badge key={idx} variant="outline">{cert}</Badge>
-            ))}
+          {trainer.experience && (
+            <div>
+              <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-3 border-b border-gray-200 dark:border-gray-700 pb-2">
+                경력
+              </h3>
+              <p className="text-base text-gray-700 dark:text-gray-300 leading-relaxed">
+                {trainer.experience}
+              </p>
+            </div>
+          )}
+
+          <div>
+            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-3 border-b border-gray-200 dark:border-gray-700 pb-2">
+              자격증 및 전문분야
+            </h3>
+            <div className="flex flex-wrap gap-2">
+              {trainer.certifications.map((cert, idx) => (
+                <Badge key={idx} variant="outline" className="text-sm py-1 px-3">{cert}</Badge>
+              ))}
+            </div>
           </div>
+
+          {trainer.education && (
+            <div>
+              <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-3 border-b border-gray-200 dark:border-gray-700 pb-2">
+                학력 및 교육
+              </h3>
+              <ul className="text-base text-gray-700 dark:text-gray-300 list-disc pl-6 space-y-1">
+                {trainer.education.map((edu, idx) => (
+                  <li key={idx}>{edu}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {trainer.languages && (
+            <div>
+              <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-3 border-b border-gray-200 dark:border-gray-700 pb-2">
+                구사 언어
+              </h3>
+              <div className="flex flex-wrap gap-2">
+                {trainer.languages.map((lang, idx) => (
+                  <Badge key={idx} variant="secondary" className="text-sm py-1 px-3">{lang}</Badge>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {trainer.availableHours && (
+            <div>
+              <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-3 border-b border-gray-200 dark:border-gray-700 pb-2">
+                가능 시간
+              </h3>
+              <div className="flex items-center text-base text-gray-700 dark:text-gray-300">
+                <Clock className="w-5 h-5 mr-2" />
+                {trainer.availableHours}
+              </div>
+            </div>
+          )}
         </div>
 
-        {trainer.education && (
-          <div className="mt-4">
-            <h3 className="text-md font-semibold mb-2">학력 및 교육</h3>
-            <ul className="text-sm text-gray-600 dark:text-gray-300 list-disc pl-5">
-              {trainer.education.map((edu, idx) => (
-                <li key={idx}>{edu}</li>
-              ))}
-            </ul>
-          </div>
-        )}
-
-        {trainer.languages && (
-          <div className="mt-4">
-            <h3 className="text-md font-semibold mb-2">구사 언어</h3>
-            <div className="flex flex-wrap gap-2">
-              {trainer.languages.map((lang, idx) => (
-                <Badge key={idx} variant="secondary">{lang}</Badge>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {trainer.availableHours && (
-          <div className="mt-4">
-            <h3 className="text-md font-semibold mb-2">가능 시간</h3>
-            <div className="flex items-center text-sm text-gray-600 dark:text-gray-300">
-              <Clock className="w-4 h-4 mr-2" />
-              {trainer.availableHours}
-            </div>
-          </div>
-        )}
-
-        <div className="mt-6 pt-4 border-t border-gray-100 dark:border-gray-800">
-          <h3 className="text-md font-semibold mb-3">훈련사에게 연락하기</h3>
-          <div className="grid grid-cols-2 gap-3">
+        <div className="mt-8 pt-6 border-t-2 border-gray-200 dark:border-gray-700">
+          <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
+            훈련사에게 연락하기
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Button 
               type="button"
-              className="w-full" 
-              size="sm"
+              className="w-full h-12 text-base font-semibold" 
+              size="default"
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
                 console.log('[Dialog Action] 메시지 보내기 클릭:', trainer.name);
-                onOpenChange(false); // 모달 닫기
+                onOpenChange(false);
                 window.location.href = `/messages`;
               }}
             >
-              <MessageSquare className="w-4 h-4 mr-2" />
+              <MessageSquare className="w-5 h-5 mr-3" />
               메시지 보내기
             </Button>
             <Button 
               type="button"
-              className="w-full" 
+              className="w-full h-12 text-base font-semibold" 
               variant="outline" 
-              size="sm"
+              size="default"
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
                 console.log('[Dialog Action] 화상 상담 예약 클릭:', trainer.name);
-                onOpenChange(false); // 모달 닫기
+                onOpenChange(false);
                 window.location.href = `/video-call`;
               }}
             >
-              <VideoIcon className="w-4 h-4 mr-2" />
+              <VideoIcon className="w-5 h-5 mr-3" />
               화상 상담 예약
             </Button>
             <Button 
               type="button"
-              className="w-full" 
+              className="w-full h-12 text-base font-semibold" 
               variant="secondary" 
-              size="sm"
+              size="default"
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
                 console.log('[Dialog Action] 수업 일정 보기 클릭:', trainer.name);
-                onOpenChange(false); // 모달 닫기
+                onOpenChange(false);
                 window.location.href = `/trainers`;
               }}
             >
-              <Calendar className="w-4 h-4 mr-2" />
+              <Calendar className="w-5 h-5 mr-3" />
               수업 일정 보기
             </Button>
             {trainer.contactInfo?.phone && (

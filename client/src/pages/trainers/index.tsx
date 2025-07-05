@@ -474,16 +474,18 @@ export default function Trainers() {
 
             {/* 프로필 이미지를 맨 위로 이동 */}
             <div className="relative h-48 bg-gradient-to-br from-blue-50 to-purple-50 flex items-center justify-center">
-              <div className="w-32 h-32 rounded-full overflow-hidden shadow-xl border-4 border-white">
+              <div className="w-32 h-32 rounded-full overflow-hidden shadow-xl border-4 border-white bg-white">
                 <img 
-                  src="https://images.unsplash.com/photo-1543466835-00a7907e9de1?q=80&w=300&auto=format&fit=crop&sharp=100" 
+                  src={trainer.avatar || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(trainer.name)}&backgroundColor=6366f1&textColor=ffffff`}
                   alt={trainer.name} 
-                  className="w-full h-full object-cover light-mode" 
+                  className="w-full h-full object-cover" 
                   style={{ 
                     filter: 'none !important', 
-                    WebkitFilter: 'none !important',
-                    brightness: '1',
-                    contrast: '1'
+                    WebkitFilter: 'none !important'
+                  }}
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.src = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(trainer.name)}&backgroundColor=6366f1&textColor=ffffff`;
                   }}
                 />
               </div>
