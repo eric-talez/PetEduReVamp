@@ -80,7 +80,13 @@ export default function Trainers() {
         params.append('page', currentPage.toString());
         params.append('limit', '12');
 
-        const response = await fetch(`/api/trainers?${params.toString()}`);
+        const response = await fetch(`/api/trainers?${params.toString()}`, {
+          cache: 'no-cache',
+          headers: {
+            'Cache-Control': 'no-cache',
+            'Pragma': 'no-cache'
+          }
+        });
         if (!response.ok) {
           throw new Error('훈련사 데이터를 불러오는데 실패했습니다.');
         }
@@ -141,15 +147,31 @@ export default function Trainers() {
     }
   ];
 
-  const openTrainerModal = (trainer: any) => {
-    console.log("훈련사 프로필 열기:", trainer.name);
-    console.log("훈련사 데이터:", { 
-      id: trainer.id, 
-      name: trainer.name, 
-      avatar: trainer.avatar, 
-      image: trainer.image 
-    });
-    setSelectedTrainer(trainer);
+  const openTrainerModal = async (trainer: any) => {
+    console.log("프로필 보기 버튼 클릭:", trainer.name);
+    
+    // 최신 훈련사 데이터를 API에서 직접 가져오기
+    try {
+      const response = await fetch(`/api/trainers/${trainer.id}`, {
+        cache: 'no-cache',
+        headers: {
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache'
+        }
+      });
+      if (response.ok) {
+        const latestTrainer = await response.json();
+        console.log("최신 훈련사 데이터:", { id: latestTrainer.id, name: latestTrainer.name, avatar: latestTrainer.avatar });
+        setSelectedTrainer(latestTrainer);
+      } else {
+        console.log("API 응답 실패, 기존 데이터 사용:", trainer);
+        setSelectedTrainer(trainer);
+      }
+    } catch (error) {
+      console.error("훈련사 데이터 로드 실패:", error);
+      setSelectedTrainer(trainer);
+    }
+    
     setIsModalOpen(true);
   };
 

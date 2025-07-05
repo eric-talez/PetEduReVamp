@@ -547,7 +547,7 @@ export class MemoryStorage implements IStorage{
       address: '경북 구미시 구평동 661 (왕짱 스쿨)',
       phone: '010-4765-1909',
       email: 'donghoong@wangzzang.com',
-      avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=300',
+      avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=강동훈&backgroundColor=2563eb,16a34a,dc2626,9333ea&radius=50',
       certifications: [
         '반려동물행동지도사 국가자격증 2급',
         '경기대학교 대체의학대학원 동물매개자연치유전공 석사',
