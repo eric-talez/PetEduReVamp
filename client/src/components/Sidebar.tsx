@@ -778,6 +778,7 @@ export function Sidebar({
                     <SidebarMenuGroup expanded={expanded} title="시스템 관리" groupName="admin" isOpen={menuGroups.admin} toggleGroup={toggleMenuGroup} icon={<Settings className="w-5 h-5 text-gray-500" />} />
                     {menuGroups.admin && (
                       <>
+                        <AccessibleNavItem href="/admin/curriculum" icon={<BookOpen className="w-5 h-5 mr-2" />} hoverIcon={<GraduationCap className="w-5 h-5 mr-2 text-primary" />} active={isActive("/admin/curriculum")} onClick={handleItemClick} show={true}>커리큘럼 관리</AccessibleNavItem>
                         <AccessibleNavItem href="/admin/users" icon={<Settings className="w-5 h-5 mr-2" />} active={isActive("/admin/users")} onClick={handleItemClick} show={true}>시스템 관리</AccessibleNavItem>
                         <AccessibleNavItem href="/admin/institutes" icon={<Building className="w-5 h-5 mr-2" />} active={isActive("/admin/institutes")} onClick={handleItemClick} show={true}>기관 관리</AccessibleNavItem>
                         <AccessibleNavItem href="/admin/business-registration" icon={<Building className="w-5 h-5 mr-2" />} active={isActive("/admin/business-registration")} onClick={handleItemClick} show={true}>업체 등록</AccessibleNavItem>
