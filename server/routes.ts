@@ -1029,60 +1029,92 @@ app.get('/api/search', async (req, res) => {
       // 데이터베이스 검색 시도 (빠른 실패 처리)
       const dbPromises = [];
 
-      // 병렬 검색으로 성능 향상
-      dbPromises.push(
-        db.select().from(courses)
-          .where(or(
-            ilike(courses.title, `%${searchQuery}%`),
-            ilike(courses.description, `%${searchQuery}%`)
-          ))
-          .limit(3)
-          .catch(err => {
-            console.log('[검색] 강의 검색 실패:', err.message);
-            return [];
-          })
-      );
-
-      dbPromises.push(
-        db.select().from(users)
-          .where(or(
-            ilike(users.name, `%${searchQuery}%`),
-            ilike(users.specialty, `%${searchQuery}%`)
-          ))
-          .limit(3)
-          .catch(err => {
-            console.log('[검색] 훈련사 검색 실패:', err.message);
-            return [];
-          })
-      );
-
-      dbPromises.push(
-        db.select().from(institutes)
-          .where(or(
-            ilike(institutes.name, `%${searchQuery}%`),
-            ilike(institutes.description, `%${searchQuery}%`)
-          ))
-          .limit(3)
-          .catch(err => {
-            console.log('[검색] 기관 검색 실패:', err.message);
-            return [];
-          })
-      );
-
+      // 메모리 저장소에서 검색 (등록된 실제 데이터 우선)
       try {
-        const [courseResults, trainerResults, instituteResults] = await Promise.all(dbPromises);
+        // 훈련사 검색
+        const allTrainers = await storage.getAllTrainers();
+        const matchedTrainers = allTrainers.filter(trainer => 
+          trainer.name.toLowerCase().includes(searchQuery) ||
+          (trainer.bio && trainer.bio.toLowerCase().includes(searchQuery)) ||
+          (trainer.specialties && trainer.specialties.some(specialty => 
+            specialty.toLowerCase().includes(searchQuery)
+          )) ||
+          (trainer.location && trainer.location.toLowerCase().includes(searchQuery))
+        );
 
-        if (courseResults.length > 0) {
-          results.push(...courseResults.map(course => ({ ...course, type: 'course' })));
+        if (matchedTrainers.length > 0) {
+          results.push(...matchedTrainers.map(trainer => ({
+            id: trainer.id,
+            type: 'trainer',
+            title: trainer.name,
+            description: trainer.bio || '전문 반려동물 훈련사',
+            rating: trainer.rating || 4.8,
+            reviewCount: trainer.reviewCount || 0,
+            location: trainer.location || '',
+            category: 'trainer',
+            features: trainer.specialties || [],
+            phone: trainer.phone,
+            experience: trainer.experience,
+            certifications: trainer.certifications
+          })));
         }
-        if (trainerResults.length > 0) {
-          results.push(...trainerResults.map(trainer => ({ ...trainer, type: 'trainer', title: trainer.name })));
+
+        // 사용자 검색 (추가 훈련사)
+        const allUsers = await storage.getAllUsers();
+        const matchedUsers = allUsers.filter(user => 
+          user.role === 'trainer' &&
+          (user.name.toLowerCase().includes(searchQuery) ||
+           (user.bio && user.bio.toLowerCase().includes(searchQuery)) ||
+           (user.location && user.location.toLowerCase().includes(searchQuery)))
+        );
+
+        if (matchedUsers.length > 0) {
+          results.push(...matchedUsers.map(user => ({
+            id: user.id,
+            type: 'trainer',
+            title: user.name,
+            description: user.bio || '전문 반려동물 훈련사',
+            rating: 4.5,
+            reviewCount: 0,
+            location: user.location || '',
+            category: 'trainer',
+            features: user.specializations || [],
+            phone: user.verificationPhone,
+            certification: user.certification
+          })));
         }
-        if (instituteResults.length > 0) {
-          results.push(...instituteResults.map(institute => ({ ...institute, type: 'institute', title: institute.name })));
+
+        // 강의 검색
+        const allCourses = await storage.getAllCourses();
+        const matchedCourses = allCourses.filter(course => 
+          course.title.toLowerCase().includes(searchQuery) ||
+          (course.description && course.description.toLowerCase().includes(searchQuery))
+        );
+
+        if (matchedCourses.length > 0) {
+          results.push(...matchedCourses.slice(0, 3).map(course => ({
+            ...course,
+            type: 'course'
+          })));
         }
+
+        // 기관 검색
+        const allInstitutes = await storage.getAllInstitutes();
+        const matchedInstitutes = allInstitutes.filter(institute => 
+          institute.name.toLowerCase().includes(searchQuery) ||
+          (institute.description && institute.description.toLowerCase().includes(searchQuery))
+        );
+
+        if (matchedInstitutes.length > 0) {
+          results.push(...matchedInstitutes.slice(0, 3).map(institute => ({
+            ...institute,
+            type: 'institute',
+            title: institute.name
+          })));
+        }
+
       } catch (error) {
-        console.error('[검색] 전체 데이터베이스 검색 실패:', error.message);
+        console.error('[검색] 메모리 저장소 검색 실패:', error.message);
       }
 
       // 데이터베이스에 결과가 없으면 샘플 데이터 제공
