@@ -312,7 +312,8 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
   // 엔터 키 처리
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
-      handleSearch();
+      e.preventDefault();
+      handleSearchSubmit();
     }
   };
   
