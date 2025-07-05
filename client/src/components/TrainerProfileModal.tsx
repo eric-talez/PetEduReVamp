@@ -55,7 +55,7 @@ export function TrainerProfileModal({ trainer, open, onOpenChange }: TrainerProf
       <DialogContent className="sm:max-w-[650px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <div className="flex items-start gap-6">
-            <div className="h-24 w-24 rounded-full overflow-hidden border-4 border-primary/20 shadow-lg bg-white flex-shrink-0">
+            <div className="h-24 w-24 rounded-full overflow-hidden border-4 border-primary/20 shadow-lg bg-white dark:bg-gray-800 flex-shrink-0">
               <img 
                 src={trainer.image || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(trainer.name)}&backgroundColor=6366f1&textColor=ffffff`}
                 alt={trainer.name}
@@ -222,9 +222,9 @@ export function TrainerProfileModal({ trainer, open, onOpenChange }: TrainerProf
             {trainer.contactInfo?.phone && (
               <Button 
                 type="button"
-                className="w-full" 
+                className="w-full h-12 text-base font-semibold" 
                 variant="outline" 
-                size="sm"
+                size="default"
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
@@ -232,20 +232,21 @@ export function TrainerProfileModal({ trainer, open, onOpenChange }: TrainerProf
                   window.open(`tel:${trainer.contactInfo?.phone}`);
                 }}
               >
-                <Phone className="w-4 h-4 mr-2" />
+                <Phone className="w-5 h-5 mr-3" />
                 전화 연락
               </Button>
             )}
           </div>
         </div>
 
-        <div className="mt-4 flex justify-between">
-          <span className="text-sm">강의 {trainer.coursesCount}개</span>
+        <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700 flex justify-between items-center">
+          <span className="text-sm text-gray-600 dark:text-gray-400">강의 {trainer.coursesCount}개</span>
           <DialogClose asChild>
             <Button 
               type="button"
               variant="ghost" 
               size="sm"
+              className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
