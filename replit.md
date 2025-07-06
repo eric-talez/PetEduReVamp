@@ -115,6 +115,25 @@ TALEZ is a comprehensive pet education and e-commerce platform that combines AI-
 
 ## Changelog
 
+- July 06, 2025. Implemented comprehensive revenue management system with detailed financial tracking and settlement features:
+  - Added complete revenue sharing data structure with trainer/platform split percentages and contact information
+  - Implemented comprehensive revenue settlement tab showing total earnings, trainer revenue, and platform revenue
+  - Created detailed revenue table with curriculum-level breakdown including enrollment counts and settlement ratios
+  - Enhanced curriculum templates with realistic revenue data (450K-1.8M total revenue examples)
+  - Added trainer contact information (email, phone) for proper settlement processing
+  - Built visual revenue summary cards showing aggregate financial performance across all curricula
+  - Integrated revenue tracking into video management interface with real-time earning displays
+  - Created settlement configuration section with different revenue sharing models (70/30 basic, 75/25 expert)
+  - Added enrollment tracking and last sale date monitoring for comprehensive financial oversight
+- July 06, 2025. Implemented comprehensive curriculum preview system with popup modals and enhanced video management interface:
+  - Converted all curriculum preview functionality from inline display to popup modals for better user experience
+  - Added detailed curriculum preview modals showing complete information (basic details, module structure, video status)
+  - Enhanced video lecture management tab to focus on curriculum-centric view with registration status tracking
+  - Implemented comprehensive video registration progress tracking per curriculum with visual progress bars
+  - Added module-level video status indicators showing registration completion and readiness
+  - Created unified preview system supporting both curriculum templates and video lectures
+  - Enhanced admin interface with curriculum-based video management showing trainer info, progress, and action buttons
+  - Integrated direct preview-to-publish workflow within popup modals for streamlined content management
 - July 05, 2025. Successfully resolved trainer avatar image loading issues and enhanced data fetching reliability:
   - Fixed critical image display problems in trainer profile modals by migrating from unstable Unsplash URLs to reliable Dicebear API avatars
   - Implemented fresh data fetching on profile modal opening to bypass browser/cache issues

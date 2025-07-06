@@ -36,6 +36,8 @@ interface CurriculumData {
   description: string;
   trainerId: string;
   trainerName: string;
+  trainerEmail?: string;
+  trainerPhone?: string;
   category: string;
   difficulty: 'beginner' | 'intermediate' | 'advanced';
   duration: number;
@@ -44,6 +46,14 @@ interface CurriculumData {
   status: 'draft' | 'published' | 'archived';
   createdAt: Date;
   updatedAt: Date;
+  // 수익 정산 관련 필드
+  revenueShare: {
+    trainerShare: number; // 훈련사 수익 분배율 (%)
+    platformShare: number; // 플랫폼 수익 분배율 (%)
+  };
+  totalRevenue: number; // 총 수익
+  enrollmentCount: number; // 등록 학생 수
+  lastSaleDate?: Date; // 마지막 판매일
 }
 
 interface ModuleData {
@@ -254,12 +264,27 @@ export default function AdminCurriculum() {
   // 미리 정의된 실제 커리큘럼 템플릿 (첨부 파일 기반)
   const realCurriculumTemplates = [
     {
+      id: 'template-basic-obedience',
       title: "기초 복종훈련 완전정복",
       description: "반려견의 기본적인 복종훈련부터 고급 명령어까지 체계적으로 학습하는 종합 과정입니다.",
+      trainerId: 'trainer-hanseongkyu',
+      trainerName: '한성규',
+      trainerEmail: 'hanseongkyu@talez.co.kr',
+      trainerPhone: '010-1234-5678',
       category: "기초훈련",
       difficulty: "beginner" as const,
       duration: 480, // 8시간
       price: 180000,
+      status: 'draft' as const,
+      createdAt: new Date('2025-01-01'),
+      updatedAt: new Date(),
+      revenueShare: {
+        trainerShare: 70, // 훈련사 70%
+        platformShare: 30  // 플랫폼 30%
+      },
+      totalRevenue: 450000, // 실제 수익 예시
+      enrollmentCount: 25,   // 등록 학생 수
+      lastSaleDate: new Date('2025-01-05'),
       modules: [
         {
           title: "1주차: 기본자세와 친화관계 형성",
@@ -371,12 +396,27 @@ export default function AdminCurriculum() {
       ]
     },
     {
+      id: 'template-behavior-correction',
       title: "문제행동 교정 전문과정",
       description: "짖음, 물기, 분리불안 등 다양한 문제행동을 체계적으로 교정하는 전문 과정입니다.",
+      trainerId: 'trainer-hanseongkyu',
+      trainerName: '한성규',
+      trainerEmail: 'hanseongkyu@talez.co.kr',
+      trainerPhone: '010-1234-5678',
       category: "문제행동교정",
       difficulty: "intermediate" as const,
       duration: 600, // 10시간
       price: 300000,
+      status: 'draft' as const,
+      createdAt: new Date('2025-01-01'),
+      updatedAt: new Date(),
+      revenueShare: {
+        trainerShare: 75, // 전문과정이므로 높은 수익 분배
+        platformShare: 25
+      },
+      totalRevenue: 1800000, // 높은 수익
+      enrollmentCount: 60,
+      lastSaleDate: new Date('2025-01-06'),
       modules: [
         {
           title: "1단계: 문제행동 원인 분석",
@@ -941,9 +981,10 @@ export default function AdminCurriculum() {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="curriculum">커리큘럼 관리</TabsTrigger>
-            <TabsTrigger value="video-lectures">영상강의 관리</TabsTrigger>
+            <TabsTrigger value="video-lectures">영상 등록 현황</TabsTrigger>
+            <TabsTrigger value="revenue-management">수익 정산</TabsTrigger>
             <TabsTrigger value="pending-approval">승인 대기</TabsTrigger>
           </TabsList>
 
@@ -1547,70 +1588,417 @@ export default function AdminCurriculum() {
 
           {/* 영상강의 관리 탭 */}
           <TabsContent value="video-lectures" className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {videoLectures.filter(lecture => lecture.status !== 'pending').map((lecture) => (
-                <Card key={lecture.id} className="hover:shadow-lg transition-shadow">
-                  <CardContent className="p-6">
-                    <div className="flex justify-between items-start mb-4">
-                      <div>
-                        <h3 className="font-semibold text-lg mb-1">{lecture.title}</h3>
-                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
-                          {lecture.instructor} • {lecture.category}
-                        </p>
-                        <div className="flex items-center gap-2 mb-3">
-                          {getDifficultyBadge(lecture.difficulty)}
-                          {getStatusBadge(lecture.status)}
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-xl font-semibold">커리큘럼 영상 등록 현황</h2>
+              <div className="text-sm text-gray-500">
+                총 {curriculums.length}개 커리큘럼 등록됨
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              {curriculums.map((curriculum) => {
+                const totalModules = curriculum.modules.length;
+                const modulesWithVideos = curriculum.modules.filter(module => 
+                  module.videos && module.videos.length > 0
+                ).length;
+                const totalVideos = curriculum.modules.reduce((sum, module) => 
+                  sum + (module.videos ? module.videos.length : 0), 0
+                );
+                const readyVideos = curriculum.modules.reduce((sum, module) => 
+                  sum + (module.videos ? module.videos.filter(v => v.status === 'ready').length : 0), 0
+                );
+                const videoProgress = totalVideos > 0 ? (readyVideos / totalVideos) * 100 : 0;
+
+                return (
+                  <Card key={curriculum.id} className="border-l-4 border-l-blue-500">
+                    <CardContent className="p-6">
+                      <div className="flex items-start justify-between mb-4">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-3 mb-2">
+                            <h3 className="font-semibold text-lg">{curriculum.title}</h3>
+                            <Badge variant={curriculum.status === 'published' ? 'default' : 'secondary'}>
+                              {curriculum.status === 'published' ? '발행됨' : '초안'}
+                            </Badge>
+                          </div>
+                          
+                          <div className="flex items-center gap-4 mb-3 text-sm text-gray-600">
+                            <div className="flex items-center gap-1">
+                              <User className="w-4 h-4" />
+                              <span>{curriculum.trainerName}</span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <BookOpen className="w-4 h-4" />
+                              <span>{curriculum.category}</span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <Clock className="w-4 h-4" />
+                              <span>{curriculum.duration}분</span>
+                            </div>
+                          </div>
+
+                          <p className="text-gray-600 text-sm mb-4">{curriculum.description}</p>
+                          
+                          {/* 영상 등록 현황 */}
+                          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                            <div className="bg-blue-50 p-3 rounded-lg">
+                              <div className="text-xs text-blue-600 font-medium mb-1">총 모듈</div>
+                              <div className="text-lg font-bold text-blue-700">{totalModules}개</div>
+                            </div>
+                            <div className="bg-green-50 p-3 rounded-lg">
+                              <div className="text-xs text-green-600 font-medium mb-1">영상 등록 모듈</div>
+                              <div className="text-lg font-bold text-green-700">{modulesWithVideos}개</div>
+                            </div>
+                            <div className="bg-orange-50 p-3 rounded-lg">
+                              <div className="text-xs text-orange-600 font-medium mb-1">총 영상</div>
+                              <div className="text-lg font-bold text-orange-700">{totalVideos}개</div>
+                            </div>
+                            <div className="bg-purple-50 p-3 rounded-lg">
+                              <div className="text-xs text-purple-600 font-medium mb-1">준비된 영상</div>
+                              <div className="text-lg font-bold text-purple-700">{readyVideos}개</div>
+                            </div>
+                          </div>
+
+                          {/* 수익 정산 정보 */}
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4 p-4 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-lg border">
+                            <div className="text-center">
+                              <div className="text-xs text-indigo-600 font-medium mb-1">총 수익</div>
+                              <div className="text-lg font-bold text-indigo-700">
+                                ₩{(curriculum.totalRevenue || 0).toLocaleString()}
+                              </div>
+                              <div className="text-xs text-gray-500">
+                                등록학생: {curriculum.enrollmentCount || 0}명
+                              </div>
+                            </div>
+                            <div className="text-center">
+                              <div className="text-xs text-green-600 font-medium mb-1">훈련사 수익</div>
+                              <div className="text-lg font-bold text-green-700">
+                                ₩{((curriculum.totalRevenue || 0) * (curriculum.revenueShare?.trainerShare || 70) / 100).toLocaleString()}
+                              </div>
+                              <div className="text-xs text-gray-500">
+                                분배율: {curriculum.revenueShare?.trainerShare || 70}%
+                              </div>
+                            </div>
+                            <div className="text-center">
+                              <div className="text-xs text-blue-600 font-medium mb-1">플랫폼 수익</div>
+                              <div className="text-lg font-bold text-blue-700">
+                                ₩{((curriculum.totalRevenue || 0) * (curriculum.revenueShare?.platformShare || 30) / 100).toLocaleString()}
+                              </div>
+                              <div className="text-xs text-gray-500">
+                                분배율: {curriculum.revenueShare?.platformShare || 30}%
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* 등록자 정보 */}
+                          <div className="bg-gray-50 p-4 rounded-lg mb-4">
+                            <h4 className="text-sm font-medium text-gray-700 mb-3">등록자 정보</h4>
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                              <div>
+                                <span className="text-gray-500">훈련사:</span>
+                                <span className="ml-2 font-medium">{curriculum.trainerName}</span>
+                              </div>
+                              <div>
+                                <span className="text-gray-500">이메일:</span>
+                                <span className="ml-2">{curriculum.trainerEmail || '미등록'}</span>
+                              </div>
+                              <div>
+                                <span className="text-gray-500">연락처:</span>
+                                <span className="ml-2">{curriculum.trainerPhone || '미등록'}</span>
+                              </div>
+                            </div>
+                            {curriculum.lastSaleDate && (
+                              <div className="mt-2 text-xs text-gray-500">
+                                마지막 판매: {curriculum.lastSaleDate.toLocaleDateString()}
+                              </div>
+                            )}
+                          </div>
+
+                          {/* 영상 준비 진행률 */}
+                          <div className="mb-4">
+                            <div className="flex justify-between text-sm mb-2">
+                              <span className="text-gray-600">영상 준비 진행률</span>
+                              <span className="font-medium">{Math.round(videoProgress)}%</span>
+                            </div>
+                            <div className="w-full bg-gray-200 rounded-full h-2">
+                              <div 
+                                className="bg-blue-600 h-2 rounded-full transition-all duration-300" 
+                                style={{ width: `${videoProgress}%` }}
+                              ></div>
+                            </div>
+                          </div>
+
+                          {/* 모듈별 영상 상태 */}
+                          {curriculum.modules.length > 0 && (
+                            <div className="border-t pt-4">
+                              <h4 className="text-sm font-medium text-gray-700 mb-3">모듈별 영상 등록 현황</h4>
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                                {curriculum.modules.slice(0, 6).map((module, index) => (
+                                  <div key={module.id} className="flex items-center justify-between p-2 bg-gray-50 rounded text-sm">
+                                    <div className="flex items-center gap-2">
+                                      <span className="bg-blue-100 text-blue-600 text-xs px-2 py-1 rounded font-medium">
+                                        {index + 1}강
+                                      </span>
+                                      <span className="truncate">{module.title}</span>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                      {module.videos && module.videos.length > 0 ? (
+                                        <>
+                                          <Badge variant="default" className="text-xs">
+                                            {module.videos.length}개
+                                          </Badge>
+                                          <div className="flex items-center gap-1">
+                                            {module.videos.filter(v => v.status === 'ready').length === module.videos.length ? (
+                                              <CheckCircle className="w-3 h-3 text-green-500" />
+                                            ) : (
+                                              <Clock className="w-3 h-3 text-orange-500" />
+                                            )}
+                                          </div>
+                                        </>
+                                      ) : (
+                                        <Badge variant="outline" className="text-xs">
+                                          미등록
+                                        </Badge>
+                                      )}
+                                    </div>
+                                  </div>
+                                ))}
+                                {curriculum.modules.length > 6 && (
+                                  <div className="text-xs text-gray-500 flex items-center justify-center">
+                                    외 {curriculum.modules.length - 6}개 모듈
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          )}
                         </div>
                       </div>
-                    </div>
 
-                    <p className="text-sm text-gray-700 dark:text-gray-300 mb-4 line-clamp-3">
-                      {lecture.description}
-                    </p>
-
-                    <div className="flex items-center gap-4 mb-4 text-xs text-gray-500">
-                      <div className="flex items-center gap-1">
-                        <Clock className="h-3 w-3" />
-                        <span>{Math.floor(lecture.totalDuration / 60)}시간</span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <Users className="h-3 w-3" />
-                        <span>{lecture.studentCount}</span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <Star className="h-3 w-3 text-yellow-400" />
-                        <span>{lecture.rating}</span>
-                      </div>
-                    </div>
-
-                    <div className="text-lg font-bold mb-4">
-                      ₩{lecture.price.toLocaleString()}
-                    </div>
-
-                    <div className="flex gap-2">
-                      <Button 
-                        size="sm" 
-                        variant="outline"
-                        onClick={() => handlePreviewVideoLecture(lecture)}
-                      >
-                        <Eye className="h-4 w-4 mr-1" />
-                        미리보기
-                      </Button>
-                      
-                      {userRole === 'admin' && (
+                      {/* 액션 버튼 */}
+                      <div className="flex gap-2 justify-end border-t pt-4">
                         <Button 
-                          size="sm" 
-                          variant="outline"
-                          onClick={() => handleDeleteLecture(lecture.id)}
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => handlePreviewCurriculum(curriculum)}
                         >
-                          <Trash2 className="h-4 w-4" />
+                          <Eye className="w-4 h-4 mr-1" />
+                          미리보기
                         </Button>
-                      )}
-                    </div>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => setSelectedCurriculum(curriculum)}
+                        >
+                          <Video className="w-4 h-4 mr-1" />
+                          영상 관리
+                        </Button>
+                        {curriculum.status !== 'published' && (
+                          <Button 
+                            size="sm"
+                            onClick={() => publishCurriculum(curriculum.id)}
+                            className="bg-green-600 hover:bg-green-700"
+                          >
+                            <CheckCircle className="w-4 h-4 mr-1" />
+                            발행
+                          </Button>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+
+            {curriculums.length === 0 && (
+              <Card className="bg-gray-50">
+                <CardContent className="p-8 text-center">
+                  <Video className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                  <h3 className="font-medium text-gray-900 mb-2">
+                    등록된 커리큘럼이 없습니다
+                  </h3>
+                  <p className="text-gray-500 text-sm">
+                    먼저 커리큘럼을 생성한 후 영상을 등록해주세요.
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
+
+          {/* 수익 정산 탭 */}
+          <TabsContent value="revenue-management" className="space-y-6">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-xl font-semibold">수익 정산 관리</h2>
+              <div className="text-sm text-gray-500">
+                총 {curriculums.length}개 커리큘럼
+              </div>
+            </div>
+
+            {/* 전체 수익 요약 */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+              <Card className="bg-gradient-to-r from-blue-500 to-blue-600 text-white">
+                <CardContent className="p-6 text-center">
+                  <div className="text-2xl font-bold mb-2">
+                    ₩{curriculums.reduce((sum, c) => sum + (c.totalRevenue || 0), 0).toLocaleString()}
+                  </div>
+                  <div className="text-blue-100">총 수익</div>
+                </CardContent>
+              </Card>
+              <Card className="bg-gradient-to-r from-green-500 to-green-600 text-white">
+                <CardContent className="p-6 text-center">
+                  <div className="text-2xl font-bold mb-2">
+                    ₩{curriculums.reduce((sum, c) => sum + ((c.totalRevenue || 0) * (c.revenueShare?.trainerShare || 70) / 100), 0).toLocaleString()}
+                  </div>
+                  <div className="text-green-100">훈련사 수익</div>
+                </CardContent>
+              </Card>
+              <Card className="bg-gradient-to-r from-purple-500 to-purple-600 text-white">
+                <CardContent className="p-6 text-center">
+                  <div className="text-2xl font-bold mb-2">
+                    ₩{curriculums.reduce((sum, c) => sum + ((c.totalRevenue || 0) * (c.revenueShare?.platformShare || 30) / 100), 0).toLocaleString()}
+                  </div>
+                  <div className="text-purple-100">플랫폼 수익</div>
+                </CardContent>
+              </Card>
+              <Card className="bg-gradient-to-r from-orange-500 to-orange-600 text-white">
+                <CardContent className="p-6 text-center">
+                  <div className="text-2xl font-bold mb-2">
+                    {curriculums.reduce((sum, c) => sum + (c.enrollmentCount || 0), 0)}
+                  </div>
+                  <div className="text-orange-100">총 등록 학생</div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* 커리큘럼별 수익 상세 */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold">커리큘럼별 수익 현황</h3>
+              
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse border border-gray-200 rounded-lg">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="border border-gray-200 px-4 py-3 text-left font-semibold">커리큘럼</th>
+                      <th className="border border-gray-200 px-4 py-3 text-left font-semibold">등록자</th>
+                      <th className="border border-gray-200 px-4 py-3 text-right font-semibold">가격</th>
+                      <th className="border border-gray-200 px-4 py-3 text-right font-semibold">등록학생</th>
+                      <th className="border border-gray-200 px-4 py-3 text-right font-semibold">총 수익</th>
+                      <th className="border border-gray-200 px-4 py-3 text-right font-semibold">훈련사 수익</th>
+                      <th className="border border-gray-200 px-4 py-3 text-right font-semibold">플랫폼 수익</th>
+                      <th className="border border-gray-200 px-4 py-3 text-center font-semibold">분배율</th>
+                      <th className="border border-gray-200 px-4 py-3 text-center font-semibold">상태</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {curriculums.map((curriculum) => {
+                      const trainerRevenue = (curriculum.totalRevenue || 0) * (curriculum.revenueShare?.trainerShare || 70) / 100;
+                      const platformRevenue = (curriculum.totalRevenue || 0) * (curriculum.revenueShare?.platformShare || 30) / 100;
+                      
+                      return (
+                        <tr key={curriculum.id} className="hover:bg-gray-50">
+                          <td className="border border-gray-200 px-4 py-3">
+                            <div>
+                              <div className="font-medium">{curriculum.title}</div>
+                              <div className="text-sm text-gray-500">{curriculum.category}</div>
+                            </div>
+                          </td>
+                          <td className="border border-gray-200 px-4 py-3">
+                            <div>
+                              <div className="font-medium">{curriculum.trainerName}</div>
+                              <div className="text-sm text-gray-500">{curriculum.trainerEmail || '이메일 미등록'}</div>
+                            </div>
+                          </td>
+                          <td className="border border-gray-200 px-4 py-3 text-right font-medium">
+                            ₩{curriculum.price.toLocaleString()}
+                          </td>
+                          <td className="border border-gray-200 px-4 py-3 text-right">
+                            {curriculum.enrollmentCount || 0}명
+                          </td>
+                          <td className="border border-gray-200 px-4 py-3 text-right font-bold text-blue-600">
+                            ₩{(curriculum.totalRevenue || 0).toLocaleString()}
+                          </td>
+                          <td className="border border-gray-200 px-4 py-3 text-right font-medium text-green-600">
+                            ₩{trainerRevenue.toLocaleString()}
+                          </td>
+                          <td className="border border-gray-200 px-4 py-3 text-right font-medium text-purple-600">
+                            ₩{platformRevenue.toLocaleString()}
+                          </td>
+                          <td className="border border-gray-200 px-4 py-3 text-center">
+                            <div className="text-sm">
+                              <div className="text-green-600">{curriculum.revenueShare?.trainerShare || 70}%</div>
+                              <div className="text-purple-600">{curriculum.revenueShare?.platformShare || 30}%</div>
+                            </div>
+                          </td>
+                          <td className="border border-gray-200 px-4 py-3 text-center">
+                            <Badge variant={curriculum.status === 'published' ? 'default' : 'secondary'}>
+                              {curriculum.status === 'published' ? '발행됨' : '초안'}
+                            </Badge>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+
+              {curriculums.length === 0 && (
+                <Card className="bg-gray-50">
+                  <CardContent className="p-8 text-center">
+                    <Package className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                    <h3 className="font-medium text-gray-900 mb-2">
+                      수익 데이터가 없습니다
+                    </h3>
+                    <p className="text-gray-500 text-sm">
+                      발행된 커리큘럼이 없거나 아직 등록 학생이 없습니다.
+                    </p>
                   </CardContent>
                 </Card>
-              ))}
+              )}
             </div>
+
+            {/* 수익 정산 설정 */}
+            <Card className="mt-8">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Settings className="w-5 h-5" />
+                  수익 분배 설정
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-4">
+                    <h4 className="font-medium">기본 수익 분배율</h4>
+                    <div className="space-y-2">
+                      <div className="flex justify-between">
+                        <span>훈련사 수익:</span>
+                        <span className="font-medium text-green-600">70%</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>플랫폼 수익:</span>
+                        <span className="font-medium text-purple-600">30%</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="space-y-4">
+                    <h4 className="font-medium">전문과정 수익 분배율</h4>
+                    <div className="space-y-2">
+                      <div className="flex justify-between">
+                        <span>훈련사 수익:</span>
+                        <span className="font-medium text-green-600">75%</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>플랫폼 수익:</span>
+                        <span className="font-medium text-purple-600">25%</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div className="mt-4 p-3 bg-blue-50 rounded-lg">
+                  <p className="text-sm text-blue-700">
+                    <strong>정산 안내:</strong> 매월 말일 자동 정산되며, 훈련사에게는 등록된 계좌로 입금됩니다. 
+                    세금계산서는 별도 발행됩니다.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
 
           {/* 승인 대기 탭 */}
