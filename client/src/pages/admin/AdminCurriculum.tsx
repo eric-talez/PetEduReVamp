@@ -111,6 +111,8 @@ export default function AdminCurriculum() {
   const [videoLectures, setVideoLectures] = useState<VideoLecture[]>([]);
   const [selectedLecture, setSelectedLecture] = useState<VideoLecture | null>(null);
   const [activeTab, setActiveTab] = useState('curriculum');
+  const [previewCurriculum, setPreviewCurriculum] = useState<CurriculumData | null>(null);
+  const [showPreviewModal, setShowPreviewModal] = useState(false);
   
   const { toast } = useToast();
 
@@ -177,6 +179,38 @@ export default function AdminCurriculum() {
         variant: "destructive"
       });
     }
+  };
+
+  // 영상강의를 커리큘럼 형태로 변환하여 미리보기
+  const handlePreviewVideoLecture = (lecture: VideoLecture) => {
+    const curriculumData: CurriculumData = {
+      id: lecture.id,
+      title: lecture.title,
+      description: lecture.description,
+      trainerId: 'video-lecture-trainer',
+      trainerName: lecture.instructor,
+      category: lecture.category,
+      difficulty: lecture.difficulty,
+      duration: lecture.totalDuration,
+      price: lecture.price,
+      modules: lecture.modules.map(module => ({
+        id: module.id,
+        title: module.title,
+        description: module.description,
+        order: module.order,
+        duration: module.duration,
+        objectives: module.objectives,
+        content: module.materials.join('\n'),
+        videos: [],
+        isRequired: !module.isFree
+      })),
+      status: lecture.status === 'approved' ? 'published' : 'draft',
+      createdAt: lecture.createdAt,
+      updatedAt: lecture.updatedAt
+    };
+
+    setPreviewCurriculum(curriculumData);
+    setShowPreviewModal(true);
   };
 
   const handleRejectLecture = async (lectureId: string) => {
@@ -719,16 +753,27 @@ export default function AdminCurriculum() {
   };
 
   // 커리큘럼 미리보기 함수
-  const previewCurriculum = (curriculumId: string) => {
-    // 새 탭에서 미리보기 페이지 열기
-    const previewUrl = `/courses/${curriculumId}/preview`;
-    window.open(previewUrl, '_blank');
+  const handlePreviewCurriculum = (curriculum: CurriculumData | string) => {
+    let targetCurriculum: CurriculumData | null = null;
     
-    toast({
-      title: "미리보기",
-      description: "새 탭에서 커리큘럼 미리보기를 열었습니다.",
-      variant: "default"
-    });
+    if (typeof curriculum === 'string') {
+      // ID로 전달된 경우 해당 커리큘럼 찾기
+      targetCurriculum = curriculums.find(c => c.id === curriculum) || null;
+    } else {
+      // 객체로 전달된 경우
+      targetCurriculum = curriculum;
+    }
+    
+    if (targetCurriculum) {
+      setPreviewCurriculum(targetCurriculum);
+      setShowPreviewModal(true);
+    } else {
+      toast({
+        title: "오류",
+        description: "미리보기할 커리큘럼을 찾을 수 없습니다.",
+        variant: "destructive"
+      });
+    }
   };
 
   // 커리큘럼 발행 함수
@@ -960,6 +1005,7 @@ export default function AdminCurriculum() {
                         variant="outline" 
                         size="sm"
                         className="flex items-center gap-1"
+                        onClick={() => handlePreviewCurriculum(template)}
                       >
                         <Eye className="w-4 h-4" />
                         미리보기
@@ -1019,6 +1065,32 @@ export default function AdminCurriculum() {
                             {curriculum.status}
                           </Badge>
                         </div>
+                      </div>
+                      <div className="flex items-center gap-2 mt-2">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handlePreviewCurriculum(curriculum);
+                          }}
+                          className="flex items-center gap-1"
+                        >
+                          <Eye className="w-3 h-3" />
+                          미리보기
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedCurriculum(curriculum);
+                          }}
+                          className="flex items-center gap-1"
+                        >
+                          <Edit className="w-3 h-3" />
+                          수정
+                        </Button>
                       </div>
                     </div>
                   </div>
@@ -1242,7 +1314,7 @@ export default function AdminCurriculum() {
                       {/* 미리보기 및 발행 버튼 */}
                       <div className="flex gap-2">
                         <Button
-                          onClick={() => previewCurriculum(selectedCurriculum.id)}
+                          onClick={() => handlePreviewCurriculum(selectedCurriculum)}
                           variant="outline"
                           size="sm"
                           className="flex-1 border-blue-500 text-blue-600 hover:bg-blue-50"
@@ -1359,7 +1431,7 @@ export default function AdminCurriculum() {
                         {selectedCurriculum.status === 'published' ? '발행됨' : '강의로 발행'}
                       </Button>
                       <Button
-                        onClick={() => previewCurriculum(selectedCurriculum)}
+                        onClick={() => handlePreviewCurriculum(selectedCurriculum)}
                         variant="outline"
                         size="sm"
                         className="flex-1"
@@ -1519,10 +1591,10 @@ export default function AdminCurriculum() {
                       <Button 
                         size="sm" 
                         variant="outline"
-                        onClick={() => setSelectedLecture(lecture)}
+                        onClick={() => handlePreviewVideoLecture(lecture)}
                       >
                         <Eye className="h-4 w-4 mr-1" />
-                        상세
+                        미리보기
                       </Button>
                       
                       {userRole === 'admin' && (
@@ -1605,10 +1677,10 @@ export default function AdminCurriculum() {
                           <Button 
                             size="sm" 
                             variant="outline"
-                            onClick={() => setSelectedLecture(lecture)}
+                            onClick={() => handlePreviewVideoLecture(lecture)}
                           >
                             <Eye className="h-4 w-4 mr-1" />
-                            상세보기
+                            미리보기
                           </Button>
                         </div>
                       </CardContent>
@@ -1754,6 +1826,166 @@ export default function AdminCurriculum() {
                   <Button variant="outline" onClick={() => setSelectedLecture(null)}>
                     닫기
                   </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+        )}
+
+        {/* 커리큘럼 미리보기 모달 */}
+        {showPreviewModal && previewCurriculum && (
+          <Dialog open={showPreviewModal} onOpenChange={setShowPreviewModal}>
+            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2">
+                  <Eye className="h-5 w-5" />
+                  커리큘럼 미리보기
+                </DialogTitle>
+              </DialogHeader>
+              
+              <div className="space-y-6">
+                {/* 커리큘럼 기본 정보 */}
+                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-lg">
+                  <div className="flex justify-between items-start mb-4">
+                    <div>
+                      <h2 className="text-2xl font-bold text-gray-900 mb-2">{previewCurriculum.title}</h2>
+                      <p className="text-gray-600 mb-3">{previewCurriculum.description}</p>
+                      <div className="flex items-center gap-4 text-sm">
+                        <div className="flex items-center gap-1">
+                          <span className="font-medium">강사:</span>
+                          <span>{previewCurriculum.trainerName}</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <span className="font-medium">카테고리:</span>
+                          <Badge variant="outline">{previewCurriculum.category}</Badge>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Clock className="w-4 h-4" />
+                          <span>{previewCurriculum.duration}분</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-2xl font-bold text-blue-600 mb-1">
+                        ₩{previewCurriculum.price.toLocaleString()}
+                      </div>
+                      <Badge variant={previewCurriculum.difficulty === 'beginner' ? 'default' : 
+                                   previewCurriculum.difficulty === 'intermediate' ? 'secondary' : 'outline'}>
+                        {previewCurriculum.difficulty === 'beginner' ? '초급' : 
+                         previewCurriculum.difficulty === 'intermediate' ? '중급' : '고급'}
+                      </Badge>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 커리큘럼 모듈 */}
+                <div>
+                  <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                    <BookOpen className="w-5 h-5" />
+                    커리큘럼 구성 ({previewCurriculum.modules.length}개 모듈)
+                  </h3>
+                  
+                  <div className="space-y-4">
+                    {previewCurriculum.modules.map((module, index) => (
+                      <Card key={module.id} className="border-l-4 border-l-blue-500">
+                        <CardContent className="p-4">
+                          <div className="flex justify-between items-start mb-3">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 mb-2">
+                                <span className="bg-blue-100 text-blue-600 text-sm font-medium px-2 py-1 rounded">
+                                  {index + 1}강
+                                </span>
+                                <h4 className="font-semibold">{module.title}</h4>
+                                {module.isRequired && (
+                                  <Badge variant="default" className="text-xs">필수</Badge>
+                                )}
+                              </div>
+                              <p className="text-gray-600 text-sm mb-3">{module.description}</p>
+                              
+                              {/* 학습 목표 */}
+                              {module.objectives && module.objectives.length > 0 && (
+                                <div className="mb-3">
+                                  <h5 className="text-sm font-medium text-gray-700 mb-2">학습 목표:</h5>
+                                  <ul className="space-y-1">
+                                    {module.objectives.map((objective, objIndex) => (
+                                      <li key={objIndex} className="flex items-center gap-2 text-sm text-gray-600">
+                                        <div className="w-1 h-1 bg-blue-500 rounded-full"></div>
+                                        <span>{objective}</span>
+                                      </li>
+                                    ))}
+                                  </ul>
+                                </div>
+                              )}
+                              
+                              {/* 영상 정보 */}
+                              {module.videos && module.videos.length > 0 && (
+                                <div className="mt-3 pt-3 border-t">
+                                  <div className="flex items-center gap-2 mb-2">
+                                    <Video className="w-4 h-4 text-green-600" />
+                                    <span className="text-sm font-medium text-gray-700">
+                                      등록된 영상: {module.videos.length}개
+                                    </span>
+                                  </div>
+                                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                    {module.videos.slice(0, 4).map((video) => (
+                                      <div key={video.id} className="flex items-center gap-2 p-2 bg-gray-50 rounded text-xs">
+                                        <Play className="w-3 h-3 text-blue-500" />
+                                        <span className="font-medium truncate">{video.title}</span>
+                                        <Badge 
+                                          variant={video.status === 'ready' ? 'default' : 'secondary'}
+                                          className="text-xs"
+                                        >
+                                          {video.status === 'ready' ? '준비' : '대기'}
+                                        </Badge>
+                                      </div>
+                                    ))}
+                                    {module.videos.length > 4 && (
+                                      <div className="text-xs text-gray-500 flex items-center">
+                                        외 {module.videos.length - 4}개 영상
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                            
+                            <div className="ml-4 text-right">
+                              <div className="flex items-center gap-1 text-sm text-gray-500">
+                                <Clock className="w-3 h-3" />
+                                <span>{module.duration}분</span>
+                              </div>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 액션 버튼 */}
+                <div className="flex justify-between items-center pt-4 border-t">
+                  <div className="text-sm text-gray-500">
+                    상태: <Badge variant={previewCurriculum.status === 'published' ? 'default' : 'secondary'}>
+                      {previewCurriculum.status === 'published' ? '발행됨' : '초안'}
+                    </Badge>
+                  </div>
+                  <div className="flex gap-2">
+                    {previewCurriculum.status !== 'published' && (
+                      <Button 
+                        onClick={() => {
+                          publishCurriculum(previewCurriculum.id);
+                          setShowPreviewModal(false);
+                        }}
+                        className="bg-green-600 hover:bg-green-700"
+                      >
+                        <CheckCircle className="w-4 h-4 mr-1" />
+                        강의로 발행
+                      </Button>
+                    )}
+                    <Button variant="outline" onClick={() => setShowPreviewModal(false)}>
+                      닫기
+                    </Button>
+                  </div>
                 </div>
               </div>
             </DialogContent>
