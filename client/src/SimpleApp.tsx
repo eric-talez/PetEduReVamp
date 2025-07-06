@@ -871,6 +871,30 @@ function AppLayout({ children }: { children: ReactNode }) {
                     }}
                   </Route>
 
+                  {/* 영상강의 시스템 */}
+                  <Route path="/video-lectures">
+                    {() => {
+                      const VideoLectureSystem = lazy(() => import('./pages/video-lectures/VideoLectureSystem'));
+                      return (
+                        <Suspense fallback={<div className="p-8 text-center">영상강의 시스템 로딩 중...</div>}>
+                          <VideoLectureSystem />
+                        </Suspense>
+                      );
+                    }}
+                  </Route>
+
+                  {/* 영상강의 플레이어 */}
+                  <Route path="/video-lectures/player/:lectureId?/:moduleId?">
+                    {() => {
+                      const VideoLecturePlayer = lazy(() => import('./pages/video-lectures/VideoLecturePlayer'));
+                      return (
+                        <Suspense fallback={<div className="p-8 text-center">영상 플레이어 로딩 중...</div>}>
+                          <VideoLecturePlayer />
+                        </Suspense>
+                      );
+                    }}
+                  </Route>
+
                   {/* 검색 */}
                   <Route path="/search" component={SearchPage} />
 

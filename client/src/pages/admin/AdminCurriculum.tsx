@@ -4,7 +4,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
 import { 
   Plus, 
   Video, 
@@ -19,7 +23,11 @@ import {
   CheckCircle,
   FileText,
   Save,
-  Eye
+  Eye,
+  XCircle,
+  AlertCircle,
+  Package,
+  Settings
 } from 'lucide-react';
 
 interface CurriculumData {
@@ -61,12 +69,153 @@ interface VideoData {
   uploadedAt: Date;
 }
 
+// 영상강의 관련 인터페이스
+interface VideoLecture {
+  id: string;
+  title: string;
+  instructor: string;
+  description: string;
+  totalDuration: number;
+  difficulty: 'beginner' | 'intermediate' | 'advanced';
+  category: string;
+  price: number;
+  rating: number;
+  reviewCount: number;
+  studentCount: number;
+  modules: LectureModule[];
+  status: 'draft' | 'pending' | 'approved' | 'rejected';
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+interface LectureModule {
+  id: string;
+  title: string;
+  description: string;
+  duration: number;
+  objectives: string[];
+  materials: string[];
+  format: 'theory' | 'practice' | 'theory_practice';
+  isFree: boolean;
+  order: number;
+}
+
 export default function AdminCurriculum() {
+  const { userRole } = useAuth();
   const [curriculums, setCurriculums] = useState<CurriculumData[]>([]);
   const [selectedCurriculum, setSelectedCurriculum] = useState<CurriculumData | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  
+  // 영상강의 관련 상태
+  const [videoLectures, setVideoLectures] = useState<VideoLecture[]>([]);
+  const [selectedLecture, setSelectedLecture] = useState<VideoLecture | null>(null);
+  const [activeTab, setActiveTab] = useState('curriculum');
+  
   const { toast } = useToast();
+
+  // 영상강의 관련 함수들 추가
+  useEffect(() => {
+    fetchVideoLectures();
+  }, []);
+
+  const fetchVideoLectures = async () => {
+    try {
+      // 샘플 데이터로 대체 (실제로는 API 호출)
+      const sampleLectures: VideoLecture[] = [
+        {
+          id: 'lecture-1',
+          title: '반려동물 재활 전문과정',
+          instructor: '한성규',
+          description: '손상이나 질병 또는 장애를 가진 반려동물에게 의학적 중재 및 재활 훈련, 심리 치료 등을 통해 동물의 신체적, 정신적 기능을 최고의 수준으로 회복시키는 종합 재활 과정입니다.',
+          totalDuration: 900,
+          difficulty: 'advanced',
+          category: '재활치료',
+          price: 350000,
+          rating: 4.9,
+          reviewCount: 156,
+          studentCount: 289,
+          status: 'pending',
+          modules: [
+            {
+              id: 'module-1',
+              title: '1강: 오리엔테이션 (OT)',
+              description: '강의 내용 개요 및 반려동물 재활의 기본 개념',
+              duration: 45,
+              objectives: ['반려동물 재활의 기본 개념 이해', '강의 전체 구성 파악'],
+              materials: ['교재 및 학습노트', 'PPT 자료'],
+              format: 'theory',
+              isFree: true,
+              order: 1
+            }
+          ],
+          createdAt: new Date(),
+          updatedAt: new Date()
+        }
+      ];
+      setVideoLectures(sampleLectures);
+    } catch (error) {
+      console.error('영상강의 목록 조회 실패:', error);
+    }
+  };
+
+  const handleApproveLecture = async (lectureId: string) => {
+    try {
+      setVideoLectures(videoLectures.map(lecture => 
+        lecture.id === lectureId 
+          ? { ...lecture, status: 'approved' as const }
+          : lecture
+      ));
+      toast({
+        title: "강의 승인 완료",
+        description: "영상강의가 승인되어 공개되었습니다.",
+      });
+    } catch (error) {
+      toast({
+        title: "승인 실패",
+        description: "영상강의 승인 중 오류가 발생했습니다.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleRejectLecture = async (lectureId: string) => {
+    try {
+      setVideoLectures(videoLectures.map(lecture => 
+        lecture.id === lectureId 
+          ? { ...lecture, status: 'rejected' as const }
+          : lecture
+      ));
+      toast({
+        title: "강의 반려 완료",
+        description: "영상강의가 반려되었습니다.",
+      });
+    } catch (error) {
+      toast({
+        title: "반려 실패",
+        description: "영상강의 반려 중 오류가 발생했습니다.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleDeleteLecture = async (lectureId: string) => {
+    if (!confirm('정말로 이 영상강의를 삭제하시겠습니까?')) return;
+
+    try {
+      setVideoLectures(videoLectures.filter(lecture => lecture.id !== lectureId));
+      toast({
+        title: "강의 삭제 완료",
+        description: "영상강의가 성공적으로 삭제되었습니다.",
+      });
+    } catch (error) {
+      toast({
+        title: "삭제 실패",
+        description: "영상강의 삭제 중 오류가 발생했습니다.",
+        variant: "destructive"
+      });
+    }
+  };
 
   // 미리 정의된 실제 커리큘럼 템플릿 (첨부 파일 기반)
   const realCurriculumTemplates = [
@@ -709,13 +858,51 @@ export default function AdminCurriculum() {
 
 
 
+  // 영상강의 관련 헬퍼 함수
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'draft':
+        return <Badge variant="secondary">초안</Badge>;
+      case 'pending':
+        return <Badge variant="warning">검토중</Badge>;
+      case 'approved':
+        return <Badge variant="success">승인됨</Badge>;
+      case 'rejected':
+        return <Badge variant="danger">반려됨</Badge>;
+      default:
+        return <Badge variant="outline">알 수 없음</Badge>;
+    }
+  };
+
+  const getDifficultyBadge = (difficulty: string) => {
+    switch (difficulty) {
+      case 'beginner':
+        return <Badge variant="default">초급</Badge>;
+      case 'intermediate':
+        return <Badge variant="secondary">중급</Badge>;
+      case 'advanced':
+        return <Badge variant="outline">고급</Badge>;
+      default:
+        return <Badge variant="outline">-</Badge>;
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-7xl mx-auto">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">커리큘럼 관리</h1>
-          <p className="text-gray-600">실제 훈련 프로그램 커리큘럼을 관리합니다.</p>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">커리큘럼 & 영상강의 관리</h1>
+          <p className="text-gray-600">훈련 프로그램 커리큘럼과 영상강의를 통합 관리합니다.</p>
         </div>
+
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="curriculum">커리큘럼 관리</TabsTrigger>
+            <TabsTrigger value="video-lectures">영상강의 관리</TabsTrigger>
+            <TabsTrigger value="pending-approval">승인 대기</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="curriculum" className="space-y-6">
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* 미리 정의된 커리큘럼 템플릿 */}
@@ -1284,6 +1471,294 @@ export default function AdminCurriculum() {
             )}
           </div>
         </div>
+      </TabsContent>
+
+          {/* 영상강의 관리 탭 */}
+          <TabsContent value="video-lectures" className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {videoLectures.filter(lecture => lecture.status !== 'pending').map((lecture) => (
+                <Card key={lecture.id} className="hover:shadow-lg transition-shadow">
+                  <CardContent className="p-6">
+                    <div className="flex justify-between items-start mb-4">
+                      <div>
+                        <h3 className="font-semibold text-lg mb-1">{lecture.title}</h3>
+                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                          {lecture.instructor} • {lecture.category}
+                        </p>
+                        <div className="flex items-center gap-2 mb-3">
+                          {getDifficultyBadge(lecture.difficulty)}
+                          {getStatusBadge(lecture.status)}
+                        </div>
+                      </div>
+                    </div>
+
+                    <p className="text-sm text-gray-700 dark:text-gray-300 mb-4 line-clamp-3">
+                      {lecture.description}
+                    </p>
+
+                    <div className="flex items-center gap-4 mb-4 text-xs text-gray-500">
+                      <div className="flex items-center gap-1">
+                        <Clock className="h-3 w-3" />
+                        <span>{Math.floor(lecture.totalDuration / 60)}시간</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Users className="h-3 w-3" />
+                        <span>{lecture.studentCount}</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Star className="h-3 w-3 text-yellow-400" />
+                        <span>{lecture.rating}</span>
+                      </div>
+                    </div>
+
+                    <div className="text-lg font-bold mb-4">
+                      ₩{lecture.price.toLocaleString()}
+                    </div>
+
+                    <div className="flex gap-2">
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        onClick={() => setSelectedLecture(lecture)}
+                      >
+                        <Eye className="h-4 w-4 mr-1" />
+                        상세
+                      </Button>
+                      
+                      {userRole === 'admin' && (
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          onClick={() => handleDeleteLecture(lecture.id)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </TabsContent>
+
+          {/* 승인 대기 탭 */}
+          <TabsContent value="pending-approval" className="space-y-6">
+            {userRole === 'admin' ? (
+              <div>
+                <h2 className="text-xl font-semibold mb-4">승인 대기 중인 영상강의</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {videoLectures.filter(lecture => lecture.status === 'pending').map((lecture) => (
+                    <Card key={lecture.id} className="border-orange-200 dark:border-orange-800">
+                      <CardContent className="p-6">
+                        <div className="flex justify-between items-start mb-4">
+                          <div>
+                            <h3 className="font-semibold text-lg mb-1">{lecture.title}</h3>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">
+                              {lecture.instructor} • {lecture.category}
+                            </p>
+                          </div>
+                          <Badge variant="warning">검토중</Badge>
+                        </div>
+                        
+                        <p className="text-sm text-gray-700 dark:text-gray-300 mb-4">
+                          {lecture.description}
+                        </p>
+
+                        <div className="mb-4">
+                          <div className="text-sm text-gray-500 mb-2">모듈 정보:</div>
+                          <div className="space-y-1">
+                            {lecture.modules.slice(0, 3).map((module, idx) => (
+                              <div key={idx} className="text-xs text-gray-600 flex items-center gap-2">
+                                <BookOpen className="h-3 w-3" />
+                                <span>{module.title} ({module.duration}분)</span>
+                                <Badge variant="outline" className="text-xs">
+                                  {module.format === 'theory' ? '이론' : 
+                                   module.format === 'practice' ? '실습' : '이론+실습'}
+                                </Badge>
+                              </div>
+                            ))}
+                            {lecture.modules.length > 3 && (
+                              <div className="text-xs text-gray-500">
+                                외 {lecture.modules.length - 3}개 모듈
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="flex gap-2">
+                          <Button 
+                            size="sm" 
+                            variant="default"
+                            onClick={() => handleApproveLecture(lecture.id)}
+                          >
+                            <CheckCircle className="h-4 w-4 mr-1" />
+                            승인
+                          </Button>
+                          <Button 
+                            size="sm" 
+                            variant="destructive"
+                            onClick={() => handleRejectLecture(lecture.id)}
+                          >
+                            <XCircle className="h-4 w-4 mr-1" />
+                            반려
+                          </Button>
+                          <Button 
+                            size="sm" 
+                            variant="outline"
+                            onClick={() => setSelectedLecture(lecture)}
+                          >
+                            <Eye className="h-4 w-4 mr-1" />
+                            상세보기
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+                
+                {videoLectures.filter(lecture => lecture.status === 'pending').length === 0 && (
+                  <Card className="bg-gray-50 dark:bg-gray-800/50">
+                    <CardContent className="p-8 text-center">
+                      <AlertCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                      <h3 className="font-medium text-gray-900 dark:text-gray-100 mb-2">
+                        승인 대기 중인 강의가 없습니다
+                      </h3>
+                      <p className="text-gray-500 dark:text-gray-400">
+                        새로운 강의 등록이 있을 때까지 기다려주세요.
+                      </p>
+                    </CardContent>
+                  </Card>
+                )}
+              </div>
+            ) : (
+              <Card className="bg-orange-50 dark:bg-orange-900/20 border-orange-200 dark:border-orange-800">
+                <CardContent className="p-6 text-center">
+                  <AlertCircle className="h-12 w-12 text-orange-500 mx-auto mb-4" />
+                  <h3 className="font-medium text-orange-700 dark:text-orange-300 mb-2">
+                    관리자 전용 기능
+                  </h3>
+                  <p className="text-orange-600 dark:text-orange-400">
+                    강의 승인 기능은 관리자만 사용할 수 있습니다.
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
+        </Tabs>
+
+        {/* 영상강의 상세 보기 모달 */}
+        {selectedLecture && (
+          <Dialog open={!!selectedLecture} onOpenChange={() => setSelectedLecture(null)}>
+            <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2">
+                  <Video className="h-5 w-5" />
+                  {selectedLecture.title}
+                </DialogTitle>
+              </DialogHeader>
+              
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <h4 className="font-semibold mb-2">기본 정보</h4>
+                    <div className="space-y-2 text-sm">
+                      <div><span className="font-medium">강사:</span> {selectedLecture.instructor}</div>
+                      <div><span className="font-medium">카테고리:</span> {selectedLecture.category}</div>
+                      <div><span className="font-medium">난이도:</span> {getDifficultyBadge(selectedLecture.difficulty)}</div>
+                      <div><span className="font-medium">상태:</span> {getStatusBadge(selectedLecture.status)}</div>
+                      <div><span className="font-medium">가격:</span> ₩{selectedLecture.price.toLocaleString()}</div>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <h4 className="font-semibold mb-2">통계</h4>
+                    <div className="space-y-2 text-sm">
+                      <div><span className="font-medium">총 시간:</span> {Math.floor(selectedLecture.totalDuration / 60)}시간</div>
+                      <div><span className="font-medium">평점:</span> {selectedLecture.rating} / 5.0</div>
+                      <div><span className="font-medium">리뷰 수:</span> {selectedLecture.reviewCount}개</div>
+                      <div><span className="font-medium">수강생:</span> {selectedLecture.studentCount}명</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <h4 className="font-semibold mb-2">강의 설명</h4>
+                  <p className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
+                    {selectedLecture.description}
+                  </p>
+                </div>
+
+                <div>
+                  <h4 className="font-semibold mb-3">강의 모듈 ({selectedLecture.modules.length}개)</h4>
+                  <div className="space-y-3">
+                    {selectedLecture.modules.map((module, index) => (
+                      <div key={module.id} className="border rounded-lg p-4">
+                        <div className="flex justify-between items-start mb-2">
+                          <h5 className="font-medium">{module.title}</h5>
+                          <div className="flex items-center gap-2">
+                            <Badge variant={module.format === 'theory' ? 'secondary' : 
+                                           module.format === 'practice' ? 'default' : 'outline'}>
+                              {module.format === 'theory' ? '이론' : 
+                               module.format === 'practice' ? '실습' : '이론+실습'}
+                            </Badge>
+                            <span className="text-xs text-gray-500">{module.duration}분</span>
+                          </div>
+                        </div>
+                        
+                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                          {module.description}
+                        </p>
+                        
+                        {module.materials.length > 0 && (
+                          <div className="mt-2">
+                            <span className="text-xs font-medium text-gray-500">준비물:</span>
+                            <div className="flex flex-wrap gap-1 mt-1">
+                              {module.materials.map((material, idx) => (
+                                <Badge key={idx} variant="outline" className="text-xs">
+                                  {material}
+                                </Badge>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="flex justify-end gap-2">
+                  {userRole === 'admin' && selectedLecture.status === 'pending' && (
+                    <>
+                      <Button 
+                        variant="default"
+                        onClick={() => {
+                          handleApproveLecture(selectedLecture.id);
+                          setSelectedLecture(null);
+                        }}
+                      >
+                        <CheckCircle className="h-4 w-4 mr-1" />
+                        승인
+                      </Button>
+                      <Button 
+                        variant="destructive"
+                        onClick={() => {
+                          handleRejectLecture(selectedLecture.id);
+                          setSelectedLecture(null);
+                        }}
+                      >
+                        <XCircle className="h-4 w-4 mr-1" />
+                        반려
+                      </Button>
+                    </>
+                  )}
+                  <Button variant="outline" onClick={() => setSelectedLecture(null)}>
+                    닫기
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+        )}
       </div>
     </div>
   );
