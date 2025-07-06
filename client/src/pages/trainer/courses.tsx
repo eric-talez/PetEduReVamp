@@ -165,7 +165,6 @@ export default function TrainerCoursesPage() {
           enrolledStudents: 0,
           completedStudents: 0,
           averageRating: 0,
-          totalRevenue: 0,
           reviewComments: "승인 대기 중입니다. 커리큘럼이 잘 구성되어 있습니다."
         },
         {
