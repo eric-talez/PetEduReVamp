@@ -76,7 +76,8 @@ import {
   Landmark,
   Calculator,
   Eye,
-  X
+  X,
+  GraduationCap
 } from 'lucide-react';
 import { 
   DropdownMenu,
@@ -147,6 +148,28 @@ interface SettlementReport {
   bankInfo?: string;
 }
 
+// 커리큘럼 수익 타입
+interface CurriculumRevenue {
+  id: string;
+  title: string;
+  trainerId: string;
+  trainerName: string;
+  trainerEmail?: string;
+  category: string;
+  price: number;
+  enrollmentCount: number;
+  totalRevenue: number;
+  trainerRevenue: number;
+  platformRevenue: number;
+  revenueShare: {
+    trainerShare: number;
+    platformShare: number;
+  };
+  status: 'draft' | 'published';
+  lastSaleDate?: Date;
+  createdAt: Date;
+}
+
 export default function AdminCommission() {
   const { userName } = useAuth();
   const { toast } = useToast();
@@ -169,6 +192,9 @@ export default function AdminCommission() {
   const [modalMode, setModalMode] = useState<'view' | 'edit' | 'add'>('view');
   const [showSettlementModal, setShowSettlementModal] = useState(false);
   const [selectedSettlement, setSelectedSettlement] = useState<SettlementReport | null>(null);
+  
+  // 커리큘럼 수익 상태
+  const [curriculumRevenues, setCurriculumRevenues] = useState<CurriculumRevenue[]>([]);
   
   // 데이터 로드
   useEffect(() => {
@@ -376,9 +402,54 @@ export default function AdminCommission() {
           }
         ];
         
+        // 커리큘럼 수익 데이터 초기화
+        const mockCurriculumRevenues: CurriculumRevenue[] = [
+          {
+            id: 'curriculum-basic-obedience',
+            title: '기초 복종훈련 완전정복',
+            trainerId: 'trainer-hanseongkyu',
+            trainerName: '한성규',
+            trainerEmail: 'hanseongkyu@talez.co.kr',
+            category: '기초훈련',
+            price: 180000,
+            enrollmentCount: 25,
+            totalRevenue: 4500000,
+            trainerRevenue: 3150000, // 70%
+            platformRevenue: 1350000, // 30%
+            revenueShare: {
+              trainerShare: 70,
+              platformShare: 30
+            },
+            status: 'published',
+            lastSaleDate: new Date('2025-01-05'),
+            createdAt: new Date('2025-01-01')
+          },
+          {
+            id: 'curriculum-behavior-correction',
+            title: '문제행동 교정 전문과정',
+            trainerId: 'trainer-hanseongkyu',
+            trainerName: '한성규',
+            trainerEmail: 'hanseongkyu@talez.co.kr',
+            category: '문제행동교정',
+            price: 300000,
+            enrollmentCount: 60,
+            totalRevenue: 18000000,
+            trainerRevenue: 13500000, // 75%
+            platformRevenue: 4500000, // 25%
+            revenueShare: {
+              trainerShare: 75,
+              platformShare: 25
+            },
+            status: 'published',
+            lastSaleDate: new Date('2025-01-06'),
+            createdAt: new Date('2025-01-01')
+          }
+        ];
+
         setPolicies(mockPolicies);
         setTransactions(mockTransactions);
         setSettlements(mockSettlements);
+        setCurriculumRevenues(mockCurriculumRevenues);
       } catch (error) {
         console.error('데이터 로딩 오류:', error);
         toast({
@@ -753,6 +824,10 @@ export default function AdminCommission() {
             <TabsTrigger value="analytics">
               <BarChart3 className="h-4 w-4 mr-2" />
               커미션 분석
+            </TabsTrigger>
+            <TabsTrigger value="curriculum-revenue">
+              <GraduationCap className="h-4 w-4 mr-2" />
+              커리큘럼 수익
             </TabsTrigger>
           </TabsList>
         </div>
@@ -1402,6 +1477,156 @@ export default function AdminCommission() {
                       <TableCell className="font-medium">₩328,630</TableCell>
                       <TableCell>2024-05-03</TableCell>
                     </TableRow>
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        {/* 커리큘럼 수익 탭 */}
+        <TabsContent value="curriculum-revenue">
+          <div className="space-y-6">
+            <div className="flex justify-between items-center">
+              <div>
+                <h3 className="text-xl font-semibold">커리큘럼 수익 관리</h3>
+                <p className="text-muted-foreground">등록된 커리큘럼의 수익 현황을 확인하고 관리합니다.</p>
+              </div>
+              <Button variant="outline" onClick={handleRefresh}>
+                <RefreshCw className="mr-2 h-4 w-4" />
+                새로고침
+              </Button>
+            </div>
+
+            {/* 수익 요약 카드 */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium">총 수익</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">
+                    ₩{curriculumRevenues.reduce((sum, curr) => sum + curr.totalRevenue, 0).toLocaleString()}
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    전체 커리큘럼 수익 합계
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium">훈련사 수익</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-blue-600">
+                    ₩{curriculumRevenues.reduce((sum, curr) => sum + curr.trainerRevenue, 0).toLocaleString()}
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    훈련사 총 수익금
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium">플랫폼 수익</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-green-600">
+                    ₩{curriculumRevenues.reduce((sum, curr) => sum + curr.platformRevenue, 0).toLocaleString()}
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    플랫폼 총 수익금
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* 커리큘럼 수익 테이블 */}
+            <Card>
+              <CardHeader>
+                <CardTitle>커리큘럼별 수익 현황</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>커리큘럼</TableHead>
+                      <TableHead>훈련사</TableHead>
+                      <TableHead>카테고리</TableHead>
+                      <TableHead>가격</TableHead>
+                      <TableHead>수강생 수</TableHead>
+                      <TableHead>총 수익</TableHead>
+                      <TableHead>수익 분배</TableHead>
+                      <TableHead>상태</TableHead>
+                      <TableHead>관리</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {curriculumRevenues.map((curriculum) => (
+                      <TableRow key={curriculum.id}>
+                        <TableCell>
+                          <div className="font-medium">{curriculum.title}</div>
+                          <div className="text-sm text-muted-foreground">
+                            {curriculum.lastSaleDate && 
+                              `최근 판매: ${curriculum.lastSaleDate.toLocaleDateString()}`
+                            }
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <Avatar className="h-8 w-8">
+                              <AvatarFallback>{curriculum.trainerName.charAt(0)}</AvatarFallback>
+                            </Avatar>
+                            <div>
+                              <div className="font-medium">{curriculum.trainerName}</div>
+                              <div className="text-sm text-muted-foreground">
+                                {curriculum.trainerEmail}
+                              </div>
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="outline">{curriculum.category}</Badge>
+                        </TableCell>
+                        <TableCell className="font-medium">
+                          ₩{curriculum.price.toLocaleString()}
+                        </TableCell>
+                        <TableCell>
+                          <div className="text-center">
+                            <div className="font-medium">{curriculum.enrollmentCount}명</div>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="font-medium">
+                            ₩{curriculum.totalRevenue.toLocaleString()}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="space-y-1">
+                            <div className="flex justify-between text-sm">
+                              <span>훈련사:</span>
+                              <span className="font-medium">{curriculum.revenueShare.trainerShare}%</span>
+                            </div>
+                            <div className="flex justify-between text-sm">
+                              <span>플랫폼:</span>
+                              <span className="font-medium">{curriculum.revenueShare.platformShare}%</span>
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant={curriculum.status === 'published' ? 'default' : 'secondary'}>
+                            {curriculum.status === 'published' ? '운영중' : '준비중'}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <Button variant="ghost" size="sm">
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
                   </TableBody>
                 </Table>
               </CardContent>
