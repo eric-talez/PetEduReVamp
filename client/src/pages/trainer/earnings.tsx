@@ -25,7 +25,7 @@ interface EarningRecord {
   courseName: string;
   studentName: string;
   amount: number;
-  commission: number;
+  commissionRate: number; // % 단위
   netAmount: number;
   status: 'completed' | 'pending' | 'processing';
   paymentMethod: 'card' | 'transfer' | 'cash';
@@ -34,7 +34,7 @@ interface EarningRecord {
 interface MonthlySummary {
   month: string;
   totalRevenue: number;
-  totalCommission: number;
+  averageCommissionRate: number; // % 단위
   netEarnings: number;
   transactionCount: number;
 }
@@ -54,114 +54,11 @@ export default function TrainerEarnings() {
     const loadData = async () => {
       setIsLoading(true);
       try {
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        // 실제 커미션 시스템에서 수익 데이터를 가져오는 곳
+        // 현재는 빈 배열로 초기화하고 추후 실제 API 연결 시 사용
         
-        const mockEarnings: EarningRecord[] = [
-          {
-            id: 1,
-            date: '2024-05-15',
-            courseName: '반려견 기본 훈련 마스터하기',
-            studentName: '김철수',
-            amount: 150000,
-            commission: 22500,
-            netAmount: 127500,
-            status: 'completed',
-            paymentMethod: 'card'
-          },
-          {
-            id: 2,
-            date: '2024-05-14',
-            courseName: '문제행동 교정 특별과정',
-            studentName: '이영희',
-            amount: 200000,
-            commission: 30000,
-            netAmount: 170000,
-            status: 'completed',
-            paymentMethod: 'transfer'
-          },
-          {
-            id: 3,
-            date: '2024-05-13',
-            courseName: '고급 트릭 훈련',
-            studentName: '정민수',
-            amount: 180000,
-            commission: 27000,
-            netAmount: 153000,
-            status: 'processing',
-            paymentMethod: 'card'
-          },
-          {
-            id: 4,
-            date: '2024-05-12',
-            courseName: '퍼피 사회화 클래스',
-            studentName: '한소희',
-            amount: 120000,
-            commission: 18000,
-            netAmount: 102000,
-            status: 'completed',
-            paymentMethod: 'card'
-          },
-          {
-            id: 5,
-            date: '2024-05-10',
-            courseName: '반려견 산책 에티켓',
-            studentName: '장수현',
-            amount: 100000,
-            commission: 15000,
-            netAmount: 85000,
-            status: 'pending',
-            paymentMethod: 'transfer'
-          },
-          {
-            id: 6,
-            date: '2024-04-28',
-            courseName: '반려견 기본 훈련 마스터하기',
-            studentName: '박지은',
-            amount: 150000,
-            commission: 22500,
-            netAmount: 127500,
-            status: 'completed',
-            paymentMethod: 'card'
-          },
-          {
-            id: 7,
-            date: '2024-04-25',
-            courseName: '어질리티 입문과정',
-            studentName: '최민호',
-            amount: 220000,
-            commission: 33000,
-            netAmount: 187000,
-            status: 'completed',
-            paymentMethod: 'transfer'
-          }
-        ];
-        
-        const mockMonthlySummary: MonthlySummary[] = [
-          {
-            month: '2024-05',
-            totalRevenue: 750000,
-            totalCommission: 112500,
-            netEarnings: 637500,
-            transactionCount: 5
-          },
-          {
-            month: '2024-04',
-            totalRevenue: 1240000,
-            totalCommission: 186000,
-            netEarnings: 1054000,
-            transactionCount: 8
-          },
-          {
-            month: '2024-03',
-            totalRevenue: 980000,
-            totalCommission: 147000,
-            netEarnings: 833000,
-            transactionCount: 6
-          }
-        ];
-        
-        setEarnings(mockEarnings);
-        setMonthlySummary(mockMonthlySummary);
+        setEarnings([]);
+        setMonthlySummary([]);
       } catch (error) {
         console.error('수익 데이터 로딩 오류:', error);
         toast({
@@ -215,7 +112,9 @@ export default function TrainerEarnings() {
 
   // 총 수익 계산
   const totalRevenue = filteredEarnings.reduce((sum, earning) => sum + earning.amount, 0);
-  const totalCommission = filteredEarnings.reduce((sum, earning) => sum + earning.commission, 0);
+  const averageCommissionRate = filteredEarnings.length > 0 
+    ? filteredEarnings.reduce((sum, earning) => sum + earning.commissionRate, 0) / filteredEarnings.length
+    : 0;
   const totalNetEarnings = filteredEarnings.reduce((sum, earning) => sum + earning.netAmount, 0);
 
   // 이번 달 수익
@@ -320,8 +219,8 @@ export default function TrainerEarnings() {
             <div className="flex items-center">
               <CreditCard className="h-8 w-8 text-purple-600" />
               <div className="ml-4">
-                <p className="text-sm font-medium text-muted-foreground">플랫폼 수수료</p>
-                <p className="text-2xl font-bold">{totalCommission.toLocaleString()}원</p>
+                <p className="text-sm font-medium text-muted-foreground">평균 수수료율</p>
+                <p className="text-2xl font-bold">{averageCommissionRate.toFixed(1)}%</p>
               </div>
             </div>
           </CardContent>
@@ -360,7 +259,7 @@ export default function TrainerEarnings() {
                     {summary.netEarnings.toLocaleString()}원
                   </div>
                   <div className="text-sm text-muted-foreground">
-                    매출 {summary.totalRevenue.toLocaleString()}원 - 수수료 {summary.totalCommission.toLocaleString()}원
+                    매출 {summary.totalRevenue.toLocaleString()}원 - 수수료 {summary.averageCommissionRate}%
                   </div>
                 </div>
               </div>
@@ -401,7 +300,7 @@ export default function TrainerEarnings() {
                     <th className="text-left py-3 px-2">강의명</th>
                     <th className="text-left py-3 px-2">수강생</th>
                     <th className="text-right py-3 px-2">매출액</th>
-                    <th className="text-right py-3 px-2">수수료</th>
+                    <th className="text-right py-3 px-2">수수료율</th>
                     <th className="text-right py-3 px-2">순수익</th>
                     <th className="text-center py-3 px-2">결제방법</th>
                     <th className="text-center py-3 px-2">상태</th>
@@ -421,7 +320,7 @@ export default function TrainerEarnings() {
                         {earning.amount.toLocaleString()}원
                       </td>
                       <td className="py-3 px-2 text-right text-red-600">
-                        -{earning.commission.toLocaleString()}원
+                        {earning.commissionRate}%
                       </td>
                       <td className="py-3 px-2 text-right font-bold text-green-600">
                         {earning.netAmount.toLocaleString()}원
