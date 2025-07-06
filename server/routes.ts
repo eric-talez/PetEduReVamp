@@ -1757,7 +1757,9 @@ app.get('/api/search', async (req, res) => {
         });
       }
 
-      console.log(`[사용자 검색] 검색어: ${query}`);
+      // URL 디코딩 처리
+      let searchQuery = decodeURIComponent(query).trim();
+      console.log(`[사용자 검색] 원본 검색어: "${query}" -> 디코딩: "${searchQuery}"`);
 
       // 모든 사용자 데이터 가져오기
       const allUsers = await storage.getAllUsers();
@@ -1770,17 +1772,17 @@ app.get('/api/search', async (req, res) => {
 
       // 일반 사용자 검색 (이름으로 검색)
       const matchedUsers = allUsers.filter(user => 
-        user.name.toLowerCase().includes(query.toLowerCase()) ||
-        user.email.toLowerCase().includes(query.toLowerCase())
+        user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        user.email.toLowerCase().includes(searchQuery.toLowerCase())
       );
 
       // 훈련사 검색 (이름, 전문분야로 검색)
       const matchedTrainers = allTrainers.filter(trainer => 
-        trainer.name.toLowerCase().includes(query.toLowerCase()) ||
+        trainer.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         (trainer.specialties && trainer.specialties.some(specialty => 
-          specialty.toLowerCase().includes(query.toLowerCase())
+          specialty.toLowerCase().includes(searchQuery.toLowerCase())
         )) ||
-        (trainer.bio && trainer.bio.toLowerCase().includes(query.toLowerCase()))
+        (trainer.bio && trainer.bio.toLowerCase().includes(searchQuery.toLowerCase()))
       );
 
       // 일반 사용자 결과 추가
@@ -1797,7 +1799,7 @@ app.get('/api/search', async (req, res) => {
       // 훈련사 결과 추가
       matchedTrainers.forEach(trainer => {
         searchResults.push({
-          id: trainer.id,
+          id: trainer.userId || trainer.id,
           name: trainer.name,
           role: 'trainer',
           avatar: trainer.avatar || trainer.image || null,
@@ -1811,7 +1813,7 @@ app.get('/api/search', async (req, res) => {
       res.json({ 
         success: true, 
         users: searchResults,
-        query,
+        query: searchQuery,
         totalResults: searchResults.length
       });
 
@@ -1820,6 +1822,106 @@ app.get('/api/search', async (req, res) => {
       res.status(500).json({ 
         success: false, 
         message: '사용자 검색 중 오류가 발생했습니다.' 
+      });
+    }
+  });
+
+  // 회원 상태 및 기관 매칭 정보 API
+  app.get("/api/admin/members-status", async (req, res) => {
+    try {
+      const allUsers = await storage.getAllUsers();
+      const allTrainers = await storage.getAllTrainers();
+      const allInstitutes = await storage.getInstitutes();
+      const allPets = await storage.getAllPets ? await storage.getAllPets() : [];
+
+      // 사용자 역할별 분류
+      const membersByRole = {
+        'pet-owner': [],
+        'trainer': [],
+        'institute-admin': [],
+        'admin': []
+      };
+
+      // 기관 매칭 정보
+      const instituteMemberships = [];
+
+      // 사용자 분류
+      allUsers.forEach(user => {
+        const roleKey = user.role || 'pet-owner';
+        if (membersByRole[roleKey]) {
+          membersByRole[roleKey].push({
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            role: user.role,
+            isVerified: user.isVerified || false,
+            instituteId: user.instituteId || null,
+            createdAt: user.createdAt,
+            avatar: user.avatar
+          });
+        }
+
+        // 기관 소속 회원 추가
+        if (user.instituteId) {
+          const institute = allInstitutes.find(inst => inst.id === user.instituteId);
+          if (institute) {
+            instituteMemberships.push({
+              userId: user.id,
+              userName: user.name,
+              userRole: user.role,
+              instituteId: user.instituteId,
+              instituteName: institute.name,
+              joinedAt: user.createdAt
+            });
+          }
+        }
+      });
+
+      // 훈련사-견주 연결 정보
+      const trainerConnections = [];
+      allTrainers.forEach(trainer => {
+        // 해당 훈련사와 연결된 견주들 찾기 (예약, 메시지 등을 통해)
+        const connectedOwners = allUsers.filter(user => {
+          // 여기서는 간단히 같은 지역의 견주들로 시뮬레이션
+          return user.role === 'pet-owner' && user.location === trainer.location;
+        });
+
+        if (connectedOwners.length > 0) {
+          trainerConnections.push({
+            trainerId: trainer.id,
+            trainerName: trainer.name,
+            connectedOwners: connectedOwners.map(owner => ({
+              id: owner.id,
+              name: owner.name,
+              email: owner.email
+            }))
+          });
+        }
+      });
+
+      res.json({
+        success: true,
+        data: {
+          membersByRole,
+          instituteMemberships,
+          trainerConnections,
+          summary: {
+            totalUsers: allUsers.length,
+            totalTrainers: allTrainers.length,
+            totalInstitutes: allInstitutes.length,
+            totalPets: allPets.length,
+            petOwners: membersByRole['pet-owner'].length,
+            instituteAdmins: membersByRole['institute-admin'].length,
+            verifiedMembers: allUsers.filter(u => u.isVerified).length
+          }
+        }
+      });
+
+    } catch (error) {
+      console.error('회원 상태 조회 오류:', error);
+      res.status(500).json({
+        success: false,
+        message: '회원 상태 정보를 가져오는데 실패했습니다.'
       });
     }
   });

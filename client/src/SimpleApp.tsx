@@ -1893,6 +1893,18 @@ function AuthenticatedRoutes() {
             );
           }}
         </Route>
+        <Route path="/admin/members-status">
+          {() => {
+            const AdminMembersStatus = lazy(() => import('./pages/admin/AdminMembersStatus'));
+            return (
+              <Suspense fallback={<div className="p-8 flex justify-center items-center">
+                <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
+              </div>}>
+                <ProtectedAdminRoute component={AdminMembersStatus} />
+              </Suspense>
+            );
+          }}
+        </Route>
         <Route path="/admin/commission">
           {() => {
             const AdminCommission = lazy(() => import('./pages/admin/AdminCommission'));
