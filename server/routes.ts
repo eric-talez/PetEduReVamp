@@ -1745,6 +1745,85 @@ app.get('/api/search', async (req, res) => {
     }
   });
 
+  // 사용자 검색 API (메시징용)
+  app.get("/api/users/search", async (req, res) => {
+    try {
+      const { query } = req.query;
+      
+      if (!query || typeof query !== 'string') {
+        return res.status(400).json({ 
+          success: false, 
+          message: '검색어가 필요합니다.' 
+        });
+      }
+
+      console.log(`[사용자 검색] 검색어: ${query}`);
+
+      // 모든 사용자 데이터 가져오기
+      const allUsers = await storage.getAllUsers();
+      const allTrainers = await storage.getAllTrainers();
+      
+      console.log(`[사용자 검색] 전체 사용자: ${allUsers.length}명, 전체 훈련사: ${allTrainers.length}명`);
+
+      // 검색 결과 생성
+      const searchResults = [];
+
+      // 일반 사용자 검색 (이름으로 검색)
+      const matchedUsers = allUsers.filter(user => 
+        user.name.toLowerCase().includes(query.toLowerCase()) ||
+        user.email.toLowerCase().includes(query.toLowerCase())
+      );
+
+      // 훈련사 검색 (이름, 전문분야로 검색)
+      const matchedTrainers = allTrainers.filter(trainer => 
+        trainer.name.toLowerCase().includes(query.toLowerCase()) ||
+        (trainer.specialties && trainer.specialties.some(specialty => 
+          specialty.toLowerCase().includes(query.toLowerCase())
+        )) ||
+        (trainer.bio && trainer.bio.toLowerCase().includes(query.toLowerCase()))
+      );
+
+      // 일반 사용자 결과 추가
+      matchedUsers.forEach(user => {
+        searchResults.push({
+          id: user.id,
+          name: user.name,
+          role: user.role || 'pet-owner',
+          avatar: user.avatar || null,
+          email: user.email
+        });
+      });
+
+      // 훈련사 결과 추가
+      matchedTrainers.forEach(trainer => {
+        searchResults.push({
+          id: trainer.id,
+          name: trainer.name,
+          role: 'trainer',
+          avatar: trainer.avatar || trainer.image || null,
+          email: trainer.email,
+          specialties: trainer.specialties || []
+        });
+      });
+
+      console.log(`[사용자 검색] 검색 결과: ${searchResults.length}명`);
+
+      res.json({ 
+        success: true, 
+        users: searchResults,
+        query,
+        totalResults: searchResults.length
+      });
+
+    } catch (error) {
+      console.error('사용자 검색 오류:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: '사용자 검색 중 오류가 발생했습니다.' 
+      });
+    }
+  });
+
   // 관리 기능 API
   app.post("/api/community/posts/:id/report", async (req, res) => {
     try {
