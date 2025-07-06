@@ -93,8 +93,15 @@ export function NewConversationDialog({ open, onOpenChange }: NewConversationDia
     try {
       setIsSearching(true);
       
-      // 서버 API 호출
-      const response = await fetch(`/api/users/search?query=${encodeURIComponent(searchTerm)}`);
+      // JSON POST 요청으로 변경하여 인코딩 문제 해결
+      const response = await fetch('/api/users/search', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({ query: searchTerm.trim() })
+      });
       
       if (!response.ok) {
         throw new Error(`서버 오류: ${response.status}`);

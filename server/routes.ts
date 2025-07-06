@@ -1745,11 +1745,20 @@ app.get('/api/search', async (req, res) => {
     }
   });
 
-  // 사용자 검색 API (메시징용)
+  // 사용자 검색 API (메시징용) - GET과 POST 모두 지원
   app.get("/api/users/search", async (req, res) => {
+    const { query } = req.query;
+    await handleUserSearch(query as string, res);
+  });
+
+  app.post("/api/users/search", async (req, res) => {
+    const { query } = req.body;
+    await handleUserSearch(query, res);
+  });
+
+  // 사용자 검색 로직을 별도 함수로 분리
+  async function handleUserSearch(query: string, res: any) {
     try {
-      const { query } = req.query;
-      
       if (!query || typeof query !== 'string') {
         return res.status(400).json({ 
           success: false, 
@@ -1757,9 +1766,34 @@ app.get('/api/search', async (req, res) => {
         });
       }
 
-      // URL 디코딩 처리
-      let searchQuery = decodeURIComponent(query).trim();
-      console.log(`[사용자 검색] 원본 검색어: "${query}" -> 디코딩: "${searchQuery}"`);
+      // URL 디코딩 및 한국어 인코딩 문제 해결
+      let searchQuery = query;
+      try {
+        // 먼저 decodeURIComponent 시도
+        searchQuery = decodeURIComponent(query);
+      } catch (e) {
+        // 실패시 원본 사용
+        searchQuery = query;
+      }
+      
+      // 추가 한국어 디코딩 처리
+      try {
+        if (searchQuery !== query) {
+          searchQuery = searchQuery;
+        } else {
+          // Buffer를 통한 UTF-8 디코딩 시도
+          const buffer = Buffer.from(searchQuery, 'latin1');
+          const decoded = buffer.toString('utf8');
+          if (decoded !== searchQuery && decoded.length > 0) {
+            searchQuery = decoded;
+          }
+        }
+      } catch (e) {
+        // 디코딩 실패시 원본 사용
+      }
+      
+      searchQuery = searchQuery.trim();
+      console.log(`[사용자 검색] 원본: "${query}" -> 처리된 검색어: "${searchQuery}"`);
 
       // 모든 사용자 데이터 가져오기
       const allUsers = await storage.getAllUsers();
@@ -1796,10 +1830,10 @@ app.get('/api/search', async (req, res) => {
         });
       });
 
-      // 훈련사 결과 추가
+      // 훈련사 결과 추가 (userId가 있으면 userId 사용, 없으면 trainer.id + 1000으로 구분)
       matchedTrainers.forEach(trainer => {
         searchResults.push({
-          id: trainer.userId || trainer.id,
+          id: trainer.userId || (trainer.id + 1000), // 훈련사 ID를 사용자 ID로 매핑
           name: trainer.name,
           role: 'trainer',
           avatar: trainer.avatar || trainer.image || null,
@@ -1807,6 +1841,41 @@ app.get('/api/search', async (req, res) => {
           specialties: trainer.specialties || []
         });
       });
+      
+      // 검색어가 짧을 경우 모든 사용자 포함 (빈 검색어가 아닌 경우)
+      if (searchQuery.length > 0 && searchQuery.length <= 2) {
+        console.log(`[사용자 검색] 짧은 검색어로 전체 사용자 포함`);
+        
+        // 아직 포함되지 않은 사용자들도 추가
+        allUsers.forEach(user => {
+          const alreadyAdded = searchResults.some(result => result.id === user.id);
+          if (!alreadyAdded) {
+            searchResults.push({
+              id: user.id,
+              name: user.name,
+              role: user.role || 'pet-owner',
+              avatar: user.avatar || null,
+              email: user.email
+            });
+          }
+        });
+        
+        // 아직 포함되지 않은 훈련사들도 추가
+        allTrainers.forEach(trainer => {
+          const trainerId = trainer.userId || (trainer.id + 1000);
+          const alreadyAdded = searchResults.some(result => result.id === trainerId);
+          if (!alreadyAdded) {
+            searchResults.push({
+              id: trainerId,
+              name: trainer.name,
+              role: 'trainer',
+              avatar: trainer.avatar || trainer.image || null,
+              email: trainer.email,
+              specialties: trainer.specialties || []
+            });
+          }
+        });
+      }
 
       console.log(`[사용자 검색] 검색 결과: ${searchResults.length}명`);
 
@@ -1824,7 +1893,7 @@ app.get('/api/search', async (req, res) => {
         message: '사용자 검색 중 오류가 발생했습니다.' 
       });
     }
-  });
+  }
 
   // 회원 상태 및 기관 매칭 정보 API
   app.get("/api/admin/members-status", async (req, res) => {
