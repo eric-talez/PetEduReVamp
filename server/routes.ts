@@ -3665,61 +3665,95 @@ app.get('/api/search', async (req, res) => {
   });
 
   // 첨부된 파일들을 자동으로 커리큘럼으로 등록하는 API
-  app.post("/api/admin/curriculum/auto-register", requireAuth('admin'), async (req, res) => {
-    try {
-      const newCurriculums = [];
-      
-      // 첨부된 파일들을 기반으로 커리큘럼 생성
-      const curriculumTemplates = [
-        {
-          title: "클리커 트레이닝 마스터 과정",
-          description: "클리커를 활용한 효과적인 반려견 훈련 기법을 배우는 전문 과정입니다. 긍정적 강화를 통한 과학적 훈련법을 익힐 수 있습니다.",
-          category: "훈련기법",
-          difficulty: "intermediate",
-          duration: 420,
-          price: 350000,
-          sourceFile: "컨텐츠 클리커 커리.hwpx"
-        },
-        {
-          title: "테일즈 종합 반려견 교육 프로그램 (유이서 버전)",
-          description: "반려견의 기본 예의부터 고급 훈련까지 포괄하는 테일즈 전용 교육 커리큘럼입니다. 체계적이고 단계별 접근으로 효과적인 학습을 보장합니다.",
-          category: "종합교육",
-          difficulty: "beginner",
-          duration: 600,
-          price: 450000,
-          sourceFile: "테일즈 강의 내용 유이서.hwp"
-        },
-        {
-          title: "전문가 한성규의 반려견 행동 분석 과정",
-          description: "반려견 행동 전문가 한성규의 노하우를 담은 심화 교육 과정입니다. 문제 행동 교정과 예방법을 전문적으로 다룹니다.",
-          category: "행동분석",
-          difficulty: "advanced",
-          duration: 540,
-          price: 500000,
-          sourceFile: "테일즈 강의 내용(한성규).hwp"
-        }
-      ];
+  app.post("/api/admin/curriculum/auto-register", requireAuth('admin'), (req, res) => {
+    const uploadFiles = upload.array('files'); // 여러 파일 업로드 지원
+    
+    uploadFiles(req, res, async (err) => {
+      if (err) {
+        console.error('파일 업로드 오류:', err);
+        return res.status(400).json({ 
+          success: false,
+          message: err.message || '파일 업로드에 실패했습니다.' 
+        });
+      }
 
-      for (const template of curriculumTemplates) {
-        const curriculumData = {
-          id: `curriculum_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-          title: template.title,
-          description: template.description,
-          trainerId: '100', // 강동훈 훈련사
-          trainerName: '강동훈',
-          trainerEmail: 'kdh@wangzzang.co.kr',
-          trainerPhone: '010-1234-5678',
-          category: template.category,
-          difficulty: template.difficulty,
-          duration: template.duration,
-          price: template.price,
+      if (!req.files || req.files.length === 0) {
+        return res.status(400).json({ 
+          success: false,
+          message: '업로드할 파일이 없습니다.' 
+        });
+      }
+
+      try {
+        const newCurriculums = [];
+        console.log(`[자동 등록] ${req.files.length}개 파일 처리 시작`);
+        
+        // 업로드된 파일들을 기반으로 커리큘럼 생성
+        for (const file of req.files) {
+          const fileExtension = path.extname(file.originalname).toLowerCase();
+          const baseName = path.basename(file.originalname, fileExtension);
+          
+          console.log(`[자동 등록] 파일 처리: ${file.originalname}`);
+          
+          // 파일 이름을 기반으로 커리큘럼 데이터 생성
+          let extractedData = {
+            title: baseName,
+            description: `${baseName}에서 추출된 전문 반려견 교육 커리큘럼`,
+            category: "전문교육",
+            difficulty: "intermediate",
+            duration: 480,
+            price: 400000
+          };
+
+          // 파일 이름 기반 맞춤 설정
+          if (file.originalname.includes('클리커')) {
+            extractedData = {
+              title: "클리커 트레이닝 마스터 과정",
+              description: "클리커를 활용한 효과적인 반려견 훈련 기법을 배우는 전문 과정입니다.",
+              category: "훈련기법",
+              difficulty: "intermediate",
+              duration: 420,
+              price: 350000
+            };
+          } else if (file.originalname.includes('유이서')) {
+            extractedData = {
+              title: "테일즈 종합 반려견 교육 프로그램",
+              description: "반려견의 기본 예의부터 고급 훈련까지 포괄하는 체계적인 교육 커리큘럼",
+              category: "종합교육",
+              difficulty: "beginner",  
+              duration: 600,
+              price: 450000
+            };
+          } else if (file.originalname.includes('한성규')) {
+            extractedData = {
+              title: "전문가 한성규의 반려견 행동 분석 과정",
+              description: "반려견 행동 전문가 한성규의 노하우를 담은 심화 교육 과정",
+              category: "행동분석",
+              difficulty: "advanced",
+              duration: 540,
+              price: 500000
+            };
+          }
+
+          const curriculumData = {
+            id: `curriculum_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+            title: extractedData.title,
+            description: extractedData.description,
+            trainerId: '100', // 강동훈 훈련사
+            trainerName: '강동훈',
+            trainerEmail: 'kdh@wangzzang.co.kr',
+            trainerPhone: '010-1234-5678',
+            category: extractedData.category,
+            difficulty: extractedData.difficulty,
+            duration: extractedData.duration,
+            price: extractedData.price,
           modules: [
             {
               id: `module_1_${Date.now()}`,
               title: "1강. 기본 개념 이해",
               description: "기초 이론과 핵심 개념을 학습합니다.",
               order: 1,
-              duration: Math.floor(template.duration * 0.2),
+              duration: Math.floor(extractedData.duration * 0.2),
               objectives: ["기본 개념 이해", "이론적 배경 학습"],
               content: "강의 내용이 여기에 들어갑니다.",
               videos: [],
@@ -3730,7 +3764,7 @@ app.get('/api/search', async (req, res) => {
               title: "2강. 실전 적용법",
               description: "실제 상황에서의 적용 방법을 익힙니다.",
               order: 2,
-              duration: Math.floor(template.duration * 0.3),
+              duration: Math.floor(extractedData.duration * 0.3),
               objectives: ["실전 기법 습득", "사례 분석"],
               content: "실습 중심의 강의 내용입니다.",
               videos: [],
@@ -3741,7 +3775,7 @@ app.get('/api/search', async (req, res) => {
               title: "3강. 심화 학습",
               description: "고급 기법과 문제 해결 방법을 학습합니다.",
               order: 3,
-              duration: Math.floor(template.duration * 0.3),
+              duration: Math.floor(extractedData.duration * 0.3),
               objectives: ["고급 기법 습득", "문제 해결 능력 향상"],
               content: "심화 과정 강의 내용입니다.",
               videos: [],
@@ -3752,7 +3786,7 @@ app.get('/api/search', async (req, res) => {
               title: "4강. 종합 정리",
               description: "전체 과정을 정리하고 실습을 진행합니다.",
               order: 4,
-              duration: Math.floor(template.duration * 0.2),
+              duration: Math.floor(extractedData.duration * 0.2),
               objectives: ["종합 정리", "최종 실습"],
               content: "종합 정리 및 평가 내용입니다.",
               videos: [],
@@ -3771,24 +3805,25 @@ app.get('/api/search', async (req, res) => {
           lastSaleDate: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000)
         };
 
-        const savedCurriculum = await storage.createCurriculum(curriculumData);
-        newCurriculums.push(savedCurriculum);
-        console.log(`[자동 등록] 커리큘럼 생성: ${template.title}`);
+          const savedCurriculum = await storage.createCurriculum(curriculumData);
+          newCurriculums.push(savedCurriculum);
+          console.log(`[자동 등록] 커리큘럼 생성: ${extractedData.title}`);
+        }
+
+        res.json({
+          success: true,
+          message: `${newCurriculums.length}개의 커리큘럼이 자동으로 등록되었습니다.`,
+          curriculums: newCurriculums
+        });
+
+      } catch (error) {
+        console.error('자동 커리큘럼 등록 오류:', error);
+        res.status(500).json({
+          success: false,
+          message: '커리큘럼 자동 등록 중 오류가 발생했습니다.'
+        });
       }
-
-      res.json({
-        success: true,
-        message: `${newCurriculums.length}개의 커리큘럼이 자동으로 등록되었습니다.`,
-        curriculums: newCurriculums
-      });
-
-    } catch (error) {
-      console.error('자동 커리큘럼 등록 오류:', error);
-      res.status(500).json({
-        success: false,
-        message: '커리큘럼 자동 등록 중 오류가 발생했습니다.'
-      });
-    }
+    });
   });
 
   // 커리큘럼 발행 API (커리큘럼을 강의 상품으로 전환)
