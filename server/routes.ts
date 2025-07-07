@@ -42,77 +42,167 @@ import xlsx from 'xlsx';
 // 유료/무료 정보를 포함한 엑셀 파일에서 커리큘럼 정보 추출 함수
 function parseExcelCurriculumWithPricing(data: any[], filename: string) {
   try {
-    let title = filename;
+    console.log('[엑셀 파싱] 데이터 파싱 시작:', filename);
+    console.log('[엑셀 파싱] 전체 데이터 행 수:', data.length);
+    
+    let title = filename.replace(/\.(xlsx|xls)$/, '');
     let description = "";
     let category = "전문교육";
     let difficulty = "intermediate";
-    let duration = 480;
-    let price = 400000;
+    let duration = 0;
+    let price = 0;
     let modules: any[] = [];
 
-    // 첫 번째 행에서 제목 찾기
-    if (data.length > 0 && data[0] && data[0][0]) {
-      title = String(data[0][0]).trim();
-    }
-
-    // 기본 정보 추출
-    for (let i = 0; i < Math.min(data.length, 10); i++) {
-      const row = data[i];
-      if (!row || !row[0]) continue;
-
-      const cellValue = String(row[0]).trim();
-      if (cellValue.includes('설명') || cellValue.includes('description')) {
-        description = row[1] ? String(row[1]).trim() : description;
-      } else if (cellValue.includes('카테고리') || cellValue.includes('category')) {
-        category = row[1] ? String(row[1]).trim() : category;
-      } else if (cellValue.includes('가격') || cellValue.includes('price')) {
-        const priceValue = row[1] ? String(row[1]).trim() : '';
-        const parsedPrice = parseInt(priceValue.replace(/[^\d]/g, ''));
-        if (!isNaN(parsedPrice)) price = parsedPrice;
+    // 모든 데이터 출력해서 구조 파악
+    console.log('[엑셀 파싱] 전체 데이터 구조:');
+    for (let i = 0; i < Math.min(data.length, 15); i++) {
+      if (data[i] && data[i].length > 0) {
+        console.log(`행 ${i}:`, data[i]);
       }
     }
 
-    // 강의 구성 테이블 찾기
+    // 첫 번째 행에서 제목 찾기
+    if (data.length > 0 && data[0] && data[0][0]) {
+      const firstCellValue = String(data[0][0]).trim();
+      if (firstCellValue && firstCellValue.length > 3) {
+        title = firstCellValue;
+        console.log('[엑셀 파싱] 제목 발견:', title);
+      }
+    }
+
+    // 기본 정보 추출 - 더 유연하게
+    for (let i = 0; i < Math.min(data.length, 20); i++) {
+      const row = data[i];
+      if (!row || row.length === 0) continue;
+
+      for (let j = 0; j < row.length - 1; j++) {
+        const cellValue = String(row[j] || '').trim().toLowerCase();
+        const nextCellValue = String(row[j + 1] || '').trim();
+        
+        if ((cellValue.includes('설명') || cellValue.includes('description') || cellValue.includes('커리큘럼')) && nextCellValue) {
+          description = nextCellValue;
+          console.log('[엑셀 파싱] 설명 발견:', description);
+        } else if ((cellValue.includes('카테고리') || cellValue.includes('category') || cellValue.includes('분류')) && nextCellValue) {
+          category = nextCellValue;
+          console.log('[엑셀 파싱] 카테고리 발견:', category);
+        } else if ((cellValue.includes('전체가격') || cellValue.includes('총가격') || cellValue.includes('price')) && nextCellValue) {
+          const parsedPrice = parseInt(nextCellValue.replace(/[^\d]/g, ''));
+          if (!isNaN(parsedPrice)) {
+            price = parsedPrice;
+            console.log('[엑셀 파싱] 가격 발견:', price);
+          }
+        }
+      }
+    }
+
+    // 모듈 정보 추출 - 다양한 패턴 인식
     let moduleTableStart = -1;
+    let headerRow = -1;
+    
+    // 테이블 헤더 찾기
     for (let i = 0; i < data.length; i++) {
       const row = data[i];
-      if (row && row[0] && String(row[0]).includes('회차')) {
+      if (!row) continue;
+      
+      const rowText = row.map(cell => String(cell || '').trim().toLowerCase()).join(' ');
+      
+      if (rowText.includes('회차') || rowText.includes('차시') || rowText.includes('강의') || rowText.includes('모듈')) {
+        // 헤더 행 발견
+        headerRow = i;
         moduleTableStart = i + 1;
+        console.log('[엑셀 파싱] 모듈 테이블 헤더 발견:', i, row);
         break;
       }
     }
 
-    // 모듈 정보 추출 (유료/무료 정보 포함)
+    // 모듈 정보 추출
     if (moduleTableStart > 0) {
       let moduleIndex = 1;
-      for (let i = moduleTableStart; i < Math.min(data.length, moduleTableStart + 20); i++) {
+      console.log('[엑셀 파싱] 모듈 추출 시작:', moduleTableStart);
+      
+      for (let i = moduleTableStart; i < Math.min(data.length, moduleTableStart + 30); i++) {
         const row = data[i];
-        if (!row || !row[1]) continue;
+        if (!row || row.length === 0) continue;
 
-        const moduleTitle = String(row[1]).trim();
-        const moduleDescription = row[2] ? String(row[2]).trim() : `${moduleTitle}에 대한 상세 내용`;
-        const moduleDuration = row[3] ? parseInt(String(row[3]).replace(/[^\d]/g, '')) || 60 : 60;
-        const isFreeText = row[4] ? String(row[4]).trim().toLowerCase() : 'n';
-        const isFree = isFreeText === 'y' || isFreeText === 'yes' || isFreeText === '무료';
-        const modulePrice = row[5] && !isFree ? parseInt(String(row[5]).replace(/[^\d]/g, '')) || 0 : 0;
+        // 빈 행이면 건너뛰기
+        const hasContent = row.some(cell => cell && String(cell).trim().length > 0);
+        if (!hasContent) continue;
+
+        console.log(`[엑셀 파싱] 모듈 행 ${i} 처리:`, row);
+
+        let moduleTitle = '';
+        let moduleDescription = '';
+        let moduleDuration = 60;
+        let isFree = moduleIndex === 1; // 첫 번째 모듈은 기본 무료
+        let modulePrice = 0;
+
+        // 각 컬럼에서 정보 추출
+        for (let j = 0; j < row.length; j++) {
+          const cellValue = String(row[j] || '').trim();
+          
+          if (j === 0 && cellValue.match(/\d+/)) {
+            // 첫 번째 컬럼: 회차 정보
+            continue;
+          } else if (j === 1 && cellValue && cellValue.length > 2) {
+            // 두 번째 컬럼: 제목
+            moduleTitle = cellValue;
+          } else if (j === 2 && cellValue && cellValue.length > 2) {
+            // 세 번째 컬럼: 설명
+            moduleDescription = cellValue;
+          } else if (j === 3 && cellValue) {
+            // 네 번째 컬럼: 시간
+            const parsedDuration = parseInt(cellValue.replace(/[^\d]/g, ''));
+            if (!isNaN(parsedDuration) && parsedDuration > 0) {
+              moduleDuration = parsedDuration;
+            }
+          } else if (j === 4 && cellValue) {
+            // 다섯 번째 컬럼: 무료/유료
+            const lowerValue = cellValue.toLowerCase();
+            isFree = lowerValue === 'y' || lowerValue === 'yes' || lowerValue === '무료' || lowerValue === 'free';
+          } else if (j === 5 && cellValue && !isFree) {
+            // 여섯 번째 컬럼: 개별가격
+            const parsedPrice = parseInt(cellValue.replace(/[^\d]/g, ''));
+            if (!isNaN(parsedPrice)) {
+              modulePrice = parsedPrice;
+            }
+          }
+        }
 
         if (moduleTitle && moduleTitle.length > 1) {
-          modules.push({
+          const module = {
             id: `module_${moduleIndex}_${Date.now()}`,
-            title: moduleTitle,
-            description: moduleDescription,
+            title: `${moduleIndex}강. ${moduleTitle}`,
+            description: moduleDescription || `${moduleTitle}에 대한 상세 내용`,
             order: moduleIndex,
             duration: moduleDuration,
-            objectives: [moduleDescription],
+            objectives: [moduleDescription || moduleTitle],
             content: `${moduleTitle}에 대한 전문적인 교육 내용`,
+            detailedContent: {
+              introduction: moduleDescription || `${moduleTitle}에 대한 소개`,
+              mainTopics: [moduleTitle],
+              practicalExercises: [`${moduleTitle} 실습`],
+              keyPoints: [`${moduleTitle}의 핵심 포인트`],
+              homework: `${moduleTitle} 복습`,
+              resources: [`${moduleTitle} 참고자료`]
+            },
             videos: [],
             isRequired: true,
             isFree: isFree,
             price: modulePrice
+          };
+          
+          modules.push(module);
+          duration += moduleDuration;
+          
+          console.log('[엑셀 파싱] 모듈 추가:', {
+            title: module.title,
+            duration: module.duration,
+            isFree: module.isFree,
+            price: module.price
           });
           
           moduleIndex++;
-          if (moduleIndex > 10) break;
+          if (moduleIndex > 20) break; // 최대 20개 모듈
         }
       }
     }
@@ -4211,18 +4301,34 @@ app.get('/api/search', async (req, res) => {
           // 엑셀 파일 처리 (유료/무료 정보 포함)
           if (fileExtension === '.xlsx' || fileExtension === '.xls') {
             try {
+              // 파일 업로드 완료 후 잠시 대기
+              await new Promise(resolve => setTimeout(resolve, 200));
+              
+              // 파일 존재 확인
+              if (!fs.existsSync(file.path)) {
+                throw new Error(`업로드된 파일을 찾을 수 없습니다: ${file.path}`);
+              }
+              
+              console.log(`[엑셀 처리] 파일 경로: ${file.path}`);
+              console.log(`[엑셀 처리] 파일 크기: ${fs.statSync(file.path).size}`);
+              
               const workbook = xlsx.readFile(file.path);
               const sheetName = workbook.SheetNames[0];
               const worksheet = workbook.Sheets[sheetName];
               const data = xlsx.utils.sheet_to_json(worksheet, { header: 1 });
               
               console.log(`[엑셀 처리] 시트명: ${sheetName}, 행 수: ${data.length}`);
+              console.log(`[엑셀 처리] 첫 5행:`, data.slice(0, 5));
               
               // 엑셀 데이터에서 커리큘럼 정보 추출 (유료/무료 설정 포함)
               const excelData = parseExcelCurriculumWithPricing(data, originalName);
               if (excelData) {
                 extractedData = { ...extractedData, ...excelData };
-                console.log(`[엑셀 처리] 추출된 데이터:`, excelData.title);
+                console.log(`[엑셀 처리] 추출된 데이터:`, {
+                  title: excelData.title,
+                  moduleCount: excelData.modules?.length || 0,
+                  totalPrice: excelData.price
+                });
               }
             } catch (excelError) {
               console.error('[엑셀 처리] 오류:', excelError);
