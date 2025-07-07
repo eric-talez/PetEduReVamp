@@ -121,6 +121,15 @@ TALEZ is a comprehensive pet education and e-commerce platform that combines AI-
 
 ## Changelog
 
+- July 07, 2025. **Unified Curriculum & Video Management Process** - Simplified complex tab structure into streamlined single workflow:
+  - **Simplified Tab Structure**: Reduced from 4 tabs to 2 main sections (커리큘럼 & 영상 관리, 수익 정산)
+  - **Integrated Creation Process**: Combined curriculum creation and video upload into one seamless workflow
+  - **Visual Progress Tracking**: Real-time status indicators for curriculum completion (정보, 영상 업로드, 발행)
+  - **One-Click Video Upload**: Direct file upload buttons for each module with drag-and-drop support
+  - **Simplified Interface**: Clean, card-based design with essential information and quick actions
+  - **Status Dashboard**: Visual metrics showing modules, videos, duration, and enrolled students
+  - **Completion Workflow**: Step-by-step completion guide from creation to publication
+  - **Enhanced User Experience**: Removed complexity while maintaining full functionality
 - July 07, 2025. **Enhanced Curriculum Management with Easy Creation Wizard** - Streamlined curriculum registration process with user-friendly step-by-step interface:
   - **3-Step Creation Wizard**: Simplified curriculum creation with guided steps (Basic Info → Course Settings → Instructor Info)
   - **Smart Validation**: Real-time form validation with helpful feedback and recommendations

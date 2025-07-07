@@ -81,7 +81,7 @@ export default function AdminRegistrations() {
     }
   };
 
-  const handleReview = async (applicationId: string, status: 'approved' | 'rejected') => {
+  const handleReview = async (applicationId: string, status: 'approved' | 'rejected' | 'pending') => {
     try {
       console.log('🔥 handleReview 호출:', applicationId, status, reviewNotes);
       
@@ -100,9 +100,11 @@ export default function AdminRegistrations() {
       console.log('🔥 서버 응답:', data);
 
       if (data.success) {
+        const statusText = status === 'approved' ? '승인' : 
+                          status === 'rejected' ? '거부' : '초기화';
         toast({
           title: "처리 완료",
-          description: data.message,
+          description: `등록 신청이 ${statusText}되었습니다.`,
           variant: "default"
         });
         
@@ -386,7 +388,7 @@ function ApplicationDetails({
   application: RegistrationApplication;
   reviewNotes: string;
   setReviewNotes: (notes: string) => void;
-  onReview: (id: string, status: 'approved' | 'rejected') => void;
+  onReview: (id: string, status: 'approved' | 'rejected' | 'pending') => void;
 }) {
   const isReadonly = application.status !== 'pending';
 

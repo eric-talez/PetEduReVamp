@@ -1156,29 +1156,61 @@ export default function AdminCurriculum() {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="curriculum">커리큘럼 관리</TabsTrigger>
-            <TabsTrigger value="video-lectures">영상 등록 현황</TabsTrigger>
-            <TabsTrigger value="revenue-management">수익 정산</TabsTrigger>
-            <TabsTrigger value="pending-approval">승인 대기</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="curriculum">📚 커리큘럼 & 영상 관리</TabsTrigger>
+            <TabsTrigger value="revenue-management">💰 수익 정산</TabsTrigger>
           </TabsList>
 
           <TabsContent value="curriculum" className="space-y-6">
 
+        {/* 간단한 커리큘럼 생성 프로세스 */}
+        <Card className="bg-gradient-to-r from-blue-50 to-green-50 border-2 border-dashed border-blue-300">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
+                <Plus className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <h2 className="text-xl font-bold text-gray-900">새 커리큘럼 만들기</h2>
+                <p className="text-sm text-gray-600 font-normal">커리큘럼 생성부터 영상 등록까지 한 번에!</p>
+              </div>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Button 
+                onClick={handleStartCreation}
+                className="h-20 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white"
+              >
+                <div className="text-center">
+                  <Edit className="w-6 h-6 mx-auto mb-2" />
+                  <div className="font-semibold">직접 작성</div>
+                  <div className="text-xs opacity-90">단계별 가이드</div>
+                </div>
+              </Button>
+              <Button 
+                onClick={handleAutoRegister}
+                variant="outline" 
+                className="h-20 border-2 border-green-300 hover:bg-green-50"
+              >
+                <div className="text-center">
+                  <Package className="w-6 h-6 mx-auto mb-2 text-green-600" />
+                  <div className="font-semibold text-green-700">파일 업로드</div>
+                  <div className="text-xs text-green-600">HWP/HWPX 자동 분석</div>
+                </div>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* 기존 커리큘럼 목록 */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* 미리 정의된 커리큘럼 템플릿 */}
           <div>
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <FileText className="w-5 h-5" />
-                    커리큘럼 템플릿 (생성 대기)
-                  </div>
-                  <Button onClick={handleAutoRegister} variant="outline" size="sm">
-                    <Package className="w-4 h-4 mr-2" />
-                    첨부파일 자동등록
-                  </Button>
+                <CardTitle className="flex items-center gap-2">
+                  <BookOpen className="w-5 h-5" />
+                  등록된 커리큘럼
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -1454,137 +1486,117 @@ export default function AdminCurriculum() {
                       <p className="text-gray-600 mt-1">{selectedCurriculum.description}</p>
                     </div>
                     
-                    <div className="grid grid-cols-3 gap-4 text-center">
-                      <div>
-                        <div className="text-sm text-gray-500 mb-1">총 시간</div>
-                        <div className="font-semibold">{Math.floor(selectedCurriculum.duration / 60)}시간</div>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                      <div className="p-3 bg-blue-50 rounded-lg">
+                        <div className="text-2xl font-bold text-blue-600">{selectedCurriculum.modules.length}</div>
+                        <div className="text-sm text-gray-600">모듈 수</div>
                       </div>
-                      <div>
-                        <div className="text-sm text-gray-500 mb-1">모듈 수</div>
-                        <div className="font-semibold">{selectedCurriculum.modules.length}개</div>
+                      <div className="p-3 bg-green-50 rounded-lg">
+                        <div className="text-2xl font-bold text-green-600">
+                          {selectedCurriculum.modules.reduce((acc, module) => acc + (module.videos?.length || 0), 0)}
+                        </div>
+                        <div className="text-sm text-gray-600">영상 수</div>
                       </div>
-                      <div>
-                        <div className="text-sm text-gray-500 mb-1">가격</div>
-                        <div className="font-semibold">₩{selectedCurriculum.price.toLocaleString()}</div>
+                      <div className="p-3 bg-purple-50 rounded-lg">
+                        <div className="text-2xl font-bold text-purple-600">{Math.floor(selectedCurriculum.duration / 60)}h</div>
+                        <div className="text-sm text-gray-600">총 시간</div>
+                      </div>
+                      <div className="p-3 bg-orange-50 rounded-lg">
+                        <div className="text-2xl font-bold text-orange-600">{selectedCurriculum.enrollmentCount || 0}</div>
+                        <div className="text-sm text-gray-600">수강생</div>
                       </div>
                     </div>
 
-                    <div>
-                      <h4 className="font-medium mb-2">모듈 구성</h4>
-                      <div className="space-y-3">
+                    <div className="bg-gray-50 rounded-lg p-4">
+                      <h4 className="font-medium mb-3 flex items-center gap-2">
+                        <BookOpen className="w-5 h-5" />
+                        간편 모듈 & 영상 관리
+                      </h4>
+                      <div className="space-y-2">
                         {selectedCurriculum.modules.map((module, index) => (
-                          <div key={module.id} className="p-4 bg-gray-50 rounded-lg border">
-                            <div className="flex items-center justify-between mb-3">
-                              <div className="flex-1">
-                                <div className="font-medium text-lg">{module.title}</div>
-                                <div className="text-sm text-gray-600 mt-1">{module.description}</div>
-                                <div className="flex items-center gap-4 mt-2 text-sm text-gray-500">
-                                  <span className="flex items-center gap-1">
-                                    <Clock className="w-4 h-4" />
-                                    {module.duration}분
-                                  </span>
-                                  <span className="flex items-center gap-1">
-                                    <Video className="w-4 h-4" />
-                                    {module.videos?.length || 0}개 영상
-                                  </span>
-                                </div>
+                          <div key={module.id} className="flex items-center justify-between p-3 bg-white rounded-lg border">
+                            <div className="flex-1">
+                              <div className="font-medium">{module.title}</div>
+                              <div className="text-sm text-gray-600 flex items-center gap-3 mt-1">
+                                <span className="flex items-center gap-1">
+                                  <Clock className="w-3 h-3" />
+                                  {module.duration}분
+                                </span>
+                                <span className="flex items-center gap-1">
+                                  <Video className="w-3 h-3" />
+                                  {module.videos?.length || 0}개 영상
+                                </span>
                               </div>
+                            </div>
+                            <div className="flex items-center gap-2">
                               <Button
                                 onClick={() => {
-                                  setSelectedModule(module);
-                                  setIsAddingVideo(true);
+                                  const input = document.createElement('input');
+                                  input.type = 'file';
+                                  input.accept = '.mp4,.avi,.mov,.mkv';
+                                  input.onchange = (e) => {
+                                    const file = (e.target as HTMLInputElement).files?.[0];
+                                    if (file) {
+                                      handleVideoUpload(module.id, file);
+                                    }
+                                  };
+                                  input.click();
                                 }}
                                 size="sm"
                                 variant="outline"
-                                className="ml-3"
+                                className="text-blue-600 border-blue-300"
                               >
-                                <Plus className="w-4 h-4 mr-1" />
+                                <Upload className="w-4 h-4 mr-1" />
                                 영상 추가
                               </Button>
+                              <Badge variant={module.videos?.length ? 'default' : 'secondary'}>
+                                {module.videos?.length ? '완료' : '대기'}
+                              </Badge>
                             </div>
-
-                            {/* 등록된 영상 목록 */}
-                            {module.videos && module.videos.length > 0 && (
-                              <div className="mt-3 pt-3 border-t">
-                                <div className="text-sm font-medium text-gray-700 mb-2">등록된 영상:</div>
-                                <div className="space-y-2">
-                                  {module.videos.map((video) => (
-                                    <div key={video.id} className="flex items-center justify-between p-2 bg-white rounded border">
-                                      <div className="flex items-center gap-2">
-                                        <Play className="w-4 h-4 text-blue-500" />
-                                        <div>
-                                          <div className="font-medium text-sm">{video.title}</div>
-                                          <div className="text-xs text-gray-500">{video.description}</div>
-                                        </div>
-                                      </div>
-                                      <div className="flex items-center gap-2">
-                                        <Badge 
-                                          variant={video.status === 'ready' ? 'default' : 'destructive'}
-                                        >
-                                          {video.status === 'ready' ? '준비완료' : video.status === 'processing' ? '처리중' : '대기중'}
-                                        </Badge>
-                                        <Button
-                                          onClick={() => deleteVideoFromModule(module.id, video.id)}
-                                          size="sm"
-                                          variant="destructive"
-                                        >
-                                          <Trash2 className="w-3 h-3" />
-                                        </Button>
-                                      </div>
-                                    </div>
-                                  ))}
-                                </div>
-                              </div>
-                            )}
                           </div>
                         ))}
                       </div>
                     </div>
 
-                    {/* 커리큘럼 액션 버튼 */}
-                    <div className="space-y-3 pt-4 border-t">
-                      {/* 미리보기 및 발행 버튼 */}
-                      <div className="flex gap-2">
-                        <Button
-                          onClick={() => handlePreviewCurriculum(selectedCurriculum)}
-                          variant="outline"
-                          size="sm"
-                          className="flex-1 border-blue-500 text-blue-600 hover:bg-blue-50"
-                        >
-                          <Eye className="w-4 h-4 mr-1" />
-                          미리보기
-                        </Button>
-                        <Button
-                          onClick={() => publishCurriculum(selectedCurriculum.id)}
-                          size="sm"
-                          className="flex-1 bg-green-600 hover:bg-green-700 text-white"
-                          disabled={selectedCurriculum.status === 'published'}
-                        >
-                          <CheckCircle className="w-4 h-4 mr-1" />
-                          {selectedCurriculum.status === 'published' ? '발행완료' : '강의로 발행'}
-                        </Button>
-                      </div>
-
-                      {/* 기본 액션 버튼 */}
-                      <div className="flex gap-2">
-                        <Button
-                          onClick={() => setIsEditing(true)}
-                          variant="outline"
-                          size="sm"
-                          className="flex-1"
-                        >
-                          <Edit className="w-4 h-4 mr-1" />
-                          수정
-                        </Button>
-                        <Button
-                          onClick={() => deleteCurriculum(selectedCurriculum.id)}
-                          variant="destructive"
-                          size="sm"
-                          className="flex-1"
-                        >
-                          <Trash2 className="w-4 h-4 mr-1" />
-                          삭제
-                        </Button>
+                    {/* 간단한 완료 프로세스 */}
+                    <div className="bg-gradient-to-r from-green-50 to-blue-50 rounded-lg p-4 mt-4">
+                      <h4 className="font-medium text-green-700 mb-3">✅ 커리큘럼 완성하기</h4>
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between text-sm">
+                          <span>📚 커리큘럼 정보</span>
+                          <Badge variant="default">완료</Badge>
+                        </div>
+                        <div className="flex items-center justify-between text-sm">
+                          <span>🎥 영상 업로드</span>
+                          <Badge variant={selectedCurriculum.modules.some(m => m.videos?.length) ? 'default' : 'secondary'}>
+                            {selectedCurriculum.modules.some(m => m.videos?.length) ? '완료' : '진행중'}
+                          </Badge>
+                        </div>
+                        <div className="flex items-center justify-between text-sm">
+                          <span>🚀 강의 발행</span>
+                          <Badge variant={selectedCurriculum.status === 'published' ? 'default' : 'secondary'}>
+                            {selectedCurriculum.status === 'published' ? '완료' : '대기중'}
+                          </Badge>
+                        </div>
+                        
+                        <div className="flex gap-2 pt-2">
+                          <Button
+                            onClick={() => handlePreviewCurriculum(selectedCurriculum)}
+                            variant="outline"
+                            className="flex-1"
+                          >
+                            <Eye className="w-4 h-4 mr-2" />
+                            미리보기
+                          </Button>
+                          <Button
+                            onClick={() => publishCurriculum(selectedCurriculum.id)}
+                            className="flex-1 bg-green-600 hover:bg-green-700"
+                            disabled={selectedCurriculum.status === 'published'}
+                          >
+                            <CheckCircle className="w-4 h-4 mr-2" />
+                            {selectedCurriculum.status === 'published' ? '발행완료' : '강의로 발행'}
+                          </Button>
+                        </div>
                       </div>
                     </div>
                   </div>
