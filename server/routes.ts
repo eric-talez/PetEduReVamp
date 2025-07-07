@@ -34,6 +34,9 @@ import { registerAnalyticsRoutes } from './routes/analytics';
 import { setupSocialRoutes } from './routes/social';
 import multer from 'multer';
 import path from 'path';
+import fs from 'fs';
+import { WorkflowEngine } from './workflow-engine';
+import { uploadDocuments } from './middleware/upload';
 
 // requireAuth 미들웨어 함수
 function requireAuth(role?: string) {
@@ -3666,9 +3669,9 @@ app.get('/api/search', async (req, res) => {
 
   // 첨부된 파일들을 자동으로 커리큘럼으로 등록하는 API
   app.post("/api/admin/curriculum/auto-register", requireAuth('admin'), (req, res) => {
-    const uploadFiles = upload.array('files'); // 여러 파일 업로드 지원
+    // 문서 파일 업로드용 multer 사용
     
-    uploadFiles(req, res, async (err) => {
+    uploadDocuments(req, res, async (err) => {
       if (err) {
         console.error('파일 업로드 오류:', err);
         return res.status(400).json({ 
@@ -3691,9 +3694,41 @@ app.get('/api/search', async (req, res) => {
         // 업로드된 파일들을 기반으로 커리큘럼 생성
         for (const file of req.files) {
           const fileExtension = path.extname(file.originalname).toLowerCase();
-          const baseName = path.basename(file.originalname, fileExtension);
           
-          console.log(`[자동 등록] 파일 처리: ${file.originalname}`);
+          // 파일명 인코딩 문제 해결
+          let originalName = file.originalname;
+          try {
+            // 다양한 인코딩 방식으로 시도
+            if (Buffer.isBuffer(file.originalname)) {
+              originalName = file.originalname.toString('utf8');
+            } else {
+              // 1. Latin1 → UTF-8 변환 시도
+              const buffer = Buffer.from(file.originalname, 'latin1');
+              const decoded = buffer.toString('utf8');
+              if (decoded.length > 0 && !decoded.includes('�')) {
+                originalName = decoded;
+              } else {
+                // 2. 다른 인코딩으로 시도
+                try {
+                  const buffer2 = Buffer.from(file.originalname, 'binary');
+                  const decoded2 = buffer2.toString('utf8');
+                  if (decoded2.length > 0 && !decoded2.includes('�')) {
+                    originalName = decoded2;
+                  }
+                } catch (e2) {
+                  // 3. 기본 문자열로 유지
+                  originalName = file.originalname;
+                }
+              }
+            }
+          } catch (e) {
+            console.log('[자동 등록] 파일명 디코딩 실패:', e.message);
+            originalName = file.originalname;
+          }
+          
+          const baseName = path.basename(originalName, fileExtension);
+          
+          console.log(`[자동 등록] 파일 처리: ${originalName} (원본: ${file.originalname})`);
           
           // 파일 이름을 기반으로 커리큘럼 데이터 생성
           let extractedData = {
@@ -3706,7 +3741,7 @@ app.get('/api/search', async (req, res) => {
           };
 
           // 파일 이름 기반 맞춤 설정
-          if (file.originalname.includes('클리커')) {
+          if (originalName.includes('클리커')) {
             extractedData = {
               title: "클리커 트레이닝 마스터 과정",
               description: "클리커를 활용한 효과적인 반려견 훈련 기법을 배우는 전문 과정입니다.",
@@ -3715,7 +3750,7 @@ app.get('/api/search', async (req, res) => {
               duration: 420,
               price: 350000
             };
-          } else if (file.originalname.includes('유이서')) {
+          } else if (originalName.includes('유이서')) {
             extractedData = {
               title: "테일즈 종합 반려견 교육 프로그램",
               description: "반려견의 기본 예의부터 고급 훈련까지 포괄하는 체계적인 교육 커리큘럼",
@@ -3724,7 +3759,7 @@ app.get('/api/search', async (req, res) => {
               duration: 600,
               price: 450000
             };
-          } else if (file.originalname.includes('한성규')) {
+          } else if (originalName.includes('한성규')) {
             extractedData = {
               title: "전문가 한성규의 반려견 행동 분석 과정",
               description: "반려견 행동 전문가 한성규의 노하우를 담은 심화 교육 과정",

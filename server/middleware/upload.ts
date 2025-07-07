@@ -28,6 +28,18 @@ const fileFilter = (req: Request, file: Express.Multer.File, cb: multer.FileFilt
   }
 };
 
+// 문서 파일 타입 검증 (hwp, hwpx, doc, docx, pdf)
+const documentFilter = (req: Request, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
+  const documentTypes = /hwp|hwpx|doc|docx|pdf/;
+  const extname = documentTypes.test(path.extname(file.originalname).toLowerCase());
+  
+  if (extname) {
+    return cb(null, true);
+  } else {
+    cb(new Error('지원되지 않는 문서 형식입니다. hwp, hwpx, doc, docx, pdf 파일만 업로드 가능합니다.'));
+  }
+};
+
 // 스토리지 설정
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -113,6 +125,41 @@ export const processUploadedFiles = (files: Express.Multer.File | Express.Multer
   }
   return result;
 };
+
+// 문서 업로드용 multer 설정
+export const uploadDocuments = multer({
+  storage: multer.diskStorage({
+    destination: (req, file, cb) => {
+      const docPath = path.join(uploadsDir, 'documents');
+      if (!fs.existsSync(docPath)) {
+        fs.mkdirSync(docPath, { recursive: true });
+      }
+      cb(null, docPath);
+    },
+    filename: (req, file, cb) => {
+      // 한글 파일명 처리
+      let originalName = file.originalname;
+      try {
+        // UTF-8 파일명 디코딩
+        const buffer = Buffer.from(file.originalname, 'latin1');
+        const decoded = buffer.toString('utf8');
+        if (decoded && !decoded.includes('�')) {
+          originalName = decoded;
+        }
+      } catch (e) {
+        // 디코딩 실패 시 원본 사용
+        originalName = file.originalname;
+      }
+      
+      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+      const ext = path.extname(originalName);
+      const name = path.basename(originalName, ext);
+      cb(null, `${name}-${uniqueSuffix}${ext}`);
+    }
+  }),
+  fileFilter: documentFilter,
+  limits: { fileSize: 10 * 1024 * 1024 } // 10MB 제한
+}).array('files', 5);
 
 // 파일 삭제 헬퍼
 export const deleteFile = (filePath: string): boolean => {
