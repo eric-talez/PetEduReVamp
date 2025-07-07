@@ -1488,7 +1488,7 @@ export default function AdminCurriculum() {
                           </p>
                           <input
                             type="file"
-                            accept=".hwp,.docx,.doc,.txt,.xlsx,.xls"
+                            accept=".hwp,.hwpx,.docx,.doc,.txt,.xlsx,.xls"
                             onChange={(e) => {
                               const file = e.target.files?.[0];
                               if (file) handleFileUpload(file);
@@ -2835,12 +2835,15 @@ export default function AdminCurriculum() {
                 <input
                   type="file"
                   multiple
-                  accept=".hwp,.hwpx,.docx,.doc,.txt"
+                  accept=".hwp,.hwpx,.docx,.doc,.txt,.xlsx,.xls"
                   onChange={(e) => setSelectedFiles(e.target.files)}
                   className="w-full p-2 border border-gray-300 rounded-md"
                 />
                 <p className="text-xs text-gray-500 mt-1">
-                  지원 형식: .hwp, .hwpx, .docx, .doc, .txt
+                  지원 형식: .hwp, .hwpx, .docx, .doc, .txt, .xlsx, .xls
+                </p>
+                <p className="text-xs text-blue-600 mt-1">
+                  💡 엑셀 파일(.xlsx/.xls): 회차별 유료/무료 정보 자동 추출
                 </p>
               </div>
               
