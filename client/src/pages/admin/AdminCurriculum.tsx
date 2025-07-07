@@ -817,6 +817,45 @@ export default function AdminCurriculum() {
     }
   };
 
+  // 첨부된 파일들을 자동으로 커리큘럼으로 등록하는 함수
+  const handleAutoRegister = async () => {
+    try {
+      const response = await fetch('/api/admin/curriculum/auto-register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error(`서버 오류: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        toast({
+          title: "자동 등록 완료",
+          description: data.message,
+          variant: "default"
+        });
+        
+        // 커리큘럼 목록 새로고침
+        loadCurriculums();
+      } else {
+        throw new Error(data.message || '자동 등록에 실패했습니다.');
+      }
+    } catch (error) {
+      console.error("자동 등록 오류:", error);
+      toast({
+        title: "자동 등록 실패",
+        description: error instanceof Error ? error.message : "자동 등록 중 오류가 발생했습니다.",
+        variant: "destructive"
+      });
+    }
+  };
+
   // 커리큘럼 발행 함수
   const publishCurriculum = async (curriculumId: string) => {
     if (!selectedCurriculum) return;
@@ -996,9 +1035,15 @@ export default function AdminCurriculum() {
           <div>
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <FileText className="w-5 h-5" />
-                  실제 커리큘럼 템플릿
+                <CardTitle className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <FileText className="w-5 h-5" />
+                    실제 커리큘럼 템플릿
+                  </div>
+                  <Button onClick={handleAutoRegister} variant="outline" size="sm">
+                    <Package className="w-4 h-4 mr-2" />
+                    첨부파일 자동등록
+                  </Button>
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
