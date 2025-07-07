@@ -16,12 +16,18 @@ export default function Courses() {
   useEffect(() => {
     const fetchCourses = async () => {
       try {
+        console.log('🔥 강의 목록 조회 시작');
         const response = await fetch('/api/admin/curriculums');
         if (response.ok) {
           const data = await response.json();
-          // 커리큘럼 데이터를 강의 형태로 변환
+          console.log('🔥 커리큘럼 데이터:', data);
+          
+          // 커리큘럼 데이터를 강의 형태로 변환 (발행된 것만)
           const transformedCourses = data.curriculums
-            .filter(curriculum => curriculum.status === 'published')
+            .filter(curriculum => {
+              console.log('🔥 커리큘럼 필터링:', curriculum.title, curriculum.status);
+              return curriculum.status === 'published';
+            })
             .map(curriculum => ({
               id: curriculum.id,
               title: curriculum.title,
@@ -45,10 +51,13 @@ export default function Courses() {
               // 상세 정보를 위한 추가 데이터
               rawData: curriculum
             }));
+          console.log('🔥 변환된 강의 목록:', transformedCourses);
           setCourses(transformedCourses);
+        } else {
+          console.error('🔥 커리큘럼 API 응답 실패:', response.status);
         }
       } catch (error) {
-        console.error('강의 데이터 로딩 실패:', error);
+        console.error('🔥 강의 데이터 로딩 실패:', error);
       } finally {
         setLoading(false);
       }
