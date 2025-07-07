@@ -3397,55 +3397,8 @@ app.get('/api/search', async (req, res) => {
   // 관리자 커리큘럼 관리 API
   app.get('/api/admin/curriculums', requireAuth('admin'), async (req, res) => {
     try {
-      // 실제 커리큘럼 데이터 반환
-      const curriculums = [
-        {
-          id: 'curriculum-basic-obedience',
-          title: '기초 복종훈련 완전정복',
-          description: '반려견의 기본적인 복종훈련부터 고급 명령어까지 체계적으로 학습하는 종합 과정입니다.',
-          trainerId: '100',
-          trainerName: '강동훈',
-          category: '기초훈련',
-          difficulty: 'beginner',
-          duration: 480,
-          price: 180000,
-          status: 'published',
-          modules: [
-            {
-              id: 'module-week1',
-              title: '1주차: 기본자세와 친화관계 형성',
-              description: '훈련사와 반려견의 첫 만남, 기본적인 신뢰관계 구축',
-              order: 1,
-              duration: 60,
-              objectives: ['반려견과의 신뢰관계 형성', '기본적인 터치 훈련', '이름 부르기 반응 훈련'],
-              isRequired: true,
-              videos: []
-            },
-            {
-              id: 'module-week2',
-              title: '2주차: 앉아, 엎드려 기본 명령어',
-              description: '가장 기본이 되는 앉아와 엎드려 명령어를 완벽하게 마스터',
-              order: 2,
-              duration: 60,
-              objectives: ['앉아 명령어 완전 숙지', '엎드려 명령어 습득', '명령어와 손신호 연결'],
-              isRequired: true,
-              videos: []
-            },
-            {
-              id: 'module-week3',
-              title: '3주차: 기다려와 이리와 명령어',
-              description: '안전을 위한 필수 명령어인 기다려와 이리와를 집중 훈련',
-              order: 3,
-              duration: 60,
-              objectives: ['기다려 명령어로 충동 억제', '이리와 명령어로 리콜 훈련', '긴급상황 대응 능력 개발'],
-              isRequired: true,
-              videos: []
-            }
-          ],
-          createdAt: new Date(),
-          updatedAt: new Date()
-        }
-      ];
+      // 실제 등록된 커리큘럼만 반환 (Storage에서 가져오기)
+      const curriculums = await storage.getCurriculums();
       
       res.json({ curriculums });
     } catch (error) {

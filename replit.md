@@ -121,6 +121,23 @@ TALEZ is a comprehensive pet education and e-commerce platform that combines AI-
 
 ## Changelog
 
+- July 07, 2025. **Enhanced Curriculum Management with Easy Creation Wizard** - Streamlined curriculum registration process with user-friendly step-by-step interface:
+  - **3-Step Creation Wizard**: Simplified curriculum creation with guided steps (Basic Info → Course Settings → Instructor Info)
+  - **Smart Validation**: Real-time form validation with helpful feedback and recommendations
+  - **Dual Creation Modes**: "Easy Creation" wizard for beginners, "Advanced Creation" for experienced users  
+  - **Visual Progress Indicator**: Clear step progression with visual feedback and completion status
+  - **Intelligent Defaults**: Pre-filled module templates and category-specific recommendations
+  - **Live Preview**: Real-time preview of curriculum before final creation
+  - **Form Persistence**: Automatic form data saving and restoration between steps
+  - **Enhanced UI/UX**: Gradient buttons, improved spacing, and professional styling
+  - **API Integration**: Seamless integration with existing curriculum management system
+  - **Success Feedback**: Clear confirmation and next-step guidance after creation
+- July 07, 2025. **Resolved Course Discovery Hard-coded Data Issue** - Cleaned up dummy data display in course listings:
+  - **Real Data Integration**: Course discovery now shows only actual registered curricula from storage
+  - **Status Filtering**: Only published curricula appear in public course listings
+  - **Dynamic Loading**: Real-time curriculum data fetching with proper loading states
+  - **Empty State Handling**: Appropriate messaging when no courses are available
+  - **Clean Data Flow**: Removed all hard-coded template data from public interfaces
 - July 06, 2025. **MAJOR MILESTONE: Achieved 90% Service Completion** - Comprehensive system enhancement and production-readiness improvements:
   - **Service Layer Architecture**: Built complete course-service.ts and revenue-service.ts with proper business logic separation
   - **Advanced Error Handling**: Implemented comprehensive error handling system with custom error classes, validation middleware, and logging

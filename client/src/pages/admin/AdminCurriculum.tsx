@@ -117,6 +117,18 @@ export default function AdminCurriculum() {
   const [selectedCurriculum, setSelectedCurriculum] = useState<CurriculumData | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [creationStep, setCreationStep] = useState(1); // 생성 단계 추가
+  const [formData, setFormData] = useState({
+    title: '',
+    description: '',
+    category: '',
+    difficulty: 'beginner' as const,
+    duration: 0,
+    price: 0,
+    trainerName: '',
+    trainerEmail: '',
+    trainerPhone: ''
+  });
   
   // 영상강의 관련 상태
   const [videoLectures, setVideoLectures] = useState<VideoLecture[]>([]);
@@ -124,8 +136,105 @@ export default function AdminCurriculum() {
   const [activeTab, setActiveTab] = useState('curriculum');
   const [previewCurriculum, setPreviewCurriculum] = useState<CurriculumData | null>(null);
   const [showPreviewModal, setShowPreviewModal] = useState(false);
+  const [showCreationWizard, setShowCreationWizard] = useState(false);
   
   const { toast } = useToast();
+
+  // 쉬운 커리큘럼 생성을 위한 마법사 함수들
+  const resetCreationForm = () => {
+    setFormData({
+      title: '',
+      description: '',
+      category: '',
+      difficulty: 'beginner',
+      duration: 0,
+      price: 0,
+      trainerName: '',
+      trainerEmail: '',
+      trainerPhone: ''
+    });
+    setCreationStep(1);
+  };
+
+  const handleStartCreation = () => {
+    resetCreationForm();
+    setShowCreationWizard(true);
+  };
+
+  const handleNextStep = () => {
+    if (creationStep < 3) {
+      setCreationStep(creationStep + 1);
+    }
+  };
+
+  const handlePrevStep = () => {
+    if (creationStep > 1) {
+      setCreationStep(creationStep - 1);
+    }
+  };
+
+  const validateCurrentStep = () => {
+    switch (creationStep) {
+      case 1:
+        return formData.title && formData.description && formData.category;
+      case 2:
+        return formData.difficulty && formData.duration > 0 && formData.price >= 0;
+      case 3:
+        return formData.trainerName && formData.trainerEmail;
+      default:
+        return false;
+    }
+  };
+
+  const handleFormDataChange = (field: string, value: any) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const handleCreateCurriculum = async () => {
+    try {
+      const curriculumData = {
+        ...formData,
+        modules: [
+          {
+            id: 'module-1',
+            title: '1주차: 기본 소개',
+            description: '커리큘럼 기본 내용 소개',
+            order: 1,
+            duration: 60,
+            objectives: ['기본 개념 이해'],
+            isRequired: true,
+            videos: []
+          }
+        ]
+      };
+
+      const response = await fetch('/api/admin/curriculums', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(curriculumData)
+      });
+
+      if (response.ok) {
+        const newCurriculum = await response.json();
+        setCurriculums(prev => [...prev, newCurriculum]);
+        setShowCreationWizard(false);
+        resetCreationForm();
+        toast({
+          title: "커리큘럼 생성 완료",
+          description: "새 커리큘럼이 성공적으로 생성되었습니다.",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "생성 실패",
+        description: "커리큘럼 생성 중 오류가 발생했습니다.",
+        variant: "destructive"
+      });
+    }
+  };
 
   // 영상강의 관련 함수들 추가
   useEffect(() => {
@@ -1135,15 +1244,25 @@ export default function AdminCurriculum() {
                     <BookOpen className="w-5 h-5" />
                     등록된 커리큘럼 (관리중)
                   </CardTitle>
-                  <Button 
-                    onClick={() => setIsCreating(true)}
-                    size="sm"
-                    variant="outline"
-                    className="flex items-center gap-1"
-                  >
-                    <Plus className="w-4 h-4" />
-                    직접 생성
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button 
+                      onClick={handleStartCreation}
+                      size="sm"
+                      className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-lg"
+                    >
+                      <Plus className="w-4 h-4 mr-1" />
+                      쉬운 생성
+                    </Button>
+                    <Button 
+                      onClick={() => setIsCreating(true)}
+                      size="sm"
+                      variant="outline"
+                      className="flex items-center gap-1"
+                    >
+                      <Settings className="w-4 h-4" />
+                      고급 생성
+                    </Button>
+                  </div>
                 </div>
               </CardHeader>
               <CardContent className="space-y-3">
@@ -2447,6 +2566,231 @@ export default function AdminCurriculum() {
             </DialogContent>
           </Dialog>
         )}
+
+        {/* 쉬운 커리큘럼 생성 마법사 */}
+        <Dialog open={showCreationWizard} onOpenChange={setShowCreationWizard}>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Package className="w-5 h-5" />
+                쉬운 커리큘럼 생성 마법사
+              </DialogTitle>
+            </DialogHeader>
+
+            {/* 단계 표시기 */}
+            <div className="flex items-center justify-between mb-6">
+              {[1, 2, 3].map((step) => (
+                <div key={step} className="flex items-center">
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
+                    step <= creationStep 
+                      ? 'bg-blue-600 text-white' 
+                      : 'bg-gray-200 text-gray-500'
+                  }`}>
+                    {step}
+                  </div>
+                  {step < 3 && (
+                    <div className={`w-12 h-1 mx-2 ${
+                      step < creationStep ? 'bg-blue-600' : 'bg-gray-200'
+                    }`} />
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {/* 단계별 제목 */}
+            <div className="text-center mb-6">
+              <h3 className="text-lg font-semibold">
+                {creationStep === 1 && '기본 정보 입력'}
+                {creationStep === 2 && '강의 설정'}
+                {creationStep === 3 && '강사 정보'}
+              </h3>
+              <p className="text-sm text-gray-500 mt-1">
+                {creationStep === 1 && '커리큘럼의 제목, 설명, 카테고리를 입력하세요'}
+                {creationStep === 2 && '난이도, 시간, 가격을 설정하세요'}
+                {creationStep === 3 && '담당 강사 정보를 입력하세요'}
+              </p>
+            </div>
+
+            {/* 단계별 폼 */}
+            <div className="space-y-4">
+              {creationStep === 1 && (
+                <>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">커리큘럼 제목 *</label>
+                    <Input
+                      value={formData.title}
+                      onChange={(e) => handleFormDataChange('title', e.target.value)}
+                      placeholder="예: 반려견 기초 훈련 완전정복"
+                      className="w-full"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">커리큘럼 설명 *</label>
+                    <Textarea
+                      value={formData.description}
+                      onChange={(e) => handleFormDataChange('description', e.target.value)}
+                      placeholder="커리큘럼의 목표와 내용을 간단히 설명해주세요"
+                      rows={3}
+                      className="w-full"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">카테고리 *</label>
+                    <Select
+                      value={formData.category}
+                      onValueChange={(value) => handleFormDataChange('category', value)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="카테고리를 선택하세요" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="기초훈련">기초훈련</SelectItem>
+                        <SelectItem value="문제행동교정">문제행동교정</SelectItem>
+                        <SelectItem value="어질리티">어질리티</SelectItem>
+                        <SelectItem value="사회화">사회화</SelectItem>
+                        <SelectItem value="전문가과정">전문가과정</SelectItem>
+                        <SelectItem value="재활치료">재활치료</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </>
+              )}
+
+              {creationStep === 2 && (
+                <>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">난이도 *</label>
+                    <Select
+                      value={formData.difficulty}
+                      onValueChange={(value) => handleFormDataChange('difficulty', value)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="beginner">초급 (처음 시작하는 분)</SelectItem>
+                        <SelectItem value="intermediate">중급 (기본기가 있는 분)</SelectItem>
+                        <SelectItem value="advanced">고급 (전문적인 과정)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">총 강의 시간 (분) *</label>
+                    <Input
+                      type="number"
+                      value={formData.duration}
+                      onChange={(e) => handleFormDataChange('duration', parseInt(e.target.value) || 0)}
+                      placeholder="예: 480 (8시간)"
+                      min="0"
+                      className="w-full"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">권장: 초급 180-360분, 중급 360-600분, 고급 600분 이상</p>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">수강료 (원) *</label>
+                    <Input
+                      type="number"
+                      value={formData.price}
+                      onChange={(e) => handleFormDataChange('price', parseInt(e.target.value) || 0)}
+                      placeholder="예: 150000"
+                      min="0"
+                      className="w-full"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">무료 강의는 0원으로 입력하세요</p>
+                  </div>
+                </>
+              )}
+
+              {creationStep === 3 && (
+                <>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">강사 이름 *</label>
+                    <Input
+                      value={formData.trainerName}
+                      onChange={(e) => handleFormDataChange('trainerName', e.target.value)}
+                      placeholder="예: 김민수"
+                      className="w-full"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">강사 이메일 *</label>
+                    <Input
+                      type="email"
+                      value={formData.trainerEmail}
+                      onChange={(e) => handleFormDataChange('trainerEmail', e.target.value)}
+                      placeholder="예: trainer@example.com"
+                      className="w-full"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">강사 연락처</label>
+                    <Input
+                      value={formData.trainerPhone}
+                      onChange={(e) => handleFormDataChange('trainerPhone', e.target.value)}
+                      placeholder="예: 010-1234-5678"
+                      className="w-full"
+                    />
+                  </div>
+                  
+                  {/* 미리보기 */}
+                  <div className="mt-6 p-4 bg-gray-50 rounded-lg">
+                    <h4 className="font-medium mb-3">생성될 커리큘럼 미리보기</h4>
+                    <div className="space-y-2 text-sm">
+                      <div><span className="font-medium">제목:</span> {formData.title}</div>
+                      <div><span className="font-medium">카테고리:</span> {formData.category}</div>
+                      <div><span className="font-medium">난이도:</span> {
+                        formData.difficulty === 'beginner' ? '초급' :
+                        formData.difficulty === 'intermediate' ? '중급' : '고급'
+                      }</div>
+                      <div><span className="font-medium">시간:</span> {formData.duration}분 ({Math.floor(formData.duration / 60)}시간 {formData.duration % 60}분)</div>
+                      <div><span className="font-medium">가격:</span> ₩{formData.price.toLocaleString()}</div>
+                      <div><span className="font-medium">강사:</span> {formData.trainerName}</div>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+
+            {/* 네비게이션 버튼 */}
+            <div className="flex justify-between pt-6 border-t">
+              <Button
+                onClick={handlePrevStep}
+                variant="outline"
+                disabled={creationStep === 1}
+              >
+                이전
+              </Button>
+              
+              <div className="flex gap-2">
+                <Button
+                  onClick={() => setShowCreationWizard(false)}
+                  variant="outline"
+                >
+                  취소
+                </Button>
+                
+                {creationStep < 3 ? (
+                  <Button
+                    onClick={handleNextStep}
+                    disabled={!validateCurrentStep()}
+                    className="bg-blue-600 hover:bg-blue-700"
+                  >
+                    다음
+                  </Button>
+                ) : (
+                  <Button
+                    onClick={handleCreateCurriculum}
+                    disabled={!validateCurrentStep()}
+                    className="bg-green-600 hover:bg-green-700"
+                  >
+                    <CheckCircle className="w-4 h-4 mr-1" />
+                    커리큘럼 생성
+                  </Button>
+                )}
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );
