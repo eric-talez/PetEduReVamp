@@ -2454,12 +2454,12 @@ export default function AdminCurriculum() {
                 <div>
                   <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
                     <BookOpen className="w-5 h-5" />
-                    커리큘럼 구성 ({previewCurriculum.modules.length}개 모듈)
+                    커리큘럼 구성 ({previewCurriculum.modules?.length || 0}개 모듈)
                   </h3>
                   
                   <div className="space-y-4">
-                    {previewCurriculum.modules.map((module, index) => (
-                      <Card key={module.id} className="border-l-4 border-l-blue-500">
+                    {previewCurriculum.modules?.map((module, index) => (
+                      <Card key={index} className="border-l-4 border-l-blue-500">
                         <CardContent className="p-4">
                           <div className="flex justify-between items-start mb-3">
                             <div className="flex-1">
@@ -2468,8 +2468,14 @@ export default function AdminCurriculum() {
                                   {index + 1}강
                                 </span>
                                 <h4 className="font-semibold">{module.title}</h4>
-                                {module.isRequired && (
-                                  <Badge variant="default" className="text-xs">필수</Badge>
+                                {module.isFree ? (
+                                  <Badge variant="secondary" className="text-xs bg-green-100 text-green-800">
+                                    무료
+                                  </Badge>
+                                ) : (
+                                  <Badge variant="default" className="text-xs bg-blue-100 text-blue-800">
+                                    유료 (₩{module.price?.toLocaleString()})
+                                  </Badge>
                                 )}
                               </div>
                               <p className="text-gray-600 text-sm mb-3">{module.description}</p>
@@ -2477,7 +2483,7 @@ export default function AdminCurriculum() {
                               {/* 학습 목표 */}
                               {module.objectives && module.objectives.length > 0 && (
                                 <div className="mb-3">
-                                  <h5 className="text-sm font-medium text-gray-700 mb-2">학습 목표:</h5>
+                                  <h5 className="text-sm font-medium text-blue-700 mb-2">🎯 학습 목표:</h5>
                                   <ul className="space-y-1">
                                     {module.objectives.map((objective, objIndex) => (
                                       <li key={objIndex} className="flex items-center gap-2 text-sm text-gray-600">
@@ -2486,6 +2492,54 @@ export default function AdminCurriculum() {
                                       </li>
                                     ))}
                                   </ul>
+                                </div>
+                              )}
+                              
+                              {/* 강의 내용 */}
+                              {module.content && (
+                                <div className="mb-3">
+                                  <h5 className="text-sm font-medium text-green-700 mb-2">📚 강의 내용:</h5>
+                                  <p className="text-sm text-gray-600 bg-gray-50 p-3 rounded-lg">{module.content}</p>
+                                </div>
+                              )}
+                              
+                              {/* 상세 내용 */}
+                              {module.detailedContent && (
+                                <div className="mb-3 space-y-2">
+                                  {module.detailedContent.introduction && (
+                                    <div>
+                                      <h6 className="text-xs font-medium text-purple-700 mb-1">🚀 수업 소개:</h6>
+                                      <p className="text-xs text-gray-600 bg-purple-50 p-2 rounded">{module.detailedContent.introduction}</p>
+                                    </div>
+                                  )}
+                                  
+                                  {module.detailedContent.mainTopics && module.detailedContent.mainTopics.length > 0 && (
+                                    <div>
+                                      <h6 className="text-xs font-medium text-orange-700 mb-1">📖 주요 토픽:</h6>
+                                      <ul className="text-xs text-gray-600 bg-orange-50 p-2 rounded space-y-1">
+                                        {module.detailedContent.mainTopics.map((topic, topicIndex) => (
+                                          <li key={topicIndex} className="flex items-start gap-1">
+                                            <span>•</span>
+                                            <span>{topic}</span>
+                                          </li>
+                                        ))}
+                                      </ul>
+                                    </div>
+                                  )}
+                                  
+                                  {module.detailedContent.practicalExercises && module.detailedContent.practicalExercises.length > 0 && (
+                                    <div>
+                                      <h6 className="text-xs font-medium text-red-700 mb-1">🏃‍♂️ 실습:</h6>
+                                      <ul className="text-xs text-gray-600 bg-red-50 p-2 rounded space-y-1">
+                                        {module.detailedContent.practicalExercises.map((exercise, exerciseIndex) => (
+                                          <li key={exerciseIndex} className="flex items-start gap-1">
+                                            <span>•</span>
+                                            <span>{exercise}</span>
+                                          </li>
+                                        ))}
+                                      </ul>
+                                    </div>
+                                  )}
                                 </div>
                               )}
                               

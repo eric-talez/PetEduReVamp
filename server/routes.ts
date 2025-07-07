@@ -3760,8 +3760,16 @@ app.get('/api/search', async (req, res) => {
                   title: '1회차 - 재활 기초 평가',
                   description: '반려동물의 신체 상태 평가 및 재활 계획 수립',
                   duration: 90,
-                  objectives: ['신체 평가', '재활 계획 수립'],
-                  content: '기본 신체검사 및 움직임 평가',
+                  objectives: ['신체 평가', '재활 계획 수립', '통증 정도 측정', '움직임 범위 확인'],
+                  content: '기본 신체검사 및 움직임 평가를 통한 재활 계획 수립',
+                  detailedContent: {
+                    introduction: '반려동물의 현재 신체 상태를 정확히 파악하고 개별 맞춤형 재활 계획을 수립하는 중요한 첫 단계입니다.',
+                    mainTopics: ['기본 신체검사 방법', '관절 가동범위 측정', '근력 평가', '보행 패턴 분석', '통증 평가 스케일'],
+                    practicalExercises: ['관절별 가동범위 측정 실습', '근력 테스트 방법', '보행 관찰 및 기록'],
+                    keyPoints: ['정확한 측정의 중요성', '반려동물 스트레스 최소화', '보호자와의 소통 방법'],
+                    homework: '집에서 관찰 가능한 행동 변화 체크리스트 작성',
+                    resources: ['재활 평가 체크시트', '관절 가동범위 측정 도구', '통증 평가 가이드']
+                  },
                   isFree: true,
                   price: 0
                 },
@@ -3769,8 +3777,16 @@ app.get('/api/search', async (req, res) => {
                   title: '2회차 - 기초 운동치료',
                   description: '기본적인 물리치료 및 운동요법',
                   duration: 60,
-                  objectives: ['기초 운동법', '통증 관리'],
-                  content: '저강도 운동 및 스트레칭',
+                  objectives: ['기초 운동법', '통증 관리', '근력 강화 운동', '유연성 향상'],
+                  content: '저강도 운동 및 스트레칭을 통한 점진적 회복',
+                  detailedContent: {
+                    introduction: '1회차 평가 결과를 바탕으로 개별 맞춤형 기초 운동치료 프로그램을 시작합니다.',
+                    mainTopics: ['저강도 유산소 운동', '관절 가동범위 운동', '근력 강화 기초', '스트레칭 요법', '통증 완화 기법'],
+                    practicalExercises: ['수동적 관절 운동', '능동적 보조 운동', '기초 근력 운동', '마사지 테크닉'],
+                    keyPoints: ['점진적 강도 증가', '반려동물의 반응 모니터링', '안전한 운동 환경 조성'],
+                    homework: '집에서 할 수 있는 간단한 스트레칭 연습',
+                    resources: ['운동 프로그램 가이드', '안전 체크리스트', '진행 상황 기록지']
+                  },
                   isFree: false,
                   price: 80000
                 },
@@ -3778,8 +3794,16 @@ app.get('/api/search', async (req, res) => {
                   title: '3회차 - 수치료 및 마사지',
                   description: '수중 운동치료 및 마사지 요법',
                   duration: 75,
-                  objectives: ['수치료 기법', '마사지 요법'],
-                  content: '수중 보행 및 관절 마사지',
+                  objectives: ['수치료 기법', '마사지 요법', '순환 개선', '근육 이완'],
+                  content: '수중 보행 및 관절 마사지를 통한 전문 재활 치료',
+                  detailedContent: {
+                    introduction: '수중 환경의 부력을 활용한 저충격 운동과 전문 마사지로 효과적인 재활을 진행합니다.',
+                    mainTopics: ['수중 보행 치료', '수중 운동 요법', '림프 마사지', '근육 이완 마사지', '순환 개선 기법'],
+                    practicalExercises: ['수중 보행 연습', '물속 관절 운동', '마사지 기법 실습', '수중 밸런스 운동'],
+                    keyPoints: ['수온 및 수위 조절', '반려동물 안전 관리', '마사지 압력 조절', '스트레스 최소화'],
+                    homework: '일상생활에서의 마사지 적용 방법',
+                    resources: ['수치료 가이드북', '마사지 기법 동영상', '안전 수칙 매뉴얼']
+                  },
                   isFree: false,
                   price: 120000
                 }
@@ -3791,8 +3815,16 @@ app.get('/api/search', async (req, res) => {
                   title: '1회차 - 사회화 기초',
                   description: '다른 강아지들과의 첫 만남 및 사회화 훈련',
                   duration: 60,
-                  objectives: ['사회화 훈련', '친화력 향상'],
-                  content: '안전한 환경에서의 강아지 간 상호작용',
+                  objectives: ['사회화 훈련', '친화력 향상', '두려움 극복', '상호작용 기초'],
+                  content: '안전한 환경에서의 강아지 간 상호작용 및 사회화 기초',
+                  detailedContent: {
+                    introduction: '어린 강아지들의 건전한 사회화를 위한 체계적인 프로그램으로 평생의 사회성을 결정하는 중요한 과정입니다.',
+                    mainTopics: ['강아지 언어 이해하기', '안전한 첫 만남 방법', '놀이 신호 인식', '경계선 설정', '긍정적 상호작용'],
+                    practicalExercises: ['통제된 환경에서의 만남', '놀이 중재 연습', '바디랭귀지 관찰', '적절한 개입 타이밍'],
+                    keyPoints: ['강아지의 스트레스 신호 인식', '점진적 노출의 중요성', '긍정적 경험 만들기'],
+                    homework: '집에서 다양한 소리와 환경에 노출시키기',
+                    resources: ['사회화 체크리스트', '놀이 관찰 가이드', '스트레스 신호 인식표']
+                  },
                   isFree: true,
                   price: 0
                 },
@@ -3822,8 +3854,16 @@ app.get('/api/search', async (req, res) => {
                   title: '1회차 - 클리커 도구 이해',
                   description: '클리커 훈련의 원리와 도구 사용법',
                   duration: 60,
-                  objectives: ['클리커 이해', '기본 사용법'],
-                  content: '클리커 훈련 이론 및 실습 준비',
+                  objectives: ['클리커 이해', '기본 사용법', '행동 강화 원리', '타이밍의 중요성'],
+                  content: '클리커 훈련 이론 및 실습 준비를 위한 기초 교육',
+                  detailedContent: {
+                    introduction: '과학적 근거에 기반한 클리커 훈련의 원리를 이해하고 효과적인 사용법을 익히는 첫 단계입니다.',
+                    mainTopics: ['행동주의 심리학 기초', '양성 강화의 원리', '클리커의 작동 메커니즘', '타이밍과 일관성', '보상 체계'],
+                    practicalExercises: ['클리커 소리에 대한 조건화', '정확한 타이밍 연습', '보상 전달 연습', '기초 신호 연결'],
+                    keyPoints: ['정확한 타이밍의 중요성', '일관된 신호 사용', '적절한 보상 선택', '점진적 학습'],
+                    homework: '클리커 소리와 보상 연결 연습',
+                    resources: ['클리커 도구', '보상 가이드', '타이밍 연습 동영상']
+                  },
                   isFree: true,
                   price: 0
                 },
