@@ -4302,7 +4302,7 @@ app.get('/api/search', async (req, res) => {
           if (fileExtension === '.xlsx' || fileExtension === '.xls') {
             try {
               // 파일 업로드 완료 후 잠시 대기
-              await new Promise(resolve => setTimeout(resolve, 200));
+              await new Promise(resolve => setTimeout(resolve, 500));
               
               // 파일 존재 확인
               if (!fs.existsSync(file.path)) {
@@ -4312,7 +4312,17 @@ app.get('/api/search', async (req, res) => {
               console.log(`[엑셀 처리] 파일 경로: ${file.path}`);
               console.log(`[엑셀 처리] 파일 크기: ${fs.statSync(file.path).size}`);
               
-              const workbook = xlsx.readFile(file.path);
+              // 파일을 Buffer로 읽어서 처리 (안전한 방법)
+              let workbook;
+              try {
+                // 방법 1: 직접 파일 읽기
+                workbook = xlsx.readFile(file.path);
+              } catch (readError) {
+                console.log('[엑셀 처리] 직접 읽기 실패, 버퍼로 시도:', readError.message);
+                // 방법 2: 버퍼로 읽기
+                const fileBuffer = fs.readFileSync(file.path);
+                workbook = xlsx.read(fileBuffer, { type: 'buffer' });
+              }
               const sheetName = workbook.SheetNames[0];
               const worksheet = workbook.Sheets[sheetName];
               const data = xlsx.utils.sheet_to_json(worksheet, { header: 1 });
