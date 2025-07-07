@@ -1038,7 +1038,7 @@ export default function AdminCurriculum() {
                 <CardTitle className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <FileText className="w-5 h-5" />
-                    실제 커리큘럼 템플릿
+                    커리큘럼 템플릿 (생성 대기)
                   </div>
                   <Button onClick={handleAutoRegister} variant="outline" size="sm">
                     <Package className="w-4 h-4 mr-2" />
@@ -1111,7 +1111,7 @@ export default function AdminCurriculum() {
                 <div className="flex items-center justify-between">
                   <CardTitle className="flex items-center gap-2">
                     <BookOpen className="w-5 h-5" />
-                    등록된 커리큘럼
+                    등록된 커리큘럼 (관리중)
                   </CardTitle>
                   <Button 
                     onClick={() => setIsCreating(true)}

@@ -164,7 +164,14 @@ export interface IStorage {
   updateReservation(id: number, data: any): Promise<any>;
   cancelReservation(id: number): Promise<any>;
 
-    // 커뮤니티 기능
+    // 커리큘럼 관련
+  getCurriculums(): Promise<any[]>;
+  getCurriculum(id: string): Promise<any | null>;
+  createCurriculum(curriculum: any): Promise<any>;
+  updateCurriculum(id: string, data: any): Promise<any>;
+  deleteCurriculum(id: string): Promise<boolean>;
+
+  // 커뮤니티 기능
     getCommunityPosts(options?: {
         page?: number;
         limit?: number;
@@ -241,6 +248,7 @@ export class MemoryStorage implements IStorage{
 
   // Training management data stores
   private trainingSessions: any[] = [];
+  private curriculums = new Map();
   private progressRecords = new Map();
   private achievements: any[] = [];
 
@@ -2717,6 +2725,45 @@ export class MemoryStorage implements IStorage{
 
   async getAllCourses(): Promise<any[]> {
         return Array.from(this.courses.values());
+  }
+
+  // 커리큘럼 관련
+  async getCurriculums(): Promise<any[]> {
+    return Array.from(this.curriculums.values());
+  }
+
+  async getCurriculum(id: string): Promise<any | null> {
+    return this.curriculums.get(id) || null;
+  }
+
+  async createCurriculum(curriculum: any): Promise<any> {
+    const id = curriculum.id || `curriculum-${Date.now()}`;
+    const newCurriculum = { 
+      ...curriculum, 
+      id,
+      createdAt: new Date(), 
+      updatedAt: new Date() 
+    };
+    this.curriculums.set(id, newCurriculum);
+    return newCurriculum;
+  }
+
+  async updateCurriculum(id: string, data: any): Promise<any> {
+    const existing = this.curriculums.get(id);
+    if (!existing) return null;
+    
+    const updated = { 
+      ...existing, 
+      ...data, 
+      id,
+      updatedAt: new Date() 
+    };
+    this.curriculums.set(id, updated);
+    return updated;
+  }
+
+  async deleteCurriculum(id: string): Promise<boolean> {
+    return this.curriculums.delete(id);
   }
   async createPet(pet: any): Promise<any> {
         const id = this.petId++;
