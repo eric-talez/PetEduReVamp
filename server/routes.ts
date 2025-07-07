@@ -3732,6 +3732,76 @@ app.get('/api/search', async (req, res) => {
     }
   });
 
+  // 커리큘럼 삭제 API
+  app.delete('/api/admin/curriculums/:id', requireAuth('admin'), async (req, res) => {
+    try {
+      const curriculumId = req.params.id;
+      
+      console.log('[관리자 커리큘럼] 커리큘럼 삭제:', curriculumId);
+      
+      // 실제로는 데이터베이스에서 삭제
+      // await storage.deleteCurriculum(curriculumId);
+      
+      res.json({ 
+        success: true,
+        message: '커리큘럼이 성공적으로 삭제되었습니다.' 
+      });
+    } catch (error) {
+      console.error('[관리자 커리큘럼] 삭제 실패:', error);
+      res.status(500).json({ message: '커리큘럼 삭제에 실패했습니다.' });
+    }
+  });
+
+  // 커리큘럼 발행 신청 API (등록신청관리로 전송)
+  app.post('/api/admin/curriculums/:id/submit-for-approval', requireAuth('admin'), async (req, res) => {
+    try {
+      const curriculumId = req.params.id;
+      const curriculumData = req.body;
+      
+      console.log('[커리큘럼 발행] 발행 신청:', curriculumData.title);
+      
+      // 등록신청관리에 추가할 신청 데이터 생성
+      const application = {
+        id: `curriculum_${curriculumId}_${Date.now()}`,
+        type: 'curriculum',
+        status: 'pending',
+        applicantInfo: {
+          curriculumInfo: {
+            id: curriculumId,
+            title: curriculumData.title,
+            description: curriculumData.description,
+            category: curriculumData.category,
+            difficulty: curriculumData.difficulty,
+            duration: curriculumData.duration,
+            price: curriculumData.price,
+            moduleCount: curriculumData.modules?.length || 0,
+            trainerName: curriculumData.trainerName || '관리자',
+            trainerEmail: curriculumData.trainerEmail || 'admin@talez.com'
+          }
+        },
+        submittedAt: new Date().toISOString(),
+        submitterId: req.user?.id || 'admin'
+      };
+
+      // 전역 등록신청 목록에 추가
+      if (!global.registrationApplications) {
+        global.registrationApplications = [];
+      }
+      global.registrationApplications.push(application);
+      
+      console.log('[커리큘럼 발행] 등록신청관리에 추가됨:', application.id);
+      
+      res.json({ 
+        success: true,
+        applicationId: application.id,
+        message: '커리큘럼 발행 신청이 등록신청관리에 추가되었습니다.' 
+      });
+    } catch (error) {
+      console.error('[커리큘럼 발행] 신청 실패:', error);
+      res.status(500).json({ message: '커리큘럼 발행 신청에 실패했습니다.' });
+    }
+  });
+
   // 커리큘럼 파일 업로드 API
   app.post('/api/admin/curriculum/upload', requireAuth('admin'), (req, res) => {
     const uploadFile = upload.single('file'); // 'file' 필드명으로 파일 업로드 받음

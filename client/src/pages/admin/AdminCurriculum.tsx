@@ -28,6 +28,7 @@ import {
   XCircle,
   AlertCircle,
   Package,
+  Send,
   Settings,
   Download,
   Lock,
@@ -1093,51 +1094,87 @@ export default function AdminCurriculum() {
   };
 
   // 커리큘럼 발행 함수
-  const publishCurriculum = async (curriculumId: string) => {
-    if (!selectedCurriculum) return;
+  // 커리큘럼 삭제 함수
+  const handleDeleteCurriculum = async (curriculumId: string) => {
+    if (!confirm('정말로 이 커리큘럼을 삭제하시겠습니까?')) {
+      return;
+    }
 
     try {
-      const response = await fetch(`/api/admin/curriculums/${curriculumId}/publish`, {
+      const response = await fetch(`/api/admin/curriculums/${curriculumId}`, {
+        method: 'DELETE'
+      });
+
+      if (response.ok) {
+        setCurriculums(prev => prev.filter(curr => curr.id !== curriculumId));
+        toast({
+          title: "삭제 완료",
+          description: "커리큘럼이 성공적으로 삭제되었습니다.",
+          variant: "default"
+        });
+      } else {
+        throw new Error('삭제 실패');
+      }
+    } catch (error) {
+      console.error('커리큘럼 삭제 실패:', error);
+      toast({
+        title: "삭제 실패",
+        description: "커리큘럼 삭제 중 오류가 발생했습니다.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const publishCurriculum = async (curriculumId: string) => {
+    try {
+      const curriculum = curriculums.find(c => c.id === curriculumId);
+      if (!curriculum) {
+        throw new Error('커리큘럼을 찾을 수 없습니다.');
+      }
+
+      // 발행 전 검증
+      if (!curriculum.modules || curriculum.modules.length === 0) {
+        toast({
+          title: "발행 불가",
+          description: "모듈이 없는 커리큘럼은 발행할 수 없습니다.",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      const response = await fetch(`/api/admin/curriculums/${curriculumId}/submit-for-approval`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify(selectedCurriculum)
+        body: JSON.stringify(curriculum)
       });
 
       if (response.ok) {
         const result = await response.json();
         
-        // 커리큘럼 상태 업데이트
-        setSelectedCurriculum(prev => prev ? { ...prev, status: 'published' } : null);
-        
-        // 커리큘럼 목록에서도 상태 업데이트
+        // 커리큘럼 상태 업데이트 - pending_approval로 설정
         setCurriculums(prev => 
           prev.map(curr => 
             curr.id === curriculumId 
-              ? { ...curr, status: 'published' as const }
+              ? { ...curr, status: 'pending_approval' as any }
               : curr
           )
         );
 
         toast({
-          title: "발행 완료",
-          description: `커리큘럼이 강의로 성공적으로 발행되었습니다. (강의 ID: ${result.courseId})`,
+          title: "발행 신청 완료",
+          description: "커리큘럼 발행 신청이 완료되었습니다. 등록신청관리에서 최종 승인을 기다립니다.",
           variant: "default"
         });
-
-        // 발행된 강의 페이지로 이동 옵션 제공
-        if (confirm('발행된 강의 페이지를 확인하시겠습니까?')) {
-          window.open(`/courses/${result.courseId}`, '_blank');
-        }
       } else {
-        throw new Error('발행 실패');
+        throw new Error('발행 신청 실패');
       }
     } catch (error) {
-      console.error('커리큘럼 발행 실패:', error);
+      console.error('커리큘럼 발행 신청 실패:', error);
       toast({
-        title: "발행 실패",
-        description: "커리큘럼 발행 중 오류가 발생했습니다.",
+        title: "발행 신청 실패",
+        description: "커리큘럼 발행 신청 중 오류가 발생했습니다.",
         variant: "destructive"
       });
     }
@@ -1459,11 +1496,34 @@ export default function AdminCurriculum() {
                             e.stopPropagation();
                             publishCurriculum(curriculum.id);
                           }}
-                          className="flex items-center gap-1 text-green-600 border-green-300"
+                          className={`flex items-center gap-1 ${
+                            curriculum.status === 'published' ? 'text-blue-600 border-blue-300' :
+                            curriculum.status === 'pending_approval' ? 'text-orange-600 border-orange-300' :
+                            'text-green-600 border-green-300'
+                          }`}
                           disabled={curriculum.status === 'published'}
                         >
-                          <CheckCircle className="w-3 h-3" />
-                          발행
+                          {curriculum.status === 'published' ? (
+                            <CheckCircle className="w-3 h-3" />
+                          ) : curriculum.status === 'pending_approval' ? (
+                            <Clock className="w-3 h-3" />
+                          ) : (
+                            <Send className="w-3 h-3" />
+                          )}
+                          {curriculum.status === 'published' ? '발행완료' : 
+                           curriculum.status === 'pending_approval' ? '승인대기' : '발행신청'}
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteCurriculum(curriculum.id);
+                          }}
+                          className="flex items-center gap-1 text-red-600 border-red-300 hover:bg-red-50"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                          삭제
                         </Button>
                       </div>
                     </div>
