@@ -18,6 +18,7 @@ import {
   Play,
   Clock,
   Users,
+  User,
   BookOpen,
   Star,
   CheckCircle,
