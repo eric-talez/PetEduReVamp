@@ -946,6 +946,8 @@ export default function AdminCurriculum() {
       return;
     }
 
+    setIsProcessingFile(true);
+    
     try {
       const formData = new FormData();
       for (let i = 0; i < selectedFiles.length; i++) {
@@ -966,7 +968,7 @@ export default function AdminCurriculum() {
       if (data.success) {
         toast({
           title: "자동 등록 완료",
-          description: data.message,
+          description: data.message || `${selectedFiles.length}개의 파일이 성공적으로 등록되었습니다.`,
           variant: "default"
         });
         
@@ -984,6 +986,8 @@ export default function AdminCurriculum() {
         description: error instanceof Error ? error.message : "자동 등록 중 오류가 발생했습니다.",
         variant: "destructive"
       });
+    } finally {
+      setIsProcessingFile(false);
     }
   };
 
@@ -2788,6 +2792,80 @@ export default function AdminCurriculum() {
                   </Button>
                 )}
               </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* 파일 선택기 모달 */}
+        <Dialog open={showFileSelector} onOpenChange={setShowFileSelector}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Package className="w-5 h-5" />
+                첨부파일 자동 등록
+              </DialogTitle>
+            </DialogHeader>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-2">
+                  커리큘럼 파일 선택 (복수 선택 가능)
+                </label>
+                <input
+                  type="file"
+                  multiple
+                  accept=".hwp,.hwpx,.docx,.doc,.txt"
+                  onChange={(e) => setSelectedFiles(e.target.files)}
+                  className="w-full p-2 border border-gray-300 rounded-md"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  지원 형식: .hwp, .hwpx, .docx, .doc, .txt
+                </p>
+              </div>
+              
+              {selectedFiles && selectedFiles.length > 0 && (
+                <div className="bg-gray-50 p-3 rounded-lg">
+                  <p className="text-sm font-medium mb-2">선택된 파일:</p>
+                  <ul className="text-sm text-gray-600 space-y-1">
+                    {Array.from(selectedFiles).map((file, index) => (
+                      <li key={index} className="flex items-center gap-2">
+                        <FileText className="w-4 h-4" />
+                        {file.name} ({(file.size / 1024 / 1024).toFixed(2)} MB)
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+            
+            <div className="flex gap-2 pt-4">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setShowFileSelector(false);
+                  setSelectedFiles(null);
+                }}
+                className="flex-1"
+              >
+                취소
+              </Button>
+              <Button
+                onClick={processAutoRegister}
+                disabled={!selectedFiles || selectedFiles.length === 0 || isProcessingFile}
+                className="flex-1 bg-blue-600 hover:bg-blue-700"
+              >
+                {isProcessingFile ? (
+                  <>
+                    <div className="animate-spin w-4 h-4 mr-2 border-2 border-white border-t-transparent rounded-full" />
+                    처리중...
+                  </>
+                ) : (
+                  <>
+                    <Plus className="w-4 h-4 mr-2" />
+                    자동 등록
+                  </>
+                )}
+              </Button>
             </div>
           </DialogContent>
         </Dialog>
