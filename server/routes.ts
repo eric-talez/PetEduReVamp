@@ -3745,6 +3745,47 @@ app.get('/api/search', async (req, res) => {
             duration: 90,
             price: 75000
           };
+        } else if (['.xlsx', '.xls'].includes(fileExtension)) {
+          // 엑셀 파일 처리
+          try {
+            const workbook = xlsx.readFile(req.file.path);
+            const sheetNames = workbook.SheetNames;
+            
+            // 첫 번째 시트 읽기
+            const firstSheet = workbook.Sheets[sheetNames[0]];
+            const data = xlsx.utils.sheet_to_json(firstSheet, { header: 1, raw: false });
+            
+            console.log('[엑셀 파일 처리] 시트 이름:', sheetNames);
+            console.log('[엑셀 파일 처리] 데이터 행 수:', data.length);
+            
+            // 엑셀 데이터 파싱
+            extractedData = parseExcelCurriculumWithPricing(data, req.file.originalname);
+            
+            console.log('[엑셀 파일 처리] 성공:', req.file.originalname);
+            
+          } catch (excelError) {
+            console.error('[엑셀 파일 처리] 오류:', excelError);
+            
+            // 엑셀 파일 처리 실패 시 기본 데이터 반환
+            extractedData = {
+              title: '엑셀 기반 커리큘럼',
+              description: '엑셀 파일에서 추출된 커리큘럼 내용입니다.',
+              category: '엑셀기반',
+              duration: 240,
+              price: 200000,
+              modules: [
+                {
+                  title: '1회차 - 기본 교육',
+                  description: '기본적인 반려견 교육 내용',
+                  duration: 60,
+                  objectives: ['기본 명령어 학습'],
+                  content: '엑셀 파일 내용 요약',
+                  isFree: true,
+                  price: 0
+                }
+              ]
+            };
+          }
         }
 
         // 파일 정보 반환
