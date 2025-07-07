@@ -1481,11 +1481,14 @@ export default function AdminCurriculum() {
                           <Upload className="w-8 h-8 mx-auto mb-2 text-blue-500" />
                           <p className="text-sm font-medium text-blue-700 mb-1">파일에서 커리큘럼 생성</p>
                           <p className="text-xs text-blue-600 mb-3">
-                            한글파일(.hwp), 워드(.docx), 텍스트(.txt) 파일을 업로드하세요
+                            한글파일(.hwp), 워드(.docx), 엑셀(.xlsx/.xls), 텍스트(.txt) 파일을 업로드하세요
+                          </p>
+                          <p className="text-xs text-green-600 mb-3">
+                            💡 엑셀 파일: 회차별 유료/무료 정보 자동 추출
                           </p>
                           <input
                             type="file"
-                            accept=".hwp,.docx,.doc,.txt"
+                            accept=".hwp,.docx,.doc,.txt,.xlsx,.xls"
                             onChange={(e) => {
                               const file = e.target.files?.[0];
                               if (file) handleFileUpload(file);

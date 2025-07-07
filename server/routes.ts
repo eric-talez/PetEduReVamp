@@ -3912,7 +3912,7 @@ app.get('/api/search', async (req, res) => {
       
       const buffer = xlsx.write(workbook, { type: 'buffer', bookType: 'xlsx' });
       res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-      res.setHeader('Content-Disposition', 'attachment; filename="TALEZ_커리큘럼_작성양식.xlsx"');
+      res.setHeader('Content-Disposition', 'attachment; filename*=UTF-8\'\'TALEZ_%EC%BB%A4%EB%A6%AC%ED%81%98%EB%9F%BC_%EC%9E%91%EC%84%B1%EC%96%91%EC%8B%9D.xlsx');
       res.send(buffer);
     } catch (error) {
       console.error('[양식 다운로드] 오류:', error);

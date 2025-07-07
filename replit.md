@@ -121,6 +121,14 @@ TALEZ is a comprehensive pet education and e-commerce platform that combines AI-
 
 ## Changelog
 
+- July 07, 2025. **Enhanced Curriculum Template System with Excel Integration** - Implemented comprehensive curriculum creation with standardized template downloads and pricing controls:
+  - **Excel Template Download**: Created API endpoint for standardized curriculum format with sample data and instructions
+  - **Module-Level Pricing Control**: Added isFree and price fields to module schema for individual session pricing
+  - **Enhanced Excel Processing**: Integrated pricing information extraction from uploaded Excel files (Y/N for free status, individual prices)
+  - **Improved File Support**: Extended upload system to support .xlsx/.xls files alongside existing HWP/HWPX formats
+  - **UTF-8 Header Fix**: Resolved Korean filename download issues with proper header encoding
+  - **Visual Pricing Indicators**: Enhanced UI to show free/paid status with pricing information for each module
+  - **Automatic Price Calculation**: Smart pricing distribution for modules when total curriculum price is specified
 - July 07, 2025. **Unified Curriculum & Video Management Process** - Simplified complex tab structure into streamlined single workflow:
   - **Simplified Tab Structure**: Reduced from 4 tabs to 2 main sections (커리큘럼 & 영상 관리, 수익 정산)
   - **Integrated Creation Process**: Combined curriculum creation and video upload into one seamless workflow
