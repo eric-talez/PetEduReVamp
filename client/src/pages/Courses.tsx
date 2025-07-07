@@ -1,12 +1,16 @@
 import { useState, useEffect } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { Search, BookOpen, Clock } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Search, BookOpen, Clock, User, Star, Eye, Play, ChevronRight } from 'lucide-react';
 
 export default function Courses() {
   const [searchTerm, setSearchTerm] = useState('');
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [selectedCourse, setSelectedCourse] = useState(null);
+  const [showCourseModal, setShowCourseModal] = useState(false);
 
   // 실제 커리큘럼 데이터 가져오기
   useEffect(() => {
@@ -37,7 +41,9 @@ export default function Courses() {
                       curriculum.difficulty === 'intermediate' ? '중급' : '고급',
                 variant: curriculum.difficulty === 'beginner' ? 'green' : 
                          curriculum.difficulty === 'intermediate' ? 'blue' : 'purple'
-              }
+              },
+              // 상세 정보를 위한 추가 데이터
+              rawData: curriculum
             }));
           setCourses(transformedCourses);
         }
@@ -56,6 +62,17 @@ export default function Courses() {
     course.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
     course.trainer.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const handleCourseClick = (course) => {
+    setSelectedCourse(course);
+    setShowCourseModal(true);
+  };
+
+  const handleEnroll = () => {
+    // 수강신청 로직
+    alert('수강신청이 완료되었습니다!');
+    setShowCourseModal(false);
+  };
 
   if (loading) {
     return (
@@ -101,7 +118,11 @@ export default function Courses() {
         {courses.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredCourses.map((course) => (
-              <div key={course.id} className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow overflow-hidden">
+              <div 
+                key={course.id} 
+                className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow overflow-hidden cursor-pointer"
+                onClick={() => handleCourseClick(course)}
+              >
                 <div className="aspect-video bg-gradient-to-br from-blue-100 to-green-100 flex items-center justify-center">
                   <BookOpen className="w-12 h-12 text-gray-400" />
                 </div>
@@ -140,8 +161,14 @@ export default function Courses() {
                   
                   <div className="flex items-center justify-between">
                     <span className="text-xl font-bold text-primary">{course.price}</span>
-                    <button className="bg-primary text-white px-4 py-2 rounded-md hover:bg-primary/90 transition-colors">
-                      수강신청
+                    <button 
+                      className="bg-primary text-white px-4 py-2 rounded-md hover:bg-primary/90 transition-colors"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleCourseClick(course);
+                      }}
+                    >
+                      자세히 보기
                     </button>
                   </div>
                 </div>
@@ -163,6 +190,114 @@ export default function Courses() {
           </div>
         )}
       </div>
+
+      {/* 커리큘럼 상세 정보 모달 */}
+      <Dialog open={showCourseModal} onOpenChange={setShowCourseModal}>
+        <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold mb-2">
+              {selectedCourse?.title}
+            </DialogTitle>
+          </DialogHeader>
+          
+          {selectedCourse && (
+            <div className="space-y-6">
+              {/* 강의 기본 정보 */}
+              <div className="bg-gradient-to-r from-blue-50 to-green-50 p-6 rounded-lg">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    <img 
+                      src={selectedCourse.trainer.image} 
+                      alt={selectedCourse.trainer.name}
+                      className="w-12 h-12 rounded-full"
+                    />
+                    <div>
+                      <h3 className="font-semibold text-lg">{selectedCourse.trainer.name}</h3>
+                      <p className="text-gray-600">전문 훈련사</p>
+                    </div>
+                  </div>
+                  <Badge variant={selectedCourse.badge.variant} className="text-sm">
+                    {selectedCourse.badge.text}
+                  </Badge>
+                </div>
+                
+                <div className="grid grid-cols-3 gap-4 text-center">
+                  <div className="flex items-center justify-center gap-2">
+                    <Clock className="w-5 h-5 text-blue-600" />
+                    <span className="font-semibold">{selectedCourse.duration}시간</span>
+                  </div>
+                  <div className="flex items-center justify-center gap-2">
+                    <BookOpen className="w-5 h-5 text-green-600" />
+                    <span className="font-semibold">{selectedCourse.modules}개 강의</span>
+                  </div>
+                  <div className="flex items-center justify-center gap-2">
+                    <User className="w-5 h-5 text-purple-600" />
+                    <span className="font-semibold">{selectedCourse.level}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* 강의 설명 */}
+              <div>
+                <h4 className="text-lg font-semibold mb-3">강의 소개</h4>
+                <p className="text-gray-700 leading-relaxed">{selectedCourse.description}</p>
+              </div>
+
+              {/* 커리큘럼 모듈 */}
+              {selectedCourse.rawData?.modules && (
+                <div>
+                  <h4 className="text-lg font-semibold mb-3">커리큘럼</h4>
+                  <div className="space-y-3">
+                    {selectedCourse.rawData.modules.map((module, index) => (
+                      <div key={index} className="flex items-start gap-3 p-4 bg-gray-50 rounded-lg">
+                        <div className="flex-shrink-0 w-8 h-8 bg-primary text-white rounded-full flex items-center justify-center text-sm font-semibold">
+                          {index + 1}
+                        </div>
+                        <div className="flex-1">
+                          <h5 className="font-semibold text-gray-900 mb-1">{module.title}</h5>
+                          {module.description && (
+                            <p className="text-gray-600 text-sm">{module.description}</p>
+                          )}
+                          {module.duration && (
+                            <div className="flex items-center gap-1 mt-2">
+                              <Clock className="w-4 h-4 text-gray-500" />
+                              <span className="text-sm text-gray-500">{module.duration}분</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* 수강 신청 영역 */}
+              <div className="bg-white border-t pt-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-2xl font-bold text-primary">{selectedCourse.price}</p>
+                    <p className="text-gray-600 text-sm">평생 수강 가능</p>
+                  </div>
+                  <div className="flex gap-3">
+                    <Button 
+                      variant="outline" 
+                      onClick={() => setShowCourseModal(false)}
+                    >
+                      취소
+                    </Button>
+                    <Button 
+                      onClick={handleEnroll}
+                      className="bg-primary hover:bg-primary/90"
+                    >
+                      수강 신청하기
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

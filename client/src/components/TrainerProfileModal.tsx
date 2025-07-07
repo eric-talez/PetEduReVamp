@@ -137,7 +137,13 @@ export function TrainerProfileModal({ trainer, open, onOpenChange }: TrainerProf
             </h3>
             <div className="flex flex-wrap gap-2">
               {trainer.certifications.map((cert, idx) => (
-                <Badge key={idx} variant="outline" className="text-sm py-1 px-3">{cert}</Badge>
+                <Badge 
+                  key={idx} 
+                  variant={cert.includes('국가자격증') ? 'default' : 'outline'} 
+                  className={`text-sm py-1 px-3 ${cert.includes('국가자격증') ? 'bg-gradient-to-r from-red-600 to-red-700 text-white border-red-600 font-semibold' : ''}`}
+                >
+                  {cert}
+                </Badge>
               ))}
             </div>
           </div>

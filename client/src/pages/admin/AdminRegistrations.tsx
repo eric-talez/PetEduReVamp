@@ -54,11 +54,14 @@ export default function AdminRegistrations() {
 
   const fetchApplications = async () => {
     try {
+      console.log('🔥 등록 신청 목록 조회 시작');
       const response = await fetch('/api/admin/registrations');
       const data = await response.json();
+      console.log('🔥 등록 신청 데이터:', data);
       
       if (data.success) {
         setApplications(data.applications);
+        console.log('🔥 등록 신청 목록 설정 완료:', data.applications.length, '건');
       } else {
         toast({
           title: "오류",
@@ -80,6 +83,8 @@ export default function AdminRegistrations() {
 
   const handleReview = async (applicationId: string, status: 'approved' | 'rejected') => {
     try {
+      console.log('🔥 handleReview 호출:', applicationId, status, reviewNotes);
+      
       const response = await fetch(`/api/admin/registrations/${applicationId}`, {
         method: 'PUT',
         headers: {
@@ -92,6 +97,7 @@ export default function AdminRegistrations() {
       });
 
       const data = await response.json();
+      console.log('🔥 서버 응답:', data);
 
       if (data.success) {
         toast({
@@ -338,8 +344,13 @@ function ApplicationCard({
       <Badge variant="purple">기관</Badge>;
   };
 
+  const handleCardClick = () => {
+    console.log('🔥 등록 신청 카드 클릭:', application.id, application.type, getApplicantName());
+    onSelect(application);
+  };
+
   return (
-    <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => onSelect(application)}>
+    <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={handleCardClick}>
       <CardContent className="p-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
@@ -357,8 +368,8 @@ function ApplicationCard({
             </div>
           </div>
           <div className="flex items-center space-x-2">
-            <TypeBadge type={application.type} />
-            <StatusBadge status={application.status} />
+            {getTypeBadge(application.type)}
+            {getStatusBadge(application.status)}
           </div>
         </div>
       </CardContent>
