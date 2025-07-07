@@ -22,7 +22,7 @@ import MyCourses from "@/pages/my-courses";
 import MyPets from "@/pages/my-pets";
 import Login from "@/pages/auth/login";
 import NotFound from "@/pages/not-found";
-import VideoTrainingPage from "@/pages/video-training";
+import VideoTrainingPage from "@/pages/VideoTraining";
 import LocationsPage from "./pages/locations";
 import VideoCallPage from "./pages/video-call";
 import MessagesPage from "./pages/messages";
