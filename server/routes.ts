@@ -37,6 +37,100 @@ import path from 'path';
 import fs from 'fs';
 import { WorkflowEngine } from './workflow-engine';
 import { uploadDocuments } from './middleware/upload';
+import xlsx from 'xlsx';
+
+// 엑셀 파일에서 커리큘럼 정보 추출 함수
+function parseExcelCurriculum(data: any[], filename: string) {
+  try {
+    // 엑셀 데이터 분석
+    let title = filename;
+    let description = "";
+    let category = "전문교육";
+    let difficulty = "intermediate";
+    let duration = 480;
+    let price = 400000;
+    let modules: any[] = [];
+
+    // 첫 번째 행에서 제목 찾기
+    if (data.length > 0 && data[0] && data[0][0]) {
+      title = String(data[0][0]).trim();
+    }
+
+    // 설명 찾기 (두 번째 행 또는 특정 패턴)
+    if (data.length > 1 && data[1] && data[1][0]) {
+      description = String(data[1][0]).trim();
+    }
+
+    // 모듈 정보 추출 (행에서 강의명, 내용 등 찾기)
+    let moduleIndex = 1;
+    for (let i = 2; i < Math.min(data.length, 20); i++) {
+      const row = data[i];
+      if (!row || !row[0]) continue;
+
+      const cellValue = String(row[0]).trim();
+      
+      // 강의나 모듈을 나타내는 패턴 찾기
+      if (cellValue.includes('강') || cellValue.includes('모듈') || cellValue.includes('차시') || cellValue.includes('주차')) {
+        let moduleTitle = cellValue;
+        let moduleDescription = row[1] ? String(row[1]).trim() : `${moduleTitle}에 대한 상세 내용`;
+        let moduleContent = row[2] ? String(row[2]).trim() : "";
+        
+        // 재활 관련 키워드가 있으면 특별 처리
+        if (filename.includes('재활') || cellValue.includes('재활')) {
+          category = "재활치료";
+          difficulty = "advanced";
+          price = 600000;
+          duration = 720;
+        }
+
+        modules.push({
+          id: `module_${moduleIndex}_${Date.now()}`,
+          title: moduleTitle,
+          description: moduleDescription,
+          order: moduleIndex,
+          duration: Math.floor(duration / 8), // 전체 시간을 8등분
+          objectives: moduleContent ? [moduleContent] : [`${moduleTitle} 학습`],
+          content: moduleContent || `${moduleTitle}에 대한 전문적인 교육 내용`,
+          videos: [],
+          isRequired: true
+        });
+        
+        moduleIndex++;
+        if (moduleIndex > 8) break; // 최대 8개 모듈
+      }
+    }
+
+    // 기본 모듈이 없으면 4개 생성
+    if (modules.length === 0) {
+      for (let i = 1; i <= 4; i++) {
+        modules.push({
+          id: `module_${i}_${Date.now()}`,
+          title: `${i}강. ${title} - 모듈 ${i}`,
+          description: `${title}의 ${i}번째 모듈`,
+          order: i,
+          duration: Math.floor(duration / 4),
+          objectives: [`모듈 ${i} 학습 목표`],
+          content: `${title}에 대한 전문적인 교육 내용 - 모듈 ${i}`,
+          videos: [],
+          isRequired: true
+        });
+      }
+    }
+
+    return {
+      title,
+      description: description || `${title}에 대한 전문 교육 과정`,
+      category,
+      difficulty,
+      duration,
+      price,
+      modules
+    };
+  } catch (error) {
+    console.error('[엑셀 파싱] 오류:', error);
+    return null;
+  }
+}
 
 // requireAuth 미들웨어 함수
 function requireAuth(role?: string) {
@@ -3730,44 +3824,71 @@ app.get('/api/search', async (req, res) => {
           
           console.log(`[자동 등록] 파일 처리: ${originalName} (원본: ${file.originalname})`);
           
-          // 파일 이름을 기반으로 커리큘럼 데이터 생성
+          // 엑셀 파일인 경우 상세 정보 추출
           let extractedData = {
             title: baseName,
             description: `${baseName}에서 추출된 전문 반려견 교육 커리큘럼`,
             category: "전문교육",
             difficulty: "intermediate",
             duration: 480,
-            price: 400000
+            price: 400000,
+            modules: [] as any[]
           };
 
-          // 파일 이름 기반 맞춤 설정
-          if (originalName.includes('클리커')) {
-            extractedData = {
-              title: "클리커 트레이닝 마스터 과정",
-              description: "클리커를 활용한 효과적인 반려견 훈련 기법을 배우는 전문 과정입니다.",
-              category: "훈련기법",
-              difficulty: "intermediate",
-              duration: 420,
-              price: 350000
-            };
-          } else if (originalName.includes('유이서')) {
-            extractedData = {
-              title: "테일즈 종합 반려견 교육 프로그램",
-              description: "반려견의 기본 예의부터 고급 훈련까지 포괄하는 체계적인 교육 커리큘럼",
-              category: "종합교육",
-              difficulty: "beginner",  
-              duration: 600,
-              price: 450000
-            };
-          } else if (originalName.includes('한성규')) {
-            extractedData = {
-              title: "전문가 한성규의 반려견 행동 분석 과정",
-              description: "반려견 행동 전문가 한성규의 노하우를 담은 심화 교육 과정",
-              category: "행동분석",
-              difficulty: "advanced",
-              duration: 540,
-              price: 500000
-            };
+          // 엑셀 파일 처리
+          if (fileExtension === '.xlsx' || fileExtension === '.xls') {
+            try {
+              const workbook = xlsx.readFile(file.path);
+              const sheetName = workbook.SheetNames[0];
+              const worksheet = workbook.Sheets[sheetName];
+              const data = xlsx.utils.sheet_to_json(worksheet, { header: 1 });
+              
+              console.log(`[엑셀 처리] 시트명: ${sheetName}, 행 수: ${data.length}`);
+              
+              // 엑셀 데이터에서 커리큘럼 정보 추출
+              const excelData = parseExcelCurriculum(data, originalName);
+              if (excelData) {
+                extractedData = { ...extractedData, ...excelData };
+                console.log(`[엑셀 처리] 추출된 데이터:`, excelData.title);
+              }
+            } catch (excelError) {
+              console.error('[엑셀 처리] 오류:', excelError);
+            }
+          }
+
+          // 파일 이름 기반 맞춤 설정 (엑셀에서 추출되지 않은 경우에만)
+          if (!extractedData.modules || extractedData.modules.length === 0) {
+            if (originalName.includes('클리커')) {
+              extractedData = {
+                ...extractedData,
+                title: "클리커 트레이닝 마스터 과정",
+                description: "클리커를 활용한 효과적인 반려견 훈련 기법을 배우는 전문 과정입니다.",
+                category: "훈련기법",
+                difficulty: "intermediate",
+                duration: 420,
+                price: 350000
+              };
+            } else if (originalName.includes('유이서')) {
+              extractedData = {
+                ...extractedData,
+                title: "테일즈 종합 반려견 교육 프로그램",
+                description: "반려견의 기본 예의부터 고급 훈련까지 포괄하는 체계적인 교육 커리큘럼",
+                category: "종합교육",
+                difficulty: "beginner",  
+                duration: 600,
+                price: 450000
+              };
+            } else if (originalName.includes('한성규')) {
+              extractedData = {
+                ...extractedData,
+                title: "전문가 한성규의 반려견 행동 분석 과정",
+                description: "반려견 행동 전문가 한성규의 노하우를 담은 심화 교육 과정",
+                category: "행동분석",
+                difficulty: "advanced",
+                duration: 540,
+                price: 500000
+              };
+            }
           }
 
           const curriculumData = {
@@ -3782,7 +3903,7 @@ app.get('/api/search', async (req, res) => {
             difficulty: extractedData.difficulty,
             duration: extractedData.duration,
             price: extractedData.price,
-          modules: [
+          modules: extractedData.modules && extractedData.modules.length > 0 ? extractedData.modules : [
             {
               id: `module_1_${Date.now()}`,
               title: "1강. 기본 개념 이해",

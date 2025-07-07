@@ -28,15 +28,15 @@ const fileFilter = (req: Request, file: Express.Multer.File, cb: multer.FileFilt
   }
 };
 
-// 문서 파일 타입 검증 (hwp, hwpx, doc, docx, pdf)
+// 문서 파일 타입 검증 (hwp, hwpx, doc, docx, pdf, xlsx, xls)
 const documentFilter = (req: Request, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
-  const documentTypes = /hwp|hwpx|doc|docx|pdf/;
+  const documentTypes = /hwp|hwpx|doc|docx|pdf|xlsx|xls/;
   const extname = documentTypes.test(path.extname(file.originalname).toLowerCase());
   
   if (extname) {
     return cb(null, true);
   } else {
-    cb(new Error('지원되지 않는 문서 형식입니다. hwp, hwpx, doc, docx, pdf 파일만 업로드 가능합니다.'));
+    cb(new Error('지원되지 않는 문서 형식입니다. hwp, hwpx, doc, docx, pdf, xlsx, xls 파일만 업로드 가능합니다.'));
   }
 };
 
