@@ -6,7 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { UserPlus, Building, CheckCircle, XCircle, FileText, Calendar, User, Phone, Mail, MapPin, RotateCcw, Clock } from 'lucide-react';
+import { UserPlus, Building, CheckCircle, XCircle, FileText, Calendar, User, Phone, Mail, MapPin } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 // Badge 컴포넌트 wrapper - 올바른 variant 타입 처리
@@ -48,36 +48,38 @@ export default function AdminRegistrations() {
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
-  // 등록 신청 목록 조회
+  useEffect(() => {
+    fetchApplications();
+  }, []);
+
   const fetchApplications = async () => {
     try {
-      setLoading(true);
       console.log('🔥 등록 신청 목록 조회 시작');
-      
       const response = await fetch('/api/admin/registrations');
       const data = await response.json();
-      
       console.log('🔥 등록 신청 데이터:', data);
       
       if (data.success) {
         setApplications(data.applications);
         console.log('🔥 등록 신청 목록 설정 완료:', data.applications.length, '건');
+      } else {
+        toast({
+          title: "오류",
+          description: "등록 신청 목록을 불러올 수 없습니다.",
+          variant: "destructive"
+        });
       }
     } catch (error) {
-      console.error('등록 신청 목록 조회 실패:', error);
+      console.error('등록 신청 조회 실패:', error);
       toast({
         title: "오류",
-        description: "등록 신청 목록을 불러오는데 실패했습니다.",
+        description: "서버 연결에 실패했습니다.",
         variant: "destructive"
       });
     } finally {
       setLoading(false);
     }
   };
-
-  useEffect(() => {
-    fetchApplications();
-  }, []);
 
   const handleReview = async (applicationId: string, status: 'approved' | 'rejected' | 'pending') => {
     try {
@@ -101,7 +103,7 @@ export default function AdminRegistrations() {
         const statusText = status === 'approved' ? '승인' : 
                           status === 'rejected' ? '거부' : '초기화';
         toast({
-          title: "처리 완료",
+          title: "처리 완료", 
           description: `등록 신청이 ${statusText}되었습니다.`,
           variant: "default"
         });
@@ -126,19 +128,6 @@ export default function AdminRegistrations() {
     }
   };
 
-  // 통계 계산
-  const stats = {
-    pending: applications.filter(app => app.status === 'pending').length,
-    approved: applications.filter(app => app.status === 'approved').length,
-    rejected: applications.filter(app => app.status === 'rejected').length,
-    total: applications.length
-  };
-
-  const handleApplicationClick = (application: RegistrationApplication) => {
-    console.log('🔥 등록 신청 카드 클릭:', application.id, application.type, application.applicantInfo?.personalInfo?.name || application.applicantInfo?.basicInfo?.instituteName);
-    setSelectedApplication(application);
-  };
-
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'pending':
@@ -158,12 +147,19 @@ export default function AdminRegistrations() {
       <Badge variant="purple">기관</Badge>;
   };
 
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleString('ko-KR');
+  };
+
+  const pendingApplications = applications.filter(app => app.status === 'pending');
+  const processedApplications = applications.filter(app => app.status !== 'pending');
+
   if (loading) {
     return (
       <div className="container mx-auto p-6">
-        <div className="text-center py-12">
-          <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
-          <p className="text-gray-500">등록 신청을 불러오는 중...</p>
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
+          <span className="ml-2">로딩 중...</span>
         </div>
       </div>
     );
@@ -185,11 +181,9 @@ export default function AdminRegistrations() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600 dark:text-gray-400">대기 중</p>
-                <p className="text-2xl font-bold text-orange-600">
-                  {stats.pending}
-                </p>
+                <p className="text-2xl font-bold text-orange-600">{pendingApplications.length}</p>
               </div>
-              <Clock className="w-8 h-8 text-orange-600" />
+              <UserPlus className="w-8 h-8 text-orange-600" />
             </div>
           </CardContent>
         </Card>
@@ -200,7 +194,7 @@ export default function AdminRegistrations() {
               <div>
                 <p className="text-sm text-gray-600 dark:text-gray-400">승인됨</p>
                 <p className="text-2xl font-bold text-green-600">
-                  {stats.approved}
+                  {applications.filter(app => app.status === 'approved').length}
                 </p>
               </div>
               <CheckCircle className="w-8 h-8 text-green-600" />
@@ -214,7 +208,7 @@ export default function AdminRegistrations() {
               <div>
                 <p className="text-sm text-gray-600 dark:text-gray-400">거부됨</p>
                 <p className="text-2xl font-bold text-red-600">
-                  {stats.rejected}
+                  {applications.filter(app => app.status === 'rejected').length}
                 </p>
               </div>
               <XCircle className="w-8 h-8 text-red-600" />
@@ -227,9 +221,7 @@ export default function AdminRegistrations() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600 dark:text-gray-400">전체</p>
-                <p className="text-2xl font-bold text-blue-600">
-                  {stats.total}
-                </p>
+                <p className="text-2xl font-bold text-blue-600">{applications.length}</p>
               </div>
               <FileText className="w-8 h-8 text-blue-600" />
             </div>
@@ -237,127 +229,179 @@ export default function AdminRegistrations() {
         </Card>
       </div>
 
-      {/* 신청 목록 */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div>
-          <h2 className="text-xl font-semibold mb-4">등록 신청 목록</h2>
-          <div className="space-y-4 max-h-[600px] overflow-y-auto">
-            {applications.map((application) => (
-              <Card 
-                key={application.id} 
-                className="cursor-pointer hover:shadow-md transition-shadow"
-                onClick={() => handleApplicationClick(application)}
-              >
-                <CardContent className="p-4">
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="flex items-center gap-3">
-                      {application.type === 'trainer' ? 
-                        <User className="w-6 h-6 text-blue-600" /> : 
-                        <Building className="w-6 h-6 text-purple-600" />
-                      }
-                      <div>
-                        <h3 className="font-semibold">
-                          {application.type === 'trainer' 
-                            ? application.applicantInfo?.personalInfo?.name 
-                            : application.applicantInfo?.basicInfo?.instituteName
-                          }
-                        </h3>
-                        <p className="text-sm text-gray-600">
-                          {new Date(application.submittedAt).toLocaleDateString('ko-KR')}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex flex-col gap-1">
-                      {getTypeBadge(application.type)}
-                      {getStatusBadge(application.status)}
-                    </div>
-                  </div>
-                  
-                  <div className="text-sm text-gray-600">
-                    {application.type === 'trainer' ? (
-                      <div className="flex items-center gap-4">
-                        <span className="flex items-center gap-1">
-                          <Phone className="w-4 h-4" />
-                          {application.applicantInfo?.personalInfo?.phone}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <Mail className="w-4 h-4" />
-                          {application.applicantInfo?.personalInfo?.email}
-                        </span>
-                      </div>
-                    ) : (
-                      <div className="flex items-center gap-4">
-                        <span className="flex items-center gap-1">
-                          <Building className="w-4 h-4" />
-                          {application.applicantInfo?.basicInfo?.instituteName}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <MapPin className="w-4 h-4" />
-                          {application.applicantInfo?.locationInfo?.address}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+      <Tabs defaultValue="pending" className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="pending">
+            대기 중 ({pendingApplications.length})
+          </TabsTrigger>
+          <TabsTrigger value="processed">
+            처리 완료 ({processedApplications.length})
+          </TabsTrigger>
+        </TabsList>
 
-            {applications.length === 0 && (
-              <div className="text-center py-8">
-                <FileText className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-                <p className="text-gray-500">등록 신청이 없습니다.</p>
-              </div>
-            )}
-          </div>
-        </div>
+        <TabsContent value="pending" className="space-y-4">
+          {pendingApplications.length === 0 ? (
+            <Card>
+              <CardContent className="p-8 text-center">
+                <UserPlus className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                <p className="text-gray-500">검토 대기 중인 신청이 없습니다.</p>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="grid gap-4">
+              {pendingApplications.map((application) => (
+                <ApplicationCard 
+                  key={application.id} 
+                  application={application}
+                  onSelect={setSelectedApplication}
+                />
+              ))}
+            </div>
+          )}
+        </TabsContent>
 
-        {/* 상세 정보 */}
-        <div>
-          {selectedApplication ? (
+        <TabsContent value="processed" className="space-y-4">
+          {processedApplications.length === 0 ? (
+            <Card>
+              <CardContent className="p-8 text-center">
+                <CheckCircle className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                <p className="text-gray-500">처리 완료된 신청이 없습니다.</p>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="grid gap-4">
+              {processedApplications.map((application) => (
+                <ApplicationCard 
+                  key={application.id} 
+                  application={application}
+                  onSelect={setSelectedApplication}
+                  readonly={true}
+                />
+              ))}
+            </div>
+          )}
+        </TabsContent>
+      </Tabs>
+
+      {/* 신청 상세 다이얼로그 */}
+      <Dialog open={!!selectedApplication} onOpenChange={() => setSelectedApplication(null)}>
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              {selectedApplication?.type === 'trainer' ? <User className="w-5 h-5" /> : <Building className="w-5 h-5" />}
+              {selectedApplication?.type === 'trainer' ? '훈련사' : '기관'} 등록 신청 상세
+            </DialogTitle>
+            <DialogDescription>
+              신청자 정보를 검토하고 승인 또는 거부를 결정하세요.
+            </DialogDescription>
+          </DialogHeader>
+
+          {selectedApplication && (
             <ApplicationDetails 
               application={selectedApplication}
               reviewNotes={reviewNotes}
               setReviewNotes={setReviewNotes}
               onReview={handleReview}
             />
-          ) : (
-            <div className="text-center py-12">
-              <FileText className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-              <p className="text-gray-500">신청을 선택하여 상세 정보를 확인하세요.</p>
-            </div>
           )}
-        </div>
-      </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
 
-interface ApplicationDetailsProps {
+function ApplicationCard({ 
+  application, 
+  onSelect, 
+  readonly = false 
+}: { 
+  application: RegistrationApplication;
+  onSelect: (app: RegistrationApplication) => void;
+  readonly?: boolean;
+}) {
+  const getApplicantName = () => {
+    if (application.type === 'trainer') {
+      return application.applicantInfo?.personalInfo?.name || '이름 없음';
+    } else {
+      return application.applicantInfo?.basicInfo?.instituteName || '기관명 없음';
+    }
+  };
+
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'pending':
+        return <Badge variant="warning">검토 중</Badge>;
+      case 'approved':
+        return <Badge variant="success">승인됨</Badge>;
+      case 'rejected':
+        return <Badge variant="danger">거부됨</Badge>;
+      default:
+        return <Badge variant="secondary">알 수 없음</Badge>;
+    }
+  };
+
+  const getTypeBadge = (type: string) => {
+    return type === 'trainer' ? 
+      <Badge variant="info">훈련사</Badge> : 
+      <Badge variant="purple">기관</Badge>;
+  };
+
+  const handleCardClick = () => {
+    console.log('🔥 등록 신청 카드 클릭:', application.id, application.type, getApplicantName());
+    onSelect(application);
+  };
+
+  return (
+    <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={handleCardClick}>
+      <CardContent className="p-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-4">
+            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+              {application.type === 'trainer' ? 
+                <User className="w-5 h-5 text-primary" /> : 
+                <Building className="w-5 h-5 text-primary" />
+              }
+            </div>
+            <div>
+              <h3 className="font-semibold">{getApplicantName()}</h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                신청일: {new Date(application.submittedAt).toLocaleDateString('ko-KR')}
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center space-x-2">
+            {getTypeBadge(application.type)}
+            {getStatusBadge(application.status)}
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function ApplicationDetails({ 
+  application, 
+  reviewNotes, 
+  setReviewNotes, 
+  onReview 
+}: {
   application: RegistrationApplication;
   reviewNotes: string;
   setReviewNotes: (notes: string) => void;
   onReview: (id: string, status: 'approved' | 'rejected' | 'pending') => void;
-}
-
-function ApplicationDetails({ application, reviewNotes, setReviewNotes, onReview }: ApplicationDetailsProps) {
+}) {
   const isReadonly = application.status !== 'pending';
 
   if (application.type === 'trainer') {
-    // 훈련사 정보 표시
     const info = application.applicantInfo;
     
     return (
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <h2 className="text-xl font-semibold">훈련사 등록 신청 상세</h2>
-          <StatusBadge status={application.status} />
-        </div>
-
-        {/* 기본 정보 */}
+        {/* 개인 정보 */}
         <div>
           <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
             <User className="w-5 h-5" />
-            기본 정보
+            개인 정보
           </h3>
           <div className="grid grid-cols-2 gap-4">
             <div>
@@ -382,10 +426,10 @@ function ApplicationDetails({ application, reviewNotes, setReviewNotes, onReview
         {/* 전문 정보 */}
         <div>
           <h3 className="text-lg font-semibold mb-3">전문 정보</h3>
-          <div className="space-y-4">
+          <div className="grid grid-cols-1 gap-4">
             <div>
               <Label>경력</Label>
-              <p className="mt-1 p-2 border rounded">{info?.professionalInfo?.experience || 0}년</p>
+              <p className="mt-1 p-2 border rounded">{info?.professionalInfo?.experience || '-'}년</p>
             </div>
             <div>
               <Label>전문 분야</Label>
@@ -420,22 +464,22 @@ function ApplicationDetails({ application, reviewNotes, setReviewNotes, onReview
                 <Label>프로필 사진</Label>
                 <img 
                   src={application.documents.profileImage} 
-                  alt="프로필" 
-                  className="mt-1 w-20 h-20 object-cover rounded-full border"
+                  alt="프로필 사진" 
+                  className="mt-1 w-32 h-32 object-cover rounded border"
                 />
               </div>
             )}
-            {application.documents?.certificationDocuments?.length > 0 && (
+            {application.documents?.certificationDocs?.length > 0 && (
               <div>
-                <Label>자격증 ({application.documents.certificationDocuments.length}개)</Label>
-                <div className="mt-1 space-y-1">
-                  {application.documents.certificationDocuments.map((doc: string, index: number) => (
+                <Label>자격증 ({application.documents.certificationDocs.length}개)</Label>
+                <div className="mt-1 flex flex-wrap gap-2">
+                  {application.documents.certificationDocs.map((doc: string, index: number) => (
                     <a 
                       key={index}
                       href={doc} 
                       target="_blank" 
                       rel="noopener noreferrer"
-                      className="block text-blue-600 hover:underline text-sm"
+                      className="text-blue-600 hover:underline"
                     >
                       자격증 {index + 1}
                     </a>
@@ -461,7 +505,7 @@ function ApplicationDetails({ application, reviewNotes, setReviewNotes, onReview
                   className="mt-1"
                 />
               </div>
-              <div className="flex gap-2">
+              <div className="grid grid-cols-3 gap-2">
                 <Button 
                   onClick={() => onReview(application.id, 'approved')}
                   className="bg-green-600 hover:bg-green-700"
@@ -477,11 +521,16 @@ function ApplicationDetails({ application, reviewNotes, setReviewNotes, onReview
                   거부
                 </Button>
                 <Button 
-                  onClick={() => onReview(application.id, 'pending')}
+                  onClick={() => {
+                    console.log("🔥 초기화 버튼 클릭:", application.id);
+                    onReview(application.id, "pending");
+                  }}
                   variant="outline"
                   className="border-blue-600 text-blue-600 hover:bg-blue-50"
                 >
-                  <RotateCcw className="w-4 h-4 mr-2" />
+                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
                   초기화
                 </Button>
               </div>
@@ -536,6 +585,94 @@ function ApplicationDetails({ application, reviewNotes, setReviewNotes, onReview
           </div>
         </div>
 
+        {/* 위치 정보 */}
+        <div>
+          <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+            <MapPin className="w-5 h-5" />
+            위치 정보
+          </h3>
+          <div className="grid grid-cols-1 gap-4">
+            <div>
+              <Label>주소</Label>
+              <p className="mt-1 p-2 border rounded">{info?.locationInfo?.address || '-'}</p>
+            </div>
+          </div>
+        </div>
+
+        {/* 서비스 정보 */}
+        <div>
+          <h3 className="text-lg font-semibold mb-3">서비스 정보</h3>
+          <div className="grid grid-cols-1 gap-4">
+            <div>
+              <Label>서비스 유형</Label>
+              <p className="mt-1 p-2 border rounded">
+                {info?.serviceInfo?.serviceTypes?.join(', ') || '-'}
+              </p>
+            </div>
+            <div>
+              <Label>설명</Label>
+              <p className="mt-1 p-2 border rounded h-20 overflow-y-auto">
+                {info?.serviceInfo?.description || '-'}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* 시설 정보 */}
+        <div>
+          <h3 className="text-lg font-semibold mb-3">시설 정보</h3>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label>수용 인원</Label>
+              <p className="mt-1 p-2 border rounded">{info?.facilityInfo?.capacity || '-'}명</p>
+            </div>
+            <div>
+              <Label>시설</Label>
+              <p className="mt-1 p-2 border rounded">
+                {info?.facilityInfo?.facilities?.join(', ') || '-'}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* 첨부 문서 */}
+        <div>
+          <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+            <FileText className="w-5 h-5" />
+            첨부 문서
+          </h3>
+          <div className="space-y-2">
+            {application.documents?.businessLicense && (
+              <div>
+                <Label>사업자등록증</Label>
+                <a 
+                  href={application.documents.businessLicense} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="mt-1 block text-blue-600 hover:underline"
+                >
+                  사업자등록증 보기
+                </a>
+              </div>
+            )}
+            {application.documents?.facilityImages?.length > 0 && (
+              <div>
+                <Label>시설 사진 ({application.documents.facilityImages.length}개)</Label>
+                <div className="mt-1 grid grid-cols-3 gap-2">
+                  {application.documents.facilityImages.map((img: string, index: number) => (
+                    <img 
+                      key={index}
+                      src={img} 
+                      alt={`시설 사진 ${index + 1}`} 
+                      className="w-full h-20 object-cover rounded border"
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
         {/* 검토 섹션 */}
         {!isReadonly && (
           <div>
@@ -551,7 +688,7 @@ function ApplicationDetails({ application, reviewNotes, setReviewNotes, onReview
                   className="mt-1"
                 />
               </div>
-              <div className="flex gap-2">
+              <div className="grid grid-cols-3 gap-2">
                 <Button 
                   onClick={() => onReview(application.id, 'approved')}
                   className="bg-green-600 hover:bg-green-700"
@@ -567,12 +704,30 @@ function ApplicationDetails({ application, reviewNotes, setReviewNotes, onReview
                   거부
                 </Button>
                 <Button 
-                  onClick={() => onReview(application.id, 'pending')}
+                  onClick={() => {
+                    console.log("🔥 초기화 버튼 클릭:", application.id);
+                    onReview(application.id, "pending");
+                  }}
                   variant="outline"
                   className="border-blue-600 text-blue-600 hover:bg-blue-50"
                 >
-                  <RotateCcw className="w-4 h-4 mr-2" />
+                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
                   초기화
+                </Button>
+                  onClick={() => onReview(application.id, 'approved')}
+                  className="bg-green-600 hover:bg-green-700"
+                >
+                  <CheckCircle className="w-4 h-4 mr-2" />
+                  승인
+                </Button>
+                <Button 
+                  onClick={() => onReview(application.id, 'rejected')}
+                  variant="destructive"
+                >
+                  <XCircle className="w-4 h-4 mr-2" />
+                  거부
                 </Button>
               </div>
             </div>
