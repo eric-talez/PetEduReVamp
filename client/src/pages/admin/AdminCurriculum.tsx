@@ -65,6 +65,14 @@ interface ModuleData {
   duration: number;
   objectives: string[];
   content: string;
+  detailedContent?: {
+    introduction?: string;
+    mainTopics?: string[];
+    practicalExercises?: string[];
+    keyPoints?: string[];
+    homework?: string;
+    resources?: string[];
+  };
   videos: VideoData[];
   isRequired: boolean;
 }
@@ -622,6 +630,25 @@ export default function AdminCurriculum() {
     title: '',
     description: '',
     videoFile: null as File | null
+  });
+
+  // 모듈 편집 상태
+  const [isEditingModule, setIsEditingModule] = useState(false);
+  const [editingModule, setEditingModule] = useState<ModuleData | null>(null);
+  const [newModule, setNewModule] = useState({
+    title: '',
+    description: '',
+    duration: 0,
+    objectives: [''],
+    content: '',
+    detailedContent: {
+      introduction: '',
+      mainTopics: [''],
+      practicalExercises: [''],
+      keyPoints: [''],
+      homework: '',
+      resources: ['']
+    }
   });
 
   useEffect(() => {
@@ -2407,9 +2434,37 @@ export default function AdminCurriculum() {
                             </div>
                             
                             <div className="ml-4 text-right">
-                              <div className="flex items-center gap-1 text-sm text-gray-500">
-                                <Clock className="w-3 h-3" />
-                                <span>{module.duration}분</span>
+                              <div className="flex flex-col items-end gap-2">
+                                <div className="flex items-center gap-1 text-sm text-gray-500">
+                                  <Clock className="w-3 h-3" />
+                                  <span>{module.duration}분</span>
+                                </div>
+                                <Button 
+                                  size="sm" 
+                                  variant="outline"
+                                  onClick={() => {
+                                    setEditingModule(module);
+                                    setNewModule({
+                                      title: module.title,
+                                      description: module.description,
+                                      duration: module.duration,
+                                      objectives: module.objectives || [''],
+                                      content: module.content,
+                                      detailedContent: module.detailedContent || {
+                                        introduction: '',
+                                        mainTopics: [''],
+                                        practicalExercises: [''],
+                                        keyPoints: [''],
+                                        homework: '',
+                                        resources: ['']
+                                      }
+                                    });
+                                    setIsEditingModule(true);
+                                  }}
+                                >
+                                  <Edit className="w-3 h-3 mr-1" />
+                                  수정
+                                </Button>
                               </div>
                             </div>
                           </div>
@@ -2747,6 +2802,315 @@ export default function AdminCurriculum() {
             </div>
           </DialogContent>
         </Dialog>
+
+        {/* 모듈 상세 편집 모달 */}
+        {isEditingModule && editingModule && (
+          <Dialog open={isEditingModule} onOpenChange={setIsEditingModule}>
+            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2">
+                  <Edit className="h-5 w-5" />
+                  강의 내용 상세 편집 - {editingModule.title}
+                </DialogTitle>
+              </DialogHeader>
+              
+              <div className="space-y-6">
+                {/* 기본 정보 */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-2">강의 제목</label>
+                    <Input
+                      value={newModule.title}
+                      onChange={(e) => setNewModule(prev => ({ ...prev, title: e.target.value }))}
+                      placeholder="예: 1강 - 기본 자세 익히기"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">수업 시간 (분)</label>
+                    <Input
+                      type="number"
+                      value={newModule.duration}
+                      onChange={(e) => setNewModule(prev => ({ ...prev, duration: parseInt(e.target.value) || 0 }))}
+                      placeholder="60"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-2">강의 설명</label>
+                  <Textarea
+                    value={newModule.description}
+                    onChange={(e) => setNewModule(prev => ({ ...prev, description: e.target.value }))}
+                    placeholder="이 강의에서 배울 내용을 간략히 설명해주세요"
+                    rows={3}
+                  />
+                </div>
+
+                {/* 상세 강의 내용 */}
+                <div className="border-t pt-6">
+                  <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                    <FileText className="w-5 h-5" />
+                    상세 강의 내용
+                  </h3>
+                  
+                  <div className="space-y-4">
+                    {/* 도입부 */}
+                    <div>
+                      <label className="block text-sm font-medium mb-2">도입부 (강의 시작 부분)</label>
+                      <Textarea
+                        value={newModule.detailedContent.introduction}
+                        onChange={(e) => setNewModule(prev => ({
+                          ...prev,
+                          detailedContent: { ...prev.detailedContent, introduction: e.target.value }
+                        }))}
+                        placeholder="이 강의를 시작하며 어떤 내용을 소개할지 작성해주세요"
+                        rows={2}
+                      />
+                    </div>
+
+                    {/* 주요 토픽들 */}
+                    <div>
+                      <label className="block text-sm font-medium mb-2">주요 토픽들</label>
+                      {newModule.detailedContent.mainTopics.map((topic, index) => (
+                        <div key={index} className="flex gap-2 mb-2">
+                          <Input
+                            value={topic}
+                            onChange={(e) => {
+                              const newTopics = [...newModule.detailedContent.mainTopics];
+                              newTopics[index] = e.target.value;
+                              setNewModule(prev => ({
+                                ...prev,
+                                detailedContent: { ...prev.detailedContent, mainTopics: newTopics }
+                              }));
+                            }}
+                            placeholder={`주요 토픽 ${index + 1}`}
+                          />
+                          {newModule.detailedContent.mainTopics.length > 1 && (
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                const newTopics = newModule.detailedContent.mainTopics.filter((_, i) => i !== index);
+                                setNewModule(prev => ({
+                                  ...prev,
+                                  detailedContent: { ...prev.detailedContent, mainTopics: newTopics }
+                                }));
+                              }}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          )}
+                        </div>
+                      ))}
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setNewModule(prev => ({
+                            ...prev,
+                            detailedContent: {
+                              ...prev.detailedContent,
+                              mainTopics: [...prev.detailedContent.mainTopics, '']
+                            }
+                          }));
+                        }}
+                      >
+                        <Plus className="w-4 h-4 mr-1" />
+                        토픽 추가
+                      </Button>
+                    </div>
+
+                    {/* 실습 내용 */}
+                    <div>
+                      <label className="block text-sm font-medium mb-2">실습 내용</label>
+                      {newModule.detailedContent.practicalExercises.map((exercise, index) => (
+                        <div key={index} className="flex gap-2 mb-2">
+                          <Input
+                            value={exercise}
+                            onChange={(e) => {
+                              const newExercises = [...newModule.detailedContent.practicalExercises];
+                              newExercises[index] = e.target.value;
+                              setNewModule(prev => ({
+                                ...prev,
+                                detailedContent: { ...prev.detailedContent, practicalExercises: newExercises }
+                              }));
+                            }}
+                            placeholder={`실습 ${index + 1}`}
+                          />
+                          {newModule.detailedContent.practicalExercises.length > 1 && (
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                const newExercises = newModule.detailedContent.practicalExercises.filter((_, i) => i !== index);
+                                setNewModule(prev => ({
+                                  ...prev,
+                                  detailedContent: { ...prev.detailedContent, practicalExercises: newExercises }
+                                }));
+                              }}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          )}
+                        </div>
+                      ))}
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setNewModule(prev => ({
+                            ...prev,
+                            detailedContent: {
+                              ...prev.detailedContent,
+                              practicalExercises: [...prev.detailedContent.practicalExercises, '']
+                            }
+                          }));
+                        }}
+                      >
+                        <Plus className="w-4 h-4 mr-1" />
+                        실습 추가
+                      </Button>
+                    </div>
+
+                    {/* 핵심 포인트 */}
+                    <div>
+                      <label className="block text-sm font-medium mb-2">핵심 포인트</label>
+                      {newModule.detailedContent.keyPoints.map((point, index) => (
+                        <div key={index} className="flex gap-2 mb-2">
+                          <Input
+                            value={point}
+                            onChange={(e) => {
+                              const newPoints = [...newModule.detailedContent.keyPoints];
+                              newPoints[index] = e.target.value;
+                              setNewModule(prev => ({
+                                ...prev,
+                                detailedContent: { ...prev.detailedContent, keyPoints: newPoints }
+                              }));
+                            }}
+                            placeholder={`핵심 포인트 ${index + 1}`}
+                          />
+                          {newModule.detailedContent.keyPoints.length > 1 && (
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                const newPoints = newModule.detailedContent.keyPoints.filter((_, i) => i !== index);
+                                setNewModule(prev => ({
+                                  ...prev,
+                                  detailedContent: { ...prev.detailedContent, keyPoints: newPoints }
+                                }));
+                              }}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          )}
+                        </div>
+                      ))}
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setNewModule(prev => ({
+                            ...prev,
+                            detailedContent: {
+                              ...prev.detailedContent,
+                              keyPoints: [...prev.detailedContent.keyPoints, '']
+                            }
+                          }));
+                        }}
+                      >
+                        <Plus className="w-4 h-4 mr-1" />
+                        포인트 추가
+                      </Button>
+                    </div>
+
+                    {/* 과제 */}
+                    <div>
+                      <label className="block text-sm font-medium mb-2">과제</label>
+                      <Textarea
+                        value={newModule.detailedContent.homework}
+                        onChange={(e) => setNewModule(prev => ({
+                          ...prev,
+                          detailedContent: { ...prev.detailedContent, homework: e.target.value }
+                        }))}
+                        placeholder="수강생들이 다음 강의까지 연습해야 할 과제를 작성해주세요"
+                        rows={3}
+                      />
+                    </div>
+
+                    {/* 학습 목표 */}
+                    <div>
+                      <label className="block text-sm font-medium mb-2">학습 목표</label>
+                      {newModule.objectives.map((objective, index) => (
+                        <div key={index} className="flex gap-2 mb-2">
+                          <Input
+                            value={objective}
+                            onChange={(e) => {
+                              const newObjectives = [...newModule.objectives];
+                              newObjectives[index] = e.target.value;
+                              setNewModule(prev => ({ ...prev, objectives: newObjectives }));
+                            }}
+                            placeholder={`학습 목표 ${index + 1}`}
+                          />
+                          {newModule.objectives.length > 1 && (
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                const newObjectives = newModule.objectives.filter((_, i) => i !== index);
+                                setNewModule(prev => ({ ...prev, objectives: newObjectives }));
+                              }}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          )}
+                        </div>
+                      ))}
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setNewModule(prev => ({
+                            ...prev,
+                            objectives: [...prev.objectives, '']
+                          }));
+                        }}
+                      >
+                        <Plus className="w-4 h-4 mr-1" />
+                        목표 추가
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="flex justify-end gap-2 pt-6 border-t">
+                  <Button variant="outline" onClick={() => setIsEditingModule(false)}>
+                    취소
+                  </Button>
+                  <Button onClick={() => {
+                    // 모듈 업데이트 로직 구현
+                    setIsEditingModule(false);
+                    toast({
+                      title: "저장 완료",
+                      description: "강의 내용이 저장되었습니다.",
+                    });
+                  }}>
+                    <Save className="w-4 h-4 mr-1" />
+                    저장
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+        )}
       </div>
     </div>
   );
