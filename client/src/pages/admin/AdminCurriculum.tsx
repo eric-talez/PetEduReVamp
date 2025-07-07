@@ -1305,12 +1305,8 @@ export default function AdminCurriculum() {
                 {curriculums.map(curriculum => (
                   <div
                     key={curriculum.id}
-                    onClick={() => setSelectedCurriculum(curriculum)}
-                    className={`p-3 rounded-lg border cursor-pointer transition-colors ${
-                      selectedCurriculum?.id === curriculum.id 
-                        ? 'border-primary bg-primary/5' 
-                        : 'border-gray-200 hover:border-gray-300'
-                    }`}
+                    onClick={() => handlePreviewCurriculum(curriculum)}
+                    className="p-3 rounded-lg border cursor-pointer transition-colors border-gray-200 hover:border-gray-300 hover:shadow-md"
                   >
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
@@ -1336,24 +1332,26 @@ export default function AdminCurriculum() {
                           size="sm"
                           onClick={(e) => {
                             e.stopPropagation();
-                            handlePreviewCurriculum(curriculum);
+                            setSelectedCurriculum(curriculum);
+                            setIsEditing(true);
                           }}
                           className="flex items-center gap-1"
                         >
-                          <Eye className="w-3 h-3" />
-                          미리보기
+                          <Edit className="w-3 h-3" />
+                          수정
                         </Button>
                         <Button 
                           variant="outline" 
                           size="sm"
                           onClick={(e) => {
                             e.stopPropagation();
-                            setSelectedCurriculum(curriculum);
+                            publishCurriculum(curriculum.id);
                           }}
-                          className="flex items-center gap-1"
+                          className="flex items-center gap-1 text-green-600 border-green-300"
+                          disabled={curriculum.status === 'published'}
                         >
-                          <Edit className="w-3 h-3" />
-                          수정
+                          <CheckCircle className="w-3 h-3" />
+                          발행
                         </Button>
                       </div>
                     </div>
@@ -1470,139 +1468,7 @@ export default function AdminCurriculum() {
               </CardContent>
             </Card>
 
-            {/* 선택된 커리큘럼 상세 정보 */}
-            {selectedCurriculum && (
-              <Card className="mt-6">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Eye className="w-5 h-5" />
-                    커리큘럼 상세
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div>
-                      <h3 className="font-semibold text-lg">{selectedCurriculum.title}</h3>
-                      <p className="text-gray-600 mt-1">{selectedCurriculum.description}</p>
-                    </div>
-                    
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-                      <div className="p-3 bg-blue-50 rounded-lg">
-                        <div className="text-2xl font-bold text-blue-600">{selectedCurriculum.modules.length}</div>
-                        <div className="text-sm text-gray-600">모듈 수</div>
-                      </div>
-                      <div className="p-3 bg-green-50 rounded-lg">
-                        <div className="text-2xl font-bold text-green-600">
-                          {selectedCurriculum.modules.reduce((acc, module) => acc + (module.videos?.length || 0), 0)}
-                        </div>
-                        <div className="text-sm text-gray-600">영상 수</div>
-                      </div>
-                      <div className="p-3 bg-purple-50 rounded-lg">
-                        <div className="text-2xl font-bold text-purple-600">{Math.floor(selectedCurriculum.duration / 60)}h</div>
-                        <div className="text-sm text-gray-600">총 시간</div>
-                      </div>
-                      <div className="p-3 bg-orange-50 rounded-lg">
-                        <div className="text-2xl font-bold text-orange-600">{selectedCurriculum.enrollmentCount || 0}</div>
-                        <div className="text-sm text-gray-600">수강생</div>
-                      </div>
-                    </div>
 
-                    <div className="bg-gray-50 rounded-lg p-4">
-                      <h4 className="font-medium mb-3 flex items-center gap-2">
-                        <BookOpen className="w-5 h-5" />
-                        간편 모듈 & 영상 관리
-                      </h4>
-                      <div className="space-y-2">
-                        {selectedCurriculum.modules.map((module, index) => (
-                          <div key={module.id} className="flex items-center justify-between p-3 bg-white rounded-lg border">
-                            <div className="flex-1">
-                              <div className="font-medium">{module.title}</div>
-                              <div className="text-sm text-gray-600 flex items-center gap-3 mt-1">
-                                <span className="flex items-center gap-1">
-                                  <Clock className="w-3 h-3" />
-                                  {module.duration}분
-                                </span>
-                                <span className="flex items-center gap-1">
-                                  <Video className="w-3 h-3" />
-                                  {module.videos?.length || 0}개 영상
-                                </span>
-                              </div>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <Button
-                                onClick={() => {
-                                  const input = document.createElement('input');
-                                  input.type = 'file';
-                                  input.accept = '.mp4,.avi,.mov,.mkv';
-                                  input.onchange = (e) => {
-                                    const file = (e.target as HTMLInputElement).files?.[0];
-                                    if (file) {
-                                      handleVideoUpload(module.id, file);
-                                    }
-                                  };
-                                  input.click();
-                                }}
-                                size="sm"
-                                variant="outline"
-                                className="text-blue-600 border-blue-300"
-                              >
-                                <Upload className="w-4 h-4 mr-1" />
-                                영상 추가
-                              </Button>
-                              <Badge variant={module.videos?.length ? 'default' : 'secondary'}>
-                                {module.videos?.length ? '완료' : '대기'}
-                              </Badge>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* 간단한 완료 프로세스 */}
-                    <div className="bg-gradient-to-r from-green-50 to-blue-50 rounded-lg p-4 mt-4">
-                      <h4 className="font-medium text-green-700 mb-3">✅ 커리큘럼 완성하기</h4>
-                      <div className="space-y-3">
-                        <div className="flex items-center justify-between text-sm">
-                          <span>📚 커리큘럼 정보</span>
-                          <Badge variant="default">완료</Badge>
-                        </div>
-                        <div className="flex items-center justify-between text-sm">
-                          <span>🎥 영상 업로드</span>
-                          <Badge variant={selectedCurriculum.modules.some(m => m.videos?.length) ? 'default' : 'secondary'}>
-                            {selectedCurriculum.modules.some(m => m.videos?.length) ? '완료' : '진행중'}
-                          </Badge>
-                        </div>
-                        <div className="flex items-center justify-between text-sm">
-                          <span>🚀 강의 발행</span>
-                          <Badge variant={selectedCurriculum.status === 'published' ? 'default' : 'secondary'}>
-                            {selectedCurriculum.status === 'published' ? '완료' : '대기중'}
-                          </Badge>
-                        </div>
-                        
-                        <div className="flex gap-2 pt-2">
-                          <Button
-                            onClick={() => handlePreviewCurriculum(selectedCurriculum)}
-                            variant="outline"
-                            className="flex-1"
-                          >
-                            <Eye className="w-4 h-4 mr-2" />
-                            미리보기
-                          </Button>
-                          <Button
-                            onClick={() => publishCurriculum(selectedCurriculum.id)}
-                            className="flex-1 bg-green-600 hover:bg-green-700"
-                            disabled={selectedCurriculum.status === 'published'}
-                          >
-                            <CheckCircle className="w-4 h-4 mr-2" />
-                            {selectedCurriculum.status === 'published' ? '발행완료' : '강의로 발행'}
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
 
             {/* 커리큘럼 편집 모달 */}
             {isEditing && selectedCurriculum && (

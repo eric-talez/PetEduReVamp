@@ -47,6 +47,7 @@ export interface IStorage {
   // 훈련사 관련
   getTrainer(id: number): Promise<any>;
   getAllTrainers(): Promise<any[]>;
+  createTrainer(trainer: any): Promise<any>;
 
   // 위치 관련
   getAllLocations(): Promise<any[]>;
@@ -2784,6 +2785,17 @@ export class MemoryStorage implements IStorage{
         return Array.from(this.trainers.values());
     }
 
+    async createTrainer(trainer: any): Promise<any> {
+        const newTrainer = {
+            ...trainer,
+            id: Date.now(),
+            createdAt: new Date(),
+            updatedAt: new Date()
+        };
+        this.trainers.set(newTrainer.id, newTrainer);
+        return newTrainer;
+    }
+
     async getAllLocations(): Promise<any[]> {
         // 기본 위치 데이터 반환
         return [
@@ -3332,6 +3344,17 @@ export class DatabaseStorage implements IStorage {
 
   async getAllTrainers(): Promise<any[]> {
     return Array.from(this.trainers.values());
+  }
+
+  async createTrainer(trainer: any): Promise<any> {
+    const newTrainer = {
+      ...trainer,
+      id: Date.now(),
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    this.trainers.set(newTrainer.id, newTrainer);
+    return newTrainer;
   }
 
   // 반려동물 관련 메서드 - 임시로 빈 구현

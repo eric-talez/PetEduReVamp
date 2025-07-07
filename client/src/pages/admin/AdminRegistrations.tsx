@@ -92,7 +92,7 @@ export default function AdminRegistrations() {
         },
         body: JSON.stringify({
           status,
-          notes: reviewNotes
+          notes: status === 'pending' ? '상태 초기화됨' : reviewNotes
         })
       });
 
@@ -103,7 +103,7 @@ export default function AdminRegistrations() {
         const statusText = status === 'approved' ? '승인' : 
                           status === 'rejected' ? '거부' : '초기화';
         toast({
-          title: "처리 완료",
+          title: "처리 완료", 
           description: `등록 신청이 ${statusText}되었습니다.`,
           variant: "default"
         });
@@ -499,13 +499,13 @@ function ApplicationDetails({
                 <Label htmlFor="review-notes">검토 의견</Label>
                 <Textarea
                   id="review-notes"
-                  placeholder="승인/거부 사유를 입력하세요..."
+                  placeholder="승인/거부/초기화 사유를 입력하세요..."
                   value={reviewNotes}
                   onChange={(e) => setReviewNotes(e.target.value)}
                   className="mt-1"
                 />
               </div>
-              <div className="flex gap-2">
+              <div className="grid grid-cols-3 gap-2">
                 <Button 
                   onClick={() => onReview(application.id, 'approved')}
                   className="bg-green-600 hover:bg-green-700"
@@ -669,13 +669,13 @@ function ApplicationDetails({
                 <Label htmlFor="review-notes">검토 의견</Label>
                 <Textarea
                   id="review-notes"
-                  placeholder="승인/거부 사유를 입력하세요..."
+                  placeholder="승인/거부/초기화 사유를 입력하세요..."
                   value={reviewNotes}
                   onChange={(e) => setReviewNotes(e.target.value)}
                   className="mt-1"
                 />
               </div>
-              <div className="flex gap-2">
+              <div className="grid grid-cols-3 gap-2">
                 <Button 
                   onClick={() => onReview(application.id, 'approved')}
                   className="bg-green-600 hover:bg-green-700"
