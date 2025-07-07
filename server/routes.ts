@@ -3748,7 +3748,38 @@ app.get('/api/search', async (req, res) => {
         } else if (['.xlsx', '.xls'].includes(fileExtension)) {
           // 엑셀 파일 처리
           try {
-            // 파일 이름에서 커리큘럼 유형 추출
+            // 파일 업로드 완료 후 잠시 대기
+            await new Promise(resolve => setTimeout(resolve, 100));
+            
+            // 파일 존재 확인
+            if (!fs.existsSync(req.file.path)) {
+              throw new Error(`업로드된 파일을 찾을 수 없습니다: ${req.file.path}`);
+            }
+            
+            console.log('[엑셀 파일 처리] 파일 경로:', req.file.path);
+            console.log('[엑셀 파일 처리] 파일 크기:', fs.statSync(req.file.path).size);
+            
+            // 엑셀 파일 읽기
+            const workbook = xlsx.readFile(req.file.path);
+            const sheetNames = workbook.SheetNames;
+            console.log('[엑셀 파일 처리] 시트 이름들:', sheetNames);
+            
+            // 첫 번째 시트 데이터 읽기
+            const firstSheet = workbook.Sheets[sheetNames[0]];
+            const data = xlsx.utils.sheet_to_json(firstSheet, { header: 1, raw: false });
+            
+            console.log('[엑셀 파일 처리] 총 행 수:', data.length);
+            console.log('[엑셀 파일 처리] 첫 5행:', data.slice(0, 5));
+            
+            // 실제 엑셀 데이터에서 커리큘럼 정보 추출
+            extractedData = parseRealExcelContent(data, req.file.originalname);
+            
+            console.log('[엑셀 파일 처리] 추출된 데이터:', extractedData.title);
+            
+          } catch (excelError) {
+            console.error('[엑셀 파일 처리] 오류:', excelError);
+            
+            // 파일명 기반 fallback
             const fileName = req.file.originalname.toLowerCase();
             let curriculumType = '기본훈련';
             let modules = [];
@@ -3898,12 +3929,10 @@ app.get('/api/search', async (req, res) => {
             };
             
             console.log('[엑셀 파일 처리] 성공:', req.file.originalname, '유형:', curriculumType);
-            
-          } catch (excelError) {
-            console.error('[엑셀 파일 처리] 오류:', excelError);
-            
-            // 엑셀 파일 처리 실패 시 기본 데이터 반환
-            extractedData = {
+          }
+        } else {
+          // 기타 파일 형식
+          extractedData = {
               title: '엑셀 기반 커리큘럼',
               description: '엑셀 파일에서 추출된 커리큘럼 내용입니다.',
               category: '기본훈련',
@@ -3930,7 +3959,6 @@ app.get('/api/search', async (req, res) => {
                 }
               ]
             };
-          }
         }
 
         // 파일 정보 반환
@@ -4925,4 +4953,208 @@ app.get('/api/search', async (req, res) => {
   // app.use(errorHandler);
 
   return httpServer;
+}
+
+// 실제 엑셀 파일 내용을 파싱하는 함수
+function parseRealExcelContent(data: any[][], fileName: string) {
+  console.log('[엑셀 파싱] 데이터 분석 시작, 행 수:', data.length);
+  
+  const result = {
+    title: '',
+    description: '',
+    category: '기본훈련',
+    duration: 0,
+    price: 0,
+    modules: [] as any[]
+  };
+  
+  // 파일명에서 기본 정보 추출
+  if (fileName.includes('재활')) {
+    result.category = '재활훈련';
+    result.title = '반려동물 재활 커리큘럼';
+  } else if (fileName.includes('유치원') || fileName.includes('놀이')) {
+    result.category = '유치원놀이';
+    result.title = '즐거운 유치원놀이 교육 커리큘럼';
+  } else if (fileName.includes('클리커')) {
+    result.category = '클리커훈련';
+    result.title = '클리커 트레이닝 커리큘럼';
+  }
+  
+  // 엑셀 데이터에서 모듈 정보 추출
+  let currentModule = null;
+  let moduleIndex = 0;
+  
+  for (let i = 0; i < data.length; i++) {
+    const row = data[i];
+    if (!row || row.length === 0) continue;
+    
+    const firstCell = String(row[0] || '').trim();
+    const secondCell = String(row[1] || '').trim();
+    const thirdCell = String(row[2] || '').trim();
+    
+    console.log(`[엑셀 파싱] 행 ${i}:`, firstCell, '|', secondCell, '|', thirdCell);
+    
+    // 회차/차시 정보 감지
+    if (firstCell.match(/\d+회차|\d+차시|\d+강|주차/)) {
+      if (currentModule) {
+        result.modules.push(currentModule);
+      }
+      
+      moduleIndex++;
+      currentModule = {
+        title: firstCell + (secondCell ? ` - ${secondCell}` : ''),
+        description: thirdCell || secondCell || '상세 설명이 제공됩니다.',
+        duration: 60,
+        objectives: [],
+        content: '',
+        detailedContent: {
+          introduction: '',
+          mainTopics: [],
+          practicalExercises: [],
+          keyPoints: [],
+          homework: '',
+          resources: []
+        },
+        isFree: moduleIndex === 1, // 첫 번째 모듈은 무료
+        price: moduleIndex === 1 ? 0 : Math.floor(Math.random() * 50000) + 50000
+      };
+      
+      console.log('[엑셀 파싱] 새 모듈 생성:', currentModule.title);
+    }
+    // 수업 목표
+    else if (firstCell.includes('목표') || firstCell.includes('학습목표') || firstCell.includes('교육목표')) {
+      if (currentModule && secondCell) {
+        currentModule.objectives.push(secondCell);
+        if (thirdCell) currentModule.objectives.push(thirdCell);
+        console.log('[엑셀 파싱] 목표 추가:', secondCell);
+      }
+    }
+    // 수업 내용
+    else if (firstCell.includes('내용') || firstCell.includes('수업내용') || firstCell.includes('교육내용')) {
+      if (currentModule && secondCell) {
+        currentModule.content = secondCell;
+        if (currentModule.detailedContent) {
+          currentModule.detailedContent.introduction = secondCell;
+        }
+        console.log('[엑셀 파싱] 내용 추가:', secondCell);
+      }
+    }
+    // 주요 주제
+    else if (firstCell.includes('주제') || firstCell.includes('토픽') || firstCell.includes('소주제')) {
+      if (currentModule && secondCell) {
+        if (currentModule.detailedContent) {
+          currentModule.detailedContent.mainTopics.push(secondCell);
+          if (thirdCell) currentModule.detailedContent.mainTopics.push(thirdCell);
+        }
+        console.log('[엑셀 파싱] 주제 추가:', secondCell);
+      }
+    }
+    // 준비물
+    else if (firstCell.includes('준비물') || firstCell.includes('자료') || firstCell.includes('교구')) {
+      if (currentModule && secondCell) {
+        if (currentModule.detailedContent) {
+          currentModule.detailedContent.resources.push(secondCell);
+          if (thirdCell) currentModule.detailedContent.resources.push(thirdCell);
+        }
+        console.log('[엑셀 파싱] 준비물 추가:', secondCell);
+      }
+    }
+    // 실습
+    else if (firstCell.includes('실습') || firstCell.includes('활동') || firstCell.includes('체험')) {
+      if (currentModule && secondCell) {
+        if (currentModule.detailedContent) {
+          currentModule.detailedContent.practicalExercises.push(secondCell);
+          if (thirdCell) currentModule.detailedContent.practicalExercises.push(thirdCell);
+        }
+        console.log('[엑셀 파싱] 실습 추가:', secondCell);
+      }
+    }
+    // 과제
+    else if (firstCell.includes('과제') || firstCell.includes('숙제') || firstCell.includes('피드백')) {
+      if (currentModule && secondCell) {
+        if (currentModule.detailedContent) {
+          currentModule.detailedContent.homework = secondCell;
+        }
+        console.log('[엑셀 파싱] 과제 추가:', secondCell);
+      }
+    }
+    // 시간/분
+    else if (firstCell.includes('시간') || firstCell.includes('분') || firstCell.includes('소요시간')) {
+      if (currentModule && secondCell) {
+        const duration = parseInt(secondCell.replace(/[^0-9]/g, ''));
+        if (duration > 0) {
+          currentModule.duration = duration;
+          console.log('[엑셀 파싱] 시간 설정:', duration);
+        }
+      }
+    }
+    // 일반적인 데이터 추가 (현재 모듈이 있고 내용이 있는 경우)
+    else if (currentModule && secondCell && !firstCell.includes('번호') && !firstCell.includes('구분')) {
+      // 내용이 비어있으면 추가
+      if (!currentModule.content && secondCell.length > 5) {
+        currentModule.content = secondCell;
+        console.log('[엑셀 파싱] 일반 내용 추가:', secondCell);
+      }
+      // 목표가 없으면 추가
+      if (currentModule.objectives.length === 0 && secondCell.length > 3) {
+        currentModule.objectives.push(secondCell);
+        console.log('[엑셀 파싱] 일반 목표 추가:', secondCell);
+      }
+    }
+  }
+  
+  // 마지막 모듈 추가
+  if (currentModule) {
+    result.modules.push(currentModule);
+  }
+  
+  // 기본값 설정 (모듈이 없는 경우)
+  if (result.modules.length === 0) {
+    console.log('[엑셀 파싱] 모듈을 찾지 못함, 엑셀 데이터 기반 기본 모듈 생성');
+    
+    // 엑셀에서 텍스트 데이터라도 추출해보기
+    const allTexts = [];
+    for (let i = 0; i < Math.min(data.length, 20); i++) {
+      const row = data[i];
+      if (row) {
+        for (let j = 0; j < Math.min(row.length, 5); j++) {
+          const cell = String(row[j] || '').trim();
+          if (cell && cell.length > 3 && !cell.includes('undefined')) {
+            allTexts.push(cell);
+          }
+        }
+      }
+    }
+    
+    result.modules = [
+      {
+        title: '1회차 - 엑셀 기반 교육',
+        description: allTexts.length > 0 ? allTexts[0] : '엑셀에서 추출된 교육 과정입니다.',
+        duration: 60,
+        objectives: allTexts.slice(1, 4).length > 0 ? allTexts.slice(1, 4) : ['기본 학습 목표'],
+        content: allTexts.slice(4, 6).join(' ') || '엑셀 파일 내용 기반 수업',
+        detailedContent: {
+          introduction: allTexts.slice(0, 2).join(' ') || '엑셀 파일에서 추출된 내용입니다.',
+          mainTopics: allTexts.slice(2, 5).length > 0 ? allTexts.slice(2, 5) : ['주요 학습 내용'],
+          practicalExercises: allTexts.slice(5, 8).length > 0 ? allTexts.slice(5, 8) : ['실습 활동'],
+          keyPoints: allTexts.slice(8, 11).length > 0 ? allTexts.slice(8, 11) : ['핵심 포인트'],
+          homework: allTexts.slice(11, 13).join(' ') || '과제 내용',
+          resources: allTexts.slice(13, 16).length > 0 ? allTexts.slice(13, 16) : ['학습 자료']
+        },
+        isFree: true,
+        price: 0
+      }
+    ];
+    
+    console.log('[엑셀 파싱] 추출된 텍스트 수:', allTexts.length);
+  }
+  
+  // 총 시간 및 가격 계산
+  result.duration = result.modules.reduce((total, module) => total + module.duration, 0);
+  result.price = result.modules.reduce((total, module) => total + (module.price || 0), 0);
+  result.description = `${result.modules.length}개 모듈로 구성된 전문 교육 과정`;
+  
+  console.log('[엑셀 파싱] 완료 - 모듈 수:', result.modules.length, '총 시간:', result.duration);
+  
+  return result;
 }
