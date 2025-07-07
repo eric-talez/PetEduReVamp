@@ -817,15 +817,35 @@ export default function AdminCurriculum() {
     }
   };
 
+  // 파일 선택 상태
+  const [selectedFiles, setSelectedFiles] = useState<FileList | null>(null);
+  const [showFileSelector, setShowFileSelector] = useState(false);
+
   // 첨부된 파일들을 자동으로 커리큘럼으로 등록하는 함수
-  const handleAutoRegister = async () => {
+  const handleAutoRegister = () => {
+    setShowFileSelector(true);
+  };
+
+  // 실제 파일 등록 처리
+  const processAutoRegister = async () => {
+    if (!selectedFiles || selectedFiles.length === 0) {
+      toast({
+        title: "파일 선택 필요",
+        description: "등록할 파일을 선택해주세요.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     try {
+      const formData = new FormData();
+      for (let i = 0; i < selectedFiles.length; i++) {
+        formData.append('files', selectedFiles[i]);
+      }
+
       const response = await fetch('/api/admin/curriculum/auto-register', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        }
+        body: formData
       });
       
       if (!response.ok) {
@@ -843,6 +863,8 @@ export default function AdminCurriculum() {
         
         // 커리큘럼 목록 새로고침
         loadCurriculums();
+        setShowFileSelector(false);
+        setSelectedFiles(null);
       } else {
         throw new Error(data.message || '자동 등록에 실패했습니다.');
       }
@@ -1754,7 +1776,7 @@ export default function AdminCurriculum() {
                             </div>
                             {curriculum.lastSaleDate && (
                               <div className="mt-2 text-xs text-gray-500">
-                                마지막 판매: {curriculum.lastSaleDate.toLocaleDateString()}
+                                마지막 판매: {curriculum.lastSaleDate ? (typeof curriculum.lastSaleDate === 'string' ? new Date(curriculum.lastSaleDate).toLocaleDateString() : curriculum.lastSaleDate.toLocaleDateString()) : '미판매'}
                               </div>
                             )}
                           </div>
