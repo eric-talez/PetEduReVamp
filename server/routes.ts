@@ -39,7 +39,119 @@ import { WorkflowEngine } from './workflow-engine';
 import { uploadDocuments } from './middleware/upload';
 import xlsx from 'xlsx';
 
-// 엑셀 파일에서 커리큘럼 정보 추출 함수
+// 유료/무료 정보를 포함한 엑셀 파일에서 커리큘럼 정보 추출 함수
+function parseExcelCurriculumWithPricing(data: any[], filename: string) {
+  try {
+    let title = filename;
+    let description = "";
+    let category = "전문교육";
+    let difficulty = "intermediate";
+    let duration = 480;
+    let price = 400000;
+    let modules: any[] = [];
+
+    // 첫 번째 행에서 제목 찾기
+    if (data.length > 0 && data[0] && data[0][0]) {
+      title = String(data[0][0]).trim();
+    }
+
+    // 기본 정보 추출
+    for (let i = 0; i < Math.min(data.length, 10); i++) {
+      const row = data[i];
+      if (!row || !row[0]) continue;
+
+      const cellValue = String(row[0]).trim();
+      if (cellValue.includes('설명') || cellValue.includes('description')) {
+        description = row[1] ? String(row[1]).trim() : description;
+      } else if (cellValue.includes('카테고리') || cellValue.includes('category')) {
+        category = row[1] ? String(row[1]).trim() : category;
+      } else if (cellValue.includes('가격') || cellValue.includes('price')) {
+        const priceValue = row[1] ? String(row[1]).trim() : '';
+        const parsedPrice = parseInt(priceValue.replace(/[^\d]/g, ''));
+        if (!isNaN(parsedPrice)) price = parsedPrice;
+      }
+    }
+
+    // 강의 구성 테이블 찾기
+    let moduleTableStart = -1;
+    for (let i = 0; i < data.length; i++) {
+      const row = data[i];
+      if (row && row[0] && String(row[0]).includes('회차')) {
+        moduleTableStart = i + 1;
+        break;
+      }
+    }
+
+    // 모듈 정보 추출 (유료/무료 정보 포함)
+    if (moduleTableStart > 0) {
+      let moduleIndex = 1;
+      for (let i = moduleTableStart; i < Math.min(data.length, moduleTableStart + 20); i++) {
+        const row = data[i];
+        if (!row || !row[1]) continue;
+
+        const moduleTitle = String(row[1]).trim();
+        const moduleDescription = row[2] ? String(row[2]).trim() : `${moduleTitle}에 대한 상세 내용`;
+        const moduleDuration = row[3] ? parseInt(String(row[3]).replace(/[^\d]/g, '')) || 60 : 60;
+        const isFreeText = row[4] ? String(row[4]).trim().toLowerCase() : 'n';
+        const isFree = isFreeText === 'y' || isFreeText === 'yes' || isFreeText === '무료';
+        const modulePrice = row[5] && !isFree ? parseInt(String(row[5]).replace(/[^\d]/g, '')) || 0 : 0;
+
+        if (moduleTitle && moduleTitle.length > 1) {
+          modules.push({
+            id: `module_${moduleIndex}_${Date.now()}`,
+            title: moduleTitle,
+            description: moduleDescription,
+            order: moduleIndex,
+            duration: moduleDuration,
+            objectives: [moduleDescription],
+            content: `${moduleTitle}에 대한 전문적인 교육 내용`,
+            videos: [],
+            isRequired: true,
+            isFree: isFree,
+            price: modulePrice
+          });
+          
+          moduleIndex++;
+          if (moduleIndex > 10) break;
+        }
+      }
+    }
+
+    // 기본 모듈이 없으면 4개 생성
+    if (modules.length === 0) {
+      for (let i = 1; i <= 4; i++) {
+        modules.push({
+          id: `module_${i}_${Date.now()}`,
+          title: `${i}강. ${title} - 모듈 ${i}`,
+          description: `${title}의 ${i}번째 모듈`,
+          order: i,
+          duration: Math.floor(duration / 4),
+          objectives: [`모듈 ${i} 학습 목표`],
+          content: `${title}에 대한 전문적인 교육 내용 - 모듈 ${i}`,
+          videos: [],
+          isRequired: true,
+          isFree: i === 1,
+          price: i === 1 ? 0 : Math.floor(price / 4)
+        });
+      }
+    }
+
+    return {
+      title,
+      description: description || `${title}에 대한 전문 교육 과정`,
+      category,
+      difficulty,
+      duration,
+      price,
+      modules
+    };
+  } catch (error) {
+    console.error('[엑셀 파싱] 오류:', error);
+    return null;
+  }
+}
+
+// 기존 엑셀 파일에서 커리큘럼 정보 추출 함수 (호환성 유지)
 function parseExcelCurriculum(data: any[], filename: string) {
   try {
     // 엑셀 데이터 분석
@@ -92,7 +204,9 @@ function parseExcelCurriculum(data: any[], filename: string) {
           objectives: moduleContent ? [moduleContent] : [`${moduleTitle} 학습`],
           content: moduleContent || `${moduleTitle}에 대한 전문적인 교육 내용`,
           videos: [],
-          isRequired: true
+          isRequired: true,
+          isFree: moduleIndex === 1, // 첫 번째 모듈은 무료
+          price: moduleIndex === 1 ? 0 : Math.floor(price / 8) // 유료 모듈은 개별 가격
         });
         
         moduleIndex++;
@@ -112,7 +226,9 @@ function parseExcelCurriculum(data: any[], filename: string) {
           objectives: [`모듈 ${i} 학습 목표`],
           content: `${title}에 대한 전문적인 교육 내용 - 모듈 ${i}`,
           videos: [],
-          isRequired: true
+          isRequired: true,
+          isFree: i === 1, // 첫 번째 모듈은 무료
+          price: i === 1 ? 0 : Math.floor(price / 4) // 유료 모듈은 개별 가격
         });
       }
     }
@@ -3761,6 +3877,49 @@ app.get('/api/search', async (req, res) => {
     }
   });
 
+  // 커리큘럼 양식 다운로드 API
+  app.get('/api/admin/curriculum/template/download', async (req, res) => {
+    try {
+      const workbook = xlsx.utils.book_new();
+      
+      const basicInfoData = [
+        ['TALEZ 커리큘럼 작성 양식'],
+        [''],
+        ['커리큘럼 제목', '예: 반려견 기초 복종훈련 과정'],
+        ['커리큘럼 설명', '예: 반려견의 기본적인 복종 훈련을 위한 체계적인 교육 과정'],
+        ['카테고리', '예: 기초훈련 / 행동교정 / 재활치료 / 전문교육'],
+        ['난이도', '예: beginner / intermediate / advanced'],
+        ['총 소요시간(분)', '예: 480'],
+        ['가격(원)', '예: 300000'],
+        [''],
+        ['강의 구성'],
+        ['회차', '강의명', '설명', '소요시간(분)', '무료여부(Y/N)', '개별가격'],
+        ['1강', '기본 개념과 이론', '반려견 훈련의 기초 이론 학습', '60', 'Y', '0'],
+        ['2강', '실전 훈련법 1단계', '앉기, 기다려 등 기본 명령 훈련', '90', 'N', '50000'],
+        ['3강', '실전 훈련법 2단계', '산책 예절과 사회화 훈련', '90', 'N', '50000'],
+        ['4강', '문제행동 교정', '짖기, 물기 등 문제행동 해결법', '120', 'N', '80000'],
+        ['5강', '심화 훈련', '고급 명령과 트릭 훈련', '120', 'N', '120000'],
+        [''],
+        ['작성 안내'],
+        ['- 각 강의명에는 "강", "모듈", "차시", "주차" 등의 키워드를 포함해주세요'],
+        ['- 무료여부: Y(무료) 또는 N(유료)으로 표시'],
+        ['- 개별가격: 유료 강의의 경우 해당 강의만의 가격을 입력'],
+        ['- 재활 관련 커리큘럼의 경우 파일명에 "재활"을 포함해주세요']
+      ];
+      
+      const basicInfoSheet = xlsx.utils.aoa_to_sheet(basicInfoData);
+      xlsx.utils.book_append_sheet(workbook, basicInfoSheet, '커리큘럼 기본정보');
+      
+      const buffer = xlsx.write(workbook, { type: 'buffer', bookType: 'xlsx' });
+      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+      res.setHeader('Content-Disposition', 'attachment; filename="TALEZ_커리큘럼_작성양식.xlsx"');
+      res.send(buffer);
+    } catch (error) {
+      console.error('[양식 다운로드] 오류:', error);
+      res.status(500).json({ error: '양식 생성 중 오류가 발생했습니다.' });
+    }
+  });
+
   // 첨부된 파일들을 자동으로 커리큘럼으로 등록하는 API
   app.post("/api/admin/curriculum/auto-register", requireAuth('admin'), (req, res) => {
     // 문서 파일 업로드용 multer 사용
@@ -3835,7 +3994,7 @@ app.get('/api/search', async (req, res) => {
             modules: [] as any[]
           };
 
-          // 엑셀 파일 처리
+          // 엑셀 파일 처리 (유료/무료 정보 포함)
           if (fileExtension === '.xlsx' || fileExtension === '.xls') {
             try {
               const workbook = xlsx.readFile(file.path);
@@ -3845,8 +4004,8 @@ app.get('/api/search', async (req, res) => {
               
               console.log(`[엑셀 처리] 시트명: ${sheetName}, 행 수: ${data.length}`);
               
-              // 엑셀 데이터에서 커리큘럼 정보 추출
-              const excelData = parseExcelCurriculum(data, originalName);
+              // 엑셀 데이터에서 커리큘럼 정보 추출 (유료/무료 설정 포함)
+              const excelData = parseExcelCurriculumWithPricing(data, originalName);
               if (excelData) {
                 extractedData = { ...extractedData, ...excelData };
                 console.log(`[엑셀 처리] 추출된 데이터:`, excelData.title);
@@ -3913,7 +4072,9 @@ app.get('/api/search', async (req, res) => {
               objectives: ["기본 개념 이해", "이론적 배경 학습"],
               content: "강의 내용이 여기에 들어갑니다.",
               videos: [],
-              isRequired: true
+              isRequired: true,
+              isFree: true,
+              price: 0
             },
             {
               id: `module_2_${Date.now()}`,
@@ -3924,7 +4085,9 @@ app.get('/api/search', async (req, res) => {
               objectives: ["실전 기법 습득", "사례 분석"],
               content: "실습 중심의 강의 내용입니다.",
               videos: [],
-              isRequired: true
+              isRequired: true,
+              isFree: false,
+              price: Math.floor(extractedData.price * 0.3)
             },
             {
               id: `module_3_${Date.now()}`,
@@ -3935,7 +4098,9 @@ app.get('/api/search', async (req, res) => {
               objectives: ["고급 기법 습득", "문제 해결 능력 향상"],
               content: "심화 과정 강의 내용입니다.",
               videos: [],
-              isRequired: true
+              isRequired: true,
+              isFree: false,
+              price: Math.floor(extractedData.price * 0.3)
             },
             {
               id: `module_4_${Date.now()}`,
@@ -3946,7 +4111,9 @@ app.get('/api/search', async (req, res) => {
               objectives: ["종합 정리", "최종 실습"],
               content: "종합 정리 및 평가 내용입니다.",
               videos: [],
-              isRequired: true
+              isRequired: true,
+              isFree: false,
+              price: Math.floor(extractedData.price * 0.4)
             }
           ],
           status: 'published',

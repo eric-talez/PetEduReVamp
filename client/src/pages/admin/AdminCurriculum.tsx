@@ -28,7 +28,17 @@ import {
   XCircle,
   AlertCircle,
   Package,
-  Settings
+  Settings,
+  Download,
+  Lock,
+  Unlock,
+  Calendar,
+  DollarSign,
+  TrendingUp,
+  GraduationCap,
+  Award,
+  ChevronRight,
+  ChevronDown
 } from 'lucide-react';
 
 interface CurriculumData {
@@ -75,6 +85,8 @@ interface ModuleData {
   };
   videos: VideoData[];
   isRequired: boolean;
+  isFree?: boolean;
+  price?: number;
 }
 
 interface VideoData {
@@ -147,6 +159,68 @@ export default function AdminCurriculum() {
   const [showCreationWizard, setShowCreationWizard] = useState(false);
   
   const { toast } = useToast();
+
+  // 양식 다운로드 함수
+  const handleDownloadTemplate = async () => {
+    try {
+      const response = await fetch('/api/admin/curriculum/template/download');
+      
+      if (!response.ok) {
+        throw new Error('양식 다운로드에 실패했습니다.');
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'TALEZ_커리큘럼_작성양식.xlsx';
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+
+      toast({
+        title: "양식 다운로드 완료",
+        description: "표준 커리큘럼 작성 양식이 다운로드되었습니다.",
+      });
+    } catch (error) {
+      console.error('양식 다운로드 오류:', error);
+      toast({
+        title: "다운로드 실패",
+        description: "양식 다운로드 중 오류가 발생했습니다.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // 모듈 가격 설정 함수
+  const handleModulePriceUpdate = (curriculumId: string, moduleId: string, isFree: boolean, price: number = 0) => {
+    setCurriculums(prev => 
+      prev.map(curriculum => {
+        if (curriculum.id === curriculumId) {
+          return {
+            ...curriculum,
+            modules: curriculum.modules.map(module => {
+              if (module.id === moduleId) {
+                return {
+                  ...module,
+                  isFree: isFree,
+                  price: isFree ? 0 : price
+                };
+              }
+              return module;
+            })
+          };
+        }
+        return curriculum;
+      })
+    );
+        
+    toast({
+      title: "가격 설정 완료",
+      description: `모듈이 ${isFree ? '무료' : `${price.toLocaleString()}원`}로 설정되었습니다.`,
+    });
+  };
 
   // 쉬운 커리큘럼 생성을 위한 마법사 함수들
   const resetCreationForm = () => {
@@ -1223,7 +1297,18 @@ export default function AdminCurriculum() {
                 <div className="text-center">
                   <Package className="w-6 h-6 mx-auto mb-2 text-green-600" />
                   <div className="font-semibold text-green-700">파일 업로드</div>
-                  <div className="text-xs text-green-600">HWP/HWPX 자동 분석</div>
+                  <div className="text-xs text-green-600">HWP/HWPX/XLSX 자동 분석</div>
+                </div>
+              </Button>
+              <Button 
+                onClick={handleDownloadTemplate}
+                variant="outline" 
+                className="h-20 border-2 border-blue-300 hover:bg-blue-50"
+              >
+                <div className="text-center">
+                  <Download className="w-6 h-6 mx-auto mb-2 text-blue-600" />
+                  <div className="font-semibold text-blue-700">양식 다운로드</div>
+                  <div className="text-xs text-blue-600">엑셀 표준 양식</div>
                 </div>
               </Button>
             </div>
