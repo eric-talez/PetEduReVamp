@@ -1,20 +1,41 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "wouter";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { Search, Filter, SlidersHorizontal, Star } from "lucide-react";
+import { Search, Filter, SlidersHorizontal, Star, BookOpen } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 interface CoursesPageProps {
   mode?: 'view' | 'create' | 'edit';
   userType?: string;
 }
 
+interface Course {
+  id: string;
+  title: string;
+  description: string;
+  price: number;
+  difficulty: 'beginner' | 'intermediate' | 'advanced';
+  category: string;
+  duration: number;
+  modules: any[];
+  trainerName: string;
+  status: 'draft' | 'published' | 'archived';
+  enrollmentCount?: number;
+  averageRating?: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export default function Courses(props?: CoursesPageProps) {
   const { mode = 'view', userType } = props || {};
   const [filter, setFilter] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
 
   // 수강 신청 처리 함수
   const handleEnrollment = async (courseId: number) => {
@@ -50,143 +71,112 @@ export default function Courses(props?: CoursesPageProps) {
   };
 
   // 강좌 참여하기 핸들러
-  const handleJoinCourse = (courseId: number) => {
+  const handleJoinCourse = (courseId: string) => {
     console.log('강좌 참여하기 클릭:', courseId);
     // 로그인 체크 후 수강 신청 프로세스 시작
-    handleEnrollment(courseId);
+    handleEnrollment(parseInt(courseId));
   };
 
   // 미리보기 핸들러
-  const handlePreview = (courseId: number) => {
+  const handlePreview = (courseId: string) => {
     console.log('미리보기 클릭:', courseId);
     window.location.href = `/courses/${courseId}/preview`;
   };
 
-  const courses = [
-    {
-      id: 1,
-      title: "반려견 기초 훈련 마스터하기",
-      description: "앉아, 기다려, 엎드려 등 기본 명령어부터 산책 예절까지 체계적으로 배우는 초보 견주 필수 코스",
-      image: "https://images.unsplash.com/photo-1535930891776-0c2dfb7fda1a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=350",
-      price: "89,000원",
-      trainer: {
-        name: "김훈련 트레이너",
-        avatar: "https://images.unsplash.com/photo-1607990281513-2c110a25bd8c?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100"
-      },
-      rating: 4.8,
-      reviews: 45,
-      popular: true,
-      level: "초급",
-      category: "기본 훈련"
-    },
-    {
-      id: 2,
-      title: "반려견 어질리티 입문",
-      description: "다양한 장애물 코스를 통해 반려견의 민첩성과 집중력을 향상시키는 어질리티 훈련 기초 과정",
-      image: "https://images.unsplash.com/photo-1583336663277-620dc1996580?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=350",
-      price: "120,000원",
-      trainer: {
-        name: "박민첩 트레이너",
-        avatar: "https://images.unsplash.com/photo-1548535537-3cfaf1fc327c?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100"
-      },
-      rating: 4.6,
-      reviews: 28,
-      level: "중급",
-      category: "활동 훈련"
-    },
-    {
-      id: 3,
-      title: "반려견 사회화 훈련",
-      description: "다른 반려견, 사람, 환경에 올바르게 적응하는 방법을 배우는 필수 사회화 과정",
-      image: "https://images.unsplash.com/photo-1548199973-03cce0bbc87b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=350",
-      price: "75,000원",
-      trainer: {
-        name: "이사회 트레이너",
-        avatar: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100"
-      },
-      rating: 4.9,
-      reviews: 36,
-      level: "초급",
-      category: "사회화"
-    },
-    {
-      id: 4,
-      title: "분리불안 극복하기",
-      description: "혼자 있는 시간을 두려워하는 반려견을 위한 단계별 행동 교정 프로그램",
-      image: "https://images.unsplash.com/photo-1583512603806-077998240c7a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=350",
-      price: "89,000원",
-      trainer: {
-        name: "최행동 트레이너",
-        avatar: "https://images.unsplash.com/photo-1599566150163-29194dcaad36?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100"
-      },
-      rating: 4.7,
-      reviews: 22,
-      level: "중급",
-      category: "행동 교정"
-    },
-    {
-      id: 5,
-      title: "재미있는 트릭 훈련",
-      description: "하이파이브부터 점프, 회전까지 반려견의 두뇌를 자극하는 다양한 트릭 교육",
-      image: "https://images.unsplash.com/photo-1587300003388-59208cc962cb?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=350",
-      price: "69,000원",
-      trainer: {
-        name: "박재미 트레이너",
-        avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100"
-      },
-      rating: 4.5,
-      reviews: 19,
-      popular: true,
-      level: "모든 레벨",
-      category: "트릭 훈련"
-    },
-    {
-      id: 6,
-      title: "반려견 심리 케어",
-      description: "반려견의 행동 패턴을 이해하고 심리적 안정을 돕는 전문 케어 과정",
-      image: "https://images.unsplash.com/photo-1601758177266-bc599de87707?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=350",
-      price: "79,000원",
-      trainer: {
-        name: "김심리 트레이너",
-        avatar: "https://images.unsplash.com/photo-1546961329-78bef0414d7c?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100"
-      },
-      rating: 4.8,
-      reviews: 31,
-      level: "중급",
-      category: "심리 케어"
-    },
-    {
-      id: 7,
-      title: "산책 예절 마스터",
-      description: "끌기, 짖기 없이 즐거운 산책을 위한 리드 훈련 및 외부 환경 적응법",
-      image: "https://images.unsplash.com/photo-1551730459-92db2a308d6a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=350",
-      price: "59,000원",
-      trainer: {
-        name: "이산책 트레이너",
-        avatar: "https://images.unsplash.com/photo-1531427186611-ecfd6d936c79?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100"
-      },
-      rating: 4.6,
-      reviews: 24,
-      popular: true,
-      level: "초급",
-      category: "기본 훈련"
-    },
-    {
-      id: 8,
-      title: "반려견 노즈워크 기초",
-      description: "후각을 활용한 놀이와 훈련으로 반려견의 지능을 발달시키는 노즈워크 입문 과정",
-      image: "https://images.unsplash.com/photo-1591946614720-90a587da4a36?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=350",
-      price: "68,000원",
-      trainer: {
-        name: "박후각 트레이너",
-        avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100"
-      },
-      rating: 4.7,
-      reviews: 17,
-      level: "초급",
-      category: "특수 훈련"
+  // 실제 등록된 커리큘럼에서 발행된 강의만 조회
+  const fetchPublishedCourses = async () => {
+    try {
+      setLoading(true);
+      console.log('🔥 강의 찾기 - 발행된 강의 목록 조회 시작');
+      
+      const response = await fetch('/api/admin/curriculums');
+      if (response.ok) {
+        const data = await response.json();
+        console.log('🔥 커리큘럼 데이터:', data);
+        
+        // 발행된 상태의 커리큘럼만 필터링하여 강의 형태로 변환
+        const publishedCourses = data.curriculums
+          .filter((curriculum: any) => curriculum.status === 'published')
+          .map((curriculum: any) => ({
+            id: curriculum.id,
+            title: curriculum.title,
+            description: curriculum.description,
+            price: curriculum.price || 0,
+            difficulty: curriculum.difficulty || 'beginner',
+            category: curriculum.category || '기본 훈련',
+            duration: curriculum.duration || 0,
+            modules: curriculum.modules || [],
+            trainerName: curriculum.trainerName || '전문 훈련사',
+            status: curriculum.status,
+            enrollmentCount: curriculum.enrollmentCount || 0,
+            averageRating: curriculum.averageRating || 0,
+            createdAt: curriculum.createdAt || new Date().toISOString(),
+            updatedAt: curriculum.updatedAt || new Date().toISOString()
+          }));
+        
+        console.log('🔥 발행된 강의 목록:', publishedCourses);
+        setCourses(publishedCourses);
+      } else {
+        console.error('🔥 커리큘럼 API 응답 실패:', response.status);
+        toast({
+          title: "오류",
+          description: "강의 목록을 불러오는데 실패했습니다.",
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      console.error('🔥 강의 데이터 로딩 실패:', error);
+      toast({
+        title: "오류",
+        description: "강의 목록을 불러오는데 실패했습니다.",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
     }
-  ];
+  };
+
+  useEffect(() => {
+    fetchPublishedCourses();
+  }, []);
+
+  // 필터링된 강의 목록
+  const filteredCourses = courses.filter(course => {
+    const matchesSearch = course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         course.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         course.trainerName.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    if (filter === "all") return matchesSearch;
+    if (filter === "beginner") return matchesSearch && course.difficulty === "beginner";
+    if (filter === "intermediate") return matchesSearch && course.difficulty === "intermediate";
+    if (filter === "advanced") return matchesSearch && course.difficulty === "advanced";
+    
+    return matchesSearch && course.category === filter;
+  });
+
+  const getDifficultyBadge = (difficulty: string) => {
+    switch (difficulty) {
+      case 'beginner':
+        return <Badge variant="success">초급</Badge>;
+      case 'intermediate':
+        return <Badge className="bg-blue-500 text-white">중급</Badge>;
+      case 'advanced':
+        return <Badge variant="destructive">고급</Badge>;
+      default:
+        return <Badge variant="secondary">미설정</Badge>;
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="container mx-auto p-6">
+        <div className="text-center py-12">
+          <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
+          <p className="text-gray-500">강의 목록을 불러오는 중...</p>
+        </div>
+      </div>
+    );
+  }
 
   // 검색 기능
   const handleSearch = () => {
@@ -197,19 +187,6 @@ export default function Courses(props?: CoursesPageProps) {
     setSearchTerm(e.target.value);
     console.log('검색어 변경:', e.target.value);
   };
-
-  // 실시간 검색 및 필터링
-  const filteredCourses = courses.filter(course => {
-    const matchesSearch = !searchTerm || 
-      course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      course.description.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesFilter = filter === 'all' || 
-      course.level === filter ||
-      course.category === filter;
-    
-    return matchesSearch && matchesFilter;
-  });
 
   return (
     <div className="py-8 px-4 sm:px-6 lg:px-8">
@@ -267,21 +244,30 @@ export default function Courses(props?: CoursesPageProps) {
         </Button>
 
         <Button
-          variant={filter === "초급" ? "default" : "outline"}
+          variant={filter === "beginner" ? "default" : "outline"}
           size="sm"
-          onClick={() => setFilter("초급")}
+          onClick={() => setFilter("beginner")}
           className="text-xs"
         >
           초급
         </Button>
 
         <Button
-          variant={filter === "중급" ? "default" : "outline"}
+          variant={filter === "intermediate" ? "default" : "outline"}
           size="sm"
-          onClick={() => setFilter("중급")}
+          onClick={() => setFilter("intermediate")}
           className="text-xs"
         >
           중급
+        </Button>
+
+        <Button
+          variant={filter === "advanced" ? "default" : "outline"}
+          size="sm"
+          onClick={() => setFilter("advanced")}
+          className="text-xs"
+        >
+          고급
         </Button>
 
         <Button
@@ -291,24 +277,6 @@ export default function Courses(props?: CoursesPageProps) {
           className="text-xs"
         >
           기본 훈련
-        </Button>
-
-        <Button
-          variant={filter === "사회화" ? "default" : "outline"}
-          size="sm"
-          onClick={() => setFilter("사회화")}
-          className="text-xs"
-        >
-          사회화
-        </Button>
-
-        <Button
-          variant={filter === "행동 교정" ? "default" : "outline"}
-          size="sm"
-          onClick={() => setFilter("행동 교정")}
-          className="text-xs"
-        >
-          행동 교정
         </Button>
 
         <Button
@@ -323,68 +291,83 @@ export default function Courses(props?: CoursesPageProps) {
 
       {/* Course Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {filteredCourses.map((course) => (
-          <Card key={course.id} className="overflow-hidden border border-gray-100 dark:border-gray-700 hover:shadow-md transition-shadow">
-            <div className="relative h-40">
-              <img 
-                src={course.image} 
-                alt={course.title} 
-                className="w-full h-full object-cover"
-              />
-              {course.popular && (
-                <Badge variant="warning" className="absolute top-2 right-2">
-                  인기
-                </Badge>
-              )}
-            </div>
-            <div className="p-5">
-              <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-1">{course.title}</h3>
-
-              <div className="flex items-center mb-2">
-                <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
-                <span className="text-sm text-gray-700 dark:text-gray-300 ml-1 mr-2">
-                  {course.rating}
-                </span>
-                <span className="text-xs text-gray-500 dark:text-gray-400">
-                  ({course.reviews} 후기)
-                </span>
-
-                <Badge variant={
-                  course.level === "초급" ? "success" : 
-                  course.level === "중급" ? "info" : "secondary"
-                } className="ml-auto">
-                  {course.level}
+        {filteredCourses.length > 0 ? (
+          filteredCourses.map((course) => (
+            <Card key={course.id} className="overflow-hidden border border-gray-100 dark:border-gray-700 hover:shadow-md transition-shadow">
+              <div className="relative h-40 bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+                <BookOpen className="w-16 h-16 text-blue-400" />
+                <Badge variant="default" className="absolute top-2 right-2">
+                  발행됨
                 </Badge>
               </div>
+              <div className="p-5">
+                <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-1">{course.title}</h3>
 
-              <p className="text-sm text-gray-600 dark:text-gray-300 mb-4 line-clamp-2">
-                {course.description}
-              </p>
+                <div className="flex items-center mb-2">
+                  <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
+                  <span className="text-sm text-gray-700 dark:text-gray-300 ml-1 mr-2">
+                    {course.averageRating || 0}
+                  </span>
+                  <span className="text-xs text-gray-500 dark:text-gray-400">
+                    ({course.enrollmentCount || 0} 수강생)
+                  </span>
 
-              <div className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <Avatar className="w-7 h-7">
-                    <AvatarImage src={course.trainer.avatar} alt={course.trainer.name} />
-                    <AvatarFallback>{course.trainer.name.charAt(0)}</AvatarFallback>
-                  </Avatar>
-                  <span className="ml-2 text-xs text-gray-700 dark:text-gray-300">{course.trainer.name}</span>
+                  <div className="ml-auto">
+                    {getDifficultyBadge(course.difficulty)}
+                  </div>
                 </div>
 
-                <span className="font-medium text-sm text-accent">{course.price}</span>
+                <p className="text-sm text-gray-600 dark:text-gray-300 mb-4 line-clamp-2">
+                  {course.description}
+                </p>
+
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <Avatar className="w-7 h-7">
+                      <AvatarFallback>{course.trainerName.charAt(0)}</AvatarFallback>
+                    </Avatar>
+                    <span className="ml-2 text-xs text-gray-700 dark:text-gray-300">{course.trainerName}</span>
+                  </div>
+
+                  <span className="font-medium text-sm text-primary">{course.price.toLocaleString()}원</span>
+                </div>
+
+                <div className="mt-3 text-xs text-gray-500">
+                  <span>{Math.floor(course.duration / 60)}시간 {course.duration % 60}분</span>
+                  <span className="mx-2">•</span>
+                  <span>{course.modules.length}개 모듈</span>
+                  <span className="mx-2">•</span>
+                  <span>{course.category}</span>
+                </div>
               </div>
-            </div>
-            <div className="bg-gray-50 dark:bg-gray-700/50 px-5 py-3 border-t border-gray-100 dark:border-gray-700">
-              <Link href={`/course/${course.id}`}>
-                <Button 
-                  variant="link" 
-                  className="text-sm font-medium text-primary hover:text-primary/80 p-0"
-                >
-                  자세히 보기
-                </Button>
-              </Link>
-            </div>
-          </Card>
-        ))}
+              <div className="bg-gray-50 dark:bg-gray-700/50 px-5 py-3 border-t border-gray-100 dark:border-gray-700">
+                <div className="flex gap-2">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    className="flex-1 text-xs"
+                    onClick={() => handlePreview(course.id)}
+                  >
+                    미리보기
+                  </Button>
+                  <Button 
+                    size="sm"
+                    className="flex-1 text-xs"
+                    onClick={() => handleJoinCourse(course.id)}
+                  >
+                    수강 신청
+                  </Button>
+                </div>
+              </div>
+            </Card>
+          ))
+        ) : (
+          <div className="col-span-full text-center py-12">
+            <BookOpen className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+            <p className="text-gray-500 mb-2">현재 발행된 강의가 없습니다.</p>
+            <p className="text-gray-400 text-sm">관리자가 강의를 발행하면 이곳에 표시됩니다.</p>
+          </div>
+        )}
       </div>
 
       {/* Pagination */}
