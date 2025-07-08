@@ -1,0 +1,26 @@
+<svg width="160" height="40" viewBox="0 0 160 40" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#2BAA61;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#34D473;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Main Logo Text -->
+  <text x="20" y="28" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="url(#logoGradient)">
+    TALEZ
+  </text>
+  
+  <!-- Paw Print Icon -->
+  <g transform="translate(140, 8)">
+    <circle cx="0" cy="0" r="3" fill="#2BAA61"/>
+    <circle cx="8" cy="2" r="3" fill="#2BAA61"/>
+    <circle cx="16" cy="0" r="3" fill="#2BAA61"/>
+    <ellipse cx="8" cy="12" rx="6" ry="8" fill="#2BAA61"/>
+  </g>
+  
+  <!-- Tagline -->
+  <text x="22" y="38" font-family="Arial, sans-serif" font-size="8" fill="#666">
+    반려견 전문 교육 플랫폼
+  </text>
+</svg>
