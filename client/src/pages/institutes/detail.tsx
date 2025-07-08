@@ -80,7 +80,7 @@ export default function InstituteDetail({ instituteId }: InstituteDetailProps) {
     authorName: '',
     rating: 5,
     content: '',
-    trainerName: ''
+    trainerName: 'none'
   });
   const [instituteReviews, setInstituteReviews] = useState<any[]>([]);
   const [reservationForm, setReservationForm] = useState({
@@ -434,7 +434,10 @@ export default function InstituteDetail({ instituteId }: InstituteDetailProps) {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(reviewForm)
+        body: JSON.stringify({
+          ...reviewForm,
+          trainerName: reviewForm.trainerName === 'none' ? '' : reviewForm.trainerName
+        })
       });
 
       const result = await response.json();
@@ -455,7 +458,7 @@ export default function InstituteDetail({ instituteId }: InstituteDetailProps) {
         authorName: '',
         rating: 5,
         content: '',
-        trainerName: ''
+        trainerName: 'none'
       });
       setIsReviewOpen(false);
 
@@ -1423,7 +1426,7 @@ export default function InstituteDetail({ instituteId }: InstituteDetailProps) {
                   <SelectValue placeholder="훈련사를 선택하세요" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">선택 안함</SelectItem>
+                  <SelectItem value="none">선택 안함</SelectItem>
                   {institute?.trainers.map((trainer) => (
                     <SelectItem key={trainer.id} value={trainer.name}>
                       {trainer.name}
