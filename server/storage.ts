@@ -290,6 +290,7 @@ export class MemoryStorage implements IStorage{
   constructor() {
     console.log('🔄 운영 환경용 메모리 저장소 초기화...');
     this.initBasicData();
+    this.initCurriculumData();
   }
 
   // 간소화된 기본 데이터만 초기화
@@ -2735,6 +2736,225 @@ export class MemoryStorage implements IStorage{
 
   async getAllCourses(): Promise<any[]> {
         return Array.from(this.courses.values());
+  }
+
+  // 커리큘럼 초기 데이터 설정
+  private initCurriculumData() {
+    // 강동훈 훈련사의 기초 복종 훈련 커리큘럼
+    const basicObedienceCurriculum = {
+      id: 'curriculum-basic-obedience-001',
+      title: '기초 복종 훈련 완전정복',
+      description: '반려견의 기본 예의와 복종을 위한 체계적인 훈련 프로그램입니다. 앉기, 기다리기, 오기 등 필수 명령어부터 산책 매너까지 완벽하게 마스터할 수 있습니다.',
+      trainerId: '6',
+      trainerName: '강동훈',
+      trainerEmail: 'donghoong@wangzzang.com',
+      trainerPhone: '010-4765-1909',
+      category: '기본 훈련',
+      difficulty: 'beginner',
+      duration: 8,
+      price: 320000,
+      modules: [
+        {
+          id: 'module-1',
+          title: '1주차 - 기본 자세와 집중력 훈련',
+          description: '앉기, 기다리기 등 기본 자세 습득과 주인에 대한 집중력 향상',
+          order: 1,
+          duration: 60,
+          objectives: ['기본 자세 숙달', '집중력 향상', '보상 시스템 이해'],
+          content: '반려견의 기본 자세 훈련과 집중력 향상을 위한 체계적 프로그램',
+          isRequired: true,
+          isFree: true,
+          price: 0,
+          videos: []
+        },
+        {
+          id: 'module-2', 
+          title: '2주차 - 오기 훈련과 리드줄 훈련',
+          description: '안전한 오기 명령과 올바른 리드줄 사용법 습득',
+          order: 2,
+          duration: 60,
+          objectives: ['오기 명령 완벽 습득', '리드줄 훈련', '산책 기본 매너'],
+          content: '실외에서의 안전을 위한 필수 오기 훈련과 리드줄 사용법',
+          isRequired: true,
+          isFree: false,
+          price: 40000,
+          videos: []
+        },
+        {
+          id: 'module-3',
+          title: '3주차 - 문제 행동 교정',
+          description: '짖음, 물기 등 문제 행동 분석과 교정 방법',
+          order: 3,
+          duration: 75,
+          objectives: ['문제 행동 원인 분석', '교정 방법 습득', '예방 전략 수립'],
+          content: '과학적 분석을 통한 문제 행동 교정과 재발 방지',
+          isRequired: true,
+          isFree: false,
+          price: 50000,
+          videos: []
+        },
+        {
+          id: 'module-4',
+          title: '4주차 - 고급 명령어와 트릭',
+          description: '고난도 명령어와 재미있는 트릭 훈련',
+          order: 4,
+          duration: 60,
+          objectives: ['고급 명령어 습득', '트릭 훈련', '놀이를 통한 학습'],
+          content: '반려견과의 유대감 강화를 위한 고급 훈련과 트릭',
+          isRequired: false,
+          isFree: false,
+          price: 45000,
+          videos: []
+        }
+      ],
+      status: 'published',
+      createdAt: new Date('2024-12-01'),
+      updatedAt: new Date('2025-01-15'),
+      revenueShare: {
+        trainerShare: 70,
+        platformShare: 30
+      },
+      totalRevenue: 2400000,
+      enrollmentCount: 45,
+      lastSaleDate: new Date('2025-01-10')
+    };
+
+    // 퍼피 사회화 훈련 커리큘럼
+    const puppySocializationCurriculum = {
+      id: 'curriculum-puppy-social-002',
+      title: '퍼피 사회화 완벽 가이드',
+      description: '3-6개월 강아지를 위한 체계적인 사회화 훈련 프로그램입니다. 다른 개, 사람, 환경에 대한 올바른 사회화로 평생의 성격을 결정하는 중요한 시기를 완벽하게 관리합니다.',
+      trainerId: '6',
+      trainerName: '강동훈',
+      trainerEmail: 'donghoong@wangzzang.com',
+      trainerPhone: '010-4765-1909',
+      category: '퍼피 교육',
+      difficulty: 'beginner',
+      duration: 6,
+      price: 280000,
+      modules: [
+        {
+          id: 'module-p1',
+          title: '1주차 - 기본 환경 적응',
+          description: '집 환경에서의 기본 적응과 안전한 공간 만들기',
+          order: 1,
+          duration: 45,
+          objectives: ['환경 적응', '안전 공간 설정', '기본 루틴 설정'],
+          content: '퍼피의 안전하고 편안한 환경 조성과 기본 적응 훈련',
+          isRequired: true,
+          isFree: true,
+          price: 0,
+          videos: []
+        },
+        {
+          id: 'module-p2',
+          title: '2주차 - 사람과의 상호작용',
+          description: '가족 구성원 및 외부인과의 올바른 상호작용 학습',
+          order: 2,
+          duration: 50,
+          objectives: ['사람 친화성', '적절한 접촉', '경계 설정'],
+          content: '사람에 대한 올바른 태도와 친화적 관계 형성',
+          isRequired: true,
+          isFree: false,
+          price: 45000,
+          videos: []
+        },
+        {
+          id: 'module-p3',
+          title: '3주차 - 다른 강아지와의 만남',
+          description: '또래 강아지들과의 안전한 사회화 훈련',
+          order: 3,
+          duration: 60,
+          objectives: ['개체간 소통', '놀이 규칙', '갈등 해결'],
+          content: '안전하고 즐거운 개체간 상호작용과 사회성 발달',
+          isRequired: true,
+          isFree: false,
+          price: 50000,
+          videos: []
+        }
+      ],
+      status: 'published',
+      createdAt: new Date('2024-11-15'),
+      updatedAt: new Date('2025-01-08'),
+      revenueShare: {
+        trainerShare: 70,
+        platformShare: 30
+      },
+      totalRevenue: 1680000,
+      enrollmentCount: 32,
+      lastSaleDate: new Date('2025-01-08')
+    };
+
+    // 문제행동 교정 전문 커리큘럼
+    const behaviorCorrectionCurriculum = {
+      id: 'curriculum-behavior-correction-003',
+      title: '문제행동 교정 마스터 클래스',
+      description: '짖음, 물기, 파괴행동 등 심각한 문제행동을 과학적으로 분석하고 교정하는 전문 프로그램입니다. 행동학적 접근을 통해 근본 원인을 해결합니다.',
+      trainerId: '6',
+      trainerName: '강동훈',
+      trainerEmail: 'donghoong@wangzzang.com',
+      trainerPhone: '010-4765-1909',
+      category: '행동교정',
+      difficulty: 'intermediate',
+      duration: 10,
+      price: 450000,
+      modules: [
+        {
+          id: 'module-b1',
+          title: '1-2주차 - 행동 분석과 원인 파악',
+          description: '문제행동의 과학적 분석과 근본 원인 진단',
+          order: 1,
+          duration: 90,
+          objectives: ['행동 분석', '원인 진단', '개별 계획 수립'],
+          content: '행동학적 접근을 통한 체계적 문제 분석과 맞춤형 솔루션',
+          isRequired: true,
+          isFree: true,
+          price: 0,
+          videos: []
+        },
+        {
+          id: 'module-b2',
+          title: '3-5주차 - 집중 교정 훈련',
+          description: '문제행동 집중 교정과 대체행동 학습',
+          order: 2,
+          duration: 120,
+          objectives: ['집중 교정', '대체행동 학습', '점진적 개선'],
+          content: '개별 맞춤형 집중 교정 프로그램과 긍정적 대체행동 훈련',
+          isRequired: true,
+          isFree: false,
+          price: 150000,
+          videos: []
+        },
+        {
+          id: 'module-b3',
+          title: '6-8주차 - 유지 관리 및 예방',
+          description: '교정된 행동의 유지와 재발 방지 전략',
+          order: 3,
+          duration: 75,
+          objectives: ['행동 유지', '재발 방지', '장기 관리'],
+          content: '교정 효과의 지속성 확보와 보호자 교육',
+          isRequired: true,
+          isFree: false,
+          price: 100000,
+          videos: []
+        }
+      ],
+      status: 'published',
+      createdAt: new Date('2024-10-20'),
+      updatedAt: new Date('2025-01-05'),
+      revenueShare: {
+        trainerShare: 75,
+        platformShare: 25
+      },
+      totalRevenue: 3150000,
+      enrollmentCount: 28,
+      lastSaleDate: new Date('2025-01-05')
+    };
+
+    // 커리큘럼 데이터 저장
+    this.curriculums.set(basicObedienceCurriculum.id, basicObedienceCurriculum);
+    this.curriculums.set(puppySocializationCurriculum.id, puppySocializationCurriculum);
+    this.curriculums.set(behaviorCorrectionCurriculum.id, behaviorCorrectionCurriculum);
   }
 
   // 커리큘럼 관련

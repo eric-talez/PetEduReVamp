@@ -116,26 +116,8 @@ export default function Courses(props?: CoursesPageProps) {
             updatedAt: curriculum.updatedAt || new Date().toISOString()
           }));
         
-        // 페이지네이션 테스트를 위해 더미 데이터 추가 (실제 강의가 적을 때)
-        let coursesWithSampleData = publishedCourses;
-        if (publishedCourses.length < 10) {
-          const sampleCourses = [
-            { id: 'sample-1', title: '기초 복종 훈련', description: '강아지 기본 예의와 복종 훈련', price: 150000, difficulty: 'beginner', category: '기본 훈련', duration: 4, modules: [], trainerName: '김훈련사', status: 'published', enrollmentCount: 25, averageRating: 4.8, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-            { id: 'sample-2', title: '고급 어질리티', description: '전문적인 어질리티 훈련 과정', price: 300000, difficulty: 'advanced', category: '어질리티', duration: 8, modules: [], trainerName: '박훈련사', status: 'published', enrollmentCount: 15, averageRating: 4.9, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-            { id: 'sample-3', title: '문제행동 교정', description: '짖음, 물기 등 문제행동 교정', price: 200000, difficulty: 'intermediate', category: '행동교정', duration: 6, modules: [], trainerName: '이훈련사', status: 'published', enrollmentCount: 30, averageRating: 4.7, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-            { id: 'sample-4', title: '사회화 훈련', description: '다른 강아지와 사람에 대한 사회화', price: 180000, difficulty: 'beginner', category: '사회화', duration: 5, modules: [], trainerName: '최훈련사', status: 'published', enrollmentCount: 40, averageRating: 4.6, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-            { id: 'sample-5', title: '실내 예절 교육', description: '실내에서의 기본 예절 교육', price: 120000, difficulty: 'beginner', category: '기본 훈련', duration: 3, modules: [], trainerName: '정훈련사', status: 'published', enrollmentCount: 35, averageRating: 4.5, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-            { id: 'sample-6', title: '산책 매너 교육', description: '올바른 산책 매너와 줄 끌기 방지', price: 150000, difficulty: 'intermediate', category: '기본 훈련', duration: 4, modules: [], trainerName: '한훈련사', status: 'published', enrollmentCount: 28, averageRating: 4.7, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-            { id: 'sample-7', title: '경비견 훈련', description: '전문 경비견 훈련 과정', price: 500000, difficulty: 'advanced', category: '전문 훈련', duration: 12, modules: [], trainerName: '강훈련사', status: 'published', enrollmentCount: 8, averageRating: 4.9, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-            { id: 'sample-8', title: '노견 케어', description: '시니어 강아지 특별 관리법', price: 180000, difficulty: 'intermediate', category: '건강 관리', duration: 5, modules: [], trainerName: '신훈련사', status: 'published', enrollmentCount: 18, averageRating: 4.8, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-            { id: 'sample-9', title: '퍼피 클래스', description: '3-6개월 강아지 전용 수업', price: 200000, difficulty: 'beginner', category: '퍼피 교육', duration: 6, modules: [], trainerName: '유훈련사', status: 'published', enrollmentCount: 45, averageRating: 4.6, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-            { id: 'sample-10', title: '트릭 훈련', description: '재미있는 트릭과 기예 훈련', price: 160000, difficulty: 'intermediate', category: '엔터테인먼트', duration: 4, modules: [], trainerName: '조훈련사', status: 'published', enrollmentCount: 22, averageRating: 4.5, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() }
-          ];
-          coursesWithSampleData = [...publishedCourses, ...sampleCourses];
-        }
-        
-        console.log('🔥 발행된 강의 목록:', coursesWithSampleData);
-        setCourses(coursesWithSampleData);
+        console.log('🔥 발행된 강의 목록:', publishedCourses);
+        setCourses(publishedCourses);
       } else {
         console.error('🔥 커리큘럼 API 응답 실패:', response.status);
         toast({

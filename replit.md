@@ -121,6 +121,14 @@ TALEZ is a comprehensive pet education and e-commerce platform that combines AI-
 
 ## Changelog
 
+- July 08, 2025. **Real Curriculum Integration with Dynamic Pagination** - Successfully replaced sample data with authentic curriculum content and enhanced pagination system:
+  - **Authentic Curriculum Data**: Integrated real curriculum content from trainer 강동훈 (3 professional courses: Basic Obedience, Puppy Socialization, Behavior Correction)
+  - **Complete Sample Data Removal**: Eliminated all hardcoded dummy data from course discovery system
+  - **Enhanced Pagination System**: Implemented smart pagination with dynamic page calculation, prev/next controls, and ellipsis display for large datasets
+  - **Real-time Data Loading**: Course discovery now exclusively shows published curriculum from actual storage with proper filtering
+  - **Professional Course Content**: Real pricing (280,000-450,000원), authentic module structures, and actual enrollment statistics
+  - **Improved User Experience**: Courses display real trainer information, detailed descriptions, and genuine difficulty levels
+  - **Performance Optimization**: Page-based display (8 items per page) with search/filter integration and automatic page reset
 - July 08, 2025. **Enhanced Member Verification System for Curriculum Registration** - Implemented comprehensive member verification and registrant information extraction:
   - **Member Verification API**: Added `/api/members/verify` endpoint to check registered member status during curriculum upload
   - **Registrant Information Extraction**: Enhanced Excel parsing to extract registrant name, email, phone, and institution
