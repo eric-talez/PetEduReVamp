@@ -813,6 +813,39 @@ export default function AdminCurriculum() {
         
         // 파일에서 추출된 내용으로 커리큘럼 폼 자동 입력
         const extractedData = result.extractedData || {};
+        const registrantInfo = result.registrantInfo || {};
+        
+        // 등록자 정보가 있는지 확인하고 회원 여부 검증
+        if (registrantInfo.email) {
+          // 회원 정보 확인 API 호출
+          try {
+            const memberResponse = await fetch(`/api/members/verify?email=${encodeURIComponent(registrantInfo.email)}`);
+            const memberData = await memberResponse.json();
+            
+            if (!memberData.isRegistered) {
+              toast({
+                title: "회원 가입 필요",
+                description: `${registrantInfo.email}은 등록되지 않은 이메일입니다. 커리큘럼 등록은 회원만 가능합니다.`,
+                variant: "destructive"
+              });
+              return;
+            }
+
+            toast({
+              title: "회원 확인 완료",
+              description: `${registrantInfo.name}님의 회원 정보가 확인되었습니다.`,
+              variant: "default"
+            });
+          } catch (memberError) {
+            console.warn('회원 확인 실패:', memberError);
+            toast({
+              title: "회원 확인 실패",
+              description: "회원 정보 확인 중 오류가 발생했습니다. 다시 시도해주세요.",
+              variant: "destructive"
+            });
+            return;
+          }
+        }
         
         setNewCurriculum(prev => ({
           ...prev,
@@ -822,8 +855,8 @@ export default function AdminCurriculum() {
           difficulty: extractedData.difficulty || 'advanced',
           duration: extractedData.duration || 480, // 8시간 기본값
           price: extractedData.price || 300000,    // 30만원 기본값
-          trainerId: '100', // 강동훈 훈련사 ID
-          trainerName: '강동훈'
+          trainerId: registrantInfo.name || '강동훈',
+          trainerName: registrantInfo.name || '강동훈'
         }));
 
         // 새 커리큘럼 생성 모드로 전환
@@ -832,7 +865,7 @@ export default function AdminCurriculum() {
 
         toast({
           title: "파일 업로드 및 자동 입력 완료",
-          description: `"${extractedData.title || file.name}" 커리큘럼 정보가 자동으로 입력되었습니다. 내용을 확인 후 등록해주세요.`,
+          description: `"${extractedData.title || file.name}" 커리큘럼 정보가 자동으로 입력되었습니다. 등록자: ${registrantInfo.name || '미확인'}`,
           variant: "default"
         });
       } else {

@@ -3829,6 +3829,46 @@ app.get('/api/search', async (req, res) => {
     }
   });
 
+  // 회원 확인 API
+  app.get('/api/members/verify', async (req, res) => {
+    try {
+      const { email } = req.query;
+      
+      if (!email) {
+        return res.status(400).json({ 
+          isRegistered: false,
+          message: '이메일이 필요합니다.' 
+        });
+      }
+
+      // 실제 회원 확인 로직 (임시로 더미 데이터 사용)
+      const registeredEmails = [
+        'admin@test.com',
+        'trainer@test.com',
+        'user@test.com',
+        'hansung@talez.com',
+        'dongmin@gmail.com',
+        'jung@daum.net',
+        'kim@naver.com',
+        'test@talez.com'
+      ];
+      
+      const isRegistered = registeredEmails.includes(email.toString().toLowerCase());
+      
+      res.json({
+        isRegistered,
+        message: isRegistered ? '등록된 회원입니다.' : '등록되지 않은 이메일입니다.',
+        email: email
+      });
+    } catch (error) {
+      console.error('회원 확인 실패:', error);
+      res.status(500).json({ 
+        isRegistered: false,
+        message: '회원 확인 중 오류가 발생했습니다.' 
+      });
+    }
+  });
+
   // 커리큘럼 파일 업로드 API
   app.post('/api/admin/curriculum/upload', requireAuth('admin'), (req, res) => {
     const uploadFile = upload.single('file'); // 'file' 필드명으로 파일 업로드 받음
@@ -4162,7 +4202,8 @@ app.get('/api/search', async (req, res) => {
         res.json({
           message: '파일 업로드 및 처리 성공',
           file: fileInfo,
-          extractedData: extractedData
+          extractedData: extractedData,
+          registrantInfo: extractedData.registrantInfo || {}
         });
       } catch (error) {
         console.error('[커리큘럼 파일 처리] 오류:', error);
@@ -5178,7 +5219,13 @@ function parseRealExcelContent(data: any[][], fileName: string) {
     category: '기본훈련',
     duration: 0,
     price: 0,
-    modules: [] as any[]
+    modules: [] as any[],
+    registrantInfo: {
+      name: '',
+      email: '',
+      phone: '',
+      institution: ''
+    }
   };
   
   // 파일명에서 기본 정보 추출
@@ -5193,6 +5240,44 @@ function parseRealExcelContent(data: any[][], fileName: string) {
     result.title = '클리커 트레이닝 커리큘럼';
   }
   
+  // 등록자 정보 추출
+  for (let i = 0; i < data.length; i++) {
+    const row = data[i];
+    if (!row || row.length === 0) continue;
+    
+    const firstCell = String(row[0] || '').trim();
+    const secondCell = String(row[1] || '').trim();
+    
+    // 등록자 정보 파싱
+    if (firstCell === '등록자명' && secondCell) {
+      result.registrantInfo.name = secondCell;
+      console.log('[엑셀 파싱] 등록자명:', secondCell);
+    } else if (firstCell === '등록자 이메일' && secondCell) {
+      result.registrantInfo.email = secondCell;
+      console.log('[엑셀 파싱] 등록자 이메일:', secondCell);
+    } else if (firstCell === '등록자 전화번호' && secondCell) {
+      result.registrantInfo.phone = secondCell;
+      console.log('[엑셀 파싱] 등록자 전화번호:', secondCell);
+    } else if (firstCell === '소속기관' && secondCell) {
+      result.registrantInfo.institution = secondCell;
+      console.log('[엑셀 파싱] 소속기관:', secondCell);
+    }
+    // 커리큘럼 기본정보 파싱
+    else if (firstCell === '제목' && secondCell) {
+      result.title = secondCell;
+      console.log('[엑셀 파싱] 제목:', secondCell);
+    } else if (firstCell === '설명' && secondCell) {
+      result.description = secondCell;
+      console.log('[엑셀 파싱] 설명:', secondCell);
+    } else if (firstCell === '카테고리' && secondCell) {
+      result.category = secondCell;
+      console.log('[엑셀 파싱] 카테고리:', secondCell);
+    } else if (firstCell === '전체가격' && secondCell) {
+      result.price = parseInt(secondCell) || 0;
+      console.log('[엑셀 파싱] 전체가격:', result.price);
+    }
+  }
+
   // 엑셀 데이터에서 모듈 정보 추출
   let currentModule = null;
   let moduleIndex = 0;
@@ -5204,11 +5289,59 @@ function parseRealExcelContent(data: any[][], fileName: string) {
     const firstCell = String(row[0] || '').trim();
     const secondCell = String(row[1] || '').trim();
     const thirdCell = String(row[2] || '').trim();
+    const fourthCell = String(row[3] || '').trim();
+    const fifthCell = String(row[4] || '').trim();
+    const sixthCell = String(row[5] || '').trim();
+    const seventhCell = String(row[6] || '').trim(); // 준비물
     
     console.log(`[엑셀 파싱] 행 ${i}:`, firstCell, '|', secondCell, '|', thirdCell);
     
-    // 회차/차시 정보 감지
-    if (firstCell.match(/\d+회차|\d+차시|\d+강|주차/)) {
+    // 회차/차시 정보 감지 (새로운 7컬럼 형식 지원)
+    if (firstCell.match(/^\d+$/) && secondCell && row.length >= 6) {
+      // 신규 표준 양식: 회차, 강의명, 설명, 시간(분), 무료여부, 개별가격, 준비물
+      if (currentModule) {
+        result.modules.push(currentModule);
+      }
+      
+      moduleIndex++;
+      const sessionNumber = parseInt(firstCell);
+      const sessionTitle = secondCell;
+      const sessionDescription = thirdCell || '상세 설명이 제공됩니다.';
+      const sessionDuration = parseInt(fourthCell) || 60;
+      const isFree = (fifthCell === 'Y' || fifthCell === 'y' || fifthCell === '무료');
+      const sessionPrice = isFree ? 0 : (parseInt(sixthCell) || 50000);
+      const materials = seventhCell || '';
+      
+      currentModule = {
+        title: `${sessionNumber}회차 - ${sessionTitle}`,
+        description: sessionDescription,
+        duration: sessionDuration,
+        objectives: [`${sessionTitle} 학습 목표`],
+        content: sessionDescription,
+        materials: materials ? materials.split(',').map(m => m.trim()) : [],
+        detailedContent: {
+          introduction: sessionDescription,
+          mainTopics: [`${sessionTitle} 핵심 내용`],
+          practicalExercises: [`${sessionTitle} 실습`],
+          keyPoints: [`${sessionTitle} 핵심 포인트`],
+          homework: `${sessionTitle} 복습`,
+          resources: [`${sessionTitle} 참고자료`]
+        },
+        isFree: isFree,
+        price: sessionPrice
+      };
+      
+      result.duration += sessionDuration;
+      console.log('[엑셀 파싱] 새 모듈 생성:', {
+        title: currentModule.title,
+        duration: sessionDuration,
+        isFree: isFree,
+        price: sessionPrice,
+        materials: currentModule.materials
+      });
+    }
+    // 기존 형식도 지원 (회차/차시 키워드 형식)
+    else if (firstCell.match(/\d+회차|\d+차시|\d+강|주차/)) {
       if (currentModule) {
         result.modules.push(currentModule);
       }
@@ -5220,6 +5353,7 @@ function parseRealExcelContent(data: any[][], fileName: string) {
         duration: 60,
         objectives: [],
         content: '',
+        materials: [],
         detailedContent: {
           introduction: '',
           mainTopics: [],
