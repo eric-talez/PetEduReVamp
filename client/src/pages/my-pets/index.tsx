@@ -196,6 +196,60 @@ export default function MyPetsPage() {
     setFormData({ ...formData, imageUrl: '' });
   };
 
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // 파일 크기 검증 (5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast({
+        title: "파일 크기 오류",
+        description: "이미지 파일은 5MB 이하여야 합니다.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // 파일 타입 검증
+    if (!file.type.startsWith('image/')) {
+      toast({
+        title: "파일 형식 오류",
+        description: "이미지 파일만 업로드 가능합니다.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      // FormData로 파일 업로드
+      const formData = new FormData();
+      formData.append('image', file);
+
+      const response = await fetch('/api/upload/image', {
+        method: 'POST',
+        credentials: 'include',
+        body: formData
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setFormData(prev => ({ ...prev, imageUrl: data.url }));
+        toast({
+          title: "업로드 성공",
+          description: "이미지가 성공적으로 업로드되었습니다."
+        });
+      } else {
+        throw new Error('업로드 실패');
+      }
+    } catch (error) {
+      toast({
+        title: "업로드 실패",
+        description: "이미지 업로드 중 오류가 발생했습니다.",
+        variant: "destructive"
+      });
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -266,19 +320,46 @@ export default function MyPetsPage() {
 
                   {/* 업로드 컨트롤 */}
                   <div className="flex-1 space-y-3">
-                    <div className="space-y-2">
-                      <Label htmlFor="imageUrl">이미지 URL (선택사항)</Label>
-                      <Input
-                        id="imageUrl"
-                        type="url"
-                        placeholder="https://example.com/image.jpg"
-                        value={formData.imageUrl || ''}
-                        onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
-                      />
-                      <p className="text-xs text-gray-500">
-                        반려동물 사진의 웹 주소를 입력하거나 비워두세요
-                      </p>
-                    </div>
+                    {!formData.imageUrl ? (
+                      <div className="space-y-2">
+                        <Label htmlFor="imageFile">프로필 사진 업로드 (선택사항)</Label>
+                        <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-gray-400 transition-colors">
+                          <input
+                            id="imageFile"
+                            type="file"
+                            accept="image/*"
+                            onChange={handleImageUpload}
+                            className="hidden"
+                          />
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => document.getElementById('imageFile')?.click()}
+                            className="flex items-center gap-2"
+                          >
+                            <Upload className="w-4 h-4" />
+                            사진 선택
+                          </Button>
+                          <p className="text-xs text-gray-500 mt-2">
+                            JPG, PNG, GIF 파일 지원 (최대 5MB)
+                          </p>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="space-y-2">
+                        <p className="text-sm text-green-600 font-medium">이미지가 업로드되었습니다</p>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setFormData({ ...formData, imageUrl: '' })}
+                          className="flex items-center gap-2"
+                        >
+                          <Upload className="w-4 h-4" />
+                          다른 사진 선택
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>

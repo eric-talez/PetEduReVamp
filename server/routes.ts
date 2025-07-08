@@ -1057,6 +1057,57 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // 이미지 업로드를 위한 multer 설정
+  const imageStorage = multer.diskStorage({
+    destination: (req, file, cb) => {
+      const uploadDir = 'uploads/images';
+      if (!fs.existsSync(uploadDir)) {
+        fs.mkdirSync(uploadDir, { recursive: true });
+      }
+      cb(null, uploadDir);
+    },
+    filename: (req, file, cb) => {
+      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+      cb(null, 'pet-' + uniqueSuffix + path.extname(file.originalname));
+    }
+  });
+
+  const imageUpload = multer({
+    storage: imageStorage,
+    limits: {
+      fileSize: 5 * 1024 * 1024, // 5MB
+    },
+    fileFilter: (req, file, cb) => {
+      if (file.mimetype.startsWith('image/')) {
+        cb(null, true);
+      } else {
+        cb(new Error('이미지 파일만 업로드 가능합니다.'), false);
+      }
+    }
+  });
+
+  // 이미지 업로드 API
+  app.post("/api/upload/image", imageUpload.single('image'), async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ error: "이미지 파일이 필요합니다." });
+      }
+
+      const imageUrl = `/uploads/images/${req.file.filename}`;
+      
+      console.log('이미지 업로드 성공:', imageUrl);
+
+      res.json({ 
+        success: true, 
+        url: imageUrl,
+        message: "이미지가 성공적으로 업로드되었습니다."
+      });
+    } catch (error) {
+      console.error('이미지 업로드 오류:', error);
+      res.status(500).json({ error: "이미지 업로드 중 오류가 발생했습니다" });
+    }
+  });
+
   // 상담 Zoom 링크 조회 API
   app.get("/api/consultations/:id/zoom", async (req, res) => {
     try {

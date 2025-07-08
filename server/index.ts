@@ -36,6 +36,9 @@ app.use(cors({
   credentials: true
 }));
 
+// 업로드된 파일을 정적으로 제공
+app.use('/uploads', express.static('uploads'));
+
 // Disable rate limiting in development to avoid proxy issues
 if (process.env.NODE_ENV === 'production') {
   const limiter = rateLimit({
