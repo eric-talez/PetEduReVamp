@@ -75,6 +75,14 @@ export default function InstituteDetail({ instituteId }: InstituteDetailProps) {
   const [isReservationOpen, setIsReservationOpen] = useState(false);
   const [isCertificationOpen, setIsCertificationOpen] = useState(false);
   const [selectedCertification, setSelectedCertification] = useState<string | null>(null);
+  const [isReviewOpen, setIsReviewOpen] = useState(false);
+  const [reviewForm, setReviewForm] = useState({
+    authorName: '',
+    rating: 5,
+    content: '',
+    trainerName: ''
+  });
+  const [instituteReviews, setInstituteReviews] = useState<any[]>([]);
   const [reservationForm, setReservationForm] = useState({
     name: '',
     phone: '',
@@ -169,6 +177,11 @@ export default function InstituteDetail({ instituteId }: InstituteDetailProps) {
         });
       } finally {
         setIsLoading(false);
+        
+        // 리뷰 데이터도 함께 로드
+        if (transformedInstitute?.id) {
+          fetchInstituteReviews();
+        }
       }
     };
 
@@ -270,8 +283,207 @@ export default function InstituteDetail({ instituteId }: InstituteDetailProps) {
     setIsReservationOpen(true);
   };
 
-  const handleTrainerContact = (trainer: Trainer) => {
-    window.location.href = `/messages/new?trainerId=${trainer.id}`;
+  const handleTrainerContact = async (trainer: Trainer) => {
+    try {
+      console.log('[Client] 훈련사 문의:', trainer);
+      
+      const inquiryData = {
+        trainerId: trainer.id,
+        trainerName: trainer.name,
+        name: "사용자", // 실제로는 로그인한 사용자 정보
+        contact: "010-0000-0000", // 실제로는 로그인한 사용자 연락처
+        message: `${trainer.name} 훈련사님께 문의드립니다.`,
+        type: "trainer_contact"
+      };
+
+      const response = await fetch(`/api/institutes/${institute?.id}/inquiries`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(inquiryData)
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || '문의 접수에 실패했습니다.');
+      }
+
+      console.log('[Client] 문의 API 응답:', result);
+
+      toast({
+        title: "문의 접수 완료",
+        description: `${trainer.name} 훈련사에게 문의가 접수되었습니다.`,
+      });
+
+    } catch (error) {
+      console.error('문의 접수 실패:', error);
+      toast({
+        title: "문의 접수 실패",
+        description: "문의 접수 중 오류가 발생했습니다.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  // 전화 문의 처리
+  const handlePhoneInquiry = async () => {
+    try {
+      console.log('[Client] 전화 문의 처리');
+      
+      const callData = {
+        callerInfo: "사용자", // 실제로는 로그인한 사용자 정보
+        purpose: "기관 문의"
+      };
+
+      const response = await fetch(`/api/institutes/${institute?.id}/call-inquiries`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(callData)
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || '전화 문의 기록에 실패했습니다.');
+      }
+
+      console.log('[Client] 전화 문의 API 응답:', result);
+
+      // 실제 전화 연결
+      window.open(`tel:${institute?.phone}`);
+
+      toast({
+        title: "전화 연결",
+        description: `${institute?.name}로 전화를 연결합니다.`,
+      });
+
+    } catch (error) {
+      console.error('전화 문의 실패:', error);
+      toast({
+        title: "전화 연결 실패",
+        description: "전화 연결 중 오류가 발생했습니다.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  // 메시지 문의 처리
+  const handleMessageInquiry = async () => {
+    try {
+      console.log('[Client] 메시지 문의 처리');
+      
+      const inquiryData = {
+        name: "사용자", // 실제로는 로그인한 사용자 정보
+        contact: "010-0000-0000", // 실제로는 로그인한 사용자 연락처
+        message: `${institute?.name}에 대해 문의드립니다.`,
+        type: "general_inquiry"
+      };
+
+      const response = await fetch(`/api/institutes/${institute?.id}/inquiries`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(inquiryData)
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || '메시지 문의 접수에 실패했습니다.');
+      }
+
+      console.log('[Client] 메시지 문의 API 응답:', result);
+
+      toast({
+        title: "메시지 문의 접수 완료",
+        description: `${institute?.name}에 메시지 문의가 접수되었습니다.`,
+      });
+
+    } catch (error) {
+      console.error('메시지 문의 실패:', error);
+      toast({
+        title: "메시지 문의 실패",
+        description: "메시지 문의 접수 중 오류가 발생했습니다.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  // 리뷰 작성 처리
+  const handleReviewSubmit = async () => {
+    try {
+      console.log('[Client] 리뷰 작성:', reviewForm);
+
+      // 기본 유효성 검사
+      if (!reviewForm.authorName || !reviewForm.content) {
+        toast({
+          title: "입력 오류",
+          description: "필수 정보를 모두 입력해주세요.",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      const response = await fetch(`/api/institutes/${institute?.id}/reviews`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(reviewForm)
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || '리뷰 등록에 실패했습니다.');
+      }
+
+      console.log('[Client] 리뷰 작성 API 응답:', result);
+
+      toast({
+        title: "리뷰 등록 완료",
+        description: "소중한 후기가 등록되었습니다.",
+      });
+
+      // 폼 초기화
+      setReviewForm({
+        authorName: '',
+        rating: 5,
+        content: '',
+        trainerName: ''
+      });
+      setIsReviewOpen(false);
+
+      // 리뷰 목록 새로고침
+      fetchInstituteReviews();
+
+    } catch (error) {
+      console.error('리뷰 작성 실패:', error);
+      toast({
+        title: "리뷰 등록 실패",
+        description: "리뷰 등록 중 오류가 발생했습니다.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  // 기관 리뷰 조회
+  const fetchInstituteReviews = async () => {
+    try {
+      const response = await fetch(`/api/institutes/${institute?.id}/reviews`);
+      const result = await response.json();
+
+      if (response.ok && result.success) {
+        setInstituteReviews(result.reviews);
+      }
+    } catch (error) {
+      console.error('리뷰 조회 실패:', error);
+    }
   };
 
   // 예약 폼 변경 처리
@@ -419,14 +631,27 @@ export default function InstituteDetail({ instituteId }: InstituteDetailProps) {
         trainerId: selectedTrainer?.id,
         trainerName: selectedTrainer?.name,
         instituteName: institute?.name,
-        ...reservationForm,
-        createdAt: new Date().toISOString()
+        ...reservationForm
       };
 
-      console.log('예약 데이터:', reservationData);
+      console.log('[Client] 예약 API 호출:', reservationData);
 
-      // 실제 API 호출 시뮬레이션
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // 실제 API 호출
+      const response = await fetch(`/api/institutes/${institute?.id}/reservations`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(reservationData)
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || '예약 생성에 실패했습니다.');
+      }
+
+      console.log('[Client] 예약 API 응답:', result);
 
       toast({
         title: "예약 완료",
@@ -741,16 +966,64 @@ export default function InstituteDetail({ instituteId }: InstituteDetailProps) {
 
             <TabsContent value="reviews" className="mt-6">
               <Card>
-                <CardHeader>
-                  <CardTitle>이용 후기</CardTitle>
-                  <CardDescription>실제 이용자들의 생생한 후기를 확인하세요.</CardDescription>
+                <CardHeader className="flex flex-row items-center justify-between">
+                  <div>
+                    <CardTitle>이용 후기</CardTitle>
+                    <CardDescription>실제 이용자들의 생생한 후기를 확인하세요.</CardDescription>
+                  </div>
+                  <Button onClick={() => setIsReviewOpen(true)}>
+                    <Star className="h-4 w-4 mr-2" />
+                    후기 작성
+                  </Button>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-center py-12">
-                    <MessageCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                    <p className="text-gray-500">아직 등록된 후기가 없습니다.</p>
-                    <p className="text-gray-500">첫 번째 후기를 남겨보세요!</p>
-                  </div>
+                  {instituteReviews.length > 0 ? (
+                    <div className="space-y-6">
+                      {instituteReviews.map((review) => (
+                        <div key={review.id} className="border-b border-gray-200 pb-4 last:border-b-0">
+                          <div className="flex items-center justify-between mb-2">
+                            <div className="flex items-center gap-2">
+                              <h4 className="font-medium">{review.authorName}</h4>
+                              {review.trainerName && (
+                                <Badge variant="outline" className="text-xs">
+                                  {review.trainerName} 훈련사
+                                </Badge>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-1">
+                              {[1, 2, 3, 4, 5].map((star) => (
+                                <Star 
+                                  key={star} 
+                                  className={`h-4 w-4 ${
+                                    star <= review.rating 
+                                      ? 'fill-yellow-400 text-yellow-400' 
+                                      : 'text-gray-300'
+                                  }`} 
+                                />
+                              ))}
+                              <span className="text-sm text-gray-500 ml-1">
+                                {new Date(review.createdAt).toLocaleDateString('ko-KR')}
+                              </span>
+                            </div>
+                          </div>
+                          <p className="text-gray-700 leading-relaxed">{review.content}</p>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-12">
+                      <MessageCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                      <p className="text-gray-500">아직 등록된 후기가 없습니다.</p>
+                      <p className="text-gray-500">첫 번째 후기를 남겨보세요!</p>
+                      <Button 
+                        className="mt-4" 
+                        onClick={() => setIsReviewOpen(true)}
+                      >
+                        <Star className="h-4 w-4 mr-2" />
+                        후기 작성하기
+                      </Button>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>
@@ -779,11 +1052,18 @@ export default function InstituteDetail({ instituteId }: InstituteDetailProps) {
               </div>
               
               <div className="pt-4 space-y-2">
-                <Button className="w-full">
+                <Button 
+                  className="w-full"
+                  onClick={handlePhoneInquiry}
+                >
                   <Phone className="h-4 w-4 mr-2" />
                   전화 문의
                 </Button>
-                <Button variant="outline" className="w-full">
+                <Button 
+                  variant="outline" 
+                  className="w-full"
+                  onClick={handleMessageInquiry}
+                >
                   <MessageCircle className="h-4 w-4 mr-2" />
                   메시지 문의
                 </Button>
@@ -1083,6 +1363,96 @@ export default function InstituteDetail({ instituteId }: InstituteDetailProps) {
             }}>
               <MessageCircle className="h-4 w-4 mr-2" />
               훈련사에게 문의하기
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* 리뷰 작성 팝업 */}
+      <Dialog open={isReviewOpen} onOpenChange={setIsReviewOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-3">
+              <Star className="h-6 w-6 text-yellow-500" />
+              <div>
+                <div className="font-semibold">후기 작성</div>
+                <div className="text-sm text-gray-500 font-normal">{institute?.name}</div>
+              </div>
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            <div>
+              <Label htmlFor="authorName">작성자명 *</Label>
+              <Input
+                id="authorName"
+                value={reviewForm.authorName}
+                onChange={(e) => setReviewForm(prev => ({ ...prev, authorName: e.target.value }))}
+                placeholder="이름을 입력하세요"
+                className="mt-1"
+              />
+            </div>
+
+            <div>
+              <Label>평점 *</Label>
+              <div className="flex items-center gap-2 mt-2">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <Star 
+                    key={star}
+                    className={`h-6 w-6 cursor-pointer transition-colors ${
+                      star <= reviewForm.rating 
+                        ? 'fill-yellow-400 text-yellow-400' 
+                        : 'text-gray-300 hover:text-yellow-200'
+                    }`}
+                    onClick={() => setReviewForm(prev => ({ ...prev, rating: star }))}
+                  />
+                ))}
+                <span className="text-sm text-gray-600 ml-2">
+                  {reviewForm.rating}점
+                </span>
+              </div>
+            </div>
+
+            <div>
+              <Label htmlFor="trainerName">담당 훈련사 (선택사항)</Label>
+              <Select
+                value={reviewForm.trainerName}
+                onValueChange={(value) => setReviewForm(prev => ({ ...prev, trainerName: value }))}
+              >
+                <SelectTrigger className="mt-1">
+                  <SelectValue placeholder="훈련사를 선택하세요" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">선택 안함</SelectItem>
+                  {institute?.trainers.map((trainer) => (
+                    <SelectItem key={trainer.id} value={trainer.name}>
+                      {trainer.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label htmlFor="content">후기 내용 *</Label>
+              <Textarea
+                id="content"
+                value={reviewForm.content}
+                onChange={(e) => setReviewForm(prev => ({ ...prev, content: e.target.value }))}
+                placeholder="이용 후기를 자세히 작성해주세요..."
+                rows={4}
+                className="mt-1"
+              />
+            </div>
+          </div>
+
+          <div className="flex gap-3 pt-4 border-t">
+            <Button variant="outline" onClick={() => setIsReviewOpen(false)} className="flex-1">
+              취소
+            </Button>
+            <Button onClick={handleReviewSubmit} className="flex-1">
+              <Star className="h-4 w-4 mr-2" />
+              후기 등록
             </Button>
           </div>
         </DialogContent>
