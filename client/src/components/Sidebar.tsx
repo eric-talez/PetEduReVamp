@@ -538,7 +538,12 @@ export function Sidebar({
                 <img 
                   src="/logo.svg" 
                   alt="TALEZ 로고" 
-                  className="h-8 w-auto transition-all duration-300 group-hover:scale-110"
+                  className="h-12 w-auto transition-all duration-300 group-hover:scale-105 dark:hidden"
+                />
+                <img 
+                  src="/logo-dark.svg" 
+                  alt="TALEZ 로고" 
+                  className="h-12 w-auto transition-all duration-300 group-hover:scale-105 hidden dark:block"
                 />
               </a>
             </ScrollReveal>
@@ -547,7 +552,12 @@ export function Sidebar({
               <img 
                 src="/logo-compact.svg" 
                 alt="TALEZ" 
-                className="h-8 w-8"
+                className="h-10 w-10 dark:hidden"
+              />
+              <img 
+                src="/logo-compact-dark.svg" 
+                alt="TALEZ" 
+                className="h-10 w-10 hidden dark:block"
               />
             </a>
           )}

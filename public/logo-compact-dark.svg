@@ -1,0 +1,23 @@
+<svg width="40" height="40" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+  <!-- Three color squares in compact form -->
+  <rect x="2" y="2" width="12" height="12" rx="2" fill="#8BC34A"/>
+  <rect x="14" y="2" width="12" height="12" rx="2" fill="#FDD835"/>
+  <rect x="26" y="2" width="12" height="12" rx="2" fill="#FF7043"/>
+  
+  <!-- Dog silhouette in first square -->
+  <path d="M5 6 Q4 5 4 8 Q4 11 7 12 Q10 11 12 9 Q12.5 8 12 6 Q11 5 9 6 Q8 5 7 6 Q6 5 5 6 Z" fill="black"/>
+  
+  <!-- Bird/leaf in second square -->
+  <path d="M17 12 Q15 10 15 8 Q15 6 17 5 Q18 4 19 5 Q20 6 22 8 Q23 10 22 12 Q20 13 19 12 Q18 11 17 12 Z" fill="black"/>
+  
+  <!-- Paw print in third square -->
+  <ellipse cx="32" cy="10" rx="1.5" ry="2" fill="black"/>
+  <ellipse cx="29" cy="7" rx="1" ry="1.5" fill="black"/>
+  <ellipse cx="32" cy="6" rx="1" ry="1.5" fill="black"/>
+  <ellipse cx="35" cy="7" rx="1" ry="1.5" fill="black"/>
+  
+  <!-- Talez text -->
+  <text x="20" y="30" font-family="Arial, sans-serif" font-size="10" font-weight="bold" fill="#E0E0E0" text-anchor="middle">
+    Talez
+  </text>
+</svg>
