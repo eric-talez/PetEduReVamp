@@ -536,30 +536,20 @@ export function Sidebar({
         <div className="h-16 flex items-center justify-between border-b border-gray-200 dark:border-gray-800 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-900 px-3 transition-all duration-300">
           {expanded ? (
             <ScrollReveal direction="left" delay={100}>
-              <a href="/" className="flex items-center justify-center w-full group">
+              <a href="/" className="flex items-center justify-center w-full h-full group">
                 <img 
                   src="/logo-light.svg" 
                   alt="TALEZ 로고" 
-                  className="h-12 w-auto transition-all duration-300 group-hover:scale-105 dark:hidden"
-                />
-                <img 
-                  src="/logo-dark.svg" 
-                  alt="TALEZ 로고" 
-                  className="h-12 w-auto transition-all duration-300 group-hover:scale-105 hidden dark:block"
+                  className="w-full h-full object-contain transition-all duration-300 group-hover:scale-105"
                 />
               </a>
             </ScrollReveal>
           ) : (
-            <a href="/" className="flex items-center justify-center w-full transition-all duration-300 hover:scale-110">
+            <a href="/" className="flex items-center justify-center w-full h-full transition-all duration-300 hover:scale-110">
               <img 
-                src="/logo-compact.svg" 
+                src="/logo-symbol.svg" 
                 alt="TALEZ" 
-                className="h-8 w-auto dark:hidden"
-              />
-              <img 
-                src="/logo-compact-dark.svg" 
-                alt="TALEZ" 
-                className="h-8 w-auto hidden dark:block"
+                className="w-full h-full object-contain transition-all duration-300 hover:scale-105"
               />
             </a>
           )}
