@@ -534,18 +534,21 @@ export function Sidebar({
         <div className="h-16 flex items-center justify-between border-b border-gray-200 dark:border-gray-800 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-900 px-3 transition-all duration-300">
           {expanded ? (
             <ScrollReveal direction="left" delay={100}>
-              <a href="/" className="flex flex-col items-center w-full group">
-                <span className="text-2xl font-bold text-gray-800 dark:text-white flex items-center">
-                  <span className="text-primary transition-all duration-300 group-hover:scale-110">Talez</span>
-
-                </span>
-                <span className="text-xs text-gray-500 dark:text-gray-400 mt-1">반려견 전문 교육 플랫폼</span>
+              <a href="/" className="flex items-center justify-center w-full group">
+                <img 
+                  src="/logo.svg" 
+                  alt="TALEZ 로고" 
+                  className="h-8 w-auto transition-all duration-300 group-hover:scale-110"
+                />
               </a>
             </ScrollReveal>
           ) : (
             <a href="/" className="flex items-center justify-center w-full transition-all duration-300 hover:scale-110">
-              <span className="text-2xl font-bold text-primary">T</span>
-
+              <img 
+                src="/logo-compact.svg" 
+                alt="TALEZ" 
+                className="h-8 w-8"
+              />
             </a>
           )}
           <button
