@@ -73,6 +73,8 @@ export default function InstituteDetail({ instituteId }: InstituteDetailProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('overview');
   const [isReservationOpen, setIsReservationOpen] = useState(false);
+  const [isCertificationOpen, setIsCertificationOpen] = useState(false);
+  const [selectedCertification, setSelectedCertification] = useState<string | null>(null);
   const [reservationForm, setReservationForm] = useState({
     name: '',
     phone: '',
@@ -278,6 +280,125 @@ export default function InstituteDetail({ instituteId }: InstituteDetailProps) {
       ...prev,
       [field]: value
     }));
+  };
+
+  // 자격증 클릭 처리
+  const handleCertificationClick = (certification: string, trainer: Trainer) => {
+    setSelectedCertification(certification);
+    setSelectedTrainer(trainer);
+    setIsCertificationOpen(true);
+  };
+
+  // 자격증 정보 데이터
+  const getCertificationInfo = (certification: string) => {
+    const certificationData: { [key: string]: { description: string; issuer: string; validity: string; requirements: string[] } } = {
+      '제1회 반려동물행동지도사 국가자격': {
+        description: '반려동물의 행동을 과학적으로 분석하고 문제행동을 교정할 수 있는 국가공인 자격증입니다.',
+        issuer: '한국펫산업협회',
+        validity: '평생 유효',
+        requirements: [
+          '반려동물 행동학 이론 교육 이수',
+          '실습 교육 40시간 이상',
+          '국가자격 검정시험 합격',
+          '윤리교육 이수'
+        ]
+      },
+      'KKF 홀련사 2급': {
+        description: '한국켄넬클럽에서 인정하는 공식 핸들러 자격증으로 견종별 전문 지식을 갖춘 전문가 증명서입니다.',
+        issuer: '한국켄넬클럽 (KKF)',
+        validity: '2년 (갱신 가능)',
+        requirements: [
+          '견종학 이론 교육',
+          '핸들링 실기 교육',
+          'KKF 공인 심사위원 평가',
+          '견종별 특성 이해도 검증'
+        ]
+      },
+      'KKF 저먼세퍼드 베젠테스트 어시스턴트': {
+        description: '저먼셰퍼드의 성격 및 능력 평가를 위한 베젠테스트 보조 업무를 수행할 수 있는 전문 자격증입니다.',
+        issuer: '한국켄넬클럽 (KKF)',
+        validity: '3년 (갱신 가능)',
+        requirements: [
+          '저먼셰퍼드 전문 지식',
+          '베젠테스트 이론 교육',
+          '현장 실습 20회 이상',
+          '전문 심사위원 인증'
+        ]
+      },
+      'KKF 공인 훈련사': {
+        description: '한국켄넬클럽에서 공인하는 반려견 훈련 전문가 자격증으로 체계적인 훈련 프로그램을 제공할 수 있습니다.',
+        issuer: '한국켄넬클럽 (KKF)',
+        validity: '3년 (갱신 가능)',
+        requirements: [
+          '반려견 훈련학 이론',
+          '실기 시험 통과',
+          '훈련 경력 1년 이상',
+          '윤리강령 준수 서약'
+        ]
+      },
+      '동물행동전문가': {
+        description: '동물의 행동 패턴을 분석하고 문제행동을 해결할 수 있는 전문가 자격증입니다.',
+        issuer: '한국동물행동학회',
+        validity: '5년 (갱신 가능)',
+        requirements: [
+          '동물행동학 석사 이상 또는 동등 경력',
+          '임상 경험 100시간 이상',
+          '사례 연구 발표',
+          '전문가 추천서'
+        ]
+      },
+      'CCPDT 인증': {
+        description: '국제적으로 인정받는 반려견 훈련사 자격증으로 과학적 훈련 방법론을 기반으로 합니다.',
+        issuer: 'Certification Council for Professional Dog Trainers',
+        validity: '3년 (갱신 필요)',
+        requirements: [
+          '300시간 이상 훈련 경험',
+          '온라인 시험 통과',
+          '지속적인 교육 이수',
+          '윤리 규정 준수'
+        ]
+      },
+      '소형견 전문가': {
+        description: '소형견의 특성을 이해하고 전문적인 훈련과 케어를 제공할 수 있는 전문가 자격증입니다.',
+        issuer: '소형견전문가협회',
+        validity: '2년 (갱신 가능)',
+        requirements: [
+          '소형견 특성 이론 교육',
+          '소형견 핸들링 실습',
+          '응급처치 교육',
+          '실무 경험 6개월 이상'
+        ]
+      },
+      '국제 어질리티 심판': {
+        description: '국제 규격의 어질리티 경기를 심판할 수 있는 공인 자격증입니다.',
+        issuer: '국제애견연맹 (FCI)',
+        validity: '5년 (갱신 가능)',
+        requirements: [
+          '어질리티 이론 및 규정 숙지',
+          '심판 실습 50회 이상',
+          '국제 규격 인증',
+          '영어 의사소통 가능'
+        ]
+      },
+      'KKF 마스터 트레이너': {
+        description: '한국켄넬클럽 최고 등급의 훈련사 자격증으로 전문 훈련사 양성도 가능한 마스터급 자격증입니다.',
+        issuer: '한국켄넬클럽 (KKF)',
+        validity: '평생 유효',
+        requirements: [
+          'KKF 공인 훈련사 경력 5년 이상',
+          '마스터 과정 이수',
+          '후진 양성 실적',
+          '특별 심사 통과'
+        ]
+      }
+    };
+
+    return certificationData[certification] || {
+      description: '전문적인 반려견 관련 자격증입니다.',
+      issuer: '공인 기관',
+      validity: '자격증에 따라 상이',
+      requirements: ['해당 기관의 교육 과정 이수', '시험 합격', '실무 경험']
+    };
   };
 
   // 예약 제출 처리
@@ -546,7 +667,14 @@ export default function InstituteDetail({ instituteId }: InstituteDetailProps) {
                             <h5 className="font-medium mb-2">자격증</h5>
                             <div className="flex flex-wrap gap-2">
                               {trainer.certifications.map((cert, index) => (
-                                <Badge key={index} variant="outline">{cert}</Badge>
+                                <Badge 
+                                  key={index} 
+                                  variant="outline" 
+                                  className="cursor-pointer hover:bg-primary/10 hover:border-primary/50 transition-colors"
+                                  onClick={() => handleCertificationClick(cert, trainer)}
+                                >
+                                  {cert}
+                                </Badge>
                               ))}
                             </div>
                           </div>
@@ -840,6 +968,121 @@ export default function InstituteDetail({ instituteId }: InstituteDetailProps) {
             <Button onClick={handleReservationSubmit} className="flex-1">
               <Calendar className="h-4 w-4 mr-2" />
               예약 신청
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* 자격증 정보 팝업 */}
+      <Dialog open={isCertificationOpen} onOpenChange={setIsCertificationOpen}>
+        <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-3">
+              <Award className="h-6 w-6 text-primary" />
+              <div>
+                <div className="font-semibold">{selectedCertification}</div>
+                <div className="text-sm text-gray-500 font-normal">자격증 상세 정보</div>
+              </div>
+            </DialogTitle>
+          </DialogHeader>
+
+          {selectedCertification && (
+            <div className="space-y-6 py-4">
+              {(() => {
+                const certInfo = getCertificationInfo(selectedCertification);
+                return (
+                  <>
+                    {/* 자격증 설명 */}
+                    <div className="bg-blue-50 p-4 rounded-lg">
+                      <h4 className="font-medium text-blue-900 mb-2">자격증 개요</h4>
+                      <p className="text-blue-800 text-sm leading-relaxed">
+                        {certInfo.description}
+                      </p>
+                    </div>
+
+                    {/* 발급 기관 정보 */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="bg-gray-50 p-4 rounded-lg">
+                        <h4 className="font-medium text-gray-900 mb-2 flex items-center gap-2">
+                          <Building className="h-4 w-4" />
+                          발급 기관
+                        </h4>
+                        <p className="text-gray-700 text-sm">{certInfo.issuer}</p>
+                      </div>
+                      
+                      <div className="bg-gray-50 p-4 rounded-lg">
+                        <h4 className="font-medium text-gray-900 mb-2 flex items-center gap-2">
+                          <Clock className="h-4 w-4" />
+                          유효 기간
+                        </h4>
+                        <p className="text-gray-700 text-sm">{certInfo.validity}</p>
+                      </div>
+                    </div>
+
+                    {/* 취득 요건 */}
+                    <div className="bg-green-50 p-4 rounded-lg">
+                      <h4 className="font-medium text-green-900 mb-3 flex items-center gap-2">
+                        <Award className="h-4 w-4" />
+                        취득 요건
+                      </h4>
+                      <ul className="space-y-2">
+                        {certInfo.requirements.map((requirement, index) => (
+                          <li key={index} className="flex items-start gap-2 text-green-800 text-sm">
+                            <span className="w-1.5 h-1.5 bg-green-600 rounded-full mt-2 flex-shrink-0"></span>
+                            <span>{requirement}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+
+                    {/* 신뢰도 지표 */}
+                    <div className="bg-yellow-50 p-4 rounded-lg">
+                      <h4 className="font-medium text-yellow-900 mb-2 flex items-center gap-2">
+                        <Star className="h-4 w-4" />
+                        자격증 신뢰도
+                      </h4>
+                      <div className="flex items-center gap-2">
+                        {[1, 2, 3, 4, 5].map((star) => (
+                          <Star 
+                            key={star} 
+                            className={`h-4 w-4 ${
+                              (selectedCertification?.includes('국가자격') || 
+                               selectedCertification?.includes('KKF') ||
+                               selectedCertification?.includes('CCPDT') ||
+                               selectedCertification?.includes('FCI')) 
+                                ? 'fill-yellow-400 text-yellow-400' 
+                                : star <= 4 ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'
+                            }`} 
+                          />
+                        ))}
+                        <span className="text-sm text-yellow-800 ml-2">
+                          {(selectedCertification?.includes('국가자격') || 
+                            selectedCertification?.includes('KKF') ||
+                            selectedCertification?.includes('CCPDT') ||
+                            selectedCertification?.includes('FCI')) 
+                             ? '공인 인증 기관' : '업계 인정 자격증'}
+                        </span>
+                      </div>
+                    </div>
+                  </>
+                );
+              })()}
+            </div>
+          )}
+
+          <div className="flex gap-3 pt-4 border-t">
+            <Button variant="outline" onClick={() => setIsCertificationOpen(false)} className="flex-1">
+              닫기
+            </Button>
+            <Button className="flex-1" onClick={() => {
+              setIsCertificationOpen(false);
+              // 해당 훈련사에게 문의하기
+              if (selectedTrainer) {
+                handleTrainerContact(selectedTrainer);
+              }
+            }}>
+              <MessageCircle className="h-4 w-4 mr-2" />
+              훈련사에게 문의하기
             </Button>
           </div>
         </DialogContent>
