@@ -58,6 +58,7 @@ import AdminSettings from './pages/admin/AdminSettings';
 import LocationManagement from './pages/admin/LocationManagement';
 import SpringBootTestPage from "./pages/SpringBootTest";
 import AdminContents from "./pages/admin/AdminContents";
+import AdminMembersStatus from "./pages/admin/AdminMembersStatus";
 
 
 
@@ -293,6 +294,7 @@ function AppLayout({ children }: { children: ReactNode }) {
                   <Route path="/admin/settings" component={AdminSettings} />
                   <Route path="/admin/contents" component={AdminContents} />
                   <Route path="/admin/curriculum" component={AdminCurriculum} />
+                  <Route path="/admin/members-status" component={AdminMembersStatus} />
                   <Route path="/admin/spring-boot-test" component={SpringBootTestPage} />
                   
                   {/* 업체 등록 관리 */}
@@ -1903,18 +1905,7 @@ function AuthenticatedRoutes() {
             );
           }}
         </Route>
-        <Route path="/admin/members-status">
-          {() => {
-            const AdminMembersStatus = lazy(() => import('./pages/admin/AdminMembersStatus'));
-            return (
-              <Suspense fallback={<div className="p-8 flex justify-center items-center">
-                <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
-              </div>}>
-                <ProtectedAdminRoute component={AdminMembersStatus} />
-              </Suspense>
-            );
-          }}
-        </Route>
+
         <Route path="/admin/commission">
           {() => {
             const AdminCommission = lazy(() => import('./pages/admin/AdminCommission'));
