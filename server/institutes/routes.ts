@@ -294,6 +294,12 @@ export function registerInstituteRoutes(app: Express, storage: any) {
         createdAt: new Date().toISOString()
       };
 
+      // 전역 메모리에 리뷰 저장
+      if (!global.instituteReviews) {
+        global.instituteReviews = [];
+      }
+      global.instituteReviews.push(review);
+
       console.log('[Review API] 리뷰 생성 완료:', review);
 
       res.status(201).json({
@@ -317,8 +323,20 @@ export function registerInstituteRoutes(app: Express, storage: any) {
     try {
       const instituteId = parseInt(req.params.id);
 
-      // 샘플 리뷰 데이터
-      const reviews = [
+      console.log('[Review API] 리뷰 조회 요청 - 기관 ID:', instituteId);
+
+      // 전역 메모리에서 리뷰 조회
+      if (!global.instituteReviews) {
+        global.instituteReviews = [];
+      }
+
+      // 해당 기관의 리뷰만 필터링
+      const instituteSpecificReviews = global.instituteReviews.filter(
+        (review: any) => review.instituteId === instituteId
+      );
+
+      // 샘플 데이터와 실제 리뷰 데이터 합치기
+      const sampleReviews = [
         {
           id: 1,
           instituteId,
@@ -339,9 +357,17 @@ export function registerInstituteRoutes(app: Express, storage: any) {
         }
       ];
 
+      // 전체 리뷰 목록 (샘플 + 실제 리뷰)
+      const allReviews = [...sampleReviews, ...instituteSpecificReviews]
+        .sort((a: any, b: any) => 
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+
+      console.log('[Review API] 조회된 리뷰 목록:', allReviews);
+
       res.json({
         success: true,
-        reviews
+        reviews: allReviews
       });
 
     } catch (error) {
