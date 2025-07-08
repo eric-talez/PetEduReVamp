@@ -4,6 +4,11 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { 
   MapPin, 
   Star, 
@@ -67,6 +72,18 @@ export default function InstituteDetail({ instituteId }: InstituteDetailProps) {
   const [selectedTrainer, setSelectedTrainer] = useState<Trainer | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('overview');
+  const [isReservationOpen, setIsReservationOpen] = useState(false);
+  const [reservationForm, setReservationForm] = useState({
+    name: '',
+    phone: '',
+    email: '',
+    petName: '',
+    petBreed: '',
+    date: '',
+    time: '',
+    service: '',
+    message: ''
+  });
   const { toast } = useToast();
 
   // 실제 API에서 기관 데이터 가져오기
@@ -247,11 +264,76 @@ export default function InstituteDetail({ instituteId }: InstituteDetailProps) {
   };
 
   const handleTrainerReservation = (trainer: Trainer) => {
-    window.location.href = `/reservation/trainer/${trainer.id}`;
+    setSelectedTrainer(trainer);
+    setIsReservationOpen(true);
   };
 
   const handleTrainerContact = (trainer: Trainer) => {
     window.location.href = `/messages/new?trainerId=${trainer.id}`;
+  };
+
+  // 예약 폼 변경 처리
+  const handleReservationFormChange = (field: string, value: string) => {
+    setReservationForm(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  // 예약 제출 처리
+  const handleReservationSubmit = async () => {
+    try {
+      // 폼 유효성 검사
+      if (!reservationForm.name || !reservationForm.phone || !reservationForm.date || !reservationForm.time) {
+        toast({
+          title: "입력 오류",
+          description: "필수 정보를 모두 입력해주세요.",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      // 예약 데이터 구성
+      const reservationData = {
+        trainerId: selectedTrainer?.id,
+        trainerName: selectedTrainer?.name,
+        instituteName: institute?.name,
+        ...reservationForm,
+        createdAt: new Date().toISOString()
+      };
+
+      console.log('예약 데이터:', reservationData);
+
+      // 실제 API 호출 시뮬레이션
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      toast({
+        title: "예약 완료",
+        description: `${selectedTrainer?.name} 훈련사와의 예약이 완료되었습니다. 곧 연락드리겠습니다.`,
+      });
+
+      // 폼 초기화 및 팝업 닫기
+      setReservationForm({
+        name: '',
+        phone: '',
+        email: '',
+        petName: '',
+        petBreed: '',
+        date: '',
+        time: '',
+        service: '',
+        message: ''
+      });
+      setIsReservationOpen(false);
+      setSelectedTrainer(null);
+
+    } catch (error) {
+      toast({
+        title: "예약 실패",
+        description: "예약 중 오류가 발생했습니다. 다시 시도해주세요.",
+        variant: "destructive"
+      });
+    }
   };
 
   if (isLoading) {
@@ -540,17 +622,26 @@ export default function InstituteDetail({ instituteId }: InstituteDetailProps) {
                   <Button
                     key={trainer.id}
                     variant="outline"
-                    className="w-full justify-start"
+                    className="w-full justify-start hover:bg-primary/5 hover:border-primary/50 transition-all duration-200 group"
                     onClick={() => handleTrainerReservation(trainer)}
                   >
-                    <Avatar className="w-6 h-6 mr-2">
+                    <Avatar className="w-7 h-7 mr-3 border-2 border-gray-200 group-hover:border-primary/30 transition-colors">
                       <AvatarImage src={trainer.avatar} />
-                      <AvatarFallback>{trainer.name[0]}</AvatarFallback>
+                      <AvatarFallback className="text-xs font-medium">{trainer.name[0]}</AvatarFallback>
                     </Avatar>
-                    {trainer.name} 예약
+                    <div className="flex flex-col items-start">
+                      <span className="font-medium text-sm">{trainer.name} 훈련사</span>
+                      <span className="text-xs text-gray-500 group-hover:text-primary/70 transition-colors">경력 {trainer.experience}년 · ⭐ {trainer.rating}</span>
+                    </div>
+                    <Calendar className="h-4 w-4 ml-auto text-gray-400 group-hover:text-primary transition-colors" />
                   </Button>
                 ))}
-                <Button variant="outline" className="w-full">
+                <Button 
+                  variant="outline" 
+                  className="w-full bg-gradient-to-r from-primary/5 to-secondary/5 hover:from-primary/10 hover:to-secondary/10 border-primary/20 hover:border-primary/40 text-primary hover:text-primary font-medium transition-all duration-200"
+                  onClick={() => setActiveTab('trainers')}
+                >
+                  <Users className="h-4 w-4 mr-2" />
                   모든 훈련사 보기
                 </Button>
               </div>
@@ -583,6 +674,159 @@ export default function InstituteDetail({ instituteId }: InstituteDetailProps) {
           </Card>
         </div>
       </div>
+
+      {/* 예약 팝업 */}
+      <Dialog open={isReservationOpen} onOpenChange={setIsReservationOpen}>
+        <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-3">
+              <Avatar className="w-10 h-10">
+                <AvatarImage src={selectedTrainer?.avatar} />
+                <AvatarFallback>{selectedTrainer?.name?.[0]}</AvatarFallback>
+              </Avatar>
+              <div>
+                <div className="font-semibold">{selectedTrainer?.name} 훈련사 예약</div>
+                <div className="text-sm text-gray-500 font-normal">{institute?.name}</div>
+              </div>
+            </DialogTitle>
+            <DialogDescription>
+              예약에 필요한 정보를 입력해주세요. 입력하신 정보를 바탕으로 훈련사가 직접 연락드립니다.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="name">보호자 성함 *</Label>
+                <Input
+                  id="name"
+                  value={reservationForm.name}
+                  onChange={(e) => handleReservationFormChange('name', e.target.value)}
+                  placeholder="홍길동"
+                />
+              </div>
+              <div>
+                <Label htmlFor="phone">연락처 *</Label>
+                <Input
+                  id="phone"
+                  value={reservationForm.phone}
+                  onChange={(e) => handleReservationFormChange('phone', e.target.value)}
+                  placeholder="010-1234-5678"
+                />
+              </div>
+            </div>
+
+            <div>
+              <Label htmlFor="email">이메일</Label>
+              <Input
+                id="email"
+                type="email"
+                value={reservationForm.email}
+                onChange={(e) => handleReservationFormChange('email', e.target.value)}
+                placeholder="example@email.com"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="petName">반려견 이름</Label>
+                <Input
+                  id="petName"
+                  value={reservationForm.petName}
+                  onChange={(e) => handleReservationFormChange('petName', e.target.value)}
+                  placeholder="멍멍이"
+                />
+              </div>
+              <div>
+                <Label htmlFor="petBreed">견종</Label>
+                <Input
+                  id="petBreed"
+                  value={reservationForm.petBreed}
+                  onChange={(e) => handleReservationFormChange('petBreed', e.target.value)}
+                  placeholder="골든리트리버"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="date">희망 날짜 *</Label>
+                <Input
+                  id="date"
+                  type="date"
+                  value={reservationForm.date}
+                  onChange={(e) => handleReservationFormChange('date', e.target.value)}
+                  min={new Date().toISOString().split('T')[0]}
+                />
+              </div>
+              <div>
+                <Label htmlFor="time">희망 시간 *</Label>
+                <Select value={reservationForm.time} onValueChange={(value) => handleReservationFormChange('time', value)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="시간 선택" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="09:00">09:00</SelectItem>
+                    <SelectItem value="10:00">10:00</SelectItem>
+                    <SelectItem value="11:00">11:00</SelectItem>
+                    <SelectItem value="13:00">13:00</SelectItem>
+                    <SelectItem value="14:00">14:00</SelectItem>
+                    <SelectItem value="15:00">15:00</SelectItem>
+                    <SelectItem value="16:00">16:00</SelectItem>
+                    <SelectItem value="17:00">17:00</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div>
+              <Label htmlFor="service">희망 서비스</Label>
+              <Select value={reservationForm.service} onValueChange={(value) => handleReservationFormChange('service', value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="서비스 선택" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="기본 훈련">기본 훈련</SelectItem>
+                  <SelectItem value="문제행동 교정">문제행동 교정</SelectItem>
+                  <SelectItem value="사회화 교육">사회화 교육</SelectItem>
+                  <SelectItem value="정서안정 교육">정서안정 교육</SelectItem>
+                  <SelectItem value="상담">상담</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label htmlFor="message">추가 요청사항</Label>
+              <Textarea
+                id="message"
+                value={reservationForm.message}
+                onChange={(e) => handleReservationFormChange('message', e.target.value)}
+                placeholder="반려견의 특이사항이나 훈련 목적 등을 자세히 적어주세요."
+                rows={3}
+              />
+            </div>
+
+            <div className="bg-blue-50 p-3 rounded-lg text-sm text-blue-800">
+              <div className="font-medium mb-1">📍 예약 안내</div>
+              <ul className="space-y-1 text-xs">
+                <li>• 예약 신청 후 24시간 내 훈련사가 직접 연락드립니다</li>
+                <li>• 첫 상담은 무료로 진행됩니다</li>
+                <li>• 예약 변경은 최소 24시간 전에 연락주세요</li>
+              </ul>
+            </div>
+          </div>
+
+          <div className="flex gap-3">
+            <Button variant="outline" onClick={() => setIsReservationOpen(false)} className="flex-1">
+              취소
+            </Button>
+            <Button onClick={handleReservationSubmit} className="flex-1">
+              <Calendar className="h-4 w-4 mr-2" />
+              예약 신청
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
