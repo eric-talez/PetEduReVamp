@@ -1357,10 +1357,31 @@ export default function AdminCurriculum() {
           <div>
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <BookOpen className="w-5 h-5" />
-                  등록된 커리큘럼
-                </CardTitle>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="flex items-center gap-2">
+                    <BookOpen className="w-5 h-5" />
+                    등록된 커리큘럼
+                  </CardTitle>
+                  <div className="flex gap-2">
+                    <Button 
+                      onClick={handleStartCreation}
+                      size="sm"
+                      className="flex items-center gap-1 bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600"
+                    >
+                      <Plus className="w-4 h-4 mr-1" />
+                      쉬운 생성
+                    </Button>
+                    <Button 
+                      onClick={() => setIsCreating(true)}
+                      size="sm"
+                      variant="outline"
+                      className="flex items-center gap-1"
+                    >
+                      <Settings className="w-4 h-4" />
+                      고급 생성
+                    </Button>
+                  </div>
+                </div>
               </CardHeader>
               <CardContent className="space-y-4">
                 {realCurriculumTemplates.map((template, index) => (

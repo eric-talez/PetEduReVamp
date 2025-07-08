@@ -24,16 +24,23 @@ function StatusBadge({ status }: { status: string }) {
 }
 
 function TypeBadge({ type }: { type: string }) {
-  return type === 'trainer' ? 
-    <Badge variant="info">훈련사</Badge> : 
-    <Badge variant="purple">기관</Badge>;
+  switch (type) {
+    case 'trainer':
+      return <Badge variant="info">훈련사</Badge>;
+    case 'institute':
+      return <Badge variant="purple">기관</Badge>;
+    case 'curriculum':
+      return <Badge variant="success">커리큘럼</Badge>;
+    default:
+      return <Badge variant="secondary">기타</Badge>;
+  }
 }
 
 interface RegistrationApplication {
   id: string;
-  type: 'trainer' | 'institute';
+  type: 'trainer' | 'institute' | 'curriculum';
   applicantInfo: any;
-  documents: any;
+  documents?: any;
   status: 'pending' | 'approved' | 'rejected';
   submittedAt: string;
   reviewerId?: string;
@@ -495,6 +502,135 @@ function ApplicationDetails({ application, reviewNotes, setReviewNotes, onReview
             <h3 className="text-lg font-semibold mb-3">처리 결과</h3>
             <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded">
               <p><strong>상태:</strong> {application.status === 'approved' ? '승인됨' : '거부됨'}</p>
+              <p><strong>처리일:</strong> {application.reviewedAt ? new Date(application.reviewedAt).toLocaleString('ko-KR') : '-'}</p>
+              {application.notes && (
+                <p><strong>검토 의견:</strong> {application.notes}</p>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  } else if (application.type === 'curriculum') {
+    // 커리큘럼 정보 표시
+    const info = application.applicantInfo.curriculumInfo;
+    
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <h2 className="text-xl font-semibold">커리큘럼 발행 신청 상세</h2>
+          <StatusBadge status={application.status} />
+        </div>
+
+        {/* 커리큘럼 기본 정보 */}
+        <div>
+          <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+            <FileText className="w-5 h-5" />
+            커리큘럼 정보
+          </h3>
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>제목</Label>
+                <p className="mt-1 p-2 border rounded font-medium">{info?.title || '-'}</p>
+              </div>
+              <div>
+                <Label>카테고리</Label>
+                <p className="mt-1 p-2 border rounded">{info?.category || '-'}</p>
+              </div>
+              <div>
+                <Label>난이도</Label>
+                <p className="mt-1 p-2 border rounded capitalize">{info?.difficulty || '-'}</p>
+              </div>
+              <div>
+                <Label>소요시간</Label>
+                <p className="mt-1 p-2 border rounded">{info?.duration || 0}분</p>
+              </div>
+              <div>
+                <Label>가격</Label>
+                <p className="mt-1 p-2 border rounded">₩{(info?.price || 0).toLocaleString()}</p>
+              </div>
+              <div>
+                <Label>모듈 수</Label>
+                <p className="mt-1 p-2 border rounded">{info?.moduleCount || 0}개</p>
+              </div>
+            </div>
+            <div>
+              <Label>설명</Label>
+              <p className="mt-1 p-2 border rounded h-24 overflow-y-auto">
+                {info?.description || '-'}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* 작성자 정보 */}
+        <div>
+          <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+            <User className="w-5 h-5" />
+            작성자 정보
+          </h3>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label>이름</Label>
+              <p className="mt-1 p-2 border rounded">{info?.trainerName || '-'}</p>
+            </div>
+            <div>
+              <Label>이메일</Label>
+              <p className="mt-1 p-2 border rounded">{info?.trainerEmail || '-'}</p>
+            </div>
+          </div>
+        </div>
+
+        {/* 검토 섹션 */}
+        {!isReadonly && (
+          <div>
+            <h3 className="text-lg font-semibold mb-3">검토</h3>
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="review-notes">검토 의견</Label>
+                <Textarea
+                  id="review-notes"
+                  placeholder="승인/거부 사유를 입력하세요..."
+                  value={reviewNotes}
+                  onChange={(e) => setReviewNotes(e.target.value)}
+                  className="mt-1"
+                />
+              </div>
+              <div className="flex gap-2">
+                <Button 
+                  onClick={() => onReview(application.id, 'approved')}
+                  className="bg-green-600 hover:bg-green-700"
+                >
+                  <CheckCircle className="w-4 h-4 mr-2" />
+                  승인 (서비스 반영)
+                </Button>
+                <Button 
+                  onClick={() => onReview(application.id, 'rejected')}
+                  variant="destructive"
+                >
+                  <XCircle className="w-4 h-4 mr-2" />
+                  거부
+                </Button>
+                <Button 
+                  onClick={() => onReview(application.id, 'pending')}
+                  variant="outline"
+                  className="border-blue-600 text-blue-600 hover:bg-blue-50"
+                >
+                  <RotateCcw className="w-4 h-4 mr-2" />
+                  초기화
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* 처리 결과 */}
+        {isReadonly && (
+          <div>
+            <h3 className="text-lg font-semibold mb-3">처리 결과</h3>
+            <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded">
+              <p><strong>상태:</strong> {application.status === 'approved' ? '승인됨 (서비스 반영됨)' : '거부됨'}</p>
               <p><strong>처리일:</strong> {application.reviewedAt ? new Date(application.reviewedAt).toLocaleString('ko-KR') : '-'}</p>
               {application.notes && (
                 <p><strong>검토 의견:</strong> {application.notes}</p>

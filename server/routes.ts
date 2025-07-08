@@ -3591,6 +3591,33 @@ app.get('/api/search', async (req, res) => {
             global.registeredInstitutes = [];
           }
           global.registeredInstitutes.push(instituteData);
+        } else if (application.type === 'curriculum') {
+          // 커리큘럼을 실제 코스로 변환
+          const curriculumInfo = application.applicantInfo.curriculumInfo;
+          
+          const courseData = {
+            id: `course-${Date.now()}`,
+            title: curriculumInfo.title,
+            instructor: curriculumInfo.trainerName,
+            description: curriculumInfo.description,
+            category: curriculumInfo.category,
+            difficulty: curriculumInfo.difficulty,
+            price: curriculumInfo.price,
+            duration: curriculumInfo.duration,
+            modules: [], // 실제로는 원본 커리큘럼에서 모듈 데이터 가져와야 함
+            enrollmentCount: 0,
+            rating: 0,
+            reviewCount: 0,
+            isActive: true,
+            featured: false,
+            tags: [curriculumInfo.category],
+            createdAt: new Date().toISOString()
+          };
+
+          // 코스 목록에 추가 (실제로는 데이터베이스)
+          await storage.createCourse(courseData);
+          
+          console.log('[커리큘럼 승인] 실제 서비스에 코스로 반영됨:', courseData.title);
         }
       }
 
