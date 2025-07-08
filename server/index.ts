@@ -2,6 +2,7 @@ import express from "express";
 import { registerRoutes } from "./routes";
 import { registerAIRoutes } from "./routes/ai";
 import { registerExperienceRoutes } from "./routes/experience";
+import { registerInstituteRoutes } from "./institutes/routes";
 import { setupVite, serveStatic } from "./vite";
 import { storage } from "./storage";
 import session from "express-session";
@@ -402,6 +403,9 @@ async function startServer() {
     
     // Register experience routes
     registerExperienceRoutes(app);
+    
+    // Register institute routes
+    registerInstituteRoutes(app, storage);
 
     // Setup Vite for development or serve static files for production
     // This MUST come AFTER API routes to prevent catch-all from intercepting API calls

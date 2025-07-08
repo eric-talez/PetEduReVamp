@@ -1,7 +1,7 @@
 import { Express } from "express";
-import { storage } from "../storage";
+import { storage as storageInstance } from "../storage";
 
-export function registerInstituteRoutes(app: Express, storage: IStorage) {
+export function registerInstituteRoutes(app: Express, storage: any) {
   // 기관 목록 조회
   app.get("/api/institutes", async (req, res) => {
     try {
