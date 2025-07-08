@@ -273,7 +273,7 @@ export default function MyPetsPage() {
               반려동물 등록
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-2xl">
+          <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>
                 {editingPet ? '반려동물 정보 수정' : '새 반려동물 등록'}
