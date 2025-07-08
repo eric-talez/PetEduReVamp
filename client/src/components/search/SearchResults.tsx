@@ -412,8 +412,8 @@ export function SearchResults({ results, isLoading, totalCount, currentPage = 1,
       </div>
 
       <div className="space-y-4">
-        {results.map((result) => (
-          <div key={`${result.type}-${result.id}`}>
+        {results.map((result, index) => (
+          <div key={`${result.type}-${result.id}-${index}`}>
             {result.type === 'course' && <CourseCard result={result} />}
             {result.type === 'trainer' && <TrainerCard result={result} />}
             {result.type === 'institute' && <InstituteCard result={result} />}

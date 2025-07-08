@@ -465,6 +465,16 @@ function AppLayout({ children }: { children: ReactNode }) {
                     }}
                   </Route>
                   <Route path="/institutes" component={Institutes} />
+                  <Route path="/institutes/:id">
+                    {(params) => {
+                      const InstituteDetail = lazy(() => import('./pages/institutes/detail'));
+                      return (
+                        <Suspense fallback={<div className="p-8 text-center">기관 정보 로딩 중...</div>}>
+                          <InstituteDetail instituteId={params.id} />
+                        </Suspense>
+                      );
+                    }}
+                  </Route>
 
                   {/* 위치 및 이벤트 */}
                   <Route path="/locations" component={LocationsPage} />
