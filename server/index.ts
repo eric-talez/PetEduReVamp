@@ -53,6 +53,11 @@ app.use(compression());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
+// Static file serving for images and assets (BEFORE Vite middleware)
+app.use('/images', express.static('public/images'));
+app.use('/assets', express.static('public/assets'));
+app.use('/uploads', express.static('public/uploads'));
+
 // Session configuration
 app.use(session({
   secret: process.env.SESSION_SECRET || 'your-secret-key-change-in-production',
