@@ -3330,11 +3330,48 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getInstitute(id: number): Promise<any> {
-    return null;
+    const institutes = await this.getAllInstitutes();
+    return institutes.find(institute => institute.id === id) || null;
   }
 
   async getAllInstitutes(): Promise<any[]> {
-    return [];
+    // 왕짱스쿨 기관 데이터 반환
+    return [
+      {
+        id: 1,
+        name: '왕짱스쿨',
+        type: 'institute',
+        description: '국가자격증을 보유한 전문 훈련사가 운영하는 반려견 교육 전문 기관',
+        address: '경북 구미시 구평동 661',
+        phone: '010-4765-1909',
+        email: 'donghoong@wangzzang.com',
+        website: 'https://wangzzang.com',
+        rating: 4.9,
+        reviewCount: 127,
+        isVerified: true,
+        verifiedAt: new Date('2024-01-15'),
+        certLevel: 'expert',
+        latitude: 36.1194,
+        longitude: 128.3448,
+        isActive: true,
+        facilities: ['실내 훈련장', '야외 운동장', '퍼피 전용 공간', '상담실'],
+        operatingHours: {
+          weekday: { open: '09:00', close: '18:00' },
+          weekend: { open: '10:00', close: '17:00' }
+        },
+        trainers: [
+          {
+            id: 6,
+            name: '강동훈',
+            specialty: '국가자격증 훈련 및 반려동물 교감 교육',
+            experience: 15,
+            rating: 4.9,
+            avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop&crop=face',
+            certifications: ['반려동물행동지도사 국가자격증 2급', '경기대학교 대체의학대학원 석사']
+          }
+        ]
+      }
+    ];
   }
 
   // 훈련사 관련 메서드 - 임시로 빈 구현
