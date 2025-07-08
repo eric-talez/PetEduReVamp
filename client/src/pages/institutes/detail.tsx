@@ -444,6 +444,61 @@ export default function InstituteDetail({ instituteId }: InstituteDetailProps) {
                   </div>
                 </CardContent>
               </Card>
+
+              {/* 빠른 예약 섹션 */}
+              <Card className="mt-6">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Calendar className="h-5 w-5 text-primary" />
+                    빠른 예약
+                  </CardTitle>
+                  <CardDescription>
+                    원하는 훈련사를 선택하여 바로 예약하세요.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {institute.trainers.slice(0, 2).map((trainer) => (
+                      <Button
+                        key={trainer.id}
+                        variant="outline"
+                        className="p-4 h-auto justify-start hover:bg-primary/5 hover:border-primary/50 transition-all duration-200 group"
+                        onClick={() => handleTrainerReservation(trainer)}
+                      >
+                        <Avatar className="w-12 h-12 mr-4 border-2 border-gray-200 group-hover:border-primary/30 transition-colors">
+                          <AvatarImage src={trainer.avatar} />
+                          <AvatarFallback className="text-sm font-medium">{trainer.name[0]}</AvatarFallback>
+                        </Avatar>
+                        <div className="flex flex-col items-start">
+                          <span className="font-medium">{trainer.name} 훈련사</span>
+                          <span className="text-sm text-gray-500 group-hover:text-primary/70 transition-colors">
+                            경력 {trainer.experience}년 · ⭐ {trainer.rating}
+                          </span>
+                        </div>
+                        <Calendar className="h-5 w-5 ml-auto text-gray-400 group-hover:text-primary transition-colors" />
+                      </Button>
+                    ))}
+                  </div>
+                  
+                  <Button 
+                    variant="outline" 
+                    className="w-full mt-4 bg-gradient-to-r from-primary/5 to-secondary/5 hover:from-primary/10 hover:to-secondary/10 border-primary/20 hover:border-primary/40 text-primary hover:text-primary font-medium transition-all duration-200"
+                    onClick={() => setActiveTab('trainers')}
+                  >
+                    <Users className="h-4 w-4 mr-2" />
+                    모든 훈련사 보기
+                  </Button>
+
+                  <div className="bg-blue-50 p-3 rounded-lg text-sm text-blue-800 mt-4">
+                    <div className="font-medium mb-1">📍 예약 안내</div>
+                    <ul className="space-y-1 text-xs">
+                      <li>• 예약 신청 후 24시간 내 훈련사가 직접 연락드립니다</li>
+                      <li>• 첫 상담은 무료로 진행됩니다</li>
+                      <li>• 예약 변경은 최소 24시간 전에 연락주세요</li>
+                    </ul>
+                  </div>
+                </CardContent>
+              </Card>
             </TabsContent>
 
             <TabsContent value="trainers" className="mt-6">
@@ -608,45 +663,7 @@ export default function InstituteDetail({ instituteId }: InstituteDetailProps) {
             </CardContent>
           </Card>
 
-          {/* 빠른 예약 */}
-          <Card>
-            <CardHeader>
-              <CardTitle>빠른 예약</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                <p className="text-sm text-gray-600">
-                  원하는 훈련사를 선택하여 바로 예약하세요.
-                </p>
-                {institute.trainers.slice(0, 2).map((trainer) => (
-                  <Button
-                    key={trainer.id}
-                    variant="outline"
-                    className="w-full justify-start hover:bg-primary/5 hover:border-primary/50 transition-all duration-200 group"
-                    onClick={() => handleTrainerReservation(trainer)}
-                  >
-                    <Avatar className="w-7 h-7 mr-3 border-2 border-gray-200 group-hover:border-primary/30 transition-colors">
-                      <AvatarImage src={trainer.avatar} />
-                      <AvatarFallback className="text-xs font-medium">{trainer.name[0]}</AvatarFallback>
-                    </Avatar>
-                    <div className="flex flex-col items-start">
-                      <span className="font-medium text-sm">{trainer.name} 훈련사</span>
-                      <span className="text-xs text-gray-500 group-hover:text-primary/70 transition-colors">경력 {trainer.experience}년 · ⭐ {trainer.rating}</span>
-                    </div>
-                    <Calendar className="h-4 w-4 ml-auto text-gray-400 group-hover:text-primary transition-colors" />
-                  </Button>
-                ))}
-                <Button 
-                  variant="outline" 
-                  className="w-full bg-gradient-to-r from-primary/5 to-secondary/5 hover:from-primary/10 hover:to-secondary/10 border-primary/20 hover:border-primary/40 text-primary hover:text-primary font-medium transition-all duration-200"
-                  onClick={() => setActiveTab('trainers')}
-                >
-                  <Users className="h-4 w-4 mr-2" />
-                  모든 훈련사 보기
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+
 
           {/* 기관 통계 */}
           <Card>
