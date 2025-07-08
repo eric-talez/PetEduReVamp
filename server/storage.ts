@@ -556,7 +556,7 @@ export class MemoryStorage implements IStorage{
       address: '경북 구미시 구평동 661 (왕짱 스쿨)',
       phone: '010-4765-1909',
       email: 'donghoong@wangzzang.com',
-      avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop&crop=face',
+      avatar: '/images/wangzzang/wangzzang-trainer.png',
       certifications: [
         '반려동물행동지도사 국가자격증 2급',
         '경기대학교 대체의학대학원 동물매개자연치유전공 석사',
@@ -3364,10 +3364,16 @@ export class DatabaseStorage implements IStorage {
             id: 6,
             name: '강동훈',
             specialty: '국가자격증 훈련 및 반려동물 교감 교육',
+            specialization: ['국가자격증 훈련', '정서안정 교육', '문제행동 교정', '퍼피 사회화 교육'],
             experience: 15,
             rating: 4.9,
-            avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop&crop=face',
-            certifications: ['반려동물행동지도사 국가자격증 2급', '경기대학교 대체의학대학원 석사']
+            reviewCount: 127,
+            bio: '반려동물행동지도사 국가자격증 2급 보유. 경기대학교 대체의학대학원 동물매개자연치유전공 석사 학위를 취득하였으며, 한국애견연맹 사회공헌위원회 위원으로 활동하고 있습니다. 이해와 신뢰 중심의 훈련 철학으로 반려견과 보호자가 함께 성장할 수 있도록 돕습니다.',
+            avatar: '/images/wangzzang/wangzzang-trainer.png',
+            certifications: ['반려동물행동지도사 국가자격증 2급', '경기대학교 대체의학대학원 석사', '한국애견연맹 사회공헌위원회 위원', '펫헬스케어아카데미 협회 공동대표'],
+            priceRange: '60,000원 - 90,000원',
+            phone: '010-4765-1909',
+            email: 'donghoong@wangzzang.com'
           }
         ]
       }
