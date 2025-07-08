@@ -94,7 +94,16 @@ export default function InstituteDetail({ instituteId }: InstituteDetailProps) {
           website: data.website || '',
           rating: data.rating || 4.5,
           reviewCount: data.reviewCount || 0,
-          images: ['/images/institute-default.jpg'],
+          images: data.name === '왕짱스쿨' ? [
+            '/images/wangzzang/wangzzang-main.png',
+            '/images/wangzzang/wangzzang-trainer.png',
+            '/images/wangzzang/wangzzang-facilities.png',
+            '/images/wangzzang/wangzzang-facility-1.jpg',
+            '/images/wangzzang/wangzzang-facility-2.jpg',
+            '/images/wangzzang/wangzzang-facility-3.jpg',
+            '/images/wangzzang/wangzzang-facility-4.jpg',
+            '/images/wangzzang/wangzzang-facility-5.jpg'
+          ] : ['/images/institute-default.jpg'],
           facilities: data.facilities || [],
           services: ['기본 훈련', '사회화 교육', '문제행동 교정'],
           operatingHours: data.operatingHours ? {
@@ -110,7 +119,19 @@ export default function InstituteDetail({ instituteId }: InstituteDetailProps) {
             weekday: { open: '09:00', close: '18:00' },
             weekend: { open: '10:00', close: '17:00' }
           },
-          trainers: data.trainers || [],
+          trainers: data.name === '왕짱스쿨' ? [{
+            id: 1,
+            name: '강동훈',
+            avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=강동훈',
+            specialization: ['기본 복종훈련', '사회화 교육', '문제행동 교정'],
+            experience: 10,
+            rating: 4.9,
+            reviewCount: 87,
+            bio: '제1회 반려동물행동지도사 국가자격 취득. 구미대학교 반려동물케어과 졸업. 한국펫고협약형 특성화고 자문위원.',
+            certifications: ['제1회 반려동물행동지도사 국가자격', 'KKF 홀련사 2급', 'KKF 저먼세퍼드 베젠테스트 어시스턴트'],
+            availableSlots: ['평일 09:00-18:00', '토요일 09:00-18:00'],
+            priceRange: '5만원-15만원'
+          }] : data.trainers || [],
           isVerified: data.isVerified || false,
           establishedYear: 2020,
           coordinates: {
