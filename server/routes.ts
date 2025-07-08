@@ -627,37 +627,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // 반려동물 관리 API - 완성된 버전
-  app.get("/api/pets", async (req, res) => {
-    try {
-      const userId = req.session?.user?.id;
-      if (!userId) {
-        return res.status(401).json({ message: 'Authentication required' });
-      }
 
-      const pets = await storage.getPetsByUserId(userId);
-      res.json(pets);
-    } catch (error) {
-      console.error('Error fetching pets:', error);
-      res.status(500).json({ message: 'Internal server error' });
-    }
-  });
 
-  app.post("/api/pets", async (req, res) => {
-    try {
-      const userId = req.session?.user?.id;
-      if (!userId) {
-        return res.status(401).json({ message: 'Authentication required' });
-      }
 
-      const petData = { ...req.body, userId };
-      const newPet = await storage.createPet(petData);
-      res.status(201).json(newPet);
-    } catch (error) {
-      console.error('Error creating pet:', error);
-      res.status(500).json({ message: 'Internal server error' });
-    }
-  });
 
   app.get("/api/pets/:id", async (req, res) => {
     try {
