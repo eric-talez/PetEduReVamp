@@ -121,6 +121,14 @@ TALEZ is a comprehensive pet education and e-commerce platform that combines AI-
 
 ## Changelog
 
+- July 08, 2025. **Enhanced Member Verification System for Curriculum Registration** - Implemented comprehensive member verification and registrant information extraction:
+  - **Member Verification API**: Added `/api/members/verify` endpoint to check registered member status during curriculum upload
+  - **Registrant Information Extraction**: Enhanced Excel parsing to extract registrant name, email, phone, and institution
+  - **Upload Authorization Control**: Non-members are now blocked from curriculum registration with clear error messages
+  - **Enhanced Excel Template**: Updated standardized template to include mandatory registrant information section
+  - **Automatic Member Validation**: Upload process now automatically validates member status before processing curriculum
+  - **Improved Template Structure**: 7-column format with registrant info, basic curriculum data, and session materials
+  - **Security Enhancement**: Only verified TALEZ members can submit curriculum registration applications
 - July 07, 2025. **Enhanced Curriculum Template System with Excel Integration** - Implemented comprehensive curriculum creation with standardized template downloads and pricing controls:
   - **Excel Template Download**: Created API endpoint for standardized curriculum format with sample data and instructions
   - **Module-Level Pricing Control**: Added isFree and price fields to module schema for individual session pricing
