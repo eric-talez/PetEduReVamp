@@ -126,6 +126,42 @@ export function registerInstituteRoutes(app: Express, storage: any) {
     }
   });
 
+  // 기관별 문의 조회 API (관리자용)
+  app.get("/api/institutes/:id/inquiries", async (req, res) => {
+    try {
+      const instituteId = parseInt(req.params.id);
+      
+      console.log('[Inquiry API] 문의 조회 요청 - 기관 ID:', instituteId);
+
+      // 실제로는 데이터베이스에서 조회하지만, 현재는 메모리에서 조회
+      // 전역 메모리에 저장된 문의들을 기관별로 필터링
+      if (!global.instituteInquiries) {
+        global.instituteInquiries = [];
+      }
+
+      const inquiries = global.instituteInquiries.filter(
+        (inquiry: any) => inquiry.instituteId === instituteId
+      );
+
+      console.log('[Inquiry API] 조회된 문의 목록:', inquiries);
+
+      res.json({
+        success: true,
+        inquiries: inquiries.sort((a: any, b: any) => 
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        )
+      });
+
+    } catch (error) {
+      console.error('Error fetching inquiries:', error);
+      res.status(500).json({ 
+        success: false,
+        message: 'Internal server error',
+        error: '문의 조회 중 오류가 발생했습니다.'
+      });
+    }
+  });
+
   // 문의 생성 API
   app.post("/api/institutes/:id/inquiries", async (req, res) => {
     try {
@@ -151,6 +187,12 @@ export function registerInstituteRoutes(app: Express, storage: any) {
         createdAt: new Date().toISOString()
       };
 
+      // 전역 메모리에 문의 저장
+      if (!global.instituteInquiries) {
+        global.instituteInquiries = [];
+      }
+      global.instituteInquiries.push(inquiry);
+
       console.log('[Inquiry API] 문의 생성 완료:', inquiry);
 
       res.status(201).json({
@@ -165,6 +207,57 @@ export function registerInstituteRoutes(app: Express, storage: any) {
         success: false,
         message: 'Internal server error',
         error: '문의 접수 중 오류가 발생했습니다.'
+      });
+    }
+  });
+
+  // 문의 상태 업데이트 API (관리자용)
+  app.patch("/api/institutes/:id/inquiries/:inquiryId", async (req, res) => {
+    try {
+      const instituteId = parseInt(req.params.id);
+      const inquiryId = parseInt(req.params.inquiryId);
+      const { status, response } = req.body;
+
+      console.log('[Inquiry API] 문의 상태 업데이트:', { instituteId, inquiryId, status, response });
+
+      if (!global.instituteInquiries) {
+        global.instituteInquiries = [];
+      }
+
+      const inquiryIndex = global.instituteInquiries.findIndex(
+        (inquiry: any) => inquiry.id === inquiryId && inquiry.instituteId === instituteId
+      );
+
+      if (inquiryIndex === -1) {
+        return res.status(404).json({
+          success: false,
+          message: 'Inquiry not found',
+          error: '문의를 찾을 수 없습니다.'
+        });
+      }
+
+      // 문의 상태 업데이트
+      global.instituteInquiries[inquiryIndex] = {
+        ...global.instituteInquiries[inquiryIndex],
+        status,
+        response,
+        respondedAt: new Date().toISOString()
+      };
+
+      console.log('[Inquiry API] 문의 업데이트 완료:', global.instituteInquiries[inquiryIndex]);
+
+      res.json({
+        success: true,
+        message: '문의 상태가 업데이트되었습니다.',
+        inquiry: global.instituteInquiries[inquiryIndex]
+      });
+
+    } catch (error) {
+      console.error('Error updating inquiry:', error);
+      res.status(500).json({ 
+        success: false,
+        message: 'Internal server error',
+        error: '문의 업데이트 중 오류가 발생했습니다.'
       });
     }
   });
