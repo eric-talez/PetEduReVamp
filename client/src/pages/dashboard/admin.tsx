@@ -105,11 +105,17 @@ export default function AdminDashboard({ onAction }: AdminDashboardProps) {
     }
   };
 
-  // 승인/거부 처리 핸들러
-  const handleApprovalAction = async (action: 'approve' | 'reject', type: string, name: string) => {
+  // 승인/거부/삭제 처리 핸들러
+  const handleApprovalAction = async (action: 'approve' | 'reject' | 'delete', type: string, name: string) => {
     const actionKey = `${action}-${type}-${name}`;
     
     try {
+      // 삭제 확인
+      if (action === 'delete') {
+        const confirmed = confirm(`정말로 ${name}의 ${type} 신청을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.`);
+        if (!confirmed) return;
+      }
+      
       // 처리 중 상태 설정
       setProcessingActions(prev => new Set(prev).add(actionKey));
       
@@ -123,7 +129,7 @@ export default function AdminDashboard({ onAction }: AdminDashboardProps) {
 
       if (response.ok) {
         const result = await response.json();
-        console.log(`${name}의 ${type} ${action === 'approve' ? '승인' : '거부'} 완료:`, result);
+        console.log(`${name}의 ${type} ${action === 'approve' ? '승인' : action === 'reject' ? '거부' : '삭제'} 완료:`, result);
         
         // 성공 메시지 표시
         alert(`✅ ${result.message}`);
@@ -131,11 +137,11 @@ export default function AdminDashboard({ onAction }: AdminDashboardProps) {
         // 데이터 새로고침
         loadStats();
       } else {
-        console.error('승인 처리 실패');
+        console.error('처리 실패');
         alert('❌ 처리 중 오류가 발생했습니다.');
       }
     } catch (error) {
-      console.error('승인 처리 오류:', error);
+      console.error('처리 오류:', error);
       alert('❌ 네트워크 오류가 발생했습니다.');
     } finally {
       // 처리 중 상태 해제
@@ -572,6 +578,15 @@ export default function AdminDashboard({ onAction }: AdminDashboardProps) {
                 </div>
                 <div className="mt-4 flex justify-end space-x-2">
                   <Button 
+                    variant="destructive" 
+                    size="sm" 
+                    className="text-xs"
+                    disabled={processingActions.has('delete-trainer-최훈련')}
+                    onClick={() => handleApprovalAction('delete', 'trainer', '최훈련')}
+                  >
+                    {processingActions.has('delete-trainer-최훈련') ? '삭제중...' : '삭제'}
+                  </Button>
+                  <Button 
                     variant="outline" 
                     size="sm" 
                     className="text-xs"
@@ -603,6 +618,15 @@ export default function AdminDashboard({ onAction }: AdminDashboardProps) {
                   <Badge variant="warning" className="ml-auto">기관</Badge>
                 </div>
                 <div className="mt-4 flex justify-end space-x-2">
+                  <Button 
+                    variant="destructive" 
+                    size="sm" 
+                    className="text-xs"
+                    disabled={processingActions.has('delete-institute-멍멍 아카데미')}
+                    onClick={() => handleApprovalAction('delete', 'institute', '멍멍 아카데미')}
+                  >
+                    {processingActions.has('delete-institute-멍멍 아카데미') ? '삭제중...' : '삭제'}
+                  </Button>
                   <Button 
                     variant="outline" 
                     size="sm" 
@@ -637,6 +661,15 @@ export default function AdminDashboard({ onAction }: AdminDashboardProps) {
                   <Badge variant="purple" className="ml-auto">인증</Badge>
                 </div>
                 <div className="mt-4 flex justify-end space-x-2">
+                  <Button 
+                    variant="destructive" 
+                    size="sm" 
+                    className="text-xs"
+                    disabled={processingActions.has('delete-certification-박전문')}
+                    onClick={() => handleApprovalAction('delete', 'certification', '박전문')}
+                  >
+                    {processingActions.has('delete-certification-박전문') ? '삭제중...' : '삭제'}
+                  </Button>
                   <Button 
                     variant="outline" 
                     size="sm" 

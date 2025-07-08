@@ -5217,7 +5217,7 @@ app.get('/api/search', async (req, res) => {
     }
   });
 
-  // 관리자 승인/거부 API
+  // 관리자 승인/거부/삭제 API
   app.post("/api/admin/approvals/:action", async (req, res) => {
     try {
       const { action } = req.params;
@@ -5243,12 +5243,21 @@ app.get('/api/search', async (req, res) => {
           type,
           name
         });
+      } else if (action === 'delete') {
+        console.log(`🗑️ ${name}의 ${type} 삭제 완료`);
+        res.json({ 
+          success: true, 
+          message: `${name}의 ${type} 신청이 삭제되었습니다.`,
+          action: 'deleted',
+          type,
+          name
+        });
       } else {
         res.status(400).json({ error: "유효하지 않은 액션입니다" });
       }
     } catch (error) {
-      console.error('승인 처리 오류:', error);
-      res.status(500).json({ error: "승인 처리 중 오류가 발생했습니다" });
+      console.error('처리 오류:', error);
+      res.status(500).json({ error: "처리 중 오류가 발생했습니다" });
     }
   });
 
