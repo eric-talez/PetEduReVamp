@@ -14,6 +14,8 @@ import { SidebarMenuGroup } from "./SidebarMenuGroup";
 import { ScrollReveal } from "@/components/ui/AnimatedContent";
 
 import { AccessibilityFloatingButton } from "@/components/ui/AccessibilityControls";
+import logoDark from '@assets/Talez_상하조합_1751984071529.png';
+import logoLight from '@assets/Talez_상하조합_1751984067730.jpg';
 import {
   Home,
   Users,
@@ -536,7 +538,7 @@ export function Sidebar({
             <ScrollReveal direction="left" delay={100}>
               <a href="/" className="flex items-center justify-center w-full group">
                 <img 
-                  src="/logo.svg" 
+                  src="/logo-light.svg" 
                   alt="TALEZ 로고" 
                   className="h-12 w-auto transition-all duration-300 group-hover:scale-105 dark:hidden"
                 />
@@ -552,12 +554,12 @@ export function Sidebar({
               <img 
                 src="/logo-compact.svg" 
                 alt="TALEZ" 
-                className="h-10 w-10 dark:hidden"
+                className="h-8 w-auto dark:hidden"
               />
               <img 
                 src="/logo-compact-dark.svg" 
                 alt="TALEZ" 
-                className="h-10 w-10 hidden dark:block"
+                className="h-8 w-auto hidden dark:block"
               />
             </a>
           )}

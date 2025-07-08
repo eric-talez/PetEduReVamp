@@ -1,0 +1,26 @@
+<svg width="220" height="80" viewBox="0 0 220 80" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="220" height="80" fill="#FFFFFF"/>
+  
+  <!-- Three colorful icon squares -->
+  <!-- Dog icon - Green -->
+  <rect x="20" y="10" width="50" height="50" rx="8" fill="#8BC34A"/>
+  <path d="M30 25 Q25 22 25 30 Q25 40 35 45 Q45 42 50 35 Q52 30 48 25 Q45 22 40 25 Q35 22 30 25 Z" fill="white"/>
+  
+  <!-- Bird/Leaf icon - Yellow -->
+  <rect x="80" y="10" width="50" height="50" rx="8" fill="#FDD835"/>
+  <path d="M90 50 Q85 45 85 40 Q85 35 90 30 Q95 27 100 30 Q105 33 115 40 Q117 45 115 50 Q110 53 105 50 Q100 47 95 50 Q90 53 90 50 Z" fill="white"/>
+  
+  <!-- Paw print icon - Orange -->
+  <rect x="140" y="10" width="50" height="50" rx="8" fill="#FF7043"/>
+  <ellipse cx="160" cy="45" rx="5" ry="7" fill="white"/>
+  <ellipse cx="152" cy="30" rx="4" ry="5" fill="white"/>
+  <ellipse cx="160" cy="25" rx="4" ry="5" fill="white"/>
+  <ellipse cx="168" cy="30" rx="4" ry="5" fill="white"/>
+  <ellipse cx="175" cy="35" rx="4" ry="5" fill="white"/>
+  
+  <!-- Talez Text -->
+  <text x="20" y="75" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="#424242">
+    Talez
+  </text>
+</svg>
