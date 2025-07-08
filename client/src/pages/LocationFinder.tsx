@@ -249,14 +249,14 @@ export default function LocationFinder() {
 
     setIsSearching(true);
     try {
-      console.log(`[DEBUG] API Request: GET /api/search?q=${encodeURIComponent(query)}&page=1&limit=10`);
-      const response = await fetch(`/api/search?q=${encodeURIComponent(query)}&page=1&limit=10`);
+      console.log(`[DEBUG] API Request: GET /api/locations/search?keyword=${encodeURIComponent(query)}`);
+      const response = await fetch(`/api/locations/search?keyword=${encodeURIComponent(query)}`);
       
       if (response.ok) {
         const data = await response.json();
         console.log('[DEBUG] API Response: 200 OK');
         console.log('[DEBUG] Search results:', data);
-        setSearchResults(data.results || []);
+        setSearchResults(data.locations || []);
       } else {
         console.error('[DEBUG] API Error:', response.status);
         setSearchResults([]);
@@ -294,18 +294,20 @@ export default function LocationFinder() {
 
   // API 검색 결과를 LocationItem 형태로 변환
   const searchResultsAsLocations = searchResults
-    .filter(result => result.type === 'trainer')
     .map(result => ({
       id: result.id + 1000, // ID 충돌 방지
-      name: result.title,
-      type: 'training' as const,
-      address: result.location || '주소 정보 없음',
+      name: result.name,
+      type: result.type === 'training-center' ? 'training' as const : 
+            result.type === 'veterinary' ? 'hospital' as const :
+            result.type === 'trainer' ? 'training' as const :
+            'training' as const,
+      address: result.address || '주소 정보 없음',
       phone: result.phone || '연락처 정보 없음',
       rating: result.rating || 4.5,
       reviewCount: result.reviewCount || 0,
       distance: 0,
       operatingHours: { open: '09:00', close: '18:00' },
-      services: result.features || [],
+      services: result.services || [],
       priceRange: '상담 후 결정',
       isPartner: true,
       description: result.description || '',

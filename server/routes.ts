@@ -8,6 +8,7 @@ import { registerAdminRoutes } from "./routes/admin";
 import { registerShoppingRoutes } from "./routes/shopping";
 // import { registerNotificationRoutes } from "./routes/notification-routes";
 import { registerUploadRoutes } from "./routes/upload";
+import { registerLocationRoutes } from "./location/routes";
 import { storage } from "./storage";
 import { courses, users, institutes } from "../shared/schema";
 import { ilike, or } from "drizzle-orm";
@@ -441,6 +442,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // 관리자 라우트 등록
   registerAdminRoutes(app);
+
+  // 위치 검색 라우트 등록
+  registerLocationRoutes(app);
 
   // 실시간 인기 통계 API
   app.get("/api/popular-stats", async (req, res) => {

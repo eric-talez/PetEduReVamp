@@ -57,27 +57,79 @@ export function registerLocationRoutes(app: Express) {
     try {
       const { keyword, type, certification } = req.query;
 
-      // 관리자 등록 위치와 일반 검색 결과 통합
-      const adminLocationsResponse = await fetch(`${process.env.BASE_URL || 'http://localhost:5000'}/api/admin/locations`);
-      let adminLocations = [];
+      // 데이터베이스에서 직접 검색
+      const institutes = await storage.getAllInstitutes();
+      const trainers = await storage.getAllTrainers();
 
-      if (adminLocationsResponse.ok) {
-        const adminData = await adminLocationsResponse.json();
-        adminLocations = adminData.success ? adminData.locations : [];
-      }
+      // 기관 데이터 변환
+      const instituteLocations = institutes.map(institute => ({
+        id: `institute_${institute.id}`,
+        name: institute.name,
+        type: institute.type || 'institute',
+        address: institute.address || '',
+        phone: institute.phone || '',
+        description: institute.description || '',
+        rating: institute.rating || 0,
+        reviewCount: institute.reviewCount || 0,
+        certification: institute.isVerified || false,
+        certificationLevel: institute.certLevel || 'standard',
+        status: 'active',
+        adminApproved: true,
+        latitude: institute.latitude || 37.5665,
+        longitude: institute.longitude || 126.9780,
+        logo: institute.logo || null,
+        operatingHours: institute.operatingHours || {}
+      }));
 
-      // 활성 상태이고 승인된 위치만 필터링
-      let filteredLocations = adminLocations.filter(location => 
-        location.status === 'active' && location.adminApproved
-      );
+      // 훈련사 데이터 변환
+      const trainerLocations = trainers.map(trainer => ({
+        id: `trainer_${trainer.id}`,
+        name: trainer.name,
+        type: 'trainer',
+        address: trainer.address || '',
+        phone: trainer.phone || '',
+        description: trainer.bio || '',
+        rating: trainer.rating || 0,
+        reviewCount: trainer.reviewCount || 0,
+        certification: trainer.isVerified || false,
+        certificationLevel: trainer.certLevel || 'standard',
+        status: 'active',
+        adminApproved: true,
+        latitude: trainer.latitude || 37.5665,
+        longitude: trainer.longitude || 126.9780,
+        logo: trainer.photo || null,
+        operatingHours: {}
+      }));
+
+      // 모든 위치 통합
+      let filteredLocations = [...instituteLocations, ...trainerLocations];
 
       // 키워드 검색
       if (keyword) {
-        filteredLocations = filteredLocations.filter(location =>
-          location.name.toLowerCase().includes(keyword.toString().toLowerCase()) ||
-          location.address.toLowerCase().includes(keyword.toString().toLowerCase()) ||
-          location.description.toLowerCase().includes(keyword.toString().toLowerCase())
-        );
+        // URL 디코딩 처리
+        let searchKeyword;
+        try {
+          searchKeyword = decodeURIComponent(keyword.toString()).toLowerCase();
+        } catch (e) {
+          searchKeyword = keyword.toString().toLowerCase();
+        }
+        
+        console.log('[위치 검색] 검색 키워드:', searchKeyword);
+        console.log('[위치 검색] 전체 위치 수:', filteredLocations.length);
+        
+        filteredLocations = filteredLocations.filter(location => {
+          const nameMatch = location.name.toLowerCase().includes(searchKeyword);
+          const addressMatch = location.address.toLowerCase().includes(searchKeyword);
+          const descMatch = location.description.toLowerCase().includes(searchKeyword);
+          
+          if (nameMatch || addressMatch || descMatch) {
+            console.log('[위치 검색] 매칭됨:', location.name);
+          }
+          
+          return nameMatch || addressMatch || descMatch;
+        });
+        
+        console.log('[위치 검색] 필터링 후 결과 수:', filteredLocations.length);
       }
 
       // 타입 필터
@@ -132,13 +184,13 @@ export function registerLocationRoutes(app: Express) {
         features?: string[];
       }> = [];
 
-      if (type === 'institute') {
+      if (type === 'institute' || type === 'training-center') {
         // 기관 데이터 가져오기
         const institutes = await storage.getAllInstitutes();
         results = institutes.map(institute => ({
           id: `institute_${institute.id}`,
           name: institute.name,
-          type: 'institute',
+          type: institute.type || 'institute',
           location: {
             latitude: institute.latitude || 37.5665, // 기본값: 서울 중심
             longitude: institute.longitude || 126.9780,
@@ -173,10 +225,47 @@ export function registerLocationRoutes(app: Express) {
           certificationLevel: trainer.certLevel || 'standard',
         }));
       } else {
-        // 그 외의 경우 샘플 데이터 반환
-        console.warn(`외부 API 키가 없어 ${type} 유형에 대한 샘플 데이터를 반환합니다.`);
-        // 빈 배열 반환 (실제 구현 시 API 키 필요)
-        results = [];
+        // 'all' 타입이거나 기타 타입인 경우 모든 데이터 포함
+        const institutes = await storage.getAllInstitutes();
+        const trainers = await storage.getAllTrainers();
+        
+        const instituteResults = institutes.map(institute => ({
+          id: `institute_${institute.id}`,
+          name: institute.name,
+          type: institute.type || 'institute',
+          location: {
+            latitude: institute.latitude || 37.5665,
+            longitude: institute.longitude || 126.9780,
+            address: institute.address || '',
+          },
+          contact: institute.phone || null,
+          distance: calculateDistance(lat, lng, institute.latitude || 37.5665, institute.longitude || 126.9780),
+          photo: institute.logo || null,
+          description: institute.description || '',
+          isCertified: institute.isVerified || false,
+          certificationDate: institute.verifiedAt ? new Date(institute.verifiedAt).toLocaleDateString() : undefined,
+          certificationLevel: institute.certLevel || 'standard',
+        }));
+        
+        const trainerResults = trainers.map(trainer => ({
+          id: `trainer_${trainer.id}`,
+          name: trainer.name,
+          type: 'trainer',
+          location: {
+            latitude: trainer.latitude || 37.5665,
+            longitude: trainer.longitude || 126.9780,
+            address: trainer.address || '',
+          },
+          contact: trainer.phone || null,
+          distance: calculateDistance(lat, lng, trainer.latitude || 37.5665, trainer.longitude || 126.9780),
+          photo: trainer.photo || null,
+          description: trainer.bio || '',
+          isCertified: trainer.isVerified || false,
+          certificationDate: trainer.verifiedAt ? new Date(trainer.verifiedAt).toLocaleDateString() : undefined,
+          certificationLevel: trainer.certLevel || 'standard',
+        }));
+        
+        results = [...instituteResults, ...trainerResults];
       }
 
       // 샘플 데이터를 위한 장소별 특징과 반려동물 친화도 추가
