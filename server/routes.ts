@@ -3782,6 +3782,24 @@ app.get('/api/search', async (req, res) => {
     }
   });
 
+  // 개별 커리큘럼 조회 API (미리보기용 - 인증 불필요)
+  app.get('/api/courses/:id/preview', async (req, res) => {
+    try {
+      const curriculumId = req.params.id;
+      const curriculums = await storage.getCurriculums();
+      const curriculum = curriculums.find(c => c.id === curriculumId);
+      
+      if (!curriculum) {
+        return res.status(404).json({ message: '커리큘럼을 찾을 수 없습니다.' });
+      }
+      
+      res.json(curriculum);
+    } catch (error) {
+      console.error('[커리큘럼 미리보기] 조회 실패:', error);
+      res.status(500).json({ message: '커리큘럼 조회에 실패했습니다.' });
+    }
+  });
+
   app.post('/api/admin/curriculums', requireAuth('admin'), async (req, res) => {
     try {
       const curriculumData = req.body;
