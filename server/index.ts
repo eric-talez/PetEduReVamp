@@ -39,6 +39,9 @@ app.use(cors({
 // 업로드된 파일을 정적으로 제공
 app.use('/uploads', express.static('uploads'));
 
+// 로고 및 기타 정적 파일 제공
+app.use(express.static('public'));
+
 // Disable rate limiting in development to avoid proxy issues
 if (process.env.NODE_ENV === 'production') {
   const limiter = rateLimit({
@@ -61,6 +64,19 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use('/images', express.static('public/images'));
 app.use('/assets', express.static('public/assets'));
 app.use('/uploads', express.static('public/uploads'));
+
+// 로고 파일 직접 제공
+app.get('/logo.svg', (req, res) => {
+  res.sendFile('logo.svg', { root: 'public' });
+});
+
+app.get('/logo-compact.svg', (req, res) => {
+  res.sendFile('logo-compact.svg', { root: 'public' });
+});
+
+app.get('/favicon.svg', (req, res) => {
+  res.sendFile('favicon.svg', { root: 'public' });
+});
 
 // Session configuration
 app.use(session({
