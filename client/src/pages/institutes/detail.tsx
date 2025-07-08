@@ -489,6 +489,13 @@ export default function InstituteDetail({ instituteId }: InstituteDetailProps) {
     }
   };
 
+  // 실제 평균 평점 계산
+  const calculateAverageRating = () => {
+    if (instituteReviews.length === 0) return institute?.rating || 0;
+    const totalRating = instituteReviews.reduce((sum: number, review: any) => sum + review.rating, 0);
+    return (totalRating / instituteReviews.length).toFixed(1);
+  };
+
   // 예약 폼 변경 처리
   const handleReservationFormChange = (field: string, value: string) => {
     setReservationForm(prev => ({
@@ -734,8 +741,8 @@ export default function InstituteDetail({ instituteId }: InstituteDetailProps) {
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-1">
               <Star className="h-5 w-5 fill-yellow-400 text-yellow-400" />
-              <span className="font-medium">{institute.rating}</span>
-              <span className="text-gray-300">({institute.reviewCount})</span>
+              <span className="font-medium">{calculateAverageRating()}</span>
+              <span className="text-gray-300">({instituteReviews.length})</span>
             </div>
             <div className="flex items-center gap-2">
               <MapPin className="h-4 w-4" />
@@ -1088,11 +1095,11 @@ export default function InstituteDetail({ instituteId }: InstituteDetailProps) {
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">평균 평점</span>
-                <span className="font-medium">{institute.rating}</span>
+                <span className="font-medium">{calculateAverageRating()}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">후기 수</span>
-                <span className="font-medium">{institute.reviewCount}개</span>
+                <span className="font-medium">{instituteReviews.length}개</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">설립년도</span>
