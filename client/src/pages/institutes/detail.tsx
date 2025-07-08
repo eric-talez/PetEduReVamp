@@ -257,26 +257,7 @@ export default function InstituteDetail({ instituteId }: InstituteDetailProps) {
     coordinates: { lat: 37.5665, lng: 126.9780 }
   };
 
-  useEffect(() => {
-    loadInstituteDetails();
-  }, [instituteId]);
 
-  const loadInstituteDetails = async () => {
-    try {
-      setIsLoading(true);
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      setInstitute(sampleInstitute);
-    } catch (error) {
-      console.error('기관 정보 로딩 실패:', error);
-      toast({
-        title: "데이터 로딩 실패",
-        description: "기관 정보를 불러올 수 없습니다.",
-        variant: "destructive"
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const handleTrainerReservation = (trainer: Trainer) => {
     setSelectedTrainer(trainer);
