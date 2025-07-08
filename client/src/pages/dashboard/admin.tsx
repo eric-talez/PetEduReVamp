@@ -40,6 +40,50 @@ export default function AdminDashboard({ onAction }: AdminDashboardProps) {
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  // 시스템 상태 데이터 로드
+  const loadStats = async () => {
+    try {
+      const response = await fetch('/api/admin/dashboard/stats');
+      const data = await response.json();
+      console.log('[Admin] 시스템 상태 로드:', data);
+      setStats(data);
+    } catch (error) {
+      console.error('[Admin] 시스템 상태 로드 오류:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // 승인/거부 처리 핸들러
+  const handleApprovalAction = async (action: 'approve' | 'reject', type: string, name: string) => {
+    try {
+      console.log(`[Admin] ${action} action for ${type}: ${name}`);
+      
+      // API 호출 (실제 구현에서는 적절한 엔드포인트 사용)
+      const response = await fetch(`/api/admin/approvals/${action}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type, name })
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        console.log(`${name}의 ${type} ${action === 'approve' ? '승인' : '거부'} 완료:`, result);
+        // 성공 시 데이터 새로고침
+        loadStats();
+      } else {
+        console.error('승인 처리 실패');
+      }
+    } catch (error) {
+      console.error('승인 처리 오류:', error);
+    }
+  };
+
+  // 컴포넌트 마운트 시 데이터 로드
+  useEffect(() => {
+    loadStats();
+  }, []);
+
   useEffect(() => {
     fetchAdminStats();
   }, []);
@@ -459,8 +503,21 @@ export default function AdminDashboard({ onAction }: AdminDashboardProps) {
                   <Badge variant="info" className="ml-auto">훈련사</Badge>
                 </div>
                 <div className="mt-4 flex justify-end space-x-2">
-                  <Button variant="outline" size="sm" className="text-xs">거부</Button>
-                  <Button size="sm" className="text-xs">승인</Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="text-xs"
+                    onClick={() => handleApprovalAction('reject', 'trainer', '최훈련')}
+                  >
+                    거부
+                  </Button>
+                  <Button 
+                    size="sm" 
+                    className="text-xs"
+                    onClick={() => handleApprovalAction('approve', 'trainer', '최훈련')}
+                  >
+                    승인
+                  </Button>
                 </div>
               </div>
               
@@ -476,8 +533,21 @@ export default function AdminDashboard({ onAction }: AdminDashboardProps) {
                   <Badge variant="warning" className="ml-auto">기관</Badge>
                 </div>
                 <div className="mt-4 flex justify-end space-x-2">
-                  <Button variant="outline" size="sm" className="text-xs">거부</Button>
-                  <Button size="sm" className="text-xs">승인</Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="text-xs"
+                    onClick={() => handleApprovalAction('reject', 'institute', '멍멍 아카데미')}
+                  >
+                    거부
+                  </Button>
+                  <Button 
+                    size="sm" 
+                    className="text-xs"
+                    onClick={() => handleApprovalAction('approve', 'institute', '멍멍 아카데미')}
+                  >
+                    승인
+                  </Button>
                 </div>
               </div>
               
@@ -495,8 +565,21 @@ export default function AdminDashboard({ onAction }: AdminDashboardProps) {
                   <Badge variant="purple" className="ml-auto">인증</Badge>
                 </div>
                 <div className="mt-4 flex justify-end space-x-2">
-                  <Button variant="outline" size="sm" className="text-xs">거부</Button>
-                  <Button size="sm" className="text-xs">승인</Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="text-xs"
+                    onClick={() => handleApprovalAction('reject', 'certification', '박전문')}
+                  >
+                    거부
+                  </Button>
+                  <Button 
+                    size="sm" 
+                    className="text-xs"
+                    onClick={() => handleApprovalAction('approve', 'certification', '박전문')}
+                  >
+                    승인
+                  </Button>
                 </div>
               </div>
             </div>

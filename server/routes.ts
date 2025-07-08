@@ -5217,6 +5217,41 @@ app.get('/api/search', async (req, res) => {
     }
   });
 
+  // 관리자 승인/거부 API
+  app.post("/api/admin/approvals/:action", async (req, res) => {
+    try {
+      const { action } = req.params;
+      const { type, name } = req.body;
+
+      console.log(`[Admin API] ${action} action for ${type}: ${name}`);
+
+      if (action === 'approve') {
+        console.log(`✅ ${name}의 ${type} 승인 완료`);
+        res.json({ 
+          success: true, 
+          message: `${name}의 ${type} 신청이 승인되었습니다.`,
+          action: 'approved',
+          type,
+          name
+        });
+      } else if (action === 'reject') {
+        console.log(`❌ ${name}의 ${type} 거부 완료`);
+        res.json({ 
+          success: true, 
+          message: `${name}의 ${type} 신청이 거부되었습니다.`,
+          action: 'rejected',
+          type,
+          name
+        });
+      } else {
+        res.status(400).json({ error: "유효하지 않은 액션입니다" });
+      }
+    } catch (error) {
+      console.error('승인 처리 오류:', error);
+      res.status(500).json({ error: "승인 처리 중 오류가 발생했습니다" });
+    }
+  });
+
   // Global error handler (commented out for now)
   // app.use(errorHandler);
 
@@ -5519,3 +5554,4 @@ function parseRealExcelContent(data: any[][], fileName: string) {
   
   return result;
 }
+
