@@ -69,15 +69,83 @@ export default function InstituteDetail({ instituteId }: InstituteDetailProps) {
   const [activeTab, setActiveTab] = useState('overview');
   const { toast } = useToast();
 
-  // 샘플 기관 데이터
-  const sampleInstitute: Institute = {
+  // 실제 API에서 기관 데이터 가져오기
+  useEffect(() => {
+    const fetchInstitute = async () => {
+      try {
+        setIsLoading(true);
+        console.log('[InstituteDetail] 기관 ID로 데이터 조회:', instituteId);
+        
+        const response = await fetch(`/api/institutes/${instituteId}`);
+        if (!response.ok) {
+          throw new Error('기관 정보를 찾을 수 없습니다.');
+        }
+        
+        const data = await response.json();
+        console.log('[InstituteDetail] API 응답 데이터:', data);
+        
+        // API 데이터를 클라이언트 인터페이스에 맞게 변환
+        const transformedInstitute: Institute = {
+          id: data.id,
+          name: data.name,
+          description: data.description || '전문 반려견 교육 기관',
+          address: data.address,
+          phone: data.phone,
+          website: data.website || '',
+          rating: data.rating || 4.5,
+          reviewCount: data.reviewCount || 0,
+          images: ['/images/institute-default.jpg'],
+          facilities: data.facilities || [],
+          services: ['기본 훈련', '사회화 교육', '문제행동 교정'],
+          operatingHours: data.operatingHours ? {
+            weekday: { 
+              open: data.operatingHours.monday?.open || '09:00', 
+              close: data.operatingHours.monday?.close || '18:00' 
+            },
+            weekend: { 
+              open: data.operatingHours.saturday?.open || '10:00', 
+              close: data.operatingHours.saturday?.close || '17:00' 
+            }
+          } : {
+            weekday: { open: '09:00', close: '18:00' },
+            weekend: { open: '10:00', close: '17:00' }
+          },
+          trainers: data.trainers || [],
+          isVerified: data.isVerified || false,
+          establishedYear: 2020,
+          coordinates: {
+            lat: data.latitude || 37.5665,
+            lng: data.longitude || 126.9780
+          }
+        };
+        
+        setInstitute(transformedInstitute);
+      } catch (error) {
+        console.error('[InstituteDetail] 기관 데이터 조회 오류:', error);
+        toast({
+          title: "오류",
+          description: "기관 정보를 불러올 수 없습니다.",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    if (instituteId) {
+      fetchInstitute();
+    }
+  }, [instituteId, toast]);
+
+  // 샘플 기관 데이터 (fallback용)
+  const fallbackInstitute: Institute = {
     id: parseInt(instituteId),
-    name: '서울 펫 트레이닝 아카데미',
-    description: '20년 전통의 반려견 전문 교육 기관으로, 체계적이고 과학적인 훈련 프로그램을 제공합니다.',
-    address: '서울시 강남구 테헤란로 123, 펫타워 5층',
-    phone: '02-1234-5678',
-    website: 'www.seouldogacademy.com',
-    rating: 4.8,
+    name: '기관 정보 없음',
+    description: '기관 정보를 불러올 수 없습니다.',
+    address: '',
+    phone: '',
+    website: '',
+    rating: 0,
     reviewCount: 324,
     images: [
       'https://images.unsplash.com/photo-1544568100-847a948585b9?w=600',

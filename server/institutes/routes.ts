@@ -5,7 +5,7 @@ export function registerInstituteRoutes(app: Express, storage: IStorage) {
   // 기관 목록 조회
   app.get("/api/institutes", async (req, res) => {
     try {
-      const institutes = await storage.getInstitutes();
+      const institutes = await storage.getAllInstitutes();
       res.json(institutes || []);
     } catch (error) {
       console.error('Error fetching institutes:', error);
@@ -17,10 +17,13 @@ export function registerInstituteRoutes(app: Express, storage: IStorage) {
   app.get("/api/institutes/:id", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
-      const institutes = await storage.getInstitutes();
-      const institute = institutes.find(i => i.id === id);
+      console.log('[InstituteAPI] 기관 상세 조회 요청:', id);
+      
+      const institute = await storage.getInstitute(id);
+      console.log('[InstituteAPI] 조회된 기관 데이터:', institute);
 
       if (!institute) {
+        console.log('[InstituteAPI] 기관을 찾을 수 없음:', id);
         return res.status(404).json({ message: 'Institute not found' });
       }
 
