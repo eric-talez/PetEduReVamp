@@ -266,36 +266,18 @@ export default function MyPetsPage() {
 
                   {/* 업로드 컨트롤 */}
                   <div className="flex-1 space-y-3">
-                    {!formData.imageUrl ? (
-                      <ImageUpload
-                        value={formData.imageUrl}
-                        onChange={(url) => setFormData({ ...formData, imageUrl: url || '' })}
-                        maxSize={5}
-                        label="프로필 사진 업로드"
-                        aspectRatio={1}
-                        maxWidth={400}
-                        maxHeight={400}
+                    <div className="space-y-2">
+                      <Label htmlFor="imageUrl">이미지 URL (선택사항)</Label>
+                      <Input
+                        id="imageUrl"
+                        type="url"
+                        placeholder="https://example.com/image.jpg"
+                        value={formData.imageUrl || ''}
+                        onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
                       />
-                    ) : (
-                      <div className="space-y-2">
-                        <p className="text-sm text-green-600 font-medium">이미지가 업로드되었습니다</p>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setFormData({ ...formData, imageUrl: '' })}
-                          className="flex items-center gap-2"
-                        >
-                          <Upload className="w-4 h-4" />
-                          다른 사진 선택
-                        </Button>
-                      </div>
-                    )}
-                    
-                    <div className="text-xs text-gray-500 space-y-1">
-                      <p>• JPG, PNG, GIF 지원 (최대 5MB)</p>
-                      <p>• 정사각형 비율 권장 (1:1)</p>
-                      <p>• 선명하고 밝은 사진 권장</p>
+                      <p className="text-xs text-gray-500">
+                        반려동물 사진의 웹 주소를 입력하거나 비워두세요
+                      </p>
                     </div>
                   </div>
                 </div>

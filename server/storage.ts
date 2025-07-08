@@ -261,6 +261,9 @@ export class MemoryStorage implements IStorage{
   private follows: any[] = [];
   private reports: any[] = [];
 
+  // Approval system data stores
+  private pendingApprovals = new Map();
+
   // ID counters
   private userId = 1;
   private petId = 1;
@@ -281,6 +284,7 @@ export class MemoryStorage implements IStorage{
   private transactionId = 1;
   private reportId = 1;
   private reservationId = 1;
+  private approvalId = 1;
 
 
   constructor() {
@@ -348,6 +352,9 @@ export class MemoryStorage implements IStorage{
 
     // 기관 데이터 초기화
     this.initInstituteData();
+
+    // 승인 대기 목록 초기화 (임시 주석 처리)
+    // this.initApprovalData();
 
     // 견주 데이터 추가
     this.initPetOwnerData();
@@ -3733,169 +3740,92 @@ export class DatabaseStorage implements IStorage {
   async cancelReservation(id: number): Promise<any> {
     return { id, status: 'cancelled', updatedAt: new Date() };
   }
+
+  // 승인 데이터 초기화
+  private initApprovalData() {
+    // 훈련사 인증 신청
+    const trainerApproval = {
+      id: this.approvalId++,
+      type: 'trainer',
+      name: '최훈련',
+      email: 'choi.trainer@example.com',
+      phone: '010-5555-6666',
+      description: '훈련사 인증 신청',
+      avatar: 'https://images.unsplash.com/photo-1607746882042-944635dfe10e?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100',
+      status: 'pending',
+      submittedAt: new Date(),
+      documents: ['certificate.pdf', 'license.pdf']
+    };
+
+    // 기관 등록 신청
+    const instituteApproval = {
+      id: this.approvalId++,
+      type: 'institute',
+      name: '멍멍 아카데미',
+      email: 'contact@woofacademy.com',
+      phone: '02-9999-8888',
+      description: '교육 기관 등록 신청',
+      address: '서울시 마포구 상암동',
+      status: 'pending',
+      submittedAt: new Date(),
+      documents: ['business_license.pdf', 'facility_photos.zip']
+    };
+
+    // 전문가 인증 신청
+    const certificationApproval = {
+      id: this.approvalId++,
+      type: 'certification',
+      name: '박전문',
+      email: 'park.expert@example.com',
+      phone: '010-7777-8888',
+      description: '전문가 뱃지 신청',
+      specialization: '행동교정 전문',
+      status: 'pending',
+      submittedAt: new Date(),
+      documents: ['expert_certificate.pdf', 'portfolio.pdf']
+    };
+
+    this.pendingApprovals.set(trainerApproval.id, trainerApproval);
+    this.pendingApprovals.set(instituteApproval.id, instituteApproval);
+    this.pendingApprovals.set(certificationApproval.id, certificationApproval);
+    
+    console.log(`✅ 승인 대기 데이터 초기화 완료: 3건`);
+  }
+
+  // 승인 목록 조회
+  async getPendingApprovals(): Promise<any[]> {
+    return Array.from(this.pendingApprovals.values());
+  }
+
+  // 승인 처리
+  async approveItem(id: number): Promise<boolean> {
+    const item = this.pendingApprovals.get(id);
+    if (item) {
+      item.status = 'approved';
+      item.processedAt = new Date();
+      this.pendingApprovals.set(id, item);
+      return true;
+    }
+    return false;
+  }
+
+  // 승인 거부
+  async rejectItem(id: number): Promise<boolean> {
+    const item = this.pendingApprovals.get(id);
+    if (item) {
+      item.status = 'rejected';
+      item.processedAt = new Date();
+      this.pendingApprovals.set(id, item);
+      return true;
+    }
+    return false;
+  }
+
+  // 승인 아이템 삭제
+  async deleteApprovalItem(id: number): Promise<boolean> {
+    return this.pendingApprovals.delete(id);
+  }
 }
 
 // Export the storage instance
 export const storage = new MemoryStorage();
-interface Pet {
-    id: number;
-    userId: number;
-    name: string;
-    breed: string;
-    age: number;
-    weight: number;
-    gender: string;
-    description: string;
-    createdAt: string;
-    updatedAt: string;
-    isActive: boolean;
-}
-
-interface CommunityPost {
-    id: number;
-    title: string;
-    content: string;
-    tag: string;
-    author: { id: number; name: string };
-    authorId: number;
-    likes: number;
-    comments: number;
-    views: number;
-    createdAt: string | Date;
-    updatedAt?: string | Date;
-    hidden?: boolean;
-    linkInfo?: {
-        url: string;
-        title: string;
-        description: string;
-        image?: string;
-    };
-}
-
-interface ShoppingItem {
-    id: number;
-    name: string;
-    price: number;
-    description: string;
-}
-
-interface Course {
-    id: number;
-    name: string;
-    description: string;
-}
-
-interface Reservation {
-    id: number;
-    courseId: number;
-    userId: number;
-    date: string;
-}
-
-interface Consultation {
-    id: number;
-    trainerId: number;
-    petId: number;
-    date: string;
-}
-
-interface Trainer {
-    id: number;
-    name: string;
-    specialty: string;
-}
-
-interface Institute {
-    id: number;
-    name: string;
-    location: string;
-}
-
-interface NotebookEntry {
-    id: number;
-    petId: number;
-    content: string;
-}
-
-interface Message {
-    id: number;
-    senderId: number;
-    receiverId: number;
-    content: string;
-}
-
-interface Notification {
-    id: number;
-    userId: number;
-    message: string;
-}
-
-interface Commission {
-    id: number;
-    rate: number;
-}
-
-interface Invoice {
-    id: number;
-    userId: number;
-    amount: number;
-}
-
-interface Transaction {
-    id: number;
-    userId: number;
-    amount: number;
-}
-
-interface Event {
-    id: number;
-    name: string;
-    location: string;
-}
-
-interface Promotion {
-    id: number;
-    name: string;
-    discount: number;
-}
-
-interface HealthRecord {
-    id: number;
-    petId: number;
-    date: string;
-    notes: string;
-}
-
-interface Vaccination {
-    id: number;
-    petId: number;
-    name: string;
-    date: string;
-}
-
-interface WeightRecord {
-    id: number;
-    petId: number;
-    date: string;
-    weight: number;
-}
-
-interface Medication {
-    id: number;
-    petId: number;
-    name: string;
-    dosage: string;
-}
-
-interface NutritionPlan {
-    id: number;
-    petId: number;
-    plan: string;
-}
-
-interface HealthReminder {
-    id: number;
-    petId: number;
-    text: string;
-    dueDate: string;
-}
