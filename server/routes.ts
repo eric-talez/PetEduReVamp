@@ -1023,21 +1023,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // 반려동물 등록 API
   app.post("/api/pets", async (req, res) => {
     try {
-      const { name, age, breed, gender, weight, description } = req.body;
+      const { 
+        name, 
+        species, 
+        breed, 
+        age, 
+        gender, 
+        weight, 
+        color, 
+        personality, 
+        medicalHistory, 
+        specialNotes, 
+        imageUrl 
+      } = req.body;
 
-      console.log('반려동물 등록 요청:', { name, breed, age });
+      console.log('반려동물 등록 요청:', { name, species, breed, age });
 
       const petId = Date.now();
       const petData = {
         id: petId,
         name: name,
-        age: age,
+        species: species,
         breed: breed,
+        age: age,
         gender: gender || '수컷',
-        weight: weight || '',
-        image: "https://images.unsplash.com/photo-1552053831-71594a27632d?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=300",
-        description: description || '',
-        createdAt: new Date().toISOString()
+        weight: weight,
+        color: color || '',
+        personality: personality || '',
+        medicalHistory: medicalHistory || '',
+        specialNotes: specialNotes || '',
+        imageUrl: imageUrl || "https://images.unsplash.com/photo-1552053831-71594a27632d?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=300",
+        isActive: true,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
       };
 
       // 메모리에 반려동물 추가 (실제로는 데이터베이스에 저장)

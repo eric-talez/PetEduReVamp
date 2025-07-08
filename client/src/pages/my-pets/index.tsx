@@ -107,6 +107,9 @@ export default function MyPetsPage() {
       });
 
       if (response.ok) {
+        const result = await response.json();
+        console.log('반려동물 등록 성공:', result);
+        
         toast({
           title: "성공",
           description: editingPet ? "반려동물 정보가 수정되었습니다." : "새 반려동물이 등록되었습니다."
@@ -116,12 +119,15 @@ export default function MyPetsPage() {
         resetForm();
         fetchPets();
       } else {
-        throw new Error('Failed to save pet');
+        const errorData = await response.json();
+        console.error('반려동물 등록 실패:', errorData);
+        throw new Error(errorData.message || errorData.error || 'Failed to save pet');
       }
-    } catch (error) {
+    } catch (error: any) {
+      console.error('반려동물 저장 오류:', error);
       toast({
         title: "오류",
-        description: "반려동물 정보 저장에 실패했습니다.",
+        description: error.message || "반려동물 정보 저장에 실패했습니다.",
         variant: "destructive"
       });
     }
