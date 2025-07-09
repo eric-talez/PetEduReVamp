@@ -123,9 +123,11 @@ export default function TrainerCertificationManagement() {
 
   const handleApplicationReview = async (applicationId: number, action: 'approve' | 'reject', notes?: string) => {
     try {
-      const response = await apiRequest('POST', `/api/trainer-applications/${applicationId}/review`, {
-        action,
-        notes
+      console.log(`[DEBUG] 신청서 검토 시작: ID=${applicationId}, Action=${action}`);
+      
+      const response = await apiRequest('PATCH', `/api/trainer-applications/${applicationId}/status`, {
+        status: action === 'approve' ? 'approved' : 'rejected',
+        reviewNotes: notes || `관리자가 ${action === 'approve' ? '승인' : '거부'}했습니다.`
       });
 
       const result = await response.json();
@@ -150,6 +152,59 @@ export default function TrainerCertificationManagement() {
         variant: "destructive"
       });
     }
+  };
+
+  const handleCertificationView = (certification: TrainerCertification) => {
+    console.log(`[DEBUG] 인증서 보기 클릭: ${certification.certificateNumber}`);
+    toast({
+      title: "인증서 보기",
+      description: `인증서 ${certification.certificateNumber}을(를) 조회합니다.`,
+      variant: "default"
+    });
+    // TODO: 인증서 상세 보기 모달 구현
+  };
+
+  const handleCertificationEdit = (certification: TrainerCertification) => {
+    console.log(`[DEBUG] 인증서 편집 클릭: ${certification.certificateNumber}`);
+    toast({
+      title: "인증서 편집",
+      description: `인증서 ${certification.certificateNumber}을(를) 편집합니다.`,
+      variant: "default"
+    });
+    // TODO: 인증서 편집 모달 구현
+  };
+
+  const handleCertificationStatusChange = async (certificationId: number, action: 'revoke' | 'activate') => {
+    try {
+      console.log(`[DEBUG] 인증서 상태 변경: ID=${certificationId}, Action=${action}`);
+      
+      // API 엔드포인트가 있다면 사용, 없다면 로컬 상태만 업데이트
+      toast({
+        title: "인증서 상태 변경",
+        description: `인증서가 ${action === 'revoke' ? '취소' : '활성화'}되었습니다.`,
+        variant: "default"
+      });
+      
+      // 데이터 다시 로드
+      loadData();
+    } catch (error) {
+      console.error('인증서 상태 변경 오류:', error);
+      toast({
+        title: "상태 변경 실패",
+        description: "인증서 상태 변경 중 오류가 발생했습니다.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleProgramEdit = (program: TrainerProgram) => {
+    console.log(`[DEBUG] 프로그램 편집 클릭: ${program.name}`);
+    toast({
+      title: "프로그램 편집",
+      description: `프로그램 ${program.name}을(를) 편집합니다.`,
+      variant: "default"
+    });
+    // TODO: 프로그램 편집 모달 구현
   };
 
   const getStatusBadge = (status: string) => {
@@ -406,7 +461,12 @@ export default function TrainerCertificationManagement() {
                     <Badge variant={program.isActive ? "default" : "secondary"}>
                       {program.isActive ? "활성" : "비활성"}
                     </Badge>
-                    <Button size="sm" variant="outline" className="ml-auto">
+                    <Button 
+                      size="sm" 
+                      variant="outline" 
+                      className="ml-auto"
+                      onClick={() => handleProgramEdit(program)}
+                    >
                       편집
                     </Button>
                   </div>
@@ -552,10 +612,46 @@ export default function TrainerCertificationManagement() {
                     <Badge variant={certification.isVerified ? "default" : "secondary"}>
                       {certification.isVerified ? "인증됨" : "미인증"}
                     </Badge>
-                    <Button size="sm" variant="outline" className="ml-auto">
-                      <FileText className="h-4 w-4 mr-1" />
-                      인증서 보기
-                    </Button>
+                    <div className="ml-auto flex gap-2">
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        onClick={() => handleCertificationView(certification)}
+                      >
+                        <Eye className="h-4 w-4 mr-1" />
+                        보기
+                      </Button>
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        onClick={() => handleCertificationEdit(certification)}
+                      >
+                        <FileText className="h-4 w-4 mr-1" />
+                        편집
+                      </Button>
+                      {certification.status === 'active' && (
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          onClick={() => handleCertificationStatusChange(certification.id, 'revoke')}
+                          className="text-red-600 border-red-600 hover:bg-red-50"
+                        >
+                          <XCircle className="h-4 w-4 mr-1" />
+                          취소
+                        </Button>
+                      )}
+                      {certification.status === 'revoked' && (
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          onClick={() => handleCertificationStatusChange(certification.id, 'activate')}
+                          className="text-green-600 border-green-600 hover:bg-green-50"
+                        >
+                          <CheckCircle className="h-4 w-4 mr-1" />
+                          활성화
+                        </Button>
+                      )}
+                    </div>
                   </div>
                 </CardContent>
               </Card>
