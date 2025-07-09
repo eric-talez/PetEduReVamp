@@ -4187,102 +4187,141 @@ export class DatabaseStorage implements IStorage {
   // 훈련사 인증 시스템 초기화
   private initTrainerCertificationData() {
     // 샘플 훈련사 양성 과정 데이터 초기화
-    const basicTrainerProgram: TrainerProgram = {
-      id: 1,
-      title: "TALEZ 기본 훈련사 양성 과정",
-      description: "반려동물 기본 훈련 및 행동 교정 전문가 양성 프로그램",
-      level: "beginner",
-      duration: 80,
-      price: "350000",
-      maxParticipants: 20,
-      currentParticipants: 5,
-      startDate: new Date("2025-02-01"),
-      endDate: new Date("2025-02-28"),
-      instructorId: 1,
-      curriculum: {
-        modules: [
-          { title: "반려동물 행동학 기초", duration: 16 },
-          { title: "기본 훈련 기법", duration: 24 },
-          { title: "문제행동 교정", duration: 20 },
-          { title: "실습 및 평가", duration: 20 }
-        ]
-      },
-      requirements: "반려동물 관련 기본 지식 보유",
-      isActive: true,
-      createdAt: new Date(),
-      updatedAt: new Date()
-    };
-
-    const advancedTrainerProgram: TrainerProgram = {
-      id: 2,
-      title: "TALEZ 고급 훈련사 양성 과정",
-      description: "전문 훈련사 및 강사 양성을 위한 심화 교육 프로그램",
-      level: "advanced",
-      duration: 120,
-      price: "580000",
-      maxParticipants: 15,
-      currentParticipants: 3,
-      startDate: new Date("2025-03-01"),
-      endDate: new Date("2025-03-31"),
-      instructorId: 1,
-      curriculum: {
-        modules: [
-          { title: "고급 행동분석", duration: 30 },
-          { title: "전문 교육 기법", duration: 40 },
-          { title: "강사 스킬 개발", duration: 30 },
-          { title: "실전 프로젝트", duration: 20 }
-        ]
-      },
-      requirements: "기본 과정 수료 또는 관련 경력 2년 이상",
-      isActive: true,
-      createdAt: new Date(),
-      updatedAt: new Date()
-    };
-
-    this.trainerPrograms.set(1, basicTrainerProgram);
-    this.trainerPrograms.set(2, advancedTrainerProgram);
-
-    // 샘플 훈련사 신청 데이터
-    const sampleApplications: TrainerApplication[] = [
+    const programs: TrainerProgram[] = [
       {
         id: 1,
-        name: "김훈련",
-        email: "kim.trainer@example.com",
-        phone: "010-1234-5678",
-        hasAffiliation: false,
-        affiliationName: null,
-        experience: "반려동물 관련 업무 3년 경력",
-        education: "동물관련학과 졸업",
-        certifications: "반려동물관리사 자격증 보유",
-        motivation: "전문 훈련사가 되어 더 많은 반려동물과 가족들을 도와드리고 싶습니다.",
-        portfolioUrl: "https://example.com/portfolio",
-        resume: "3년간 동물병원 근무 경력",
-        status: "pending",
-        submittedAt: new Date(),
-        reviewedAt: null,
-        reviewedBy: null,
-        reviewNotes: null,
+        name: "TALEZ 기초 반려견 훈련사 과정",
+        description: "반려동물 기본 훈련 및 행동 교정 전문가 양성 프로그램",
+        level: "basic",
+        duration: 30,
+        maxParticipants: 20,
+        isActive: true,
+        requirements: [
+          "만 18세 이상",
+          "반려견 양육 경험 1년 이상",
+          "기본적인 반려견 지식 보유"
+        ],
+        curriculum: [
+          "1주차: 반려견 심리와 행동 이해",
+          "2주차: 기본 명령어 훈련",
+          "3주차: 사회화 훈련",
+          "4주차: 문제행동 교정 기법"
+        ],
+        certificateValidityPeriod: 365,
         createdAt: new Date(),
         updatedAt: new Date()
       },
       {
         id: 2,
-        name: "박전문",
-        email: "park.expert@example.com",
-        phone: "010-9876-5432",
-        hasAffiliation: true,
-        affiliationName: "멍멍 트레이닝센터",
-        experience: "반려동물 훈련사 5년 경력",
-        education: "수의학과 졸업",
-        certifications: "수의사 면허, 동물행동 전문가 자격증",
-        motivation: "TALEZ 플랫폼을 통해 더 체계적인 교육 서비스를 제공하고 싶습니다.",
-        portfolioUrl: "https://example.com/portfolio2",
-        resume: "5년간 전문 훈련사 경력",
+        name: "TALEZ 고급 반려견 훈련사 과정",
+        description: "전문 훈련사 및 강사 양성을 위한 심화 교육 프로그램",
+        level: "advanced",
+        duration: 60,
+        maxParticipants: 15,
+        isActive: true,
+        requirements: [
+          "기본 과정 수료 또는 관련 경력 2년 이상",
+          "반려견 훈련 실무 경험",
+          "교육 의지 및 열정"
+        ],
+        curriculum: [
+          "1-2주차: 고급 행동분석 기법",
+          "3-4주차: 전문 교육 방법론",
+          "5-6주차: 강사 스킬 개발",
+          "7-8주차: 실전 프로젝트 및 평가"
+        ],
+        certificateValidityPeriod: 730,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      },
+      {
+        id: 3,
+        name: "TALEZ 전문가 반려견 훈련사 과정",
+        description: "최고 수준의 훈련사 양성을 위한 전문가 과정",
+        level: "expert",
+        duration: 90,
+        maxParticipants: 10,
+        isActive: true,
+        requirements: [
+          "고급 과정 수료 또는 관련 경력 5년 이상",
+          "전문 자격증 보유",
+          "추천서 2통 이상"
+        ],
+        curriculum: [
+          "1-3주차: 고급 행동 심리학",
+          "4-6주차: 전문 치료 기법",
+          "7-9주차: 연구 방법론",
+          "10-12주차: 전문가 프로젝트"
+        ],
+        certificateValidityPeriod: 1095,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      }
+    ];
+
+    programs.forEach(program => {
+      this.trainerPrograms.set(program.id, program);
+    });
+
+    // 샘플 훈련사 신청 데이터
+    const sampleApplications: TrainerApplication[] = [
+      {
+        id: 1,
+        userId: 10,
+        programId: 1,
+        status: "pending",
+        experience: "반려동물 관련 업무 3년 경력, 동물병원 근무",
+        motivation: "전문 훈련사가 되어 더 많은 반려동물과 가족들을 도와드리고 싶습니다.",
+        previousCertifications: ["반려동물관리사 자격증", "펫샵 운영자 자격증"],
+        portfolioUrl: "https://example.com/portfolio1",
+        applicationDate: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+        reviewDate: undefined,
+        reviewNotes: undefined,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      },
+      {
+        id: 2,
+        userId: 11,
+        programId: 2,
         status: "approved",
-        submittedAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
-        reviewedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
-        reviewedBy: 1,
+        experience: "반려동물 훈련사 5년 경력, 다수의 문제행동 교정 경험",
+        motivation: "TALEZ 플랫폼을 통해 더 체계적인 교육 서비스를 제공하고 싶습니다.",
+        previousCertifications: ["수의사 면허", "동물행동 전문가 자격증"],
+        portfolioUrl: "https://example.com/portfolio2",
+        applicationDate: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+        reviewDate: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
         reviewNotes: "우수한 경력과 자격을 보유한 지원자입니다.",
+        createdAt: new Date(),
+        updatedAt: new Date()
+      },
+      {
+        id: 3,
+        userId: 12,
+        programId: 1,
+        status: "rejected",
+        experience: "반려견 양육 경험 1년",
+        motivation: "반려견을 기르면서 많은 것을 배우고 싶어 지원했습니다.",
+        previousCertifications: [],
+        portfolioUrl: undefined,
+        applicationDate: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+        reviewDate: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+        reviewNotes: "경력이 부족하여 기본 교육 수강 후 재신청 권장",
+        createdAt: new Date(),
+        updatedAt: new Date()
+      },
+      {
+        id: 4,
+        userId: 13,
+        programId: 3,
+        status: "pending",
+        experience: "반려동물 훈련사 8년 경력, 전문 교육기관 운영",
+        motivation: "최고 수준의 전문가 과정을 통해 더 깊이 있는 지식을 습득하고 싶습니다.",
+        previousCertifications: ["국가공인 반려동물훈련사", "동물행동치료사", "펫케어매니저"],
+        portfolioUrl: "https://example.com/portfolio3",
+        applicationDate: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+        reviewDate: undefined,
+        reviewNotes: undefined,
         createdAt: new Date(),
         updatedAt: new Date()
       }
@@ -4292,7 +4331,60 @@ export class DatabaseStorage implements IStorage {
       this.trainerApplications.set(app.id, app);
     });
 
-    console.log(`✅ 훈련사 인증 시스템 초기화 완료: 프로그램 2개, 신청서 ${sampleApplications.length}개`);
+    // 샘플 인증서 데이터
+    const sampleCertifications: TrainerCertification[] = [
+      {
+        id: 1,
+        trainerId: 1,
+        programId: 1,
+        certificateNumber: "TALEZ-BASIC-2024-001",
+        issueDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
+        expiryDate: new Date(Date.now() + 335 * 24 * 60 * 60 * 1000).toISOString(),
+        level: "basic",
+        score: 85,
+        status: "active",
+        isVerified: true,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      },
+      {
+        id: 2,
+        trainerId: 2,
+        programId: 2,
+        certificateNumber: "TALEZ-ADV-2024-001",
+        issueDate: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString(),
+        expiryDate: new Date(Date.now() + 670 * 24 * 60 * 60 * 1000).toISOString(),
+        level: "advanced",
+        score: 92,
+        status: "active",
+        isVerified: true,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      },
+      {
+        id: 3,
+        trainerId: 3,
+        programId: 1,
+        certificateNumber: "TALEZ-BASIC-2023-045",
+        issueDate: new Date(Date.now() - 400 * 24 * 60 * 60 * 1000).toISOString(),
+        expiryDate: new Date(Date.now() - 35 * 24 * 60 * 60 * 1000).toISOString(),
+        level: "basic",
+        score: 78,
+        status: "expired",
+        isVerified: false,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      }
+    ];
+
+    sampleCertifications.forEach(cert => {
+      this.trainerCertifications.set(cert.id, cert);
+    });
+
+    console.log(`✅ 훈련사 인증 시스템 초기화 완료`);
+    console.log(`   - 인증 프로그램: ${programs.length}개`);
+    console.log(`   - 신청서: ${sampleApplications.length}개`);
+    console.log(`   - 인증서: ${sampleCertifications.length}개`);
   }
 
   // 훈련사 인증 신청 관련 메서드

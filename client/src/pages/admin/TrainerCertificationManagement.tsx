@@ -348,6 +348,24 @@ export default function TrainerCertificationManagement() {
 
         {/* 프로그램 탭 */}
         <TabsContent value="programs" className="space-y-6">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-xl font-semibold">인증 프로그램 관리</h2>
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button className="bg-blue-600 hover:bg-blue-700">
+                  <Plus className="h-4 w-4 mr-2" />
+                  새 프로그램 추가
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-2xl">
+                <DialogHeader>
+                  <DialogTitle>새 인증 프로그램 추가</DialogTitle>
+                </DialogHeader>
+                <NewProgramForm onSuccess={loadData} />
+              </DialogContent>
+            </Dialog>
+          </div>
+          
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {programs.map((program) => (
               <Card key={program.id}>
@@ -547,4 +565,209 @@ export default function TrainerCertificationManagement() {
       </Tabs>
     </div>
   );
+}
+
+// 새 프로그램 추가 폼 컴포넌트
+function NewProgramForm({ onSuccess }: { onSuccess: () => void }) {
+  const [formData, setFormData] = useState({
+    name: '',
+    description: '',
+    level: 'basic' as 'basic' | 'advanced' | 'expert',
+    duration: 30,
+    maxParticipants: 20,
+    certificateValidityPeriod: 365,
+    requirements: '',
+    curriculum: '',
+    isActive: true
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { toast } = useToast();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    try {
+      const programData = {
+        ...formData,
+        requirements: formData.requirements.split('\n').filter(req => req.trim()),
+        curriculum: formData.curriculum.split('\n').filter(curr => curr.trim())
+      };
+
+      const response = await apiRequest('POST', '/api/trainer-programs', programData);
+      const result = await response.json();
+
+      if (result.success) {
+        toast({
+          title: "프로그램 추가 완료",
+          description: "새로운 인증 프로그램이 성공적으로 추가되었습니다.",
+          variant: "default"
+        });
+        onSuccess();
+      } else {
+        throw new Error(result.message || '프로그램 추가 실패');
+      }
+    } catch (error) {
+      console.error('프로그램 추가 오류:', error);
+      toast({
+        title: "추가 실패",
+        description: "프로그램 추가 중 오류가 발생했습니다.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium mb-2">프로그램명</label>
+          <Input
+            value={formData.name}
+            onChange={(e) => setFormData({...formData, name: e.target.value})}
+            placeholder="예: 기초 반려견 훈련사 과정"
+            required
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium mb-2">레벨</label>
+          <Select value={formData.level} onValueChange={(value) => setFormData({...formData, level: value as any})}>
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="basic">기초</SelectItem>
+              <SelectItem value="advanced">고급</SelectItem>
+              <SelectItem value="expert">전문가</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium mb-2">프로그램 설명</label>
+        <Input
+          value={formData.description}
+          onChange={(e) => setFormData({...formData, description: e.target.value})}
+          placeholder="프로그램에 대한 간단한 설명을 입력하세요"
+          required
+        />
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+          <label className="block text-sm font-medium mb-2">교육 기간 (일)</label>
+          <Input
+            type="number"
+            value={formData.duration}
+            onChange={(e) => setFormData({...formData, duration: parseInt(e.target.value)})}
+            min="1"
+            max="365"
+            required
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium mb-2">최대 참여자 수</label>
+          <Input
+            type="number"
+            value={formData.maxParticipants}
+            onChange={(e) => setFormData({...formData, maxParticipants: parseInt(e.target.value)})}
+            min="1"
+            max="100"
+            required
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium mb-2">인증 유효기간 (일)</label>
+          <Input
+            type="number"
+            value={formData.certificateValidityPeriod}
+            onChange={(e) => setFormData({...formData, certificateValidityPeriod: parseInt(e.target.value)})}
+            min="30"
+            max="1095"
+            required
+          />
+        </div>
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium mb-2">필수 요건 (한 줄당 하나씩)</label>
+        <textarea
+          className="w-full p-3 border border-gray-300 rounded-md resize-y min-h-[100px]"
+          value={formData.requirements}
+          onChange={(e) => setFormData({...formData, requirements: e.target.value})}
+          placeholder="예:&#10;만 18세 이상&#10;반려견 양육 경험 1년 이상&#10;기본적인 반려견 지식 보유"
+          required
+        />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium mb-2">커리큘럼 (한 줄당 하나씩)</label>
+        <textarea
+          className="w-full p-3 border border-gray-300 rounded-md resize-y min-h-[120px]"
+          value={formData.curriculum}
+          onChange={(e) => setFormData({...formData, curriculum: e.target.value})}
+          placeholder="예:&#10;1주차: 반려견 심리와 행동 이해&#10;2주차: 기본 명령어 훈련&#10;3주차: 사회화 훈련&#10;4주차: 문제행동 교정 기법"
+          required
+        />
+      </div>
+
+      <div className="flex items-center gap-2">
+        <input
+          type="checkbox"
+          id="isActive"
+          checked={formData.isActive}
+          onChange={(e) => setFormData({...formData, isActive: e.target.checked})}
+          className="rounded"
+        />
+        <label htmlFor="isActive" className="text-sm font-medium">
+          프로그램 활성화
+        </label>
+      </div>
+
+      <div className="flex gap-2 justify-end">
+        <Button type="button" variant="outline" disabled={isSubmitting}>
+          취소
+        </Button>
+        <Button type="submit" disabled={isSubmitting}>
+          {isSubmitting ? '추가 중...' : '프로그램 추가'}
+        </Button>
+      </div>
+    </form>
+  );
+}
+
+// 헬퍼 함수들
+function getStatusBadge(status: string) {
+  switch (status) {
+    case 'pending':
+      return <Badge variant="outline" className="text-yellow-600 border-yellow-600">대기중</Badge>;
+    case 'approved':
+      return <Badge variant="default" className="bg-green-600">승인됨</Badge>;
+    case 'rejected':
+      return <Badge variant="destructive">거부됨</Badge>;
+    case 'active':
+      return <Badge variant="default" className="bg-green-600">활성</Badge>;
+    case 'expired':
+      return <Badge variant="outline" className="text-gray-600 border-gray-600">만료</Badge>;
+    case 'revoked':
+      return <Badge variant="destructive">취소됨</Badge>;
+    default:
+      return <Badge variant="outline">{status}</Badge>;
+  }
+}
+
+function getLevelBadge(level: string) {
+  switch (level) {
+    case 'basic':
+      return <Badge variant="outline" className="text-blue-600 border-blue-600">기초</Badge>;
+    case 'advanced':
+      return <Badge variant="outline" className="text-purple-600 border-purple-600">고급</Badge>;
+    case 'expert':
+      return <Badge variant="outline" className="text-red-600 border-red-600">전문가</Badge>;
+    default:
+      return <Badge variant="outline">{level}</Badge>;
+  }
 }
