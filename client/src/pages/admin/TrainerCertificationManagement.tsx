@@ -51,6 +51,7 @@ interface TrainerApplication {
   motivation: string;
   previousCertifications: string[];
   portfolioUrl?: string;
+  profileImageUrl?: string;
   applicationDate: string;
   reviewDate?: string;
   reviewNotes?: string;
@@ -511,12 +512,27 @@ export default function TrainerCertificationManagement() {
               .map((application) => (
                 <Card key={application.id}>
                   <CardContent className="p-6">
-                    <div className="flex items-center justify-between mb-4">
-                      <div>
-                        <h3 className="font-semibold">신청 ID: {application.id}</h3>
-                        <p className="text-sm text-gray-600">
-                          신청일: {new Date(application.applicationDate).toLocaleDateString()}
-                        </p>
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="flex items-center gap-4">
+                        <div className="flex-shrink-0">
+                          {application.profileImageUrl ? (
+                            <img 
+                              src={application.profileImageUrl} 
+                              alt="프로필 사진" 
+                              className="w-16 h-16 rounded-full object-cover border-2 border-gray-200"
+                            />
+                          ) : (
+                            <div className="w-16 h-16 rounded-full bg-gray-200 flex items-center justify-center">
+                              <Users className="w-8 h-8 text-gray-400" />
+                            </div>
+                          )}
+                        </div>
+                        <div>
+                          <h3 className="font-semibold">신청 ID: {application.id}</h3>
+                          <p className="text-sm text-gray-600">
+                            신청일: {new Date(application.applicationDate).toLocaleDateString()}
+                          </p>
+                        </div>
                       </div>
                       <div className="flex items-center gap-2">
                         {getStatusBadge(application.status)}
@@ -832,6 +848,21 @@ export default function TrainerCertificationManagement() {
           
           {selectedApplication && (
             <div className="space-y-4">
+              {/* 프로필 이미지 섹션 */}
+              <div className="flex items-center justify-center mb-6">
+                {selectedApplication.profileImageUrl ? (
+                  <img 
+                    src={selectedApplication.profileImageUrl} 
+                    alt="프로필 사진" 
+                    className="w-24 h-24 rounded-full object-cover border-4 border-gray-200"
+                  />
+                ) : (
+                  <div className="w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center">
+                    <Users className="w-12 h-12 text-gray-400" />
+                  </div>
+                )}
+              </div>
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label>신청 ID</Label>
