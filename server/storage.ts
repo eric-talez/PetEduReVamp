@@ -7,7 +7,11 @@ import {
   institutes, trainers, pets, vaccinations, checkups,
   commissionPolicies, commissionTransactions, settlementReports,
   shopCategories, products, cartItems,
-  banners, type Banner, type InsertBanner
+  banners, type Banner, type InsertBanner,
+  trainerApplications, type TrainerApplication, type InsertTrainerApplication,
+  trainerCertifications, type TrainerCertification, type InsertTrainerCertification,
+  trainerPrograms, type TrainerProgram, type InsertTrainerProgram,
+  trainerProgramEnrollments, type TrainerProgramEnrollment, type InsertTrainerProgramEnrollment
 } from "../shared/schema";
 
 // 프로필 업데이트를 위한 인터페이스
@@ -197,6 +201,32 @@ export interface IStorage {
     createReport(reportData: any): Promise<any>;
     moderatePost(postId: number, moderationData: any): Promise<any>;
     getReports(): Promise<any[]>;
+
+    // 훈련사 인증 신청 관련
+    createTrainerApplication(application: InsertTrainerApplication): Promise<TrainerApplication>;
+    getAllTrainerApplications(): Promise<TrainerApplication[]>;
+    getTrainerApplication(id: number): Promise<TrainerApplication | undefined>;
+    updateTrainerApplication(id: number, data: Partial<TrainerApplication>): Promise<TrainerApplication>;
+    updateTrainerApplicationStatus(id: number, status: string, reviewerId?: number, reviewNotes?: string): Promise<TrainerApplication>;
+    
+    // 훈련사 인증 기록 관련
+    createTrainerCertification(certification: InsertTrainerCertification): Promise<TrainerCertification>;
+    getAllTrainerCertifications(): Promise<TrainerCertification[]>;
+    getTrainerCertification(id: number): Promise<TrainerCertification | undefined>;
+    getTrainerCertificationByTrainerId(trainerId: number): Promise<TrainerCertification | undefined>;
+    
+    // 훈련사 양성 과정 관련
+    createTrainerProgram(program: InsertTrainerProgram): Promise<TrainerProgram>;
+    getAllTrainerPrograms(): Promise<TrainerProgram[]>;
+    getTrainerProgram(id: number): Promise<TrainerProgram | undefined>;
+    updateTrainerProgram(id: number, data: Partial<TrainerProgram>): Promise<TrainerProgram>;
+    
+    // 훈련사 양성 과정 등록 관련
+    createTrainerProgramEnrollment(enrollment: InsertTrainerProgramEnrollment): Promise<TrainerProgramEnrollment>;
+    getAllTrainerProgramEnrollments(): Promise<TrainerProgramEnrollment[]>;
+    getTrainerProgramEnrollment(id: number): Promise<TrainerProgramEnrollment | undefined>;
+    getTrainerProgramEnrollmentsByUserId(userId: number): Promise<TrainerProgramEnrollment[]>;
+    updateTrainerProgramEnrollment(id: number, data: Partial<TrainerProgramEnrollment>): Promise<TrainerProgramEnrollment>;
 }
 
 // 메모리 기반 데이터 저장소 (운영 환경용)
@@ -264,6 +294,12 @@ export class MemoryStorage implements IStorage{
   // Approval system data stores
   private pendingApprovals = new Map();
 
+  // Trainer certification data stores
+  private trainerApplications = new Map<number, TrainerApplication>();
+  private trainerCertifications = new Map<number, TrainerCertification>();
+  private trainerPrograms = new Map<number, TrainerProgram>();
+  private trainerProgramEnrollments = new Map<number, TrainerProgramEnrollment>();
+
   // ID counters
   private userId = 1;
   private petId = 1;
@@ -285,12 +321,17 @@ export class MemoryStorage implements IStorage{
   private reportId = 1;
   private reservationId = 1;
   private approvalId = 1;
+  private applicationId = 1;
+  private certificationId = 1;
+  private programId = 1;
+  private enrollmentTrainerId = 1;
 
 
   constructor() {
     console.log('🔄 운영 환경용 메모리 저장소 초기화...');
     this.initBasicData();
     this.initCurriculumData();
+    this.initTrainerCertificationData();
   }
 
   // 간소화된 기본 데이터만 초기화
@@ -3237,6 +3278,103 @@ export class MemoryStorage implements IStorage{
     async getReports(): Promise<any[]> {
         return null;
     }
+
+    // 훈련사 인증 시스템 초기화 메서드
+    private initTrainerCertificationData() {
+        // 훈련사 인증 프로그램 생성
+        const basicProgram: TrainerProgram = {
+            id: 1,
+            name: "기본 훈련사 인증",
+            description: "기본적인 반려동물 훈련 지식 및 기술 인증",
+            level: "basic",
+            duration: 30,
+            maxParticipants: 20,
+            isActive: true,
+            requirements: [
+                "반려동물 관련 경험 1년 이상",
+                "기본적인 동물 행동학 이해",
+                "교육 열정 및 참여 의지"
+            ],
+            curriculum: [
+                "반려동물 기본 행동학",
+                "기초 훈련 방법론",
+                "문제 행동 대처법",
+                "안전 관리 및 응급처치"
+            ],
+            certificateValidityPeriod: 365,
+            createdAt: new Date(),
+            updatedAt: new Date()
+        };
+
+        const advancedProgram: TrainerProgram = {
+            id: 2,
+            name: "전문 훈련사 인증",
+            description: "심화된 반려동물 훈련 전문가 인증",
+            level: "advanced",
+            duration: 60,
+            maxParticipants: 15,
+            isActive: true,
+            requirements: [
+                "기본 훈련사 인증 보유",
+                "실무 경험 2년 이상",
+                "고급 동물 행동학 지식"
+            ],
+            curriculum: [
+                "심화 동물 행동학",
+                "전문 훈련 기법",
+                "특수 상황 대처법",
+                "훈련사 리더십 개발"
+            ],
+            certificateValidityPeriod: 730,
+            createdAt: new Date(),
+            updatedAt: new Date()
+        };
+
+        this.trainerPrograms.set(1, basicProgram);
+        this.trainerPrograms.set(2, advancedProgram);
+
+        // 샘플 훈련사 신청서 생성
+        const sampleApplication: TrainerApplication = {
+            id: 1,
+            userId: 3, // 김민수 훈련사 ID
+            programId: 1,
+            status: "approved",
+            experience: "10년간 반려동물 훈련 경험",
+            motivation: "전문적인 인증을 통해 더 나은 서비스를 제공하고 싶습니다.",
+            previousCertifications: ["반려동물행동교정사 1급"],
+            portfolioUrl: "https://example.com/portfolio",
+            applicationDate: new Date(),
+            reviewDate: new Date(),
+            reviewNotes: "우수한 경험과 자격을 보유하고 있음",
+            createdAt: new Date(),
+            updatedAt: new Date()
+        };
+
+        this.trainerApplications.set(1, sampleApplication);
+
+        // 샘플 인증서 생성
+        const sampleCertification: TrainerCertification = {
+            id: 1,
+            trainerId: 3,
+            programId: 1,
+            certificateNumber: "TALEZ-CERT-2024-001",
+            issueDate: new Date(),
+            expiryDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
+            level: "basic",
+            score: 95,
+            status: "active",
+            isVerified: true,
+            createdAt: new Date(),
+            updatedAt: new Date()
+        };
+
+        this.trainerCertifications.set(1, sampleCertification);
+
+        console.log('✅ 훈련사 인증 시스템 초기화 완료');
+        console.log(`   - 인증 프로그램: ${this.trainerPrograms.size}개`);
+        console.log(`   - 신청서: ${this.trainerApplications.size}개`);
+        console.log(`   - 인증서: ${this.trainerCertifications.size}개`);
+    }
 }
 
 import { db } from "./db";
@@ -4044,6 +4182,257 @@ export class DatabaseStorage implements IStorage {
   // 승인 아이템 삭제
   async deleteApprovalItem(id: number): Promise<boolean> {
     return this.pendingApprovals.delete(id);
+  }
+
+  // 훈련사 인증 시스템 초기화
+  private initTrainerCertificationData() {
+    // 샘플 훈련사 양성 과정 데이터 초기화
+    const basicTrainerProgram: TrainerProgram = {
+      id: 1,
+      title: "TALEZ 기본 훈련사 양성 과정",
+      description: "반려동물 기본 훈련 및 행동 교정 전문가 양성 프로그램",
+      level: "beginner",
+      duration: 80,
+      price: "350000",
+      maxParticipants: 20,
+      currentParticipants: 5,
+      startDate: new Date("2025-02-01"),
+      endDate: new Date("2025-02-28"),
+      instructorId: 1,
+      curriculum: {
+        modules: [
+          { title: "반려동물 행동학 기초", duration: 16 },
+          { title: "기본 훈련 기법", duration: 24 },
+          { title: "문제행동 교정", duration: 20 },
+          { title: "실습 및 평가", duration: 20 }
+        ]
+      },
+      requirements: "반려동물 관련 기본 지식 보유",
+      isActive: true,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+
+    const advancedTrainerProgram: TrainerProgram = {
+      id: 2,
+      title: "TALEZ 고급 훈련사 양성 과정",
+      description: "전문 훈련사 및 강사 양성을 위한 심화 교육 프로그램",
+      level: "advanced",
+      duration: 120,
+      price: "580000",
+      maxParticipants: 15,
+      currentParticipants: 3,
+      startDate: new Date("2025-03-01"),
+      endDate: new Date("2025-03-31"),
+      instructorId: 1,
+      curriculum: {
+        modules: [
+          { title: "고급 행동분석", duration: 30 },
+          { title: "전문 교육 기법", duration: 40 },
+          { title: "강사 스킬 개발", duration: 30 },
+          { title: "실전 프로젝트", duration: 20 }
+        ]
+      },
+      requirements: "기본 과정 수료 또는 관련 경력 2년 이상",
+      isActive: true,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+
+    this.trainerPrograms.set(1, basicTrainerProgram);
+    this.trainerPrograms.set(2, advancedTrainerProgram);
+
+    // 샘플 훈련사 신청 데이터
+    const sampleApplications: TrainerApplication[] = [
+      {
+        id: 1,
+        name: "김훈련",
+        email: "kim.trainer@example.com",
+        phone: "010-1234-5678",
+        hasAffiliation: false,
+        affiliationName: null,
+        experience: "반려동물 관련 업무 3년 경력",
+        education: "동물관련학과 졸업",
+        certifications: "반려동물관리사 자격증 보유",
+        motivation: "전문 훈련사가 되어 더 많은 반려동물과 가족들을 도와드리고 싶습니다.",
+        portfolioUrl: "https://example.com/portfolio",
+        resume: "3년간 동물병원 근무 경력",
+        status: "pending",
+        submittedAt: new Date(),
+        reviewedAt: null,
+        reviewedBy: null,
+        reviewNotes: null,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      },
+      {
+        id: 2,
+        name: "박전문",
+        email: "park.expert@example.com",
+        phone: "010-9876-5432",
+        hasAffiliation: true,
+        affiliationName: "멍멍 트레이닝센터",
+        experience: "반려동물 훈련사 5년 경력",
+        education: "수의학과 졸업",
+        certifications: "수의사 면허, 동물행동 전문가 자격증",
+        motivation: "TALEZ 플랫폼을 통해 더 체계적인 교육 서비스를 제공하고 싶습니다.",
+        portfolioUrl: "https://example.com/portfolio2",
+        resume: "5년간 전문 훈련사 경력",
+        status: "approved",
+        submittedAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
+        reviewedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
+        reviewedBy: 1,
+        reviewNotes: "우수한 경력과 자격을 보유한 지원자입니다.",
+        createdAt: new Date(),
+        updatedAt: new Date()
+      }
+    ];
+
+    sampleApplications.forEach(app => {
+      this.trainerApplications.set(app.id, app);
+    });
+
+    console.log(`✅ 훈련사 인증 시스템 초기화 완료: 프로그램 2개, 신청서 ${sampleApplications.length}개`);
+  }
+
+  // 훈련사 인증 신청 관련 메서드
+  async createTrainerApplication(application: InsertTrainerApplication): Promise<TrainerApplication> {
+    const id = this.applicationId++;
+    const newApplication: TrainerApplication = {
+      ...application,
+      id,
+      submittedAt: new Date(),
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    this.trainerApplications.set(id, newApplication);
+    return newApplication;
+  }
+
+  async getAllTrainerApplications(): Promise<TrainerApplication[]> {
+    return Array.from(this.trainerApplications.values());
+  }
+
+  async getTrainerApplication(id: number): Promise<TrainerApplication | undefined> {
+    return this.trainerApplications.get(id);
+  }
+
+  async updateTrainerApplication(id: number, data: Partial<TrainerApplication>): Promise<TrainerApplication> {
+    const existing = this.trainerApplications.get(id);
+    if (!existing) throw new Error('Application not found');
+    
+    const updated = { ...existing, ...data, updatedAt: new Date() };
+    this.trainerApplications.set(id, updated);
+    return updated;
+  }
+
+  async updateTrainerApplicationStatus(id: number, status: string, reviewerId?: number, reviewNotes?: string): Promise<TrainerApplication> {
+    const existing = this.trainerApplications.get(id);
+    if (!existing) throw new Error('Application not found');
+    
+    const updated = { 
+      ...existing, 
+      status, 
+      reviewedBy: reviewerId || null,
+      reviewNotes: reviewNotes || null,
+      reviewedAt: new Date(),
+      updatedAt: new Date() 
+    };
+    this.trainerApplications.set(id, updated);
+    return updated;
+  }
+
+  // 훈련사 인증 기록 관련 메서드
+  async createTrainerCertification(certification: InsertTrainerCertification): Promise<TrainerCertification> {
+    const id = this.certificationId++;
+    const certificationNumber = `TALEZ-${Date.now()}-${id}`;
+    const newCertification: TrainerCertification = {
+      ...certification,
+      id,
+      certificationNumber,
+      issuedAt: new Date(),
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    this.trainerCertifications.set(id, newCertification);
+    return newCertification;
+  }
+
+  async getAllTrainerCertifications(): Promise<TrainerCertification[]> {
+    return Array.from(this.trainerCertifications.values());
+  }
+
+  async getTrainerCertification(id: number): Promise<TrainerCertification | undefined> {
+    return this.trainerCertifications.get(id);
+  }
+
+  async getTrainerCertificationByTrainerId(trainerId: number): Promise<TrainerCertification | undefined> {
+    return Array.from(this.trainerCertifications.values()).find(cert => cert.trainerId === trainerId);
+  }
+
+  // 훈련사 양성 과정 관련 메서드
+  async createTrainerProgram(program: InsertTrainerProgram): Promise<TrainerProgram> {
+    const id = this.programId++;
+    const newProgram: TrainerProgram = {
+      ...program,
+      id,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    this.trainerPrograms.set(id, newProgram);
+    return newProgram;
+  }
+
+  async getAllTrainerPrograms(): Promise<TrainerProgram[]> {
+    return Array.from(this.trainerPrograms.values());
+  }
+
+  async getTrainerProgram(id: number): Promise<TrainerProgram | undefined> {
+    return this.trainerPrograms.get(id);
+  }
+
+  async updateTrainerProgram(id: number, data: Partial<TrainerProgram>): Promise<TrainerProgram> {
+    const existing = this.trainerPrograms.get(id);
+    if (!existing) throw new Error('Program not found');
+    
+    const updated = { ...existing, ...data, updatedAt: new Date() };
+    this.trainerPrograms.set(id, updated);
+    return updated;
+  }
+
+  // 훈련사 양성 과정 등록 관련 메서드
+  async createTrainerProgramEnrollment(enrollment: InsertTrainerProgramEnrollment): Promise<TrainerProgramEnrollment> {
+    const id = this.enrollmentTrainerId++;
+    const newEnrollment: TrainerProgramEnrollment = {
+      ...enrollment,
+      id,
+      enrolledAt: new Date(),
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    this.trainerProgramEnrollments.set(id, newEnrollment);
+    return newEnrollment;
+  }
+
+  async getAllTrainerProgramEnrollments(): Promise<TrainerProgramEnrollment[]> {
+    return Array.from(this.trainerProgramEnrollments.values());
+  }
+
+  async getTrainerProgramEnrollment(id: number): Promise<TrainerProgramEnrollment | undefined> {
+    return this.trainerProgramEnrollments.get(id);
+  }
+
+  async getTrainerProgramEnrollmentsByUserId(userId: number): Promise<TrainerProgramEnrollment[]> {
+    return Array.from(this.trainerProgramEnrollments.values()).filter(enrollment => enrollment.userId === userId);
+  }
+
+  async updateTrainerProgramEnrollment(id: number, data: Partial<TrainerProgramEnrollment>): Promise<TrainerProgramEnrollment> {
+    const existing = this.trainerProgramEnrollments.get(id);
+    if (!existing) throw new Error('Enrollment not found');
+    
+    const updated = { ...existing, ...data, updatedAt: new Date() };
+    this.trainerProgramEnrollments.set(id, updated);
+    return updated;
   }
 }
 

@@ -533,3 +533,89 @@ export const curriculums = pgTable("curriculums", {
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
+
+// 훈련사 인증 신청 테이블
+export const trainerApplications = pgTable("trainer_applications", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 100 }).notNull(),
+  email: varchar("email", { length: 255 }).notNull(),
+  phone: varchar("phone", { length: 20 }).notNull(),
+  hasAffiliation: boolean("has_affiliation").default(false),
+  affiliationName: varchar("affiliation_name", { length: 200 }),
+  experience: text("experience"),
+  education: text("education"),
+  certifications: text("certifications"),
+  motivation: text("motivation"),
+  portfolioUrl: text("portfolio_url"),
+  resume: text("resume"),
+  status: varchar("status", { length: 20 }).default("pending"), // pending, approved, rejected, certified
+  submittedAt: timestamp("submitted_at").defaultNow(),
+  reviewedAt: timestamp("reviewed_at"),
+  reviewedBy: integer("reviewed_by").references(() => users.id),
+  reviewNotes: text("review_notes"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// 훈련사 인증 기록 테이블
+export const trainerCertifications = pgTable("trainer_certifications", {
+  id: serial("id").primaryKey(),
+  applicationId: integer("application_id").references(() => trainerApplications.id),
+  trainerId: integer("trainer_id").references(() => users.id),
+  certificationLevel: varchar("certification_level", { length: 50 }).default("basic"), // basic, intermediate, advanced
+  certificationNumber: varchar("certification_number", { length: 100 }).unique(),
+  issuedAt: timestamp("issued_at").defaultNow(),
+  expiresAt: timestamp("expires_at"),
+  issuedBy: integer("issued_by").references(() => users.id),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// 훈련사 양성 과정 테이블
+export const trainerPrograms = pgTable("trainer_programs", {
+  id: serial("id").primaryKey(),
+  title: varchar("title", { length: 200 }).notNull(),
+  description: text("description"),
+  level: varchar("level", { length: 50 }).notNull(), // beginner, intermediate, advanced
+  duration: integer("duration"), // in hours
+  price: decimal("price", { precision: 10, scale: 2 }),
+  maxParticipants: integer("max_participants").default(20),
+  currentParticipants: integer("current_participants").default(0),
+  startDate: timestamp("start_date"),
+  endDate: timestamp("end_date"),
+  instructorId: integer("instructor_id").references(() => users.id),
+  curriculum: jsonb("curriculum"),
+  requirements: text("requirements"),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// 훈련사 양성 과정 등록 테이블
+export const trainerProgramEnrollments = pgTable("trainer_program_enrollments", {
+  id: serial("id").primaryKey(),
+  programId: integer("program_id").references(() => trainerPrograms.id),
+  userId: integer("user_id").references(() => users.id),
+  status: varchar("status", { length: 20 }).default("enrolled"), // enrolled, completed, dropped, failed
+  progress: integer("progress").default(0), // percentage
+  enrolledAt: timestamp("enrolled_at").defaultNow(),
+  completedAt: timestamp("completed_at"),
+  finalScore: decimal("final_score", { precision: 5, scale: 2 }),
+  certificate: text("certificate"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Insert/Select 타입 정의
+export type TrainerApplication = typeof trainerApplications.$inferSelect;
+export type InsertTrainerApplication = typeof trainerApplications.$inferInsert;
+
+export type TrainerCertification = typeof trainerCertifications.$inferSelect;
+export type InsertTrainerCertification = typeof trainerCertifications.$inferInsert;
+
+export type TrainerProgram = typeof trainerPrograms.$inferSelect;
+export type InsertTrainerProgram = typeof trainerPrograms.$inferInsert;
+
+export type TrainerProgramEnrollment = typeof trainerProgramEnrollments.$inferSelect;
+export type InsertTrainerProgramEnrollment = typeof trainerProgramEnrollments.$inferInsert;

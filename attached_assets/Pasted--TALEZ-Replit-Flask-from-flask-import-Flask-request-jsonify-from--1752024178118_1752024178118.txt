@@ -1,0 +1,70 @@
+# TALEZ 관리자용 훈련사 인증 관리 시스템 (Replit 기반 Flask 백엔드 예시)
+
+from flask import Flask, request, jsonify
+from datetime import datetime
+import uuid
+
+app = Flask(__name__)
+
+# 데이터베이스 모의 구조
+trainers_db = []  # 훈련사 정보 목록
+applications_db = []  # 훈련사 인증 신청 목록
+certifications_db = []  # 인증 이력
+
+# 관리자 로그인 키 (간단하게)
+ADMIN_KEY = "secret_admin_key"
+
+# 훈련사 지원 양식 (비기관 소속)
+@app.route('/apply_trainer', methods=['POST'])
+def apply_trainer():
+    data = request.json
+    trainer = {
+        "id": str(uuid.uuid4()),
+        "name": data['name'],
+        "email": data['email'],
+        "phone": data['phone'],
+        "has_affiliation": data.get('has_affiliation', False),
+        "submitted_at": datetime.utcnow().isoformat(),
+        "status": "pending"
+    }
+    applications_db.append(trainer)
+    return jsonify({"message": "지원이 완료되었습니다.", "trainer_id": trainer["id"]})
+
+# 관리자: 지원자 목록 확인
+@app.route('/admin/list_applications', methods=['GET'])
+def list_applications():
+    if request.args.get("admin_key") != ADMIN_KEY:
+        return jsonify({"error": "인증 오류"}), 401
+    return jsonify(applications_db)
+
+# 관리자: 특정 지원자 승인 및 인증 처리
+@app.route('/admin/certify_trainer', methods=['POST'])
+def certify_trainer():
+    if request.args.get("admin_key") != ADMIN_KEY:
+        return jsonify({"error": "인증 오류"}), 401
+
+    trainer_id = request.json['trainer_id']
+    trainer = next((t for t in applications_db if t['id'] == trainer_id), None)
+
+    if not trainer:
+        return jsonify({"error": "지원자를 찾을 수 없습니다."}), 404
+
+    trainer['status'] = 'certified'
+    certification = {
+        "certification_id": str(uuid.uuid4()),
+        "trainer_id": trainer['id'],
+        "certified_at": datetime.utcnow().isoformat(),
+        "issued_by": "admin"
+    }
+    certifications_db.append(certification)
+    trainers_db.append(trainer)
+    return jsonify({"message": "인증 완료", "certification": certification})
+
+# 인증 훈련사 목록
+@app.route('/certified_trainers', methods=['GET'])
+def get_certified_trainers():
+    return jsonify([t for t in trainers_db if t['status'] == 'certified'])
+
+# 실행
+if __name__ == '__main__':
+    app.run(debug=True)

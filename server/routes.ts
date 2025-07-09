@@ -5323,6 +5323,9 @@ app.get('/api/search', async (req, res) => {
   // Global error handler (commented out for now)
   // app.use(errorHandler);
 
+  // 훈련사 인증 시스템 라우트 등록
+  registerTrainerCertificationRoutes(app);
+
   return httpServer;
 }
 
@@ -5621,5 +5624,289 @@ function parseRealExcelContent(data: any[][], fileName: string) {
   console.log('[엑셀 파싱] 완료 - 모듈 수:', result.modules.length, '총 시간:', result.duration);
   
   return result;
+}
+
+// 훈련사 인증 시스템 API 라우트
+export function registerTrainerCertificationRoutes(app: Express) {
+  // 훈련사 인증 신청 생성
+  app.post("/api/trainer-applications", async (req, res) => {
+    try {
+      const applicationData = {
+        name: req.body.name,
+        email: req.body.email,
+        phone: req.body.phone,
+        hasAffiliation: req.body.hasAffiliation || false,
+        affiliationName: req.body.affiliationName || null,
+        experience: req.body.experience,
+        education: req.body.education,
+        certifications: req.body.certifications,
+        motivation: req.body.motivation,
+        portfolioUrl: req.body.portfolioUrl,
+        resume: req.body.resume,
+        status: 'pending'
+      };
+
+      const newApplication = await storage.createTrainerApplication(applicationData);
+      
+      res.status(201).json({
+        success: true,
+        message: "훈련사 인증 신청이 성공적으로 제출되었습니다.",
+        application: newApplication
+      });
+    } catch (error) {
+      console.error('훈련사 인증 신청 오류:', error);
+      res.status(500).json({
+        success: false,
+        message: "신청 처리 중 오류가 발생했습니다."
+      });
+    }
+  });
+
+  // 모든 훈련사 인증 신청 조회 (관리자용)
+  app.get("/api/trainer-applications", async (req, res) => {
+    try {
+      const applications = await storage.getAllTrainerApplications();
+      res.json({
+        success: true,
+        applications: applications
+      });
+    } catch (error) {
+      console.error('훈련사 신청 목록 조회 오류:', error);
+      res.status(500).json({
+        success: false,
+        message: "신청 목록을 불러오는 중 오류가 발생했습니다."
+      });
+    }
+  });
+
+  // 특정 훈련사 인증 신청 조회
+  app.get("/api/trainer-applications/:id", async (req, res) => {
+    try {
+      const applicationId = parseInt(req.params.id);
+      const application = await storage.getTrainerApplication(applicationId);
+      
+      if (!application) {
+        return res.status(404).json({
+          success: false,
+          message: "해당 신청을 찾을 수 없습니다."
+        });
+      }
+
+      res.json({
+        success: true,
+        application: application
+      });
+    } catch (error) {
+      console.error('훈련사 신청 조회 오류:', error);
+      res.status(500).json({
+        success: false,
+        message: "신청 정보를 불러오는 중 오류가 발생했습니다."
+      });
+    }
+  });
+
+  // 훈련사 인증 신청 상태 업데이트 (관리자용)
+  app.patch("/api/trainer-applications/:id/status", async (req, res) => {
+    try {
+      const applicationId = parseInt(req.params.id);
+      const { status, reviewNotes } = req.body;
+      const reviewerId = req.session?.user?.id || 1; // 현재 로그인한 관리자 ID
+
+      const updatedApplication = await storage.updateTrainerApplicationStatus(
+        applicationId,
+        status,
+        reviewerId,
+        reviewNotes
+      );
+
+      // 승인된 경우 훈련사 인증 기록 생성
+      if (status === 'approved') {
+        await storage.createTrainerCertification({
+          applicationId: applicationId,
+          trainerId: updatedApplication.id, // 실제로는 사용자 ID와 매핑 필요
+          certificationLevel: 'basic',
+          issuedBy: reviewerId,
+          expiresAt: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // 1년 후 만료
+          isActive: true
+        });
+      }
+
+      res.json({
+        success: true,
+        message: `신청이 ${status === 'approved' ? '승인' : '거부'}되었습니다.`,
+        application: updatedApplication
+      });
+    } catch (error) {
+      console.error('훈련사 신청 상태 업데이트 오류:', error);
+      res.status(500).json({
+        success: false,
+        message: "상태 업데이트 중 오류가 발생했습니다."
+      });
+    }
+  });
+
+  // 훈련사 양성 과정 목록 조회
+  app.get("/api/trainer-programs", async (req, res) => {
+    try {
+      const programs = await storage.getAllTrainerPrograms();
+      res.json({
+        success: true,
+        programs: programs
+      });
+    } catch (error) {
+      console.error('훈련사 양성 과정 목록 조회 오류:', error);
+      res.status(500).json({
+        success: false,
+        message: "과정 목록을 불러오는 중 오류가 발생했습니다."
+      });
+    }
+  });
+
+  // 특정 훈련사 양성 과정 조회
+  app.get("/api/trainer-programs/:id", async (req, res) => {
+    try {
+      const programId = parseInt(req.params.id);
+      const program = await storage.getTrainerProgram(programId);
+      
+      if (!program) {
+        return res.status(404).json({
+          success: false,
+          message: "해당 과정을 찾을 수 없습니다."
+        });
+      }
+
+      res.json({
+        success: true,
+        program: program
+      });
+    } catch (error) {
+      console.error('훈련사 양성 과정 조회 오류:', error);
+      res.status(500).json({
+        success: false,
+        message: "과정 정보를 불러오는 중 오류가 발생했습니다."
+      });
+    }
+  });
+
+  // 훈련사 양성 과정 등록
+  app.post("/api/trainer-programs/:id/enroll", async (req, res) => {
+    try {
+      const programId = parseInt(req.params.id);
+      const userId = req.session?.user?.id || 1; // 현재 로그인한 사용자 ID
+
+      const program = await storage.getTrainerProgram(programId);
+      if (!program) {
+        return res.status(404).json({
+          success: false,
+          message: "해당 과정을 찾을 수 없습니다."
+        });
+      }
+
+      // 이미 등록했는지 확인
+      const existingEnrollments = await storage.getTrainerProgramEnrollmentsByUserId(userId);
+      const alreadyEnrolled = existingEnrollments.some(enrollment => 
+        enrollment.programId === programId && enrollment.status === 'enrolled'
+      );
+
+      if (alreadyEnrolled) {
+        return res.status(400).json({
+          success: false,
+          message: "이미 해당 과정에 등록되어 있습니다."
+        });
+      }
+
+      const enrollment = await storage.createTrainerProgramEnrollment({
+        programId: programId,
+        userId: userId,
+        status: 'enrolled',
+        progress: 0
+      });
+
+      res.json({
+        success: true,
+        message: "훈련사 양성 과정 등록이 완료되었습니다.",
+        enrollment: enrollment
+      });
+    } catch (error) {
+      console.error('훈련사 양성 과정 등록 오류:', error);
+      res.status(500).json({
+        success: false,
+        message: "과정 등록 중 오류가 발생했습니다."
+      });
+    }
+  });
+
+  // 사용자의 훈련사 양성 과정 등록 현황 조회
+  app.get("/api/users/:userId/trainer-program-enrollments", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const enrollments = await storage.getTrainerProgramEnrollmentsByUserId(userId);
+      
+      // 각 등록 정보에 과정 정보 포함
+      const enrollmentsWithPrograms = await Promise.all(
+        enrollments.map(async (enrollment) => {
+          const program = await storage.getTrainerProgram(enrollment.programId!);
+          return {
+            ...enrollment,
+            program: program
+          };
+        })
+      );
+
+      res.json({
+        success: true,
+        enrollments: enrollmentsWithPrograms
+      });
+    } catch (error) {
+      console.error('사용자 훈련사 과정 등록 현황 조회 오류:', error);
+      res.status(500).json({
+        success: false,
+        message: "등록 현황을 불러오는 중 오류가 발생했습니다."
+      });
+    }
+  });
+
+  // 훈련사 인증 기록 조회
+  app.get("/api/trainer-certifications", async (req, res) => {
+    try {
+      const certifications = await storage.getAllTrainerCertifications();
+      res.json({
+        success: true,
+        certifications: certifications
+      });
+    } catch (error) {
+      console.error('훈련사 인증 기록 조회 오류:', error);
+      res.status(500).json({
+        success: false,
+        message: "인증 기록을 불러오는 중 오류가 발생했습니다."
+      });
+    }
+  });
+
+  // 특정 훈련사의 인증 기록 조회
+  app.get("/api/trainers/:trainerId/certification", async (req, res) => {
+    try {
+      const trainerId = parseInt(req.params.trainerId);
+      const certification = await storage.getTrainerCertificationByTrainerId(trainerId);
+      
+      if (!certification) {
+        return res.status(404).json({
+          success: false,
+          message: "해당 훈련사의 인증 기록을 찾을 수 없습니다."
+        });
+      }
+
+      res.json({
+        success: true,
+        certification: certification
+      });
+    } catch (error) {
+      console.error('훈련사 인증 기록 조회 오류:', error);
+      res.status(500).json({
+        success: false,
+        message: "인증 기록을 불러오는 중 오류가 발생했습니다."
+      });
+    }
+  });
 }
 
