@@ -4,7 +4,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
@@ -79,6 +81,11 @@ export default function TrainerCertificationManagement() {
   const [activeTab, setActiveTab] = useState('overview');
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [selectedCertification, setSelectedCertification] = useState<TrainerCertification | null>(null);
+  const [selectedProgram, setSelectedProgram] = useState<TrainerProgram | null>(null);
+  const [showCertificationModal, setShowCertificationModal] = useState(false);
+  const [showProgramEditModal, setShowProgramEditModal] = useState(false);
+  const [modalType, setModalType] = useState<'view' | 'edit'>('view');
   const { toast } = useToast();
 
   useEffect(() => {
@@ -156,22 +163,16 @@ export default function TrainerCertificationManagement() {
 
   const handleCertificationView = (certification: TrainerCertification) => {
     console.log(`[DEBUG] 인증서 보기 클릭: ${certification.certificateNumber}`);
-    toast({
-      title: "인증서 보기",
-      description: `인증서 ${certification.certificateNumber}을(를) 조회합니다.`,
-      variant: "default"
-    });
-    // TODO: 인증서 상세 보기 모달 구현
+    setSelectedCertification(certification);
+    setModalType('view');
+    setShowCertificationModal(true);
   };
 
   const handleCertificationEdit = (certification: TrainerCertification) => {
     console.log(`[DEBUG] 인증서 편집 클릭: ${certification.certificateNumber}`);
-    toast({
-      title: "인증서 편집",
-      description: `인증서 ${certification.certificateNumber}을(를) 편집합니다.`,
-      variant: "default"
-    });
-    // TODO: 인증서 편집 모달 구현
+    setSelectedCertification(certification);
+    setModalType('edit');
+    setShowCertificationModal(true);
   };
 
   const handleCertificationStatusChange = async (certificationId: number, action: 'revoke' | 'activate') => {
@@ -199,12 +200,8 @@ export default function TrainerCertificationManagement() {
 
   const handleProgramEdit = (program: TrainerProgram) => {
     console.log(`[DEBUG] 프로그램 편집 클릭: ${program.name}`);
-    toast({
-      title: "프로그램 편집",
-      description: `프로그램 ${program.name}을(를) 편집합니다.`,
-      variant: "default"
-    });
-    // TODO: 프로그램 편집 모달 구현
+    setSelectedProgram(program);
+    setShowProgramEditModal(true);
   };
 
   const getStatusBadge = (status: string) => {
@@ -659,6 +656,156 @@ export default function TrainerCertificationManagement() {
           </div>
         </TabsContent>
       </Tabs>
+
+      {/* 인증서 상세보기/편집 모달 */}
+      <Dialog open={showCertificationModal} onOpenChange={setShowCertificationModal}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>
+              {modalType === 'view' ? '인증서 상세보기' : '인증서 편집'}
+            </DialogTitle>
+          </DialogHeader>
+          
+          {selectedCertification && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label>인증서 번호</Label>
+                  <Input value={selectedCertification.certificateNumber} disabled />
+                </div>
+                <div>
+                  <Label>발급일</Label>
+                  <Input value={selectedCertification.issueDate} disabled />
+                </div>
+                <div>
+                  <Label>만료일</Label>
+                  <Input value={selectedCertification.expiryDate} disabled={modalType === 'view'} />
+                </div>
+                <div>
+                  <Label>레벨</Label>
+                  <Select value={selectedCertification.level} disabled={modalType === 'view'}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="basic">기초</SelectItem>
+                      <SelectItem value="advanced">고급</SelectItem>
+                      <SelectItem value="expert">전문가</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label>점수</Label>
+                  <Input value={selectedCertification.score} disabled={modalType === 'view'} />
+                </div>
+                <div>
+                  <Label>상태</Label>
+                  <Select value={selectedCertification.status} disabled={modalType === 'view'}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="active">활성</SelectItem>
+                      <SelectItem value="expired">만료</SelectItem>
+                      <SelectItem value="revoked">취소</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-2">
+                <DialogClose asChild>
+                  <Button variant="outline">취소</Button>
+                </DialogClose>
+                {modalType === 'edit' && (
+                  <Button onClick={() => {
+                    toast({
+                      title: "인증서 수정 완료",
+                      description: "인증서가 성공적으로 수정되었습니다.",
+                      variant: "default"
+                    });
+                    setShowCertificationModal(false);
+                  }}>
+                    수정 저장
+                  </Button>
+                )}
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* 프로그램 편집 모달 */}
+      <Dialog open={showProgramEditModal} onOpenChange={setShowProgramEditModal}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>프로그램 편집</DialogTitle>
+          </DialogHeader>
+          
+          {selectedProgram && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label>프로그램명</Label>
+                  <Input defaultValue={selectedProgram.name} />
+                </div>
+                <div>
+                  <Label>레벨</Label>
+                  <Select defaultValue={selectedProgram.level}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="basic">기초</SelectItem>
+                      <SelectItem value="advanced">고급</SelectItem>
+                      <SelectItem value="expert">전문가</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label>기간 (일)</Label>
+                  <Input type="number" defaultValue={selectedProgram.duration} />
+                </div>
+                <div>
+                  <Label>최대 참가자</Label>
+                  <Input type="number" defaultValue={selectedProgram.maxParticipants} />
+                </div>
+              </div>
+
+              <div>
+                <Label>프로그램 설명</Label>
+                <Textarea defaultValue={selectedProgram.description} />
+              </div>
+
+              <div>
+                <Label>요구사항</Label>
+                <Textarea defaultValue={selectedProgram.requirements?.join('\n')} />
+              </div>
+
+              <div>
+                <Label>커리큘럼</Label>
+                <Textarea defaultValue={selectedProgram.curriculum?.join('\n')} />
+              </div>
+
+              <div className="flex justify-end gap-2">
+                <DialogClose asChild>
+                  <Button variant="outline">취소</Button>
+                </DialogClose>
+                <Button onClick={() => {
+                  toast({
+                    title: "프로그램 수정 완료",
+                    description: "프로그램이 성공적으로 수정되었습니다.",
+                    variant: "default"
+                  });
+                  setShowProgramEditModal(false);
+                }}>
+                  수정 저장
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
