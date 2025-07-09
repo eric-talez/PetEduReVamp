@@ -5665,7 +5665,10 @@ export function registerTrainerCertificationRoutes(app: Express) {
   // 모든 훈련사 인증 신청 조회 (관리자용)
   app.get("/api/trainer-applications", async (req, res) => {
     try {
-      const applications = await storage.getAllTrainerApplications();
+      // 직접 trainerApplications 맵에서 데이터를 가져오기
+      const applications = Array.from((storage as any).trainerApplications.values());
+      console.log('훈련사 신청 조회 성공:', applications.length, '개');
+      
       res.json({
         success: true,
         applications: applications
@@ -5748,7 +5751,10 @@ export function registerTrainerCertificationRoutes(app: Express) {
   // 훈련사 양성 과정 목록 조회
   app.get("/api/trainer-programs", async (req, res) => {
     try {
-      const programs = await storage.getAllTrainerPrograms();
+      // 직접 trainerPrograms 맵에서 데이터를 가져오기
+      const programs = Array.from((storage as any).trainerPrograms.values());
+      console.log('훈련사 프로그램 조회 성공:', programs.length, '개');
+      
       res.json({
         success: true,
         programs: programs
@@ -5888,7 +5894,10 @@ export function registerTrainerCertificationRoutes(app: Express) {
   // 훈련사 인증 기록 조회
   app.get("/api/trainer-certifications", async (req, res) => {
     try {
-      const certifications = await storage.getAllTrainerCertifications();
+      // 직접 trainerCertifications 맵에서 데이터를 가져오기
+      const certifications = Array.from((storage as any).trainerCertifications.values());
+      console.log('훈련사 인증서 조회 성공:', certifications.length, '개');
+      
       res.json({
         success: true,
         certifications: certifications
