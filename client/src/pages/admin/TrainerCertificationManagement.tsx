@@ -83,8 +83,10 @@ export default function TrainerCertificationManagement() {
   const [statusFilter, setStatusFilter] = useState('all');
   const [selectedCertification, setSelectedCertification] = useState<TrainerCertification | null>(null);
   const [selectedProgram, setSelectedProgram] = useState<TrainerProgram | null>(null);
+  const [selectedApplication, setSelectedApplication] = useState<TrainerApplication | null>(null);
   const [showCertificationModal, setShowCertificationModal] = useState(false);
   const [showProgramEditModal, setShowProgramEditModal] = useState(false);
+  const [showApplicationModal, setShowApplicationModal] = useState(false);
   const [modalType, setModalType] = useState<'view' | 'edit'>('view');
   const { toast } = useToast();
 
@@ -202,6 +204,12 @@ export default function TrainerCertificationManagement() {
     console.log(`[DEBUG] 프로그램 편집 클릭: ${program.name}`);
     setSelectedProgram(program);
     setShowProgramEditModal(true);
+  };
+
+  const handleApplicationView = (application: TrainerApplication) => {
+    console.log(`[DEBUG] 신청서 보기 클릭: ${application.id}`);
+    setSelectedApplication(application);
+    setShowApplicationModal(true);
   };
 
   const getStatusBadge = (status: string) => {
@@ -513,6 +521,14 @@ export default function TrainerCertificationManagement() {
                       <div className="flex items-center gap-2">
                         {getStatusBadge(application.status)}
                         <Badge variant="outline">프로그램 ID: {application.programId}</Badge>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleApplicationView(application)}
+                        >
+                          <Eye className="h-4 w-4 mr-1" />
+                          보기
+                        </Button>
                       </div>
                     </div>
 
@@ -801,6 +817,118 @@ export default function TrainerCertificationManagement() {
                 }}>
                   수정 저장
                 </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* 신청서 상세보기 모달 */}
+      <Dialog open={showApplicationModal} onOpenChange={setShowApplicationModal}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>신청서 상세보기</DialogTitle>
+          </DialogHeader>
+          
+          {selectedApplication && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label>신청 ID</Label>
+                  <Input value={selectedApplication.id} disabled />
+                </div>
+                <div>
+                  <Label>사용자 ID</Label>
+                  <Input value={selectedApplication.userId} disabled />
+                </div>
+                <div>
+                  <Label>프로그램 ID</Label>
+                  <Input value={selectedApplication.programId} disabled />
+                </div>
+                <div>
+                  <Label>신청 상태</Label>
+                  <div className="flex items-center gap-2">
+                    {getStatusBadge(selectedApplication.status)}
+                  </div>
+                </div>
+                <div>
+                  <Label>신청일</Label>
+                  <Input value={new Date(selectedApplication.applicationDate).toLocaleDateString()} disabled />
+                </div>
+                {selectedApplication.reviewDate && (
+                  <div>
+                    <Label>검토일</Label>
+                    <Input value={new Date(selectedApplication.reviewDate).toLocaleDateString()} disabled />
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <Label>경력</Label>
+                <Textarea value={selectedApplication.experience} disabled />
+              </div>
+
+              <div>
+                <Label>지원 동기</Label>
+                <Textarea value={selectedApplication.motivation} disabled />
+              </div>
+
+              {selectedApplication.portfolioUrl && (
+                <div>
+                  <Label>포트폴리오 URL</Label>
+                  <Input value={selectedApplication.portfolioUrl} disabled />
+                </div>
+              )}
+
+              {selectedApplication.previousCertifications.length > 0 && (
+                <div>
+                  <Label>보유 자격증</Label>
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {selectedApplication.previousCertifications.map((cert, index) => (
+                      <Badge key={index} variant="outline">
+                        {cert}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {selectedApplication.reviewNotes && (
+                <div>
+                  <Label>검토 메모</Label>
+                  <Textarea value={selectedApplication.reviewNotes} disabled />
+                </div>
+              )}
+
+              <div className="flex justify-end gap-2">
+                <DialogClose asChild>
+                  <Button variant="outline">닫기</Button>
+                </DialogClose>
+                {selectedApplication.status === 'pending' && (
+                  <>
+                    <Button
+                      onClick={() => {
+                        handleApplicationReview(selectedApplication.id, 'approve');
+                        setShowApplicationModal(false);
+                      }}
+                      className="bg-green-600 hover:bg-green-700"
+                    >
+                      <CheckCircle className="h-4 w-4 mr-1" />
+                      승인
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        handleApplicationReview(selectedApplication.id, 'reject');
+                        setShowApplicationModal(false);
+                      }}
+                      className="text-red-600 border-red-600 hover:bg-red-50"
+                    >
+                      <XCircle className="h-4 w-4 mr-1" />
+                      거부
+                    </Button>
+                  </>
+                )}
               </div>
             </div>
           )}
