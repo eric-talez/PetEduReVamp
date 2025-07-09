@@ -59,6 +59,7 @@ import LocationManagement from './pages/admin/LocationManagement';
 import SpringBootTestPage from "./pages/SpringBootTest";
 import AdminContents from "./pages/admin/AdminContents";
 import AdminMembersStatus from "./pages/admin/AdminMembersStatus";
+import TrainerCertificationManagement from "./pages/admin/TrainerCertificationManagement";
 
 
 
@@ -295,6 +296,7 @@ function AppLayout({ children }: { children: ReactNode }) {
                   <Route path="/admin/contents" component={AdminContents} />
                   <Route path="/admin/curriculum" component={AdminCurriculum} />
                   <Route path="/admin/members-status" component={AdminMembersStatus} />
+                  <Route path="/admin/trainer-certification" component={TrainerCertificationManagement} />
                   <Route path="/admin/spring-boot-test" component={SpringBootTestPage} />
                   
                   {/* 업체 등록 관리 */}

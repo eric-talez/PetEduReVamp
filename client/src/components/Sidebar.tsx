@@ -786,6 +786,7 @@ export function Sidebar({
                       <>
                         <AccessibleNavItem href="/admin/curriculum" icon={<BookOpen className="w-5 h-5 mr-2" />} hoverIcon={<GraduationCap className="w-5 h-5 mr-2 text-primary" />} active={isActive("/admin/curriculum")} onClick={handleItemClick} show={true}>커리큘럼 관리</AccessibleNavItem>
                         <AccessibleNavItem href="/admin/registrations" icon={<UserPlus className="w-5 h-5 mr-2" />} hoverIcon={<UserCheck className="w-5 h-5 mr-2 text-primary" />} active={isActive("/admin/registrations")} onClick={handleItemClick} show={true}>등록 신청 관리</AccessibleNavItem>
+                        <AccessibleNavItem href="/admin/trainer-certification" icon={<Award className="w-5 h-5 mr-2" />} hoverIcon={<Shield className="w-5 h-5 mr-2 text-primary" />} active={isActive("/admin/trainer-certification")} onClick={handleItemClick} show={true}>훈련사 인증 관리</AccessibleNavItem>
                         <AccessibleNavItem href="/admin/users" icon={<Settings className="w-5 h-5 mr-2" />} active={isActive("/admin/users")} onClick={handleItemClick} show={true}>시스템 관리</AccessibleNavItem>
                         <AccessibleNavItem href="/admin/members-status" icon={<Users className="w-5 h-5 mr-2" />} active={isActive("/admin/members-status")} onClick={handleItemClick} show={true}>회원 현황</AccessibleNavItem>
                         <AccessibleNavItem href="/admin/institutes" icon={<Building className="w-5 h-5 mr-2" />} active={isActive("/admin/institutes")} onClick={handleItemClick} show={true}>기관 관리</AccessibleNavItem>
