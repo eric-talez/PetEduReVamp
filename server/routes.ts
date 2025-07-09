@@ -5762,6 +5762,25 @@ export function registerTrainerCertificationRoutes(app: Express) {
     }
   });
 
+  // 새 훈련사 양성 과정 추가 (관리자용)
+  app.post("/api/trainer-programs", async (req, res) => {
+    try {
+      const programData = req.body;
+      const newProgram = await storage.createTrainerProgram(programData);
+      res.json({
+        success: true,
+        message: "새로운 훈련사 양성 과정이 추가되었습니다.",
+        program: newProgram
+      });
+    } catch (error) {
+      console.error('훈련사 양성 과정 추가 오류:', error);
+      res.status(500).json({
+        success: false,
+        message: "과정 추가 중 오류가 발생했습니다."
+      });
+    }
+  });
+
   // 특정 훈련사 양성 과정 조회
   app.get("/api/trainer-programs/:id", async (req, res) => {
     try {
