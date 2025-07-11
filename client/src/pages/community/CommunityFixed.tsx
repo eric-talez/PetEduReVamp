@@ -901,18 +901,47 @@ function CommunityPage() {
                   {paginatedPosts.map((post: any) => (
                     <Card key={post.id} className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => handlePostClick(post)}>
                       <CardContent className="p-4">
-                        <div className="flex items-start justify-between">
+                        <div className="flex items-start gap-4">
+                          {/* 썸네일 이미지 (리스트뷰용) */}
+                          {post.linkInfo?.image && (
+                            <div className="flex-shrink-0 w-24 h-24 overflow-hidden rounded-lg">
+                              <img 
+                                src={post.linkInfo.image} 
+                                alt={post.linkInfo.title || post.title}
+                                className="w-full h-full object-cover"
+                                onError={(e) => {
+                                  e.currentTarget.style.display = 'none';
+                                }}
+                              />
+                            </div>
+                          )}
+                          
                           <div className="flex-1">
                             <div className="flex items-center gap-2 mb-2">
                               <Badge variant="secondary" className="text-xs">
-                                {post.tag?.text || post.category}
+                                {post.tag}
                               </Badge>
                               <span className="text-xs text-gray-500">
-                                {post.user?.name || '익명'} • {post.user?.time || '방금 전'}
+                                {post.author?.name || '익명 사용자'} • {(() => {
+                                  try {
+                                    return formatDistanceToNow(new Date(post.createdAt), { addSuffix: true, locale: ko });
+                                  } catch {
+                                    return '방금 전';
+                                  }
+                                })()}
                               </span>
                             </div>
                             <h3 className="font-semibold text-lg mb-2 line-clamp-1">{post.title}</h3>
                             <p className="text-gray-600 text-sm mb-3 line-clamp-2">{post.content}</p>
+                            
+                            {/* 링크 정보 미리보기 (썸네일이 없고 리스트뷰일 때) */}
+                            {post.linkInfo && !post.linkInfo.image && (
+                              <div className="mb-3 p-2 bg-gray-50 rounded border text-xs">
+                                <div className="font-medium line-clamp-1">{post.linkInfo.title}</div>
+                                <div className="text-gray-600 line-clamp-1 mt-1">{post.linkInfo.description}</div>
+                              </div>
+                            )}
+                            
                             <div className="flex items-center gap-4 text-xs text-gray-500">
                               <div className="flex items-center gap-1">
                                 <Heart className="h-3 w-3" />
@@ -922,12 +951,20 @@ function CommunityPage() {
                                 <MessageSquare className="h-3 w-3" />
                                 <span>{post.comments || 0}</span>
                               </div>
+                              <div className="flex items-center gap-1">
+                                <Eye className="h-3 w-3" />
+                                <span>{post.views || 0}</span>
+                              </div>
                             </div>
                           </div>
-                          <Avatar className="h-10 w-10 ml-4">
-                            <AvatarImage src={post.user?.image} alt={post.user?.name} />
-                            <AvatarFallback>{post.user?.name?.[0] || 'U'}</AvatarFallback>
-                          </Avatar>
+                          
+                          {/* 작성자 아바타 (오른쪽 끝) */}
+                          <div className="flex-shrink-0">
+                            <Avatar className="h-10 w-10">
+                              <AvatarImage src={post.author?.image} alt={post.author?.name} />
+                              <AvatarFallback>{post.author?.name?.[0] || 'U'}</AvatarFallback>
+                            </Avatar>
+                          </div>
                         </div>
                       </CardContent>
                     </Card>
@@ -957,16 +994,45 @@ function CommunityPage() {
                   {paginatedPosts.map((post: any) => (
                     <Card key={post.id} className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => handlePostClick(post)}>
                       <CardContent className="p-4">
-                        <div className="flex items-start justify-between">
+                        <div className="flex items-start gap-4">
+                          {/* 썸네일 이미지 (리스트뷰용) */}
+                          {post.linkInfo?.image && (
+                            <div className="flex-shrink-0 w-24 h-24 overflow-hidden rounded-lg">
+                              <img 
+                                src={post.linkInfo.image} 
+                                alt={post.linkInfo.title || post.title}
+                                className="w-full h-full object-cover"
+                                onError={(e) => {
+                                  e.currentTarget.style.display = 'none';
+                                }}
+                              />
+                            </div>
+                          )}
+                          
                           <div className="flex-1">
                             <div className="flex items-center gap-2 mb-2">
                               <Badge variant="secondary" className="text-xs">훈련팁</Badge>
                               <span className="text-xs text-gray-500">
-                                {post.user?.name || '익명'} • {post.user?.time || '방금 전'}
+                                {post.author?.name || '익명 사용자'} • {(() => {
+                                  try {
+                                    return formatDistanceToNow(new Date(post.createdAt), { addSuffix: true, locale: ko });
+                                  } catch {
+                                    return '방금 전';
+                                  }
+                                })()}
                               </span>
                             </div>
                             <h3 className="font-semibold text-lg mb-2 line-clamp-1">{post.title}</h3>
                             <p className="text-gray-600 text-sm mb-3 line-clamp-2">{post.content}</p>
+                            
+                            {/* 링크 정보 미리보기 (썸네일이 없고 리스트뷰일 때) */}
+                            {post.linkInfo && !post.linkInfo.image && (
+                              <div className="mb-3 p-2 bg-gray-50 rounded border text-xs">
+                                <div className="font-medium line-clamp-1">{post.linkInfo.title}</div>
+                                <div className="text-gray-600 line-clamp-1 mt-1">{post.linkInfo.description}</div>
+                              </div>
+                            )}
+                            
                             <div className="flex items-center gap-4 text-xs text-gray-500">
                               <div className="flex items-center gap-1">
                                 <Heart className="h-3 w-3" />
@@ -976,12 +1042,20 @@ function CommunityPage() {
                                 <MessageSquare className="h-3 w-3" />
                                 <span>{post.comments || 0}</span>
                               </div>
+                              <div className="flex items-center gap-1">
+                                <Eye className="h-3 w-3" />
+                                <span>{post.views || 0}</span>
+                              </div>
                             </div>
                           </div>
-                          <Avatar className="h-10 w-10 ml-4">
-                            <AvatarImage src={post.user?.image} alt={post.user?.name} />
-                            <AvatarFallback>{post.user?.name?.[0] || 'U'}</AvatarFallback>
-                          </Avatar>
+                          
+                          {/* 작성자 아바타 (오른쪽 끝) */}
+                          <div className="flex-shrink-0">
+                            <Avatar className="h-10 w-10">
+                              <AvatarImage src={post.author?.image} alt={post.author?.name} />
+                              <AvatarFallback>{post.author?.name?.[0] || 'U'}</AvatarFallback>
+                            </Avatar>
+                          </div>
                         </div>
                       </CardContent>
                     </Card>
@@ -1011,16 +1085,45 @@ function CommunityPage() {
                   {paginatedPosts.map((post: any) => (
                     <Card key={post.id} className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => handlePostClick(post)}>
                       <CardContent className="p-4">
-                        <div className="flex items-start justify-between">
+                        <div className="flex items-start gap-4">
+                          {/* 썸네일 이미지 (리스트뷰용) */}
+                          {post.linkInfo?.image && (
+                            <div className="flex-shrink-0 w-24 h-24 overflow-hidden rounded-lg">
+                              <img 
+                                src={post.linkInfo.image} 
+                                alt={post.linkInfo.title || post.title}
+                                className="w-full h-full object-cover"
+                                onError={(e) => {
+                                  e.currentTarget.style.display = 'none';
+                                }}
+                              />
+                            </div>
+                          )}
+                          
                           <div className="flex-1">
                             <div className="flex items-center gap-2 mb-2">
                               <Badge variant="secondary" className="text-xs">설문</Badge>
                               <span className="text-xs text-gray-500">
-                                {post.user?.name || '익명'} • {post.user?.time || '방금 전'}
+                                {post.author?.name || '익명 사용자'} • {(() => {
+                                  try {
+                                    return formatDistanceToNow(new Date(post.createdAt), { addSuffix: true, locale: ko });
+                                  } catch {
+                                    return '방금 전';
+                                  }
+                                })()}
                               </span>
                             </div>
                             <h3 className="font-semibold text-lg mb-2 line-clamp-1">{post.title}</h3>
                             <p className="text-gray-600 text-sm mb-3 line-clamp-2">{post.content}</p>
+                            
+                            {/* 링크 정보 미리보기 (썸네일이 없고 리스트뷰일 때) */}
+                            {post.linkInfo && !post.linkInfo.image && (
+                              <div className="mb-3 p-2 bg-gray-50 rounded border text-xs">
+                                <div className="font-medium line-clamp-1">{post.linkInfo.title}</div>
+                                <div className="text-gray-600 line-clamp-1 mt-1">{post.linkInfo.description}</div>
+                              </div>
+                            )}
+                            
                             <div className="flex items-center gap-4 text-xs text-gray-500">
                               <div className="flex items-center gap-1">
                                 <Heart className="h-3 w-3" />
@@ -1030,12 +1133,20 @@ function CommunityPage() {
                                 <MessageSquare className="h-3 w-3" />
                                 <span>{post.comments || 0}</span>
                               </div>
+                              <div className="flex items-center gap-1">
+                                <Eye className="h-3 w-3" />
+                                <span>{post.views || 0}</span>
+                              </div>
                             </div>
                           </div>
-                          <Avatar className="h-10 w-10 ml-4">
-                            <AvatarImage src={post.user?.image} alt={post.user?.name} />
-                            <AvatarFallback>{post.user?.name?.[0] || 'U'}</AvatarFallback>
-                          </Avatar>
+                          
+                          {/* 작성자 아바타 (오른쪽 끝) */}
+                          <div className="flex-shrink-0">
+                            <Avatar className="h-10 w-10">
+                              <AvatarImage src={post.author?.image} alt={post.author?.name} />
+                              <AvatarFallback>{post.author?.name?.[0] || 'U'}</AvatarFallback>
+                            </Avatar>
+                          </div>
                         </div>
                       </CardContent>
                     </Card>
@@ -1065,16 +1176,45 @@ function CommunityPage() {
                   {paginatedPosts.map((post: any) => (
                     <Card key={post.id} className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => handlePostClick(post)}>
                       <CardContent className="p-4">
-                        <div className="flex items-start justify-between">
+                        <div className="flex items-start gap-4">
+                          {/* 썸네일 이미지 (리스트뷰용) */}
+                          {post.linkInfo?.image && (
+                            <div className="flex-shrink-0 w-24 h-24 overflow-hidden rounded-lg">
+                              <img 
+                                src={post.linkInfo.image} 
+                                alt={post.linkInfo.title || post.title}
+                                className="w-full h-full object-cover"
+                                onError={(e) => {
+                                  e.currentTarget.style.display = 'none';
+                                }}
+                              />
+                            </div>
+                          )}
+                          
                           <div className="flex-1">
                             <div className="flex items-center gap-2 mb-2">
                               <Badge variant="secondary" className="text-xs">정보공유</Badge>
                               <span className="text-xs text-gray-500">
-                                {post.user?.name || '익명'} • {post.user?.time || '방금 전'}
+                                {post.author?.name || '익명 사용자'} • {(() => {
+                                  try {
+                                    return formatDistanceToNow(new Date(post.createdAt), { addSuffix: true, locale: ko });
+                                  } catch {
+                                    return '방금 전';
+                                  }
+                                })()}
                               </span>
                             </div>
                             <h3 className="font-semibold text-lg mb-2 line-clamp-1">{post.title}</h3>
                             <p className="text-gray-600 text-sm mb-3 line-clamp-2">{post.content}</p>
+                            
+                            {/* 링크 정보 미리보기 (썸네일이 없고 리스트뷰일 때) */}
+                            {post.linkInfo && !post.linkInfo.image && (
+                              <div className="mb-3 p-2 bg-gray-50 rounded border text-xs">
+                                <div className="font-medium line-clamp-1">{post.linkInfo.title}</div>
+                                <div className="text-gray-600 line-clamp-1 mt-1">{post.linkInfo.description}</div>
+                              </div>
+                            )}
+                            
                             <div className="flex items-center gap-4 text-xs text-gray-500">
                               <div className="flex items-center gap-1">
                                 <Heart className="h-3 w-3" />
@@ -1084,12 +1224,20 @@ function CommunityPage() {
                                 <MessageSquare className="h-3 w-3" />
                                 <span>{post.comments || 0}</span>
                               </div>
+                              <div className="flex items-center gap-1">
+                                <Eye className="h-3 w-3" />
+                                <span>{post.views || 0}</span>
+                              </div>
                             </div>
                           </div>
-                          <Avatar className="h-10 w-10 ml-4">
-                            <AvatarImage src={post.user?.image} alt={post.user?.name} />
-                            <AvatarFallback>{post.user?.name?.[0] || 'U'}</AvatarFallback>
-                          </Avatar>
+                          
+                          {/* 작성자 아바타 (오른쪽 끝) */}
+                          <div className="flex-shrink-0">
+                            <Avatar className="h-10 w-10">
+                              <AvatarImage src={post.author?.image} alt={post.author?.name} />
+                              <AvatarFallback>{post.author?.name?.[0] || 'U'}</AvatarFallback>
+                            </Avatar>
+                          </div>
                         </div>
                       </CardContent>
                     </Card>
@@ -1119,16 +1267,45 @@ function CommunityPage() {
                   {paginatedPosts.map((post: any) => (
                     <Card key={post.id} className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => handlePostClick(post)}>
                       <CardContent className="p-4">
-                        <div className="flex items-start justify-between">
+                        <div className="flex items-start gap-4">
+                          {/* 썸네일 이미지 (리스트뷰용) */}
+                          {post.linkInfo?.image && (
+                            <div className="flex-shrink-0 w-24 h-24 overflow-hidden rounded-lg">
+                              <img 
+                                src={post.linkInfo.image} 
+                                alt={post.linkInfo.title || post.title}
+                                className="w-full h-full object-cover"
+                                onError={(e) => {
+                                  e.currentTarget.style.display = 'none';
+                                }}
+                              />
+                            </div>
+                          )}
+                          
                           <div className="flex-1">
                             <div className="flex items-center gap-2 mb-2">
                               <Badge variant="danger" className="text-xs">공지사항</Badge>
                               <span className="text-xs text-gray-500">
-                                {post.user?.name || '관리자'} • {post.user?.time || '방금 전'}
+                                {post.author?.name || '관리자'} • {(() => {
+                                  try {
+                                    return formatDistanceToNow(new Date(post.createdAt), { addSuffix: true, locale: ko });
+                                  } catch {
+                                    return '방금 전';
+                                  }
+                                })()}
                               </span>
                             </div>
                             <h3 className="font-semibold text-lg mb-2 line-clamp-1">{post.title}</h3>
                             <p className="text-gray-600 text-sm mb-3 line-clamp-2">{post.content}</p>
+                            
+                            {/* 링크 정보 미리보기 (썸네일이 없고 리스트뷰일 때) */}
+                            {post.linkInfo && !post.linkInfo.image && (
+                              <div className="mb-3 p-2 bg-gray-50 rounded border text-xs">
+                                <div className="font-medium line-clamp-1">{post.linkInfo.title}</div>
+                                <div className="text-gray-600 line-clamp-1 mt-1">{post.linkInfo.description}</div>
+                              </div>
+                            )}
+                            
                             <div className="flex items-center gap-4 text-xs text-gray-500">
                               <div className="flex items-center gap-1">
                                 <Heart className="h-3 w-3" />
@@ -1138,12 +1315,20 @@ function CommunityPage() {
                                 <MessageSquare className="h-3 w-3" />
                                 <span>{post.comments || 0}</span>
                               </div>
+                              <div className="flex items-center gap-1">
+                                <Eye className="h-3 w-3" />
+                                <span>{post.views || 0}</span>
+                              </div>
                             </div>
                           </div>
-                          <Avatar className="h-10 w-10 ml-4">
-                            <AvatarImage src={post.user?.image} alt={post.user?.name} />
-                            <AvatarFallback>{post.user?.name?.[0] || 'A'}</AvatarFallback>
-                          </Avatar>
+                          
+                          {/* 작성자 아바타 (오른쪽 끝) */}
+                          <div className="flex-shrink-0">
+                            <Avatar className="h-10 w-10">
+                              <AvatarImage src={post.author?.image} alt={post.author?.name} />
+                              <AvatarFallback>{post.author?.name?.[0] || 'A'}</AvatarFallback>
+                            </Avatar>
+                          </div>
                         </div>
                       </CardContent>
                     </Card>
