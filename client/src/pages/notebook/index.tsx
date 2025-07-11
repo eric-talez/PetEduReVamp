@@ -1008,10 +1008,10 @@ export default function NotebookPage() {
 
                   <Tabs defaultValue="basic" className="w-full">
                     <TabsList className="grid w-full grid-cols-4">
-                      <TabsTrigger value="basic">기본 정보</TabsTrigger>
-                      <TabsTrigger value="activities">활동 기록</TabsTrigger>
-                      <TabsTrigger value="media">미디어</TabsTrigger>
-                      <TabsTrigger value="ai">AI 도우미</TabsTrigger>
+                      <TabsTrigger value="basic">📝 기본 정보</TabsTrigger>
+                      <TabsTrigger value="activities">📊 활동 기록</TabsTrigger>
+                      <TabsTrigger value="media">📸 미디어</TabsTrigger>
+                      <TabsTrigger value="ai">🤖 AI 도우미</TabsTrigger>
                     </TabsList>
 
                     <TabsContent value="basic" className="space-y-4">
@@ -1092,6 +1092,11 @@ export default function NotebookPage() {
 
                 <TabsContent value="activities" className="space-y-4">
                   <div className="space-y-6">
+                    <div className="bg-blue-50 p-4 rounded-lg mb-4">
+                      <h2 className="text-lg font-semibold text-blue-800 mb-2">📊 상세 활동 추적 시스템</h2>
+                      <p className="text-sm text-blue-600">반려동물의 일일 활동을 체계적으로 기록하고 관리하세요.</p>
+                    </div>
+
                     {/* 배변 활동 */}
                     <div className="p-4 border rounded-lg">
                       <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
