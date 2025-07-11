@@ -1008,6 +1008,84 @@ export class MemoryStorage implements IStorage{
     this.notifications.set(notification1.id, notification1);
     this.notifications.set(notification2.id, notification2);
     this.notifications.set(notification3.id, notification3);
+
+    // 훈련 알림장 데이터 생성 (시간 필터링 테스트용)
+    const journal1 = {
+      id: this.trainingJournalId++,
+      trainerId: 1, // 김민수 훈련사
+      petId: this.petId - 3, // 맥스
+      petOwnerId: 108, // 김지영
+      trainingDate: new Date('2025-01-10 09:30:00'), // 오전 시간대
+      activities: ['기본 앉기', '기다리기', '산책 훈련'],
+      notes: '맥스가 기본 명령에 잘 반응하고 있습니다. 집중력이 많이 향상되었어요.',
+      mood: 'good',
+      healthStatus: 'healthy',
+      photos: ['/uploads/journal1_photo1.jpg'],
+      videos: [],
+      nextSession: new Date('2025-01-17 09:30:00'),
+      isRead: false,
+      createdAt: new Date('2025-01-10 09:30:00'),
+      updatedAt: new Date('2025-01-10 09:30:00')
+    };
+
+    const journal2 = {
+      id: this.trainingJournalId++,
+      trainerId: 2, // 박지혜 훈련사
+      petId: this.petId - 2, // 루나
+      petOwnerId: 109, // 박민호
+      trainingDate: new Date('2025-01-10 14:00:00'), // 오후 시간대
+      activities: ['사회화 훈련', '다른 개와 인사하기', '산책 예절'],
+      notes: '루나가 처음에는 긴장했지만 훈련 후반부에는 다른 개와 잘 어울렸습니다.',
+      mood: 'nervous',
+      healthStatus: 'healthy',
+      photos: ['/uploads/journal2_photo1.jpg', '/uploads/journal2_photo2.jpg'],
+      videos: ['/uploads/journal2_video1.mp4'],
+      nextSession: new Date('2025-01-17 14:00:00'),
+      isRead: true,
+      createdAt: new Date('2025-01-10 14:00:00'),
+      updatedAt: new Date('2025-01-10 14:00:00')
+    };
+
+    const journal3 = {
+      id: this.trainingJournalId++,
+      trainerId: 4, // 최예린 훈련사
+      petId: this.petId - 1, // 초코
+      petOwnerId: 110, // 이수진
+      trainingDate: new Date('2025-01-10 19:00:00'), // 저녁 시간대
+      activities: ['행동 교정', '야간 짖음 훈련', '진정 훈련'],
+      notes: '초코의 야간 짖음 문제를 집중적으로 다뤘습니다. 진정 명령에 반응하기 시작했어요.',
+      mood: 'excited',
+      healthStatus: 'healthy',
+      photos: [],
+      videos: ['/uploads/journal3_video1.mp4'],
+      nextSession: new Date('2025-01-17 19:00:00'),
+      isRead: false,
+      createdAt: new Date('2025-01-10 19:00:00'),
+      updatedAt: new Date('2025-01-10 19:00:00')
+    };
+
+    const journal4 = {
+      id: this.trainingJournalId++,
+      trainerId: 1, // 김민수 훈련사
+      petId: this.petId - 3, // 맥스
+      petOwnerId: 108, // 김지영
+      trainingDate: new Date('2025-01-11 10:00:00'), // 오전 시간대
+      activities: ['복습 훈련', '새로운 트릭 연습', '보상 훈련'],
+      notes: '어제 배운 내용을 잘 기억하고 있어요. 새로운 트릭도 빠르게 익히고 있습니다.',
+      mood: 'excellent',
+      healthStatus: 'healthy',
+      photos: ['/uploads/journal4_photo1.jpg'],
+      videos: [],
+      nextSession: new Date('2025-01-18 10:00:00'),
+      isRead: false,
+      createdAt: new Date('2025-01-11 10:00:00'),
+      updatedAt: new Date('2025-01-11 10:00:00')
+    };
+
+    this.trainingJournals.set(journal1.id, journal1);
+    this.trainingJournals.set(journal2.id, journal2);
+    this.trainingJournals.set(journal3.id, journal3);
+    this.trainingJournals.set(journal4.id, journal4);
   }
 
   // 간단한 서비스 연결 데이터
@@ -1040,8 +1118,87 @@ export class MemoryStorage implements IStorage{
     this.messages.set(message1.id, message1);
     this.messages.set(message2.id, message2);
 
+    // 훈련 알림장 데이터 생성 (시간 필터링 테스트용)
+    const journal1 = {
+      id: this.trainingJournalId++,
+      trainerId: 1, // 김민수 훈련사
+      petId: this.petId - 3, // 맥스
+      petOwnerId: 108, // 김지영
+      trainingDate: new Date('2025-01-10 09:30:00'), // 오전 시간대
+      activities: ['기본 앉기', '기다리기', '산책 훈련'],
+      notes: '맥스가 기본 명령에 잘 반응하고 있습니다. 집중력이 많이 향상되었어요.',
+      mood: 'good',
+      healthStatus: 'healthy',
+      photos: ['/uploads/journal1_photo1.jpg'],
+      videos: [],
+      nextSession: new Date('2025-01-17 09:30:00'),
+      isRead: false,
+      createdAt: new Date('2025-01-10 09:30:00'),
+      updatedAt: new Date('2025-01-10 09:30:00')
+    };
+
+    const journal2 = {
+      id: this.trainingJournalId++,
+      trainerId: 2, // 박지혜 훈련사
+      petId: this.petId - 2, // 루나
+      petOwnerId: 109, // 박민호
+      trainingDate: new Date('2025-01-10 14:00:00'), // 오후 시간대
+      activities: ['사회화 훈련', '다른 개와 인사하기', '산책 예절'],
+      notes: '루나가 처음에는 긴장했지만 훈련 후반부에는 다른 개와 잘 어울렸습니다.',
+      mood: 'nervous',
+      healthStatus: 'healthy',
+      photos: ['/uploads/journal2_photo1.jpg', '/uploads/journal2_photo2.jpg'],
+      videos: ['/uploads/journal2_video1.mp4'],
+      nextSession: new Date('2025-01-17 14:00:00'),
+      isRead: true,
+      createdAt: new Date('2025-01-10 14:00:00'),
+      updatedAt: new Date('2025-01-10 14:00:00')
+    };
+
+    const journal3 = {
+      id: this.trainingJournalId++,
+      trainerId: 4, // 최예린 훈련사
+      petId: this.petId - 1, // 초코
+      petOwnerId: 110, // 이수진
+      trainingDate: new Date('2025-01-10 19:00:00'), // 저녁 시간대
+      activities: ['행동 교정', '야간 짖음 훈련', '진정 훈련'],
+      notes: '초코의 야간 짖음 문제를 집중적으로 다뤘습니다. 진정 명령에 반응하기 시작했어요.',
+      mood: 'excited',
+      healthStatus: 'healthy',
+      photos: [],
+      videos: ['/uploads/journal3_video1.mp4'],
+      nextSession: new Date('2025-01-17 19:00:00'),
+      isRead: false,
+      createdAt: new Date('2025-01-10 19:00:00'),
+      updatedAt: new Date('2025-01-10 19:00:00')
+    };
+
+    const journal4 = {
+      id: this.trainingJournalId++,
+      trainerId: 1, // 김민수 훈련사
+      petId: this.petId - 3, // 맥스
+      petOwnerId: 108, // 김지영
+      trainingDate: new Date('2025-01-11 10:00:00'), // 오전 시간대
+      activities: ['복습 훈련', '새로운 트릭 연습', '보상 훈련'],
+      notes: '어제 배운 내용을 잘 기억하고 있어요. 새로운 트릭도 빠르게 익히고 있습니다.',
+      mood: 'excellent',
+      healthStatus: 'healthy',
+      photos: ['/uploads/journal4_photo1.jpg'],
+      videos: [],
+      nextSession: new Date('2025-01-18 10:00:00'),
+      isRead: false,
+      createdAt: new Date('2025-01-11 10:00:00'),
+      updatedAt: new Date('2025-01-11 10:00:00')
+    };
+
+    this.trainingJournals.set(journal1.id, journal1);
+    this.trainingJournals.set(journal2.id, journal2);
+    this.trainingJournals.set(journal3.id, journal3);
+    this.trainingJournals.set(journal4.id, journal4);
+
     console.log('✅ 서비스 연결 데이터 초기화 완료');
     console.log(`   - 메시지: ${this.messages.size}건`);
+    console.log(`   - 훈련 알림장: ${this.trainingJournals.size}건`);
   }
 
   // 기존 복잡한 데이터 초기화 함수 (사용 안 함)

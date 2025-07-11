@@ -2016,14 +2016,26 @@ app.get('/api/search', async (req, res) => {
         const journalDate = new Date(journal.trainingDate);
         
         // 날짜 필터링
-        if (startDate && journalDate < new Date(startDate as string)) return false;
-        if (endDate && journalDate > new Date(endDate as string)) return false;
+        const journalDateStr = journalDate.toISOString().split('T')[0];
+        if (startDate && journalDateStr < (startDate as string)) return false;
+        if (endDate && journalDateStr > (endDate as string)) return false;
         
         // 시간 필터링
         if (startTime || endTime) {
-          const journalTime = journalDate.toTimeString().slice(0, 5); // HH:MM 형식
-          if (startTime && journalTime < (startTime as string)) return false;
-          if (endTime && journalTime > (endTime as string)) return false;
+          const hours = journalDate.getHours();
+          const minutes = journalDate.getMinutes();
+          const journalTime = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+          
+          console.log(`Journal time: ${journalTime}, startTime: ${startTime}, endTime: ${endTime}`);
+          
+          if (startTime && journalTime < (startTime as string)) {
+            console.log(`Filtered out: ${journalTime} < ${startTime}`);
+            return false;
+          }
+          if (endTime && journalTime > (endTime as string)) {
+            console.log(`Filtered out: ${journalTime} > ${endTime}`);
+            return false;
+          }
         }
         
         return true;
