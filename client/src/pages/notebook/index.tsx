@@ -8,7 +8,6 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Calendar } from '@/components/ui/calendar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
 import { 
   CalendarDays, 
@@ -1008,43 +1007,55 @@ export default function NotebookPage() {
                   </DialogHeader>
 
                   {/* Tab Navigation */}
-                  <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg mb-4">
+                  <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg mb-4 border-2 border-blue-200">
                     <button 
-                      onClick={() => setActiveTab('basic')}
+                      onClick={() => {
+                        console.log('Tab clicked: basic');
+                        setActiveTab('basic');
+                      }}
                       className={`flex-1 py-2 px-3 text-sm font-medium rounded-md transition-colors ${
                         activeTab === 'basic' 
-                          ? 'bg-white shadow-sm text-gray-900' 
-                          : 'text-gray-600 hover:text-gray-900'
+                          ? 'bg-white shadow-sm text-gray-900 border-2 border-blue-500' 
+                          : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                       }`}
                     >
                       📝 기본 정보
                     </button>
                     <button 
-                      onClick={() => setActiveTab('activities')}
+                      onClick={() => {
+                        console.log('Tab clicked: activities');
+                        setActiveTab('activities');
+                      }}
                       className={`flex-1 py-2 px-3 text-sm font-medium rounded-md transition-colors ${
                         activeTab === 'activities' 
-                          ? 'bg-white shadow-sm text-gray-900' 
-                          : 'text-gray-600 hover:text-gray-900'
+                          ? 'bg-white shadow-sm text-gray-900 border-2 border-blue-500' 
+                          : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                       }`}
                     >
                       📊 활동 기록
                     </button>
                     <button 
-                      onClick={() => setActiveTab('media')}
+                      onClick={() => {
+                        console.log('Tab clicked: media');
+                        setActiveTab('media');
+                      }}
                       className={`flex-1 py-2 px-3 text-sm font-medium rounded-md transition-colors ${
                         activeTab === 'media' 
-                          ? 'bg-white shadow-sm text-gray-900' 
-                          : 'text-gray-600 hover:text-gray-900'
+                          ? 'bg-white shadow-sm text-gray-900 border-2 border-blue-500' 
+                          : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                       }`}
                     >
                       📸 미디어
                     </button>
                     <button 
-                      onClick={() => setActiveTab('ai')}
+                      onClick={() => {
+                        console.log('Tab clicked: ai');
+                        setActiveTab('ai');
+                      }}
                       className={`flex-1 py-2 px-3 text-sm font-medium rounded-md transition-colors ${
                         activeTab === 'ai' 
-                          ? 'bg-white shadow-sm text-gray-900' 
-                          : 'text-gray-600 hover:text-gray-900'
+                          ? 'bg-white shadow-sm text-gray-900 border-2 border-blue-500' 
+                          : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                       }`}
                     >
                       🤖 AI 도우미
