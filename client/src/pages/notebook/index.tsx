@@ -46,6 +46,7 @@ import {
 import { format, isToday, isYesterday, subDays, addDays } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/lib/auth-compat';
 
 // 알림장 엔트리 타입 정의
 interface NotebookEntry {
@@ -90,6 +91,7 @@ interface NotebookTemplate {
 
 export default function NotebookPage() {
   const { toast } = useToast();
+  const { isAuthenticated, userRole, userName, user } = useAuth();
   const [entries, setEntries] = useState<NotebookEntry[]>([]);
   const [filteredEntries, setFilteredEntries] = useState<NotebookEntry[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -108,8 +110,6 @@ export default function NotebookPage() {
   const [loading, setLoading] = useState(false);
   const [uploadingImages, setUploadingImages] = useState(false);
   const [uploadingVideos, setUploadingVideos] = useState(false);
-  const [userRole, setUserRole] = useState<string | null>(null); // 사용자 권한 상태 추가
-  const [user, setUser] = useState<any>(null); // 사용자 정보 상태 추가
   const [selectedCalendarDate, setSelectedCalendarDate] = useState<Date | undefined>(undefined);
   const [showCalendar, setShowCalendar] = useState(false);
   const [dateFilterMode, setDateFilterMode] = useState<'all' | 'today' | 'week' | 'month' | 'custom'>('all');
@@ -195,6 +195,17 @@ export default function NotebookPage() {
     anxious: '불안'
   };
 
+  // 사용자 권한 확인 함수
+  const canCreateNotebook = useMemo(() => {
+    // 훈련사나 기관 관리자만 알림장 작성 가능
+    return userRole === 'trainer' || userRole === 'institute-admin';
+  }, [userRole]);
+
+  const canEditNotebook = useMemo(() => {
+    // 훈련사나 기관 관리자만 알림장 수정 가능
+    return userRole === 'trainer' || userRole === 'institute-admin';
+  }, [userRole]);
+
   // 샘플 데이터 로드
   useEffect(() => {
     const sampleEntries: NotebookEntry[] = [
@@ -271,12 +282,6 @@ export default function NotebookPage() {
     ];
 
     setEntries(sampleEntries);
-        // 사용자 권한 및 정보 설정 (가정)
-        setUserRole('trainer'); // 예시: 훈련사 권한
-        setUser({
-            id: 'trainer1',
-            instituteId: 'institute1'
-        });
   }, []);
 
   // 필터링 및 검색
@@ -391,7 +396,7 @@ export default function NotebookPage() {
     const files = event.target.files;
     if (!files) return;
 
-    const newFiles = Array.from(files).map(file => ({
+    const newFiles = Array.from(files).map((file: File) => ({
       file,
       preview: URL.createObjectURL(file)
     }));
@@ -442,7 +447,7 @@ export default function NotebookPage() {
     const files = event.target.files;
     if (!files) return;
 
-    const validFiles = Array.from(files).filter(file => {
+    const validFiles = Array.from(files).filter((file: File) => {
       // 10MB 제한
       if (file.size > 10 * 1024 * 1024) {
         toast({
@@ -858,173 +863,9 @@ export default function NotebookPage() {
     }
   };
 
-  // 이미지 업로드 처리
-  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = event.target.files;
-    if (!files) return;
 
-    const validFiles = Array.from(files).filter(file => {
-      const isValidType = file.type.startsWith('image/');
-      const isValidSize = file.size <= 10 * 1024 * 1024; // 10MB
 
-      if (!isValidType) {
-        toast({
-          title: '파일 형식 오류',
-          description: '이미지 파일만 업로드할 수 있습니다.',
-          variant: 'destructive'
-        });
-        return false;
-      }
 
-      if (!isValidSize) {
-        toast({
-          title: '파일 크기 오류',
-          description: '이미지 파일은 10MB 이하여야 합니다.',
-          variant: 'destructive'
-        });
-        return false;
-      }
-
-      return true;
-    });
-
-    if (validFiles.length === 0) return;
-
-    setIsLoading(true);
-
-    try {
-      const uploadedImages = await Promise.all(
-        validFiles.map(async (file) => {
-          const formData = new FormData();
-          formData.append('image', file);
-
-          const response = await fetch('/api/upload/image', {
-            method: 'POST',
-            body: formData
-          });
-
-          if (!response.ok) {
-            throw new Error('이미지 업로드 실패');
-          }
-
-          const data = await response.json();
-          return data.imageUrl;
-        })
-      );
-
-      setNewEntry(prev => ({
-        ...prev,
-        photos: [...prev.photos, ...uploadedImages]
-      }));
-
-      toast({
-        title: '이미지 업로드 완료',
-        description: `${uploadedImages.length}개의 이미지가 업로드되었습니다.`
-      });
-
-    } catch (error) {
-      console.error('이미지 업로드 실패:', error);
-      toast({
-        title: '업로드 실패',
-        description: '이미지 업로드 중 오류가 발생했습니다.',
-        variant: 'destructive'
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // 동영상 업로드 처리
-  const handleVideoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = event.target.files;
-    if (!files) return;
-
-    const validFiles = Array.from(files).filter(file => {
-      const isValidType = file.type.startsWith('video/');
-      const isValidSize = file.size <= 50 * 1024 * 1024; // 50MB
-
-      if (!isValidType) {
-        toast({
-          title: '파일 형식 오류',
-          description: '동영상 파일만 업로드할 수 있습니다.',
-          variant: 'destructive'
-        });
-        return false;
-      }
-
-      if (!isValidSize) {
-        toast({
-          title: '파일 크기 오류',
-          description: '동영상 파일은 50MB 이하여야 합니다.',
-          variant: 'destructive'
-        });
-        return false;
-      }
-
-      return true;
-    });
-
-    if (validFiles.length === 0) return;
-
-    setIsLoading(true);
-
-    try {
-      const uploadedVideos = await Promise.all(
-        validFiles.map(async (file) => {
-          const formData = new FormData();
-          formData.append('video', file);
-
-          const response = await fetch('/api/upload/video', {
-            method: 'POST',
-            body: formData
-          });
-
-          if (!response.ok) {
-            throw new Error('동영상 업로드 실패');
-          }
-
-          const data = await response.json();
-          return data.videoUrl;
-        })
-      );
-
-      setNewEntry(prev => ({
-        ...prev,
-        videos: [...prev.videos, ...uploadedVideos]
-      }));
-
-      toast({
-        title: '동영상 업로드 완료',
-        description: `${uploadedVideos.length}개의 동영상이 업로드되었습니다.`
-      });
-
-    } catch (error) {
-      console.error('동영상 업로드 실패:', error);
-      toast({
-        title: '업로드 실패',
-        description: '동영상 업로드 중 오류가 발생했습니다.',
-        variant: 'destructive'
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // 이미지 삭제
-  const removePhoto = (index: number) => {
-    setNewEntry(prev => ({
-      ...prev,
-      photos: prev.photos.filter((_, i) => i !== index)
-    }));
-  };
-
-  // 동영상 삭제
-  const removeVideo = (index: number) => {
-    setNewEntry(prev => ({
-      ...prev,
-      videos: prev.videos.filter((_, i) => i !== index)
-    }));
-  };
 
   return (
     <div className="container mx-auto p-6 space-y-6">
@@ -1039,63 +880,65 @@ export default function NotebookPage() {
         </div>
 
         <div className="flex gap-2">
-          <Dialog open={isAIHelperOpen} onOpenChange={setIsAIHelperOpen}>
-            <DialogTrigger asChild>
-              <Button variant="outline" className="flex items-center gap-2">
-                <Sparkles className="h-4 w-4" />
-                AI 도우미
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>AI 알림장 도우미</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-4">
-                <p className="text-sm text-gray-600">
-                  AI가 반려동물 정보를 바탕으로 알림장 내용을 자동 생성해드립니다.
-                </p>
-                <Button onClick={handleAIGenerate} disabled={loading} className="w-full">
-                  {loading ? '생성 중...' : 'AI로 내용 생성'}
-                </Button>
-              </div>
-            </DialogContent>
-          </Dialog>
-
-          <Dialog open={isNewEntryOpen} onOpenChange={setIsNewEntryOpen}>
-            <DialogTrigger asChild>
-              <Button className="flex items-center gap-2">
-                <Plus className="h-4 w-4" />
-                새 알림장 작성
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-              <DialogHeader>
-                <DialogTitle className="flex items-center gap-3">
-                  <Avatar className="h-10 w-10 border-2 border-gray-200">
-                    <AvatarImage 
-                      src={`https://api.dicebear.com/7.x/big-ears-neutral/svg?seed=${newEntry.petName || 'pet'}&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf&eyesColor=2563eb,7c3aed,dc2626,059669,ea580c&mouthColor=2563eb,7c3aed,dc2626,059669`} 
-                      alt={newEntry.petName || '반려동물'}
-                    />
-                    <AvatarFallback className="bg-blue-100 text-blue-600">
-                      <PawPrint className="h-4 w-4" />
-                    </AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <h2 className="text-xl font-bold">새 알림장 작성</h2>
-                    <p className="text-sm text-gray-600">{newEntry.petName || '반려동물'}의 일일 기록</p>
+          {canCreateNotebook && (
+            <>
+              <Dialog open={isAIHelperOpen} onOpenChange={setIsAIHelperOpen}>
+                <DialogTrigger asChild>
+                  <Button variant="outline" className="flex items-center gap-2">
+                    <Sparkles className="h-4 w-4" />
+                    AI 도우미
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>AI 알림장 도우미</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    <p className="text-sm text-gray-600">
+                      AI가 반려동물 정보를 바탕으로 알림장 내용을 자동 생성해드립니다.
+                    </p>
+                    <Button onClick={handleAIGenerate} disabled={loading} className="w-full">
+                      {loading ? '생성 중...' : 'AI로 내용 생성'}
+                    </Button>
                   </div>
-                </DialogTitle>
-              </DialogHeader>
+                </DialogContent>
+              </Dialog>
 
-              <Tabs defaultValue="basic" className="w-full">
-                <TabsList className="grid w-full grid-cols-4">
-                  <TabsTrigger value="basic">기본 정보</TabsTrigger>
-                  <TabsTrigger value="activities">활동 기록</TabsTrigger>
-                  <TabsTrigger value="media">미디어</TabsTrigger>
-                  <TabsTrigger value="ai">AI 도우미</TabsTrigger>
-                </TabsList>
+              <Dialog open={isNewEntryOpen} onOpenChange={setIsNewEntryOpen}>
+                <DialogTrigger asChild>
+                  <Button className="flex items-center gap-2">
+                    <Plus className="h-4 w-4" />
+                    새 알림장 작성
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+                  <DialogHeader>
+                    <DialogTitle className="flex items-center gap-3">
+                      <Avatar className="h-10 w-10 border-2 border-gray-200">
+                        <AvatarImage 
+                          src={`https://api.dicebear.com/7.x/big-ears-neutral/svg?seed=${newEntry.petName || 'pet'}&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf&eyesColor=2563eb,7c3aed,dc2626,059669,ea580c&mouthColor=2563eb,7c3aed,dc2626,059669`} 
+                          alt={newEntry.petName || '반려동물'}
+                        />
+                        <AvatarFallback className="bg-blue-100 text-blue-600">
+                          <PawPrint className="h-4 w-4" />
+                        </AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <h2 className="text-xl font-bold">새 알림장 작성</h2>
+                        <p className="text-sm text-gray-600">{newEntry.petName || '반려동물'}의 일일 기록</p>
+                      </div>
+                    </DialogTitle>
+                  </DialogHeader>
 
-                <TabsContent value="basic" className="space-y-4">
+                  <Tabs defaultValue="basic" className="w-full">
+                    <TabsList className="grid w-full grid-cols-4">
+                      <TabsTrigger value="basic">기본 정보</TabsTrigger>
+                      <TabsTrigger value="activities">활동 기록</TabsTrigger>
+                      <TabsTrigger value="media">미디어</TabsTrigger>
+                      <TabsTrigger value="ai">AI 도우미</TabsTrigger>
+                    </TabsList>
+
+                    <TabsContent value="basic" className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="text-sm font-medium mb-2 block">반려동물 이름 *</label>
@@ -1370,6 +1213,15 @@ export default function NotebookPage() {
               </div>
             </DialogContent>
           </Dialog>
+            </>
+          )}
+          
+          {!canCreateNotebook && (
+            <div className="flex items-center gap-2 text-sm text-gray-600 bg-gray-50 px-3 py-2 rounded-md">
+              <Eye className="h-4 w-4" />
+              읽기 전용 모드
+            </div>
+          )}
         </div>
       </div>
 
@@ -1573,11 +1425,15 @@ export default function NotebookPage() {
             <CardContent className="p-12 text-center">
               <BookOpen className="h-16 w-16 text-gray-300 mx-auto mb-4" />
               <h3 className="text-lg font-semibold text-gray-600 mb-2">알림장이 없습니다</h3>
-              <p className="text-gray-500 mb-4">첫 번째 알림장을 작성해보세요!</p>
-              <Button onClick={() => setIsNewEntryOpen(true)}>
-                <Plus className="h-4 w-4 mr-2" />
-                새 알림장 작성
-              </Button>
+              <p className="text-gray-500 mb-4">
+                {canCreateNotebook ? '첫 번째 알림장을 작성해보세요!' : '훈련사가 작성한 알림장이 여기에 표시됩니다.'}
+              </p>
+              {canCreateNotebook && (
+                <Button onClick={() => setIsNewEntryOpen(true)}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  새 알림장 작성
+                </Button>
+              )}
             </CardContent>
           </Card>
         ) : (
