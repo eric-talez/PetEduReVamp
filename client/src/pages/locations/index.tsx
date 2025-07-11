@@ -550,15 +550,15 @@ export default function LocationsPage() {
   };
 
   return (
-    <div className="h-screen flex flex-col bg-gray-50">
+    <div className="h-screen flex flex-col bg-gray-50 dark:bg-gray-900">
       {/* 네이버 지도 스타일 상단 검색바 */}
-      <div className="bg-white border-b border-gray-200 px-4 py-3 shadow-sm">
+      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 py-3 shadow-sm">
         <div className="max-w-7xl mx-auto">
           <div className="flex items-center gap-4">
             {/* 로고/타이틀 */}
             <div className="flex items-center gap-2 min-w-0">
               <MapPin className="w-6 h-6 text-blue-600" />
-              <h1 className="text-lg font-bold text-gray-900 hidden sm:block">TALEZ 위치찾기</h1>
+              <h1 className="text-lg font-bold text-gray-900 dark:text-gray-100 hidden sm:block">TALEZ 위치찾기</h1>
             </div>
 
             {/* 검색바 */}
@@ -569,7 +569,7 @@ export default function LocationsPage() {
                   placeholder="장소명, 주소를 검색하세요"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 pr-4 py-3 text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="pl-10 pr-4 py-3 text-base border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-gray-100"
                 />
               </div>
             </div>
@@ -615,12 +615,12 @@ export default function LocationsPage() {
       {/* 메인 컨테이너 - 네이버 지도 스타일 좌우 분할 */}
       <div className="flex-1 flex overflow-hidden">
         {/* 좌측 사이드바 - 검색 결과 및 목록 */}
-        <div className="w-96 bg-white border-r border-gray-200 flex flex-col">
+        <div className="w-96 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col">
           {/* 검색 결과 헤더 */}
-          <div className="p-4 border-b border-gray-100">
+          <div className="p-4 border-b border-gray-100 dark:border-gray-700">
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
-                <span className="text-sm font-medium text-gray-700">
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
                   {showCertifiedOnly ? 'TALEZ 인증 업체' : '검색결과'}
                 </span>
                 <Badge 
@@ -694,8 +694,8 @@ export default function LocationsPage() {
                   {filteredLocations.map((location, index) => (
                     <div
                       key={location.id}
-                      className={`p-3 rounded-lg cursor-pointer transition-all hover:bg-gray-50 border ${
-                        selectedLocation?.id === location.id ? 'border-blue-500 bg-blue-50' : 'border-gray-100'
+                      className={`p-3 rounded-lg cursor-pointer transition-all hover:bg-gray-50 dark:hover:bg-gray-800 border ${
+                        selectedLocation?.id === location.id ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' : 'border-gray-100 dark:border-gray-700'
                       }`}
                       onClick={() => handleLocationSelect(location)}
                     >
@@ -705,27 +705,27 @@ export default function LocationsPage() {
                             <span className="text-sm font-medium text-blue-600">
                               {index + 1}
                             </span>
-                            <h4 className="font-medium text-gray-900 truncate">{location.name}</h4>
+                            <h4 className="font-medium text-gray-900 dark:text-gray-100 truncate">{location.name}</h4>
                             <Badge className={`${getLocationTypeBadgeColor(location.type)} text-xs`}>
                               {getLocationTypeLabel(location.type)}
                             </Badge>
                           </div>
 
                           <div className="space-y-1">
-                            <div className="flex items-center gap-1 text-xs text-gray-600">
+                            <div className="flex items-center gap-1 text-xs text-gray-600 dark:text-gray-400">
                               <MapPin className="w-3 h-3" />
                               <span className="truncate">{location.address}</span>
                             </div>
 
                             {location.phone && (
-                              <div className="flex items-center gap-1 text-xs text-gray-600">
+                              <div className="flex items-center gap-1 text-xs text-gray-600 dark:text-gray-400">
                                 <Phone className="w-3 h-3" />
                                 <span>{location.phone}</span>
                               </div>
                             )}
 
                             {location.hours && (
-                              <div className="flex items-center gap-1 text-xs text-gray-600">
+                              <div className="flex items-center gap-1 text-xs text-gray-600 dark:text-gray-400">
                                 <Clock className="w-3 h-3" />
                                 <span>{location.hours}</span>
                               </div>
@@ -737,7 +737,7 @@ export default function LocationsPage() {
                                   <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
                                   <span className="text-xs font-medium">{location.rating}</span>
                                   {location.reviewCount && (
-                                    <span className="text-xs text-gray-500">({location.reviewCount})</span>
+                                    <span className="text-xs text-gray-500 dark:text-gray-400">({location.reviewCount})</span>
                                   )}
                                 </div>
                               )}
@@ -758,7 +758,7 @@ export default function LocationsPage() {
                       </div>
 
                       {location.description && (
-                        <p className="text-xs text-gray-600 mt-2 line-clamp-2">
+                        <p className="text-xs text-gray-600 dark:text-gray-400 mt-2 line-clamp-2">
                           {location.description}
                         </p>
                       )}
@@ -808,8 +808,8 @@ export default function LocationsPage() {
               ) : (
                 <div className="text-center py-12">
                   <MapPin className="w-12 h-12 mx-auto text-gray-400 mb-4" />
-                  <p className="text-gray-500 font-medium">검색 결과가 없습니다</p>
-                  <p className="text-sm text-gray-400 mt-1">
+                  <p className="text-gray-500 dark:text-gray-400 font-medium">검색 결과가 없습니다</p>
+                  <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">
                     다른 검색어나 필터를 시도해보세요
                   </p>
                 </div>
@@ -829,17 +829,17 @@ export default function LocationsPage() {
             />
           ) : (
             /* 상세 정보 패널 */
-            <div className="h-full bg-white">
+            <div className="h-full bg-white dark:bg-gray-900">
               {selectedLocation ? (
                 <div className="h-full flex flex-col">
                   {/* 헤더 */}
-                  <div className="flex items-start justify-between p-6 border-b">
+                  <div className="flex items-start justify-between p-6 border-b dark:border-gray-700">
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-2">
                         <div className="text-2xl">
                           {/*{getLocationIcon(selectedLocation.type)}*/}
                         </div>
-                        <h2 className="text-2xl font-bold text-gray-900">
+                        <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
                           {selectedLocation.name}
                         </h2>
                         {/*{selectedLocation.talezPartner && (
@@ -858,11 +858,11 @@ export default function LocationsPage() {
                         <div className="flex items-center gap-2">
                           <div className="flex items-center gap-1">
                             <Star className="w-5 h-5 fill-yellow-400 text-yellow-400" />
-                            <span className="text-xl font-bold">{selectedLocation.rating}</span>
-                            <span className="text-gray-500">/5</span>
+                            <span className="text-xl font-bold dark:text-gray-100">{selectedLocation.rating}</span>
+                            <span className="text-gray-500 dark:text-gray-400">/5</span>
                           </div>
                           {selectedLocation.reviewCount && (
-                            <span className="text-sm text-gray-500">리뷰 {selectedLocation.reviewCount}개</span>
+                            <span className="text-sm text-gray-500 dark:text-gray-400">리뷰 {selectedLocation.reviewCount}개</span>
                           )}
                         </div>
                       )}
@@ -884,20 +884,20 @@ export default function LocationsPage() {
                       
                       {/* 기본 정보 */}
                       <div className="space-y-4">
-                        <div className="flex items-center gap-2 text-gray-600">
+                        <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
                           <MapPin className="w-4 h-4" />
                           <span className="text-sm">{selectedLocation.address}</span>
                         </div>
 
                         {selectedLocation.phone && (
-                          <div className="flex items-center gap-2 text-gray-600">
+                          <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
                             <Phone className="w-4 h-4" />
                             <span className="text-sm">{selectedLocation.phone}</span>
                           </div>
                         )}
 
                         {selectedLocation.hours && (
-                          <div className="flex items-center gap-2 text-gray-600">
+                          <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
                             <Clock className="w-4 h-4" />
                             <span className="text-sm">{selectedLocation.hours}</span>
                           </div>
@@ -921,11 +921,11 @@ export default function LocationsPage() {
                       {/* TALEZ 인증 정보 */}
                       {selectedLocation.businessNumber && (
                         <div className="space-y-3">
-                          <h3 className="font-semibold text-gray-900 flex items-center gap-2">
+                          <h3 className="font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
                             <Award className="w-4 h-4" />
                             TALEZ 인증 정보
                           </h3>
-                          <div className="bg-green-50 p-4 rounded-lg">
+                          <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg">
                             <div className="flex items-center justify-between mb-2">
                               <TalezCertificationBadge 
                                 businessData={{
@@ -940,12 +940,12 @@ export default function LocationsPage() {
                                 showDetails={false}
                               />
                               {selectedLocation.certificationDate && (
-                                <span className="text-xs text-gray-500">
+                                <span className="text-xs text-gray-500 dark:text-gray-400">
                                   인증일: {selectedLocation.certificationDate}
                                 </span>
                               )}
                             </div>
-                            <div className="space-y-1 text-sm">
+                            <div className="space-y-1 text-sm dark:text-gray-300">
                               <div>사업자번호: {selectedLocation.businessNumber}</div>
                               {selectedLocation.businessType && (
                                 <div>업종: {selectedLocation.businessType}</div>
@@ -960,8 +960,8 @@ export default function LocationsPage() {
                         <>
                           <Separator />
                           <div className="space-y-3">
-                            <h3 className="font-semibold text-gray-900">소개</h3>
-                            <p className="text-sm text-gray-600 leading-relaxed">
+                            <h3 className="font-semibold text-gray-900 dark:text-gray-100">소개</h3>
+                            <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
                               {selectedLocation.description}
                             </p>
                           </div>
@@ -973,7 +973,7 @@ export default function LocationsPage() {
                         <>
                           <Separator />
                           <div className="space-y-3">
-                            <h3 className="font-semibold text-gray-900">제공 서비스</h3>
+                            <h3 className="font-semibold text-gray-900 dark:text-gray-100">제공 서비스</h3>
                             <div className="flex flex-wrap gap-2">
                               {selectedLocation.services.map((service, index) => (
                                 <Badge key={index} variant="outline">
@@ -990,7 +990,7 @@ export default function LocationsPage() {
                         <>
                           <Separator />
                           <div className="space-y-3">
-                            <h3 className="font-semibold text-gray-900 flex items-center gap-2">
+                            <h3 className="font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
                               <Users className="w-4 h-4" />
                               전문 훈련사 ({selectedLocation.trainers.length}명)
                             </h3>
@@ -1038,7 +1038,7 @@ export default function LocationsPage() {
                       <Separator />
                       <div className="space-y-3">
                         <div className="flex items-center justify-between">
-                          <h3 className="font-semibold text-gray-900 flex items-center gap-2">
+                          <h3 className="font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
                             <Star className="w-4 h-4" />
                             리뷰 ({selectedLocation.reviews?.length || 0})
                           </h3>
@@ -1054,10 +1054,10 @@ export default function LocationsPage() {
 
                         {/* 평점 요약 */}
                         {selectedLocation.rating && (
-                          <div className="bg-gray-50 rounded-lg p-4">
+                          <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
                             <div className="flex items-center gap-3">
                               <div className="text-center">
-                                <div className="text-2xl font-bold text-gray-900">
+                                <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
                                   {selectedLocation.rating.toFixed(1)}
                                 </div>
                                 <div className="flex items-center justify-center gap-1 mb-1">
@@ -1105,10 +1105,10 @@ export default function LocationsPage() {
                         <div className="space-y-3 max-h-80 overflow-y-auto">
                           {selectedLocation.reviews && selectedLocation.reviews.length > 0 ? (
                             selectedLocation.reviews.slice(0, 3).map((review) => (
-                              <div key={review.id} className="border rounded-lg p-3 bg-white">
+                              <div key={review.id} className="border dark:border-gray-700 rounded-lg p-3 bg-white dark:bg-gray-800">
                                 <div className="flex items-start justify-between mb-2">
                                   <div className="flex items-center gap-2">
-                                    <span className="font-medium text-sm">{review.authorName}</span>
+                                    <span className="font-medium text-sm dark:text-gray-100">{review.authorName}</span>
                                     <div className="flex items-center gap-1">
                                       {[1, 2, 3, 4, 5].map((star) => (
                                         <Star
@@ -1122,11 +1122,11 @@ export default function LocationsPage() {
                                       ))}
                                     </div>
                                   </div>
-                                  <span className="text-xs text-gray-500">
+                                  <span className="text-xs text-gray-500 dark:text-gray-400">
                                     {new Date(review.date).toLocaleDateString()}
                                   </span>
                                 </div>
-                                <p className="text-sm text-gray-700 mb-2 line-clamp-3">
+                                <p className="text-sm text-gray-700 dark:text-gray-300 mb-2 line-clamp-3">
                                   {review.comment}
                                 </p>
                                 {review.photos && review.photos.length > 0 && (
@@ -1140,7 +1140,7 @@ export default function LocationsPage() {
                                       />
                                     ))}
                                     {review.photos.length > 3 && (
-                                      <div className="w-12 h-12 bg-gray-100 rounded border flex items-center justify-center text-xs text-gray-500">
+                                      <div className="w-12 h-12 bg-gray-100 dark:bg-gray-700 rounded border flex items-center justify-center text-xs text-gray-500 dark:text-gray-400">
                                         +{review.photos.length - 3}
                                       </div>
                                     )}
@@ -1158,7 +1158,7 @@ export default function LocationsPage() {
                               </div>
                             ))
                           ) : (
-                            <div className="text-center py-8 text-gray-500">
+                            <div className="text-center py-8 text-gray-500 dark:text-gray-400">
                               <Star className="w-8 h-8 mx-auto mb-2 text-gray-300" />
                               <p className="text-sm">아직 리뷰가 없습니다</p>
                               <p className="text-xs">첫 번째 리뷰를 작성해보세요!</p>
@@ -1187,7 +1187,7 @@ export default function LocationsPage() {
                   </ScrollArea>
 
                   {/* 하단 액션 버튼 */}
-                  <div className="p-6 border-t border-gray-200 bg-white">
+                  <div className="p-6 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
                     <div className="flex gap-3">
                       {(selectedLocation.type === 'training-center' || selectedLocation.type === 'training' || selectedLocation.type === 'hospital' || selectedLocation.type === 'veterinary') && (
                         <Button
@@ -1214,10 +1214,10 @@ export default function LocationsPage() {
                 <div className="h-full flex items-center justify-center">
                   <div className="text-center">
                     <MapPin className="w-16 h-16 mx-auto text-gray-400 mb-4" />
-                    <h3 className="text-xl font-medium text-gray-900 mb-2">
+                    <h3 className="text-xl font-medium text-gray-900 dark:text-gray-100 mb-2">
                       위치를 선택해주세요
                     </h3>
-                    <p className="text-gray-600">
+                    <p className="text-gray-600 dark:text-gray-400">
                       좌측 목록에서 장소를 클릭하면<br />
                       자세한 정보를 볼 수 있습니다
                     </p>
