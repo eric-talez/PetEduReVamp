@@ -2006,16 +2006,26 @@ app.get('/api/search', async (req, res) => {
   // 알림장 모니터링 API
   app.get("/api/admin/notebook/status", async (req, res) => {
     try {
-      const { startDate, endDate } = req.query;
+      const { startDate, endDate, startTime, endTime } = req.query;
       
       // 모든 알림장 데이터 가져오기
       const allJournals = await storage.getAllTrainingJournals();
       
-      // 날짜 필터링
+      // 날짜 및 시간 필터링
       const filteredJournals = allJournals.filter(journal => {
         const journalDate = new Date(journal.trainingDate);
+        
+        // 날짜 필터링
         if (startDate && journalDate < new Date(startDate as string)) return false;
         if (endDate && journalDate > new Date(endDate as string)) return false;
+        
+        // 시간 필터링
+        if (startTime || endTime) {
+          const journalTime = journalDate.toTimeString().slice(0, 5); // HH:MM 형식
+          if (startTime && journalTime < (startTime as string)) return false;
+          if (endTime && journalTime > (endTime as string)) return false;
+        }
+        
         return true;
       });
       

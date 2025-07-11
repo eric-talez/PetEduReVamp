@@ -66,6 +66,7 @@ import {
   UserCog,
   Wrench,
   Monitor as Presentation,
+  Monitor,
   Play as VideoIcon,
   Sparkles,
   Bot,
@@ -760,6 +761,7 @@ export function Sidebar({
                         {(showTrainerMenu || showInstituteMenu) && <AccessibleNavItem href="/trainer/earnings" icon={<DollarSign className="w-5 h-5 mr-2" />} active={isActive("/trainer/earnings")} onClick={handleItemClick} show={true}>수익 관리</AccessibleNavItem>}
                         {showInstituteMenu && <AccessibleNavItem href="/institute/trainers" icon={<UserCog className="w-5 h-5 mr-2" />} active={isActive("/institute/trainers")} onClick={handleItemClick} show={true}>훈련사 관리</AccessibleNavItem>}
                         {showInstituteMenu && <AccessibleNavItem href="/institute/facility" icon={<Building className="w-5 h-5 mr-2" />} active={isActive("/institute/facility")} onClick={handleItemClick} show={true}>시설 관리</AccessibleNavItem>}
+                        {showInstituteMenu && <AccessibleNavItem href="/institute/notebook-monitor" icon={<FileText className="w-5 h-5 mr-2" />} hoverIcon={<Monitor className="w-5 h-5 mr-2 text-primary" />} active={isActive("/institute/notebook-monitor")} onClick={handleItemClick} show={true}>알림장 모니터링</AccessibleNavItem>}
                       </>
                     )}
                   </>
