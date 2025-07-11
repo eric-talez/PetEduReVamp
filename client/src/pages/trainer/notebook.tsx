@@ -31,7 +31,9 @@ import {
   Upload,
   Camera,
   Brain,
-  Sparkles
+  Sparkles,
+  Activity,
+  Bot
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
@@ -320,67 +322,78 @@ export default function TrainerNotebookPage() {
                 새 알림장 작성
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-              <DialogHeader>
-                <DialogTitle>새 알림장 작성</DialogTitle>
+            <DialogContent className="max-w-5xl max-h-[95vh] overflow-y-auto">
+              <DialogHeader className="pb-4 border-b">
+                <DialogTitle className="text-xl font-bold text-gray-900">새 알림장 작성</DialogTitle>
+                <p className="text-sm text-gray-500 mt-1">반려견의 하루 활동을 상세히 기록하고 학부모와 공유하세요</p>
               </DialogHeader>
 
-              {/* Tab Navigation System */}
-              <div className="mb-4 p-4 bg-yellow-200 border-4 border-red-500 rounded-lg">
-                <div className="text-lg text-red-700 font-bold mb-2 text-center">🔥 TAB NAVIGATION SYSTEM 🔥</div>
-                <div className="text-sm text-black font-medium mb-2 text-center">현재 활성 탭: {activeTab}</div>
-                <div className="flex space-x-1 bg-gradient-to-r from-blue-100 to-indigo-100 p-2 rounded-lg border-2 border-blue-300 shadow-lg">
+              {/* Enhanced Tab Navigation System */}
+              <div className="sticky top-0 bg-white z-10 pt-4 pb-2 border-b">
+                <div className="flex space-x-1 bg-gray-50 p-1 rounded-lg">
                   <button 
                     onClick={() => {
                       console.log('Tab clicked: basic');
                       setActiveTab('basic');
                     }}
-                    className={`flex-1 py-2 px-3 text-sm font-medium rounded-md transition-colors ${
+                    className={`flex-1 py-3 px-4 text-sm font-medium rounded-md transition-all duration-200 ${
                       activeTab === 'basic' 
-                        ? 'bg-white shadow-sm text-gray-900 border-2 border-blue-500' 
-                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                        ? 'bg-white shadow-sm text-blue-700 border border-blue-200' 
+                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
                     }`}
                   >
-                    📝 기본 정보
+                    <div className="flex items-center justify-center space-x-2">
+                      <FileText className="h-4 w-4" />
+                      <span>기본 정보</span>
+                    </div>
                   </button>
                   <button 
                     onClick={() => {
                       console.log('Tab clicked: activities');
                       setActiveTab('activities');
                     }}
-                    className={`flex-1 py-2 px-3 text-sm font-medium rounded-md transition-colors ${
+                    className={`flex-1 py-3 px-4 text-sm font-medium rounded-md transition-all duration-200 ${
                       activeTab === 'activities' 
-                        ? 'bg-white shadow-sm text-gray-900 border-2 border-blue-500' 
-                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                        ? 'bg-white shadow-sm text-blue-700 border border-blue-200' 
+                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
                     }`}
                   >
-                    📊 활동 기록
+                    <div className="flex items-center justify-center space-x-2">
+                      <Activity className="h-4 w-4" />
+                      <span>활동 기록</span>
+                    </div>
                   </button>
                   <button 
                     onClick={() => {
                       console.log('Tab clicked: media');
                       setActiveTab('media');
                     }}
-                    className={`flex-1 py-2 px-3 text-sm font-medium rounded-md transition-colors ${
+                    className={`flex-1 py-3 px-4 text-sm font-medium rounded-md transition-all duration-200 ${
                       activeTab === 'media' 
-                        ? 'bg-white shadow-sm text-gray-900 border-2 border-blue-500' 
-                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                        ? 'bg-white shadow-sm text-blue-700 border border-blue-200' 
+                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
                     }`}
                   >
-                    📸 미디어
+                    <div className="flex items-center justify-center space-x-2">
+                      <Camera className="h-4 w-4" />
+                      <span>미디어</span>
+                    </div>
                   </button>
                   <button 
                     onClick={() => {
                       console.log('Tab clicked: ai');
                       setActiveTab('ai');
                     }}
-                    className={`flex-1 py-2 px-3 text-sm font-medium rounded-md transition-colors ${
+                    className={`flex-1 py-3 px-4 text-sm font-medium rounded-md transition-all duration-200 ${
                       activeTab === 'ai' 
-                        ? 'bg-white shadow-sm text-gray-900 border-2 border-blue-500' 
-                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                        ? 'bg-white shadow-sm text-blue-700 border border-blue-200' 
+                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
                     }`}
                   >
-                    🤖 AI 도우미
+                    <div className="flex items-center justify-center space-x-2">
+                      <Bot className="h-4 w-4" />
+                      <span>AI 도우미</span>
+                    </div>
                   </button>
                 </div>
               </div>
@@ -448,96 +461,139 @@ export default function TrainerNotebookPage() {
                 {/* Activities Tab */}
                 {activeTab === 'activities' && (
                   <div className="space-y-4">
-                    <div className="bg-green-100 p-2 rounded mb-4 text-center">
-                      <div className="text-green-800 font-bold">✅ 활동 기록 탭이 활성화되었습니다!</div>
-                      <div className="text-sm text-green-600">배변, 놀이, 산책, 식사 활동을 기록하세요</div>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="space-y-3">
-                        <Label className="text-sm font-medium">배변 활동</Label>
-                        <div className="space-y-2">
-                          <div className="flex items-center space-x-2">
-                            <input type="checkbox" id="bathroom-morning" className="rounded" />
-                            <Label htmlFor="bathroom-morning" className="text-sm">아침 배변</Label>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <input type="checkbox" id="bathroom-afternoon" className="rounded" />
-                            <Label htmlFor="bathroom-afternoon" className="text-sm">오후 배변</Label>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <input type="checkbox" id="bathroom-evening" className="rounded" />
-                            <Label htmlFor="bathroom-evening" className="text-sm">저녁 배변</Label>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <input type="checkbox" id="bathroom-accident" className="rounded" />
-                            <Label htmlFor="bathroom-accident" className="text-sm">실수 발생</Label>
-                          </div>
+                    {/* Time-based Activity Tracking */}
+                    <div className="space-y-6">
+                      {/* 배변 활동 */}
+                      <div className="border rounded-lg p-4">
+                        <h3 className="font-medium mb-3 flex items-center">
+                          <div className="w-3 h-3 bg-blue-500 rounded-full mr-2"></div>
+                          배변 활동
+                        </h3>
+                        <div className="grid grid-cols-6 gap-2 text-xs">
+                          <div className="font-medium">시간</div>
+                          <div className="font-medium text-center">06:00</div>
+                          <div className="font-medium text-center">10:00</div>
+                          <div className="font-medium text-center">14:00</div>
+                          <div className="font-medium text-center">18:00</div>
+                          <div className="font-medium text-center">22:00</div>
+                          
+                          <div className="text-sm">정상 배변</div>
+                          <div className="text-center"><input type="checkbox" className="rounded" /></div>
+                          <div className="text-center"><input type="checkbox" className="rounded" /></div>
+                          <div className="text-center"><input type="checkbox" className="rounded" /></div>
+                          <div className="text-center"><input type="checkbox" className="rounded" /></div>
+                          <div className="text-center"><input type="checkbox" className="rounded" /></div>
+                          
+                          <div className="text-sm">실수 발생</div>
+                          <div className="text-center"><input type="checkbox" className="rounded" /></div>
+                          <div className="text-center"><input type="checkbox" className="rounded" /></div>
+                          <div className="text-center"><input type="checkbox" className="rounded" /></div>
+                          <div className="text-center"><input type="checkbox" className="rounded" /></div>
+                          <div className="text-center"><input type="checkbox" className="rounded" /></div>
                         </div>
                       </div>
 
-                      <div className="space-y-3">
-                        <Label className="text-sm font-medium">놀이 활동</Label>
-                        <div className="space-y-2">
-                          <div className="flex items-center space-x-2">
-                            <input type="checkbox" id="play-fetch" className="rounded" />
-                            <Label htmlFor="play-fetch" className="text-sm">공 던지기</Label>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <input type="checkbox" id="play-tug" className="rounded" />
-                            <Label htmlFor="play-tug" className="text-sm">줄다리기</Label>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <input type="checkbox" id="play-puzzle" className="rounded" />
-                            <Label htmlFor="play-puzzle" className="text-sm">퍼즐 놀이</Label>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <input type="checkbox" id="play-social" className="rounded" />
-                            <Label htmlFor="play-social" className="text-sm">사회화 놀이</Label>
-                          </div>
+                      {/* 산책 활동 */}
+                      <div className="border rounded-lg p-4">
+                        <h3 className="font-medium mb-3 flex items-center">
+                          <div className="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
+                          산책 활동
+                        </h3>
+                        <div className="grid grid-cols-6 gap-2 text-xs">
+                          <div className="font-medium">시간</div>
+                          <div className="font-medium text-center">06:00</div>
+                          <div className="font-medium text-center">10:00</div>
+                          <div className="font-medium text-center">14:00</div>
+                          <div className="font-medium text-center">18:00</div>
+                          <div className="font-medium text-center">22:00</div>
+                          
+                          <div className="text-sm">실시함</div>
+                          <div className="text-center"><input type="checkbox" className="rounded" /></div>
+                          <div className="text-center"><input type="checkbox" className="rounded" /></div>
+                          <div className="text-center"><input type="checkbox" className="rounded" /></div>
+                          <div className="text-center"><input type="checkbox" className="rounded" /></div>
+                          <div className="text-center"><input type="checkbox" className="rounded" /></div>
+                          
+                          <div className="text-sm">시간(분)</div>
+                          <div className="text-center"><input type="number" className="w-12 px-1 py-0.5 border rounded text-xs" placeholder="30" /></div>
+                          <div className="text-center"><input type="number" className="w-12 px-1 py-0.5 border rounded text-xs" placeholder="30" /></div>
+                          <div className="text-center"><input type="number" className="w-12 px-1 py-0.5 border rounded text-xs" placeholder="30" /></div>
+                          <div className="text-center"><input type="number" className="w-12 px-1 py-0.5 border rounded text-xs" placeholder="30" /></div>
+                          <div className="text-center"><input type="number" className="w-12 px-1 py-0.5 border rounded text-xs" placeholder="30" /></div>
                         </div>
                       </div>
 
-                      <div className="space-y-3">
-                        <Label className="text-sm font-medium">산책 활동</Label>
-                        <div className="space-y-2">
-                          <div className="flex items-center space-x-2">
-                            <input type="checkbox" id="walk-morning" className="rounded" />
-                            <Label htmlFor="walk-morning" className="text-sm">아침 산책</Label>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <input type="checkbox" id="walk-afternoon" className="rounded" />
-                            <Label htmlFor="walk-afternoon" className="text-sm">오후 산책</Label>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <input type="checkbox" id="walk-evening" className="rounded" />
-                            <Label htmlFor="walk-evening" className="text-sm">저녁 산책</Label>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <input type="number" id="walk-duration" className="w-16 px-2 py-1 border rounded text-sm" placeholder="30" />
-                            <Label htmlFor="walk-duration" className="text-sm">분</Label>
-                          </div>
+                      {/* 놀이 활동 */}
+                      <div className="border rounded-lg p-4">
+                        <h3 className="font-medium mb-3 flex items-center">
+                          <div className="w-3 h-3 bg-purple-500 rounded-full mr-2"></div>
+                          놀이 활동
+                        </h3>
+                        <div className="grid grid-cols-6 gap-2 text-xs">
+                          <div className="font-medium">시간</div>
+                          <div className="font-medium text-center">06:00</div>
+                          <div className="font-medium text-center">10:00</div>
+                          <div className="font-medium text-center">14:00</div>
+                          <div className="font-medium text-center">18:00</div>
+                          <div className="font-medium text-center">22:00</div>
+                          
+                          <div className="text-sm">공 던지기</div>
+                          <div className="text-center"><input type="checkbox" className="rounded" /></div>
+                          <div className="text-center"><input type="checkbox" className="rounded" /></div>
+                          <div className="text-center"><input type="checkbox" className="rounded" /></div>
+                          <div className="text-center"><input type="checkbox" className="rounded" /></div>
+                          <div className="text-center"><input type="checkbox" className="rounded" /></div>
+                          
+                          <div className="text-sm">줄다리기</div>
+                          <div className="text-center"><input type="checkbox" className="rounded" /></div>
+                          <div className="text-center"><input type="checkbox" className="rounded" /></div>
+                          <div className="text-center"><input type="checkbox" className="rounded" /></div>
+                          <div className="text-center"><input type="checkbox" className="rounded" /></div>
+                          <div className="text-center"><input type="checkbox" className="rounded" /></div>
+                          
+                          <div className="text-sm">퍼즐 놀이</div>
+                          <div className="text-center"><input type="checkbox" className="rounded" /></div>
+                          <div className="text-center"><input type="checkbox" className="rounded" /></div>
+                          <div className="text-center"><input type="checkbox" className="rounded" /></div>
+                          <div className="text-center"><input type="checkbox" className="rounded" /></div>
+                          <div className="text-center"><input type="checkbox" className="rounded" /></div>
                         </div>
                       </div>
 
-                      <div className="space-y-3">
-                        <Label className="text-sm font-medium">식사 활동</Label>
-                        <div className="space-y-2">
-                          <div className="flex items-center space-x-2">
-                            <input type="checkbox" id="meal-breakfast" className="rounded" />
-                            <Label htmlFor="meal-breakfast" className="text-sm">아침 식사</Label>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <input type="checkbox" id="meal-lunch" className="rounded" />
-                            <Label htmlFor="meal-lunch" className="text-sm">점심 식사</Label>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <input type="checkbox" id="meal-dinner" className="rounded" />
-                            <Label htmlFor="meal-dinner" className="text-sm">저녁 식사</Label>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <input type="checkbox" id="meal-snack" className="rounded" />
-                            <Label htmlFor="meal-snack" className="text-sm">간식</Label>
-                          </div>
+                      {/* 식사 활동 */}
+                      <div className="border rounded-lg p-4">
+                        <h3 className="font-medium mb-3 flex items-center">
+                          <div className="w-3 h-3 bg-orange-500 rounded-full mr-2"></div>
+                          식사 활동
+                        </h3>
+                        <div className="grid grid-cols-6 gap-2 text-xs">
+                          <div className="font-medium">시간</div>
+                          <div className="font-medium text-center">06:00</div>
+                          <div className="font-medium text-center">10:00</div>
+                          <div className="font-medium text-center">14:00</div>
+                          <div className="font-medium text-center">18:00</div>
+                          <div className="font-medium text-center">22:00</div>
+                          
+                          <div className="text-sm">정상 식사</div>
+                          <div className="text-center"><input type="checkbox" className="rounded" /></div>
+                          <div className="text-center"><input type="checkbox" className="rounded" /></div>
+                          <div className="text-center"><input type="checkbox" className="rounded" /></div>
+                          <div className="text-center"><input type="checkbox" className="rounded" /></div>
+                          <div className="text-center"><input type="checkbox" className="rounded" /></div>
+                          
+                          <div className="text-sm">간식</div>
+                          <div className="text-center"><input type="checkbox" className="rounded" /></div>
+                          <div className="text-center"><input type="checkbox" className="rounded" /></div>
+                          <div className="text-center"><input type="checkbox" className="rounded" /></div>
+                          <div className="text-center"><input type="checkbox" className="rounded" /></div>
+                          <div className="text-center"><input type="checkbox" className="rounded" /></div>
+                          
+                          <div className="text-sm">식사량(%)</div>
+                          <div className="text-center"><input type="number" className="w-12 px-1 py-0.5 border rounded text-xs" placeholder="100" /></div>
+                          <div className="text-center"><input type="number" className="w-12 px-1 py-0.5 border rounded text-xs" placeholder="100" /></div>
+                          <div className="text-center"><input type="number" className="w-12 px-1 py-0.5 border rounded text-xs" placeholder="100" /></div>
+                          <div className="text-center"><input type="number" className="w-12 px-1 py-0.5 border rounded text-xs" placeholder="100" /></div>
+                          <div className="text-center"><input type="number" className="w-12 px-1 py-0.5 border rounded text-xs" placeholder="100" /></div>
                         </div>
                       </div>
                     </div>
@@ -601,17 +657,38 @@ export default function TrainerNotebookPage() {
                   </div>
                 )}
               </div>
-              <DialogFooter>
-                <Button variant="outline" onClick={() => setIsCreateJournalOpen(false)}>
-                  취소
-                </Button>
-                <Button variant="secondary" onClick={() => saveJournalMutation.mutate({ status: 'draft' })}>
-                  임시저장
-                </Button>
-                <Button onClick={() => saveJournalMutation.mutate({ status: 'sent' })}>
-                  <Send className="h-4 w-4 mr-2" />
-                  작성 완료 및 전송
-                </Button>
+              <DialogFooter className="border-t pt-4 mt-6">
+                <div className="flex justify-between items-center w-full">
+                  <div className="text-sm text-gray-500">
+                    모든 탭의 정보를 확인하고 저장하세요
+                  </div>
+                  <div className="flex space-x-2">
+                    <Button variant="outline" onClick={() => setIsCreateJournalOpen(false)} className="px-4">
+                      취소
+                    </Button>
+                    <Button 
+                      variant="secondary" 
+                      className="px-4"
+                      onClick={() => {
+                        console.log('임시저장 완료');
+                        // saveJournalMutation.mutate({ status: 'draft' })
+                      }}
+                    >
+                      임시저장
+                    </Button>
+                    <Button 
+                      className="px-4 bg-blue-600 hover:bg-blue-700"
+                      onClick={() => {
+                        console.log('알림장 작성 완료 및 전송');
+                        // saveJournalMutation.mutate({ status: 'sent' })
+                        setIsCreateJournalOpen(false);
+                      }}
+                    >
+                      <Send className="h-4 w-4 mr-2" />
+                      작성 완료 및 전송
+                    </Button>
+                  </div>
+                </div>
               </DialogFooter>
             </DialogContent>
           </Dialog>
