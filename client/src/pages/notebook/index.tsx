@@ -106,6 +106,8 @@ export default function NotebookPage() {
   const [showUnread, setShowUnread] = useState(true);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [loading, setLoading] = useState(false);
+  const [uploadingImages, setUploadingImages] = useState(false);
+  const [uploadingVideos, setUploadingVideos] = useState(false);
   const [userRole, setUserRole] = useState<string | null>(null); // 사용자 권한 상태 추가
   const [user, setUser] = useState<any>(null); // 사용자 정보 상태 추가
   const [selectedCalendarDate, setSelectedCalendarDate] = useState<Date | undefined>(undefined);
@@ -433,6 +435,154 @@ export default function NotebookPage() {
     });
 
     return Promise.all(uploadPromises);
+  }, []);
+
+  // 이미지 업로드 핸들러
+  const handleImageUpload = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (!files) return;
+
+    const validFiles = Array.from(files).filter(file => {
+      // 10MB 제한
+      if (file.size > 10 * 1024 * 1024) {
+        toast({
+          title: "파일 크기 제한",
+          description: "이미지 파일은 10MB 이하만 업로드 가능합니다.",
+          variant: "destructive",
+        });
+        return false;
+      }
+      return true;
+    });
+
+    if (validFiles.length === 0) return;
+
+    setUploadingImages(true);
+    
+    for (const file of validFiles) {
+      try {
+        const formData = new FormData();
+        formData.append('file', file);
+
+        const response = await fetch('/api/upload/image', {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (!response.ok) {
+          throw new Error('업로드 실패');
+        }
+
+        const result = await response.json();
+        
+        if (result.success) {
+          setNewEntry(prev => ({
+            ...prev,
+            photos: [...prev.photos, result.fullUrl]
+          }));
+          
+          toast({
+            title: "이미지 업로드 성공",
+            description: "이미지가 성공적으로 업로드되었습니다.",
+          });
+        } else {
+          throw new Error(result.message || '업로드 실패');
+        }
+      } catch (error) {
+        console.error('이미지 업로드 오류:', error);
+        toast({
+          title: "이미지 업로드 실패",
+          description: "이미지 업로드 중 오류가 발생했습니다.",
+          variant: "destructive",
+        });
+      }
+    }
+
+    setUploadingImages(false);
+    // 입력 필드 초기화
+    event.target.value = '';
+  }, [toast]);
+
+  // 동영상 업로드 핸들러
+  const handleVideoUpload = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (!files) return;
+
+    const validFiles = Array.from(files).filter(file => {
+      // 50MB 제한
+      if (file.size > 50 * 1024 * 1024) {
+        toast({
+          title: "파일 크기 제한",
+          description: "동영상 파일은 50MB 이하만 업로드 가능합니다.",
+          variant: "destructive",
+        });
+        return false;
+      }
+      return true;
+    });
+
+    if (validFiles.length === 0) return;
+
+    setUploadingVideos(true);
+    
+    for (const file of validFiles) {
+      try {
+        const formData = new FormData();
+        formData.append('file', file);
+
+        const response = await fetch('/api/upload/video', {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (!response.ok) {
+          throw new Error('업로드 실패');
+        }
+
+        const result = await response.json();
+        
+        if (result.success) {
+          setNewEntry(prev => ({
+            ...prev,
+            videos: [...prev.videos, result.fullUrl]
+          }));
+          
+          toast({
+            title: "동영상 업로드 성공",
+            description: "동영상이 성공적으로 업로드되었습니다.",
+          });
+        } else {
+          throw new Error(result.message || '업로드 실패');
+        }
+      } catch (error) {
+        console.error('동영상 업로드 오류:', error);
+        toast({
+          title: "동영상 업로드 실패",
+          description: "동영상 업로드 중 오류가 발생했습니다.",
+          variant: "destructive",
+        });
+      }
+    }
+
+    setUploadingVideos(false);
+    // 입력 필드 초기화
+    event.target.value = '';
+  }, [toast]);
+
+  // 사진 삭제 핸들러
+  const removePhoto = useCallback((index: number) => {
+    setNewEntry(prev => ({
+      ...prev,
+      photos: prev.photos.filter((_, i) => i !== index)
+    }));
+  }, []);
+
+  // 동영상 삭제 핸들러
+  const removeVideo = useCallback((index: number) => {
+    setNewEntry(prev => ({
+      ...prev,
+      videos: prev.videos.filter((_, i) => i !== index)
+    }));
   }, []);
 
   // 새 알림장 저장
@@ -1034,11 +1184,25 @@ export default function NotebookPage() {
                 </TabsContent>
 
                 <TabsContent value="media" className="space-y-4">
-                  <div className="space-y-4">
+                  <div className="space-y-6">
                     {/* 이미지 업로드 섹션 */}
                     <div>
-                      <label className="text-sm font-medium mb-2 block">사진 업로드</label>
-                      <div className="border-2 border-dashed border-gray-300 rounded-lg p-4">
+                      <label className="text-sm font-medium mb-2 block flex items-center gap-2">
+                        <ImageIcon className="h-4 w-4" />
+                        사진 업로드
+                      </label>
+                      <div 
+                        className="border-2 border-dashed border-gray-300 rounded-lg p-6 hover:border-blue-400 hover:bg-blue-50 transition-colors"
+                        onDragOver={(e) => e.preventDefault()}
+                        onDrop={(e) => {
+                          e.preventDefault();
+                          const files = Array.from(e.dataTransfer.files).filter(file => file.type.startsWith('image/'));
+                          if (files.length > 0) {
+                            const event = { target: { files } } as any;
+                            handleImageUpload(event);
+                          }
+                        }}
+                      >
                         <input
                           type="file"
                           accept="image/*"
@@ -1048,25 +1212,34 @@ export default function NotebookPage() {
                           id="image-upload"
                         />
                         <label htmlFor="image-upload" className="cursor-pointer flex flex-col items-center justify-center">
-                          <ImageIcon className="h-8 w-8 text-gray-400 mb-2" />
-                          <span className="text-sm text-gray-600">클릭하여 사진 선택</span>
-                          <span className="text-xs text-gray-500 mt-1">JPG, PNG 등 (최대 10MB)</span>
+                          {uploadingImages ? (
+                            <>
+                              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mb-2"></div>
+                              <span className="text-sm text-blue-600 font-medium">이미지 업로드 중...</span>
+                            </>
+                          ) : (
+                            <>
+                              <ImageIcon className="h-8 w-8 text-gray-400 mb-2" />
+                              <span className="text-sm text-gray-600 font-medium">클릭하여 사진 선택하거나 드래그하여 업로드</span>
+                              <span className="text-xs text-gray-500 mt-1">JPG, PNG 등 (최대 10MB, 여러 파일 가능)</span>
+                            </>
+                          )}
                         </label>
                       </div>
                       {/* 업로드된 이미지 미리보기 */}
                       {newEntry.photos.length > 0 && (
-                        <div className="grid grid-cols-3 gap-2 mt-3">
+                        <div className="grid grid-cols-3 gap-3 mt-4">
                           {newEntry.photos.map((photo, index) => (
-                            <div key={index} className="relative">
+                            <div key={index} className="relative group">
                               <img
                                 src={photo}
                                 alt={`Photo ${index + 1}`}
-                                className="w-full h-20 object-cover rounded-lg border"
+                                className="w-full h-24 object-cover rounded-lg border shadow-sm"
                               />
                               <button
                                 type="button"
                                 onClick={() => removePhoto(index)}
-                                className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs"
+                                className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600 transition-colors opacity-0 group-hover:opacity-100"
                               >
                                 ×
                               </button>
@@ -1078,8 +1251,22 @@ export default function NotebookPage() {
 
                     {/* 동영상 업로드 섹션 */}
                     <div>
-                      <label className="text-sm font-medium mb-2 block">동영상 업로드</label>
-                      <div className="border-2 border-dashed border-gray-300 rounded-lg p-4">
+                      <label className="text-sm font-medium mb-2 block flex items-center gap-2">
+                        <Video className="h-4 w-4" />
+                        동영상 업로드
+                      </label>
+                      <div 
+                        className="border-2 border-dashed border-gray-300 rounded-lg p-6 hover:border-blue-400 hover:bg-blue-50 transition-colors"
+                        onDragOver={(e) => e.preventDefault()}
+                        onDrop={(e) => {
+                          e.preventDefault();
+                          const files = Array.from(e.dataTransfer.files).filter(file => file.type.startsWith('video/'));
+                          if (files.length > 0) {
+                            const event = { target: { files } } as any;
+                            handleVideoUpload(event);
+                          }
+                        }}
+                      >
                         <input
                           type="file"
                           accept="video/*"
@@ -1089,24 +1276,38 @@ export default function NotebookPage() {
                           id="video-upload"
                         />
                         <label htmlFor="video-upload" className="cursor-pointer flex flex-col items-center justify-center">
-                          <Video className="h-8 w-8 text-gray-400 mb-2" />
-                          <span className="text-sm text-gray-600">클릭하여 동영상 선택</span>
-                          <span className="text-xs text-gray-500 mt-1">MP4, AVI 등 (최대 50MB)</span>
+                          {uploadingVideos ? (
+                            <>
+                              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mb-2"></div>
+                              <span className="text-sm text-blue-600 font-medium">동영상 업로드 중...</span>
+                            </>
+                          ) : (
+                            <>
+                              <Video className="h-8 w-8 text-gray-400 mb-2" />
+                              <span className="text-sm text-gray-600 font-medium">클릭하여 동영상 선택하거나 드래그하여 업로드</span>
+                              <span className="text-xs text-gray-500 mt-1">MP4, AVI, MOV 등 (최대 50MB, 여러 파일 가능)</span>
+                            </>
+                          )}
                         </label>
                       </div>
                       {/* 업로드된 동영상 미리보기 */}
                       {newEntry.videos.length > 0 && (
-                        <div className="space-y-2 mt-3">
+                        <div className="space-y-3 mt-4">
                           {newEntry.videos.map((video, index) => (
-                            <div key={index} className="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
-                              <div className="flex items-center gap-2">
-                                <Video className="h-4 w-4 text-gray-500" />
-                                <span className="text-sm text-gray-700">동영상 {index + 1}</span>
+                            <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border">
+                              <div className="flex items-center gap-3">
+                                <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                                  <Video className="h-6 w-6 text-blue-600" />
+                                </div>
+                                <div>
+                                  <span className="text-sm font-medium text-gray-700">동영상 {index + 1}</span>
+                                  <p className="text-xs text-gray-500 mt-1">업로드 완료</p>
+                                </div>
                               </div>
                               <button
                                 type="button"
                                 onClick={() => removeVideo(index)}
-                                className="text-red-500 hover:text-red-700 text-sm"
+                                className="text-red-500 hover:text-red-700 text-sm font-medium px-2 py-1 rounded hover:bg-red-50 transition-colors"
                               >
                                 삭제
                               </button>
@@ -1114,6 +1315,17 @@ export default function NotebookPage() {
                           ))}
                         </div>
                       )}
+                    </div>
+
+                    {/* 미디어 업로드 도움말 */}
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                      <h4 className="text-sm font-medium text-blue-900 mb-2">미디어 업로드 팁</h4>
+                      <ul className="text-xs text-blue-800 space-y-1">
+                        <li>• 여러 파일을 한 번에 선택하거나 드래그하여 업로드할 수 있습니다</li>
+                        <li>• 이미지는 JPG, PNG 형식을 권장합니다 (최대 10MB)</li>
+                        <li>• 동영상은 MP4, AVI, MOV 형식을 권장합니다 (최대 50MB)</li>
+                        <li>• 업로드된 파일은 언제든지 삭제할 수 있습니다</li>
+                      </ul>
                     </div>
                   </div>
                 </TabsContent>
