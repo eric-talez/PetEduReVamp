@@ -177,6 +177,7 @@ export default function NotebookDialog({
   
   // 초기 데이터로 폼 초기화
   useEffect(() => {
+    console.log('NotebookDialog useEffect - Dialog open:', open, 'activeTab:', activeTab);
     if (initialData) {
       setForm(initialData);
       setMediaPreview({
@@ -187,6 +188,11 @@ export default function NotebookDialog({
       resetForm();
     }
   }, [initialData, open]);
+
+  // 탭 상태 디버깅
+  useEffect(() => {
+    console.log('NotebookDialog activeTab changed to:', activeTab);
+  }, [activeTab]);
   
   // 폼 초기화
   const resetForm = () => {
@@ -410,8 +416,9 @@ export default function NotebookDialog({
         </DialogHeader>
         
         {/* Tab Navigation */}
-        <div className="mb-4">
-          <div className="text-xs text-blue-600 font-medium mb-1 text-center">탭 네비게이션</div>
+        <div className="mb-4 p-2 bg-yellow-100 border-2 border-yellow-400 rounded-lg">
+          <div className="text-xs text-blue-600 font-medium mb-1 text-center">탭 네비게이션 시스템</div>
+          <div className="text-xs text-red-600 font-medium mb-2 text-center">현재 활성 탭: {activeTab}</div>
           <div className="flex space-x-1 bg-gradient-to-r from-blue-100 to-indigo-100 p-2 rounded-lg border-2 border-blue-300 shadow-lg">
             <button 
               onClick={() => {
