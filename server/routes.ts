@@ -1772,10 +1772,48 @@ app.get('/api/search', async (req, res) => {
     }
   });
 
-  // 견주 알림장 목록 조회 API
+  // 훈련사 알림장 목록 조회 API
+  app.get("/api/trainer/training-journals", async (req, res) => {
+    try {
+      const trainerId = req.session?.user?.id || 1;
+      const journals = await storage.getTrainingJournalsByTrainer(trainerId);
+      
+      return res.json({
+        success: true,
+        journals: journals
+      });
+    } catch (error) {
+      console.error('훈련사 알림장 조회 오류:', error);
+      return res.status(500).json({
+        success: false,
+        message: "알림장 조회 중 오류가 발생했습니다."
+      });
+    }
+  });
+
+  // 견주용 알림장 목록 조회 API
+  app.get("/api/notifications/training-journals", async (req, res) => {
+    try {
+      const userId = req.session?.user?.id || 108; // 기본값: 김지영
+      const journals = await storage.getTrainingJournalsByOwner(userId);
+      
+      return res.json({
+        success: true,
+        journals: journals
+      });
+    } catch (error) {
+      console.error('견주 알림장 조회 오류:', error);
+      return res.status(500).json({
+        success: false,
+        message: "알림장 조회 중 오류가 발생했습니다."
+      });
+    }
+  });
+
+  // 견주 알림장 목록 조회 API (기존)
   app.get("/api/notebook/entries", async (req, res) => {
     try {
-      const userId = req.session?.user?.id || 1;
+      const userId = req.session?.user?.id || 108; // 기본값: 김지영
       const journals = await storage.getTrainingJournalsByOwner(userId);
       
       return res.json({
