@@ -28,7 +28,10 @@ import {
   AlertCircle,
   Filter,
   Download,
-  Upload
+  Upload,
+  Camera,
+  Brain,
+  Sparkles
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
@@ -103,6 +106,7 @@ export default function TrainerNotebookPage() {
   const [isJournalDetailOpen, setIsJournalDetailOpen] = useState(false);
   const [isCreateJournalOpen, setIsCreateJournalOpen] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState<number | null>(null);
+  const [activeTab, setActiveTab] = useState<'basic' | 'activities' | 'media' | 'ai'>('basic');
 
   // 알림장 목록 조회
   const { data: journals, isLoading: journalsLoading } = useQuery({
@@ -320,86 +324,188 @@ export default function TrainerNotebookPage() {
               <DialogHeader>
                 <DialogTitle>새 알림장 작성</DialogTitle>
               </DialogHeader>
+
+              {/* Tab Navigation System */}
+              <div className="mb-4 p-4 bg-yellow-200 border-4 border-red-500 rounded-lg">
+                <div className="text-lg text-red-700 font-bold mb-2 text-center">🔥 TAB NAVIGATION SYSTEM 🔥</div>
+                <div className="text-sm text-black font-medium mb-2 text-center">현재 활성 탭: {activeTab}</div>
+                <div className="flex space-x-1 bg-gradient-to-r from-blue-100 to-indigo-100 p-2 rounded-lg border-2 border-blue-300 shadow-lg">
+                  <button 
+                    onClick={() => {
+                      console.log('Tab clicked: basic');
+                      setActiveTab('basic');
+                    }}
+                    className={`flex-1 py-2 px-3 text-sm font-medium rounded-md transition-colors ${
+                      activeTab === 'basic' 
+                        ? 'bg-white shadow-sm text-gray-900 border-2 border-blue-500' 
+                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                    }`}
+                  >
+                    📝 기본 정보
+                  </button>
+                  <button 
+                    onClick={() => {
+                      console.log('Tab clicked: activities');
+                      setActiveTab('activities');
+                    }}
+                    className={`flex-1 py-2 px-3 text-sm font-medium rounded-md transition-colors ${
+                      activeTab === 'activities' 
+                        ? 'bg-white shadow-sm text-gray-900 border-2 border-blue-500' 
+                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                    }`}
+                  >
+                    📊 활동 기록
+                  </button>
+                  <button 
+                    onClick={() => {
+                      console.log('Tab clicked: media');
+                      setActiveTab('media');
+                    }}
+                    className={`flex-1 py-2 px-3 text-sm font-medium rounded-md transition-colors ${
+                      activeTab === 'media' 
+                        ? 'bg-white shadow-sm text-gray-900 border-2 border-blue-500' 
+                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                    }`}
+                  >
+                    📸 미디어
+                  </button>
+                  <button 
+                    onClick={() => {
+                      console.log('Tab clicked: ai');
+                      setActiveTab('ai');
+                    }}
+                    className={`flex-1 py-2 px-3 text-sm font-medium rounded-md transition-colors ${
+                      activeTab === 'ai' 
+                        ? 'bg-white shadow-sm text-gray-900 border-2 border-blue-500' 
+                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                    }`}
+                  >
+                    🤖 AI 도우미
+                  </button>
+                </div>
+              </div>
+
+              {/* Tab Content */}
               <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="student">수강생 선택</Label>
-                    <Select value={selectedStudent?.toString()} onValueChange={(value) => setSelectedStudent(Number(value))}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="수강생을 선택하세요" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {students?.map((student: Student) => (
-                          <SelectItem key={student.id} value={student.id.toString()}>
-                            {student.name} - {student.pet.name} ({student.course.title})
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <Label htmlFor="date">훈련 날짜</Label>
-                    <Input id="date" type="date" defaultValue="2025-01-22" />
-                  </div>
-                </div>
-                
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="duration">훈련 시간 (분)</Label>
-                    <Input id="duration" type="number" placeholder="60" />
-                  </div>
-                  <div>
-                    <Label htmlFor="rating">진도 평가 (1-5점)</Label>
-                    <Select>
-                      <SelectTrigger>
-                        <SelectValue placeholder="평점 선택" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="5">5점 - 매우 우수</SelectItem>
-                        <SelectItem value="4">4점 - 우수</SelectItem>
-                        <SelectItem value="3">3점 - 보통</SelectItem>
-                        <SelectItem value="2">2점 - 미흡</SelectItem>
-                        <SelectItem value="1">1점 - 매우 미흡</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
+                {/* Basic Information Tab */}
+                {activeTab === 'basic' && (
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="student">수강생 선택</Label>
+                        <Select value={selectedStudent?.toString()} onValueChange={(value) => setSelectedStudent(Number(value))}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="수강생을 선택하세요" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {students?.map((student: Student) => (
+                              <SelectItem key={student.id} value={student.id.toString()}>
+                                {student.name} - {student.pet.name} ({student.course.title})
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <Label htmlFor="date">훈련 날짜</Label>
+                        <Input id="date" type="date" defaultValue="2025-01-22" />
+                      </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="duration">훈련 시간 (분)</Label>
+                        <Input id="duration" type="number" placeholder="60" />
+                      </div>
+                      <div>
+                        <Label htmlFor="rating">진도 평가 (1-5점)</Label>
+                        <Select>
+                          <SelectTrigger>
+                            <SelectValue placeholder="평점 선택" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="5">5점 - 매우 우수</SelectItem>
+                            <SelectItem value="4">4점 - 우수</SelectItem>
+                            <SelectItem value="3">3점 - 보통</SelectItem>
+                            <SelectItem value="2">2점 - 미흡</SelectItem>
+                            <SelectItem value="1">1점 - 매우 미흡</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
 
-                <div>
-                  <Label htmlFor="content">훈련 내용</Label>
-                  <Textarea 
-                    id="content" 
-                    placeholder="오늘 진행한 훈련 내용을 상세히 작성해주세요..."
-                    rows={4}
-                  />
-                </div>
+                    <div>
+                      <Label htmlFor="content">훈련 내용</Label>
+                      <Textarea 
+                        id="content" 
+                        placeholder="오늘 진행한 훈련 내용을 상세히 작성해주세요..."
+                        rows={4}
+                      />
+                    </div>
+                  </div>
+                )}
 
-                <div>
-                  <Label htmlFor="behavior">행동 특이사항</Label>
-                  <Textarea 
-                    id="behavior" 
-                    placeholder="반려견의 행동이나 성격적 특징을 기록해주세요..."
-                    rows={2}
-                  />
-                </div>
+                {/* Activities Tab */}
+                {activeTab === 'activities' && (
+                  <div className="space-y-4">
+                    <div>
+                      <Label htmlFor="behavior">행동 특이사항</Label>
+                      <Textarea 
+                        id="behavior" 
+                        placeholder="반려견의 행동이나 성격적 특징을 기록해주세요..."
+                        rows={2}
+                      />
+                    </div>
 
-                <div>
-                  <Label htmlFor="homework">숙제 및 집에서 할 일</Label>
-                  <Textarea 
-                    id="homework" 
-                    placeholder="집에서 연습해야 할 내용이나 주의사항을 작성해주세요..."
-                    rows={2}
-                  />
-                </div>
+                    <div>
+                      <Label htmlFor="homework">숙제 및 집에서 할 일</Label>
+                      <Textarea 
+                        id="homework" 
+                        placeholder="집에서 연습해야 할 내용이나 주의사항을 작성해주세요..."
+                        rows={2}
+                      />
+                    </div>
 
-                <div>
-                  <Label htmlFor="goals">다음 훈련 목표</Label>
-                  <Textarea 
-                    id="goals" 
-                    placeholder="다음 수업에서 목표로 하는 내용을 작성해주세요..."
-                    rows={2}
-                  />
-                </div>
+                    <div>
+                      <Label htmlFor="goals">다음 훈련 목표</Label>
+                      <Textarea 
+                        id="goals" 
+                        placeholder="다음 수업에서 목표로 하는 내용을 작성해주세요..."
+                        rows={2}
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* Media Tab */}
+                {activeTab === 'media' && (
+                  <div className="space-y-4">
+                    <div className="p-4 border-2 border-dashed border-gray-300 rounded-lg text-center">
+                      <Camera className="mx-auto h-12 w-12 text-gray-400 mb-2" />
+                      <p className="text-sm text-gray-600">미디어 업로드 기능</p>
+                      <p className="text-xs text-gray-500">사진이나 동영상을 첨부할 수 있습니다</p>
+                    </div>
+                  </div>
+                )}
+
+                {/* AI Helper Tab */}
+                {activeTab === 'ai' && (
+                  <div className="space-y-4">
+                    <div className="p-4 border border-blue-200 rounded-lg bg-blue-50">
+                      <div className="flex items-center mb-2">
+                        <Brain className="h-5 w-5 text-blue-600 mr-2" />
+                        <h3 className="font-medium text-blue-900">AI 알림장 도우미</h3>
+                      </div>
+                      <p className="text-sm text-blue-700 mb-4">
+                        AI가 입력된 정보를 바탕으로 알림장 내용을 자동으로 생성해드립니다.
+                      </p>
+                      <Button className="w-full" variant="outline">
+                        <Sparkles className="h-4 w-4 mr-2" />
+                        AI로 내용 생성하기
+                      </Button>
+                    </div>
+                  </div>
+                )}
               </div>
               <DialogFooter>
                 <Button variant="outline" onClick={() => setIsCreateJournalOpen(false)}>
