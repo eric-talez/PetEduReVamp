@@ -144,7 +144,8 @@ function CommunityPage() {
         }
         const data = await response.json();
         console.log('API에서 받은 게시글 데이터:', data);
-        return Array.isArray(data) ? data : [];
+        // API 응답의 posts 배열을 반환
+        return Array.isArray(data.posts) ? data.posts : [];
       } catch (error) {
         console.error('게시글 조회 오류:', error);
         throw error;

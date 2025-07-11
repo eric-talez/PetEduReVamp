@@ -14,11 +14,14 @@ export default function Community() {
   const [isPostFormOpen, setIsPostFormOpen] = useState(false);
   
   // API에서 실제 커뮤니티 게시글 데이터를 가져오기
-  const { data: communityData, isLoading } = useQuery({
+  const { data: communityData, isLoading, error } = useQuery({
     queryKey: ['/api/community/posts'],
     queryFn: async () => {
       console.log('API에서 커뮤니티 게시글 데이터 요청');
       const response = await fetch('/api/community/posts');
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
       const data = await response.json();
       console.log('API에서 받은 게시글 데이터:', data);
       return data;
@@ -37,8 +40,20 @@ export default function Community() {
   console.log('Community 컴포넌트 - filteredPosts 길이:', filteredPosts.length);
   console.log('Community 컴포넌트 - filteredPosts 내용:', filteredPosts);
 
+  // 간단한 테스트 렌더링
+  if (error) {
+    return (
+      <div className="p-8">
+        <h1 className="text-2xl font-bold mb-6">커뮤니티</h1>
+        <div className="bg-red-100 p-4 rounded-lg">
+          <p className="text-red-700">에러 발생: {error.message}</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div>
+    <div className="p-8">
       <h1 className="text-2xl font-bold mb-6">커뮤니티</h1>
       
       {/* 디버깅 정보 표시 */}
@@ -55,6 +70,22 @@ export default function Community() {
           </div>
         )}
       </div>
+
+      {/* 간단한 게시글 목록 표시 */}
+      {posts.length > 0 && (
+        <div className="mb-8">
+          <h2 className="text-xl font-bold mb-4">게시글 목록 (간단 표시)</h2>
+          <div className="space-y-4">
+            {posts.map(post => (
+              <div key={post.id} className="p-4 border rounded-lg bg-white">
+                <h3 className="font-semibold text-lg">{post.title}</h3>
+                <p className="text-gray-600">{post.author?.name || '익명'} | {post.tag}</p>
+                <p className="text-sm text-gray-500 mt-2">{post.content.substring(0, 100)}...</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
       
       <div className="mb-8">
         <div className="flex flex-col md:flex-row gap-4 mb-4">
