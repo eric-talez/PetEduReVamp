@@ -203,8 +203,15 @@ export default function NotebookPage() {
           behavior: ['긍정적 반응', '집중력 향상']
         },
         mood: 'excellent',
-        photos: [],
-        videos: [],
+        photos: [
+          'https://images.unsplash.com/photo-1552053831-71594a27632d?w=400&h=300&fit=crop&q=80',
+          'https://images.unsplash.com/photo-1583337130417-3346a1be7dee?w=400&h=300&fit=crop&q=80',
+          'https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=400&h=300&fit=crop&q=80'
+        ],
+        videos: [
+          'https://sample-videos.com/zip/10/mp4/SampleVideo_1280x720_1mb.mp4',
+          'https://sample-videos.com/zip/10/mp4/SampleVideo_1280x720_2mb.mp4'
+        ],
         notes: '내일은 산책 훈련을 추가로 진행할 예정입니다.',
         nextGoals: ['산책 훈련', '다른 강아지와의 사회화'],
         weather: '맑음',
@@ -232,8 +239,13 @@ export default function NotebookPage() {
           behavior: ['스크래칭 개선', '활동성 증가']
         },
         mood: 'good',
-        photos: [],
-        videos: [],
+        photos: [
+          'https://images.unsplash.com/photo-1574158622682-e40e69881006?w=400&h=300&fit=crop&q=80',
+          'https://images.unsplash.com/photo-1592194996308-7b43878e84a6?w=400&h=300&fit=crop&q=80'
+        ],
+        videos: [
+          'https://sample-videos.com/zip/10/mp4/SampleVideo_640x360_1mb.mp4'
+        ],
         notes: '점진적으로 개선되고 있습니다. 꾸준한 훈련이 필요해요.',
         nextGoals: ['완전한 스크래칭 교정', '새로운 장난감 적응'],
         weather: '흐림',
@@ -1154,28 +1166,28 @@ export default function NotebookPage() {
                   size="sm"
                   onClick={() => setDateFilterMode('all')}
                 >
-                  전체
+                  전체 <Badge variant="secondary" className="ml-1">{entries.length}</Badge>
                 </Button>
                 <Button
                   variant={dateFilterMode === 'today' ? 'default' : 'outline'}
                   size="sm"
                   onClick={() => setDateFilterMode('today')}
                 >
-                  오늘
+                  오늘 <Badge variant="secondary" className="ml-1">{getDateStats.today}</Badge>
                 </Button>
                 <Button
                   variant={dateFilterMode === 'week' ? 'default' : 'outline'}
                   size="sm"
                   onClick={() => setDateFilterMode('week')}
                 >
-                  이번 주
+                  이번 주 <Badge variant="secondary" className="ml-1">{getDateStats.week}</Badge>
                 </Button>
                 <Button
                   variant={dateFilterMode === 'month' ? 'default' : 'outline'}
                   size="sm"
                   onClick={() => setDateFilterMode('month')}
                 >
-                  이번 달
+                  이번 달 <Badge variant="secondary" className="ml-1">{getDateStats.month}</Badge>
                 </Button>
                 <Button
                   variant={dateFilterMode === 'custom' ? 'default' : 'outline'}
@@ -1183,6 +1195,9 @@ export default function NotebookPage() {
                   onClick={() => setShowCalendar(true)}
                 >
                   날짜 선택
+                  {dateFilterMode === 'custom' && selectedCalendarDate && (
+                    <Badge variant="secondary" className="ml-1">{getDateStats.selectedDate}</Badge>
+                  )}
                 </Button>
               </div>
 
@@ -1231,6 +1246,28 @@ export default function NotebookPage() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* 결과 상태 표시 */}
+      {filteredEntries.length > 0 && (
+        <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+          <div className="flex items-center gap-2">
+            <BookOpen className="h-4 w-4 text-gray-500" />
+            <span className="text-sm font-medium">
+              {dateFilterMode === 'all' 
+                ? `전체 ${filteredEntries.length}개의 알림장` 
+                : `${dateFilterMode === 'today' ? '오늘' : 
+                     dateFilterMode === 'week' ? '이번 주' : 
+                     dateFilterMode === 'month' ? '이번 달' : 
+                     '선택된 날짜'} ${filteredEntries.length}개의 알림장`
+              }
+            </span>
+          </div>
+          <div className="flex items-center gap-4 text-xs text-gray-500">
+            <span>읽지 않음: {filteredEntries.filter(e => !e.isRead).length}개</span>
+            <span>미디어 포함: {filteredEntries.filter(e => e.photos.length > 0 || e.videos.length > 0).length}개</span>
+          </div>
+        </div>
+      )}
 
       {/* 알림장 목록 */}
       <div className="space-y-4">
@@ -1499,6 +1536,58 @@ export default function NotebookPage() {
                       </li>
                     ))}
                   </ul>
+                </div>
+              )}
+
+              {/* 미디어 갤러리 */}
+              {(selectedEntry.photos.length > 0 || selectedEntry.videos.length > 0) && (
+                <div>
+                  <h3 className="text-lg font-semibold mb-3">미디어 갤러리</h3>
+                  <div className="space-y-4">
+                    {/* 이미지 갤러리 */}
+                    {selectedEntry.photos.length > 0 && (
+                      <div>
+                        <h4 className="font-medium text-gray-600 mb-2">사진 ({selectedEntry.photos.length}장)</h4>
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                          {selectedEntry.photos.map((photo, index) => (
+                            <div key={index} className="relative group">
+                              <img
+                                src={photo}
+                                alt={`Photo ${index + 1}`}
+                                className="w-full h-32 object-cover rounded-lg border border-gray-200 cursor-pointer hover:opacity-90 transition-opacity"
+                                onClick={() => window.open(photo, '_blank')}
+                              />
+                              <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all rounded-lg flex items-center justify-center">
+                                <Eye className="h-6 w-6 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* 동영상 갤러리 */}
+                    {selectedEntry.videos.length > 0 && (
+                      <div>
+                        <h4 className="font-medium text-gray-600 mb-2">동영상 ({selectedEntry.videos.length}개)</h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {selectedEntry.videos.map((video, index) => (
+                            <div key={index} className="relative">
+                              <video
+                                src={video}
+                                controls
+                                className="w-full h-40 object-cover rounded-lg border border-gray-200"
+                                preload="metadata"
+                              />
+                              <div className="absolute bottom-2 left-2 bg-black bg-opacity-60 text-white text-xs px-2 py-1 rounded">
+                                동영상 {index + 1}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
 

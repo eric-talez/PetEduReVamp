@@ -145,6 +145,15 @@ TALEZ is a comprehensive pet education and e-commerce platform that combines AI-
 
 ## Changelog
 
+- July 11, 2025. **Enhanced Notebook System with Calendar and Media Features** - Implemented comprehensive daily journal enhancements:
+  - **Calendar-based Date Filtering**: Added advanced date filter system with options for today, this week, this month, and custom date selection
+  - **Interactive Calendar Dialog**: Implemented popup calendar for precise date selection with Korean locale support
+  - **Dog Profile Image Integration**: Enhanced all notebook interfaces with dynamic dog profile images using Dicebear API
+  - **Media Gallery System**: Complete media preview and gallery functionality showing uploaded photos and videos
+  - **Statistical Information Display**: Real-time counters showing notebook entries per date range, unread status, and media content
+  - **Visual Media Previews**: Thumbnail previews in notebook cards with overflow indicators for multiple media files
+  - **Enhanced Detail View**: Full media gallery in notebook detail modals with clickable image previews and video players
+  - **Improved User Experience**: Better visual hierarchy with dog profile images in create/edit modals and list views
 - July 09, 2025. **Complete Trainer Certification Management System** - Implemented comprehensive trainer certification program with full admin interface:
   - **Backend API Integration**: All 12 trainer certification endpoints fully operational with proper storage initialization
   - **Admin Management Interface**: Complete TrainerCertificationManagement.tsx with comprehensive program, application, and certification management
