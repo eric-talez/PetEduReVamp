@@ -53,6 +53,7 @@ import AdminMenuManagement from "./pages/admin/menu-management";
 import AdminCommissionPage from "./pages/admin/commission";
 import AdminApprovals from './pages/admin/AdminApprovals';
 import AdminReports from './pages/admin/AdminReports';
+import NotebookMonitorPage from "./pages/admin/notebook-monitor";
 import AdminShop from './pages/admin/AdminShop';
 import AdminSettings from './pages/admin/AdminSettings';
 import LocationManagement from './pages/admin/LocationManagement';
@@ -716,6 +717,9 @@ function AppLayout({ children }: { children: ReactNode }) {
                         </Suspense>
                       );
                     }}
+                  </Route>
+                  <Route path="/institute/notebook-monitor">
+                    <NotebookMonitorPage />
                   </Route>
                   <Route path="/institute/trainers">
                     {() => {

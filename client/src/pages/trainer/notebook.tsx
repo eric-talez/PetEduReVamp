@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useQuery, useMutation } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -37,7 +37,8 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
-import { queryClient } from '@/lib/queryClient';
+import { format, subDays } from 'date-fns';
+import { ko } from 'date-fns/locale';
 
 interface Journal {
   id: number;
@@ -109,6 +110,100 @@ export default function TrainerNotebookPage() {
   const [isCreateJournalOpen, setIsCreateJournalOpen] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState<number | null>(null);
   const [activeTab, setActiveTab] = useState<'basic' | 'activities' | 'media' | 'ai'>('basic');
+  const [notebookForm, setNotebookForm] = useState({
+    title: '',
+    content: '',
+    studentId: '',
+    petId: '',
+    trainingDate: new Date().toISOString().split('T')[0],
+    trainingDuration: 60,
+    progressRating: 3,
+    behaviorNotes: '',
+    homeworkInstructions: '',
+    nextGoals: '',
+    activities: {
+      bathroom: { times: [], notes: '' },
+      walk: { times: [], duration: 0, notes: '' },
+      play: { times: [], activities: [], notes: '' },
+      meal: { times: [], amount: '', notes: '' }
+    }
+  });
+
+  const queryClient = useQueryClient();
+
+  // 알림장 생성 mutation
+  const createNotebookMutation = useMutation({
+    mutationFn: async (notebookData: any) => {
+      const response = await fetch('/api/notebook/entries', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(notebookData)
+      });
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "알림장 전송 완료",
+        description: "견주에게 알림장이 성공적으로 전송되었습니다."
+      });
+      setIsCreateJournalOpen(false);
+      setNotebookForm({
+        title: '',
+        content: '',
+        studentId: '',
+        petId: '',
+        trainingDate: new Date().toISOString().split('T')[0],
+        trainingDuration: 60,
+        progressRating: 3,
+        behaviorNotes: '',
+        homeworkInstructions: '',
+        nextGoals: '',
+        activities: {
+          bathroom: { times: [], notes: '' },
+          walk: { times: [], duration: 0, notes: '' },
+          play: { times: [], activities: [], notes: '' },
+          meal: { times: [], amount: '', notes: '' }
+        }
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/trainer/journals'] });
+    },
+    onError: (error) => {
+      toast({
+        title: "전송 실패",
+        description: "알림장 전송 중 오류가 발생했습니다.",
+        variant: "destructive"
+      });
+    }
+  });
+
+  // 알림장 제출 핸들러
+  const handleSubmitNotebook = () => {
+    if (!notebookForm.title.trim()) {
+      toast({
+        title: "제목을 입력해주세요",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    if (!notebookForm.content.trim()) {
+      toast({
+        title: "내용을 입력해주세요",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    if (!notebookForm.studentId) {
+      toast({
+        title: "수강생을 선택해주세요",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    createNotebookMutation.mutate(notebookForm);
+  };
 
   // 알림장 목록 조회
   const { data: journals, isLoading: journalsLoading } = useQuery({
@@ -406,7 +501,13 @@ export default function TrainerNotebookPage() {
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <Label htmlFor="student">수강생 선택</Label>
-                        <Select value={selectedStudent?.toString()} onValueChange={(value) => setSelectedStudent(Number(value))}>
+                        <Select value={notebookForm.studentId} onValueChange={(value) => {
+                          setNotebookForm(prev => ({ ...prev, studentId: value }));
+                          const student = students?.find(s => s.id.toString() === value);
+                          if (student) {
+                            setNotebookForm(prev => ({ ...prev, petId: student.pet.id.toString() }));
+                          }
+                        }}>
                           <SelectTrigger>
                             <SelectValue placeholder="수강생을 선택하세요" />
                           </SelectTrigger>
@@ -421,18 +522,29 @@ export default function TrainerNotebookPage() {
                       </div>
                       <div>
                         <Label htmlFor="date">훈련 날짜</Label>
-                        <Input id="date" type="date" defaultValue="2025-01-22" />
+                        <Input 
+                          id="date" 
+                          type="date" 
+                          value={notebookForm.trainingDate}
+                          onChange={(e) => setNotebookForm(prev => ({ ...prev, trainingDate: e.target.value }))}
+                        />
                       </div>
                     </div>
                     
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <Label htmlFor="duration">훈련 시간 (분)</Label>
-                        <Input id="duration" type="number" placeholder="60" />
+                        <Input 
+                          id="duration" 
+                          type="number" 
+                          value={notebookForm.trainingDuration}
+                          onChange={(e) => setNotebookForm(prev => ({ ...prev, trainingDuration: Number(e.target.value) }))}
+                          placeholder="60" 
+                        />
                       </div>
                       <div>
                         <Label htmlFor="rating">진도 평가 (1-5점)</Label>
-                        <Select>
+                        <Select value={notebookForm.progressRating.toString()} onValueChange={(value) => setNotebookForm(prev => ({ ...prev, progressRating: Number(value) }))}>
                           <SelectTrigger>
                             <SelectValue placeholder="평점 선택" />
                           </SelectTrigger>
@@ -448,11 +560,56 @@ export default function TrainerNotebookPage() {
                     </div>
 
                     <div>
+                      <Label htmlFor="title">제목</Label>
+                      <Input 
+                        id="title" 
+                        value={notebookForm.title}
+                        onChange={(e) => setNotebookForm(prev => ({ ...prev, title: e.target.value }))}
+                        placeholder="알림장 제목을 입력하세요"
+                      />
+                    </div>
+                    
+                    <div>
                       <Label htmlFor="content">훈련 내용</Label>
                       <Textarea 
                         id="content" 
+                        value={notebookForm.content}
+                        onChange={(e) => setNotebookForm(prev => ({ ...prev, content: e.target.value }))}
                         placeholder="오늘 진행한 훈련 내용을 상세히 작성해주세요..."
                         rows={4}
+                      />
+                    </div>
+                    
+                    <div>
+                      <Label htmlFor="behaviorNotes">행동 관찰 노트</Label>
+                      <Textarea 
+                        id="behaviorNotes" 
+                        value={notebookForm.behaviorNotes}
+                        onChange={(e) => setNotebookForm(prev => ({ ...prev, behaviorNotes: e.target.value }))}
+                        placeholder="반려동물의 행동이나 특이사항을 기록하세요..."
+                        rows={3}
+                      />
+                    </div>
+                    
+                    <div>
+                      <Label htmlFor="homeworkInstructions">숙제 안내</Label>
+                      <Textarea 
+                        id="homeworkInstructions" 
+                        value={notebookForm.homeworkInstructions}
+                        onChange={(e) => setNotebookForm(prev => ({ ...prev, homeworkInstructions: e.target.value }))}
+                        placeholder="견주가 집에서 해야 할 연습이나 주의사항을 적어주세요..."
+                        rows={3}
+                      />
+                    </div>
+                    
+                    <div>
+                      <Label htmlFor="nextGoals">다음 목표</Label>
+                      <Textarea 
+                        id="nextGoals" 
+                        value={notebookForm.nextGoals}
+                        onChange={(e) => setNotebookForm(prev => ({ ...prev, nextGoals: e.target.value }))}
+                        placeholder="다음 세션의 목표나 계획을 적어주세요..."
+                        rows={3}
                       />
                     </div>
                   </div>
@@ -471,11 +628,21 @@ export default function TrainerNotebookPage() {
                         </h3>
                         <div className="grid grid-cols-6 gap-2 text-xs">
                           <div className="font-medium">시간</div>
-                          <div className="font-medium text-center">06:00</div>
-                          <div className="font-medium text-center">10:00</div>
-                          <div className="font-medium text-center">14:00</div>
-                          <div className="font-medium text-center">18:00</div>
-                          <div className="font-medium text-center">22:00</div>
+                          <div className="text-center">
+                            <input type="time" className="w-16 px-1 py-0.5 border rounded text-xs" defaultValue="06:00" />
+                          </div>
+                          <div className="text-center">
+                            <input type="time" className="w-16 px-1 py-0.5 border rounded text-xs" defaultValue="10:00" />
+                          </div>
+                          <div className="text-center">
+                            <input type="time" className="w-16 px-1 py-0.5 border rounded text-xs" defaultValue="14:00" />
+                          </div>
+                          <div className="text-center">
+                            <input type="time" className="w-16 px-1 py-0.5 border rounded text-xs" defaultValue="18:00" />
+                          </div>
+                          <div className="text-center">
+                            <input type="time" className="w-16 px-1 py-0.5 border rounded text-xs" defaultValue="22:00" />
+                          </div>
                           
                           <div className="text-sm">정상 배변</div>
                           <div className="text-center"><input type="checkbox" className="rounded" /></div>
@@ -501,11 +668,21 @@ export default function TrainerNotebookPage() {
                         </h3>
                         <div className="grid grid-cols-6 gap-2 text-xs">
                           <div className="font-medium">시간</div>
-                          <div className="font-medium text-center">06:00</div>
-                          <div className="font-medium text-center">10:00</div>
-                          <div className="font-medium text-center">14:00</div>
-                          <div className="font-medium text-center">18:00</div>
-                          <div className="font-medium text-center">22:00</div>
+                          <div className="text-center">
+                            <input type="time" className="w-16 px-1 py-0.5 border rounded text-xs" defaultValue="07:00" />
+                          </div>
+                          <div className="text-center">
+                            <input type="time" className="w-16 px-1 py-0.5 border rounded text-xs" defaultValue="12:00" />
+                          </div>
+                          <div className="text-center">
+                            <input type="time" className="w-16 px-1 py-0.5 border rounded text-xs" defaultValue="16:00" />
+                          </div>
+                          <div className="text-center">
+                            <input type="time" className="w-16 px-1 py-0.5 border rounded text-xs" defaultValue="19:00" />
+                          </div>
+                          <div className="text-center">
+                            <input type="time" className="w-16 px-1 py-0.5 border rounded text-xs" defaultValue="21:00" />
+                          </div>
                           
                           <div className="text-sm">실시함</div>
                           <div className="text-center"><input type="checkbox" className="rounded" /></div>
@@ -531,11 +708,21 @@ export default function TrainerNotebookPage() {
                         </h3>
                         <div className="grid grid-cols-6 gap-2 text-xs">
                           <div className="font-medium">시간</div>
-                          <div className="font-medium text-center">06:00</div>
-                          <div className="font-medium text-center">10:00</div>
-                          <div className="font-medium text-center">14:00</div>
-                          <div className="font-medium text-center">18:00</div>
-                          <div className="font-medium text-center">22:00</div>
+                          <div className="text-center">
+                            <input type="time" className="w-16 px-1 py-0.5 border rounded text-xs" defaultValue="08:00" />
+                          </div>
+                          <div className="text-center">
+                            <input type="time" className="w-16 px-1 py-0.5 border rounded text-xs" defaultValue="11:00" />
+                          </div>
+                          <div className="text-center">
+                            <input type="time" className="w-16 px-1 py-0.5 border rounded text-xs" defaultValue="15:00" />
+                          </div>
+                          <div className="text-center">
+                            <input type="time" className="w-16 px-1 py-0.5 border rounded text-xs" defaultValue="17:00" />
+                          </div>
+                          <div className="text-center">
+                            <input type="time" className="w-16 px-1 py-0.5 border rounded text-xs" defaultValue="20:00" />
+                          </div>
                           
                           <div className="text-sm">공 던지기</div>
                           <div className="text-center"><input type="checkbox" className="rounded" /></div>
@@ -568,11 +755,21 @@ export default function TrainerNotebookPage() {
                         </h3>
                         <div className="grid grid-cols-6 gap-2 text-xs">
                           <div className="font-medium">시간</div>
-                          <div className="font-medium text-center">06:00</div>
-                          <div className="font-medium text-center">10:00</div>
-                          <div className="font-medium text-center">14:00</div>
-                          <div className="font-medium text-center">18:00</div>
-                          <div className="font-medium text-center">22:00</div>
+                          <div className="text-center">
+                            <input type="time" className="w-16 px-1 py-0.5 border rounded text-xs" defaultValue="06:00" />
+                          </div>
+                          <div className="text-center">
+                            <input type="time" className="w-16 px-1 py-0.5 border rounded text-xs" defaultValue="10:00" />
+                          </div>
+                          <div className="text-center">
+                            <input type="time" className="w-16 px-1 py-0.5 border rounded text-xs" defaultValue="14:00" />
+                          </div>
+                          <div className="text-center">
+                            <input type="time" className="w-16 px-1 py-0.5 border rounded text-xs" defaultValue="18:00" />
+                          </div>
+                          <div className="text-center">
+                            <input type="time" className="w-16 px-1 py-0.5 border rounded text-xs" defaultValue="22:00" />
+                          </div>
                           
                           <div className="text-sm">정상 식사</div>
                           <div className="text-center"><input type="checkbox" className="rounded" /></div>
@@ -678,11 +875,7 @@ export default function TrainerNotebookPage() {
                     </Button>
                     <Button 
                       className="px-4 bg-blue-600 hover:bg-blue-700"
-                      onClick={() => {
-                        console.log('알림장 작성 완료 및 전송');
-                        // saveJournalMutation.mutate({ status: 'sent' })
-                        setIsCreateJournalOpen(false);
-                      }}
+                      onClick={handleSubmitNotebook}
                     >
                       <Send className="h-4 w-4 mr-2" />
                       작성 완료 및 전송

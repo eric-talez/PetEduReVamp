@@ -1711,6 +1711,167 @@ app.get('/api/search', async (req, res) => {
     });
   });
 
+  // 훈련사 알림장 생성 API
+  app.post("/api/notebook/entries", async (req, res) => {
+    try {
+      const { 
+        title, 
+        content, 
+        studentId, 
+        petId, 
+        trainingDate, 
+        trainingDuration, 
+        progressRating, 
+        behaviorNotes, 
+        homeworkInstructions, 
+        nextGoals, 
+        activities 
+      } = req.body;
+
+      if (!title || !content || !studentId || !petId) {
+        return res.status(400).json({
+          success: false,
+          message: "필수 정보가 누락되었습니다."
+        });
+      }
+
+      // 훈련사 ID는 세션에서 가져오기 (실제 구현에서는 세션 처리 필요)
+      const trainerId = req.session?.user?.id || 1;
+
+      const newJournal = await storage.createTrainingJournal({
+        trainerId,
+        petOwnerId: parseInt(studentId),
+        petId: parseInt(petId),
+        title,
+        content,
+        trainingDate: new Date(trainingDate),
+        trainingDuration: parseInt(trainingDuration) || 60,
+        progressRating: parseInt(progressRating) || 3,
+        behaviorNotes: behaviorNotes || '',
+        homeworkInstructions: homeworkInstructions || '',
+        nextGoals: nextGoals || '',
+        activities: JSON.stringify(activities || {}),
+        status: 'sent',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      });
+
+      console.log('새 알림장 생성:', newJournal);
+
+      return res.json({
+        success: true,
+        message: "알림장이 성공적으로 전송되었습니다.",
+        journal: newJournal
+      });
+    } catch (error) {
+      console.error('알림장 생성 오류:', error);
+      return res.status(500).json({
+        success: false,
+        message: "알림장 생성 중 오류가 발생했습니다."
+      });
+    }
+  });
+
+  // 견주 알림장 목록 조회 API
+  app.get("/api/notebook/entries", async (req, res) => {
+    try {
+      const userId = req.session?.user?.id || 1;
+      const journals = await storage.getTrainingJournalsByOwner(userId);
+      
+      return res.json({
+        success: true,
+        journals
+      });
+    } catch (error) {
+      console.error('알림장 목록 조회 오류:', error);
+      return res.status(500).json({
+        success: false,
+        message: "알림장 목록 조회 중 오류가 발생했습니다."
+      });
+    }
+  });
+
+  // 훈련사 알림장 목록 조회 API
+  app.get("/api/trainer/journals", async (req, res) => {
+    try {
+      const trainerId = req.session?.user?.id || 1;
+      const journals = await storage.getTrainingJournalsByTrainer(trainerId);
+      
+      return res.json({
+        success: true,
+        journals
+      });
+    } catch (error) {
+      console.error('훈련사 알림장 목록 조회 오류:', error);
+      return res.status(500).json({
+        success: false,
+        message: "알림장 목록 조회 중 오류가 발생했습니다."
+      });
+    }
+  });
+
+  // 기관 관리자 - 알림장 현황 조회 API
+  app.get("/api/admin/notebook/status", async (req, res) => {
+    try {
+      const { startDate, endDate } = req.query;
+      
+      // 모든 훈련사의 알림장 작성 현황 조회
+      const allJournals = await storage.getAllTrainingJournals();
+      
+      // 날짜 필터링
+      let filteredJournals = allJournals;
+      if (startDate && endDate) {
+        const start = new Date(startDate as string);
+        const end = new Date(endDate as string);
+        filteredJournals = allJournals.filter(journal => {
+          const journalDate = new Date(journal.trainingDate);
+          return journalDate >= start && journalDate <= end;
+        });
+      }
+      
+      // 훈련사별 통계 계산
+      const trainerStats = {};
+      filteredJournals.forEach(journal => {
+        const trainerId = journal.trainerId;
+        if (!trainerStats[trainerId]) {
+          trainerStats[trainerId] = {
+            trainerId,
+            trainerName: journal.trainer?.name || '알 수 없음',
+            totalJournals: 0,
+            sentJournals: 0,
+            readJournals: 0,
+            dates: []
+          };
+        }
+        trainerStats[trainerId].totalJournals++;
+        if (journal.status === 'sent' || journal.status === 'read') {
+          trainerStats[trainerId].sentJournals++;
+        }
+        if (journal.status === 'read') {
+          trainerStats[trainerId].readJournals++;
+        }
+        trainerStats[trainerId].dates.push({
+          date: journal.trainingDate,
+          status: journal.status,
+          petName: journal.pet?.name || '알 수 없음',
+          title: journal.title
+        });
+      });
+      
+      return res.json({
+        success: true,
+        stats: Object.values(trainerStats),
+        totalJournals: filteredJournals.length
+      });
+    } catch (error) {
+      console.error('알림장 현황 조회 오류:', error);
+      return res.status(500).json({
+        success: false,
+        message: "알림장 현황 조회 중 오류가 발생했습니다."
+      });
+    }
+  });
+
   // 사용자 즐겨찾기 강의 목록
   app.get("/api/users/:userId/favorite-courses", (req, res) => {
     const userId = parseInt(req.params.userId);
@@ -1841,6 +2002,80 @@ app.get('/api/search', async (req, res) => {
 
   // 알림 관련 라우트 (// 임시 비활성화)
   // registerNotificationRoutes(app);
+
+  // 알림장 모니터링 API
+  app.get("/api/admin/notebook/status", async (req, res) => {
+    try {
+      const { startDate, endDate } = req.query;
+      
+      // 모든 알림장 데이터 가져오기
+      const allJournals = await storage.getAllTrainingJournals();
+      
+      // 날짜 필터링
+      const filteredJournals = allJournals.filter(journal => {
+        const journalDate = new Date(journal.trainingDate);
+        if (startDate && journalDate < new Date(startDate as string)) return false;
+        if (endDate && journalDate > new Date(endDate as string)) return false;
+        return true;
+      });
+      
+      // 훈련사별 통계 생성
+      const trainerStats = new Map();
+      
+      for (const journal of filteredJournals) {
+        const trainerId = journal.trainerId;
+        
+        if (!trainerStats.has(trainerId)) {
+          // 훈련사 정보 가져오기
+          const trainer = await storage.getTrainer(trainerId);
+          
+          trainerStats.set(trainerId, {
+            trainerId,
+            trainerName: trainer?.name || `훈련사 ${trainerId}`,
+            totalJournals: 0,
+            sentJournals: 0,
+            readJournals: 0,
+            dates: []
+          });
+        }
+        
+        const stats = trainerStats.get(trainerId);
+        stats.totalJournals++;
+        
+        if (journal.status === 'sent' || journal.status === 'read' || journal.status === 'replied') {
+          stats.sentJournals++;
+        }
+        
+        if (journal.status === 'read' || journal.status === 'replied') {
+          stats.readJournals++;
+        }
+        
+        // 펫 정보 가져오기
+        const pet = await storage.getPet(journal.petId);
+        
+        stats.dates.push({
+          date: journal.trainingDate,
+          status: journal.status,
+          petName: pet?.name || `펫 ${journal.petId}`,
+          title: journal.title
+        });
+      }
+      
+      const response = {
+        stats: Array.from(trainerStats.values()),
+        totalJournals: filteredJournals.length
+      };
+      
+      res.json(response);
+      
+    } catch (error) {
+      console.error('알림장 현황 조회 오류:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: '알림장 현황을 불러오는 중 오류가 발생했습니다.' 
+      });
+    }
+  });
 
   // 커뮤니티 API는 setupSocialRoutes에서 처리됨
 

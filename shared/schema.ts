@@ -417,6 +417,9 @@ export type InsertEventLocation = typeof eventLocations.$inferInsert;
 
 export type EventAttendance = typeof eventAttendances.$inferSelect;
 
+export type TrainingJournal = typeof trainingJournals.$inferSelect;
+export type InsertTrainingJournal = typeof trainingJournals.$inferInsert;
+
 // Missing tables from error report
 export const projects = pgTable("projects", {
   id: serial("id").primaryKey(),

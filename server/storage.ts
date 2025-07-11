@@ -11,7 +11,8 @@ import {
   trainerApplications, type TrainerApplication, type InsertTrainerApplication,
   trainerCertifications, type TrainerCertification, type InsertTrainerCertification,
   trainerPrograms, type TrainerProgram, type InsertTrainerProgram,
-  trainerProgramEnrollments, type TrainerProgramEnrollment, type InsertTrainerProgramEnrollment
+  trainerProgramEnrollments, type TrainerProgramEnrollment, type InsertTrainerProgramEnrollment,
+  trainingJournals, type TrainingJournal, type InsertTrainingJournal
 } from "../shared/schema";
 
 // 프로필 업데이트를 위한 인터페이스
@@ -227,6 +228,15 @@ export interface IStorage {
     getTrainerProgramEnrollment(id: number): Promise<TrainerProgramEnrollment | undefined>;
     getTrainerProgramEnrollmentsByUserId(userId: number): Promise<TrainerProgramEnrollment[]>;
     updateTrainerProgramEnrollment(id: number, data: Partial<TrainerProgramEnrollment>): Promise<TrainerProgramEnrollment>;
+
+    // Training Journal methods
+    createTrainingJournal(journal: InsertTrainingJournal): Promise<TrainingJournal>;
+    getAllTrainingJournals(): Promise<TrainingJournal[]>;
+    getTrainingJournal(id: number): Promise<TrainingJournal | undefined>;
+    getTrainingJournalsByTrainer(trainerId: number): Promise<TrainingJournal[]>;
+    getTrainingJournalsByOwner(ownerId: number): Promise<TrainingJournal[]>;
+    updateTrainingJournal(id: number, data: Partial<TrainingJournal>): Promise<TrainingJournal>;
+    deleteTrainingJournal(id: number): Promise<boolean>;
 }
 
 // 메모리 기반 데이터 저장소 (운영 환경용)
@@ -299,6 +309,7 @@ export class MemoryStorage implements IStorage{
   private trainerCertifications = new Map<number, TrainerCertification>();
   private trainerPrograms = new Map<number, TrainerProgram>();
   private trainerProgramEnrollments = new Map<number, TrainerProgramEnrollment>();
+  private trainingJournals = new Map<number, TrainingJournal>();
 
   // ID counters
   private userId = 1;
@@ -325,6 +336,7 @@ export class MemoryStorage implements IStorage{
   private certificationId = 1;
   private programId = 1;
   private enrollmentTrainerId = 1;
+  private trainingJournalId = 1;
 
 
   constructor() {
@@ -3484,6 +3496,48 @@ export class MemoryStorage implements IStorage{
         console.log(`   - 인증 프로그램: ${programs.length}개`);
         console.log(`   - 신청서: ${sampleApplications.length}개`);
         console.log(`   - 인증서: ${sampleCertifications.length}개`);
+    }
+
+    // Training Journal Methods
+    async createTrainingJournal(journal: InsertTrainingJournal): Promise<TrainingJournal> {
+        const newJournal = {
+            id: this.trainingJournalId++,
+            ...journal,
+            createdAt: new Date(),
+            updatedAt: new Date()
+        };
+        this.trainingJournals.set(newJournal.id, newJournal);
+        return newJournal;
+    }
+
+    async getAllTrainingJournals(): Promise<TrainingJournal[]> {
+        return Array.from(this.trainingJournals.values());
+    }
+
+    async getTrainingJournal(id: number): Promise<TrainingJournal | undefined> {
+        return this.trainingJournals.get(id);
+    }
+
+    async getTrainingJournalsByTrainer(trainerId: number): Promise<TrainingJournal[]> {
+        return Array.from(this.trainingJournals.values()).filter(journal => journal.trainerId === trainerId);
+    }
+
+    async getTrainingJournalsByOwner(ownerId: number): Promise<TrainingJournal[]> {
+        return Array.from(this.trainingJournals.values()).filter(journal => journal.petOwnerId === ownerId);
+    }
+
+    async updateTrainingJournal(id: number, data: Partial<TrainingJournal>): Promise<TrainingJournal> {
+        const journal = this.trainingJournals.get(id);
+        if (!journal) {
+            throw new Error('Training journal not found');
+        }
+        const updatedJournal = { ...journal, ...data, updatedAt: new Date() };
+        this.trainingJournals.set(id, updatedJournal);
+        return updatedJournal;
+    }
+
+    async deleteTrainingJournal(id: number): Promise<boolean> {
+        return this.trainingJournals.delete(id);
     }
 }
 
