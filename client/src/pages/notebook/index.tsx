@@ -111,6 +111,16 @@ export default function NotebookPage() {
   const [selectedCalendarDate, setSelectedCalendarDate] = useState<Date | undefined>(undefined);
   const [showCalendar, setShowCalendar] = useState(false);
   const [dateFilterMode, setDateFilterMode] = useState<'all' | 'today' | 'week' | 'month' | 'custom'>('all');
+  
+  // 파일 업로드 상태
+  const [uploadedFiles, setUploadedFiles] = useState<{
+    images: { file: File; preview: string }[];
+    videos: { file: File; preview: string }[];
+  }>({
+    images: [],
+    videos: []
+  });
+  const [isUploading, setIsUploading] = useState(false);
 
   // 새 알림장 폼 상태
   const [newEntry, setNewEntry] = useState({
@@ -374,6 +384,57 @@ export default function NotebookPage() {
     }
   }, [selectedPet, selectedTrainer, toast]);
 
+  // 파일 업로드 핸들러
+  const handleFileUpload = useCallback((event: React.ChangeEvent<HTMLInputElement>, type: 'images' | 'videos') => {
+    const files = event.target.files;
+    if (!files) return;
+
+    const newFiles = Array.from(files).map(file => ({
+      file,
+      preview: URL.createObjectURL(file)
+    }));
+
+    setUploadedFiles(prev => ({
+      ...prev,
+      [type]: [...prev[type], ...newFiles]
+    }));
+  }, []);
+
+  // 파일 삭제 핸들러
+  const handleFileRemove = useCallback((index: number, type: 'images' | 'videos') => {
+    setUploadedFiles(prev => ({
+      ...prev,
+      [type]: prev[type].filter((_, i) => i !== index)
+    }));
+  }, []);
+
+  // 파일을 서버에 업로드하는 함수
+  const uploadFilesToServer = useCallback(async (files: { file: File; preview: string }[]) => {
+    const uploadPromises = files.map(async ({ file }) => {
+      const formData = new FormData();
+      formData.append('file', file);
+      
+      try {
+        const response = await fetch('/api/upload', {
+          method: 'POST',
+          body: formData
+        });
+        
+        if (!response.ok) {
+          throw new Error('Upload failed');
+        }
+        
+        const result = await response.json();
+        return result.url;
+      } catch (error) {
+        console.error('File upload error:', error);
+        throw error;
+      }
+    });
+
+    return Promise.all(uploadPromises);
+  }, []);
+
   // 새 알림장 저장
   const handleSaveEntry = async () => {
     if (!newEntry.title || !newEntry.content || !newEntry.petName) {
@@ -386,8 +447,21 @@ export default function NotebookPage() {
     }
 
     setLoading(true);
+    setIsUploading(true);
 
     try {
+      // 파일 업로드 처리
+      let photoUrls: string[] = [];
+      let videoUrls: string[] = [];
+
+      if (uploadedFiles.images.length > 0) {
+        photoUrls = await uploadFilesToServer(uploadedFiles.images);
+      }
+
+      if (uploadedFiles.videos.length > 0) {
+        videoUrls = await uploadFilesToServer(uploadedFiles.videos);
+      }
+
       const response = await fetch('/api/notebook/entries', {
         method: 'POST',
         headers: {
@@ -395,7 +469,9 @@ export default function NotebookPage() {
         },
         body: JSON.stringify({
           ...newEntry,
-          date: format(selectedDate, 'yyyy-MM-dd')
+          date: format(selectedDate, 'yyyy-MM-dd'),
+          photos: photoUrls,
+          videos: videoUrls
         }),
       });
 
@@ -406,6 +482,8 @@ export default function NotebookPage() {
           id: data.entry.id,
           date: format(selectedDate, 'yyyy-MM-dd'),
           ...newEntry,
+          photos: photoUrls,
+          videos: videoUrls,
           isRead: false,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString()
