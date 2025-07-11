@@ -80,19 +80,90 @@ export default function Community() {
         </TabsList>
         
         <TabsContent value="popular" className="mt-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredPosts.map((post) => (
-              <Card
-                key={post.id}
-                user={post.user}
-                title={post.title}
-                content={post.content}
-                likes={post.likes}
-                comments={post.comments}
-                tag={post.tag}
-              />
-            ))}
-          </div>
+          {isLoading ? (
+            <div className="text-center py-8">
+              <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
+              <p className="text-gray-600">게시글을 불러오는 중...</p>
+            </div>
+          ) : filteredPosts.length === 0 ? (
+            <div className="text-center py-8">
+              <p className="text-gray-600">등록된 게시글이 없습니다.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[...filteredPosts].sort((a, b) => b.likes - a.likes).map((post) => (
+                <Card key={post.id} className="p-4 hover:shadow-lg transition-shadow">
+                  <CardContent className="p-0">
+                    <div className="flex items-start space-x-3 mb-3">
+                      <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                        <span className="text-primary font-medium text-sm">
+                          {post.author?.name?.charAt(0) || 'U'}
+                        </span>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center space-x-2">
+                          <span className="font-medium text-sm">{post.author?.name || '익명'}</span>
+                          <span className="text-xs text-gray-500">
+                            {new Date(post.createdAt).toLocaleDateString()}
+                          </span>
+                        </div>
+                        {post.tag && (
+                          <Badge variant="secondary" className="text-xs mt-1">
+                            {post.tag}
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                    
+                    <div className="mb-3">
+                      <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2">
+                        {post.title}
+                      </h3>
+                      <p className="text-sm text-gray-600 line-clamp-3 mb-3">
+                        {post.content}
+                      </p>
+                      
+                      {post.linkInfo && (
+                        <div className="border rounded-lg p-3 bg-gray-50">
+                          <div className="flex items-center space-x-3">
+                            {post.linkInfo.image && (
+                              <img 
+                                src={post.linkInfo.image} 
+                                alt="링크 이미지" 
+                                className="w-16 h-16 object-cover rounded"
+                              />
+                            )}
+                            <div className="flex-1">
+                              <h4 className="font-medium text-sm text-gray-900 line-clamp-2">
+                                {post.linkInfo.title}
+                              </h4>
+                              <p className="text-xs text-gray-500 line-clamp-2">
+                                {post.linkInfo.description}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                    
+                    <div className="flex items-center justify-between text-sm text-gray-500">
+                      <div className="flex items-center space-x-4">
+                        <span className="flex items-center gap-1">
+                          <MessageSquare className="w-4 h-4" />
+                          {post.comments || 0}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <TrendingUp className="w-4 h-4" />
+                          {post.likes || 0}
+                        </span>
+                      </div>
+                      <span>조회 {post.views || 0}</span>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
         </TabsContent>
         
         <TabsContent value="recent" className="mt-6">
@@ -183,25 +254,97 @@ export default function Community() {
         
         <TabsContent value="filter" className="mt-6">
           <div className="flex gap-2 mb-6">
-            <Badge variant="blue" className="cursor-pointer py-1">산책팁</Badge>
-            <Badge variant="green" className="cursor-pointer py-1">훈련팁</Badge>
-            <Badge variant="purple" className="cursor-pointer py-1">성공후기</Badge>
-            <Badge variant="red" className="cursor-pointer py-1">건강</Badge>
-            <Badge variant="accent" className="cursor-pointer py-1">질문</Badge>
+            <Badge variant="secondary" className="cursor-pointer py-1">법률정보</Badge>
+            <Badge variant="secondary" className="cursor-pointer py-1">여행정보</Badge>
+            <Badge variant="secondary" className="cursor-pointer py-1">병원정보</Badge>
+            <Badge variant="secondary" className="cursor-pointer py-1">훈련팁</Badge>
+            <Badge variant="secondary" className="cursor-pointer py-1">기타</Badge>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredPosts.map((post) => (
-              <CommunityCard
-                key={post.id}
-                user={post.user}
-                title={post.title}
-                content={post.content}
-                likes={post.likes}
-                comments={post.comments}
-                tag={post.tag}
-              />
-            ))}
+          {isLoading ? (
+            <div className="text-center py-8">
+              <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
+              <p className="text-gray-600">게시글을 불러오는 중...</p>
+            </div>
+          ) : filteredPosts.length === 0 ? (
+            <div className="text-center py-8">
+              <p className="text-gray-600">등록된 게시글이 없습니다.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredPosts.map((post) => (
+                <Card key={post.id} className="p-4 hover:shadow-lg transition-shadow">
+                  <CardContent className="p-0">
+                    <div className="flex items-start space-x-3 mb-3">
+                      <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                        <span className="text-primary font-medium text-sm">
+                          {post.author?.name?.charAt(0) || 'U'}
+                        </span>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center space-x-2">
+                          <span className="font-medium text-sm">{post.author?.name || '익명'}</span>
+                          <span className="text-xs text-gray-500">
+                            {new Date(post.createdAt).toLocaleDateString()}
+                          </span>
+                        </div>
+                        {post.tag && (
+                          <Badge variant="secondary" className="text-xs mt-1">
+                            {post.tag}
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                    
+                    <div className="mb-3">
+                      <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2">
+                        {post.title}
+                      </h3>
+                      <p className="text-sm text-gray-600 line-clamp-3 mb-3">
+                        {post.content}
+                      </p>
+                      
+                      {post.linkInfo && (
+                        <div className="border rounded-lg p-3 bg-gray-50">
+                          <div className="flex items-center space-x-3">
+                            {post.linkInfo.image && (
+                              <img 
+                                src={post.linkInfo.image} 
+                                alt="링크 이미지" 
+                                className="w-16 h-16 object-cover rounded"
+                              />
+                            )}
+                            <div className="flex-1">
+                              <h4 className="font-medium text-sm text-gray-900 line-clamp-2">
+                                {post.linkInfo.title}
+                              </h4>
+                              <p className="text-xs text-gray-500 line-clamp-2">
+                                {post.linkInfo.description}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                    
+                    <div className="flex items-center justify-between text-sm text-gray-500">
+                      <div className="flex items-center space-x-4">
+                        <span className="flex items-center gap-1">
+                          <MessageSquare className="w-4 h-4" />
+                          {post.comments || 0}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <TrendingUp className="w-4 h-4" />
+                          {post.likes || 0}
+                        </span>
+                      </div>
+                      <span>조회 {post.views || 0}</span>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
           </div>
         </TabsContent>
       </Tabs>
