@@ -106,8 +106,11 @@ export default function NotebookPage() {
   const [showUnread, setShowUnread] = useState(true);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [loading, setLoading] = useState(false);
-    const [userRole, setUserRole] = useState<string | null>(null); // 사용자 권한 상태 추가
+  const [userRole, setUserRole] = useState<string | null>(null); // 사용자 권한 상태 추가
   const [user, setUser] = useState<any>(null); // 사용자 정보 상태 추가
+  const [selectedCalendarDate, setSelectedCalendarDate] = useState<Date | undefined>(undefined);
+  const [showCalendar, setShowCalendar] = useState(false);
+  const [dateFilterMode, setDateFilterMode] = useState<'all' | 'today' | 'week' | 'month' | 'custom'>('all');
 
   // 새 알림장 폼 상태
   const [newEntry, setNewEntry] = useState({
@@ -276,6 +279,39 @@ export default function NotebookPage() {
       filtered = filtered.filter(entry => entry.trainerId === selectedTrainer);
     }
 
+    // 날짜 필터
+    const today = new Date();
+    const startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const startOfWeek = new Date(startOfToday);
+    startOfWeek.setDate(startOfToday.getDate() - startOfToday.getDay());
+    const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+
+    if (dateFilterMode === 'today') {
+      filtered = filtered.filter(entry => {
+        const entryDate = new Date(entry.date);
+        return entryDate >= startOfToday && entryDate < new Date(startOfToday.getTime() + 24 * 60 * 60 * 1000);
+      });
+    } else if (dateFilterMode === 'week') {
+      const endOfWeek = new Date(startOfWeek.getTime() + 7 * 24 * 60 * 60 * 1000);
+      filtered = filtered.filter(entry => {
+        const entryDate = new Date(entry.date);
+        return entryDate >= startOfWeek && entryDate < endOfWeek;
+      });
+    } else if (dateFilterMode === 'month') {
+      const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+      filtered = filtered.filter(entry => {
+        const entryDate = new Date(entry.date);
+        return entryDate >= startOfMonth && entryDate <= endOfMonth;
+      });
+    } else if (dateFilterMode === 'custom' && selectedCalendarDate) {
+      const selectedDateStart = new Date(selectedCalendarDate.getFullYear(), selectedCalendarDate.getMonth(), selectedCalendarDate.getDate());
+      const selectedDateEnd = new Date(selectedDateStart.getTime() + 24 * 60 * 60 * 1000);
+      filtered = filtered.filter(entry => {
+        const entryDate = new Date(entry.date);
+        return entryDate >= selectedDateStart && entryDate < selectedDateEnd;
+      });
+    }
+
     // 읽음/안읽음 필터
     if (!showRead && !showUnread) {
       filtered = [];
@@ -295,7 +331,7 @@ export default function NotebookPage() {
     }
 
     setFilteredEntries(filtered);
-  }, [entries, searchQuery, selectedPet, selectedTrainer, sortBy, showRead, showUnread]);
+  }, [entries, searchQuery, selectedPet, selectedTrainer, sortBy, showRead, showUnread, dateFilterMode, selectedCalendarDate]);
 
   // 알림장 목록 조회
   const fetchEntries = useCallback(async () => {
@@ -525,6 +561,46 @@ export default function NotebookPage() {
     return format(date, 'MM월 dd일', { locale: ko });
   };
 
+  // 날짜별 알림장 통계 계산
+  const getDateStats = useMemo(() => {
+    const today = new Date();
+    const startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const startOfWeek = new Date(startOfToday);
+    startOfWeek.setDate(startOfToday.getDate() - startOfToday.getDay());
+    const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+
+    const todayCount = entries.filter(entry => {
+      const entryDate = new Date(entry.date);
+      return entryDate >= startOfToday && entryDate < new Date(startOfToday.getTime() + 24 * 60 * 60 * 1000);
+    }).length;
+
+    const weekCount = entries.filter(entry => {
+      const entryDate = new Date(entry.date);
+      const endOfWeek = new Date(startOfWeek.getTime() + 7 * 24 * 60 * 60 * 1000);
+      return entryDate >= startOfWeek && entryDate < endOfWeek;
+    }).length;
+
+    const monthCount = entries.filter(entry => {
+      const entryDate = new Date(entry.date);
+      const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+      return entryDate >= startOfMonth && entryDate <= endOfMonth;
+    }).length;
+
+    const selectedDateCount = selectedCalendarDate ? entries.filter(entry => {
+      const entryDate = new Date(entry.date);
+      const selectedDateStart = new Date(selectedCalendarDate.getFullYear(), selectedCalendarDate.getMonth(), selectedCalendarDate.getDate());
+      const selectedDateEnd = new Date(selectedDateStart.getTime() + 24 * 60 * 60 * 1000);
+      return entryDate >= selectedDateStart && entryDate < selectedDateEnd;
+    }).length : 0;
+
+    return {
+      today: todayCount,
+      week: weekCount,
+      month: monthCount,
+      selectedDate: selectedDateCount
+    };
+  }, [entries, selectedCalendarDate]);
+
   // 알림장 읽음 처리
   const markAsRead = async (entryId: string) => {
     try {
@@ -540,6 +616,174 @@ export default function NotebookPage() {
     } catch (error) {
       console.error('읽음 처리 실패:', error);
     }
+  };
+
+  // 이미지 업로드 처리
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (!files) return;
+
+    const validFiles = Array.from(files).filter(file => {
+      const isValidType = file.type.startsWith('image/');
+      const isValidSize = file.size <= 10 * 1024 * 1024; // 10MB
+
+      if (!isValidType) {
+        toast({
+          title: '파일 형식 오류',
+          description: '이미지 파일만 업로드할 수 있습니다.',
+          variant: 'destructive'
+        });
+        return false;
+      }
+
+      if (!isValidSize) {
+        toast({
+          title: '파일 크기 오류',
+          description: '이미지 파일은 10MB 이하여야 합니다.',
+          variant: 'destructive'
+        });
+        return false;
+      }
+
+      return true;
+    });
+
+    if (validFiles.length === 0) return;
+
+    setIsLoading(true);
+
+    try {
+      const uploadedImages = await Promise.all(
+        validFiles.map(async (file) => {
+          const formData = new FormData();
+          formData.append('image', file);
+
+          const response = await fetch('/api/upload/image', {
+            method: 'POST',
+            body: formData
+          });
+
+          if (!response.ok) {
+            throw new Error('이미지 업로드 실패');
+          }
+
+          const data = await response.json();
+          return data.imageUrl;
+        })
+      );
+
+      setNewEntry(prev => ({
+        ...prev,
+        photos: [...prev.photos, ...uploadedImages]
+      }));
+
+      toast({
+        title: '이미지 업로드 완료',
+        description: `${uploadedImages.length}개의 이미지가 업로드되었습니다.`
+      });
+
+    } catch (error) {
+      console.error('이미지 업로드 실패:', error);
+      toast({
+        title: '업로드 실패',
+        description: '이미지 업로드 중 오류가 발생했습니다.',
+        variant: 'destructive'
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // 동영상 업로드 처리
+  const handleVideoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (!files) return;
+
+    const validFiles = Array.from(files).filter(file => {
+      const isValidType = file.type.startsWith('video/');
+      const isValidSize = file.size <= 50 * 1024 * 1024; // 50MB
+
+      if (!isValidType) {
+        toast({
+          title: '파일 형식 오류',
+          description: '동영상 파일만 업로드할 수 있습니다.',
+          variant: 'destructive'
+        });
+        return false;
+      }
+
+      if (!isValidSize) {
+        toast({
+          title: '파일 크기 오류',
+          description: '동영상 파일은 50MB 이하여야 합니다.',
+          variant: 'destructive'
+        });
+        return false;
+      }
+
+      return true;
+    });
+
+    if (validFiles.length === 0) return;
+
+    setIsLoading(true);
+
+    try {
+      const uploadedVideos = await Promise.all(
+        validFiles.map(async (file) => {
+          const formData = new FormData();
+          formData.append('video', file);
+
+          const response = await fetch('/api/upload/video', {
+            method: 'POST',
+            body: formData
+          });
+
+          if (!response.ok) {
+            throw new Error('동영상 업로드 실패');
+          }
+
+          const data = await response.json();
+          return data.videoUrl;
+        })
+      );
+
+      setNewEntry(prev => ({
+        ...prev,
+        videos: [...prev.videos, ...uploadedVideos]
+      }));
+
+      toast({
+        title: '동영상 업로드 완료',
+        description: `${uploadedVideos.length}개의 동영상이 업로드되었습니다.`
+      });
+
+    } catch (error) {
+      console.error('동영상 업로드 실패:', error);
+      toast({
+        title: '업로드 실패',
+        description: '동영상 업로드 중 오류가 발생했습니다.',
+        variant: 'destructive'
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // 이미지 삭제
+  const removePhoto = (index: number) => {
+    setNewEntry(prev => ({
+      ...prev,
+      photos: prev.photos.filter((_, i) => i !== index)
+    }));
+  };
+
+  // 동영상 삭제
+  const removeVideo = (index: number) => {
+    setNewEntry(prev => ({
+      ...prev,
+      videos: prev.videos.filter((_, i) => i !== index)
+    }));
   };
 
   return (
@@ -586,7 +830,21 @@ export default function NotebookPage() {
             </DialogTrigger>
             <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
               <DialogHeader>
-                <DialogTitle>새 알림장 작성</DialogTitle>
+                <DialogTitle className="flex items-center gap-3">
+                  <Avatar className="h-10 w-10 border-2 border-gray-200">
+                    <AvatarImage 
+                      src={`https://api.dicebear.com/7.x/big-ears-neutral/svg?seed=${newEntry.petName || 'pet'}&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf&eyesColor=2563eb,7c3aed,dc2626,059669,ea580c&mouthColor=2563eb,7c3aed,dc2626,059669`} 
+                      alt={newEntry.petName || '반려동물'}
+                    />
+                    <AvatarFallback className="bg-blue-100 text-blue-600">
+                      <PawPrint className="h-4 w-4" />
+                    </AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <h2 className="text-xl font-bold">새 알림장 작성</h2>
+                    <p className="text-sm text-gray-600">{newEntry.petName || '반려동물'}의 일일 기록</p>
+                  </div>
+                </DialogTitle>
               </DialogHeader>
 
               <Tabs defaultValue="basic" className="w-full">
@@ -686,12 +944,87 @@ export default function NotebookPage() {
                 </TabsContent>
 
                 <TabsContent value="media" className="space-y-4">
-                  <div className="text-center p-8 border-2 border-dashed border-gray-300 rounded-lg">
-                    <Camera className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                    <p className="text-gray-600">사진이나 동영상을 업로드하세요</p>
-                    <Button variant="outline" className="mt-2">
-                      파일 선택
-                    </Button>
+                  <div className="space-y-4">
+                    {/* 이미지 업로드 섹션 */}
+                    <div>
+                      <label className="text-sm font-medium mb-2 block">사진 업로드</label>
+                      <div className="border-2 border-dashed border-gray-300 rounded-lg p-4">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          multiple
+                          onChange={handleImageUpload}
+                          className="hidden"
+                          id="image-upload"
+                        />
+                        <label htmlFor="image-upload" className="cursor-pointer flex flex-col items-center justify-center">
+                          <ImageIcon className="h-8 w-8 text-gray-400 mb-2" />
+                          <span className="text-sm text-gray-600">클릭하여 사진 선택</span>
+                          <span className="text-xs text-gray-500 mt-1">JPG, PNG 등 (최대 10MB)</span>
+                        </label>
+                      </div>
+                      {/* 업로드된 이미지 미리보기 */}
+                      {newEntry.photos.length > 0 && (
+                        <div className="grid grid-cols-3 gap-2 mt-3">
+                          {newEntry.photos.map((photo, index) => (
+                            <div key={index} className="relative">
+                              <img
+                                src={photo}
+                                alt={`Photo ${index + 1}`}
+                                className="w-full h-20 object-cover rounded-lg border"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => removePhoto(index)}
+                                className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs"
+                              >
+                                ×
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* 동영상 업로드 섹션 */}
+                    <div>
+                      <label className="text-sm font-medium mb-2 block">동영상 업로드</label>
+                      <div className="border-2 border-dashed border-gray-300 rounded-lg p-4">
+                        <input
+                          type="file"
+                          accept="video/*"
+                          multiple
+                          onChange={handleVideoUpload}
+                          className="hidden"
+                          id="video-upload"
+                        />
+                        <label htmlFor="video-upload" className="cursor-pointer flex flex-col items-center justify-center">
+                          <Video className="h-8 w-8 text-gray-400 mb-2" />
+                          <span className="text-sm text-gray-600">클릭하여 동영상 선택</span>
+                          <span className="text-xs text-gray-500 mt-1">MP4, AVI 등 (최대 50MB)</span>
+                        </label>
+                      </div>
+                      {/* 업로드된 동영상 미리보기 */}
+                      {newEntry.videos.length > 0 && (
+                        <div className="space-y-2 mt-3">
+                          {newEntry.videos.map((video, index) => (
+                            <div key={index} className="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
+                              <div className="flex items-center gap-2">
+                                <Video className="h-4 w-4 text-gray-500" />
+                                <span className="text-sm text-gray-700">동영상 {index + 1}</span>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => removeVideo(index)}
+                                className="text-red-500 hover:text-red-700 text-sm"
+                              >
+                                삭제
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </TabsContent>
 
@@ -741,72 +1074,163 @@ export default function NotebookPage() {
       {/* 필터 및 검색 */}
       <Card>
         <CardContent className="p-4">
-          <div className="flex flex-col lg:flex-row gap-4 items-center">
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-              <Input
-                placeholder="제목, 내용, 반려동물 이름으로 검색..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10"
-              />
+          <div className="flex flex-col gap-4">
+            {/* 첫 번째 줄: 검색 및 기본 필터 */}
+            <div className="flex flex-col lg:flex-row gap-4 items-center">
+              <div className="flex-1 relative">
+                <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                <Input
+                  placeholder="제목, 내용, 반려동물 이름으로 검색..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+
+              <div className="flex gap-2 items-center">
+                <div className="flex items-center gap-2">
+                  <Switch
+                    id="show-read"
+                    checked={showRead}
+                    onCheckedChange={setShowRead}
+                  />
+                  <label htmlFor="show-read" className="text-sm">읽음</label>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <Switch
+                    id="show-unread"
+                    checked={showUnread}
+                    onCheckedChange={setShowUnread}
+                  />
+                  <label htmlFor="show-unread" className="text-sm">안읽음</label>
+                </div>
+
+                <Select value={selectedPet} onValueChange={setSelectedPet}>
+                  <SelectTrigger className="w-32">
+                    <SelectValue placeholder="반려동물" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">모든 반려동물</SelectItem>
+                    <SelectItem value="pet1">멍멍이</SelectItem>
+                    <SelectItem value="pet2">야옹이</SelectItem>
+                  </SelectContent>
+                </Select>
+
+                <Select value={selectedTrainer} onValueChange={setSelectedTrainer}>
+                  <SelectTrigger className="w-32">
+                    <SelectValue placeholder="훈련사" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">모든 훈련사</SelectItem>
+                    <SelectItem value="trainer1">김민수</SelectItem>
+                    <SelectItem value="trainer2">이영희</SelectItem>
+                  </SelectContent>
+                </Select>
+
+                <Select value={sortBy} onValueChange={(value: 'date' | 'pet' | 'trainer') => setSortBy(value)}>
+                  <SelectTrigger className="w-24">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="date">날짜순</SelectItem>
+                    <SelectItem value="pet">반려동물순</SelectItem>
+                    <SelectItem value="trainer">훈련사순</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
-            <div className="flex gap-2 items-center">
+            {/* 두 번째 줄: 날짜 필터 */}
+            <div className="flex flex-col sm:flex-row gap-4 items-center border-t pt-4">
               <div className="flex items-center gap-2">
-                <Switch
-                  id="show-read"
-                  checked={showRead}
-                  onCheckedChange={setShowRead}
-                />
-                <label htmlFor="show-read" className="text-sm">읽음</label>
+                <CalendarDays className="h-4 w-4 text-gray-500" />
+                <span className="text-sm font-medium">날짜 필터:</span>
               </div>
 
-              <div className="flex items-center gap-2">
-                <Switch
-                  id="show-unread"
-                  checked={showUnread}
-                  onCheckedChange={setShowUnread}
-                />
-                <label htmlFor="show-unread" className="text-sm">안읽음</label>
+              <div className="flex gap-2 items-center">
+                <Button
+                  variant={dateFilterMode === 'all' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setDateFilterMode('all')}
+                >
+                  전체
+                </Button>
+                <Button
+                  variant={dateFilterMode === 'today' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setDateFilterMode('today')}
+                >
+                  오늘
+                </Button>
+                <Button
+                  variant={dateFilterMode === 'week' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setDateFilterMode('week')}
+                >
+                  이번 주
+                </Button>
+                <Button
+                  variant={dateFilterMode === 'month' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setDateFilterMode('month')}
+                >
+                  이번 달
+                </Button>
+                <Button
+                  variant={dateFilterMode === 'custom' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setShowCalendar(true)}
+                >
+                  날짜 선택
+                </Button>
               </div>
 
-              <Select value={selectedPet} onValueChange={setSelectedPet}>
-                <SelectTrigger className="w-32">
-                  <SelectValue placeholder="반려동물" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">모든 반려동물</SelectItem>
-                  <SelectItem value="pet1">멍멍이</SelectItem>
-                  <SelectItem value="pet2">야옹이</SelectItem>
-                </SelectContent>
-              </Select>
-
-              <Select value={selectedTrainer} onValueChange={setSelectedTrainer}>
-                <SelectTrigger className="w-32">
-                  <SelectValue placeholder="훈련사" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">모든 훈련사</SelectItem>
-                  <SelectItem value="trainer1">김민수</SelectItem>
-                  <SelectItem value="trainer2">이영희</SelectItem>
-                </SelectContent>
-              </Select>
-
-              <Select value={sortBy} onValueChange={(value: 'date' | 'pet' | 'trainer') => setSortBy(value)}>
-                <SelectTrigger className="w-24">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="date">날짜순</SelectItem>
-                  <SelectItem value="pet">반려동물순</SelectItem>
-                  <SelectItem value="trainer">훈련사순</SelectItem>
-                </SelectContent>
-              </Select>
+              {/* 선택된 날짜 표시 */}
+              {dateFilterMode === 'custom' && selectedCalendarDate && (
+                <div className="flex items-center gap-2 text-sm text-gray-600">
+                  <span>선택된 날짜:</span>
+                  <Badge variant="outline">
+                    {format(selectedCalendarDate, 'yyyy년 MM월 dd일', { locale: ko })}
+                  </Badge>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setSelectedCalendarDate(undefined);
+                      setDateFilterMode('all');
+                    }}
+                  >
+                    ×
+                  </Button>
+                </div>
+              )}
             </div>
           </div>
         </CardContent>
       </Card>
+
+      {/* 캘린더 다이얼로그 */}
+      <Dialog open={showCalendar} onOpenChange={setShowCalendar}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>날짜 선택</DialogTitle>
+          </DialogHeader>
+          <div className="flex justify-center">
+            <Calendar
+              mode="single"
+              selected={selectedCalendarDate}
+              onSelect={(date) => {
+                setSelectedCalendarDate(date);
+                setDateFilterMode('custom');
+                setShowCalendar(false);
+              }}
+              locale={ko}
+              className="rounded-md border"
+            />
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* 알림장 목록 */}
       <div className="space-y-4">
@@ -844,9 +1268,12 @@ export default function NotebookPage() {
               <CardHeader className="pb-3">
                 <div className="flex justify-between items-start">
                   <div className="flex items-center gap-3">
-                    <Avatar className="h-10 w-10">
-                      <AvatarImage src={`/images/pets/${entry.petId}.jpg`} />
-                      <AvatarFallback>
+                    <Avatar className="h-12 w-12 border-2 border-gray-200">
+                      <AvatarImage 
+                        src={`https://api.dicebear.com/7.x/big-ears${entry.petId === 'pet1' ? '-neutral' : ''}/svg?seed=${entry.petName}&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf&eyesColor=2563eb,7c3aed,dc2626,059669,ea580c&mouthColor=2563eb,7c3aed,dc2626,059669`} 
+                        alt={entry.petName}
+                      />
+                      <AvatarFallback className="bg-blue-100 text-blue-600">
                         <PawPrint className="h-5 w-5" />
                       </AvatarFallback>
                     </Avatar>
@@ -905,6 +1332,43 @@ export default function NotebookPage() {
                   </div>
                 )}
 
+                {/* 미디어 미리보기 */}
+                {(entry.photos.length > 0 || entry.videos.length > 0) && (
+                  <div className="space-y-2">
+                    <h4 className="text-sm font-medium text-gray-600">첨부 파일</h4>
+                    <div className="flex gap-2">
+                      {/* 이미지 미리보기 */}
+                      {entry.photos.slice(0, 3).map((photo, index) => (
+                        <div key={index} className="relative">
+                          <img
+                            src={photo}
+                            alt={`Photo ${index + 1}`}
+                            className="w-16 h-16 object-cover rounded-lg border border-gray-200"
+                          />
+                          {entry.photos.length > 3 && index === 2 && (
+                            <div className="absolute inset-0 bg-black bg-opacity-50 rounded-lg flex items-center justify-center">
+                              <span className="text-white text-xs font-medium">+{entry.photos.length - 3}</span>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                      {/* 동영상 미리보기 */}
+                      {entry.videos.slice(0, 2).map((video, index) => (
+                        <div key={index} className="relative">
+                          <div className="w-16 h-16 bg-gray-100 rounded-lg border border-gray-200 flex items-center justify-center">
+                            <Video className="h-6 w-6 text-gray-400" />
+                          </div>
+                          {entry.videos.length > 2 && index === 1 && (
+                            <div className="absolute -top-1 -right-1 bg-blue-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                              {entry.videos.length - 2}
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 {/* 추가 정보 */}
                 <div className="flex flex-wrap gap-4 text-xs text-gray-500">
                   {entry.location && (
@@ -925,6 +1389,19 @@ export default function NotebookPage() {
                       {entry.tags.join(', ')}
                     </span>
                   )}
+                  {/* 미디어 개수 표시 */}
+                  {entry.photos.length > 0 && (
+                    <span className="flex items-center gap-1">
+                      <Camera className="h-3 w-3" />
+                      {entry.photos.length}개 사진
+                    </span>
+                  )}
+                  {entry.videos.length > 0 && (
+                    <span className="flex items-center gap-1">
+                      <Video className="h-3 w-3" />
+                      {entry.videos.length}개 동영상
+                    </span>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -937,9 +1414,21 @@ export default function NotebookPage() {
         <Dialog open={!!selectedEntry} onOpenChange={() => setSelectedEntry(null)}>
           <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle className="flex items-center gap-2">
-                {selectedEntry.title}
-                <div className="text-xl">{moodEmojis[selectedEntry.mood]}</div>
+              <DialogTitle className="flex items-center gap-3">
+                <Avatar className="h-12 w-12 border-2 border-gray-200">
+                  <AvatarImage 
+                    src={`https://api.dicebear.com/7.x/big-ears${selectedEntry.petId === 'pet1' ? '-neutral' : ''}/svg?seed=${selectedEntry.petName}&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf&eyesColor=2563eb,7c3aed,dc2626,059669,ea580c&mouthColor=2563eb,7c3aed,dc2626,059669`} 
+                    alt={selectedEntry.petName}
+                  />
+                  <AvatarFallback className="bg-blue-100 text-blue-600">
+                    <PawPrint className="h-5 w-5" />
+                  </AvatarFallback>
+                </Avatar>
+                <div>
+                  <h2 className="text-xl font-bold">{selectedEntry.title}</h2>
+                  <p className="text-sm text-gray-600">{selectedEntry.petName}의 알림장</p>
+                </div>
+                <div className="text-2xl ml-auto">{moodEmojis[selectedEntry.mood]}</div>
               </DialogTitle>
             </DialogHeader>
 
@@ -948,7 +1437,10 @@ export default function NotebookPage() {
               <div className="grid grid-cols-2 gap-4 p-4 bg-gray-50 rounded-lg">
                 <div>
                   <span className="text-sm text-gray-600">반려동물:</span>
-                  <p className="font-medium">{selectedEntry.petName}</p>
+                  <div className="flex items-center gap-2 font-medium">
+                    <PawPrint className="h-4 w-4 text-blue-500" />
+                    {selectedEntry.petName}
+                  </div>
                 </div>
                 <div>
                   <span className="text-sm text-gray-600">훈련사:</span>

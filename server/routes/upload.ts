@@ -169,6 +169,38 @@ export function registerUploadRoutes(app: Express) {
     });
   });
 
+  app.post("/api/upload/video", (req: Request, res: Response) => {
+    uploadSingle(req, res, (err) => {
+      if (err) {
+        console.error('동영상 업로드 오류:', err);
+        return res.status(400).json({ 
+          success: false, 
+          message: err.message 
+        });
+      }
+
+      if (!req.file) {
+        return res.status(400).json({ 
+          success: false, 
+          message: '업로드할 동영상이 없습니다.' 
+        });
+      }
+      
+      const videoUrl = `/uploads/${req.file.filename}`;
+
+        // 동영상 접근 가능성 확인
+        console.log(`[Upload] 동영상 업로드 성공: ${videoUrl}`);
+
+        res.json({
+          success: true,
+          message: '동영상이 성공적으로 업로드되었습니다.',
+          videoUrl: videoUrl,
+          filename: req.file.filename,
+          fullUrl: `${req.protocol}://${req.get('host')}${videoUrl}` // 절대 URL도 제공
+        });
+    });
+  });
+
   // 파일 삭제
   app.delete("/api/upload/:filename", (req: Request, res: Response) => {
     if (!req.isAuthenticated()) {
