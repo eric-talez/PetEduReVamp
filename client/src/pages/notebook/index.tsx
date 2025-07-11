@@ -144,6 +144,7 @@ export default function NotebookPage() {
   const [selectedCalendarDate, setSelectedCalendarDate] = useState<Date | undefined>(undefined);
   const [showCalendar, setShowCalendar] = useState(false);
   const [dateFilterMode, setDateFilterMode] = useState<'all' | 'today' | 'week' | 'month' | 'custom'>('all');
+  const [activeTab, setActiveTab] = useState<'basic' | 'activities' | 'media' | 'ai'>('basic');
   
   // 파일 업로드 상태
   const [uploadedFiles, setUploadedFiles] = useState<{
@@ -1006,15 +1007,53 @@ export default function NotebookPage() {
                     </DialogTitle>
                   </DialogHeader>
 
-                  <Tabs defaultValue="basic" className="w-full">
-                    <TabsList className="grid w-full grid-cols-4 bg-gray-100 p-1 rounded-lg mb-4 border">
-                      <TabsTrigger value="basic" className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:shadow-sm">📝 기본 정보</TabsTrigger>
-                      <TabsTrigger value="activities" className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:shadow-sm">📊 활동 기록</TabsTrigger>
-                      <TabsTrigger value="media" className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:shadow-sm">📸 미디어</TabsTrigger>
-                      <TabsTrigger value="ai" className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:shadow-sm">🤖 AI 도우미</TabsTrigger>
-                    </TabsList>
+                  {/* Tab Navigation */}
+                  <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg mb-4">
+                    <button 
+                      onClick={() => setActiveTab('basic')}
+                      className={`flex-1 py-2 px-3 text-sm font-medium rounded-md transition-colors ${
+                        activeTab === 'basic' 
+                          ? 'bg-white shadow-sm text-gray-900' 
+                          : 'text-gray-600 hover:text-gray-900'
+                      }`}
+                    >
+                      📝 기본 정보
+                    </button>
+                    <button 
+                      onClick={() => setActiveTab('activities')}
+                      className={`flex-1 py-2 px-3 text-sm font-medium rounded-md transition-colors ${
+                        activeTab === 'activities' 
+                          ? 'bg-white shadow-sm text-gray-900' 
+                          : 'text-gray-600 hover:text-gray-900'
+                      }`}
+                    >
+                      📊 활동 기록
+                    </button>
+                    <button 
+                      onClick={() => setActiveTab('media')}
+                      className={`flex-1 py-2 px-3 text-sm font-medium rounded-md transition-colors ${
+                        activeTab === 'media' 
+                          ? 'bg-white shadow-sm text-gray-900' 
+                          : 'text-gray-600 hover:text-gray-900'
+                      }`}
+                    >
+                      📸 미디어
+                    </button>
+                    <button 
+                      onClick={() => setActiveTab('ai')}
+                      className={`flex-1 py-2 px-3 text-sm font-medium rounded-md transition-colors ${
+                        activeTab === 'ai' 
+                          ? 'bg-white shadow-sm text-gray-900' 
+                          : 'text-gray-600 hover:text-gray-900'
+                      }`}
+                    >
+                      🤖 AI 도우미
+                    </button>
+                  </div>
 
-                    <TabsContent value="basic" className="space-y-4">
+                  {/* Tab Content */}
+                  {activeTab === 'basic' && (
+                    <div className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="text-sm font-medium mb-2 block">반려동물 이름 *</label>
@@ -1088,9 +1127,11 @@ export default function NotebookPage() {
                       />
                     </div>
                   </div>
-                </TabsContent>
+                    </div>
+                  )}
 
-                <TabsContent value="activities" className="space-y-4">
+                  {activeTab === 'activities' && (
+                    <div className="space-y-4">
                   <div className="space-y-6">
                     <div className="bg-blue-50 p-4 rounded-lg mb-4">
                       <h2 className="text-lg font-semibold text-blue-800 mb-2">📊 상세 활동 추적 시스템</h2>
@@ -1527,9 +1568,11 @@ export default function NotebookPage() {
                       />
                     </div>
                   </div>
-                </TabsContent>
+                    </div>
+                  )}
 
-                <TabsContent value="media" className="space-y-4">
+                  {activeTab === 'media' && (
+                    <div className="space-y-4">
                   <div className="space-y-6">
                     {/* 이미지 업로드 섹션 */}
                     <div>
@@ -1674,9 +1717,11 @@ export default function NotebookPage() {
                       </ul>
                     </div>
                   </div>
-                </TabsContent>
+                    </div>
+                  )}
 
-                <TabsContent value="ai" className="space-y-4">
+                  {activeTab === 'ai' && (
+                    <div className="space-y-4">
                   <div className="text-center p-8 border border-blue-200 rounded-lg bg-blue-50">
                     <Sparkles className="h-12 w-12 text-blue-600 mx-auto mb-4" />
                     <h3 className="text-lg font-semibold mb-2">AI 알림장 도우미</h3>
@@ -1703,8 +1748,8 @@ export default function NotebookPage() {
                       {loading ? '생성 중...' : 'AI로 내용 생성'}
                     </Button>
                   </div>
-                </TabsContent>
-              </Tabs>
+                    </div>
+                  )}
 
               <div className="flex justify-end gap-3 pt-4 border-t">
                 <Button variant="outline" onClick={() => setIsNewEntryOpen(false)}>
