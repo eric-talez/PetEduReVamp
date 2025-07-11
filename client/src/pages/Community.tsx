@@ -26,12 +26,15 @@ export default function Community() {
   });
 
   const posts = communityData?.posts || [];
+  console.log('Community 컴포넌트 - posts:', posts);
+  console.log('Community 컴포넌트 - posts 길이:', posts.length);
   
   const filteredPosts = posts.filter(post => 
     post.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
     post.content.toLowerCase().includes(searchTerm.toLowerCase()) ||
     post.author?.name?.toLowerCase().includes(searchTerm.toLowerCase())
   );
+  console.log('Community 컴포넌트 - filteredPosts:', filteredPosts.length);
 
   return (
     <div>
@@ -63,7 +66,7 @@ export default function Community() {
         </div>
       </div>
 
-      <Tabs defaultValue="popular" className="mb-8">
+      <Tabs defaultValue="recent" className="mb-8">
         <TabsList>
           <TabsTrigger value="popular">
             <TrendingUp className="w-4 h-4 mr-2" />
