@@ -52,20 +52,28 @@ export default function NotebookMonitorPage() {
     start: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
     end: new Date().toISOString().split('T')[0]
   });
+  const [timeRange, setTimeRange] = useState({
+    startTime: '00:00',
+    endTime: '23:59'
+  });
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [isTrainerDetailOpen, setIsTrainerDetailOpen] = useState(false);
 
   // API 호출로 알림장 현황 가져오기
   const { data: notebookStatus, isLoading, refetch } = useQuery<NotebookStatus>({
-    queryKey: ['/api/admin/notebook/status', dateRange.start, dateRange.end],
+    queryKey: ['/api/admin/notebook/status', dateRange.start, dateRange.end, timeRange.startTime, timeRange.endTime],
     queryFn: async () => {
-      const response = await fetch(`/api/admin/notebook/status?startDate=${dateRange.start}&endDate=${dateRange.end}`);
+      const response = await fetch(`/api/admin/notebook/status?startDate=${dateRange.start}&endDate=${dateRange.end}&startTime=${timeRange.startTime}&endTime=${timeRange.endTime}`);
       return response.json();
     }
   });
 
   const handleDateRangeChange = (field: 'start' | 'end', value: string) => {
     setDateRange(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleTimeRangeChange = (field: 'startTime' | 'endTime', value: string) => {
+    setTimeRange(prev => ({ ...prev, [field]: value }));
   };
 
   const handleTrainerDetail = (trainer: TrainerStats) => {
@@ -133,7 +141,7 @@ export default function NotebookMonitorPage() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 items-end">
             <div>
               <Label htmlFor="startDate">시작일</Label>
               <Input
@@ -150,6 +158,24 @@ export default function NotebookMonitorPage() {
                 type="date"
                 value={dateRange.end}
                 onChange={(e) => handleDateRangeChange('end', e.target.value)}
+              />
+            </div>
+            <div>
+              <Label htmlFor="startTime">시작 시간</Label>
+              <Input
+                id="startTime"
+                type="time"
+                value={timeRange.startTime}
+                onChange={(e) => handleTimeRangeChange('startTime', e.target.value)}
+              />
+            </div>
+            <div>
+              <Label htmlFor="endTime">종료 시간</Label>
+              <Input
+                id="endTime"
+                type="time"
+                value={timeRange.endTime}
+                onChange={(e) => handleTimeRangeChange('endTime', e.target.value)}
               />
             </div>
             <div className="flex space-x-2">
@@ -177,6 +203,60 @@ export default function NotebookMonitorPage() {
                 </DialogContent>
               </Dialog>
             </div>
+          </div>
+          
+          {/* 빠른 시간 설정 버튼들 */}
+          <div className="mt-4 flex flex-wrap gap-2">
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => {
+                setTimeRange({ startTime: '00:00', endTime: '23:59' });
+                refetch();
+              }}
+            >
+              전체 시간
+            </Button>
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => {
+                setTimeRange({ startTime: '09:00', endTime: '18:00' });
+                refetch();
+              }}
+            >
+              업무 시간 (09:00-18:00)
+            </Button>
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => {
+                setTimeRange({ startTime: '06:00', endTime: '12:00' });
+                refetch();
+              }}
+            >
+              오전 (06:00-12:00)
+            </Button>
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => {
+                setTimeRange({ startTime: '12:00', endTime: '18:00' });
+                refetch();
+              }}
+            >
+              오후 (12:00-18:00)
+            </Button>
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => {
+                setTimeRange({ startTime: '18:00', endTime: '23:59' });
+                refetch();
+              }}
+            >
+              저녁 (18:00-23:59)
+            </Button>
           </div>
         </CardContent>
       </Card>
