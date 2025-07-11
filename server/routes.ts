@@ -6,6 +6,8 @@ import { registerDashboardRoutes } from "./routes/dashboard";
 import { registerAdminRoutes } from "./routes/admin";
 // import { errorHandler } from "./middleware/error-handler";
 import { registerShoppingRoutes } from "./routes/shopping";
+import { productRoutes } from "./routes/products";
+import { simpleProductRoutes } from "./routes/simple-products";
 // import { registerNotificationRoutes } from "./routes/notification-routes";
 import { registerUploadRoutes } from "./routes/upload";
 import { registerLocationRoutes } from "./location/routes";
@@ -2100,6 +2102,29 @@ app.get('/api/search', async (req, res) => {
 
   // 파일 업로드 라우트
   registerUploadRoutes(app);
+
+  // 상품 API 라우트 등록 (높은 우선순위)
+  app.use('/api', productRoutes);
+  app.use('/api', simpleProductRoutes);
+  
+  // API 라우트 직접 등록 (Vite 미들웨어보다 먼저 처리되도록)
+  app.get('/api/test-products', async (req, res) => {
+    try {
+      const result = await db.select().from(products).limit(5);
+      res.json({
+        success: true,
+        message: 'API 라우트가 정상적으로 작동합니다.',
+        products: result,
+        count: result.length
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        error: '데이터베이스 연결 오류',
+        details: error.message
+      });
+    }
+  });
 
   // 메시징 라우트 등록
   const httpServer = createServer(app);

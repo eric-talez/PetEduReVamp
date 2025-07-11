@@ -121,6 +121,83 @@ export const reservations = pgTable("reservations", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// 상품 테이블 (실제 데이터베이스 구조에 맞게 수정)
+export const products = pgTable("products", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 200 }).notNull(),
+  description: text("description"),
+  price: integer("price").notNull(),
+  discount_price: integer("discount_price"),
+  category_id: integer("category_id"),
+  images: jsonb("images"),
+  tags: jsonb("tags"),
+  stock: integer("stock").default(0),
+  is_active: boolean("is_active").default(true),
+  rating: integer("rating").default(0),
+  review_count: integer("review_count").default(0),
+  created_at: timestamp("created_at").defaultNow(),
+  updated_at: timestamp("updated_at").defaultNow(),
+});
+
+// 상품 노출 연결 테이블
+export const productExposures = pgTable("product_exposures", {
+  id: serial("id").primaryKey(),
+  productId: integer("product_id").references(() => products.id),
+  exposureType: varchar("exposure_type", { length: 50 }).notNull(), // homepage, category, search, promotion
+  position: integer("position").default(0),
+  priority: integer("priority").default(5),
+  isActive: boolean("is_active").default(true),
+  startDate: timestamp("start_date"),
+  endDate: timestamp("end_date"),
+  targetAudience: varchar("target_audience", { length: 100 }),
+  clickCount: integer("click_count").default(0),
+  impressionCount: integer("impression_count").default(0),
+  conversionRate: decimal("conversion_rate", { precision: 5, scale: 2 }).default("0"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// 쇼핑 카트 테이블
+export const shoppingCarts = pgTable("shopping_carts", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id),
+  productId: integer("product_id").references(() => products.id),
+  quantity: integer("quantity").default(1),
+  price: decimal("price", { precision: 10, scale: 2 }),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// 주문 테이블
+export const orders = pgTable("orders", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id),
+  orderNumber: varchar("order_number", { length: 50 }).unique().notNull(),
+  status: varchar("status", { length: 50 }).default("pending"),
+  totalAmount: decimal("total_amount", { precision: 12, scale: 2 }).notNull(),
+  shippingAmount: decimal("shipping_amount", { precision: 10, scale: 2 }).default("0"),
+  taxAmount: decimal("tax_amount", { precision: 10, scale: 2 }).default("0"),
+  discountAmount: decimal("discount_amount", { precision: 10, scale: 2 }).default("0"),
+  paymentMethod: varchar("payment_method", { length: 50 }),
+  paymentStatus: varchar("payment_status", { length: 50 }).default("pending"),
+  shippingAddress: jsonb("shipping_address"),
+  billingAddress: jsonb("billing_address"),
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// 주문 아이템 테이블
+export const orderItems = pgTable("order_items", {
+  id: serial("id").primaryKey(),
+  orderId: integer("order_id").references(() => orders.id),
+  productId: integer("product_id").references(() => products.id),
+  quantity: integer("quantity").notNull(),
+  price: decimal("price", { precision: 10, scale: 2 }).notNull(),
+  totalPrice: decimal("total_price", { precision: 10, scale: 2 }).notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // 알림 테이블
 export const notifications = pgTable("notifications", {
   id: serial("id").primaryKey(),
@@ -245,16 +322,7 @@ export const shopCategories = pgTable("shop_categories", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
-export const products = pgTable("products", {
-  id: serial("id").primaryKey(),
-  name: varchar("name", { length: 200 }).notNull(),
-  description: text("description"),
-  price: decimal("price", { precision: 10, scale: 2 }).notNull(),
-  categoryId: integer("category_id").references(() => shopCategories.id),
-  stock: integer("stock").default(0),
-  isActive: boolean("is_active").default(true),
-  createdAt: timestamp("created_at").defaultNow(),
-});
+
 
 export const cartItems = pgTable("cart_items", {
   id: serial("id").primaryKey(),
@@ -619,3 +687,35 @@ export type InsertTrainerProgram = typeof trainerPrograms.$inferInsert;
 
 export type TrainerProgramEnrollment = typeof trainerProgramEnrollments.$inferSelect;
 export type InsertTrainerProgramEnrollment = typeof trainerProgramEnrollments.$inferInsert;
+
+// 상품 관련 타입 정의
+export type Product = typeof products.$inferSelect;
+export type InsertProduct = typeof products.$inferInsert;
+
+export type ProductExposure = typeof productExposures.$inferSelect;
+export type InsertProductExposure = typeof productExposures.$inferInsert;
+
+export type ShoppingCart = typeof shoppingCarts.$inferSelect;
+export type InsertShoppingCart = typeof shoppingCarts.$inferInsert;
+
+export type Order = typeof orders.$inferSelect;
+export type InsertOrder = typeof orders.$inferInsert;
+
+export type OrderItem = typeof orderItems.$inferSelect;
+export type InsertOrderItem = typeof orderItems.$inferInsert;
+
+// 상품 관련 Zod 스키마
+export const insertProductSchema = createInsertSchema(products);
+export const selectProductSchema = createSelectSchema(products);
+
+export const insertProductExposureSchema = createInsertSchema(productExposures);
+export const selectProductExposureSchema = createSelectSchema(productExposures);
+
+export const insertShoppingCartSchema = createInsertSchema(shoppingCarts);
+export const selectShoppingCartSchema = createSelectSchema(shoppingCarts);
+
+export const insertOrderSchema = createInsertSchema(orders);
+export const selectOrderSchema = createSelectSchema(orders);
+
+export const insertOrderItemSchema = createInsertSchema(orderItems);
+export const selectOrderItemSchema = createSelectSchema(orderItems);
