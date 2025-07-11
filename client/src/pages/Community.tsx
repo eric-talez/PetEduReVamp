@@ -40,6 +40,14 @@ export default function Community() {
     <div>
       <h1 className="text-2xl font-bold mb-6">커뮤니티</h1>
       
+      {/* 디버깅 정보 표시 */}
+      <div className="mb-4 p-4 bg-yellow-100 rounded-lg">
+        <p>로딩 상태: {isLoading ? '로딩 중...' : '로딩 완료'}</p>
+        <p>전체 게시글 수: {posts.length}</p>
+        <p>필터링된 게시글 수: {filteredPosts.length}</p>
+        <p>검색어: "{searchTerm}"</p>
+      </div>
+      
       <div className="mb-8">
         <div className="flex flex-col md:flex-row gap-4 mb-4">
           <div className="relative w-full md:w-1/2">
