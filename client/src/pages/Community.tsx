@@ -34,7 +34,8 @@ export default function Community() {
     post.content.toLowerCase().includes(searchTerm.toLowerCase()) ||
     post.author?.name?.toLowerCase().includes(searchTerm.toLowerCase())
   );
-  console.log('Community 컴포넌트 - filteredPosts:', filteredPosts.length);
+  console.log('Community 컴포넌트 - filteredPosts 길이:', filteredPosts.length);
+  console.log('Community 컴포넌트 - filteredPosts 내용:', filteredPosts);
 
   return (
     <div>
@@ -46,6 +47,13 @@ export default function Community() {
         <p>전체 게시글 수: {posts.length}</p>
         <p>필터링된 게시글 수: {filteredPosts.length}</p>
         <p>검색어: "{searchTerm}"</p>
+        {posts.length > 0 && (
+          <div className="mt-4 p-2 bg-blue-100 rounded">
+            <p className="font-semibold">첫 번째 게시글:</p>
+            <p>제목: {posts[0].title}</p>
+            <p>작성자: {posts[0].author?.name || '익명'}</p>
+          </div>
+        )}
       </div>
       
       <div className="mb-8">
