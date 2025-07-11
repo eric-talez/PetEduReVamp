@@ -448,6 +448,96 @@ export default function TrainerNotebookPage() {
                 {/* Activities Tab */}
                 {activeTab === 'activities' && (
                   <div className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-3">
+                        <Label className="text-sm font-medium">배변 활동</Label>
+                        <div className="space-y-2">
+                          <div className="flex items-center space-x-2">
+                            <input type="checkbox" id="bathroom-morning" className="rounded" />
+                            <Label htmlFor="bathroom-morning" className="text-sm">아침 배변</Label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <input type="checkbox" id="bathroom-afternoon" className="rounded" />
+                            <Label htmlFor="bathroom-afternoon" className="text-sm">오후 배변</Label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <input type="checkbox" id="bathroom-evening" className="rounded" />
+                            <Label htmlFor="bathroom-evening" className="text-sm">저녁 배변</Label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <input type="checkbox" id="bathroom-accident" className="rounded" />
+                            <Label htmlFor="bathroom-accident" className="text-sm">실수 발생</Label>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="space-y-3">
+                        <Label className="text-sm font-medium">놀이 활동</Label>
+                        <div className="space-y-2">
+                          <div className="flex items-center space-x-2">
+                            <input type="checkbox" id="play-fetch" className="rounded" />
+                            <Label htmlFor="play-fetch" className="text-sm">공 던지기</Label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <input type="checkbox" id="play-tug" className="rounded" />
+                            <Label htmlFor="play-tug" className="text-sm">줄다리기</Label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <input type="checkbox" id="play-puzzle" className="rounded" />
+                            <Label htmlFor="play-puzzle" className="text-sm">퍼즐 놀이</Label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <input type="checkbox" id="play-social" className="rounded" />
+                            <Label htmlFor="play-social" className="text-sm">사회화 놀이</Label>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="space-y-3">
+                        <Label className="text-sm font-medium">산책 활동</Label>
+                        <div className="space-y-2">
+                          <div className="flex items-center space-x-2">
+                            <input type="checkbox" id="walk-morning" className="rounded" />
+                            <Label htmlFor="walk-morning" className="text-sm">아침 산책</Label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <input type="checkbox" id="walk-afternoon" className="rounded" />
+                            <Label htmlFor="walk-afternoon" className="text-sm">오후 산책</Label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <input type="checkbox" id="walk-evening" className="rounded" />
+                            <Label htmlFor="walk-evening" className="text-sm">저녁 산책</Label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <input type="number" id="walk-duration" className="w-16 px-2 py-1 border rounded text-sm" placeholder="30" />
+                            <Label htmlFor="walk-duration" className="text-sm">분</Label>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="space-y-3">
+                        <Label className="text-sm font-medium">식사 활동</Label>
+                        <div className="space-y-2">
+                          <div className="flex items-center space-x-2">
+                            <input type="checkbox" id="meal-breakfast" className="rounded" />
+                            <Label htmlFor="meal-breakfast" className="text-sm">아침 식사</Label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <input type="checkbox" id="meal-lunch" className="rounded" />
+                            <Label htmlFor="meal-lunch" className="text-sm">점심 식사</Label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <input type="checkbox" id="meal-dinner" className="rounded" />
+                            <Label htmlFor="meal-dinner" className="text-sm">저녁 식사</Label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <input type="checkbox" id="meal-snack" className="rounded" />
+                            <Label htmlFor="meal-snack" className="text-sm">간식</Label>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
                     <div>
                       <Label htmlFor="behavior">행동 특이사항</Label>
                       <Textarea 
