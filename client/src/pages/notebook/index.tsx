@@ -59,10 +59,34 @@ interface NotebookEntry {
   title: string;
   content: string;
   activities: {
-    training?: string[];
-    play?: string[];
-    meal?: string[];
-    health?: string[];
+    training?: {
+      type?: string;
+      focus?: string;
+      achievement?: string;
+    };
+    play?: {
+      duration?: string;
+      type?: string;
+      intensity?: string;
+    };
+    meal?: {
+      frequency?: string;
+      amount?: string;
+      time1?: string;
+      time2?: string;
+      snacks?: string;
+    };
+    health?: {
+      weight?: string;
+      temperature?: string;
+      water?: string;
+      special?: string;
+    };
+    bathroom?: {
+      urination?: string;
+      defecation?: string;
+      condition?: string;
+    };
     behavior?: string[];
   };
   mood: 'excellent' | 'good' | 'normal' | 'tired' | 'anxious';
@@ -87,6 +111,13 @@ interface NotebookTemplate {
   activities: string[];
   defaultContent: string;
   tags: string[];
+  activityPreset?: {
+    training?: { type?: string; focus?: string; achievement?: string; };
+    play?: { duration?: string; type?: string; intensity?: string; };
+    meal?: { frequency?: string; amount?: string; time1?: string; time2?: string; snacks?: string; };
+    health?: { weight?: string; temperature?: string; water?: string; special?: string; };
+    bathroom?: { urination?: string; defecation?: string; condition?: string; };
+  };
 }
 
 export default function NotebookPage() {
@@ -133,10 +164,34 @@ export default function NotebookPage() {
     title: '',
     content: '',
     activities: {
-      training: [] as string[],
-      play: [] as string[],
-      meal: [] as string[],
-      health: [] as string[],
+      training: {
+        type: 'basic' as string,
+        focus: 'medium' as string,
+        achievement: 'medium' as string
+      },
+      play: {
+        duration: '30' as string,
+        type: 'fetch' as string,
+        intensity: 'medium' as string
+      },
+      meal: {
+        frequency: '2' as string,
+        amount: 'normal' as string,
+        time1: '' as string,
+        time2: '' as string,
+        snacks: '0' as string
+      },
+      health: {
+        weight: '' as string,
+        temperature: '' as string,
+        water: 'normal' as string,
+        special: 'none' as string
+      },
+      bathroom: {
+        urination: '0' as string,
+        defecation: '0' as string,
+        condition: 'normal' as string
+      },
       behavior: [] as string[]
     },
     mood: 'good' as NotebookEntry['mood'],
@@ -158,7 +213,14 @@ export default function NotebookPage() {
       description: '일반적인 반려동물 기본 훈련 세션용',
       activities: ['기본 명령어', '리드줄 훈련', '사회화 훈련'],
       defaultContent: '오늘 {petName}는 기본 훈련을 진행했습니다.',
-      tags: ['기본훈련', '초급']
+      tags: ['기본훈련', '초급'],
+      activityPreset: {
+        training: { type: 'basic', focus: 'high', achievement: 'good' },
+        play: { duration: '60', type: 'fetch', intensity: 'medium' },
+        meal: { frequency: '2', amount: 'normal', time1: '08:00', time2: '18:00', snacks: '1' },
+        health: { water: 'normal', special: 'none' },
+        bathroom: { urination: '4', defecation: '2', condition: 'normal' }
+      }
     },
     {
       id: 'behavior-correction',
@@ -166,7 +228,14 @@ export default function NotebookPage() {
       description: '문제 행동 교정을 위한 세션용',
       activities: ['문제행동 분석', '교정 훈련', '대안행동 제시'],
       defaultContent: '{petName}의 행동 교정을 위한 훈련을 실시했습니다.',
-      tags: ['행동교정', '치료']
+      tags: ['행동교정', '치료'],
+      activityPreset: {
+        training: { type: 'behavior', focus: 'medium', achievement: 'fair' },
+        play: { duration: '30', type: 'puzzle', intensity: 'low' },
+        meal: { frequency: '2', amount: 'normal', time1: '09:00', time2: '19:00', snacks: '0' },
+        health: { water: 'normal', special: 'none' },
+        bathroom: { urination: '3', defecation: '1', condition: 'normal' }
+      }
     },
     {
       id: 'socialization',
@@ -174,7 +243,14 @@ export default function NotebookPage() {
       description: '다른 동물이나 사람과의 사회화 훈련용',
       activities: ['타 반려동물과의 만남', '사람과의 교감', '환경 적응'],
       defaultContent: '{petName}의 사회화 능력 향상을 위한 훈련을 진행했습니다.',
-      tags: ['사회화', '적응']
+      tags: ['사회화', '적응'],
+      activityPreset: {
+        training: { type: 'socialization', focus: 'high', achievement: 'good' },
+        play: { duration: '90', type: 'social', intensity: 'medium' },
+        meal: { frequency: '2', amount: 'normal', time1: '07:30', time2: '17:30', snacks: '2' },
+        health: { water: 'normal', special: 'none' },
+        bathroom: { urination: '5', defecation: '2', condition: 'normal' }
+      }
     }
   ];
 
@@ -786,7 +862,7 @@ export default function NotebookPage() {
       tags: template.tags,
       activities: {
         ...prev.activities,
-        training: template.activities
+        ...(template.activityPreset || {})
       }
     }));
 
@@ -1015,14 +1091,436 @@ export default function NotebookPage() {
                 </TabsContent>
 
                 <TabsContent value="activities" className="space-y-4">
-                  <div>
-                    <label className="text-sm font-medium mb-2 block">특별 노트</label>
-                    <Textarea
-                      value={newEntry.notes}
-                      onChange={(e) => setNewEntry(prev => ({ ...prev, notes: e.target.value }))}
-                      placeholder="특별히 기록하고 싶은 내용이나 다음 세션을 위한 메모"
-                      rows={4}
-                    />
+                  <div className="space-y-6">
+                    {/* 배변 활동 */}
+                    <div className="p-4 border rounded-lg">
+                      <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                        <div className="w-8 h-8 bg-amber-100 rounded-full flex items-center justify-center">
+                          🚽
+                        </div>
+                        배변 활동
+                      </h3>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                          <label className="text-sm font-medium mb-2 block">소변 횟수</label>
+                          <Select value={newEntry.activities.bathroom?.urination || '0'} onValueChange={(value) => setNewEntry(prev => ({
+                            ...prev,
+                            activities: {
+                              ...prev.activities,
+                              bathroom: { ...prev.activities.bathroom, urination: value }
+                            }
+                          }))}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="횟수 선택" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {[0, 1, 2, 3, 4, 5, 6, 7, 8].map(num => (
+                                <SelectItem key={num} value={num.toString()}>{num}회</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div>
+                          <label className="text-sm font-medium mb-2 block">대변 횟수</label>
+                          <Select value={newEntry.activities.bathroom?.defecation || '0'} onValueChange={(value) => setNewEntry(prev => ({
+                            ...prev,
+                            activities: {
+                              ...prev.activities,
+                              bathroom: { ...prev.activities.bathroom, defecation: value }
+                            }
+                          }))}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="횟수 선택" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {[0, 1, 2, 3, 4, 5].map(num => (
+                                <SelectItem key={num} value={num.toString()}>{num}회</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div>
+                          <label className="text-sm font-medium mb-2 block">배변 상태</label>
+                          <Select value={newEntry.activities.bathroom?.condition || 'normal'} onValueChange={(value) => setNewEntry(prev => ({
+                            ...prev,
+                            activities: {
+                              ...prev.activities,
+                              bathroom: { ...prev.activities.bathroom, condition: value }
+                            }
+                          }))}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="상태 선택" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="normal">정상</SelectItem>
+                              <SelectItem value="soft">무른편</SelectItem>
+                              <SelectItem value="hard">딱딱함</SelectItem>
+                              <SelectItem value="diarrhea">설사</SelectItem>
+                              <SelectItem value="constipation">변비</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* 식사 활동 */}
+                    <div className="p-4 border rounded-lg">
+                      <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                        <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                          🍽️
+                        </div>
+                        식사 활동
+                      </h3>
+                      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div>
+                          <label className="text-sm font-medium mb-2 block">식사 횟수</label>
+                          <Select value={newEntry.activities.meal?.frequency || '2'} onValueChange={(value) => setNewEntry(prev => ({
+                            ...prev,
+                            activities: {
+                              ...prev.activities,
+                              meal: { ...prev.activities.meal, frequency: value }
+                            }
+                          }))}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="횟수 선택" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {[1, 2, 3, 4, 5, 6].map(num => (
+                                <SelectItem key={num} value={num.toString()}>{num}회</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div>
+                          <label className="text-sm font-medium mb-2 block">식사량</label>
+                          <Select value={newEntry.activities.meal?.amount || 'normal'} onValueChange={(value) => setNewEntry(prev => ({
+                            ...prev,
+                            activities: {
+                              ...prev.activities,
+                              meal: { ...prev.activities.meal, amount: value }
+                            }
+                          }))}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="양 선택" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="none">안먹음</SelectItem>
+                              <SelectItem value="little">조금</SelectItem>
+                              <SelectItem value="normal">보통</SelectItem>
+                              <SelectItem value="much">많이</SelectItem>
+                              <SelectItem value="all">완식</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div>
+                          <label className="text-sm font-medium mb-2 block">식사 시간</label>
+                          <div className="space-y-2">
+                            <Input
+                              type="time"
+                              value={newEntry.activities.meal?.time1 || ''}
+                              onChange={(e) => setNewEntry(prev => ({
+                                ...prev,
+                                activities: {
+                                  ...prev.activities,
+                                  meal: { ...prev.activities.meal, time1: e.target.value }
+                                }
+                              }))}
+                              placeholder="첫 번째 식사"
+                            />
+                            <Input
+                              type="time"
+                              value={newEntry.activities.meal?.time2 || ''}
+                              onChange={(e) => setNewEntry(prev => ({
+                                ...prev,
+                                activities: {
+                                  ...prev.activities,
+                                  meal: { ...prev.activities.meal, time2: e.target.value }
+                                }
+                              }))}
+                              placeholder="두 번째 식사"
+                            />
+                          </div>
+                        </div>
+                        <div>
+                          <label className="text-sm font-medium mb-2 block">간식 횟수</label>
+                          <Select value={newEntry.activities.meal?.snacks || '0'} onValueChange={(value) => setNewEntry(prev => ({
+                            ...prev,
+                            activities: {
+                              ...prev.activities,
+                              meal: { ...prev.activities.meal, snacks: value }
+                            }
+                          }))}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="간식 횟수" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {[0, 1, 2, 3, 4, 5].map(num => (
+                                <SelectItem key={num} value={num.toString()}>{num}회</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* 놀이 활동 */}
+                    <div className="p-4 border rounded-lg">
+                      <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                        <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                          🎾
+                        </div>
+                        놀이 활동
+                      </h3>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                          <label className="text-sm font-medium mb-2 block">놀이 시간 (분)</label>
+                          <Select value={newEntry.activities.play?.duration || '30'} onValueChange={(value) => setNewEntry(prev => ({
+                            ...prev,
+                            activities: {
+                              ...prev.activities,
+                              play: { ...prev.activities.play, duration: value }
+                            }
+                          }))}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="시간 선택" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="0">0분</SelectItem>
+                              <SelectItem value="15">15분</SelectItem>
+                              <SelectItem value="30">30분</SelectItem>
+                              <SelectItem value="60">1시간</SelectItem>
+                              <SelectItem value="90">1시간 30분</SelectItem>
+                              <SelectItem value="120">2시간</SelectItem>
+                              <SelectItem value="180">3시간 이상</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div>
+                          <label className="text-sm font-medium mb-2 block">놀이 종류</label>
+                          <Select value={newEntry.activities.play?.type || 'fetch'} onValueChange={(value) => setNewEntry(prev => ({
+                            ...prev,
+                            activities: {
+                              ...prev.activities,
+                              play: { ...prev.activities.play, type: value }
+                            }
+                          }))}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="놀이 선택" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="fetch">공 던지기</SelectItem>
+                              <SelectItem value="tugwar">줄다리기</SelectItem>
+                              <SelectItem value="running">달리기</SelectItem>
+                              <SelectItem value="walking">산책</SelectItem>
+                              <SelectItem value="swimming">수영</SelectItem>
+                              <SelectItem value="puzzle">퍼즐게임</SelectItem>
+                              <SelectItem value="social">사회화놀이</SelectItem>
+                              <SelectItem value="other">기타</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div>
+                          <label className="text-sm font-medium mb-2 block">활동 강도</label>
+                          <Select value={newEntry.activities.play?.intensity || 'medium'} onValueChange={(value) => setNewEntry(prev => ({
+                            ...prev,
+                            activities: {
+                              ...prev.activities,
+                              play: { ...prev.activities.play, intensity: value }
+                            }
+                          }))}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="강도 선택" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="low">낮음</SelectItem>
+                              <SelectItem value="medium">보통</SelectItem>
+                              <SelectItem value="high">높음</SelectItem>
+                              <SelectItem value="very-high">매우 높음</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* 건강 체크 */}
+                    <div className="p-4 border rounded-lg">
+                      <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                        <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center">
+                          🏥
+                        </div>
+                        건강 체크
+                      </h3>
+                      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div>
+                          <label className="text-sm font-medium mb-2 block">체중 (kg)</label>
+                          <Input
+                            type="number"
+                            step="0.1"
+                            value={newEntry.activities.health?.weight || ''}
+                            onChange={(e) => setNewEntry(prev => ({
+                              ...prev,
+                              activities: {
+                                ...prev.activities,
+                                health: { ...prev.activities.health, weight: e.target.value }
+                              }
+                            }))}
+                            placeholder="예: 25.5"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-sm font-medium mb-2 block">체온 (°C)</label>
+                          <Input
+                            type="number"
+                            step="0.1"
+                            value={newEntry.activities.health?.temperature || ''}
+                            onChange={(e) => setNewEntry(prev => ({
+                              ...prev,
+                              activities: {
+                                ...prev.activities,
+                                health: { ...prev.activities.health, temperature: e.target.value }
+                              }
+                            }))}
+                            placeholder="예: 38.5"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-sm font-medium mb-2 block">수분 섭취</label>
+                          <Select value={newEntry.activities.health?.water || 'normal'} onValueChange={(value) => setNewEntry(prev => ({
+                            ...prev,
+                            activities: {
+                              ...prev.activities,
+                              health: { ...prev.activities.health, water: value }
+                            }
+                          }))}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="수분 섭취량" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="none">안마심</SelectItem>
+                              <SelectItem value="little">조금</SelectItem>
+                              <SelectItem value="normal">보통</SelectItem>
+                              <SelectItem value="much">많이</SelectItem>
+                              <SelectItem value="excessive">과도하게</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div>
+                          <label className="text-sm font-medium mb-2 block">특이사항</label>
+                          <Select value={newEntry.activities.health?.special || 'none'} onValueChange={(value) => setNewEntry(prev => ({
+                            ...prev,
+                            activities: {
+                              ...prev.activities,
+                              health: { ...prev.activities.health, special: value }
+                            }
+                          }))}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="특이사항" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="none">없음</SelectItem>
+                              <SelectItem value="cough">기침</SelectItem>
+                              <SelectItem value="vomit">구토</SelectItem>
+                              <SelectItem value="diarrhea">설사</SelectItem>
+                              <SelectItem value="lethargy">기력저하</SelectItem>
+                              <SelectItem value="loss-appetite">식욕부진</SelectItem>
+                              <SelectItem value="other">기타</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* 훈련 활동 */}
+                    <div className="p-4 border rounded-lg">
+                      <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                        <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
+                          🎓
+                        </div>
+                        훈련 활동
+                      </h3>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                          <label className="text-sm font-medium mb-2 block">훈련 종류</label>
+                          <Select value={newEntry.activities.training?.type || 'basic'} onValueChange={(value) => setNewEntry(prev => ({
+                            ...prev,
+                            activities: {
+                              ...prev.activities,
+                              training: { ...prev.activities.training, type: value }
+                            }
+                          }))}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="훈련 선택" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="basic">기본명령</SelectItem>
+                              <SelectItem value="obedience">복종훈련</SelectItem>
+                              <SelectItem value="socialization">사회화</SelectItem>
+                              <SelectItem value="behavior">행동교정</SelectItem>
+                              <SelectItem value="agility">민첩성</SelectItem>
+                              <SelectItem value="trick">트릭</SelectItem>
+                              <SelectItem value="other">기타</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div>
+                          <label className="text-sm font-medium mb-2 block">집중도</label>
+                          <Select value={newEntry.activities.training?.focus || 'medium'} onValueChange={(value) => setNewEntry(prev => ({
+                            ...prev,
+                            activities: {
+                              ...prev.activities,
+                              training: { ...prev.activities.training, focus: value }
+                            }
+                          }))}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="집중도" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="low">낮음</SelectItem>
+                              <SelectItem value="medium">보통</SelectItem>
+                              <SelectItem value="high">높음</SelectItem>
+                              <SelectItem value="excellent">탁월</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div>
+                          <label className="text-sm font-medium mb-2 block">성과</label>
+                          <Select value={newEntry.activities.training?.achievement || 'medium'} onValueChange={(value) => setNewEntry(prev => ({
+                            ...prev,
+                            activities: {
+                              ...prev.activities,
+                              training: { ...prev.activities.training, achievement: value }
+                            }
+                          }))}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="성과" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="poor">미흡</SelectItem>
+                              <SelectItem value="fair">보통</SelectItem>
+                              <SelectItem value="good">좋음</SelectItem>
+                              <SelectItem value="excellent">우수</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* 특별 노트 */}
+                    <div className="p-4 border rounded-lg">
+                      <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                        <div className="w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center">
+                          📝
+                        </div>
+                        특별 노트
+                      </h3>
+                      <Textarea
+                        value={newEntry.notes}
+                        onChange={(e) => setNewEntry(prev => ({ ...prev, notes: e.target.value }))}
+                        placeholder="특별히 기록하고 싶은 내용이나 다음 세션을 위한 메모를 작성하세요"
+                        rows={4}
+                        className="w-full"
+                      />
+                    </div>
                   </div>
                 </TabsContent>
 
