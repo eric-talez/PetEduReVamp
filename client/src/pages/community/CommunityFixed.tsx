@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link as RouterLink, useLocation } from 'wouter';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -161,20 +161,37 @@ function CommunityPage() {
   const [showLinkSection, setShowLinkSection] = useState(false);
   const [isExtractingLink, setIsExtractingLink] = useState(false);
 
+  const itemsPerPage = 8;
+
   // 카테고리 목록
   const categories = ['일반', '훈련팁', '건강', '행동교정', '사회화', '질문', '후기'];
 
-  // 게시글 목록 조회
+  // 게시글 목록 조회 (탭별 필터링)
   const { data: postsData = [], isLoading, error } = useQuery({
-    queryKey: ['/api/community/posts'],
+    queryKey: ['/api/community/posts', activeTab],
     queryFn: async () => {
       try {
-        const response = await fetch('/api/community/posts');
+        let url = '/api/community/posts';
+        
+        // 탭별 카테고리 필터링
+        if (activeTab === 'training') {
+          url += '?category=훈련팁';
+        } else if (activeTab === 'survey') {
+          url += '?category=설문';
+        } else if (activeTab === 'info') {
+          url += '?category=정보공유';
+        } else if (activeTab === 'notices') {
+          url += '?category=공지사항';
+        } else if (activeTab === 'popular') {
+          url += '?sort=popular';
+        }
+        
+        const response = await fetch(url);
         if (!response.ok) {
           throw new Error('게시글을 불러올 수 없습니다');
         }
         const data = await response.json();
-        console.log('API에서 받은 게시글 데이터:', data);
+        console.log(`API에서 받은 게시글 데이터 (${activeTab}):`, data);
         // API 응답의 posts 배열을 반환
         return Array.isArray(data.posts) ? data.posts : [];
       } catch (error) {
@@ -184,6 +201,40 @@ function CommunityPage() {
     },
     staleTime: 5 * 60 * 1000,
   });
+
+  // 게시글 필터링 및 검색
+  const filteredPosts = useMemo(() => {
+    if (!postsData) return [];
+    
+    let filtered = postsData.filter((post: any) => {
+      const matchesSearch = !searchQuery || 
+        post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        post.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        post.author?.name?.toLowerCase().includes(searchQuery.toLowerCase());
+      
+      return matchesSearch;
+    });
+
+    return filtered;
+  }, [postsData, searchQuery]);
+
+  // 페이지네이션
+  const totalPages = Math.ceil(filteredPosts.length / itemsPerPage);
+  const paginatedPosts = filteredPosts.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  // 페이지 변경 시 탭 변경도 페이지 리셋
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  // 탭 변경 시 페이지 리셋
+  const handleTabChange = (tab: string) => {
+    setActiveTab(tab);
+    setCurrentPage(1);
+  };
 
   // 게시글 작성 뮤테이션
   const createPostMutation = useMutation({
@@ -215,7 +266,7 @@ function CommunityPage() {
       console.log('새 게시글 데이터:', newPostData);
       
       // 즉시 캐시 업데이트 - 새 게시글을 기존 목록 앞에 추가
-      queryClient.setQueryData(['/api/community/posts'], (oldData: any) => {
+      queryClient.setQueryData(['/api/community/posts', activeTab], (oldData: any) => {
         console.log('기존 캐시 데이터:', oldData);
         if (Array.isArray(oldData)) {
           const updatedData = [newPostData, ...oldData];
@@ -224,9 +275,6 @@ function CommunityPage() {
         }
         return [newPostData];
       });
-      
-      // 캐시 무효화를 제거하고 수동 업데이트만 사용
-      // queryClient.invalidateQueries({ queryKey: ['/api/community/posts'] });
       
       toast({
         title: "게시글 작성 완료",
@@ -253,453 +301,340 @@ function CommunityPage() {
         description: error.message || "게시글 작성에 실패했습니다.",
         variant: "destructive",
       });
-    }
+    },
   });
 
-  // 링크 정보 추출 함수
-  const handleLinkUrlChange = async (url: string) => {
-    setNewPost(prev => ({ ...prev, linkUrl: url }));
-    
-    if (url && isValidUrl(url)) {
-      setIsExtractingLink(true);
-      try {
-        const response = await fetch('/api/extract-link-info', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ url }),
-        });
-        
-        if (response.ok) {
-          const linkInfo = await response.json();
-          setNewPost(prev => ({
-            ...prev,
-            linkTitle: linkInfo.title || '',
-            linkDescription: linkInfo.description || '',
-            linkImage: linkInfo.image || ''
-          }));
-        }
-      } catch (error) {
-        console.error('링크 정보 추출 오류:', error);
-      }
-      setIsExtractingLink(false);
-    }
+  // 게시글 상세 보기
+  const handlePostClick = (post: any) => {
+    setSelectedPost(post);
+    setIsPostDetailOpen(true);
   };
 
-  const isValidUrl = (string: string) => {
-    try {
-      new URL(string);
-      return true;
-    } catch {
-      return false;
-    }
-  };
-
-  // 게시글 작성 함수
-  const handleSubmitPost = () => {
-    if (!newPost.title || !newPost.content) {
+  // 게시글 작성 핸들러
+  const handleSubmitPost = async () => {
+    if (!newPost.title.trim() || !newPost.content.trim()) {
       toast({
-        title: "입력 오류",
+        title: "작성 오류",
         description: "제목과 내용을 모두 입력해주세요.",
         variant: "destructive",
       });
       return;
     }
 
-    if (createPostMutation.isPending) {
-      return;
-    }
-
     createPostMutation.mutate(newPost);
   };
 
-  // 검색 및 필터링
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('all');
-
-  // 페이지네이션
-  const itemsPerPage = 12;
-
-  // 필터링된 게시글
-  const filteredPosts = (Array.isArray(postsData) ? postsData : []).filter(post => {
-    if (!post) return false;
+  // 링크 URL 변경 핸들러
+  const handleLinkUrlChange = async (url: string) => {
+    setNewPost(prev => ({ ...prev, linkUrl: url }));
     
-    const matchesTab = activeTab === 'latest' ? true : 
-                       activeTab === 'popular' ? (post.likes || 0) > 10 :
-                       activeTab === 'notices' ? post.isNotice :
-                       activeTab === 'training' ? post.category === '훈련팁' :
-                       activeTab === 'survey' ? post.category === '설문' :
-                       activeTab === 'info' ? post.category === '정보공유' :
-                       true;
-    
-    const matchesSearch = searchQuery === '' || 
-      (post.title && post.title.toLowerCase().includes(searchQuery.toLowerCase())) ||
-      (post.content && post.content.toLowerCase().includes(searchQuery.toLowerCase())) ||
-      (post.user?.name && post.user.name.toLowerCase().includes(searchQuery.toLowerCase()));
-    
-    const matchesCategory = selectedCategory === 'all' || post.category === selectedCategory;
-    
-    return matchesTab && matchesSearch && matchesCategory;
-  });
+    if (url && url.startsWith('http')) {
+      setIsExtractingLink(true);
+      try {
+        const response = await fetch('/api/community/extract-link', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ url }),
+        });
 
-  // 페이지네이션 계산
-  const totalItems = filteredPosts?.length || 0;
-  const totalPages = Math.ceil(totalItems / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const paginatedPosts = filteredPosts?.slice(startIndex, startIndex + itemsPerPage) || [];
-
-  // 페이지 변경 핸들러
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  // 게시글 클릭 핸들러 (상세보기 모달 열기)
-  const handlePostClick = (post: any) => {
-    setSelectedPost(post);
-    setIsPostDetailOpen(true);
-    
-    // 샘플 댓글 데이터 설정
-    setComments([
-      {
-        id: 1,
-        user: {
-          name: "댓글러",
-          image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100"
-        },
-        content: "좋은 정보 감사합니다! 우리 강아지에게도 적용해봐야겠어요.",
-        likes: 3,
-        createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), // 2시간 전
-        replies: []
+        if (response.ok) {
+          const linkData = await response.json();
+          setNewPost(prev => ({
+            ...prev,
+            linkTitle: linkData.title || '',
+            linkDescription: linkData.description || '',
+            linkImage: linkData.image || ''
+          }));
+        }
+      } catch (error) {
+        console.error('링크 정보 추출 오류:', error);
+      } finally {
+        setIsExtractingLink(false);
       }
-    ]);
+    }
   };
 
   // 댓글 작성 핸들러
-  const handleCommentSubmit = () => {
-    if (!newComment.trim()) {
-      toast({
-        title: "댓글 내용을 입력해주세요",
-        variant: "destructive",
-      });
-      return;
-    }
+  const handleAddComment = () => {
+    if (!newComment.trim()) return;
 
-    // 새 댓글 객체 생성
-    const newCommentObj = {
+    const comment = {
       id: Date.now(),
-      user: {
-        name: user?.name || "반려인",
-        image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100"
-      },
       content: newComment,
-      likes: 0,
+      author: {
+        name: user?.username || '익명 사용자',
+        image: user?.image || null
+      },
       createdAt: new Date().toISOString(),
       replies: []
     };
 
-    // 댓글 목록에 추가
-    setComments(prev => [newCommentObj, ...prev]);
-
-    // 선택된 게시글의 댓글 수 증가
-    if (selectedPost) {
-      const updatedPost = {
-        ...selectedPost,
-        comments: (selectedPost.comments || 0) + 1
-      };
-      setSelectedPost(updatedPost);
-
-      // 캐시도 업데이트
-      queryClient.setQueryData(['/api/community/posts'], (oldData: any) => {
-        if (Array.isArray(oldData)) {
-          return oldData.map(post => 
-            post.id === selectedPost.id ? updatedPost : post
-          );
-        }
-        return oldData;
-      });
-    }
-
-    toast({
-      title: "댓글 작성 완료",
-      description: "댓글이 성공적으로 작성되었습니다.",
-    });
-    
+    setComments(prev => [...prev, comment]);
     setNewComment('');
   };
 
-  // 좋아요 토글 핸들러
-  const handleLikeToggle = (postId: number) => {
-    if (selectedPost) {
-      const updatedPost = {
-        ...selectedPost,
-        likes: (selectedPost.likes || 0) + 1
-      };
-      setSelectedPost(updatedPost);
-
-      // 캐시도 업데이트
-      queryClient.setQueryData(['/api/community/posts'], (oldData: any) => {
-        if (Array.isArray(oldData)) {
-          return oldData.map(post => 
-            post.id === postId ? updatedPost : post
-          );
-        }
-        return oldData;
-      });
-
-      toast({
-        title: "좋아요",
-        description: "좋아요가 반영되었습니다.",
-      });
-    }
-  };
-
   // 답글 작성 핸들러
-  const handleReplySubmit = (parentCommentId: number) => {
-    if (!replyText.trim()) {
-      toast({
-        title: "답글 내용을 입력해주세요",
-        variant: "destructive",
-      });
-      return;
-    }
+  const handleAddReply = (commentId: number) => {
+    if (!replyText.trim()) return;
 
-    const newReply = {
+    const reply = {
       id: Date.now(),
-      user: {
-        name: user?.name || "반려인",
-        image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100"
-      },
       content: replyText,
-      likes: 0,
+      author: {
+        name: user?.username || '익명 사용자',
+        image: user?.image || null
+      },
       createdAt: new Date().toISOString()
     };
 
-    // 해당 댓글에 답글 추가
     setComments(prev => prev.map(comment => 
-      comment.id === parentCommentId 
-        ? { ...comment, replies: [...(comment.replies || []), newReply] }
+      comment.id === commentId 
+        ? { ...comment, replies: [...(comment.replies || []), reply] }
         : comment
     ));
-
-    toast({
-      title: "답글 작성 완료",
-      description: "답글이 성공적으로 작성되었습니다.",
-    });
-
     setReplyText('');
     setReplyingTo(null);
   };
 
-
+  // 탭별 메시지 정의
+  const getEmptyMessage = (tabValue: string) => {
+    const messages = {
+      'training': {
+        title: '훈련팁이 없습니다',
+        description: '펫 훈련 관련 팁과 노하우를 공유해주세요!'
+      },
+      'survey': {
+        title: '설문조사가 없습니다',
+        description: '커뮤니티 설문조사에 참여해보세요!'
+      },
+      'info': {
+        title: '정보공유 게시글이 없습니다',
+        description: '유용한 정보를 공유해주세요!'
+      },
+      'notices': {
+        title: '공지사항이 없습니다',
+        description: '공지사항을 확인해주세요!'
+      },
+      'popular': {
+        title: '인기 게시글이 없습니다',
+        description: '좋아요가 많은 게시글이 여기에 표시됩니다.'
+      },
+      'latest': {
+        title: '게시글이 없습니다',
+        description: '첫 번째 게시글을 작성해보세요!'
+      }
+    };
+    return messages[tabValue as keyof typeof messages] || messages.latest;
+  };
 
   return (
-    <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 max-w-7xl">
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold">커뮤니티</h1>
-        <Dialog open={isCreatePostOpen} onOpenChange={setIsCreatePostOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="h-4 w-4 mr-2" />
-              글쓰기
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>새 게시글 작성</DialogTitle>
-              <DialogDescription>
-                커뮤니티에 새로운 게시글을 작성하세요.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="grid gap-4 py-4">
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="post-title" className="text-right">
-                  제목
-                </Label>
-                <Input
-                  id="post-title"
-                  value={newPost.title}
-                  onChange={(e) => setNewPost({ ...newPost, title: e.target.value })}
-                  className="col-span-3"
-                  placeholder="게시글 제목을 입력하세요"
-                />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="post-category" className="text-right">
-                  카테고리
-                </Label>
-                <Select value={newPost.category} onValueChange={(value) => setNewPost({ ...newPost, category: value })}>
-                  <SelectTrigger className="col-span-3">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {categories.map((category) => (
-                      <SelectItem key={category} value={category}>
-                        {category}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="grid grid-cols-4 items-start gap-4">
-                <Label htmlFor="post-content" className="text-right pt-2">
-                  내용
-                </Label>
-                <Textarea
-                  id="post-content"
-                  value={newPost.content}
-                  onChange={(e) => setNewPost({ ...newPost, content: e.target.value })}
-                  className="col-span-3 min-h-[120px]"
-                  placeholder="게시글 내용을 입력하세요"
-                />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="post-tags" className="text-right">
-                  태그
-                </Label>
-                <Input
-                  id="post-tags"
-                  value={newPost.tags}
-                  onChange={(e) => setNewPost({ ...newPost, tags: e.target.value })}
-                  className="col-span-3"
-                  placeholder="태그를 쉼표로 구분하여 입력하세요"
-                />
-              </div>
+    <div className="container mx-auto p-4 max-w-6xl">
+      {/* 헤더 */}
+      <div className="mb-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">커뮤니티</h1>
+            <p className="text-gray-600 mt-1">반려동물 교육과 훈련 정보를 공유하는 공간입니다</p>
+          </div>
 
-              {/* 링크 추가 버튼 */}
-              {!showLinkSection && (
-                <div className="flex justify-start">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setShowLinkSection(true)}
-                    className="flex items-center gap-2"
-                  >
-                    <Link className="h-4 w-4" />
-                    링크 추가
-                  </Button>
+          {/* 게시글 작성 버튼 */}
+          <Dialog open={isCreatePostOpen} onOpenChange={setIsCreatePostOpen}>
+            <DialogTrigger asChild>
+              <Button className="bg-green-600 hover:bg-green-700 text-white">
+                <Plus className="h-4 w-4 mr-2" />
+                글쓰기
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle>새 게시글 작성</DialogTitle>
+                <DialogDescription>
+                  커뮤니티에 공유할 게시글을 작성해주세요.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4 py-4">
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="title" className="text-right">제목</Label>
+                  <Input
+                    id="title"
+                    value={newPost.title}
+                    onChange={(e) => setNewPost(prev => ({ ...prev, title: e.target.value }))}
+                    placeholder="게시글 제목을 입력하세요"
+                    className="col-span-3"
+                  />
                 </div>
-              )}
+                <div className="grid grid-cols-4 items-start gap-4">
+                  <Label htmlFor="content" className="text-right pt-2">내용</Label>
+                  <Textarea
+                    id="content"
+                    value={newPost.content}
+                    onChange={(e) => setNewPost(prev => ({ ...prev, content: e.target.value }))}
+                    placeholder="게시글 내용을 입력하세요"
+                    className="col-span-3 min-h-[120px]"
+                  />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="category" className="text-right">카테고리</Label>
+                  <Select value={newPost.category} onValueChange={(value) => setNewPost(prev => ({ ...prev, category: value }))}>
+                    <SelectTrigger className="col-span-3">
+                      <SelectValue placeholder="카테고리를 선택하세요" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {categories.map(category => (
+                        <SelectItem key={category} value={category}>
+                          {category}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="tags" className="text-right">태그</Label>
+                  <Input
+                    id="tags"
+                    value={newPost.tags}
+                    onChange={(e) => setNewPost(prev => ({ ...prev, tags: e.target.value }))}
+                    placeholder="태그를 쉼표로 구분해서 입력하세요"
+                    className="col-span-3"
+                  />
+                </div>
 
-              {/* 링크 정보 섹션 */}
-              {showLinkSection && (
-                <div className="border rounded-lg p-4 bg-blue-50">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-2">
-                      <Link className="h-5 w-5 text-blue-600" />
-                      <h3 className="font-semibold text-blue-800">
-                        링크 정보 추가
-                      </h3>
-                    </div>
+                {/* 링크 추가 버튼 */}
+                {!showLinkSection && (
+                  <div className="flex justify-center">
                     <Button
                       type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setShowLinkSection(false)}
-                      className="text-blue-600 hover:text-blue-800"
+                      variant="outline"
+                      onClick={() => setShowLinkSection(true)}
+                      className="flex items-center gap-2"
                     >
-                      <X className="h-4 w-4" />
+                      <Link className="h-4 w-4" />
+                      링크 추가
                     </Button>
                   </div>
-                  
-                  <p className="text-blue-700 mb-4">
-                    URL을 입력하면 자동으로 링크 정보를 추출하여 게시글을 더 풍부하게 만들 수 있습니다.
-                  </p>
-                  
-                  <div className="space-y-4">
-                    {/* 링크 URL */}
-                    <div>
-                      <Label className="block text-sm font-medium mb-2">
-                        링크 URL
-                      </Label>
-                      <div className="flex gap-2">
-                        <Input
-                          value={newPost.linkUrl}
-                          onChange={(e) => handleLinkUrlChange(e.target.value)}
-                          placeholder="https://example.com"
-                          className="flex-1"
-                        />
-                        {isExtractingLink && (
-                          <div className="flex items-center px-3">
-                            <div className="animate-spin w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full"></div>
-                          </div>
-                        )}
-                      </div>
-                    </div>
+                )}
 
-                    {/* 링크 정보 미리보기 */}
-                    {(newPost.linkTitle || newPost.linkDescription || newPost.linkImage) && (
-                      <div className="border rounded-lg p-4 bg-white">
-                        <h4 className="font-medium mb-3">링크 미리보기</h4>
-                        
-                        <div className="grid grid-cols-4 items-center gap-4 mb-3">
-                          <Label className="text-right">제목</Label>
+                {/* 링크 정보 섹션 */}
+                {showLinkSection && (
+                  <div className="border rounded-lg p-4 bg-blue-50">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center gap-2">
+                        <Link className="h-5 w-5 text-blue-600" />
+                        <h3 className="font-semibold text-blue-800">
+                          링크 정보 추가
+                        </h3>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setShowLinkSection(false)}
+                        className="text-blue-600 hover:text-blue-800"
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                    
+                    <p className="text-blue-700 mb-4">
+                      URL을 입력하면 자동으로 링크 정보를 추출하여 게시글을 더 풍부하게 만들 수 있습니다.
+                    </p>
+                    
+                    <div className="space-y-4">
+                      {/* 링크 URL */}
+                      <div>
+                        <Label className="block text-sm font-medium mb-2">
+                          링크 URL
+                        </Label>
+                        <div className="flex gap-2">
                           <Input
-                            value={newPost.linkTitle}
-                            onChange={(e) => setNewPost(prev => ({ ...prev, linkTitle: e.target.value }))}
-                            placeholder="링크 제목"
-                            className="col-span-3"
+                            value={newPost.linkUrl}
+                            onChange={(e) => handleLinkUrlChange(e.target.value)}
+                            placeholder="https://example.com"
+                            className="flex-1"
                           />
-                        </div>
-                        
-                        <div className="grid grid-cols-4 items-start gap-4 mb-3">
-                          <Label className="text-right pt-2">설명</Label>
-                          <Textarea
-                            value={newPost.linkDescription}
-                            onChange={(e) => setNewPost(prev => ({ ...prev, linkDescription: e.target.value }))}
-                            placeholder="링크 설명"
-                            className="col-span-3 min-h-[60px]"
-                          />
-                        </div>
-                        
-                        <div className="grid grid-cols-4 items-center gap-4">
-                          <Label className="text-right">이미지 URL</Label>
-                          <div className="col-span-3 space-y-2">
-                            <Input
-                              value={newPost.linkImage}
-                              onChange={(e) => setNewPost(prev => ({ ...prev, linkImage: e.target.value }))}
-                              placeholder="이미지 URL"
-                            />
-                            {newPost.linkImage && (
-                              <div className="relative inline-block">
-                                <img
-                                  src={newPost.linkImage}
-                                  alt="링크 썸네일"
-                                  className="w-20 h-20 object-cover rounded border"
-                                  onError={(e) => {
-                                    e.currentTarget.style.display = 'none';
-                                  }}
-                                />
-                                <Button
-                                  type="button"
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => setNewPost(prev => ({ ...prev, linkImage: '' }))}
-                                  className="absolute -top-2 -right-2 w-6 h-6 p-0 rounded-full"
-                                >
-                                  <X className="h-3 w-3" />
-                                </Button>
-                              </div>
-                            )}
-                          </div>
+                          {isExtractingLink && (
+                            <div className="flex items-center px-3">
+                              <div className="animate-spin w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full"></div>
+                            </div>
+                          )}
                         </div>
                       </div>
-                    )}
+
+                      {/* 링크 정보 미리보기 */}
+                      {(newPost.linkTitle || newPost.linkDescription || newPost.linkImage) && (
+                        <div className="border rounded-lg p-4 bg-white">
+                          <h4 className="font-medium mb-3">링크 미리보기</h4>
+                          
+                          <div className="grid grid-cols-4 items-center gap-4 mb-3">
+                            <Label className="text-right">제목</Label>
+                            <Input
+                              value={newPost.linkTitle}
+                              onChange={(e) => setNewPost(prev => ({ ...prev, linkTitle: e.target.value }))}
+                              placeholder="링크 제목"
+                              className="col-span-3"
+                            />
+                          </div>
+                          
+                          <div className="grid grid-cols-4 items-start gap-4 mb-3">
+                            <Label className="text-right pt-2">설명</Label>
+                            <Textarea
+                              value={newPost.linkDescription}
+                              onChange={(e) => setNewPost(prev => ({ ...prev, linkDescription: e.target.value }))}
+                              placeholder="링크 설명"
+                              className="col-span-3 min-h-[60px]"
+                            />
+                          </div>
+                          
+                          <div className="grid grid-cols-4 items-center gap-4">
+                            <Label className="text-right">이미지 URL</Label>
+                            <div className="col-span-3 space-y-2">
+                              <Input
+                                value={newPost.linkImage}
+                                onChange={(e) => setNewPost(prev => ({ ...prev, linkImage: e.target.value }))}
+                                placeholder="이미지 URL"
+                              />
+                              {newPost.linkImage && (
+                                <div className="relative inline-block">
+                                  <img
+                                    src={newPost.linkImage}
+                                    alt="링크 썸네일"
+                                    className="w-20 h-20 object-cover rounded border"
+                                    onError={(e) => {
+                                      e.currentTarget.style.display = 'none';
+                                    }}
+                                  />
+                                  <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => setNewPost(prev => ({ ...prev, linkImage: '' }))}
+                                    className="absolute -top-2 -right-2 w-6 h-6 p-0 rounded-full"
+                                  >
+                                    <X className="h-3 w-3" />
+                                  </Button>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
-              )}
-            </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setIsCreatePostOpen(false)}>
-                취소
-              </Button>
-              <Button onClick={handleSubmitPost} disabled={createPostMutation.isPending}>
-                {createPostMutation.isPending ? '작성 중...' : '게시'}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+                )}
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setIsCreatePostOpen(false)}>
+                  취소
+                </Button>
+                <Button onClick={handleSubmitPost} disabled={createPostMutation.isPending}>
+                  {createPostMutation.isPending ? '작성 중...' : '게시'}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
 
       {/* 검색 및 뷰 컨트롤 */}
@@ -733,7 +668,7 @@ function CommunityPage() {
         </div>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+      <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
         <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="latest">최신 글</TabsTrigger>
           <TabsTrigger value="popular">인기 글</TabsTrigger>
@@ -743,874 +678,346 @@ function CommunityPage() {
           <TabsTrigger value="notices">공지사항</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="latest" className="mt-6">
-          {isLoading && (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {Array.from({ length: 6 }).map((_, i) => (
-                <PostCardSkeleton key={i} />
-              ))}
-            </div>
-          )}
-
-          {error && (
-            <div className="text-center py-8">
-              <div className="bg-red-50 border border-red-200 rounded-lg p-4 max-w-md mx-auto">
-                <div className="text-red-600 font-medium mb-2">게시글을 불러올 수 없습니다</div>
-                <div className="text-red-500 text-sm">{error?.message || '알 수 없는 오류가 발생했습니다'}</div>
-                <button 
-                  onClick={() => window.location.reload()} 
-                  className="mt-3 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 text-sm"
-                >
-                  새로고침
-                </button>
+        {/* 모든 탭에서 사용할 공통 콘텐츠 */}
+        {['latest', 'popular', 'training', 'survey', 'info', 'notices'].map(tabValue => (
+          <TabsContent key={tabValue} value={tabValue} className="mt-6">
+            {isLoading && (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <PostCardSkeleton key={i} />
+                ))}
               </div>
-            </div>
-          )}
+            )}
 
-          {!isLoading && !error && paginatedPosts && paginatedPosts.length > 0 && (
-            <>
-              {viewType === 'card' ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {paginatedPosts.map((post: any) => (
-                    <PostCard
-                      key={post.id}
-                      post={post}
-                      onClick={handlePostClick}
-                    />
-                  ))}
+            {error && (
+              <div className="text-center py-8">
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4 max-w-md mx-auto">
+                  <div className="text-red-600 font-medium mb-2">게시글을 불러올 수 없습니다</div>
+                  <div className="text-red-500 text-sm">{error?.message || '알 수 없는 오류가 발생했습니다'}</div>
+                  <button 
+                    onClick={() => window.location.reload()} 
+                    className="mt-3 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 text-sm"
+                  >
+                    새로고침
+                  </button>
                 </div>
-              ) : (
-                <div className="space-y-4">
-                  {paginatedPosts.map((post: any) => (
-                    <Card key={post.id} className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => handlePostClick(post)}>
-                      <CardContent className="p-4">
-                        <div className="flex items-start gap-4">
-                          {/* 썸네일 이미지 (리스트뷰용) */}
-                          {post.linkInfo?.image && (
-                            <div className="flex-shrink-0 w-24 h-24 overflow-hidden rounded-lg">
-                              <img 
-                                src={post.linkInfo.image} 
-                                alt={post.linkInfo.title || post.title}
-                                className="w-full h-full object-cover"
-                                onError={(e) => {
-                                  e.currentTarget.style.display = 'none';
-                                }}
-                              />
-                            </div>
-                          )}
-                          
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-2">
-                              <Badge variant="secondary" className="text-xs">
-                                {post.tag}
-                              </Badge>
-                              <span className="text-xs text-gray-500">
-                                {post.author?.name || '익명 사용자'} • {(() => {
-                                  try {
-                                    return formatDistanceToNow(new Date(post.createdAt), { addSuffix: true, locale: ko });
-                                  } catch {
-                                    return '방금 전';
-                                  }
-                                })()}
-                              </span>
-                            </div>
-                            <h3 className="font-semibold text-lg mb-2 line-clamp-1">{post.title}</h3>
-                            <p className="text-gray-600 text-sm mb-3 line-clamp-2">{post.content}</p>
-                            
-                            {/* 링크 정보 미리보기 (썸네일이 없고 리스트뷰일 때) */}
-                            {post.linkInfo && !post.linkInfo.image && (
-                              <div className="mb-3 p-2 bg-gray-50 rounded border text-xs">
-                                <div className="font-medium line-clamp-1">{post.linkInfo.title}</div>
-                                <div className="text-gray-600 line-clamp-1 mt-1">{post.linkInfo.description}</div>
-                              </div>
-                            )}
-                            
-                            <div className="flex items-center gap-4 text-xs text-gray-500">
-                              <div className="flex items-center gap-1">
-                                <Heart className="h-3 w-3" />
-                                <span>{post.likes || 0}</span>
-                              </div>
-                              <div className="flex items-center gap-1">
-                                <MessageSquare className="h-3 w-3" />
-                                <span>{post.comments || 0}</span>
-                              </div>
-                              <div className="flex items-center gap-1">
-                                <Eye className="h-3 w-3" />
-                                <span>{post.views || 0}</span>
-                              </div>
-                            </div>
-                          </div>
-                          
-                          {/* 작성자 아바타 (오른쪽 끝) */}
-                          <div className="flex-shrink-0">
-                            <Avatar className="h-10 w-10">
-                              <AvatarImage src={post.author?.image} alt={post.author?.name} />
-                              <AvatarFallback>{post.author?.name?.[0] || 'U'}</AvatarFallback>
-                            </Avatar>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              )}
+              </div>
+            )}
 
-              {totalPages > 1 && (
-                <div className="mt-8 flex justify-center">
-                  <div className="flex items-center gap-2">
-                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                      <Button
-                        key={page}
-                        variant={currentPage === page ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => handlePageChange(page)}
-                      >
-                        {page}
-                      </Button>
+            {!isLoading && !error && paginatedPosts && paginatedPosts.length > 0 && (
+              <>
+                {viewType === 'card' ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {paginatedPosts.map((post: any) => (
+                      <PostCard
+                        key={post.id}
+                        post={post}
+                        onClick={handlePostClick}
+                      />
                     ))}
                   </div>
-                </div>
-              )}
-            </>
-          )}
-
-          {!isLoading && !error && (!paginatedPosts || paginatedPosts.length === 0) && (
-            <div className="text-center py-12">
-              <p className="text-xl mb-2">게시글이 없습니다</p>
-              <p className="text-muted-foreground mb-4">첫 번째 게시글을 작성해보세요!</p>
-              <Button onClick={() => setIsCreatePostOpen(true)}>
-                <Plus className="h-4 w-4 mr-1" />
-                글쓰기
-              </Button>
-            </div>
-          )}
-        </TabsContent>
-
-        <TabsContent value="popular" className="mt-6">
-          {/* 인기 게시글 탭 내용 - 동일한 구조 사용 */}
-          {!isLoading && !error && paginatedPosts && paginatedPosts.length > 0 ? (
-            <>
-              {viewType === 'card' ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {paginatedPosts.map((post: any) => (
-                    <PostCard key={post.id} post={post} onClick={handlePostClick} />
-                  ))}
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {paginatedPosts.map((post: any) => (
-                    <Card key={post.id} className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => handlePostClick(post)}>
-                      <CardContent className="p-4">
-                        <div className="flex items-start gap-4">
-                          {/* 썸네일 이미지 (리스트뷰용) */}
-                          {post.linkInfo?.image && (
-                            <div className="flex-shrink-0 w-24 h-24 overflow-hidden rounded-lg">
-                              <img 
-                                src={post.linkInfo.image} 
-                                alt={post.linkInfo.title || post.title}
-                                className="w-full h-full object-cover"
-                                onError={(e) => {
-                                  e.currentTarget.style.display = 'none';
-                                }}
-                              />
-                            </div>
-                          )}
-                          
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-2">
-                              <Badge variant="secondary" className="text-xs">
-                                {post.tag}
-                              </Badge>
-                              <span className="text-xs text-gray-500">
-                                {post.author?.name || '익명 사용자'} • {(() => {
-                                  try {
-                                    return formatDistanceToNow(new Date(post.createdAt), { addSuffix: true, locale: ko });
-                                  } catch {
-                                    return '방금 전';
-                                  }
-                                })()}
-                              </span>
-                            </div>
-                            <h3 className="font-semibold text-lg mb-2 line-clamp-1">{post.title}</h3>
-                            <p className="text-gray-600 text-sm mb-3 line-clamp-2">{post.content}</p>
-                            
-                            {/* 링크 정보 미리보기 (썸네일이 없고 리스트뷰일 때) */}
-                            {post.linkInfo && !post.linkInfo.image && (
-                              <div className="mb-3 p-2 bg-gray-50 rounded border text-xs">
-                                <div className="font-medium line-clamp-1">{post.linkInfo.title}</div>
-                                <div className="text-gray-600 line-clamp-1 mt-1">{post.linkInfo.description}</div>
+                ) : (
+                  <div className="space-y-4">
+                    {paginatedPosts.map((post: any) => (
+                      <Card key={post.id} className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => handlePostClick(post)}>
+                        <CardContent className="p-4">
+                          <div className="flex items-start gap-4">
+                            {/* 썸네일 이미지 (리스트뷰용) */}
+                            {post.linkInfo?.image && (
+                              <div className="flex-shrink-0 w-24 h-24 overflow-hidden rounded-lg">
+                                <img 
+                                  src={post.linkInfo.image} 
+                                  alt={post.linkInfo.title || post.title}
+                                  className="w-full h-full object-cover"
+                                  onError={(e) => {
+                                    e.currentTarget.style.display = 'none';
+                                  }}
+                                />
                               </div>
                             )}
                             
-                            <div className="flex items-center gap-4 text-xs text-gray-500">
-                              <div className="flex items-center gap-1">
-                                <Heart className="h-3 w-3" />
-                                <span>{post.likes || 0}</span>
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 mb-2">
+                                <Badge variant="secondary" className="text-xs">
+                                  {post.tag}
+                                </Badge>
+                                <span className="text-xs text-gray-500">
+                                  {post.author?.name || '익명 사용자'} • {(() => {
+                                    try {
+                                      return formatDistanceToNow(new Date(post.createdAt), { addSuffix: true, locale: ko });
+                                    } catch {
+                                      return '방금 전';
+                                    }
+                                  })()}
+                                </span>
                               </div>
-                              <div className="flex items-center gap-1">
-                                <MessageSquare className="h-3 w-3" />
-                                <span>{post.comments || 0}</span>
-                              </div>
-                              <div className="flex items-center gap-1">
-                                <Eye className="h-3 w-3" />
-                                <span>{post.views || 0}</span>
+                              <h3 className="font-semibold text-lg mb-2 line-clamp-1">{post.title}</h3>
+                              <p className="text-gray-600 text-sm mb-3 line-clamp-2">{post.content}</p>
+                              
+                              {/* 링크 정보 미리보기 (썸네일이 없고 리스트뷰일 때) */}
+                              {post.linkInfo && !post.linkInfo.image && (
+                                <div className="mb-3 p-2 bg-gray-50 rounded border text-xs">
+                                  <div className="font-medium line-clamp-1">{post.linkInfo.title}</div>
+                                  <div className="text-gray-600 line-clamp-1 mt-1">{post.linkInfo.description}</div>
+                                </div>
+                              )}
+                              
+                              <div className="flex items-center gap-4 text-xs text-gray-500">
+                                <div className="flex items-center gap-1">
+                                  <Heart className="h-3 w-3" />
+                                  <span>{post.likes || 0}</span>
+                                </div>
+                                <div className="flex items-center gap-1">
+                                  <MessageSquare className="h-3 w-3" />
+                                  <span>{post.comments || 0}</span>
+                                </div>
+                                <div className="flex items-center gap-1">
+                                  <Eye className="h-3 w-3" />
+                                  <span>{post.views || 0}</span>
+                                </div>
                               </div>
                             </div>
+                            
+                            {/* 작성자 아바타 (오른쪽 끝) */}
+                            <div className="flex-shrink-0">
+                              <Avatar className="h-10 w-10">
+                                <AvatarImage src={post.author?.image} alt={post.author?.name} />
+                                <AvatarFallback>{post.author?.name?.[0] || 'U'}</AvatarFallback>
+                              </Avatar>
+                            </div>
                           </div>
-                          
-                          {/* 작성자 아바타 (오른쪽 끝) */}
-                          <div className="flex-shrink-0">
-                            <Avatar className="h-10 w-10">
-                              <AvatarImage src={post.author?.image} alt={post.author?.name} />
-                              <AvatarFallback>{post.author?.name?.[0] || 'U'}</AvatarFallback>
-                            </Avatar>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              )}
-            </>
-          ) : (
-            <div className="text-center py-12">
-              <p className="text-xl mb-2">인기 게시글이 없습니다</p>
-              <p className="text-muted-foreground">좋아요가 10개 이상인 게시글이 여기에 표시됩니다.</p>
-            </div>
-          )}
-        </TabsContent>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )}
 
-        <TabsContent value="training" className="mt-6">
-          {!isLoading && !error && paginatedPosts && paginatedPosts.length > 0 ? (
-            <>
-              {viewType === 'card' ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {paginatedPosts.map((post: any) => (
-                    <PostCard key={post.id} post={post} onClick={handlePostClick} />
-                  ))}
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {paginatedPosts.map((post: any) => (
-                    <Card key={post.id} className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => handlePostClick(post)}>
-                      <CardContent className="p-4">
-                        <div className="flex items-start gap-4">
-                          {/* 썸네일 이미지 (리스트뷰용) */}
-                          {post.linkInfo?.image && (
-                            <div className="flex-shrink-0 w-24 h-24 overflow-hidden rounded-lg">
-                              <img 
-                                src={post.linkInfo.image} 
-                                alt={post.linkInfo.title || post.title}
-                                className="w-full h-full object-cover"
-                                onError={(e) => {
-                                  e.currentTarget.style.display = 'none';
-                                }}
-                              />
-                            </div>
-                          )}
-                          
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-2">
-                              <Badge variant="secondary" className="text-xs">훈련팁</Badge>
-                              <span className="text-xs text-gray-500">
-                                {post.author?.name || '익명 사용자'} • {(() => {
-                                  try {
-                                    return formatDistanceToNow(new Date(post.createdAt), { addSuffix: true, locale: ko });
-                                  } catch {
-                                    return '방금 전';
-                                  }
-                                })()}
-                              </span>
-                            </div>
-                            <h3 className="font-semibold text-lg mb-2 line-clamp-1">{post.title}</h3>
-                            <p className="text-gray-600 text-sm mb-3 line-clamp-2">{post.content}</p>
-                            
-                            {/* 링크 정보 미리보기 (썸네일이 없고 리스트뷰일 때) */}
-                            {post.linkInfo && !post.linkInfo.image && (
-                              <div className="mb-3 p-2 bg-gray-50 rounded border text-xs">
-                                <div className="font-medium line-clamp-1">{post.linkInfo.title}</div>
-                                <div className="text-gray-600 line-clamp-1 mt-1">{post.linkInfo.description}</div>
-                              </div>
-                            )}
-                            
-                            <div className="flex items-center gap-4 text-xs text-gray-500">
-                              <div className="flex items-center gap-1">
-                                <Heart className="h-3 w-3" />
-                                <span>{post.likes || 0}</span>
-                              </div>
-                              <div className="flex items-center gap-1">
-                                <MessageSquare className="h-3 w-3" />
-                                <span>{post.comments || 0}</span>
-                              </div>
-                              <div className="flex items-center gap-1">
-                                <Eye className="h-3 w-3" />
-                                <span>{post.views || 0}</span>
-                              </div>
-                            </div>
-                          </div>
-                          
-                          {/* 작성자 아바타 (오른쪽 끝) */}
-                          <div className="flex-shrink-0">
-                            <Avatar className="h-10 w-10">
-                              <AvatarImage src={post.author?.image} alt={post.author?.name} />
-                              <AvatarFallback>{post.author?.name?.[0] || 'U'}</AvatarFallback>
-                            </Avatar>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              )}
-            </>
-          ) : (
-            <div className="text-center py-12">
-              <p className="text-xl mb-2">훈련팁이 없습니다</p>
-              <p className="text-muted-foreground">펫 훈련 관련 팁과 노하우를 공유해주세요!</p>
-            </div>
-          )}
-        </TabsContent>
+                {totalPages > 1 && (
+                  <div className="mt-8 flex justify-center">
+                    <div className="flex items-center gap-2">
+                      {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                        <Button
+                          key={page}
+                          variant={currentPage === page ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => handlePageChange(page)}
+                        >
+                          {page}
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
 
-        <TabsContent value="survey" className="mt-6">
-          {!isLoading && !error && paginatedPosts && paginatedPosts.length > 0 ? (
-            <>
-              {viewType === 'card' ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {paginatedPosts.map((post: any) => (
-                    <PostCard key={post.id} post={post} onClick={handlePostClick} />
-                  ))}
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {paginatedPosts.map((post: any) => (
-                    <Card key={post.id} className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => handlePostClick(post)}>
-                      <CardContent className="p-4">
-                        <div className="flex items-start gap-4">
-                          {/* 썸네일 이미지 (리스트뷰용) */}
-                          {post.linkInfo?.image && (
-                            <div className="flex-shrink-0 w-24 h-24 overflow-hidden rounded-lg">
-                              <img 
-                                src={post.linkInfo.image} 
-                                alt={post.linkInfo.title || post.title}
-                                className="w-full h-full object-cover"
-                                onError={(e) => {
-                                  e.currentTarget.style.display = 'none';
-                                }}
-                              />
-                            </div>
-                          )}
-                          
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-2">
-                              <Badge variant="secondary" className="text-xs">설문</Badge>
-                              <span className="text-xs text-gray-500">
-                                {post.author?.name || '익명 사용자'} • {(() => {
-                                  try {
-                                    return formatDistanceToNow(new Date(post.createdAt), { addSuffix: true, locale: ko });
-                                  } catch {
-                                    return '방금 전';
-                                  }
-                                })()}
-                              </span>
-                            </div>
-                            <h3 className="font-semibold text-lg mb-2 line-clamp-1">{post.title}</h3>
-                            <p className="text-gray-600 text-sm mb-3 line-clamp-2">{post.content}</p>
-                            
-                            {/* 링크 정보 미리보기 (썸네일이 없고 리스트뷰일 때) */}
-                            {post.linkInfo && !post.linkInfo.image && (
-                              <div className="mb-3 p-2 bg-gray-50 rounded border text-xs">
-                                <div className="font-medium line-clamp-1">{post.linkInfo.title}</div>
-                                <div className="text-gray-600 line-clamp-1 mt-1">{post.linkInfo.description}</div>
-                              </div>
-                            )}
-                            
-                            <div className="flex items-center gap-4 text-xs text-gray-500">
-                              <div className="flex items-center gap-1">
-                                <Heart className="h-3 w-3" />
-                                <span>{post.likes || 0}</span>
-                              </div>
-                              <div className="flex items-center gap-1">
-                                <MessageSquare className="h-3 w-3" />
-                                <span>{post.comments || 0}</span>
-                              </div>
-                              <div className="flex items-center gap-1">
-                                <Eye className="h-3 w-3" />
-                                <span>{post.views || 0}</span>
-                              </div>
-                            </div>
-                          </div>
-                          
-                          {/* 작성자 아바타 (오른쪽 끝) */}
-                          <div className="flex-shrink-0">
-                            <Avatar className="h-10 w-10">
-                              <AvatarImage src={post.author?.image} alt={post.author?.name} />
-                              <AvatarFallback>{post.author?.name?.[0] || 'U'}</AvatarFallback>
-                            </Avatar>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              )}
-            </>
-          ) : (
-            <div className="text-center py-12">
-              <p className="text-xl mb-2">설문이 없습니다</p>
-              <p className="text-muted-foreground">커뮤니티 의견을 묻는 설문을 만들어보세요!</p>
-            </div>
-          )}
-        </TabsContent>
-
-        <TabsContent value="info" className="mt-6">
-          {!isLoading && !error && paginatedPosts && paginatedPosts.length > 0 ? (
-            <>
-              {viewType === 'card' ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {paginatedPosts.map((post: any) => (
-                    <PostCard key={post.id} post={post} onClick={handlePostClick} />
-                  ))}
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {paginatedPosts.map((post: any) => (
-                    <Card key={post.id} className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => handlePostClick(post)}>
-                      <CardContent className="p-4">
-                        <div className="flex items-start gap-4">
-                          {/* 썸네일 이미지 (리스트뷰용) */}
-                          {post.linkInfo?.image && (
-                            <div className="flex-shrink-0 w-24 h-24 overflow-hidden rounded-lg">
-                              <img 
-                                src={post.linkInfo.image} 
-                                alt={post.linkInfo.title || post.title}
-                                className="w-full h-full object-cover"
-                                onError={(e) => {
-                                  e.currentTarget.style.display = 'none';
-                                }}
-                              />
-                            </div>
-                          )}
-                          
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-2">
-                              <Badge variant="secondary" className="text-xs">정보공유</Badge>
-                              <span className="text-xs text-gray-500">
-                                {post.author?.name || '익명 사용자'} • {(() => {
-                                  try {
-                                    return formatDistanceToNow(new Date(post.createdAt), { addSuffix: true, locale: ko });
-                                  } catch {
-                                    return '방금 전';
-                                  }
-                                })()}
-                              </span>
-                            </div>
-                            <h3 className="font-semibold text-lg mb-2 line-clamp-1">{post.title}</h3>
-                            <p className="text-gray-600 text-sm mb-3 line-clamp-2">{post.content}</p>
-                            
-                            {/* 링크 정보 미리보기 (썸네일이 없고 리스트뷰일 때) */}
-                            {post.linkInfo && !post.linkInfo.image && (
-                              <div className="mb-3 p-2 bg-gray-50 rounded border text-xs">
-                                <div className="font-medium line-clamp-1">{post.linkInfo.title}</div>
-                                <div className="text-gray-600 line-clamp-1 mt-1">{post.linkInfo.description}</div>
-                              </div>
-                            )}
-                            
-                            <div className="flex items-center gap-4 text-xs text-gray-500">
-                              <div className="flex items-center gap-1">
-                                <Heart className="h-3 w-3" />
-                                <span>{post.likes || 0}</span>
-                              </div>
-                              <div className="flex items-center gap-1">
-                                <MessageSquare className="h-3 w-3" />
-                                <span>{post.comments || 0}</span>
-                              </div>
-                              <div className="flex items-center gap-1">
-                                <Eye className="h-3 w-3" />
-                                <span>{post.views || 0}</span>
-                              </div>
-                            </div>
-                          </div>
-                          
-                          {/* 작성자 아바타 (오른쪽 끝) */}
-                          <div className="flex-shrink-0">
-                            <Avatar className="h-10 w-10">
-                              <AvatarImage src={post.author?.image} alt={post.author?.name} />
-                              <AvatarFallback>{post.author?.name?.[0] || 'U'}</AvatarFallback>
-                            </Avatar>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              )}
-            </>
-          ) : (
-            <div className="text-center py-12">
-              <p className="text-xl mb-2">정보공유 게시글이 없습니다</p>
-              <p className="text-muted-foreground">유용한 정보와 지식을 커뮤니티와 공유해주세요!</p>
-            </div>
-          )}
-        </TabsContent>
-
-        <TabsContent value="notices" className="mt-6">
-          {!isLoading && !error && paginatedPosts && paginatedPosts.length > 0 ? (
-            <>
-              {viewType === 'card' ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {paginatedPosts.map((post: any) => (
-                    <PostCard key={post.id} post={post} onClick={handlePostClick} />
-                  ))}
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {paginatedPosts.map((post: any) => (
-                    <Card key={post.id} className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => handlePostClick(post)}>
-                      <CardContent className="p-4">
-                        <div className="flex items-start gap-4">
-                          {/* 썸네일 이미지 (리스트뷰용) */}
-                          {post.linkInfo?.image && (
-                            <div className="flex-shrink-0 w-24 h-24 overflow-hidden rounded-lg">
-                              <img 
-                                src={post.linkInfo.image} 
-                                alt={post.linkInfo.title || post.title}
-                                className="w-full h-full object-cover"
-                                onError={(e) => {
-                                  e.currentTarget.style.display = 'none';
-                                }}
-                              />
-                            </div>
-                          )}
-                          
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-2">
-                              <Badge variant="danger" className="text-xs">공지사항</Badge>
-                              <span className="text-xs text-gray-500">
-                                {post.author?.name || '관리자'} • {(() => {
-                                  try {
-                                    return formatDistanceToNow(new Date(post.createdAt), { addSuffix: true, locale: ko });
-                                  } catch {
-                                    return '방금 전';
-                                  }
-                                })()}
-                              </span>
-                            </div>
-                            <h3 className="font-semibold text-lg mb-2 line-clamp-1">{post.title}</h3>
-                            <p className="text-gray-600 text-sm mb-3 line-clamp-2">{post.content}</p>
-                            
-                            {/* 링크 정보 미리보기 (썸네일이 없고 리스트뷰일 때) */}
-                            {post.linkInfo && !post.linkInfo.image && (
-                              <div className="mb-3 p-2 bg-gray-50 rounded border text-xs">
-                                <div className="font-medium line-clamp-1">{post.linkInfo.title}</div>
-                                <div className="text-gray-600 line-clamp-1 mt-1">{post.linkInfo.description}</div>
-                              </div>
-                            )}
-                            
-                            <div className="flex items-center gap-4 text-xs text-gray-500">
-                              <div className="flex items-center gap-1">
-                                <Heart className="h-3 w-3" />
-                                <span>{post.likes || 0}</span>
-                              </div>
-                              <div className="flex items-center gap-1">
-                                <MessageSquare className="h-3 w-3" />
-                                <span>{post.comments || 0}</span>
-                              </div>
-                              <div className="flex items-center gap-1">
-                                <Eye className="h-3 w-3" />
-                                <span>{post.views || 0}</span>
-                              </div>
-                            </div>
-                          </div>
-                          
-                          {/* 작성자 아바타 (오른쪽 끝) */}
-                          <div className="flex-shrink-0">
-                            <Avatar className="h-10 w-10">
-                              <AvatarImage src={post.author?.image} alt={post.author?.name} />
-                              <AvatarFallback>{post.author?.name?.[0] || 'A'}</AvatarFallback>
-                            </Avatar>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              )}
-            </>
-          ) : (
-            <div className="text-center py-12">
-              <p className="text-xl mb-2">공지사항이 없습니다</p>
-              <p className="text-muted-foreground">중요한 공지사항들이 여기에 표시됩니다.</p>
-            </div>
-          )}
-        </TabsContent>
+            {!isLoading && !error && (!paginatedPosts || paginatedPosts.length === 0) && (
+              <div className="text-center py-12">
+                <p className="text-xl mb-2">{getEmptyMessage(tabValue).title}</p>
+                <p className="text-muted-foreground mb-4">{getEmptyMessage(tabValue).description}</p>
+                <Button onClick={() => setIsCreatePostOpen(true)}>
+                  <Plus className="h-4 w-4 mr-1" />
+                  글쓰기
+                </Button>
+              </div>
+            )}
+          </TabsContent>
+        ))}
       </Tabs>
 
-      {/* 게시글 상세보기 모달 */}
+      {/* 게시글 상세 보기 다이얼로그 */}
       <Dialog open={isPostDetailOpen} onOpenChange={setIsPostDetailOpen}>
-        <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
-          <DialogDescription className="sr-only">
-            게시글 상세 내용을 확인하고 댓글을 작성할 수 있습니다.
-          </DialogDescription>
+        <DialogContent className="sm:max-w-[700px] max-h-[80vh] overflow-y-auto">
           {selectedPost && (
             <>
               <DialogHeader>
-                <div className="flex items-center gap-2 mb-2">
-                  <Badge variant="secondary" className="text-xs">
-                    {selectedPost.tag?.text || selectedPost.category}
-                  </Badge>
-                  <span className="text-sm text-gray-500">
-                    {selectedPost.user?.time || '방금 전'}
-                  </span>
-                </div>
-                <DialogTitle className="text-xl font-bold leading-tight">
-                  {selectedPost.title}
-                </DialogTitle>
-                <div className="flex items-center gap-2 pt-2">
-                  <Avatar className="h-8 w-8">
-                    <AvatarImage src={selectedPost.user?.image} alt={selectedPost.user?.name} />
-                    <AvatarFallback>{selectedPost.user?.name?.[0] || 'U'}</AvatarFallback>
+                <DialogTitle className="text-xl">{selectedPost.title}</DialogTitle>
+                <DialogDescription className="flex items-center gap-2">
+                  <Avatar className="h-6 w-6">
+                    <AvatarImage src={selectedPost.author?.image} alt={selectedPost.author?.name} />
+                    <AvatarFallback>{selectedPost.author?.name?.[0] || 'U'}</AvatarFallback>
                   </Avatar>
-                  <div>
-                    <p className="text-sm font-medium">{selectedPost.user?.name || '익명'}</p>
-                    <p className="text-xs text-gray-500">
-                      {selectedPost.createdAt ? new Date(selectedPost.createdAt).toLocaleDateString('ko-KR') : '날짜 정보 없음'}
-                    </p>
-                  </div>
-                </div>
+                  <span>{selectedPost.author?.name || '익명 사용자'}</span>
+                  <span>•</span>
+                  <span>{(() => {
+                    try {
+                      return formatDistanceToNow(new Date(selectedPost.createdAt), { addSuffix: true, locale: ko });
+                    } catch {
+                      return '방금 전';
+                    }
+                  })()}</span>
+                </DialogDescription>
               </DialogHeader>
               
-              <div className="mt-6">
-                <div className="prose prose-sm max-w-none">
-                  <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
-                    {selectedPost.content}
-                  </p>
+              <div className="py-4 space-y-4">
+                {/* 게시글 내용 */}
+                <div className="prose max-w-none">
+                  <p className="whitespace-pre-wrap">{selectedPost.content}</p>
                 </div>
-                
-                {/* 링크 정보 표시 */}
+
+                {/* 링크 정보 */}
                 {selectedPost.linkInfo && (
-                  <div className="mt-4 p-4 border rounded-lg bg-gray-50">
-                    <div className="flex items-start gap-3">
+                  <div className="border rounded-lg p-4 bg-gray-50">
+                    <div className="flex items-start gap-4">
                       {selectedPost.linkInfo.image && (
-                        <img 
-                          src={selectedPost.linkInfo.image} 
-                          alt="링크 썸네일" 
-                          className="w-16 h-16 object-cover rounded"
-                        />
+                        <div className="flex-shrink-0 w-24 h-24 overflow-hidden rounded-lg">
+                          <img 
+                            src={selectedPost.linkInfo.image} 
+                            alt={selectedPost.linkInfo.title}
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                              e.currentTarget.style.display = 'none';
+                            }}
+                          />
+                        </div>
                       )}
                       <div className="flex-1">
-                        <h4 className="font-semibold text-sm mb-1">
-                          {selectedPost.linkInfo.title}
-                        </h4>
-                        <p className="text-xs text-gray-600 mb-2">
-                          {selectedPost.linkInfo.description}
-                        </p>
+                        <h4 className="font-medium text-lg mb-2">{selectedPost.linkInfo.title}</h4>
+                        <p className="text-gray-600 text-sm mb-2">{selectedPost.linkInfo.description}</p>
                         <a 
-                          href={selectedPost.linkInfo.url}
-                          target="_blank"
+                          href={selectedPost.linkInfo.url} 
+                          target="_blank" 
                           rel="noopener noreferrer"
-                          className="text-xs text-blue-600 hover:text-blue-800 underline"
+                          className="text-blue-600 hover:text-blue-800 text-sm flex items-center gap-1"
                         >
-                          링크 보기
+                          <ExternalLink className="h-3 w-3" />
+                          링크 바로가기
                         </a>
                       </div>
                     </div>
                   </div>
                 )}
-                
-                {selectedPost.tags && selectedPost.tags.length > 0 && (
-                  <div className="mt-4 pt-4 border-t">
-                    <div className="flex flex-wrap gap-2">
-                      {selectedPost.tags.map((tag: string, index: number) => (
-                        <Badge key={index} variant="outline" className="text-xs">
-                          #{tag}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                
-                <div className="mt-6 pt-4 border-t flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      className="text-gray-600 hover:text-red-500"
-                      onClick={() => handleLikeToggle(selectedPost.id)}
-                    >
-                      <Heart className="h-4 w-4 mr-1" />
-                      좋아요 {selectedPost.likes || 0}
-                    </Button>
-                    <Button variant="ghost" size="sm" className="text-gray-600 hover:text-blue-500">
-                      <MessageSquare className="h-4 w-4 mr-1" />
-                      댓글 {selectedPost.comments || 0}
-                    </Button>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Button variant="outline" size="sm">
-                      공유
-                    </Button>
-                    <Button variant="outline" size="sm">
-                      신고
-                    </Button>
-                  </div>
+
+                {/* 반응 버튼 */}
+                <div className="flex items-center gap-4 py-2 border-t border-b">
+                  <Button variant="ghost" size="sm" className="flex items-center gap-2">
+                    <Heart className="h-4 w-4" />
+                    좋아요 {selectedPost.likes || 0}
+                  </Button>
+                  <Button variant="ghost" size="sm" className="flex items-center gap-2">
+                    <MessageSquare className="h-4 w-4" />
+                    댓글 {selectedPost.comments || 0}
+                  </Button>
+                  <Button variant="ghost" size="sm" className="flex items-center gap-2">
+                    <Eye className="h-4 w-4" />
+                    조회 {selectedPost.views || 0}
+                  </Button>
                 </div>
-                
+
                 {/* 댓글 섹션 */}
-                <div className="mt-6 pt-4 border-t">
-                  <h4 className="font-medium mb-4">댓글 {selectedPost.comments || 0}개</h4>
+                <div className="space-y-4">
+                  <h4 className="font-medium">댓글</h4>
                   
                   {/* 댓글 작성 */}
-                  <div className="mb-4">
-                    <Textarea 
-                      placeholder="댓글을 작성해주세요..." 
-                      className="mb-2"
-                      rows={3}
-                      value={newComment}
-                      onChange={(e) => setNewComment(e.target.value)}
-                    />
-                    <div className="flex justify-end">
-                      <Button size="sm" onClick={handleCommentSubmit}>댓글 작성</Button>
+                  <div className="flex gap-3">
+                    <Avatar className="h-8 w-8">
+                      <AvatarImage src={user?.image} alt={user?.username} />
+                      <AvatarFallback>{user?.username?.[0] || 'U'}</AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 space-y-2">
+                      <Textarea
+                        placeholder="댓글을 작성하세요..."
+                        value={newComment}
+                        onChange={(e) => setNewComment(e.target.value)}
+                        className="min-h-[60px]"
+                      />
+                      <Button size="sm" onClick={handleAddComment}>
+                        댓글 작성
+                      </Button>
                     </div>
                   </div>
-                  
+
                   {/* 댓글 목록 */}
                   <div className="space-y-4">
-                    {comments.length === 0 ? (
-                      <div className="text-center py-8 text-gray-500">
-                        <MessageSquare className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                        <p>아직 댓글이 없습니다.</p>
-                        <p className="text-sm">첫 번째 댓글을 작성해보세요!</p>
-                      </div>
-                    ) : (
-                      comments.map((comment) => (
-                        <div key={comment.id} className="bg-gray-50 rounded-lg p-3">
-                          <div className="flex items-center gap-2 mb-2">
-                            <Avatar className="h-6 w-6">
-                              <AvatarImage src={comment.user.image} />
-                              <AvatarFallback>{comment.user.name?.[0] || 'U'}</AvatarFallback>
-                            </Avatar>
-                            <span className="text-sm font-medium">{comment.user.name}</span>
-                            <span className="text-xs text-gray-500">
-                              {formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true, locale: ko })}
-                            </span>
+                    {comments.map((comment) => (
+                      <div key={comment.id} className="flex gap-3">
+                        <Avatar className="h-8 w-8">
+                          <AvatarImage src={comment.author.image} alt={comment.author.name} />
+                          <AvatarFallback>{comment.author.name[0]}</AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1">
+                          <div className="bg-gray-50 rounded-lg p-3">
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className="font-medium text-sm">{comment.author.name}</span>
+                              <span className="text-xs text-gray-500">
+                                {formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true, locale: ko })}
+                              </span>
+                            </div>
+                            <p className="text-sm">{comment.content}</p>
                           </div>
-                          <p className="text-sm text-gray-700 whitespace-pre-wrap">
-                            {comment.content}
-                          </p>
-                          <div className="flex items-center gap-2 mt-2">
+                          <div className="flex gap-2 mt-2">
                             <Button 
                               variant="ghost" 
                               size="sm" 
-                              className="text-xs h-6 px-2 hover:text-red-500"
-                              onClick={() => {
-                                // 댓글 좋아요 기능
-                                const updatedComments = comments.map(c => 
-                                  c.id === comment.id ? { ...c, likes: (c.likes || 0) + 1 } : c
-                                );
-                                setComments(updatedComments);
-                                toast({
-                                  title: "댓글 좋아요",
-                                  description: "댓글에 좋아요를 눌렀습니다.",
-                                });
-                              }}
-                            >
-                              <Heart className="h-3 w-3 mr-1" />
-                              {comment.likes || 0}
-                            </Button>
-                            <Button 
-                              variant="ghost" 
-                              size="sm" 
-                              className="text-xs h-6 px-2"
-                              onClick={() => {
-                                setReplyingTo(replyingTo === comment.id ? null : comment.id);
-                                setReplyText('');
-                              }}
+                              onClick={() => setReplyingTo(comment.id)}
+                              className="text-xs"
                             >
                               답글
                             </Button>
                           </div>
-                          
-                          {/* 답글 작성 폼 */}
+
+                          {/* 답글 작성 */}
                           {replyingTo === comment.id && (
-                            <div className="mt-3 ml-6 p-3 bg-white rounded-lg border">
-                              <Textarea
-                                placeholder="답글을 작성해주세요..."
-                                value={replyText}
-                                onChange={(e) => setReplyText(e.target.value)}
-                                rows={2}
-                                className="mb-2"
-                              />
-                              <div className="flex justify-end gap-2">
-                                <Button 
-                                  variant="outline" 
-                                  size="sm"
-                                  onClick={() => {
-                                    setReplyingTo(null);
-                                    setReplyText('');
-                                  }}
-                                >
-                                  취소
-                                </Button>
-                                <Button 
-                                  size="sm"
-                                  onClick={() => handleReplySubmit(comment.id)}
-                                >
-                                  답글 작성
-                                </Button>
+                            <div className="mt-3 flex gap-2">
+                              <Avatar className="h-6 w-6">
+                                <AvatarImage src={user?.image} alt={user?.username} />
+                                <AvatarFallback>{user?.username?.[0] || 'U'}</AvatarFallback>
+                              </Avatar>
+                              <div className="flex-1 space-y-2">
+                                <Textarea
+                                  placeholder="답글을 작성하세요..."
+                                  value={replyText}
+                                  onChange={(e) => setReplyText(e.target.value)}
+                                  className="min-h-[50px] text-sm"
+                                />
+                                <div className="flex gap-2">
+                                  <Button 
+                                    size="sm" 
+                                    onClick={() => handleAddReply(comment.id)}
+                                    className="text-xs"
+                                  >
+                                    답글 작성
+                                  </Button>
+                                  <Button 
+                                    variant="ghost" 
+                                    size="sm" 
+                                    onClick={() => setReplyingTo(null)}
+                                    className="text-xs"
+                                  >
+                                    취소
+                                  </Button>
+                                </div>
                               </div>
                             </div>
                           )}
-                          
+
                           {/* 답글 목록 */}
                           {comment.replies && comment.replies.length > 0 && (
-                            <div className="mt-3 ml-6 space-y-3">
+                            <div className="mt-3 ml-4 space-y-3">
                               {comment.replies.map((reply: any) => (
-                                <div key={reply.id} className="bg-white rounded-lg p-3 border-l-2 border-blue-200">
-                                  <div className="flex items-center gap-2 mb-2">
-                                    <Avatar className="h-5 w-5">
-                                      <AvatarImage src={reply.user.image} />
-                                      <AvatarFallback>{reply.user.name?.[0] || 'U'}</AvatarFallback>
-                                    </Avatar>
-                                    <span className="text-sm font-medium">{reply.user.name}</span>
-                                    <span className="text-xs text-gray-500">
-                                      {formatDistanceToNow(new Date(reply.createdAt), { addSuffix: true, locale: ko })}
-                                    </span>
-                                  </div>
-                                  <p className="text-sm text-gray-700 whitespace-pre-wrap">
-                                    {reply.content}
-                                  </p>
-                                  <div className="flex items-center gap-2 mt-2">
-                                    <Button 
-                                      variant="ghost" 
-                                      size="sm" 
-                                      className="text-xs h-5 px-2 hover:text-red-500"
-                                      onClick={() => {
-                                        // 답글 좋아요 기능
-                                        setComments(prev => prev.map(c => 
-                                          c.id === comment.id ? {
-                                            ...c,
-                                            replies: c.replies.map((r: any) => 
-                                              r.id === reply.id ? { ...r, likes: (r.likes || 0) + 1 } : r
-                                            )
-                                          } : c
-                                        ));
-                                        toast({
-                                          title: "답글 좋아요",
-                                          description: "답글에 좋아요를 눌렀습니다.",
-                                        });
-                                      }}
-                                    >
-                                      <Heart className="h-3 w-3 mr-1" />
-                                      {reply.likes || 0}
-                                    </Button>
+                                <div key={reply.id} className="flex gap-2">
+                                  <Avatar className="h-6 w-6">
+                                    <AvatarImage src={reply.author.image} alt={reply.author.name} />
+                                    <AvatarFallback>{reply.author.name[0]}</AvatarFallback>
+                                  </Avatar>
+                                  <div className="flex-1">
+                                    <div className="bg-gray-100 rounded-lg p-2">
+                                      <div className="flex items-center gap-2 mb-1">
+                                        <span className="font-medium text-xs">{reply.author.name}</span>
+                                        <span className="text-xs text-gray-500">
+                                          {formatDistanceToNow(new Date(reply.createdAt), { addSuffix: true, locale: ko })}
+                                        </span>
+                                      </div>
+                                      <p className="text-xs">{reply.content}</p>
+                                    </div>
                                   </div>
                                 </div>
                               ))}
                             </div>
                           )}
                         </div>
-                      ))
-                    )}
+                      </div>
+                    ))}
                   </div>
                 </div>
               </div>
