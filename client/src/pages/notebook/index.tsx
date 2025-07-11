@@ -1006,9 +1006,13 @@ export default function NotebookPage() {
                     </DialogTitle>
                   </DialogHeader>
 
+                  {/* Debug Console Logging */}
+                  {console.log('🚀 Dialog rendering with activeTab:', activeTab)}
+
                   {/* Tab Navigation - Custom Implementation */}
-                  <div className="mb-4">
-                    <div className="text-xs text-blue-600 font-medium mb-1 text-center">탭 네비게이션</div>
+                  <div className="mb-4 p-4 bg-yellow-200 border-4 border-red-500 rounded-lg">
+                    <div className="text-lg text-red-700 font-bold mb-2 text-center">🔥 TAB NAVIGATION SYSTEM 🔥</div>
+                    <div className="text-sm text-black font-medium mb-2 text-center">현재 활성 탭: {activeTab}</div>
                     <div className="flex space-x-1 bg-gradient-to-r from-blue-100 to-indigo-100 p-2 rounded-lg border-2 border-blue-300 shadow-lg"
                          data-tab-system="custom-v2">
                     <button 
