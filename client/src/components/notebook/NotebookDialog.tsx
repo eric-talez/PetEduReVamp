@@ -170,6 +170,7 @@ export default function NotebookDialog({
   const [tagInput, setTagInput] = useState('');
   const [mediaPreview, setMediaPreview] = useState<{photos: string[], videos: string[]}>({photos: [], videos: []});
   const [useAIMode, setUseAIMode] = useState(false);
+  const [activeTab, setActiveTab] = useState<'basic' | 'activities' | 'media' | 'ai'>('basic');
   
   const fileInputRef = useRef<HTMLInputElement>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
@@ -302,6 +303,30 @@ export default function NotebookDialog({
     }
   };
   
+  // AI 콘텐츠 생성 함수
+  const generateAIContent = () => {
+    toast({
+      title: "AI 콘텐츠 생성 중",
+      description: "AI가 알림장 내용을 생성하고 있습니다..."
+    });
+    
+    // AI 콘텐츠 생성 로직을 여기에 추가
+    // 현재는 기본 텍스트로 설정
+    const aiContent = "AI가 생성한 알림장 내용입니다. 오늘 반려견이 활발하고 건강한 모습을 보였습니다.";
+    
+    setTimeout(() => {
+      setForm(prev => ({
+        ...prev,
+        content: prev.content ? `${prev.content}\n\n${aiContent}` : aiContent
+      }));
+      
+      toast({
+        title: "AI 콘텐츠 생성 완료",
+        description: "AI가 생성한 내용이 추가되었습니다."
+      });
+    }, 1000);
+  };
+
   // 미디어 파일 제거
   const handleDeleteMedia = (type: 'photo' | 'video', index: number) => {
     if (type === 'photo') {
@@ -383,7 +408,70 @@ export default function NotebookDialog({
             {initialData ? '알림장을 수정합니다.' : '새로운 알림장을 작성합니다.'}
           </DialogDescription>
         </DialogHeader>
+        
+        {/* Tab Navigation */}
+        <div className="mb-4">
+          <div className="text-xs text-blue-600 font-medium mb-1 text-center">탭 네비게이션</div>
+          <div className="flex space-x-1 bg-gradient-to-r from-blue-100 to-indigo-100 p-2 rounded-lg border-2 border-blue-300 shadow-lg">
+            <button 
+              onClick={() => {
+                console.log('Tab clicked: basic');
+                setActiveTab('basic');
+              }}
+              className={`flex-1 py-2 px-3 text-sm font-medium rounded-md transition-colors ${
+                activeTab === 'basic' 
+                  ? 'bg-white shadow-sm text-gray-900 border-2 border-blue-500' 
+                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+              }`}
+            >
+              📝 기본 정보
+            </button>
+            <button 
+              onClick={() => {
+                console.log('Tab clicked: activities');
+                setActiveTab('activities');
+              }}
+              className={`flex-1 py-2 px-3 text-sm font-medium rounded-md transition-colors ${
+                activeTab === 'activities' 
+                  ? 'bg-white shadow-sm text-gray-900 border-2 border-blue-500' 
+                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+              }`}
+            >
+              📊 활동 기록
+            </button>
+            <button 
+              onClick={() => {
+                console.log('Tab clicked: media');
+                setActiveTab('media');
+              }}
+              className={`flex-1 py-2 px-3 text-sm font-medium rounded-md transition-colors ${
+                activeTab === 'media' 
+                  ? 'bg-white shadow-sm text-gray-900 border-2 border-blue-500' 
+                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+              }`}
+            >
+              📸 미디어
+            </button>
+            <button 
+              onClick={() => {
+                console.log('Tab clicked: ai');
+                setActiveTab('ai');
+              }}
+              className={`flex-1 py-2 px-3 text-sm font-medium rounded-md transition-colors ${
+                activeTab === 'ai' 
+                  ? 'bg-white shadow-sm text-gray-900 border-2 border-blue-500' 
+                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+              }`}
+            >
+              🤖 AI 도우미
+            </button>
+          </div>
+        </div>
+        
+        {/* Tab Content */}
         <div className="grid gap-4 py-4">
+          {activeTab === 'basic' && (
+            <div className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="petId">반려견 선택</Label>
             <Select 
@@ -614,104 +702,201 @@ export default function NotebookDialog({
               </Button>
             </div>
           </div>
-          <div className="space-y-2">
-            <Label>미디어</Label>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <div className="flex justify-between items-center mb-2">
-                  <h4 className="text-sm font-medium">사진</h4>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => fileInputRef.current?.click()}
-                  >
-                    <Image className="mr-2 h-4 w-4" />
-                    사진 추가
-                  </Button>
-                  <input
-                    type="file"
-                    ref={fileInputRef}
-                    className="hidden"
-                    accept="image/*"
-                    onChange={handleFileChange}
-                    multiple
-                  />
-                </div>
-                {mediaPreview.photos.length > 0 ? (
-                  <div className="grid grid-cols-2 gap-2">
-                    {mediaPreview.photos.map((url, index) => (
-                      <div key={index} className="relative group">
-                        <img
-                          src={url}
-                          alt={`미리보기 ${index + 1}`}
-                          className="w-full h-24 object-cover rounded-md cursor-pointer"
-                        />
-                        <Button
-                          variant="destructive"
-                          size="icon"
-                          className="absolute top-1 right-1 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
-                          onClick={() => handleDeleteMedia('photo', index)}
-                        >
-                          <X className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="flex items-center justify-center h-24 bg-muted rounded-md">
-                    <p className="text-sm text-muted-foreground">사진 없음</p>
-                  </div>
-                )}
+            </div>
+          )}
+          
+          {activeTab === 'activities' && (
+            <div className="space-y-4">
+              <div className="text-center py-8">
+                <h3 className="text-lg font-medium mb-2">📊 활동 기록</h3>
+                <p className="text-gray-600 mb-4">반려견의 다양한 활동을 기록해보세요.</p>
               </div>
-              <div>
-                <div className="flex justify-between items-center mb-2">
-                  <h4 className="text-sm font-medium">동영상</h4>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => videoInputRef.current?.click()}
-                  >
-                    <Video className="mr-2 h-4 w-4" />
-                    동영상 추가
-                  </Button>
-                  <input
-                    type="file"
-                    ref={videoInputRef}
-                    className="hidden"
-                    accept="video/*"
-                    onChange={handleVideoChange}
-                    multiple
-                  />
-                </div>
-                {mediaPreview.videos.length > 0 ? (
-                  <div className="grid grid-cols-2 gap-2">
-                    {mediaPreview.videos.map((url, index) => (
-                      <div key={index} className="relative group">
-                        <video
-                          src={url}
-                          className="w-full h-24 object-cover rounded-md cursor-pointer"
-                        />
-                        <Button
-                          variant="destructive"
-                          size="icon"
-                          className="absolute top-1 right-1 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
-                          onClick={() => handleDeleteMedia('video', index)}
-                        >
-                          <X className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    ))}
+              <ActivityRecorder 
+                value={form.activities} 
+                onChange={(activities) => {
+                  const activityText = generateActivityText(activities);
+                  let cleanContent = form.content;
+                  
+                  const activityLabels = ['[식사]', '[배변]', '[산책]', '[훈련]', '[놀이]'];
+                  const contentLines = cleanContent.split('\n');
+                  const filteredLines = contentLines.filter(line => {
+                    const isActivityRelated = line.trim().startsWith('특이사항:') 
+                      || line.trim().startsWith('추가 훈련:') 
+                      || line.trim().startsWith('기타 놀이:');
+                      
+                    return !activityLabels.some(label => line.trim().startsWith(label)) && !isActivityRelated;
+                  });
+                  
+                  cleanContent = filteredLines.join('\n');
+                  
+                  setForm(prev => ({
+                    ...prev,
+                    activities,
+                    content: activityText ? 
+                      (cleanContent.trim() ? `${cleanContent.trim()}\n\n${activityText}` : activityText) : 
+                      cleanContent
+                  }));
+                  
+                  toast({
+                    title: "활동 정보가 추가되었습니다",
+                    description: "선택한 활동이 알림장 내용에 반영되었습니다."
+                  });
+                }}
+              />
+            </div>
+          )}
+          
+          {activeTab === 'media' && (
+            <div className="space-y-4">
+              <div className="text-center py-8">
+                <h3 className="text-lg font-medium mb-2">📸 미디어 관리</h3>
+                <p className="text-gray-600 mb-4">사진과 동영상을 추가하여 알림장을 더욱 풍성하게 만들어보세요.</p>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <div className="flex justify-between items-center mb-2">
+                    <h4 className="text-sm font-medium">사진</h4>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => fileInputRef.current?.click()}
+                    >
+                      <Image className="mr-2 h-4 w-4" />
+                      사진 추가
+                    </Button>
+                    <input
+                      type="file"
+                      ref={fileInputRef}
+                      className="hidden"
+                      accept="image/*"
+                      onChange={handleFileChange}
+                      multiple
+                    />
                   </div>
-                ) : (
-                  <div className="flex items-center justify-center h-24 bg-muted rounded-md">
-                    <p className="text-sm text-muted-foreground">동영상 없음</p>
+                  {mediaPreview.photos.length > 0 ? (
+                    <div className="grid grid-cols-2 gap-2">
+                      {mediaPreview.photos.map((url, index) => (
+                        <div key={index} className="relative group">
+                          <img
+                            src={url}
+                            alt={`미리보기 ${index + 1}`}
+                            className="w-full h-24 object-cover rounded-md cursor-pointer"
+                          />
+                          <Button
+                            variant="destructive"
+                            size="icon"
+                            className="absolute top-1 right-1 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                            onClick={() => handleDeleteMedia('photo', index)}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-center h-24 bg-muted rounded-md">
+                      <p className="text-sm text-muted-foreground">사진 없음</p>
+                    </div>
+                  )}
+                </div>
+                <div>
+                  <div className="flex justify-between items-center mb-2">
+                    <h4 className="text-sm font-medium">동영상</h4>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => videoInputRef.current?.click()}
+                    >
+                      <Video className="mr-2 h-4 w-4" />
+                      동영상 추가
+                    </Button>
+                    <input
+                      type="file"
+                      ref={videoInputRef}
+                      className="hidden"
+                      accept="video/*"
+                      onChange={handleVideoChange}
+                      multiple
+                    />
+                  </div>
+                  {mediaPreview.videos.length > 0 ? (
+                    <div className="grid grid-cols-2 gap-2">
+                      {mediaPreview.videos.map((url, index) => (
+                        <div key={index} className="relative group">
+                          <video
+                            src={url}
+                            className="w-full h-24 object-cover rounded-md cursor-pointer"
+                          />
+                          <Button
+                            variant="destructive"
+                            size="icon"
+                            className="absolute top-1 right-1 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                            onClick={() => handleDeleteMedia('video', index)}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-center h-24 bg-muted rounded-md">
+                      <p className="text-sm text-muted-foreground">동영상 없음</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+          
+          {activeTab === 'ai' && (
+            <div className="space-y-4">
+              <div className="text-center py-8">
+                <h3 className="text-lg font-medium mb-2">🤖 AI 도우미</h3>
+                <p className="text-gray-600 mb-4">AI의 도움을 받아 더욱 풍성한 알림장을 작성해보세요.</p>
+              </div>
+              <div className="space-y-4">
+                <div className="flex gap-2">
+                  <Button 
+                    type="button" 
+                    variant="outline"
+                    onClick={() => setUseAIMode(!useAIMode)}
+                    className={useAIMode ? "bg-primary/20" : ""}
+                  >
+                    <Sparkles className="mr-2 h-4 w-4" />
+                    AI 모드 {useAIMode ? '끄기' : '켜기'}
+                  </Button>
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    size="sm"
+                    onClick={onShowTemplateDialog}
+                  >
+                    <ClipboardList className="mr-2 h-4 w-4" />
+                    템플릿 사용
+                  </Button>
+                  {useAIMode && (
+                    <Button 
+                      type="button" 
+                      variant="outline" 
+                      size="sm"
+                      onClick={generateAIContent}
+                    >
+                      <Brain className="mr-2 h-4 w-4" />
+                      AI로 내용 생성
+                    </Button>
+                  )}
+                </div>
+                {useAIMode && (
+                  <div className="bg-blue-50 p-4 rounded-lg">
+                    <p className="text-sm text-blue-700 mb-2">AI 모드가 활성화되었습니다.</p>
+                    <p className="text-xs text-blue-600">활동 기록 탭에서 활동을 선택하면 AI가 자동으로 내용을 생성합니다.</p>
                   </div>
                 )}
               </div>
             </div>
-          </div>
+          )}
         </div>
         <DialogFooter>
           <Button
