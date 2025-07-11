@@ -1007,11 +1007,11 @@ export default function NotebookPage() {
                   </DialogHeader>
 
                   <Tabs defaultValue="basic" className="w-full">
-                    <TabsList className="grid w-full grid-cols-4">
-                      <TabsTrigger value="basic">📝 기본 정보</TabsTrigger>
-                      <TabsTrigger value="activities">📊 활동 기록</TabsTrigger>
-                      <TabsTrigger value="media">📸 미디어</TabsTrigger>
-                      <TabsTrigger value="ai">🤖 AI 도우미</TabsTrigger>
+                    <TabsList className="grid w-full grid-cols-4 bg-gray-100 p-1 rounded-lg mb-4 border">
+                      <TabsTrigger value="basic" className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:shadow-sm">📝 기본 정보</TabsTrigger>
+                      <TabsTrigger value="activities" className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:shadow-sm">📊 활동 기록</TabsTrigger>
+                      <TabsTrigger value="media" className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:shadow-sm">📸 미디어</TabsTrigger>
+                      <TabsTrigger value="ai" className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:shadow-sm">🤖 AI 도우미</TabsTrigger>
                     </TabsList>
 
                     <TabsContent value="basic" className="space-y-4">
