@@ -1006,8 +1006,11 @@ export default function NotebookPage() {
                     </DialogTitle>
                   </DialogHeader>
 
-                  {/* Tab Navigation */}
-                  <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg mb-4 border-2 border-blue-200">
+                  {/* Tab Navigation - Custom Implementation */}
+                  <div className="mb-4">
+                    <div className="text-xs text-blue-600 font-medium mb-1 text-center">탭 네비게이션</div>
+                    <div className="flex space-x-1 bg-gradient-to-r from-blue-100 to-indigo-100 p-2 rounded-lg border-2 border-blue-300 shadow-lg"
+                         data-tab-system="custom-v2">
                     <button 
                       onClick={() => {
                         console.log('Tab clicked: basic');
@@ -1060,6 +1063,7 @@ export default function NotebookPage() {
                     >
                       🤖 AI 도우미
                     </button>
+                    </div>
                   </div>
 
                   {/* Tab Content */}
