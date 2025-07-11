@@ -64,6 +64,7 @@ export default function FacilitiesPage() {
   const [userLocation, setUserLocation] = useState<{lat: number, lng: number} | null>(null);
   const [selectedFacility, setSelectedFacility] = useState<Facility | null>(null);
   const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
+  const [isMapReady, setIsMapReady] = useState(false);
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstance = useRef<any>(null);
   const { toast } = useToast();
@@ -215,6 +216,7 @@ export default function FacilitiesPage() {
   useEffect(() => {
     loadFacilities();
     getCurrentLocation();
+    checkKakaoMapsAPI();
   }, []);
 
   useEffect(() => {
@@ -222,16 +224,55 @@ export default function FacilitiesPage() {
   }, [facilities, searchTerm, typeFilter, sortBy, userLocation]);
 
   useEffect(() => {
-    if (viewMode === 'map' && mapRef.current && !mapInstance.current) {
+    console.log('지도 초기화 조건 확인:', {
+      viewMode,
+      hasMapRef: !!mapRef.current,
+      hasMapInstance: !!mapInstance.current,
+      isMapReady
+    });
+    
+    if (viewMode === 'map' && mapRef.current && !mapInstance.current && isMapReady) {
+      console.log('지도 초기화 실행');
       initializeMap();
     }
-  }, [viewMode, filteredFacilities, userLocation]);
+  }, [viewMode, filteredFacilities, userLocation, isMapReady]);
 
   useEffect(() => {
     if (mapInstance.current && filteredFacilities.length > 0) {
       updateMapMarkers();
     }
   }, [filteredFacilities]);
+
+  const checkKakaoMapsAPI = () => {
+    console.log('카카오맵 API 로드 상태 확인 중...');
+    
+    if (window.kakao && window.kakao.maps) {
+      console.log('카카오맵 API 로드 완료');
+      setIsMapReady(true);
+    } else {
+      console.log('카카오맵 API 로드 중... 재시도 예정');
+      
+      // API가 로드되지 않은 경우 잠시 후 다시 시도
+      const timer = setTimeout(() => {
+        if (window.kakao && window.kakao.maps) {
+          console.log('카카오맵 API 로드 완료 (재시도 성공)');
+          setIsMapReady(true);
+        } else {
+          console.error('카카오맵 API 로드 실패');
+          // 3초 후 한 번 더 시도
+          setTimeout(() => {
+            if (window.kakao && window.kakao.maps) {
+              console.log('카카오맵 API 로드 완료 (최종 재시도 성공)');
+              setIsMapReady(true);
+            } else {
+              console.error('카카오맵 API 최종 로드 실패');
+            }
+          }, 3000);
+        }
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  };
 
   const loadFacilities = async () => {
     try {
@@ -340,20 +381,47 @@ export default function FacilitiesPage() {
   const initializeMap = () => {
     if (!window.kakao || !window.kakao.maps) {
       console.error('Kakao Maps API not loaded');
+      // 백업 지도 표시
+      if (mapRef.current) {
+        mapRef.current.innerHTML = `
+          <div class="w-full h-full flex items-center justify-center flex-col bg-gray-50 rounded-lg">
+            <div class="text-2xl mb-4">🗺️</div>
+            <div class="text-base text-gray-600 mb-2">지도를 로드하는 중...</div>
+            <div class="text-sm text-gray-500">잠시만 기다려주세요</div>
+          </div>
+        `;
+      }
       return;
     }
 
-    const container = mapRef.current;
-    const options = {
-      center: new window.kakao.maps.LatLng(
-        userLocation?.lat || 37.5665, 
-        userLocation?.lng || 126.9780
-      ),
-      level: 5
-    };
+    try {
+      const container = mapRef.current;
+      if (!container) return;
 
-    mapInstance.current = new window.kakao.maps.Map(container, options);
-    updateMapMarkers();
+      const options = {
+        center: new window.kakao.maps.LatLng(
+          userLocation?.lat || 37.5665, 
+          userLocation?.lng || 126.9780
+        ),
+        level: 5
+      };
+
+      mapInstance.current = new window.kakao.maps.Map(container, options);
+      console.log('카카오맵 초기화 완료');
+      updateMapMarkers();
+    } catch (error) {
+      console.error('지도 초기화 실패:', error);
+      // 에러 발생 시 백업 표시
+      if (mapRef.current) {
+        mapRef.current.innerHTML = `
+          <div class="w-full h-full flex items-center justify-center flex-col bg-gray-50 rounded-lg">
+            <div class="text-2xl mb-4">❌</div>
+            <div class="text-base text-gray-600 mb-2">지도를 로드할 수 없습니다</div>
+            <div class="text-sm text-gray-500">페이지를 새로고침해주세요</div>
+          </div>
+        `;
+      }
+    }
   };
 
   const updateMapMarkers = () => {
@@ -633,7 +701,15 @@ export default function FacilitiesPage() {
                     ref={mapRef}
                     className="w-full h-[600px] rounded-lg"
                     style={{ background: '#f0f0f0' }}
-                  />
+                  >
+                    {!isMapReady && (
+                      <div className="w-full h-full flex items-center justify-center flex-col bg-gray-50 rounded-lg">
+                        <div className="text-2xl mb-4">🗺️</div>
+                        <div className="text-base text-gray-600 mb-2">지도를 준비하는 중...</div>
+                        <div className="text-sm text-gray-500">잠시만 기다려주세요</div>
+                      </div>
+                    )}
+                  </div>
                 </CardContent>
               </Card>
             </div>
