@@ -448,6 +448,10 @@ export default function TrainerNotebookPage() {
                 {/* Activities Tab */}
                 {activeTab === 'activities' && (
                   <div className="space-y-4">
+                    <div className="bg-green-100 p-2 rounded mb-4 text-center">
+                      <div className="text-green-800 font-bold">✅ 활동 기록 탭이 활성화되었습니다!</div>
+                      <div className="text-sm text-green-600">배변, 놀이, 산책, 식사 활동을 기록하세요</div>
+                    </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-3">
                         <Label className="text-sm font-medium">배변 활동</Label>
