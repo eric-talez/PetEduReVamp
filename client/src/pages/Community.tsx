@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -7,102 +7,30 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Search, MessageSquare, TrendingUp, MessageCircle, Filter } from 'lucide-react';
 import { CommunityPostForm } from '@/components/CommunityPostForm';
+import { useQuery } from '@tanstack/react-query';
 
 export default function Community() {
   const [searchTerm, setSearchTerm] = useState('');
   const [isPostFormOpen, setIsPostFormOpen] = useState(false);
   
-  // Mock community posts data
-  const communityPosts = [
-    {
-      id: 1,
-      user: {
-        image: "https://images.unsplash.com/photo-1580489944761-15a19d654956?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100",
-        name: "최견주",
-        time: "3시간 전"
-      },
-      title: "산책 중 다른 강아지 만났을 때 대처법",
-      content: "오늘 산책 중 크고 활발한 강아지를 만났는데, 우리집 강아지가 너무 긴장하더라구요. 훈련사님이 알려주신 대로 거리를 두고 차분히 대응했더니 효과가 있었어요. 다른 견주분들도 시도해보세요!",
-      likes: 28,
-      comments: 12,
-      tag: { text: "산책팁", variant: "blue" }
-    },
-    {
-      id: 2,
-      user: {
-        image: "https://images.unsplash.com/photo-1607990281513-2c110a25bd8c?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100",
-        name: "김훈련",
-        time: "어제"
-      },
-      title: "강아지가 말을 안들을 때 해결법",
-      content: "많은 견주님들이 반려견이 말을 안들어서 힘들어하십니다. 하지만 강아지 입장에선 여러분이 무슨 말을 하는지 모를 수 있어요. 일관된 명령어와 적절한 보상으로 서서히 훈련하는 것이 중요합니다. 다음 주 라이브 세션에서 자세히 알려드릴게요!",
-      likes: 56,
-      comments: 23,
-      tag: { text: "훈련팁", variant: "green" }
-    },
-    {
-      id: 3,
-      user: {
-        image: "https://images.unsplash.com/photo-1493666438817-866a91353ca9?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100",
-        name: "박반려",
-        time: "2일 전"
-      },
-      title: "분리불안 극복 성공 후기",
-      content: "저희 코코가 혼자 있으면 짖고 물건을 망가뜨리는 문제가 심했는데, 이 플랫폼에서 분리불안 과정을 수강하고 정말 많이 좋아졌어요! 특히 점진적 이별 훈련이 효과적이었습니다. 비슷한 고민 있으신 분들께 추천해요.",
-      likes: 42,
-      comments: 18,
-      tag: { text: "성공후기", variant: "purple" }
-    },
-    {
-      id: 4,
-      user: {
-        image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100",
-        name: "이건강",
-        time: "3일 전"
-      },
-      title: "강아지 여름 건강 관리 팁",
-      content: "날씨가 점점 더워지면서 반려견 건강 관리에 신경 써야 할 부분이 있어요. 산책은 아침이나 저녁 시간으로 조정하고, 충분한 수분 섭취를 도와주세요. 아스팔트 온도가 높을 수 있으니 발바닥 보호제도 추천합니다.",
-      likes: 35,
-      comments: 15,
-      tag: { text: "건강", variant: "red" }
-    },
-    {
-      id: 5,
-      user: {
-        image: "https://images.unsplash.com/photo-1552058544-f2b08422138a?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100",
-        name: "최행동",
-        time: "4일 전"
-      },
-      title: "번개와 천둥에 겁내는 강아지 케어 방법",
-      content: "번개와 천둥 소리에 공포감을 느끼는 반려견이 많습니다. 미리 안전한 공간(케이지나 방)을 마련해두고, 번개가 치기 전에 조용한 활동으로 기분을 전환시켜주세요. 압박 조끼도 효과적입니다.",
-      likes: 38,
-      comments: 20,
-      tag: { text: "행동교정", variant: "blue" }
-    },
-    {
-      id: 6,
-      user: {
-        image: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100",
-        name: "이사회",
-        time: "5일 전"
-      },
-      title: "반려견 카페 방문 시 예절",
-      content: "반려견 카페 방문 시 주의사항을 공유합니다. 다른 강아지들과 사람들을 존중하는 기본 예절이 중요해요. 기본 명령어를 잘 따르는지 확인하고, 목줄을 항상 착용하세요. 배변 패드와 물티슈도 꼭 챙기시는 것 좋아요.",
-      likes: 31,
-      comments: 25,
-      tag: { text: "사회화", variant: "green" }
+  // API에서 실제 커뮤니티 게시글 데이터를 가져오기
+  const { data: communityData, isLoading } = useQuery({
+    queryKey: ['/api/community/posts'],
+    queryFn: async () => {
+      console.log('API에서 커뮤니티 게시글 데이터 요청');
+      const response = await fetch('/api/community/posts');
+      const data = await response.json();
+      console.log('API에서 받은 게시글 데이터:', data);
+      return data;
     }
-  ];
-
-  const [posts, setPosts] = useState(() => {
-    console.log('Community 컴포넌트 - 초기 게시글 데이터 로드:', communityPosts.length);
-    return communityPosts;
   });
+
+  const posts = communityData?.posts || [];
   
   const filteredPosts = posts.filter(post => 
     post.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
     post.content.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    post.user.name.toLowerCase().includes(searchTerm.toLowerCase())
+    post.author?.name?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
@@ -168,54 +96,89 @@ export default function Community() {
         </TabsContent>
         
         <TabsContent value="recent" className="mt-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[...filteredPosts].sort((a, b) => b.id - a.id).map((post) => (
-              <Card key={post.id} className="p-4 hover:shadow-lg transition-shadow">
-                <CardContent className="p-0">
-                  <div className="flex items-start space-x-3 mb-3">
-                    <img 
-                      src={post.user.image} 
-                      alt={post.user.name}
-                      className="w-10 h-10 rounded-full object-cover"
-                    />
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center space-x-2">
-                        <span className="font-medium text-sm">{post.user.name}</span>
-                        <span className="text-xs text-gray-500">{post.user.time}</span>
+          {isLoading ? (
+            <div className="text-center py-8">
+              <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
+              <p className="text-gray-600">게시글을 불러오는 중...</p>
+            </div>
+          ) : filteredPosts.length === 0 ? (
+            <div className="text-center py-8">
+              <p className="text-gray-600">등록된 게시글이 없습니다.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[...filteredPosts].sort((a, b) => b.id - a.id).map((post) => (
+                <Card key={post.id} className="p-4 hover:shadow-lg transition-shadow">
+                  <CardContent className="p-0">
+                    <div className="flex items-start space-x-3 mb-3">
+                      <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                        <span className="text-primary font-medium text-sm">
+                          {post.author?.name?.charAt(0) || 'U'}
+                        </span>
                       </div>
-                      <Badge 
-                        variant={post.tag.variant as any} 
-                        className="text-xs mt-1"
-                      >
-                        {post.tag.text}
-                      </Badge>
-                    </div>
-                  </div>
-                  
-                  <h3 className="font-semibold text-base mb-2 line-clamp-2">
-                    {post.title}
-                  </h3>
-                  
-                  <p className="text-sm text-gray-600 mb-3 line-clamp-3">
-                    {post.content}
-                  </p>
-                  
-                  <div className="flex items-center justify-between text-sm text-gray-500">
-                    <div className="flex items-center space-x-4">
-                      <div className="flex items-center space-x-1">
-                        <span>👍</span>
-                        <span>{post.likes}</span>
-                      </div>
-                      <div className="flex items-center space-x-1">
-                        <MessageCircle className="w-4 h-4" />
-                        <span>{post.comments}</span>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center space-x-2">
+                          <span className="font-medium text-sm">{post.author?.name || '익명'}</span>
+                          <span className="text-xs text-gray-500">
+                            {new Date(post.createdAt).toLocaleDateString()}
+                          </span>
+                        </div>
+                        <Badge 
+                          variant="default" 
+                          className="text-xs mt-1"
+                        >
+                          {post.tag}
+                        </Badge>
                       </div>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+                    
+                    <h3 className="font-semibold text-base mb-2 line-clamp-2">
+                      {post.title}
+                    </h3>
+                    
+                    <p className="text-sm text-gray-600 mb-3 line-clamp-3">
+                      {post.content}
+                    </p>
+                    
+                    {post.linkInfo && (
+                      <div className="border rounded-lg p-3 mb-3 bg-gray-50">
+                        <div className="flex items-start space-x-3">
+                          {post.linkInfo.image && (
+                            <img 
+                              src={post.linkInfo.image} 
+                              alt={post.linkInfo.title}
+                              className="w-16 h-16 rounded object-cover flex-shrink-0"
+                            />
+                          )}
+                          <div className="flex-1 min-w-0">
+                            <h4 className="font-medium text-sm line-clamp-2 mb-1">
+                              {post.linkInfo.title}
+                            </h4>
+                            <p className="text-xs text-gray-600 line-clamp-2">
+                              {post.linkInfo.description}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    
+                    <div className="flex items-center justify-between text-sm text-gray-500">
+                      <div className="flex items-center space-x-4">
+                        <div className="flex items-center space-x-1">
+                          <span>👍</span>
+                          <span>{post.likes}</span>
+                        </div>
+                        <div className="flex items-center space-x-1">
+                          <MessageCircle className="w-4 h-4" />
+                          <span>{post.comments}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
         </TabsContent>
         
         <TabsContent value="filter" className="mt-6">
