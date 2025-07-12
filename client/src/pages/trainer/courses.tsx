@@ -124,8 +124,7 @@ export default function TrainerCoursesPage() {
           ],
           enrolledStudents: 8,
           completedStudents: 3,
-          averageRating: 4.8,
-          totalRevenue: 2800000
+          averageRating: 4.8
         },
         {
           id: 2,
