@@ -12,7 +12,8 @@ import {
   trainerCertifications, type TrainerCertification, type InsertTrainerCertification,
   trainerPrograms, type TrainerProgram, type InsertTrainerProgram,
   trainerProgramEnrollments, type TrainerProgramEnrollment, type InsertTrainerProgramEnrollment,
-  trainingJournals, type TrainingJournal, type InsertTrainingJournal
+  trainingJournals, type TrainingJournal, type InsertTrainingJournal,
+  logoAssets, type LogoAsset, type InsertLogoAsset
 } from "../shared/schema";
 
 // 프로필 업데이트를 위한 인터페이스
@@ -237,6 +238,15 @@ export interface IStorage {
     getTrainingJournalsByOwner(ownerId: number): Promise<TrainingJournal[]>;
     updateTrainingJournal(id: number, data: Partial<TrainingJournal>): Promise<TrainingJournal>;
     deleteTrainingJournal(id: number): Promise<boolean>;
+
+    // 로고 관리 관련
+    getAllLogoAssets(): Promise<LogoAsset[]>;
+    getLogoAsset(id: number): Promise<LogoAsset | undefined>;
+    createLogoAsset(logoAsset: InsertLogoAsset): Promise<LogoAsset>;
+    updateLogoAsset(id: number, updates: Partial<LogoAsset>): Promise<LogoAsset>;
+    deleteLogoAsset(id: number): Promise<boolean>;
+    getActiveLogoAssets(): Promise<LogoAsset[]>;
+    setActiveLogoAsset(id: number): Promise<LogoAsset>;
 }
 
 // 메모리 기반 데이터 저장소 (운영 환경용)

@@ -517,7 +517,9 @@ const AdminDashboard = () => {
             메뉴 관리
           </Button>
           <Button className="w-full justify-start" variant="outline">
-            <PieChart className="mr-2 h-4 w-4" />
+            <div className="mr-2 h-4 w-4">
+              <PieChart className="h-4 w-4" />
+            </div>
             통계 리포트
           </Button>
           <Button className="w-full justify-start" variant="outline">

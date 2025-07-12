@@ -4,9 +4,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
-  BarChart,
-  LineChart,
-  PieChart,
   ArrowLeft,
   Download,
   Calendar,
@@ -19,6 +16,7 @@ import {
   RefreshCw,
   FileText
 } from 'lucide-react';
+import { UserGrowthChart, UserTypeChart, PlatformActivityChart } from '@/components/charts/AdminCharts';
 import { useLocation } from 'wouter';
 import { Progress } from '@/components/ui/progress';
 import {
@@ -185,7 +183,9 @@ export default function AnalyticsReportPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="h-80 flex flex-col items-center justify-center">
-              <LineChart className="h-12 w-12 mb-4 text-primary" />
+              <div className="mb-4">
+                <UserGrowthChart />
+              </div>
               <p className="text-center text-muted-foreground">
                 사용자 증가 추세 그래프가 여기에 표시됩니다.
               </p>
@@ -276,7 +276,9 @@ export default function AnalyticsReportPage() {
                 <CardDescription>역할별 사용자 비율</CardDescription>
               </CardHeader>
               <CardContent className="h-64 flex flex-col justify-center items-center">
-                <PieChart className="h-10 w-10 mb-4 text-primary" />
+                <div className="mb-4 h-10 w-10">
+                  <UserTypeChart />
+                </div>
                 <p className="text-sm text-center text-muted-foreground">사용자 역할 분포 차트가 표시됩니다.</p>
                 <div className="mt-4 w-full space-y-2">
                   <div className="flex items-center">
@@ -309,7 +311,9 @@ export default function AnalyticsReportPage() {
                 <CardDescription>지역에 따른 사용자 분포</CardDescription>
               </CardHeader>
               <CardContent className="h-64 flex flex-col justify-center items-center">
-                <BarChart className="h-10 w-10 mb-4 text-primary" />
+                <div className="mb-4 h-10 w-10">
+                  <PlatformActivityChart />
+                </div>
                 <p className="text-sm text-center text-muted-foreground">지역별 사용자 분포 차트가 표시됩니다.</p>
                 <div className="mt-4 w-full space-y-2">
                   <div className="flex items-start justify-between">

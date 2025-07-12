@@ -722,3 +722,28 @@ export const selectOrderSchema = createSelectSchema(orders);
 
 export const insertOrderItemSchema = createInsertSchema(orderItems);
 export const selectOrderItemSchema = createSelectSchema(orderItems);
+
+// 로고 관리 테이블
+export const logoAssets = pgTable("logo_assets", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 100 }).notNull(),
+  description: text("description"),
+  type: varchar("type", { length: 50 }).notNull(), // 'main_logo', 'compact_logo', 'symbol', 'favicon'
+  fileUrl: text("file_url").notNull(),
+  fileName: varchar("file_name", { length: 255 }).notNull(),
+  fileSize: integer("file_size"),
+  mimeType: varchar("mime_type", { length: 100 }),
+  isActive: boolean("is_active").default(true),
+  uploadedById: integer("uploaded_by_id").references(() => users.id),
+  themeVariant: varchar("theme_variant", { length: 20 }).default("light"), // 'light', 'dark', 'auto'
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// 로고 관련 타입 정의
+export type LogoAsset = typeof logoAssets.$inferSelect;
+export type InsertLogoAsset = typeof logoAssets.$inferInsert;
+
+// 로고 관련 Zod 스키마
+export const insertLogoAssetSchema = createInsertSchema(logoAssets);
+export const selectLogoAssetSchema = createSelectSchema(logoAssets);

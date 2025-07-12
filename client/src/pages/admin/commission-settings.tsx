@@ -448,7 +448,9 @@ export default function CommissionSettingsPage() {
                     카테고리별 설정
                   </TabsTrigger>
                   <TabsTrigger value="statistics" className="flex items-center">
-                    <PieChart className="mr-2 h-4 w-4" />
+                    <div className="mr-2 h-4 w-4">
+                      <PieChart className="h-4 w-4" />
+                    </div>
                     통계
                   </TabsTrigger>
                 </TabsList>

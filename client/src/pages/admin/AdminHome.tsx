@@ -23,6 +23,7 @@ import {
   X,
   GraduationCap
 } from 'lucide-react';
+import { CompactUserGrowthChart, CompactUserTypeChart, CompactRevenueChart, CompactSystemChart } from '@/components/charts/AdminCharts';
 import { useLocation } from 'wouter';
 import { Progress } from '@/components/ui/progress';
 import {
@@ -213,20 +214,18 @@ export default function AdminHome() {
               <Card>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-base">사용자 증가 추세</CardTitle>
-                  <CardDescription>최근 30일간 신규 가입자 수</CardDescription>
+                  <CardDescription>최근 6개월간 신규 가입자 수</CardDescription>
                 </CardHeader>
-                <CardContent className="h-64 flex flex-col justify-center items-center">
-                  <BarChart className="h-8 w-8 mb-2 text-primary" />
-                  <p className="text-sm text-center text-muted-foreground">사용자 증가 그래프가 표시됩니다.</p>
-                  <div className="mt-4 w-full space-y-1">
+                <CardContent className="h-64">
+                  <CompactUserGrowthChart height={200} />
+                  <div className="mt-2 space-y-1">
                     <div className="flex justify-between text-xs">
                       <span>이번 주 신규 가입</span>
-                      <span className="font-medium">187명</span>
+                      <span className="font-medium">387명</span>
                     </div>
-                    <Progress value={65} className="h-2" />
                     <div className="flex justify-between text-xs">
                       <span>지난 주 대비</span>
-                      <span className="text-green-500">+7.6%</span>
+                      <span className="text-green-500">+13.1%</span>
                     </div>
                   </div>
                 </CardContent>
@@ -237,29 +236,24 @@ export default function AdminHome() {
                   <CardTitle className="text-base">사용자 유형 분포</CardTitle>
                   <CardDescription>역할별 사용자 비율</CardDescription>
                 </CardHeader>
-                <CardContent className="h-64 flex flex-col justify-center items-center">
-                  <PieChart className="h-8 w-8 mb-2 text-primary" />
-                  <p className="text-sm text-center text-muted-foreground">사용자 역할 분포 차트가 표시됩니다.</p>
-                  <div className="mt-4 w-full space-y-2">
+                <CardContent className="h-64">
+                  <CompactUserTypeChart height={200} />
+                  <div className="mt-2 grid grid-cols-2 gap-2 text-xs">
                     <div className="flex items-center">
-                      <div className="w-3 h-3 rounded-full bg-blue-500 mr-2"></div>
-                      <span className="text-xs flex-1">반려인</span>
-                      <span className="text-xs font-medium">78%</span>
+                      <div className="w-2 h-2 rounded-full bg-blue-500 mr-1"></div>
+                      <span>반려인 78%</span>
                     </div>
                     <div className="flex items-center">
-                      <div className="w-3 h-3 rounded-full bg-green-500 mr-2"></div>
-                      <span className="text-xs flex-1">훈련사</span>
-                      <span className="text-xs font-medium">12%</span>
+                      <div className="w-2 h-2 rounded-full bg-green-500 mr-1"></div>
+                      <span>훈련사 12%</span>
                     </div>
                     <div className="flex items-center">
-                      <div className="w-3 h-3 rounded-full bg-purple-500 mr-2"></div>
-                      <span className="text-xs flex-1">기관 관리자</span>
-                      <span className="text-xs font-medium">8%</span>
+                      <div className="w-2 h-2 rounded-full bg-purple-500 mr-1"></div>
+                      <span>기관 8%</span>
                     </div>
                     <div className="flex items-center">
-                      <div className="w-3 h-3 rounded-full bg-amber-500 mr-2"></div>
-                      <span className="text-xs flex-1">기타</span>
-                      <span className="text-xs font-medium">2%</span>
+                      <div className="w-2 h-2 rounded-full bg-amber-500 mr-1"></div>
+                      <span>기타 2%</span>
                     </div>
                   </div>
                 </CardContent>
@@ -453,7 +447,9 @@ export default function AdminHome() {
                   onClick={handleDetailedAnalysis}
                   aria-label="플랫폼 통계 상세 분석 보기"
                 >
-                  <PieChart className="h-4 w-4 mr-2" />
+                  <div className="h-4 w-4 mr-2">
+                    <PieChart className="h-4 w-4" />
+                  </div>
                   상세 분석 보기
                 </Button>
               </CardFooter>
@@ -669,30 +665,8 @@ export default function AdminHome() {
                 
                 <div>
                   <h3 className="text-lg font-semibold mb-2">사용자 분포</h3>
-                  <div className="flex items-center space-x-4">
-                    <div className="space-y-2">
-                      <div className="flex items-center space-x-2">
-                        <div className="w-3 h-3 rounded-full bg-blue-500"></div>
-                        <span className="text-sm">일반 사용자 (76%)</span>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <div className="w-3 h-3 rounded-full bg-green-500"></div>
-                        <span className="text-sm">훈련사 (12%)</span>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <div className="w-3 h-3 rounded-full bg-amber-500"></div>
-                        <span className="text-sm">기관 관리자 (8%)</span>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <div className="w-3 h-3 rounded-full bg-purple-500"></div>
-                        <span className="text-sm">시스템 관리자 (4%)</span>
-                      </div>
-                    </div>
-                    <div className="w-20 h-20 rounded-full border-8 border-blue-500 relative">
-                      <div className="absolute inset-0 rounded-full border-t-8 border-r-8 border-green-500 -rotate-[285deg]"></div>
-                      <div className="absolute inset-0 rounded-full border-t-8 border-amber-500 -rotate-[240deg]"></div>
-                      <div className="absolute inset-0 rounded-full border-t-8 border-purple-500 -rotate-[205deg]"></div>
-                    </div>
+                  <div className="h-64">
+                    <UserTypeChart />
                   </div>
                 </div>
               </div>
