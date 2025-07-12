@@ -11,10 +11,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
-import { Search, Check, X, Clock, AlertTriangle, Edit, Eye, Calendar, Filter, FileText, Building, Phone, MapPin, AlertCircle } from 'lucide-react';
+import { Search, Check, X, Clock, AlertTriangle, Edit, Eye, Calendar, Filter, FileText, Building, Phone, MapPin, AlertCircle, Palette, Settings } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { formatDistanceToNow } from 'date-fns';
 import { ko } from 'date-fns/locale';
+import { useTheme } from '@/context/theme-context';
+import { ThemeSettings } from '@/components/ThemeSettings';
+import { ThemeSwitcherDropdown } from '@/components/ui/ThemeSwitcher';
 
 interface CorrectionRequest {
   id: string;
@@ -38,6 +41,8 @@ interface CorrectionRequest {
 }
 
 export default function InfoCorrectionRequests() {
+  console.log('[DEBUG] 정보 수정 요청 관리 라우트 접근');
+
   const [requests, setRequests] = useState<CorrectionRequest[]>([]);
   const [filteredRequests, setFilteredRequests] = useState<CorrectionRequest[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -50,6 +55,8 @@ export default function InfoCorrectionRequests() {
   const [adminNotes, setAdminNotes] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
+  const [showThemeSettings, setShowThemeSettings] = useState(false);
+  const { theme } = useTheme();
 
   // 샘플 데이터
   const sampleRequests: CorrectionRequest[] = [
@@ -256,6 +263,30 @@ export default function InfoCorrectionRequests() {
     return labels[type as keyof typeof labels] || type;
   };
 
+  // 테마 설정 값 체크 함수
+  const checkThemeSettings = () => {
+    const themeData = {
+      currentTheme: theme,
+      systemSettings: {
+        prefersDarkMode: window.matchMedia('(prefers-color-scheme: dark)').matches,
+        storedTheme: localStorage.getItem('petedu-theme'),
+        appliedClasses: document.documentElement.className,
+        colorScheme: document.documentElement.style.colorScheme
+      },
+      cssVariables: {
+        background: getComputedStyle(document.documentElement).getPropertyValue('--background'),
+        foreground: getComputedStyle(document.documentElement).getPropertyValue('--foreground'),
+        primary: getComputedStyle(document.documentElement).getPropertyValue('--primary'),
+        secondary: getComputedStyle(document.documentElement).getPropertyValue('--secondary'),
+        accent: getComputedStyle(document.documentElement).getPropertyValue('--accent'),
+        muted: getComputedStyle(document.documentElement).getPropertyValue('--muted')
+      }
+    };
+
+    console.log('🎨 테마 설정 값 체크:', themeData);
+    return themeData;
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -288,7 +319,7 @@ export default function InfoCorrectionRequests() {
                 />
               </div>
             </div>
-            
+
             <div>
               <Label htmlFor="status">상태</Label>
               <Select value={statusFilter} onValueChange={setStatusFilter}>
@@ -510,20 +541,20 @@ export default function InfoCorrectionRequests() {
               요청 {reviewAction === 'approve' ? '승인' : '반려'}
             </DialogTitle>
           </DialogHeader>
-          
+
           <div className="space-y-4">
             <div>
               <Label>업체명</Label>
               <p className="text-sm font-medium">{selectedRequest?.businessName}</p>
             </div>
-            
+
             <div>
               <Label>수정 유형</Label>
               <p className="text-sm">
                 {selectedRequest && getCorrectionTypeLabel(selectedRequest.correctionType)}
               </p>
             </div>
-            
+
             <div>
               <Label htmlFor="adminNotes">관리자 메모</Label>
               <Textarea
@@ -556,6 +587,94 @@ export default function InfoCorrectionRequests() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* 테마 설정 관리 섹션 */}
+      <Card className="mt-6">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Palette className="h-5 w-5" />
+            테마 설정 관리
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {/* 현재 테마 상태 표시 */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <Card className="p-4">
+                <div className="flex items-center gap-2">
+                  <Settings className="h-4 w-4 text-primary" />
+                  <Label className="font-medium">현재 테마</Label>
+                </div>
+                <p className="text-lg font-semibold mt-1 capitalize">
+                  {theme === 'light' ? '라이트 모드' : theme === 'dark' ? '다크 모드' : '시스템 자동'}
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  {theme === 'system' ? '시스템 설정을 따름' : '수동 설정'}
+                </p>
+              </Card>
+
+              <Card className="p-4">
+                <div className="flex items-center gap-2">
+                  <Eye className="h-4 w-4 text-primary" />
+                  <Label className="font-medium">시스템 설정</Label>
+                </div>
+                <p className="text-lg font-semibold mt-1">
+                  {window.matchMedia('(prefers-color-scheme: dark)').matches ? '다크' : '라이트'}
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  운영체제 설정
+                </p>
+              </Card>
+
+              <Card className="p-4">
+                <div className="flex items-center gap-2">
+                  <CheckCircle className="h-4 w-4 text-primary" />
+                  <Label className="font-medium">적용 상태</Label>
+                </div>
+                <p className="text-lg font-semibold mt-1 text-green-600">
+                  정상
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  테마가 올바르게 적용됨
+                </p>
+              </Card>
+            </div>
+
+            {/* 테마 컨트롤 */}
+            <div className="flex flex-wrap gap-4 items-center">
+              <div className="flex items-center gap-2">
+                <Label>빠른 테마 변경:</Label>
+                <ThemeSwitcherDropdown />
+              </div>
+
+              <Button
+                variant="outline"
+                onClick={() => setShowThemeSettings(!showThemeSettings)}
+                className="flex items-center gap-2"
+              >
+                <Settings className="h-4 w-4" />
+                고급 설정
+              </Button>
+
+              <Button
+                variant="outline"
+                onClick={checkThemeSettings}
+                className="flex items-center gap-2"
+              >
+                <RefreshCw className="h-4 w-4" />
+                테마 값 체크
+              </Button>
+            </div>
+
+            {/* 고급 테마 설정 패널 */}
+            {showThemeSettings && (
+              <div className="border rounded-lg p-4 bg-muted/50">
+                <ThemeSettings />
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
