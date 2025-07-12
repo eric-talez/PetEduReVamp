@@ -1100,6 +1100,113 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // 로고 업로드를 위한 multer 설정
+  const logoStorage = multer.diskStorage({
+    destination: (req, file, cb) => {
+      const uploadDir = 'uploads/logos';
+      if (!fs.existsSync(uploadDir)) {
+        fs.mkdirSync(uploadDir, { recursive: true });
+      }
+      cb(null, uploadDir);
+    },
+    filename: (req, file, cb) => {
+      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+      cb(null, 'logo-' + uniqueSuffix + path.extname(file.originalname));
+    }
+  });
+
+  const logoUpload = multer({
+    storage: logoStorage,
+    limits: {
+      fileSize: 5 * 1024 * 1024, // 5MB
+    },
+    fileFilter: (req, file, cb) => {
+      if (file.mimetype.startsWith('image/')) {
+        cb(null, true);
+      } else {
+        cb(new Error('이미지 파일만 업로드 가능합니다.'), false);
+      }
+    }
+  });
+
+  // 로고 업로드 API
+  app.post("/api/admin/logo/upload", logoUpload.single('logo'), async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ error: "로고 파일이 필요합니다." });
+      }
+
+      const logoUrl = `/uploads/logos/${req.file.filename}`;
+      const { type } = req.body;
+      
+      // 로고 설정 업데이트
+      try {
+        const currentSettings = await storage.getLogoSettings();
+        const updateData = { ...currentSettings };
+        
+        if (type === 'expanded') {
+          updateData.logoLight = logoUrl;
+          updateData.logoDark = logoUrl;
+        } else if (type === 'compact') {
+          updateData.logoSymbolLight = logoUrl;
+          updateData.logoSymbolDark = logoUrl;
+        }
+        
+        await storage.updateLogoSettings(updateData);
+        
+        console.log('로고 업로드 및 설정 업데이트 성공:', logoUrl, type);
+        
+        res.json({ 
+          success: true, 
+          url: logoUrl,
+          type: type,
+          message: "로고가 성공적으로 업로드되고 설정이 업데이트되었습니다."
+        });
+      } catch (storageError) {
+        console.error('로고 설정 업데이트 실패:', storageError);
+        res.json({ 
+          success: true, 
+          url: logoUrl,
+          message: "로고 업로드는 성공했지만 설정 업데이트에 실패했습니다."
+        });
+      }
+    } catch (error) {
+      console.error('로고 업로드 오류:', error);
+      res.status(500).json({ error: "로고 업로드 중 오류가 발생했습니다" });
+    }
+  });
+
+  // 로고 설정 조회 API
+  app.get("/api/admin/logos", async (req, res) => {
+    try {
+      const logoSettings = await storage.getLogoSettings();
+      res.json({
+        success: true,
+        logos: logoSettings
+      });
+    } catch (error) {
+      console.error('로고 설정 조회 오류:', error);
+      res.status(500).json({ error: "로고 설정을 불러오는 중 오류가 발생했습니다" });
+    }
+  });
+
+  // 현재 로고 조회 API (사이드바용)
+  app.get("/api/admin/logo", async (req, res) => {
+    try {
+      const logoSettings = await storage.getLogoSettings();
+      res.json({
+        success: true,
+        expandedLogo: logoSettings.logoLight || "/logo.svg",
+        compactLogo: logoSettings.logoSymbolLight || "/logo-compact.svg",
+        logoDark: logoSettings.logoDark || "/logo-dark.svg",
+        logoSymbolDark: logoSettings.logoSymbolDark || "/logo-compact-dark.svg"
+      });
+    } catch (error) {
+      console.error('로고 조회 오류:', error);
+      res.status(500).json({ error: "로고를 불러오는 중 오류가 발생했습니다" });
+    }
+  });
+
   // 상담 Zoom 링크 조회 API
   app.get("/api/consultations/:id/zoom", async (req, res) => {
     try {

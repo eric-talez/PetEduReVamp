@@ -77,10 +77,10 @@ export default function AdminSettings() {
   const logoUploadMutation = useMutation({
     mutationFn: async ({ type, file }: { type: string; file: File }) => {
       const formData = new FormData();
-      formData.append('image', file);
+      formData.append('logo', file);
       formData.append('type', type);
       
-      const response = await fetch('/api/admin/logos/upload', {
+      const response = await fetch('/api/admin/logo/upload', {
         method: 'POST',
         body: formData,
       });
@@ -1767,8 +1767,8 @@ export default function AdminSettings() {
                 </div>
               )}
               
-              {/* 로고 설정 제거됨 - appearance 탭으로 통합 */}
-              {activeTab === 'logo-removed' && (
+              {/* 로고 설정 완전 제거 - appearance 탭으로 통합 완료 */}
+              {activeTab === 'logo-removed-completely' && (
                 <div className="space-y-6">
                   <div className="space-y-4">
                     <h3 className="text-lg font-medium">사이드바 로고 설정</h3>
