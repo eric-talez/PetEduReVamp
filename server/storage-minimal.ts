@@ -445,6 +445,131 @@ export class MemoryStorage implements IStorage {
       }
     ];
   }
+
+  // Event operations (이벤트 관리용)
+  async getAllEvents(): Promise<any[]> {
+    return [
+      {
+        id: 1,
+        title: "반려견 건강 관리 세미나",
+        description: "전문 수의사와 함께하는 건강 관리 교육",
+        date: "2025-01-15",
+        location: "서울 강남구",
+        participants: 45,
+        maxParticipants: 100,
+        status: "active"
+      },
+      {
+        id: 2,
+        title: "펫 트레이닝 워크샵",
+        description: "기본적인 펫 트레이닝 방법론 워크샵",
+        date: "2025-01-20",
+        location: "경기 수원시",
+        participants: 23,
+        maxParticipants: 50,
+        status: "active"
+      }
+    ];
+  }
+
+  // Curriculum operations (커리큘럼 관리용)
+  async getAllCurricula(): Promise<any[]> {
+    return [
+      {
+        id: 1,
+        title: "기초 반려견 훈련 커리큘럼",
+        description: "초보자를 위한 기본 훈련 과정",
+        modules: [
+          { id: 1, title: "기본 명령어", duration: "2시간" },
+          { id: 2, title: "산책 훈련", duration: "1.5시간" },
+          { id: 3, title: "사회화 훈련", duration: "2시간" }
+        ],
+        instructor: "강동훈",
+        price: 450000,
+        duration: "4주",
+        level: "초급",
+        status: "published"
+      }
+    ];
+  }
+
+  // Member operations (회원 관리용)
+  async getAllMembers(): Promise<any[]> {
+    return Array.from(this.users.values()).map(user => ({
+      ...user,
+      status: "active",
+      joinDate: user.createdAt,
+      lastLogin: new Date(),
+      plan: "basic"
+    }));
+  }
+
+  // Registration operations (등록 관리용)
+  async getAllRegistrations(): Promise<any[]> {
+    return [
+      {
+        id: 1,
+        type: "business",
+        applicantName: "김사업자",
+        businessName: "펫케어센터",
+        status: "pending",
+        submittedAt: new Date(),
+        documents: ["사업자등록증", "자격증"],
+        location: "서울 강남구"
+      }
+    ];
+  }
+
+  // Review operations (리뷰 관리용)
+  async getAllReviews(): Promise<any[]> {
+    return [
+      {
+        id: 1,
+        userId: 1,
+        userName: "김지영",
+        serviceType: "training",
+        serviceName: "기초 훈련",
+        rating: 5,
+        content: "정말 유용한 훈련이었습니다!",
+        createdAt: new Date(),
+        status: "published"
+      }
+    ];
+  }
+
+  // Content operations (컨텐츠 관리용)
+  async getAllContents(): Promise<any[]> {
+    return [
+      {
+        id: 1,
+        title: "반려견 건강 관리 가이드",
+        type: "article",
+        author: "전문가",
+        status: "published",
+        views: 1250,
+        likes: 89,
+        createdAt: new Date(),
+        category: "health"
+      }
+    ];
+  }
+
+  // Info correction request operations (정보 수정 요청 관리용)
+  async getAllInfoCorrectionRequests(): Promise<any[]> {
+    return [
+      {
+        id: 1,
+        requesterId: 1,
+        requesterName: "김지영",
+        type: "profile",
+        originalData: { name: "김지영", phone: "010-1234-5678" },
+        requestedData: { name: "김지영", phone: "010-9876-5432" },
+        reason: "전화번호 변경",
+        status: "pending",
+        submittedAt: new Date()
+      }
+    ];
+  }
 }
 
 // Export storage instance
