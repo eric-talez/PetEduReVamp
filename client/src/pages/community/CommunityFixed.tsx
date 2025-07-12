@@ -204,7 +204,12 @@ function CommunityPage() {
 
   // 게시글 필터링 및 검색
   const filteredPosts = useMemo(() => {
-    if (!postsData) return [];
+    console.log('filteredPosts 계산 중:', { postsData, searchQuery, activeTab });
+    
+    if (!postsData) {
+      console.log('postsData가 없음');
+      return [];
+    }
     
     let filtered = postsData.filter((post: any) => {
       const matchesSearch = !searchQuery || 
@@ -215,6 +220,7 @@ function CommunityPage() {
       return matchesSearch;
     });
 
+    console.log('필터링된 게시글:', filtered.length, '개');
     return filtered;
   }, [postsData, searchQuery]);
 
@@ -224,6 +230,24 @@ function CommunityPage() {
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
+  
+  console.log('페이지네이션 정보:', {
+    totalPages,
+    currentPage,
+    itemsPerPage,
+    filteredPostsLength: filteredPosts.length,
+    paginatedPostsLength: paginatedPosts.length,
+    activeTab
+  });
+  
+  console.log('페이지네이션 정보:', {
+    totalPages,
+    currentPage,
+    itemsPerPage,
+    filteredPostsLength: filteredPosts.length,
+    paginatedPostsLength: paginatedPosts.length,
+    activeTab
+  });
 
   // 페이지 변경 시 탭 변경도 페이지 리셋
   const handlePageChange = (page: number) => {
