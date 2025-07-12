@@ -238,10 +238,11 @@ export class MemoryStorage implements IStorage {
   private initializeLogoSettings() {
     // Initialize with default logo settings
     this.logoSettings = {
-      logoLight: "/images/logo-light.svg",
-      logoDark: "/images/logo-dark.svg", 
-      logoSymbolLight: "/images/logo-symbol-light.svg",
-      logoSymbolDark: "/images/logo-symbol-dark.svg"
+      main: "/images/logo-light.svg",
+      mainDark: "/images/logo-dark.svg", 
+      compact: "/images/logo-symbol-light.svg",
+      compactDark: "/images/logo-symbol-dark.svg",
+      favicon: "/images/favicon.svg"
     };
   }
 
@@ -347,10 +348,11 @@ export class MemoryStorage implements IStorage {
 
   async resetLogoSettings(): Promise<any> {
     this.logoSettings = {
-      logoLight: "/images/logo-light.svg",
-      logoDark: "/images/logo-dark.svg", 
-      logoSymbolLight: "/images/logo-symbol-light.svg",
-      logoSymbolDark: "/images/logo-symbol-dark.svg"
+      main: "/images/logo-light.svg",
+      mainDark: "/images/logo-dark.svg", 
+      compact: "/images/logo-symbol-light.svg",
+      compactDark: "/images/logo-symbol-dark.svg",
+      favicon: "/images/favicon.svg"
     };
     return this.logoSettings;
   }

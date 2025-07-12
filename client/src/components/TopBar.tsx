@@ -78,10 +78,13 @@ interface CartItem {
 
 interface TopBarProps {
   sidebarOpen: boolean;
-  onToggleSidebar: () => void;
+  onToggleSidebar?: () => void;
+  layoutMode?: string;
+  userRole?: string | null;
+  isAuthenticated?: boolean;
 }
 
-export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
+export function TopBar({ sidebarOpen, onToggleSidebar, layoutMode = 'sidebar', userRole: propUserRole, isAuthenticated: propIsAuthenticated }: TopBarProps) {
   // 전역 상태에서 인증 정보 직접 확인
   const globalAuth = (window as any).__peteduAuthState;
   
@@ -90,10 +93,10 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
   // 전역 상태가 있으면 우선 사용
   const authState = globalAuth || auth;
   
-  // 상태 추출
+  // 상태 추출 - props 값이 있으면 우선 사용
   const userName = authState?.userName || auth?.userName;
-  const userRole = authState?.userRole || auth?.userRole;
-  const isAuthenticated = authState?.isAuthenticated || auth?.isAuthenticated;
+  const userRole = propUserRole || authState?.userRole || auth?.userRole;
+  const isAuthenticated = propIsAuthenticated || authState?.isAuthenticated || auth?.isAuthenticated;
   const logout = auth?.logout;
   const [location, setLocation] = useLocation();
   
@@ -377,15 +380,53 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
     <header className="bg-white dark:bg-gray-900 shadow-sm z-40 transition-colors sticky top-0 w-full">
       <div className="w-full mx-auto px-0">
         <div className="flex justify-between items-center h-16 px-4">
-          {/* Mobile Menu Button */}
-          <button
-            type="button"
-            onClick={onToggleSidebar}
-            className="lg:hidden p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none"
-            aria-label={sidebarOpen ? "사이드바 닫기" : "사이드바 열기"}
-          >
-            <Menu className="h-5 w-5" aria-hidden="true" />
-          </button>
+          {/* Mobile Menu Button (사이드바 모드에서만 표시) */}
+          {layoutMode === 'sidebar' && onToggleSidebar && (
+            <button
+              type="button"
+              onClick={onToggleSidebar}
+              className="lg:hidden p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none"
+              aria-label={sidebarOpen ? "사이드바 닫기" : "사이드바 열기"}
+            >
+              <Menu className="h-5 w-5" aria-hidden="true" />
+            </button>
+          )}
+          
+          {/* Top Navigation Menu (상단 네비게이션 모드에서만 표시) */}
+          {layoutMode === 'topnav' && (
+            <nav className="hidden lg:flex items-center space-x-4">
+              <Link href="/" className="text-gray-700 dark:text-gray-200 hover:text-primary px-3 py-2 rounded-md text-sm font-medium">
+                홈
+              </Link>
+              <Link href="/courses" className="text-gray-700 dark:text-gray-200 hover:text-primary px-3 py-2 rounded-md text-sm font-medium">
+                강의
+              </Link>
+              <Link href="/trainers" className="text-gray-700 dark:text-gray-200 hover:text-primary px-3 py-2 rounded-md text-sm font-medium">
+                훈련사
+              </Link>
+              <Link href="/community" className="text-gray-700 dark:text-gray-200 hover:text-primary px-3 py-2 rounded-md text-sm font-medium">
+                커뮤니티
+              </Link>
+              <Link href="/locations" className="text-gray-700 dark:text-gray-200 hover:text-primary px-3 py-2 rounded-md text-sm font-medium">
+                위치 찾기
+              </Link>
+              {isAuthenticated && (
+                <>
+                  <Link href="/my-courses" className="text-gray-700 dark:text-gray-200 hover:text-primary px-3 py-2 rounded-md text-sm font-medium">
+                    내 강의
+                  </Link>
+                  <Link href="/my-pets" className="text-gray-700 dark:text-gray-200 hover:text-primary px-3 py-2 rounded-md text-sm font-medium">
+                    내 반려동물
+                  </Link>
+                  {userRole === 'admin' && (
+                    <Link href="/admin/dashboard" className="text-gray-700 dark:text-gray-200 hover:text-primary px-3 py-2 rounded-md text-sm font-medium">
+                      관리자
+                    </Link>
+                  )}
+                </>
+              )}
+            </nav>
+          )}
           
           {/* Search */}
           <div className="hidden lg:flex flex-1 max-w-xl ml-0">

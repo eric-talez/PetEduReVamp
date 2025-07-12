@@ -147,6 +147,14 @@ function AppLayout({ children }: { children: ReactNode }) {
     // 기본값은 확장된 상태 (데스크톱에서)
     return true;
   });
+  
+  // 레이아웃 모드 상태 추가
+  const [layoutMode, setLayoutMode] = useState(() => {
+    // localStorage에서 저장된 레이아웃 모드 가져오기
+    const savedLayout = localStorage.getItem('defaultLayout');
+    return savedLayout || 'sidebar';
+  });
+  
   const auth = useAuth();
 
   // 인증 상태가 변경될 때마다 윈도우 객체에 저장된 상태를 확인하고 동기화
@@ -197,6 +205,25 @@ function AppLayout({ children }: { children: ReactNode }) {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  // 레이아웃 모드 변경 감지
+  useEffect(() => {
+    function handleLayoutChange() {
+      const savedLayout = localStorage.getItem('defaultLayout');
+      if (savedLayout && savedLayout !== layoutMode) {
+        setLayoutMode(savedLayout);
+      }
+    }
+
+    // 초기 실행
+    handleLayoutChange();
+
+    // localStorage 변경 감지
+    window.addEventListener('storage', handleLayoutChange);
+
+    // 클린업
+    return () => window.removeEventListener('storage', handleLayoutChange);
+  }, [layoutMode]);
+
   // 키보드 접근성 설정 (전역 단축키)
   useKeyboardAccessibility([
     // 홈 페이지로 이동
@@ -231,35 +258,37 @@ function AppLayout({ children }: { children: ReactNode }) {
         <SkipToContent contentId="main-content" />
 
         <div className="flex flex-grow">
-          {/* 사이드바 - 항상 고정된 너비를 가짐 */}
-          <aside 
-            className={`
-              shrink-0 h-screen fixed left-0 top-0 z-20
-              transition-all duration-300
-              ${sidebarExpanded ? 'w-64' : 'w-[70px]'}
-              ${sidebarOpen || isDesktop ? 'translate-x-0' : '-translate-x-full'}
-            `}
-            aria-label="사이드바 메뉴"
-          >
-            <Sidebar 
-              open={sidebarOpen} 
-              onClose={() => setSidebarOpen(false)} 
-              userRole={auth.userRole} 
-              isAuthenticated={auth.isAuthenticated}
-              expanded={sidebarExpanded}
-              onToggleExpand={toggleSidebarSize}
-            />
-            {/* 디버그 정보 표시 - 개발 모드에서만 표시 */}
-            {process.env.NODE_ENV === 'development' && (
-              <div className="fixed bottom-4 right-4 p-2 bg-slate-900 text-white text-xs rounded z-50">
-                역할: {auth.userRole || '미로그인'} / 
-                인증: {auth.isAuthenticated ? 'true' : 'false'}
-              </div>
-            )}
-          </aside>
+          {/* 사이드바 - 상단 네비게이션 모드에서는 숨김 */}
+          {layoutMode === 'sidebar' && (
+            <aside 
+              className={`
+                shrink-0 h-screen fixed left-0 top-0 z-20
+                transition-all duration-300
+                ${sidebarExpanded ? 'w-64' : 'w-[70px]'}
+                ${sidebarOpen || isDesktop ? 'translate-x-0' : '-translate-x-full'}
+              `}
+              aria-label="사이드바 메뉴"
+            >
+              <Sidebar 
+                open={sidebarOpen} 
+                onClose={() => setSidebarOpen(false)} 
+                userRole={auth.userRole} 
+                isAuthenticated={auth.isAuthenticated}
+                expanded={sidebarExpanded}
+                onToggleExpand={toggleSidebarSize}
+              />
+              {/* 디버그 정보 표시 - 개발 모드에서만 표시 */}
+              {process.env.NODE_ENV === 'development' && (
+                <div className="fixed bottom-4 right-4 p-2 bg-slate-900 text-white text-xs rounded z-50">
+                  역할: {auth.userRole || '미로그인'} / 
+                  인증: {auth.isAuthenticated ? 'true' : 'false'}
+                </div>
+              )}
+            </aside>
+          )}
 
           {/* 모바일 오버레이 - 사이드바가 열리면 본문 위에 표시 */}
-          {sidebarOpen && !isDesktop && (
+          {sidebarOpen && !isDesktop && layoutMode === 'sidebar' && (
             <div 
               className="fixed inset-0 bg-black bg-opacity-50 z-10" 
               onClick={() => setSidebarOpen(false)}
@@ -270,12 +299,15 @@ function AppLayout({ children }: { children: ReactNode }) {
           {/* 우측 컨텐츠 영역 (헤더 + 메인) */}
           <div className={`
             flex-grow flex flex-col min-h-screen transition-all duration-300 w-full
-            ${isDesktop ? (sidebarExpanded ? 'ml-64' : 'ml-[70px]') : 'ml-0'}
+            ${layoutMode === 'sidebar' && isDesktop ? (sidebarExpanded ? 'ml-64' : 'ml-[70px]') : 'ml-0'}
           `}>
             {/* 상단바 */}
             <TopBar
               sidebarOpen={sidebarOpen}
-              onToggleSidebar={isDesktop ? toggleSidebarSize : () => setSidebarOpen(!sidebarOpen)}
+              onToggleSidebar={layoutMode === 'sidebar' ? (isDesktop ? toggleSidebarSize : () => setSidebarOpen(!sidebarOpen)) : undefined}
+              layoutMode={layoutMode}
+              userRole={auth.userRole}
+              isAuthenticated={auth.isAuthenticated}
             />
 
             {/* 메인 컨텐츠 영역 */}

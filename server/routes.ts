@@ -1151,16 +1151,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // 타입에 따라 로고 설정 업데이트
         switch (type) {
           case 'main':
-            updateData.logoLight = url;
+            updateData.main = url;
             break;
           case 'mainDark':
-            updateData.logoDark = url;
+            updateData.mainDark = url;
             break;
           case 'compact':
-            updateData.logoSymbolLight = url;
+            updateData.compact = url;
             break;
           case 'compactDark':
-            updateData.logoSymbolDark = url;
+            updateData.compactDark = url;
             break;
           case 'favicon':
             updateData.favicon = url;
