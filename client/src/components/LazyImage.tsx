@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { ImageOptimizer } from '../utils/performance-optimizer';
 
 interface LazyImageProps extends React.ImgHTMLAttributes<HTMLImageElement> {
   src: string;
@@ -102,29 +103,37 @@ export function GalleryLazyImage({
   const [isLoaded, setIsLoaded] = useState(false);
   const [isInView, setIsInView] = useState(false);
   const imgRef = useRef<HTMLImageElement>(null);
+  const [optimizedSrc, setOptimizedSrc] = useState(src); // Initialize with original src
 
   // 저해상도 썸네일 URL 생성 (실제로는 백엔드에서 제공하는 것이 좋음)
   const thumbnailSrc = src.replace(/\.(jpg|jpeg|png|webp)/, '-thumb.$1');
 
   useEffect(() => {
+    if (!imgRef.current) return;
+
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
-          setIsInView(true);
+          // 이미지 최적화 적용
+          ImageOptimizer.getOptimalImageFormat(src)
+            .then(optimizedSrc => {
+              setOptimizedSrc(optimizedSrc);
+              setIsInView(true);
+            })
+            .catch(() => {
+              setOptimizedSrc(src);
+              setIsInView(true);
+            });
           observer.disconnect();
         }
       },
-      { threshold: 0.1 }
+      { threshold: 0.1, rootMargin: '50px' }
     );
 
-    if (imgRef.current) {
-      observer.observe(imgRef.current);
-    }
+    observer.observe(imgRef.current);
 
-    return () => {
-      observer.disconnect();
-    };
-  }, []);
+    return () => observer.disconnect();
+  }, [src]);
 
   return (
     <div className={`relative overflow-hidden ${className}`}>
@@ -141,7 +150,7 @@ export function GalleryLazyImage({
       {/* 고해상도 이미지 */}
       <img
         ref={imgRef}
-        src={isInView ? src : ''}
+        src={isInView ? optimizedSrc : ''} // Use optimizedSrc here
         alt={alt}
         className={`w-full h-full object-cover transition-opacity duration-500 ${
           isLoaded ? 'opacity-100' : 'opacity-0'

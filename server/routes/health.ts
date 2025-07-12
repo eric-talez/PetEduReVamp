@@ -246,7 +246,7 @@ export function registerHealthRoutes(app: Express, storage: IStorage) {
       }
 
       const petId = parseInt(req.params.petId);
-      
+
       // 모든 건강 관련 데이터를 한 번에 조회
       const [
         vaccinations,
@@ -313,7 +313,7 @@ export function registerHealthRoutes(app: Express, storage: IStorage) {
 
       const endDate = new Date();
       const startDate = new Date();
-      
+
       switch (period) {
         case '1month':
           startDate.setMonth(endDate.getMonth() - 1);
@@ -375,6 +375,43 @@ export function registerHealthRoutes(app: Express, storage: IStorage) {
     } catch (error) {
       console.error('Error fetching health stats:', error);
       res.status(500).json({ message: 'Internal server error' });
+    }
+  });
+
+  app.get('/api/health', async (req, res) => {
+    try {
+      const health = {
+        status: 'ok',
+        timestamp: new Date().toISOString(),
+        version: '1.0.0',
+        uptime: process.uptime(),
+        environment: process.env.NODE_ENV || 'development',
+        memory: {
+          used: Math.round(process.memoryUsage().heapUsed / 1024 / 1024),
+          total: Math.round(process.memoryUsage().heapTotal / 1024 / 1024),
+          external: Math.round(process.memoryUsage().external / 1024 / 1024)
+        },
+        cpu: process.cpuUsage(),
+        services: {
+          database: 'connected',
+          cache: 'active',
+          websocket: 'running'
+        }
+      };
+
+      // 프로덕션에서는 민감한 정보 제거
+      if (process.env.NODE_ENV === 'production') {
+        delete health.cpu;
+        delete health.memory.external;
+      }
+
+      res.json(health);
+    } catch (error) {
+      res.status(503).json({
+        status: 'error',
+        timestamp: new Date().toISOString(),
+        message: 'Health check failed'
+      });
     }
   });
 

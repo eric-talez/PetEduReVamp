@@ -10,14 +10,37 @@ import './debug.js';
 
 console.log('ENV VAR CHECK in main:', import.meta.env.VITE_KAKAO_MAPS_API_KEY);
 
-// Global error handlers
+// Enhanced global error handlers
 window.addEventListener('unhandledrejection', (event) => {
-  console.warn('Unhandled promise rejection:', event.reason);
+  // 개발 환경에서만 상세 로깅
+  if (import.meta.env.DEV) {
+    console.warn('Unhandled promise rejection:', event.reason);
+  }
+  
+  // 네트워크 에러나 중요하지 않은 에러는 무시
+  const reason = event.reason;
+  if (reason?.name === 'AbortError' || 
+      reason?.message?.includes('fetch') ||
+      reason?.message?.includes('Network Error')) {
+    event.preventDefault();
+    return;
+  }
+  
+  // 중요한 에러만 로깅
+  console.error('Critical unhandled rejection:', reason);
   event.preventDefault();
 });
 
 window.addEventListener('error', (event) => {
-  console.warn('Global error:', event.error);
+  // 스크립트 에러나 리소스 로딩 에러만 처리
+  if (event.error || event.message) {
+    console.error('Global error:', {
+      message: event.message,
+      filename: event.filename,
+      lineno: event.lineno,
+      error: event.error
+    });
+  }
 });
 
 createRoot(document.getElementById("root")!).render(

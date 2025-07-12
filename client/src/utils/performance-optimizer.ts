@@ -227,7 +227,37 @@ export class PerformanceTracker {
   }
 }
 
-// 자동 캐시 정리
-setInterval(() => {
-  CacheManager.cleanup();
-}, 5 * 60 * 1000); // 5분마다 정리
+// 자동 캐시 정리 (메모리 누수 방지)
+let cleanupInterval: NodeJS.Timeout | null = null;
+
+export const startCacheCleanup = () => {
+  if (cleanupInterval) return;
+  
+  cleanupInterval = setInterval(() => {
+    CacheManager.cleanup();
+    
+    // 성능 메트릭도 정리
+    const metrics = PerformanceTracker.getMetrics();
+    Object.keys(metrics).forEach(key => {
+      if (metrics[key].count > 100) {
+        // 오래된 메트릭 제거
+        PerformanceTracker['metrics'].set(key, 
+          PerformanceTracker['metrics'].get(key)?.slice(-50) || []
+        );
+      }
+    });
+  }, 5 * 60 * 1000); // 5분마다 정리
+};
+
+export const stopCacheCleanup = () => {
+  if (cleanupInterval) {
+    clearInterval(cleanupInterval);
+    cleanupInterval = null;
+  }
+};
+
+// 페이지 언로드 시 정리
+if (typeof window !== 'undefined') {
+  window.addEventListener('beforeunload', stopCacheCleanup);
+  startCacheCleanup();
+}

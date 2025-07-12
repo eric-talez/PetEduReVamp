@@ -7,6 +7,8 @@ import { useGlobalShortcuts } from './hooks/use-keyboard-shortcuts';
 import { NotificationsProvider } from './components/NotificationsProvider';
 import { AchievementsProvider } from './hooks/useAchievements';
 import { useKeyboardAccessibility } from '@/hooks/use-keyboard-accessibility';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { startCacheCleanup } from './utils/performance-optimizer';
 
 // 페이지 컴포넌트 임포트
 import Home from "./pages/Home";
@@ -299,7 +301,7 @@ function AppLayout({ children }: { children: ReactNode }) {
                   <Route path="/admin/members-status" component={AdminMembersStatus} />
                   <Route path="/admin/trainer-certification" component={TrainerCertificationManagement} />
                   <Route path="/admin/spring-boot-test" component={SpringBootTestPage} />
-                  
+
                   {/* 업체 등록 관리 */}
                   <Route path="/admin/business-registration">
                     {() => {
@@ -745,7 +747,7 @@ function AppLayout({ children }: { children: ReactNode }) {
                   {/* 등록 페이지 */}
                   <Route path="/registration/trainer" component={TrainerRegistration} />
                   <Route path="/registration/institute" component={InstituteRegistration} />
-                  
+
                   {/* 관리자 등록 관리 */}
                   <Route path="/admin/registrations">
                     {() => (
@@ -834,7 +836,7 @@ function AppLayout({ children }: { children: ReactNode }) {
                       );
                     }}
                   </Route>
-                  <Route path="/analytics">
+                  The code will apply code splitting and lazy loading to improve performance.                  <Route path="/analytics">
                     {() => {
                       const AnalyticsPage = lazy(() => import('./pages/analytics'));
                       return (
@@ -2214,7 +2216,7 @@ function UnauthenticatedRoutes() {
       <Switch>
         <Route path="/auth" component={Login} />
         <Route path="/chatbot" component={ChatbotPage} />
-        
+
         {/* TALEZ 체험 서비스 */}
         <Route path="/experience">
           {() => {
@@ -2384,7 +2386,7 @@ function UnauthenticatedRoutes() {
           }}
         </Route>
         <Route path="/" component={Home} />
-        
+
         {/* 404 페이지 */}
         <Route>
           {() => {
