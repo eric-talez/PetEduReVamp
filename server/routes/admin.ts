@@ -8,7 +8,144 @@ const asyncHandler = (fn: Function) => (req: any, res: any, next: any) => {
 
 const successResponse = (data: any) => ({ success: true, data });
 
-export function registerAdminRoutes(app: Express, storage: IStorage) {
+export function registerAdminRoutes(app: Express) {
+  // 회원 현황 조회 API
+  app.get("/api/admin/members-status", async (req, res) => {
+    try {
+      console.log('[Admin] 회원 현황 조회 요청');
+      
+      const members = [
+        {
+          id: 1,
+          name: '김반려',
+          email: 'kim.pet@example.com',
+          role: 'pet-owner',
+          status: 'active',
+          joinDate: '2024-01-15',
+          lastLogin: '2024-03-10',
+          petCount: 2,
+          coursesCompleted: 3,
+          isVerified: true
+        },
+        {
+          id: 2,
+          name: '박훈련',
+          email: 'park.trainer@example.com',
+          role: 'trainer',
+          status: 'active',
+          joinDate: '2024-01-20',
+          lastLogin: '2024-03-11',
+          studentsCount: 15,
+          coursesCreated: 5,
+          isVerified: true,
+          certification: 'KKF 공인 훈련사'
+        },
+        {
+          id: 3,
+          name: '이기관',
+          email: 'lee.institute@example.com',
+          role: 'institute-admin',
+          status: 'active',
+          joinDate: '2024-02-01',
+          lastLogin: '2024-03-11',
+          instituteName: '서울반려견센터',
+          trainersCount: 8,
+          isVerified: true
+        },
+        {
+          id: 4,
+          name: '정반려',
+          email: 'jung.pet@example.com',
+          role: 'pet-owner',
+          status: 'inactive',
+          joinDate: '2024-02-15',
+          lastLogin: '2024-02-20',
+          petCount: 1,
+          coursesCompleted: 0,
+          isVerified: false
+        },
+        {
+          id: 5,
+          name: '한훈련',
+          email: 'han.trainer@example.com',
+          role: 'trainer',
+          status: 'pending',
+          joinDate: '2024-02-20',
+          lastLogin: null,
+          studentsCount: 0,
+          coursesCreated: 0,
+          isVerified: false,
+          certification: '신규 신청'
+        }
+      ];
+
+      const stats = {
+        totalMembers: members.length,
+        activeMembers: members.filter(m => m.status === 'active').length,
+        pendingMembers: members.filter(m => m.status === 'pending').length,
+        inactiveMembers: members.filter(m => m.status === 'inactive').length,
+        verifiedMembers: members.filter(m => m.isVerified).length,
+        byRole: {
+          'pet-owner': members.filter(m => m.role === 'pet-owner').length,
+          'trainer': members.filter(m => m.role === 'trainer').length,
+          'institute-admin': members.filter(m => m.role === 'institute-admin').length,
+          'admin': members.filter(m => m.role === 'admin').length
+        },
+        recentJoins: members.filter(m => {
+          const joinDate = new Date(m.joinDate);
+          const weekAgo = new Date();
+          weekAgo.setDate(weekAgo.getDate() - 7);
+          return joinDate > weekAgo;
+        }).length
+      };
+
+      res.json({
+        success: true,
+        data: {
+          members,
+          stats
+        },
+        message: '회원 현황을 성공적으로 조회했습니다.'
+      });
+    } catch (error) {
+      console.error('회원 현황 조회 오류:', error);
+      res.status(500).json({ 
+        success: false,
+        message: '회원 현황 조회 중 오류가 발생했습니다.' 
+      });
+    }
+  });
+
+  // 회원 상태 변경 API
+  app.patch("/api/admin/members/:id/status", async (req, res) => {
+    try {
+      const memberId = parseInt(req.params.id);
+      const { status, reason } = req.body;
+      
+      console.log(`[Admin] 회원 ${memberId} 상태 변경: ${status}`);
+      
+      // 실제로는 데이터베이스 업데이트
+      const updatedMember = {
+        id: memberId,
+        status: status,
+        statusReason: reason,
+        updatedAt: new Date().toISOString()
+      };
+
+      res.json({
+        success: true,
+        data: updatedMember,
+        message: `회원 상태가 ${status}로 변경되었습니다.`
+      });
+    } catch (error) {
+      console.error('회원 상태 변경 오류:', error);
+      res.status(500).json({ 
+        success: false,
+        message: '회원 상태 변경 중 오류가 발생했습니다.' 
+      });
+    }
+  });
+
   // 관리자 승인 대기 목록 조회
   app.get("/api/admin/approvals", async (req, res) => {
     try {
@@ -70,7 +207,136 @@ export function registerAdminRoutes(app: Express, storage: IStorage) {
     }
   });
 
-  // 관리자 위치 목록 조회
+  // 기관 관리 목록 조회
+  app.get("/api/admin/institutes", async (req, res) => {
+    try {
+      console.log('[Admin] 기관 관리 목록 조회 요청');
+      
+      const institutes = [
+        {
+          id: 1,
+          name: "서울반려견아카데미",
+          businessNumber: "123-45-67890",
+          address: "서울시 강남구 테헤란로 123",
+          phone: "02-1234-5678",
+          email: "info@seoul-pet-academy.com",
+          directorName: "이기관",
+          directorEmail: "lee.institute@example.com",
+          status: "active",
+          isVerified: true,
+          certification: "교육부 인증",
+          establishedDate: "2020-01-15",
+          registeredDate: "2024-01-15",
+          trainersCount: 8,
+          studentsCount: 156,
+          coursesCount: 12,
+          facilities: ["실내 훈련장", "야외 운동장", "대기실", "상담실"],
+          operatingHours: "평일 09:00-18:00, 주말 10:00-17:00",
+          description: "전문 반려견 교육 및 훈련 서비스를 제공하는 종합 교육기관입니다."
+        },
+        {
+          id: 2,
+          name: "부산펫트레이닝센터",
+          businessNumber: "234-56-78901",
+          address: "부산시 해운대구 해운대로 456",
+          phone: "051-2345-6789",
+          email: "info@busan-pet-center.com",
+          directorName: "박기관",
+          directorEmail: "park.institute@example.com",
+          status: "pending",
+          isVerified: false,
+          certification: "신청 중",
+          establishedDate: "2023-06-01",
+          registeredDate: "2024-02-20",
+          trainersCount: 3,
+          studentsCount: 45,
+          coursesCount: 5,
+          facilities: ["실내 훈련장", "놀이터"],
+          operatingHours: "평일 10:00-19:00, 토요일 10:00-15:00",
+          description: "개인 맞춤형 반려견 훈련 전문 센터입니다."
+        },
+        {
+          id: 3,
+          name: "대구애견학교",
+          businessNumber: "345-67-89012",
+          address: "대구시 중구 동성로 789",
+          phone: "053-3456-7890",
+          email: "info@daegu-pet-school.com",
+          directorName: "최기관",
+          directorEmail: "choi.institute@example.com",
+          status: "suspended",
+          isVerified: true,
+          certification: "한국애견협회 인증",
+          establishedDate: "2019-03-01",
+          registeredDate: "2024-01-30",
+          trainersCount: 5,
+          studentsCount: 89,
+          coursesCount: 8,
+          facilities: ["실내 훈련장", "야외 운동장", "수영장"],
+          operatingHours: "일시 운영 중단",
+          description: "체계적인 교육 프로그램으로 유명한 반려견 교육 전문기관입니다.",
+          suspendedReason: "시설 보수 공사로 인한 일시 중단"
+        }
+      ];
+
+      const stats = {
+        totalInstitutes: institutes.length,
+        activeInstitutes: institutes.filter(i => i.status === 'active').length,
+        pendingInstitutes: institutes.filter(i => i.status === 'pending').length,
+        suspendedInstitutes: institutes.filter(i => i.status === 'suspended').length,
+        verifiedInstitutes: institutes.filter(i => i.isVerified).length,
+        totalTrainers: institutes.reduce((sum, i) => sum + i.trainersCount, 0),
+        totalStudents: institutes.reduce((sum, i) => sum + i.studentsCount, 0),
+        totalCourses: institutes.reduce((sum, i) => sum + i.coursesCount, 0)
+      };
+
+      res.json({
+        success: true,
+        data: {
+          institutes,
+          stats
+        },
+        message: '기관 목록을 성공적으로 조회했습니다.'
+      });
+    } catch (error) {
+      console.error('기관 목록 조회 오류:', error);
+      res.status(500).json({ 
+        success: false,
+        message: '기관 목록 조회 중 오류가 발생했습니다.' 
+      });
+    }
+  });
+
+  // 기관 상태 변경 API
+  app.patch("/api/admin/institutes/:id/status", async (req, res) => {
+    try {
+      const instituteId = parseInt(req.params.id);
+      const { status, reason } = req.body;
+      
+      console.log(`[Admin] 기관 ${instituteId} 상태 변경: ${status}`);
+      
+      const updatedInstitute = {
+        id: instituteId,
+        status: status,
+        statusReason: reason,
+        updatedAt: new Date().toISOString()
+      };
+
+      res.json({
+        success: true,
+        data: updatedInstitute,
+        message: `기관 상태가 ${status}로 변경되었습니다.`
+      });
+    } catch (error) {
+      console.error('기관 상태 변경 오류:', error);
+      res.status(500).json({ 
+        success: false,
+        message: '기관 상태 변경 중 오류가 발생했습니다.' 
+      });
+    }
+  });
+
+  // 관리자 위치 목록 조회 (기존 유지)
   app.get("/api/admin/locations", async (req, res) => {
     try {
       const locations = [

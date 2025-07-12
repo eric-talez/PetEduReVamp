@@ -106,7 +106,7 @@ app.use((req: any, res: any, next: any) => {
 app.post('/api/login', async (req, res) => {
   try {
     const { username, password } = req.body;
-    
+
     if (!username || !password) {
       return res.status(400).json({
         success: false,
@@ -123,7 +123,7 @@ app.post('/api/login', async (req, res) => {
     };
 
     const account = testAccounts[username as keyof typeof testAccounts];
-    
+
     if (!account || account.password !== password) {
       return res.status(401).json({
         success: false,
@@ -413,16 +413,16 @@ async function startServer() {
     if (storage.initializeData && typeof storage.initializeData === 'function') {
       await storage.initializeData();
     }
-    
+
     // Register other API routes BEFORE Vite
     const server = await registerRoutes(app);
-    
+
     // Register AI routes
     registerAIRoutes(app);
-    
+
     // Register experience routes
     registerExperienceRoutes(app);
-    
+
     // Register institute routes
     registerInstituteRoutes(app, storage);
 

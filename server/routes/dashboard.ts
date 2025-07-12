@@ -36,19 +36,36 @@ export function registerDashboardRoutes(app: Express) {
 
     try {
       // 실제 시스템 메트릭 수집
-      const [
-        allUsers,
-        allCourses,
-        allInstitutes,
-        allTrainers,
-        allEvents
-      ] = await Promise.all([
-        storage.getAllUsers(),
-        storage.getAllCourses(),
-        storage.getAllInstitutes(),
-        storage.getAllTrainers(),
-        storage.getAllEvents()
-      ]);
+      // 샘플 데이터로 대체 (실제 구현에서는 데이터베이스 연결 필요)
+      const allUsers = [
+        { id: 1, name: '김반려', role: 'pet-owner', isActive: true, createdAt: '2024-01-15', updatedAt: '2024-01-15' },
+        { id: 2, name: '박훈련', role: 'trainer', isActive: true, createdAt: '2024-01-20', updatedAt: '2024-01-20' },
+        { id: 3, name: '이기관', role: 'institute-admin', isActive: true, createdAt: '2024-02-01', updatedAt: '2024-02-01' },
+        { id: 4, name: '최관리', role: 'admin', isActive: true, createdAt: '2024-01-10', updatedAt: '2024-01-10' },
+        { id: 5, name: '정반려', role: 'pet-owner', isActive: false, createdAt: '2024-02-15', updatedAt: '2024-02-15' },
+        { id: 6, name: '한훈련', role: 'trainer', isActive: true, createdAt: '2024-02-20', updatedAt: '2024-02-20' }
+      ];
+      
+      const allCourses = [
+        { id: 1, title: '기본 순종 훈련', isActive: true, createdAt: '2024-01-25' },
+        { id: 2, title: '어질리티 훈련', isActive: true, createdAt: '2024-02-01' },
+        { id: 3, title: '사회화 훈련', isActive: false, createdAt: '2024-02-10' }
+      ];
+      
+      const allInstitutes = [
+        { id: 1, name: '서울반려견센터', isVerified: true, createdAt: '2024-01-20' },
+        { id: 2, name: '부산훈련소', isVerified: false, createdAt: '2024-02-05' }
+      ];
+      
+      const allTrainers = [
+        { id: 1, name: '박훈련', isVerified: true, createdAt: '2024-01-20' },
+        { id: 2, name: '한훈련', isVerified: true, createdAt: '2024-02-20' }
+      ];
+      
+      const allEvents = [
+        { id: 1, title: '반려견 페스티벌', isActive: true, date: '2024-03-15', createdAt: '2024-02-01' },
+        { id: 2, title: '훈련 워크샵', isActive: true, date: '2024-04-10', createdAt: '2024-02-10' }
+      ];
 
       // 시스템 건강 상태 계산
       const systemHealth = {
@@ -96,21 +113,42 @@ export function registerDashboardRoutes(app: Express) {
       const adminUserId = req.user?.id || 'admin-1';
       
       // 실제 데이터 조회
-      const [
-        allUsers,
-        allCourses,
-        allInstitutes,
-        allTrainers,
-        allEvents,
-        allProducts
-      ] = await Promise.all([
-        storage.getAllUsers(),
-        storage.getAllCourses(),
-        storage.getAllInstitutes(),
-        storage.getAllTrainers(),
-        storage.getAllEvents(),
-        storage.getProducts()
-      ]);
+      // 관리자 통계용 샘플 데이터
+      const allUsers = [
+        { id: 1, name: '김반려', role: 'pet-owner', isActive: true, createdAt: '2024-01-15', updatedAt: '2024-01-15' },
+        { id: 2, name: '박훈련', role: 'trainer', isActive: true, createdAt: '2024-01-20', updatedAt: '2024-01-20' },
+        { id: 3, name: '이기관', role: 'institute-admin', isActive: true, createdAt: '2024-02-01', updatedAt: '2024-02-01' },
+        { id: 4, name: '최관리', role: 'admin', isActive: true, createdAt: '2024-01-10', updatedAt: '2024-01-10' },
+        { id: 5, name: '정반려', role: 'pet-owner', isActive: false, createdAt: '2024-02-15', updatedAt: '2024-02-15' },
+        { id: 6, name: '한훈련', role: 'trainer', isActive: true, createdAt: '2024-02-20', updatedAt: '2024-02-20' }
+      ];
+      
+      const allCourses = [
+        { id: 1, title: '기본 순종 훈련', isActive: true, createdAt: '2024-01-25' },
+        { id: 2, title: '어질리티 훈련', isActive: true, createdAt: '2024-02-01' },
+        { id: 3, title: '사회화 훈련', isActive: false, createdAt: '2024-02-10' }
+      ];
+      
+      const allInstitutes = [
+        { id: 1, name: '서울반려견센터', isVerified: true, createdAt: '2024-01-20' },
+        { id: 2, name: '부산훈련소', isVerified: false, createdAt: '2024-02-05' }
+      ];
+      
+      const allTrainers = [
+        { id: 1, name: '박훈련', isVerified: true, createdAt: '2024-01-20' },
+        { id: 2, name: '한훈련', isVerified: true, createdAt: '2024-02-20' }
+      ];
+      
+      const allEvents = [
+        { id: 1, title: '반려견 페스티벌', isActive: true, date: '2024-03-15', createdAt: '2024-02-01' },
+        { id: 2, title: '훈련 워크샵', isActive: true, date: '2024-04-10', createdAt: '2024-02-10' }
+      ];
+      
+      const allProducts = [
+        { id: 1, name: '프리미엄 사료', price: 50000, category: 'food', isActive: true },
+        { id: 2, name: '훈련용 장난감', price: 15000, category: 'toy', isActive: true },
+        { id: 3, name: '목줄', price: 25000, category: 'accessory', isActive: true }
+      ];
 
       // 알림과 메시지는 임시로 빈 배열로 처리
       const allNotifications: any[] = [];
