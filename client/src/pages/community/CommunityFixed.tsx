@@ -100,7 +100,7 @@ const PostCard = ({ post, onClick }: { post: any; onClick: (post: any) => void }
           </div>
           <div className="flex items-center gap-1">
             <MessageSquare className="h-3 w-3" />
-            <span>{post.comments || 0}</span>
+            <span>{Array.isArray(post.comments) ? post.comments.length : (post.comments || 0)}</span>
           </div>
           <div className="flex items-center gap-1">
             <Eye className="h-3 w-3" />
