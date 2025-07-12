@@ -1,26 +1,6 @@
 import type { Express } from "express";
 import { storage } from "../storage";
 
-// ApiError 클래스 정의
-class ApiError extends Error {
-  constructor(public statusCode: number, message: string) {
-    super(message);
-    this.name = 'ApiError';
-  }
-
-  static internal(message: string) {
-    return new ApiError(500, message);
-  }
-
-  static notFound(message: string) {
-    return new ApiError(404, message);
-  }
-
-  static badRequest(message: string) {
-    return new ApiError(400, message);
-  }
-}
-
 // 임시 에러 핸들러
 const asyncHandler = (fn: Function) => (req: any, res: any, next: any) => {
   Promise.resolve(fn(req, res, next)).catch(next);
@@ -28,15 +8,38 @@ const asyncHandler = (fn: Function) => (req: any, res: any, next: any) => {
 
 const successResponse = (data: any) => ({ success: true, data });
 
+// ApiError 클래스 정의
+class ApiError extends Error {
+  statusCode: number;
+
+  constructor(statusCode: number, message: string) {
+    super(message);
+    this.statusCode = statusCode;
+  }
+
+  static forbidden(message: string) {
+    return new ApiError(403, message);
+  }
+
+  static unauthorized() {
+    return new ApiError(401, 'Unauthorized');
+  }
+
+  static internal(message: string) {
+    return new ApiError(500, message);
+  }
+}
+
 export function registerAdminRoutes(app: Express) {
   // 회원 현황 조회 API
   app.get('/api/admin/members-status', asyncHandler(async (req: any, res: any) => {
     console.log('[Admin] 회원 현황 조회 요청');
 
     try {
-      const users = storage.getUsers() || [];
-      const pets = storage.getPets() || [];
-      const institutes = storage.getInstitutes() || [];
+      // storage에서 데이터 가져오기
+      const users = await storage.getAllUsers() || [];
+      const pets = await storage.getAllPets ? await storage.getAllPets() : [];
+      const institutes = await storage.getInstitutes ? await storage.getInstitutes() : [];
 
       console.log('[Admin] 데이터 현황:', {
         usersCount: users.length,
@@ -45,10 +48,10 @@ export function registerAdminRoutes(app: Express) {
       });
 
       const membersByRole = {
-        'pet-owner': users.filter(u => u.role === 'pet-owner'),
-        'trainer': users.filter(u => u.role === 'trainer'), 
-        'institute-admin': users.filter(u => u.role === 'institute-admin'),
-        'admin': users.filter(u => u.role === 'admin')
+        'pet-owner': users.filter((u: any) => u.role === 'pet-owner'),
+        'trainer': users.filter((u: any) => u.role === 'trainer'), 
+        'institute-admin': users.filter((u: any) => u.role === 'institute-admin'),
+        'admin': users.filter((u: any) => u.role === 'admin')
       };
 
       const instituteMemberships = institutes.map(inst => ({
@@ -218,7 +221,7 @@ export function registerAdminRoutes(app: Express) {
           trainersCount: 1,
           studentsCount: 87,
           coursesCount: 6,
-          facilities: ["실내 훈련장", "야외 운동장", "대기실", "상담실", "애견유치원"],
+          facilities: ["실내 훈련장", "야외 훈련장", "대기실", "상담실", "애견유치원"],
           operatingHours: "평일 09:00-18:00, 토요일 09:00-18:00, 일요일 휴무",
           description: "국가자격증 훈련부터 반려동물 교감 교육까지! 반려견과 보호자의 '진짜 관계'를 만들어 드리는 전문 교육기관입니다.",
           website: "https://wangzzang.com",
@@ -424,7 +427,7 @@ export function registerAdminRoutes(app: Express) {
 
     try {
       const curriculums = storage.getCurriculums() || [];
-      
+
       console.log('[Admin] 커리큘럼 응답:', curriculums.length + '개');
 
       res.json({
