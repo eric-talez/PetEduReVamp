@@ -449,12 +449,12 @@ export function registerAdminRoutes(app: Express) {
     console.log('[Admin] 기관 목록 조회 요청');
 
     try {
-      const institutes = storage.institutes || [];
+      const institutes = storage.getInstitutes();
 
       const institutesWithDetails = institutes.map(institute => ({
         ...institute,
-        trainersCount: institute.trainerId ? 1 : 0,
-        studentsCount: 0, // 추후 실제 학생 수 계산 로직 추가
+        trainersCount: institute.trainerId ? 1 : (institute.trainersCount || 0),
+        studentsCount: institute.studentsCount || 0,
         isActive: institute.isActive !== false // 기본값 true
       }));
 
