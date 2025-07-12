@@ -1100,6 +1100,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // 단일 파일 업로드 API (ImageUpload 컴포넌트용)
+  app.post("/api/upload/single", imageUpload.single('file'), async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ 
+          success: false,
+          message: "업로드할 파일이 없습니다." 
+        });
+      }
+
+      const imageUrl = `/uploads/images/${req.file.filename}`;
+      
+      console.log('단일 파일 업로드 성공:', imageUrl);
+
+      res.json({ 
+        success: true, 
+        file: {
+          url: imageUrl,
+          filename: req.file.filename
+        },
+        message: "이미지가 성공적으로 업로드되었습니다."
+      });
+    } catch (error) {
+      console.error('단일 파일 업로드 오류:', error);
+      res.status(500).json({ 
+        success: false,
+        message: "이미지 업로드 중 오류가 발생했습니다"
+      });
+    }
+  });
+
   // 로고 업로드를 위한 multer 설정
   const logoStorage = multer.diskStorage({
     destination: (req, file, cb) => {

@@ -780,19 +780,16 @@ export default function AdminSettings() {
                         </div>
                         <div className="flex flex-col space-y-2">
                           <ImageUpload
-                            onUpload={(file) => handleLogoUpload('main', file)}
-                            accept="image/*"
+                            value={currentLogos?.main || ''}
+                            onChange={(url) => {
+                              if (url) {
+                                handleLogoUpload('main', url);
+                              }
+                            }}
+                            maxSize={5}
+                            label="메인 로고 업로드"
                             className="w-auto"
-                          >
-                            <Button variant="outline" disabled={uploadingLogo === 'main'}>
-                              {uploadingLogo === 'main' ? (
-                                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                              ) : (
-                                <Upload className="h-4 w-4 mr-2" />
-                              )}
-                              메인 로고 업로드
-                            </Button>
-                          </ImageUpload>
+                          />
                           {currentLogos?.main && (
                             <Button 
                               variant="outline" 
@@ -825,19 +822,16 @@ export default function AdminSettings() {
                         </div>
                         <div className="flex flex-col space-y-2">
                           <ImageUpload
-                            onUpload={(file) => handleLogoUpload('mainDark', file)}
-                            accept="image/*"
+                            value={currentLogos?.mainDark || ''}
+                            onChange={(url) => {
+                              if (url) {
+                                handleLogoUpload('mainDark', url);
+                              }
+                            }}
+                            maxSize={5}
+                            label="다크 로고 업로드"
                             className="w-auto"
-                          >
-                            <Button variant="outline" disabled={uploadingLogo === 'mainDark'}>
-                              {uploadingLogo === 'mainDark' ? (
-                                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                              ) : (
-                                <Upload className="h-4 w-4 mr-2" />
-                              )}
-                              다크 로고 업로드
-                            </Button>
-                          </ImageUpload>
+                          />
                           {currentLogos?.mainDark && (
                             <Button 
                               variant="outline" 
@@ -870,19 +864,16 @@ export default function AdminSettings() {
                         </div>
                         <div className="flex flex-col space-y-2">
                           <ImageUpload
-                            onUpload={(file) => handleLogoUpload('compact', file)}
-                            accept="image/*"
+                            value={currentLogos?.compact || ''}
+                            onChange={(url) => {
+                              if (url) {
+                                handleLogoUpload('compact', url);
+                              }
+                            }}
+                            maxSize={5}
+                            label="컴팩트 로고 업로드"
                             className="w-auto"
-                          >
-                            <Button variant="outline" disabled={uploadingLogo === 'compact'}>
-                              {uploadingLogo === 'compact' ? (
-                                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                              ) : (
-                                <Upload className="h-4 w-4 mr-2" />
-                              )}
-                              컴팩트 로고 업로드
-                            </Button>
-                          </ImageUpload>
+                          />
                           {currentLogos?.compact && (
                             <Button 
                               variant="outline" 
@@ -963,19 +954,16 @@ export default function AdminSettings() {
                         </div>
                         <div className="flex flex-col space-y-2">
                           <ImageUpload
-                            onUpload={(file) => handleLogoUpload('favicon', file)}
-                            accept="image/*"
+                            value={currentLogos?.favicon || ''}
+                            onChange={(url) => {
+                              if (url) {
+                                handleLogoUpload('favicon', url);
+                              }
+                            }}
+                            maxSize={5}
+                            label="파비콘 업로드"
                             className="w-auto"
-                          >
-                            <Button variant="outline" disabled={uploadingLogo === 'favicon'}>
-                              {uploadingLogo === 'favicon' ? (
-                                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                              ) : (
-                                <Upload className="h-4 w-4 mr-2" />
-                              )}
-                              파비콘 업로드
-                            </Button>
-                          </ImageUpload>
+                          />
                           {currentLogos?.favicon && (
                             <Button 
                               variant="outline" 
