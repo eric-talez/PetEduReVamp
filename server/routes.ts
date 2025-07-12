@@ -3040,30 +3040,46 @@ app.get('/api/search', async (req, res) => {
     }
   });
 
-  // 로고 업로드 API
-  app.post('/api/admin/logos/upload', async (req, res) => {
+  // 로고 설정 API (단일 로고 업데이트)
+  app.post('/api/logo/set', async (req, res) => {
     try {
-      // Multer 설정이 아직 없어서 임시로 파일 처리
-      const type = req.body.type || 'main';
-      if (!['main', 'compact', 'favicon'].includes(type)) {
-        return res.status(400).json({ error: '유효하지 않은 로고 타입입니다.' });
+      const { type, url } = req.body;
+      
+      if (!type || !url) {
+        return res.status(400).json({ error: '타입과 URL이 필요합니다.' });
       }
 
-      // 임시 파일 경로 생성
-      const filename = `logo-${type}-${Date.now()}.svg`;
-      const logoPath = `/uploads/${filename}`;
+      // 현재 로고 설정 조회
+      const currentSettings = await storage.getLogoSettings();
+      
+      // 타입에 따른 업데이트
+      const updateData = {
+        logoLight: currentSettings.logoLight || "/logo-light.svg",
+        logoDark: currentSettings.logoDark || "/logo-dark.svg", 
+        logoSymbolLight: currentSettings.logoSymbolLight || "/logo-compact.svg",
+        logoSymbolDark: currentSettings.logoSymbolDark || "/logo-compact-dark.svg"
+      };
 
-      // 스토리지에 로고 업로드
-      await storage.uploadLogo(type as 'main' | 'compact' | 'favicon', filename, Buffer.from(''));
+      // 업데이트할 필드 결정
+      if (type === 'expanded') {
+        updateData.logoLight = url;
+        updateData.logoDark = url;
+      } else if (type === 'compact') {
+        updateData.logoSymbolLight = url;
+        updateData.logoSymbolDark = url;
+      }
+
+      // 로고 설정 업데이트
+      const settings = await storage.updateLogoSettings(updateData);
       
       res.json({ 
         success: true, 
-        logoPath,
-        message: '로고가 성공적으로 업로드되었습니다.' 
+        message: '로고가 성공적으로 저장되었습니다.',
+        settings
       });
     } catch (error) {
-      console.error('로고 업로드 오류:', error);
-      res.status(500).json({ error: '로고 업로드에 실패했습니다.' });
+      console.error('로고 설정 오류:', error);
+      res.status(500).json({ error: '로고 설정에 실패했습니다.' });
     }
   });
 

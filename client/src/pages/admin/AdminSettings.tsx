@@ -130,9 +130,37 @@ export default function AdminSettings() {
   });
 
   // 로고 업로드 핸들러
-  const handleLogoUpload = async (type: string, file: File) => {
-    setUploadingLogo(type);
-    logoUploadMutation.mutate({ type, file });
+  const handleLogoUpload = async (type: string, urlOrFile: string | File) => {
+    if (typeof urlOrFile === 'string') {
+      // URL인 경우 API를 통해 로고 저장
+      try {
+        const response = await apiRequest(`/api/logo/set`, 'POST', {
+          type,
+          url: urlOrFile
+        });
+        
+        if (response.success) {
+          toast({
+            title: '로고 업로드 완료',
+            description: `${type === 'expanded' ? '확장' : '축소'} 로고가 성공적으로 저장되었습니다.`,
+          });
+          // 로고 목록 다시 조회
+          window.location.reload();
+        } else {
+          throw new Error(response.message || '로고 저장 실패');
+        }
+      } catch (error: any) {
+        toast({
+          title: '로고 저장 실패',
+          description: error.message || '로고 저장 중 오류가 발생했습니다.',
+          variant: 'destructive',
+        });
+      }
+    } else {
+      // File인 경우 기존 로직 사용
+      setUploadingLogo(type);
+      logoUploadMutation.mutate({ type, file: urlOrFile });
+    }
   };
 
   // 로고 삭제 핸들러
@@ -1562,19 +1590,16 @@ export default function AdminSettings() {
                         </div>
                         <div className="flex flex-col space-y-2">
                           <ImageUpload
-                            onUpload={(file) => handleLogoUpload('expanded', file)}
-                            accept="image/*"
+                            value={currentLogos?.expandedLogo}
+                            onChange={(url) => {
+                              if (url) {
+                                handleLogoUpload('expanded', url);
+                              }
+                            }}
+                            maxSize={5}
+                            label="확장 로고 업로드"
                             className="w-auto"
-                          >
-                            <Button variant="outline" disabled={uploadingLogo === 'expanded'}>
-                              {uploadingLogo === 'expanded' ? (
-                                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                              ) : (
-                                <Upload className="h-4 w-4 mr-2" />
-                              )}
-                              확장 로고 업로드
-                            </Button>
-                          </ImageUpload>
+                          />
                           {currentLogos?.expandedLogo && (
                             <Button 
                               variant="outline" 
@@ -1607,19 +1632,16 @@ export default function AdminSettings() {
                         </div>
                         <div className="flex flex-col space-y-2">
                           <ImageUpload
-                            onUpload={(file) => handleLogoUpload('compact', file)}
-                            accept="image/*"
+                            value={currentLogos?.compactLogo}
+                            onChange={(url) => {
+                              if (url) {
+                                handleLogoUpload('compact', url);
+                              }
+                            }}
+                            maxSize={5}
+                            label="축소 로고 업로드"
                             className="w-auto"
-                          >
-                            <Button variant="outline" disabled={uploadingLogo === 'compact'}>
-                              {uploadingLogo === 'compact' ? (
-                                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                              ) : (
-                                <Upload className="h-4 w-4 mr-2" />
-                              )}
-                              축소 로고 업로드
-                            </Button>
-                          </ImageUpload>
+                          />
                           {currentLogos?.compactLogo && (
                             <Button 
                               variant="outline" 
