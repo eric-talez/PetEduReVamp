@@ -242,6 +242,14 @@ export default function AdminSettings() {
                 화면 설정
               </Button>
               <Button 
+                variant={activeTab === 'logo' ? 'default' : 'ghost'} 
+                className="w-full justify-start"
+                onClick={() => setActiveTab('logo')}
+              >
+                <ImageIcon className="h-4 w-4 mr-2" />
+                로고 설정
+              </Button>
+              <Button 
                 variant={activeTab === 'localization' ? 'default' : 'ghost'} 
                 className="w-full justify-start"
                 onClick={() => setActiveTab('localization')}
@@ -1523,6 +1531,172 @@ export default function AdminSettings() {
                     <div className="space-y-2">
                       <Label htmlFor="zoomApiSecret">Zoom API 시크릿</Label>
                       <Input id="zoomApiSecret" type="password" defaultValue="********" />
+                    </div>
+                  </div>
+                </div>
+              )}
+              
+              {/* 로고 설정 */}
+              {activeTab === 'logo' && (
+                <div className="space-y-6">
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-medium">사이드바 로고 설정</h3>
+                    <p className="text-sm text-muted-foreground">
+                      사이드바에 표시되는 로고를 설정합니다. 확장 상태와 축소 상태에 따라 다른 로고가 표시됩니다.
+                    </p>
+                    
+                    {/* 확장 로고 */}
+                    <div className="space-y-3">
+                      <Label className="text-sm font-medium">확장 로고 (사이드바 펼쳐졌을 때)</Label>
+                      <div className="flex items-center space-x-4">
+                        <div className="h-16 w-48 bg-secondary rounded-lg flex items-center justify-center border">
+                          {currentLogos?.expandedLogo ? (
+                            <img 
+                              src={currentLogos.expandedLogo} 
+                              alt="확장 로고" 
+                              className="max-h-full max-w-full object-contain"
+                            />
+                          ) : (
+                            <div className="text-sm text-muted-foreground">확장 로고 미리보기</div>
+                          )}
+                        </div>
+                        <div className="flex flex-col space-y-2">
+                          <ImageUpload
+                            onUpload={(file) => handleLogoUpload('expanded', file)}
+                            accept="image/*"
+                            className="w-auto"
+                          >
+                            <Button variant="outline" disabled={uploadingLogo === 'expanded'}>
+                              {uploadingLogo === 'expanded' ? (
+                                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                              ) : (
+                                <Upload className="h-4 w-4 mr-2" />
+                              )}
+                              확장 로고 업로드
+                            </Button>
+                          </ImageUpload>
+                          {currentLogos?.expandedLogo && (
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => handleLogoDelete('expanded')}
+                              disabled={logoDeleteMutation.isPending}
+                            >
+                              <XCircle className="h-4 w-4 mr-2" />
+                              삭제
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* 축소 로고 */}
+                    <div className="space-y-3">
+                      <Label className="text-sm font-medium">축소 로고 (사이드바 축소됐을 때)</Label>
+                      <div className="flex items-center space-x-4">
+                        <div className="h-12 w-12 bg-secondary rounded-lg flex items-center justify-center border">
+                          {currentLogos?.compactLogo ? (
+                            <img 
+                              src={currentLogos.compactLogo} 
+                              alt="축소 로고" 
+                              className="max-h-full max-w-full object-contain"
+                            />
+                          ) : (
+                            <div className="text-xs text-muted-foreground text-center">축소 로고</div>
+                          )}
+                        </div>
+                        <div className="flex flex-col space-y-2">
+                          <ImageUpload
+                            onUpload={(file) => handleLogoUpload('compact', file)}
+                            accept="image/*"
+                            className="w-auto"
+                          >
+                            <Button variant="outline" disabled={uploadingLogo === 'compact'}>
+                              {uploadingLogo === 'compact' ? (
+                                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                              ) : (
+                                <Upload className="h-4 w-4 mr-2" />
+                              )}
+                              축소 로고 업로드
+                            </Button>
+                          </ImageUpload>
+                          {currentLogos?.compactLogo && (
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => handleLogoDelete('compact')}
+                              disabled={logoDeleteMutation.isPending}
+                            >
+                              <XCircle className="h-4 w-4 mr-2" />
+                              삭제
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <Separator />
+                  
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-medium">로고 설정 안내</h3>
+                    <div className="space-y-3 text-sm text-muted-foreground">
+                      <div className="flex items-start space-x-2">
+                        <div className="w-2 h-2 bg-blue-500 rounded-full mt-1.5 flex-shrink-0"></div>
+                        <div>
+                          <span className="font-medium">확장 로고:</span> 사이드바가 펼쳐져 있을 때 표시되는 로고입니다. 권장 크기는 180x60px입니다.
+                        </div>
+                      </div>
+                      <div className="flex items-start space-x-2">
+                        <div className="w-2 h-2 bg-green-500 rounded-full mt-1.5 flex-shrink-0"></div>
+                        <div>
+                          <span className="font-medium">축소 로고:</span> 사이드바가 축소됐을 때 표시되는 로고입니다. 권장 크기는 40x40px입니다.
+                        </div>
+                      </div>
+                      <div className="flex items-start space-x-2">
+                        <div className="w-2 h-2 bg-purple-500 rounded-full mt-1.5 flex-shrink-0"></div>
+                        <div>
+                          <span className="font-medium">파일 형식:</span> PNG, JPG, SVG 형식을 지원합니다. SVG 형식을 권장합니다.
+                        </div>
+                      </div>
+                      <div className="flex items-start space-x-2">
+                        <div className="w-2 h-2 bg-orange-500 rounded-full mt-1.5 flex-shrink-0"></div>
+                        <div>
+                          <span className="font-medium">투명 배경:</span> 로고는 투명한 배경을 가진 파일을 권장합니다.
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <Separator />
+                  
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-medium">빠른 작업</h3>
+                    <div className="flex flex-wrap gap-2">
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => {
+                          // 로고 초기화 기능
+                          if (confirm('모든 로고를 초기화하시겠습니까?')) {
+                            // 로고 초기화 로직
+                          }
+                        }}
+                      >
+                        <RefreshCw className="h-4 w-4 mr-2" />
+                        기본 로고로 복원
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => {
+                          // 로고 정보 새로고침
+                          window.location.reload();
+                        }}
+                      >
+                        <RefreshCw className="h-4 w-4 mr-2" />
+                        새로고침
+                      </Button>
                     </div>
                   </div>
                 </div>
