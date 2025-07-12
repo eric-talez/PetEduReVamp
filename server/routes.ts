@@ -2977,7 +2977,27 @@ app.get('/api/search', async (req, res) => {
   // Get all courses
   app.get("/api/courses", async (req, res) => {
     try {
-      const courses = await storage.getAllCourses();
+      // 실제 커리큘럼 데이터를 강좌 형태로 제공
+      const curricula = storage.getAllCurricula();
+      const courses = curricula
+        .filter(c => c.status === 'published')
+        .map(curriculum => ({
+          id: curriculum.id,
+          title: curriculum.title,
+          description: curriculum.description,
+          price: curriculum.price || 0,
+          difficulty: curriculum.difficulty || 'beginner',
+          category: curriculum.category || '기본 훈련',
+          duration: curriculum.duration || 0,
+          modules: curriculum.modules || [],
+          trainerName: curriculum.trainerName || '전문 훈련사',
+          status: curriculum.status,
+          enrollmentCount: curriculum.enrollmentCount || 0,
+          averageRating: curriculum.averageRating || 4.5,
+          createdAt: curriculum.createdAt || new Date().toISOString(),
+          updatedAt: curriculum.updatedAt || new Date().toISOString()
+        }));
+      
       return res.status(200).json(courses);
     } catch (error: any) {
       console.error("Get courses error:", error);

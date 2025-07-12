@@ -123,6 +123,27 @@ class Storage {
     }));
   }
 
+  getAllCurricula() {
+    return this.courses.map(course => ({
+      id: course.id,
+      title: course.title,
+      description: course.description,
+      trainerId: course.trainerId,
+      trainerName: course.trainerName,
+      duration: course.duration,
+      difficulty: course.level,
+      category: course.category || '기초 훈련',
+      price: course.price,
+      maxStudents: course.maxStudents,
+      status: 'published',
+      enrollmentCount: 0,
+      averageRating: 4.5,
+      modules: course.modules || [],
+      createdAt: course.createdAt || new Date().toISOString(),
+      updatedAt: course.updatedAt || new Date().toISOString()
+    }));
+  }
+
   createCurriculum(curriculumData: any) {
     const newCourse = {
       id: this.courses.length + 1,
@@ -259,6 +280,15 @@ class Storage {
     // 로고 설정 업데이트 로직
     console.log('로고 설정 업데이트:', settings);
     return this.getLogoSettings();
+  }
+
+  // 강좌 관련 메서드들  
+  getAllCourses() {
+    return this.courses || [];
+  }
+
+  getCourse(id: number) {
+    return this.courses?.find(course => course.id === id);
   }
 }
 

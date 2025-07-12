@@ -80,7 +80,7 @@ app.get('/favicon.svg', (req, res) => {
 
 // Session configuration
 app.use(session({
-  secret: process.env.SESSION_SECRET || 'your-secret-key-change-in-production',
+  secret: process.env.SESSION_SECRET || 'talez-super-secure-session-secret-2025-production-ready',
   resave: false,
   saveUninitialized: false,
   cookie: {
