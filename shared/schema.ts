@@ -522,9 +522,6 @@ export const forums = pgTable("forums", {
 export type Banner = typeof banners.$inferSelect;
 export type InsertBanner = typeof banners.$inferInsert;
 
-export type TrainingJournal = typeof trainingJournals.$inferSelect;
-export type InsertTrainingJournal = typeof trainingJournals.$inferInsert;
-
 export type JournalComment = typeof journalComments.$inferSelect;
 export type InsertJournalComment = typeof journalComments.$inferInsert;
 

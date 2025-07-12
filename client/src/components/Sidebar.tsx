@@ -12,10 +12,9 @@ import { AccessibleMenuToggle } from "./AccessibleMenuToggle";
 import { AccessibleNavItem } from "./AccessibleNavItem";
 import { SidebarMenuGroup } from "./SidebarMenuGroup";
 import { ScrollReveal } from "@/components/ui/AnimatedContent";
+import { useQuery } from "@tanstack/react-query";
 
 import { AccessibilityFloatingButton } from "@/components/ui/AccessibilityControls";
-import logoDark from '@assets/Talez_상하조합_1751984071529.png';
-import logoLight from '@assets/Talez_상하조합_1751984067730.jpg';
 import {
   Home,
   Users,
@@ -506,6 +505,14 @@ export function Sidebar({
     navigateToPage(path);
   };
 
+  // 동적 로고 로딩
+  const { data: logoData } = useQuery({
+    queryKey: ['/api/admin/logo'],
+    retry: false,
+    refetchOnWindowFocus: false,
+    staleTime: 30000 // 30초
+  });
+
   const contextValue = {
     expanded,
     toggleSidebar
@@ -539,7 +546,7 @@ export function Sidebar({
             <ScrollReveal direction="left" delay={100}>
               <a href="/" className="flex items-center justify-center w-full h-full group">
                 <img 
-                  src="/logo-light.svg" 
+                  src={logoData?.expandedLogo || "/logo-light.svg"} 
                   alt="TALEZ 로고" 
                   className="w-full h-full object-contain transition-all duration-300 group-hover:scale-105"
                 />
@@ -548,7 +555,7 @@ export function Sidebar({
           ) : (
             <a href="/" className="flex items-center justify-center w-full h-full transition-all duration-300 hover:scale-110">
               <img 
-                src="/logo-symbol.svg" 
+                src={logoData?.compactLogo || "/logo-compact.svg"} 
                 alt="TALEZ" 
                 className="w-full h-full object-contain transition-all duration-300 hover:scale-105"
               />

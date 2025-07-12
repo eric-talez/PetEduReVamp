@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { apiRequest } from '@/lib/queryClient';
 import {
   Card,
   CardContent,
@@ -40,11 +42,16 @@ import {
   LayoutDashboard,
   Cog,
   FileText,
-  MessageSquare
+  MessageSquare,
+  Loader2,
+  CheckCircle,
+  XCircle,
+  Image as ImageIcon
 } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { ImageUpload } from '@/components/ImageUpload';
 
 export default function AdminSettings() {
   const { userName } = useAuth();
@@ -52,6 +59,86 @@ export default function AdminSettings() {
   const [activeTab, setActiveTab] = useState('general');
   const [isLoading, setIsLoading] = useState(false);
   const [showRestartDialog, setShowRestartDialog] = useState(false);
+  const [logoImages, setLogoImages] = useState<{ [key: string]: string }>({});
+  const [uploadingLogo, setUploadingLogo] = useState<string | null>(null);
+
+  // 현재 로고 설정 조회
+  const { data: currentLogos, isLoading: logosLoading } = useQuery({
+    queryKey: ['/api/admin/logos'],
+    retry: false,
+  });
+
+  // 로고 업로드 뮤테이션
+  const logoUploadMutation = useMutation({
+    mutationFn: async ({ type, file }: { type: string; file: File }) => {
+      const formData = new FormData();
+      formData.append('image', file);
+      formData.append('type', type);
+      
+      const response = await fetch('/api/admin/logos/upload', {
+        method: 'POST',
+        body: formData,
+      });
+      
+      if (!response.ok) {
+        throw new Error('로고 업로드 실패');
+      }
+      
+      return response.json();
+    },
+    onSuccess: (data, variables) => {
+      toast({
+        title: '로고 업로드 완료',
+        description: `${variables.type} 로고가 성공적으로 업로드되었습니다.`,
+      });
+      setUploadingLogo(null);
+      // 로고 목록 다시 조회
+      window.location.reload();
+    },
+    onError: (error: any) => {
+      toast({
+        title: '로고 업로드 실패',
+        description: error.message || '로고 업로드 중 오류가 발생했습니다.',
+        variant: 'destructive',
+      });
+      setUploadingLogo(null);
+    },
+  });
+
+  // 로고 삭제 뮤테이션
+  const logoDeleteMutation = useMutation({
+    mutationFn: async (type: string) => {
+      return apiRequest(`/api/admin/logos/${type}`, {
+        method: 'DELETE',
+      });
+    },
+    onSuccess: (data, type) => {
+      toast({
+        title: '로고 삭제 완료',
+        description: `${type} 로고가 성공적으로 삭제되었습니다.`,
+      });
+      // 로고 목록 다시 조회
+      window.location.reload();
+    },
+    onError: (error: any) => {
+      toast({
+        title: '로고 삭제 실패',
+        description: error.message || '로고 삭제 중 오류가 발생했습니다.',
+        variant: 'destructive',
+      });
+    },
+  });
+
+  // 로고 업로드 핸들러
+  const handleLogoUpload = async (type: string, file: File) => {
+    setUploadingLogo(type);
+    logoUploadMutation.mutate({ type, file });
+  };
+
+  // 로고 삭제 핸들러
+  const handleLogoDelete = (type: string) => {
+    logoDeleteMutation.mutate(type);
+  };
   
   // 설정 저장 처리
   const handleSaveSettings = () => {
@@ -621,34 +708,254 @@ export default function AdminSettings() {
                   <div className="space-y-4">
                     <h3 className="text-lg font-medium">로고 및 파비콘</h3>
                     
+                    {/* 메인 로고 (라이트 모드) */}
                     <div className="space-y-2">
-                      <Label htmlFor="logoUpload">로고 이미지</Label>
+                      <Label>메인 로고 (라이트 모드)</Label>
                       <div className="flex items-center space-x-4">
-                        <div className="h-16 w-32 bg-secondary rounded flex items-center justify-center">
-                          로고 미리보기
+                        <div className="h-16 w-32 bg-secondary rounded flex items-center justify-center border">
+                          {currentLogos?.main ? (
+                            <img 
+                              src={currentLogos.main} 
+                              alt="메인 로고" 
+                              className="max-h-full max-w-full object-contain"
+                            />
+                          ) : (
+                            <div className="text-sm text-muted-foreground">미리보기</div>
+                          )}
                         </div>
-                        <Button variant="outline">
-                          <Upload className="h-4 w-4 mr-2" />
-                          로고 업로드
-                        </Button>
+                        <div className="flex flex-col space-y-2">
+                          <ImageUpload
+                            onUpload={(file) => handleLogoUpload('main', file)}
+                            accept="image/*"
+                            className="w-auto"
+                          >
+                            <Button variant="outline" disabled={uploadingLogo === 'main'}>
+                              {uploadingLogo === 'main' ? (
+                                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                              ) : (
+                                <Upload className="h-4 w-4 mr-2" />
+                              )}
+                              메인 로고 업로드
+                            </Button>
+                          </ImageUpload>
+                          {currentLogos?.main && (
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => handleLogoDelete('main')}
+                              disabled={logoDeleteMutation.isPending}
+                            >
+                              <XCircle className="h-4 w-4 mr-2" />
+                              삭제
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* 메인 로고 (다크 모드) */}
+                    <div className="space-y-2">
+                      <Label>메인 로고 (다크 모드)</Label>
+                      <div className="flex items-center space-x-4">
+                        <div className="h-16 w-32 bg-slate-800 rounded flex items-center justify-center border">
+                          {currentLogos?.mainDark ? (
+                            <img 
+                              src={currentLogos.mainDark} 
+                              alt="메인 로고 (다크)" 
+                              className="max-h-full max-w-full object-contain"
+                            />
+                          ) : (
+                            <div className="text-sm text-white">미리보기</div>
+                          )}
+                        </div>
+                        <div className="flex flex-col space-y-2">
+                          <ImageUpload
+                            onUpload={(file) => handleLogoUpload('mainDark', file)}
+                            accept="image/*"
+                            className="w-auto"
+                          >
+                            <Button variant="outline" disabled={uploadingLogo === 'mainDark'}>
+                              {uploadingLogo === 'mainDark' ? (
+                                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                              ) : (
+                                <Upload className="h-4 w-4 mr-2" />
+                              )}
+                              다크 로고 업로드
+                            </Button>
+                          </ImageUpload>
+                          {currentLogos?.mainDark && (
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => handleLogoDelete('mainDark')}
+                              disabled={logoDeleteMutation.isPending}
+                            >
+                              <XCircle className="h-4 w-4 mr-2" />
+                              삭제
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* 컴팩트 로고 (라이트 모드) */}
+                    <div className="space-y-2">
+                      <Label>컴팩트 로고 (라이트 모드)</Label>
+                      <div className="flex items-center space-x-4">
+                        <div className="h-12 w-12 bg-secondary rounded flex items-center justify-center border">
+                          {currentLogos?.compact ? (
+                            <img 
+                              src={currentLogos.compact} 
+                              alt="컴팩트 로고" 
+                              className="max-h-full max-w-full object-contain"
+                            />
+                          ) : (
+                            <div className="text-xs text-muted-foreground">미리보기</div>
+                          )}
+                        </div>
+                        <div className="flex flex-col space-y-2">
+                          <ImageUpload
+                            onUpload={(file) => handleLogoUpload('compact', file)}
+                            accept="image/*"
+                            className="w-auto"
+                          >
+                            <Button variant="outline" disabled={uploadingLogo === 'compact'}>
+                              {uploadingLogo === 'compact' ? (
+                                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                              ) : (
+                                <Upload className="h-4 w-4 mr-2" />
+                              )}
+                              컴팩트 로고 업로드
+                            </Button>
+                          </ImageUpload>
+                          {currentLogos?.compact && (
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => handleLogoDelete('compact')}
+                              disabled={logoDeleteMutation.isPending}
+                            >
+                              <XCircle className="h-4 w-4 mr-2" />
+                              삭제
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        사이드바 축소 시 표시되는 로고 (권장 크기: 40x40px)
+                      </p>
+                    </div>
+
+                    {/* 컴팩트 로고 (다크 모드) */}
+                    <div className="space-y-2">
+                      <Label>컴팩트 로고 (다크 모드)</Label>
+                      <div className="flex items-center space-x-4">
+                        <div className="h-12 w-12 bg-slate-800 rounded flex items-center justify-center border">
+                          {currentLogos?.compactDark ? (
+                            <img 
+                              src={currentLogos.compactDark} 
+                              alt="컴팩트 로고 (다크)" 
+                              className="max-h-full max-w-full object-contain"
+                            />
+                          ) : (
+                            <div className="text-xs text-white">미리보기</div>
+                          )}
+                        </div>
+                        <div className="flex flex-col space-y-2">
+                          <ImageUpload
+                            onUpload={(file) => handleLogoUpload('compactDark', file)}
+                            accept="image/*"
+                            className="w-auto"
+                          >
+                            <Button variant="outline" disabled={uploadingLogo === 'compactDark'}>
+                              {uploadingLogo === 'compactDark' ? (
+                                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                              ) : (
+                                <Upload className="h-4 w-4 mr-2" />
+                              )}
+                              컴팩트 다크 로고 업로드
+                            </Button>
+                          </ImageUpload>
+                          {currentLogos?.compactDark && (
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => handleLogoDelete('compactDark')}
+                              disabled={logoDeleteMutation.isPending}
+                            >
+                              <XCircle className="h-4 w-4 mr-2" />
+                              삭제
+                            </Button>
+                          )}
+                        </div>
                       </div>
                     </div>
                     
+                    {/* 파비콘 */}
                     <div className="space-y-2">
-                      <Label htmlFor="faviconUpload">파비콘</Label>
+                      <Label>파비콘</Label>
                       <div className="flex items-center space-x-4">
-                        <div className="h-8 w-8 bg-secondary rounded flex items-center justify-center">
-                          파비콘
+                        <div className="h-8 w-8 bg-secondary rounded flex items-center justify-center border">
+                          {currentLogos?.favicon ? (
+                            <img 
+                              src={currentLogos.favicon} 
+                              alt="파비콘" 
+                              className="max-h-full max-w-full object-contain"
+                            />
+                          ) : (
+                            <div className="text-xs text-muted-foreground">ICO</div>
+                          )}
                         </div>
-                        <Button variant="outline">
-                          <Upload className="h-4 w-4 mr-2" />
-                          파비콘 업로드
-                        </Button>
+                        <div className="flex flex-col space-y-2">
+                          <ImageUpload
+                            onUpload={(file) => handleLogoUpload('favicon', file)}
+                            accept="image/*"
+                            className="w-auto"
+                          >
+                            <Button variant="outline" disabled={uploadingLogo === 'favicon'}>
+                              {uploadingLogo === 'favicon' ? (
+                                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                              ) : (
+                                <Upload className="h-4 w-4 mr-2" />
+                              )}
+                              파비콘 업로드
+                            </Button>
+                          </ImageUpload>
+                          {currentLogos?.favicon && (
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => handleLogoDelete('favicon')}
+                              disabled={logoDeleteMutation.isPending}
+                            >
+                              <XCircle className="h-4 w-4 mr-2" />
+                              삭제
+                            </Button>
+                          )}
+                        </div>
                       </div>
                       <p className="text-sm text-muted-foreground">
                         32x32 크기의 파비콘 이미지를 업로드하세요.
                       </p>
                     </div>
+
+                    {/* 로고 상태 표시 */}
+                    {logosLoading && (
+                      <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        <span>로고 설정을 불러오는 중...</span>
+                      </div>
+                    )}
+
+                    {/* 적용 상태 알림 */}
+                    <Alert>
+                      <CheckCircle className="h-4 w-4" />
+                      <AlertTitle>로고 적용 안내</AlertTitle>
+                      <AlertDescription>
+                        로고를 업로드하면 즉시 사이드바에 적용됩니다. 
+                        페이지를 새로고침하면 변경사항을 확인할 수 있습니다.
+                      </AlertDescription>
+                    </Alert>
                   </div>
                   
                   <Separator />

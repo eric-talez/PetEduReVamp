@@ -2956,6 +2956,63 @@ app.get('/api/search', async (req, res) => {
       }
     });
 
+  // ===== Logo Management Routes =====
+
+  // 로고 설정 조회
+  app.get('/api/admin/logo-settings', async (req, res) => {
+    try {
+      const settings = await storage.getLogoSettings();
+      res.json(settings);
+    } catch (error) {
+      console.error('로고 설정 조회 오류:', error);
+      res.status(500).json({ error: '로고 설정 조회에 실패했습니다.' });
+    }
+  });
+
+  // 로고 설정 업데이트
+  app.put('/api/admin/logo-settings', async (req, res) => {
+    try {
+      const { logoLight, logoDark, logoSymbolLight, logoSymbolDark } = req.body;
+
+      if (!logoLight || !logoDark || !logoSymbolLight || !logoSymbolDark) {
+        return res.status(400).json({ 
+          error: '모든 로고 파일이 필요합니다.' 
+        });
+      }
+
+      const settings = await storage.updateLogoSettings({
+        logoLight,
+        logoDark,
+        logoSymbolLight,
+        logoSymbolDark
+      });
+
+      res.json({
+        success: true,
+        message: '로고 설정이 업데이트되었습니다.',
+        settings
+      });
+    } catch (error) {
+      console.error('로고 설정 업데이트 오류:', error);
+      res.status(500).json({ error: '로고 설정 업데이트에 실패했습니다.' });
+    }
+  });
+
+  // 로고 초기화 (기본값으로 되돌리기)
+  app.post('/api/admin/logo-settings/reset', async (req, res) => {
+    try {
+      const settings = await storage.resetLogoSettings();
+      res.json({
+        success: true,
+        message: '로고 설정이 초기화되었습니다.',
+        settings
+      });
+    } catch (error) {
+      console.error('로고 설정 초기화 오류:', error);
+      res.status(500).json({ error: '로고 설정 초기화에 실패했습니다.' });
+    }
+  });
+
   // Multer Storage 설정
   const storageConfig = multer.diskStorage({
     destination: (req: any, file: any, cb: any) => {
