@@ -171,6 +171,78 @@ class Storage {
     }
     return null;
   }
+
+  // 사용자 관련 메서드들
+  getUsers() {
+    return this.users || [];
+  }
+
+  getAllUsers() {
+    return this.users || [];
+  }
+
+  getUser(id: number) {
+    return this.users?.find(user => user.id === id);
+  }
+
+  getUserByEmail(email: string) {
+    return this.users?.find(user => user.email === email);
+  }
+
+  createUser(userData: any) {
+    const newUser = {
+      id: (this.users?.length || 0) + 1,
+      ...userData,
+      createdAt: new Date().toISOString()
+    };
+
+    if (!this.users) {
+      this.users = [];
+    }
+    this.users.push(newUser);
+    return newUser;
+  }
+
+  // 펫 관련 메서드들
+  getPets() {
+    return this.pets || [];
+  }
+
+  getAllPets() {
+    return this.pets || [];
+  }
+
+  getPetsByOwnerId(ownerId: number) {
+    return this.pets?.filter(pet => pet.ownerId === ownerId) || [];
+  }
+
+  // 통계 관련 메서드들
+  getUserStats() {
+    const users = this.users || [];
+    const totalUsers = users.length;
+    const activeUsers = users.filter(u => u.isVerified !== false).length;
+    const inactiveUsers = totalUsers - activeUsers;
+
+    return {
+      totalUsers,
+      activeUsers,
+      inactiveUsers,
+      newUsersToday: 0,
+      newUsersThisWeek: 0,
+      newUsersThisMonth: 0
+    };
+  }
+
+  getSystemErrors() {
+    return [];
+  }
+
+  getAllTrainers() {
+    return this.users?.filter(user => user.role === 'trainer') || [];
+  }
 }
 
+const storage = new Storage();
+
+export { storage };
 export default Storage;

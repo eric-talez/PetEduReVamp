@@ -414,4 +414,6 @@ export class MemoryStorage implements IStorage {
 }
 
 // Export storage instance
-export const storage = new MemoryStorage();
+const storage = new MemoryStorage();
+export { storage };
+export default MemoryStorage;
