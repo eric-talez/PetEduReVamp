@@ -78,13 +78,10 @@ interface CartItem {
 
 interface TopBarProps {
   sidebarOpen: boolean;
-  onToggleSidebar?: () => void;
-  layoutMode?: string;
-  userRole?: string | null;
-  isAuthenticated?: boolean;
+  onToggleSidebar: () => void;
 }
 
-export function TopBar({ sidebarOpen, onToggleSidebar, layoutMode = 'sidebar', userRole: propUserRole, isAuthenticated: propIsAuthenticated }: TopBarProps) {
+export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
   // 전역 상태에서 인증 정보 직접 확인
   const globalAuth = (window as any).__peteduAuthState;
   
@@ -93,10 +90,10 @@ export function TopBar({ sidebarOpen, onToggleSidebar, layoutMode = 'sidebar', u
   // 전역 상태가 있으면 우선 사용
   const authState = globalAuth || auth;
   
-  // 상태 추출 - props 값이 있으면 우선 사용
+  // 상태 추출
   const userName = authState?.userName || auth?.userName;
-  const userRole = propUserRole || authState?.userRole || auth?.userRole;
-  const isAuthenticated = propIsAuthenticated || authState?.isAuthenticated || auth?.isAuthenticated;
+  const userRole = authState?.userRole || auth?.userRole;
+  const isAuthenticated = authState?.isAuthenticated || auth?.isAuthenticated;
   const logout = auth?.logout;
   const [location, setLocation] = useLocation();
   
@@ -110,18 +107,12 @@ export function TopBar({ sidebarOpen, onToggleSidebar, layoutMode = 'sidebar', u
   const [messagePopupOpen, setMessagePopupOpen] = useState(false);
   const [notificationPopupOpen, setNotificationPopupOpen] = useState(false);
   const [cartPopupOpen, setCartPopupOpen] = useState(false);
-  const [navMenuOpen, setNavMenuOpen] = useState(false);
-  const [activeSubmenu, setActiveSubmenu] = useState<string | null>(null);
   
   // 참조 (외부 클릭 감지용)
   const userMenuRef = useClickAway<HTMLDivElement>(() => setUserMenuOpen(false));
   const messagePopupRef = useClickAway<HTMLDivElement>(() => setMessagePopupOpen(false));
   const notificationPopupRef = useClickAway<HTMLDivElement>(() => setNotificationPopupOpen(false));
   const cartPopupRef = useClickAway<HTMLDivElement>(() => setCartPopupOpen(false));
-  const navMenuRef = useClickAway<HTMLDivElement>(() => {
-    setNavMenuOpen(false);
-    setActiveSubmenu(null);
-  });
   
   // 샘플 메시지 데이터
   const [messages, setMessages] = useState<Message[]>([
@@ -386,225 +377,15 @@ export function TopBar({ sidebarOpen, onToggleSidebar, layoutMode = 'sidebar', u
     <header className="bg-white dark:bg-gray-900 shadow-sm z-40 transition-colors sticky top-0 w-full">
       <div className="w-full mx-auto px-0">
         <div className="flex justify-between items-center h-16 px-4">
-          {/* Mobile Menu Button (사이드바 모드에서만 표시) */}
-          {layoutMode === 'sidebar' && onToggleSidebar && (
-            <button
-              type="button"
-              onClick={onToggleSidebar}
-              className="lg:hidden p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none"
-              aria-label={sidebarOpen ? "사이드바 닫기" : "사이드바 열기"}
-            >
-              <Menu className="h-5 w-5" aria-hidden="true" />
-            </button>
-          )}
-          
-          {/* Top Navigation Menu (상단 네비게이션 모드에서만 표시) */}
-          {layoutMode === 'topnav' && (
-            <>
-              {/* 데스크톱 네비게이션 - 상위 그룹만 */}
-              <nav className="hidden lg:flex items-center space-x-1 relative" ref={navMenuRef}>
-                <Link href="/" className="text-gray-700 dark:text-gray-200 hover:text-primary px-3 py-2 rounded-md text-sm font-medium">
-                  홈
-                </Link>
-                
-                {/* 서비스 메뉴 */}
-                <div className="relative">
-                  <button
-                    onClick={() => setActiveSubmenu(activeSubmenu === 'services' ? null : 'services')}
-                    className="flex items-center text-gray-700 dark:text-gray-200 hover:text-primary px-3 py-2 rounded-md text-sm font-medium"
-                  >
-                    서비스
-                    <ChevronDown className="ml-1 h-4 w-4" />
-                  </button>
-                  {activeSubmenu === 'services' && (
-                    <div className="absolute left-0 mt-2 w-48 bg-white dark:bg-gray-900 rounded-md shadow-lg py-1 z-[60] border border-gray-200 dark:border-gray-700">
-                      <Link href="/courses" className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800">
-                        강의
-                      </Link>
-                      <Link href="/trainers" className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800">
-                        훈련사
-                      </Link>
-                      <Link href="/locations" className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800">
-                        위치 찾기
-                      </Link>
-                      <Link href="/institutes" className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800">
-                        기관
-                      </Link>
-                    </div>
-                  )}
-                </div>
-
-                {/* 커뮤니티 메뉴 */}
-                <div className="relative">
-                  <button
-                    onClick={() => setActiveSubmenu(activeSubmenu === 'community' ? null : 'community')}
-                    className="flex items-center text-gray-700 dark:text-gray-200 hover:text-primary px-3 py-2 rounded-md text-sm font-medium"
-                  >
-                    커뮤니티
-                    <ChevronDown className="ml-1 h-4 w-4" />
-                  </button>
-                  {activeSubmenu === 'community' && (
-                    <div className="absolute left-0 mt-2 w-48 bg-white dark:bg-gray-900 rounded-md shadow-lg py-1 z-[60] border border-gray-200 dark:border-gray-700">
-                      <Link href="/community" className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800">
-                        커뮤니티 홈
-                      </Link>
-                      <Link href="/events" className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800">
-                        이벤트
-                      </Link>
-                      <Link href="/messages" className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800">
-                        메시지
-                      </Link>
-                    </div>
-                  )}
-                </div>
-
-                {/* 내 정보 메뉴 (로그인 시에만) */}
-                {isAuthenticated && (
-                  <div className="relative">
-                    <button
-                      onClick={() => setActiveSubmenu(activeSubmenu === 'my' ? null : 'my')}
-                      className="flex items-center text-gray-700 dark:text-gray-200 hover:text-primary px-3 py-2 rounded-md text-sm font-medium"
-                    >
-                      내 정보
-                      <ChevronDown className="ml-1 h-4 w-4" />
-                    </button>
-                    {activeSubmenu === 'my' && (
-                      <div className="absolute left-0 mt-2 w-48 bg-white dark:bg-gray-900 rounded-md shadow-lg py-1 z-[60] border border-gray-200 dark:border-gray-700">
-                        <Link href="/my-courses" className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800">
-                          내 강의
-                        </Link>
-                        <Link href="/my-pets" className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800">
-                          내 반려동물
-                        </Link>
-                        <Link href="/dashboard" className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800">
-                          대시보드
-                        </Link>
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {/* 관리자 메뉴 (관리자만) */}
-                {userRole === 'admin' && (
-                  <div className="relative">
-                    <button
-                      onClick={() => setActiveSubmenu(activeSubmenu === 'admin' ? null : 'admin')}
-                      className="flex items-center text-gray-700 dark:text-gray-200 hover:text-primary px-3 py-2 rounded-md text-sm font-medium"
-                    >
-                      관리자
-                      <ChevronDown className="ml-1 h-4 w-4" />
-                    </button>
-                    {activeSubmenu === 'admin' && (
-                      <div className="absolute left-0 mt-2 w-48 bg-white dark:bg-gray-900 rounded-md shadow-lg py-1 z-[60] border border-gray-200 dark:border-gray-700">
-                        <Link href="/admin/dashboard" className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800">
-                          대시보드
-                        </Link>
-                        <Link href="/admin/users" className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800">
-                          사용자 관리
-                        </Link>
-                        <Link href="/admin/settings" className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800">
-                          시스템 설정
-                        </Link>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </nav>
-
-              {/* 모바일 네비게이션 버튼 */}
-              <div className="lg:hidden relative" ref={userMenuRef}>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => setUserMenuOpen(!userMenuOpen)}
-                  className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none"
-                  aria-label="네비게이션 메뉴"
-                >
-                  <Menu className="h-5 w-5" />
-                </Button>
-                
-                {/* 모바일 네비게이션 드롭다운 */}
-                {userMenuOpen && (
-                  <div className="absolute left-0 mt-2 w-64 bg-white dark:bg-gray-900 rounded-md shadow-lg py-1 z-[60] border border-gray-200 dark:border-gray-700">
-                    <Link href="/" className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800">
-                      홈
-                    </Link>
-                    
-                    {/* 서비스 섹션 */}
-                    <div className="border-t border-gray-200 dark:border-gray-700 my-1"></div>
-                    <div className="px-4 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                      서비스
-                    </div>
-                    <Link href="/courses" className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 pl-6">
-                      강의
-                    </Link>
-                    <Link href="/trainers" className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 pl-6">
-                      훈련사
-                    </Link>
-                    <Link href="/locations" className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 pl-6">
-                      위치 찾기
-                    </Link>
-                    <Link href="/institutes" className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 pl-6">
-                      기관
-                    </Link>
-                    
-                    {/* 커뮤니티 섹션 */}
-                    <div className="border-t border-gray-200 dark:border-gray-700 my-1"></div>
-                    <div className="px-4 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                      커뮤니티
-                    </div>
-                    <Link href="/community" className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 pl-6">
-                      커뮤니티 홈
-                    </Link>
-                    <Link href="/events" className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 pl-6">
-                      이벤트
-                    </Link>
-                    <Link href="/messages" className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 pl-6">
-                      메시지
-                    </Link>
-                    
-                    {/* 내 정보 섹션 (로그인 시에만) */}
-                    {isAuthenticated && (
-                      <>
-                        <div className="border-t border-gray-200 dark:border-gray-700 my-1"></div>
-                        <div className="px-4 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                          내 정보
-                        </div>
-                        <Link href="/my-courses" className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 pl-6">
-                          내 강의
-                        </Link>
-                        <Link href="/my-pets" className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 pl-6">
-                          내 반려동물
-                        </Link>
-                        <Link href="/dashboard" className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 pl-6">
-                          대시보드
-                        </Link>
-                      </>
-                    )}
-                    
-                    {/* 관리자 섹션 (관리자만) */}
-                    {userRole === 'admin' && (
-                      <>
-                        <div className="border-t border-gray-200 dark:border-gray-700 my-1"></div>
-                        <div className="px-4 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                          관리자
-                        </div>
-                        <Link href="/admin/dashboard" className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 pl-6">
-                          대시보드
-                        </Link>
-                        <Link href="/admin/users" className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 pl-6">
-                          사용자 관리
-                        </Link>
-                        <Link href="/admin/settings" className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 pl-6">
-                          시스템 설정
-                        </Link>
-                      </>
-                    )}
-                  </div>
-                )}
-              </div>
-            </>
-          )}
+          {/* Mobile Menu Button */}
+          <button
+            type="button"
+            onClick={onToggleSidebar}
+            className="lg:hidden p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none"
+            aria-label={sidebarOpen ? "사이드바 닫기" : "사이드바 열기"}
+          >
+            <Menu className="h-5 w-5" aria-hidden="true" />
+          </button>
           
           {/* Search */}
           <div className="hidden lg:flex flex-1 max-w-xl ml-0">

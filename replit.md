@@ -145,14 +145,6 @@ TALEZ is a comprehensive pet education and e-commerce platform that combines AI-
 
 ## Changelog
 
-- July 12, 2025. **Admin Logo Management System Enhanced** - Fixed critical logo upload and management functionality:
-  - **API Parameter Order Fixed**: Corrected apiRequest function parameter order (method, url, data) in AdminSettings.tsx
-  - **Logo Settings API**: Added complete `/api/logo/set` POST endpoint for logo configuration updates
-  - **Logo Retrieval API**: Implemented `/api/admin/logos` GET endpoint for fetching current logo settings
-  - **Smooth UX**: Replaced page refresh with seamless refetch for better user experience
-  - **Response Handling**: Enhanced JSON response parsing and error handling for logo operations
-  - **Storage Integration**: Fully integrated logo settings with MemoryStorage getLogoSettings/updateLogoSettings methods
-  - **Complete Workflow**: Logo upload → storage → immediate UI reflection without page reload
 - July 12, 2025. **Shop Branding Update: "펫에듀 쇼핑" → "테일즈 샵"** - Unified shopping brand name across all interfaces:
   - **Interface Updates**: Changed all shopping-related text from "펫에듀 쇼핑" to "테일즈 샵" in headers, buttons, and descriptions
   - **Brand Consistency**: Updated 9 key files including ShopAccess, ShopPreview, cart, and order pages

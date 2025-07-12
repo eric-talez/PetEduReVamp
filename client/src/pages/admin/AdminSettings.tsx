@@ -68,7 +68,7 @@ export default function AdminSettings() {
   const [topNavEnabled, setTopNavEnabled] = useState(false);
 
   // 현재 로고 설정 조회
-  const { data: currentLogos, isLoading: logosLoading, refetch: refetchLogos } = useQuery({
+  const { data: currentLogos, isLoading: logosLoading } = useQuery({
     queryKey: ['/api/admin/logos'],
     retry: false,
   });
@@ -97,8 +97,8 @@ export default function AdminSettings() {
         description: `${variables.type} 로고가 성공적으로 업로드되었습니다.`,
       });
       setUploadingLogo(null);
-      // 로고 목록 다시 조회 (페이지 새로고침 없이)
-      refetchLogos();
+      // 로고 목록 다시 조회
+      window.location.reload();
     },
     onError: (error: any) => {
       toast({
@@ -180,12 +180,6 @@ export default function AdminSettings() {
     setDefaultLayout(layout);
     // 전역 상태 업데이트
     localStorage.setItem('defaultLayout', layout);
-    
-    // 레이아웃 변경 이벤트 발생
-    const layoutChangeEvent = new CustomEvent('layoutModeChange', {
-      detail: { layout }
-    });
-    window.dispatchEvent(layoutChangeEvent);
     
     toast({
       title: '레이아웃 설정 변경',

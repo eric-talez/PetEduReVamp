@@ -28,7 +28,6 @@ export type CommunityPost = {
 export interface IStorage {
   // User operations
   getUser(id: number): Promise<User | undefined>;
-  getAllUsers(): Promise<User[]>;
   createUser(user: Omit<User, 'id' | 'createdAt' | 'updatedAt'>): Promise<User>;
   getUserByEmail(email: string): Promise<User | undefined>;
   
@@ -239,20 +238,15 @@ export class MemoryStorage implements IStorage {
   private initializeLogoSettings() {
     // Initialize with default logo settings
     this.logoSettings = {
-      main: "/images/logo-light.svg",
-      mainDark: "/images/logo-dark.svg", 
-      compact: "/images/logo-symbol-light.svg",
-      compactDark: "/images/logo-symbol-dark.svg",
-      favicon: "/images/favicon.svg"
+      logoLight: "/images/logo-light.svg",
+      logoDark: "/images/logo-dark.svg", 
+      logoSymbolLight: "/images/logo-symbol-light.svg",
+      logoSymbolDark: "/images/logo-symbol-dark.svg"
     };
   }
 
   async getUser(id: number): Promise<User | undefined> {
     return this.users.get(id);
-  }
-
-  async getAllUsers(): Promise<User[]> {
-    return Array.from(this.users.values());
   }
 
   async createUser(user: Omit<User, 'id' | 'createdAt' | 'updatedAt'>): Promise<User> {
@@ -353,222 +347,64 @@ export class MemoryStorage implements IStorage {
 
   async resetLogoSettings(): Promise<any> {
     this.logoSettings = {
-      main: "/images/logo-light.svg",
-      mainDark: "/images/logo-dark.svg", 
-      compact: "/images/logo-symbol-light.svg",
-      compactDark: "/images/logo-symbol-dark.svg",
-      favicon: "/images/favicon.svg"
+      logoLight: "/images/logo-light.svg",
+      logoDark: "/images/logo-dark.svg", 
+      logoSymbolLight: "/images/logo-symbol-light.svg",
+      logoSymbolDark: "/images/logo-symbol-dark.svg"
     };
     return this.logoSettings;
   }
 
-  // Course operations (필요한 메서드들 추가)
+  // getAllUsers 메서드 추가 (API 호환성)
+  async getAllUsers(): Promise<User[]> {
+    return Array.from(this.users.values());
+  }
+
+  // getCurriculums 메서드 추가 (API 호환성)
+  async getCurriculums(): Promise<any[]> {
+    return this.getAllCurricula();
+  }
+
+  // getInstitutes 메서드 추가 (API 호환성)
+  async getInstitutes(): Promise<any[]> {
+    return this.getAllInstitutes();
+  }
+
+  // getTrainers 메서드 추가 (API 호환성)
+  async getTrainers(): Promise<any[]> {
+    return this.getAllTrainers();
+  }
+
+  // getAllCourses 메서드 추가 (API 호환성)
   async getAllCourses(): Promise<any[]> {
-    // 샘플 강의 데이터 반환
-    return [
-      {
-        id: 1,
-        title: "기초 반려견 훈련",
-        description: "반려견 기본 훈련 강의",
-        instructor: "김훈련사",
-        price: 150000,
-        duration: "4주",
-        level: "초급",
-        enrollments: 45,
-        rating: 4.8,
-        status: "active"
-      },
-      {
-        id: 2,
-        title: "고급 행동 교정",
-        description: "문제 행동 교정 전문 강의",
-        instructor: "이전문가",
-        price: 280000,
-        duration: "6주",
-        level: "고급",
-        enrollments: 23,
-        rating: 4.9,
-        status: "active"
-      }
-    ];
+    // 코스 데이터를 반환 (빈 배열 또는 실제 코스 데이터)
+    return [];
   }
 
-  // Pet operations (필요한 메서드들 추가)
-  async getAllPets(): Promise<Pet[]> {
-    return Array.from(this.pets.values());
-  }
-
-  // Statistics operations (대시보드용)
-  async getSystemStats(): Promise<any> {
+  // getMemberStatus 메서드 추가 (API 호환성)
+  async getMemberStatus(): Promise<any> {
+    const users = Array.from(this.users.values());
     return {
-      totalUsers: this.users.size,
-      totalPets: this.pets.size,
-      totalPosts: this.posts.size,
-      totalCourses: 2,
-      activeUsers: Math.floor(this.users.size * 0.3),
-      newUsers: Math.floor(this.users.size * 0.1),
-      serverUptime: "99.8%",
-      responseTime: "180ms",
-      memoryUsage: "45%",
-      diskUsage: "23%"
-    };
-  }
-
-  // Trainer operations (훈련사 관리용)
-  async getAllTrainers(): Promise<any[]> {
-    return [
-      {
-        id: 1,
-        name: "강동훈",
-        specialty: "기본 훈련",
-        certifications: ["국가공인 동물훈련사"],
-        rating: 4.9,
-        experience: "8년",
-        location: "경북 구미시",
-        status: "active"
-      }
-    ];
-  }
-
-  // Institute operations (기관 관리용)
-  async getAllInstitutes(): Promise<any[]> {
-    return [
-      {
-        id: 1,
-        name: "왕짱스쿨",
-        type: "전문 훈련소",
-        location: "경북 구미시",
-        certification: "인증 완료",
-        students: 150,
-        courses: 8,
-        status: "active"
-      }
-    ];
-  }
-
-  // Event operations (이벤트 관리용)
-  async getAllEvents(): Promise<any[]> {
-    return [
-      {
-        id: 1,
-        title: "반려견 건강 관리 세미나",
-        description: "전문 수의사와 함께하는 건강 관리 교육",
-        date: "2025-01-15",
-        location: "서울 강남구",
-        participants: 45,
-        maxParticipants: 100,
-        status: "active"
+      totalMembers: users.length,
+      activeMembers: Math.floor(users.length * 0.8),
+      inactiveMembers: Math.floor(users.length * 0.2),
+      newMembersThisMonth: Math.floor(users.length * 0.1),
+      verifiedMembers: Math.floor(users.length * 0.7),
+      premiumMembers: Math.floor(users.length * 0.3),
+      basicMembers: Math.floor(users.length * 0.7),
+      membersByType: {
+        individual: Math.floor(users.length * 0.7),
+        business: Math.floor(users.length * 0.2),
+        trainer: Math.floor(users.length * 0.1)
       },
-      {
-        id: 2,
-        title: "펫 트레이닝 워크샵",
-        description: "기본적인 펫 트레이닝 방법론 워크샵",
-        date: "2025-01-20",
-        location: "경기 수원시",
-        participants: 23,
-        maxParticipants: 50,
-        status: "active"
-      }
-    ];
-  }
-
-  // Curriculum operations (커리큘럼 관리용)
-  async getAllCurricula(): Promise<any[]> {
-    return [
-      {
-        id: 1,
-        title: "기초 반려견 훈련 커리큘럼",
-        description: "초보자를 위한 기본 훈련 과정",
-        modules: [
-          { id: 1, title: "기본 명령어", duration: "2시간" },
-          { id: 2, title: "산책 훈련", duration: "1.5시간" },
-          { id: 3, title: "사회화 훈련", duration: "2시간" }
-        ],
-        instructor: "강동훈",
-        price: 450000,
-        duration: "4주",
-        level: "초급",
-        status: "published"
-      }
-    ];
-  }
-
-  // Member operations (회원 관리용)
-  async getAllMembers(): Promise<any[]> {
-    return Array.from(this.users.values()).map(user => ({
-      ...user,
-      status: "active",
-      joinDate: user.createdAt,
-      lastLogin: new Date(),
-      plan: "basic"
-    }));
-  }
-
-  // Registration operations (등록 관리용)
-  async getAllRegistrations(): Promise<any[]> {
-    return [
-      {
-        id: 1,
-        type: "business",
-        applicantName: "김사업자",
-        businessName: "펫케어센터",
-        status: "pending",
-        submittedAt: new Date(),
-        documents: ["사업자등록증", "자격증"],
-        location: "서울 강남구"
-      }
-    ];
-  }
-
-  // Review operations (리뷰 관리용)
-  async getAllReviews(): Promise<any[]> {
-    return [
-      {
-        id: 1,
-        userId: 1,
-        userName: "김지영",
-        serviceType: "training",
-        serviceName: "기초 훈련",
-        rating: 5,
-        content: "정말 유용한 훈련이었습니다!",
-        createdAt: new Date(),
-        status: "published"
-      }
-    ];
-  }
-
-  // Content operations (컨텐츠 관리용)
-  async getAllContents(): Promise<any[]> {
-    return [
-      {
-        id: 1,
-        title: "반려견 건강 관리 가이드",
-        type: "article",
-        author: "전문가",
-        status: "published",
-        views: 1250,
-        likes: 89,
-        createdAt: new Date(),
-        category: "health"
-      }
-    ];
-  }
-
-  // Info correction request operations (정보 수정 요청 관리용)
-  async getAllInfoCorrectionRequests(): Promise<any[]> {
-    return [
-      {
-        id: 1,
-        requesterId: 1,
-        requesterName: "김지영",
-        type: "profile",
-        originalData: { name: "김지영", phone: "010-1234-5678" },
-        requestedData: { name: "김지영", phone: "010-9876-5432" },
-        reason: "전화번호 변경",
-        status: "pending",
-        submittedAt: new Date()
-      }
-    ];
+      memberGrowth: [
+        { month: "2024-08", count: users.length - 20 },
+        { month: "2024-09", count: users.length - 15 },
+        { month: "2024-10", count: users.length - 10 },
+        { month: "2024-11", count: users.length - 5 },
+        { month: "2024-12", count: users.length }
+      ]
+    };
   }
 }
 

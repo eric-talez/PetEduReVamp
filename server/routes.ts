@@ -1151,16 +1151,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // 타입에 따라 로고 설정 업데이트
         switch (type) {
           case 'main':
-            updateData.main = url;
+            updateData.logoLight = url;
             break;
           case 'mainDark':
-            updateData.mainDark = url;
+            updateData.logoDark = url;
             break;
           case 'compact':
-            updateData.compact = url;
+            updateData.logoSymbolLight = url;
             break;
           case 'compactDark':
-            updateData.compactDark = url;
+            updateData.logoSymbolDark = url;
             break;
           case 'favicon':
             updateData.favicon = url;
@@ -1194,20 +1194,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ 
         success: false, 
         message: "로고 설정 중 오류가 발생했습니다."
-      });
-    }
-  });
-
-  // 로고 설정 조회 API
-  app.get("/api/admin/logos", async (req, res) => {
-    try {
-      const logoSettings = await storage.getLogoSettings();
-      res.json(logoSettings);
-    } catch (error) {
-      console.error('로고 설정 조회 실패:', error);
-      res.status(500).json({ 
-        success: false, 
-        message: "로고 설정을 가져오는 중 오류가 발생했습니다."
       });
     }
   });
