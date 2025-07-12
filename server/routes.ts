@@ -1198,6 +1198,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // 로고 설정 조회 API
+  app.get("/api/admin/logos", async (req, res) => {
+    try {
+      const logoSettings = await storage.getLogoSettings();
+      res.json(logoSettings);
+    } catch (error) {
+      console.error('로고 설정 조회 실패:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: "로고 설정을 가져오는 중 오류가 발생했습니다."
+      });
+    }
+  });
+
   // 로고 업로드를 위한 multer 설정
   const logoStorage = multer.diskStorage({
     destination: (req, file, cb) => {
