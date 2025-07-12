@@ -769,8 +769,11 @@ export function setupSocialRoutes(app: Express) {
 
       // 검색 쿼리 필터
       if (searchQuery && typeof searchQuery === 'string') {
-        const query = searchQuery.toLowerCase();
+        // URL 디코딩 처리
+        const decodedQuery = decodeURIComponent(searchQuery);
+        const query = decodedQuery.toLowerCase();
         console.log(`[커뮤니티 API] 검색 쿼리 "${searchQuery}" 받음`);
+        console.log(`[커뮤니티 API] 디코딩된 검색 쿼리 "${decodedQuery}" 처리`);
         
         filteredPosts = filteredPosts.filter(post => {
           const titleMatch = post.title.toLowerCase().includes(query);
