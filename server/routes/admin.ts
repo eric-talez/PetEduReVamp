@@ -10,133 +10,88 @@ const successResponse = (data: any) => ({ success: true, data });
 
 export function registerAdminRoutes(app: Express) {
   // 회원 현황 조회 API
-  app.get("/api/admin/members-status", async (req, res) => {
-    try {
-      console.log('[Admin] 회원 현황 조회 요청');
-      
-      const members = [
-        {
-          id: 1,
-          name: '강동훈',
-          email: 'donghoong@wangzzang.com',
-          role: 'institute-admin',
-          status: 'active',
-          joinDate: '2024-01-10',
-          lastLogin: '2024-03-11',
-          instituteName: '왕짱스쿨',
-          trainersCount: 1,
-          isVerified: true,
-          certification: '반려동물행동지도사 국가자격증 2급'
-        },
-        {
-          id: 2,
-          name: '김반려',
-          email: 'kim.pet@example.com',
-          role: 'pet-owner',
-          status: 'active',
-          joinDate: '2024-01-15',
-          lastLogin: '2024-03-10',
-          petCount: 2,
-          coursesCompleted: 3,
-          isVerified: true
-        },
-        {
-          id: 3,
-          name: '박훈련',
-          email: 'park.trainer@example.com',
-          role: 'trainer',
-          status: 'active',
-          joinDate: '2024-01-20',
-          lastLogin: '2024-03-11',
-          studentsCount: 15,
-          coursesCreated: 5,
-          isVerified: true,
-          certification: 'KKF 공인 훈련사'
-        },
-        {
-          id: 4,
-          name: '이기관',
-          email: 'lee.institute@example.com',
-          role: 'institute-admin',
-          status: 'active',
-          joinDate: '2024-02-01',
-          lastLogin: '2024-03-11',
-          instituteName: '서울반려견센터',
-          trainersCount: 8,
-          isVerified: true
-        },
-        {
-          id: 5,
-          name: '정반려',
-          email: 'jung.pet@example.com',
-          role: 'pet-owner',
-          status: 'inactive',
-          joinDate: '2024-02-15',
-          lastLogin: '2024-02-20',
-          petCount: 1,
-          coursesCompleted: 0,
-          isVerified: false
-        },
-        {
-          id: 6,
-          name: '한훈련',
-          email: 'han.trainer@example.com',
-          role: 'trainer',
-          status: 'pending',
-          joinDate: '2024-02-20',
-          lastLogin: null,
-          studentsCount: 0,
-          coursesCreated: 0,
-          isVerified: false,
-          certification: '신규 신청'
-        }
-      ];
+  app.get('/api/admin/members-status', asyncHandler(async (req: any, res: any) => {
+    console.log('[Admin] 회원 현황 조회 요청');
 
-      const stats = {
-        totalMembers: members.length,
-        activeMembers: members.filter(m => m.status === 'active').length,
-        pendingMembers: members.filter(m => m.status === 'pending').length,
-        inactiveMembers: members.filter(m => m.status === 'inactive').length,
-        verifiedMembers: members.filter(m => m.isVerified).length,
-        byRole: {
-          'pet-owner': members.filter(m => m.role === 'pet-owner').length,
-          'trainer': members.filter(m => m.role === 'trainer').length,
-          'institute-admin': members.filter(m => m.role === 'institute-admin').length,
-          'admin': members.filter(m => m.role === 'admin').length
-        },
-        recentJoins: members.filter(m => {
-          const joinDate = new Date(m.joinDate);
-          const weekAgo = new Date();
-          weekAgo.setDate(weekAgo.getDate() - 7);
-          return joinDate > weekAgo;
-        }).length
+    try {
+      const users = storage.users || [];
+      const pets = storage.pets || [];
+      const institutes = storage.institutes || [];
+
+      console.log('[Admin] 데이터 현황:', {
+        usersCount: users.length,
+        petsCount: pets.length, 
+        institutesCount: institutes.length
+      });
+
+      const membersByRole = {
+        'pet-owner': users.filter(u => u.role === 'pet-owner'),
+        'trainer': users.filter(u => u.role === 'trainer'), 
+        'institute-admin': users.filter(u => u.role === 'institute-admin'),
+        'admin': users.filter(u => u.role === 'admin')
       };
 
-      res.json({
-        success: true,
-        data: {
-          members,
-          stats
-        },
-        message: '회원 현황을 성공적으로 조회했습니다.'
+      const instituteMemberships = institutes.map(inst => ({
+        userId: inst.trainerId,
+        userName: inst.trainerName || '미지정',
+        userRole: 'trainer',
+        instituteName: inst.name,
+        joinedAt: inst.createdAt || new Date().toISOString()
+      })).filter(membership => membership.userId);
+
+      const trainerConnections = institutes.filter(inst => inst.trainerId).map(inst => ({
+        trainerId: inst.trainerId,
+        trainerName: inst.trainerName || '미지정',
+        connectedOwners: users
+          .filter(u => u.role === 'pet-owner')
+          .slice(0, 2) // 샘플 연결
+          .map(owner => ({
+            id: owner.id,
+            name: owner.name,
+            email: owner.email
+          }))
+      }));
+
+      const summary = {
+        totalUsers: users.length,
+        totalTrainers: users.filter(u => u.role === 'trainer').length,
+        totalInstitutes: institutes.length,
+        totalPets: pets.length,
+        petOwners: users.filter(u => u.role === 'pet-owner').length,
+        instituteAdmins: users.filter(u => u.role === 'institute-admin').length,
+        verifiedMembers: users.filter(u => u.isVerified).length
+      };
+
+      const result = {
+        membersByRole,
+        instituteMemberships,
+        trainerConnections,
+        summary
+      };
+
+      console.log('[Admin] 응답 데이터:', {
+        summary,
+        membersByRoleCount: Object.keys(membersByRole).reduce((acc, role) => {
+          acc[role] = membersByRole[role].length;
+          return acc;
+        }, {} as any)
       });
+
+      res.json(successResponse(result));
     } catch (error) {
       console.error('회원 현황 조회 오류:', error);
-      res.status(500).json({ 
-        success: false,
-        message: '회원 현황 조회 중 오류가 발생했습니다.' 
-      });
+      throw ApiError.internal('회원 현황을 불러올 수 없습니다');
     }
-  });
+  }));
 
   // 회원 상태 변경 API
   app.patch("/api/admin/members/:id/status", async (req, res) => {
     try {
       const memberId = parseInt(req.params.id);
       const { status, reason } = req.body;
-      
+
       console.log(`[Admin] 회원 ${memberId} 상태 변경: ${status}`);
-      
+
       // 실제로는 데이터베이스 업데이트
       const updatedMember = {
         id: memberId,
@@ -192,7 +147,7 @@ export function registerAdminRoutes(app: Express) {
   app.post("/api/admin/locations", async (req, res) => {
     try {
       const { name, type, address, latitude, longitude, description, certification } = req.body;
-      
+
       const newLocation = {
         id: Date.now(),
         name,
@@ -224,7 +179,7 @@ export function registerAdminRoutes(app: Express) {
   app.get("/api/admin/institutes", async (req, res) => {
     try {
       console.log('[Admin] 기관 관리 목록 조회 요청');
-      
+
       const institutes = [
         {
           id: 1,
@@ -352,9 +307,9 @@ export function registerAdminRoutes(app: Express) {
     try {
       const instituteId = parseInt(req.params.id);
       const { status, reason } = req.body;
-      
+
       console.log(`[Admin] 기관 ${instituteId} 상태 변경: ${status}`);
-      
+
       const updatedInstitute = {
         id: instituteId,
         status: status,
@@ -442,4 +397,29 @@ export function registerAdminRoutes(app: Express) {
       res.status(500).json({ message: 'Internal server error' });
     }
   });
+
+  // 기관 목록 조회 API
+  app.get('/api/institutes', asyncHandler(async (req: any, res: any) => {
+    console.log('[Admin] 기관 목록 조회 요청');
+
+    try {
+      const institutes = storage.institutes || [];
+
+      const institutesWithDetails = institutes.map(institute => ({
+        ...institute,
+        trainersCount: institute.trainerId ? 1 : 0,
+        studentsCount: 0, // 추후 실제 학생 수 계산 로직 추가
+        isActive: institute.isActive !== false // 기본값 true
+      }));
+
+      console.log('[Admin] 기관 목록 응답:', institutesWithDetails.length + '개');
+
+      res.json(successResponse(institutesWithDetails));
+    } catch (error) {
+      console.error('기관 목록 조회 오류:', error);
+      throw ApiError.internal('기관 목록을 불러올 수 없습니다');
+    }
+  }));
+
+  return app;
 }

@@ -201,9 +201,9 @@ export default function AdminMembersStatus() {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{data?.summary?.totalUsers}명</div>
+            <div className="text-2xl font-bold">{data?.summary?.totalUsers || 0}명</div>
             <p className="text-xs text-muted-foreground">
-              인증 회원: {data?.summary?.verifiedMembers}명
+              인증 회원: {data?.summary?.verifiedMembers || 0}명
             </p>
           </CardContent>
         </Card>
@@ -214,9 +214,9 @@ export default function AdminMembersStatus() {
             <PawPrint className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{data?.summary?.petOwners}명</div>
+            <div className="text-2xl font-bold">{data?.summary?.petOwners || 0}명</div>
             <p className="text-xs text-muted-foreground">
-              반려동물: {data?.summary?.totalPets}마리
+              반려동물: {data?.summary?.totalPets || 0}마리
             </p>
           </CardContent>
         </Card>
@@ -227,7 +227,7 @@ export default function AdminMembersStatus() {
             <GraduationCap className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{data?.summary?.totalTrainers}명</div>
+            <div className="text-2xl font-bold">{data?.summary?.totalTrainers || 0}명</div>
             <p className="text-xs text-muted-foreground">
               등록된 전문 훈련사
             </p>
@@ -240,9 +240,9 @@ export default function AdminMembersStatus() {
             <Building2 className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{data?.summary?.instituteAdmins}명</div>
+            <div className="text-2xl font-bold">{data?.summary?.instituteAdmins || 0}명</div>
             <p className="text-xs text-muted-foreground">
-              총 {data?.summary?.totalInstitutes}개 기관
+              총 {data?.summary?.totalInstitutes || 0}개 기관
             </p>
           </CardContent>
         </Card>

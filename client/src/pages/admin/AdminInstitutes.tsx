@@ -47,6 +47,14 @@ export default function AdminInstitutes() {
   // 실제 기관 데이터 가져오기
   const { data: institutesData, isLoading, error } = useQuery({
     queryKey: ['/api/institutes'],
+    queryFn: async () => {
+      const response = await fetch('/api/institutes');
+      if (!response.ok) {
+        throw new Error('기관 데이터를 불러올 수 없습니다');
+      }
+      const result = await response.json();
+      return result.success ? result.data : [];
+    },
     staleTime: 5 * 60 * 1000, // 5분
   });
 
