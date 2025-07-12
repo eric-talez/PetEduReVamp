@@ -30,10 +30,10 @@ export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
   createUser(user: Omit<User, 'id' | 'createdAt' | 'updatedAt'>): Promise<User>;
   getUserByEmail(email: string): Promise<User | undefined>;
-  
+
   // Pet operations
   getPetsByOwnerId(ownerId: number): Promise<Pet[]>;
-  
+
   // Post operations
   getAllPosts(): Promise<CommunityPost[]>;
   getPostById(id: number): Promise<CommunityPost | undefined>;
@@ -41,13 +41,13 @@ export interface IStorage {
   updatePost(id: number, post: Partial<CommunityPost>): Promise<CommunityPost>;
   deletePost(id: number): Promise<void>;
   searchPosts(query: string): Promise<CommunityPost[]>;
-  
+
   // Logo operations
   uploadLogo(logoType: 'main' | 'compact' | 'favicon', filename: string, buffer: Buffer): Promise<string>;
   getLogo(logoType: 'main' | 'compact' | 'favicon'): Promise<string | null>;
   updateLogo(logoType: 'main' | 'compact' | 'favicon', filename: string): Promise<void>;
   deleteLogo(logoType: 'main' | 'compact' | 'favicon'): Promise<void>;
-  
+
   // Logo settings operations
   getLogoSettings(): Promise<any>;
   updateLogoSettings(settings: any): Promise<any>;
@@ -231,7 +231,7 @@ export class MemoryStorage implements IStorage {
     sampleUsers.forEach(user => this.users.set(user.id, user as User));
     samplePets.forEach(pet => this.pets.set(pet.id, pet as Pet));
     samplePosts.forEach(post => this.posts.set(post.id, post));
-    
+
     this.nextId = Math.max(...sampleUsers.map(u => u.id), ...samplePets.map(p => p.id), ...samplePosts.map(p => p.id)) + 1;
   }
 
@@ -365,7 +365,7 @@ export class MemoryStorage implements IStorage {
     const totalUsers = users.length;
     const activeUsers = users.filter(u => u.isActive !== false).length;
     const inactiveUsers = totalUsers - activeUsers;
-    
+
     return {
       totalUsers,
       activeUsers,
@@ -394,6 +394,22 @@ export class MemoryStorage implements IStorage {
   async getAllPets(): Promise<any[]> {
     // 펫 목록 반환
     return Array.from(this.pets.values());
+  }
+
+  getCurriculums() {
+    return this.curriculums || [];
+  }
+
+  getUsers() {
+    return this.users || [];
+  }
+
+  getPets() {
+    return this.pets || [];
+  }
+
+  getInstitutes() {
+    return this.institutes || [];
   }
 }
 

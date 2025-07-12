@@ -1,6 +1,26 @@
 import type { Express } from "express";
 import { storage } from "../storage";
 
+// ApiError 클래스 정의
+class ApiError extends Error {
+  constructor(public statusCode: number, message: string) {
+    super(message);
+    this.name = 'ApiError';
+  }
+
+  static internal(message: string) {
+    return new ApiError(500, message);
+  }
+
+  static notFound(message: string) {
+    return new ApiError(404, message);
+  }
+
+  static badRequest(message: string) {
+    return new ApiError(400, message);
+  }
+}
+
 // 임시 에러 핸들러
 const asyncHandler = (fn: Function) => (req: any, res: any, next: any) => {
   Promise.resolve(fn(req, res, next)).catch(next);
@@ -14,9 +34,9 @@ export function registerAdminRoutes(app: Express) {
     console.log('[Admin] 회원 현황 조회 요청');
 
     try {
-      const users = storage.users || [];
-      const pets = storage.pets || [];
-      const institutes = storage.institutes || [];
+      const users = storage.getUsers() || [];
+      const pets = storage.getPets() || [];
+      const institutes = storage.getInstitutes() || [];
 
       console.log('[Admin] 데이터 현황:', {
         usersCount: users.length,
@@ -397,6 +417,29 @@ export function registerAdminRoutes(app: Express) {
       res.status(500).json({ message: 'Internal server error' });
     }
   });
+
+  // 커리큘럼 목록 조회 API
+  app.get('/api/admin/curriculums', asyncHandler(async (req: any, res: any) => {
+    console.log('[Admin] 커리큘럼 목록 조회 요청');
+
+    try {
+      const curriculums = storage.getCurriculums() || [];
+      
+      console.log('[Admin] 커리큘럼 응답:', curriculums.length + '개');
+
+      res.json({
+        success: true,
+        curriculums: curriculums,
+        total: curriculums.length
+      });
+    } catch (error) {
+      console.error('커리큘럼 목록 조회 오류:', error);
+      res.status(500).json({ 
+        success: false,
+        message: '커리큘럼 목록을 불러올 수 없습니다.' 
+      });
+    }
+  }));
 
   // 기관 목록 조회 API
   app.get('/api/institutes', asyncHandler(async (req: any, res: any) => {
