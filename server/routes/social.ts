@@ -759,11 +759,37 @@ export function setupSocialRoutes(app: Express) {
       console.log('[커뮤니티 API] posts 배열 길이:', posts.length);
       console.log('[커뮤니티 API] posts 내용:', posts.map(p => ({ id: p.id, title: p.title })));
       
-      const { page = '1', limit = '12', category, sort } = req.query;
+      const { page = '1', limit = '12', category, sort, q: searchQuery } = req.query;
+      
+      console.log(`[커뮤니티 API] 요청 파라미터:`, { page, limit, category, sort, searchQuery });
       const pageNum = parseInt(page as string);
       const limitNum = parseInt(limit as string);
 
       let filteredPosts = [...posts];
+
+      // 검색 쿼리 필터
+      if (searchQuery && typeof searchQuery === 'string') {
+        const query = searchQuery.toLowerCase();
+        console.log(`[커뮤니티 API] 검색 쿼리 "${searchQuery}" 받음`);
+        
+        filteredPosts = filteredPosts.filter(post => {
+          const titleMatch = post.title.toLowerCase().includes(query);
+          const contentMatch = post.content.toLowerCase().includes(query);
+          const tagMatch = post.tag?.toLowerCase().includes(query);
+          const categoryMatch = post.category?.toLowerCase().includes(query);
+          const authorMatch = post.author?.name?.toLowerCase().includes(query);
+          
+          const match = titleMatch || contentMatch || tagMatch || categoryMatch || authorMatch;
+          
+          if (match) {
+            console.log(`[커뮤니티 API] 매칭된 게시글: ${post.id} - ${post.title}`);
+          }
+          
+          return match;
+        });
+        
+        console.log(`[커뮤니티 API] 검색 쿼리 "${searchQuery}" 적용 - 결과: ${filteredPosts.length}개`);
+      }
 
       // 카테고리 필터
       if (category && category !== 'all') {

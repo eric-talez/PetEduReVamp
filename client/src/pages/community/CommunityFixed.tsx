@@ -168,22 +168,32 @@ function CommunityPage() {
 
   // 게시글 목록 조회 (탭별 필터링)
   const { data: postsData = [], isLoading, error } = useQuery({
-    queryKey: ['/api/community/posts', activeTab],
+    queryKey: ['/api/community/posts', activeTab, searchQuery],
     queryFn: async () => {
       try {
         let url = '/api/community/posts';
+        const params = new URLSearchParams();
+        
+        // 검색 쿼리 추가
+        if (searchQuery) {
+          params.append('q', searchQuery);
+        }
         
         // 탭별 카테고리 필터링
         if (activeTab === 'training') {
-          url += '?category=훈련팁';
+          params.append('category', '훈련팁');
         } else if (activeTab === 'survey') {
-          url += '?category=설문';
+          params.append('category', '설문');
         } else if (activeTab === 'info') {
-          url += '?category=정보공유';
+          params.append('category', '정보공유');
         } else if (activeTab === 'notices') {
-          url += '?category=공지사항';
+          params.append('category', '공지사항');
         } else if (activeTab === 'popular') {
-          url += '?sort=popular';
+          params.append('sort', 'popular');
+        }
+        
+        if (params.toString()) {
+          url += '?' + params.toString();
         }
         
         const response = await fetch(url);
