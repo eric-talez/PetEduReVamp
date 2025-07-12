@@ -354,6 +354,47 @@ export class MemoryStorage implements IStorage {
     };
     return this.logoSettings;
   }
+
+  // 추가 메서드들
+  async getAllUsers(): Promise<User[]> {
+    return Array.from(this.users.values());
+  }
+
+  async getUserStats(): Promise<any> {
+    const users = Array.from(this.users.values());
+    const totalUsers = users.length;
+    const activeUsers = users.filter(u => u.isActive !== false).length;
+    const inactiveUsers = totalUsers - activeUsers;
+    
+    return {
+      totalUsers,
+      activeUsers,
+      inactiveUsers,
+      newUsersToday: 0, // 실제 구현에서는 날짜 체크 필요
+      newUsersThisWeek: 0,
+      newUsersThisMonth: 0
+    };
+  }
+
+  async getSystemErrors(): Promise<any[]> {
+    // 시스템 에러 로그 반환 (현재는 빈 배열)
+    return [];
+  }
+
+  async getInstitutes(): Promise<any[]> {
+    // 기관 목록 반환 (현재는 빈 배열)
+    return [];
+  }
+
+  async getAllTrainers(): Promise<any[]> {
+    // 훈련사 목록 반환 (현재는 기존 사용자 중 trainer 역할)
+    return Array.from(this.users.values()).filter(user => user.role === 'trainer');
+  }
+
+  async getAllPets(): Promise<any[]> {
+    // 펫 목록 반환
+    return Array.from(this.pets.values());
+  }
 }
 
 // Export storage instance
