@@ -210,6 +210,7 @@ function AppLayout({ children }: { children: ReactNode }) {
     function handleLayoutChange() {
       const savedLayout = localStorage.getItem('defaultLayout');
       if (savedLayout && savedLayout !== layoutMode) {
+        console.log('레이아웃 모드 변경 감지:', savedLayout, '현재:', layoutMode);
         setLayoutMode(savedLayout);
       }
     }
@@ -219,9 +220,15 @@ function AppLayout({ children }: { children: ReactNode }) {
 
     // localStorage 변경 감지
     window.addEventListener('storage', handleLayoutChange);
+    
+    // 레이아웃 모드 변경 이벤트 리스너 추가
+    window.addEventListener('layoutModeChange', handleLayoutChange);
 
     // 클린업
-    return () => window.removeEventListener('storage', handleLayoutChange);
+    return () => {
+      window.removeEventListener('storage', handleLayoutChange);
+      window.removeEventListener('layoutModeChange', handleLayoutChange);
+    };
   }, [layoutMode]);
 
   // 키보드 접근성 설정 (전역 단축키)

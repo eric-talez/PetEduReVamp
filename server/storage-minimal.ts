@@ -361,6 +361,90 @@ export class MemoryStorage implements IStorage {
     };
     return this.logoSettings;
   }
+
+  // Course operations (필요한 메서드들 추가)
+  async getAllCourses(): Promise<any[]> {
+    // 샘플 강의 데이터 반환
+    return [
+      {
+        id: 1,
+        title: "기초 반려견 훈련",
+        description: "반려견 기본 훈련 강의",
+        instructor: "김훈련사",
+        price: 150000,
+        duration: "4주",
+        level: "초급",
+        enrollments: 45,
+        rating: 4.8,
+        status: "active"
+      },
+      {
+        id: 2,
+        title: "고급 행동 교정",
+        description: "문제 행동 교정 전문 강의",
+        instructor: "이전문가",
+        price: 280000,
+        duration: "6주",
+        level: "고급",
+        enrollments: 23,
+        rating: 4.9,
+        status: "active"
+      }
+    ];
+  }
+
+  // Pet operations (필요한 메서드들 추가)
+  async getAllPets(): Promise<Pet[]> {
+    return Array.from(this.pets.values());
+  }
+
+  // Statistics operations (대시보드용)
+  async getSystemStats(): Promise<any> {
+    return {
+      totalUsers: this.users.size,
+      totalPets: this.pets.size,
+      totalPosts: this.posts.size,
+      totalCourses: 2,
+      activeUsers: Math.floor(this.users.size * 0.3),
+      newUsers: Math.floor(this.users.size * 0.1),
+      serverUptime: "99.8%",
+      responseTime: "180ms",
+      memoryUsage: "45%",
+      diskUsage: "23%"
+    };
+  }
+
+  // Trainer operations (훈련사 관리용)
+  async getAllTrainers(): Promise<any[]> {
+    return [
+      {
+        id: 1,
+        name: "강동훈",
+        specialty: "기본 훈련",
+        certifications: ["국가공인 동물훈련사"],
+        rating: 4.9,
+        experience: "8년",
+        location: "경북 구미시",
+        status: "active"
+      }
+    ];
+  }
+
+  // Institute operations (기관 관리용)
+  async getAllInstitutes(): Promise<any[]> {
+    return [
+      {
+        id: 1,
+        name: "왕짱스쿨",
+        type: "전문 훈련소",
+        location: "경북 구미시",
+        certification: "인증 완료",
+        students: 150,
+        courses: 8,
+        status: "active"
+      }
+    ];
+  }
 }
 
 // Export storage instance

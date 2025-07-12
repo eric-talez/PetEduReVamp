@@ -181,6 +181,12 @@ export default function AdminSettings() {
     // 전역 상태 업데이트
     localStorage.setItem('defaultLayout', layout);
     
+    // 레이아웃 변경 이벤트 발생
+    const layoutChangeEvent = new CustomEvent('layoutModeChange', {
+      detail: { layout }
+    });
+    window.dispatchEvent(layoutChangeEvent);
+    
     toast({
       title: '레이아웃 설정 변경',
       description: `${layout === 'sidebar' ? '사이드바 레이아웃' : '상단 네비게이션'}으로 변경되었습니다.`,
