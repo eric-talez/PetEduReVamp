@@ -48,21 +48,66 @@ export default function AdminMembersStatus() {
     try {
       setLoading(true);
       const response = await fetch('/api/admin/members-status');
-      
+
       if (!response.ok) {
         throw new Error('회원 상태 정보를 가져오는데 실패했습니다.');
       }
-      
+
       const result = await response.json();
-      
-      if (result.success) {
+
+      if (result.success && result.data) {
         setData(result.data);
+        // setStats(data.data.stats || { // There is not setStats function in origin code, should not be added
+        //   totalUsers: 0//   activeUsers: 0,
+        //   pendingUsers: 0,
+        //   inactiveUsers: 0,
+        //   verifiedUsers: 0,
+        //   byRole: {
+        //     'pet-owner': 0,
+        //     'trainer': 0,
+        //     'institute-admin': 0,
+        //     'admin': 0
+        //   },
+        //   recentJoins: 0
+        // });
       } else {
-        throw new Error(result.message || '데이터를 가져오는데 실패했습니다.');
+        console.error('회원 상태 조회 실패:', result.message);
+        setError(result.message || '데이터를 가져오는데 실패했습니다.');
+        // 기본값 설정
+        // setStats({ // There is not setStats function in origin code, should not be added
+        //   totalUsers: 0,
+        //   activeUsers: 0,
+        //   pendingUsers: 0,
+        //   inactiveUsers: 0,
+        //   verifiedUsers: 0,
+        //   byRole: {
+        //     'pet-owner': 0,
+        //     'trainer': 0,
+        //     'institute-admin': 0,
+        //     'admin': 0
+        //   },
+        //   recentJoins: 0
+        // });
       }
     } catch (err) {
       console.error('회원 상태 조회 오류:', err);
       setError(err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다.');
+      // 에러 시 기본값 설정
+      // setStats({ // There is not setStats function in origin code, should not be added
+      //   totalUsers: 0,
+      //   activeUsers: 0,
+      //   pendingUsers: 0,
+      //   inactiveUsers: 0,
+      //   verifiedUsers: 0,
+      //   byRole: {
+      //     'pet-owner': 0,
+      //     'trainer': 0,
+      //     'institute-admin': 0,
+      //     'admin': 0
+      //   },
+      //   recentJoins: 0
+      // });
+        //setError('데이터를 불러오는데 실패했습니다.'); // Add error handling
     } finally {
       setLoading(false);
     }
@@ -156,48 +201,48 @@ export default function AdminMembersStatus() {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{data.summary.totalUsers}명</div>
+            <div className="text-2xl font-bold">{data?.summary?.totalUsers}명</div>
             <p className="text-xs text-muted-foreground">
-              인증 회원: {data.summary.verifiedMembers}명
+              인증 회원: {data?.summary?.verifiedMembers}명
             </p>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">견주 회원</CardTitle>
             <PawPrint className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{data.summary.petOwners}명</div>
+            <div className="text-2xl font-bold">{data?.summary?.petOwners}명</div>
             <p className="text-xs text-muted-foreground">
-              반려동물: {data.summary.totalPets}마리
+              반려동물: {data?.summary?.totalPets}마리
             </p>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">전문 훈련사</CardTitle>
             <GraduationCap className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{data.summary.totalTrainers}명</div>
+            <div className="text-2xl font-bold">{data?.summary?.totalTrainers}명</div>
             <p className="text-xs text-muted-foreground">
               등록된 전문 훈련사
             </p>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">기관 관리자</CardTitle>
             <Building2 className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{data.summary.instituteAdmins}명</div>
+            <div className="text-2xl font-bold">{data?.summary?.instituteAdmins}명</div>
             <p className="text-xs text-muted-foreground">
-              총 {data.summary.totalInstitutes}개 기관
+              총 {data?.summary?.totalInstitutes}개 기관
             </p>
           </CardContent>
         </Card>
@@ -212,7 +257,7 @@ export default function AdminMembersStatus() {
 
         <TabsContent value="members" className="space-y-4">
           <div className="grid gap-4 md:grid-cols-2">
-            {Object.entries(data.membersByRole).map(([role, members]) => (
+            {Object.entries(data?.membersByRole || {}).map(([role, members]) => (
               <Card key={role}>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
@@ -269,7 +314,7 @@ export default function AdminMembersStatus() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              {data.instituteMemberships.length === 0 ? (
+              {data?.instituteMemberships?.length === 0 ? (
                 <p className="text-center text-muted-foreground py-8">
                   기관에 소속된 회원이 없습니다.
                 </p>
@@ -284,7 +329,7 @@ export default function AdminMembersStatus() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {data.instituteMemberships.map((membership: any, index) => (
+                    {data?.instituteMemberships?.map((membership: any, index) => (
                       <TableRow key={index}>
                         <TableCell className="font-medium">
                           {membership.userName}
@@ -316,13 +361,13 @@ export default function AdminMembersStatus() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              {data.trainerConnections.length === 0 ? (
+              {data?.trainerConnections?.length === 0 ? (
                 <p className="text-center text-muted-foreground py-8">
                   연결된 훈련사-견주 관계가 없습니다.
                 </p>
               ) : (
                 <div className="space-y-4">
-                  {data.trainerConnections.map((connection: any, index) => (
+                  {data?.trainerConnections?.map((connection: any, index) => (
                     <div key={index} className="border rounded-lg p-4">
                       <div className="flex items-center gap-2 mb-3">
                         <GraduationCap className="w-5 h-5 text-green-600" />

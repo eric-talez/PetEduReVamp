@@ -17,6 +17,19 @@ export function registerAdminRoutes(app: Express) {
       const members = [
         {
           id: 1,
+          name: '강동훈',
+          email: 'donghoong@wangzzang.com',
+          role: 'institute-admin',
+          status: 'active',
+          joinDate: '2024-01-10',
+          lastLogin: '2024-03-11',
+          instituteName: '왕짱스쿨',
+          trainersCount: 1,
+          isVerified: true,
+          certification: '반려동물행동지도사 국가자격증 2급'
+        },
+        {
+          id: 2,
           name: '김반려',
           email: 'kim.pet@example.com',
           role: 'pet-owner',
@@ -28,7 +41,7 @@ export function registerAdminRoutes(app: Express) {
           isVerified: true
         },
         {
-          id: 2,
+          id: 3,
           name: '박훈련',
           email: 'park.trainer@example.com',
           role: 'trainer',
@@ -41,7 +54,7 @@ export function registerAdminRoutes(app: Express) {
           certification: 'KKF 공인 훈련사'
         },
         {
-          id: 3,
+          id: 4,
           name: '이기관',
           email: 'lee.institute@example.com',
           role: 'institute-admin',
@@ -53,7 +66,7 @@ export function registerAdminRoutes(app: Express) {
           isVerified: true
         },
         {
-          id: 4,
+          id: 5,
           name: '정반려',
           email: 'jung.pet@example.com',
           role: 'pet-owner',
@@ -65,7 +78,7 @@ export function registerAdminRoutes(app: Express) {
           isVerified: false
         },
         {
-          id: 5,
+          id: 6,
           name: '한훈련',
           email: 'han.trainer@example.com',
           role: 'trainer',
@@ -215,8 +228,35 @@ export function registerAdminRoutes(app: Express) {
       const institutes = [
         {
           id: 1,
-          name: "서울반려견아카데미",
+          name: "왕짱스쿨",
           businessNumber: "123-45-67890",
+          address: "경북 구미시 구평동 661",
+          phone: "010-4765-1909",
+          email: "donghoong@wangzzang.com",
+          directorName: "강동훈",
+          directorEmail: "donghoong@wangzzang.com",
+          status: "active",
+          isVerified: true,
+          certification: "반려동물행동지도사 국가자격증 2급",
+          establishedDate: "2020-01-01",
+          registeredDate: "2024-01-15",
+          trainersCount: 1,
+          studentsCount: 87,
+          coursesCount: 6,
+          facilities: ["실내 훈련장", "야외 운동장", "대기실", "상담실", "애견유치원"],
+          operatingHours: "평일 09:00-18:00, 토요일 09:00-18:00, 일요일 휴무",
+          description: "국가자격증 훈련부터 반려동물 교감 교육까지! 반려견과 보호자의 '진짜 관계'를 만들어 드리는 전문 교육기관입니다.",
+          website: "https://wangzzang.com",
+          specialPrograms: [
+            "구미시 2025 미래교육지구 마을학교 '반려꿈터' 운영",
+            "정신건강 및 특수교육 대상자를 위한 교감 활동",
+            "경북소방본부, 교육기관 대상 강의 및 상담"
+          ]
+        },
+        {
+          id: 2,
+          name: "서울반려견아카데미",
+          businessNumber: "234-56-78901",
           address: "서울시 강남구 테헤란로 123",
           phone: "02-1234-5678",
           email: "info@seoul-pet-academy.com",
@@ -235,9 +275,9 @@ export function registerAdminRoutes(app: Express) {
           description: "전문 반려견 교육 및 훈련 서비스를 제공하는 종합 교육기관입니다."
         },
         {
-          id: 2,
+          id: 3,
           name: "부산펫트레이닝센터",
-          businessNumber: "234-56-78901",
+          businessNumber: "345-67-89012",
           address: "부산시 해운대구 해운대로 456",
           phone: "051-2345-6789",
           email: "info@busan-pet-center.com",
@@ -256,9 +296,9 @@ export function registerAdminRoutes(app: Express) {
           description: "개인 맞춤형 반려견 훈련 전문 센터입니다."
         },
         {
-          id: 3,
+          id: 4,
           name: "대구애견학교",
-          businessNumber: "345-67-89012",
+          businessNumber: "456-78-90123",
           address: "대구시 중구 동성로 789",
           phone: "053-3456-7890",
           email: "info@daegu-pet-school.com",
