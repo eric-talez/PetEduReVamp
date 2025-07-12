@@ -212,23 +212,12 @@ function CommunityPage() {
     staleTime: 5 * 60 * 1000,
   });
 
-  // 게시글 필터링 및 검색
+  // 게시글 데이터 (API에서 이미 필터링됨)
   const filteredPosts = useMemo(() => {
     if (!postsData) return [];
-    
-    let filtered = postsData.filter((post: any) => {
-      const matchesSearch = !searchQuery || 
-        post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        post.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        post.author?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        post.tag?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        post.category?.toLowerCase().includes(searchQuery.toLowerCase());
-      
-      return matchesSearch;
-    });
-
-    return filtered;
-  }, [postsData, searchQuery]);
+    // API에서 이미 검색 필터링이 적용되어 있으므로 그대로 반환
+    return postsData;
+  }, [postsData]);
 
   // 페이지네이션
   const totalPages = Math.ceil(filteredPosts.length / itemsPerPage);
