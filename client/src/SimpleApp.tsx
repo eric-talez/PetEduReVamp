@@ -1938,6 +1938,18 @@ function AuthenticatedRoutes() {
             );
           }}
         </Route>
+        <Route path="/admin/commission-settings">
+          {() => {
+            const CommissionSettings = lazy(() => import('./pages/admin/commission-settings'));
+            return (
+              <Suspense fallback={<div className="p-8 flex justify-center items-center">
+                <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
+              </div>}>
+                <ProtectedAdminRoute component={CommissionSettings} />
+              </Suspense>
+            );
+          }}
+        </Route>
 
         <Route path="/admin/banners">
           {() => {
