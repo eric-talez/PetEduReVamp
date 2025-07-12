@@ -280,7 +280,16 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
       
       setIsSearching(true);
       try {
-        // Navigate to search page with query
+        // Check if we're on the community page - if so, navigate to community with search
+        if (location.startsWith('/community')) {
+          // Navigate to community page with search query
+          setLocation(`/community?q=${encodeURIComponent(query)}`);
+          setSearchQuery('');
+          setIsSearching(false);
+          return;
+        }
+        
+        // Navigate to search page with query for non-community pages
         setLocation(`/search?q=${encodeURIComponent(query)}`);
         setSearchQuery('');
       } catch (error) {
@@ -294,7 +303,7 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
         setIsSearching(false);
       }
     }, 300),
-    [setLocation, toast]
+    [setLocation, toast, location]
   );
 
   // Enhanced search with validation
@@ -387,7 +396,7 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
               <input 
                 type="text" 
                 className="block w-full pl-10 pr-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-primary focus:border-primary" 
-                placeholder="강의, 훈련사, 기관 검색"
+                placeholder={location.startsWith('/community') ? "커뮤니티 검색" : "강의, 훈련사, 기관 검색"}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyDown={handleKeyPress}

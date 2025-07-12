@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link as RouterLink, useLocation } from 'wouter';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -137,11 +137,15 @@ function CommunityPage() {
   const { user, isLoading: authLoading } = useAuth();
   const queryClient = useQueryClient();
   
+  // URL 파라미터에서 검색 쿼리 추출
+  const urlParams = new URLSearchParams(window.location.search);
+  const urlSearchQuery = urlParams.get('q') || '';
+  
   const [activeTab, setActiveTab] = useState('latest');
   const [currentPage, setCurrentPage] = useState(1);
   const [isCreatePostOpen, setIsCreatePostOpen] = useState(false);
   const [viewType, setViewType] = useState<'card' | 'list'>('card');
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState(urlSearchQuery);
   const [selectedPost, setSelectedPost] = useState<any>(null);
   const [isPostDetailOpen, setIsPostDetailOpen] = useState(false);
   const [newComment, setNewComment] = useState('');
@@ -162,6 +166,15 @@ function CommunityPage() {
   const [isExtractingLink, setIsExtractingLink] = useState(false);
 
   const itemsPerPage = 8;
+
+  // URL 파라미터 변경 감지
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const newSearchQuery = urlParams.get('q') || '';
+    if (newSearchQuery !== searchQuery) {
+      setSearchQuery(newSearchQuery);
+    }
+  }, [window.location.search]);
 
   // 카테고리 목록
   const categories = ['일반', '훈련팁', '건강', '행동교정', '사회화', '질문', '후기'];
