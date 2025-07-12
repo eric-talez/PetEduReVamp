@@ -56,3 +56,16 @@ args = "npm run build"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "NODE_ENV=production node production-start.js"
+
+[[workflows.workflow]]
+name = "Check and Fix"
+author = 37268622
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "node scripts/check-missing-endpoints.js"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "npm run dev"

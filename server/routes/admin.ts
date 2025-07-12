@@ -467,5 +467,120 @@ export function registerAdminRoutes(app: Express) {
     }
   }));
 
+  // 훈련사 양성 프로그램 관리 API
+  app.get('/api/trainer-programs', async (req, res) => {
+    try {
+      const programs = [
+        {
+          id: 1,
+          name: "기초 반려견 훈련사 과정",
+          duration: "8주",
+          description: "반려견 기초 훈련 전문가 양성 과정",
+          price: 500000,
+          startDate: "2024-03-01",
+          capacity: 20,
+          enrolledCount: 15,
+          status: 'active'
+        },
+        {
+          id: 2,
+          name: "고급 행동 교정사 과정",
+          duration: "12주",
+          description: "문제 행동 교정 전문가 양성 과정",
+          price: 800000,
+          startDate: "2024-03-15",
+          capacity: 15,
+          enrolledCount: 8,
+          status: 'active'
+        }
+      ];
+      
+      res.json({
+        success: true,
+        programs
+      });
+    } catch (error) {
+      console.error('훈련사 프로그램 조회 오류:', error);
+      res.status(500).json({
+        success: false,
+        message: '훈련사 프로그램 조회 중 오류가 발생했습니다.'
+      });
+    }
+  });
+
+  // 훈련사 신청 목록 API
+  app.get('/api/trainer-applications', async (req, res) => {
+    try {
+      const applications = [
+        {
+          id: 1,
+          applicantName: "김훈련",
+          programName: "기초 반려견 훈련사 과정",
+          status: "pending",
+          appliedDate: "2024-02-15",
+          experience: "2년",
+          certification: "반려동물행동지도사 2급"
+        },
+        {
+          id: 2,
+          applicantName: "이전문",
+          programName: "고급 행동 교정사 과정",
+          status: "approved",
+          appliedDate: "2024-02-10",
+          experience: "5년",
+          certification: "반려동물행동지도사 1급"
+        }
+      ];
+      
+      res.json({
+        success: true,
+        applications
+      });
+    } catch (error) {
+      console.error('훈련사 신청 조회 오류:', error);
+      res.status(500).json({
+        success: false,
+        message: '훈련사 신청 조회 중 오류가 발생했습니다.'
+      });
+    }
+  });
+
+  // 훈련사 인증 기록 API
+  app.get('/api/trainer-certifications', async (req, res) => {
+    try {
+      const certifications = [
+        {
+          id: 1,
+          trainerName: "김훈련",
+          certificationType: "반려동물행동지도사 2급",
+          issuedDate: "2024-01-15",
+          expiryDate: "2026-01-15",
+          status: "active",
+          issuingOrganization: "한국반려동물협회"
+        },
+        {
+          id: 2,
+          trainerName: "이전문",
+          certificationType: "반려동물행동지도사 1급",
+          issuedDate: "2023-12-01",
+          expiryDate: "2025-12-01",
+          status: "active",
+          issuingOrganization: "한국반려동물협회"
+        }
+      ];
+      
+      res.json({
+        success: true,
+        certifications
+      });
+    } catch (error) {
+      console.error('훈련사 인증 조회 오류:', error);
+      res.status(500).json({
+        success: false,
+        message: '훈련사 인증 조회 중 오류가 발생했습니다.'
+      });
+    }
+  });
+
   return app;
 }
