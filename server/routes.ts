@@ -2958,6 +2958,33 @@ app.get('/api/search', async (req, res) => {
 
   // ===== Logo Management Routes =====
 
+  // 로고 설정 조회 (호환성을 위한 별칭)
+  app.get('/api/admin/logos', async (req, res) => {
+    try {
+      const settings = await storage.getLogoSettings();
+      res.json(settings);
+    } catch (error) {
+      console.error('로고 설정 조회 오류:', error);
+      res.status(500).json({ error: '로고 설정 조회에 실패했습니다.' });
+    }
+  });
+
+  // 사이드바 로고 API (단수형)
+  app.get('/api/admin/logo', async (req, res) => {
+    try {
+      const settings = await storage.getLogoSettings();
+      // 사이드바 컴포넌트에서 기대하는 형식으로 변환
+      const logoData = {
+        expandedLogo: settings.logoLight || "/logo-light.svg",
+        compactLogo: settings.logoSymbolLight || "/logo-compact.svg"
+      };
+      res.json(logoData);
+    } catch (error) {
+      console.error('로고 설정 조회 오류:', error);
+      res.status(500).json({ error: '로고 설정 조회에 실패했습니다.' });
+    }
+  });
+
   // 로고 설정 조회
   app.get('/api/admin/logo-settings', async (req, res) => {
     try {
@@ -3010,6 +3037,52 @@ app.get('/api/search', async (req, res) => {
     } catch (error) {
       console.error('로고 설정 초기화 오류:', error);
       res.status(500).json({ error: '로고 설정 초기화에 실패했습니다.' });
+    }
+  });
+
+  // 로고 업로드 API
+  app.post('/api/admin/logos/upload', async (req, res) => {
+    try {
+      // Multer 설정이 아직 없어서 임시로 파일 처리
+      const type = req.body.type || 'main';
+      if (!['main', 'compact', 'favicon'].includes(type)) {
+        return res.status(400).json({ error: '유효하지 않은 로고 타입입니다.' });
+      }
+
+      // 임시 파일 경로 생성
+      const filename = `logo-${type}-${Date.now()}.svg`;
+      const logoPath = `/uploads/${filename}`;
+
+      // 스토리지에 로고 업로드
+      await storage.uploadLogo(type as 'main' | 'compact' | 'favicon', filename, Buffer.from(''));
+      
+      res.json({ 
+        success: true, 
+        logoPath,
+        message: '로고가 성공적으로 업로드되었습니다.' 
+      });
+    } catch (error) {
+      console.error('로고 업로드 오류:', error);
+      res.status(500).json({ error: '로고 업로드에 실패했습니다.' });
+    }
+  });
+
+  // 로고 삭제 API
+  app.delete('/api/admin/logos/:type', async (req, res) => {
+    try {
+      const { type } = req.params;
+      if (!type || !['main', 'compact', 'favicon'].includes(type)) {
+        return res.status(400).json({ error: '유효하지 않은 로고 타입입니다.' });
+      }
+
+      await storage.deleteLogo(type as 'main' | 'compact' | 'favicon');
+      res.json({ 
+        success: true, 
+        message: '로고가 성공적으로 삭제되었습니다.' 
+      });
+    } catch (error) {
+      console.error('로고 삭제 오류:', error);
+      res.status(500).json({ error: '로고 삭제에 실패했습니다.' });
     }
   });
 

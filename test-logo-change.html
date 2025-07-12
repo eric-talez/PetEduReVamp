@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>로고 변경 테스트</title>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .logo-preview {
+            display: flex;
+            justify-content: space-between;
+            margin: 20px 0;
+        }
+        .logo-box {
+            text-align: center;
+            padding: 20px;
+            border: 2px dashed #ddd;
+            border-radius: 8px;
+            min-width: 200px;
+        }
+        .logo-box img {
+            max-width: 180px;
+            max-height: 60px;
+            object-fit: contain;
+        }
+        button {
+            background: #2BAA61;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px;
+        }
+        button:hover {
+            background: #259854;
+        }
+        .status {
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 5px;
+            text-align: center;
+            font-weight: bold;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .current-config {
+            background: #e9ecef;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .current-config pre {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 3px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 TALEZ 로고 변경 테스트</h1>
+        
+        <div class="status" id="statusMessage" style="display: none;"></div>
+        
+        <div class="current-config">
+            <h3>현재 로고 설정</h3>
+            <pre id="currentConfig">로딩 중...</pre>
+        </div>
+        
+        <div class="logo-preview">
+            <div class="logo-box">
+                <h4>확장 로고</h4>
+                <img id="expandedLogo" src="" alt="확장 로고" style="display: none;">
+                <div id="expandedLogoError" style="display: none; color: #666;">로고 없음</div>
+            </div>
+            <div class="logo-box">
+                <h4>축소 로고</h4>
+                <img id="compactLogo" src="" alt="축소 로고" style="display: none;">
+                <div id="compactLogoError" style="display: none; color: #666;">로고 없음</div>
+            </div>
+        </div>
+        
+        <div style="text-align: center;">
+            <button onclick="loadCurrentLogos()">🔄 로고 새로고침</button>
+            <button onclick="testUpload()">📤 로고 업로드 테스트</button>
+            <button onclick="resetLogos()">🔄 로고 초기화</button>
+        </div>
+        
+        <div style="margin-top: 30px;">
+            <h3>API 테스트 결과</h3>
+            <div id="apiResults" style="font-family: monospace; background: #f8f9fa; padding: 15px; border-radius: 5px; white-space: pre-wrap;">
+                준비 중...
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 상태 메시지 표시
+        function showStatus(message, type = 'success') {
+            const statusEl = document.getElementById('statusMessage');
+            statusEl.textContent = message;
+            statusEl.className = `status ${type}`;
+            statusEl.style.display = 'block';
+            
+            setTimeout(() => {
+                statusEl.style.display = 'none';
+            }, 5000);
+        }
+
+        // 현재 로고 설정 로드
+        async function loadCurrentLogos() {
+            try {
+                const response = await axios.get('/api/admin/logo');
+                const logoData = response.data;
+                
+                // 설정 정보 표시
+                document.getElementById('currentConfig').textContent = JSON.stringify(logoData, null, 2);
+                
+                // 확장 로고 표시
+                const expandedImg = document.getElementById('expandedLogo');
+                const expandedError = document.getElementById('expandedLogoError');
+                
+                if (logoData.expandedLogo) {
+                    expandedImg.src = logoData.expandedLogo;
+                    expandedImg.style.display = 'block';
+                    expandedError.style.display = 'none';
+                } else {
+                    expandedImg.style.display = 'none';
+                    expandedError.style.display = 'block';
+                }
+                
+                // 축소 로고 표시
+                const compactImg = document.getElementById('compactLogo');
+                const compactError = document.getElementById('compactLogoError');
+                
+                if (logoData.compactLogo) {
+                    compactImg.src = logoData.compactLogo;
+                    compactImg.style.display = 'block';
+                    compactError.style.display = 'none';
+                } else {
+                    compactImg.style.display = 'none';
+                    compactError.style.display = 'block';
+                }
+                
+                showStatus('로고 로드 완료!', 'success');
+                
+                // API 결과 표시
+                document.getElementById('apiResults').textContent = `로고 API 응답:\n${JSON.stringify(logoData, null, 2)}`;
+                
+            } catch (error) {
+                showStatus('로고 로드 실패: ' + error.message, 'error');
+                document.getElementById('apiResults').textContent = `오류 발생:\n${error.message}`;
+            }
+        }
+
+        // 로고 업로드 테스트
+        async function testUpload() {
+            try {
+                const response = await axios.post('/api/admin/logos/upload', {
+                    type: 'main'
+                });
+                
+                showStatus('로고 업로드 테스트 완료!', 'success');
+                document.getElementById('apiResults').textContent = `업로드 API 응답:\n${JSON.stringify(response.data, null, 2)}`;
+                
+                // 로고 새로고침
+                loadCurrentLogos();
+                
+            } catch (error) {
+                showStatus('로고 업로드 실패: ' + error.message, 'error');
+                document.getElementById('apiResults').textContent = `업로드 오류:\n${error.message}`;
+            }
+        }
+
+        // 로고 초기화
+        async function resetLogos() {
+            try {
+                const response = await axios.post('/api/admin/logo-settings/reset');
+                
+                showStatus('로고 초기화 완료!', 'success');
+                document.getElementById('apiResults').textContent = `초기화 API 응답:\n${JSON.stringify(response.data, null, 2)}`;
+                
+                // 로고 새로고침
+                loadCurrentLogos();
+                
+            } catch (error) {
+                showStatus('로고 초기화 실패: ' + error.message, 'error');
+                document.getElementById('apiResults').textContent = `초기화 오류:\n${error.message}`;
+            }
+        }
+
+        // 페이지 로드 시 로고 로드
+        window.onload = function() {
+            loadCurrentLogos();
+        };
+    </script>
+</body>
+</html>
