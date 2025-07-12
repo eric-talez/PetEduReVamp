@@ -28,6 +28,7 @@ export type CommunityPost = {
 export interface IStorage {
   // User operations
   getUser(id: number): Promise<User | undefined>;
+  getAllUsers(): Promise<User[]>;
   createUser(user: Omit<User, 'id' | 'createdAt' | 'updatedAt'>): Promise<User>;
   getUserByEmail(email: string): Promise<User | undefined>;
   
@@ -248,6 +249,10 @@ export class MemoryStorage implements IStorage {
 
   async getUser(id: number): Promise<User | undefined> {
     return this.users.get(id);
+  }
+
+  async getAllUsers(): Promise<User[]> {
+    return Array.from(this.users.values());
   }
 
   async createUser(user: Omit<User, 'id' | 'createdAt' | 'updatedAt'>): Promise<User> {

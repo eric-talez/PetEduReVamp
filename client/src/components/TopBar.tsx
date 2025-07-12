@@ -402,7 +402,7 @@ export function TopBar({ sidebarOpen, onToggleSidebar, layoutMode = 'sidebar', u
           {layoutMode === 'topnav' && (
             <>
               {/* 데스크톱 네비게이션 - 상위 그룹만 */}
-              <nav className="hidden lg:flex items-center space-x-1" ref={navMenuRef}>
+              <nav className="hidden lg:flex items-center space-x-1 relative" ref={navMenuRef}>
                 <Link href="/" className="text-gray-700 dark:text-gray-200 hover:text-primary px-3 py-2 rounded-md text-sm font-medium">
                   홈
                 </Link>
@@ -417,7 +417,7 @@ export function TopBar({ sidebarOpen, onToggleSidebar, layoutMode = 'sidebar', u
                     <ChevronDown className="ml-1 h-4 w-4" />
                   </button>
                   {activeSubmenu === 'services' && (
-                    <div className="absolute left-0 mt-2 w-48 bg-white dark:bg-gray-900 rounded-md shadow-lg py-1 z-50 border border-gray-200 dark:border-gray-700">
+                    <div className="absolute left-0 mt-2 w-48 bg-white dark:bg-gray-900 rounded-md shadow-lg py-1 z-[60] border border-gray-200 dark:border-gray-700">
                       <Link href="/courses" className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800">
                         강의
                       </Link>
@@ -444,7 +444,7 @@ export function TopBar({ sidebarOpen, onToggleSidebar, layoutMode = 'sidebar', u
                     <ChevronDown className="ml-1 h-4 w-4" />
                   </button>
                   {activeSubmenu === 'community' && (
-                    <div className="absolute left-0 mt-2 w-48 bg-white dark:bg-gray-900 rounded-md shadow-lg py-1 z-50 border border-gray-200 dark:border-gray-700">
+                    <div className="absolute left-0 mt-2 w-48 bg-white dark:bg-gray-900 rounded-md shadow-lg py-1 z-[60] border border-gray-200 dark:border-gray-700">
                       <Link href="/community" className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800">
                         커뮤니티 홈
                       </Link>
@@ -469,7 +469,7 @@ export function TopBar({ sidebarOpen, onToggleSidebar, layoutMode = 'sidebar', u
                       <ChevronDown className="ml-1 h-4 w-4" />
                     </button>
                     {activeSubmenu === 'my' && (
-                      <div className="absolute left-0 mt-2 w-48 bg-white dark:bg-gray-900 rounded-md shadow-lg py-1 z-50 border border-gray-200 dark:border-gray-700">
+                      <div className="absolute left-0 mt-2 w-48 bg-white dark:bg-gray-900 rounded-md shadow-lg py-1 z-[60] border border-gray-200 dark:border-gray-700">
                         <Link href="/my-courses" className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800">
                           내 강의
                         </Link>
@@ -495,7 +495,7 @@ export function TopBar({ sidebarOpen, onToggleSidebar, layoutMode = 'sidebar', u
                       <ChevronDown className="ml-1 h-4 w-4" />
                     </button>
                     {activeSubmenu === 'admin' && (
-                      <div className="absolute left-0 mt-2 w-48 bg-white dark:bg-gray-900 rounded-md shadow-lg py-1 z-50 border border-gray-200 dark:border-gray-700">
+                      <div className="absolute left-0 mt-2 w-48 bg-white dark:bg-gray-900 rounded-md shadow-lg py-1 z-[60] border border-gray-200 dark:border-gray-700">
                         <Link href="/admin/dashboard" className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800">
                           대시보드
                         </Link>
@@ -525,7 +525,7 @@ export function TopBar({ sidebarOpen, onToggleSidebar, layoutMode = 'sidebar', u
                 
                 {/* 모바일 네비게이션 드롭다운 */}
                 {userMenuOpen && (
-                  <div className="absolute left-0 mt-2 w-64 bg-white dark:bg-gray-900 rounded-md shadow-lg py-1 z-50 border border-gray-200 dark:border-gray-700">
+                  <div className="absolute left-0 mt-2 w-64 bg-white dark:bg-gray-900 rounded-md shadow-lg py-1 z-[60] border border-gray-200 dark:border-gray-700">
                     <Link href="/" className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800">
                       홈
                     </Link>
