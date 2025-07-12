@@ -240,6 +240,26 @@ class Storage {
   getAllTrainers() {
     return this.users?.filter(user => user.role === 'trainer') || [];
   }
+
+  // 로고 설정 관련 메서드들
+  getLogoSettings() {
+    return {
+      id: 1,
+      logoUrl: '/logo.svg',
+      darkLogoUrl: '/logo-dark.svg',
+      compactLogoUrl: '/logo-compact.svg',
+      symbolUrl: '/logo-symbol.svg',
+      isActive: true,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+  }
+
+  updateLogoSettings(settings: any) {
+    // 로고 설정 업데이트 로직
+    console.log('로고 설정 업데이트:', settings);
+    return this.getLogoSettings();
+  }
 }
 
 const storage = new Storage();
