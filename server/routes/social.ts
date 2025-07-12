@@ -769,8 +769,14 @@ export function setupSocialRoutes(app: Express) {
 
       // 검색 쿼리 필터
       if (searchQuery && typeof searchQuery === 'string') {
-        // URL 디코딩 처리
-        const decodedQuery = decodeURIComponent(searchQuery);
+        // URL 디코딩 처리 - 한글 문자 지원
+        let decodedQuery = searchQuery;
+        try {
+          decodedQuery = decodeURIComponent(searchQuery);
+        } catch (e) {
+          // 이미 디코딩되어 있거나 잘못된 인코딩인 경우 원본 사용
+          decodedQuery = searchQuery;
+        }
         const query = decodedQuery.toLowerCase();
         console.log(`[커뮤니티 API] 검색 쿼리 "${searchQuery}" 받음`);
         console.log(`[커뮤니티 API] 디코딩된 검색 쿼리 "${decodedQuery}" 처리`);
