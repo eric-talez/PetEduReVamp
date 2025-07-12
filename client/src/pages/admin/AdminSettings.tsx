@@ -139,20 +139,22 @@ export default function AdminSettings() {
     if (typeof urlOrFile === 'string') {
       // URL인 경우 API를 통해 로고 저장
       try {
-        const response = await apiRequest(`/api/logo/set`, 'POST', {
+        const response = await apiRequest('POST', `/api/logo/set`, {
           type,
           url: urlOrFile
         });
         
-        if (response.success) {
+        const responseData = await response.json();
+        
+        if (responseData.success) {
           toast({
             title: '로고 업로드 완료',
-            description: `${type === 'expanded' ? '확장' : '축소'} 로고가 성공적으로 저장되었습니다.`,
+            description: `${type === 'main' ? '메인' : type === 'compact' ? '컴팩트' : '파비콘'} 로고가 성공적으로 저장되었습니다.`,
           });
           // 로고 목록 다시 조회
           window.location.reload();
         } else {
-          throw new Error(response.message || '로고 저장 실패');
+          throw new Error(responseData.message || '로고 저장 실패');
         }
       } catch (error: any) {
         toast({

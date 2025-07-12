@@ -1131,6 +1131,73 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // 로고 설정 API
+  app.post("/api/logo/set", async (req, res) => {
+    try {
+      const { type, url } = req.body;
+      
+      if (!type || !url) {
+        return res.status(400).json({ 
+          success: false, 
+          message: "로고 타입과 URL이 필요합니다." 
+        });
+      }
+
+      // 로고 설정 업데이트
+      try {
+        const currentSettings = await storage.getLogoSettings();
+        const updateData = { ...currentSettings };
+        
+        // 타입에 따라 로고 설정 업데이트
+        switch (type) {
+          case 'main':
+            updateData.logoLight = url;
+            break;
+          case 'mainDark':
+            updateData.logoDark = url;
+            break;
+          case 'compact':
+            updateData.logoSymbolLight = url;
+            break;
+          case 'compactDark':
+            updateData.logoSymbolDark = url;
+            break;
+          case 'favicon':
+            updateData.favicon = url;
+            break;
+          default:
+            return res.status(400).json({ 
+              success: false, 
+              message: "지원되지 않는 로고 타입입니다." 
+            });
+        }
+        
+        await storage.updateLogoSettings(updateData);
+        
+        console.log('로고 설정 업데이트 성공:', type, url);
+        
+        res.json({ 
+          success: true, 
+          type: type,
+          url: url,
+          message: "로고 설정이 성공적으로 업데이트되었습니다."
+        });
+      } catch (storageError) {
+        console.error('로고 설정 업데이트 실패:', storageError);
+        res.status(500).json({ 
+          success: false, 
+          message: "로고 설정 업데이트 중 오류가 발생했습니다."
+        });
+      }
+    } catch (error) {
+      console.error('로고 설정 API 오류:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: "로고 설정 중 오류가 발생했습니다."
+      });
+    }
+  });
+
   // 로고 업로드를 위한 multer 설정
   const logoStorage = multer.diskStorage({
     destination: (req, file, cb) => {
