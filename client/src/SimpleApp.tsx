@@ -7,7 +7,7 @@ import { useGlobalShortcuts } from './hooks/use-keyboard-shortcuts';
 import { NotificationsProvider } from './components/NotificationsProvider';
 import { AchievementsProvider } from './hooks/useAchievements';
 import { useKeyboardAccessibility } from '@/hooks/use-keyboard-accessibility';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+
 import { startCacheCleanup } from './utils/performance-optimizer';
 
 // 페이지 컴포넌트 임포트
