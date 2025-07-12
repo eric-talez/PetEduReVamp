@@ -210,7 +210,9 @@ function CommunityPage() {
       const matchesSearch = !searchQuery || 
         post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         post.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        post.author?.name?.toLowerCase().includes(searchQuery.toLowerCase());
+        post.author?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        post.tag?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        post.category?.toLowerCase().includes(searchQuery.toLowerCase());
       
       return matchesSearch;
     });

@@ -823,13 +823,13 @@ export function setupSocialRoutes(app: Express) {
   // 게시글 작성
   app.post('/api/community/posts', (req, res) => {
     try {
-      const { title, content, category = '일반', tag } = req.body;
+      const { title, content, category = '일반', tag, linkUrl, linkTitle, linkDescription, linkImage } = req.body;
 
       if (!title || !content) {
         return res.status(400).json({ error: '제목과 내용을 입력해주세요.' });
       }
 
-      const newPost = {
+      const newPost: any = {
         id: nextPostId++,
         title,
         content,
@@ -843,6 +843,16 @@ export function setupSocialRoutes(app: Express) {
         createdAt: new Date(),
         updatedAt: new Date()
       };
+
+      // linkInfo 추가 (링크 정보가 있는 경우)
+      if (linkUrl) {
+        newPost.linkInfo = {
+          url: linkUrl,
+          title: linkTitle || title,
+          description: linkDescription || '',
+          image: linkImage || null
+        };
+      }
 
       posts.unshift(newPost);
 
