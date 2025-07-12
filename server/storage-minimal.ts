@@ -354,58 +354,6 @@ export class MemoryStorage implements IStorage {
     };
     return this.logoSettings;
   }
-
-  // getAllUsers 메서드 추가 (API 호환성)
-  async getAllUsers(): Promise<User[]> {
-    return Array.from(this.users.values());
-  }
-
-  // getCurriculums 메서드 추가 (API 호환성)
-  async getCurriculums(): Promise<any[]> {
-    return this.getAllCurricula();
-  }
-
-  // getInstitutes 메서드 추가 (API 호환성)
-  async getInstitutes(): Promise<any[]> {
-    return this.getAllInstitutes();
-  }
-
-  // getTrainers 메서드 추가 (API 호환성)
-  async getTrainers(): Promise<any[]> {
-    return this.getAllTrainers();
-  }
-
-  // getAllCourses 메서드 추가 (API 호환성)
-  async getAllCourses(): Promise<any[]> {
-    // 코스 데이터를 반환 (빈 배열 또는 실제 코스 데이터)
-    return [];
-  }
-
-  // getMemberStatus 메서드 추가 (API 호환성)
-  async getMemberStatus(): Promise<any> {
-    const users = Array.from(this.users.values());
-    return {
-      totalMembers: users.length,
-      activeMembers: Math.floor(users.length * 0.8),
-      inactiveMembers: Math.floor(users.length * 0.2),
-      newMembersThisMonth: Math.floor(users.length * 0.1),
-      verifiedMembers: Math.floor(users.length * 0.7),
-      premiumMembers: Math.floor(users.length * 0.3),
-      basicMembers: Math.floor(users.length * 0.7),
-      membersByType: {
-        individual: Math.floor(users.length * 0.7),
-        business: Math.floor(users.length * 0.2),
-        trainer: Math.floor(users.length * 0.1)
-      },
-      memberGrowth: [
-        { month: "2024-08", count: users.length - 20 },
-        { month: "2024-09", count: users.length - 15 },
-        { month: "2024-10", count: users.length - 10 },
-        { month: "2024-11", count: users.length - 5 },
-        { month: "2024-12", count: users.length }
-      ]
-    };
-  }
 }
 
 // Export storage instance

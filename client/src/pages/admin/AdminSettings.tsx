@@ -68,7 +68,7 @@ export default function AdminSettings() {
   const [topNavEnabled, setTopNavEnabled] = useState(false);
 
   // 현재 로고 설정 조회
-  const { data: currentLogos, isLoading: logosLoading } = useQuery({
+  const { data: currentLogos, isLoading: logosLoading, refetch: refetchLogos } = useQuery({
     queryKey: ['/api/admin/logos'],
     retry: false,
   });
@@ -97,8 +97,8 @@ export default function AdminSettings() {
         description: `${variables.type} 로고가 성공적으로 업로드되었습니다.`,
       });
       setUploadingLogo(null);
-      // 로고 목록 다시 조회
-      window.location.reload();
+      // 로고 목록 다시 조회 (페이지 새로고침 없이)
+      refetchLogos();
     },
     onError: (error: any) => {
       toast({
