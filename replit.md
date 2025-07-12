@@ -145,6 +145,13 @@ TALEZ is a comprehensive pet education and e-commerce platform that combines AI-
 
 ## Changelog
 
+- July 12, 2025. **Shop Branding Update: "펫에듀 쇼핑" → "테일즈 샵"** - Unified shopping brand name across all interfaces:
+  - **Interface Updates**: Changed all shopping-related text from "펫에듀 쇼핑" to "테일즈 샵" in headers, buttons, and descriptions
+  - **Brand Consistency**: Updated 9 key files including ShopAccess, ShopPreview, cart, and order pages
+  - **User Experience**: Unified brand naming provides consistent shopping experience across platform
+  - **Button Text Updates**: "쇼핑 계속하기" → "테일즈 샵 계속하기" for better brand recognition
+  - **Page Titles**: Updated document titles and tooltips to reflect new branding
+  - **Complete Coverage**: All shopping-related interfaces now use consistent "테일즈 샵" branding
 - July 12, 2025. **Korean Character Search System Completely Resolved** - Fixed URL encoding/decoding issues for Korean search terms:
   - **Korean Character Support**: Added proper URL decoding with try-catch error handling for Korean characters
   - **Search Functionality**: Confirmed working search for "펫로스", "법률정보", "여행정보" with proper results

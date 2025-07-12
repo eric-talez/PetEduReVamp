@@ -67,7 +67,7 @@ export default function OrderComplete() {
       setOrderData(order);
       
       // 페이지 타이틀 업데이트
-      document.title = `주문 완료 - ${orderNumber} | 테일즈 쇼핑`;
+      document.title = `주문 완료 - ${orderNumber} | 테일즈 샵`;
       
     } catch (err) {
       console.error('주문 정보 로드 오류:', err);

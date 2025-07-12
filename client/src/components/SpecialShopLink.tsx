@@ -100,7 +100,7 @@ export function SpecialShopLink({ children, className = "", expanded = true }: S
             </a>
           </TooltipTrigger>
           <TooltipContent side="right" className="bg-white dark:bg-gray-900 p-2 rounded border border-gray-200 dark:border-gray-700 shadow-lg">
-            <p>쇼핑몰 (새 창에서 열림)</p>
+            <p>테일즈 샵 (새 창에서 열림)</p>
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>

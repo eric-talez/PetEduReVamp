@@ -9,7 +9,7 @@ import { Sidebar } from '@/components/Sidebar';
 import { Badge } from '@/components/ui/badge';
 
 /**
- * 테일즈 쇼핑 스타일의 쇼핑몰 메인 컴포넌트
+ * 테일즈 샵 스타일의 쇼핑몰 메인 컴포넌트
  * - 모든 shop/* 경로 요청의 진입점 
  * - 인증 여부와 관계없이 접근 가능
  * - https://shopping.naver.com/ns/home 디자인 참고 (네이버 쇼핑)

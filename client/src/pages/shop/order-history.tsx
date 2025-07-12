@@ -304,7 +304,7 @@ export default function OrderHistory() {
             <p className="text-xl font-medium mb-2">주문 내역이 없습니다</p>
             <p className="text-muted-foreground mb-6">해당 기간에 주문한 내역이 없거나 검색 조건에 맞는 주문이 없습니다.</p>
             <Button onClick={() => setLocation('/shop')}>
-              쇼핑하러 가기
+              테일즈 샵 가기
             </Button>
           </div>
         </Card>

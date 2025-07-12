@@ -38,7 +38,7 @@ export function ShopPreview() {
       <div className="bg-primary text-primary-foreground p-4">
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-bold flex items-center">
-            <ShoppingBag className="mr-2" /> 펫에듀 쇼핑
+            <ShoppingBag className="mr-2" /> 테일즈 샵
           </h2>
           <div className="flex space-x-2">
             <a

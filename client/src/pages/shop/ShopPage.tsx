@@ -154,7 +154,7 @@ export default function ShopPage() {
               <div className="logo-icon">
                 <ShoppingBag size={24} />
               </div>
-              <span className="logo-text">테일즈 쇼핑</span>
+              <span className="logo-text">테일즈 샵</span>
             </a>
             
             <div className="search-container">

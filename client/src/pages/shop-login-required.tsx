@@ -63,7 +63,7 @@ export default function ShopLoginRequired() {
               </div>
               <h3 className="text-lg font-medium mb-2 text-gray-800 dark:text-white">펫 케어 상품 쇼핑</h3>
               <p className="text-gray-600 dark:text-gray-400 max-w-xs mx-auto">
-                펫에듀 쇼핑몰에서 반려동물을 위한 모든 것을 찾아보세요. 다양한 할인 혜택과 프로모션이 기다리고 있습니다.
+                테일즈 샵에서 반려동물을 위한 모든 것을 찾아보세요. 다양한 할인 혜택과 프로모션이 기다리고 있습니다.
               </p>
             </div>
           </div>

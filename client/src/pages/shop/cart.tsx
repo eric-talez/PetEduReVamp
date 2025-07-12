@@ -303,14 +303,14 @@ export default function Cart() {
           <ShoppingCart className="h-20 w-20 mx-auto mb-6 text-gray-300" />
           <h2 className="text-2xl font-bold mb-4">장바구니가 비어있습니다</h2>
           <p className="text-gray-600 dark:text-gray-400 mb-8">
-            장바구니에 상품을 담고 쇼핑을 계속해보세요.
+            장바구니에 상품을 담고 테일즈 샵을 계속 이용해보세요.
           </p>
           <Button 
             onClick={continueShopping}
             className="bg-[#03c75a] hover:bg-[#02b04a] text-white"
           >
             <ShoppingBag className="mr-2 h-5 w-5" />
-            쇼핑 계속하기
+            테일즈 샵 계속하기
           </Button>
         </div>
       </div>
@@ -598,7 +598,7 @@ export default function Cart() {
                 onClick={continueShopping}
               >
                 <ShoppingBag className="mr-2 h-5 w-5" />
-                쇼핑 계속하기
+                테일즈 샵 계속하기
               </Button>
             </CardFooter>
           </Card>
