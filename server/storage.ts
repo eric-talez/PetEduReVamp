@@ -265,4 +265,4 @@ class Storage {
 const storage = new Storage();
 
 export { storage };
-export default Storage;
+export default storage;
