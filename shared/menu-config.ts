@@ -415,7 +415,7 @@ export const DEFAULT_MENU_ITEMS: MenuItem[] = [
   },
   {
     id: 'financial-admin',
-    title: '수수료 관리',
+    title: '가격 관리',
     path: '/admin/commissions',
     icon: 'Percent',
     type: 'internal',
