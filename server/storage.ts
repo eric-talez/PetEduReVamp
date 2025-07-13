@@ -37,11 +37,11 @@ class Storage {
       },
       { 
         id: 3, 
-        name: '김반려', 
-        email: 'owner@test.com', 
+        name: '테스트 사용자', 
+        email: 'test@test.com', 
         role: 'pet-owner', 
-        password: 'owner123',
-        isVerified: false,
+        password: 'test123',
+        isVerified: true,
         createdAt: new Date().toISOString()
       }
     ];

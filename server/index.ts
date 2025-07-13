@@ -116,9 +116,12 @@ app.post('/api/login', async (req, res) => {
 
     // 테스트 계정 정보
     const testAccounts = {
+      'test': { password: 'test123', role: 'pet-owner', name: '테스트 사용자' },
       'testuser': { password: 'password123', role: 'pet-owner', name: '테스트 사용자' },
+      'trainer': { password: 'trainer123', role: 'trainer', name: '강동훈' },
       'trainer01': { password: 'trainer123', role: 'trainer', name: '훈련사' },
       'admin': { password: 'admin123', role: 'admin', name: '관리자' },
+      'institute': { password: 'institute123', role: 'institute-admin', name: '기관 관리자' },
       'institute01': { password: 'institute123', role: 'institute-admin', name: '기관 관리자' }
     };
 

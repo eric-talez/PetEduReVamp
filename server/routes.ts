@@ -377,9 +377,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // 테스트 계정 정보
       const testAccounts = {
+        'test': { password: 'test123', role: 'pet-owner', name: '테스트 사용자' },
         'testuser': { password: 'password123', role: 'pet-owner', name: '테스트 사용자' },
+        'trainer': { password: 'trainer123', role: 'trainer', name: '강동훈' },
         'trainer01': { password: 'trainer123', role: 'trainer', name: '훈련사' },
         'admin': { password: 'admin123', role: 'admin', name: '관리자' },
+        'institute': { password: 'institute123', role: 'institute-admin', name: '기관 관리자' },
         'institute01': { password: 'institute123', role: 'institute-admin', name: '기관 관리자' }
       };
 
@@ -1019,8 +1022,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ error: "로그인이 필요합니다" });
       }
 
+      console.log('반려동물 목록 조회 - 사용자 ID:', userId);
+      
+      // 사용자 ID를 숫자로 변환하여 조회
+      let numericUserId = userId;
+      if (typeof userId === 'string') {
+        // 테스트 계정에 대한 매핑
+        const userMapping = {
+          'testuser': 3,
+          'test': 3,
+          'trainer': 2,
+          'trainer01': 2,
+          'admin': 1,
+          'institute': 4,
+          'institute01': 4
+        };
+        numericUserId = userMapping[userId as keyof typeof userMapping] || parseInt(userId);
+      }
+
+      console.log('매핑된 사용자 ID:', numericUserId);
+
       // 사용자별 반려동물 목록 조회
-      const userPets = await storage.getPetsByUserId(userId);
+      const userPets = await storage.getPetsByUserId(numericUserId);
       
       // 반려동물 데이터에 훈련소 매칭 정보 추가
       const petsWithTrainingInfo = userPets.map(pet => ({
