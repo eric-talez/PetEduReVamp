@@ -666,7 +666,7 @@ export default function AdminHome() {
                 <div>
                   <h3 className="text-lg font-semibold mb-2">사용자 분포</h3>
                   <div className="h-64">
-                    <UserTypeChart />
+                    <CompactUserTypeChart />
                   </div>
                 </div>
               </div>
