@@ -1190,22 +1190,32 @@ export default function ConsultationStatusPage() {
                 </div>
               </div>
 
-              {/* Zoom 정보 (화상상담인 경우) */}
+              {/* 화상상담 정보 (화상상담인 경우) */}
               {selectedConsultation.type === 'video' && selectedConsultation.status === 'scheduled' && (
-                <div className="p-4 bg-blue-50 rounded-lg">
-                  <Label className="text-sm font-medium text-muted-foreground">화상상담 정보</Label>
-                  <div className="space-y-2 mt-2">
+                <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                  <Label className="text-sm font-medium text-gray-900 dark:text-white">화상상담 접속 정보</Label>
+                  <div className="space-y-3 mt-3">
                     <div className="flex items-center justify-between">
-                      <span className="text-sm">미팅 ID:</span>
-                      <code className="bg-white px-2 py-1 rounded text-sm">123 456 789</code>
+                      <span className="text-sm font-medium text-gray-900 dark:text-gray-100">미팅 ID:</span>
+                      <code className="bg-white dark:bg-gray-800 px-3 py-1 rounded text-sm font-mono text-gray-900 dark:text-gray-100">
+                        {selectedConsultation.meetingId || '123 456 789'}
+                      </code>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-sm">비밀번호:</span>
-                      <code className="bg-white px-2 py-1 rounded text-sm">abcd1234</code>
+                      <span className="text-sm font-medium text-gray-900 dark:text-gray-100">비밀번호:</span>
+                      <code className="bg-white dark:bg-gray-800 px-3 py-1 rounded text-sm font-mono text-gray-900 dark:text-gray-100">
+                        {selectedConsultation.meetingPassword || 'talez2025'}
+                      </code>
                     </div>
-                    <p className="text-xs text-muted-foreground mt-2">
-                      상담 시작 15분 전부터 참여 가능합니다.
-                    </p>
+                    <div className="flex items-start gap-2 mt-3 p-3 bg-blue-100 dark:bg-blue-800/30 rounded">
+                      <Video className="h-4 w-4 text-blue-600 dark:text-blue-400 mt-0.5" />
+                      <div className="text-xs text-blue-800 dark:text-blue-200">
+                        <p className="font-medium text-blue-900 dark:text-blue-100">화상상담 참여 안내</p>
+                        <p className="mt-1 text-blue-800 dark:text-blue-200">• 예약 시간 15분 전부터 접속 가능합니다</p>
+                        <p className="text-blue-800 dark:text-blue-200">• 안정적인 인터넷 연결을 확인해주세요</p>
+                        <p className="text-blue-800 dark:text-blue-200">• 조용한 환경에서 참여를 권장합니다</p>
+                      </div>
+                    </div>
                   </div>
                 </div>
               )}

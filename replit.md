@@ -151,6 +151,14 @@ TALEZ is a comprehensive pet education and e-commerce platform that combines AI-
 
 ## Changelog
 
+- July 13, 2025. **CONSULTATION VIDEO INFORMATION SECTION ENHANCED** - Improved video consultation information display with better UX:
+  - **Section Title**: Changed "화상상담 정보" to "화상상담 접속 정보" for better clarity
+  - **Visual Enhancement**: Added Video icon and structured layout with better spacing
+  - **Dynamic Data**: Added support for dynamic meetingId and meetingPassword from consultation data
+  - **Improved Guidance**: Added comprehensive participation guidelines with bullet points
+  - **Dark Mode Support**: Added proper dark mode variants for all UI elements
+  - **Code Display**: Enhanced code blocks with font-mono for better readability
+  - **User Experience**: More informative and professional video consultation information panel
 - July 13, 2025. **SIDEBAR LOGIN BUTTON ROUTING FIXED** - Corrected login button navigation path from `/auth/login` to `/auth`:
   - **Button Navigation**: Fixed both expanded and collapsed sidebar login buttons to use correct `/auth` path
   - **Route Consistency**: Aligned sidebar login buttons with actual route configuration in SimpleApp.tsx
