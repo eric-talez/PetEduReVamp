@@ -37,7 +37,7 @@ fi
 
 # PM2로 서비스 시작/재시작
 echo "🔄 PM2 서비스 재시작 중..."
-pm2 restart talez-service || pm2 start dist/index.js --name talez-service
+pm2 restart talez-service || pm2 start ecosystem.config.cjs --env production
 
 # 상태 확인
 echo "📊 서비스 상태 확인 중..."

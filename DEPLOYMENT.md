@@ -10,6 +10,7 @@
 - **배포 스크립트**: deploy-immediate.sh 자동화 스크립트 준비 완료
 - **서버 보안**: production.ts 보안 설정 구문 오류 수정
 - **EC2 준비**: 서버 배포용 빌드 출력 검증 완료
+- **PM2 설정 수정**: ES 모듈 호환성 문제 해결 (ecosystem.config.cjs)
 
 ## 📋 사전 요구사항
 
@@ -94,9 +95,26 @@ npm prune --production
 ```
 
 #### 3. PM2로 프로세스 관리
+
+**⚠️ ES 모듈 프로젝트에서 PM2 설정 파일 사용 시 주의사항:**
+- `ecosystem.config.js` 파일은 ES 모듈에서 호환성 문제가 발생합니다
+- `.cjs` 또는 `.mjs` 확장자를 사용하세요
+
 ```bash
 npm install -g pm2
-pm2 start ecosystem.config.js --env production
+
+# 방법 1: CommonJS 설정 파일 사용 (권장)
+pm2 start ecosystem.config.cjs --env production
+
+# 방법 2: ES 모듈 설정 파일 사용
+pm2 start ecosystem.config.mjs --env production
+
+# 방법 3: 직접 실행
+pm2 start dist/index.js --name talez-service --env production
+
+# 상태 확인
+pm2 status
+pm2 logs talez-service
 ```
 
 #### 4. Nginx 설정
