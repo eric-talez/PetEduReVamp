@@ -536,7 +536,7 @@ export default function LocationManagement() {
                 <Button
                   size="sm"
                   variant="outline"
-                  className="flex-1"
+                  className="flex-1 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-300 transition-all duration-200"
                   onClick={() => handleEditLocation(location)}
                 >
                   <Edit className="h-3 w-3 mr-1" />
@@ -555,7 +555,7 @@ export default function LocationManagement() {
                 <Button
                   size="sm"
                   variant="outline"
-                  className="text-red-600 hover:text-red-700"
+                  className="text-red-600 border-red-300 hover:bg-red-50 hover:text-red-700 hover:border-red-400 transition-all duration-200"
                   onClick={() => handleDeleteLocation(location.id)}
                 >
                   <Trash2 className="h-3 w-3" />

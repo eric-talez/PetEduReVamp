@@ -550,9 +550,10 @@ export default function AdminContents() {
                           <Eye className="h-4 w-4" />
                         </Button>
                         <Button
-                          variant="ghost"
+                          variant="outline"
                           size="icon"
                           onClick={() => handleEditContent(content)}
+                          className="hover:bg-blue-50 hover:text-blue-600 hover:border-blue-300 transition-all duration-200"
                         >
                           <Edit2 className="h-4 w-4" />
                         </Button>

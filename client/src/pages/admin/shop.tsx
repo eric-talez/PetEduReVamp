@@ -410,11 +410,11 @@ export default function AdminShopPage() {
                               <Link size={14} />
                               노출연결
                             </Button>
-                            <Button variant="ghost" size="sm" className="gap-1">
+                            <Button variant="outline" size="sm" className="gap-1 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-300 transition-all duration-200">
                               <Pencil size={14} />
                               수정
                             </Button>
-                            <Button variant="ghost" size="sm" className="gap-1 text-red-500 hover:text-red-700">
+                            <Button variant="outline" size="sm" className="gap-1 text-red-600 border-red-300 hover:bg-red-50 hover:text-red-700 hover:border-red-400 transition-all duration-200">
                               <Trash2 size={14} />
                               삭제
                             </Button>

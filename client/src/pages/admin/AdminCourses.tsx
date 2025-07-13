@@ -463,20 +463,22 @@ export default function AdminCourses() {
                     <Eye className="h-4 w-4" />
                   </Button>
                   <Button 
-                    variant="ghost" 
+                    variant="outline" 
                     size="sm"
                     onClick={() => {
                       console.log('강좌 편집:', course.title);
                     }}
+                    className="hover:bg-blue-50 hover:text-blue-600 hover:border-blue-300 transition-all duration-200"
                   >
                     <Edit className="h-4 w-4" />
                   </Button>
                   <Button 
-                    variant="ghost" 
+                    variant="outline" 
                     size="sm"
                     onClick={() => {
                       console.log('강좌 삭제:', course.title);
                     }}
+                    className="text-red-600 border-red-300 hover:bg-red-50 hover:text-red-700 hover:border-red-400 transition-all duration-200"
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>

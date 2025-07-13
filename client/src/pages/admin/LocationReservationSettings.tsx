@@ -190,6 +190,7 @@ export default function LocationReservationSettings() {
                       setSelectedSetting(setting);
                       setIsEditModalOpen(true);
                     }}
+                    className="hover:bg-blue-50 hover:text-blue-600 hover:border-blue-300 transition-all duration-200"
                   >
                     <Edit className="h-4 w-4" />
                   </Button>
@@ -199,6 +200,7 @@ export default function LocationReservationSettings() {
                     onClick={() => {
                       setSettings(prev => prev.filter(s => s.id !== setting.id));
                     }}
+                    className="text-red-600 border-red-300 hover:bg-red-50 hover:text-red-700 hover:border-red-400 transition-all duration-200"
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>

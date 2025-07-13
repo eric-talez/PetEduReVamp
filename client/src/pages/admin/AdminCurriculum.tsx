@@ -1557,7 +1557,7 @@ export default function AdminCurriculum() {
                             setSelectedCurriculum(curriculum);
                             setIsEditing(true);
                           }}
-                          className="flex items-center gap-1"
+                          className="flex items-center gap-1 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-300 transition-all duration-200"
                         >
                           <Edit className="w-3 h-3" />
                           수정
@@ -1593,7 +1593,7 @@ export default function AdminCurriculum() {
                             e.stopPropagation();
                             handleDeleteCurriculum(curriculum.id);
                           }}
-                          className="flex items-center gap-1 text-red-600 border-red-300 hover:bg-red-50"
+                          className="flex items-center gap-1 text-red-600 border-red-300 hover:bg-red-50 hover:text-red-700 hover:border-red-400 transition-all duration-200"
                         >
                           <Trash2 className="w-3 h-3" />
                           삭제

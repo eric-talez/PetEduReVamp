@@ -797,6 +797,7 @@ export default function TrainerCertificationManagement() {
                         size="sm" 
                         variant="outline"
                         onClick={() => handleCertificationEdit(certification)}
+                        className="hover:bg-blue-50 hover:text-blue-600 hover:border-blue-300 transition-all duration-200"
                       >
                         <FileText className="h-4 w-4 mr-1" />
                         편집
@@ -806,7 +807,7 @@ export default function TrainerCertificationManagement() {
                           size="sm" 
                           variant="outline"
                           onClick={() => handleCertificationStatusChange(certification.id, 'revoke')}
-                          className="text-red-600 border-red-600 hover:bg-red-50"
+                          className="text-red-600 border-red-300 hover:bg-red-50 hover:text-red-700 hover:border-red-400 transition-all duration-200"
                         >
                           <XCircle className="h-4 w-4 mr-1" />
                           취소
@@ -817,7 +818,7 @@ export default function TrainerCertificationManagement() {
                           size="sm" 
                           variant="outline"
                           onClick={() => handleCertificationStatusChange(certification.id, 'activate')}
-                          className="text-green-600 border-green-600 hover:bg-green-50"
+                          className="text-green-600 border-green-300 hover:bg-green-50 hover:text-green-700 hover:border-green-400 transition-all duration-200"
                         >
                           <CheckCircle className="h-4 w-4 mr-1" />
                           활성화
