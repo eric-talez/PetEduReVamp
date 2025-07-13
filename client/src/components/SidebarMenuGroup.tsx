@@ -27,7 +27,7 @@ export function SidebarMenuGroup({
     <>
       {expanded ? (
         <div 
-          className="px-3 py-2 flex items-center justify-between cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition-all duration-200 shadow-sm hover:shadow-md border border-transparent hover:border-gray-200 dark:hover:border-gray-700 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2" 
+          className="px-3 py-2 flex items-center justify-between cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition-all duration-200 shadow-sm hover:shadow-md border border-transparent hover:border-gray-200 dark:hover:border-gray-700 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 hover:scale-105" 
           onClick={handleToggle}
           role="button"
           aria-expanded={isOpen}
@@ -61,7 +61,7 @@ export function SidebarMenuGroup({
           }}
         >
           <div className={cn(
-            "w-8 h-8 flex items-center justify-center rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer relative transition-all duration-200 shadow-sm hover:shadow-md border border-transparent hover:border-gray-200 dark:hover:border-gray-700 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+            "w-8 h-8 flex items-center justify-center rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer relative transition-all duration-200 shadow-sm hover:shadow-md border border-transparent hover:border-gray-200 dark:hover:border-gray-700 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 hover:scale-110"
           )}>
             {icon}
             <div className="absolute -top-1 -right-1 transition-transform duration-200">

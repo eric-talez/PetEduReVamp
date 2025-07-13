@@ -151,6 +151,15 @@ TALEZ is a comprehensive pet education and e-commerce platform that combines AI-
 
 ## Changelog
 
+- July 13, 2025. **SIDEBAR HOVER EFFECTS UNIFIED** - Standardized hover animations and transitions across all sidebar components:
+  - **Scale Animation**: Added consistent hover:scale-105 and hover:scale-110 animations for all interactive elements
+  - **Border Transitions**: Implemented consistent hover border colors (hover:border-primary/20 dark:hover:border-primary/30)
+  - **Shadow Effects**: Unified hover shadow transitions from shadow-sm to hover:shadow-md
+  - **Color Consistency**: Standardized hover text and background colors across all menu items
+  - **Responsive Feedback**: Enhanced visual feedback for all clickable elements with smooth transitions
+  - **Accessibility**: Maintained focus states and keyboard navigation while adding hover enhancements
+  - **Component Coverage**: Applied to Sidebar.tsx, SidebarMenuGroup.tsx, and AccessibleNavItem.tsx
+  - **Production Ready**: All hover effects now provide consistent user experience across the platform
 - July 13, 2025. **TRAINER CERTIFICATION MANAGEMENT TAB FONT COLORS FIXED** - Enhanced dark mode compatibility for all tab content:
   - **Tab Navigation**: Improved TabsList and TabsTrigger styling with proper color contrast for active/inactive states
   - **Content Titles**: Fixed all CardTitle elements with proper dark mode text colors (text-gray-900 dark:text-white)
