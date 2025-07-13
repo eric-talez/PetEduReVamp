@@ -72,28 +72,4 @@ export function setupProductionSecurity(app: Express) {
   });
 
   console.log('✅ Production security configured');
-}도 제한
-    skipSuccessfulRequests: true,
-    message: {
-      error: "로그인 시도가 너무 많습니다. 15분 후 다시 시도해주세요."
-    }
-  });
-
-  const apiRateLimit = rateLimit({
-    windowMs: 1 * 60 * 1000, // 1분
-    max: 60, // API 호출 제한
-    message: {
-      error: "API 호출 한도를 초과했습니다. 잠시 후 다시 시도해주세요."
-    }
-  });
-
-  // Rate Limiting 적용
-  app.use('/api/auth', authRateLimit);
-  app.use('/api', apiRateLimit);
-  app.use(strictRateLimit);
-
-  // 추가 보안 설정
-  app.disable('x-powered-by');
-  
-  console.log('🛡️ Production 보안 설정이 완료되었습니다.');
 }

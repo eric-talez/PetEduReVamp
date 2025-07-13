@@ -194,3 +194,32 @@ export const CompactSystemChart = ({ height = 200 }: ChartProps) => {
     </ResponsiveContainer>
   );
 };
+
+// 플랫폼 활동 차트 데이터
+const platformActivityData = [
+  { time: '09:00', logins: 45, registrations: 8, courses: 12 },
+  { time: '10:00', logins: 62, registrations: 15, courses: 18 },
+  { time: '11:00', logins: 89, registrations: 22, courses: 25 },
+  { time: '12:00', logins: 124, registrations: 28, courses: 31 },
+  { time: '13:00', logins: 98, registrations: 19, courses: 22 },
+  { time: '14:00', logins: 112, registrations: 25, courses: 28 },
+  { time: '15:00', logins: 89, registrations: 18, courses: 24 },
+  { time: '16:00', logins: 76, registrations: 12, courses: 19 },
+];
+
+export const PlatformActivityChart = ({ height = 300 }: ChartProps) => {
+  return (
+    <ResponsiveContainer width="100%" height={height}>
+      <LineChart data={platformActivityData}>
+        <CartesianGrid strokeDasharray="3 3" />
+        <XAxis dataKey="time" />
+        <YAxis />
+        <Tooltip />
+        <Legend />
+        <Line type="monotone" dataKey="logins" stroke="#3B82F6" strokeWidth={2} name="로그인" />
+        <Line type="monotone" dataKey="registrations" stroke="#10B981" strokeWidth={2} name="신규 가입" />
+        <Line type="monotone" dataKey="courses" stroke="#8B5CF6" strokeWidth={2} name="강좌 등록" />
+      </LineChart>
+    </ResponsiveContainer>
+  );
+};

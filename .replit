@@ -69,3 +69,10 @@ args = "node scripts/check-missing-endpoints.js"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "npm run dev"
+
+[languages.typescript]
+pattern = "**/{*.ts,*.tsx}"
+syntax = "typescript"
+
+[languages.typescript.languageServer]
+start = ["typescript-language-server", "--stdio"]

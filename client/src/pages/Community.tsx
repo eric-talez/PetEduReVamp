@@ -395,7 +395,180 @@ export default function Community() {
               ))}
             </div>
           )}
+        </TabsContent>
+        
+        <TabsContent value="recent" className="mt-6">
+          {isLoading ? (
+            <div className="text-center py-8">
+              <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
+              <p className="text-gray-600">게시글을 불러오는 중...</p>
+            </div>
+          ) : filteredPosts.length === 0 ? (
+            <div className="text-center py-8">
+              <p className="text-gray-600">등록된 게시글이 없습니다.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[...filteredPosts].sort((a, b) => new Date(b.createdAt || '').getTime() - new Date(a.createdAt || '').getTime()).map((post) => (
+                <Card key={post.id} className="p-4 hover:shadow-lg transition-shadow">
+                  <CardContent className="p-0">
+                    <div className="flex items-start space-x-3 mb-3">
+                      <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                        <span className="text-primary font-medium text-sm">
+                          {post.author?.name?.charAt(0) || 'U'}
+                        </span>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center space-x-2">
+                          <span className="font-medium text-sm">{post.author?.name || '익명'}</span>
+                          <Badge variant="secondary" className="text-xs">
+                            {post.tag || '일반'}
+                          </Badge>
+                        </div>
+                        <span className="text-xs text-gray-500">
+                          {new Date(post.createdAt || '').toLocaleDateString()}
+                        </span>
+                      </div>
+                    </div>
+                    
+                    <h3 className="font-medium text-lg mb-2 line-clamp-2">{post.title}</h3>
+                    <p className="text-gray-600 text-sm mb-3 line-clamp-3">{post.content}</p>
+                    
+                    {post.linkInfo && (
+                      <div className="mb-3 border rounded-lg p-3 bg-gray-50">
+                        <div className="flex gap-3">
+                          {post.linkInfo.image && (
+                            <img 
+                              src={post.linkInfo.image} 
+                              alt={post.linkInfo.title}
+                              className="w-16 h-16 object-cover rounded"
+                              onError={(e) => {
+                                e.currentTarget.style.display = 'none';
+                              }}
+                            />
+                          )}
+                          <div className="flex-1">
+                            <h4 className="font-medium text-sm text-gray-900 line-clamp-2">
+                              {post.linkInfo.title}
+                            </h4>
+                            <p className="text-xs text-gray-500 line-clamp-2">
+                              {post.linkInfo.description}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    
+                    <div className="flex items-center justify-between text-sm text-gray-500">
+                      <div className="flex items-center space-x-4">
+                        <span className="flex items-center gap-1">
+                          <MessageSquare className="w-4 h-4" />
+                          {post.comments || 0}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <TrendingUp className="w-4 h-4" />
+                          {post.likes || 0}
+                        </span>
+                      </div>
+                      <span>조회 {post.views || 0}</span>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </TabsContent>
+        
+        <TabsContent value="filter" className="mt-6">
+          <div className="mb-4">
+            <div className="flex flex-wrap gap-2">
+              {['훈련 팁', '건강 관리', '영양 정보', '행동 교정', '사회화', '그루밍', '놀이', '응급처치'].map(tag => (
+                <Button key={tag} variant="outline" size="sm" className="text-sm">
+                  {tag}
+                </Button>
+              ))}
+            </div>
           </div>
+          
+          {isLoading ? (
+            <div className="text-center py-8">
+              <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
+              <p className="text-gray-600">게시글을 불러오는 중...</p>
+            </div>
+          ) : filteredPosts.length === 0 ? (
+            <div className="text-center py-8">
+              <p className="text-gray-600">등록된 게시글이 없습니다.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredPosts.map((post) => (
+                <Card key={post.id} className="p-4 hover:shadow-lg transition-shadow">
+                  <CardContent className="p-0">
+                    <div className="flex items-start space-x-3 mb-3">
+                      <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                        <span className="text-primary font-medium text-sm">
+                          {post.author?.name?.charAt(0) || 'U'}
+                        </span>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center space-x-2">
+                          <span className="font-medium text-sm">{post.author?.name || '익명'}</span>
+                          <Badge variant="secondary" className="text-xs">
+                            {post.tag || '일반'}
+                          </Badge>
+                        </div>
+                        <span className="text-xs text-gray-500">
+                          {new Date(post.createdAt || '').toLocaleDateString()}
+                        </span>
+                      </div>
+                    </div>
+                    
+                    <h3 className="font-medium text-lg mb-2 line-clamp-2">{post.title}</h3>
+                    <p className="text-gray-600 text-sm mb-3 line-clamp-3">{post.content}</p>
+                    
+                    {post.linkInfo && (
+                      <div className="mb-3 border rounded-lg p-3 bg-gray-50">
+                        <div className="flex gap-3">
+                          {post.linkInfo.image && (
+                            <img 
+                              src={post.linkInfo.image} 
+                              alt={post.linkInfo.title}
+                              className="w-16 h-16 object-cover rounded"
+                              onError={(e) => {
+                                e.currentTarget.style.display = 'none';
+                              }}
+                            />
+                          )}
+                          <div className="flex-1">
+                            <h4 className="font-medium text-sm text-gray-900 line-clamp-2">
+                              {post.linkInfo.title}
+                            </h4>
+                            <p className="text-xs text-gray-500 line-clamp-2">
+                              {post.linkInfo.description}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    
+                    <div className="flex items-center justify-between text-sm text-gray-500">
+                      <div className="flex items-center space-x-4">
+                        <span className="flex items-center gap-1">
+                          <MessageSquare className="w-4 h-4" />
+                          {post.comments || 0}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <TrendingUp className="w-4 h-4" />
+                          {post.likes || 0}
+                        </span>
+                      </div>
+                      <span>조회 {post.views || 0}</span>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
         </TabsContent>
       </Tabs>
       
@@ -409,15 +582,13 @@ export default function Community() {
             
             <div className="flex flex-col space-y-4">
               <div className="flex gap-4 items-start pb-4 border-b border-gray-100 dark:border-gray-800">
-                <Avatar 
-                  src="https://images.unsplash.com/photo-1607990281513-2c110a25bd8c"
-                  alt="김훈련 트레이너"
-                  size="md"
-                />
+                <div className="w-10 h-10 rounded-full bg-green-500 flex items-center justify-center">
+                  <span className="text-white font-medium text-sm">김</span>
+                </div>
                 <div>
                   <div className="flex items-center mb-1">
                     <span className="font-medium mr-2">김훈련 트레이너</span>
-                    <Badge variant="accent" size="sm">인기 훈련사</Badge>
+                    <Badge variant="success" className="text-xs">인기 훈련사</Badge>
                   </div>
                   <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">
                     강아지가 소파에 올라가는 문제를 해결하려면 일관성 있게 규칙을 지키는 것이 중요합니다. 
@@ -428,15 +599,13 @@ export default function Community() {
               </div>
               
               <div className="flex gap-4 items-start">
-                <Avatar 
-                  src="https://images.unsplash.com/photo-1548535537-3cfaf1fc327c"
-                  alt="박민첩 트레이너"
-                  size="md"
-                />
+                <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center">
+                  <span className="text-white font-medium text-sm">박</span>
+                </div>
                 <div>
                   <div className="flex items-center mb-1">
                     <span className="font-medium mr-2">박민첩 트레이너</span>
-                    <Badge variant="blue" size="sm">어질리티 전문가</Badge>
+                    <Badge variant="info" className="text-xs">어질리티 전문가</Badge>
                   </div>
                   <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">
                     장난감을 이용한 10분 놀이도 좋은 운동이 됩니다. 
@@ -456,14 +625,6 @@ export default function Community() {
         onOpenChange={setIsPostFormOpen}
         onPostCreated={(newPost) => {
           console.log('커뮤니티 - 새 게시글 추가됨:', newPost);
-          
-          // 새 게시글을 맨 앞에 추가
-          setPosts(prevPosts => {
-            const updatedPosts = [newPost, ...prevPosts];
-            console.log('커뮤니티 - 전체 게시글 수:', updatedPosts.length);
-            console.log('커뮤니티 - 첫 번째 게시글:', updatedPosts[0]?.title);
-            return updatedPosts;
-          });
           
           // 성공 알림
           setTimeout(() => {
