@@ -686,7 +686,7 @@ export function NewSidebar({
                       onClick={handleItemClick}
                       show={true}
                     >
-                      가격 및 수수료 관리
+                      수수료 관리
                     </NavItem>
 
                     <NavItem
