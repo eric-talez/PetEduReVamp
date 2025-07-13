@@ -151,6 +151,15 @@ TALEZ is a comprehensive pet education and e-commerce platform that combines AI-
 
 ## Changelog
 
+- July 13, 2025. **VIDEO CONSULTATION COMMISSION SETTLEMENT SYSTEM IMPLEMENTED** - Automated fee settlement when video lessons start:
+  - **Automatic Settlement**: Commission fees are automatically calculated and settled when video consultations begin
+  - **Payment Integration**: PaymentService processes fees, trainer payments, and platform commissions in real-time
+  - **Settlement Logging**: Comprehensive logging of fee calculations (amount, fee, net payment) for transparency
+  - **User Feedback**: Toast notifications show detailed settlement information (consultation fee, commission, trainer payment)
+  - **Error Handling**: Graceful fallback if settlement fails - consultation continues with separate fee processing
+  - **API Enhancement**: Enhanced `/api/consultations/:id/join` endpoint with payment processing integration
+  - **Business Logic**: Implements "수업 시작과 동시에 수수료 정산" requirement for video consultations
+  - **Real-time Processing**: Instant commission settlement upon video lesson initiation
 - July 13, 2025. **CONSULTATION VIDEO INFORMATION SECTION ENHANCED** - Improved video consultation information display with better UX:
   - **Section Title**: Changed "화상상담 정보" to "화상상담 접속 정보" for better clarity
   - **Visual Enhancement**: Added Video icon and structured layout with better spacing

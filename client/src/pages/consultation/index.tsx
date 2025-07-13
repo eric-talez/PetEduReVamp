@@ -231,7 +231,7 @@ export default function ConsultationStatusPage() {
     setShowDetails(true);
   };
 
-  const handleJoinConsultation = (consultation: Consultation) => {
+  const handleJoinConsultation = async (consultation: Consultation) => {
     console.log('상담 참여하기 클릭:', consultation.id);
     
     // 현재 시간과 상담 시간 비교
@@ -262,25 +262,65 @@ export default function ConsultationStatusPage() {
     
     // 화상상담 참여 로직
     if (consultation.type === 'video') {
-      // 실제 Zoom 링크로 연결 (훈련사별 고정 Zoom 룸)
-      const zoomLinks: { [key: string]: string } = {
-        '김훈련사': 'https://zoom.us/j/123456789?pwd=abcd1234',
-        '박전문가': 'https://zoom.us/j/987654321?pwd=efgh5678',
-        '이준호 어질리티 코치': 'https://zoom.us/j/555666777?pwd=ijkl9012',
-        '최예린 행동분석가': 'https://zoom.us/j/111222333?pwd=mnop3456'
-      };
-      
-      const zoomUrl = zoomLinks[consultation.trainerName] || 'https://zoom.us/j/default';
-      
-      toast({
-        title: "화상상담 연결 중",
-        description: `${consultation.trainerName}의 Zoom 룸으로 연결합니다.`,
-      });
-      
-      // Zoom 앱으로 연결 시도, 실패시 웹 브라우저로 연결
-      setTimeout(() => {
-        window.open(zoomUrl, '_blank');
-      }, 1000);
+      try {
+        // 화상수업 시작 및 수수료 정산 API 호출
+        const response = await fetch(`/api/consultations/${consultation.id}/join`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            userId: 3 // 현재 사용자 ID (실제로는 인증 상태에서 가져옴)
+          })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          // 수수료 정산 완료 메시지
+          if (result.paymentInfo) {
+            toast({
+              title: "화상상담 시작 및 수수료 정산 완료",
+              description: `상담료: ${result.paymentInfo.amount?.toLocaleString()}원, 수수료: ${result.paymentInfo.feeAmount?.toLocaleString()}원, 정산액: ${result.paymentInfo.netAmount?.toLocaleString()}원`,
+              duration: 5000,
+            });
+          } else {
+            toast({
+              title: "화상상담 연결 중",
+              description: `${consultation.trainerName}의 화상상담에 참여합니다.`,
+            });
+          }
+
+          // 실제 Zoom 링크로 연결 (훈련사별 고정 Zoom 룸)
+          const zoomLinks: { [key: string]: string } = {
+            '김훈련사': 'https://zoom.us/j/123456789?pwd=abcd1234',
+            '박전문가': 'https://zoom.us/j/987654321?pwd=efgh5678',
+            '이준호 어질리티 코치': 'https://zoom.us/j/555666777?pwd=ijkl9012',
+            '최예린 행동분석가': 'https://zoom.us/j/111222333?pwd=mnop3456'
+          };
+          
+          const zoomUrl = zoomLinks[consultation.trainerName] || result.videoCallUrl || 'https://zoom.us/j/default';
+          
+          // Zoom 앱으로 연결 시도, 실패시 웹 브라우저로 연결
+          setTimeout(() => {
+            window.open(zoomUrl, '_blank');
+          }, 1000);
+
+        } else {
+          toast({
+            title: "상담 참여 실패",
+            description: result.error || "상담 참여 중 오류가 발생했습니다.",
+            variant: "destructive",
+          });
+        }
+      } catch (error) {
+        console.error('상담 참여 API 오류:', error);
+        toast({
+          title: "연결 오류",
+          description: "서버 연결 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.",
+          variant: "destructive",
+        });
+      }
       
     } else if (consultation.type === 'phone') {
       alert(`전화상담이 곧 시작됩니다. 연락처: ${consultation.trainerName}`);

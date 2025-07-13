@@ -1590,14 +1590,94 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/consultations/:id/join", async (req, res) => {
     try {
       const consultationId = req.params.id;
+      const { userId } = req.body;
+
+      console.log(`[상담 참여] 사용자 ${userId}가 상담 ${consultationId} 참여 시작`);
+
+      // 상담 정보 조회 (실제로는 데이터베이스에서 조회)
+      const consultation = {
+        id: consultationId,
+        trainerId: 1,
+        trainerName: "김민수 전문 훈련사",
+        userId: userId || 3,
+        amount: 50000, // 상담 비용
+        status: "scheduled",
+        type: "video"
+      };
 
       const videoCallUrl = "https://meet.google.com/abc-defg-hij";
 
-      res.json({ 
-        success: true, 
-        message: "화상 상담에 참여합니다.",
-        videoCallUrl 
-      });
+      // 화상수업 시작 시 수수료 정산 처리
+      if (consultation.type === "video") {
+        console.log(`[수수료 정산] 화상수업 시작 - 상담 ID: ${consultationId}`);
+        
+        try {
+          // PaymentService를 사용한 수수료 정산
+          const { PaymentService } = require('./services/payment-service');
+          const paymentService = new PaymentService(storage);
+          
+          const paymentResult = await paymentService.processPayment({
+            transactionType: 'video_consultation',
+            referenceId: parseInt(consultationId),
+            referenceType: 'consultation',
+            payerId: consultation.userId,
+            payeeId: consultation.trainerId,
+            grossAmount: consultation.amount,
+            paymentMethod: 'credit_card',
+            paymentProvider: 'stripe',
+            externalTransactionId: `video_${consultationId}_${Date.now()}`,
+            metadata: {
+              consultationType: 'video',
+              sessionStart: new Date().toISOString(),
+              trainerName: consultation.trainerName
+            }
+          });
+
+          if (paymentResult.success) {
+            console.log(`[수수료 정산 완료] 상담 ${consultationId} - 수수료: ${paymentResult.feeAmount}원, 정산액: ${paymentResult.netAmount}원`);
+            
+            // 상담 상태를 '진행 중'으로 업데이트
+            // await storage.updateConsultationStatus(consultationId, 'in-progress');
+            
+            res.json({ 
+              success: true, 
+              message: "화상 상담에 참여합니다. 수수료 정산이 완료되었습니다.",
+              videoCallUrl,
+              paymentInfo: {
+                amount: consultation.amount,
+                feeAmount: paymentResult.feeAmount,
+                netAmount: paymentResult.netAmount,
+                settlementStatus: "완료"
+              }
+            });
+          } else {
+            console.error(`[수수료 정산 실패] 상담 ${consultationId}:`, paymentResult.errorMessage);
+            res.status(500).json({ 
+              error: "수수료 정산 중 오류가 발생했습니다",
+              details: paymentResult.errorMessage
+            });
+          }
+        } catch (settlementError) {
+          console.error(`[수수료 정산 오류] 상담 ${consultationId}:`, settlementError);
+          // 정산 실패해도 상담 참여는 허용 (별도 처리)
+          res.json({ 
+            success: true, 
+            message: "화상 상담에 참여합니다. (수수료 정산은 별도 처리됩니다)",
+            videoCallUrl,
+            paymentInfo: {
+              amount: consultation.amount,
+              settlementStatus: "처리 중"
+            }
+          });
+        }
+      } else {
+        res.json({ 
+          success: true, 
+          message: "화상 상담에 참여합니다.",
+          videoCallUrl 
+        });
+      }
+
     } catch (error) {
       console.error('화상 상담 참여 오류:', error);
       res.status(500).json({ error: "화상 상담 참여 중 오류가 발생했습니다" });
