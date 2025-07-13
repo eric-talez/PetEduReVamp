@@ -1352,7 +1352,7 @@ export default function AdminCurriculum() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <Button 
                 onClick={handleStartCreation}
                 className="h-20 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white"
@@ -1465,7 +1465,7 @@ export default function AdminCurriculum() {
                       <Button 
                         variant="outline" 
                         size="sm"
-                        className="flex items-center gap-1"
+                        className="flex items-center gap-1 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800/20"
                         onClick={() => handlePreviewCurriculum(template)}
                       >
                         <Eye className="w-4 h-4" />
@@ -1483,8 +1483,8 @@ export default function AdminCurriculum() {
             <Card>
               <CardHeader>
                 <div className="flex items-center justify-between">
-                  <CardTitle className="flex items-center gap-2">
-                    <BookOpen className="w-5 h-5" />
+                  <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-white">
+                    <BookOpen className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                     등록된 커리큘럼 (관리중)
                   </CardTitle>
                   <div className="flex gap-2">
@@ -1500,7 +1500,7 @@ export default function AdminCurriculum() {
                       onClick={() => setIsCreating(true)}
                       size="sm"
                       variant="outline"
-                      className="flex items-center gap-1"
+                      className="flex items-center gap-1 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800/20"
                     >
                       <Settings className="w-4 h-4" />
                       고급 생성
@@ -1517,7 +1517,7 @@ export default function AdminCurriculum() {
                   >
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
-                        <h3 className="font-medium">{curriculum.title}</h3>
+                        <h3 className="font-medium text-gray-900 dark:text-white">{curriculum.title}</h3>
                         <p className="text-sm text-gray-600 dark:text-gray-300 mt-1 line-clamp-2">
                           {curriculum.description}
                         </p>
