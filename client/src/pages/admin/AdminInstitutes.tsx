@@ -45,6 +45,8 @@ export default function AdminInstitutes() {
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isChangeSubscriptionOpen, setIsChangeSubscriptionOpen] = useState(false);
+  const [selectedSubscriptionPlan, setSelectedSubscriptionPlan] = useState("");
   const [newInstitute, setNewInstitute] = useState({
     name: "",
     description: "",
@@ -182,6 +184,51 @@ export default function AdminInstitutes() {
       toast({
         title: '삭제 실패',
         description: error.message || '기관 삭제 중 오류가 발생했습니다.',
+        variant: 'destructive'
+      });
+    }
+  };
+
+  // 구독 플랜 변경 함수
+  const handleChangeSubscription = (institute: any) => {
+    setSelectedInstitute(institute);
+    setSelectedSubscriptionPlan(institute.subscriptionPlan || "");
+    setIsChangeSubscriptionOpen(true);
+  };
+
+  // 구독 플랜 변경 처리
+  const handleSubscriptionChange = async (paymentMethod: 'admin' | 'institute') => {
+    if (!selectedInstitute || !selectedSubscriptionPlan) return;
+
+    try {
+      if (paymentMethod === 'admin') {
+        // 관리자가 대신 결제
+        await apiRequest('POST', `/api/admin/institutes/${selectedInstitute.id}/admin-payment`, {
+          subscriptionPlan: selectedSubscriptionPlan
+        });
+        toast({
+          title: '구독 플랜 변경 완료',
+          description: '관리자 결제로 구독 플랜이 변경되었습니다.'
+        });
+      } else {
+        // 기관 관리자가 직접 결제
+        await apiRequest('POST', `/api/admin/institutes/${selectedInstitute.id}/request-payment`, {
+          subscriptionPlan: selectedSubscriptionPlan
+        });
+        toast({
+          title: '결제 요청 완료',
+          description: '기관 관리자에게 결제 요청이 전송되었습니다.'
+        });
+      }
+      
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/institutes'] });
+      setIsChangeSubscriptionOpen(false);
+      setSelectedInstitute(null);
+      setSelectedSubscriptionPlan("");
+    } catch (error: any) {
+      toast({
+        title: '구독 플랜 변경 실패',
+        description: error.message || '구독 플랜 변경 중 오류가 발생했습니다.',
         variant: 'destructive'
       });
     }
@@ -705,6 +752,14 @@ export default function AdminInstitutes() {
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => handleChangeSubscription(institute)}
+                      className="hover:bg-purple-50 hover:text-purple-600 hover:border-purple-300"
+                    >
+                      <CreditCard className="h-4 w-4" />
+                    </Button>
                   </div>
                 </div>
               ))
@@ -857,6 +912,137 @@ export default function AdminInstitutes() {
             </Button>
             <Button variant="destructive" onClick={confirmDeleteInstitute}>
               삭제
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* 구독 플랜 변경 다이얼로그 */}
+      <Dialog open={isChangeSubscriptionOpen} onOpenChange={setIsChangeSubscriptionOpen}>
+        <DialogContent className="sm:max-w-[700px]">
+          <DialogHeader>
+            <DialogTitle>구독 플랜 변경</DialogTitle>
+            <DialogDescription>
+              "{selectedInstitute?.name}" 기관의 구독 플랜을 변경하고 결제를 처리합니다.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-6">
+            {/* 현재 플랜 정보 */}
+            <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
+              <h4 className="font-semibold mb-2">현재 구독 플랜</h4>
+              <div className="flex items-center justify-between">
+                <span>{selectedInstitute?.subscriptionPlanInfo?.name || selectedInstitute?.subscriptionPlan}</span>
+                <span className="text-lg font-bold">
+                  월 {selectedInstitute?.subscriptionPlanInfo?.price ? formatPrice(selectedInstitute.subscriptionPlanInfo.price) : '0'}원
+                </span>
+              </div>
+            </div>
+
+            {/* 새 플랜 선택 */}
+            <div className="space-y-4">
+              <Label htmlFor="new-plan" className="text-base font-medium">새 구독 플랜 선택</Label>
+              <Select value={selectedSubscriptionPlan} onValueChange={setSelectedSubscriptionPlan}>
+                <SelectTrigger>
+                  <SelectValue placeholder="구독 플랜을 선택하세요" />
+                </SelectTrigger>
+                <SelectContent>
+                  {(Array.isArray(subscriptionPlans) ? subscriptionPlans : []).map((plan: SubscriptionPlan) => (
+                    <SelectItem key={plan.code} value={plan.code}>
+                      <div className="flex items-center justify-between w-full">
+                        <span>{plan.name}</span>
+                        <span className="text-primary font-semibold ml-4">
+                          월 {formatPrice(plan.price)}원
+                        </span>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* 선택된 플랜 상세 정보 */}
+            {selectedSubscriptionPlan && (
+              <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
+                <h4 className="font-semibold mb-2">선택한 플랜 정보</h4>
+                {(() => {
+                  const plans = Array.isArray(subscriptionPlans) ? subscriptionPlans : [];
+                  const selectedPlan = plans.find((p: SubscriptionPlan) => p.code === selectedSubscriptionPlan);
+                  if (!selectedPlan) return null;
+                  
+                  return (
+                    <div className="space-y-2">
+                      <div className="flex justify-between">
+                        <span>플랜명:</span>
+                        <span className="font-medium">{selectedPlan.name}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>월 구독료:</span>
+                        <span className="font-bold text-primary">{formatPrice(selectedPlan.price)}원</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>최대 회원 수:</span>
+                        <span>{selectedPlan.maxMembers}명</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>비디오 시간:</span>
+                        <span>{selectedPlan.maxVideoHours}시간</span>
+                      </div>
+                      <div className="mt-3">
+                        <span className="block mb-1">포함 기능:</span>
+                        <div className="flex flex-wrap gap-1">
+                          {selectedPlan.features.basicLMS && <Badge variant="secondary">기본 LMS</Badge>}
+                          {selectedPlan.features.basicVideoConsultation && <Badge variant="secondary">화상 상담</Badge>}
+                          {selectedPlan.features.aiRecommendation && <Badge variant="secondary">AI 추천</Badge>}
+                          {selectedPlan.features.customBranding && <Badge variant="secondary">커스텀 브랜딩</Badge>}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })()}
+              </div>
+            )}
+
+            {/* 결제 방법 선택 */}
+            <div className="space-y-4">
+              <Label className="text-base font-medium">결제 방법</Label>
+              <RadioGroup defaultValue="admin" className="space-y-3">
+                <div className="flex items-center space-x-2 p-3 border rounded-lg">
+                  <RadioGroupItem value="admin" id="admin-payment" />
+                  <Label htmlFor="admin-payment" className="flex-1 cursor-pointer">
+                    <div className="font-medium">관리자 대신 결제</div>
+                    <div className="text-sm text-muted-foreground">
+                      관리자가 직접 결제하고 즉시 플랜을 변경합니다.
+                    </div>
+                  </Label>
+                </div>
+                <div className="flex items-center space-x-2 p-3 border rounded-lg">
+                  <RadioGroupItem value="institute" id="institute-payment" />
+                  <Label htmlFor="institute-payment" className="flex-1 cursor-pointer">
+                    <div className="font-medium">기관 관리자 직접 결제</div>
+                    <div className="text-sm text-muted-foreground">
+                      기관 관리자에게 결제 요청을 전송합니다.
+                    </div>
+                  </Label>
+                </div>
+              </RadioGroup>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsChangeSubscriptionOpen(false)}>
+              취소
+            </Button>
+            <Button 
+              onClick={() => handleSubscriptionChange('admin')}
+              disabled={!selectedSubscriptionPlan}
+            >
+              관리자 결제로 변경
+            </Button>
+            <Button 
+              variant="outline"
+              onClick={() => handleSubscriptionChange('institute')}
+              disabled={!selectedSubscriptionPlan}
+            >
+              기관에 결제 요청
             </Button>
           </DialogFooter>
         </DialogContent>

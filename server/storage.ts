@@ -6,6 +6,7 @@ class Storage {
   registrations: any[] = [];
   institutes: any[] = [];
   subscriptionPlans: any[] = [];
+  paymentRequests: any[] = [];
 
   constructor() {
     console.log('🔄 운영 환경용 메모리 저장소 초기화...');
@@ -543,6 +544,34 @@ class Storage {
 
     this.institutes.splice(index, 1);
     return true;
+  }
+
+  getInstitute(instituteId: number): any {
+    return this.institutes.find(i => i.id === instituteId);
+  }
+
+  createPaymentRequest(paymentRequest: any): Promise<any> {
+    if (!this.paymentRequests) {
+      this.paymentRequests = [];
+    }
+    this.paymentRequests.push(paymentRequest);
+    return Promise.resolve(paymentRequest);
+  }
+
+  getPaymentRequests(): any[] {
+    return this.paymentRequests || [];
+  }
+
+  updatePaymentRequest(requestId: string, updateData: any): any {
+    if (!this.paymentRequests) {
+      this.paymentRequests = [];
+    }
+    const request = this.paymentRequests.find(r => r.id === requestId);
+    if (request) {
+      Object.assign(request, updateData);
+      return request;
+    }
+    return null;
   }
 
   getInstituteSubscriptionInfo(instituteId: number) {

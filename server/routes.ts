@@ -688,6 +688,128 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // 관리자 대신 결제 처리
+  app.post('/api/admin/institutes/:id/admin-payment', requireAuth('admin'), async (req, res) => {
+    try {
+      const instituteId = parseInt(req.params.id);
+      const { subscriptionPlan } = req.body;
+
+      // 구독 플랜 정보 조회
+      const plan = await storage.getSubscriptionPlan(subscriptionPlan);
+      if (!plan) {
+        return res.status(400).json({ 
+          error: '유효하지 않은 구독 플랜입니다.' 
+        });
+      }
+
+      // 결제 처리 시뮬레이션 (관리자 대신 결제)
+      const paymentResult = {
+        success: true,
+        transactionId: 'admin_txn_' + Date.now(),
+        amount: plan.price,
+        currency: 'KRW',
+        method: 'admin_payment',
+        status: 'completed',
+        paidAt: new Date().toISOString(),
+        paidBy: 'admin'
+      };
+
+      // 구독 상태 업데이트
+      const updateData = {
+        subscriptionPlan: plan.code,
+        subscriptionStatus: 'active',
+        paymentStatus: 'paid',
+        lastPaymentDate: new Date().toISOString(),
+        nextPaymentDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+        maxMembers: plan.maxMembers,
+        maxVideoHours: plan.maxVideoHours,
+        featuresEnabled: plan.features,
+        monthlyPrice: plan.price,
+        paymentMethod: 'admin_payment'
+      };
+
+      const updatedInstitute = await storage.updateInstituteSubscription(instituteId, updateData);
+      
+      if (!updatedInstitute) {
+        return res.status(404).json({ 
+          error: '기관을 찾을 수 없습니다.' 
+        });
+      }
+
+      res.json({
+        success: true,
+        message: '관리자 결제로 구독 플랜이 변경되었습니다.',
+        institute: updatedInstitute,
+        payment: paymentResult,
+        subscriptionPlan: plan
+      });
+
+    } catch (error) {
+      console.error('[Admin] 관리자 결제 처리 오류:', error);
+      res.status(500).json({ 
+        error: '관리자 결제 처리 중 오류가 발생했습니다.' 
+      });
+    }
+  });
+
+  // 기관 관리자 결제 요청
+  app.post('/api/admin/institutes/:id/request-payment', requireAuth('admin'), async (req, res) => {
+    try {
+      const instituteId = parseInt(req.params.id);
+      const { subscriptionPlan } = req.body;
+
+      // 구독 플랜 정보 조회
+      const plan = await storage.getSubscriptionPlan(subscriptionPlan);
+      if (!plan) {
+        return res.status(400).json({ 
+          error: '유효하지 않은 구독 플랜입니다.' 
+        });
+      }
+
+      // 기관 정보 조회
+      const institute = await storage.getInstitute(instituteId);
+      if (!institute) {
+        return res.status(404).json({ 
+          error: '기관을 찾을 수 없습니다.' 
+        });
+      }
+
+      // 결제 요청 생성
+      const paymentRequest = {
+        id: 'req_' + Date.now(),
+        instituteId: instituteId,
+        instituteName: institute.name,
+        subscriptionPlan: plan.code,
+        planName: plan.name,
+        amount: plan.price,
+        currency: 'KRW',
+        status: 'pending',
+        requestedAt: new Date().toISOString(),
+        requestedBy: 'admin',
+        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString() // 7일 후 만료
+      };
+
+      // 결제 요청 저장 (실제로는 데이터베이스에 저장)
+      await storage.createPaymentRequest(paymentRequest);
+
+      // 기관 관리자에게 이메일 알림 전송 (시뮬레이션)
+      console.log(`[Payment Request] 기관 ${institute.name}에 결제 요청 전송:`, paymentRequest);
+
+      res.json({
+        success: true,
+        message: '기관 관리자에게 결제 요청이 전송되었습니다.',
+        paymentRequest,
+        subscriptionPlan: plan
+      });
+
+    } catch (error) {
+      console.error('[Admin] 결제 요청 처리 오류:', error);
+      res.status(500).json({ 
+        error: '결제 요청 처리 중 오류가 발생했습니다.' 
+      });
+    }
+  });
+
   // 기관 기능 접근 권한 확인
   app.get('/api/institutes/:id/access/:feature', async (req, res) => {
     try {
