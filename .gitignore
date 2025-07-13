@@ -4,3 +4,31 @@ dist
 server/public
 vite.config.ts.*
 *.tar.gz
+
+# 환경 변수 파일
+.env
+.env.local
+.env.production
+.env.development
+
+# 로그 파일
+logs/
+*.log
+
+# 시스템 파일
+.DS_Store
+Thumbs.db
+
+# 임시 파일
+temp/
+tmp/
+*.tmp
+*.temp
+
+# 빌드 출력
+build/
+out/
+
+# 배포 관련
+.deploy/
+deploy.log

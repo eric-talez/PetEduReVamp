@@ -485,3 +485,33 @@ TALEZ is a comprehensive pet education and e-commerce platform that combines AI-
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
+
+## Git Integration Setup
+
+The project now includes comprehensive Git-based deployment capabilities:
+
+### Repository Structure
+- **Main Branch**: Production-ready code
+- **Develop Branch**: Development and testing
+- **Feature Branches**: Individual feature development
+
+### Deployment Scripts
+- `deploy-from-git.sh`: Automated deployment from Git repository
+- `setup-server.sh`: Complete server initialization script
+- `.github/workflows/deploy.yml`: GitHub Actions CI/CD pipeline
+
+### Environment Management
+- `.env.example`: Template for environment variables
+- `.gitignore`: Updated to exclude sensitive files
+- Production-ready configuration files
+
+### Deployment Options
+1. **Manual Git Deployment**: Use `deploy-from-git.sh` script
+2. **Automated CI/CD**: GitHub Actions workflow
+3. **Traditional PM2**: Direct PM2 process management
+
+### Server Setup Process
+1. Clone repository to `/var/www/talez-platform`
+2. Configure environment variables from `.env.example`
+3. Run automated deployment script
+4. Monitor with PM2 process manager

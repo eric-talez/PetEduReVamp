@@ -55,7 +55,42 @@ PORT=5000
 
 ## 🚀 배포 방법
 
-### Option 1: Docker 배포 (권장)
+### Option 1: Git 기반 배포 (권장)
+
+#### 1. 서버 초기 설정
+```bash
+# 서버 초기 설정 스크립트 실행
+chmod +x setup-server.sh
+./setup-server.sh
+```
+
+#### 2. Git 저장소 연결
+```bash
+# 원격 저장소 확인
+git remote -v
+
+# 원격 저장소 추가 (필요한 경우)
+git remote add origin https://github.com/your-username/talez-platform.git
+
+# 소스 코드 업로드
+git add .
+git commit -m "Initial commit: TALEZ platform production ready"
+git push -u origin main
+```
+
+#### 3. 서버에서 배포
+```bash
+# 서버에서 프로젝트 클론
+cd /var/www
+git clone https://github.com/your-username/talez-platform.git
+cd talez-platform
+
+# Git 기반 자동 배포
+chmod +x deploy-from-git.sh
+./deploy-from-git.sh
+```
+
+### Option 2: Docker 배포
 
 #### 1. Docker 이미지 빌드
 ```bash
