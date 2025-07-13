@@ -252,6 +252,7 @@ export default function HealthRecordPage() {
                     variant="outline" 
                     size="sm"
                     onClick={() => handleEditPet(selectedPet)}
+                    className="hover:bg-blue-50 hover:text-blue-600 hover:border-blue-300 transition-all duration-200"
                   >
                     <FileText className="w-4 h-4 mr-2" />
                     반려견 등록 프로필 수정
@@ -612,7 +613,7 @@ export default function HealthRecordPage() {
               <Button type="button" variant="outline" onClick={() => setIsPetEditDialogOpen(false)}>
                 취소
               </Button>
-              <Button type="submit" disabled={updatePetMutation.isPending}>
+              <Button type="submit" disabled={updatePetMutation.isPending} className="hover:bg-blue-50 hover:text-blue-600 hover:border-blue-300 transition-all duration-200">
                 {updatePetMutation.isPending ? '수정 중...' : '수정'}
               </Button>
             </div>
