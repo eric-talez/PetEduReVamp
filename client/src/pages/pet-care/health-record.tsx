@@ -240,7 +240,7 @@ export default function HealthRecordPage() {
             <div className="flex gap-2">
               <Dialog open={isPetAddDialogOpen} onOpenChange={setIsPetAddDialogOpen}>
                 <DialogTrigger asChild>
-                  <Button variant="outline" size="sm">
+                  <Button variant="outline" size="sm" className="text-green-600 border-green-300 hover:bg-green-50 hover:text-green-600 hover:border-green-300 transition-all duration-200">
                     <Plus className="w-4 h-4 mr-2" />
                     반려견 추가 등록하기
                   </Button>
@@ -252,13 +252,13 @@ export default function HealthRecordPage() {
                     variant="outline" 
                     size="sm"
                     onClick={() => handleEditPet(selectedPet)}
-                    className="hover:bg-blue-50 hover:text-blue-600 hover:border-blue-300 transition-all duration-200"
+                    className="text-blue-600 border-blue-300 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-300 transition-all duration-200"
                   >
                     <FileText className="w-4 h-4 mr-2" />
                     반려견 등록 프로필 수정
                   </Button>
                   <Link href={`/pet-care/pet-detail/${selectedPet.id}`}>
-                    <Button variant="outline" size="sm">
+                    <Button variant="outline" size="sm" className="text-gray-600 border-gray-300 hover:bg-gray-50 hover:text-gray-800 hover:border-gray-400 transition-all duration-200">
                       <Eye className="w-4 h-4 mr-2" />
                       케어일지 상세보기
                     </Button>
@@ -613,7 +613,7 @@ export default function HealthRecordPage() {
               <Button type="button" variant="outline" onClick={() => setIsPetEditDialogOpen(false)}>
                 취소
               </Button>
-              <Button type="submit" disabled={updatePetMutation.isPending} className="hover:bg-blue-50 hover:text-blue-600 hover:border-blue-300 transition-all duration-200">
+              <Button type="submit" disabled={updatePetMutation.isPending} variant="outline" className="text-blue-600 border-blue-300 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-300 transition-all duration-200">
                 {updatePetMutation.isPending ? '수정 중...' : '수정'}
               </Button>
             </div>
