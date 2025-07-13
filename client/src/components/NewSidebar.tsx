@@ -45,7 +45,9 @@ import {
   DollarSign,
   Gift,
   Percent,
-  Tag
+  Tag,
+  PercentIcon,
+  Calculator
 } from "lucide-react";
 
 interface NavItemProps {
@@ -685,6 +687,26 @@ export function NewSidebar({
                       show={true}
                     >
                       상품 가격 관리
+                    </NavItem>
+
+                    <NavItem
+                      href="/admin/commissions"
+                      icon={<PercentIcon className="w-5 h-5 mr-2" />}
+                      active={isActive("/admin/commissions")}
+                      onClick={handleItemClick}
+                      show={true}
+                    >
+                      커미션 관리
+                    </NavItem>
+
+                    <NavItem
+                      href="/admin/settlements"
+                      icon={<Calculator className="w-5 h-5 mr-2" />}
+                      active={isActive("/admin/settlements")}
+                      onClick={handleItemClick}
+                      show={true}
+                    >
+                      정산 관리
                     </NavItem>
 
                     <NavItem

@@ -30,7 +30,6 @@ import VideoCallPage from "./pages/video-call";
 import MessagesPage from "./pages/messages";
 import ChatbotPage from "./pages/chatbot";
 import AdminMenuConfigPage from "./pages/admin/menu-config";
-import AdminSettlementPage from "./pages/admin/settlement";
 import EventsPage from "./pages/events";
 import EventDetailPage from "./pages/events/event-detail";
 import EventCalendarPage from "./pages/events/calendar";
@@ -64,6 +63,7 @@ import AdminContents from "./pages/admin/AdminContents";
 import AdminMembersStatus from "./pages/admin/AdminMembersStatus";
 import TrainerCertificationManagement from "./pages/admin/TrainerCertificationManagement";
 import AdminProductPricing from "./pages/admin/AdminProductPricing";
+import AdminSettlementPage from "./pages/admin/settlement";
 
 
 
@@ -313,6 +313,7 @@ function AppLayout({ children }: { children: ReactNode }) {
                   <Route path="/admin/locations" component={LocationManagement} />
                   <Route path="/admin/commissions" component={AdminCommissionPage} />
                   <Route path="/admin/commission-settings" component={AdminCommissionPage} />
+                  <Route path="/admin/settlements" component={AdminSettlementPage} />
                   <Route path="/admin/shop" component={AdminShop} />
                   <Route path="/admin/locations" component={LocationManagement} />
                   <Route path="/admin/settings" component={AdminSettings} />
