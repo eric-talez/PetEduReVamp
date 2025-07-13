@@ -42,6 +42,8 @@ PORT=5000
 - Redis (세션 스토어용, 선택사항)
 - Nginx (리버스 프록시)
 - SSL 인증서
+- 최소 2GB RAM (권장: 4GB)
+- 최소 10GB 디스크 공간
 
 ## 🚀 배포 방법
 
@@ -68,12 +70,20 @@ docker exec talez-app npm run db:push
 
 #### 1. 의존성 설치
 ```bash
-npm ci --only=production
+# 모든 의존성 설치 (빌드 시 devDependencies도 필요)
+npm ci
+
+# 또는 yarn 사용시
+yarn install --frozen-lockfile
 ```
 
 #### 2. 프론트엔드 빌드
 ```bash
+# 프로덕션 빌드
 npm run build
+
+# 빌드 완료 후 불필요한 devDependencies 제거 (선택사항)
+npm prune --production
 ```
 
 #### 3. PM2로 프로세스 관리
