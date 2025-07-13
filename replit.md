@@ -151,6 +151,12 @@ TALEZ is a comprehensive pet education and e-commerce platform that combines AI-
 
 ## Changelog
 
+- July 13, 2025. **SIDEBAR LOGIN BUTTON ROUTING FIXED** - Corrected login button navigation path from `/auth/login` to `/auth`:
+  - **Button Navigation**: Fixed both expanded and collapsed sidebar login buttons to use correct `/auth` path
+  - **Route Consistency**: Aligned sidebar login buttons with actual route configuration in SimpleApp.tsx
+  - **User Experience**: Eliminated 404 errors when clicking login button from sidebar
+  - **Authentication Flow**: Streamlined access to login page from all sidebar states
+  - **Production Ready**: Login button now properly navigates to authentication page without errors
 - July 13, 2025. **EDIT/DELETE/MODIFY BUTTON STYLES UNIFIED** - Standardized all action buttons across the platform:
   - **Button Variant**: Changed from variant="ghost" to variant="outline" for better visual consistency
   - **Edit Button Styling**: Unified hover effects (hover:bg-blue-50 hover:text-blue-600 hover:border-blue-300)

@@ -659,7 +659,7 @@ export function Sidebar({
                       <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">회원가입 후 맞춤형 교육을 경험하세요.</p>
                     </div>
                     <Link
-                      href="/auth/login"
+                      href="/auth"
                       className="bg-primary hover:bg-primary/90 text-white text-xs font-medium py-2 px-3 rounded-md transition-colors inline-block text-center"
                     >
                       로그인
@@ -670,7 +670,7 @@ export function Sidebar({
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <Link
-                          href="/auth/login"
+                          href="/auth"
                           className="flex items-center justify-center py-2 px-2 mt-4 bg-primary hover:bg-primary/90 text-white rounded-lg mx-auto w-[48px]"
                           aria-label="로그인"
                         >
