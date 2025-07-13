@@ -19,6 +19,54 @@ const MOCK_PRODUCTS = [
   { id: 6, name: '반려견 트레이닝 클리커', category: '상품', price: 12000, commissionRate: 7 },
 ];
 
+// 구독 상품 데이터
+const MOCK_SUBSCRIPTION_PRODUCTS = [
+  { 
+    id: 1, 
+    name: 'Starter Plan', 
+    tier: 'starter',
+    description: '기본 기능 제공',
+    basePrice: 150000, 
+    discountRate: 0,
+    finalPrice: 150000,
+    features: ['기본 LMS 기능', '최대 50명 수용', '기본 지원'],
+    status: 'active'
+  },
+  { 
+    id: 2, 
+    name: 'Standard Plan', 
+    tier: 'standard',
+    description: '표준 기능 제공',
+    basePrice: 300000, 
+    discountRate: 10,
+    finalPrice: 270000,
+    features: ['전체 LMS 기능', '최대 200명 수용', '우선 지원', '분석 도구'],
+    status: 'active'
+  },
+  { 
+    id: 3, 
+    name: 'Professional Plan', 
+    tier: 'professional',
+    description: '전문 기능 제공',
+    basePrice: 500000, 
+    discountRate: 15,
+    finalPrice: 425000,
+    features: ['고급 LMS 기능', '최대 500명 수용', '전담 지원', '고급 분석', '커스터마이징'],
+    status: 'active'
+  },
+  { 
+    id: 4, 
+    name: 'Enterprise Plan', 
+    tier: 'enterprise',
+    description: '기업용 기능 제공',
+    basePrice: 800000, 
+    discountRate: 20,
+    finalPrice: 640000,
+    features: ['무제한 기능', '무제한 수용', '24/7 지원', '완전 커스터마이징', 'API 접근'],
+    status: 'active'
+  }
+];
+
 const MOCK_REFERRERS = [
   { id: 1, name: '김지훈', role: '훈련사', referralCode: 'TRAINER001', earningsTotal: 1250000 },
   { id: 2, name: '서울 애견훈련소', role: '기관', referralCode: 'INST002', earningsTotal: 2380000 },
@@ -36,10 +84,14 @@ const MOCK_COMMISSION_HISTORY = [
 
 export default function CommissionManagement() {
   const [products, setProducts] = useState(MOCK_PRODUCTS);
+  const [subscriptionProducts, setSubscriptionProducts] = useState(MOCK_SUBSCRIPTION_PRODUCTS);
   const [referrers, setReferrers] = useState(MOCK_REFERRERS);
   const [commissionHistory, setCommissionHistory] = useState(MOCK_COMMISSION_HISTORY);
   const [editingProductId, setEditingProductId] = useState<number | null>(null);
+  const [editingSubscriptionId, setEditingSubscriptionId] = useState<number | null>(null);
   const [newCommissionRate, setNewCommissionRate] = useState<number>(0);
+  const [newDiscountRate, setNewDiscountRate] = useState<number>(0);
+  const [newBasePrice, setNewBasePrice] = useState<number>(0);
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [categoryFilter, setCategoryFilter] = useState<string>('전체');
   
@@ -69,16 +121,44 @@ export default function CommissionManagement() {
     setEditingProductId(null);
   };
 
+  // 구독 상품 편집 시작
+  const handleEditSubscriptionStart = (subscription: typeof MOCK_SUBSCRIPTION_PRODUCTS[0]) => {
+    setEditingSubscriptionId(subscription.id);
+    setNewBasePrice(subscription.basePrice);
+    setNewDiscountRate(subscription.discountRate);
+  };
+
+  // 구독 상품 저장
+  const handleSaveSubscription = (subscriptionId: number) => {
+    setSubscriptionProducts(subscriptionProducts.map(subscription => 
+      subscription.id === subscriptionId 
+        ? { 
+            ...subscription, 
+            basePrice: newBasePrice, 
+            discountRate: newDiscountRate,
+            finalPrice: Math.round(newBasePrice * (1 - newDiscountRate / 100))
+          } 
+        : subscription
+    ));
+    setEditingSubscriptionId(null);
+  };
+
+  // 구독 상품 편집 취소
+  const handleCancelSubscriptionEdit = () => {
+    setEditingSubscriptionId(null);
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">수수료 관리</h1>
+        <h1 className="text-2xl font-bold">가격 및 정산 관리</h1>
       </div>
       
       <Tabs defaultValue="products">
-        <TabsList className="grid w-full md:w-auto grid-cols-5">
+        <TabsList className="grid w-full md:w-auto grid-cols-6">
           <TabsTrigger value="products">상품별 수수료율</TabsTrigger>
           <TabsTrigger value="pricing">상품 가격 관리</TabsTrigger>
+          <TabsTrigger value="subscriptions">구독 상품 관리</TabsTrigger>
           <TabsTrigger value="referrers">추천인 현황</TabsTrigger>
           <TabsTrigger value="history">수수료 지급 내역</TabsTrigger>
           <TabsTrigger value="settlements">정산 관리</TabsTrigger>
@@ -261,6 +341,135 @@ export default function CommissionManagement() {
                     ))}
                   </TableBody>
                 </Table>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        {/* 구독 상품 관리 탭 */}
+        <TabsContent value="subscriptions" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>구독 상품 가격 관리</CardTitle>
+              <CardDescription>
+                기관용 구독 플랜의 기본 가격과 할인율을 관리합니다. 할인율이 적용된 최종 가격이 자동으로 계산됩니다.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {subscriptionProducts.map(subscription => (
+                  <Card key={subscription.id} className="p-4">
+                    <div className="flex justify-between items-start">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3 mb-2">
+                          <h3 className="text-lg font-semibold">{subscription.name}</h3>
+                          <Badge variant={subscription.status === 'active' ? 'default' : 'secondary'}>
+                            {subscription.status === 'active' ? '활성' : '비활성'}
+                          </Badge>
+                        </div>
+                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+                          {subscription.description}
+                        </p>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                          <div>
+                            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">기본 가격</label>
+                            {editingSubscriptionId === subscription.id ? (
+                              <Input
+                                type="number"
+                                value={newBasePrice}
+                                onChange={(e) => setNewBasePrice(Number(e.target.value))}
+                                className="mt-1"
+                                min="0"
+                              />
+                            ) : (
+                              <p className="text-lg font-semibold">{subscription.basePrice.toLocaleString()}원</p>
+                            )}
+                          </div>
+                          <div>
+                            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">할인율</label>
+                            {editingSubscriptionId === subscription.id ? (
+                              <div className="flex items-center gap-2 mt-1">
+                                <Input
+                                  type="number"
+                                  value={newDiscountRate}
+                                  onChange={(e) => setNewDiscountRate(Number(e.target.value))}
+                                  min="0"
+                                  max="100"
+                                  className="flex-1"
+                                />
+                                <span className="text-sm">%</span>
+                              </div>
+                            ) : (
+                              <p className="text-lg font-semibold text-orange-600">{subscription.discountRate}%</p>
+                            )}
+                          </div>
+                          <div>
+                            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">최종 가격</label>
+                            <p className="text-lg font-bold text-green-600">
+                              {editingSubscriptionId === subscription.id 
+                                ? Math.round(newBasePrice * (1 - newDiscountRate / 100)).toLocaleString()
+                                : subscription.finalPrice.toLocaleString()
+                              }원
+                            </p>
+                          </div>
+                          <div>
+                            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">할인 금액</label>
+                            <p className="text-lg font-semibold text-red-600">
+                              {editingSubscriptionId === subscription.id 
+                                ? Math.round(newBasePrice * (newDiscountRate / 100)).toLocaleString()
+                                : Math.round(subscription.basePrice * (subscription.discountRate / 100)).toLocaleString()
+                              }원
+                            </p>
+                          </div>
+                        </div>
+                        <div className="mt-3">
+                          <label className="text-sm font-medium text-gray-700 dark:text-gray-300">주요 기능</label>
+                          <div className="flex flex-wrap gap-2 mt-1">
+                            {subscription.features.map((feature, index) => (
+                              <Badge key={index} variant="outline" className="text-xs">
+                                {feature}
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex space-x-2">
+                        {editingSubscriptionId === subscription.id ? (
+                          <>
+                            <Button
+                              onClick={() => handleSaveSubscription(subscription.id)}
+                              size="sm"
+                              variant="outline"
+                              className="h-8"
+                            >
+                              <Save className="h-4 w-4 mr-1" />
+                              저장
+                            </Button>
+                            <Button
+                              onClick={handleCancelSubscriptionEdit}
+                              size="sm"
+                              variant="outline"
+                              className="h-8"
+                            >
+                              <X className="h-4 w-4 mr-1" />
+                              취소
+                            </Button>
+                          </>
+                        ) : (
+                          <Button
+                            onClick={() => handleEditSubscriptionStart(subscription)}
+                            size="sm"
+                            variant="outline"
+                            className="h-8"
+                          >
+                            <Pencil className="h-4 w-4 mr-1" />
+                            편집
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  </Card>
+                ))}
               </div>
             </CardContent>
           </Card>
