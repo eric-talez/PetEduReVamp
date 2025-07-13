@@ -810,6 +810,80 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // 기관 구독 변경 API
+  app.post('/api/institutes/:id/subscription/change', requireAuth(), (req, res) => {
+    const instituteId = parseInt(req.params.id);
+    const { newPlanCode, paymentMethod } = req.body;
+    
+    // 기관 관리자 또는 시스템 관리자만 접근 가능
+    const userRole = req.user?.role;
+    const userId = req.user?.id;
+    
+    if (userRole !== 'admin' && userRole !== 'institute-admin') {
+      return res.status(403).json({ error: '접근 권한이 없습니다.' });
+    }
+    
+    // 기관 관리자인 경우 자신의 기관만 변경 가능
+    if (userRole === 'institute-admin') {
+      const institute = storage.getInstitute(instituteId);
+      if (!institute || institute.directorId !== userId) {
+        return res.status(403).json({ error: '자신의 기관만 변경할 수 있습니다.' });
+      }
+    }
+    
+    const result = storage.changeInstituteSubscription(instituteId, newPlanCode, paymentMethod);
+    
+    if (result) {
+      res.json({
+        message: '구독 플랜이 성공적으로 변경되었습니다.',
+        ...result
+      });
+    } else {
+      res.status(404).json({ error: '기관 또는 구독 플랜을 찾을 수 없습니다.' });
+    }
+  });
+
+  // 기관 자체 결제 처리 API
+  app.post('/api/institutes/:id/payment/process', requireAuth('institute-admin'), (req, res) => {
+    const instituteId = parseInt(req.params.id);
+    const paymentData = req.body;
+    const userId = req.user?.id;
+    
+    // 기관 관리자 본인 확인
+    const institute = storage.getInstitute(instituteId);
+    if (!institute || institute.directorId !== userId) {
+      return res.status(403).json({ error: '자신의 기관만 결제할 수 있습니다.' });
+    }
+    
+    const result = storage.processInstitutePayment(instituteId, paymentData);
+    
+    if (result) {
+      res.json({
+        message: '결제가 성공적으로 처리되었습니다.',
+        institute: result
+      });
+    } else {
+      res.status(404).json({ error: '기관을 찾을 수 없습니다.' });
+    }
+  });
+
+  // 관리자 대리 결제 처리 API
+  app.post('/api/admin/payment-requests/:id/process', requireAuth('admin'), (req, res) => {
+    const paymentRequestId = req.params.id;
+    const adminId = req.user?.id;
+    
+    const result = storage.processAdminPayment(paymentRequestId, adminId);
+    
+    if (result) {
+      res.json({
+        message: '관리자 대리 결제가 성공적으로 처리되었습니다.',
+        ...result
+      });
+    } else {
+      res.status(404).json({ error: '결제 요청을 찾을 수 없습니다.' });
+    }
+  });
+
   // 기관 기능 접근 권한 확인
   app.get('/api/institutes/:id/access/:feature', async (req, res) => {
     try {

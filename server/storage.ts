@@ -552,6 +552,114 @@ class Storage {
     return this.institutes.find(i => i.id === instituteId);
   }
 
+  // 기관 구독 변경 및 결제 관련 메서드들
+  changeInstituteSubscription(instituteId: number, newPlanCode: string, paymentMethod: 'self' | 'admin') {
+    const institute = this.institutes.find(i => i.id === instituteId);
+    const newPlan = this.subscriptionPlans.find(p => p.code === newPlanCode);
+    
+    if (!institute || !newPlan) {
+      return null;
+    }
+
+    // 현재 구독 정보 백업
+    const oldSubscription = {
+      planCode: institute.subscriptionPlan,
+      startDate: institute.subscriptionStartDate,
+      endDate: institute.subscriptionEndDate,
+      price: institute.subscriptionPrice
+    };
+
+    // 새 구독 정보 업데이트
+    institute.subscriptionPlan = newPlan.code;
+    institute.subscriptionPrice = newPlan.price;
+    institute.subscriptionStartDate = new Date().toISOString();
+    institute.subscriptionEndDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(); // 30일 후
+    institute.paymentMethod = paymentMethod;
+    institute.updatedAt = new Date().toISOString();
+
+    // 결제 요청 생성 (관리자 결제의 경우)
+    if (paymentMethod === 'admin') {
+      const paymentRequest = {
+        id: `payment-${Date.now()}`,
+        instituteId: instituteId,
+        instituteName: institute.name,
+        oldPlan: oldSubscription,
+        newPlan: {
+          code: newPlan.code,
+          name: newPlan.name,
+          price: newPlan.price
+        },
+        amount: newPlan.price,
+        status: 'pending',
+        requestedAt: new Date().toISOString(),
+        paymentMethod: 'admin',
+        notes: `${institute.name} 구독 플랜 변경 요청 (${oldSubscription.planCode} → ${newPlan.code})`
+      };
+
+      if (!this.paymentRequests) {
+        this.paymentRequests = [];
+      }
+      this.paymentRequests.push(paymentRequest);
+    }
+
+    return {
+      institute,
+      oldSubscription,
+      newSubscription: {
+        planCode: newPlan.code,
+        planName: newPlan.name,
+        price: newPlan.price,
+        startDate: institute.subscriptionStartDate,
+        endDate: institute.subscriptionEndDate
+      }
+    };
+  }
+
+  // 기관 자체 결제 처리
+  processInstitutePayment(instituteId: number, paymentData: any) {
+    const institute = this.institutes.find(i => i.id === instituteId);
+    if (!institute) {
+      return null;
+    }
+
+    // 결제 정보 저장
+    institute.paymentStatus = 'completed';
+    institute.paymentDate = new Date().toISOString();
+    institute.paymentTransactionId = paymentData.transactionId || `tx-${Date.now()}`;
+    institute.updatedAt = new Date().toISOString();
+
+    return institute;
+  }
+
+  // 관리자 대리 결제 처리
+  processAdminPayment(paymentRequestId: string, adminId: number) {
+    const paymentRequest = this.paymentRequests?.find(pr => pr.id === paymentRequestId);
+    if (!paymentRequest) {
+      return null;
+    }
+
+    const institute = this.institutes.find(i => i.id === paymentRequest.instituteId);
+    if (!institute) {
+      return null;
+    }
+
+    // 결제 요청 상태 업데이트
+    paymentRequest.status = 'completed';
+    paymentRequest.processedAt = new Date().toISOString();
+    paymentRequest.processedBy = adminId;
+
+    // 기관 결제 상태 업데이트
+    institute.paymentStatus = 'completed';
+    institute.paymentDate = new Date().toISOString();
+    institute.paymentTransactionId = `admin-${paymentRequestId}`;
+    institute.updatedAt = new Date().toISOString();
+
+    return {
+      paymentRequest,
+      institute
+    };
+  }
+
   createPaymentRequest(paymentRequest: any): Promise<any> {
     if (!this.paymentRequests) {
       this.paymentRequests = [];

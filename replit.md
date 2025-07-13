@@ -151,6 +151,18 @@ TALEZ is a comprehensive pet education and e-commerce platform that combines AI-
 
 ## Changelog
 
+- July 13, 2025. **DUAL PAYMENT SUBSCRIPTION CHANGE SYSTEM IMPLEMENTED** - Complete institution subscription management with flexible payment options:
+  - **Dual Payment Methods**: Institute administrators can change subscription plans through either self-payment or admin proxy payment
+  - **Subscription Change API**: New `/api/institutes/:id/subscription/change` endpoint supporting both payment methods with proper authorization
+  - **Admin Proxy Payment**: Administrators can process subscription changes on behalf of institutions with `/api/admin/payment-requests/:id/process`
+  - **Institute Self-Payment**: Institution administrators can process their own subscription changes through `/api/institutes/:id/payment/process`
+  - **Comprehensive UI Component**: New SubscriptionChangeDialog.tsx with step-by-step wizard for plan selection and payment method choice
+  - **Enhanced Storage Methods**: Added `changeInstituteSubscription`, `processInstitutePayment`, and `processAdminPayment` methods to handle all payment scenarios
+  - **Payment Request Management**: Complete payment request lifecycle with pending, completed, and failed statuses
+  - **Security Controls**: Role-based access control ensuring institute administrators can only modify their own subscriptions
+  - **Professional Interface**: Multi-step subscription change process with plan comparison, payment method selection, and confirmation
+  - **Real-time Updates**: Automatic cache invalidation and UI updates after successful subscription changes
+  - **Production Ready**: Complete subscription tier management system supporting Starter (15만원), Standard (30만원), Professional (50만원), and Enterprise (80만원) monthly plans
 - July 13, 2025. **COMPREHENSIVE COMMISSION SETTLEMENT SYSTEM IMPLEMENTED** - Different settlement timings for each service type:
   - **Video Consultations**: Commission settlement at lesson start with automatic fee calculation and PaymentService integration
   - **Video Lectures**: Commission settlement at payment time when users purchase courses with detailed settlement tracking
