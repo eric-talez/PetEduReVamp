@@ -82,6 +82,16 @@ import { ThemeProvider } from "@/context/theme-context";
 // 인증 관련 임포트 - 호환성 레이어 사용
 import { useAuth, USER_ROLES, type UserRole, type AuthState, UserRoleEnum } from "@/lib/auth-compat";
 
+// 로딩 시스템 임포트
+import { usePageLoadingDetector } from "@/hooks/use-route-loading";
+import { 
+  RouteLoadingBar, 
+  RouteLoadingMessage, 
+  CourseSkeleton, 
+  DashboardSkeleton, 
+  TrainerSkeleton 
+} from "@/components/ui/RouteLoadingBar";
+
 // 역호환성 유지를 위한 re-export
 // 다른 파일에서 SimpleApp에서 useAuth를 import하는 경우 호환성 유지
 export { useAuth, USER_ROLES, UserRoleEnum };
@@ -224,9 +234,18 @@ function AppLayout({ children }: { children: ReactNode }) {
     }
   ], true);
 
+  // 페이지 로딩 감지 활성화
+  usePageLoadingDetector();
+
   return (
     <ErrorBoundary showDogLoading>
       <div className="bg-background text-foreground min-h-screen font-sans flex flex-col">
+        {/* 글로벌 로딩바 */}
+        <RouteLoadingBar />
+        
+        {/* 로딩 메시지 (선택사항) */}
+        <RouteLoadingMessage />
+        
         {/* 접근성 개선: 콘텐츠로 건너뛰기 링크 */}
         <SkipToContent contentId="main-content" />
 
@@ -346,7 +365,7 @@ function AppLayout({ children }: { children: ReactNode }) {
                     {() => {
                       const DashboardPage = lazy(() => import('./pages/dashboard'));
                       return (
-                        <Suspense fallback={<div className="p-8 text-center">대시보드 로딩 중...</div>}>
+                        <Suspense fallback={<div className="p-8"><DashboardSkeleton /></div>}>
                           <DashboardPage />
                         </Suspense>
                       );
@@ -356,7 +375,7 @@ function AppLayout({ children }: { children: ReactNode }) {
                     {() => {
                       const DashboardPage = lazy(() => import('./pages/dashboard'));
                       return (
-                        <Suspense fallback={<div className="p-8 text-center">훈련사 대시보드 로딩 중...</div>}>
+                        <Suspense fallback={<div className="p-8"><DashboardSkeleton /></div>}>
                           <DashboardPage />
                         </Suspense>
                       );
@@ -368,7 +387,7 @@ function AppLayout({ children }: { children: ReactNode }) {
                     {() => {
                       const CoursesPage = lazy(() => import('./pages/courses'));
                       return (
-                        <Suspense fallback={<div className="p-8 text-center">강의 목록 로딩 중...</div>}>
+                        <Suspense fallback={<div className="p-8"><CourseSkeleton /></div>}>
                           <CoursesPage />
                         </Suspense>
                       );
@@ -460,12 +479,21 @@ function AppLayout({ children }: { children: ReactNode }) {
                   </Route>
 
                   {/* 훈련사 및 기관 */}
-                  <Route path="/trainers" component={Trainers} />
+                  <Route path="/trainers">
+                    {() => {
+                      const TrainersPage = lazy(() => import('./pages/trainers'));
+                      return (
+                        <Suspense fallback={<div className="p-8"><TrainerSkeleton /></div>}>
+                          <TrainersPage />
+                        </Suspense>
+                      );
+                    }}
+                  </Route>
                   <Route path="/trainers/:id">
                     {(params) => {
                       const TrainerDetail = lazy(() => import('./pages/trainers/detail'));
                       return (
-                        <Suspense fallback={<div className="p-8 text-center">훈련사 정보 로딩 중...</div>}>
+                        <Suspense fallback={<div className="p-8"><TrainerSkeleton /></div>}>
                           <TrainerDetail trainerId={params.id} />
                         </Suspense>
                       );
@@ -495,9 +523,36 @@ function AppLayout({ children }: { children: ReactNode }) {
                       );
                     }}
                   </Route>
-                  <Route path="/events" component={EventsPage} />
-                  <Route path="/events/calendar" component={EventCalendarPage} />
-                  <Route path="/events/:id" component={EventDetailPage} />
+                  <Route path="/events">
+                    {() => {
+                      const EventsPageLazy = lazy(() => import('./pages/events'));
+                      return (
+                        <Suspense fallback={<div className="p-8"><CourseSkeleton /></div>}>
+                          <EventsPageLazy />
+                        </Suspense>
+                      );
+                    }}
+                  </Route>
+                  <Route path="/events/calendar">
+                    {() => {
+                      const EventCalendarPageLazy = lazy(() => import('./pages/events/calendar'));
+                      return (
+                        <Suspense fallback={<div className="p-8"><CourseSkeleton /></div>}>
+                          <EventCalendarPageLazy />
+                        </Suspense>
+                      );
+                    }}
+                  </Route>
+                  <Route path="/events/:id">
+                    {(params) => {
+                      const EventDetailPageLazy = lazy(() => import('./pages/events/event-detail'));
+                      return (
+                        <Suspense fallback={<div className="p-8"><CourseSkeleton /></div>}>
+                          <EventDetailPageLazy eventId={params.id} />
+                        </Suspense>
+                      );
+                    }}
+                  </Route>
 
                   {/* 영상 및 화상 */}
                   <Route path="/video-training" component={VideoTrainingPage} />
@@ -530,7 +585,7 @@ function AppLayout({ children }: { children: ReactNode }) {
                     {() => {
                       const CommunityPage = lazy(() => import('./pages/community/CommunityFixed'));
                       return (
-                        <Suspense fallback={<div className="p-8 text-center">커뮤니티 로딩 중...</div>}>
+                        <Suspense fallback={<div className="p-8"><CourseSkeleton /></div>}>
                           <CommunityPage />
                         </Suspense>
                       );
@@ -543,7 +598,7 @@ function AppLayout({ children }: { children: ReactNode }) {
                     {() => {
                       const ShopIndex = lazy(() => import('./pages/shop/index'));
                       return (
-                        <Suspense fallback={<div className="p-8 text-center">쇼핑 페이지 로딩 중...</div>}>
+                        <Suspense fallback={<div className="p-8"><CourseSkeleton /></div>}>
                           <ShopIndex />
                         </Suspense>
                       );
@@ -558,7 +613,7 @@ function AppLayout({ children }: { children: ReactNode }) {
                     {() => {
                       const AIAnalysisPage = lazy(() => import('./pages/ai-analysis'));
                       return (
-                        <Suspense fallback={<div className="p-8 text-center">AI 분석 페이지 로딩 중...</div>}>
+                        <Suspense fallback={<div className="p-8"><CourseSkeleton /></div>}>
                           <AIAnalysisPage />
                         </Suspense>
                       );
@@ -570,7 +625,7 @@ function AppLayout({ children }: { children: ReactNode }) {
                     {() => {
                       const AIChatbotPage = lazy(() => import('./pages/ai-chatbot'));
                       return (
-                        <Suspense fallback={<div className="p-8 text-center">AI 챗봇 로딩 중...</div>}>
+                        <Suspense fallback={<div className="p-8"><CourseSkeleton /></div>}>
                           <AIChatbotPage />
                         </Suspense>
                       );
@@ -582,7 +637,7 @@ function AppLayout({ children }: { children: ReactNode }) {
                     {() => {
                       const TrainerClasses = lazy(() => import('./pages/trainer/classes'));
                       return (
-                        <Suspense fallback={<div className="p-8 text-center">강의 관리 로딩 중...</div>}>
+                        <Suspense fallback={<div className="p-8"><TrainerSkeleton /></div>}>
                           <TrainerClasses />
                         </Suspense>
                       );
@@ -592,7 +647,7 @@ function AppLayout({ children }: { children: ReactNode }) {
                     {() => {
                       const TrainerStudents = lazy(() => import('./pages/trainer/students'));
                       return (
-                        <Suspense fallback={<div className="p-8 text-center">수강생 관리 로딩 중...</div>}>
+                        <Suspense fallback={<div className="p-8"><TrainerSkeleton /></div>}>
                           <TrainerStudents />
                         </Suspense>
                       );
@@ -602,7 +657,7 @@ function AppLayout({ children }: { children: ReactNode }) {
                     {() => {
                       const TrainerCourses = lazy(() => import('./pages/trainer/courses'));
                       return (
-                        <Suspense fallback={<div className="p-8 text-center">강의 관리 로딩 중...</div>}>
+                        <Suspense fallback={<div className="p-8"><TrainerSkeleton /></div>}>
                           <TrainerCourses />
                         </Suspense>
                       );
@@ -612,7 +667,7 @@ function AppLayout({ children }: { children: ReactNode }) {
                     {() => {
                       const TrainerNotebook = lazy(() => import('./pages/trainer/notebook'));
                       return (
-                        <Suspense fallback={<div className="p-8 text-center">훈련 노트 로딩 중...</div>}>
+                        <Suspense fallback={<div className="p-8"><TrainerSkeleton /></div>}>
                           <TrainerNotebook />
                         </Suspense>
                       );
@@ -622,7 +677,7 @@ function AppLayout({ children }: { children: ReactNode }) {
                     {() => {
                       const TrainerReviews = lazy(() => import('./pages/trainer/reviews'));
                       return (
-                        <Suspense fallback={<div className="p-8 text-center">리뷰 관리 로딩 중...</div>}>
+                        <Suspense fallback={<div className="p-8"><TrainerSkeleton /></div>}>
                           <TrainerReviews />
                         </Suspense>
                       );
@@ -632,7 +687,7 @@ function AppLayout({ children }: { children: ReactNode }) {
                     {() => {
                       const TrainerEarnings = lazy(() => import('./pages/trainer/earnings'));
                       return (
-                        <Suspense fallback={<div className="p-8 text-center">수익 관리 로딩 중...</div>}>
+                        <Suspense fallback={<div className="p-8"><TrainerSkeleton /></div>}>
                           <TrainerEarnings />
                         </Suspense>
                       );
