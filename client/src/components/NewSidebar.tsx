@@ -680,33 +680,13 @@ export function NewSidebar({
                     </NavItem>
 
                     <NavItem
-                      href="/admin/product-pricing"
-                      icon={<DollarSign className="w-5 h-5 mr-2" />}
-                      active={isActive("/admin/product-pricing")}
-                      onClick={handleItemClick}
-                      show={true}
-                    >
-                      상품 가격 관리
-                    </NavItem>
-
-                    <NavItem
                       href="/admin/commissions"
                       icon={<PercentIcon className="w-5 h-5 mr-2" />}
-                      active={isActive("/admin/commissions")}
+                      active={isActive("/admin/commissions") || isActive("/admin/product-pricing") || isActive("/admin/settlements")}
                       onClick={handleItemClick}
                       show={true}
                     >
-                      커미션 관리
-                    </NavItem>
-
-                    <NavItem
-                      href="/admin/settlements"
-                      icon={<Calculator className="w-5 h-5 mr-2" />}
-                      active={isActive("/admin/settlements")}
-                      onClick={handleItemClick}
-                      show={true}
-                    >
-                      정산 관리
+                      가격 및 수수료 관리
                     </NavItem>
 
                     <NavItem

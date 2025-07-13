@@ -72,14 +72,16 @@ export default function CommissionManagement() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">수수료 관리</h1>
+        <h1 className="text-2xl font-bold">가격 및 수수료 관리</h1>
       </div>
       
       <Tabs defaultValue="products">
-        <TabsList className="grid w-full md:w-auto grid-cols-3">
+        <TabsList className="grid w-full md:w-auto grid-cols-5">
           <TabsTrigger value="products">상품별 수수료율</TabsTrigger>
+          <TabsTrigger value="pricing">상품 가격 관리</TabsTrigger>
           <TabsTrigger value="referrers">추천인 현황</TabsTrigger>
           <TabsTrigger value="history">수수료 지급 내역</TabsTrigger>
+          <TabsTrigger value="settlements">정산 관리</TabsTrigger>
         </TabsList>
         
         {/* 상품별 수수료율 탭 */}
@@ -206,6 +208,64 @@ export default function CommissionManagement() {
           </Card>
         </TabsContent>
         
+        {/* 상품 가격 관리 탭 */}
+        <TabsContent value="pricing" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>상품 가격 관리</CardTitle>
+              <CardDescription>
+                강의, 상품, 서비스의 가격을 관리합니다. 할인 정책과 프로모션을 설정할 수 있습니다.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="border rounded-md">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>상품명</TableHead>
+                      <TableHead>카테고리</TableHead>
+                      <TableHead>기본 가격</TableHead>
+                      <TableHead>할인율</TableHead>
+                      <TableHead>최종 가격</TableHead>
+                      <TableHead>상태</TableHead>
+                      <TableHead>관리</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {products.map(product => (
+                      <TableRow key={product.id}>
+                        <TableCell className="font-medium">{product.name}</TableCell>
+                        <TableCell>
+                          <Badge variant={product.category === '강의' ? 'default' : 'secondary'}>
+                            {product.category}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>{product.price.toLocaleString()}원</TableCell>
+                        <TableCell>0%</TableCell>
+                        <TableCell className="font-semibold">{product.price.toLocaleString()}원</TableCell>
+                        <TableCell>
+                          <Badge variant="default">활성</Badge>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex space-x-1">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="h-8 w-8 p-0"
+                            >
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
         {/* 추천인 현황 탭 */}
         <TabsContent value="referrers" className="space-y-4">
           <Card>
@@ -305,6 +365,87 @@ export default function CommissionManagement() {
                           {history.status === '지급대기' && (
                             <Button size="sm" variant="outline">
                               지급처리
+                            </Button>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        {/* 정산 관리 탭 */}
+        <TabsContent value="settlements" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>정산 관리</CardTitle>
+              <CardDescription>
+                훈련사, 기관, 제휴사에 대한 정산 현황을 관리합니다. 정산 승인 및 지급 처리를 할 수 있습니다.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-4 md:grid-cols-4 mb-6">
+                <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                  <h3 className="font-semibold text-blue-900 dark:text-blue-100">총 정산 금액</h3>
+                  <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">₩6,230,000</p>
+                </div>
+                <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                  <h3 className="font-semibold text-green-900 dark:text-green-100">지급 완료</h3>
+                  <p className="text-2xl font-bold text-green-600 dark:text-green-400">₩3,630,000</p>
+                </div>
+                <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
+                  <h3 className="font-semibold text-yellow-900 dark:text-yellow-100">지급 대기</h3>
+                  <p className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">₩2,600,000</p>
+                </div>
+                <div className="p-4 bg-red-50 dark:bg-red-900/20 rounded-lg">
+                  <h3 className="font-semibold text-red-900 dark:text-red-100">보류</h3>
+                  <p className="text-2xl font-bold text-red-600 dark:text-red-400">₩0</p>
+                </div>
+              </div>
+              
+              <div className="border rounded-md">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>정산 대상</TableHead>
+                      <TableHead>유형</TableHead>
+                      <TableHead>정산 기간</TableHead>
+                      <TableHead>총 수익</TableHead>
+                      <TableHead>수수료율</TableHead>
+                      <TableHead>정산 금액</TableHead>
+                      <TableHead>상태</TableHead>
+                      <TableHead>관리</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {referrers.map(referrer => (
+                      <TableRow key={referrer.id}>
+                        <TableCell className="font-medium">{referrer.name}</TableCell>
+                        <TableCell>
+                          <Badge variant={referrer.role === '훈련사' ? 'default' : 'secondary'}>
+                            {referrer.role}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>2025.01.01 ~ 2025.01.31</TableCell>
+                        <TableCell>{referrer.earningsTotal.toLocaleString()}원</TableCell>
+                        <TableCell>
+                          {referrer.role === '훈련사' ? '15%' : referrer.role === '기관' ? '10%' : '5%'}
+                        </TableCell>
+                        <TableCell className="font-semibold">
+                          {Math.round(referrer.earningsTotal * (referrer.role === '훈련사' ? 0.15 : referrer.role === '기관' ? 0.10 : 0.05)).toLocaleString()}원
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant={referrer.id % 2 === 0 ? 'default' : 'outline'}>
+                            {referrer.id % 2 === 0 ? '지급완료' : '지급대기'}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          {referrer.id % 2 !== 0 && (
+                            <Button size="sm" variant="outline">
+                              정산 승인
                             </Button>
                           )}
                         </TableCell>
