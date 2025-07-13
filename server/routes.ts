@@ -448,6 +448,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // 관리자 라우트 등록
   registerAdminRoutes(app);
 
+  // 기본 사용자 API 라우트
+  app.get('/api/users', async (req, res) => {
+    try {
+      const users = await storage.getAllUsers();
+      res.json(users || []);
+    } catch (error) {
+      console.error('Users API error:', error);
+      res.status(500).json({ error: 'Failed to fetch users' });
+    }
+  });
+
+  // 관리자 사용자 API
+  app.get('/api/admin/users', async (req, res) => {
+    try {
+      const users = await storage.getAllUsers();
+      res.json(users || []);
+    } catch (error) {
+      console.error('Admin Users API error:', error);
+      res.status(500).json({ error: 'Failed to fetch admin users' });
+    }
+  });
+
   // 구독 플랜 관련 API
   app.get('/api/subscription-plans', async (req, res) => {
     try {

@@ -103,6 +103,27 @@ app.use((req: any, res: any, next: any) => {
 });
 
 // Register API routes BEFORE Vite middleware
+// Critical API routes that must be handled by Express, not Vite
+app.get('/api/users', async (req, res) => {
+  try {
+    const users = await storage.getAllUsers();
+    res.json(users || []);
+  } catch (error) {
+    console.error('Users API error:', error);
+    res.status(500).json({ error: 'Failed to fetch users' });
+  }
+});
+
+app.get('/api/admin/users', async (req, res) => {
+  try {
+    const users = await storage.getAllUsers();
+    res.json(users || []);
+  } catch (error) {
+    console.error('Admin Users API error:', error);
+    res.status(500).json({ error: 'Failed to fetch admin users' });
+  }
+});
+
 app.post('/api/login', async (req, res) => {
   try {
     const { username, password } = req.body;

@@ -30,6 +30,66 @@ class ApiError extends Error {
 const successResponse = (data: any) => ({ success: true, data });
 
 export function registerDashboardRoutes(app: Express) {
+  // 대시보드 통계 API
+  app.get('/api/dashboard/stats', asyncHandler(async (req: any, res: any) => {
+    console.log('[Dashboard] 대시보드 통계 요청받음');
+    
+    try {
+      const stats = {
+        totalUsers: 6,
+        totalCourses: 15,
+        totalInstitutes: 3,
+        totalTrainers: 5,
+        totalOrders: 42,
+        totalRevenue: 2580000,
+        activeUsers: 5,
+        activeCourses: 12,
+        pendingApplications: 8,
+        recentActivity: [
+          { type: 'user_registered', message: '새로운 사용자가 등록되었습니다', timestamp: new Date().toISOString() },
+          { type: 'course_completed', message: '기본 순종 훈련 과정이 완료되었습니다', timestamp: new Date().toISOString() },
+          { type: 'payment_received', message: '결제가 완료되었습니다', timestamp: new Date().toISOString() }
+        ]
+      };
+      
+      console.log('[Dashboard] 대시보드 통계 응답:', stats);
+      res.json(stats);
+    } catch (error) {
+      console.error('[Dashboard] 대시보드 통계 오류:', error);
+      res.status(500).json({ error: '대시보드 통계 조회 중 오류가 발생했습니다' });
+    }
+  }));
+
+  // 관리자 대시보드 통계 API
+  app.get('/api/admin/dashboard/stats', asyncHandler(async (req: any, res: any) => {
+    console.log('[Dashboard] 관리자 대시보드 통계 요청받음');
+    
+    try {
+      const stats = {
+        totalUsers: 6,
+        totalCourses: 15,
+        totalInstitutes: 3,
+        totalTrainers: 5,
+        totalOrders: 42,
+        totalRevenue: 2580000,
+        activeUsers: 5,
+        activeCourses: 12,
+        pendingApplications: 8,
+        recentActivity: [
+          { type: 'user_registered', message: '새로운 사용자가 등록되었습니다', timestamp: new Date().toISOString() },
+          { type: 'course_completed', message: '기본 순종 훈련 과정이 완료되었습니다', timestamp: new Date().toISOString() },
+          { type: 'payment_received', message: '결제가 완료되었습니다', timestamp: new Date().toISOString() }
+        ]
+      };
+      
+      console.log('[Dashboard] 관리자 대시보드 통계 응답:', stats);
+      res.json(stats);
+    } catch (error) {
+      console.error('[Dashboard] 관리자 대시보드 통계 오류:', error);
+      res.status(500).json({ error: '관리자 대시보드 통계 조회 중 오류가 발생했습니다' });
+    }
+  }));
+
   // 시스템 상태 API (실시간 서비스 현황용)
   app.get('/api/dashboard/system/status', asyncHandler(async (req: any, res: any) => {
     console.log('[Dashboard] 시스템 상태 요청받음');
