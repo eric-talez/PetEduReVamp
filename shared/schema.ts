@@ -58,6 +58,31 @@ export const institutes = pgTable("institutes", {
   logoUrl: text("logo_url"),
   isVerified: boolean("is_verified").default(false),
   isActive: boolean("is_active").default(true),
+  // 구독 플랜 관련 필드
+  subscriptionPlan: varchar("subscription_plan", { length: 50 }).default("starter"),
+  subscriptionStatus: varchar("subscription_status", { length: 20 }).default("active"),
+  subscriptionStartDate: timestamp("subscription_start_date").defaultNow(),
+  subscriptionEndDate: timestamp("subscription_end_date"),
+  maxMembers: integer("max_members").default(50),
+  maxVideoHours: integer("max_video_hours").default(10),
+  featuresEnabled: jsonb("features_enabled"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// 구독 플랜 테이블
+export const subscriptionPlans = pgTable("subscription_plans", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 100 }).notNull(),
+  code: varchar("code", { length: 50 }).notNull().unique(),
+  description: text("description"),
+  price: decimal("price", { precision: 10, scale: 2 }).notNull(),
+  currency: varchar("currency", { length: 3 }).default("KRW"),
+  billingPeriod: varchar("billing_period", { length: 20 }).default("monthly"),
+  maxMembers: integer("max_members").notNull(),
+  maxVideoHours: integer("max_video_hours").notNull(),
+  features: jsonb("features").notNull(),
+  isActive: boolean("is_active").default(true),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

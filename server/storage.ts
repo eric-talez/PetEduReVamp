@@ -5,6 +5,7 @@ class Storage {
   notifications: any[] = [];
   registrations: any[] = [];
   institutes: any[] = [];
+  subscriptionPlans: any[] = [];
 
   constructor() {
     console.log('🔄 운영 환경용 메모리 저장소 초기화...');
@@ -100,6 +101,106 @@ class Storage {
       }
     ];
 
+    // 구독 플랜 데이터 초기화
+    this.subscriptionPlans = [
+      {
+        id: 1,
+        name: '스타터 플랜',
+        code: 'starter',
+        description: '소규모 기관을 위한 기본 플랜',
+        price: 150000,
+        currency: 'KRW',
+        billingPeriod: 'monthly',
+        maxMembers: 50,
+        maxVideoHours: 10,
+        features: {
+          basicLMS: true,
+          basicVideoConsultation: true,
+          basicStatistics: true,
+          aiRecommendation: false,
+          customBranding: false,
+          apiIntegration: false,
+          dedicatedSupport: false,
+          whiteLabel: false
+        },
+        isActive: true,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      },
+      {
+        id: 2,
+        name: '스탠다드 플랜',
+        code: 'standard',
+        description: '중간 규모 기관을 위한 고급 플랜',
+        price: 300000,
+        currency: 'KRW',
+        billingPeriod: 'monthly',
+        maxMembers: 200,
+        maxVideoHours: 30,
+        features: {
+          basicLMS: true,
+          basicVideoConsultation: true,
+          basicStatistics: true,
+          aiRecommendation: true,
+          customBranding: true,
+          apiIntegration: false,
+          dedicatedSupport: false,
+          whiteLabel: false
+        },
+        isActive: true,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      },
+      {
+        id: 3,
+        name: '프로페셔널 플랜',
+        code: 'professional',
+        description: '대규모 기관을 위한 전문 플랜',
+        price: 500000,
+        currency: 'KRW',
+        billingPeriod: 'monthly',
+        maxMembers: 500,
+        maxVideoHours: -1, // 무제한
+        features: {
+          basicLMS: true,
+          basicVideoConsultation: true,
+          basicStatistics: true,
+          aiRecommendation: true,
+          customBranding: true,
+          apiIntegration: true,
+          dedicatedSupport: true,
+          whiteLabel: false
+        },
+        isActive: true,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      },
+      {
+        id: 4,
+        name: '엔터프라이즈 플랜',
+        code: 'enterprise',
+        description: '대형 기관을 위한 맞춤형 플랜',
+        price: 800000,
+        currency: 'KRW',
+        billingPeriod: 'monthly',
+        maxMembers: -1, // 무제한
+        maxVideoHours: -1, // 무제한
+        features: {
+          basicLMS: true,
+          basicVideoConsultation: true,
+          basicStatistics: true,
+          aiRecommendation: true,
+          customBranding: true,
+          apiIntegration: true,
+          dedicatedSupport: true,
+          whiteLabel: true
+        },
+        isActive: true,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      }
+    ];
+
     // 기관 데이터 초기화
     this.institutes = [
       {
@@ -123,6 +224,23 @@ class Storage {
         studentsCount: 87,
         coursesCount: 6,
         facilities: ['실내 훈련장', '야외 훈련장', '대기실', '상담실', '애견유치원'],
+        // 구독 플랜 정보
+        subscriptionPlan: 'standard',
+        subscriptionStatus: 'active',
+        subscriptionStartDate: new Date().toISOString(),
+        subscriptionEndDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+        maxMembers: 200,
+        maxVideoHours: 30,
+        featuresEnabled: {
+          basicLMS: true,
+          basicVideoConsultation: true,
+          basicStatistics: true,
+          aiRecommendation: true,
+          customBranding: true,
+          apiIntegration: false,
+          dedicatedSupport: false,
+          whiteLabel: false
+        },
         operatingHours: '평일 09:00-18:00, 토요일 09:00-18:00, 일요일 휴무',
         description: '국가자격증 훈련부터 반려동물 교감 교육까지! 반려견과 보호자의 "진짜 관계"를 만들어 드리는 전문 교육기관입니다.',
         website: 'https://wangzzang.com',
@@ -368,6 +486,82 @@ class Storage {
 
   getCourse(id: number) {
     return this.courses?.find(course => course.id === id);
+  }
+
+  // 구독 플랜 관련 메서드들
+  getAllSubscriptionPlans() {
+    return this.subscriptionPlans || [];
+  }
+
+  getSubscriptionPlan(code: string) {
+    return this.subscriptionPlans?.find(plan => plan.code === code);
+  }
+
+  getSubscriptionPlanById(id: number) {
+    return this.subscriptionPlans?.find(plan => plan.id === id);
+  }
+
+  // 기관 구독 관련 메서드들
+  createInstituteWithSubscription(instituteData: any) {
+    const newInstitute = {
+      ...instituteData,
+      id: this.institutes.length + 1,
+      isActive: true,
+      isVerified: false,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+    
+    this.institutes.push(newInstitute);
+    return newInstitute;
+  }
+
+  updateInstituteSubscription(instituteId: number, subscriptionData: any) {
+    const institute = this.institutes.find(inst => inst.id === instituteId);
+    if (institute) {
+      Object.assign(institute, subscriptionData, {
+        updatedAt: new Date().toISOString()
+      });
+      return institute;
+    }
+    return null;
+  }
+
+  getInstituteSubscriptionInfo(instituteId: number) {
+    const institute = this.institutes.find(inst => inst.id === instituteId);
+    if (institute) {
+      return {
+        subscriptionPlan: institute.subscriptionPlan,
+        subscriptionStatus: institute.subscriptionStatus,
+        subscriptionStartDate: institute.subscriptionStartDate,
+        subscriptionEndDate: institute.subscriptionEndDate,
+        maxMembers: institute.maxMembers,
+        maxVideoHours: institute.maxVideoHours,
+        featuresEnabled: institute.featuresEnabled
+      };
+    }
+    return null;
+  }
+
+  checkInstituteFeatureAccess(instituteId: number, featureName: string) {
+    const institute = this.institutes.find(inst => inst.id === instituteId);
+    if (institute && institute.featuresEnabled) {
+      return institute.featuresEnabled[featureName] === true;
+    }
+    return false;
+  }
+
+  checkInstituteLimits(instituteId: number) {
+    const institute = this.institutes.find(inst => inst.id === instituteId);
+    if (institute) {
+      return {
+        maxMembers: institute.maxMembers,
+        maxVideoHours: institute.maxVideoHours,
+        currentMembers: institute.studentsCount || 0,
+        currentVideoHours: institute.usedVideoHours || 0
+      };
+    }
+    return null;
   }
 }
 

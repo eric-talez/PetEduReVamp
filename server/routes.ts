@@ -448,6 +448,238 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // 관리자 라우트 등록
   registerAdminRoutes(app);
 
+  // 구독 플랜 관련 API
+  app.get('/api/subscription-plans', async (req, res) => {
+    try {
+      const plans = await storage.getAllSubscriptionPlans();
+      res.json(plans);
+    } catch (error) {
+      console.error('구독 플랜 조회 오류:', error);
+      res.status(500).json({ error: '구독 플랜 조회에 실패했습니다.' });
+    }
+  });
+
+  // 관리자 - 기관 등록 (구독 플랜 포함)
+  app.post('/api/admin/institutes', requireAuth('admin'), async (req, res) => {
+    try {
+      const {
+        name,
+        description,
+        address,
+        phone,
+        email,
+        website,
+        businessNumber,
+        directorName,
+        directorEmail,
+        subscriptionPlan,
+        paymentMethod,
+        isVerified = false
+      } = req.body;
+
+      // 필수 필드 검증
+      if (!name || !email || !subscriptionPlan) {
+        return res.status(400).json({ 
+          error: '기관명, 이메일, 구독 플랜은 필수 항목입니다.' 
+        });
+      }
+
+      // 구독 플랜 정보 조회
+      const plan = await storage.getSubscriptionPlan(subscriptionPlan);
+      if (!plan) {
+        return res.status(400).json({ 
+          error: '유효하지 않은 구독 플랜입니다.' 
+        });
+      }
+
+      // 기관 등록 데이터 생성
+      const instituteData = {
+        name,
+        description,
+        address,
+        phone,
+        email,
+        website,
+        businessNumber,
+        directorName,
+        directorEmail,
+        isVerified,
+        subscriptionPlan: plan.code,
+        subscriptionStatus: 'pending_payment',
+        subscriptionStartDate: new Date().toISOString(),
+        subscriptionEndDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+        maxMembers: plan.maxMembers,
+        maxVideoHours: plan.maxVideoHours,
+        featuresEnabled: plan.features,
+        paymentMethod,
+        monthlyPrice: plan.price
+      };
+
+      // 기관 등록
+      const institute = await storage.createInstituteWithSubscription(instituteData);
+
+      // 결제 처리 시뮬레이션
+      if (paymentMethod === 'card') {
+        // 실제로는 Stripe나 다른 결제 서비스와 연동
+        institute.subscriptionStatus = 'active';
+        institute.paymentStatus = 'paid';
+        institute.lastPaymentDate = new Date().toISOString();
+        institute.nextPaymentDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+      }
+
+      res.status(201).json({
+        success: true,
+        message: '기관이 성공적으로 등록되었습니다.',
+        institute,
+        subscriptionPlan: plan,
+        paymentRequired: paymentMethod !== 'card'
+      });
+
+    } catch (error) {
+      console.error('기관 등록 오류:', error);
+      res.status(500).json({ 
+        error: '기관 등록 중 오류가 발생했습니다.' 
+      });
+    }
+  });
+
+  // 관리자 - 기관 목록 조회
+  app.get('/api/admin/institutes', requireAuth('admin'), async (req, res) => {
+    try {
+      const institutes = await storage.getAllInstitutes();
+      
+      // 구독 플랜 정보 포함
+      const institutesWithPlans = institutes.map(institute => ({
+        ...institute,
+        subscriptionPlanInfo: storage.getSubscriptionPlan(institute.subscriptionPlan)
+      }));
+
+      res.json({
+        success: true,
+        institutes: institutesWithPlans
+      });
+    } catch (error) {
+      console.error('기관 목록 조회 오류:', error);
+      res.status(500).json({ 
+        error: '기관 목록 조회에 실패했습니다.' 
+      });
+    }
+  });
+
+  // 관리자 - 기관 구독 변경
+  app.put('/api/admin/institutes/:id/subscription', requireAuth('admin'), async (req, res) => {
+    try {
+      const instituteId = parseInt(req.params.id);
+      const { subscriptionPlan } = req.body;
+
+      const plan = await storage.getSubscriptionPlan(subscriptionPlan);
+      if (!plan) {
+        return res.status(400).json({ 
+          error: '유효하지 않은 구독 플랜입니다.' 
+        });
+      }
+
+      const updateData = {
+        subscriptionPlan: plan.code,
+        maxMembers: plan.maxMembers,
+        maxVideoHours: plan.maxVideoHours,
+        featuresEnabled: plan.features,
+        monthlyPrice: plan.price
+      };
+
+      const updatedInstitute = await storage.updateInstituteSubscription(instituteId, updateData);
+      
+      if (!updatedInstitute) {
+        return res.status(404).json({ 
+          error: '기관을 찾을 수 없습니다.' 
+        });
+      }
+
+      res.json({
+        success: true,
+        message: '구독 플랜이 변경되었습니다.',
+        institute: updatedInstitute,
+        subscriptionPlan: plan
+      });
+
+    } catch (error) {
+      console.error('구독 플랜 변경 오류:', error);
+      res.status(500).json({ 
+        error: '구독 플랜 변경 중 오류가 발생했습니다.' 
+      });
+    }
+  });
+
+  // 기관 구독 결제 처리
+  app.post('/api/institutes/:id/payment', async (req, res) => {
+    try {
+      const instituteId = parseInt(req.params.id);
+      const { paymentMethod, cardInfo } = req.body;
+
+      const institute = await storage.getInstitute(instituteId);
+      if (!institute) {
+        return res.status(404).json({ 
+          error: '기관을 찾을 수 없습니다.' 
+        });
+      }
+
+      // 결제 처리 시뮬레이션
+      const paymentResult = {
+        success: true,
+        transactionId: 'txn_' + Date.now(),
+        amount: institute.monthlyPrice,
+        currency: 'KRW',
+        method: paymentMethod,
+        status: 'completed',
+        paidAt: new Date().toISOString()
+      };
+
+      // 구독 상태 업데이트
+      const updateData = {
+        subscriptionStatus: 'active',
+        paymentStatus: 'paid',
+        lastPaymentDate: new Date().toISOString(),
+        nextPaymentDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+      };
+
+      await storage.updateInstituteSubscription(instituteId, updateData);
+
+      res.json({
+        success: true,
+        message: '결제가 완료되었습니다.',
+        payment: paymentResult
+      });
+
+    } catch (error) {
+      console.error('결제 처리 오류:', error);
+      res.status(500).json({ 
+        error: '결제 처리 중 오류가 발생했습니다.' 
+      });
+    }
+  });
+
+  // 기관 기능 접근 권한 확인
+  app.get('/api/institutes/:id/access/:feature', async (req, res) => {
+    try {
+      const instituteId = parseInt(req.params.id);
+      const feature = req.params.feature;
+
+      const hasAccess = await storage.checkInstituteFeatureAccess(instituteId, feature);
+      const limits = await storage.checkInstituteLimits(instituteId);
+
+      res.json({
+        hasAccess,
+        limits
+      });
+
+    } catch (error) {
+      console.error('기능 접근 권한 확인 오류:', error);
+      res.status(500).json({ 
+        error: '기능 접근 권한 확인 중 오류가 발생했습니다.' 
+      });
+    }
+  });
+
   // 위치 검색 라우트 등록
   registerLocationRoutes(app);
 
