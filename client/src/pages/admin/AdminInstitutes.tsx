@@ -115,7 +115,8 @@ export default function AdminInstitutes() {
   };
 
   const handlePlanSelect = (planCode: string) => {
-    const plan = subscriptionPlans.find((p: SubscriptionPlan) => p.code === planCode);
+    const plans = Array.isArray(subscriptionPlans) ? subscriptionPlans : [];
+    const plan = plans.find((p: SubscriptionPlan) => p.code === planCode);
     setSelectedPlan(plan || null);
     setNewInstitute({ ...newInstitute, subscriptionPlan: planCode });
   };
@@ -155,7 +156,16 @@ export default function AdminInstitutes() {
       }
       const result = await response.json();
       console.log('[DEBUG] 기관 데이터 응답:', result);
-      return result.success ? result.institutes : result.institutes || [];
+      
+      // 응답 데이터 구조 확인
+      if (result.success && result.institutes) {
+        return result.institutes;
+      } else if (result.data && result.data.institutes) {
+        return result.data.institutes;
+      } else {
+        console.error('[DEBUG] 예상치 못한 응답 구조:', result);
+        return [];
+      }
     },
     staleTime: 5 * 60 * 1000, // 5분
   });
@@ -330,7 +340,7 @@ export default function AdminInstitutes() {
                       <SelectValue placeholder="구독 플랜을 선택하세요" />
                     </SelectTrigger>
                     <SelectContent>
-                      {subscriptionPlans.map((plan: SubscriptionPlan) => (
+                      {(Array.isArray(subscriptionPlans) ? subscriptionPlans : []).map((plan: SubscriptionPlan) => (
                         <SelectItem key={plan.code} value={plan.code}>
                           <div className="flex items-center justify-between w-full">
                             <span>{plan.name}</span>
