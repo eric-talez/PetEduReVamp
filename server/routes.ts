@@ -1023,6 +1023,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       console.log('반려동물 목록 조회 - 사용자 ID:', userId);
+      console.log('전체 세션 정보:', req.session);
       
       // 사용자 ID를 숫자로 변환하여 조회
       let numericUserId = userId;
@@ -1041,9 +1042,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       console.log('매핑된 사용자 ID:', numericUserId);
+      console.log('저장소에서 펫 조회 시도...');
 
       // 사용자별 반려동물 목록 조회
       const userPets = await storage.getPetsByUserId(numericUserId);
+      console.log('저장소에서 조회된 반려동물:', userPets);
       
       // 반려동물 데이터에 훈련소 매칭 정보 추가
       const petsWithTrainingInfo = userPets.map(pet => ({
