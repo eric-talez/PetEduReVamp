@@ -47,6 +47,10 @@ fi
 echo "🔨 프로덕션 빌드 중..."
 npm run build
 
+# 정적 파일 복사
+echo "📂 정적 파일 복사 중..."
+./copy-static-files.sh
+
 # 빌드 결과 확인
 if [ ! -f "dist/index.js" ]; then
     echo "❌ 서버 빌드 실패: dist/index.js 없음"
