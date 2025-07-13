@@ -1335,12 +1335,10 @@ export default function AdminCurriculum() {
           <TabsContent value="curriculum" className="space-y-6">
 
         {/* 간단한 커리큘럼 생성 프로세스 */}
-        <Card className="bg-gradient-to-r from-blue-50 to-green-50 border-2 border-dashed border-blue-300">
+        <Card className="bg-gradient-to-r from-blue-50 to-green-50 dark:from-blue-900/20 dark:to-green-900/20 border-2 border-dashed border-blue-300 dark:border-blue-600">
           <CardHeader>
             <CardTitle className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
-                <Plus className="w-5 h-5 text-white" />
-              </div>
+              <Plus className="w-6 h-6 text-blue-600 dark:text-blue-400" />
               <div>
                 <h2 className="text-xl font-bold text-gray-900 dark:text-white">새 커리큘럼 만들기</h2>
                 <p className="text-sm text-gray-600 dark:text-gray-300 font-normal">커리큘럼 생성부터 영상 등록까지 한 번에!</p>
@@ -1362,23 +1360,23 @@ export default function AdminCurriculum() {
               <Button 
                 onClick={handleAutoRegister}
                 variant="outline" 
-                className="h-20 border-2 border-green-300 hover:bg-green-50"
+                className="h-20 border-2 border-green-300 dark:border-green-600 hover:bg-green-50 dark:hover:bg-green-900/20"
               >
                 <div className="text-center">
-                  <Package className="w-6 h-6 mx-auto mb-2 text-green-600" />
-                  <div className="font-semibold text-green-700">파일 업로드</div>
-                  <div className="text-xs text-green-600">HWP/HWPX/XLSX 자동 분석</div>
+                  <Package className="w-6 h-6 mx-auto mb-2 text-green-600 dark:text-green-400" />
+                  <div className="font-semibold text-green-700 dark:text-green-300">파일 업로드</div>
+                  <div className="text-xs text-green-600 dark:text-green-400">HWP/HWPX/XLSX 자동 분석</div>
                 </div>
               </Button>
               <Button 
                 onClick={handleDownloadTemplate}
                 variant="outline" 
-                className="h-20 border-2 border-blue-300 hover:bg-blue-50"
+                className="h-20 border-2 border-blue-300 dark:border-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20"
               >
                 <div className="text-center">
-                  <Download className="w-6 h-6 mx-auto mb-2 text-blue-600" />
-                  <div className="font-semibold text-blue-700">양식 다운로드</div>
-                  <div className="text-xs text-blue-600">엑셀 표준 양식</div>
+                  <Download className="w-6 h-6 mx-auto mb-2 text-blue-600 dark:text-blue-400" />
+                  <div className="font-semibold text-blue-700 dark:text-blue-300">양식 다운로드</div>
+                  <div className="text-xs text-blue-600 dark:text-blue-400">엑셀 표준 양식</div>
                 </div>
               </Button>
             </div>
@@ -1391,8 +1389,8 @@ export default function AdminCurriculum() {
             <Card>
               <CardHeader>
                 <div className="flex items-center justify-between">
-                  <CardTitle className="flex items-center gap-2">
-                    <BookOpen className="w-5 h-5" />
+                  <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-white">
+                    <BookOpen className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                     등록된 커리큘럼
                   </CardTitle>
                   <div className="flex gap-2">
@@ -1420,11 +1418,11 @@ export default function AdminCurriculum() {
                 {realCurriculumTemplates.map((template, index) => (
                   <div
                     key={index}
-                    className="p-4 border border-gray-200 rounded-lg hover:border-gray-300 transition-colors"
+                    className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:border-gray-300 dark:hover:border-gray-600 transition-colors"
                   >
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
-                        <h3 className="font-semibold text-lg mb-2">{template.title}</h3>
+                        <h3 className="font-semibold text-lg mb-2 text-gray-900 dark:text-white">{template.title}</h3>
                         <p className="text-gray-600 dark:text-gray-300 text-sm mb-3">{template.description}</p>
                         <div className="flex items-center gap-3 mb-3">
                           <Badge variant={getDifficultyColor(template.difficulty)}>
