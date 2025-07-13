@@ -274,7 +274,7 @@ export default function MyPetsPage() {
         
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button onClick={openNewPetDialog} className="flex items-center gap-2">
+            <Button onClick={openNewPetDialog} variant="outline" className="flex items-center gap-2 text-green-600 border-green-300 hover:bg-green-50 hover:text-green-600 hover:border-green-300 transition-all duration-200">
               <Plus className="w-4 h-4" />
               반려동물 등록
             </Button>
@@ -484,7 +484,7 @@ export default function MyPetsPage() {
                 <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
                   취소
                 </Button>
-                <Button type="submit">
+                <Button type="submit" variant="outline" className="text-blue-600 border-blue-300 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-300 transition-all duration-200">
                   {editingPet ? '수정' : '등록'}
                 </Button>
               </div>
@@ -499,7 +499,7 @@ export default function MyPetsPage() {
             <Heart className="w-16 h-16 text-gray-400 mx-auto mb-4" />
             <h3 className="text-xl font-semibold text-gray-900 mb-2">등록된 반려동물이 없습니다</h3>
             <p className="text-gray-600 mb-6">첫 번째 반려동물을 등록해보세요!</p>
-            <Button onClick={openNewPetDialog}>
+            <Button onClick={openNewPetDialog} variant="outline" className="text-green-600 border-green-300 hover:bg-green-50 hover:text-green-600 hover:border-green-300 transition-all duration-200">
               <Plus className="w-4 h-4 mr-2" />
               반려동물 등록
             </Button>
@@ -530,10 +530,10 @@ export default function MyPetsPage() {
                 
                 {/* 수정/삭제 버튼을 이미지 위에 오버레이로 배치 */}
                 <div className="absolute top-2 right-2 flex gap-1">
-                  <Button size="sm" variant="secondary" className="w-8 h-8 p-0 bg-white/80 hover:bg-white/90" onClick={() => handleEdit(pet)}>
+                  <Button size="sm" variant="outline" className="w-8 h-8 p-0 text-blue-600 border-blue-300 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-300 transition-all duration-200" onClick={() => handleEdit(pet)}>
                     <Edit className="w-3 h-3" />
                   </Button>
-                  <Button size="sm" variant="secondary" className="w-8 h-8 p-0 bg-white/80 hover:bg-white/90" onClick={() => handleDelete(pet.id)}>
+                  <Button size="sm" variant="outline" className="w-8 h-8 p-0 text-red-600 border-red-300 hover:bg-red-50 hover:text-red-600 hover:border-red-300 transition-all duration-200" onClick={() => handleDelete(pet.id)}>
                     <Trash2 className="w-3 h-3" />
                   </Button>
                 </div>
