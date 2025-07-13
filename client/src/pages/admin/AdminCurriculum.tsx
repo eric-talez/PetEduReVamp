@@ -1319,11 +1319,11 @@ export default function AdminCurriculum() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
       <div className="max-w-7xl mx-auto">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">커리큘럼 & 영상강의 관리</h1>
-          <p className="text-gray-600">훈련 프로그램 커리큘럼과 영상강의를 통합 관리합니다.</p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">커리큘럼 & 영상강의 관리</h1>
+          <p className="text-gray-600 dark:text-gray-300">훈련 프로그램 커리큘럼과 영상강의를 통합 관리합니다.</p>
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
@@ -1342,8 +1342,8 @@ export default function AdminCurriculum() {
                 <Plus className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h2 className="text-xl font-bold text-gray-900">새 커리큘럼 만들기</h2>
-                <p className="text-sm text-gray-600 font-normal">커리큘럼 생성부터 영상 등록까지 한 번에!</p>
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white">새 커리큘럼 만들기</h2>
+                <p className="text-sm text-gray-600 dark:text-gray-300 font-normal">커리큘럼 생성부터 영상 등록까지 한 번에!</p>
               </div>
             </CardTitle>
           </CardHeader>
@@ -1425,15 +1425,15 @@ export default function AdminCurriculum() {
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <h3 className="font-semibold text-lg mb-2">{template.title}</h3>
-                        <p className="text-gray-600 text-sm mb-3">{template.description}</p>
+                        <p className="text-gray-600 dark:text-gray-300 text-sm mb-3">{template.description}</p>
                         <div className="flex items-center gap-3 mb-3">
                           <Badge variant={getDifficultyColor(template.difficulty)}>
                             {getDifficultyText(template.difficulty)}
                           </Badge>
-                          <span className="text-sm text-gray-500">
+                          <span className="text-sm text-gray-500 dark:text-gray-400">
                             {Math.floor(template.duration / 60)}시간
                           </span>
-                          <span className="text-sm text-gray-500">
+                          <span className="text-sm text-gray-500 dark:text-gray-400">
                             {template.modules.length}개 모듈
                           </span>
                           <span className="text-sm font-medium text-green-600">
@@ -1442,7 +1442,7 @@ export default function AdminCurriculum() {
                         </div>
                         <div className="space-y-1">
                           {template.modules.map((module, moduleIndex) => (
-                            <div key={moduleIndex} className="text-xs text-gray-500">
+                            <div key={moduleIndex} className="text-xs text-gray-500 dark:text-gray-400">
                               • {module.title} ({module.duration}분)
                             </div>
                           ))}
@@ -1509,19 +1509,19 @@ export default function AdminCurriculum() {
                   <div
                     key={curriculum.id}
                     onClick={() => handlePreviewCurriculum(curriculum)}
-                    className="p-3 rounded-lg border cursor-pointer transition-colors border-gray-200 hover:border-gray-300 hover:shadow-md"
+                    className="p-3 rounded-lg border cursor-pointer transition-colors border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 hover:shadow-md"
                   >
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <h3 className="font-medium">{curriculum.title}</h3>
-                        <p className="text-sm text-gray-600 mt-1 line-clamp-2">
+                        <p className="text-sm text-gray-600 dark:text-gray-300 mt-1 line-clamp-2">
                           {curriculum.description}
                         </p>
                         <div className="flex items-center gap-2 mt-2">
                           <Badge variant={getDifficultyColor(curriculum.difficulty)} className="text-xs">
                             {getDifficultyText(curriculum.difficulty)}
                           </Badge>
-                          <span className="text-xs text-gray-500">
+                          <span className="text-xs text-gray-500 dark:text-gray-400">
                             {curriculum.modules.length}개 모듈
                           </span>
                           <Badge variant="outline" className="text-xs">
@@ -1586,8 +1586,8 @@ export default function AdminCurriculum() {
 
                 {/* 커스텀 커리큘럼 생성 폼 */}
                 {isCreating && (
-                  <div className="p-4 border border-dashed border-gray-300 rounded-lg">
-                    <h4 className="font-medium mb-3">새 커리큘럼 생성</h4>
+                  <div className="p-4 border border-dashed border-gray-300 dark:border-gray-600 rounded-lg">
+                    <h4 className="font-medium mb-3 text-gray-900 dark:text-white">새 커리큘럼 생성</h4>
                     <div className="space-y-3">
                       {/* 파일 업로드 섹션 */}
                       <div className="p-3 border-2 border-dashed border-blue-300 rounded-lg bg-blue-50">
@@ -1630,7 +1630,7 @@ export default function AdminCurriculum() {
                         </div>
                       </div>
 
-                      <div className="text-center text-gray-500 text-sm">또는</div>
+                      <div className="text-center text-gray-500 dark:text-gray-400 text-sm">또는</div>
 
                       {/* 수동 입력 폼 */}
                       <Input
@@ -1688,7 +1688,7 @@ export default function AdminCurriculum() {
                 )}
 
                 {curriculums.length === 0 && !isCreating && (
-                  <div className="text-center text-gray-500 py-8">
+                  <div className="text-center text-gray-500 dark:text-gray-400 py-8">
                     <BookOpen className="w-12 h-12 mx-auto mb-2 opacity-50" />
                     <div>등록된 커리큘럼이 없습니다.</div>
                     <div className="text-sm">템플릿을 사용하거나 직접 생성해보세요.</div>
@@ -1887,8 +1887,8 @@ export default function AdminCurriculum() {
           {/* 영상강의 관리 탭 */}
           <TabsContent value="video-lectures" className="space-y-6">
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl font-semibold">커리큘럼 영상 등록 현황</h2>
-              <div className="text-sm text-gray-500">
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-white">커리큘럼 영상 등록 현황</h2>
+              <div className="text-sm text-gray-500 dark:text-gray-400">
                 총 {curriculums.length}개 커리큘럼 등록됨
               </div>
             </div>
@@ -1919,7 +1919,7 @@ export default function AdminCurriculum() {
                             </Badge>
                           </div>
                           
-                          <div className="flex items-center gap-4 mb-3 text-sm text-gray-600">
+                          <div className="flex items-center gap-4 mb-3 text-sm text-gray-600 dark:text-gray-300">
                             <div className="flex items-center gap-1">
                               <User className="w-4 h-4" />
                               <span>{curriculum.trainerName}</span>
@@ -1934,7 +1934,7 @@ export default function AdminCurriculum() {
                             </div>
                           </div>
 
-                          <p className="text-gray-600 text-sm mb-4">{curriculum.description}</p>
+                          <p className="text-gray-600 dark:text-gray-300 text-sm mb-4">{curriculum.description}</p>
                           
                           {/* 영상 등록 현황 */}
                           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
@@ -1963,7 +1963,7 @@ export default function AdminCurriculum() {
                               <div className="text-lg font-bold text-indigo-700">
                                 ₩{(curriculum.totalRevenue || 0).toLocaleString()}
                               </div>
-                              <div className="text-xs text-gray-500">
+                              <div className="text-xs text-gray-500 dark:text-gray-400">
                                 등록학생: {curriculum.enrollmentCount || 0}명
                               </div>
                             </div>
@@ -1972,7 +1972,7 @@ export default function AdminCurriculum() {
                               <div className="text-lg font-bold text-green-700">
                                 ₩{((curriculum.totalRevenue || 0) * (curriculum.revenueShare?.trainerShare || 70) / 100).toLocaleString()}
                               </div>
-                              <div className="text-xs text-gray-500">
+                              <div className="text-xs text-gray-500 dark:text-gray-400">
                                 분배율: {curriculum.revenueShare?.trainerShare || 70}%
                               </div>
                             </div>
@@ -1981,31 +1981,31 @@ export default function AdminCurriculum() {
                               <div className="text-lg font-bold text-blue-700">
                                 ₩{((curriculum.totalRevenue || 0) * (curriculum.revenueShare?.platformShare || 30) / 100).toLocaleString()}
                               </div>
-                              <div className="text-xs text-gray-500">
+                              <div className="text-xs text-gray-500 dark:text-gray-400">
                                 분배율: {curriculum.revenueShare?.platformShare || 30}%
                               </div>
                             </div>
                           </div>
 
                           {/* 등록자 정보 */}
-                          <div className="bg-gray-50 p-4 rounded-lg mb-4">
-                            <h4 className="text-sm font-medium text-gray-700 mb-3">등록자 정보</h4>
+                          <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg mb-4">
+                            <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">등록자 정보</h4>
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                               <div>
-                                <span className="text-gray-500">훈련사:</span>
-                                <span className="ml-2 font-medium">{curriculum.trainerName}</span>
+                                <span className="text-gray-500 dark:text-gray-400">훈련사:</span>
+                                <span className="ml-2 font-medium text-gray-900 dark:text-white">{curriculum.trainerName}</span>
                               </div>
                               <div>
-                                <span className="text-gray-500">이메일:</span>
-                                <span className="ml-2">{curriculum.trainerEmail || '미등록'}</span>
+                                <span className="text-gray-500 dark:text-gray-400">이메일:</span>
+                                <span className="ml-2 text-gray-900 dark:text-white">{curriculum.trainerEmail || '미등록'}</span>
                               </div>
                               <div>
-                                <span className="text-gray-500">연락처:</span>
-                                <span className="ml-2">{curriculum.trainerPhone || '미등록'}</span>
+                                <span className="text-gray-500 dark:text-gray-400">연락처:</span>
+                                <span className="ml-2 text-gray-900 dark:text-white">{curriculum.trainerPhone || '미등록'}</span>
                               </div>
                             </div>
                             {curriculum.lastSaleDate && (
-                              <div className="mt-2 text-xs text-gray-500">
+                              <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
                                 마지막 판매: {curriculum.lastSaleDate ? (typeof curriculum.lastSaleDate === 'string' ? new Date(curriculum.lastSaleDate).toLocaleDateString() : curriculum.lastSaleDate.toLocaleDateString()) : '미판매'}
                               </div>
                             )}
@@ -2168,21 +2168,21 @@ export default function AdminCurriculum() {
 
             {/* 커리큘럼별 수익 상세 */}
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold">커리큘럼별 수익 현황</h3>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">커리큘럼별 수익 현황</h3>
               
               <div className="overflow-x-auto">
-                <table className="w-full border-collapse border border-gray-200 rounded-lg">
-                  <thead className="bg-gray-50">
+                <table className="w-full border-collapse border border-gray-200 dark:border-gray-700 rounded-lg">
+                  <thead className="bg-gray-50 dark:bg-gray-800">
                     <tr>
-                      <th className="border border-gray-200 px-4 py-3 text-left font-semibold">커리큘럼</th>
-                      <th className="border border-gray-200 px-4 py-3 text-left font-semibold">등록자</th>
-                      <th className="border border-gray-200 px-4 py-3 text-right font-semibold">가격</th>
-                      <th className="border border-gray-200 px-4 py-3 text-right font-semibold">등록학생</th>
-                      <th className="border border-gray-200 px-4 py-3 text-right font-semibold">총 수익</th>
-                      <th className="border border-gray-200 px-4 py-3 text-right font-semibold">훈련사 수익</th>
-                      <th className="border border-gray-200 px-4 py-3 text-right font-semibold">플랫폼 수익</th>
-                      <th className="border border-gray-200 px-4 py-3 text-center font-semibold">분배율</th>
-                      <th className="border border-gray-200 px-4 py-3 text-center font-semibold">상태</th>
+                      <th className="border border-gray-200 dark:border-gray-700 px-4 py-3 text-left font-semibold text-gray-900 dark:text-white">커리큘럼</th>
+                      <th className="border border-gray-200 dark:border-gray-700 px-4 py-3 text-left font-semibold text-gray-900 dark:text-white">등록자</th>
+                      <th className="border border-gray-200 dark:border-gray-700 px-4 py-3 text-right font-semibold text-gray-900 dark:text-white">가격</th>
+                      <th className="border border-gray-200 dark:border-gray-700 px-4 py-3 text-right font-semibold text-gray-900 dark:text-white">등록학생</th>
+                      <th className="border border-gray-200 dark:border-gray-700 px-4 py-3 text-right font-semibold text-gray-900 dark:text-white">총 수익</th>
+                      <th className="border border-gray-200 dark:border-gray-700 px-4 py-3 text-right font-semibold text-gray-900 dark:text-white">훈련사 수익</th>
+                      <th className="border border-gray-200 dark:border-gray-700 px-4 py-3 text-right font-semibold text-gray-900 dark:text-white">플랫폼 수익</th>
+                      <th className="border border-gray-200 dark:border-gray-700 px-4 py-3 text-center font-semibold text-gray-900 dark:text-white">분배율</th>
+                      <th className="border border-gray-200 dark:border-gray-700 px-4 py-3 text-center font-semibold text-gray-900 dark:text-white">상태</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -2191,41 +2191,41 @@ export default function AdminCurriculum() {
                       const platformRevenue = (curriculum.totalRevenue || 0) * (curriculum.revenueShare?.platformShare || 30) / 100;
                       
                       return (
-                        <tr key={curriculum.id} className="hover:bg-gray-50">
-                          <td className="border border-gray-200 px-4 py-3">
+                        <tr key={curriculum.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
+                          <td className="border border-gray-200 dark:border-gray-700 px-4 py-3">
                             <div>
-                              <div className="font-medium">{curriculum.title}</div>
-                              <div className="text-sm text-gray-500">{curriculum.category}</div>
+                              <div className="font-medium text-gray-900 dark:text-white">{curriculum.title}</div>
+                              <div className="text-sm text-gray-500 dark:text-gray-400">{curriculum.category}</div>
                             </div>
                           </td>
-                          <td className="border border-gray-200 px-4 py-3">
+                          <td className="border border-gray-200 dark:border-gray-700 px-4 py-3">
                             <div>
-                              <div className="font-medium">{curriculum.trainerName}</div>
-                              <div className="text-sm text-gray-500">{curriculum.trainerEmail || '이메일 미등록'}</div>
+                              <div className="font-medium text-gray-900 dark:text-white">{curriculum.trainerName}</div>
+                              <div className="text-sm text-gray-500 dark:text-gray-400">{curriculum.trainerEmail || '이메일 미등록'}</div>
                             </div>
                           </td>
-                          <td className="border border-gray-200 px-4 py-3 text-right font-medium">
+                          <td className="border border-gray-200 dark:border-gray-700 px-4 py-3 text-right font-medium text-gray-900 dark:text-white">
                             ₩{curriculum.price.toLocaleString()}
                           </td>
-                          <td className="border border-gray-200 px-4 py-3 text-right">
+                          <td className="border border-gray-200 dark:border-gray-700 px-4 py-3 text-right text-gray-900 dark:text-white">
                             {curriculum.enrollmentCount || 0}명
                           </td>
-                          <td className="border border-gray-200 px-4 py-3 text-right font-bold text-blue-600">
+                          <td className="border border-gray-200 dark:border-gray-700 px-4 py-3 text-right font-bold text-blue-600">
                             ₩{(curriculum.totalRevenue || 0).toLocaleString()}
                           </td>
-                          <td className="border border-gray-200 px-4 py-3 text-right font-medium text-green-600">
+                          <td className="border border-gray-200 dark:border-gray-700 px-4 py-3 text-right font-medium text-green-600">
                             ₩{trainerRevenue.toLocaleString()}
                           </td>
-                          <td className="border border-gray-200 px-4 py-3 text-right font-medium text-purple-600">
+                          <td className="border border-gray-200 dark:border-gray-700 px-4 py-3 text-right font-medium text-purple-600">
                             ₩{platformRevenue.toLocaleString()}
                           </td>
-                          <td className="border border-gray-200 px-4 py-3 text-center">
+                          <td className="border border-gray-200 dark:border-gray-700 px-4 py-3 text-center">
                             <div className="text-sm">
                               <div className="text-green-600">{curriculum.revenueShare?.trainerShare || 70}%</div>
                               <div className="text-purple-600">{curriculum.revenueShare?.platformShare || 30}%</div>
                             </div>
                           </td>
-                          <td className="border border-gray-200 px-4 py-3 text-center">
+                          <td className="border border-gray-200 dark:border-gray-700 px-4 py-3 text-center">
                             <Badge variant={curriculum.status === 'published' ? 'default' : 'secondary'}>
                               {curriculum.status === 'published' ? '발행됨' : '초안'}
                             </Badge>
@@ -2238,13 +2238,13 @@ export default function AdminCurriculum() {
               </div>
 
               {curriculums.length === 0 && (
-                <Card className="bg-gray-50">
+                <Card className="bg-gray-50 dark:bg-gray-800">
                   <CardContent className="p-8 text-center">
                     <Package className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                    <h3 className="font-medium text-gray-900 mb-2">
+                    <h3 className="font-medium text-gray-900 dark:text-white mb-2">
                       수익 데이터가 없습니다
                     </h3>
-                    <p className="text-gray-500 text-sm">
+                    <p className="text-gray-500 dark:text-gray-400 text-sm">
                       발행된 커리큘럼이 없거나 아직 등록 학생이 없습니다.
                     </p>
                   </CardContent>
@@ -2263,27 +2263,27 @@ export default function AdminCurriculum() {
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-4">
-                    <h4 className="font-medium">기본 수익 분배율</h4>
+                    <h4 className="font-medium text-gray-900 dark:text-white">기본 수익 분배율</h4>
                     <div className="space-y-2">
                       <div className="flex justify-between">
-                        <span>훈련사 수익:</span>
+                        <span className="text-gray-700 dark:text-gray-300">훈련사 수익:</span>
                         <span className="font-medium text-green-600">70%</span>
                       </div>
                       <div className="flex justify-between">
-                        <span>플랫폼 수익:</span>
+                        <span className="text-gray-700 dark:text-gray-300">플랫폼 수익:</span>
                         <span className="font-medium text-purple-600">30%</span>
                       </div>
                     </div>
                   </div>
                   <div className="space-y-4">
-                    <h4 className="font-medium">전문과정 수익 분배율</h4>
+                    <h4 className="font-medium text-gray-900 dark:text-white">전문과정 수익 분배율</h4>
                     <div className="space-y-2">
                       <div className="flex justify-between">
-                        <span>훈련사 수익:</span>
+                        <span className="text-gray-700 dark:text-gray-300">훈련사 수익:</span>
                         <span className="font-medium text-green-600">75%</span>
                       </div>
                       <div className="flex justify-between">
-                        <span>플랫폼 수익:</span>
+                        <span className="text-gray-700 dark:text-gray-300">플랫폼 수익:</span>
                         <span className="font-medium text-purple-600">25%</span>
                       </div>
                     </div>
@@ -2303,7 +2303,7 @@ export default function AdminCurriculum() {
           <TabsContent value="pending-approval" className="space-y-6">
             {userRole === 'admin' ? (
               <div>
-                <h2 className="text-xl font-semibold mb-4">승인 대기 중인 영상강의</h2>
+                <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">승인 대기 중인 영상강의</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {videoLectures.filter(lecture => lecture.status === 'pending').map((lecture) => (
                     <Card key={lecture.id} className="border-orange-200 dark:border-orange-800">
@@ -2323,10 +2323,10 @@ export default function AdminCurriculum() {
                         </p>
 
                         <div className="mb-4">
-                          <div className="text-sm text-gray-500 mb-2">모듈 정보:</div>
+                          <div className="text-sm text-gray-500 dark:text-gray-400 mb-2">모듈 정보:</div>
                           <div className="space-y-1">
                             {lecture.modules.slice(0, 3).map((module, idx) => (
-                              <div key={idx} className="text-xs text-gray-600 flex items-center gap-2">
+                              <div key={idx} className="text-xs text-gray-600 dark:text-gray-300 flex items-center gap-2">
                                 <BookOpen className="h-3 w-3" />
                                 <span>{module.title} ({module.duration}분)</span>
                                 <Badge variant="outline" className="text-xs">
@@ -2336,7 +2336,7 @@ export default function AdminCurriculum() {
                               </div>
                             ))}
                             {lecture.modules.length > 3 && (
-                              <div className="text-xs text-gray-500">
+                              <div className="text-xs text-gray-500 dark:text-gray-400">
                                 외 {lecture.modules.length - 3}개 모듈
                               </div>
                             )}

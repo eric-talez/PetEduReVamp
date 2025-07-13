@@ -151,6 +151,15 @@ TALEZ is a comprehensive pet education and e-commerce platform that combines AI-
 
 ## Changelog
 
+- July 13, 2025. **DARK MODE COMPATIBILITY COMPLETED** - Fixed all dark mode background color issues in admin curriculum management page:
+  - **Main Container**: Updated `bg-gray-50` to `bg-gray-50 dark:bg-gray-900` for proper dark mode support
+  - **Text Colors**: Fixed all hardcoded text colors with dark mode variants (`text-gray-900 dark:text-white`, `text-gray-600 dark:text-gray-300`)
+  - **Tables**: Enhanced table styling with dark mode borders and backgrounds (`border-gray-200 dark:border-gray-700`, `bg-gray-50 dark:bg-gray-800`)
+  - **Cards & Borders**: Applied dark mode support to all card elements and borders throughout the interface
+  - **Hover Effects**: Added proper hover states for both light and dark modes (`hover:bg-gray-50 dark:hover:bg-gray-800`)
+  - **Small Text**: Fixed secondary text colors (`text-gray-500 dark:text-gray-400`) for better readability
+  - **Complete Coverage**: All curriculum management, revenue settlement, and approval sections now fully dark mode compatible
+  - **Production Ready**: Dark mode now works seamlessly across all admin curriculum management features
 - July 13, 2025. **SERVICE DEMO PREPARATION COMPLETED** - Comprehensive demo setup with test accounts, scenarios, and monitoring tools:
   - **Demo Accounts Ready**: 4 test accounts configured (test, trainer, admin, institute) with role-based access
   - **Demo Scenarios**: Complete user journey scenarios with step-by-step instructions
