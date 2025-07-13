@@ -1328,8 +1328,14 @@ export default function AdminCurriculum() {
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="curriculum">📚 커리큘럼 & 영상 관리</TabsTrigger>
-            <TabsTrigger value="revenue-management">💰 수익 정산</TabsTrigger>
+            <TabsTrigger value="curriculum" className="flex items-center gap-2">
+              <BookOpen className="w-4 h-4" />
+              커리큘럼 & 영상 관리
+            </TabsTrigger>
+            <TabsTrigger value="revenue-management" className="flex items-center gap-2">
+              <DollarSign className="w-4 h-4" />
+              수익 정산
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="curriculum" className="space-y-6">

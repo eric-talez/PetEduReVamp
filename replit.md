@@ -160,6 +160,7 @@ TALEZ is a comprehensive pet education and e-commerce platform that combines AI-
   - **Small Text**: Fixed secondary text colors (`text-gray-500 dark:text-gray-400`) for better readability
   - **Complete Coverage**: All curriculum management, revenue settlement, and approval sections now fully dark mode compatible
   - **Icon Consistency**: Fixed Plus icon in "새 커리큘럼 만들기" section to match overall design (removed circular background)
+  - **Tab Icons**: Replaced emoji icons (📚, 💰) with consistent Lucide React icons (BookOpen, DollarSign) in main tabs
   - **Theme Support**: Added dark mode variants for card backgrounds, buttons, and borders in creation section
   - **Production Ready**: Dark mode now works seamlessly across all admin curriculum management features
 - July 13, 2025. **SERVICE DEMO PREPARATION COMPLETED** - Comprehensive demo setup with test accounts, scenarios, and monitoring tools:
