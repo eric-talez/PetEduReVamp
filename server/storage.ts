@@ -316,6 +316,14 @@ class Storage {
     return this.institutes || [];
   }
 
+  getSubscriptionPlan(planCode: string) {
+    return this.subscriptionPlans.find(plan => plan.code === planCode) || null;
+  }
+
+  getSubscriptionPlans() {
+    return this.subscriptionPlans || [];
+  }
+
   getInstitute(id: number) {
     return this.institutes?.find(institute => institute.id === id);
   }

@@ -546,6 +546,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // 관리자 - 기관 목록 조회
   app.get('/api/admin/institutes', requireAuth('admin'), async (req, res) => {
     try {
+      console.log('[Admin] 기관 목록 조회 요청');
       const institutes = await storage.getAllInstitutes();
       
       // 구독 플랜 정보 포함
@@ -554,14 +555,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         subscriptionPlanInfo: storage.getSubscriptionPlan(institute.subscriptionPlan)
       }));
 
+      console.log('[Admin] 기관 목록 응답:', institutesWithPlans.length + '개');
+      
       res.json({
         success: true,
         institutes: institutesWithPlans
       });
     } catch (error) {
-      console.error('기관 목록 조회 오류:', error);
+      console.error('[Admin] 기관 목록 조회 오류:', error);
       res.status(500).json({ 
-        error: '기관 목록 조회에 실패했습니다.' 
+        success: false,
+        error: '기관 목록 조회에 실패했습니다.',
+        institutes: []
       });
     }
   });

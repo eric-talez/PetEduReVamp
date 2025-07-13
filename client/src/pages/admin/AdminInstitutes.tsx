@@ -154,7 +154,8 @@ export default function AdminInstitutes() {
         throw new Error('기관 데이터를 불러올 수 없습니다');
       }
       const result = await response.json();
-      return result.success ? result.institutes : [];
+      console.log('[DEBUG] 기관 데이터 응답:', result);
+      return result.success ? result.institutes : result.institutes || [];
     },
     staleTime: 5 * 60 * 1000, // 5분
   });
