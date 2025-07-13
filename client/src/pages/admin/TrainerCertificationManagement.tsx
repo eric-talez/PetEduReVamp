@@ -465,7 +465,7 @@ export default function TrainerCertificationManagement() {
                   {applications && applications.length > 0 ? applications.slice(0, 5).map((application) => (
                     <div key={application.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                       <div>
-                        <p className="font-medium">신청 ID: {application.id}</p>
+                        <p className="font-medium text-[#2b3245]">신청 ID: {application.id}</p>
                         <p className="text-sm text-muted-foreground">
                           {new Date(application.applicationDate).toLocaleDateString()}
                         </p>
