@@ -7,7 +7,8 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Pencil, Trash2, Search, Plus, Save, X } from 'lucide-react';
+import { Pencil, Trash2, Search, Plus, Save, X, FileText } from 'lucide-react';
+import { InvoiceGenerator } from '@/components/InvoiceGenerator';
 
 // 임시 데이터 - 실제로는 API에서 가져와야 함
 const MOCK_PRODUCTS = [
@@ -94,6 +95,9 @@ export default function CommissionManagement() {
   const [newBasePrice, setNewBasePrice] = useState<number>(0);
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [categoryFilter, setCategoryFilter] = useState<string>('전체');
+  const [isInvoiceDialogOpen, setIsInvoiceDialogOpen] = useState(false);
+  const [selectedSettlement, setSelectedSettlement] = useState<any>(null);
+  const [generatedInvoices, setGeneratedInvoices] = useState<any[]>([]);
   
   // 상품 검색 및 필터링 기능
   const filteredProducts = products.filter(product => {
@@ -119,6 +123,36 @@ export default function CommissionManagement() {
   // 편집 취소
   const handleCancelEdit = () => {
     setEditingProductId(null);
+  };
+
+  // 정산승인 처리
+  const handleSettlementApproval = (referrer: any) => {
+    setSelectedSettlement(referrer);
+    setIsInvoiceDialogOpen(true);
+  };
+
+  // 계산서 발행 완료 처리
+  const handleInvoiceGenerated = (invoiceData: any) => {
+    // 정산 상태를 '지급완료'로 변경
+    setReferrers(prev => 
+      prev.map(referrer => 
+        referrer.id === selectedSettlement.id 
+          ? { ...referrer, status: '지급완료' }
+          : referrer
+      )
+    );
+    
+    // 생성된 계산서 저장
+    setGeneratedInvoices(prev => [...prev, invoiceData]);
+    
+    // 성공 메시지 표시
+    alert(`${selectedSettlement.name}님의 정산이 완료되었습니다.\n계산서 번호: ${invoiceData.id}`);
+  };
+
+  // 계산서 다이얼로그 닫기
+  const handleInvoiceDialogClose = () => {
+    setIsInvoiceDialogOpen(false);
+    setSelectedSettlement(null);
   };
 
   // 구독 상품 편집 시작
@@ -652,10 +686,21 @@ export default function CommissionManagement() {
                           </Badge>
                         </TableCell>
                         <TableCell>
-                          {referrer.id % 2 !== 0 && (
-                            <Button size="sm" variant="outline">
-                              정산 승인
-                            </Button>
+                          {referrer.id % 2 !== 0 ? (
+                            <div className="flex gap-2">
+                              <Button 
+                                size="sm" 
+                                variant="outline"
+                                onClick={() => handleSettlementApproval(referrer)}
+                              >
+                                <FileText className="h-4 w-4 mr-1" />
+                                정산 승인
+                              </Button>
+                            </div>
+                          ) : (
+                            <Badge variant="default" className="text-xs">
+                              지급완료
+                            </Badge>
                           )}
                         </TableCell>
                       </TableRow>
@@ -667,6 +712,14 @@ export default function CommissionManagement() {
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* 계산서 발행 다이얼로그 */}
+      <InvoiceGenerator
+        isOpen={isInvoiceDialogOpen}
+        onClose={handleInvoiceDialogClose}
+        settlement={selectedSettlement}
+        onInvoiceGenerated={handleInvoiceGenerated}
+      />
     </div>
   );
 }
