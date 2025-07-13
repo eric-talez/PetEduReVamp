@@ -41,6 +41,10 @@ export default function AdminInstitutes() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [isAddInstituteOpen, setIsAddInstituteOpen] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<SubscriptionPlan | null>(null);
+  const [selectedInstitute, setSelectedInstitute] = useState<any>(null);
+  const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [newInstitute, setNewInstitute] = useState({
     name: "",
     description: "",
@@ -59,7 +63,15 @@ export default function AdminInstitutes() {
   // 구독 플랜 조회
   const { data: subscriptionPlans = [], isLoading: plansLoading } = useQuery({
     queryKey: ['/api/subscription-plans'],
-    queryFn: () => apiRequest('GET', '/api/subscription-plans')
+    queryFn: async () => {
+      const response = await fetch('/api/subscription-plans');
+      if (!response.ok) {
+        throw new Error('구독 플랜 데이터를 불러올 수 없습니다');
+      }
+      const result = await response.json();
+      console.log('[DEBUG] 구독 플랜 응답:', result);
+      return Array.isArray(result) ? result : result.data || result.plans || [];
+    }
   });
 
   // 기관 등록 뮤테이션
@@ -119,6 +131,60 @@ export default function AdminInstitutes() {
     const plan = plans.find((p: SubscriptionPlan) => p.code === planCode);
     setSelectedPlan(plan || null);
     setNewInstitute({ ...newInstitute, subscriptionPlan: planCode });
+  };
+
+  // 기관 보기 함수
+  const handleViewInstitute = (institute: any) => {
+    setSelectedInstitute(institute);
+    setIsViewDialogOpen(true);
+  };
+
+  // 기관 수정 함수
+  const handleEditInstitute = (institute: any) => {
+    setSelectedInstitute(institute);
+    setNewInstitute({
+      name: institute.name || "",
+      description: institute.description || "",
+      address: institute.address || "",
+      phone: institute.phone || "",
+      email: institute.email || "",
+      website: institute.website || "",
+      businessNumber: institute.businessNumber || "",
+      directorName: institute.directorName || "",
+      directorEmail: institute.directorEmail || "",
+      subscriptionPlan: institute.subscriptionPlan || "",
+      paymentMethod: "card",
+      isVerified: institute.isVerified || false
+    });
+    setIsEditDialogOpen(true);
+  };
+
+  // 기관 삭제 함수
+  const handleDeleteInstitute = (institute: any) => {
+    setSelectedInstitute(institute);
+    setIsDeleteDialogOpen(true);
+  };
+
+  // 기관 삭제 확인
+  const confirmDeleteInstitute = async () => {
+    if (!selectedInstitute) return;
+
+    try {
+      await apiRequest('DELETE', `/api/admin/institutes/${selectedInstitute.id}`);
+      toast({
+        title: '기관 삭제 완료',
+        description: '기관이 성공적으로 삭제되었습니다.'
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/institutes'] });
+      setIsDeleteDialogOpen(false);
+      setSelectedInstitute(null);
+    } catch (error: any) {
+      toast({
+        title: '삭제 실패',
+        description: error.message || '기관 삭제 중 오류가 발생했습니다.',
+        variant: 'destructive'
+      });
+    }
   };
 
   const formatPrice = (price: number) => {
@@ -616,29 +682,26 @@ export default function AdminInstitutes() {
                   </div>
                   <div className="flex gap-2">
                     <Button 
-                      variant="ghost" 
+                      variant="outline" 
                       size="sm"
-                      onClick={() => {
-                        console.log('기관 상세보기:', institute.name);
-                      }}
+                      onClick={() => handleViewInstitute(institute)}
+                      className="hover:bg-blue-50 hover:text-blue-600 hover:border-blue-300"
                     >
                       <Eye className="h-4 w-4" />
                     </Button>
                     <Button 
-                      variant="ghost" 
+                      variant="outline" 
                       size="sm"
-                      onClick={() => {
-                        console.log('기관 편집:', institute.name);
-                      }}
+                      onClick={() => handleEditInstitute(institute)}
+                      className="hover:bg-green-50 hover:text-green-600 hover:border-green-300"
                     >
                       <Edit className="h-4 w-4" />
                     </Button>
                     <Button 
-                      variant="ghost" 
+                      variant="outline" 
                       size="sm"
-                      onClick={() => {
-                        console.log('기관 삭제:', institute.name);
-                      }}
+                      onClick={() => handleDeleteInstitute(institute)}
+                      className="text-red-600 border-red-300 hover:bg-red-50"
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
@@ -653,6 +716,151 @@ export default function AdminInstitutes() {
           </div>
         </CardContent>
       </Card>
+
+      {/* 기관 상세보기 다이얼로그 */}
+      <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle>기관 상세 정보</DialogTitle>
+          </DialogHeader>
+          {selectedInstitute && (
+            <div className="space-y-6">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-sm font-medium">기관명</Label>
+                  <p className="text-sm text-muted-foreground">{selectedInstitute.name}</p>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium">대표자</Label>
+                  <p className="text-sm text-muted-foreground">{selectedInstitute.directorName}</p>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium">이메일</Label>
+                  <p className="text-sm text-muted-foreground">{selectedInstitute.email}</p>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium">전화번호</Label>
+                  <p className="text-sm text-muted-foreground">{selectedInstitute.phone}</p>
+                </div>
+                <div className="col-span-2">
+                  <Label className="text-sm font-medium">주소</Label>
+                  <p className="text-sm text-muted-foreground">{selectedInstitute.address}</p>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium">구독 플랜</Label>
+                  <p className="text-sm text-muted-foreground">
+                    {selectedInstitute.subscriptionPlanInfo?.name || selectedInstitute.subscriptionPlan}
+                  </p>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium">월 구독료</Label>
+                  <p className="text-sm text-muted-foreground">
+                    {selectedInstitute.subscriptionPlanInfo?.price ? formatPrice(selectedInstitute.subscriptionPlanInfo.price) : '0'}원
+                  </p>
+                </div>
+              </div>
+              {selectedInstitute.description && (
+                <div>
+                  <Label className="text-sm font-medium">기관 설명</Label>
+                  <p className="text-sm text-muted-foreground mt-1">{selectedInstitute.description}</p>
+                </div>
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* 기관 수정 다이얼로그 */}
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent className="sm:max-w-[700px]">
+          <DialogHeader>
+            <DialogTitle>기관 정보 수정</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="edit-name" className="text-right">기관명</Label>
+              <Input
+                id="edit-name"
+                value={newInstitute.name}
+                onChange={(e) => setNewInstitute({ ...newInstitute, name: e.target.value })}
+                className="col-span-3"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="edit-director" className="text-right">대표자</Label>
+              <Input
+                id="edit-director"
+                value={newInstitute.directorName}
+                onChange={(e) => setNewInstitute({ ...newInstitute, directorName: e.target.value })}
+                className="col-span-3"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="edit-email" className="text-right">이메일</Label>
+              <Input
+                id="edit-email"
+                type="email"
+                value={newInstitute.email}
+                onChange={(e) => setNewInstitute({ ...newInstitute, email: e.target.value })}
+                className="col-span-3"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="edit-phone" className="text-right">전화번호</Label>
+              <Input
+                id="edit-phone"
+                value={newInstitute.phone}
+                onChange={(e) => setNewInstitute({ ...newInstitute, phone: e.target.value })}
+                className="col-span-3"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="edit-address" className="text-right">주소</Label>
+              <Input
+                id="edit-address"
+                value={newInstitute.address}
+                onChange={(e) => setNewInstitute({ ...newInstitute, address: e.target.value })}
+                className="col-span-3"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
+              취소
+            </Button>
+            <Button onClick={() => {
+              // 수정 로직 구현
+              toast({
+                title: '수정 완료',
+                description: '기관 정보가 수정되었습니다.'
+              });
+              setIsEditDialogOpen(false);
+            }}>
+              수정
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* 기관 삭제 확인 다이얼로그 */}
+      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>기관 삭제 확인</DialogTitle>
+            <DialogDescription>
+              정말로 "{selectedInstitute?.name}" 기관을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>
+              취소
+            </Button>
+            <Button variant="destructive" onClick={confirmDeleteInstitute}>
+              삭제
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

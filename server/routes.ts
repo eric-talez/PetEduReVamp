@@ -451,7 +451,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // 구독 플랜 관련 API
   app.get('/api/subscription-plans', async (req, res) => {
     try {
-      const plans = await storage.getAllSubscriptionPlans();
+      const plans = await storage.getSubscriptionPlans();
+      console.log('[Admin] 구독 플랜 조회:', plans.length + '개');
       res.json(plans);
     } catch (error) {
       console.error('구독 플랜 조회 오류:', error);
@@ -659,6 +660,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error('결제 처리 오류:', error);
       res.status(500).json({ 
         error: '결제 처리 중 오류가 발생했습니다.' 
+      });
+    }
+  });
+
+  // 관리자 - 기관 삭제
+  app.delete('/api/admin/institutes/:id', requireAuth('admin'), async (req, res) => {
+    try {
+      const instituteId = parseInt(req.params.id);
+      
+      const success = await storage.deleteInstitute(instituteId);
+      if (!success) {
+        return res.status(404).json({ 
+          error: '기관을 찾을 수 없습니다.' 
+        });
+      }
+
+      res.json({
+        success: true,
+        message: '기관이 성공적으로 삭제되었습니다.'
+      });
+    } catch (error) {
+      console.error('[Admin] 기관 삭제 오류:', error);
+      res.status(500).json({ 
+        error: '기관 삭제 중 오류가 발생했습니다.' 
       });
     }
   });

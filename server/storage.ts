@@ -535,6 +535,16 @@ class Storage {
     return null;
   }
 
+  deleteInstitute(instituteId: number): boolean {
+    const index = this.institutes.findIndex(i => i.id === instituteId);
+    if (index === -1) {
+      return false;
+    }
+
+    this.institutes.splice(index, 1);
+    return true;
+  }
+
   getInstituteSubscriptionInfo(instituteId: number) {
     const institute = this.institutes.find(inst => inst.id === instituteId);
     if (institute) {
