@@ -145,6 +145,14 @@ TALEZ is a comprehensive pet education and e-commerce platform that combines AI-
 
 ## Changelog
 
+- July 13, 2025. **PRODUCTION DEPLOYMENT CONFIGURATION COMPLETED** - Fixed all critical port configuration and environment variable issues for EC2 deployment:
+  - **Port Configuration Fixed**: Updated PM2 production environment from port 3000 to 5000 to match Nginx proxy settings
+  - **Environment Variables Added**: Added OPENAI_API_KEY and KAKAO_MAPS_API_KEY to .env for AI and maps functionality
+  - **Nginx Deployment Guide**: Created comprehensive nginx-deployment-guide.md with current server structure analysis
+  - **Server-Specific Scripts**: Created deploy-for-nginx.sh optimized for current funnytalez.com server environment
+  - **Port Consistency**: Both ecosystem.config.cjs and ecosystem.config.mjs now use port 5000 for production
+  - **API Integration**: OpenAI and Kakao Maps APIs now properly configured for production deployment
+  - **Zero Configuration Conflicts**: All deployment scripts and configurations aligned with current Nginx setup
 - July 13, 2025. **PRODUCTION BUILD COMPILATION ERRORS RESOLVED** - Fixed all critical TypeScript/JSX compilation errors for EC2 deployment:
   - **Community.tsx Fixes**: Resolved JSX syntax errors, missing imports, and undefined variables (setPosts issue)
   - **AdminCharts.tsx Compilation**: Fixed TypeScript JSX compilation errors for chart components
