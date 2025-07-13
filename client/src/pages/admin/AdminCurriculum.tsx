@@ -1327,12 +1327,18 @@ export default function AdminCurriculum() {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="curriculum" className="flex items-center gap-2">
+          <TabsList className="grid w-full grid-cols-2 bg-gray-100 dark:bg-gray-800 p-1 rounded-lg">
+            <TabsTrigger 
+              value="curriculum" 
+              className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-blue-600 dark:data-[state=active]:bg-gray-700 dark:data-[state=active]:text-blue-400 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
+            >
               <BookOpen className="w-4 h-4" />
               커리큘럼 & 영상 관리
             </TabsTrigger>
-            <TabsTrigger value="revenue-management" className="flex items-center gap-2">
+            <TabsTrigger 
+              value="revenue-management" 
+              className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-blue-600 dark:data-[state=active]:bg-gray-700 dark:data-[state=active]:text-blue-400 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
+            >
               <DollarSign className="w-4 h-4" />
               수익 정산
             </TabsTrigger>
@@ -1341,7 +1347,7 @@ export default function AdminCurriculum() {
           <TabsContent value="curriculum" className="space-y-6">
 
         {/* 간단한 커리큘럼 생성 프로세스 */}
-        <Card className="bg-gradient-to-r from-blue-50 to-green-50 dark:from-blue-900/20 dark:to-green-900/20 border-2 border-dashed border-blue-300 dark:border-blue-600">
+        <Card className="bg-gradient-to-r from-blue-50 to-green-50 dark:from-blue-900/20 dark:to-green-900/20 border-2 border-dashed border-blue-300 dark:border-blue-600 shadow-lg hover:shadow-xl transition-shadow duration-300">
           <CardHeader>
             <CardTitle className="flex items-center gap-3">
               <Plus className="w-6 h-6 text-blue-600 dark:text-blue-400" />
@@ -1355,7 +1361,8 @@ export default function AdminCurriculum() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <Button 
                 onClick={handleStartCreation}
-                className="h-20 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white"
+                className="h-20 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-sm hover:shadow-md transition-all duration-200 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                aria-label="새 커리큘럼 직접 작성하기"
               >
                 <div className="text-center">
                   <Edit className="w-6 h-6 mx-auto mb-2" />
@@ -1366,7 +1373,8 @@ export default function AdminCurriculum() {
               <Button 
                 onClick={handleAutoRegister}
                 variant="outline" 
-                className="h-20 border-2 border-green-300 dark:border-green-600 hover:bg-green-50 dark:hover:bg-green-900/20"
+                className="h-20 border-2 border-green-300 dark:border-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 shadow-sm hover:shadow-md transition-all duration-200 focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+                aria-label="파일 업로드로 커리큘럼 생성하기"
               >
                 <div className="text-center">
                   <Package className="w-6 h-6 mx-auto mb-2 text-green-600 dark:text-green-400" />
@@ -1377,7 +1385,8 @@ export default function AdminCurriculum() {
               <Button 
                 onClick={handleDownloadTemplate}
                 variant="outline" 
-                className="h-20 border-2 border-blue-300 dark:border-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                className="h-20 border-2 border-blue-300 dark:border-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 shadow-sm hover:shadow-md transition-all duration-200 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                aria-label="커리큘럼 작성 양식 다운로드"
               >
                 <div className="text-center">
                   <Download className="w-6 h-6 mx-auto mb-2 text-blue-600 dark:text-blue-400" />
@@ -1403,7 +1412,8 @@ export default function AdminCurriculum() {
                     <Button 
                       onClick={handleStartCreation}
                       size="sm"
-                      className="flex items-center gap-1 bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600"
+                      className="flex items-center gap-1 bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 shadow-sm hover:shadow-md transition-all duration-200 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                      aria-label="쉬운 커리큘럼 생성 시작하기"
                     >
                       <Plus className="w-4 h-4 mr-1" />
                       쉬운 생성
@@ -1412,7 +1422,8 @@ export default function AdminCurriculum() {
                       onClick={() => setIsCreating(true)}
                       size="sm"
                       variant="outline"
-                      className="flex items-center gap-1"
+                      className="flex items-center gap-1 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800/20 shadow-sm hover:shadow-md transition-all duration-200 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+                      aria-label="고급 커리큘럼 생성 시작하기"
                     >
                       <Settings className="w-4 h-4" />
                       고급 생성
@@ -1424,7 +1435,7 @@ export default function AdminCurriculum() {
                 {realCurriculumTemplates.map((template, index) => (
                   <div
                     key={index}
-                    className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:border-gray-300 dark:hover:border-gray-600 transition-colors"
+                    className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:border-gray-300 dark:hover:border-gray-600 transition-all duration-200 hover:shadow-lg bg-white dark:bg-gray-800/50"
                   >
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
@@ -1456,8 +1467,9 @@ export default function AdminCurriculum() {
                     <div className="mt-4 flex gap-2">
                       <Button 
                         onClick={() => createFromTemplate(template)}
-                        className="flex items-center gap-1"
+                        className="flex items-center gap-1 shadow-sm hover:shadow-md transition-all duration-200 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
                         size="sm"
+                        aria-label={`${template.title} 템플릿으로 커리큘럼 생성`}
                       >
                         <Plus className="w-4 h-4" />
                         커리큘럼 생성
@@ -1465,8 +1477,9 @@ export default function AdminCurriculum() {
                       <Button 
                         variant="outline" 
                         size="sm"
-                        className="flex items-center gap-1 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800/20"
+                        className="flex items-center gap-1 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800/20 shadow-sm hover:shadow-md transition-all duration-200 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
                         onClick={() => handlePreviewCurriculum(template)}
+                        aria-label={`${template.title} 미리보기`}
                       >
                         <Eye className="w-4 h-4" />
                         미리보기
@@ -1480,7 +1493,7 @@ export default function AdminCurriculum() {
 
           {/* 등록된 커리큘럼 목록 */}
           <div>
-            <Card>
+            <Card className="bg-white dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 shadow-lg">
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-white">
@@ -1491,7 +1504,8 @@ export default function AdminCurriculum() {
                     <Button 
                       onClick={handleStartCreation}
                       size="sm"
-                      className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-lg"
+                      className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-sm hover:shadow-md transition-all duration-200 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                      aria-label="쉬운 방법으로 커리큘럼 생성하기"
                     >
                       <Plus className="w-4 h-4 mr-1" />
                       쉬운 생성
@@ -1500,7 +1514,8 @@ export default function AdminCurriculum() {
                       onClick={() => setIsCreating(true)}
                       size="sm"
                       variant="outline"
-                      className="flex items-center gap-1 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800/20"
+                      className="flex items-center gap-1 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800/20 shadow-sm hover:shadow-md transition-all duration-200 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+                      aria-label="고급 방법으로 커리큘럼 생성하기"
                     >
                       <Settings className="w-4 h-4" />
                       고급 생성
@@ -2352,6 +2367,8 @@ export default function AdminCurriculum() {
                             size="sm" 
                             variant="default"
                             onClick={() => handleApproveLecture(lecture.id)}
+                            className="bg-green-600 hover:bg-green-700 text-white shadow-sm hover:shadow-md transition-all duration-200 focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+                            aria-label={`${lecture.title} 강의 승인`}
                           >
                             <CheckCircle className="h-4 w-4 mr-1" />
                             승인
@@ -2360,6 +2377,8 @@ export default function AdminCurriculum() {
                             size="sm" 
                             variant="destructive"
                             onClick={() => handleRejectLecture(lecture.id)}
+                            className="bg-red-600 hover:bg-red-700 text-white shadow-sm hover:shadow-md transition-all duration-200 focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+                            aria-label={`${lecture.title} 강의 반려`}
                           >
                             <XCircle className="h-4 w-4 mr-1" />
                             반려
@@ -2368,6 +2387,8 @@ export default function AdminCurriculum() {
                             size="sm" 
                             variant="outline"
                             onClick={() => handlePreviewVideoLecture(lecture)}
+                            className="border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800/20 shadow-sm hover:shadow-md transition-all duration-200 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+                            aria-label={`${lecture.title} 강의 미리보기`}
                           >
                             <Eye className="h-4 w-4 mr-1" />
                             미리보기
@@ -2411,10 +2432,10 @@ export default function AdminCurriculum() {
         {/* 영상강의 상세 보기 모달 */}
         {selectedLecture && (
           <Dialog open={!!selectedLecture} onOpenChange={() => setSelectedLecture(null)}>
-            <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+            <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700">
               <DialogHeader>
-                <DialogTitle className="flex items-center gap-2">
-                  <Video className="h-5 w-5" />
+                <DialogTitle className="flex items-center gap-2 text-gray-900 dark:text-white">
+                  <Video className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                   {selectedLecture.title}
                 </DialogTitle>
               </DialogHeader>
