@@ -111,13 +111,13 @@ export default function TrainerCertificationManagement() {
       const certificationsData = await certificationsRes.json();
 
       if (programsData.success) {
-        setPrograms(programsData.programs);
+        setPrograms(programsData.programs || []);
       }
       if (applicationsData.success) {
-        setApplications(applicationsData.applications);
+        setApplications(applicationsData.applications || []);
       }
       if (certificationsData.success) {
-        setCertifications(certificationsData.certifications);
+        setCertifications(certificationsData.certifications || []);
       }
     } catch (error) {
       console.error('데이터 로드 오류:', error);
@@ -358,7 +358,7 @@ export default function TrainerCertificationManagement() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {programs.map((program) => (
+                  {programs && programs.length > 0 ? programs.map((program) => (
                     <div key={program.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                       <div>
                         <p className="font-medium">{program.name}</p>
@@ -371,7 +371,9 @@ export default function TrainerCertificationManagement() {
                         </Badge>
                       </div>
                     </div>
-                  ))}
+                  )) : (
+                    <p className="text-gray-500 text-center py-4">등록된 프로그램이 없습니다.</p>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -385,7 +387,7 @@ export default function TrainerCertificationManagement() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {applications.slice(0, 5).map((application) => (
+                  {applications && applications.length > 0 ? applications.slice(0, 5).map((application) => (
                     <div key={application.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                       <div>
                         <p className="font-medium">신청 ID: {application.id}</p>
@@ -400,7 +402,9 @@ export default function TrainerCertificationManagement() {
                         </Button>
                       </div>
                     </div>
-                  ))}
+                  )) : (
+                    <p className="text-gray-500 text-center py-4">신청서가 없습니다.</p>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -428,7 +432,7 @@ export default function TrainerCertificationManagement() {
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {programs.map((program) => (
+            {programs && programs.length > 0 ? programs.map((program) => (
               <Card key={program.id}>
                 <CardHeader>
                   <CardTitle className="flex items-center justify-between">
@@ -457,9 +461,11 @@ export default function TrainerCertificationManagement() {
                   <div className="mb-4">
                     <p className="text-sm font-medium mb-2">필수 요건:</p>
                     <ul className="text-xs text-gray-600 space-y-1">
-                      {program.requirements.map((req, index) => (
+                      {program.requirements && program.requirements.length > 0 ? program.requirements.map((req, index) => (
                         <li key={index}>• {req}</li>
-                      ))}
+                      )) : (
+                        <li className="text-gray-400">요건이 없습니다.</li>
+                      )}
                     </ul>
                   </div>
 
@@ -478,7 +484,9 @@ export default function TrainerCertificationManagement() {
                   </div>
                 </CardContent>
               </Card>
-            ))}
+            )) : (
+              <p className="text-gray-500 text-center py-8 col-span-full">등록된 프로그램이 없습니다.</p>
+            )}
           </div>
         </TabsContent>
 
@@ -507,9 +515,10 @@ export default function TrainerCertificationManagement() {
           </div>
 
           <div className="grid grid-cols-1 gap-4">
-            {applications
-              .filter(app => statusFilter === 'all' || app.status === statusFilter)
-              .map((application) => (
+            {applications && applications.length > 0 
+              ? applications
+                .filter(app => statusFilter === 'all' || app.status === statusFilter)
+                .map((application) => (
                 <Card key={application.id}>
                   <CardContent className="p-6">
                     <div className="flex items-start justify-between mb-4">
@@ -559,7 +568,7 @@ export default function TrainerCertificationManagement() {
                       </div>
                     </div>
 
-                    {application.previousCertifications.length > 0 && (
+                    {application.previousCertifications && application.previousCertifications.length > 0 && (
                       <div className="mb-4">
                         <p className="text-sm font-medium mb-2">보유 자격증:</p>
                         <div className="flex flex-wrap gap-1">
@@ -595,14 +604,18 @@ export default function TrainerCertificationManagement() {
                     )}
                   </CardContent>
                 </Card>
-              ))}
+              ))
+              : (
+                <p className="text-gray-500 text-center py-8">신청서가 없습니다.</p>
+              )
+            }
           </div>
         </TabsContent>
 
         {/* 인증서 탭 */}
         <TabsContent value="certifications" className="space-y-6">
           <div className="grid grid-cols-1 gap-4">
-            {certifications.map((certification) => (
+            {certifications && certifications.length > 0 ? certifications.map((certification) => (
               <Card key={certification.id}>
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between mb-4">
@@ -684,7 +697,9 @@ export default function TrainerCertificationManagement() {
                   </div>
                 </CardContent>
               </Card>
-            ))}
+            )) : (
+              <p className="text-gray-500 text-center py-8">등록된 인증서가 없습니다.</p>
+            )}
           </div>
         </TabsContent>
       </Tabs>
