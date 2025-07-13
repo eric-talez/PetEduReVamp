@@ -20,9 +20,27 @@ git reset --hard origin/main
 echo "📦 의존성 설치 중..."
 npm ci
 
-# 환경 변수 확인
+# 환경 변수 확인 및 생성
 if [ ! -f ".env" ]; then
-    echo "⚠️  .env 파일이 없습니다. 환경 변수를 설정하세요."
+    echo "⚠️  .env 파일이 없습니다. 기본 .env 파일을 생성합니다."
+    cat > .env << 'EOF'
+# 기본 환경 변수
+NODE_ENV=production
+PORT=5000
+
+# 세션 보안
+SESSION_SECRET=talez-super-secure-session-secret-2025-production-ready
+CORS_ORIGIN=*
+ENCRYPTION_KEY=talez-32-character-encryption-key
+
+# 카카오 맵 API
+VITE_KAKAO_MAPS_API_KEY=ce38e8a3c2b566aeb9faf4c60b0153d2
+KAKAO_MAPS_API_KEY=ce38e8a3c2b566aeb9faf4c60b0153d2
+
+# OpenAI API (실제 키로 교체 필요)
+OPENAI_API_KEY=sk-your-actual-openai-api-key-here
+EOF
+    chmod 600 .env
 fi
 
 # 프로덕션 빌드 (dist/public 생성)
