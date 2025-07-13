@@ -678,6 +678,16 @@ export function NewSidebar({
                     </NavItem>
 
                     <NavItem
+                      href="/admin/product-pricing"
+                      icon={<DollarSign className="w-5 h-5 mr-2" />}
+                      active={isActive("/admin/product-pricing")}
+                      onClick={handleItemClick}
+                      show={true}
+                    >
+                      상품 가격 관리
+                    </NavItem>
+
+                    <NavItem
                       href="/admin/settings"
                       icon={<Cog className="w-5 h-5 mr-2" />}
                       active={isActive("/admin/settings")}

@@ -7,6 +7,8 @@ class Storage {
   institutes: any[] = [];
   subscriptionPlans: any[] = [];
   paymentRequests: any[] = [];
+  products: any[] = [];
+  pricingRules: any[] = [];
 
   constructor() {
     console.log('🔄 운영 환경용 메모리 저장소 초기화...');
@@ -572,6 +574,76 @@ class Storage {
       return request;
     }
     return null;
+  }
+
+  // 상품 관리 메서드
+  getAllProducts(): any[] {
+    return this.products || [];
+  }
+
+  getProduct(id: number): any {
+    return this.products.find(p => p.id === id);
+  }
+
+  updateProductPricing(id: number, pricingData: any): any {
+    const product = this.products.find(p => p.id === id);
+    if (product) {
+      // 할인 정보 업데이트
+      product.originalPrice = pricingData.originalPrice;
+      product.discountType = pricingData.discountType;
+      product.discountStartDate = pricingData.discountStartDate;
+      product.discountEndDate = pricingData.discountEndDate;
+      product.isDiscountActive = pricingData.isDiscountActive;
+      product.updatedAt = new Date().toISOString();
+      
+      // 할인 가격 및 퍼센트 계산
+      if (pricingData.discountType === 'percentage') {
+        product.discountPercentage = pricingData.discountValue;
+        product.discountPrice = Math.round(product.originalPrice * (1 - pricingData.discountValue / 100));
+      } else if (pricingData.discountType === 'fixed') {
+        product.discountPrice = Math.max(0, product.originalPrice - pricingData.discountValue);
+        product.discountPercentage = Math.round(((product.originalPrice - product.discountPrice) / product.originalPrice) * 100);
+      } else {
+        product.discountPrice = undefined;
+        product.discountPercentage = undefined;
+      }
+      
+      return product;
+    }
+    return null;
+  }
+
+  // 가격 규칙 관리 메서드
+  getAllPricingRules(): any[] {
+    return this.pricingRules || [];
+  }
+
+  createPricingRule(ruleData: any): any {
+    const rule = {
+      id: this.pricingRules.length + 1,
+      ...ruleData,
+      createdAt: new Date().toISOString()
+    };
+    this.pricingRules.push(rule);
+    return rule;
+  }
+
+  updatePricingRule(id: number, updateData: any): any {
+    const rule = this.pricingRules.find(r => r.id === id);
+    if (rule) {
+      Object.assign(rule, updateData);
+      return rule;
+    }
+    return null;
+  }
+
+  deletePricingRule(id: number): boolean {
+    const index = this.pricingRules.findIndex(r => r.id === id);
+    if (index !== -1) {
+      this.pricingRules.splice(index, 1);
+      return true;
+    }
+    return false;
   }
 
   getInstituteSubscriptionInfo(instituteId: number) {
