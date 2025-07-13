@@ -5627,11 +5627,22 @@ app.get('/api/search', async (req, res) => {
     }
   });
 
-  // 강의 구매 API
+  // 강의 구매 API - 결제 시점에 수수료 정산
   app.post('/api/courses/:id/purchase', requireAuth(), async (req, res) => {
     try {
       const courseId = req.params.id;
       const userId = req.user.id;
+      
+      // 강의 정보 조회 (실제로는 데이터베이스에서)
+      const courseInfo = {
+        id: courseId,
+        title: "기초 복종훈련 완전정복",
+        price: 180000,
+        trainerId: 1,
+        trainerName: "강동훈 전문 훈련사"
+      };
+      
+      console.log(`[영상강의 구매] 사용자 ${userId}가 강의 ${courseId} 구매 시작`);
       
       // 구매 정보 생성
       const purchaseData = {
@@ -5640,18 +5651,74 @@ app.get('/api/search', async (req, res) => {
         courseId: courseId,
         purchaseDate: new Date(),
         paymentStatus: 'completed',
-        amount: 180000,
+        amount: courseInfo.price,
         paymentMethod: 'card'
       };
       
-      console.log('[강의 구매] 사용자:', userId, '강의:', courseId);
+      // 영상강의 결제 시점에 수수료 정산 처리
+      try {
+        console.log(`[영상강의 수수료 정산] 결제 시점 정산 - 강의 ID: ${courseId}`);
+        
+        const { PaymentService } = require('./services/payment-service');
+        const paymentService = new PaymentService(storage);
+        
+        const paymentResult = await paymentService.processPayment({
+          transactionType: 'video_course_purchase',
+          referenceId: parseInt(courseId),
+          referenceType: 'course',
+          payerId: userId,
+          payeeId: courseInfo.trainerId,
+          grossAmount: courseInfo.price,
+          paymentMethod: 'credit_card',
+          paymentProvider: 'stripe',
+          externalTransactionId: `course_${courseId}_${Date.now()}`,
+          metadata: {
+            courseType: 'video_lecture',
+            courseName: courseInfo.title,
+            trainerName: courseInfo.trainerName,
+            settlementTiming: 'payment_time'
+          }
+        });
+
+        if (paymentResult.success) {
+          console.log(`[영상강의 수수료 정산 완료] 강의 ${courseId} - 수수료: ${paymentResult.feeAmount}원, 정산액: ${paymentResult.netAmount}원`);
+          
+          res.json({ 
+            success: true,
+            purchaseId: purchaseData.id,
+            message: '강의 구매 및 수수료 정산이 완료되었습니다.',
+            purchaseData: purchaseData,
+            paymentInfo: {
+              coursePrice: courseInfo.price,
+              feeAmount: paymentResult.feeAmount,
+              netAmount: paymentResult.netAmount,
+              settlementStatus: "결제 시점 정산 완료",
+              settlementTiming: "payment_time"
+            }
+          });
+        } else {
+          console.error(`[영상강의 수수료 정산 실패] 강의 ${courseId}:`, paymentResult.errorMessage);
+          res.status(500).json({ 
+            error: "영상강의 수수료 정산 중 오류가 발생했습니다",
+            details: paymentResult.errorMessage
+          });
+        }
+      } catch (settlementError) {
+        console.error(`[영상강의 수수료 정산 오류] 강의 ${courseId}:`, settlementError);
+        // 정산 실패해도 구매는 완료 처리 (별도 처리)
+        res.json({ 
+          success: true,
+          purchaseId: purchaseData.id,
+          message: '강의 구매가 완료되었습니다. (수수료 정산은 별도 처리됩니다)',
+          purchaseData: purchaseData,
+          paymentInfo: {
+            coursePrice: courseInfo.price,
+            settlementStatus: "처리 중",
+            settlementTiming: "payment_time"
+          }
+        });
+      }
       
-      res.json({ 
-        success: true,
-        purchaseId: purchaseData.id,
-        message: '강의 구매가 완료되었습니다.',
-        purchaseData: purchaseData
-      });
     } catch (error) {
       console.error('[강의 구매] 실패:', error);
       res.status(500).json({ message: '강의 구매에 실패했습니다.' });
@@ -6129,6 +6196,128 @@ app.get('/api/search', async (req, res) => {
 
   // Global error handler (commented out for now)
   // app.use(errorHandler);
+
+  // 훈련사 추천 상품 구매 API - 실시간 수수료 정산
+  app.post('/api/shop/products/:id/purchase', async (req, res) => {
+    try {
+      const productId = req.params.id;
+      const { userId, quantity, referralCode, trainerInfo } = req.body;
+      
+      // 상품 정보 조회 (실제로는 데이터베이스에서)
+      const productInfo = {
+        id: productId,
+        name: "프리미엄 강아지 사료",
+        price: 55000,
+        referralCode: referralCode,
+        commissionRate: 15 // 15%
+      };
+      
+      const totalAmount = productInfo.price * quantity;
+      
+      console.log(`[훈련사 추천 상품 구매] 사용자 ${userId}가 상품 ${productId} 구매 (수량: ${quantity})`);
+      
+      // 구매 정보 생성
+      const purchaseData = {
+        id: `product_purchase_${Date.now()}`,
+        userId: userId,
+        productId: productId,
+        quantity: quantity,
+        unitPrice: productInfo.price,
+        totalAmount: totalAmount,
+        referralCode: referralCode,
+        purchaseDate: new Date(),
+        paymentStatus: 'completed'
+      };
+      
+      // 훈련사 추천 상품 실시간 수수료 정산 처리
+      if (referralCode && trainerInfo) {
+        try {
+          console.log(`[훈련사 추천 상품 실시간 정산] 상품 ID: ${productId}, 추천 코드: ${referralCode}`);
+          
+          const { PaymentService } = require('./services/payment-service');
+          const paymentService = new PaymentService(storage);
+          
+          const paymentResult = await paymentService.processPayment({
+            transactionType: 'trainer_recommended_product',
+            referenceId: parseInt(productId),
+            referenceType: 'product',
+            payerId: userId,
+            payeeId: trainerInfo.trainerId,
+            grossAmount: totalAmount,
+            paymentMethod: 'credit_card',
+            paymentProvider: 'stripe',
+            externalTransactionId: `product_${productId}_${Date.now()}`,
+            metadata: {
+              productType: 'trainer_recommended',
+              productName: productInfo.name,
+              quantity: quantity,
+              referralCode: referralCode,
+              trainerName: trainerInfo.trainerName,
+              commissionRate: productInfo.commissionRate,
+              settlementTiming: 'realtime'
+            }
+          });
+
+          if (paymentResult.success) {
+            console.log(`[훈련사 추천 상품 실시간 정산 완료] 상품 ${productId} - 수수료: ${paymentResult.feeAmount}원, 정산액: ${paymentResult.netAmount}원`);
+            
+            res.json({ 
+              success: true,
+              purchaseId: purchaseData.id,
+              message: '훈련사 추천 상품 구매 및 실시간 수수료 정산이 완료되었습니다.',
+              purchaseData: purchaseData,
+              paymentInfo: {
+                totalAmount: totalAmount,
+                feeAmount: paymentResult.feeAmount,
+                netAmount: paymentResult.netAmount,
+                commissionRate: productInfo.commissionRate,
+                settlementStatus: "실시간 정산 완료",
+                settlementTiming: "realtime",
+                trainerEarnings: paymentResult.netAmount
+              }
+            });
+          } else {
+            console.error(`[훈련사 추천 상품 실시간 정산 실패] 상품 ${productId}:`, paymentResult.errorMessage);
+            res.status(500).json({ 
+              error: "훈련사 추천 상품 실시간 정산 중 오류가 발생했습니다",
+              details: paymentResult.errorMessage
+            });
+          }
+        } catch (settlementError) {
+          console.error(`[훈련사 추천 상품 실시간 정산 오류] 상품 ${productId}:`, settlementError);
+          // 정산 실패해도 구매는 완료 처리 (별도 처리)
+          res.json({ 
+            success: true,
+            purchaseId: purchaseData.id,
+            message: '상품 구매가 완료되었습니다. (실시간 정산은 별도 처리됩니다)',
+            purchaseData: purchaseData,
+            paymentInfo: {
+              totalAmount: totalAmount,
+              settlementStatus: "처리 중",
+              settlementTiming: "realtime"
+            }
+          });
+        }
+      } else {
+        // 일반 상품 구매 (추천 코드 없음)
+        res.json({ 
+          success: true,
+          purchaseId: purchaseData.id,
+          message: '상품 구매가 완료되었습니다.',
+          purchaseData: purchaseData,
+          paymentInfo: {
+            totalAmount: totalAmount,
+            settlementStatus: "일반 상품 구매",
+            settlementTiming: "none"
+          }
+        });
+      }
+      
+    } catch (error) {
+      console.error('[훈련사 추천 상품 구매] 실패:', error);
+      res.status(500).json({ message: '상품 구매에 실패했습니다.' });
+    }
+  });
 
   // 훈련사 인증 시스템 라우트 등록
   registerTrainerCertificationRoutes(app);
