@@ -686,7 +686,7 @@ export function NewSidebar({
                       onClick={handleItemClick}
                       show={true}
                     >
-                      가격 및 정산 관리
+                      가격정산 관리
                     </NavItem>
 
                     <NavItem
