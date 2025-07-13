@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
-import { Plus, Edit, Trash2, Heart, Calendar, Weight, Upload, X } from 'lucide-react';
+import { Plus, Edit, Trash2, Heart, Calendar, Weight, Upload, X, User, BookOpen, AlertCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { ImageUpload } from '@/components/ImageUpload';
 
@@ -28,6 +28,16 @@ interface Pet {
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
+  // 훈련소 매칭 정보 추가
+  trainingStatus: 'not_assigned' | 'assigned' | 'in_progress' | 'completed';
+  assignedTrainer?: {
+    id: number;
+    name: string;
+  } | null;
+  notebookEnabled: boolean;
+  lastNotebookEntry?: string | null;
+  trainingType?: string | null;
+  trainingStartDate?: string | null;
 }
 
 interface PetFormData {
@@ -73,13 +83,23 @@ export default function MyPetsPage() {
       const response = await fetch('/api/pets', {
         credentials: 'include'
       });
-      if (response.ok) {
-        const data = await response.json();
-        setPets(Array.isArray(data) ? data : data.pets || []);
-      } else {
-        setPets([]);
+      
+      if (!response.ok) {
+        if (response.status === 401) {
+          toast({
+            title: "인증 오류",
+            description: "로그인이 필요합니다.",
+            variant: "destructive"
+          });
+          return;
+        }
+        throw new Error('Failed to fetch pets');
       }
+      
+      const data = await response.json();
+      setPets(data.pets || []);
     } catch (error) {
+      console.error('Error fetching pets:', error);
       toast({
         title: "오류",
         description: "반려동물 목록을 불러오는데 실패했습니다.",
@@ -259,7 +279,7 @@ export default function MyPetsPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="text-lg">반려동물 정보를 불러오는 중...</div>
+        <div className="text-lg text-gray-900 dark:text-white">반려동물 정보를 불러오는 중...</div>
       </div>
     );
   }
@@ -268,8 +288,8 @@ export default function MyPetsPage() {
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">내 반려동물</h1>
-          <p className="text-gray-600 mt-2">소중한 반려동물들의 정보를 관리하세요</p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">내 반려동물</h1>
+          <p className="text-gray-600 dark:text-gray-400 mt-2">소중한 반려동물들의 정보를 관리하세요</p>
         </div>
         
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
@@ -497,8 +517,8 @@ export default function MyPetsPage() {
         <Card className="text-center py-12">
           <CardContent>
             <Heart className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">등록된 반려동물이 없습니다</h3>
-            <p className="text-gray-600 mb-6">첫 번째 반려동물을 등록해보세요!</p>
+            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">등록된 반려동물이 없습니다</h3>
+            <p className="text-gray-600 dark:text-gray-400 mb-6">첫 번째 반려동물을 등록해보세요!</p>
             <Button onClick={openNewPetDialog} variant="outline" className="text-green-600 border-green-300 hover:bg-green-50 hover:text-green-600 hover:border-green-300 transition-all duration-200">
               <Plus className="w-4 h-4 mr-2" />
               반려동물 등록
@@ -523,7 +543,7 @@ export default function MyPetsPage() {
                       <div className="text-6xl mb-2">
                         {pet.species === 'dog' ? '🐶' : pet.species === 'cat' ? '🐱' : '🐾'}
                       </div>
-                      <p className="text-sm text-gray-500 font-medium">{pet.name}</p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">{pet.name}</p>
                     </div>
                   </div>
                 )}
@@ -541,8 +561,8 @@ export default function MyPetsPage() {
               
               <CardHeader className="pb-3">
                 <div>
-                  <CardTitle className="text-xl">{pet.name}</CardTitle>
-                  <CardDescription>
+                  <CardTitle className="text-xl text-gray-900 dark:text-white">{pet.name}</CardTitle>
+                  <CardDescription className="text-gray-600 dark:text-gray-400">
                     {pet.species === 'dog' ? '🐶' : pet.species === 'cat' ? '🐱' : '🐾'} {pet.breed}
                   </CardDescription>
                 </div>
@@ -564,24 +584,84 @@ export default function MyPetsPage() {
                 </div>
                 
                 {pet.color && (
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
                     <strong>색상:</strong> {pet.color}
                   </p>
                 )}
                 
                 {pet.personality && (
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
                     <strong>성격:</strong> {pet.personality}
                   </p>
                 )}
                 
                 {pet.specialNotes && (
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
                     <strong>특이사항:</strong> {pet.specialNotes}
                   </p>
                 )}
                 
-                <div className="text-xs text-gray-500 pt-2 border-t">
+                {/* 훈련소 매칭 상태 표시 */}
+                <div className="mt-4 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border">
+                  <div className="flex items-center gap-2 text-sm mb-2">
+                    <User className="h-4 w-4 text-gray-600 dark:text-gray-400" />
+                    <span className="font-medium text-gray-700 dark:text-gray-300">훈련 상태</span>
+                  </div>
+                  
+                  {pet.trainingStatus === 'not_assigned' ? (
+                    <div className="space-y-2">
+                      <Badge variant="secondary" className="text-xs">
+                        <AlertCircle className="h-3 w-3 mr-1" />
+                        훈련사 미배정
+                      </Badge>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">
+                        훈련사를 배정하면 일대일 맞춤 훈련과 정기 알림장 서비스를 받을 수 있습니다.
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <Badge variant="default" className="text-xs">
+                          {pet.trainingStatus === 'assigned' && '훈련사 배정완료'}
+                          {pet.trainingStatus === 'in_progress' && '훈련 진행중'}
+                          {pet.trainingStatus === 'completed' && '훈련 완료'}
+                        </Badge>
+                        {pet.notebookEnabled && (
+                          <Badge variant="outline" className="text-xs">
+                            <BookOpen className="h-3 w-3 mr-1" />
+                            알림장 활성화
+                          </Badge>
+                        )}
+                      </div>
+                      
+                      {pet.assignedTrainer && (
+                        <div className="text-xs text-gray-600 dark:text-gray-400">
+                          <strong>담당 훈련사:</strong> {pet.assignedTrainer.name}
+                        </div>
+                      )}
+                      
+                      {pet.trainingType && (
+                        <div className="text-xs text-gray-600 dark:text-gray-400">
+                          <strong>훈련 종류:</strong> {pet.trainingType}
+                        </div>
+                      )}
+                      
+                      {pet.trainingStartDate && (
+                        <div className="text-xs text-gray-600 dark:text-gray-400">
+                          <strong>훈련 시작일:</strong> {new Date(pet.trainingStartDate).toLocaleDateString()}
+                        </div>
+                      )}
+                      
+                      {pet.lastNotebookEntry && (
+                        <div className="text-xs text-gray-600 dark:text-gray-400">
+                          <strong>최근 알림장:</strong> {pet.lastNotebookEntry}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+                
+                <div className="text-xs text-gray-500 dark:text-gray-400 pt-2 border-t">
                   등록일: {new Date(pet.createdAt).toLocaleDateString()}
                 </div>
               </CardContent>

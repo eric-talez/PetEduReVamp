@@ -51,18 +51,52 @@ class Storage {
       {
         id: 1,
         name: '맥스',
+        species: 'dog',
         breed: '골든리트리버',
         age: 3,
+        gender: 'male',
+        weight: 25,
+        color: '골든',
+        personality: '활발하고 친근함',
+        medicalHistory: '',
+        specialNotes: '',
+        imageUrl: 'https://api.dicebear.com/7.x/shapes/svg?seed=max',
         ownerId: 3,
-        createdAt: new Date().toISOString()
+        trainingStatus: 'assigned',
+        assignedTrainerId: 2,
+        assignedTrainerName: '강동훈',
+        trainingType: 'basic',
+        notebookEnabled: true,
+        trainingStartDate: new Date().toISOString(),
+        lastNotebookEntry: '오늘 기초 훈련 진행',
+        isActive: true,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
       },
       {
         id: 2,
         name: '루이',
+        species: 'dog',
         breed: '시바이누',
         age: 2,
+        gender: 'male',
+        weight: 15,
+        color: '갈색',
+        personality: '조용하고 독립적',
+        medicalHistory: '',
+        specialNotes: '',
+        imageUrl: 'https://api.dicebear.com/7.x/shapes/svg?seed=louis',
         ownerId: 3,
-        createdAt: new Date().toISOString()
+        trainingStatus: 'not_assigned',
+        assignedTrainerId: null,
+        assignedTrainerName: null,
+        trainingType: null,
+        notebookEnabled: false,
+        trainingStartDate: null,
+        lastNotebookEntry: null,
+        isActive: true,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
       }
     ];
 
@@ -229,6 +263,47 @@ class Storage {
     return this.pets || [];
   }
 
+  getPet(id: number) {
+    return this.pets.find(pet => pet.id === id);
+  }
+
+  getPetsByUserId(userId: number) {
+    return this.pets.filter(pet => pet.ownerId === userId);
+  }
+
+  createPet(petData: any) {
+    const newPet = {
+      id: this.pets.length ? Math.max(...this.pets.map(p => p.id)) + 1 : 1,
+      ...petData,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+    this.pets.push(newPet);
+    return newPet;
+  }
+
+  updatePet(id: number, updates: any) {
+    const petIndex = this.pets.findIndex(pet => pet.id === id);
+    if (petIndex !== -1) {
+      this.pets[petIndex] = { 
+        ...this.pets[petIndex], 
+        ...updates, 
+        updatedAt: new Date().toISOString() 
+      };
+      return this.pets[petIndex];
+    }
+    return null;
+  }
+
+  deletePet(id: number) {
+    const petIndex = this.pets.findIndex(pet => pet.id === id);
+    if (petIndex !== -1) {
+      this.pets.splice(petIndex, 1);
+      return true;
+    }
+    return false;
+  }
+
   getAllPets() {
     return this.pets || [];
   }
@@ -260,6 +335,10 @@ class Storage {
 
   getAllTrainers() {
     return this.users?.filter(user => user.role === 'trainer') || [];
+  }
+
+  getTrainer(id: number) {
+    return this.users?.find(user => user.id === id && user.role === 'trainer');
   }
 
   // 로고 설정 관련 메서드들
