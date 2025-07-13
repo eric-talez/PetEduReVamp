@@ -502,6 +502,49 @@
     @apply bg-background text-foreground font-sans transition-colors duration-300;
     font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'system-ui', 'Roboto', 'Helvetica Neue', 'Segoe UI', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', sans-serif;
   }
+  
+  /* 다크모드 스타일 강화 */
+  .dark {
+    color-scheme: dark;
+  }
+  
+  /* 입력 필드 다크모드 스타일 */
+  input, textarea, select {
+    @apply bg-input border-border text-foreground;
+  }
+  
+  /* 버튼 다크모드 스타일 */
+  button {
+    @apply transition-colors duration-200;
+  }
+  
+  /* 카드 다크모드 스타일 */
+  .card {
+    @apply bg-card text-card-foreground border-border;
+  }
+  
+  /* 모달 다크모드 스타일 */
+  .modal, .dialog {
+    @apply bg-card text-card-foreground border-border;
+  }
+  
+  /* 스크롤바 다크모드 스타일 */
+  .dark ::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  .dark ::-webkit-scrollbar-track {
+    background: hsl(var(--background));
+  }
+  
+  .dark ::-webkit-scrollbar-thumb {
+    background: hsl(var(--border));
+    border-radius: 4px;
+  }
+  
+  .dark ::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--accent));
+  }
 }
 
 .card-hover {

@@ -142,7 +142,7 @@ function MessageItemComponent({
                   className={`rounded-lg px-3 py-1.5 ${
                     isCurrentUser 
                       ? 'bg-primary text-primary-foreground' 
-                      : 'bg-muted text-foreground'
+                      : 'bg-muted text-muted-foreground'
                   }`}
                 >
                   {message.type === 'image' ? (

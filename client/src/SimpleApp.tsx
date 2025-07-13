@@ -251,7 +251,7 @@ function AppLayout({ children }: { children: ReactNode }) {
             />
             {/* 디버그 정보 표시 - 개발 모드에서만 표시 */}
             {process.env.NODE_ENV === 'development' && (
-              <div className="fixed bottom-4 right-4 p-2 bg-slate-900 text-white text-xs rounded z-50">
+              <div className="fixed bottom-4 right-4 p-2 bg-card border border-border text-card-foreground text-xs rounded z-50">
                 역할: {auth.userRole || '미로그인'} / 
                 인증: {auth.isAuthenticated ? 'true' : 'false'}
               </div>
@@ -261,7 +261,7 @@ function AppLayout({ children }: { children: ReactNode }) {
           {/* 모바일 오버레이 - 사이드바가 열리면 본문 위에 표시 */}
           {sidebarOpen && !isDesktop && (
             <div 
-              className="fixed inset-0 bg-black bg-opacity-50 z-10" 
+              className="fixed inset-0 bg-background/80 backdrop-blur-sm z-10" 
               onClick={() => setSidebarOpen(false)}
               aria-hidden="true"
             />

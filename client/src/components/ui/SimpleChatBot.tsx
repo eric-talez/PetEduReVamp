@@ -346,7 +346,7 @@ export function SimpleChatBot() {
       </div>
 
       {/* 메시지 영역 */}
-      <ScrollArea className="flex-1 p-4 bg-gray-50/50">
+      <ScrollArea className="flex-1 p-4 bg-background/50">
         <div className="space-y-4">
           {messages.filter(m => m.role !== 'system').map(message => (
             <div
@@ -357,7 +357,7 @@ export function SimpleChatBot() {
               )}
             >
               {message.role === 'assistant' && (
-                <div className="w-8 h-8 rounded-full bg-gradient-to-r from-primary to-primary/80 flex items-center justify-center text-white shadow-sm">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-r from-primary to-primary/80 flex items-center justify-center text-primary-foreground shadow-sm">
                   <Bot size={16} />
                 </div>
               )}
@@ -365,8 +365,8 @@ export function SimpleChatBot() {
                 className={cn(
                   'rounded-2xl px-4 py-3 max-w-[75%] text-sm leading-relaxed shadow-sm',
                   message.role === 'user' 
-                    ? 'bg-primary text-white rounded-br-md' 
-                    : 'bg-white text-gray-800 border border-gray-100 rounded-bl-md'
+                    ? 'bg-primary text-primary-foreground rounded-br-md' 
+                    : 'bg-card text-card-foreground border border-border rounded-bl-md'
                 )}
               >
                 <div className="whitespace-pre-wrap">
@@ -374,7 +374,7 @@ export function SimpleChatBot() {
                 </div>
               </div>
               {message.role === 'user' && (
-                <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center text-gray-600">
+                <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-muted-foreground">
                   <User size={16} />
                 </div>
               )}
@@ -395,7 +395,7 @@ export function SimpleChatBot() {
       </ScrollArea>
 
       {/* 입력 영역 */}
-      <div className="p-4 bg-white border-t border-gray-100">
+      <div className="p-4 bg-card border-t border-border">
         <div className="flex gap-3 items-end">
           <div className="flex-1">
             <Textarea

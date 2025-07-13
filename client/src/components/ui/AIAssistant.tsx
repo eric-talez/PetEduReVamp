@@ -40,7 +40,7 @@ const ChatBubble = ({ message, isUser }: { message: Message; isUser: boolean }) 
           'rounded-lg px-4 py-2 max-w-[80%]',
           isUser 
             ? 'bg-primary text-primary-foreground rounded-tr-none' 
-            : 'bg-muted rounded-tl-none'
+            : 'bg-muted text-muted-foreground rounded-tl-none'
         )}
       >
         <div className="prose dark:prose-invert prose-sm break-words">

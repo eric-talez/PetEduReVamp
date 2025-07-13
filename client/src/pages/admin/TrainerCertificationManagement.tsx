@@ -89,6 +89,10 @@ export default function TrainerCertificationManagement() {
   const [showProgramEditModal, setShowProgramEditModal] = useState(false);
   const [showApplicationModal, setShowApplicationModal] = useState(false);
   const [modalType, setModalType] = useState<'view' | 'edit'>('view');
+  const [showConfirmationModal, setShowConfirmationModal] = useState(false);
+  const [selectedApplicationForConfirmation, setSelectedApplicationForConfirmation] = useState<TrainerApplication | null>(null);
+  const [confirmationMessage, setConfirmationMessage] = useState('');
+  const [agreementStatus, setAgreementStatus] = useState<'pending' | 'agreed' | 'rejected'>('pending');
   const { toast } = useToast();
 
   useEffect(() => {
@@ -128,6 +132,77 @@ export default function TrainerCertificationManagement() {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  // 기관관리자 확인 메시지 발송
+  const handleSendConfirmationMessage = async (application: TrainerApplication) => {
+    setSelectedApplicationForConfirmation(application);
+    setConfirmationMessage(`안녕하세요. ${application.userId}번 훈련사 인증 신청에 대한 확인이 필요합니다. 해당 신청자의 자격 요건을 검토해 주시기 바랍니다.`);
+    setShowConfirmationModal(true);
+  };
+
+  const handleConfirmationSend = async () => {
+    if (!selectedApplicationForConfirmation) return;
+
+    try {
+      const response = await apiRequest('POST', `/api/trainer-applications/${selectedApplicationForConfirmation.id}/confirmation`, {
+        message: confirmationMessage,
+        recipientType: 'institute_admin'
+      });
+
+      const result = await response.json();
+      
+      if (result.success) {
+        toast({
+          title: "확인 메시지 발송 완료",
+          description: "기관관리자에게 확인 메시지가 발송되었습니다.",
+        });
+        
+        setShowConfirmationModal(false);
+        setConfirmationMessage('');
+        loadData();
+      } else {
+        throw new Error(result.message || '메시지 발송 실패');
+      }
+    } catch (error) {
+      console.error('확인 메시지 발송 오류:', error);
+      toast({
+        title: "발송 실패",
+        description: "확인 메시지 발송 중 오류가 발생했습니다.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  // 훈련사 합의 처리
+  const handleTrainerAgreement = async (applicationId: number, agreed: boolean) => {
+    try {
+      const response = await apiRequest('PATCH', `/api/trainer-applications/${applicationId}/agreement`, {
+        agreed: agreed,
+        agreementDate: new Date().toISOString()
+      });
+
+      const result = await response.json();
+      
+      if (result.success) {
+        toast({
+          title: "합의 처리 완료",
+          description: `훈련사가 인증 조건에 ${agreed ? '합의' : '거부'}했습니다.`,
+        });
+        
+        setAgreementStatus(agreed ? 'agreed' : 'rejected');
+        loadData();
+      } else {
+        throw new Error(result.message || '합의 처리 실패');
+      }
+    } catch (error) {
+      console.error('합의 처리 오류:', error);
+      toast({
+        title: "합의 처리 실패",
+        description: "합의 처리 중 오류가 발생했습니다.",
+        variant: "destructive"
+      });
     }
   };
 
@@ -391,7 +466,7 @@ export default function TrainerCertificationManagement() {
                     <div key={application.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                       <div>
                         <p className="font-medium">신청 ID: {application.id}</p>
-                        <p className="text-sm text-gray-600">
+                        <p className="text-sm text-muted-foreground">
                           {new Date(application.applicationDate).toLocaleDateString()}
                         </p>
                       </div>
@@ -403,7 +478,7 @@ export default function TrainerCertificationManagement() {
                       </div>
                     </div>
                   )) : (
-                    <p className="text-gray-500 text-center py-4">신청서가 없습니다.</p>
+                    <p className="text-muted-foreground text-center py-4">신청서가 없습니다.</p>
                   )}
                 </div>
               </CardContent>
@@ -441,7 +516,7 @@ export default function TrainerCertificationManagement() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-sm text-gray-600 mb-4">{program.description}</p>
+                  <p className="text-sm text-muted-foreground mb-4">{program.description}</p>
                   
                   <div className="space-y-2 mb-4">
                     <div className="flex items-center justify-between text-sm">
@@ -460,11 +535,11 @@ export default function TrainerCertificationManagement() {
 
                   <div className="mb-4">
                     <p className="text-sm font-medium mb-2">필수 요건:</p>
-                    <ul className="text-xs text-gray-600 space-y-1">
+                    <ul className="text-xs text-muted-foreground space-y-1">
                       {program.requirements && program.requirements.length > 0 ? program.requirements.map((req, index) => (
                         <li key={index}>• {req}</li>
                       )) : (
-                        <li className="text-gray-400">요건이 없습니다.</li>
+                        <li className="text-muted-foreground/60">요건이 없습니다.</li>
                       )}
                     </ul>
                   </div>
@@ -485,7 +560,7 @@ export default function TrainerCertificationManagement() {
                 </CardContent>
               </Card>
             )) : (
-              <p className="text-gray-500 text-center py-8 col-span-full">등록된 프로그램이 없습니다.</p>
+              <p className="text-muted-foreground text-center py-8 col-span-full">등록된 프로그램이 없습니다.</p>
             )}
           </div>
         </TabsContent>
@@ -538,7 +613,7 @@ export default function TrainerCertificationManagement() {
                         </div>
                         <div>
                           <h3 className="font-semibold">신청 ID: {application.id}</h3>
-                          <p className="text-sm text-gray-600">
+                          <p className="text-sm text-muted-foreground">
                             신청일: {new Date(application.applicationDate).toLocaleDateString()}
                           </p>
                         </div>
@@ -560,11 +635,11 @@ export default function TrainerCertificationManagement() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                       <div>
                         <p className="text-sm font-medium mb-1">경력:</p>
-                        <p className="text-sm text-gray-600">{application.experience}</p>
+                        <p className="text-sm text-muted-foreground">{application.experience}</p>
                       </div>
                       <div>
                         <p className="text-sm font-medium mb-1">지원 동기:</p>
-                        <p className="text-sm text-gray-600">{application.motivation}</p>
+                        <p className="text-sm text-muted-foreground">{application.motivation}</p>
                       </div>
                     </div>
 
@@ -582,31 +657,66 @@ export default function TrainerCertificationManagement() {
                     )}
 
                     {application.status === 'pending' && (
-                      <div className="flex gap-2">
-                        <Button
-                          size="sm"
-                          onClick={() => handleApplicationReview(application.id, 'approve')}
-                          className="bg-green-600 hover:bg-green-700"
-                        >
-                          <CheckCircle className="h-4 w-4 mr-1" />
-                          승인
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleApplicationReview(application.id, 'reject')}
-                          className="text-red-600 border-red-600 hover:bg-red-50"
-                        >
-                          <XCircle className="h-4 w-4 mr-1" />
-                          거부
-                        </Button>
+                      <div className="space-y-2">
+                        {/* 워크플로우 상태 표시 */}
+                        <div className="flex items-center gap-2 text-xs">
+                          <span className="font-medium">워크플로우:</span>
+                          <div className="flex items-center gap-1">
+                            <div className="w-2 h-2 bg-gray-300 dark:bg-gray-600 rounded-full"></div>
+                            <span className="text-muted-foreground">기관확인</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <div className="w-2 h-2 bg-gray-300 dark:bg-gray-600 rounded-full"></div>
+                            <span className="text-muted-foreground">훈련사합의</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <div className="w-2 h-2 bg-gray-300 dark:bg-gray-600 rounded-full"></div>
+                            <span className="text-muted-foreground">최종승인</span>
+                          </div>
+                        </div>
+                        
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            onClick={() => handleSendConfirmationMessage(application)}
+                            className="bg-blue-600 hover:bg-blue-700"
+                          >
+                            <FileText className="h-4 w-4 mr-1" />
+                            기관확인 발송
+                          </Button>
+                          <Button
+                            size="sm"
+                            onClick={() => handleTrainerAgreement(application.id, true)}
+                            className="bg-orange-600 hover:bg-orange-700"
+                          >
+                            <CheckCircle className="h-4 w-4 mr-1" />
+                            훈련사합의
+                          </Button>
+                          <Button
+                            size="sm"
+                            onClick={() => handleApplicationReview(application.id, 'approve')}
+                            className="bg-green-600 hover:bg-green-700"
+                          >
+                            <CheckCircle className="h-4 w-4 mr-1" />
+                            최종승인
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleApplicationReview(application.id, 'reject')}
+                            className="text-red-600 border-red-600 hover:bg-red-50"
+                          >
+                            <XCircle className="h-4 w-4 mr-1" />
+                            거부
+                          </Button>
+                        </div>
                       </div>
                     )}
                   </CardContent>
                 </Card>
               ))
               : (
-                <p className="text-gray-500 text-center py-8">신청서가 없습니다.</p>
+                <p className="text-muted-foreground text-center py-8">신청서가 없습니다.</p>
               )
             }
           </div>
@@ -621,7 +731,7 @@ export default function TrainerCertificationManagement() {
                   <div className="flex items-center justify-between mb-4">
                     <div>
                       <h3 className="font-semibold">인증서 번호: {certification.certificateNumber}</h3>
-                      <p className="text-sm text-gray-600">
+                      <p className="text-sm text-muted-foreground">
                         발급일: {new Date(certification.issueDate).toLocaleDateString()} | 
                         만료일: {new Date(certification.expiryDate).toLocaleDateString()}
                       </p>
@@ -635,17 +745,17 @@ export default function TrainerCertificationManagement() {
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
                       <p className="text-sm font-medium">훈련사 ID:</p>
-                      <p className="text-sm text-gray-600">{certification.trainerId}</p>
+                      <p className="text-sm text-muted-foreground">{certification.trainerId}</p>
                     </div>
                     <div>
                       <p className="text-sm font-medium">프로그램 ID:</p>
-                      <p className="text-sm text-gray-600">{certification.programId}</p>
+                      <p className="text-sm text-muted-foreground">{certification.programId}</p>
                     </div>
                     <div>
                       <p className="text-sm font-medium">점수:</p>
                       <div className="flex items-center gap-1">
                         <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
-                        <span className="text-sm text-gray-600">{certification.score}/100</span>
+                        <span className="text-sm text-muted-foreground">{certification.score}/100</span>
                       </div>
                     </div>
                   </div>
@@ -698,7 +808,7 @@ export default function TrainerCertificationManagement() {
                 </CardContent>
               </Card>
             )) : (
-              <p className="text-gray-500 text-center py-8">등록된 인증서가 없습니다.</p>
+              <p className="text-muted-foreground text-center py-8">등록된 인증서가 없습니다.</p>
             )}
           </div>
         </TabsContent>
@@ -954,6 +1064,16 @@ export default function TrainerCertificationManagement() {
                   <>
                     <Button
                       onClick={() => {
+                        handleSendConfirmationMessage(selectedApplication);
+                        setShowApplicationModal(false);
+                      }}
+                      className="bg-blue-600 hover:bg-blue-700"
+                    >
+                      <FileText className="h-4 w-4 mr-1" />
+                      기관확인 발송
+                    </Button>
+                    <Button
+                      onClick={() => {
                         handleApplicationReview(selectedApplication.id, 'approve');
                         setShowApplicationModal(false);
                       }}
@@ -975,6 +1095,75 @@ export default function TrainerCertificationManagement() {
                     </Button>
                   </>
                 )}
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* 기관 확인 메시지 발송 모달 */}
+      <Dialog open={showConfirmationModal} onOpenChange={setShowConfirmationModal}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>기관관리자 확인 메시지 발송</DialogTitle>
+          </DialogHeader>
+          
+          {selectedApplicationForConfirmation && (
+            <div className="space-y-4">
+              <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
+                <p className="text-sm text-blue-700 dark:text-blue-300">
+                  <strong>신청자:</strong> 사용자 ID {selectedApplicationForConfirmation.userId}
+                </p>
+                <p className="text-sm text-blue-700 dark:text-blue-300">
+                  <strong>신청일:</strong> {new Date(selectedApplicationForConfirmation.applicationDate).toLocaleDateString()}
+                </p>
+                <p className="text-sm text-blue-700 dark:text-blue-300">
+                  <strong>프로그램:</strong> ID {selectedApplicationForConfirmation.programId}
+                </p>
+              </div>
+
+              <div>
+                <Label htmlFor="confirmationMessage">확인 메시지</Label>
+                <Textarea
+                  id="confirmationMessage"
+                  value={confirmationMessage}
+                  onChange={(e) => setConfirmationMessage(e.target.value)}
+                  rows={6}
+                  placeholder="기관관리자에게 발송할 확인 메시지를 작성해주세요..."
+                />
+              </div>
+
+              {/* 워크플로우 상태 */}
+              <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
+                <h4 className="font-medium mb-2">인증 워크플로우</h4>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                    <span className="text-sm">1. 기관 확인 발송</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 bg-gray-300 dark:bg-gray-600 rounded-full"></div>
+                    <span className="text-sm">2. 훈련사 합의</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 bg-gray-300 dark:bg-gray-600 rounded-full"></div>
+                    <span className="text-sm">3. 최종 승인</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-2">
+                <DialogClose asChild>
+                  <Button variant="outline">취소</Button>
+                </DialogClose>
+                <Button
+                  onClick={handleConfirmationSend}
+                  disabled={!confirmationMessage.trim()}
+                  className="bg-blue-600 hover:bg-blue-700"
+                >
+                  <FileText className="h-4 w-4 mr-1" />
+                  확인 메시지 발송
+                </Button>
               </div>
             </div>
           )}
