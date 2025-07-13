@@ -151,7 +151,7 @@ export default function CommissionManagement() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">가격정산 관리</h1>
+        <h1 className="text-2xl font-bold">요금관리시스템</h1>
       </div>
       
       <Tabs defaultValue="products">
