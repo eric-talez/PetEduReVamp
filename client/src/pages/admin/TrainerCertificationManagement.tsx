@@ -456,7 +456,7 @@ export default function TrainerCertificationManagement() {
                   {programs && programs.length > 0 ? programs.map((program) => (
                     <div key={program.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                       <div>
-                        <p className="font-medium text-[#2b3245] dark:text-white">{program.name}</p>
+                        <p className="font-medium dark:text-white text-[#2b3245]">{program.name}</p>
                         <p className="text-sm text-gray-600 dark:text-gray-400">{program.description}</p>
                       </div>
                       <div className="flex items-center gap-2">
