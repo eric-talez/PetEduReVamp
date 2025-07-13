@@ -414,11 +414,31 @@ export default function TrainerCertificationManagement() {
 
       {/* 탭 메뉴 */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="overview">개요</TabsTrigger>
-          <TabsTrigger value="programs">프로그램</TabsTrigger>
-          <TabsTrigger value="applications">신청서</TabsTrigger>
-          <TabsTrigger value="certifications">인증서</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-4 bg-gray-100 dark:bg-gray-800 p-1">
+          <TabsTrigger 
+            value="overview" 
+            className="text-gray-700 dark:text-gray-300 data-[state=active]:text-blue-600 data-[state=active]:dark:text-blue-400 data-[state=active]:bg-white data-[state=active]:dark:bg-gray-700 font-medium"
+          >
+            개요
+          </TabsTrigger>
+          <TabsTrigger 
+            value="programs"
+            className="text-gray-700 dark:text-gray-300 data-[state=active]:text-blue-600 data-[state=active]:dark:text-blue-400 data-[state=active]:bg-white data-[state=active]:dark:bg-gray-700 font-medium"
+          >
+            프로그램
+          </TabsTrigger>
+          <TabsTrigger 
+            value="applications"
+            className="text-gray-700 dark:text-gray-300 data-[state=active]:text-blue-600 data-[state=active]:dark:text-blue-400 data-[state=active]:bg-white data-[state=active]:dark:bg-gray-700 font-medium"
+          >
+            신청서
+          </TabsTrigger>
+          <TabsTrigger 
+            value="certifications"
+            className="text-gray-700 dark:text-gray-300 data-[state=active]:text-blue-600 data-[state=active]:dark:text-blue-400 data-[state=active]:bg-white data-[state=active]:dark:bg-gray-700 font-medium"
+          >
+            인증서
+          </TabsTrigger>
         </TabsList>
 
         {/* 개요 탭 */}
@@ -426,7 +446,7 @@ export default function TrainerCertificationManagement() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+                <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-white">
                   <Award className="h-5 w-5" />
                   인증 프로그램 현황
                 </CardTitle>
@@ -437,7 +457,7 @@ export default function TrainerCertificationManagement() {
                     <div key={program.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                       <div>
                         <p className="font-medium text-[#2b3245] dark:text-white">{program.name}</p>
-                        <p className="text-sm text-gray-600">{program.description}</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">{program.description}</p>
                       </div>
                       <div className="flex items-center gap-2">
                         {getLevelBadge(program.level)}
@@ -447,7 +467,7 @@ export default function TrainerCertificationManagement() {
                       </div>
                     </div>
                   )) : (
-                    <p className="text-gray-500 text-center py-4">등록된 프로그램이 없습니다.</p>
+                    <p className="text-gray-500 dark:text-gray-400 text-center py-4">등록된 프로그램이 없습니다.</p>
                   )}
                 </div>
               </CardContent>
@@ -455,7 +475,7 @@ export default function TrainerCertificationManagement() {
 
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+                <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-white">
                   <FileText className="h-5 w-5" />
                   최근 신청서
                 </CardTitle>
@@ -489,7 +509,7 @@ export default function TrainerCertificationManagement() {
         {/* 프로그램 탭 */}
         <TabsContent value="programs" className="space-y-6">
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl font-semibold">인증 프로그램 관리</h2>
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">인증 프로그램 관리</h2>
             <Dialog>
               <DialogTrigger asChild>
                 <Button className="bg-blue-600 hover:bg-blue-700">
@@ -510,7 +530,7 @@ export default function TrainerCertificationManagement() {
             {programs && programs.length > 0 ? programs.map((program) => (
               <Card key={program.id}>
                 <CardHeader>
-                  <CardTitle className="flex items-center justify-between">
+                  <CardTitle className="flex items-center justify-between text-gray-900 dark:text-white">
                     <span>{program.name}</span>
                     {getLevelBadge(program.level)}
                   </CardTitle>
@@ -519,22 +539,22 @@ export default function TrainerCertificationManagement() {
                   <p className="text-sm text-muted-foreground mb-4">{program.description}</p>
                   
                   <div className="space-y-2 mb-4">
-                    <div className="flex items-center justify-between text-sm">
+                    <div className="flex items-center justify-between text-sm text-gray-700 dark:text-gray-300">
                       <span>교육 기간:</span>
                       <span>{program.duration}일</span>
                     </div>
-                    <div className="flex items-center justify-between text-sm">
+                    <div className="flex items-center justify-between text-sm text-gray-700 dark:text-gray-300">
                       <span>최대 참여자:</span>
                       <span>{program.maxParticipants}명</span>
                     </div>
-                    <div className="flex items-center justify-between text-sm">
+                    <div className="flex items-center justify-between text-sm text-gray-700 dark:text-gray-300">
                       <span>인증 유효기간:</span>
                       <span>{program.certificateValidityPeriod}일</span>
                     </div>
                   </div>
 
                   <div className="mb-4">
-                    <p className="text-sm font-medium mb-2">필수 요건:</p>
+                    <p className="text-sm font-medium mb-2 text-gray-900 dark:text-white">필수 요건:</p>
                     <ul className="text-xs text-muted-foreground space-y-1">
                       {program.requirements && program.requirements.length > 0 ? program.requirements.map((req, index) => (
                         <li key={index}>• {req}</li>
@@ -612,7 +632,7 @@ export default function TrainerCertificationManagement() {
                           )}
                         </div>
                         <div>
-                          <h3 className="font-semibold">신청 ID: {application.id}</h3>
+                          <h3 className="font-semibold text-gray-900 dark:text-white">신청 ID: {application.id}</h3>
                           <p className="text-sm text-muted-foreground">
                             신청일: {new Date(application.applicationDate).toLocaleDateString()}
                           </p>
@@ -634,18 +654,18 @@ export default function TrainerCertificationManagement() {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                       <div>
-                        <p className="text-sm font-medium mb-1">경력:</p>
+                        <p className="text-sm font-medium mb-1 text-gray-900 dark:text-white">경력:</p>
                         <p className="text-sm text-muted-foreground">{application.experience}</p>
                       </div>
                       <div>
-                        <p className="text-sm font-medium mb-1">지원 동기:</p>
+                        <p className="text-sm font-medium mb-1 text-gray-900 dark:text-white">지원 동기:</p>
                         <p className="text-sm text-muted-foreground">{application.motivation}</p>
                       </div>
                     </div>
 
                     {application.previousCertifications && application.previousCertifications.length > 0 && (
                       <div className="mb-4">
-                        <p className="text-sm font-medium mb-2">보유 자격증:</p>
+                        <p className="text-sm font-medium mb-2 text-gray-900 dark:text-white">보유 자격증:</p>
                         <div className="flex flex-wrap gap-1">
                           {application.previousCertifications.map((cert, index) => (
                             <Badge key={index} variant="outline" className="text-xs">
@@ -730,7 +750,7 @@ export default function TrainerCertificationManagement() {
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between mb-4">
                     <div>
-                      <h3 className="font-semibold">인증서 번호: {certification.certificateNumber}</h3>
+                      <h3 className="font-semibold text-gray-900 dark:text-white">인증서 번호: {certification.certificateNumber}</h3>
                       <p className="text-sm text-muted-foreground">
                         발급일: {new Date(certification.issueDate).toLocaleDateString()} | 
                         만료일: {new Date(certification.expiryDate).toLocaleDateString()}
@@ -744,15 +764,15 @@ export default function TrainerCertificationManagement() {
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
-                      <p className="text-sm font-medium">훈련사 ID:</p>
+                      <p className="text-sm font-medium text-gray-900 dark:text-white">훈련사 ID:</p>
                       <p className="text-sm text-muted-foreground">{certification.trainerId}</p>
                     </div>
                     <div>
-                      <p className="text-sm font-medium">프로그램 ID:</p>
+                      <p className="text-sm font-medium text-gray-900 dark:text-white">프로그램 ID:</p>
                       <p className="text-sm text-muted-foreground">{certification.programId}</p>
                     </div>
                     <div>
-                      <p className="text-sm font-medium">점수:</p>
+                      <p className="text-sm font-medium text-gray-900 dark:text-white">점수:</p>
                       <div className="flex items-center gap-1">
                         <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
                         <span className="text-sm text-muted-foreground">{certification.score}/100</span>

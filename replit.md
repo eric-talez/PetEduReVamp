@@ -151,6 +151,14 @@ TALEZ is a comprehensive pet education and e-commerce platform that combines AI-
 
 ## Changelog
 
+- July 13, 2025. **TRAINER CERTIFICATION MANAGEMENT TAB FONT COLORS FIXED** - Enhanced dark mode compatibility for all tab content:
+  - **Tab Navigation**: Improved TabsList and TabsTrigger styling with proper color contrast for active/inactive states
+  - **Content Titles**: Fixed all CardTitle elements with proper dark mode text colors (text-gray-900 dark:text-white)
+  - **Label Text**: Enhanced form labels and section titles with consistent dark mode support
+  - **Data Display**: Improved data presentation with proper text color contrast throughout all tabs
+  - **Button Integration**: Maintained consistent button styling across all certification management features
+  - **Visual Hierarchy**: Clear text hierarchy with proper color contrast ratios for both light and dark modes
+  - **Production Ready**: All tabs now provide optimal readability in both light and dark theme modes
 - July 13, 2025. **SIDEBAR MENU STYLE UNIFICATION COMPLETED** - Standardized all sidebar menu components with consistent accessibility features:
   - **Navigation Items**: Unified styling for all nav items with shadow effects, focus rings, and active state indicators
   - **Menu Group Toggles**: Consistent styling for expandable menu groups with smooth transitions and hover effects
