@@ -126,8 +126,8 @@ function NavItem({ href, icon, children, active, onClick, show }: NavItemProps) 
             <a
               href={href}
               className={cn(
-                "sidebar-link flex items-center justify-center py-2 text-sm font-medium rounded-md transition-all duration-200 ease-in-out px-2 group",
-                active ? "bg-primary/10 text-primary" : "text-gray-700 dark:text-gray-200 hover:text-primary dark:hover:text-primary hover:bg-primary/5"
+                "sidebar-link flex items-center justify-center py-2 text-sm font-medium rounded-md transition-all duration-200 ease-in-out px-2 group shadow-sm hover:shadow-md focus:ring-2 focus:ring-primary focus:ring-offset-2",
+                active ? "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800" : "text-gray-700 dark:text-gray-200 hover:text-primary dark:hover:text-primary hover:bg-primary/5 border border-transparent"
               )}
               onClick={handleClick}
               aria-label={typeof children === 'string' ? children : children?.toString()}
@@ -150,8 +150,8 @@ function NavItem({ href, icon, children, active, onClick, show }: NavItemProps) 
     <a
       href={href}
       className={cn(
-        "sidebar-link flex items-center py-2 text-sm font-medium rounded-md transition-all duration-200 ease-in-out px-3 group",
-        active ? "bg-primary/10 text-primary" : "text-gray-700 dark:text-gray-200 hover:text-primary dark:hover:text-primary hover:bg-primary/5"
+        "sidebar-link flex items-center py-2 text-sm font-medium rounded-md transition-all duration-200 ease-in-out px-3 group shadow-sm hover:shadow-md focus:ring-2 focus:ring-primary focus:ring-offset-2",
+        active ? "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800" : "text-gray-700 dark:text-gray-200 hover:text-primary dark:hover:text-primary hover:bg-primary/5 border border-transparent"
       )}
       onClick={handleClick}
       aria-current={active ? "page" : undefined}
@@ -333,10 +333,10 @@ export function Sidebar({
       const overlay = document.createElement('div');
       overlay.className = 'fixed inset-0 bg-black/30 z-50 flex items-center justify-center';
       overlay.innerHTML = `
-        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg flex flex-col items-center">
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 flex flex-col items-center">
           <div class="animate-spin w-6 h-6 border-3 border-primary border-t-transparent rounded-full mb-3"></div>
-          <p class="mb-4">로그인이 필요한 서비스입니다</p>
-          <p class="text-sm text-gray-500 mb-4">로그인 페이지로 이동합니다...</p>
+          <p class="mb-4 text-gray-900 dark:text-white">로그인이 필요한 서비스입니다</p>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">로그인 페이지로 이동합니다...</p>
         </div>
       `;
       document.body.appendChild(overlay);
@@ -372,11 +372,11 @@ export function Sidebar({
         const overlay = document.createElement('div');
         overlay.className = 'fixed inset-0 bg-black/30 z-50 flex items-center justify-center';
         overlay.innerHTML = `
-          <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg flex flex-col items-center">
+          <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 flex flex-col items-center">
             <div class="text-amber-500 mb-3"><svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg></div>
-            <p class="text-lg font-medium mb-2">접근 권한이 없습니다</p>
-            <p class="text-sm text-gray-500 mb-4">이 페이지는 훈련사 권한이 필요합니다.</p>
-            <button class="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2">확인</button>
+            <p class="text-lg font-medium mb-2 text-gray-900 dark:text-white">접근 권한이 없습니다</p>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">이 페이지는 훈련사 권한이 필요합니다.</p>
+            <button class="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 transition-all duration-200 shadow-sm hover:shadow-md">확인</button>
           </div>
         `;
 
@@ -402,11 +402,11 @@ export function Sidebar({
         const overlay = document.createElement('div');
         overlay.className = 'fixed inset-0 bg-black/30 z-50 flex items-center justify-center';
         overlay.innerHTML = `
-          <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg flex flex-col items-center">
+          <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 flex flex-col items-center">
             <div class="text-amber-500 mb-3"><svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg></div>
-            <p class="text-lg font-medium mb-2">접근 권한이 없습니다</p>
-            <p class="text-sm text-gray-500 mb-4">이 페이지는 기관 관리자 권한이 필요합니다.</p>
-            <button class="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2">확인</button>
+            <p class="text-lg font-medium mb-2 text-gray-900 dark:text-white">접근 권한이 없습니다</p>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">이 페이지는 기관 관리자 권한이 필요합니다.</p>
+            <button class="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 transition-all duration-200 shadow-sm hover:shadow-md">확인</button>
           </div>
         `;
 
@@ -563,7 +563,7 @@ export function Sidebar({
           )}
           <button
             onClick={toggleSidebar}
-            className="hidden lg:flex items-center justify-center w-6 h-6 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+            className="hidden lg:flex items-center justify-center w-8 h-8 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 transition-all duration-200 shadow-sm hover:shadow-md border border-transparent hover:border-gray-300 dark:hover:border-gray-600"
             aria-label={expanded ? "사이드바 접기" : "사이드바 펼치기"}
             aria-expanded={expanded}
             title={expanded ? "사이드바 접기" : "사이드바 펼치기"}
