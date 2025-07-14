@@ -844,8 +844,28 @@ export default function Home() {
 
         {/* TALEZ 체험 서비스 섹션 */}
         <div className="mb-8">
-          <div className="bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-2xl p-8 border border-blue-200 dark:border-blue-800">
-            <div className="text-center mb-6">
+          <div className="relative bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-2xl p-8 border border-blue-200 dark:border-blue-800 overflow-hidden">
+            {/* 백그라운드 이미지 */}
+            <div className="absolute inset-0 opacity-10 bg-cover bg-center bg-no-repeat" style={{
+              backgroundImage: `url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" fill="none"><path d="M80 220c0-40 20-60 60-60s60 20 60 60" stroke="%23000" stroke-width="3" fill="none"/><circle cx="100" cy="180" r="8" fill="%23000"/><circle cx="160" cy="180" r="8" fill="%23000"/><path d="M130 190c-5 0-10 5-10 10s5 10 10 10" stroke="%23000" stroke-width="2" fill="none"/><path d="M50 240c10-10 20-20 30-20s20 10 30 20" stroke="%23000" stroke-width="2" fill="none"/><path d="M240 240c10-10 20-20 30-20s20 10 30 20" stroke="%23000" stroke-width="2" fill="none"/><circle cx="320" cy="120" r="30" fill="%23f0f0f0"/><circle cx="60" cy="80" r="20" fill="%23f0f0f0"/><circle cx="340" cy="260" r="25" fill="%23f0f0f0"/></svg>')`
+            }}></div>
+            
+            <div className="relative z-10 text-center mb-6">
+              <div className="flex items-center justify-center mb-4">
+                <div className="w-20 h-20 bg-gradient-to-br from-orange-400 to-red-500 rounded-full flex items-center justify-center shadow-lg animate-bounce">
+                  <svg className="w-12 h-12 text-white" fill="currentColor" viewBox="0 0 24 24">
+                    {/* 강아지 얼굴 */}
+                    <path d="M12 2C10.3 2 9 3.3 9 5c0 .6.2 1.2.5 1.7L8 8.5c-.8.8-.8 2.1 0 2.9L10.5 14c.4.4 1 .4 1.4 0L12 13.9l.1.1c.4.4 1 .4 1.4 0L16 11.4c.8-.8.8-2.1 0-2.9L14.5 6.7c.3-.5.5-1.1.5-1.7 0-1.7-1.3-3-3-3z"/>
+                    {/* 눈 */}
+                    <circle cx="10" cy="8" r="1" fill="white"/>
+                    <circle cx="14" cy="8" r="1" fill="white"/>
+                    {/* 코 */}
+                    <path d="M12 10c-.6 0-1 .4-1 1s.4 1 1 1 1-.4 1-1-.4-1-1-1z" fill="white"/>
+                    {/* 입 */}
+                    <path d="M10 13c.6.6 1.3 1 2 1s1.4-.4 2-1" stroke="white" strokeWidth="1" fill="none"/>
+                  </svg>
+                </div>
+              </div>
               <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
                 🐕 TALEZ 체험 서비스
               </h2>
@@ -858,17 +878,17 @@ export default function Home() {
             </div>
 
             {!showExperience ? (
-              <div className="text-center">
+              <div className="relative z-10 text-center">
                 <Button 
                   onClick={() => setShowExperience(true)}
-                  className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white px-8 py-3 text-lg"
+                  className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white px-8 py-3 text-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
                 >
                   <Play className="mr-2 h-5 w-5" />
                   무료 체험 시작하기
                 </Button>
               </div>
             ) : (
-              <div className="max-w-2xl mx-auto">
+              <div className="relative z-10 max-w-2xl mx-auto">
                 {/* 단계 표시 */}
                 <div className="flex items-center justify-center mb-6">
                   <div className="flex items-center space-x-4">
