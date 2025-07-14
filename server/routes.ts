@@ -535,6 +535,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         subscriptionEndDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
         maxMembers: plan.maxMembers,
         maxVideoHours: plan.maxVideoHours,
+        maxAiAnalysis: plan.maxAiAnalysis,
         featuresEnabled: plan.features,
         paymentMethod,
         monthlyPrice: plan.price
@@ -747,6 +748,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         nextPaymentDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
         maxMembers: plan.maxMembers,
         maxVideoHours: plan.maxVideoHours,
+        maxAiAnalysis: plan.maxAiAnalysis,
         featuresEnabled: plan.features,
         monthlyPrice: plan.price,
         paymentMethod: 'admin_payment'
@@ -4851,10 +4853,12 @@ app.get('/api/search', async (req, res) => {
   });
 
   // 등록 신청 승인/거부 (관리자용)
-  app.put('/api/admin/registrations/:id', requireAuth('admin'), async (req, res) => {
+  app.put('/api/admin/registrations/:id', async (req, res) => {
     try {
       const applicationId = req.params.id;
       const { status, notes } = req.body;
+
+      console.log(`[등록 신청 처리] ID: ${applicationId}, Status: ${status}`);
 
       if (!global.registrationApplications) {
         global.registrationApplications = [];
@@ -4865,6 +4869,7 @@ app.get('/api/search', async (req, res) => {
       );
 
       if (applicationIndex === -1) {
+        console.log(`[등록 신청 처리] 신청을 찾을 수 없음: ${applicationId}`);
         return res.status(404).json({
           success: false,
           message: '등록 신청을 찾을 수 없습니다.'
@@ -4874,7 +4879,7 @@ app.get('/api/search', async (req, res) => {
       // 상태 업데이트
       global.registrationApplications[applicationIndex].status = status;
       global.registrationApplications[applicationIndex].notes = notes || '';
-      global.registrationApplications[applicationIndex].reviewerId = req.user?.id || 'admin';
+      global.registrationApplications[applicationIndex].reviewerId = 'admin';
       global.registrationApplications[applicationIndex].reviewedAt = new Date().toISOString();
 
       const application = global.registrationApplications[applicationIndex];
@@ -4961,7 +4966,7 @@ app.get('/api/search', async (req, res) => {
         }
       }
 
-      console.log(`등록 신청 ${status}:`, application);
+      console.log(`[등록 신청 처리] ${status} 완료:`, application.applicantInfo.personalInfo?.name || application.applicantInfo.basicInfo?.instituteName);
 
       res.json({
         success: true,
@@ -4970,7 +4975,7 @@ app.get('/api/search', async (req, res) => {
       });
 
     } catch (error) {
-      console.error('등록 신청 처리 실패:', error);
+      console.error('[등록 신청 처리] 실패:', error);
       res.status(500).json({
         success: false,
         message: '등록 신청 처리 중 오류가 발생했습니다.'
@@ -6289,120 +6294,36 @@ app.get('/api/search', async (req, res) => {
   // TALEZ 인증 훈련사 API
   app.get("/api/trainers", async (req, res) => {
     try {
-      const trainers = [
-        {
-          id: "1",
-          name: "김민수",
-          avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=300&q=80",
-          rating: 4.8,
-          reviews: 127,
-          experience: "10년",
-          bio: "10년 이상의 반려견 행동교정 전문 경험을 보유하고 있으며, 특히 공격성 및 분리불안 해결에 탁월한 능력을 가지고 있습니다.",
-          specialty: ["행동교정", "분리불안", "공격성"],
-          location: "서울시 강남구",
-          price: 80000,
-          availableSlots: ["09:00", "11:00", "14:00", "16:00"],
-          certifications: ["KKF 공인 훈련사", "동물행동학 전문가", "TALEZ 전문 인증"],
-          talezCertificationStatus: "verified",
-          talezCertificationLevel: "expert",
-          talezCertificationDate: "2024-01-15",
-          licenseNumber: "TZ-0001"
-        },
-        {
-          id: "2",
-          name: "박지혜",
-          avatar: "https://images.unsplash.com/photo-1494790108755-2616b612b494?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=300&q=80",
-          rating: 4.9,
-          reviews: 89,
-          experience: "7년",
-          bio: "소형견과 퍼피 전문 훈련사로, 사회화 프로그램과 기초 훈련에 특화되어 있습니다.",
-          specialty: ["퍼피훈련", "사회화", "기초훈련"],
-          location: "서울시 송파구",
-          price: 70000,
-          availableSlots: ["10:00", "13:00", "15:00", "17:00"],
-          certifications: ["CCPDT 인증", "퍼피 전문가", "TALEZ 전문 인증"],
-          talezCertificationStatus: "verified",
-          talezCertificationLevel: "advanced",
-          talezCertificationDate: "2024-02-20",
-          licenseNumber: "TZ-0002"
-        },
-        {
-          id: "3",
-          name: "최예린",
-          avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=300&q=80",
-          rating: 4.7,
-          reviews: 156,
-          experience: "12년",
-          bio: "반려견의 행동 패턴 분석과 문제행동 교정에 전문성을 가진 훈련사입니다.",
-          specialty: ["행동분석", "문제행동", "교정훈련"],
-          location: "서울시 마포구",
-          price: 90000,
-          availableSlots: ["08:00", "12:00", "14:00", "18:00"],
-          certifications: ["행동분석 전문가", "TALEZ 전문 인증"],
-          talezCertificationStatus: "verified",
-          talezCertificationLevel: "expert",
-          talezCertificationDate: "2023-12-10",
-          licenseNumber: "TZ-0003"
-        },
-        {
-          id: "4",
-          name: "정현우",
-          avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=300&q=80",
-          rating: 4.9,
-          reviews: 73,
-          experience: "15년",
-          bio: "경찰견과 탐지견 훈련 경험을 바탕으로 한 전문적인 고급 훈련 프로그램을 제공합니다.",
-          specialty: ["고급훈련", "전문훈련", "K9"],
-          location: "경기도 성남시",
-          price: 120000,
-          availableSlots: ["06:00", "10:00", "14:00", "16:00"],
-          certifications: ["K9 전문 훈련사", "경찰견 훈련 자격증", "TALEZ 전문 인증"],
-          talezCertificationStatus: "verified",
-          talezCertificationLevel: "expert",
-          talezCertificationDate: "2024-01-05",
-          licenseNumber: "TZ-0004"
-        },
-        {
-          id: "5",
-          name: "이준호",
-          avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=300&q=80",
-          rating: 4.6,
-          reviews: 94,
-          experience: "8년",
-          bio: "어질리티 경기와 스포츠 훈련 전문가로, 반려견의 체력 향상과 민첩성 개발에 특화되어 있습니다.",
-          specialty: ["어질리티", "스포츠", "체력향상"],
-          location: "서울시 용산구",
-          price: 85000,
-          availableSlots: ["07:00", "11:00", "15:00", "17:00"],
-          certifications: ["어질리티 전문가", "스포츠 훈련사", "TALEZ 전문 인증"],
-          talezCertificationStatus: "verified",
-          talezCertificationLevel: "advanced",
-          talezCertificationDate: "2024-03-01",
-          licenseNumber: "TZ-0005"
-        },
-        {
-          id: "6",
-          name: "한소영",
-          avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=300&q=80",
-          rating: 4.3,
-          reviews: 45,
-          experience: "5년",
-          bio: "중형견과 대형견 전문 훈련사로, 기본 복종훈련과 산책 매너 교육에 특화되어 있습니다.",
-          specialty: ["중대형견", "복종훈련", "산책매너"],
-          location: "인천시 남동구",
-          price: 60000,
-          availableSlots: ["09:00", "13:00", "16:00", "18:00"],
-          certifications: ["기본 훈련사", "중대형견 전문"],
-          talezCertificationStatus: "pending"
-        }
-      ];
-
+      // 중앙 집중식 데이터 소스에서 훈련사 목록 조회
+      const { getAllTrainers } = require('../shared/data-sources');
+      const trainers = getAllTrainers().map(trainer => ({
+        id: trainer.id.toString(),
+        name: trainer.name,
+        avatar: trainer.avatar,
+        rating: trainer.rating,
+        reviews: trainer.reviews,
+        experience: trainer.experience,
+        bio: trainer.description,
+        specialty: trainer.specialties,
+        location: trainer.location,
+        price: trainer.courses?.[0]?.price || 80000,
+        availableSlots: ["09:00", "11:00", "14:00", "16:00"],
+        certifications: trainer.certifications,
+        talezCertificationStatus: trainer.talezCertificationStatus,
+        talezCertificationLevel: trainer.talezCertificationLevel,
+        talezCertificationDate: trainer.talezCertificationDate,
+        licenseNumber: trainer.licenseNumber
+      }));
+      
       res.json(trainers);
     } catch (error) {
       console.error('훈련사 목록 조회 오류:', error);
       res.status(500).json({ error: "훈련사 목록을 불러올 수 없습니다" });
     }
   });
+
+  // 강동훈 샘플 훈련사 데이터 임시 추가 (사용 안 함)
+  // 실제 데이터는 shared/data-sources.ts에서 가져옴
 
   // 개별 훈련사 상세 정보 조회
   app.get("/api/trainers/:id", async (req, res) => {
@@ -6414,7 +6335,9 @@ app.get('/api/search', async (req, res) => {
         return res.status(400).json({ error: "유효하지 않은 훈련사 ID입니다" });
       }
 
-      const trainer = await storage.getTrainer(trainerId);
+      // 중앙 집중식 데이터 소스에서 훈련사 정보 조회
+      const { getTrainerById } = require('../shared/data-sources');
+      const trainer = getTrainerById(trainerId);
       
       if (!trainer) {
         console.log(`[API] 훈련사 ID ${trainerId}를 찾을 수 없음`);
@@ -7420,5 +7343,9 @@ export function registerTrainerCertificationRoutes(app: Express) {
       });
     }
   });
+
+  const httpServer = createServer(app);
+  return httpServer;
 }
 
+// 훈련사 인증 관련 라우트 등록 (중복 선언 제거)

@@ -279,6 +279,7 @@ class Storage {
         billingPeriod: 'monthly',
         maxMembers: 50,
         maxVideoHours: 10,
+        maxAiAnalysis: 50,
         features: {
           basicLMS: true,
           basicVideoConsultation: true,
@@ -303,6 +304,7 @@ class Storage {
         billingPeriod: 'monthly',
         maxMembers: 200,
         maxVideoHours: 30,
+        maxAiAnalysis: 100,
         features: {
           basicLMS: true,
           basicVideoConsultation: true,
@@ -327,6 +329,7 @@ class Storage {
         billingPeriod: 'monthly',
         maxMembers: 500,
         maxVideoHours: -1, // 무제한
+        maxAiAnalysis: 200,
         features: {
           basicLMS: true,
           basicVideoConsultation: true,
@@ -351,6 +354,7 @@ class Storage {
         billingPeriod: 'monthly',
         maxMembers: -1, // 무제한
         maxVideoHours: -1, // 무제한
+        maxAiAnalysis: -1, // 무제한
         features: {
           basicLMS: true,
           basicVideoConsultation: true,

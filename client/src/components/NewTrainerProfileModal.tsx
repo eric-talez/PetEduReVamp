@@ -48,7 +48,7 @@ export function NewTrainerProfileModal({ trainer, isOpen, onClose }: TrainerProf
         <div className="flex items-start gap-4">
           <div className="h-20 w-20 rounded-full overflow-hidden border-2 border-primary">
             <img 
-              src="https://images.unsplash.com/photo-1543466835-00a7907e9de1?q=80&w=300&auto=format&fit=crop" 
+              src={trainer.avatar || "https://api.dicebear.com/7.x/initials/svg?seed=" + trainer.name + "&backgroundColor=6366f1&textColor=ffffff"} 
               alt={trainer.name}
               className="w-full h-full object-cover"
             />

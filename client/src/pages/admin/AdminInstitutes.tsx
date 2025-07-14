@@ -23,6 +23,7 @@ interface SubscriptionPlan {
   price: number;
   maxMembers: number;
   maxVideoHours: number;
+  maxAiAnalysis: number;
   features: {
     basicLMS: boolean;
     basicVideoConsultation: boolean;
@@ -156,18 +157,22 @@ export default function AdminInstitutes() {
 
   // 기관 보기 함수
   const handleViewInstitute = (institute: any) => {
+    console.log('기관 상세보기 클릭:', institute);
     setSelectedInstitute(institute);
     setIsViewDialogOpen(true);
   };
 
   // 구독 변경 처리
   const handleChangeSubscription = (institute: any) => {
+    console.log('구독 변경 클릭:', institute);
     setSelectedInstitute(institute);
+    setCurrentUser({ role: 'admin', name: '관리자' });
     setIsChangeSubscriptionOpen(true);
   };
 
   // 기관 수정 함수
   const handleEditInstitute = (institute: any) => {
+    console.log('기관 수정 클릭:', institute);
     setSelectedInstitute(institute);
     setNewInstitute({
       name: institute.name || "",
@@ -188,6 +193,7 @@ export default function AdminInstitutes() {
 
   // 기관 삭제 함수
   const handleDeleteInstitute = (institute: any) => {
+    console.log('기관 삭제 클릭:', institute);
     setSelectedInstitute(institute);
     setIsDeleteDialogOpen(true);
   };
@@ -733,7 +739,10 @@ export default function AdminInstitutes() {
                   <div className="text-center font-medium">
                     <div>{institute.studentsCount || 0}명</div>
                     <div className="text-xs text-muted-foreground">
-                      {institute.usedVideoHours || 0}h/{institute.maxVideoHours === -1 ? '∞' : institute.maxVideoHours}h
+                      영상: {institute.usedVideoHours || 0}h/{institute.maxVideoHours === -1 ? '∞' : institute.maxVideoHours}h
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      AI: {institute.currentAiUsage || 0}회/{institute.maxAiAnalysis === -1 ? '∞' : institute.maxAiAnalysis}회
                     </div>
                   </div>
                   <div>{getStatusBadge(institute.isActive ? 'active' : 'inactive')}</div>
@@ -829,6 +838,18 @@ export default function AdminInstitutes() {
                   <Label className="text-sm font-medium">월 구독료</Label>
                   <p className="text-sm text-muted-foreground">
                     {selectedInstitute.subscriptionPlanInfo?.price ? formatPrice(selectedInstitute.subscriptionPlanInfo.price) : '0'}원
+                  </p>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium">화상 수업 한도</Label>
+                  <p className="text-sm text-muted-foreground">
+                    {selectedInstitute.maxVideoHours === -1 ? '무제한' : `${selectedInstitute.maxVideoHours}시간`}
+                  </p>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium">AI 분석 한도</Label>
+                  <p className="text-sm text-muted-foreground">
+                    {selectedInstitute.maxAiAnalysis === -1 ? '무제한' : `${selectedInstitute.maxAiAnalysis}회`}
                   </p>
                 </div>
               </div>

@@ -6,7 +6,8 @@ import {
   DialogContent, 
   DialogHeader, 
   DialogTitle, 
-  DialogFooter 
+  DialogFooter,
+  DialogDescription
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -44,6 +45,7 @@ interface SubscriptionPlan {
   billingPeriod: string;
   maxMembers: number;
   maxVideoHours: number;
+  maxAiAnalysis: number;
   features: {
     basicLMS: boolean;
     basicVideoConsultation: boolean;
@@ -67,6 +69,10 @@ interface Institute {
   paymentStatus: string;
   directorName: string;
   directorEmail: string;
+  maxVideoHours?: number;
+  maxAiAnalysis?: number;
+  currentVideoUsage?: number;
+  currentAiUsage?: number;
 }
 
 interface SubscriptionChangeDialogProps {
@@ -228,6 +234,14 @@ export const SubscriptionChangeDialog: React.FC<SubscriptionChangeDialogProps> =
                   <span className="ml-2 font-medium">{formatPrice(currentPlan?.price || 0)}원</span>
                 </div>
                 <div>
+                  <span className="text-gray-600 dark:text-gray-400">화상수업:</span>
+                  <span className="ml-2 font-medium">{institute.currentVideoUsage || 0}/{institute.maxVideoHours || 0}시간</span>
+                </div>
+                <div>
+                  <span className="text-gray-600 dark:text-gray-400">AI 분석:</span>
+                  <span className="ml-2 font-medium">{institute.currentAiUsage || 0}/{institute.maxAiAnalysis || 0}회</span>
+                </div>
+                <div>
                   <span className="text-gray-600 dark:text-gray-400">결제 상태:</span>
                   <Badge variant={institute.paymentStatus === 'completed' ? 'default' : 'secondary'} className="ml-2">
                     {institute.paymentStatus === 'completed' ? '결제 완료' : '결제 대기'}
@@ -279,6 +293,12 @@ export const SubscriptionChangeDialog: React.FC<SubscriptionChangeDialogProps> =
                             <Video className="w-4 h-4 text-green-500" />
                             <span className="text-sm">
                               월 {plan.maxVideoHours === -1 ? '무제한' : plan.maxVideoHours}시간
+                            </span>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <Zap className="w-4 h-4 text-purple-500" />
+                            <span className="text-sm">
+                              월 {plan.maxAiAnalysis === -1 ? '무제한' : plan.maxAiAnalysis}회 AI 분석
                             </span>
                           </div>
                         </div>
