@@ -576,10 +576,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const institutes = storage.getAllInstitutes();
       
       // 구독 플랜 정보 포함
-      const institutesWithPlans = institutes.map(institute => ({
-        ...institute,
-        subscriptionPlanInfo: storage.getSubscriptionPlan(institute.subscriptionPlan)
-      }));
+      const institutesWithPlans = institutes.map(institute => {
+        const subscriptionPlan = storage.getSubscriptionPlan(institute.subscriptionPlan);
+        console.log('[DEBUG] 기관:', institute.name, '구독 플랜:', institute.subscriptionPlan, '매핑 결과:', subscriptionPlan);
+        return {
+          ...institute,
+          subscriptionPlanInfo: subscriptionPlan
+        };
+      });
 
       console.log('[Admin] 기관 목록 응답:', institutesWithPlans.length + '개');
       

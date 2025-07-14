@@ -781,10 +781,19 @@ export default function AdminInstitutes() {
                   </div>
                   <div>
                     <div className="font-medium">
-                      {institute.subscriptionPlanInfo?.name || institute.subscriptionPlan || '미지정'}
+                      {institute.subscriptionPlanInfo?.name || 
+                       (institute.subscriptionPlan === 'starter' ? 'Starter' : 
+                        institute.subscriptionPlan === 'standard' ? 'Standard' : 
+                        institute.subscriptionPlan === 'professional' ? 'Professional' : 
+                        institute.subscriptionPlan === 'enterprise' ? 'Enterprise' : 
+                        institute.subscriptionPlan || '미지정')}
                     </div>
                     <div className="text-sm text-muted-foreground">
-                      월 {institute.subscriptionPlanInfo?.price ? formatPrice(institute.subscriptionPlanInfo.price) : '0'}원
+                      월 {institute.subscriptionPlanInfo?.price ? formatPrice(institute.subscriptionPlanInfo.price) : 
+                           (institute.subscriptionPlan === 'starter' ? '150,000' : 
+                            institute.subscriptionPlan === 'standard' ? '300,000' : 
+                            institute.subscriptionPlan === 'professional' ? '500,000' : 
+                            institute.subscriptionPlan === 'enterprise' ? '800,000' : '0')}원
                     </div>
                   </div>
                   <div className="text-center font-medium">
@@ -888,13 +897,22 @@ export default function AdminInstitutes() {
                 <div>
                   <Label className="text-sm font-medium">구독 플랜</Label>
                   <p className="text-sm text-muted-foreground">
-                    {selectedInstitute.subscriptionPlanInfo?.name || selectedInstitute.subscriptionPlan}
+                    {selectedInstitute.subscriptionPlanInfo?.name || 
+                     (selectedInstitute.subscriptionPlan === 'starter' ? 'Starter' : 
+                      selectedInstitute.subscriptionPlan === 'standard' ? 'Standard' : 
+                      selectedInstitute.subscriptionPlan === 'professional' ? 'Professional' : 
+                      selectedInstitute.subscriptionPlan === 'enterprise' ? 'Enterprise' : 
+                      selectedInstitute.subscriptionPlan || '미지정')}
                   </p>
                 </div>
                 <div>
                   <Label className="text-sm font-medium">월 구독료</Label>
                   <p className="text-sm text-muted-foreground">
-                    {selectedInstitute.subscriptionPlanInfo?.price ? formatPrice(selectedInstitute.subscriptionPlanInfo.price) : '0'}원
+                    {selectedInstitute.subscriptionPlanInfo?.price ? formatPrice(selectedInstitute.subscriptionPlanInfo.price) : 
+                     (selectedInstitute.subscriptionPlan === 'starter' ? '150,000' : 
+                      selectedInstitute.subscriptionPlan === 'standard' ? '300,000' : 
+                      selectedInstitute.subscriptionPlan === 'professional' ? '500,000' : 
+                      selectedInstitute.subscriptionPlan === 'enterprise' ? '800,000' : '0')}원
                   </p>
                 </div>
                 <div>
