@@ -64,7 +64,12 @@ export default function NotebookMonitorPage() {
     queryKey: ['/api/admin/notebook/status', dateRange.start, dateRange.end, timeRange.startTime, timeRange.endTime],
     queryFn: async () => {
       const response = await fetch(`/api/admin/notebook/status?startDate=${dateRange.start}&endDate=${dateRange.end}&startTime=${timeRange.startTime}&endTime=${timeRange.endTime}`);
-      return response.json();
+      const data = await response.json();
+      // 데이터 구조 안전성 확인
+      return {
+        stats: Array.isArray(data.stats) ? data.stats : [],
+        totalJournals: data.totalJournals || 0
+      };
     }
   });
 
@@ -282,7 +287,7 @@ export default function NotebookMonitorPage() {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{notebookStatus?.stats.length || 0}</div>
+            <div className="text-2xl font-bold">{(notebookStatus?.stats || []).length}</div>
             <p className="text-xs text-muted-foreground">알림장 작성중</p>
           </CardContent>
         </Card>
@@ -293,7 +298,7 @@ export default function NotebookMonitorPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {notebookStatus?.stats.reduce((acc, curr) => acc + curr.sentJournals, 0) || 0}
+              {(notebookStatus?.stats || []).reduce((acc, curr) => acc + curr.sentJournals, 0)}
             </div>
             <p className="text-xs text-muted-foreground">견주에게 전송됨</p>
           </CardContent>
@@ -305,7 +310,7 @@ export default function NotebookMonitorPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {notebookStatus?.stats.reduce((acc, curr) => acc + curr.readJournals, 0) || 0}
+              {(notebookStatus?.stats || []).reduce((acc, curr) => acc + curr.readJournals, 0)}
             </div>
             <p className="text-xs text-muted-foreground">견주가 확인함</p>
           </CardContent>
@@ -421,7 +426,7 @@ export default function NotebookMonitorPage() {
               <div>
                 <h3 className="font-semibold mb-3">알림장 작성 내역</h3>
                 <div className="space-y-2 max-h-96 overflow-y-auto">
-                  {selectedTrainer.dates.map((entry, index) => (
+                  {(selectedTrainer.dates || []).map((entry, index) => (
                     <div key={index} className="flex items-center justify-between p-3 border rounded">
                       <div className="flex items-center space-x-3">
                         <div className={`w-3 h-3 rounded-full ${getStatusColor(entry.status)}`}></div>

@@ -9,6 +9,7 @@ class Storage {
   paymentRequests: any[] = [];
   products: any[] = [];
   pricingRules: any[] = [];
+  trainingJournals: any[] = [];
   events: any[] = [
     {
       id: 1,
@@ -512,6 +513,67 @@ class Storage {
         createdAt: new Date().toISOString()
       }
     ];
+    
+    // 훈련 일지 샘플 데이터
+    this.trainingJournals = [
+      {
+        id: 1,
+        trainerId: 1,
+        petId: 1,
+        trainerName: "강동훈",
+        petName: "맥스",
+        title: "기본 복종 훈련 1회차",
+        content: "오늘은 맥스와 함께 기본적인 앉기, 기다리기 훈련을 진행했습니다. 처음에는 산만했지만 점차 집중력이 향상되었습니다.",
+        trainingDate: "2025-01-10",
+        status: "sent",
+        createdAt: new Date('2025-01-10').toISOString(),
+        sentAt: new Date('2025-01-10T18:00:00').toISOString(),
+        trainer: { name: "강동훈" }
+      },
+      {
+        id: 2,
+        trainerId: 1,
+        petId: 1,
+        trainerName: "강동훈",
+        petName: "맥스",
+        title: "기본 복종 훈련 2회차",
+        content: "앉기 명령에 대한 반응이 좋아졌습니다. 이제 손신호도 함께 병행하여 훈련하고 있습니다.",
+        trainingDate: "2025-01-12",
+        status: "read",
+        createdAt: new Date('2025-01-12').toISOString(),
+        sentAt: new Date('2025-01-12T18:30:00').toISOString(),
+        readAt: new Date('2025-01-12T20:15:00').toISOString(),
+        trainer: { name: "강동훈" }
+      },
+      {
+        id: 3,
+        trainerId: 1,
+        petId: 2,
+        trainerName: "강동훈",
+        petName: "루나",
+        title: "사회화 훈련 1회차",
+        content: "루나는 다른 개들과의 만남에 약간 긴장하는 모습을 보였습니다. 천천히 적응할 수 있도록 도와주겠습니다.",
+        trainingDate: "2025-01-13",
+        status: "draft",
+        createdAt: new Date('2025-01-13').toISOString(),
+        trainer: { name: "강동훈" }
+      },
+      {
+        id: 4,
+        trainerId: 1,
+        petId: 3,
+        trainerName: "강동훈",
+        petName: "초코",
+        title: "문제 행동 교정 1회차",
+        content: "짖는 행동에 대한 교정 훈련을 시작했습니다. 원인을 파악하고 단계별로 접근하고 있습니다.",
+        trainingDate: "2025-01-14",
+        status: "sent",
+        createdAt: new Date('2025-01-14').toISOString(),
+        sentAt: new Date('2025-01-14T19:00:00').toISOString(),
+        trainer: { name: "강동훈" }
+      }
+    ];
+    
     // courses data
     this.courses = [];
   }
@@ -1087,6 +1149,43 @@ class Storage {
         currentMembers: institute.studentsCount || 0,
         currentVideoHours: institute.usedVideoHours || 0
       };
+    }
+    return null;
+  }
+
+  // 알림장 관리 메서드
+  getAllTrainingJournals(): any[] {
+    return this.trainingJournals || [];
+  }
+
+  getTrainingJournalsByTrainer(trainerId: number): any[] {
+    return (this.trainingJournals || []).filter(journal => journal.trainerId === trainerId);
+  }
+
+  getTrainingJournalsByPet(petId: number): any[] {
+    return (this.trainingJournals || []).filter(journal => journal.petId === petId);
+  }
+
+  createTrainingJournal(journalData: any): any {
+    const journal = {
+      id: (this.trainingJournals || []).length + 1,
+      ...journalData,
+      createdAt: new Date().toISOString(),
+      status: 'draft'
+    };
+    
+    if (!this.trainingJournals) {
+      this.trainingJournals = [];
+    }
+    this.trainingJournals.push(journal);
+    return journal;
+  }
+
+  updateTrainingJournal(id: number, updateData: any): any {
+    const journal = (this.trainingJournals || []).find(j => j.id === id);
+    if (journal) {
+      Object.assign(journal, updateData);
+      return journal;
     }
     return null;
   }
