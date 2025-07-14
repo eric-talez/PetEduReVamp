@@ -2,13 +2,14 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Loader2, Search, MapPin, Navigation, Calendar, Clock, Users, Star, Filter, ExternalLink, Heart, Share2, Trophy } from 'lucide-react';
+import { Loader2, Search, MapPin, Navigation, Calendar, Clock, Users, Star, Filter, ExternalLink, Heart, Share2, Trophy, Upload, Image, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useMapService, MapServiceProvider, Place } from '@/hooks/useMapService';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { apiRequest } from '@/lib/queryClient';
 
 /**
@@ -132,6 +133,15 @@ function NearbyPlaces() {
   // 축제/이벤트 데이터 - API에서 가져오기
   const [eventData, setEventData] = useState<any[]>([]);
   const [isLoadingEvents, setIsLoadingEvents] = useState(false);
+
+  // 썸네일 업데이트 핸들러
+  const handleThumbnailUpdate = (eventId: number, thumbnailUrl: string) => {
+    setEventData(prevData => 
+      prevData.map(event => 
+        event.id === eventId ? { ...event, thumbnailUrl } : event
+      )
+    );
+  };
   
   // 이벤트 API 호출 함수
   const fetchEvents = async () => {
@@ -483,7 +493,7 @@ function NearbyPlaces() {
                     </div>
                     {filteredEvents.map((event, index) => {
                       console.log(`🔥 이벤트 ${index + 1}/${filteredEvents.length}: ${event.name}`);
-                      return <EventCard key={event.id} event={event} />;
+                      return <EventCard key={event.id} event={event} onThumbnailUpdate={handleThumbnailUpdate} />;
                     })}
                   </>
                 ) : (
@@ -505,9 +515,131 @@ function NearbyPlaces() {
 }
 
 /**
+ * 썸네일 업로드 컴포넌트
+ */
+function ThumbnailUpload({ eventId, onUploadSuccess }: { eventId: number; onUploadSuccess: (thumbnailUrl: string) => void }) {
+  const [isUploading, setIsUploading] = useState(false);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const { toast } = useToast();
+
+  const handleFileUpload = async (file: File) => {
+    setIsUploading(true);
+    
+    try {
+      const formData = new FormData();
+      formData.append('thumbnail', file);
+      
+      const response = await fetch(`/api/events/${eventId}/thumbnail`, {
+        method: 'POST',
+        body: formData,
+      });
+      
+      if (!response.ok) {
+        throw new Error('업로드 실패');
+      }
+      
+      const result = await response.json();
+      
+      toast({
+        title: "썸네일 업로드 완료",
+        description: "이벤트 썸네일이 성공적으로 업로드되었습니다.",
+      });
+      
+      onUploadSuccess(result.thumbnailUrl);
+      setIsDialogOpen(false);
+    } catch (error) {
+      console.error('썸네일 업로드 오류:', error);
+      toast({
+        title: "업로드 실패",
+        description: "썸네일 업로드에 실패했습니다. 다시 시도해주세요.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    const files = e.dataTransfer.files;
+    if (files.length > 0) {
+      handleFileUpload(files[0]);
+    }
+  };
+
+  return (
+    <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+      <DialogTrigger asChild>
+        <Button 
+          variant="outline" 
+          size="sm"
+          className="flex items-center gap-2"
+        >
+          <Upload className="h-4 w-4" />
+          썸네일 업로드
+        </Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>이벤트 썸네일 업로드</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4">
+          <div 
+            className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-gray-400 transition-colors"
+            onDragOver={handleDragOver}
+            onDrop={handleDrop}
+          >
+            <div className="space-y-2">
+              <Image className="h-12 w-12 mx-auto text-gray-400" />
+              <div className="space-y-1">
+                <p className="text-sm font-medium">드래그 앤 드롭 또는 클릭하여 파일 선택</p>
+                <p className="text-xs text-gray-500">JPG, PNG, GIF 파일 (최대 10MB)</p>
+              </div>
+              <Input
+                type="file"
+                accept="image/*"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) {
+                    handleFileUpload(file);
+                  }
+                }}
+                className="hidden"
+                id="thumbnail-upload"
+              />
+              <label htmlFor="thumbnail-upload">
+                <Button variant="outline" size="sm" disabled={isUploading} asChild>
+                  <span className="cursor-pointer">
+                    {isUploading ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                        업로드 중...
+                      </>
+                    ) : (
+                      <>
+                        <Upload className="h-4 w-4 mr-2" />
+                        파일 선택
+                      </>
+                    )}
+                  </span>
+                </Button>
+              </label>
+            </div>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+/**
  * 축제/이벤트 카드 컴포넌트
  */
-function EventCard({ event }: { event: any }) {
+function EventCard({ event, onThumbnailUpdate }: { event: any; onThumbnailUpdate?: (eventId: number, thumbnailUrl: string) => void }) {
   const { toast } = useToast();
 
   const handleEventClick = () => {
@@ -536,6 +668,12 @@ function EventCard({ event }: { event: any }) {
         title: "링크 복사됨",
         description: "이벤트 링크가 클립보드에 복사되었습니다.",
       });
+    }
+  };
+
+  const handleThumbnailUploadSuccess = (thumbnailUrl: string) => {
+    if (onThumbnailUpdate) {
+      onThumbnailUpdate(event.id, thumbnailUrl);
     }
   };
 
@@ -688,6 +826,14 @@ function EventCard({ event }: { event: any }) {
             >
               <Share2 className="h-4 w-4" />
             </Button>
+          </div>
+          
+          {/* 썸네일 업로드 버튼 */}
+          <div className="flex justify-center pt-3 border-t">
+            <ThumbnailUpload 
+              eventId={event.id} 
+              onUploadSuccess={handleThumbnailUploadSuccess}
+            />
           </div>
         </div>
       </CardContent>

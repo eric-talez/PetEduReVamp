@@ -123,17 +123,15 @@ router.post('/events/:id/thumbnail', eventUpload.single('thumbnail'), async (req
     if (!file) {
       return res.status(400).json({ error: '썸네일 파일이 필요합니다.' });
     }
-
-    // 썸네일 URL 생성
+    
+    // 파일 URL 생성
     const thumbnailUrl = `/uploads/events/${file.filename}`;
     
-    // 이벤트 썸네일 업데이트
-    const updatedEvent = await storage.updateEventThumbnail(eventId, thumbnailUrl);
+    // 이벤트 정보 업데이트
+    await storage.updateEventThumbnail(eventId, thumbnailUrl);
     
-    if (!updatedEvent) {
-      return res.status(404).json({ error: '이벤트를 찾을 수 없습니다.' });
-    }
-
+    console.log(`이벤트 ${eventId} 썸네일 업로드 완료: ${thumbnailUrl}`);
+    
     res.json({ 
       success: true, 
       thumbnailUrl,
@@ -141,7 +139,39 @@ router.post('/events/:id/thumbnail', eventUpload.single('thumbnail'), async (req
     });
   } catch (error) {
     console.error('썸네일 업로드 오류:', error);
-    res.status(500).json({ error: '썸네일 업로드 중 오류가 발생했습니다.' });
+    res.status(500).json({ error: '썸네일 업로드에 실패했습니다.' });
+  }
+});
+
+// 이벤트 썸네일 삭제
+router.delete('/events/:id/thumbnail', async (req, res) => {
+  try {
+    const eventId = parseInt(req.params.id);
+    
+    // 기존 썸네일 정보 가져오기
+    const event = await storage.getEventById(eventId);
+    if (!event) {
+      return res.status(404).json({ error: '이벤트를 찾을 수 없습니다.' });
+    }
+    
+    // 썸네일 파일 삭제
+    if (event.thumbnailUrl && event.thumbnailUrl.startsWith('/uploads/events/')) {
+      const filename = event.thumbnailUrl.split('/').pop();
+      const filePath = path.join(uploadDir, filename);
+      
+      if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
+        console.log(`썸네일 파일 삭제됨: ${filePath}`);
+      }
+    }
+    
+    // 이벤트 썸네일 URL 제거
+    await storage.updateEventThumbnail(eventId, null);
+    
+    res.json({ success: true, message: '썸네일이 삭제되었습니다.' });
+  } catch (error) {
+    console.error('썸네일 삭제 오류:', error);
+    res.status(500).json({ error: '썸네일 삭제에 실패했습니다.' });
   }
 });
 
