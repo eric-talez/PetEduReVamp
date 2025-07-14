@@ -133,6 +133,7 @@ function NearbyPlaces() {
   // 축제/이벤트 데이터 - API에서 가져오기
   const [eventData, setEventData] = useState<any[]>([]);
   const [isLoadingEvents, setIsLoadingEvents] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState<any>(null);
 
   // 썸네일 업데이트 핸들러
   const handleThumbnailUpdate = (eventId: number, thumbnailUrl: string) => {
@@ -509,8 +510,179 @@ function NearbyPlaces() {
         </Tabs>
       </div>
 
-
+      {/* 이벤트 상세 정보 다이얼로그 */}
+      <EventDetailDialog 
+        event={selectedEvent} 
+        isOpen={!!selectedEvent} 
+        onClose={() => setSelectedEvent(null)} 
+      />
     </div>
+  );
+}
+
+/**
+ * 이벤트 상세 정보 다이얼로그
+ */
+function EventDetailDialog({ event, isOpen, onClose }: { event: any; isOpen: boolean; onClose: () => void }) {
+  if (!event) return null;
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case '예정': return 'bg-blue-100 text-blue-800 border-blue-300';
+      case '진행중': return 'bg-green-100 text-green-800 border-green-300';
+      case '완료': return 'bg-gray-100 text-gray-800 border-gray-300';
+      case '취소': return 'bg-red-100 text-red-800 border-red-300';
+      default: return 'bg-gray-100 text-gray-800 border-gray-300';
+    }
+  };
+
+  const getCategoryIcon = (category: string) => {
+    switch (category) {
+      case '전시회': return <Trophy className="h-5 w-5" />;
+      case '지역축제': return <Star className="h-5 w-5" />;
+      case '자연체험': return <MapPin className="h-5 w-5" />;
+      default: return <Calendar className="h-5 w-5" />;
+    }
+  };
+
+  const handleSourceLink = () => {
+    if (event.sourceUrl) {
+      window.open(event.sourceUrl, '_blank');
+    }
+  };
+
+  const handleShare = () => {
+    if (navigator.share) {
+      navigator.share({
+        title: event.name,
+        text: event.description,
+        url: event.sourceUrl
+      });
+    } else {
+      navigator.clipboard.writeText(event.sourceUrl);
+    }
+  };
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <div className="flex items-center space-x-3">
+            <div className="flex items-center text-primary">
+              {getCategoryIcon(event.category)}
+              <span className="ml-2 text-sm font-medium">{event.category}</span>
+            </div>
+            <Badge className={`text-xs ${getStatusColor(event.status)}`}>
+              {event.status}
+            </Badge>
+          </div>
+          <DialogTitle className="text-xl font-bold mt-2">{event.name}</DialogTitle>
+        </DialogHeader>
+        
+        <div className="space-y-6">
+          {/* 썸네일 이미지 */}
+          {event.thumbnailUrl && (
+            <div className="relative h-64 overflow-hidden rounded-lg">
+              <img 
+                src={event.thumbnailUrl} 
+                alt={event.name}
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none';
+                }}
+              />
+            </div>
+          )}
+          
+          {/* 기본 정보 */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-3">
+              <div className="flex items-center text-sm">
+                <Calendar className="h-4 w-4 mr-2 text-muted-foreground" />
+                <span className="font-medium">일정:</span>
+                <span className="ml-2">
+                  {event.startDate === event.endDate ? 
+                    event.startDate : 
+                    `${event.startDate} ~ ${event.endDate}`
+                  }
+                </span>
+              </div>
+              <div className="flex items-center text-sm">
+                <Clock className="h-4 w-4 mr-2 text-muted-foreground" />
+                <span className="font-medium">시간:</span>
+                <span className="ml-2">{event.time}</span>
+              </div>
+              <div className="flex items-center text-sm">
+                <MapPin className="h-4 w-4 mr-2 text-muted-foreground" />
+                <span className="font-medium">장소:</span>
+                <span className="ml-2">{event.location?.address || event.location}</span>
+              </div>
+            </div>
+            
+            <div className="space-y-3">
+              <div className="flex items-center text-sm">
+                <Users className="h-4 w-4 mr-2 text-muted-foreground" />
+                <span className="font-medium">참가자:</span>
+                <span className="ml-2">
+                  {event.attendees > 0 ? `${event.attendees}명 참여` : '참여 대기'} 
+                  / 최대 {event.maxAttendees?.toLocaleString()}명
+                </span>
+              </div>
+              <div className="flex items-center text-sm">
+                <span className="font-medium">참가비:</span>
+                <span className="ml-2">
+                  {event.price === '무료' ? (
+                    <Badge className="bg-green-100 text-green-800">무료</Badge>
+                  ) : (
+                    <Badge className="bg-orange-100 text-orange-800">
+                      {typeof event.price === 'number' ? `${event.price.toLocaleString()}원` : event.price}
+                    </Badge>
+                  )}
+                </span>
+              </div>
+              <div className="flex items-center text-sm">
+                <span className="font-medium">주최:</span>
+                <span className="ml-2">{event.organizer}</span>
+              </div>
+            </div>
+          </div>
+          
+          {/* 상세 설명 */}
+          <div>
+            <h4 className="font-semibold mb-2">상세 설명</h4>
+            <p className="text-sm text-gray-600 leading-relaxed">{event.description}</p>
+          </div>
+          
+          {/* 태그 */}
+          {event.tags && event.tags.length > 0 && (
+            <div>
+              <h4 className="font-semibold mb-2">태그</h4>
+              <div className="flex flex-wrap gap-2">
+                {event.tags.map((tag: string, index: number) => (
+                  <Badge key={index} variant="secondary" className="text-xs">
+                    {tag}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+          )}
+          
+          {/* 액션 버튼 */}
+          <div className="flex space-x-2 pt-4 border-t">
+            {event.sourceUrl && (
+              <Button onClick={handleSourceLink} className="flex-1">
+                <ExternalLink className="h-4 w-4 mr-2" />
+                원본 페이지 보기
+              </Button>
+            )}
+            <Button onClick={handleShare} variant="outline">
+              <Share2 className="h-4 w-4 mr-2" />
+              공유하기
+            </Button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -643,10 +815,8 @@ function EventCard({ event, onThumbnailUpdate }: { event: any; onThumbnailUpdate
   const { toast } = useToast();
 
   const handleEventClick = () => {
-    toast({
-      title: "이벤트 상세 정보",
-      description: `${event.name}에 대한 자세한 정보를 확인하세요.`,
-    });
+    // 이벤트 상세 정보 다이얼로그 열기
+    setSelectedEvent(event);
   };
 
   const handleSourceLink = () => {
@@ -697,7 +867,10 @@ function EventCard({ event, onThumbnailUpdate }: { event: any; onThumbnailUpdate
   };
 
   return (
-    <Card className="hover:shadow-lg transition-all duration-200 border-l-4 border-l-primary">
+    <Card 
+      className="hover:shadow-lg transition-all duration-200 border-l-4 border-l-primary cursor-pointer hover:border-primary/50"
+      onClick={handleEventClick}
+    >
       {/* 썸네일 이미지 */}
       {event.thumbnailUrl && (
         <div className="relative h-48 overflow-hidden">
@@ -803,7 +976,10 @@ function EventCard({ event, onThumbnailUpdate }: { event: any; onThumbnailUpdate
             <Button 
               variant="outline" 
               size="sm" 
-              onClick={handleEventClick}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleEventClick();
+              }}
               className="flex-1"
             >
               상세보기
@@ -812,7 +988,10 @@ function EventCard({ event, onThumbnailUpdate }: { event: any; onThumbnailUpdate
               <Button 
                 variant="outline" 
                 size="sm" 
-                onClick={handleSourceLink}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleSourceLink();
+                }}
                 className="px-3"
               >
                 <ExternalLink className="h-4 w-4" />
@@ -821,7 +1000,10 @@ function EventCard({ event, onThumbnailUpdate }: { event: any; onThumbnailUpdate
             <Button 
               variant="outline" 
               size="sm" 
-              onClick={handleShare}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleShare();
+              }}
               className="px-3"
             >
               <Share2 className="h-4 w-4" />
@@ -829,7 +1011,7 @@ function EventCard({ event, onThumbnailUpdate }: { event: any; onThumbnailUpdate
           </div>
           
           {/* 썸네일 업로드 버튼 */}
-          <div className="flex justify-center pt-3 border-t">
+          <div className="flex justify-center pt-3 border-t" onClick={(e) => e.stopPropagation()}>
             <ThumbnailUpload 
               eventId={event.id} 
               onUploadSuccess={handleThumbnailUploadSuccess}
