@@ -518,7 +518,7 @@ function AppLayout({ children }: { children: ReactNode }) {
                   <Route path="/locations" component={LocationsPage} />
                   <Route path="/location-finder">
                     {() => {
-                      const LocationsPage = lazy(() => import('./pages/locations/index'));
+                      const LocationsPage = lazy(() => import('./pages/location/index'));
                       return (
                         <Suspense fallback={<div className="p-8 text-center">위치 찾기 로딩 중...</div>}>
                           <LocationsPage />
@@ -981,7 +981,7 @@ function AppLayout({ children }: { children: ReactNode }) {
 
                   <Route path="/location-finder">
           {() => {
-            const LocationsPage = lazy(() => import('./pages/locations/index'));
+            const LocationsPage = lazy(() => import('./pages/location/index'));
             return (
               <Suspense fallback={<div className="p-8 flex justify-center items-center">
                 <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
@@ -1426,7 +1426,7 @@ function AuthenticatedRoutes() {
         <Route path="/locations">
           {() => {
             console.log("위치 서비스 페이지 접근");
-            const Locations = lazy(() => import('./pages/locations'));
+            const Locations = lazy(() => import('./pages/location'));
             return (
               <Suspense fallback={<div className="p-8 flex justify-center items-center">
                 <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
@@ -2306,7 +2306,7 @@ function UnauthenticatedRoutes() {
         <Route path="/locations">
           {() => {
             console.log("비회원이 위치 서비스 클릭");
-            const LocationsPage = lazy(() => import('./pages/locations'));
+            const LocationsPage = lazy(() => import('./pages/location'));
             return (
               <Suspense fallback={<div className="p-8 flex justify-center items-center">
                 <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>

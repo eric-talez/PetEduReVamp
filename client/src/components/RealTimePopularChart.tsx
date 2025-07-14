@@ -412,22 +412,27 @@ export function RealTimePopularChart() {
   // 모든 데이터 타입에 대한 실시간 통계 병합
   const trainersData = mergeWithStats(baseTrainerData, statsData?.trainers || [], 'trainers');
 
-  const baseEventData: PopularItem[] = [
-    {
-      id: 1,
-      title: "왕짱스쿨 반려견 교감교육 체험",
-      description: "구미시 2025 미래교육지구 마을학교 반려꿈터와 함께하는 특별 체험 프로그램입니다.",
-      category: "교육체험",
-      views: 1567,
-      likes: 98,
-      comments: 45,
-      trend: 'up',
-      changePercent: 15.2,
-      location: "경북 구미시 구평동 661",
-      date: "2025-07-10",
-      detailPath: "/events/1"
-    }
-  ];
+  // 실제 이벤트 데이터 조회
+  const { data: eventData, isLoading: eventLoading } = useQuery({
+    queryKey: ['/api/events'],
+    refetchInterval: 30000, // 30초마다 자동 갱신
+  });
+
+  const baseEventData: PopularItem[] = eventData ? eventData.map((event: any) => ({
+    id: event.id,
+    title: event.name,
+    description: event.description,
+    category: event.category,
+    views: Math.floor(Math.random() * 3000) + 500, // 임시 조회수 (실제 통계 API 연결 시 교체)
+    likes: Math.floor(Math.random() * 200) + 50, // 임시 좋아요 수
+    comments: Math.floor(Math.random() * 100) + 20, // 임시 댓글 수
+    trend: 'up' as const,
+    changePercent: Math.floor(Math.random() * 20) + 5,
+    location: event.location?.address || event.location,
+    date: event.date,
+    detailPath: `/events/${event.id}`,
+    imageUrl: event.thumbnailUrl || "https://tse3.mm.bing.net/th/id/OIP._D4iSsXD0kjWw4hBbdyX5gHaHa?r=0&pid=Api"
+  })) : [];
 
   const eventsData = mergeWithStats(baseEventData, statsData?.events || [], 'events');
 
@@ -632,7 +637,18 @@ export function RealTimePopularChart() {
             </TabsContent>
 
             <TabsContent value="events" className="mt-4">
-              {renderPopularList(eventsData, true, true)}
+              {eventLoading ? (
+                <div className="flex justify-center items-center py-8">
+                  <div className="animate-spin w-6 h-6 border-2 border-primary border-t-transparent rounded-full"></div>
+                  <span className="ml-2 text-sm text-gray-600">이벤트 로딩 중...</span>
+                </div>
+              ) : eventsData.length > 0 ? (
+                renderPopularList(eventsData, true, true)
+              ) : (
+                <div className="text-center py-8 text-gray-500">
+                  <p>현재 진행 중인 이벤트가 없습니다.</p>
+                </div>
+              )}
             </TabsContent>
 
             <TabsContent value="community" className="mt-4">
