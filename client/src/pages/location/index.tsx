@@ -470,16 +470,22 @@ function NearbyPlaces() {
               </div>
 
               {/* 축제/이벤트 목록 */}
-              <div className="space-y-4 max-h-96 overflow-y-auto pr-2">
+              <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2">
                 {isLoadingEvents ? (
                   <div className="flex justify-center items-center py-12">
                     <Loader2 className="h-8 w-8 animate-spin text-primary" />
                     <span className="ml-2 text-muted-foreground">이벤트 정보를 불러오는 중...</span>
                   </div>
                 ) : filteredEvents.length > 0 ? (
-                  filteredEvents.map(event => (
-                    <EventCard key={event.id} event={event} />
-                  ))
+                  <>
+                    <div className="text-sm text-muted-foreground mb-2">
+                      {filteredEvents.length}개의 이벤트를 표시하고 있습니다.
+                    </div>
+                    {filteredEvents.map((event, index) => {
+                      console.log(`🔥 이벤트 ${index + 1}/${filteredEvents.length}: ${event.name}`);
+                      return <EventCard key={event.id} event={event} />;
+                    })}
+                  </>
                 ) : (
                   <Alert>
                     <AlertDescription>
