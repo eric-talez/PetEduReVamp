@@ -1032,6 +1032,143 @@ class Storage {
     }
     return null;
   }
+
+  // 정보 수정 요청 승인/반려 처리
+  async reviewCorrectionRequest(requestId: string, action: string, adminNotes: string) {
+    console.log('[Storage] 정보 수정 요청 처리:', requestId, action, adminNotes);
+    
+    // 임시 데이터 소스에서 정보 수정 요청 찾기
+    const correctionRequests = this.getCorrectionRequests();
+    const requestIndex = correctionRequests.findIndex(req => req.id === requestId);
+    
+    if (requestIndex === -1) {
+      throw new Error('정보 수정 요청을 찾을 수 없습니다.');
+    }
+    
+    const request = correctionRequests[requestIndex];
+    
+    // 요청 상태 업데이트
+    request.status = action === 'approve' ? 'approved' : 'rejected';
+    request.reviewedAt = new Date().toISOString();
+    request.reviewedBy = '관리자';
+    request.adminNotes = adminNotes;
+    
+    // 승인된 경우 실제 업체 정보 업데이트
+    if (action === 'approve') {
+      await this.updateBusinessInfo(request);
+    }
+    
+    console.log('[Storage] 정보 수정 요청 처리 완료:', request);
+    return request;
+  }
+
+  // 업체 정보 업데이트 (승인된 수정 요청 반영)
+  async updateBusinessInfo(request: any) {
+    console.log('[Storage] 업체 정보 업데이트:', request.businessId, request.correctionType, request.proposedValue);
+    
+    // 업체 유형에 따라 적절한 데이터 소스 업데이트
+    if (request.businessType === 'institute') {
+      await this.updateInstituteField(request.businessId, request.correctionType, request.proposedValue);
+    } else if (request.businessType === 'trainer') {
+      await this.updateTrainerField(request.businessId, request.correctionType, request.proposedValue);
+    } else if (request.businessType === 'business') {
+      await this.updateBusinessField(request.businessId, request.correctionType, request.proposedValue);
+    }
+    
+    console.log('[Storage] 업체 정보 업데이트 완료');
+  }
+
+  // 기관 정보 필드 업데이트
+  async updateInstituteField(businessId: string, correctionType: string, proposedValue: string) {
+    const institute = this.institutes.find(inst => inst.id === parseInt(businessId));
+    if (institute) {
+      switch (correctionType) {
+        case 'address':
+          institute.address = proposedValue;
+          break;
+        case 'phone':
+          institute.phone = proposedValue;
+          break;
+        case 'description':
+          institute.description = proposedValue;
+          break;
+        case 'services':
+          institute.services = proposedValue.split(',').map(s => s.trim());
+          break;
+        default:
+          institute[correctionType] = proposedValue;
+      }
+      console.log('[Storage] 기관 정보 업데이트 완료:', institute.name);
+    }
+  }
+
+  // 훈련사 정보 필드 업데이트
+  async updateTrainerField(businessId: string, correctionType: string, proposedValue: string) {
+    const trainer = this.trainers.find(t => t.id === parseInt(businessId));
+    if (trainer) {
+      switch (correctionType) {
+        case 'address':
+          trainer.address = proposedValue;
+          break;
+        case 'phone':
+          trainer.phone = proposedValue;
+          break;
+        case 'description':
+          trainer.bio = proposedValue;
+          break;
+        case 'services':
+          trainer.specialties = proposedValue.split(',').map(s => s.trim());
+          break;
+        default:
+          trainer[correctionType] = proposedValue;
+      }
+      console.log('[Storage] 훈련사 정보 업데이트 완료:', trainer.name);
+    }
+  }
+
+  // 일반 업체 정보 필드 업데이트
+  async updateBusinessField(businessId: string, correctionType: string, proposedValue: string) {
+    // 일반 업체 정보 업데이트 로직 (필요시 구현)
+    console.log('[Storage] 일반 업체 정보 업데이트:', businessId, correctionType, proposedValue);
+  }
+
+  // 정보 수정 요청 목록 조회
+  getCorrectionRequests() {
+    return [
+      {
+        id: '1',
+        businessId: '1',
+        businessName: '서울 펫트레이닝 센터',
+        businessType: 'institute',
+        requesterName: '김철수',
+        requesterEmail: 'kimcs@example.com',
+        requesterPhone: '010-1234-5678',
+        correctionType: 'address',
+        currentValue: '서울시 강남구 역삼동 123-45',
+        proposedValue: '서울시 강남구 역삼동 678-90',
+        reason: '이전으로 인한 주소 변경',
+        evidence: ['image1.jpg', 'lease_contract.pdf'],
+        status: 'pending',
+        submittedAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
+        priority: 'high'
+      },
+      {
+        id: '2',
+        businessId: '2',
+        businessName: '부산 동물병원',
+        businessType: 'business',
+        requesterName: '이영희',
+        requesterEmail: 'leeyh@example.com',
+        correctionType: 'phone',
+        currentValue: '051-123-4567',
+        proposedValue: '051-987-6543',
+        reason: '전화번호 변경',
+        status: 'in-review',
+        submittedAt: new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString(),
+        priority: 'medium'
+      }
+    ];
+  }
 }
 
 const storage = new Storage();

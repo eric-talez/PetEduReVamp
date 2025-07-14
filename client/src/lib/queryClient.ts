@@ -94,18 +94,7 @@ export async function apiRequest(
     console.error('[DEBUG] API Request failed:', error);
     throw error;
   }
-}
-      await throwIfResNotOk(res);
-      return res;
-    } catch (error) {
-      console.error('[DEBUG] API response error:', error);
-      throw error;
-    }
-  } catch (fetchError) {
-    console.error('[DEBUG] Fetch error:', fetchError);
-    throw fetchError;
-  }
-}
+};
 
 type UnauthorizedBehavior = "returnNull" | "throw";
 export const getQueryFn: <T>(options: {

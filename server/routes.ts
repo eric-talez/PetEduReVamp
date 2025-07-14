@@ -3819,6 +3819,30 @@ app.get('/api/search', async (req, res) => {
     }
   });
 
+  // 정보 수정 요청 승인/반려 처리 API
+  app.post('/api/admin/correction-requests/:id/review', async (req, res) => {
+    const { id } = req.params;
+    const { action, adminNotes } = req.body;
+    
+    console.log('[Admin] 정보 수정 요청 처리:', id, action, adminNotes);
+    
+    try {
+      const result = await storage.reviewCorrectionRequest(id, action, adminNotes);
+      
+      res.json({
+        success: true,
+        message: action === 'approve' ? '요청이 승인되었습니다.' : '요청이 반려되었습니다.',
+        request: result
+      });
+    } catch (error: any) {
+      console.error('[Admin] 정보 수정 요청 처리 실패:', error);
+      res.status(500).json({
+        success: false,
+        message: error.message || '요청 처리에 실패했습니다.'
+      });
+    }
+  });
+
 // 관리자 - 배너 관리
   app.get('/api/admin/banners', requireAuth('admin'), async (req, res) => {
     try {

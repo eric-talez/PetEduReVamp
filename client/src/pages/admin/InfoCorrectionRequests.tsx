@@ -175,31 +175,40 @@ export default function InfoCorrectionRequests() {
 
     setIsSubmitting(true);
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      const updatedRequest: CorrectionRequest = {
-        ...selectedRequest,
-        status: reviewAction === 'approve' ? 'approved' : 'rejected',
-        reviewedAt: new Date().toISOString(),
-        reviewedBy: '관리자',
+      // 실제 API 호출
+      const response = await apiRequest('POST', `/api/admin/correction-requests/${selectedRequest.id}/review`, {
+        action: reviewAction,
         adminNotes
-      };
-
-      setRequests(prev => 
-        prev.map(req => req.id === selectedRequest.id ? updatedRequest : req)
-      );
-
-      toast({
-        title: reviewAction === 'approve' ? "요청 승인 완료" : "요청 반려 완료",
-        description: `${selectedRequest.businessName}의 정보 수정 요청이 ${reviewAction === 'approve' ? '승인' : '반려'}되었습니다.`
       });
 
-      setReviewDialogOpen(false);
-    } catch (error) {
+      if (response.success) {
+        const updatedRequest: CorrectionRequest = {
+          ...selectedRequest,
+          status: reviewAction === 'approve' ? 'approved' : 'rejected',
+          reviewedAt: new Date().toISOString(),
+          reviewedBy: '관리자',
+          adminNotes
+        };
+
+        setRequests(prev => 
+          prev.map(req => req.id === selectedRequest.id ? updatedRequest : req)
+        );
+
+        toast({
+          title: reviewAction === 'approve' ? "요청 승인 완료" : "요청 반려 완료",
+          description: reviewAction === 'approve' 
+            ? `${selectedRequest.businessName}의 정보 수정 요청이 승인되어 실제 정보가 업데이트되었습니다.`
+            : `${selectedRequest.businessName}의 정보 수정 요청이 반려되었습니다.`
+        });
+
+        setReviewDialogOpen(false);
+      } else {
+        throw new Error(response.message || '요청 처리 실패');
+      }
+    } catch (error: any) {
       toast({
         title: "처리 실패",
-        description: "요청 처리 중 오류가 발생했습니다.",
+        description: error.message || "요청 처리 중 오류가 발생했습니다.",
         variant: "destructive"
       });
     } finally {
@@ -291,8 +300,8 @@ export default function InfoCorrectionRequests() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">정보 수정 요청 관리</h1>
-          <p className="text-gray-600 mt-1">업체 정보 수정 요청을 검토하고 승인/반려할 수 있습니다</p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">정보 수정 요청 관리</h1>
+          <p className="text-gray-600 dark:text-gray-300 mt-1">업체 정보 수정 요청을 검토하고 승인/반려할 수 있습니다</p>
         </div>
       </div>
 
@@ -307,7 +316,7 @@ export default function InfoCorrectionRequests() {
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
             <div>
-              <Label htmlFor="search">검색</Label>
+              <Label htmlFor="search" className="text-gray-900 dark:text-white">검색</Label>
               <div className="relative">
                 <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
@@ -315,15 +324,15 @@ export default function InfoCorrectionRequests() {
                   placeholder="업체명, 요청자, 사유 검색..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-8"
+                  className="pl-8 text-gray-900 dark:text-white bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 placeholder:text-gray-500 dark:placeholder:text-gray-400"
                 />
               </div>
             </div>
 
             <div>
-              <Label htmlFor="status">상태</Label>
+              <Label htmlFor="status" className="text-gray-900 dark:text-white">상태</Label>
               <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger>
+                <SelectTrigger className="text-gray-900 dark:text-white bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -337,9 +346,9 @@ export default function InfoCorrectionRequests() {
             </div>
 
             <div>
-              <Label htmlFor="priority">우선순위</Label>
+              <Label htmlFor="priority" className="text-gray-900 dark:text-white">우선순위</Label>
               <Select value={priorityFilter} onValueChange={setPriorityFilter}>
-                <SelectTrigger>
+                <SelectTrigger className="text-gray-900 dark:text-white bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -353,9 +362,9 @@ export default function InfoCorrectionRequests() {
             </div>
 
             <div>
-              <Label htmlFor="type">수정 유형</Label>
+              <Label htmlFor="type" className="text-gray-900 dark:text-white">수정 유형</Label>
               <Select value={typeFilter} onValueChange={setTypeFilter}>
-                <SelectTrigger>
+                <SelectTrigger className="text-gray-900 dark:text-white bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -405,23 +414,23 @@ export default function InfoCorrectionRequests() {
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                     <div>
-                      <Label className="text-sm font-medium text-gray-600">요청자 정보</Label>
+                      <Label className="text-sm font-medium text-gray-600 dark:text-gray-300">요청자 정보</Label>
                       <div className="flex items-center gap-2 mt-1">
                         <Avatar className="w-6 h-6">
                           <AvatarFallback className="text-xs">
                             {request.requesterName.charAt(0)}
                           </AvatarFallback>
                         </Avatar>
-                        <span className="text-sm">{request.requesterName}</span>
-                        <span className="text-xs text-gray-500">({request.requesterEmail})</span>
+                        <span className="text-sm text-gray-900 dark:text-white">{request.requesterName}</span>
+                        <span className="text-xs text-gray-500 dark:text-gray-400">({request.requesterEmail})</span>
                       </div>
                     </div>
 
                     <div>
-                      <Label className="text-sm font-medium text-gray-600">제출일</Label>
+                      <Label className="text-sm font-medium text-gray-600 dark:text-gray-300">제출일</Label>
                       <div className="flex items-center gap-2 mt-1">
                         <Calendar className="w-4 h-4 text-gray-400" />
-                        <span className="text-sm">
+                        <span className="text-sm text-gray-900 dark:text-white">
                           {formatDistanceToNow(new Date(request.submittedAt), {
                             addSuffix: true,
                             locale: ko
