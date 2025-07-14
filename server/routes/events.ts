@@ -1,7 +1,40 @@
 import { Router } from 'express';
 import { storage } from '../storage';
+import multer from 'multer';
+import path from 'path';
+import fs from 'fs';
 
 const router = Router();
+
+// 업로드 디렉토리 설정
+const uploadDir = path.join(process.cwd(), 'uploads', 'events');
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+}
+
+// Multer 설정
+const eventStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, uploadDir);
+  },
+  filename: (req, file, cb) => {
+    const uniqueName = `event_${Date.now()}_${Math.round(Math.random() * 1E9)}${path.extname(file.originalname)}`;
+    cb(null, uniqueName);
+  }
+});
+
+const eventUpload = multer({ 
+  storage: eventStorage,
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+    if (allowedTypes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('지원되지 않는 파일 형식입니다. JPG, PNG, GIF 파일만 업로드 가능합니다.'));
+    }
+  }
+});
 
 // 이벤트 데이터 타입 정의
 interface EventData {
@@ -78,6 +111,37 @@ router.get('/events', async (req, res) => {
   } catch (error) {
     console.error('이벤트 조회 오류:', error);
     res.status(500).json({ error: '이벤트 데이터를 불러오는데 실패했습니다.' });
+  }
+});
+
+// 이벤트 썸네일 업로드
+router.post('/events/:id/thumbnail', eventUpload.single('thumbnail'), async (req, res) => {
+  try {
+    const eventId = parseInt(req.params.id);
+    const file = req.file;
+    
+    if (!file) {
+      return res.status(400).json({ error: '썸네일 파일이 필요합니다.' });
+    }
+
+    // 썸네일 URL 생성
+    const thumbnailUrl = `/uploads/events/${file.filename}`;
+    
+    // 이벤트 썸네일 업데이트
+    const updatedEvent = await storage.updateEventThumbnail(eventId, thumbnailUrl);
+    
+    if (!updatedEvent) {
+      return res.status(404).json({ error: '이벤트를 찾을 수 없습니다.' });
+    }
+
+    res.json({ 
+      success: true, 
+      thumbnailUrl,
+      message: '썸네일이 성공적으로 업로드되었습니다.'
+    });
+  } catch (error) {
+    console.error('썸네일 업로드 오류:', error);
+    res.status(500).json({ error: '썸네일 업로드 중 오류가 발생했습니다.' });
   }
 });
 

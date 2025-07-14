@@ -994,6 +994,16 @@ class Storage {
     }
     return false;
   }
+
+  updateEventThumbnail(id: number, thumbnailUrl: string): any {
+    const event = this.events.find(e => e.id === id);
+    if (event) {
+      event.thumbnailUrl = thumbnailUrl;
+      event.lastUpdated = new Date().toISOString();
+      return event;
+    }
+    return null;
+  }
 }
 
 const storage = new Storage();

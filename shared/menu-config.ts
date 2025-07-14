@@ -436,6 +436,18 @@ export const DEFAULT_MENU_ITEMS: MenuItem[] = [
     orderIndex: 4,
     isActive: true,
     isPublic: false
+  },
+  {
+    id: 'event-management',
+    title: '이벤트 관리',
+    path: '/admin/event-management',
+    icon: 'Calendar',
+    type: 'internal',
+    category: 'admin',
+    roles: ['admin'],
+    orderIndex: 5,
+    isActive: true,
+    isPublic: false
   }
 ];
 

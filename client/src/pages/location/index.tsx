@@ -554,6 +554,25 @@ function EventCard({ event }: { event: any }) {
 
   return (
     <Card className="hover:shadow-lg transition-all duration-200 border-l-4 border-l-primary">
+      {/* 썸네일 이미지 */}
+      {event.thumbnailUrl && (
+        <div className="relative h-48 overflow-hidden">
+          <img 
+            src={event.thumbnailUrl} 
+            alt={event.name}
+            className="w-full h-full object-cover"
+            onError={(e) => {
+              e.currentTarget.style.display = 'none';
+            }}
+          />
+          <div className="absolute top-2 right-2">
+            <Badge className={`text-xs ${getStatusColor(event.status)}`}>
+              {event.status}
+            </Badge>
+          </div>
+        </div>
+      )}
+      
       <CardHeader className="pb-3">
         <div className="flex justify-between items-start">
           <div className="flex-1">
@@ -562,9 +581,11 @@ function EventCard({ event }: { event: any }) {
                 {getCategoryIcon(event.category)}
                 <span className="ml-1 text-sm font-medium">{event.category}</span>
               </div>
-              <Badge className={`text-xs ${getStatusColor(event.status)}`}>
-                {event.status}
-              </Badge>
+              {!event.thumbnailUrl && (
+                <Badge className={`text-xs ${getStatusColor(event.status)}`}>
+                  {event.status}
+                </Badge>
+              )}
             </div>
             <CardTitle className="text-lg leading-tight">{event.name}</CardTitle>
             <CardDescription className="mt-1 text-sm">
