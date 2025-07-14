@@ -182,6 +182,28 @@ export function RealTimePopularChart() {
           { id: 3, title: "실내 배변 훈련", price: 120000, duration: "3주" },
           { id: 4, title: "어린 강아지 기초 훈련", price: 180000, duration: "5주" }
         ]
+      },
+      '6': {
+        id: 6,
+        name: "강동훈 훈련사",
+        specialty: "반려견 행동 교정",
+        experience: "12년",
+        rating: 4.9,
+        reviews: 234,
+        students: 650,
+        totalCourses: 15,
+        location: "경북 구미시",
+        phone: "054-123-4567",
+        email: "dongkang@wangzzang.com",
+        avatar: "https://api.dicebear.com/7.x/initials/svg?seed=강동훈&backgroundColor=6366f1&textColor=ffffff",
+        description: "12년 경력의 전문 반려견 훈련사로, 왕짱스쿨을 운영하며 행동 교정과 기초 복종 훈련에 특화되어 있습니다. 국가 공인 동물 행동 지도사 자격을 보유하고 있으며, 장애인 반려견 훈련 프로그램도 운영하고 있습니다.",
+        certifications: ["국가 공인 동물 행동 지도사", "반려동물 행동 교정 전문가", "장애인 반려견 훈련 지도사"],
+        specialties: ["행동 교정", "기초 복종 훈련", "강아지 사회화", "장애인 반려견 훈련"],
+        courses: [
+          { id: 5, title: "기초 복종훈련 완전정복", price: 450000, duration: "8주" },
+          { id: 6, title: "강아지 사회화 프로그램", price: 280000, duration: "4주" },
+          { id: 7, title: "문제 행동 교정 과정", price: 380000, duration: "6주" }
+        ]
       }
     };
 
