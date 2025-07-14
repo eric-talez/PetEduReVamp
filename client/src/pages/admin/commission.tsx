@@ -7,8 +7,10 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Pencil, Trash2, Search, Plus, Save, X, FileText } from 'lucide-react';
+import { Pencil, Trash2, Search, Plus, Save, X, FileText, BarChart3 } from 'lucide-react';
 import { InvoiceGenerator } from '@/components/InvoiceGenerator';
+import { CircularProgressbar, buildStyles } from 'react-circular-progressbar';
+import 'react-circular-progressbar/dist/styles.css';
 
 // 임시 데이터 - 실제로는 API에서 가져와야 함
 const MOCK_PRODUCTS = [
@@ -631,21 +633,65 @@ export default function CommissionManagement() {
             </CardHeader>
             <CardContent>
               <div className="grid gap-4 md:grid-cols-4 mb-6">
-                <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                  <h3 className="font-semibold text-blue-900 dark:text-blue-100">총 정산 금액</h3>
-                  <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">₩6,230,000</p>
+                <div className="bg-slate-800 dark:bg-slate-700 text-white p-4 rounded-xl">
+                  <h3 className="text-sm mb-2">총 정산 금액</h3>
+                  <div className="w-20 h-20 mx-auto mb-2">
+                    <CircularProgressbar 
+                      value={100} 
+                      text="100%" 
+                      styles={buildStyles({
+                        textColor: "white",
+                        pathColor: "#3b82f6",
+                        trailColor: "#374151"
+                      })}
+                    />
+                  </div>
+                  <p className="text-lg font-bold text-center">₩6,230,000</p>
                 </div>
-                <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
-                  <h3 className="font-semibold text-green-900 dark:text-green-100">지급 완료</h3>
-                  <p className="text-2xl font-bold text-green-600 dark:text-green-400">₩3,630,000</p>
+                <div className="bg-slate-800 dark:bg-slate-700 text-white p-4 rounded-xl">
+                  <h3 className="text-sm mb-2">지급 완료</h3>
+                  <div className="w-20 h-20 mx-auto mb-2">
+                    <CircularProgressbar 
+                      value={58} 
+                      text="58%" 
+                      styles={buildStyles({
+                        textColor: "white",
+                        pathColor: "#10b981",
+                        trailColor: "#374151"
+                      })}
+                    />
+                  </div>
+                  <p className="text-lg font-bold text-center">₩3,630,000</p>
                 </div>
-                <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
-                  <h3 className="font-semibold text-yellow-900 dark:text-yellow-100">지급 대기</h3>
-                  <p className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">₩2,600,000</p>
+                <div className="bg-slate-800 dark:bg-slate-700 text-white p-4 rounded-xl">
+                  <h3 className="text-sm mb-2">지급 대기</h3>
+                  <div className="w-20 h-20 mx-auto mb-2">
+                    <CircularProgressbar 
+                      value={42} 
+                      text="42%" 
+                      styles={buildStyles({
+                        textColor: "white",
+                        pathColor: "#f59e0b",
+                        trailColor: "#374151"
+                      })}
+                    />
+                  </div>
+                  <p className="text-lg font-bold text-center">₩2,600,000</p>
                 </div>
-                <div className="p-4 bg-red-50 dark:bg-red-900/20 rounded-lg">
-                  <h3 className="font-semibold text-red-900 dark:text-red-100">보류</h3>
-                  <p className="text-2xl font-bold text-red-600 dark:text-red-400">₩0</p>
+                <div className="bg-slate-800 dark:bg-slate-700 text-white p-4 rounded-xl">
+                  <h3 className="text-sm mb-2">보류</h3>
+                  <div className="w-20 h-20 mx-auto mb-2">
+                    <CircularProgressbar 
+                      value={0} 
+                      text="0%" 
+                      styles={buildStyles({
+                        textColor: "white",
+                        pathColor: "#ef4444",
+                        trailColor: "#374151"
+                      })}
+                    />
+                  </div>
+                  <p className="text-lg font-bold text-center">₩0</p>
                 </div>
               </div>
               

@@ -151,6 +151,15 @@ TALEZ is a comprehensive pet education and e-commerce platform that combines AI-
 
 ## Changelog
 
+- July 14, 2025. **CIRCULAR PROGRESS BAR IMPLEMENTATION COMPLETED** - Enhanced UI styling across dashboard, commission management, and settlement management pages:
+  - **Dashboard Enhancements**: Replaced all linear progress bars with modern circular progress bars using react-circular-progressbar
+  - **User Statistics Display**: Updated user composition section to show percentage breakdowns with color-coded circular progress indicators
+  - **Commission Management**: Added circular progress bars for settlement status tracking (총 정산 금액, 지급 완료, 지급 대기, 보류)
+  - **Settlement Management**: Implemented circular progress indicators for completion rates, monthly settlement amounts, and commission percentages
+  - **Consistent Design System**: Unified dark theme styling with slate-800 backgrounds and white text across all circular progress components
+  - **Color-Coded Progress**: Each metric uses distinct colors (blue for totals, green for completed, yellow for pending, red for issues)
+  - **Enhanced User Experience**: Modern, professional appearance with consistent sizing (w-12 h-12 for small, w-16 h-16 for medium, w-20 h-20 for large)
+  - **Production Ready**: All graph areas now use consistent circular progress bar styling throughout the admin interface
 - July 13, 2025. **DUAL PAYMENT SUBSCRIPTION CHANGE SYSTEM IMPLEMENTED** - Complete institution subscription management with flexible payment options:
   - **Dual Payment Methods**: Institute administrators can change subscription plans through either self-payment or admin proxy payment
   - **Subscription Change API**: New `/api/institutes/:id/subscription/change` endpoint supporting both payment methods with proper authorization

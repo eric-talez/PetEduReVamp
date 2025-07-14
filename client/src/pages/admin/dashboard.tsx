@@ -26,7 +26,8 @@ import {
   Building,
   PieChart,
   Zap,
-  CreditCard
+  CreditCard,
+  PawPrint
 } from "lucide-react";
 import {
   Table,
@@ -41,6 +42,8 @@ import { Progress } from "@/components/ui/progress";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { format } from 'date-fns';
 import { ko } from 'date-fns/locale';
+import { CircularProgressbar, buildStyles } from 'react-circular-progressbar';
+import 'react-circular-progressbar/dist/styles.css';
 // 커스텀 Badge 컴포넌트를 사용하기 위해 shadcn Badge는 사용하지 않음
 // import { Badge } from "@/components/ui/badge";
 import { 
@@ -157,7 +160,17 @@ const AdminDashboard = () => {
               <span>지난달: 2,198</span>
               <span>목표: 3,000</span>
             </div>
-            <Progress value={82} className="h-1 mt-2" />
+            <div className="w-12 h-12 mx-auto mt-2">
+              <CircularProgressbar 
+                value={82} 
+                text="82%" 
+                styles={buildStyles({
+                  textColor: "#3b82f6",
+                  pathColor: "#3b82f6",
+                  trailColor: "#e5e7eb"
+                })}
+              />
+            </div>
           </CardFooter>
         </Card>
         
@@ -185,7 +198,17 @@ const AdminDashboard = () => {
               <span>지난달: ₩30,050,000</span>
               <span>목표: ₩40,000,000</span>
             </div>
-            <Progress value={81} className="h-1 mt-2" />
+            <div className="w-12 h-12 mx-auto mt-2">
+              <CircularProgressbar 
+                value={81} 
+                text="81%" 
+                styles={buildStyles({
+                  textColor: "#10b981",
+                  pathColor: "#10b981",
+                  trailColor: "#e5e7eb"
+                })}
+              />
+            </div>
           </CardFooter>
         </Card>
         
@@ -213,7 +236,17 @@ const AdminDashboard = () => {
               <span>지난달: 1,584</span>
               <span>목표: 2,000</span>
             </div>
-            <Progress value={91} className="h-1 mt-2" />
+            <div className="w-12 h-12 mx-auto mt-2">
+              <CircularProgressbar 
+                value={91} 
+                text="91%" 
+                styles={buildStyles({
+                  textColor: "#8b5cf6",
+                  pathColor: "#8b5cf6",
+                  trailColor: "#e5e7eb"
+                })}
+              />
+            </div>
           </CardFooter>
         </Card>
         
@@ -241,7 +274,17 @@ const AdminDashboard = () => {
               <span>지난달: 375</span>
               <span>목표: 400</span>
             </div>
-            <Progress value={89} className="h-1 mt-2" />
+            <div className="w-12 h-12 mx-auto mt-2">
+              <CircularProgressbar 
+                value={89} 
+                text="89%" 
+                styles={buildStyles({
+                  textColor: "#f97316",
+                  pathColor: "#f97316",
+                  trailColor: "#e5e7eb"
+                })}
+              />
+            </div>
           </CardFooter>
         </Card>
       </div>
@@ -279,26 +322,27 @@ const AdminDashboard = () => {
               <CardDescription>유형별 사용자 분포</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="h-[200px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <RechartsPieChart>
-                    <Pie
-                      data={userTypeData}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={60}
-                      outerRadius={80}
-                      paddingAngle={5}
-                      dataKey="value"
-                      label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                    >
-                      {userTypeData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip formatter={(value) => `${value}명`} />
-                  </RechartsPieChart>
-                </ResponsiveContainer>
+              <div className="grid grid-cols-2 gap-4">
+                {userTypeData.map((user, index) => {
+                  const percentage = Math.round((user.value / userTypeData.reduce((sum, u) => sum + u.value, 0)) * 100);
+                  return (
+                    <div key={user.name} className="bg-slate-800 dark:bg-slate-700 text-white p-4 rounded-xl">
+                      <h4 className="text-sm mb-2">{user.name}</h4>
+                      <div className="w-16 h-16 mx-auto mb-2">
+                        <CircularProgressbar 
+                          value={percentage} 
+                          text={`${percentage}%`} 
+                          styles={buildStyles({
+                            textColor: "white",
+                            pathColor: COLORS[index % COLORS.length],
+                            trailColor: "#374151"
+                          })}
+                        />
+                      </div>
+                      <p className="text-xs text-center text-gray-300">{user.value}명</p>
+                    </div>
+                  );
+                })}
               </div>
             </CardContent>
           </Card>

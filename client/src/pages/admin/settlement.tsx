@@ -5,9 +5,11 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Pencil, Search, Download, FileText, Download as DownloadIcon } from 'lucide-react';
+import { Pencil, Search, Download, FileText, Download as DownloadIcon, BarChart3, PieChart } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
+import { CircularProgressbar, buildStyles } from 'react-circular-progressbar';
+import 'react-circular-progressbar/dist/styles.css';
 
 // 임시 데이터 - 실제로는 API에서 가져와야 함
 const MOCK_INSTITUTES = [
@@ -271,6 +273,55 @@ export default function InstitutionSettlementManagement() {
             </CardDescription>
           </CardHeader>
           <CardContent>
+            {/* 통계 정보 원형 진행률 바 */}
+            <div className="grid gap-4 md:grid-cols-3 mb-6">
+              <div className="bg-slate-800 dark:bg-slate-700 text-white p-4 rounded-xl">
+                <h4 className="text-sm mb-2">정산 완료율</h4>
+                <div className="w-20 h-20 mx-auto mb-2">
+                  <CircularProgressbar 
+                    value={67} 
+                    text="67%" 
+                    styles={buildStyles({
+                      textColor: "white",
+                      pathColor: "#10b981",
+                      trailColor: "#374151"
+                    })}
+                  />
+                </div>
+                <p className="text-xs text-center text-gray-300">2/3 기관 정산 완료</p>
+              </div>
+              <div className="bg-slate-800 dark:bg-slate-700 text-white p-4 rounded-xl">
+                <h4 className="text-sm mb-2">월간 정산액</h4>
+                <div className="w-20 h-20 mx-auto mb-2">
+                  <CircularProgressbar 
+                    value={85} 
+                    text="85%" 
+                    styles={buildStyles({
+                      textColor: "white",
+                      pathColor: "#3b82f6",
+                      trailColor: "#374151"
+                    })}
+                  />
+                </div>
+                <p className="text-xs text-center text-gray-300">₩9,225,000</p>
+              </div>
+              <div className="bg-slate-800 dark:bg-slate-700 text-white p-4 rounded-xl">
+                <h4 className="text-sm mb-2">평균 수수료율</h4>
+                <div className="w-20 h-20 mx-auto mb-2">
+                  <CircularProgressbar 
+                    value={10} 
+                    text="10%" 
+                    styles={buildStyles({
+                      textColor: "white",
+                      pathColor: "#f59e0b",
+                      trailColor: "#374151"
+                    })}
+                  />
+                </div>
+                <p className="text-xs text-center text-gray-300">표준 수수료율</p>
+              </div>
+            </div>
+            
             <div className="flex flex-col md:flex-row gap-4 mb-6">
               <div className="relative flex-1">
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
