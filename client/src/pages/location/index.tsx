@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { apiRequest } from '@/lib/queryClient';
 
 /**
  * 위치 마커 컴포넌트
@@ -410,137 +411,234 @@ function NearbyPlaces() {
         )}
       </div>
 
-      <Tabs defaultValue="trainer" value={activeTab} onValueChange={(v) => setActiveTab(v as any)}>
-        <TabsList className="grid grid-cols-5">
-          <TabsTrigger value="trainer">훈련사</TabsTrigger>
-          <TabsTrigger value="institute">훈련소</TabsTrigger>
-          <TabsTrigger value="clinic">동물병원</TabsTrigger>
-          <TabsTrigger value="shop">용품점</TabsTrigger>
-          <TabsTrigger value="event">축제/이벤트</TabsTrigger>
-        </TabsList>
-      </Tabs>
-
-      {activeTab === 'event' ? (
-        <div className="space-y-4">
-          {/* 축제/이벤트 필터링 및 검색 UI */}
-          <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg space-y-4">
-            <div className="flex flex-col md:flex-row gap-4">
-              <div className="flex-1">
-                <Input
-                  placeholder="축제명, 지역, 태그로 검색..."
-                  value={eventSearchTerm}
-                  onChange={(e) => setEventSearchTerm(e.target.value)}
-                  className="w-full"
-                />
+      {/* 카테고리 구분 */}
+      <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+        <h3 className="text-sm font-medium mb-3 text-gray-700 dark:text-gray-300">카테고리 선택</h3>
+        <Tabs defaultValue="trainer" value={activeTab} onValueChange={(v) => setActiveTab(v as any)}>
+          <TabsList className="grid grid-cols-5 w-full">
+            <TabsTrigger value="trainer" className="text-sm">훈련사</TabsTrigger>
+            <TabsTrigger value="institute" className="text-sm">훈련소</TabsTrigger>
+            <TabsTrigger value="clinic" className="text-sm">동물병원</TabsTrigger>
+            <TabsTrigger value="shop" className="text-sm">용품점</TabsTrigger>
+            <TabsTrigger value="event" className="text-sm">축제/이벤트</TabsTrigger>
+          </TabsList>
+          
+          {/* 탭 컨텐츠 */}
+          <TabsContent value="trainer" className="mt-4">
+            <div className="space-y-4">
+              <div className="text-sm text-muted-foreground">
+                주변 반려동물 훈련사를 찾아보세요. 전문적인 훈련 서비스를 제공합니다.
               </div>
-              <div className="flex gap-2">
-                <Select value={eventCategoryFilter} onValueChange={setEventCategoryFilter}>
-                  <SelectTrigger className="w-[140px]">
-                    <SelectValue placeholder="카테고리" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">전체 카테고리</SelectItem>
-                    <SelectItem value="전시회">전시회</SelectItem>
-                    <SelectItem value="지역축제">지역축제</SelectItem>
-                    <SelectItem value="자연체험">자연체험</SelectItem>
-                  </SelectContent>
-                </Select>
-                
-                <Select value={eventStatusFilter} onValueChange={setEventStatusFilter}>
-                  <SelectTrigger className="w-[120px]">
-                    <SelectValue placeholder="상태" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">전체 상태</SelectItem>
-                    <SelectItem value="예정">예정</SelectItem>
-                    <SelectItem value="진행중">진행중</SelectItem>
-                    <SelectItem value="완료">완료</SelectItem>
-                  </SelectContent>
-                </Select>
-                
-                <Select value={eventSortBy} onValueChange={setEventSortBy}>
-                  <SelectTrigger className="w-[120px]">
-                    <SelectValue placeholder="정렬" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="date">날짜순</SelectItem>
-                    <SelectItem value="name">이름순</SelectItem>
-                    <SelectItem value="price">가격순</SelectItem>
-                    <SelectItem value="attendees">규모순</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+              {isSearching ? (
+                <div className="py-8 flex justify-center">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                </div>
+              ) : nearbyPlaces.length > 0 ? (
+                <div className="space-y-2 max-h-96 overflow-y-auto pr-2">
+                  {nearbyPlaces.map(place => (
+                    <PlaceCard key={place.id} place={place} />
+                  ))}
+                </div>
+              ) : (
+                (!isSearching && currentLocation) && (
+                  <Alert variant="default">
+                    <AlertDescription>
+                      주변에 {getTypeLabel(activeTab)}이(가) 없습니다.
+                    </AlertDescription>
+                  </Alert>
+                )
+              )}
             </div>
-            
-            <div className="flex items-center justify-between text-sm text-muted-foreground">
-              <div className="flex items-center space-x-4">
-                <span>총 {filteredEvents.length}개의 축제/이벤트</span>
-                <div className="flex items-center space-x-2">
-                  <Badge variant="outline" className="text-xs">
-                    예정: {filteredEvents.filter(e => e.status === '예정').length}
-                  </Badge>
-                  <Badge variant="outline" className="text-xs">
-                    완료: {filteredEvents.filter(e => e.status === '완료').length}
-                  </Badge>
+          </TabsContent>
+
+          <TabsContent value="institute" className="mt-4">
+            <div className="space-y-4">
+              <div className="text-sm text-muted-foreground">
+                주변 반려동물 훈련소를 찾아보세요. 체계적인 훈련 프로그램을 제공합니다.
+              </div>
+              {isSearching ? (
+                <div className="py-8 flex justify-center">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                </div>
+              ) : nearbyPlaces.length > 0 ? (
+                <div className="space-y-2 max-h-96 overflow-y-auto pr-2">
+                  {nearbyPlaces.map(place => (
+                    <PlaceCard key={place.id} place={place} />
+                  ))}
+                </div>
+              ) : (
+                (!isSearching && currentLocation) && (
+                  <Alert variant="default">
+                    <AlertDescription>
+                      주변에 {getTypeLabel(activeTab)}이(가) 없습니다.
+                    </AlertDescription>
+                  </Alert>
+                )
+              )}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="clinic" className="mt-4">
+            <div className="space-y-4">
+              <div className="text-sm text-muted-foreground">
+                주변 동물병원을 찾아보세요. 반려동물의 건강관리를 위한 전문 의료 서비스를 제공합니다.
+              </div>
+              {isSearching ? (
+                <div className="py-8 flex justify-center">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                </div>
+              ) : nearbyPlaces.length > 0 ? (
+                <div className="space-y-2 max-h-96 overflow-y-auto pr-2">
+                  {nearbyPlaces.map(place => (
+                    <PlaceCard key={place.id} place={place} />
+                  ))}
+                </div>
+              ) : (
+                (!isSearching && currentLocation) && (
+                  <Alert variant="default">
+                    <AlertDescription>
+                      주변에 {getTypeLabel(activeTab)}이(가) 없습니다.
+                    </AlertDescription>
+                  </Alert>
+                )
+              )}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="shop" className="mt-4">
+            <div className="space-y-4">
+              <div className="text-sm text-muted-foreground">
+                주변 반려동물 용품점을 찾아보세요. 사료, 간식, 장난감 등 다양한 용품을 만나보세요.
+              </div>
+              {isSearching ? (
+                <div className="py-8 flex justify-center">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                </div>
+              ) : nearbyPlaces.length > 0 ? (
+                <div className="space-y-2 max-h-96 overflow-y-auto pr-2">
+                  {nearbyPlaces.map(place => (
+                    <PlaceCard key={place.id} place={place} />
+                  ))}
+                </div>
+              ) : (
+                (!isSearching && currentLocation) && (
+                  <Alert variant="default">
+                    <AlertDescription>
+                      주변에 {getTypeLabel(activeTab)}이(가) 없습니다.
+                    </AlertDescription>
+                  </Alert>
+                )
+              )}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="event" className="mt-4">
+            <div className="space-y-4">
+              {/* 축제/이벤트 필터링 및 검색 UI */}
+              <div className="bg-white dark:bg-gray-900 p-4 rounded-lg border space-y-4">
+                <div className="flex flex-col md:flex-row gap-4">
+                  <div className="flex-1">
+                    <Input
+                      placeholder="축제명, 지역, 태그로 검색..."
+                      value={eventSearchTerm}
+                      onChange={(e) => setEventSearchTerm(e.target.value)}
+                      className="w-full"
+                    />
+                  </div>
+                  <div className="flex gap-2">
+                    <Select value={eventCategoryFilter} onValueChange={setEventCategoryFilter}>
+                      <SelectTrigger className="w-[140px]">
+                        <SelectValue placeholder="카테고리" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">전체 카테고리</SelectItem>
+                        <SelectItem value="전시회">전시회</SelectItem>
+                        <SelectItem value="지역축제">지역축제</SelectItem>
+                        <SelectItem value="자연체험">자연체험</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    
+                    <Select value={eventStatusFilter} onValueChange={setEventStatusFilter}>
+                      <SelectTrigger className="w-[120px]">
+                        <SelectValue placeholder="상태" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">전체 상태</SelectItem>
+                        <SelectItem value="예정">예정</SelectItem>
+                        <SelectItem value="진행중">진행중</SelectItem>
+                        <SelectItem value="완료">완료</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    
+                    <Select value={eventSortBy} onValueChange={setEventSortBy}>
+                      <SelectTrigger className="w-[120px]">
+                        <SelectValue placeholder="정렬" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="date">날짜순</SelectItem>
+                        <SelectItem value="name">이름순</SelectItem>
+                        <SelectItem value="price">가격순</SelectItem>
+                        <SelectItem value="attendees">규모순</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                
+                <div className="flex items-center justify-between text-sm text-muted-foreground">
+                  <div className="flex items-center space-x-4">
+                    <span>총 {filteredEvents.length}개의 축제/이벤트</span>
+                    <div className="flex items-center space-x-2">
+                      <Badge variant="outline" className="text-xs">
+                        예정: {filteredEvents.filter(e => e.status === '예정').length}
+                      </Badge>
+                      <Badge variant="outline" className="text-xs">
+                        완료: {filteredEvents.filter(e => e.status === '완료').length}
+                      </Badge>
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => {
+                        setEventSearchTerm('');
+                        setEventCategoryFilter('all');
+                        setEventStatusFilter('all');
+                        setEventSortBy('date');
+                      }}
+                    >
+                      <Filter className="h-4 w-4 mr-1" />
+                      필터 초기화
+                    </Button>
+                  </div>
                 </div>
               </div>
-              <div className="flex items-center space-x-2">
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => {
-                    setEventSearchTerm('');
-                    setEventCategoryFilter('all');
-                    setEventStatusFilter('all');
-                    setEventSortBy('date');
-                  }}
-                >
-                  <Filter className="h-4 w-4 mr-1" />
-                  필터 초기화
-                </Button>
+
+              {/* 축제/이벤트 목록 */}
+              <div className="space-y-4 max-h-96 overflow-y-auto pr-2">
+                {isLoadingEvents ? (
+                  <div className="flex justify-center items-center py-12">
+                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                    <span className="ml-2 text-muted-foreground">이벤트 정보를 불러오는 중...</span>
+                  </div>
+                ) : filteredEvents.length > 0 ? (
+                  filteredEvents.map(event => (
+                    <EventCard key={event.id} event={event} />
+                  ))
+                ) : (
+                  <Alert>
+                    <AlertDescription>
+                      검색 조건에 맞는 축제/이벤트가 없습니다.
+                    </AlertDescription>
+                  </Alert>
+                )}
               </div>
             </div>
-          </div>
+          </TabsContent>
+        </Tabs>
+      </div>
 
-          {/* 축제/이벤트 목록 */}
-          <div className="space-y-4 max-h-96 overflow-y-auto pr-2">
-            {isLoadingEvents ? (
-              <div className="flex justify-center items-center py-12">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                <span className="ml-2 text-muted-foreground">이벤트 정보를 불러오는 중...</span>
-              </div>
-            ) : filteredEvents.length > 0 ? (
-              filteredEvents.map(event => (
-                <EventCard key={event.id} event={event} />
-              ))
-            ) : (
-              <Alert>
-                <AlertDescription>
-                  검색 조건에 맞는 축제/이벤트가 없습니다.
-                </AlertDescription>
-              </Alert>
-            )}
-          </div>
-        </div>
-      ) : isSearching ? (
-        <div className="py-8 flex justify-center">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        </div>
-      ) : nearbyPlaces.length > 0 ? (
-        <div className="space-y-2 max-h-96 overflow-y-auto pr-2">
-          {nearbyPlaces.map(place => (
-            <PlaceCard key={place.id} place={place} />
-          ))}
-        </div>
-      ) : (
-        (!isSearching && currentLocation) && (
-          <Alert variant="default">
-            <AlertDescription>
-              주변에 {getTypeLabel(activeTab)}이(가) 없습니다.
-            </AlertDescription>
-          </Alert>
-        )
-      )}
+
     </div>
   );
 }
