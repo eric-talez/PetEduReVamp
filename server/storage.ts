@@ -385,6 +385,7 @@ class Storage {
         directorEmail: 'donghoong@wangzzang.com',
         trainerName: '강동훈',
         trainerId: 2,
+        status: 'active',
         isActive: true,
         isVerified: true,
         certification: '반려동물행동지도사 국가자격증 2급',
@@ -420,6 +421,94 @@ class Storage {
           '정신건강 및 특수교육 대상자를 위한 교감 활동',
           '경북소방본부, 교육기관 대상 강의 및 상담'
         ],
+        createdAt: new Date().toISOString()
+      },
+      {
+        id: 2,
+        name: '서울반려견아카데미',
+        businessNumber: '234-56-78901',
+        address: '서울시 강남구 테헤란로 123',
+        phone: '02-1234-5678',
+        email: 'info@seoul-pet-academy.com',
+        directorName: '이기관',
+        directorEmail: 'lee.institute@example.com',
+        status: 'active',
+        isVerified: true,
+        certification: '교육부 인증',
+        establishedDate: '2020-01-15',
+        registeredDate: '2024-01-15',
+        trainersCount: 8,
+        studentsCount: 156,
+        coursesCount: 12,
+        facilities: ['실내 훈련장', '야외 운동장', '대기실', '상담실'],
+        operatingHours: '평일 09:00-18:00, 주말 10:00-17:00',
+        description: '전문 반려견 교육 및 훈련 서비스를 제공하는 종합 교육기관입니다.',
+        subscriptionPlan: 'professional',
+        subscriptionStatus: 'active',
+        subscriptionStartDate: new Date().toISOString(),
+        subscriptionEndDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+        maxMembers: 500,
+        maxVideoHours: 100,
+        maxAiAnalysis: 300,
+        createdAt: new Date().toISOString()
+      },
+      {
+        id: 3,
+        name: '부산펫트레이닝센터',
+        businessNumber: '345-67-89012',
+        address: '부산시 해운대구 해운대로 456',
+        phone: '051-2345-6789',
+        email: 'info@busan-pet-center.com',
+        directorName: '박기관',
+        directorEmail: 'park.institute@example.com',
+        status: 'pending',
+        isVerified: false,
+        certification: '신청 중',
+        establishedDate: '2023-06-01',
+        registeredDate: '2024-02-20',
+        trainersCount: 3,
+        studentsCount: 45,
+        coursesCount: 5,
+        facilities: ['실내 훈련장', '놀이터'],
+        operatingHours: '평일 10:00-19:00, 토요일 10:00-15:00',
+        description: '개인 맞춤형 반려견 훈련 전문 센터입니다.',
+        subscriptionPlan: 'starter',
+        subscriptionStatus: 'pending',
+        subscriptionStartDate: new Date().toISOString(),
+        subscriptionEndDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+        maxMembers: 50,
+        maxVideoHours: 10,
+        maxAiAnalysis: 50,
+        createdAt: new Date().toISOString()
+      },
+      {
+        id: 4,
+        name: '대구애견학교',
+        businessNumber: '456-78-90123',
+        address: '대구시 중구 동성로 789',
+        phone: '053-3456-7890',
+        email: 'info@daegu-pet-school.com',
+        directorName: '최기관',
+        directorEmail: 'choi.institute@example.com',
+        status: 'suspended',
+        isVerified: true,
+        certification: '한국애견협회 인증',
+        establishedDate: '2019-03-01',
+        registeredDate: '2024-01-30',
+        trainersCount: 5,
+        studentsCount: 89,
+        coursesCount: 8,
+        facilities: ['실내 훈련장', '야외 운동장', '수영장'],
+        operatingHours: '일시 운영 중단',
+        description: '체계적인 교육 프로그램으로 유명한 반려견 교육 전문기관입니다.',
+        suspendedReason: '시설 보수 공사로 인한 일시 중단',
+        subscriptionPlan: 'enterprise',
+        subscriptionStatus: 'suspended',
+        subscriptionStartDate: new Date().toISOString(),
+        subscriptionEndDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+        maxMembers: 1000,
+        maxVideoHours: 500,
+        maxAiAnalysis: 1000,
         createdAt: new Date().toISOString()
       }
     ];
@@ -492,6 +581,10 @@ class Storage {
   }
 
   getSubscriptionPlans() {
+    return this.subscriptionPlans || [];
+  }
+
+  getAllSubscriptionPlans() {
     return this.subscriptionPlans || [];
   }
 

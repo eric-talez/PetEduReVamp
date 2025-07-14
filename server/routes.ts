@@ -572,60 +572,83 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // 관리자 - 기관 목록 조회
   app.get('/api/admin/institutes', (req, res) => {
     try {
-      console.log('[Admin] 기관 목록 조회 요청');
+      console.log('[Admin] 기관 관리 목록 조회 요청');
       const institutes = storage.getAllInstitutes();
-      console.log('[DEBUG] 기관 데이터:', institutes.map(i => ({ id: i.id, name: i.name, subscriptionPlan: i.subscriptionPlan })));
+      const subscriptionPlans = storage.getSubscriptionPlans();
       
-      // 구독 플랜 정보 포함
-      const institutesWithPlans = institutes.map(institute => {
-        const subscriptionPlan = storage.getSubscriptionPlan(institute.subscriptionPlan);
-        console.log('[DEBUG] 기관:', institute.name, '구독 플랜:', institute.subscriptionPlan, '매핑 결과:', subscriptionPlan);
-        console.log('[DEBUG] 사용 가능한 구독 플랜들:', storage.getAllSubscriptionPlans().map(p => p.code));
+      console.log('[DEBUG] 사용 가능한 구독 플랜들:', subscriptionPlans.map(p => ({ code: p.code, name: p.name })));
+      console.log('[DEBUG] 첫 번째 기관의 구독 플랜:', institutes[0]?.subscriptionPlan);
+      
+      // 통계 정보 계산
+      const stats = {
+        totalInstitutes: institutes.length,
+        activeInstitutes: institutes.filter(i => i.status === 'active').length,
+        pendingInstitutes: institutes.filter(i => i.status === 'pending').length,
+        suspendedInstitutes: institutes.filter(i => i.status === 'suspended').length,
+        verifiedInstitutes: institutes.filter(i => i.isVerified).length,
+        totalTrainers: institutes.reduce((sum, i) => sum + (i.trainersCount || 0), 0),
+        totalStudents: institutes.reduce((sum, i) => sum + (i.studentsCount || 0), 0),
+        totalCourses: institutes.reduce((sum, i) => sum + (i.coursesCount || 0), 0)
+      };
+
+      // 기관 데이터 가공 - 구독 플랜 정보 매핑
+      const processedInstitutes = institutes.map(institute => {
+        const subscriptionPlan = subscriptionPlans.find(plan => plan.code === institute.subscriptionPlan);
         
-        // 구독 플랜 정보가 없는 경우 기본값 설정
-        if (!subscriptionPlan && institute.subscriptionPlan) {
-          console.log('[DEBUG] 구독 플랜을 찾을 수 없음, 기본값 사용');
-          const defaultPlan = {
-            id: 0,
-            name: institute.subscriptionPlan === 'starter' ? '스타터 플랜' : 
-                  institute.subscriptionPlan === 'standard' ? '스탠다드 플랜' :
-                  institute.subscriptionPlan === 'professional' ? '프로페셔널 플랜' :
-                  institute.subscriptionPlan === 'enterprise' ? '엔터프라이즈 플랜' : '미지정',
-            code: institute.subscriptionPlan,
-            price: institute.subscriptionPlan === 'starter' ? 150000 :
-                   institute.subscriptionPlan === 'standard' ? 300000 :
-                   institute.subscriptionPlan === 'professional' ? 500000 :
-                   institute.subscriptionPlan === 'enterprise' ? 800000 : 0,
-            currency: 'KRW'
-          };
-          return {
-            ...institute,
-            subscriptionPlanInfo: defaultPlan
-          };
-        }
+        console.log(`[DEBUG] 기관 ${institute.name} - 구독 플랜: ${institute.subscriptionPlan}, 매칭 결과:`, subscriptionPlan);
         
-        return {
+        const processedInstitute = {
           ...institute,
-          subscriptionPlanInfo: subscriptionPlan
+          status: institute.status || 'active',
+          subscriptionPlanInfo: subscriptionPlan ? `${subscriptionPlan.name} (${subscriptionPlan.price.toLocaleString()}원)` : '미지정',
+          subscriptionPlanCode: institute.subscriptionPlan || null,
+          subscriptionPlanName: subscriptionPlan ? subscriptionPlan.name : '미지정',
+          subscriptionPlanPrice: subscriptionPlan ? subscriptionPlan.price : 0,
+          subscriptionStatus: institute.subscriptionStatus || 'active',
+          totalRevenue: institute.totalRevenue || 0,
+          monthlyRevenue: institute.monthlyRevenue || 0,
+          videoClassCount: institute.videoClassCount || 0,
+          aiAnalysisCount: institute.aiAnalysisCount || 0,
+          maxMembers: institute.maxMembers || 0,
+          maxVideoHours: institute.maxVideoHours || 0,
+          maxAiAnalysis: institute.maxAiAnalysis || 0,
+          createdAt: institute.createdAt || new Date().toISOString()
         };
+        
+        console.log(`[DEBUG] 기관 ${institute.name} 처리 결과:`, {
+          subscriptionPlan: processedInstitute.subscriptionPlan,
+          subscriptionPlanInfo: processedInstitute.subscriptionPlanInfo,
+          subscriptionPlanName: processedInstitute.subscriptionPlanName
+        });
+        
+        return processedInstitute;
       });
 
-      console.log('[Admin] 기관 목록 응답:', institutesWithPlans.length + '개');
-      
-      res.json({
+      const response = {
         success: true,
         data: {
-          institutes: institutesWithPlans
-        }
+          institutes: processedInstitutes,
+          stats,
+          subscriptionPlans
+        },
+        message: '기관 목록을 성공적으로 조회했습니다.'
+      };
+      
+      console.log('[DEBUG] 응답 데이터 샘플:', {
+        institutesCount: processedInstitutes.length,
+        firstInstitute: processedInstitutes[0]?.name,
+        firstInstituteSubscriptionInfo: processedInstitutes[0]?.subscriptionPlanInfo,
+        subscriptionPlansCount: subscriptionPlans.length
       });
-    } catch (error) {
-      console.error('[Admin] 기관 목록 조회 오류:', error);
-      res.status(500).json({ 
+
+      res.json(response);
+
+    } catch (error: any) {
+      console.error('[Admin] 기관 목록 조회 중 오류:', error);
+      res.status(500).json({
         success: false,
-        error: '기관 목록 조회에 실패했습니다.',
-        data: {
-          institutes: []
-        }
+        message: '기관 목록 조회 중 오류가 발생했습니다.',
+        error: error.message
       });
     }
   });

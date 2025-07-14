@@ -781,15 +781,15 @@ export default function AdminInstitutes() {
                   </div>
                   <div>
                     <div className="font-medium">
-                      {institute.subscriptionPlanInfo?.name || 
-                       (institute.subscriptionPlan === 'starter' ? 'Starter' : 
-                        institute.subscriptionPlan === 'standard' ? 'Standard' : 
-                        institute.subscriptionPlan === 'professional' ? 'Professional' : 
-                        institute.subscriptionPlan === 'enterprise' ? 'Enterprise' : 
+                      {institute.subscriptionPlanName || 
+                       (institute.subscriptionPlan === 'starter' ? '스타터 플랜' : 
+                        institute.subscriptionPlan === 'standard' ? '스탠다드 플랜' : 
+                        institute.subscriptionPlan === 'professional' ? '프로페셔널 플랜' : 
+                        institute.subscriptionPlan === 'enterprise' ? '엔터프라이즈 플랜' : 
                         institute.subscriptionPlan || '미지정')}
                     </div>
                     <div className="text-sm text-muted-foreground">
-                      월 {institute.subscriptionPlanInfo?.price ? formatPrice(institute.subscriptionPlanInfo.price) : 
+                      월 {institute.subscriptionPlanPrice ? institute.subscriptionPlanPrice.toLocaleString() : 
                            (institute.subscriptionPlan === 'starter' ? '150,000' : 
                             institute.subscriptionPlan === 'standard' ? '300,000' : 
                             institute.subscriptionPlan === 'professional' ? '500,000' : 
