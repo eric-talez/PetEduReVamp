@@ -2,11 +2,13 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Loader2, Search, MapPin, Navigation, Calendar, Clock, Users, Star } from 'lucide-react';
+import { Loader2, Search, MapPin, Navigation, Calendar, Clock, Users, Star, Filter, ExternalLink, Heart, Share2, Trophy } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useMapService, MapServiceProvider, Place } from '@/hooks/useMapService';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 /**
  * 위치 마커 컴포넌트
@@ -119,8 +121,33 @@ function NearbyPlaces() {
   } = useMapService();
   const { toast } = useToast();
 
-  // 축제/이벤트 데이터 (웹사이트에서 가져온 실제 데이터)
-  const eventData = [
+  // 이벤트 필터링 및 검색 상태
+  const [eventSearchTerm, setEventSearchTerm] = useState('');
+  const [eventCategoryFilter, setEventCategoryFilter] = useState('all');
+  const [eventStatusFilter, setEventStatusFilter] = useState('all');
+  const [eventSortBy, setEventSortBy] = useState('date');
+  const [filteredEvents, setFilteredEvents] = useState<any[]>([]);
+
+  // 축제/이벤트 데이터 - API에서 가져오기
+  const [eventData, setEventData] = useState<any[]>([]);
+  const [isLoadingEvents, setIsLoadingEvents] = useState(false);
+  
+  // 이벤트 API 호출 함수
+  const fetchEvents = async () => {
+    try {
+      setIsLoadingEvents(true);
+      const response = await apiRequest('GET', '/api/events');
+      const data = await response.json();
+      setEventData(data);
+    } catch (error) {
+      console.error('이벤트 조회 오류:', error);
+      toast({
+        title: "오류",
+        description: "이벤트 정보를 불러오는데 실패했습니다.",
+        variant: "destructive"
+      });
+      // 오류 발생 시 기본 이벤트 데이터 설정
+      setEventData([
     {
       id: 1,
       name: "멍룡 썸머 뮤직 피크닉",
@@ -129,89 +156,209 @@ function NearbyPlaces() {
         lat: 35.948611,
         lng: 126.837500
       },
-      date: "2025-07-12",
+      startDate: "2025-07-12",
+      endDate: "2025-07-12",
       time: "오후 7:00 - 10:00",
       description: "반려인과 비반려인이 함께 즐기는 여름밤 문화행사. 보석 십자수, 자개 열쇠고리 만들기, 반려동물 미로 탐험, 어질리티 체험, 멍BTI 테스트 등 다양한 체험 프로그램과 클래식 4중주, 키즈팝 댄스, 버블쇼 등 공연이 펼쳐집니다.",
-      category: "문화축제",
+      category: "지역축제",
       price: "무료",
       attendees: 150,
       maxAttendees: 300,
       organizer: "익산시청",
-      tags: ["반려동물", "문화체험", "음악회", "펫티켓", "반려동물 친화관광도시"]
+      status: "완료",
+      tags: ["반려동물", "문화체험", "음악회", "펫티켓", "반려동물 친화관광도시"],
+      sourceUrl: "https://www.jjan.kr/article/20250712580069",
+      thumbnailUrl: "https://tse3.mm.bing.net/th/id/OIP._D4iSsXD0kjWw4hBbdyX5gHaHa?r=0&pid=Api"
     },
     {
       id: 2,
-      name: "전주 한옥마을 반려동물 축제",
+      name: "2025 케이펫페어 마곡",
       location: {
-        address: "전북 전주시 완산구 기린대로 99 (전주 한옥마을)",
-        lat: 35.814444,
-        lng: 127.153889
+        address: "서울특별시 강서구 마곡중앙로 38 (코엑스 마곡전시장)",
+        lat: 37.5635,
+        lng: 126.8266
       },
-      date: "2025-08-15",
+      startDate: "2025-06-13",
+      endDate: "2025-06-15",
       time: "오전 10:00 - 오후 6:00",
-      description: "전주 한옥마을에서 펼쳐지는 반려동물과 함께하는 특별한 축제. 전통 한복 체험, 반려동물 사진 촬영, 한옥마을 투어 등 다양한 프로그램이 준비되어 있습니다.",
-      category: "전통문화",
+      description: "국내 대표 반려동물 축제. 121개사 약 250부스 규모로 펫푸드·펫 용품 체험, 샘플링 이벤트, 럭키드로우, 아로마·아이스크림 만들기 등 다양한 프로그램이 진행됩니다.",
+      category: "전시회",
       price: "무료",
       attendees: 0,
-      maxAttendees: 500,
-      organizer: "전주시 문화관광재단",
-      tags: ["한옥마을", "전통문화", "반려동물", "사진촬영"]
+      maxAttendees: 50000,
+      organizer: "한국펫사료협회 / 메쎄이상",
+      status: "예정",
+      tags: ["펫푸드", "펫용품", "전시회", "체험", "샘플링"],
+      sourceUrl: "https://www.mk.co.kr/news/culture/11339790",
+      thumbnailUrl: "https://tse3.mm.bing.net/th/id/OIP._D4iSsXD0kjWw4hBbdyX5gHaHa?r=0&pid=Api"
     },
     {
       id: 3,
-      name: "군산 은파호수공원 반려견 어질리티 대회",
+      name: "제22회 대구펫쇼",
       location: {
-        address: "전북 군산시 나운동 은파호수공원",
-        lat: 35.968889,
-        lng: 126.733611
+        address: "대구광역시 북구 엑스코로 10 (대구 EXCO)",
+        lat: 35.9078,
+        lng: 128.6219
       },
-      date: "2025-09-05",
-      time: "오전 9:00 - 오후 5:00",
-      description: "반려견과 함께 참여하는 어질리티 대회. 초보자부터 전문가까지 다양한 레벨의 경기가 준비되어 있으며, 반려견 훈련 상담도 함께 진행됩니다.",
-      category: "스포츠",
-      price: 30000,
+      startDate: "2025-05-23",
+      endDate: "2025-05-25",
+      time: "오전 10:00 - 오후 6:00",
+      description: "200개사 350부스 규모의 대구 최대 반려동물 박람회. 펫푸드 및 용품 전시, 토로카드 체험, 펫택시, 레드캡 배송 서비스 등이 제공됩니다.",
+      category: "전시회",
+      price: "사전등록 5,000원 (현장 8,000원)",
       attendees: 0,
-      maxAttendees: 100,
-      organizer: "군산시 반려동물협회",
-      tags: ["어질리티", "반려견 훈련", "스포츠", "대회"]
+      maxAttendees: 30000,
+      organizer: "대구광역시 / 동인전람·페어스커뮤니케이션즈",
+      status: "예정",
+      tags: ["펫쇼", "전시회", "펫푸드", "용품", "체험"],
+      sourceUrl: "https://allforyou-first.tistory.com/221",
+      thumbnailUrl: "https://tse3.mm.bing.net/th/id/OIP._D4iSsXD0kjWw4hBbdyX5gHaHa?r=0&pid=Api"
     },
     {
       id: 4,
-      name: "정읍 내장산 반려동물 힐링 캠프",
+      name: "기장 반려동물 문화축제",
       location: {
-        address: "전북 정읍시 내장동 내장산국립공원",
-        lat: 35.449722,
-        lng: 126.887500
+        address: "부산광역시 기장군 정관읍 정관로 31 (정관 중앙공원)",
+        lat: 35.3127,
+        lng: 129.2086
       },
-      date: "2025-10-10",
-      time: "오전 10:00 - 오후 4:00",
-      description: "내장산의 아름다운 자연 속에서 반려동물과 함께하는 힐링 캠프. 숲속 산책, 자연 놀이, 반려동물 요가 등 특별한 프로그램을 경험할 수 있습니다.",
-      category: "자연체험",
-      price: 25000,
+      startDate: "2025-06-07",
+      endDate: "2025-06-07",
+      time: "오전 10:00 - 오후 6:00",
+      description: "정관 중앙공원 잔디광장에서 열리는 반려동물 문화축제. 펫푸드·미용체험, 행동교육, 산책예절 교육 등 다양한 프로그램이 진행됩니다.",
+      category: "지역축제",
+      price: "무료",
       attendees: 0,
-      maxAttendees: 80,
-      organizer: "정읍시 관광진흥과",
-      tags: ["힐링", "자연체험", "내장산", "반려동물 요가"]
+      maxAttendees: 5000,
+      organizer: "부산광역시 기장군",
+      status: "예정",
+      tags: ["문화축제", "펫미용", "행동교육", "산책예절"],
+      sourceUrl: "https://www.instagram.com/p/DJ5hYHMS3v_/",
+      thumbnailUrl: "https://tse3.mm.bing.net/th/id/OIP._D4iSsXD0kjWw4hBbdyX5gHaHa?r=0&pid=Api"
     },
     {
       id: 5,
-      name: "전주동물원 야간 특별 개방",
+      name: "가평 반려동물 문화행사 '활짝펫'",
       location: {
-        address: "전북 전주시 완산구 소리로 68 (전주동물원)",
-        lat: 35.815000,
-        lng: 127.119167
+        address: "경기도 가평군 상면 수목원로 432 (가평 수목원)",
+        lat: 37.7447,
+        lng: 127.3729
       },
-      date: "2025-08-20",
-      time: "오후 7:00 - 10:00",
-      description: "여름 특별 프로그램으로 동물원 야간 개방. 반려동물과 함께 야간 동물원 투어, 별빛 음악회, 동물 먹이주기 체험 등 특별한 경험을 제공합니다.",
-      category: "교육체험",
-      price: 15000,
+      startDate: "2025-05-15",
+      endDate: "2025-05-17",
+      time: "오전 10:00 - 오후 5:00",
+      description: "산책형 문화 행사로 오프리쉬존, 펫게임, 산책, 행동교육, 체험 마켓 등이 포함된 자연 친화적인 반려동물 축제입니다.",
+      category: "자연체험",
+      price: "무료",
       attendees: 0,
-      maxAttendees: 200,
-      organizer: "전주시설관리공단",
-      tags: ["동물원", "야간개방", "교육체험", "별빛음악회"]
+      maxAttendees: 3000,
+      organizer: "가평군",
+      status: "예정",
+      tags: ["산책", "자연체험", "오프리쉬존", "펫게임", "행동교육"],
+      sourceUrl: "https://korean.visitkorea.or.kr/kfes/detail/fstvlDetail.do?fstvlCntntsId=29ce22e7-6d69-40e4-9d74-1c306a339b16",
+      thumbnailUrl: "https://tse3.mm.bing.net/th/id/OIP._D4iSsXD0kjWw4hBbdyX5gHaHa?r=0&pid=Api"
+    },
+    {
+      id: 6,
+      name: "궁디팡팡 캣페스타",
+      location: {
+        address: "서울특별시 서초구 강남대로 27 (aT센터)",
+        lat: 37.4848,
+        lng: 127.0347
+      },
+      startDate: "2025-06-13",
+      endDate: "2025-06-16",
+      time: "오전 10:00 - 오후 6:00",
+      description: "고양이 전용 축제로 신제품 체험, 굿즈 증정, 포토존, 행동 전문가 강연, 수의사 Q&A 등 고양이 전문 프로그램이 진행됩니다.",
+      category: "전시회",
+      price: "무료",
+      attendees: 0,
+      maxAttendees: 10000,
+      organizer: "캣페스타 조직위원회",
+      status: "예정",
+      tags: ["고양이", "캣페스타", "전시회", "수의사", "행동전문가"],
+      sourceUrl: "https://muhwagwalab.tistory.com/entry/2025-양재-박람회-일정·위치·주차-총정리-궁디팡팡-캣페스타-꿀팁",
+      thumbnailUrl: "https://tse3.mm.bing.net/th/id/OIP._D4iSsXD0kjWw4hBbdyX5gHaHa?r=0&pid=Api"
+    },
+    {
+      id: 7,
+      name: "춘천 반려동물 페스티벌",
+      location: {
+        address: "강원도 춘천시 서면 박사로 854 (애니메이션 박물관)",
+        lat: 37.8813,
+        lng: 127.7298
+      },
+      startDate: "2025-09-25",
+      endDate: "2025-09-27",
+      time: "오전 10:00 - 오후 6:00",
+      description: "강원정보문화산업진흥원 애니메이션 박물관 일대에서 열리는 무료 반려동물 축제. 다양한 체험 프로그램과 교육 세션이 진행됩니다.",
+      category: "지역축제",
+      price: "무료",
+      attendees: 0,
+      maxAttendees: 8000,
+      organizer: "춘천시 / 강원정보문화산업진흥원",
+      status: "예정",
+      tags: ["지역축제", "애니메이션", "교육", "체험"],
+      sourceUrl: "https://korean.visitkorea.or.kr/kfes/detail/fstvlDetail.do?fstvlCntntsId=eb8683a5-3ca8-4636-8ad1-0d089533bb87",
+      thumbnailUrl: "https://tse3.mm.bing.net/th/id/OIP._D4iSsXD0kjWw4hBbdyX5gHaHa?r=0&pid=Api"
     }
-  ];
+  ]);
+    } finally {
+      setIsLoadingEvents(false);
+    }
+  };
+
+  // 이벤트 탭 선택 시 데이터 로드
+  useEffect(() => {
+    if (activeTab === 'event') {
+      fetchEvents();
+    }
+  }, [activeTab]);
+
+  // 이벤트 필터링 및 검색 로직
+  useEffect(() => {
+    let filtered = [...eventData];
+
+    // 검색어 필터링
+    if (eventSearchTerm) {
+      filtered = filtered.filter(event => 
+        event.name.toLowerCase().includes(eventSearchTerm.toLowerCase()) ||
+        event.location.address.toLowerCase().includes(eventSearchTerm.toLowerCase()) ||
+        event.description.toLowerCase().includes(eventSearchTerm.toLowerCase()) ||
+        event.tags.some(tag => tag.toLowerCase().includes(eventSearchTerm.toLowerCase()))
+      );
+    }
+
+    // 카테고리 필터링
+    if (eventCategoryFilter !== 'all') {
+      filtered = filtered.filter(event => event.category === eventCategoryFilter);
+    }
+
+    // 상태 필터링
+    if (eventStatusFilter !== 'all') {
+      filtered = filtered.filter(event => event.status === eventStatusFilter);
+    }
+
+    // 정렬
+    filtered.sort((a, b) => {
+      switch (eventSortBy) {
+        case 'date':
+          return new Date(a.startDate).getTime() - new Date(b.startDate).getTime();
+        case 'name':
+          return a.name.localeCompare(b.name);
+        case 'price':
+          const priceA = a.price === '무료' ? 0 : typeof a.price === 'number' ? a.price : parseInt(a.price.replace(/[^\d]/g, '')) || 0;
+          const priceB = b.price === '무료' ? 0 : typeof b.price === 'number' ? b.price : parseInt(b.price.replace(/[^\d]/g, '')) || 0;
+          return priceA - priceB;
+        case 'attendees':
+          return b.maxAttendees - a.maxAttendees;
+        default:
+          return 0;
+      }
+    });
+
+    setFilteredEvents(filtered);
+  }, [eventSearchTerm, eventCategoryFilter, eventStatusFilter, eventSortBy]);
 
   // 근처 장소 검색
   const handleSearchNearby = async () => {
@@ -274,10 +421,106 @@ function NearbyPlaces() {
       </Tabs>
 
       {activeTab === 'event' ? (
-        <div className="space-y-4 max-h-96 overflow-y-auto pr-2">
-          {eventData.map(event => (
-            <EventCard key={event.id} event={event} />
-          ))}
+        <div className="space-y-4">
+          {/* 축제/이벤트 필터링 및 검색 UI */}
+          <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg space-y-4">
+            <div className="flex flex-col md:flex-row gap-4">
+              <div className="flex-1">
+                <Input
+                  placeholder="축제명, 지역, 태그로 검색..."
+                  value={eventSearchTerm}
+                  onChange={(e) => setEventSearchTerm(e.target.value)}
+                  className="w-full"
+                />
+              </div>
+              <div className="flex gap-2">
+                <Select value={eventCategoryFilter} onValueChange={setEventCategoryFilter}>
+                  <SelectTrigger className="w-[140px]">
+                    <SelectValue placeholder="카테고리" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">전체 카테고리</SelectItem>
+                    <SelectItem value="전시회">전시회</SelectItem>
+                    <SelectItem value="지역축제">지역축제</SelectItem>
+                    <SelectItem value="자연체험">자연체험</SelectItem>
+                  </SelectContent>
+                </Select>
+                
+                <Select value={eventStatusFilter} onValueChange={setEventStatusFilter}>
+                  <SelectTrigger className="w-[120px]">
+                    <SelectValue placeholder="상태" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">전체 상태</SelectItem>
+                    <SelectItem value="예정">예정</SelectItem>
+                    <SelectItem value="진행중">진행중</SelectItem>
+                    <SelectItem value="완료">완료</SelectItem>
+                  </SelectContent>
+                </Select>
+                
+                <Select value={eventSortBy} onValueChange={setEventSortBy}>
+                  <SelectTrigger className="w-[120px]">
+                    <SelectValue placeholder="정렬" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="date">날짜순</SelectItem>
+                    <SelectItem value="name">이름순</SelectItem>
+                    <SelectItem value="price">가격순</SelectItem>
+                    <SelectItem value="attendees">규모순</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            
+            <div className="flex items-center justify-between text-sm text-muted-foreground">
+              <div className="flex items-center space-x-4">
+                <span>총 {filteredEvents.length}개의 축제/이벤트</span>
+                <div className="flex items-center space-x-2">
+                  <Badge variant="outline" className="text-xs">
+                    예정: {filteredEvents.filter(e => e.status === '예정').length}
+                  </Badge>
+                  <Badge variant="outline" className="text-xs">
+                    완료: {filteredEvents.filter(e => e.status === '완료').length}
+                  </Badge>
+                </div>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => {
+                    setEventSearchTerm('');
+                    setEventCategoryFilter('all');
+                    setEventStatusFilter('all');
+                    setEventSortBy('date');
+                  }}
+                >
+                  <Filter className="h-4 w-4 mr-1" />
+                  필터 초기화
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          {/* 축제/이벤트 목록 */}
+          <div className="space-y-4 max-h-96 overflow-y-auto pr-2">
+            {isLoadingEvents ? (
+              <div className="flex justify-center items-center py-12">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                <span className="ml-2 text-muted-foreground">이벤트 정보를 불러오는 중...</span>
+              </div>
+            ) : filteredEvents.length > 0 ? (
+              filteredEvents.map(event => (
+                <EventCard key={event.id} event={event} />
+              ))
+            ) : (
+              <Alert>
+                <AlertDescription>
+                  검색 조건에 맞는 축제/이벤트가 없습니다.
+                </AlertDescription>
+              </Alert>
+            )}
+          </div>
         </div>
       ) : isSearching ? (
         <div className="py-8 flex justify-center">
@@ -315,24 +558,86 @@ function EventCard({ event }: { event: any }) {
     });
   };
 
+  const handleSourceLink = () => {
+    if (event.sourceUrl) {
+      window.open(event.sourceUrl, '_blank');
+    }
+  };
+
+  const handleShare = () => {
+    if (navigator.share) {
+      navigator.share({
+        title: event.name,
+        text: event.description,
+        url: event.sourceUrl
+      });
+    } else {
+      navigator.clipboard.writeText(event.sourceUrl);
+      toast({
+        title: "링크 복사됨",
+        description: "이벤트 링크가 클립보드에 복사되었습니다.",
+      });
+    }
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case '예정': return 'bg-blue-100 text-blue-800';
+      case '진행중': return 'bg-green-100 text-green-800';
+      case '완료': return 'bg-gray-100 text-gray-800';
+      case '취소': return 'bg-red-100 text-red-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const getCategoryIcon = (category: string) => {
+    switch (category) {
+      case '전시회': return <Trophy className="h-4 w-4" />;
+      case '지역축제': return <Star className="h-4 w-4" />;
+      case '자연체험': return <MapPin className="h-4 w-4" />;
+      default: return <Calendar className="h-4 w-4" />;
+    }
+  };
+
   return (
-    <Card className="cursor-pointer hover:shadow-md transition-shadow">
+    <Card className="hover:shadow-lg transition-all duration-200 border-l-4 border-l-primary">
       <CardHeader className="pb-3">
         <div className="flex justify-between items-start">
           <div className="flex-1">
-            <CardTitle className="text-lg">{event.name}</CardTitle>
-            <CardDescription className="mt-1">
-              {event.location?.address || event.location}
+            <div className="flex items-center space-x-2 mb-2">
+              <div className="flex items-center text-primary">
+                {getCategoryIcon(event.category)}
+                <span className="ml-1 text-sm font-medium">{event.category}</span>
+              </div>
+              <Badge className={`text-xs ${getStatusColor(event.status)}`}>
+                {event.status}
+              </Badge>
+            </div>
+            <CardTitle className="text-lg leading-tight">{event.name}</CardTitle>
+            <CardDescription className="mt-1 text-sm">
+              <div className="flex items-center">
+                <MapPin className="h-3 w-3 mr-1" />
+                {event.location?.address || event.location}
+              </div>
             </CardDescription>
           </div>
-          <div className="flex items-center text-xs text-muted-foreground ml-2">
-            <Calendar className="h-3 w-3 mr-1" />
-            {event.date}
+          <div className="flex flex-col items-end space-y-1">
+            <div className="flex items-center text-xs text-muted-foreground">
+              <Calendar className="h-3 w-3 mr-1" />
+              {event.startDate === event.endDate ? 
+                event.startDate : 
+                `${event.startDate} ~ ${event.endDate}`
+              }
+            </div>
+            <div className="flex items-center text-xs text-muted-foreground">
+              <Clock className="h-3 w-3 mr-1" />
+              {event.time}
+            </div>
           </div>
         </div>
       </CardHeader>
       <CardContent className="pt-0">
-        <div className="space-y-2">
+        <div className="space-y-3">
           <p className="text-sm text-gray-600 line-clamp-2">
             {event.description}
           </p>
@@ -340,43 +645,68 @@ function EventCard({ event }: { event: any }) {
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4 text-sm text-muted-foreground">
               <div className="flex items-center">
-                <Clock className="h-4 w-4 mr-1" />
-                {event.time}
+                <Users className="h-4 w-4 mr-1" />
+                {event.attendees > 0 ? `${event.attendees}명 참여` : '참여 대기'}
               </div>
-              {event.attendees && (
-                <div className="flex items-center">
-                  <Users className="h-4 w-4 mr-1" />
-                  {event.attendees}명 참여
-                </div>
-              )}
+              <div className="text-xs">
+                최대 {event.maxAttendees?.toLocaleString()}명
+              </div>
             </div>
             
             <div className="flex items-center space-x-2">
-              {event.category && (
-                <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
-                  {event.category}
-                </span>
-              )}
               {event.price === '무료' ? (
-                <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">
-                  무료
-                </span>
+                <Badge className="bg-green-100 text-green-800">무료</Badge>
               ) : (
-                <span className="px-2 py-1 bg-orange-100 text-orange-800 text-xs rounded-full">
+                <Badge className="bg-orange-100 text-orange-800">
                   {typeof event.price === 'number' ? `${event.price.toLocaleString()}원` : event.price}
-                </span>
+                </Badge>
               )}
             </div>
           </div>
+
+          <div className="flex flex-wrap gap-1">
+            {event.tags?.slice(0, 3).map((tag: string, index: number) => (
+              <Badge key={index} variant="secondary" className="text-xs">
+                {tag}
+              </Badge>
+            ))}
+            {event.tags?.length > 3 && (
+              <Badge variant="secondary" className="text-xs">
+                +{event.tags.length - 3}
+              </Badge>
+            )}
+          </div>
+
+          <div className="text-xs text-muted-foreground">
+            주최: {event.organizer}
+          </div>
           
-          <div className="pt-2">
+          <div className="flex space-x-2 pt-2">
             <Button 
               variant="outline" 
               size="sm" 
               onClick={handleEventClick}
-              className="w-full"
+              className="flex-1"
             >
-              이벤트 상세보기
+              상세보기
+            </Button>
+            {event.sourceUrl && (
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={handleSourceLink}
+                className="px-3"
+              >
+                <ExternalLink className="h-4 w-4" />
+              </Button>
+            )}
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={handleShare}
+              className="px-3"
+            >
+              <Share2 className="h-4 w-4" />
             </Button>
           </div>
         </div>

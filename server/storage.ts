@@ -9,6 +9,169 @@ class Storage {
   paymentRequests: any[] = [];
   products: any[] = [];
   pricingRules: any[] = [];
+  events: any[] = [
+    {
+      id: 1,
+      name: "멍룡 썸머 뮤직 피크닉",
+      location: {
+        address: "전북 익산시 왕궁면 왕궁리 산80-1 (왕궁보석테마관광지 가족공원)",
+        lat: 35.948611,
+        lng: 126.837500
+      },
+      startDate: "2025-07-12",
+      endDate: "2025-07-12",
+      time: "오후 7:00 - 10:00",
+      description: "반려인과 비반려인이 함께 즐기는 여름밤 문화행사. 보석 십자수, 자개 열쇠고리 만들기, 반려동물 미로 탐험, 어질리티 체험, 멍BTI 테스트 등 다양한 체험 프로그램과 클래식 4중주, 키즈팝 댄스, 버블쇼 등 공연이 펼쳐집니다.",
+      category: "지역축제",
+      price: "무료",
+      attendees: 150,
+      maxAttendees: 300,
+      organizer: "익산시청",
+      status: "완료",
+      tags: ["반려동물", "문화체험", "음악회", "펫티켓", "반려동물 친화관광도시"],
+      sourceUrl: "https://www.jjan.kr/article/20250712580069",
+      thumbnailUrl: "https://tse3.mm.bing.net/th/id/OIP._D4iSsXD0kjWw4hBbdyX5gHaHa?r=0&pid=Api",
+      lastUpdated: new Date().toISOString()
+    },
+    {
+      id: 2,
+      name: "2025 케이펫페어 마곡",
+      location: {
+        address: "서울특별시 강서구 마곡중앙로 38 (코엑스 마곡전시장)",
+        lat: 37.5635,
+        lng: 126.8266
+      },
+      startDate: "2025-06-13",
+      endDate: "2025-06-15",
+      time: "오전 10:00 - 오후 6:00",
+      description: "아시아 최대 규모의 반려동물 전시회. 최신 펫 트렌드, 제품 체험, 전문가 강연, 반려동물 동반 입장 가능한 다양한 프로그램이 진행됩니다.",
+      category: "전시회",
+      price: "5000",
+      attendees: 12000,
+      maxAttendees: 15000,
+      organizer: "케이펫페어 조직위원회",
+      status: "완료",
+      tags: ["전시회", "펫용품", "전문가강연", "트렌드"],
+      sourceUrl: "https://www.kpetfair.co.kr/",
+      thumbnailUrl: "https://tse3.mm.bing.net/th/id/OIP._D4iSsXD0kjWw4hBbdyX5gHaHa?r=0&pid=Api",
+      lastUpdated: new Date().toISOString()
+    },
+    {
+      id: 3,
+      name: "한강 반려동물 동반 피크닉",
+      location: {
+        address: "서울특별시 마포구 망원동 (망원한강공원)",
+        lat: 37.5547,
+        lng: 126.8967
+      },
+      startDate: "2025-05-25",
+      endDate: "2025-05-25",
+      time: "오전 11:00 - 오후 4:00",
+      description: "한강에서 펼쳐지는 반려동물과 함께하는 힐링 피크닉. 반려동물 건강 체크, 훈련 체험, 사진 촬영 등 다양한 프로그램이 준비되어 있습니다.",
+      category: "자연체험",
+      price: "무료",
+      attendees: 800,
+      maxAttendees: 1000,
+      organizer: "서울특별시",
+      status: "완료",
+      tags: ["한강", "피크닉", "힐링", "건강체크", "훈련체험"],
+      sourceUrl: "https://hangang.seoul.go.kr/",
+      thumbnailUrl: "https://tse3.mm.bing.net/th/id/OIP._D4iSsXD0kjWw4hBbdyX5gHaHa?r=0&pid=Api",
+      lastUpdated: new Date().toISOString()
+    },
+    {
+      id: 4,
+      name: "부산 기장 반려동물 문화축제",
+      location: {
+        address: "부산광역시 기장군 정관읍 정관로 804 (정관 중앙공원)",
+        lat: 35.3105,
+        lng: 129.2086
+      },
+      startDate: "2025-06-07",
+      endDate: "2025-06-07",
+      time: "오전 10:00 - 오후 6:00",
+      description: "정관 중앙공원 잔디광장에서 열리는 반려동물 문화축제. 펫푸드·미용체험, 행동교육, 산책예절 교육 등 다양한 프로그램이 진행됩니다.",
+      category: "지역축제",
+      price: "무료",
+      attendees: 2500,
+      maxAttendees: 5000,
+      organizer: "부산광역시 기장군",
+      status: "완료",
+      tags: ["문화축제", "펫미용", "행동교육", "산책예절"],
+      sourceUrl: "https://www.instagram.com/p/DJ5hYHMS3v_/",
+      thumbnailUrl: "https://tse3.mm.bing.net/th/id/OIP._D4iSsXD0kjWw4hBbdyX5gHaHa?r=0&pid=Api",
+      lastUpdated: new Date().toISOString()
+    },
+    {
+      id: 5,
+      name: "가평 반려동물 문화행사 '활짝펫'",
+      location: {
+        address: "경기도 가평군 상면 수목원로 432 (가평 수목원)",
+        lat: 37.7447,
+        lng: 127.3729
+      },
+      startDate: "2025-05-15",
+      endDate: "2025-05-17",
+      time: "오전 10:00 - 오후 5:00",
+      description: "산책형 문화 행사로 오프리쉬존, 펫게임, 산책, 행동교육, 체험 마켓 등이 포함된 자연 친화적인 반려동물 축제입니다.",
+      category: "자연체험",
+      price: "무료",
+      attendees: 1200,
+      maxAttendees: 3000,
+      organizer: "가평군",
+      status: "완료",
+      tags: ["산책", "자연체험", "오프리쉬존", "펫게임", "행동교육"],
+      sourceUrl: "https://korean.visitkorea.or.kr/kfes/detail/fstvlDetail.do?fstvlCntntsId=29ce22e7-6d69-40e4-9d74-1c306a339b16",
+      thumbnailUrl: "https://tse3.mm.bing.net/th/id/OIP._D4iSsXD0kjWw4hBbdyX5gHaHa?r=0&pid=Api",
+      lastUpdated: new Date().toISOString()
+    },
+    {
+      id: 6,
+      name: "궁디팡팡 캣페스타",
+      location: {
+        address: "서울특별시 서초구 강남대로 27 (aT센터)",
+        lat: 37.4848,
+        lng: 127.0347
+      },
+      startDate: "2025-06-13",
+      endDate: "2025-06-16",
+      time: "오전 10:00 - 오후 6:00",
+      description: "고양이 전용 축제로 신제품 체험, 굿즈 증정, 포토존, 행동 전문가 강연, 수의사 Q&A 등 고양이 전문 프로그램이 진행됩니다.",
+      category: "전시회",
+      price: "8000",
+      attendees: 5000,
+      maxAttendees: 10000,
+      organizer: "캣페스타 조직위원회",
+      status: "완료",
+      tags: ["고양이", "캣페스타", "전시회", "수의사", "행동전문가"],
+      sourceUrl: "https://muhwagwalab.tistory.com/entry/2025-양재-박람회-일정·위치·주차-총정리-궁디팡팡-캣페스타-꿀팁",
+      thumbnailUrl: "https://tse3.mm.bing.net/th/id/OIP._D4iSsXD0kjWw4hBbdyX5gHaHa?r=0&pid=Api",
+      lastUpdated: new Date().toISOString()
+    },
+    {
+      id: 7,
+      name: "춘천 반려동물 페스티벌",
+      location: {
+        address: "강원도 춘천시 서면 박사로 854 (애니메이션 박물관)",
+        lat: 37.8813,
+        lng: 127.7298
+      },
+      startDate: "2025-09-25",
+      endDate: "2025-09-27",
+      time: "오전 10:00 - 오후 6:00",
+      description: "강원정보문화산업진흥원 애니메이션 박물관 일대에서 열리는 반려동물 축제. 다양한 체험 프로그램과 교육 세션이 진행됩니다.",
+      category: "지역축제",
+      price: "무료",
+      attendees: 0,
+      maxAttendees: 8000,
+      organizer: "춘천시 / 강원정보문화산업진흥원",
+      status: "예정",
+      tags: ["지역축제", "애니메이션", "교육", "체험"],
+      sourceUrl: "https://korean.visitkorea.or.kr/kfes/detail/fstvlDetail.do?fstvlCntntsId=eb8683a5-3ca8-4636-8ad1-0d089533bb87",
+      thumbnailUrl: "https://tse3.mm.bing.net/th/id/OIP._D4iSsXD0kjWw4hBbdyX5gHaHa?r=0&pid=Api",
+      lastUpdated: new Date().toISOString()
+    }
+  ];
 
   constructor() {
     console.log('🔄 운영 환경용 메모리 저장소 초기화...');
@@ -789,6 +952,47 @@ class Storage {
       };
     }
     return null;
+  }
+
+  // 이벤트 관리 메서드
+  getAllEvents(): any[] {
+    return this.events || [];
+  }
+
+  getEventById(id: number): any {
+    return this.events.find(event => event.id === id);
+  }
+
+  getEventBySourceUrl(sourceUrl: string): any {
+    return this.events.find(event => event.sourceUrl === sourceUrl);
+  }
+
+  createEvent(eventData: any): any {
+    const event = {
+      id: this.events.length + 1,
+      ...eventData,
+      createdAt: new Date().toISOString()
+    };
+    this.events.push(event);
+    return event;
+  }
+
+  updateEvent(id: number, updateData: any): any {
+    const event = this.events.find(e => e.id === id);
+    if (event) {
+      Object.assign(event, updateData);
+      return event;
+    }
+    return null;
+  }
+
+  deleteEvent(id: number): boolean {
+    const index = this.events.findIndex(e => e.id === id);
+    if (index !== -1) {
+      this.events.splice(index, 1);
+      return true;
+    }
+    return false;
   }
 }
 

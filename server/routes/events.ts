@@ -1,0 +1,256 @@
+import { Router } from 'express';
+import { storage } from '../storage';
+
+const router = Router();
+
+// 이벤트 데이터 타입 정의
+interface EventData {
+  id: number;
+  name: string;
+  location: {
+    address: string;
+    lat: number;
+    lng: number;
+  };
+  startDate: string;
+  endDate: string;
+  time: string;
+  description: string;
+  category: string;
+  price: string | number;
+  attendees: number;
+  maxAttendees: number;
+  organizer: string;
+  status: string;
+  tags: string[];
+  sourceUrl: string;
+  thumbnailUrl: string;
+  lastUpdated?: string;
+}
+
+// 모든 이벤트 조회
+router.get('/events', async (req, res) => {
+  try {
+    const { category, status, search, sortBy = 'date' } = req.query;
+    
+    // 실제 데이터베이스에서 이벤트 데이터를 가져오는 로직
+    // 현재는 메모리 저장소를 사용하여 구현
+    let events = await storage.getAllEvents();
+    
+    // 필터링
+    if (category && category !== 'all') {
+      events = events.filter(event => event.category === category);
+    }
+    
+    if (status && status !== 'all') {
+      events = events.filter(event => event.status === status);
+    }
+    
+    if (search) {
+      const searchTerm = search.toString().toLowerCase();
+      events = events.filter(event => 
+        event.name.toLowerCase().includes(searchTerm) ||
+        event.location.address.toLowerCase().includes(searchTerm) ||
+        event.description.toLowerCase().includes(searchTerm) ||
+        event.tags.some(tag => tag.toLowerCase().includes(searchTerm))
+      );
+    }
+    
+    // 정렬
+    events.sort((a, b) => {
+      switch (sortBy) {
+        case 'date':
+          return new Date(a.startDate).getTime() - new Date(b.startDate).getTime();
+        case 'name':
+          return a.name.localeCompare(b.name);
+        case 'price':
+          const priceA = a.price === '무료' ? 0 : typeof a.price === 'number' ? a.price : parseInt(a.price.toString().replace(/[^\d]/g, '')) || 0;
+          const priceB = b.price === '무료' ? 0 : typeof b.price === 'number' ? b.price : parseInt(b.price.toString().replace(/[^\d]/g, '')) || 0;
+          return priceA - priceB;
+        case 'attendees':
+          return b.maxAttendees - a.maxAttendees;
+        default:
+          return 0;
+      }
+    });
+    
+    res.json(events);
+  } catch (error) {
+    console.error('이벤트 조회 오류:', error);
+    res.status(500).json({ error: '이벤트 데이터를 불러오는데 실패했습니다.' });
+  }
+});
+
+// 특정 이벤트 조회
+router.get('/events/:id', async (req, res) => {
+  try {
+    const eventId = parseInt(req.params.id);
+    const event = await storage.getEventById(eventId);
+    
+    if (!event) {
+      return res.status(404).json({ error: '이벤트를 찾을 수 없습니다.' });
+    }
+    
+    res.json(event);
+  } catch (error) {
+    console.error('이벤트 조회 오류:', error);
+    res.status(500).json({ error: '이벤트 데이터를 불러오는데 실패했습니다.' });
+  }
+});
+
+// 새로운 이벤트 추가 (관리자 전용)
+router.post('/events', async (req, res) => {
+  try {
+    if (!req.user || req.user.role !== 'admin') {
+      return res.status(403).json({ error: '관리자 권한이 필요합니다.' });
+    }
+    
+    const eventData: EventData = req.body;
+    eventData.lastUpdated = new Date().toISOString();
+    
+    const newEvent = await storage.createEvent(eventData);
+    
+    res.status(201).json(newEvent);
+  } catch (error) {
+    console.error('이벤트 생성 오류:', error);
+    res.status(500).json({ error: '이벤트 생성에 실패했습니다.' });
+  }
+});
+
+// 이벤트 업데이트 (관리자 전용)
+router.put('/events/:id', async (req, res) => {
+  try {
+    if (!req.user || req.user.role !== 'admin') {
+      return res.status(403).json({ error: '관리자 권한이 필요합니다.' });
+    }
+    
+    const eventId = parseInt(req.params.id);
+    const eventData = req.body;
+    eventData.lastUpdated = new Date().toISOString();
+    
+    const updatedEvent = await storage.updateEvent(eventId, eventData);
+    
+    if (!updatedEvent) {
+      return res.status(404).json({ error: '이벤트를 찾을 수 없습니다.' });
+    }
+    
+    res.json(updatedEvent);
+  } catch (error) {
+    console.error('이벤트 업데이트 오류:', error);
+    res.status(500).json({ error: '이벤트 업데이트에 실패했습니다.' });
+  }
+});
+
+// 이벤트 삭제 (관리자 전용)
+router.delete('/events/:id', async (req, res) => {
+  try {
+    if (!req.user || req.user.role !== 'admin') {
+      return res.status(403).json({ error: '관리자 권한이 필요합니다.' });
+    }
+    
+    const eventId = parseInt(req.params.id);
+    const deleted = await storage.deleteEvent(eventId);
+    
+    if (!deleted) {
+      return res.status(404).json({ error: '이벤트를 찾을 수 없습니다.' });
+    }
+    
+    res.json({ message: '이벤트가 삭제되었습니다.' });
+  } catch (error) {
+    console.error('이벤트 삭제 오류:', error);
+    res.status(500).json({ error: '이벤트 삭제에 실패했습니다.' });
+  }
+});
+
+// 이벤트 자동 업데이트 (외부 크롤러용)
+router.post('/events/auto-update', async (req, res) => {
+  try {
+    // API 키 검증 (실제 운영에서는 적절한 인증 구현)
+    const apiKey = req.headers['x-api-key'];
+    if (!apiKey || apiKey !== process.env.AUTO_UPDATE_API_KEY) {
+      return res.status(401).json({ error: '유효하지 않은 API 키입니다.' });
+    }
+    
+    const eventsData = req.body.events as EventData[];
+    
+    if (!Array.isArray(eventsData)) {
+      return res.status(400).json({ error: '잘못된 데이터 형식입니다.' });
+    }
+    
+    const results = [];
+    
+    for (const eventData of eventsData) {
+      try {
+        // 기존 이벤트 확인 (sourceUrl 기준)
+        const existingEvent = await storage.getEventBySourceUrl(eventData.sourceUrl);
+        
+        if (existingEvent) {
+          // 업데이트
+          const updatedEvent = await storage.updateEvent(existingEvent.id, {
+            ...eventData,
+            lastUpdated: new Date().toISOString()
+          });
+          results.push({ action: 'updated', event: updatedEvent });
+        } else {
+          // 새로 생성
+          const newEvent = await storage.createEvent({
+            ...eventData,
+            lastUpdated: new Date().toISOString()
+          });
+          results.push({ action: 'created', event: newEvent });
+        }
+      } catch (error) {
+        console.error(`이벤트 처리 오류 (${eventData.name}):`, error);
+        results.push({ action: 'error', eventName: eventData.name, error: error.message });
+      }
+    }
+    
+    res.json({
+      message: '이벤트 자동 업데이트 완료',
+      results: results,
+      totalProcessed: eventsData.length,
+      created: results.filter(r => r.action === 'created').length,
+      updated: results.filter(r => r.action === 'updated').length,
+      errors: results.filter(r => r.action === 'error').length
+    });
+  } catch (error) {
+    console.error('이벤트 자동 업데이트 오류:', error);
+    res.status(500).json({ error: '이벤트 자동 업데이트에 실패했습니다.' });
+  }
+});
+
+// 이벤트 통계 조회
+router.get('/events/stats', async (req, res) => {
+  try {
+    const events = await storage.getAllEvents();
+    
+    const stats = {
+      total: events.length,
+      byCategory: {},
+      byStatus: {},
+      upcoming: events.filter(e => e.status === '예정').length,
+      ongoing: events.filter(e => e.status === '진행중').length,
+      completed: events.filter(e => e.status === '완료').length,
+      totalAttendees: events.reduce((sum, e) => sum + e.attendees, 0),
+      totalCapacity: events.reduce((sum, e) => sum + e.maxAttendees, 0),
+      averageAttendance: events.length > 0 ? events.reduce((sum, e) => sum + e.attendees, 0) / events.length : 0
+    };
+    
+    // 카테고리별 통계
+    events.forEach(event => {
+      stats.byCategory[event.category] = (stats.byCategory[event.category] || 0) + 1;
+    });
+    
+    // 상태별 통계
+    events.forEach(event => {
+      stats.byStatus[event.status] = (stats.byStatus[event.status] || 0) + 1;
+    });
+    
+    res.json(stats);
+  } catch (error) {
+    console.error('이벤트 통계 조회 오류:', error);
+    res.status(500).json({ error: '이벤트 통계를 불러오는데 실패했습니다.' });
+  }
+});
+
+export const eventRoutes = router;

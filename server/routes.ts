@@ -12,6 +12,8 @@ import { simpleProductRoutes } from "./routes/simple-products";
 import { registerUploadRoutes } from "./routes/upload";
 import { registerLocationRoutes } from "./location/routes";
 import { storage } from "./storage";
+import { eventRoutes } from "./routes/events";
+import { eventUpdater } from "./services/eventUpdater";
 import { courses, users, institutes } from "../shared/schema";
 import { ilike, or } from "drizzle-orm";
 import { 
@@ -3420,6 +3422,12 @@ app.get('/api/search', async (req, res) => {
 
   // 소셜/커뮤니티 라우트 (임시 비활성화)
   // setupSocialRoutes(app);
+
+  // 이벤트 라우트 등록
+  app.use('/api', eventRoutes);
+
+  // 이벤트 자동 업데이트 서비스 시작
+  eventUpdater.startScheduler && eventUpdater.startScheduler();
 
   // 서비스 검수 API
   app.get('/api/service/inspection', async (req, res) => {
