@@ -137,173 +137,26 @@ function NearbyPlaces() {
   const fetchEvents = async () => {
     try {
       setIsLoadingEvents(true);
+      console.log('🔥 이벤트 API 호출 시작');
       const response = await apiRequest('GET', '/api/events');
       const data = await response.json();
-      setEventData(data);
+      console.log('🔥 API 응답 데이터:', data);
+      
+      if (Array.isArray(data)) {
+        setEventData(data);
+        console.log('🔥 이벤트 데이터 설정 완료, 총 개수:', data.length);
+      } else {
+        console.error('🔥 API 응답이 배열이 아님:', data);
+        setEventData([]);
+      }
     } catch (error) {
-      console.error('이벤트 조회 오류:', error);
+      console.error('🔥 이벤트 조회 오류:', error);
       toast({
         title: "오류",
         description: "이벤트 정보를 불러오는데 실패했습니다.",
         variant: "destructive"
       });
-      // 오류 발생 시 기본 이벤트 데이터 설정
-      setEventData([
-    {
-      id: 1,
-      name: "멍룡 썸머 뮤직 피크닉",
-      location: {
-        address: "전북 익산시 왕궁면 왕궁리 산80-1 (왕궁보석테마관광지 가족공원)",
-        lat: 35.948611,
-        lng: 126.837500
-      },
-      startDate: "2025-07-12",
-      endDate: "2025-07-12",
-      time: "오후 7:00 - 10:00",
-      description: "반려인과 비반려인이 함께 즐기는 여름밤 문화행사. 보석 십자수, 자개 열쇠고리 만들기, 반려동물 미로 탐험, 어질리티 체험, 멍BTI 테스트 등 다양한 체험 프로그램과 클래식 4중주, 키즈팝 댄스, 버블쇼 등 공연이 펼쳐집니다.",
-      category: "지역축제",
-      price: "무료",
-      attendees: 150,
-      maxAttendees: 300,
-      organizer: "익산시청",
-      status: "완료",
-      tags: ["반려동물", "문화체험", "음악회", "펫티켓", "반려동물 친화관광도시"],
-      sourceUrl: "https://www.jjan.kr/article/20250712580069",
-      thumbnailUrl: "https://tse3.mm.bing.net/th/id/OIP._D4iSsXD0kjWw4hBbdyX5gHaHa?r=0&pid=Api"
-    },
-    {
-      id: 2,
-      name: "2025 케이펫페어 마곡",
-      location: {
-        address: "서울특별시 강서구 마곡중앙로 38 (코엑스 마곡전시장)",
-        lat: 37.5635,
-        lng: 126.8266
-      },
-      startDate: "2025-06-13",
-      endDate: "2025-06-15",
-      time: "오전 10:00 - 오후 6:00",
-      description: "국내 대표 반려동물 축제. 121개사 약 250부스 규모로 펫푸드·펫 용품 체험, 샘플링 이벤트, 럭키드로우, 아로마·아이스크림 만들기 등 다양한 프로그램이 진행됩니다.",
-      category: "전시회",
-      price: "무료",
-      attendees: 0,
-      maxAttendees: 50000,
-      organizer: "한국펫사료협회 / 메쎄이상",
-      status: "예정",
-      tags: ["펫푸드", "펫용품", "전시회", "체험", "샘플링"],
-      sourceUrl: "https://www.mk.co.kr/news/culture/11339790",
-      thumbnailUrl: "https://tse3.mm.bing.net/th/id/OIP._D4iSsXD0kjWw4hBbdyX5gHaHa?r=0&pid=Api"
-    },
-    {
-      id: 3,
-      name: "제22회 대구펫쇼",
-      location: {
-        address: "대구광역시 북구 엑스코로 10 (대구 EXCO)",
-        lat: 35.9078,
-        lng: 128.6219
-      },
-      startDate: "2025-05-23",
-      endDate: "2025-05-25",
-      time: "오전 10:00 - 오후 6:00",
-      description: "200개사 350부스 규모의 대구 최대 반려동물 박람회. 펫푸드 및 용품 전시, 토로카드 체험, 펫택시, 레드캡 배송 서비스 등이 제공됩니다.",
-      category: "전시회",
-      price: "사전등록 5,000원 (현장 8,000원)",
-      attendees: 0,
-      maxAttendees: 30000,
-      organizer: "대구광역시 / 동인전람·페어스커뮤니케이션즈",
-      status: "예정",
-      tags: ["펫쇼", "전시회", "펫푸드", "용품", "체험"],
-      sourceUrl: "https://allforyou-first.tistory.com/221",
-      thumbnailUrl: "https://tse3.mm.bing.net/th/id/OIP._D4iSsXD0kjWw4hBbdyX5gHaHa?r=0&pid=Api"
-    },
-    {
-      id: 4,
-      name: "기장 반려동물 문화축제",
-      location: {
-        address: "부산광역시 기장군 정관읍 정관로 31 (정관 중앙공원)",
-        lat: 35.3127,
-        lng: 129.2086
-      },
-      startDate: "2025-06-07",
-      endDate: "2025-06-07",
-      time: "오전 10:00 - 오후 6:00",
-      description: "정관 중앙공원 잔디광장에서 열리는 반려동물 문화축제. 펫푸드·미용체험, 행동교육, 산책예절 교육 등 다양한 프로그램이 진행됩니다.",
-      category: "지역축제",
-      price: "무료",
-      attendees: 0,
-      maxAttendees: 5000,
-      organizer: "부산광역시 기장군",
-      status: "예정",
-      tags: ["문화축제", "펫미용", "행동교육", "산책예절"],
-      sourceUrl: "https://www.instagram.com/p/DJ5hYHMS3v_/",
-      thumbnailUrl: "https://tse3.mm.bing.net/th/id/OIP._D4iSsXD0kjWw4hBbdyX5gHaHa?r=0&pid=Api"
-    },
-    {
-      id: 5,
-      name: "가평 반려동물 문화행사 '활짝펫'",
-      location: {
-        address: "경기도 가평군 상면 수목원로 432 (가평 수목원)",
-        lat: 37.7447,
-        lng: 127.3729
-      },
-      startDate: "2025-05-15",
-      endDate: "2025-05-17",
-      time: "오전 10:00 - 오후 5:00",
-      description: "산책형 문화 행사로 오프리쉬존, 펫게임, 산책, 행동교육, 체험 마켓 등이 포함된 자연 친화적인 반려동물 축제입니다.",
-      category: "자연체험",
-      price: "무료",
-      attendees: 0,
-      maxAttendees: 3000,
-      organizer: "가평군",
-      status: "예정",
-      tags: ["산책", "자연체험", "오프리쉬존", "펫게임", "행동교육"],
-      sourceUrl: "https://korean.visitkorea.or.kr/kfes/detail/fstvlDetail.do?fstvlCntntsId=29ce22e7-6d69-40e4-9d74-1c306a339b16",
-      thumbnailUrl: "https://tse3.mm.bing.net/th/id/OIP._D4iSsXD0kjWw4hBbdyX5gHaHa?r=0&pid=Api"
-    },
-    {
-      id: 6,
-      name: "궁디팡팡 캣페스타",
-      location: {
-        address: "서울특별시 서초구 강남대로 27 (aT센터)",
-        lat: 37.4848,
-        lng: 127.0347
-      },
-      startDate: "2025-06-13",
-      endDate: "2025-06-16",
-      time: "오전 10:00 - 오후 6:00",
-      description: "고양이 전용 축제로 신제품 체험, 굿즈 증정, 포토존, 행동 전문가 강연, 수의사 Q&A 등 고양이 전문 프로그램이 진행됩니다.",
-      category: "전시회",
-      price: "무료",
-      attendees: 0,
-      maxAttendees: 10000,
-      organizer: "캣페스타 조직위원회",
-      status: "예정",
-      tags: ["고양이", "캣페스타", "전시회", "수의사", "행동전문가"],
-      sourceUrl: "https://muhwagwalab.tistory.com/entry/2025-양재-박람회-일정·위치·주차-총정리-궁디팡팡-캣페스타-꿀팁",
-      thumbnailUrl: "https://tse3.mm.bing.net/th/id/OIP._D4iSsXD0kjWw4hBbdyX5gHaHa?r=0&pid=Api"
-    },
-    {
-      id: 7,
-      name: "춘천 반려동물 페스티벌",
-      location: {
-        address: "강원도 춘천시 서면 박사로 854 (애니메이션 박물관)",
-        lat: 37.8813,
-        lng: 127.7298
-      },
-      startDate: "2025-09-25",
-      endDate: "2025-09-27",
-      time: "오전 10:00 - 오후 6:00",
-      description: "강원정보문화산업진흥원 애니메이션 박물관 일대에서 열리는 무료 반려동물 축제. 다양한 체험 프로그램과 교육 세션이 진행됩니다.",
-      category: "지역축제",
-      price: "무료",
-      attendees: 0,
-      maxAttendees: 8000,
-      organizer: "춘천시 / 강원정보문화산업진흥원",
-      status: "예정",
-      tags: ["지역축제", "애니메이션", "교육", "체험"],
-      sourceUrl: "https://korean.visitkorea.or.kr/kfes/detail/fstvlDetail.do?fstvlCntntsId=eb8683a5-3ca8-4636-8ad1-0d089533bb87",
-      thumbnailUrl: "https://tse3.mm.bing.net/th/id/OIP._D4iSsXD0kjWw4hBbdyX5gHaHa?r=0&pid=Api"
-    }
-  ]);
+      setEventData([]);
     } finally {
       setIsLoadingEvents(false);
     }
@@ -318,6 +171,7 @@ function NearbyPlaces() {
 
   // 이벤트 필터링 및 검색 로직
   useEffect(() => {
+    console.log('🔥 필터링 시작, 원본 데이터 개수:', eventData.length);
     let filtered = [...eventData];
 
     // 검색어 필터링
@@ -358,8 +212,9 @@ function NearbyPlaces() {
       }
     });
 
+    console.log('🔥 필터링 완료, 필터링된 데이터 개수:', filtered.length);
     setFilteredEvents(filtered);
-  }, [eventSearchTerm, eventCategoryFilter, eventStatusFilter, eventSortBy]);
+  }, [eventData, eventSearchTerm, eventCategoryFilter, eventStatusFilter, eventSortBy]);
 
   // 근처 장소 검색
   const handleSearchNearby = async () => {
