@@ -781,7 +781,8 @@ export default function AdminInstitutes() {
                   </div>
                   <div>
                     <div className="font-medium">
-                      {institute.subscriptionPlanName || 
+                      {institute.subscriptionPlanInfo || 
+                       institute.subscriptionPlanName || 
                        (institute.subscriptionPlan === 'starter' ? '스타터 플랜' : 
                         institute.subscriptionPlan === 'standard' ? '스탠다드 플랜' : 
                         institute.subscriptionPlan === 'professional' ? '프로페셔널 플랜' : 

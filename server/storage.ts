@@ -762,7 +762,22 @@ class Storage {
 
   // 기관 관련 메서드들
   getAllInstitutes() {
-    return this.institutes || [];
+    // 구독 플랜 정보가 포함된 전체 기관 정보 반환
+    return (this.institutes || []).map(institute => {
+      console.log(`[Storage] 기관 ${institute.name} 구독 플랜:`, institute.subscriptionPlan);
+      return {
+        ...institute,
+        // 구독 플랜 정보 명시적으로 포함
+        subscriptionPlan: institute.subscriptionPlan,
+        subscriptionStatus: institute.subscriptionStatus,
+        subscriptionStartDate: institute.subscriptionStartDate,
+        subscriptionEndDate: institute.subscriptionEndDate,
+        maxMembers: institute.maxMembers,
+        maxVideoHours: institute.maxVideoHours,
+        maxAiAnalysis: institute.maxAiAnalysis,
+        featuresEnabled: institute.featuresEnabled
+      };
+    });
   }
 
   // 구독 플랜 관련 메서드들

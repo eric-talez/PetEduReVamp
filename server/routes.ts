@@ -578,6 +578,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       console.log('[DEBUG] 사용 가능한 구독 플랜들:', subscriptionPlans.map(p => ({ code: p.code, name: p.name })));
       console.log('[DEBUG] 첫 번째 기관의 구독 플랜:', institutes[0]?.subscriptionPlan);
+      console.log('[DEBUG] 전체 기관 구독 플랜:', institutes.map(i => ({ name: i.name, subscriptionPlan: i.subscriptionPlan })));
       
       // 통계 정보 계산
       const stats = {
@@ -597,31 +598,64 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         console.log(`[DEBUG] 기관 ${institute.name} - 구독 플랜: ${institute.subscriptionPlan}, 매칭 결과:`, subscriptionPlan);
         
-        const processedInstitute = {
-          ...institute,
+        // 명시적으로 구독 플랜 정보를 매핑
+        const result = {
+          id: institute.id,
+          name: institute.name,
+          code: institute.code,
+          businessNumber: institute.businessNumber,
+          address: institute.address,
+          phone: institute.phone,
+          email: institute.email,
+          directorName: institute.directorName,
+          directorEmail: institute.directorEmail,
+          trainerName: institute.trainerName,
+          trainerId: institute.trainerId,
           status: institute.status || 'active',
+          isActive: institute.isActive,
+          isVerified: institute.isVerified,
+          certification: institute.certification,
+          establishedDate: institute.establishedDate,
+          registeredDate: institute.registeredDate,
+          trainersCount: institute.trainersCount,
+          studentsCount: institute.studentsCount,
+          coursesCount: institute.coursesCount,
+          facilities: institute.facilities,
+          operatingHours: institute.operatingHours,
+          description: institute.description,
+          website: institute.website,
+          specialPrograms: institute.specialPrograms,
+          suspendedReason: institute.suspendedReason,
+          
+          // 구독 플랜 정보 명시적 매핑
+          subscriptionPlan: institute.subscriptionPlan,
           subscriptionPlanInfo: subscriptionPlan ? `${subscriptionPlan.name} (${subscriptionPlan.price.toLocaleString()}원)` : '미지정',
           subscriptionPlanCode: institute.subscriptionPlan || null,
           subscriptionPlanName: subscriptionPlan ? subscriptionPlan.name : '미지정',
           subscriptionPlanPrice: subscriptionPlan ? subscriptionPlan.price : 0,
           subscriptionStatus: institute.subscriptionStatus || 'active',
+          subscriptionStartDate: institute.subscriptionStartDate,
+          subscriptionEndDate: institute.subscriptionEndDate,
+          
+          // 기타 필드들
+          maxMembers: institute.maxMembers || 0,
+          maxVideoHours: institute.maxVideoHours || 0,
+          maxAiAnalysis: institute.maxAiAnalysis || 0,
+          featuresEnabled: institute.featuresEnabled,
           totalRevenue: institute.totalRevenue || 0,
           monthlyRevenue: institute.monthlyRevenue || 0,
           videoClassCount: institute.videoClassCount || 0,
           aiAnalysisCount: institute.aiAnalysisCount || 0,
-          maxMembers: institute.maxMembers || 0,
-          maxVideoHours: institute.maxVideoHours || 0,
-          maxAiAnalysis: institute.maxAiAnalysis || 0,
           createdAt: institute.createdAt || new Date().toISOString()
         };
         
         console.log(`[DEBUG] 기관 ${institute.name} 처리 결과:`, {
-          subscriptionPlan: processedInstitute.subscriptionPlan,
-          subscriptionPlanInfo: processedInstitute.subscriptionPlanInfo,
-          subscriptionPlanName: processedInstitute.subscriptionPlanName
+          subscriptionPlan: result.subscriptionPlan,
+          subscriptionPlanInfo: result.subscriptionPlanInfo,
+          subscriptionPlanName: result.subscriptionPlanName
         });
         
-        return processedInstitute;
+        return result;
       });
 
       const response = {
@@ -638,8 +672,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
         institutesCount: processedInstitutes.length,
         firstInstitute: processedInstitutes[0]?.name,
         firstInstituteSubscriptionInfo: processedInstitutes[0]?.subscriptionPlanInfo,
+        firstInstituteSubscriptionPlan: processedInstitutes[0]?.subscriptionPlan,
+        firstInstituteSubscriptionPlanName: processedInstitutes[0]?.subscriptionPlanName,
         subscriptionPlansCount: subscriptionPlans.length
       });
+      
+      // 응답 JSON 확인
+      console.log('[DEBUG] JSON 응답 샘플:', JSON.stringify({
+        firstInstitute: {
+          name: processedInstitutes[0]?.name,
+          subscriptionPlan: processedInstitutes[0]?.subscriptionPlan,
+          subscriptionPlanInfo: processedInstitutes[0]?.subscriptionPlanInfo,
+          subscriptionPlanName: processedInstitutes[0]?.subscriptionPlanName,
+          subscriptionPlanPrice: processedInstitutes[0]?.subscriptionPlanPrice
+        }
+      }, null, 2));
 
       res.json(response);
 
