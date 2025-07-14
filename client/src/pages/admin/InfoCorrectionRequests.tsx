@@ -18,6 +18,8 @@ import { ko } from 'date-fns/locale';
 import { useTheme } from '@/context/theme-context';
 import { ThemeSettings } from '@/components/ThemeSettings';
 import { ThemeSwitcherDropdown } from '@/components/ui/ThemeSwitcher';
+import { useQuery } from '@tanstack/react-query';
+import { apiRequest } from '@/lib/queryClient';
 
 interface CorrectionRequest {
   id: string;
@@ -58,7 +60,17 @@ export default function InfoCorrectionRequests() {
   const [showThemeSettings, setShowThemeSettings] = useState(false);
   const { theme } = useTheme();
 
-  // 샘플 데이터
+  // 실제 데이터 조회
+  const { data: requestsData, isLoading } = useQuery({
+    queryKey: ['/api/admin/correction-requests'],
+    queryFn: async () => {
+      const response = await apiRequest('GET', '/api/admin/correction-requests');
+      return response.data || [];
+    },
+    staleTime: 5 * 60 * 1000, // 5분
+  });
+
+  // 샘플 데이터 (실제 데이터가 없을 때 표시)
   const sampleRequests: CorrectionRequest[] = [
     {
       id: 'req-001',
@@ -132,9 +144,14 @@ export default function InfoCorrectionRequests() {
   ];
 
   useEffect(() => {
-    setRequests(sampleRequests);
-    setFilteredRequests(sampleRequests);
-  }, []);
+    if (requestsData && requestsData.length > 0) {
+      setRequests(requestsData);
+      setFilteredRequests(requestsData);
+    } else {
+      setRequests(sampleRequests);
+      setFilteredRequests(sampleRequests);
+    }
+  }, [requestsData]);
 
   // 필터링
   useEffect(() => {

@@ -198,10 +198,12 @@ export default function AdminInstitutes() {
   };
 
   const handlePlanSelect = (planCode: string) => {
+    console.log('[DEBUG] 구독 플랜 선택:', planCode);
     const plans = Array.isArray(subscriptionPlans) ? subscriptionPlans : [];
     const plan = plans.find((p: SubscriptionPlan) => p.code === planCode);
+    console.log('[DEBUG] 선택된 플랜:', plan);
     setSelectedPlan(plan || null);
-    setNewInstitute({ ...newInstitute, subscriptionPlan: planCode });
+    setNewInstitute(prev => ({ ...prev, subscriptionPlan: planCode }));
   };
 
   // 기관 보기 함수
@@ -1032,7 +1034,7 @@ export default function AdminInstitutes() {
                     <SelectValue placeholder="구독 플랜을 선택하세요" />
                   </SelectTrigger>
                   <SelectContent>
-                    {subscriptionPlans.map((plan: SubscriptionPlan) => (
+                    {Array.isArray(subscriptionPlans) && subscriptionPlans.map((plan: SubscriptionPlan) => (
                       <SelectItem key={plan.code} value={plan.code}>
                         {plan.name} - {formatPrice(plan.price)}원/월
                       </SelectItem>

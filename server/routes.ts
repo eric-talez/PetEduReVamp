@@ -3819,6 +3819,25 @@ app.get('/api/search', async (req, res) => {
     }
   });
 
+  // 정보 수정 요청 목록 조회 API
+  app.get('/api/admin/correction-requests', async (req, res) => {
+    try {
+      const requests = storage.getCorrectionRequests();
+      console.log('[Admin] 정보 수정 요청 목록 조회:', requests.length, '건');
+      
+      res.json({
+        success: true,
+        data: requests
+      });
+    } catch (error: any) {
+      console.error('[Admin] 정보 수정 요청 목록 조회 실패:', error);
+      res.status(500).json({
+        success: false,
+        message: error.message || '요청 목록 조회에 실패했습니다.'
+      });
+    }
+  });
+
   // 정보 수정 요청 승인/반려 처리 API
   app.post('/api/admin/correction-requests/:id/review', async (req, res) => {
     const { id } = req.params;
