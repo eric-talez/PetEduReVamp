@@ -160,9 +160,15 @@ export default function AdminInstitutes() {
     }
 
     try {
+      console.log('[DEBUG] API Request: PUT /api/admin/institutes/' + selectedInstitute.id);
+      console.log('[DEBUG] Request payload:', newInstitute);
+      
       const response = await apiRequest('PUT', `/api/admin/institutes/${selectedInstitute.id}`, newInstitute);
       
-      if (response.success) {
+      console.log('[DEBUG] API Response:', response.status || '200 OK');
+      
+      // API 응답이 성공 상태인지 확인
+      if (response && (response.success === true || response.success === undefined)) {
         toast({
           title: '수정 완료',
           description: '기관 정보가 성공적으로 수정되었습니다.'
@@ -174,13 +180,15 @@ export default function AdminInstitutes() {
         setIsEditDialogOpen(false);
         setSelectedInstitute(null);
       } else {
+        console.error('[DEBUG] API Error:', response);
         toast({
           title: '수정 실패',
-          description: response.message || '기관 정보 수정에 실패했습니다.',
+          description: response?.message || response?.error || '기관 정보 수정에 실패했습니다.',
           variant: 'destructive'
         });
       }
     } catch (error: any) {
+      console.error('[DEBUG] Exception caught:', error);
       toast({
         title: '수정 실패',
         description: error.message || '기관 정보 수정 중 오류가 발생했습니다.',

@@ -41,7 +41,7 @@ export async function apiRequest(
   method: string,
   url: string,
   data?: unknown | undefined,
-): Promise<Response> {
+): Promise<any> {
   console.log(`[DEBUG] API Request: ${method} ${url}`);
   if (data) {
     console.log('[DEBUG] Request payload:', data);
@@ -72,7 +72,29 @@ export async function apiRequest(
     
     console.log(`[DEBUG] API Response: ${res.status} ${res.statusText}`);
     
-    try {
+    // 응답 처리
+    if (!res.ok) {
+      const errorText = await res.text();
+      console.error(`[DEBUG] API Error: ${res.status} ${res.statusText}`, errorText);
+      throw new Error(`API 요청 실패: ${res.status} ${res.statusText}`);
+    }
+    
+    // JSON 응답 파싱
+    const contentType = res.headers.get("content-type");
+    if (contentType && contentType.includes("application/json")) {
+      const result = await res.json();
+      console.log('[DEBUG] API Success:', result);
+      return result;
+    } else {
+      const text = await res.text();
+      console.log('[DEBUG] API Success (text):', text);
+      return { success: true, data: text };
+    }
+  } catch (error) {
+    console.error('[DEBUG] API Request failed:', error);
+    throw error;
+  }
+}
       await throwIfResNotOk(res);
       return res;
     } catch (error) {
