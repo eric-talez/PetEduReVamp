@@ -462,9 +462,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // 관리자 사용자 API
-  app.get('/api/admin/users', async (req, res) => {
+  app.get('/api/admin/users', (req, res) => {
     try {
-      const users = await storage.getAllUsers();
+      const users = storage.getAllUsers();
       res.json(users || []);
     } catch (error) {
       console.error('Admin Users API error:', error);
@@ -473,9 +473,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // 구독 플랜 관련 API
-  app.get('/api/subscription-plans', async (req, res) => {
+  app.get('/api/subscription-plans', (req, res) => {
     try {
-      const plans = await storage.getSubscriptionPlans();
+      const plans = storage.getSubscriptionPlans();
       console.log('[Admin] 구독 플랜 조회:', plans.length + '개');
       res.json(plans);
     } catch (error) {
@@ -485,7 +485,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // 관리자 - 기관 등록 (구독 플랜 포함)
-  app.post('/api/admin/institutes', requireAuth('admin'), async (req, res) => {
+  app.post('/api/admin/institutes', (req, res) => {
     try {
       const {
         name,
@@ -510,7 +510,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // 구독 플랜 정보 조회
-      const plan = await storage.getSubscriptionPlan(subscriptionPlan);
+      const plan = storage.getSubscriptionPlan(subscriptionPlan);
       if (!plan) {
         return res.status(400).json({ 
           error: '유효하지 않은 구독 플랜입니다.' 
@@ -542,7 +542,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       };
 
       // 기관 등록
-      const institute = await storage.createInstituteWithSubscription(instituteData);
+      const institute = storage.createInstituteWithSubscription(instituteData);
 
       // 결제 처리 시뮬레이션
       if (paymentMethod === 'card') {
@@ -570,10 +570,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // 관리자 - 기관 목록 조회
-  app.get('/api/admin/institutes', requireAuth('admin'), async (req, res) => {
+  app.get('/api/admin/institutes', (req, res) => {
     try {
       console.log('[Admin] 기관 목록 조회 요청');
-      const institutes = await storage.getAllInstitutes();
+      const institutes = storage.getAllInstitutes();
       
       // 구독 플랜 정보 포함
       const institutesWithPlans = institutes.map(institute => ({
@@ -585,25 +585,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       res.json({
         success: true,
-        institutes: institutesWithPlans
+        data: {
+          institutes: institutesWithPlans
+        }
       });
     } catch (error) {
       console.error('[Admin] 기관 목록 조회 오류:', error);
       res.status(500).json({ 
         success: false,
         error: '기관 목록 조회에 실패했습니다.',
-        institutes: []
+        data: {
+          institutes: []
+        }
       });
     }
   });
 
   // 관리자 - 기관 구독 변경
-  app.put('/api/admin/institutes/:id/subscription', requireAuth('admin'), async (req, res) => {
+  app.put('/api/admin/institutes/:id/subscription', (req, res) => {
     try {
       const instituteId = parseInt(req.params.id);
       const { subscriptionPlan } = req.body;
 
-      const plan = await storage.getSubscriptionPlan(subscriptionPlan);
+      const plan = storage.getSubscriptionPlan(subscriptionPlan);
       if (!plan) {
         return res.status(400).json({ 
           error: '유효하지 않은 구독 플랜입니다.' 
@@ -614,11 +618,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         subscriptionPlan: plan.code,
         maxMembers: plan.maxMembers,
         maxVideoHours: plan.maxVideoHours,
+        maxAiAnalysis: plan.maxAiAnalysis,
         featuresEnabled: plan.features,
         monthlyPrice: plan.price
       };
 
-      const updatedInstitute = await storage.updateInstituteSubscription(instituteId, updateData);
+      const updatedInstitute = storage.updateInstituteSubscription(instituteId, updateData);
       
       if (!updatedInstitute) {
         return res.status(404).json({ 

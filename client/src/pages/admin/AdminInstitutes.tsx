@@ -295,10 +295,10 @@ export default function AdminInstitutes() {
       console.log('[DEBUG] 기관 데이터 응답:', result);
       
       // 응답 데이터 구조 확인
-      if (result.success && result.institutes) {
-        return result.institutes;
-      } else if (result.data && result.data.institutes) {
+      if (result.success && result.data && result.data.institutes) {
         return result.data.institutes;
+      } else if (result.institutes) {
+        return result.institutes;
       } else {
         console.error('[DEBUG] 예상치 못한 응답 구조:', result);
         return [];

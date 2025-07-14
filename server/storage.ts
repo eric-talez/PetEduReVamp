@@ -666,8 +666,17 @@ class Storage {
     return this.courses?.find(course => course.id === id);
   }
 
+  // 기관 관련 메서드들
+  getAllInstitutes() {
+    return this.institutes || [];
+  }
+
   // 구독 플랜 관련 메서드들
   getAllSubscriptionPlans() {
+    return this.subscriptionPlans || [];
+  }
+
+  getSubscriptionPlans() {
     return this.subscriptionPlans || [];
   }
 
