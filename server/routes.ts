@@ -574,11 +574,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       console.log('[Admin] 기관 목록 조회 요청');
       const institutes = storage.getAllInstitutes();
+      console.log('[DEBUG] 기관 데이터:', institutes.map(i => ({ id: i.id, name: i.name, subscriptionPlan: i.subscriptionPlan })));
       
       // 구독 플랜 정보 포함
       const institutesWithPlans = institutes.map(institute => {
         const subscriptionPlan = storage.getSubscriptionPlan(institute.subscriptionPlan);
         console.log('[DEBUG] 기관:', institute.name, '구독 플랜:', institute.subscriptionPlan, '매핑 결과:', subscriptionPlan);
+        console.log('[DEBUG] 사용 가능한 구독 플랜들:', storage.getAllSubscriptionPlans().map(p => p.code));
+        
+        // 구독 플랜 정보가 없는 경우 기본값 설정
+        if (!subscriptionPlan && institute.subscriptionPlan) {
+          console.log('[DEBUG] 구독 플랜을 찾을 수 없음, 기본값 사용');
+          const defaultPlan = {
+            id: 0,
+            name: institute.subscriptionPlan === 'starter' ? '스타터 플랜' : 
+                  institute.subscriptionPlan === 'standard' ? '스탠다드 플랜' :
+                  institute.subscriptionPlan === 'professional' ? '프로페셔널 플랜' :
+                  institute.subscriptionPlan === 'enterprise' ? '엔터프라이즈 플랜' : '미지정',
+            code: institute.subscriptionPlan,
+            price: institute.subscriptionPlan === 'starter' ? 150000 :
+                   institute.subscriptionPlan === 'standard' ? 300000 :
+                   institute.subscriptionPlan === 'professional' ? 500000 :
+                   institute.subscriptionPlan === 'enterprise' ? 800000 : 0,
+            currency: 'KRW'
+          };
+          return {
+            ...institute,
+            subscriptionPlanInfo: defaultPlan
+          };
+        }
+        
         return {
           ...institute,
           subscriptionPlanInfo: subscriptionPlan

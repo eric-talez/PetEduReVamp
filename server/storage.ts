@@ -401,6 +401,7 @@ class Storage {
         subscriptionEndDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
         maxMembers: 200,
         maxVideoHours: 30,
+        maxAiAnalysis: 100,
         featuresEnabled: {
           basicLMS: true,
           basicVideoConsultation: true,
