@@ -845,35 +845,32 @@ export default function Home() {
         {/* TALEZ 체험 서비스 섹션 */}
         <div className="mb-8">
           <div className="relative bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-2xl p-8 border border-blue-200 dark:border-blue-800 overflow-hidden">
-            {/* 백그라운드 이미지 */}
-            <div className="absolute inset-0 opacity-10 bg-cover bg-center bg-no-repeat" style={{
-              backgroundImage: `url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" fill="none"><path d="M80 220c0-40 20-60 60-60s60 20 60 60" stroke="%23000" stroke-width="3" fill="none"/><circle cx="100" cy="180" r="8" fill="%23000"/><circle cx="160" cy="180" r="8" fill="%23000"/><path d="M130 190c-5 0-10 5-10 10s5 10 10 10" stroke="%23000" stroke-width="2" fill="none"/><path d="M50 240c10-10 20-20 30-20s20 10 30 20" stroke="%23000" stroke-width="2" fill="none"/><path d="M240 240c10-10 20-20 30-20s20 10 30 20" stroke="%23000" stroke-width="2" fill="none"/><circle cx="320" cy="120" r="30" fill="%23f0f0f0"/><circle cx="60" cy="80" r="20" fill="%23f0f0f0"/><circle cx="340" cy="260" r="25" fill="%23f0f0f0"/></svg>')`
+            {/* 백그라운드 이미지 - AI 분석 및 강아지 훈련 테마 */}
+            <div className="absolute inset-0 opacity-5 bg-cover bg-center bg-no-repeat" style={{
+              backgroundImage: `url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400" fill="none"><defs><pattern id="circuit" patternUnits="userSpaceOnUse" width="60" height="60"><path d="M10 10h40v40H10z" fill="none" stroke="%23007acc" stroke-width="0.5" opacity="0.3"/><circle cx="20" cy="20" r="3" fill="%23007acc" opacity="0.4"/><circle cx="40" cy="40" r="3" fill="%23007acc" opacity="0.4"/><path d="M20 20L40 40" stroke="%23007acc" stroke-width="1" opacity="0.3"/></pattern></defs><rect width="600" height="400" fill="url(%23circuit)"/><g opacity="0.6"><circle cx="150" cy="120" r="25" fill="none" stroke="%23007acc" stroke-width="2"/><path d="M135 120h30M150 105v30" stroke="%23007acc" stroke-width="2"/></g><g opacity="0.4"><path d="M300 200c-20-15-40-15-60 0-20 15-40 15-60 0" stroke="%23007acc" stroke-width="3" fill="none"/><circle cx="270" cy="185" r="6" fill="%23007acc"/><circle cx="330" cy="185" r="6" fill="%23007acc"/><path d="M300 195c-5 8-15 8-20 0s-15-8-20 0" stroke="%23007acc" stroke-width="2" fill="none"/></g><g opacity="0.3"><rect x="450" y="80" width="60" height="40" rx="5" fill="none" stroke="%23007acc" stroke-width="2"/><rect x="460" y="90" width="40" height="5" fill="%23007acc" opacity="0.5"/><rect x="460" y="100" width="30" height="5" fill="%23007acc" opacity="0.5"/><rect x="460" y="110" width="35" height="5" fill="%23007acc" opacity="0.5"/></g><g opacity="0.4"><circle cx="500" cy="300" r="20" fill="none" stroke="%23007acc" stroke-width="2"/><path d="M490 300L510 300M500 290L500 310" stroke="%23007acc" stroke-width="2"/><circle cx="500" cy="300" r="10" fill="%23007acc" opacity="0.2"/></g></svg>')`
             }}></div>
             
             <div className="relative z-10 text-center mb-6">
               <div className="flex items-center justify-center mb-4">
-                <div className="w-20 h-20 bg-gradient-to-br from-orange-400 to-red-500 rounded-full flex items-center justify-center shadow-lg animate-bounce">
-                  <svg className="w-12 h-12 text-white" fill="currentColor" viewBox="0 0 24 24">
-                    {/* 강아지 얼굴 */}
-                    <path d="M12 2C10.3 2 9 3.3 9 5c0 .6.2 1.2.5 1.7L8 8.5c-.8.8-.8 2.1 0 2.9L10.5 14c.4.4 1 .4 1.4 0L12 13.9l.1.1c.4.4 1 .4 1.4 0L16 11.4c.8-.8.8-2.1 0-2.9L14.5 6.7c.3-.5.5-1.1.5-1.7 0-1.7-1.3-3-3-3z"/>
-                    {/* 눈 */}
-                    <circle cx="10" cy="8" r="1" fill="white"/>
-                    <circle cx="14" cy="8" r="1" fill="white"/>
-                    {/* 코 */}
-                    <path d="M12 10c-.6 0-1 .4-1 1s.4 1 1 1 1-.4 1-1-.4-1-1-1z" fill="white"/>
-                    {/* 입 */}
-                    <path d="M10 13c.6.6 1.3 1 2 1s1.4-.4 2-1" stroke="white" strokeWidth="1" fill="none"/>
+                <div className="w-24 h-24 bg-gradient-to-br from-blue-500 via-purple-500 to-indigo-600 rounded-full flex items-center justify-center shadow-xl animate-pulse">
+                  <svg className="w-14 h-14 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    {/* AI 뇌파 + 강아지 조합 아이콘 */}
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                    {/* 강아지 귀 */}
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 8c-1 1-1 3 0 4M16 8c1 1 1 3 0 4" />
+                    {/* AI 신호 */}
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M6 6l1.5 1.5M18 6l-1.5 1.5M6 18l1.5-1.5M18 18l-1.5-1.5" />
                   </svg>
                 </div>
               </div>
               <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-                🐕 TALEZ 체험 서비스
+                🎯 TALEZ AI 체험 서비스
               </h2>
               <p className="text-lg text-gray-600 dark:text-gray-300">
-                강아지 영상을 업로드하고 AI 분석을 무료로 체험해보세요
+                강아지 행동 영상을 업로드하고 AI 전문가 분석을 무료로 체험해보세요
               </p>
               <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                회원가입 없이 바로 이용 가능합니다
+                실시간 AI 분석 • 전문가 추천 • 맞춤형 훈련 가이드
               </p>
             </div>
 
@@ -881,10 +878,15 @@ export default function Home() {
               <div className="relative z-10 text-center">
                 <Button 
                   onClick={() => setShowExperience(true)}
-                  className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white px-8 py-3 text-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+                  className="bg-gradient-to-r from-purple-500 via-blue-500 to-indigo-600 hover:from-purple-600 hover:via-blue-600 hover:to-indigo-700 text-white px-10 py-4 text-lg font-semibold shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105 relative overflow-hidden"
                 >
-                  <Play className="mr-2 h-5 w-5" />
-                  무료 체험 시작하기
+                  <span className="relative z-10 flex items-center">
+                    <svg className="mr-3 h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                    AI 분석 무료 체험하기
+                  </span>
+                  <div className="absolute inset-0 bg-white opacity-0 hover:opacity-10 transition-opacity duration-300"></div>
                 </Button>
               </div>
             ) : (
