@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Loader2, Search, MapPin, Navigation } from 'lucide-react';
+import { Loader2, Search, MapPin, Navigation, Calendar, Clock, Users, Star } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useMapService, MapServiceProvider, Place } from '@/hooks/useMapService';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -108,7 +108,7 @@ function PlaceSearch() {
  * 근처 장소 찾기 컴포넌트
  */
 function NearbyPlaces() {
-  const [activeTab, setActiveTab] = useState<'institute' | 'trainer' | 'clinic' | 'shop'>('trainer');
+  const [activeTab, setActiveTab] = useState<'institute' | 'trainer' | 'clinic' | 'shop' | 'event'>('trainer');
   const { 
     currentLocation, 
     nearbyPlaces, 
@@ -118,6 +118,100 @@ function NearbyPlaces() {
     searchNearbyPlaces 
   } = useMapService();
   const { toast } = useToast();
+
+  // 축제/이벤트 데이터 (웹사이트에서 가져온 실제 데이터)
+  const eventData = [
+    {
+      id: 1,
+      name: "멍룡 썸머 뮤직 피크닉",
+      location: {
+        address: "전북 익산시 왕궁면 왕궁리 산80-1 (왕궁보석테마관광지 가족공원)",
+        lat: 35.948611,
+        lng: 126.837500
+      },
+      date: "2025-07-12",
+      time: "오후 7:00 - 10:00",
+      description: "반려인과 비반려인이 함께 즐기는 여름밤 문화행사. 보석 십자수, 자개 열쇠고리 만들기, 반려동물 미로 탐험, 어질리티 체험, 멍BTI 테스트 등 다양한 체험 프로그램과 클래식 4중주, 키즈팝 댄스, 버블쇼 등 공연이 펼쳐집니다.",
+      category: "문화축제",
+      price: "무료",
+      attendees: 150,
+      maxAttendees: 300,
+      organizer: "익산시청",
+      tags: ["반려동물", "문화체험", "음악회", "펫티켓", "반려동물 친화관광도시"]
+    },
+    {
+      id: 2,
+      name: "전주 한옥마을 반려동물 축제",
+      location: {
+        address: "전북 전주시 완산구 기린대로 99 (전주 한옥마을)",
+        lat: 35.814444,
+        lng: 127.153889
+      },
+      date: "2025-08-15",
+      time: "오전 10:00 - 오후 6:00",
+      description: "전주 한옥마을에서 펼쳐지는 반려동물과 함께하는 특별한 축제. 전통 한복 체험, 반려동물 사진 촬영, 한옥마을 투어 등 다양한 프로그램이 준비되어 있습니다.",
+      category: "전통문화",
+      price: "무료",
+      attendees: 0,
+      maxAttendees: 500,
+      organizer: "전주시 문화관광재단",
+      tags: ["한옥마을", "전통문화", "반려동물", "사진촬영"]
+    },
+    {
+      id: 3,
+      name: "군산 은파호수공원 반려견 어질리티 대회",
+      location: {
+        address: "전북 군산시 나운동 은파호수공원",
+        lat: 35.968889,
+        lng: 126.733611
+      },
+      date: "2025-09-05",
+      time: "오전 9:00 - 오후 5:00",
+      description: "반려견과 함께 참여하는 어질리티 대회. 초보자부터 전문가까지 다양한 레벨의 경기가 준비되어 있으며, 반려견 훈련 상담도 함께 진행됩니다.",
+      category: "스포츠",
+      price: 30000,
+      attendees: 0,
+      maxAttendees: 100,
+      organizer: "군산시 반려동물협회",
+      tags: ["어질리티", "반려견 훈련", "스포츠", "대회"]
+    },
+    {
+      id: 4,
+      name: "정읍 내장산 반려동물 힐링 캠프",
+      location: {
+        address: "전북 정읍시 내장동 내장산국립공원",
+        lat: 35.449722,
+        lng: 126.887500
+      },
+      date: "2025-10-10",
+      time: "오전 10:00 - 오후 4:00",
+      description: "내장산의 아름다운 자연 속에서 반려동물과 함께하는 힐링 캠프. 숲속 산책, 자연 놀이, 반려동물 요가 등 특별한 프로그램을 경험할 수 있습니다.",
+      category: "자연체험",
+      price: 25000,
+      attendees: 0,
+      maxAttendees: 80,
+      organizer: "정읍시 관광진흥과",
+      tags: ["힐링", "자연체험", "내장산", "반려동물 요가"]
+    },
+    {
+      id: 5,
+      name: "전주동물원 야간 특별 개방",
+      location: {
+        address: "전북 전주시 완산구 소리로 68 (전주동물원)",
+        lat: 35.815000,
+        lng: 127.119167
+      },
+      date: "2025-08-20",
+      time: "오후 7:00 - 10:00",
+      description: "여름 특별 프로그램으로 동물원 야간 개방. 반려동물과 함께 야간 동물원 투어, 별빛 음악회, 동물 먹이주기 체험 등 특별한 경험을 제공합니다.",
+      category: "교육체험",
+      price: 15000,
+      attendees: 0,
+      maxAttendees: 200,
+      organizer: "전주시설관리공단",
+      tags: ["동물원", "야간개방", "교육체험", "별빛음악회"]
+    }
+  ];
 
   // 근처 장소 검색
   const handleSearchNearby = async () => {
@@ -138,9 +232,9 @@ function NearbyPlaces() {
     searchNearbyPlaces(activeTab);
   };
 
-  // 탭 변경 시 자동 검색
+  // 탭 변경 시 자동 검색 (축제/이벤트 탭 제외)
   useEffect(() => {
-    if (currentLocation) {
+    if (currentLocation && activeTab !== 'event') {
       searchNearbyPlaces(activeTab);
     }
   }, [activeTab, currentLocation, searchNearbyPlaces]);
@@ -170,15 +264,22 @@ function NearbyPlaces() {
       </div>
 
       <Tabs defaultValue="trainer" value={activeTab} onValueChange={(v) => setActiveTab(v as any)}>
-        <TabsList className="grid grid-cols-4">
+        <TabsList className="grid grid-cols-5">
           <TabsTrigger value="trainer">훈련사</TabsTrigger>
           <TabsTrigger value="institute">훈련소</TabsTrigger>
           <TabsTrigger value="clinic">동물병원</TabsTrigger>
           <TabsTrigger value="shop">용품점</TabsTrigger>
+          <TabsTrigger value="event">축제/이벤트</TabsTrigger>
         </TabsList>
       </Tabs>
 
-      {isSearching ? (
+      {activeTab === 'event' ? (
+        <div className="space-y-4 max-h-96 overflow-y-auto pr-2">
+          {eventData.map(event => (
+            <EventCard key={event.id} event={event} />
+          ))}
+        </div>
+      ) : isSearching ? (
         <div className="py-8 flex justify-center">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
@@ -198,6 +299,89 @@ function NearbyPlaces() {
         )
       )}
     </div>
+  );
+}
+
+/**
+ * 축제/이벤트 카드 컴포넌트
+ */
+function EventCard({ event }: { event: any }) {
+  const { toast } = useToast();
+
+  const handleEventClick = () => {
+    toast({
+      title: "이벤트 상세 정보",
+      description: `${event.name}에 대한 자세한 정보를 확인하세요.`,
+    });
+  };
+
+  return (
+    <Card className="cursor-pointer hover:shadow-md transition-shadow">
+      <CardHeader className="pb-3">
+        <div className="flex justify-between items-start">
+          <div className="flex-1">
+            <CardTitle className="text-lg">{event.name}</CardTitle>
+            <CardDescription className="mt-1">
+              {event.location?.address || event.location}
+            </CardDescription>
+          </div>
+          <div className="flex items-center text-xs text-muted-foreground ml-2">
+            <Calendar className="h-3 w-3 mr-1" />
+            {event.date}
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent className="pt-0">
+        <div className="space-y-2">
+          <p className="text-sm text-gray-600 line-clamp-2">
+            {event.description}
+          </p>
+          
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4 text-sm text-muted-foreground">
+              <div className="flex items-center">
+                <Clock className="h-4 w-4 mr-1" />
+                {event.time}
+              </div>
+              {event.attendees && (
+                <div className="flex items-center">
+                  <Users className="h-4 w-4 mr-1" />
+                  {event.attendees}명 참여
+                </div>
+              )}
+            </div>
+            
+            <div className="flex items-center space-x-2">
+              {event.category && (
+                <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
+                  {event.category}
+                </span>
+              )}
+              {event.price === '무료' ? (
+                <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">
+                  무료
+                </span>
+              ) : (
+                <span className="px-2 py-1 bg-orange-100 text-orange-800 text-xs rounded-full">
+                  {typeof event.price === 'number' ? `${event.price.toLocaleString()}원` : event.price}
+                </span>
+              )}
+            </div>
+          </div>
+          
+          <div className="pt-2">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={handleEventClick}
+              className="w-full"
+            >
+              이벤트 상세보기
+            </Button>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -286,6 +470,7 @@ function getTypeLabel(type: string): string {
     case 'trainer': return '훈련사';
     case 'clinic': return '동물병원';
     case 'shop': return '용품점';
+    case 'event': return '축제/이벤트';
     default: return '장소';
   }
 }
