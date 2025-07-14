@@ -148,6 +148,47 @@ export default function AdminInstitutes() {
     registerInstituteMutation.mutate(newInstitute);
   };
 
+  // 기관 정보 수정 함수
+  const handleUpdateInstitute = async () => {
+    if (!selectedInstitute || !newInstitute.name || !newInstitute.email) {
+      toast({
+        title: '입력 오류',
+        description: '필수 정보를 모두 입력해주세요.',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    try {
+      const response = await apiRequest('PUT', `/api/admin/institutes/${selectedInstitute.id}`, newInstitute);
+      
+      if (response.success) {
+        toast({
+          title: '수정 완료',
+          description: '기관 정보가 성공적으로 수정되었습니다.'
+        });
+        
+        // 캐시 무효화로 목록 새로고침
+        queryClient.invalidateQueries({ queryKey: ['/api/admin/institutes'] });
+        
+        setIsEditDialogOpen(false);
+        setSelectedInstitute(null);
+      } else {
+        toast({
+          title: '수정 실패',
+          description: response.message || '기관 정보 수정에 실패했습니다.',
+          variant: 'destructive'
+        });
+      }
+    } catch (error: any) {
+      toast({
+        title: '수정 실패',
+        description: error.message || '기관 정보 수정 중 오류가 발생했습니다.',
+        variant: 'destructive'
+      });
+    }
+  };
+
   const handlePlanSelect = (planCode: string) => {
     const plans = Array.isArray(subscriptionPlans) ? subscriptionPlans : [];
     const plan = plans.find((p: SubscriptionPlan) => p.code === planCode);
@@ -185,9 +226,15 @@ export default function AdminInstitutes() {
       directorName: institute.directorName || "",
       directorEmail: institute.directorEmail || "",
       subscriptionPlan: institute.subscriptionPlan || "",
-      paymentMethod: "card",
+      paymentMethod: institute.paymentMethod || "card",
       isVerified: institute.isVerified || false
     });
+    
+    // 선택된 플랜 정보 설정
+    const plans = Array.isArray(subscriptionPlans) ? subscriptionPlans : [];
+    const plan = plans.find((p: SubscriptionPlan) => p.code === institute.subscriptionPlan);
+    setSelectedPlan(plan || null);
+    
     setIsEditDialogOpen(true);
   };
 
@@ -866,71 +913,231 @@ export default function AdminInstitutes() {
 
       {/* 기관 수정 다이얼로그 */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="sm:max-w-[700px]">
+        <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>기관 정보 수정</DialogTitle>
+            <DialogDescription>
+              기관의 기본 정보와 구독 플랜을 수정할 수 있습니다.
+            </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4">
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="edit-name" className="text-right">기관명</Label>
-              <Input
-                id="edit-name"
-                value={newInstitute.name}
-                onChange={(e) => setNewInstitute({ ...newInstitute, name: e.target.value })}
-                className="col-span-3"
-              />
+          <div className="space-y-6">
+            {/* 기본 정보 섹션 */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold">기본 정보</h3>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="edit-name">기관명 *</Label>
+                  <Input
+                    id="edit-name"
+                    value={newInstitute.name}
+                    onChange={(e) => setNewInstitute({ ...newInstitute, name: e.target.value })}
+                    placeholder="기관명을 입력하세요"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="edit-director">대표자명 *</Label>
+                  <Input
+                    id="edit-director"
+                    value={newInstitute.directorName}
+                    onChange={(e) => setNewInstitute({ ...newInstitute, directorName: e.target.value })}
+                    placeholder="대표자명을 입력하세요"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="edit-email">이메일 *</Label>
+                  <Input
+                    id="edit-email"
+                    type="email"
+                    value={newInstitute.email}
+                    onChange={(e) => setNewInstitute({ ...newInstitute, email: e.target.value })}
+                    placeholder="이메일을 입력하세요"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="edit-director-email">대표자 이메일</Label>
+                  <Input
+                    id="edit-director-email"
+                    type="email"
+                    value={newInstitute.directorEmail}
+                    onChange={(e) => setNewInstitute({ ...newInstitute, directorEmail: e.target.value })}
+                    placeholder="대표자 이메일을 입력하세요"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="edit-phone">전화번호</Label>
+                  <Input
+                    id="edit-phone"
+                    value={newInstitute.phone}
+                    onChange={(e) => setNewInstitute({ ...newInstitute, phone: e.target.value })}
+                    placeholder="전화번호를 입력하세요"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="edit-business-number">사업자등록번호</Label>
+                  <Input
+                    id="edit-business-number"
+                    value={newInstitute.businessNumber}
+                    onChange={(e) => setNewInstitute({ ...newInstitute, businessNumber: e.target.value })}
+                    placeholder="사업자등록번호를 입력하세요"
+                  />
+                </div>
+                <div className="col-span-2">
+                  <Label htmlFor="edit-address">주소</Label>
+                  <Input
+                    id="edit-address"
+                    value={newInstitute.address}
+                    onChange={(e) => setNewInstitute({ ...newInstitute, address: e.target.value })}
+                    placeholder="주소를 입력하세요"
+                  />
+                </div>
+                <div className="col-span-2">
+                  <Label htmlFor="edit-website">웹사이트</Label>
+                  <Input
+                    id="edit-website"
+                    value={newInstitute.website}
+                    onChange={(e) => setNewInstitute({ ...newInstitute, website: e.target.value })}
+                    placeholder="웹사이트 URL을 입력하세요"
+                  />
+                </div>
+                <div className="col-span-2">
+                  <Label htmlFor="edit-description">기관 설명</Label>
+                  <Textarea
+                    id="edit-description"
+                    value={newInstitute.description}
+                    onChange={(e) => setNewInstitute({ ...newInstitute, description: e.target.value })}
+                    placeholder="기관에 대한 설명을 입력하세요"
+                    rows={3}
+                  />
+                </div>
+              </div>
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="edit-director" className="text-right">대표자</Label>
-              <Input
-                id="edit-director"
-                value={newInstitute.directorName}
-                onChange={(e) => setNewInstitute({ ...newInstitute, directorName: e.target.value })}
-                className="col-span-3"
-              />
+
+            <Separator />
+
+            {/* 구독 플랜 섹션 */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold">구독 플랜</h3>
+              <div className="space-y-3">
+                <Label>구독 플랜 선택 *</Label>
+                <Select value={newInstitute.subscriptionPlan} onValueChange={handlePlanSelect}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="구독 플랜을 선택하세요" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {subscriptionPlans.map((plan: SubscriptionPlan) => (
+                      <SelectItem key={plan.code} value={plan.code}>
+                        {plan.name} - {formatPrice(plan.price)}원/월
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                
+                {/* 선택된 플랜 정보 */}
+                {selectedPlan && (
+                  <div className="mt-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                    <div className="grid grid-cols-2 gap-4 text-sm">
+                      <div>
+                        <span className="font-medium">최대 회원 수:</span>
+                        <span className="ml-2 text-muted-foreground">
+                          {selectedPlan.maxMembers === -1 ? '무제한' : `${selectedPlan.maxMembers}명`}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="font-medium">화상 수업 시간:</span>
+                        <span className="ml-2 text-muted-foreground">
+                          {selectedPlan.maxVideoHours === -1 ? '무제한' : `${selectedPlan.maxVideoHours}시간`}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="font-medium">AI 분석 횟수:</span>
+                        <span className="ml-2 text-muted-foreground">
+                          {selectedPlan.maxAiAnalysis === -1 ? '무제한' : `${selectedPlan.maxAiAnalysis}회`}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="font-medium">월 구독료:</span>
+                        <span className="ml-2 text-muted-foreground">
+                          {formatPrice(selectedPlan.price)}원
+                        </span>
+                      </div>
+                    </div>
+                    <div className="mt-3">
+                      <span className="font-medium">포함 기능:</span>
+                      <div className="flex flex-wrap gap-1 mt-1">
+                        {Object.entries(selectedPlan.features).map(([key, enabled]) => {
+                          if (!enabled) return null;
+                          const featureNames: Record<string, string> = {
+                            basicLMS: 'LMS 기본',
+                            basicVideoConsultation: '화상 상담',
+                            basicStatistics: '기본 통계',
+                            aiRecommendation: 'AI 추천',
+                            customBranding: '커스텀 브랜딩',
+                            apiIntegration: 'API 연동',
+                            dedicatedSupport: '전담 지원',
+                            whiteLabel: '화이트레이블'
+                          };
+                          return (
+                            <Badge key={key} variant="secondary" className="text-xs">
+                              {featureNames[key] || key}
+                            </Badge>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="edit-email" className="text-right">이메일</Label>
-              <Input
-                id="edit-email"
-                type="email"
-                value={newInstitute.email}
-                onChange={(e) => setNewInstitute({ ...newInstitute, email: e.target.value })}
-                className="col-span-3"
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="edit-phone" className="text-right">전화번호</Label>
-              <Input
-                id="edit-phone"
-                value={newInstitute.phone}
-                onChange={(e) => setNewInstitute({ ...newInstitute, phone: e.target.value })}
-                className="col-span-3"
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="edit-address" className="text-right">주소</Label>
-              <Input
-                id="edit-address"
-                value={newInstitute.address}
-                onChange={(e) => setNewInstitute({ ...newInstitute, address: e.target.value })}
-                className="col-span-3"
-              />
+
+            <Separator />
+
+            {/* 설정 섹션 */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold">설정</h3>
+              <div className="space-y-3">
+                <div>
+                  <Label>결제 방법</Label>
+                  <RadioGroup 
+                    value={newInstitute.paymentMethod} 
+                    onValueChange={(value) => setNewInstitute({ ...newInstitute, paymentMethod: value })}
+                    className="mt-2"
+                  >
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="card" id="edit-card" />
+                      <Label htmlFor="edit-card">카드 결제</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="bank" id="edit-bank" />
+                      <Label htmlFor="edit-bank">무통장 입금</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="admin" id="edit-admin" />
+                      <Label htmlFor="edit-admin">관리자 결제</Label>
+                    </div>
+                  </RadioGroup>
+                </div>
+                
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    id="edit-verified"
+                    checked={newInstitute.isVerified}
+                    onChange={(e) => setNewInstitute({ ...newInstitute, isVerified: e.target.checked })}
+                    className="rounded border-gray-300 text-primary focus:ring-primary"
+                  />
+                  <Label htmlFor="edit-verified" className="text-sm font-medium">
+                    기관 인증 상태
+                  </Label>
+                </div>
+              </div>
             </div>
           </div>
-          <DialogFooter>
+          <DialogFooter className="mt-6">
             <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
               취소
             </Button>
-            <Button onClick={() => {
-              // 수정 로직 구현
-              toast({
-                title: '수정 완료',
-                description: '기관 정보가 수정되었습니다.'
-              });
-              setIsEditDialogOpen(false);
-            }}>
-              수정
+            <Button onClick={handleUpdateInstitute} disabled={!newInstitute.name || !newInstitute.email}>
+              수정 완료
             </Button>
           </DialogFooter>
         </DialogContent>

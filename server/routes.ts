@@ -646,6 +646,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // 관리자 - 기관 정보 수정
+  app.put('/api/admin/institutes/:id', (req, res) => {
+    try {
+      const instituteId = parseInt(req.params.id);
+      const updateData = req.body;
+      
+      console.log('[Admin] 기관 정보 수정 요청:', instituteId, updateData);
+      
+      // 기관 정보 업데이트
+      const updatedInstitute = storage.updateInstitute(instituteId, updateData);
+      
+      if (!updatedInstitute) {
+        return res.status(404).json({ 
+          error: '기관을 찾을 수 없습니다.' 
+        });
+      }
+
+      console.log('[Admin] 기관 정보 수정 완료:', updatedInstitute.id);
+      
+      res.json({
+        success: true,
+        message: '기관 정보가 성공적으로 수정되었습니다.',
+        institute: updatedInstitute
+      });
+
+    } catch (error) {
+      console.error('[Admin] 기관 정보 수정 오류:', error);
+      res.status(500).json({ 
+        error: '기관 정보 수정 중 오류가 발생했습니다.' 
+      });
+    }
+  });
+
   // 기관 구독 결제 처리
   app.post('/api/institutes/:id/payment', async (req, res) => {
     try {

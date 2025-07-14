@@ -728,6 +728,21 @@ class Storage {
     return this.institutes.find(i => i.id === instituteId);
   }
 
+  updateInstitute(instituteId: number, updateData: any): any {
+    const institute = this.institutes.find(i => i.id === instituteId);
+    if (!institute) {
+      return null;
+    }
+
+    // 기존 정보와 업데이트 데이터 병합
+    Object.assign(institute, updateData, {
+      updatedAt: new Date().toISOString()
+    });
+
+    console.log('[Storage] 기관 정보 업데이트 완료:', institute.id, institute.name);
+    return institute;
+  }
+
   // 기관 구독 변경 및 결제 관련 메서드들
   changeInstituteSubscription(instituteId: number, newPlanCode: string, paymentMethod: 'self' | 'admin') {
     const institute = this.institutes.find(i => i.id === instituteId);
