@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
-import { Search, Check, X, Clock, AlertTriangle, Edit, Eye, Calendar, Filter, FileText, Building, Phone, MapPin, AlertCircle, Palette, Settings } from 'lucide-react';
+import { Search, Check, X, Clock, AlertTriangle, Edit, Eye, Calendar, Filter, FileText, Building, Phone, MapPin, AlertCircle, Palette, Settings, CheckCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { formatDistanceToNow } from 'date-fns';
 import { ko } from 'date-fns/locale';
