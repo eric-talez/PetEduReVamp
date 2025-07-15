@@ -176,20 +176,51 @@ export function SimpleTrainerProfileModal({ trainer, isOpen, onClose }: SimpleTr
         <div className="p-6 border-t border-gray-100 dark:border-gray-800">
           <h3 className="text-md font-semibold mb-3">훈련사에게 연락하기</h3>
           <div className="grid grid-cols-2 gap-3">
-            <Button className="w-full" size="sm">
+            <Button 
+              className="w-full" 
+              size="sm"
+              onClick={() => {
+                console.log(`${trainer.name} 훈련사에게 메시지 보내기`);
+                // 추후 메시지 기능 구현
+              }}
+            >
               <MessageSquare className="w-4 h-4 mr-2" />
               메시지 보내기
             </Button>
-            <Button className="w-full" variant="outline" size="sm">
+            <Button 
+              className="w-full" 
+              variant="outline" 
+              size="sm"
+              onClick={() => {
+                console.log(`${trainer.name} 훈련사와 화상 상담 예약`);
+                // 추후 화상 상담 예약 기능 구현
+              }}
+            >
               <VideoIcon className="w-4 h-4 mr-2" />
               화상 상담 예약
             </Button>
-            <Button className="w-full" variant="secondary" size="sm">
+            <Button 
+              className="w-full" 
+              variant="secondary" 
+              size="sm"
+              onClick={() => {
+                console.log(`${trainer.name} 훈련사 수업 일정 보기`);
+                // 추후 수업 일정 기능 구현
+              }}
+            >
               <Calendar className="w-4 h-4 mr-2" />
               수업 일정 보기
             </Button>
             {trainer.contactInfo?.phone && (
-              <Button className="w-full" variant="outline" size="sm">
+              <Button 
+                className="w-full" 
+                variant="outline" 
+                size="sm"
+                onClick={() => {
+                  console.log(`${trainer.name} 훈련사에게 전화 연락: ${trainer.contactInfo.phone}`);
+                  // 추후 전화 기능 구현
+                }}
+              >
                 <Phone className="w-4 h-4 mr-2" />
                 전화 연락
               </Button>

@@ -327,6 +327,12 @@ export default function Trainers() {
               placeholder="지역, 전문 분야로 훈련사 찾기" 
               value={searchTerm}
               onChange={handleSearchChange}
+              onKeyPress={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  handleSearch();
+                }
+              }}
               className="flex-1 py-2 px-2 bg-transparent focus:outline-none text-gray-800 dark:text-gray-200"
             />
             <Button className="ml-2" onClick={handleSearch}>

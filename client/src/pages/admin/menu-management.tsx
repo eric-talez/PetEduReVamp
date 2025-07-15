@@ -219,7 +219,8 @@ export default function AdminMenuManagement() {
                     variant="ghost" 
                     size="sm"
                     onClick={() => {
-                      console.log('메뉴 그룹 편집:', group.name);
+                      // 메뉴 그룹 편집 기능 구현
+                      alert(`${group.name} 그룹 편집 기능은 곧 구현됩니다.`);
                     }}
                   >
                     <Edit className="h-4 w-4" />
@@ -228,7 +229,10 @@ export default function AdminMenuManagement() {
                     variant="ghost" 
                     size="sm"
                     onClick={() => {
-                      console.log('메뉴 그룹 삭제:', group.name);
+                      // 메뉴 그룹 삭제 확인 및 기능 구현
+                      if (confirm(`${group.name} 그룹을 정말 삭제하시겠습니까?`)) {
+                        alert(`${group.name} 그룹 삭제 기능은 곧 구현됩니다.`);
+                      }
                     }}
                   >
                     <Trash2 className="h-4 w-4" />
@@ -265,7 +269,8 @@ export default function AdminMenuManagement() {
                           variant="ghost" 
                           size="sm"
                           onClick={() => {
-                            console.log('메뉴 항목 편집:', item.name);
+                            // 메뉴 항목 편집 기능 구현
+                            alert(`${item.name} 항목 편집 기능은 곧 구현됩니다.`);
                           }}
                         >
                           <Edit className="h-4 w-4" />
@@ -274,7 +279,10 @@ export default function AdminMenuManagement() {
                           variant="ghost" 
                           size="sm"
                           onClick={() => {
-                            console.log('메뉴 항목 삭제:', item.name);
+                            // 메뉴 항목 삭제 확인 및 기능 구현
+                            if (confirm(`${item.name} 항목을 정말 삭제하시겠습니까?`)) {
+                              alert(`${item.name} 항목 삭제 기능은 곧 구현됩니다.`);
+                            }
                           }}
                         >
                           <Trash2 className="h-4 w-4" />
@@ -287,7 +295,8 @@ export default function AdminMenuManagement() {
                     size="sm" 
                     className="ml-5 mt-2"
                     onClick={() => {
-                      console.log('메뉴 항목 추가 클릭 - 그룹:', group.name);
+                      // 메뉴 항목 추가 기능 구현
+                      alert(`${group.name} 그룹에 새 항목 추가 기능은 곧 구현됩니다.`);
                     }}
                   >
                     <Plus className="h-4 w-4 mr-2" />
