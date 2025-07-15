@@ -245,6 +245,16 @@ export default function AdminCurriculum() {
   };
 
   const handleNextStep = () => {
+    if (!validateCurrentStep()) {
+      const errorMessage = getStepValidationMessage(creationStep);
+      toast({
+        title: "입력값 확인 필요",
+        description: errorMessage,
+        variant: "destructive"
+      });
+      return;
+    }
+    
     if (creationStep < 3) {
       setCreationStep(creationStep + 1);
     }
@@ -259,13 +269,40 @@ export default function AdminCurriculum() {
   const validateCurrentStep = () => {
     switch (creationStep) {
       case 1:
-        return formData.title && formData.description && formData.category;
+        return formData.title.trim() && formData.description.trim() && formData.category.trim();
       case 2:
         return formData.difficulty && formData.duration > 0 && formData.price >= 0;
       case 3:
-        return formData.trainerName && formData.trainerEmail;
+        return formData.trainerName.trim() && formData.trainerEmail.trim();
       default:
         return false;
+    }
+  };
+
+  const getStepValidationMessage = (step: number): string => {
+    switch (step) {
+      case 1:
+        const step1Errors = [];
+        if (!formData.title.trim()) step1Errors.push("커리큘럼 제목");
+        if (!formData.description.trim()) step1Errors.push("커리큘럼 설명");
+        if (!formData.category.trim()) step1Errors.push("카테고리");
+        return step1Errors.length > 0 ? `다음 항목을 입력해주세요: ${step1Errors.join(", ")}` : "";
+      
+      case 2:
+        const step2Errors = [];
+        if (!formData.difficulty) step2Errors.push("난이도");
+        if (formData.duration <= 0) step2Errors.push("총 강의 시간 (0분 이상)");
+        if (formData.price < 0) step2Errors.push("수강료 (0원 이상)");
+        return step2Errors.length > 0 ? `다음 항목을 확인해주세요: ${step2Errors.join(", ")}` : "";
+      
+      case 3:
+        const step3Errors = [];
+        if (!formData.trainerName.trim()) step3Errors.push("강사 이름");
+        if (!formData.trainerEmail.trim()) step3Errors.push("강사 이메일");
+        return step3Errors.length > 0 ? `다음 항목을 입력해주세요: ${step3Errors.join(", ")}` : "";
+      
+      default:
+        return "";
     }
   };
 
@@ -277,9 +314,44 @@ export default function AdminCurriculum() {
   };
 
   const handleCreateCurriculum = async () => {
+    // 최종 검증 (모든 단계)
+    if (!validateCurrentStep()) {
+      const errorMessage = getStepValidationMessage(creationStep);
+      toast({
+        title: "입력값 확인 필요",
+        description: errorMessage,
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // 전체 폼 데이터 검증
+    const allFieldsValid = 
+      formData.title.trim() && 
+      formData.description.trim() && 
+      formData.category.trim() &&
+      formData.difficulty &&
+      formData.duration > 0 &&
+      formData.price >= 0 &&
+      formData.trainerName.trim() &&
+      formData.trainerEmail.trim();
+
+    if (!allFieldsValid) {
+      toast({
+        title: "모든 정보를 입력해주세요",
+        description: "커리큘럼 생성을 위해 모든 필수 정보를 입력해주세요.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     try {
       const curriculumData = {
         ...formData,
+        id: `curriculum-${Date.now()}`,
+        status: 'draft',
+        createdAt: new Date(),
+        updatedAt: new Date(),
         modules: [
           {
             id: 'module-1',
@@ -307,13 +379,17 @@ export default function AdminCurriculum() {
         resetCreationForm();
         toast({
           title: "커리큘럼 생성 완료",
-          description: "새 커리큘럼이 성공적으로 생성되었습니다.",
+          description: `"${formData.title}" 커리큘럼이 성공적으로 생성되었습니다.`,
         });
+      } else {
+        const errorData = await response.json();
+        throw new Error(errorData.message || '서버 오류가 발생했습니다.');
       }
-    } catch (error) {
+    } catch (error: any) {
+      console.error('커리큘럼 생성 오류:', error);
       toast({
         title: "생성 실패",
-        description: "커리큘럼 생성 중 오류가 발생했습니다.",
+        description: error.message || "커리큘럼 생성 중 오류가 발생했습니다. 다시 시도해주세요.",
         variant: "destructive"
       });
     }
@@ -1223,10 +1299,46 @@ export default function AdminCurriculum() {
   };
 
   const createCustomCurriculum = async () => {
+    // 입력값 검증
+    const validationErrors: string[] = [];
+    
     if (!newCurriculum.title.trim()) {
+      validationErrors.push("커리큘럼 제목을 입력해주세요.");
+    }
+    
+    if (!newCurriculum.description.trim()) {
+      validationErrors.push("커리큘럼 설명을 입력해주세요.");
+    }
+    
+    if (!newCurriculum.category.trim()) {
+      validationErrors.push("카테고리를 선택해주세요.");
+    }
+    
+    if (!newCurriculum.trainerName.trim()) {
+      validationErrors.push("강사명을 입력해주세요.");
+    }
+    
+    if (newCurriculum.duration <= 0) {
+      validationErrors.push("총 강의 시간을 입력해주세요. (0분 이상)");
+    }
+    
+    if (newCurriculum.price < 0) {
+      validationErrors.push("가격은 0원 이상이어야 합니다.");
+    }
+
+    if (validationErrors.length > 0) {
       toast({
-        title: "입력 오류",
-        description: "커리큘럼 제목을 입력해주세요.",
+        title: "입력값 오류",
+        description: (
+          <div className="space-y-1">
+            <p className="font-medium mb-2">다음 항목을 확인해주세요:</p>
+            <ul className="list-disc list-inside space-y-1 text-sm">
+              {validationErrors.map((error, index) => (
+                <li key={index}>{error}</li>
+              ))}
+            </ul>
+          </div>
+        ),
         variant: "destructive"
       });
       return;
@@ -1263,15 +1375,19 @@ export default function AdminCurriculum() {
         });
         setIsCreating(false);
         toast({
-          title: "성공",
-          description: "커리큘럼이 생성되었습니다.",
+          title: "커리큘럼 생성 완료",
+          description: "새로운 커리큘럼이 성공적으로 생성되었습니다.",
           variant: "default"
         });
+      } else {
+        const errorData = await response.json();
+        throw new Error(errorData.message || '서버 오류가 발생했습니다.');
       }
-    } catch (error) {
+    } catch (error: any) {
+      console.error('커리큘럼 생성 오류:', error);
       toast({
-        title: "오류",
-        description: "커리큘럼 생성에 실패했습니다.",
+        title: "커리큘럼 생성 실패",
+        description: error.message || "커리큘럼 생성 중 오류가 발생했습니다. 다시 시도해주세요.",
         variant: "destructive"
       });
     }
@@ -1550,7 +1666,7 @@ export default function AdminCurriculum() {
                             {getDifficultyText(curriculum.difficulty)}
                           </Badge>
                           <span className="text-xs text-gray-500 dark:text-gray-400">
-                            {modules.length}개 모듈
+                            {curriculum.modules?.length || 0}개 모듈
                           </span>
                           <Badge variant="outline" className="text-xs">
                             {curriculum.status}
