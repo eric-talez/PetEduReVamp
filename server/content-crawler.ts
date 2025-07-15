@@ -215,12 +215,17 @@ export class ContentCrawler {
 
   // 크롤링된 콘텐츠를 커뮤니티에 등록
   async postToCommunity(content: CrawledContent, storage: any): Promise<any> {
-    // social.ts의 posts 배열에 직접 추가하기 위해 모듈 로드
-    const socialRoutes = require('./routes/social');
-    const posts = socialRoutes.posts;
+    // social.ts의 posts 배열에 직접 추가하기 위해 전역 변수 사용
+    const posts = (global as any).socialPosts;
+    const getNextPostId = (global as any).getNextPostId;
+    
+    if (!posts || !getNextPostId) {
+      console.error('[커뮤니티 등록] 전역 posts 배열이 초기화되지 않았습니다.');
+      return null;
+    }
     
     const post = {
-      id: socialRoutes.getNextPostId(),
+      id: getNextPostId(),
       title: content.title,
       content: content.summary,
       tag: content.category,

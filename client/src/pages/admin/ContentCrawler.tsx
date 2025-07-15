@@ -75,6 +75,30 @@ export default function ContentCrawler() {
     setProgress(0);
 
     try {
+      // 언론사 페이지인지 확인
+      const isJournalistPage = singleUrl.includes('media.naver.com/journalist/');
+      
+      if (isJournalistPage) {
+        // 언론사 페이지 크롤링 진행률 단계별 업데이트
+        setProgress(10); // 페이지 분석 시작
+        
+        await new Promise(resolve => setTimeout(resolve, 500));
+        setProgress(30); // 기사 링크 추출 중
+        
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        setProgress(60); // 반려견 관련 기사 필터링 중
+        
+        await new Promise(resolve => setTimeout(resolve, 500));
+        setProgress(80); // 첫 번째 기사 크롤링 중
+      } else {
+        // 단일 기사 크롤링
+        setProgress(20); // 기사 분석 시작
+        await new Promise(resolve => setTimeout(resolve, 300));
+        setProgress(60); // 내용 추출 중
+        await new Promise(resolve => setTimeout(resolve, 500));
+        setProgress(80); // 분석 완료
+      }
+
       const response = await fetch('/api/admin/content/crawl', {
         method: 'POST',
         headers: {
@@ -135,6 +159,9 @@ export default function ContentCrawler() {
     setProgress(0);
 
     try {
+      // 다중 URL 크롤링 진행률 업데이트
+      setProgress(10); // 크롤링 시작
+      
       const response = await fetch('/api/admin/content/crawl-multiple', {
         method: 'POST',
         headers: {
@@ -146,6 +173,8 @@ export default function ContentCrawler() {
         }),
       });
 
+      setProgress(50); // 서버 응답 대기 중
+      
       const result: CrawlResult = await response.json();
 
       if (result.success && result.data) {
