@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ShoppingBag, Package2, Search, Sun, Moon, ChevronRight, Star } from 'lucide-react';
+import { useLocation } from "wouter";
 
 /**
  * 쇼핑몰 메인 페이지 컴포넌트
@@ -10,6 +11,7 @@ export default function ShopPage() {
   const [isDarkMode, setIsDarkMode] = useState<boolean>(false);
   const [currentSlide, setCurrentSlide] = useState<number>(0);
   const totalSlides = 3;
+  const [, setLocation] = useLocation();
   
   // 다크 모드 초기화
   useEffect(() => {
@@ -55,12 +57,47 @@ export default function ShopPage() {
   
   // 상품 상세 페이지로 이동
   const goToProductDetail = (productId: number) => {
-    // React 라우팅 구현
-    console.log(`상품 ID ${productId}로 이동 - React 라우트 사용`);
-    // 상품 상세 페이지로 이동 구현
-    window.location.href = `/shop/product/${productId}`;
-    // 참고: 동일 React 애플리케이션 내에서 이동하는 경우에는 
-    // useLocation() 훅을 사용하는 것이 좋지만, 여기서는 window.location 사용
+    setLocation(`/shop/product/${productId}`);
+  };
+
+  // 메인 서비스로 이동
+  const goToMainService = () => {
+    setLocation('/');
+  };
+
+  // 로그인 페이지로 이동
+  const goToLogin = () => {
+    setLocation('/auth');
+  };
+
+  // 회원가입 페이지로 이동
+  const goToSignup = () => {
+    setLocation('/auth');
+  };
+
+  // 마이페이지로 이동
+  const goToMyPage = () => {
+    setLocation('/mypage');
+  };
+
+  // 고객센터로 이동
+  const goToCustomerService = () => {
+    alert('고객센터 기능\n\n연락처: 1588-1234\n운영시간: 평일 09:00-18:00\n\n이메일: support@talez.com');
+  };
+
+  // 장바구니로 이동
+  const goToCart = () => {
+    setLocation('/shop/cart');
+  };
+
+  // 위시리스트로 이동
+  const goToWishlist = () => {
+    setLocation('/shop/wishlist');
+  };
+
+  // 쇼핑몰 홈으로 이동
+  const goToShopHome = () => {
+    setLocation('/shop');
   };
   
   // 샘플 카테고리 데이터
@@ -125,10 +162,7 @@ export default function ShopPage() {
 
   // 메인 서비스로 이동
   const goToMainService = () => {
-    console.log("메인 서비스로 이동 - React 라우트 사용");
-    window.location.href = '/'; // 메인 페이지로 이동 
-    // 참고: 동일 React 애플리케이션 내에서 이동하는 경우에는 useLocation()을 사용할 수 있지만,
-    // 메인 서비스로 이동하는 경우는 전체 페이지 리로드가 필요하기 때문에 window.location 사용
+    setLocation('/');
   };
 
   return (
@@ -138,10 +172,10 @@ export default function ShopPage() {
         <div className="container utility-nav-container">
           <ul className="utility-links">
             <li><a href="#" onClick={(e) => { e.preventDefault(); goToMainService(); }}>메인 서비스</a></li>
-            <li><a href="#">로그인</a></li>
-            <li><a href="#">회원가입</a></li>
-            <li><a href="#">마이페이지</a></li>
-            <li><a href="#">고객센터</a></li>
+            <li><a href="#" onClick={(e) => { e.preventDefault(); goToLogin(); }}>로그인</a></li>
+            <li><a href="#" onClick={(e) => { e.preventDefault(); goToSignup(); }}>회원가입</a></li>
+            <li><a href="#" onClick={(e) => { e.preventDefault(); goToMyPage(); }}>마이페이지</a></li>
+            <li><a href="#" onClick={(e) => { e.preventDefault(); goToCustomerService(); }}>고객센터</a></li>
           </ul>
         </div>
       </div>
@@ -150,7 +184,7 @@ export default function ShopPage() {
       <header>
         <div className="container">
           <div className="header-top">
-            <a href="#" className="logo">
+            <a href="#" className="logo" onClick={(e) => { e.preventDefault(); goToShopHome(); }}>
               <div className="logo-icon">
                 <ShoppingBag size={24} />
               </div>
@@ -181,7 +215,7 @@ export default function ShopPage() {
                 {isDarkMode ? <Moon size={24} /> : <Sun size={24} />}
               </button>
               
-              <a href="#" className="action-item">
+              <a href="#" className="action-item" onClick={(e) => { e.preventDefault(); goToMyPage(); }}>
                 <div className="action-icon">
                   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
@@ -191,7 +225,7 @@ export default function ShopPage() {
                 <span>마이페이지</span>
               </a>
               
-              <a href="#" className="action-item">
+              <a href="#" className="action-item" onClick={(e) => { e.preventDefault(); goToWishlist(); }}>
                 <div className="action-icon">
                   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path>
@@ -200,7 +234,7 @@ export default function ShopPage() {
                 <span>찜</span>
               </a>
               
-              <a href="#" className="action-item">
+              <a href="#" className="action-item" onClick={(e) => { e.preventDefault(); goToCart(); }}>
                 <div className="action-icon">
                   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <circle cx="9" cy="21" r="1"></circle>
@@ -230,7 +264,7 @@ export default function ShopPage() {
               <div className="category-dropdown">
                 <ul className="category-list">
                   {categories.map(category => (
-                    <li key={category.id} className="category-item" onClick={() => console.log(`${category.name} 카테고리로 이동`)}>
+                    <li key={category.id} className="category-item" onClick={() => setLocation(`/shop/category/${category.id}`)}>
                       <span>{category.name}</span>
                       <span className="category-item-icon">
                         <ChevronRight size={16} />
@@ -243,28 +277,28 @@ export default function ShopPage() {
             
             <ul className="nav-menu">
               <li className="nav-menu-item">
-                <a href="#" className="nav-menu-link active">홈</a>
+                <a href="#" className="nav-menu-link active" onClick={(e) => { e.preventDefault(); goToShopHome(); }}>홈</a>
               </li>
               <li className="nav-menu-item">
-                <a href="#" className="nav-menu-link">베스트</a>
+                <a href="#" className="nav-menu-link" onClick={(e) => { e.preventDefault(); setLocation('/shop/best'); }}>베스트</a>
               </li>
               <li className="nav-menu-item">
-                <a href="#" className="nav-menu-link">신상품</a>
+                <a href="#" className="nav-menu-link" onClick={(e) => { e.preventDefault(); setLocation('/shop/new'); }}>신상품</a>
               </li>
               <li className="nav-menu-item">
-                <a href="#" className="nav-menu-link">특가</a>
+                <a href="#" className="nav-menu-link" onClick={(e) => { e.preventDefault(); setLocation('/shop/sale'); }}>특가</a>
               </li>
               <li className="nav-menu-item">
-                <a href="#" className="nav-menu-link">기획전</a>
+                <a href="#" className="nav-menu-link" onClick={(e) => { e.preventDefault(); setLocation('/shop/special'); }}>기획전</a>
               </li>
               <li className="nav-menu-item">
-                <a href="#" className="nav-menu-link">이벤트</a>
+                <a href="#" className="nav-menu-link" onClick={(e) => { e.preventDefault(); setLocation('/shop/events'); }}>이벤트</a>
               </li>
               <li className="nav-menu-item">
-                <a href="#" className="nav-menu-link">브랜드</a>
+                <a href="#" className="nav-menu-link" onClick={(e) => { e.preventDefault(); setLocation('/shop/brands'); }}>브랜드</a>
               </li>
               <li className="nav-menu-item">
-                <a href="#" className="nav-menu-link">교육 연계상품</a>
+                <a href="#" className="nav-menu-link" onClick={(e) => { e.preventDefault(); setLocation('/shop/education'); }}>교육 연계상품</a>
               </li>
             </ul>
           </div>

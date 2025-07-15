@@ -54,6 +54,17 @@ export function AccessibleNavItem({ href, icon, hoverIcon, children, active, onC
                 active ? "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800" : "text-gray-700 dark:text-gray-200 hover:text-primary dark:hover:text-primary hover:bg-primary/5 hover:border-primary/20 dark:hover:border-primary/30 border border-transparent hover:scale-105"
               )}
               onClick={handleClick}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  if (onClick) {
+                    onClick(href);
+                  } else {
+                    setLocation(href);
+                  }
+                }
+              }}
+              tabIndex={0}
               aria-label={accessibilityLabel}
             >
               <div className="relative w-5 h-5">

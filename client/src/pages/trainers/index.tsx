@@ -49,11 +49,10 @@ export default function Trainers() {
   const [favorites, setFavorites] = useState<number[]>([]);
 
   // API에서 훈련사 데이터 로드
-  useEffect(() => {
-    const fetchTrainers = async () => {
-      try {
-        setLoading(true);
-        setError(null);
+  const fetchTrainers = async () => {
+    try {
+      setLoading(true);
+      setError(null);
 
         const params = new URLSearchParams();
 
@@ -103,10 +102,11 @@ export default function Trainers() {
       } finally {
         setLoading(false);
       }
-    };
+  };
 
+  useEffect(() => {
     fetchTrainers();
-  }, [filter, searchTerm, locationFilter, minRating, maxPrice, sortBy, sortOrder, currentPage]);
+  }, [filter, locationFilter, minRating, maxPrice, sortBy, sortOrder, currentPage]);
 
   // 즐겨찾기 로드
   useEffect(() => {
@@ -275,7 +275,11 @@ export default function Trainers() {
           <div className="text-center">
             <AlertCircle className="h-8 w-8 mx-auto mb-4 text-red-500" />
             <p className="text-red-600 dark:text-red-400 mb-4">{error}</p>
-            <Button onClick={() => window.location.reload()}>
+            <Button onClick={() => {
+              setError(null);
+              setLoading(true);
+              fetchTrainers();
+            }}>
               다시 시도
             </Button>
           </div>
@@ -285,13 +289,40 @@ export default function Trainers() {
   }
 
   // 검색 기능
-  const handleSearch = () => {
-    console.log('훈련사 검색 실행:', searchTerm);
+  const handleSearch = async () => {
+    if (!searchTerm.trim()) return;
+    
+    try {
+      setLoading(true);
+      const response = await fetch(`/api/trainers/search?q=${encodeURIComponent(searchTerm)}`, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (response.ok) {
+        const searchResults = await response.json();
+        setTrainers(searchResults);
+        setCurrentPage(1);
+      } else {
+        console.error('검색 실패');
+      }
+    } catch (error) {
+      console.error('검색 중 오류:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
-    console.log('검색어 변경:', e.target.value);
+    // 실시간 검색 구현 (디바운스 적용)
+    if (e.target.value.trim()) {
+      const timer = setTimeout(() => {
+        handleSearch();
+      }, 500);
+      return () => clearTimeout(timer);
+    }
   };
 
   // 검색 결과 표시 (API에서 이미 필터링된 데이터 사용)

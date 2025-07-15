@@ -152,13 +152,14 @@ export default function TrainerDashboard({ onAction }: TrainerDashboardProps) {
           <div>
             <Button
               className="bg-white text-primary font-semibold hover:bg-gray-50 mr-3"
-              onClick={() => onAction('navigate', currentBanner.action.path)}
+              onClick={() => window.location.href = currentBanner.action.path}
             >
               {currentBanner.action.text}
             </Button>
             <Button
               variant="outline"
               className="border-2 border-white text-white hover:bg-white/10 font-semibold"
+              onClick={() => window.location.href = '/trainer/certification'}
             >
               전문가 인증 업그레이드
             </Button>
@@ -216,7 +217,12 @@ export default function TrainerDashboard({ onAction }: TrainerDashboardProps) {
           <div className="mt-4">
             <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400">
               <span>활성 강좌</span>
-              <a href="/trainer/courses" className="text-primary hover:text-primary/80">관리</a>
+              <button 
+                onClick={() => window.location.href = '/trainer/courses'}
+                className="text-primary hover:text-primary/80 text-xs font-medium"
+              >
+                관리
+              </button>
             </div>
           </div>
         </Card>
@@ -236,7 +242,12 @@ export default function TrainerDashboard({ onAction }: TrainerDashboardProps) {
           <div className="mt-4">
             <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400">
               <span>이번 주 +{stats?.recentActivity.newStudentsThisWeek || 0}명</span>
-              <a href="/trainer/students" className="text-primary hover:text-primary/80">상세</a>
+              <button 
+                onClick={() => window.location.href = '/trainer/students'}
+                className="text-primary hover:text-primary/80 text-xs font-medium"
+              >
+                상세
+              </button>
             </div>
           </div>
         </Card>
@@ -256,7 +267,12 @@ export default function TrainerDashboard({ onAction }: TrainerDashboardProps) {
           <div className="mt-4">
             <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400">
               <span>실시간 수익</span>
-              <a href="/trainer/earnings" className="text-primary hover:text-primary/80">내역</a>
+              <button 
+                onClick={() => window.location.href = '/trainer/earnings'}
+                className="text-primary hover:text-primary/80 text-xs font-medium"
+              >
+                내역
+              </button>
             </div>
           </div>
         </Card>

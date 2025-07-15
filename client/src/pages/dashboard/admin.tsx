@@ -222,12 +222,14 @@ export default function AdminDashboard({ onAction }: AdminDashboardProps) {
           <div>
             <Button
               className="bg-white text-primary font-semibold hover:bg-gray-50 mr-3"
+              onClick={() => window.location.href = '/admin/system-status'}
             >
               시스템 상태 확인
             </Button>
             <Button
               variant="outline"
               className="border-2 border-white text-white hover:bg-white/10"
+              onClick={() => window.location.href = '/admin/backup'}
             >
               백업 관리
             </Button>
@@ -279,7 +281,12 @@ export default function AdminDashboard({ onAction }: AdminDashboardProps) {
           <div className="mt-4">
             <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400">
               <span>처리 대기 중</span>
-              <a href="/admin/reports" className="text-primary hover:text-primary/80">처리</a>
+              <button 
+                onClick={() => window.location.href = '/admin/reports'}
+                className="text-primary hover:text-primary/80 text-xs font-medium"
+              >
+                처리
+              </button>
             </div>
           </div>
         </Card>
@@ -410,7 +417,12 @@ export default function AdminDashboard({ onAction }: AdminDashboardProps) {
         <div>
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-xl font-bold text-gray-800 dark:text-white">승인 대기 목록</h2>
-            <a href="/admin/approvals" className="text-sm text-primary hover:text-primary/80 font-medium">모두 보기</a>
+            <button 
+              onClick={() => window.location.href = '/admin/approvals'}
+              className="text-sm text-primary hover:text-primary/80 font-medium"
+            >
+              모두 보기
+            </button>
           </div>
           
           <Card className="border border-gray-100 dark:border-gray-700">

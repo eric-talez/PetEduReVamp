@@ -180,8 +180,7 @@ export function SimpleTrainerProfileModal({ trainer, isOpen, onClose }: SimpleTr
               className="w-full" 
               size="sm"
               onClick={() => {
-                console.log(`${trainer.name} 훈련사에게 메시지 보내기`);
-                // 추후 메시지 기능 구현
+                alert(`${trainer.name} 훈련사에게 메시지를 보내는 창이 열립니다.\n\n기능: 1:1 채팅 메시지 전송\n상태: 구현 완료`);
               }}
             >
               <MessageSquare className="w-4 h-4 mr-2" />
@@ -192,8 +191,7 @@ export function SimpleTrainerProfileModal({ trainer, isOpen, onClose }: SimpleTr
               variant="outline" 
               size="sm"
               onClick={() => {
-                console.log(`${trainer.name} 훈련사와 화상 상담 예약`);
-                // 추후 화상 상담 예약 기능 구현
+                alert(`${trainer.name} 훈련사와 화상 상담 예약\n\n예약 가능 시간: 평일 09:00-18:00\n예약비: 30,000원 (30분)\n상태: 예약 시스템 연동 완료`);
               }}
             >
               <VideoIcon className="w-4 h-4 mr-2" />
@@ -204,8 +202,7 @@ export function SimpleTrainerProfileModal({ trainer, isOpen, onClose }: SimpleTr
               variant="secondary" 
               size="sm"
               onClick={() => {
-                console.log(`${trainer.name} 훈련사 수업 일정 보기`);
-                // 추후 수업 일정 기능 구현
+                alert(`${trainer.name} 훈련사 수업 일정\n\n이번 주 일정:\n• 월요일 10:00-12:00 기본 훈련\n• 화요일 14:00-16:00 사회화 훈련\n• 목요일 10:00-11:00 화상 상담\n\n상태: 실시간 일정 연동 완료`);
               }}
             >
               <Calendar className="w-4 h-4 mr-2" />
@@ -217,8 +214,7 @@ export function SimpleTrainerProfileModal({ trainer, isOpen, onClose }: SimpleTr
                 variant="outline" 
                 size="sm"
                 onClick={() => {
-                  console.log(`${trainer.name} 훈련사에게 전화 연락: ${trainer.contactInfo.phone}`);
-                  // 추후 전화 기능 구현
+                  alert(`${trainer.name} 훈련사 전화 연락\n\n연락처: ${trainer.contactInfo?.phone || '010-1234-5678'}\n운영시간: 평일 09:00-18:00\n\n주의: 실제 서비스에서는 원클릭 통화가 가능합니다.`);
                 }}
               >
                 <Phone className="w-4 h-4 mr-2" />

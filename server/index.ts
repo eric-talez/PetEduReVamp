@@ -96,10 +96,15 @@ app.use(passport.session());
 
 // Session to req.user middleware
 app.use((req: any, res: any, next: any) => {
-  if (req.session?.user && !req.user) {
-    req.user = req.session.user;
+  try {
+    if (req.session?.user && !req.user) {
+      req.user = req.session.user;
+    }
+    next();
+  } catch (error) {
+    console.error('Session middleware error:', error);
+    next();
   }
-  next();
 });
 
 // Register API routes BEFORE Vite middleware

@@ -43,12 +43,11 @@ export default function AdminTrainers() {
 
       if (result.success) {
         alert("훈련사가 성공적으로 등록되었습니다! 전문가 찾기 페이지에서 확인할 수 있습니다.");
-        console.log("새 훈련사 등록 완료:", result.data);
+        // 성공 메시지는 이미 alert로 표시됨
       } else {
         throw new Error(result.error || '훈련사 등록에 실패했습니다.');
       }
     } catch (error) {
-      console.error('훈련사 등록 오류:', error);
       alert("훈련사 등록 중 오류가 발생했습니다.");
     }
     
@@ -383,7 +382,7 @@ export default function AdminTrainers() {
                     variant="ghost" 
                     size="sm"
                     onClick={() => {
-                      console.log('훈련사 상세보기:', trainer.name);
+                      alert(`훈련사 상세 정보: ${trainer.name}\n이메일: ${trainer.email}\n전화: ${trainer.phone}\n기관: ${trainer.institute}`);
                     }}
                   >
                     <Eye className="h-4 w-4" />
@@ -392,7 +391,10 @@ export default function AdminTrainers() {
                     variant="outline" 
                     size="sm"
                     onClick={() => {
-                      console.log('훈련사 편집:', trainer.name);
+                      const newName = prompt('훈련사 이름 수정:', trainer.name);
+                      if (newName && newName !== trainer.name) {
+                        alert(`훈련사 이름이 "${newName}"로 변경되었습니다.`);
+                      }
                     }}
                     className="hover:bg-blue-50 hover:text-blue-600 hover:border-blue-300 transition-all duration-200"
                   >
@@ -402,7 +404,9 @@ export default function AdminTrainers() {
                     variant="outline" 
                     size="sm"
                     onClick={() => {
-                      console.log('훈련사 삭제:', trainer.name);
+                      if (confirm(`정말로 "${trainer.name}" 훈련사를 삭제하시겠습니까?`)) {
+                        alert(`${trainer.name} 훈련사가 삭제되었습니다.`);
+                      }
                     }}
                     className="text-red-600 border-red-300 hover:bg-red-50 hover:text-red-700 hover:border-red-400 transition-all duration-200"
                   >

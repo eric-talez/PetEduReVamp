@@ -118,6 +118,18 @@ function NavItem({ href, icon, children, active, onClick, show }: NavItemProps) 
     }
   };
 
+  // 키보드 이벤트 핸들러
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      if (onClick) {
+        onClick(href);
+      } else {
+        setLocation(href);
+      }
+    }
+  };
+
   if (!show) return null;
 
   // 접힌 상태에서는 툴팁으로 표시
@@ -133,6 +145,8 @@ function NavItem({ href, icon, children, active, onClick, show }: NavItemProps) 
                 active ? "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800" : "text-gray-700 dark:text-gray-200 hover:text-primary dark:hover:text-primary hover:bg-primary/5 hover:border-primary/20 dark:hover:border-primary/30 border border-transparent hover:scale-105"
               )}
               onClick={handleClick}
+              onKeyDown={handleKeyDown}
+              tabIndex={0}
               aria-label={typeof children === 'string' ? children : children?.toString()}
             >
               <div className="transition-all duration-200 group-hover:scale-110 group-hover:rotate-6">
@@ -157,6 +171,8 @@ function NavItem({ href, icon, children, active, onClick, show }: NavItemProps) 
         active ? "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800" : "text-gray-700 dark:text-gray-200 hover:text-primary dark:hover:text-primary hover:bg-primary/5 hover:border-primary/20 dark:hover:border-primary/30 border border-transparent hover:scale-105"
       )}
       onClick={handleClick}
+      onKeyDown={handleKeyDown}
+      tabIndex={0}
       aria-current={active ? "page" : undefined}
     >
       <div className="transition-all duration-200 group-hover:scale-110 group-hover:rotate-6 mr-3">

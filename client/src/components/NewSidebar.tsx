@@ -69,6 +69,16 @@ function NavItem({ href, icon, children, active, onClick, show }: NavItemProps) 
     }
     // onClick이 없으면 Link의 기본 라우팅 동작 사용
   };
+
+  // 키보드 이벤트 핸들러
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      if (onClick) {
+        onClick(href);
+      }
+    }
+  };
   
   return (
     <Link href={href}>
@@ -80,6 +90,8 @@ function NavItem({ href, icon, children, active, onClick, show }: NavItemProps) 
             : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800/50"
         )}
         onClick={handleClick}
+        onKeyDown={handleKeyDown}
+        tabIndex={0}
       >
         {icon}
         <span>{children}</span>

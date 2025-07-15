@@ -453,7 +453,12 @@ export default function PetOwnerDashboard({ onAction }: PetOwnerDashboardProps) 
                   className="w-full h-full object-cover"
                 />
               </div>
-              <Link href="/my-pets" className="ml-2 text-xs text-primary hover:text-primary/80">관리하기</Link>
+              <button 
+                onClick={() => setLocation('/my-pets')}
+                className="ml-2 text-xs text-primary hover:text-primary/80"
+              >
+                관리하기
+              </button>
             </div>
           </div>
         </Card>
@@ -533,7 +538,12 @@ export default function PetOwnerDashboard({ onAction }: PetOwnerDashboardProps) 
       <div className="mb-12">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-xl font-bold text-gray-800 dark:text-white">진행 중인 강의</h2>
-          <Link href="/my-courses" className="text-sm text-primary hover:text-primary/80 font-medium">모두 보기</Link>
+          <button 
+            onClick={() => setLocation('/my-courses')}
+            className="text-sm text-primary hover:text-primary/80 font-medium"
+          >
+            모두 보기
+          </button>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
