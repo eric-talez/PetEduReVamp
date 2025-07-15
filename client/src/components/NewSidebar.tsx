@@ -61,6 +61,15 @@ interface NavItemProps {
 
 function NavItem({ href, icon, children, active, onClick, show }: NavItemProps) {
   if (!show) return null;
+  
+  const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    if (onClick) {
+      e.preventDefault();
+      onClick(href);
+    }
+    // onClick이 없으면 Link의 기본 라우팅 동작 사용
+  };
+  
   return (
     <Link href={href}>
       <a
@@ -70,7 +79,7 @@ function NavItem({ href, icon, children, active, onClick, show }: NavItemProps) 
             ? "bg-primary/10 text-primary"
             : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800/50"
         )}
-        onClick={() => onClick && onClick(href)}
+        onClick={handleClick}
       >
         {icon}
         <span>{children}</span>

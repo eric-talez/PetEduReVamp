@@ -103,6 +103,8 @@ interface NavItemProps {
 
 function NavItem({ href, icon, children, active, onClick, show }: NavItemProps) {
   const { expanded } = useContext(SidebarContext);
+  const [, setLocation] = useLocation();
+  
   const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     // 기본 동작 방지하고 커스텀 라우팅 로직 사용
     e.preventDefault();
@@ -111,8 +113,8 @@ function NavItem({ href, icon, children, active, onClick, show }: NavItemProps) 
       onClick(href);
     } else {
       console.log("기본 네비게이션 시도:", href);
-      // onClick이 없는 경우 window.location 사용 (임시 조치)
-      window.location.href = href;
+      // wouter를 사용한 라우팅
+      setLocation(href);
     }
   };
 

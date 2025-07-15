@@ -2,6 +2,7 @@ import React, { useContext } from 'react';
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { SidebarContext } from "./Sidebar";
+import { useLocation } from "wouter";
 
 interface AccessibleNavItemProps {
   href: string;
@@ -21,6 +22,7 @@ interface AccessibleNavItemProps {
  */
 export function AccessibleNavItem({ href, icon, hoverIcon, children, active, onClick, show }: AccessibleNavItemProps) {
   const { expanded } = useContext(SidebarContext);
+  const [, setLocation] = useLocation();
   
   const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
@@ -29,7 +31,8 @@ export function AccessibleNavItem({ href, icon, hoverIcon, children, active, onC
       onClick(href);
     } else {
       console.log("기본 네비게이션 시도:", href);
-      window.location.href = href;
+      // wouter를 사용한 라우팅
+      setLocation(href);
     }
   };
   
@@ -93,7 +96,7 @@ export function AccessibleNavItem({ href, icon, hoverIcon, children, active, onC
           if (onClick) {
             onClick(href);
           } else {
-            window.location.href = href;
+            setLocation(href);
           }
         }
       }}
