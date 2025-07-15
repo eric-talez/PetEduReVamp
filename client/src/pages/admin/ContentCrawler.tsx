@@ -42,7 +42,12 @@ interface CrawledContent {
 interface CrawlResult {
   success: boolean;
   message: string;
-  data?: CrawledContent | CrawledContent[];
+  data?: {
+    crawledContent: CrawledContent;
+    post?: any;
+    foundArticles?: number;
+    allArticleUrls?: string[];
+  };
 }
 
 export default function ContentCrawler() {
@@ -53,6 +58,8 @@ export default function ContentCrawler() {
   const [progress, setProgress] = useState(0);
   const [results, setResults] = useState<CrawledContent[]>([]);
   const [error, setError] = useState('');
+  const [foundArticles, setFoundArticles] = useState<number>(0);
+  const [allArticleUrls, setAllArticleUrls] = useState<string[]>([]);
   const { toast } = useToast();
 
   // 단일 URL 크롤링
@@ -81,12 +88,27 @@ export default function ContentCrawler() {
       const result: CrawlResult = await response.json();
 
       if (result.success && result.data) {
-        setResults([result.data as CrawledContent]);
+        setResults([result.data.crawledContent]);
         setProgress(100);
+        
+        // 언론사 페이지 크롤링 결과 저장
+        if (result.data.foundArticles) {
+          setFoundArticles(result.data.foundArticles);
+          setAllArticleUrls(result.data.allArticleUrls || []);
+        }
+        
         toast({
           title: "크롤링 완료",
           description: result.message,
         });
+        
+        // 언론사 페이지 크롤링 결과 표시
+        if (result.data.foundArticles && result.data.foundArticles > 1) {
+          toast({
+            title: "언론사 페이지 크롤링",
+            description: `총 ${result.data.foundArticles}개의 반려견 관련 기사를 발견했습니다.`,
+          });
+        }
       } else {
         setError(result.message || '크롤링에 실패했습니다.');
       }
@@ -150,6 +172,8 @@ export default function ContentCrawler() {
     setResults([]);
     setError('');
     setProgress(0);
+    setFoundArticles(0);
+    setAllArticleUrls([]);
   };
 
   // 카테고리별 색상 매핑
@@ -324,6 +348,11 @@ export default function ContentCrawler() {
             <CardTitle className="flex items-center gap-2">
               <CheckCircle className="h-5 w-5 text-green-600" />
               크롤링 결과 ({results.length}개)
+              {foundArticles > 0 && (
+                <Badge variant="secondary" className="ml-2">
+                  총 {foundArticles}개 기사 발견
+                </Badge>
+              )}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -382,6 +411,35 @@ export default function ContentCrawler() {
                   )}
                 </div>
               ))}
+              
+              {/* 발견된 기사 목록 표시 */}
+              {allArticleUrls.length > 0 && (
+                <div className="mt-6 p-4 bg-blue-50 rounded-lg">
+                  <h4 className="font-semibold text-blue-900 mb-3 flex items-center gap-2">
+                    <Globe className="h-4 w-4" />
+                    발견된 반려견 관련 기사 ({allArticleUrls.length}개)
+                  </h4>
+                  <div className="space-y-2">
+                    {allArticleUrls.map((url, index) => (
+                      <div key={index} className="flex items-center justify-between p-2 bg-white rounded border">
+                        <span className="text-sm text-gray-600">기사 #{index + 1}</span>
+                        <a 
+                          href={url} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-1 text-blue-600 hover:text-blue-800 text-sm"
+                        >
+                          <ExternalLink className="h-3 w-3" />
+                          기사 보기
+                        </a>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="mt-3 text-xs text-blue-700">
+                    💡 언론사 페이지에서 자동으로 발견한 반려견 관련 기사들입니다. 각 기사를 개별적으로 크롤링하려면 단일 URL 탭에서 해당 기사 링크를 입력하세요.
+                  </div>
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>

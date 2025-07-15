@@ -3534,66 +3534,131 @@ app.get('/api/search', async (req, res) => {
 
       console.log(`[콘텐츠 크롤링] URL 크롤링 시작: ${url}`);
       
-      // 네이버 미디어 기사 크롤링
-      const crawledContent = await contentCrawler.crawlNaverMedia(url);
+      // 언론사 페이지인지 확인 (기자 페이지 URL 패턴)
+      const isJournalistPage = url.includes('/journalist/') || url.includes('/press/');
       
-      if (!crawledContent) {
-        return res.status(400).json({
-          success: false,
-          message: "크롤링에 실패했습니다. URL을 확인해주세요."
-        });
-      }
-
-      // 반려견 관련 콘텐츠인지 확인
-      const isPetRelated = crawledContent.tags.length > 0;
-      
-      if (!isPetRelated) {
-        return res.status(400).json({
-          success: false,
-          message: "반려견 관련 콘텐츠가 아닙니다."
-        });
-      }
-
-      // 자동으로 커뮤니티에 등록하는 경우
-      if (autoPost) {
-        const postData = {
-          title: crawledContent.title,
-          content: crawledContent.summary,
-          tags: crawledContent.tags,
-          category: crawledContent.category,
-          linkInfo: {
-            url: crawledContent.sourceUrl,
-            title: crawledContent.title,
-            description: crawledContent.summary,
-            thumbnail: crawledContent.thumbnailUrl
-          },
-          authorId: 1, // 관리자 ID
-          authorName: "TALEZ 관리자",
-          createdAt: new Date().toISOString(),
-          isPublished: true
-        };
-
-        // 커뮤니티 게시글로 등록
-        const newPost = await storage.createPost(postData);
+      if (isJournalistPage) {
+        console.log(`[콘텐츠 크롤링] 언론사 페이지 감지, 반려견 관련 기사 검색 시작`);
         
-        console.log(`[콘텐츠 크롤링] 커뮤니티 게시글 자동 등록 완료: ${newPost.id}`);
+        // 언론사 페이지에서 반려견 관련 기사 URL들 추출
+        const petArticleUrls = await contentCrawler.extractPetArticleUrls(url);
         
+        if (petArticleUrls.length === 0) {
+          return res.status(400).json({
+            success: false,
+            message: "해당 언론사 페이지에서 반려견 관련 기사를 찾을 수 없습니다."
+          });
+        }
+
+        console.log(`[콘텐츠 크롤링] ${petArticleUrls.length}개의 반려견 관련 기사 발견`);
+
+        // 첫 번째 기사를 크롤링하여 예시로 반환
+        const firstArticleContent = await contentCrawler.crawlNaverMedia(petArticleUrls[0]);
+        
+        if (!firstArticleContent) {
+          return res.status(400).json({
+            success: false,
+            message: "기사 크롤링에 실패했습니다."
+          });
+        }
+
+        let post = null;
+        if (autoPost) {
+          // 커뮤니티에 자동 등록
+          const postData = {
+            title: firstArticleContent.title,
+            content: firstArticleContent.summary,
+            tags: firstArticleContent.tags,
+            category: firstArticleContent.category,
+            linkInfo: {
+              url: firstArticleContent.sourceUrl,
+              title: firstArticleContent.title,
+              description: firstArticleContent.summary,
+              thumbnail: firstArticleContent.thumbnailUrl
+            },
+            authorId: 1, // 관리자 ID
+            authorName: "TALEZ 관리자",
+            createdAt: new Date().toISOString(),
+            isPublished: true
+          };
+
+          post = await storage.createPost(postData);
+          console.log(`[콘텐츠 크롤링] 커뮤니티 게시글 자동 등록 완료: ${post.id}`);
+        }
+
         return res.json({
           success: true,
-          message: "크롤링 및 커뮤니티 등록이 완료되었습니다.",
+          message: autoPost ? `크롤링 및 커뮤니티 등록이 완료되었습니다. (총 ${petArticleUrls.length}개 기사 발견)` : `크롤링이 완료되었습니다. (총 ${petArticleUrls.length}개 기사 발견)`,
           data: {
-            crawledContent,
-            post: newPost
+            crawledContent: firstArticleContent,
+            post,
+            foundArticles: petArticleUrls.length,
+            allArticleUrls: petArticleUrls.slice(0, 10) // 최대 10개만 미리보기
           }
         });
-      }
 
-      // 크롤링 결과만 반환
-      res.json({
-        success: true,
-        message: "크롤링이 완료되었습니다.",
-        data: crawledContent
-      });
+      } else {
+        // 단일 기사 크롤링
+        const crawledContent = await contentCrawler.crawlNaverMedia(url);
+        
+        if (!crawledContent) {
+          return res.status(400).json({
+            success: false,
+            message: "크롤링에 실패했습니다. URL을 확인해주세요."
+          });
+        }
+
+        // 반려견 관련 콘텐츠인지 확인
+        const isPetRelated = crawledContent.tags.length > 0;
+        
+        if (!isPetRelated) {
+          return res.status(400).json({
+            success: false,
+            message: "반려견 관련 콘텐츠가 아닙니다."
+          });
+        }
+
+        // 자동으로 커뮤니티에 등록하는 경우
+        if (autoPost) {
+          const postData = {
+            title: crawledContent.title,
+            content: crawledContent.summary,
+            tags: crawledContent.tags,
+            category: crawledContent.category,
+            linkInfo: {
+              url: crawledContent.sourceUrl,
+              title: crawledContent.title,
+              description: crawledContent.summary,
+              thumbnail: crawledContent.thumbnailUrl
+            },
+            authorId: 1, // 관리자 ID
+            authorName: "TALEZ 관리자",
+            createdAt: new Date().toISOString(),
+            isPublished: true
+          };
+
+          // 커뮤니티 게시글로 등록
+          const newPost = await storage.createPost(postData);
+          
+          console.log(`[콘텐츠 크롤링] 커뮤니티 게시글 자동 등록 완료: ${newPost.id}`);
+          
+          return res.json({
+            success: true,
+            message: "크롤링 및 커뮤니티 등록이 완료되었습니다.",
+            data: {
+              crawledContent,
+              post: newPost
+            }
+          });
+        }
+
+        // 크롤링 결과만 반환
+        res.json({
+          success: true,
+          message: "크롤링이 완료되었습니다.",
+          data: crawledContent
+        });
+      }
 
     } catch (error) {
       console.error('콘텐츠 크롤링 오류:', error);

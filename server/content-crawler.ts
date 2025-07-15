@@ -14,6 +14,78 @@ interface CrawledContent {
 
 export class ContentCrawler {
   
+  // 언론사 페이지에서 반려견 관련 기사 URL들 추출
+  async extractPetArticleUrls(journalistPageUrl: string): Promise<string[]> {
+    try {
+      const response = await fetch(journalistPageUrl);
+      const html = await response.text();
+      const dom = new JSDOM(html);
+      const document = dom.window.document;
+
+      // 기사 링크들 추출
+      const articleLinks = Array.from(document.querySelectorAll('a[href*="/article/"]'))
+        .map(link => link.getAttribute('href'))
+        .filter(href => href && href.includes('n.news.naver.com'))
+        .map(href => href!.startsWith('http') ? href : `https://n.news.naver.com${href}`);
+
+      console.log(`[언론사 페이지] 총 ${articleLinks.length}개 기사 링크 발견`);
+
+      // 각 기사 제목을 확인하여 반려견 관련 기사만 필터링
+      const petArticleUrls: string[] = [];
+      
+      for (const articleUrl of articleLinks) {
+        try {
+          const articleResponse = await fetch(articleUrl);
+          const articleHtml = await articleResponse.text();
+          const articleDom = new JSDOM(articleHtml);
+          const articleDoc = articleDom.window.document;
+          
+          const titleElement = articleDoc.querySelector('h2.media_end_head_headline') || 
+                              articleDoc.querySelector('.news_headline') ||
+                              articleDoc.querySelector('h1') ||
+                              articleDoc.querySelector('title');
+          const title = titleElement?.textContent?.trim() || '';
+          
+          // 반려견 관련 키워드 체크
+          if (this.isPetRelatedContent(title)) {
+            petArticleUrls.push(articleUrl);
+            console.log(`[반려견 기사 발견] ${title}`);
+          }
+          
+          // 요청 간격 조절 (1초 대기)
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          
+        } catch (error) {
+          console.error(`기사 확인 실패: ${articleUrl}`, error);
+        }
+      }
+
+      console.log(`[언론사 페이지] 총 ${petArticleUrls.length}개 반려견 관련 기사 발견`);
+      return petArticleUrls;
+      
+    } catch (error) {
+      console.error('언론사 페이지 크롤링 오류:', error);
+      return [];
+    }
+  }
+
+  // 반려견 관련 콘텐츠 판별
+  private isPetRelatedContent(text: string): boolean {
+    const petKeywords = [
+      '반려견', '반려동물', '강아지', '개', '펫', '애완동물',
+      '댕댕이', '댕냥이', '반려', '펫푸드', '사료',
+      '훈련', '교육', '훈련사', '수의사', '동물병원',
+      '비글', '골든리트리버', '말티즈', '포메라니안',
+      '산책', '미용', '그루밍', '목욕', '간식',
+      '입양', '분양', '보호소', '유기견', '구조',
+      '캠핑', '여행', '호텔', '동반', '펜션'
+    ];
+
+    return petKeywords.some(keyword => 
+      text.toLowerCase().includes(keyword.toLowerCase())
+    );
+  }
+
   // 네이버 미디어 기사 크롤링
   async crawlNaverMedia(url: string): Promise<CrawledContent | null> {
     try {
