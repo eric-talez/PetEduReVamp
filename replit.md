@@ -151,13 +151,17 @@ TALEZ is a comprehensive pet education and e-commerce platform that combines AI-
 
 ## Changelog
 
-- July 15, 2025. **REGISTRATION APPROVAL SYSTEM FIXED** - 등록 신청 승인 프로세스 오류 해결 및 안정화:
+- July 15, 2025. **REGISTRATION APPROVAL SYSTEM ENHANCED** - 등록 신청 승인 프로세스 및 초기화 기능 완성:
   - **API Error Resolution**: 등록 신청 승인 시 발생하던 서버 오류 완전 해결
   - **Missing Method Addition**: storage.ts에 createCourse, createTrainer 메소드 추가
+  - **Processing Cleanup Feature**: 처리 완료된 신청 초기화 기능 구현
+  - **Clear Processed API**: DELETE /api/admin/registrations/clear-processed 엔드포인트 추가
+  - **UI Enhancement**: 상단에 초기화 버튼 추가 (승인/거부 개수 표시)
   - **Safe Logging**: 신청 타입별 안전한 로깅 메시지 구현 (trainer, institute, curriculum)
   - **Error Handling**: 승인 프로세스 중 발생할 수 있는 오류 상황 대응
   - **Storage Integration**: 승인된 데이터의 올바른 저장소 반영 보장
-  - **Production Ready**: 모든 등록 신청 승인/거부 기능 정상 동작
+  - **Admin UX Improvement**: 처리 완료된 항목 일괄 정리로 관리 효율성 향상
+  - **Production Ready**: 모든 등록 신청 승인/거부/초기화 기능 정상 동작
 - July 15, 2025. **ADMIN CURRICULUM MANAGEMENT SYSTEM STABILIZED** - 커리큘럼 등록 완료 프로세스 안정화 및 사용자 경험 개선:
   - **Runtime Error Resolution**: AdminCurriculum.tsx의 1553번 줄 modules 변수 미정의 오류 완전 해결
   - **Safe Data Handling**: curriculum.modules?.length || 0 방식으로 안전한 배열 접근 적용

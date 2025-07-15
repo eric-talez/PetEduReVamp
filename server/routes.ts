@@ -5422,6 +5422,48 @@ app.get('/api/search', async (req, res) => {
     }
   });
 
+  // 처리 완료된 등록 신청 초기화 (관리자용)
+  app.delete('/api/admin/registrations/clear-processed', async (req, res) => {
+    try {
+      if (!global.registrationApplications) {
+        global.registrationApplications = [];
+      }
+
+      // 처리 완료된 신청 (승인됨 또는 거부됨) 찾기
+      const processedApplications = global.registrationApplications.filter(
+        app => app.status === 'approved' || app.status === 'rejected'
+      );
+
+      if (processedApplications.length === 0) {
+        return res.json({
+          success: true,
+          message: '처리 완료된 신청이 없습니다.',
+          clearedCount: 0
+        });
+      }
+
+      // 처리 완료된 신청 제거 (pending 상태만 유지)
+      global.registrationApplications = global.registrationApplications.filter(
+        app => app.status === 'pending'
+      );
+
+      console.log(`[등록 신청 초기화] ${processedApplications.length}개의 처리 완료된 신청이 초기화되었습니다.`);
+
+      res.json({
+        success: true,
+        message: `${processedApplications.length}개의 처리 완료된 신청이 초기화되었습니다.`,
+        clearedCount: processedApplications.length
+      });
+
+    } catch (error) {
+      console.error('처리 완료된 신청 초기화 실패:', error);
+      res.status(500).json({
+        success: false,
+        message: '처리 완료된 신청 초기화 중 오류가 발생했습니다.'
+      });
+    }
+  });
+
   // 커리큘럼 관리 API
   app.get('/api/courses/curriculum', async (req, res) => {
     try {

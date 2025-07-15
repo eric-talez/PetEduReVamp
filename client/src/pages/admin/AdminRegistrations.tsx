@@ -133,6 +133,58 @@ export default function AdminRegistrations() {
     }
   };
 
+  // 처리 완료된 신청 초기화 (승인/거부된 항목들을 삭제)
+  const handleClearProcessedApplications = async () => {
+    try {
+      const processedApplications = applications.filter(app => app.status === 'approved' || app.status === 'rejected');
+      
+      if (processedApplications.length === 0) {
+        toast({
+          title: "초기화할 항목 없음",
+          description: "처리 완료된 신청이 없습니다.",
+          variant: "default"
+        });
+        return;
+      }
+
+      if (!confirm(`처리 완료된 ${processedApplications.length}개의 신청을 초기화하시겠습니까?`)) {
+        return;
+      }
+
+      const response = await fetch('/api/admin/registrations/clear-processed', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        toast({
+          title: "초기화 완료",
+          description: `${data.clearedCount}개의 처리 완료된 신청이 초기화되었습니다.`,
+          variant: "default"
+        });
+        
+        fetchApplications(); // 목록 새로고침
+      } else {
+        toast({
+          title: "오류",
+          description: data.message || "초기화 중 오류가 발생했습니다.",
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      console.error('처리 완료된 신청 초기화 실패:', error);
+      toast({
+        title: "오류",
+        description: "초기화 중 오류가 발생했습니다.",
+        variant: "destructive"
+      });
+    }
+  };
+
   // 통계 계산
   const stats = {
     pending: applications.filter(app => app.status === 'pending').length,
@@ -179,10 +231,25 @@ export default function AdminRegistrations() {
   return (
     <div className="container mx-auto p-6">
       <div className="mb-6">
-        <h1 className="text-3xl font-bold">등록 신청 관리</h1>
-        <p className="text-gray-600 dark:text-gray-400 mt-2">
-          훈련사 및 기관 등록 신청을 검토하고 승인/거부를 관리합니다.
-        </p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold">등록 신청 관리</h1>
+            <p className="text-gray-600 dark:text-gray-400 mt-2">
+              훈련사 및 기관 등록 신청을 검토하고 승인/거부를 관리합니다.
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <Button
+              onClick={handleClearProcessedApplications}
+              variant="outline"
+              className="text-gray-600 border-gray-300 hover:bg-gray-50 hover:border-gray-400"
+              disabled={stats.approved === 0 && stats.rejected === 0}
+            >
+              <RotateCcw className="w-4 h-4 mr-2" />
+              처리 완료된 신청 초기화 ({stats.approved + stats.rejected})
+            </Button>
+          </div>
+        </div>
       </div>
 
       {/* 통계 카드 */}
