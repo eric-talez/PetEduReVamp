@@ -78,11 +78,26 @@ export class ContentCrawler {
       '비글', '골든리트리버', '말티즈', '포메라니안',
       '산책', '미용', '그루밍', '목욕', '간식',
       '입양', '분양', '보호소', '유기견', '구조',
-      '캠핑', '여행', '호텔', '동반', '펜션'
+      '캠핑', '여행', '호텔', '동반', '펜션',
+      '캐니', '펫브랜드', '반려인', '고양이', '냥이'
     ];
 
+    // 제외할 키워드 (일반적인 단어들)
+    const excludeKeywords = [
+      '급식봉사', '급식소', '급식센터', '무료급식', '봉사활동',
+      '학교급식', '공장', '회사', '기업', '사업', '산업',
+      '정치', '경제', '사회', '문화', '스포츠', '연예'
+    ];
+    
+    const lowercaseText = text.toLowerCase();
+    
+    // 제외 키워드가 있으면 반려견 관련이 아님
+    if (excludeKeywords.some(keyword => lowercaseText.includes(keyword.toLowerCase()))) {
+      return false;
+    }
+
     return petKeywords.some(keyword => 
-      text.toLowerCase().includes(keyword.toLowerCase())
+      lowercaseText.includes(keyword.toLowerCase())
     );
   }
 
@@ -279,8 +294,12 @@ export class ContentCrawler {
       return null;
     }
     
+    // 새로운 ID 생성 (현재 최고 ID + 1)
+    const maxId = Math.max(...posts.map((p: any) => p.id), 0);
+    const newId = maxId + 1;
+    
     const post = {
-      id: getNextPostId(),
+      id: newId,
       title: content.title,
       content: content.summary,
       tag: content.category,
@@ -303,6 +322,7 @@ export class ContentCrawler {
 
     posts.push(post);
     console.log(`[커뮤니티 등록] 게시글 추가 완료: ${post.id} - ${post.title}`);
+    console.log(`[커뮤니티 등록] 현재 총 게시글 수: ${posts.length}`);
     
     return post;
   }
