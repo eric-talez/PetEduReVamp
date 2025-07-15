@@ -75,7 +75,9 @@ export default function AdminRegistrations() {
         }
         const data = await response.json();
         console.log('📋 등록 신청 데이터:', data);
-        setApplications(data);
+        // API 응답 구조에 맞춰 데이터 추출
+        const applicationsArray = data.applications || [];
+        setApplications(applicationsArray);
       } catch (error) {
         console.error('등록 신청 데이터 가져오기 실패:', error);
         toast({
@@ -117,7 +119,8 @@ export default function AdminRegistrations() {
       const refreshResponse = await fetch('/api/admin/registrations');
       if (refreshResponse.ok) {
         const refreshData = await refreshResponse.json();
-        setApplications(refreshData);
+        const refreshArray = refreshData.applications || [];
+        setApplications(refreshArray);
       }
 
       // 선택된 신청 업데이트
@@ -162,7 +165,8 @@ export default function AdminRegistrations() {
       const refreshResponse = await fetch('/api/admin/registrations');
       if (refreshResponse.ok) {
         const refreshData = await refreshResponse.json();
-        setApplications(refreshData);
+        const refreshArray = refreshData.applications || [];
+        setApplications(refreshArray);
       }
 
       // 선택된 신청이 삭제되었다면 선택 해제
