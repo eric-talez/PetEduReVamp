@@ -97,6 +97,14 @@ export default function AdminContents() {
   const [showContentModal, setShowContentModal] = useState(false);
   const [modalMode, setModalMode] = useState<'view' | 'edit' | 'add'>('view');
   
+  // 커뮤니티 관리 상태
+  const [communityPosts, setCommunityPosts] = useState<any[]>([]);
+  const [communityLoading, setCommunityLoading] = useState(false);
+  const [communityPage, setCommunityPage] = useState(1);
+  const [communitySearch, setCommunitySearch] = useState('');
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [postToDelete, setPostToDelete] = useState<any>(null);
+  
   // Banner management state
   const [showBannerDialog, setShowBannerDialog] = useState(false);
   const [bannerFormData, setBannerFormData] = useState({
@@ -151,6 +159,55 @@ export default function AdminContents() {
         variant: 'destructive',
       });
     },
+  });
+
+  // 커뮤니티 게시글 데이터 조회
+  const { data: communityData = { posts: [], total: 0 }, isLoading: communityPostsLoading, refetch: refetchCommunityPosts } = useQuery({
+    queryKey: ['/api/community/posts', communityPage, communitySearch],
+    queryFn: async () => {
+      const params = new URLSearchParams({
+        page: communityPage.toString(),
+        limit: '10',
+        ...(communitySearch && { searchQuery: communitySearch })
+      });
+      const response = await fetch(`/api/community/posts?${params}`, {
+        credentials: 'include'
+      });
+      if (!response.ok) {
+        throw new Error('커뮤니티 게시글을 불러오는데 실패했습니다');
+      }
+      return response.json();
+    }
+  });
+
+  // 커뮤니티 게시글 삭제 mutation
+  const deletePostMutation = useMutation({
+    mutationFn: async (postId: number) => {
+      const response = await fetch(`/api/admin/community/posts/${postId}`, {
+        method: 'DELETE',
+        credentials: 'include'
+      });
+      if (!response.ok) {
+        throw new Error('게시글 삭제에 실패했습니다');
+      }
+      return response.json();
+    },
+    onSuccess: (data) => {
+      toast({ 
+        title: '성공', 
+        description: `게시글 "${data.deletedPost.title}"이 성공적으로 삭제되었습니다.` 
+      });
+      setShowDeleteConfirm(false);
+      setPostToDelete(null);
+      refetchCommunityPosts();
+    },
+    onError: (error: Error) => {
+      toast({
+        title: '오류',
+        description: error.message,
+        variant: 'destructive',
+      });
+    }
   });
 
   // Fetch banners

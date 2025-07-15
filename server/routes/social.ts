@@ -1240,5 +1240,47 @@ export function setupSocialRoutes(app: Express) {
     }
   });
 
+  // 관리자 글 삭제 API
+  app.delete('/api/admin/community/posts/:id', (req, res) => {
+    try {
+      const postId = parseInt(req.params.id);
+      
+      if (isNaN(postId)) {
+        return res.status(400).json({ 
+          success: false, 
+          error: '잘못된 게시글 ID입니다.' 
+        });
+      }
+
+      const postIndex = posts.findIndex(post => post.id === postId);
+      
+      if (postIndex === -1) {
+        return res.status(404).json({ 
+          success: false, 
+          error: '게시글을 찾을 수 없습니다.' 
+        });
+      }
+
+      const deletedPost = posts.splice(postIndex, 1)[0];
+      
+      console.log(`[관리자 글 삭제] 게시글 삭제됨: ID ${postId}, 제목: ${deletedPost.title}`);
+      
+      res.json({
+        success: true,
+        message: '게시글이 성공적으로 삭제되었습니다.',
+        deletedPost: {
+          id: deletedPost.id,
+          title: deletedPost.title
+        }
+      });
+    } catch (error) {
+      console.error('[관리자 글 삭제] 오류:', error);
+      res.status(500).json({ 
+        success: false, 
+        error: '게시글 삭제 중 오류가 발생했습니다.' 
+      });
+    }
+  });
+
   console.log('[Social Routes] 커뮤니티 API 라우트가 등록되었습니다.');
 }

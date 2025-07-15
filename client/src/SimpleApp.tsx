@@ -65,6 +65,7 @@ import TrainerCertificationManagement from "./pages/admin/TrainerCertificationMa
 import AdminProductPricing from "./pages/admin/AdminProductPricing";
 import AdminSettlementPage from "./pages/admin/settlement";
 import ContentCrawler from "./pages/admin/ContentCrawler";
+import AdminCommunityManagement from "./pages/admin/AdminCommunityManagement";
 
 
 
@@ -319,6 +320,7 @@ function AppLayout({ children }: { children: ReactNode }) {
                   <Route path="/admin/locations" component={LocationManagement} />
                   <Route path="/admin/settings" component={AdminSettings} />
                   <Route path="/admin/contents" component={AdminContents} />
+                  <Route path="/admin/community" component={AdminCommunityManagement} />
                   <Route path="/admin/curriculum" component={AdminCurriculum} />
                   <Route path="/admin/members-status" component={AdminMembersStatus} />
                   <Route path="/admin/trainer-certification" component={TrainerCertificationManagement} />
