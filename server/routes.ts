@@ -5399,7 +5399,13 @@ app.get('/api/search', async (req, res) => {
         }
       }
 
-      console.log(`[등록 신청 처리] ${status} 완료:`, application.applicantInfo.personalInfo?.name || application.applicantInfo.basicInfo?.instituteName);
+      const applicationName = 
+        application.type === 'trainer' ? application.applicantInfo.personalInfo?.name :
+        application.type === 'institute' ? application.applicantInfo.basicInfo?.instituteName :
+        application.type === 'curriculum' ? application.applicantInfo.curriculumInfo?.title :
+        '알 수 없음';
+      
+      console.log(`[등록 신청 처리] ${status} 완료:`, applicationName);
 
       res.json({
         success: true,

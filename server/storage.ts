@@ -1386,6 +1386,81 @@ class Storage {
     console.log('[Storage] 일반 업체 정보 업데이트:', businessId, correctionType, proposedValue);
   }
 
+  // 강의 생성
+  async createCourse(courseData: any): Promise<any> {
+    try {
+      const newCourse = {
+        id: courseData.id || `course-${Date.now()}`,
+        title: courseData.title,
+        instructor: courseData.instructor,
+        description: courseData.description,
+        category: courseData.category,
+        difficulty: courseData.difficulty,
+        price: courseData.price,
+        duration: courseData.duration,
+        modules: courseData.modules || [],
+        enrollmentCount: courseData.enrollmentCount || 0,
+        rating: courseData.rating || 0,
+        reviewCount: courseData.reviewCount || 0,
+        isActive: courseData.isActive !== false,
+        featured: courseData.featured || false,
+        tags: courseData.tags || [],
+        createdAt: courseData.createdAt || new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+
+      this.courses.push(newCourse);
+      console.log('[Storage] 새 강의 생성:', newCourse.title);
+      return newCourse;
+    } catch (error) {
+      console.error('[Storage] 강의 생성 실패:', error);
+      throw error;
+    }
+  }
+
+  // 모든 강의 조회
+  async getAllCourses(): Promise<any[]> {
+    return this.courses;
+  }
+
+  // 훈련사 생성
+  async createTrainer(trainerData: any): Promise<any> {
+    try {
+      const newTrainer = {
+        id: trainerData.id || Date.now(),
+        name: trainerData.name,
+        email: trainerData.email,
+        phone: trainerData.phone,
+        bio: trainerData.bio,
+        specialties: trainerData.specialties || [],
+        experience: trainerData.experience || 0,
+        certifications: trainerData.certifications || [],
+        price: trainerData.price || 0,
+        location: trainerData.location,
+        address: trainerData.address,
+        profileImage: trainerData.profileImage,
+        rating: trainerData.rating || 0,
+        reviewCount: trainerData.reviewCount || 0,
+        featured: trainerData.featured || false,
+        isActive: trainerData.isActive !== false,
+        createdAt: trainerData.createdAt || new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+
+      // 전역 훈련사 목록에 추가
+      if (!global.trainers) {
+        global.trainers = [];
+      }
+      global.trainers.push(newTrainer);
+      
+      console.log('[Storage] 새 훈련사 생성:', newTrainer.name);
+      return newTrainer;
+    } catch (error) {
+      console.error('[Storage] 훈련사 생성 실패:', error);
+      throw error;
+    }
+  }
+
   // 정보 수정 요청 목록 조회
   getCorrectionRequests() {
     return [
