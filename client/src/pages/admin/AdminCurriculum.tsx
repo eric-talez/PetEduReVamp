@@ -1114,11 +1114,20 @@ export default function AdminCurriculum() {
       } else {
         throw new Error(data.message || '자동 등록에 실패했습니다.');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("자동 등록 오류:", error);
+      let errorMessage = error?.message || "자동 등록 중 오류가 발생했습니다.";
+      
+      // 특정 오류 타입에 따른 맞춤형 안내
+      if (errorMessage.includes('length') || errorMessage.includes('undefined')) {
+        errorMessage = "파일 양식이 맞지 않습니다. 엑셀 파일의 컬럼 순서와 내용을 확인해주세요.";
+      } else if (errorMessage.includes('parsing') || errorMessage.includes('읽기')) {
+        errorMessage = "파일을 읽을 수 없습니다. 파일이 손상되었거나 지원되지 않는 형식일 수 있습니다.";
+      }
+      
       toast({
         title: "자동 등록 실패",
-        description: error instanceof Error ? error.message : "자동 등록 중 오류가 발생했습니다.",
+        description: errorMessage,
         variant: "destructive"
       });
     } finally {
@@ -1541,7 +1550,7 @@ export default function AdminCurriculum() {
                             {getDifficultyText(curriculum.difficulty)}
                           </Badge>
                           <span className="text-xs text-gray-500 dark:text-gray-400">
-                            {curriculum.modules.length}개 모듈
+                            {modules.length}개 모듈
                           </span>
                           <Badge variant="outline" className="text-xs">
                             {curriculum.status}
@@ -1780,7 +1789,7 @@ export default function AdminCurriculum() {
                         저장
                       </Button>
                       <Button
-                        onClick={() => selectedCurriculum && publishCurriculum(selectedCurriculum)}
+                        onClick={() => selectedCurriculum && publishCurriculum(selectedCurriculum.id)}
                         size="sm"
                         className="flex-1 bg-green-600 hover:bg-green-700"
                         disabled={selectedCurriculum?.status === 'published'}
@@ -1914,14 +1923,15 @@ export default function AdminCurriculum() {
 
             <div className="space-y-4">
               {curriculums.map((curriculum) => {
-                const totalModules = curriculum.modules.length;
-                const modulesWithVideos = curriculum.modules.filter(module => 
+                const modules = curriculum.modules || [];
+                const totalModules = modules.length;
+                const modulesWithVideos = modules.filter(module => 
                   module.videos && module.videos.length > 0
                 ).length;
-                const totalVideos = curriculum.modules.reduce((sum, module) => 
+                const totalVideos = modules.reduce((sum, module) => 
                   sum + (module.videos ? module.videos.length : 0), 0
                 );
-                const readyVideos = curriculum.modules.reduce((sum, module) => 
+                const readyVideos = modules.reduce((sum, module) => 
                   sum + (module.videos ? module.videos.filter(v => v.status === 'ready').length : 0), 0
                 );
                 const videoProgress = totalVideos > 0 ? (readyVideos / totalVideos) * 100 : 0;
@@ -2045,11 +2055,11 @@ export default function AdminCurriculum() {
                           </div>
 
                           {/* 모듈별 영상 상태 */}
-                          {curriculum.modules.length > 0 && (
+                          {modules.length > 0 && (
                             <div className="border-t pt-4">
                               <h4 className="text-sm font-medium text-gray-700 mb-3">모듈별 영상 등록 현황</h4>
                               <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                                {curriculum.modules.slice(0, 6).map((module, index) => (
+                                {modules.slice(0, 6).map((module, index) => (
                                   <div key={module.id} className="flex items-center justify-between p-2 bg-gray-50 rounded text-sm">
                                     <div className="flex items-center gap-2">
                                       <span className="bg-blue-100 text-blue-600 text-xs px-2 py-1 rounded font-medium">
@@ -2079,9 +2089,9 @@ export default function AdminCurriculum() {
                                     </div>
                                   </div>
                                 ))}
-                                {curriculum.modules.length > 6 && (
+                                {modules.length > 6 && (
                                   <div className="text-xs text-gray-500 flex items-center justify-center">
-                                    외 {curriculum.modules.length - 6}개 모듈
+                                    외 {modules.length - 6}개 모듈
                                   </div>
                                 )}
                               </div>
@@ -3032,11 +3042,29 @@ export default function AdminCurriculum() {
                   onChange={(e) => setSelectedFiles(e.target.files)}
                   className="w-full p-2 border border-gray-300 rounded-md"
                 />
+                <div className="mt-2 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                  <h4 className="text-sm font-medium text-yellow-800 mb-2">📋 엑셀 파일 양식 안내</h4>
+                  <div className="text-xs text-yellow-700 space-y-1">
+                    <p><strong>컬럼 순서:</strong> 회차 | 제목 | 내용 | 설명 | 준비물 | 유료/무료</p>
+                    <p><strong>유료/무료 컬럼:</strong> "유료" 또는 "무료"로 입력</p>
+                    <p><strong>첫 번째 행:</strong> 커리큘럼 제목 (필수)</p>
+                    <p><strong>두 번째 행:</strong> 커리큘럼 설명 (선택사항)</p>
+                    <p><strong>세 번째 행부터:</strong> 각 회차별 모듈 정보</p>
+                  </div>
+                  <div className="mt-2 pt-2 border-t border-yellow-200">
+                    <p className="text-xs text-yellow-600">
+                      <strong>⚠️ 주의:</strong> 양식이 맞지 않으면 오류가 발생할 수 있습니다. 
+                      <button 
+                        onClick={handleDownloadTemplate}
+                        className="text-blue-600 hover:text-blue-800 underline ml-1"
+                      >
+                        표준 양식 다운로드
+                      </button>
+                    </p>
+                  </div>
+                </div>
                 <p className="text-xs text-gray-500 mt-1">
                   지원 형식: .hwp, .hwpx, .docx, .doc, .txt, .xlsx, .xls
-                </p>
-                <p className="text-xs text-blue-600 mt-1">
-                  💡 엑셀 파일(.xlsx/.xls): 회차별 유료/무료 정보 자동 추출
                 </p>
               </div>
               
