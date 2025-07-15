@@ -215,24 +215,36 @@ export class ContentCrawler {
 
   // 크롤링된 콘텐츠를 커뮤니티에 등록
   async postToCommunity(content: CrawledContent, storage: any): Promise<any> {
-    const postData = {
+    // social.ts의 posts 배열에 직접 추가하기 위해 모듈 로드
+    const socialRoutes = require('./routes/social');
+    const posts = socialRoutes.posts;
+    
+    const post = {
+      id: socialRoutes.getNextPostId(),
       title: content.title,
       content: content.summary,
-      tags: content.tags,
+      tag: content.category,
       category: content.category,
+      authorId: 1,
+      author: { id: 1, name: 'TALEZ 관리자' },
+      likes: 0,
+      comments: 0,
+      views: 0,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      hidden: false,
       linkInfo: {
         url: content.sourceUrl,
         title: content.title,
         description: content.summary,
-        thumbnail: content.thumbnailUrl
-      },
-      authorId: 1, // 관리자 ID
-      authorName: "TALEZ 관리자",
-      createdAt: new Date().toISOString(),
-      isPublished: true
+        image: content.thumbnailUrl
+      }
     };
 
-    return await storage.createPost(postData);
+    posts.push(post);
+    console.log(`[커뮤니티 등록] 게시글 추가 완료: ${post.id} - ${post.title}`);
+    
+    return post;
   }
 }
 

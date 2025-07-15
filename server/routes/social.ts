@@ -752,6 +752,11 @@ export function setupSocialRoutes(app: Express) {
   let nextPostId = 38;
   let nextCommentId = 1;
 
+  // posts 배열을 export하여 다른 모듈에서 접근 가능하게 함
+  module.exports.posts = posts;
+  module.exports.getNextPostId = () => nextPostId++;
+  module.exports.updateNextPostId = (id: number) => { nextPostId = id; };
+
   // 게시글 목록 조회
   app.get('/api/community/posts', (req, res) => {
     try {
