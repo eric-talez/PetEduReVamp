@@ -89,52 +89,99 @@ export class ContentCrawler {
   // 네이버 미디어 기사 크롤링
   async crawlNaverMedia(url: string): Promise<CrawledContent | null> {
     try {
-      const response = await fetch(url);
+      const response = await fetch(url, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+        }
+      });
       const html = await response.text();
       const dom = new JSDOM(html);
       const document = dom.window.document;
 
-      // 기사 제목
+      // 기사 제목 (네이버 뉴스 구조에 맞게 업데이트)
       const titleElement = document.querySelector('h2.media_end_head_headline') || 
+                          document.querySelector('.media_end_head_headline') ||
                           document.querySelector('.news_headline') ||
                           document.querySelector('h1') ||
                           document.querySelector('title');
-      const title = titleElement?.textContent?.trim() || '제목 없음';
+      const title = titleElement?.textContent?.trim()?.replace(/\s+/g, ' ') || '제목 없음';
 
-      // 기사 내용
+      // 기사 내용 (더 정확한 선택자 사용)
       const contentElement = document.querySelector('#dic_area') ||
+                            document.querySelector('.go_trans._article_content') ||
                             document.querySelector('.news_article') ||
                             document.querySelector('.article_body');
-      const content = contentElement?.textContent?.trim() || '';
+      
+      let content = '';
+      if (contentElement) {
+        // 불필요한 태그 제거
+        const unwantedElements = contentElement.querySelectorAll('script, style, .ad, .advertisement, .related_news, .footer');
+        unwantedElements.forEach(el => el.remove());
+        
+        content = contentElement.textContent?.trim()?.replace(/\s+/g, ' ') || '';
+        // 특수 문자 정리
+        content = content.replace(/[\u200B-\u200D\uFEFF]/g, ''); // 제로폭 공백 제거
+        content = content.replace(/\t+/g, ' '); // 탭 문자를 공백으로 변환
+        content = content.replace(/\n\s*\n/g, '\n'); // 빈 줄 정리
+      }
 
-      // 기사 요약 (첫 200자)
-      const summary = content.substring(0, 200) + (content.length > 200 ? '...' : '');
+      // 기사 요약 (첫 150자, 더 깔끔하게)
+      const cleanContent = content.replace(/\n/g, ' ').trim();
+      const summary = cleanContent.substring(0, 150) + (cleanContent.length > 150 ? '...' : '');
 
-      // 발행일
+      // 발행일 (더 정확한 파싱)
       const dateElement = document.querySelector('.media_end_head_info_datestamp_time') ||
+                         document.querySelector('.media_end_head_info_datestamp') ||
                          document.querySelector('.date') ||
                          document.querySelector('time');
-      const publishedAt = dateElement?.textContent?.trim() || new Date().toISOString();
+      let publishedAt = new Date().toISOString();
+      if (dateElement) {
+        const dateText = dateElement.textContent?.trim();
+        if (dateText) {
+          try {
+            publishedAt = new Date(dateText).toISOString();
+          } catch {
+            publishedAt = new Date().toISOString();
+          }
+        }
+      }
 
       // 작성자
       const authorElement = document.querySelector('.media_end_head_journalist_name') ||
+                           document.querySelector('.byline_name') ||
                            document.querySelector('.author') ||
                            document.querySelector('.byline');
       const author = authorElement?.textContent?.trim();
 
-      // 썸네일 이미지
-      const imageElement = document.querySelector('.end_photo_org img') ||
-                          document.querySelector('.news_img img') ||
-                          document.querySelector('img[src*="jpg"], img[src*="jpeg"], img[src*="png"]');
-      const thumbnailUrl = imageElement?.getAttribute('src');
+      // 썸네일 이미지 (더 정확한 이미지 선택)
+      const imageSelectors = [
+        '.end_photo_org img',
+        '.media_end_head_img img',
+        '.news_img img',
+        'img[data-src]',
+        'img[src*="jpg"]',
+        'img[src*="jpeg"]',
+        'img[src*="png"]'
+      ];
+      
+      let thumbnailUrl = '';
+      for (const selector of imageSelectors) {
+        const imageElement = document.querySelector(selector);
+        if (imageElement) {
+          thumbnailUrl = imageElement.getAttribute('src') || imageElement.getAttribute('data-src') || '';
+          if (thumbnailUrl && thumbnailUrl.startsWith('http')) {
+            break;
+          }
+        }
+      }
 
       // 반려견 관련 키워드 감지 및 카테고리 분류
       const petKeywords = this.extractPetKeywords(title + ' ' + content);
       const category = this.categorizePetContent(title + ' ' + content);
 
-      return {
+      const result = {
         title,
-        content,
+        content: cleanContent,
         summary,
         tags: petKeywords,
         category,
@@ -143,6 +190,14 @@ export class ContentCrawler {
         author,
         thumbnailUrl: thumbnailUrl || undefined
       };
+
+      console.log(`[크롤링 완료] 제목: ${title}`);
+      console.log(`[크롤링 완료] 내용 길이: ${content.length}자`);
+      console.log(`[크롤링 완료] 썸네일: ${thumbnailUrl ? '있음' : '없음'}`);
+      console.log(`[크롤링 완료] 카테고리: ${category}`);
+      console.log(`[크롤링 완료] 키워드: ${petKeywords.join(', ')}`);
+
+      return result;
 
     } catch (error) {
       console.error('크롤링 오류:', error);
