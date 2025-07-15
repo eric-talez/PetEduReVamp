@@ -43,6 +43,7 @@ import fs from 'fs';
 import { WorkflowEngine } from './workflow-engine';
 import { uploadDocuments } from './middleware/upload';
 import xlsx from 'xlsx';
+import { contentCrawler } from './content-crawler';
 
 // 유료/무료 정보를 포함한 엑셀 파일에서 커리큘럼 정보 추출 함수
 function parseExcelCurriculumWithPricing(data: any[], filename: string) {
@@ -3515,6 +3516,179 @@ app.get('/api/search', async (req, res) => {
       res.status(500).json({
         success: false,
         message: '회원 상태 정보를 가져오는데 실패했습니다.'
+      });
+    }
+  });
+
+  // 콘텐츠 크롤링 API
+  app.post("/api/admin/content/crawl", async (req, res) => {
+    try {
+      const { url, autoPost = false } = req.body;
+      
+      if (!url) {
+        return res.status(400).json({
+          success: false,
+          message: "URL이 필요합니다."
+        });
+      }
+
+      console.log(`[콘텐츠 크롤링] URL 크롤링 시작: ${url}`);
+      
+      // 네이버 미디어 기사 크롤링
+      const crawledContent = await contentCrawler.crawlNaverMedia(url);
+      
+      if (!crawledContent) {
+        return res.status(400).json({
+          success: false,
+          message: "크롤링에 실패했습니다. URL을 확인해주세요."
+        });
+      }
+
+      // 반려견 관련 콘텐츠인지 확인
+      const isPetRelated = crawledContent.tags.length > 0;
+      
+      if (!isPetRelated) {
+        return res.status(400).json({
+          success: false,
+          message: "반려견 관련 콘텐츠가 아닙니다."
+        });
+      }
+
+      // 자동으로 커뮤니티에 등록하는 경우
+      if (autoPost) {
+        const postData = {
+          title: crawledContent.title,
+          content: crawledContent.summary,
+          tags: crawledContent.tags,
+          category: crawledContent.category,
+          linkInfo: {
+            url: crawledContent.sourceUrl,
+            title: crawledContent.title,
+            description: crawledContent.summary,
+            thumbnail: crawledContent.thumbnailUrl
+          },
+          authorId: 1, // 관리자 ID
+          authorName: "TALEZ 관리자",
+          createdAt: new Date().toISOString(),
+          isPublished: true
+        };
+
+        // 커뮤니티 게시글로 등록
+        const newPost = await storage.createPost(postData);
+        
+        console.log(`[콘텐츠 크롤링] 커뮤니티 게시글 자동 등록 완료: ${newPost.id}`);
+        
+        return res.json({
+          success: true,
+          message: "크롤링 및 커뮤니티 등록이 완료되었습니다.",
+          data: {
+            crawledContent,
+            post: newPost
+          }
+        });
+      }
+
+      // 크롤링 결과만 반환
+      res.json({
+        success: true,
+        message: "크롤링이 완료되었습니다.",
+        data: crawledContent
+      });
+
+    } catch (error) {
+      console.error('콘텐츠 크롤링 오류:', error);
+      res.status(500).json({
+        success: false,
+        message: "크롤링 중 오류가 발생했습니다."
+      });
+    }
+  });
+
+  // 다중 URL 크롤링 API  
+  app.post("/api/admin/content/crawl-multiple", async (req, res) => {
+    try {
+      const { urls, autoPost = false } = req.body;
+      
+      if (!Array.isArray(urls) || urls.length === 0) {
+        return res.status(400).json({
+          success: false,
+          message: "URL 배열이 필요합니다."
+        });
+      }
+
+      console.log(`[다중 크롤링] ${urls.length}개 URL 크롤링 시작`);
+      
+      // 다중 URL 크롤링
+      const crawledContents = await contentCrawler.crawlMultipleUrls(urls);
+      
+      if (crawledContents.length === 0) {
+        return res.status(400).json({
+          success: false,
+          message: "크롤링 가능한 반려견 관련 콘텐츠가 없습니다."
+        });
+      }
+
+      const results = [];
+      
+      // 자동으로 커뮤니티에 등록하는 경우
+      if (autoPost) {
+        for (const content of crawledContents) {
+          const postData = {
+            title: content.title,
+            content: content.summary,
+            tags: content.tags,
+            category: content.category,
+            linkInfo: {
+              url: content.sourceUrl,
+              title: content.title,
+              description: content.summary,
+              thumbnail: content.thumbnailUrl
+            },
+            authorId: 1, // 관리자 ID
+            authorName: "TALEZ 관리자",
+            createdAt: new Date().toISOString(),
+            isPublished: true
+          };
+
+          try {
+            const newPost = await storage.createPost(postData);
+            results.push({
+              crawledContent: content,
+              post: newPost,
+              success: true
+            });
+          } catch (error) {
+            console.error(`게시글 등록 실패: ${content.title}`, error);
+            results.push({
+              crawledContent: content,
+              success: false,
+              error: error.message
+            });
+          }
+        }
+        
+        return res.json({
+          success: true,
+          message: `${crawledContents.length}개 콘텐츠 크롤링 및 커뮤니티 등록이 완료되었습니다.`,
+          data: {
+            totalCrawled: crawledContents.length,
+            results
+          }
+        });
+      }
+
+      // 크롤링 결과만 반환
+      res.json({
+        success: true,
+        message: `${crawledContents.length}개 콘텐츠 크롤링이 완료되었습니다.`,
+        data: crawledContents
+      });
+
+    } catch (error) {
+      console.error('다중 콘텐츠 크롤링 오류:', error);
+      res.status(500).json({
+        success: false,
+        message: "크롤링 중 오류가 발생했습니다."
       });
     }
   });

@@ -1,0 +1,391 @@
+import React, { useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Progress } from "@/components/ui/progress";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
+import { 
+  Globe, 
+  Search, 
+  Download, 
+  CheckCircle, 
+  XCircle, 
+  AlertCircle, 
+  Link as LinkIcon,
+  FileText,
+  Tags,
+  ExternalLink,
+  Play,
+  Pause,
+  RefreshCw
+} from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+
+interface CrawledContent {
+  title: string;
+  content: string;
+  summary: string;
+  tags: string[];
+  category: string;
+  sourceUrl: string;
+  publishedAt: string;
+  author?: string;
+  thumbnailUrl?: string;
+}
+
+interface CrawlResult {
+  success: boolean;
+  message: string;
+  data?: CrawledContent | CrawledContent[];
+}
+
+export default function ContentCrawler() {
+  const [singleUrl, setSingleUrl] = useState('');
+  const [multipleUrls, setMultipleUrls] = useState('');
+  const [autoPost, setAutoPost] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [results, setResults] = useState<CrawledContent[]>([]);
+  const [error, setError] = useState('');
+  const { toast } = useToast();
+
+  // 단일 URL 크롤링
+  const handleSingleCrawl = async () => {
+    if (!singleUrl.trim()) {
+      setError('URL을 입력해주세요.');
+      return;
+    }
+
+    setIsLoading(true);
+    setError('');
+    setProgress(0);
+
+    try {
+      const response = await fetch('/api/admin/content/crawl', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          url: singleUrl.trim(),
+          autoPost
+        }),
+      });
+
+      const result: CrawlResult = await response.json();
+
+      if (result.success && result.data) {
+        setResults([result.data as CrawledContent]);
+        setProgress(100);
+        toast({
+          title: "크롤링 완료",
+          description: result.message,
+        });
+      } else {
+        setError(result.message || '크롤링에 실패했습니다.');
+      }
+    } catch (error) {
+      console.error('크롤링 오류:', error);
+      setError('크롤링 중 오류가 발생했습니다.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // 다중 URL 크롤링
+  const handleMultipleCrawl = async () => {
+    const urls = multipleUrls.split('\n').filter(url => url.trim());
+    
+    if (urls.length === 0) {
+      setError('URL을 입력해주세요.');
+      return;
+    }
+
+    setIsLoading(true);
+    setError('');
+    setProgress(0);
+
+    try {
+      const response = await fetch('/api/admin/content/crawl-multiple', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          urls,
+          autoPost
+        }),
+      });
+
+      const result: CrawlResult = await response.json();
+
+      if (result.success && result.data) {
+        setResults(result.data as CrawledContent[]);
+        setProgress(100);
+        toast({
+          title: "다중 크롤링 완료",
+          description: result.message,
+        });
+      } else {
+        setError(result.message || '크롤링에 실패했습니다.');
+      }
+    } catch (error) {
+      console.error('다중 크롤링 오류:', error);
+      setError('크롤링 중 오류가 발생했습니다.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // 결과 초기화
+  const handleReset = () => {
+    setSingleUrl('');
+    setMultipleUrls('');
+    setResults([]);
+    setError('');
+    setProgress(0);
+  };
+
+  // 카테고리별 색상 매핑
+  const getCategoryColor = (category: string) => {
+    const colors = {
+      '건강정보': 'bg-red-100 text-red-800',
+      '훈련교육': 'bg-blue-100 text-blue-800',
+      '행동분석': 'bg-purple-100 text-purple-800',
+      '생활정보': 'bg-green-100 text-green-800',
+      '미용관리': 'bg-pink-100 text-pink-800',
+      '법률정보': 'bg-yellow-100 text-yellow-800',
+      '여행정보': 'bg-indigo-100 text-indigo-800',
+      '입양분양': 'bg-orange-100 text-orange-800',
+      '품종정보': 'bg-teal-100 text-teal-800',
+      '일반정보': 'bg-gray-100 text-gray-800'
+    };
+    return colors[category] || colors['일반정보'];
+  };
+
+  return (
+    <div className="container mx-auto p-6 space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold">콘텐츠 크롤링</h1>
+          <p className="text-gray-600 mt-1">
+            네이버 미디어 기사를 크롤링하여 반려견 관련 콘텐츠를 커뮤니티에 자동 등록합니다.
+          </p>
+        </div>
+        <Button 
+          onClick={handleReset}
+          variant="outline"
+          className="flex items-center gap-2"
+        >
+          <RefreshCw className="h-4 w-4" />
+          초기화
+        </Button>
+      </div>
+
+      <Tabs defaultValue="single" className="w-full">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="single">단일 URL</TabsTrigger>
+          <TabsTrigger value="multiple">다중 URL</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="single" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Globe className="h-5 w-5" />
+                단일 URL 크롤링
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center space-x-2">
+                <Switch 
+                  id="auto-post-single" 
+                  checked={autoPost}
+                  onCheckedChange={setAutoPost}
+                />
+                <Label htmlFor="auto-post-single">자동으로 커뮤니티에 등록</Label>
+              </div>
+              
+              <div className="space-y-2">
+                <Label>URL</Label>
+                <Input
+                  placeholder="https://media.naver.com/journalist/396/81348"
+                  value={singleUrl}
+                  onChange={(e) => setSingleUrl(e.target.value)}
+                  disabled={isLoading}
+                />
+              </div>
+
+              <Button 
+                onClick={handleSingleCrawl}
+                disabled={isLoading || !singleUrl.trim()}
+                className="w-full"
+              >
+                {isLoading ? (
+                  <>
+                    <Pause className="h-4 w-4 mr-2 animate-spin" />
+                    크롤링 중...
+                  </>
+                ) : (
+                  <>
+                    <Download className="h-4 w-4 mr-2" />
+                    크롤링 시작
+                  </>
+                )}
+              </Button>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="multiple" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Search className="h-5 w-5" />
+                다중 URL 크롤링
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center space-x-2">
+                <Switch 
+                  id="auto-post-multiple" 
+                  checked={autoPost}
+                  onCheckedChange={setAutoPost}
+                />
+                <Label htmlFor="auto-post-multiple">자동으로 커뮤니티에 등록</Label>
+              </div>
+              
+              <div className="space-y-2">
+                <Label>URL 목록 (한 줄에 하나씩)</Label>
+                <Textarea
+                  placeholder="https://media.naver.com/journalist/396/81348&#10;https://media.naver.com/journalist/396/81349&#10;https://media.naver.com/journalist/396/81350"
+                  value={multipleUrls}
+                  onChange={(e) => setMultipleUrls(e.target.value)}
+                  disabled={isLoading}
+                  rows={6}
+                />
+              </div>
+
+              <Button 
+                onClick={handleMultipleCrawl}
+                disabled={isLoading || !multipleUrls.trim()}
+                className="w-full"
+              >
+                {isLoading ? (
+                  <>
+                    <Pause className="h-4 w-4 mr-2 animate-spin" />
+                    크롤링 중...
+                  </>
+                ) : (
+                  <>
+                    <Download className="h-4 w-4 mr-2" />
+                    일괄 크롤링 시작
+                  </>
+                )}
+              </Button>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+
+      {/* 진행 상황 */}
+      {isLoading && (
+        <Card>
+          <CardContent className="pt-6">
+            <div className="space-y-2">
+              <div className="flex justify-between text-sm">
+                <span>크롤링 진행 상황</span>
+                <span>{progress}%</span>
+              </div>
+              <Progress value={progress} className="h-2" />
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* 오류 메시지 */}
+      {error && (
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
+
+      {/* 크롤링 결과 */}
+      {results.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <CheckCircle className="h-5 w-5 text-green-600" />
+              크롤링 결과 ({results.length}개)
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {results.map((content, index) => (
+                <div key={index} className="border rounded-lg p-4 space-y-3">
+                  <div className="flex items-start justify-between">
+                    <h3 className="font-semibold text-lg">{content.title}</h3>
+                    <Badge className={getCategoryColor(content.category)}>
+                      {content.category}
+                    </Badge>
+                  </div>
+                  
+                  <p className="text-gray-600 text-sm line-clamp-3">
+                    {content.summary}
+                  </p>
+                  
+                  <div className="flex flex-wrap gap-1">
+                    {content.tags.map((tag, tagIndex) => (
+                      <Badge key={tagIndex} variant="outline" className="text-xs">
+                        <Tags className="h-3 w-3 mr-1" />
+                        {tag}
+                      </Badge>
+                    ))}
+                  </div>
+                  
+                  <div className="flex items-center justify-between text-sm text-gray-500">
+                    <div className="flex items-center gap-4">
+                      {content.author && (
+                        <span>작성자: {content.author}</span>
+                      )}
+                      <span>{new Date(content.publishedAt).toLocaleDateString()}</span>
+                    </div>
+                    <a 
+                      href={content.sourceUrl} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-1 text-blue-600 hover:text-blue-800"
+                    >
+                      <ExternalLink className="h-3 w-3" />
+                      원문 보기
+                    </a>
+                  </div>
+                  
+                  {content.thumbnailUrl && (
+                    <div className="mt-3">
+                      <img 
+                        src={content.thumbnailUrl} 
+                        alt={content.title}
+                        className="w-full h-48 object-cover rounded"
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none';
+                        }}
+                      />
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  );
+}

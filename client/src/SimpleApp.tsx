@@ -64,6 +64,7 @@ import AdminMembersStatus from "./pages/admin/AdminMembersStatus";
 import TrainerCertificationManagement from "./pages/admin/TrainerCertificationManagement";
 import AdminProductPricing from "./pages/admin/AdminProductPricing";
 import AdminSettlementPage from "./pages/admin/settlement";
+import ContentCrawler from "./pages/admin/ContentCrawler";
 
 
 
@@ -322,6 +323,7 @@ function AppLayout({ children }: { children: ReactNode }) {
                   <Route path="/admin/members-status" component={AdminMembersStatus} />
                   <Route path="/admin/trainer-certification" component={TrainerCertificationManagement} />
                   <Route path="/admin/product-pricing" component={AdminProductPricing} />
+                  <Route path="/admin/content-crawler" component={ContentCrawler} />
                   <Route path="/admin/spring-boot-test" component={SpringBootTestPage} />
 
                   {/* 업체 등록 관리 */}

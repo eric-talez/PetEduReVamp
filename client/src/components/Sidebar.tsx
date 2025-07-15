@@ -803,6 +803,7 @@ export function Sidebar({
                         <AccessibleNavItem href="/admin/review-management" icon={<MessageSquare className="w-5 h-5 mr-2" />} active={isActive("/admin/review-management")} onClick={handleItemClick} show={true}>리뷰 관리</AccessibleNavItem>
                         <AccessibleNavItem href="/admin/info-correction-requests" icon={<Edit className="w-5 h-5 mr-2" />} active={isActive("/admin/info-correction-requests")} onClick={handleItemClick} show={true}>정보 수정 요청</AccessibleNavItem>
                         <AccessibleNavItem href="/admin/contents" icon={<ImageIcon className="w-5 h-5 mr-2" />} active={isActive("/admin/contents")} onClick={handleItemClick} show={true}>콘텐츠 관리</AccessibleNavItem>
+                        <AccessibleNavItem href="/admin/content-crawler" icon={<Search className="w-5 h-5 mr-2" />} active={isActive("/admin/content-crawler")} onClick={handleItemClick} show={true}>콘텐츠 크롤링</AccessibleNavItem>
                         <AccessibleNavItem href="/admin/commissions" icon={<Percent className="w-5 h-5 mr-2" />} active={isActive("/admin/commissions")} onClick={handleItemClick} show={true}>가격 관리</AccessibleNavItem>
                         <AccessibleNavItem href="/admin/shop" icon={<ShoppingBag className="w-5 h-5 mr-2" />} active={isActive("/admin/shop")} onClick={handleItemClick} show={true}>쇼핑몰 관리</AccessibleNavItem>
                       </>

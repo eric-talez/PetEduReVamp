@@ -10,6 +10,7 @@ class Storage {
   products: any[] = [];
   pricingRules: any[] = [];
   trainingJournals: any[] = [];
+  posts: any[] = [];
   events: any[] = [
     {
       id: 1,
@@ -1220,6 +1221,51 @@ class Storage {
       return event;
     }
     return null;
+  }
+
+  // 커뮤니티 게시글 관리 메서드
+  createPost(postData: any): any {
+    const newPost = {
+      id: (this.posts?.length || 0) + 1,
+      ...postData,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      likes: 0,
+      comments: []
+    };
+
+    if (!this.posts) {
+      this.posts = [];
+    }
+    this.posts.push(newPost);
+    return newPost;
+  }
+
+  getAllPosts(): any[] {
+    return this.posts || [];
+  }
+
+  getPostById(id: number): any {
+    return this.posts?.find(post => post.id === id);
+  }
+
+  updatePost(id: number, updateData: any): any {
+    const post = this.posts?.find(p => p.id === id);
+    if (post) {
+      Object.assign(post, updateData);
+      post.updatedAt = new Date().toISOString();
+      return post;
+    }
+    return null;
+  }
+
+  deletePost(id: number): boolean {
+    const index = this.posts?.findIndex(p => p.id === id);
+    if (index !== undefined && index !== -1) {
+      this.posts?.splice(index, 1);
+      return true;
+    }
+    return false;
   }
 
   deleteEvent(id: number): boolean {
