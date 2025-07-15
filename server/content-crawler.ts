@@ -212,6 +212,28 @@ export class ContentCrawler {
     
     return results;
   }
+
+  // 크롤링된 콘텐츠를 커뮤니티에 등록
+  async postToCommunity(content: CrawledContent, storage: any): Promise<any> {
+    const postData = {
+      title: content.title,
+      content: content.summary,
+      tags: content.tags,
+      category: content.category,
+      linkInfo: {
+        url: content.sourceUrl,
+        title: content.title,
+        description: content.summary,
+        thumbnail: content.thumbnailUrl
+      },
+      authorId: 1, // 관리자 ID
+      authorName: "TALEZ 관리자",
+      createdAt: new Date().toISOString(),
+      isPublished: true
+    };
+
+    return await storage.createPost(postData);
+  }
 }
 
 export const contentCrawler = new ContentCrawler();

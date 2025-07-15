@@ -151,6 +151,15 @@ TALEZ is a comprehensive pet education and e-commerce platform that combines AI-
 
 ## Changelog
 
+- July 15, 2025. **CONTENT CRAWLING SYSTEM ENHANCED** - 언론사 페이지 크롤링 및 수동 등록 기능 완성:
+  - **언론사 페이지 크롤링**: 기자 페이지 URL에서 반려견 관련 기사 자동 감지 및 추출
+  - **반려견 콘텐츠 필터링**: 기사 제목 검사로 반려견 관련 콘텐츠 자동 분류
+  - **수동 등록 API**: `/api/admin/content/register` 엔드포인트로 크롤링된 콘텐츠 개별 등록
+  - **개별 기사 크롤링**: 발견된 기사 목록에서 각 기사를 개별적으로 크롤링 후 커뮤니티 등록
+  - **향상된 UI**: 크롤링 결과에 수동 등록 버튼 추가 및 발견된 기사 목록 표시
+  - **오류 처리 개선**: 크롤링 실패 시 적절한 오류 메시지 및 토스트 알림
+  - **커뮤니티 연동**: 크롤링된 기사가 자동으로 커뮤니티에 등록되도록 통합
+  - **Production Ready**: 언론사 페이지에서 30개 이상의 기사 중 반려견 관련 콘텐츠만 선별적으로 추출하여 커뮤니티에 등록하는 완전한 워크플로우 구현
 - July 14, 2025. **INSTITUTION MANAGEMENT SYSTEM COMPLETED** - Comprehensive institution management with full CRUD operations:
   - **API Implementation**: Complete PUT `/api/admin/institutes/:id` endpoint for institution updates
   - **UI Enhancement**: Enhanced edit dialog with all registration information including subscription plans and payment methods

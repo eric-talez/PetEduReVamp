@@ -60,6 +60,7 @@ export default function ContentCrawler() {
   const [error, setError] = useState('');
   const [foundArticles, setFoundArticles] = useState<number>(0);
   const [allArticleUrls, setAllArticleUrls] = useState<string[]>([]);
+  const [registeringId, setRegisteringId] = useState<number | string | null>(null);
   const { toast } = useToast();
 
   // 단일 URL 크롤링
@@ -165,6 +166,81 @@ export default function ContentCrawler() {
     }
   };
 
+  // 수동 커뮤니티 등록
+  const handleManualRegister = async (content: CrawledContent, index: number) => {
+    setRegisteringId(index);
+    
+    try {
+      const response = await fetch('/api/admin/content/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          crawledContent: content
+        }),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        toast({
+          title: "등록 완료",
+          description: "커뮤니티에 성공적으로 등록되었습니다.",
+        });
+      } else {
+        throw new Error(result.message);
+      }
+    } catch (error) {
+      console.error('수동 등록 오류:', error);
+      toast({
+        title: "등록 실패",
+        description: "커뮤니티 등록 중 오류가 발생했습니다.",
+        variant: "destructive",
+      });
+    } finally {
+      setRegisteringId(null);
+    }
+  };
+
+  // 개별 기사 URL 크롤링 후 등록
+  const handleArticleUrlCrawl = async (url: string, index: number) => {
+    setRegisteringId(`url-${index}`);
+    
+    try {
+      const response = await fetch('/api/admin/content/crawl', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          url: url.trim(),
+          autoPost: true
+        }),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        toast({
+          title: "크롤링 및 등록 완료",
+          description: "기사가 성공적으로 크롤링되어 커뮤니티에 등록되었습니다.",
+        });
+      } else {
+        throw new Error(result.message);
+      }
+    } catch (error) {
+      console.error('기사 크롤링 오류:', error);
+      toast({
+        title: "크롤링 실패",
+        description: "기사 크롤링 중 오류가 발생했습니다.",
+        variant: "destructive",
+      });
+    } finally {
+      setRegisteringId(null);
+    }
+  };
+
   // 결과 초기화
   const handleReset = () => {
     setSingleUrl('');
@@ -174,6 +250,7 @@ export default function ContentCrawler() {
     setProgress(0);
     setFoundArticles(0);
     setAllArticleUrls([]);
+    setRegisteringId(null);
   };
 
   // 카테고리별 색상 매핑
@@ -386,15 +463,36 @@ export default function ContentCrawler() {
                       )}
                       <span>{new Date(content.publishedAt).toLocaleDateString()}</span>
                     </div>
-                    <a 
-                      href={content.sourceUrl} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-1 text-blue-600 hover:text-blue-800"
-                    >
-                      <ExternalLink className="h-3 w-3" />
-                      원문 보기
-                    </a>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleManualRegister(content, index)}
+                        disabled={registeringId === index}
+                        className="text-xs"
+                      >
+                        {registeringId === index ? (
+                          <>
+                            <RefreshCw className="h-3 w-3 mr-1 animate-spin" />
+                            등록 중...
+                          </>
+                        ) : (
+                          <>
+                            <Play className="h-3 w-3 mr-1" />
+                            커뮤니티 등록
+                          </>
+                        )}
+                      </Button>
+                      <a 
+                        href={content.sourceUrl} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-1 text-blue-600 hover:text-blue-800"
+                      >
+                        <ExternalLink className="h-3 w-3" />
+                        원문 보기
+                      </a>
+                    </div>
                   </div>
                   
                   {content.thumbnailUrl && (
@@ -423,15 +521,36 @@ export default function ContentCrawler() {
                     {allArticleUrls.map((url, index) => (
                       <div key={index} className="flex items-center justify-between p-2 bg-white rounded border">
                         <span className="text-sm text-gray-600">기사 #{index + 1}</span>
-                        <a 
-                          href={url} 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-1 text-blue-600 hover:text-blue-800 text-sm"
-                        >
-                          <ExternalLink className="h-3 w-3" />
-                          기사 보기
-                        </a>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleArticleUrlCrawl(url, index)}
+                            disabled={registeringId === `url-${index}`}
+                            className="text-xs"
+                          >
+                            {registeringId === `url-${index}` ? (
+                              <>
+                                <RefreshCw className="h-3 w-3 mr-1 animate-spin" />
+                                등록 중...
+                              </>
+                            ) : (
+                              <>
+                                <Play className="h-3 w-3 mr-1" />
+                                크롤링 후 등록
+                              </>
+                            )}
+                          </Button>
+                          <a 
+                            href={url} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-1 text-blue-600 hover:text-blue-800 text-sm"
+                          >
+                            <ExternalLink className="h-3 w-3" />
+                            기사 보기
+                          </a>
+                        </div>
                       </div>
                     ))}
                   </div>

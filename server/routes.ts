@@ -3565,25 +3565,12 @@ app.get('/api/search', async (req, res) => {
         let post = null;
         if (autoPost) {
           // 커뮤니티에 자동 등록
-          const postData = {
-            title: firstArticleContent.title,
-            content: firstArticleContent.summary,
-            tags: firstArticleContent.tags,
-            category: firstArticleContent.category,
-            linkInfo: {
-              url: firstArticleContent.sourceUrl,
-              title: firstArticleContent.title,
-              description: firstArticleContent.summary,
-              thumbnail: firstArticleContent.thumbnailUrl
-            },
-            authorId: 1, // 관리자 ID
-            authorName: "TALEZ 관리자",
-            createdAt: new Date().toISOString(),
-            isPublished: true
-          };
-
-          post = await storage.createPost(postData);
-          console.log(`[콘텐츠 크롤링] 커뮤니티 게시글 자동 등록 완료: ${post.id}`);
+          try {
+            post = await contentCrawler.postToCommunity(firstArticleContent, storage);
+            console.log(`[콘텐츠 크롤링] 커뮤니티 게시글 자동 등록 완료: ${post.id}`);
+          } catch (error) {
+            console.error(`[콘텐츠 크롤링] 커뮤니티 등록 실패:`, error);
+          }
         }
 
         return res.json({
@@ -3620,36 +3607,29 @@ app.get('/api/search', async (req, res) => {
 
         // 자동으로 커뮤니티에 등록하는 경우
         if (autoPost) {
-          const postData = {
-            title: crawledContent.title,
-            content: crawledContent.summary,
-            tags: crawledContent.tags,
-            category: crawledContent.category,
-            linkInfo: {
-              url: crawledContent.sourceUrl,
-              title: crawledContent.title,
-              description: crawledContent.summary,
-              thumbnail: crawledContent.thumbnailUrl
-            },
-            authorId: 1, // 관리자 ID
-            authorName: "TALEZ 관리자",
-            createdAt: new Date().toISOString(),
-            isPublished: true
-          };
-
-          // 커뮤니티 게시글로 등록
-          const newPost = await storage.createPost(postData);
-          
-          console.log(`[콘텐츠 크롤링] 커뮤니티 게시글 자동 등록 완료: ${newPost.id}`);
-          
-          return res.json({
-            success: true,
-            message: "크롤링 및 커뮤니티 등록이 완료되었습니다.",
-            data: {
-              crawledContent,
-              post: newPost
-            }
-          });
+          try {
+            const newPost = await contentCrawler.postToCommunity(crawledContent, storage);
+            console.log(`[콘텐츠 크롤링] 커뮤니티 게시글 자동 등록 완료: ${newPost.id}`);
+            
+            return res.json({
+              success: true,
+              message: "크롤링 및 커뮤니티 등록이 완료되었습니다.",
+              data: {
+                crawledContent,
+                post: newPost
+              }
+            });
+          } catch (error) {
+            console.error(`[콘텐츠 크롤링] 커뮤니티 등록 실패:`, error);
+            return res.json({
+              success: true,
+              message: "크롤링은 완료되었지만 커뮤니티 등록에 실패했습니다.",
+              data: {
+                crawledContent,
+                post: null
+              }
+            });
+          }
         }
 
         // 크롤링 결과만 반환
@@ -3665,6 +3645,40 @@ app.get('/api/search', async (req, res) => {
       res.status(500).json({
         success: false,
         message: "크롤링 중 오류가 발생했습니다."
+      });
+    }
+  });
+
+  // 수동 커뮤니티 등록 API
+  app.post("/api/admin/content/register", async (req, res) => {
+    try {
+      const { crawledContent } = req.body;
+      
+      if (!crawledContent) {
+        return res.status(400).json({
+          success: false,
+          message: "크롤링 콘텐츠 데이터가 필요합니다."
+        });
+      }
+
+      console.log(`[수동 등록] 커뮤니티 게시글 등록 시작: ${crawledContent.title}`);
+      
+      // 커뮤니티에 등록
+      const newPost = await contentCrawler.postToCommunity(crawledContent, storage);
+      
+      console.log(`[수동 등록] 커뮤니티 게시글 등록 완료: ${newPost.id}`);
+      
+      res.json({
+        success: true,
+        message: "커뮤니티 등록이 완료되었습니다.",
+        data: newPost
+      });
+
+    } catch (error) {
+      console.error('수동 등록 오류:', error);
+      res.status(500).json({
+        success: false,
+        message: "커뮤니티 등록 중 오류가 발생했습니다."
       });
     }
   });
