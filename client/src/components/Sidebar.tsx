@@ -73,6 +73,7 @@ import {
   ShoppingBag,
   LogIn,
   ChevronsLeft,
+  Search,
   ChevronsRight,
   Percent,
   DollarSign,
