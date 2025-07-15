@@ -1731,25 +1731,25 @@ export default function AdminCurriculum() {
                   <div className="space-y-4">
                     <Input
                       placeholder="커리큘럼 제목"
-                      value={selectedCurriculum.title}
+                      value={selectedCurriculum?.title || ''}
                       onChange={(e) => setSelectedCurriculum(prev => prev ? { ...prev, title: e.target.value } : null)}
                     />
                     <Textarea
                       placeholder="커리큘럼 설명"
-                      value={selectedCurriculum.description}
+                      value={selectedCurriculum?.description || ''}
                       onChange={(e) => setSelectedCurriculum(prev => prev ? { ...prev, description: e.target.value } : null)}
                       rows={4}
                     />
                     <div className="grid grid-cols-2 gap-3">
                       <Input
                         placeholder="카테고리"
-                        value={selectedCurriculum.category}
+                        value={selectedCurriculum?.category || ''}
                         onChange={(e) => setSelectedCurriculum(prev => prev ? { ...prev, category: e.target.value } : null)}
                       />
                       <Input
                         type="number"
                         placeholder="가격"
-                        value={selectedCurriculum.price}
+                        value={selectedCurriculum?.price || 0}
                         onChange={(e) => setSelectedCurriculum(prev => prev ? { ...prev, price: parseInt(e.target.value) } : null)}
                       />
                     </div>
@@ -1757,12 +1757,12 @@ export default function AdminCurriculum() {
                       <Input
                         type="number"
                         placeholder="총 시간 (분)"
-                        value={selectedCurriculum.duration}
+                        value={selectedCurriculum?.duration || 0}
                         onChange={(e) => setSelectedCurriculum(prev => prev ? { ...prev, duration: parseInt(e.target.value) } : null)}
                       />
                       <select
                         className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
-                        value={selectedCurriculum.difficulty}
+                        value={selectedCurriculum?.difficulty || 'beginner'}
                         onChange={(e) => setSelectedCurriculum(prev => prev ? { ...prev, difficulty: e.target.value as 'beginner' | 'intermediate' | 'advanced' } : null)}
                       >
                         <option value="beginner">초급</option>
@@ -1772,7 +1772,7 @@ export default function AdminCurriculum() {
                     </div>
                     <div className="flex gap-2">
                       <Button
-                        onClick={() => updateCurriculum(selectedCurriculum)}
+                        onClick={() => selectedCurriculum && updateCurriculum(selectedCurriculum)}
                         size="sm"
                         className="flex-1"
                       >
@@ -1780,16 +1780,16 @@ export default function AdminCurriculum() {
                         저장
                       </Button>
                       <Button
-                        onClick={() => publishCurriculum(selectedCurriculum)}
+                        onClick={() => selectedCurriculum && publishCurriculum(selectedCurriculum)}
                         size="sm"
                         className="flex-1 bg-green-600 hover:bg-green-700"
-                        disabled={selectedCurriculum.status === 'published'}
+                        disabled={selectedCurriculum?.status === 'published'}
                       >
                         <CheckCircle className="w-4 h-4 mr-1" />
-                        {selectedCurriculum.status === 'published' ? '발행됨' : '강의로 발행'}
+                        {selectedCurriculum?.status === 'published' ? '발행됨' : '강의로 발행'}
                       </Button>
                       <Button
-                        onClick={() => handlePreviewCurriculum(selectedCurriculum)}
+                        onClick={() => selectedCurriculum && handlePreviewCurriculum(selectedCurriculum)}
                         variant="outline"
                         size="sm"
                         className="flex-1"
@@ -2064,7 +2064,7 @@ export default function AdminCurriculum() {
                                             {module.videos.length}개
                                           </Badge>
                                           <div className="flex items-center gap-1">
-                                            {module.videos.filter(v => v.status === 'ready').length === module.videos.length ? (
+                                            {module.videos && module.videos.filter(v => v.status === 'ready').length === module.videos.length ? (
                                               <CheckCircle className="w-3 h-3 text-green-500" />
                                             ) : (
                                               <Clock className="w-3 h-3 text-orange-500" />
