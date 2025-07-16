@@ -17,7 +17,7 @@ export default function Trainers() {
   const [showCertifiedOnly, setShowCertifiedOnly] = useState(false);
 
   // API로부터 트레이너 데이터 가져오기
-  const { data: trainersData, isLoading, error } = useQuery<Trainer[]>({
+  const { data: trainersResponse, isLoading, error } = useQuery<{trainers: UnifiedTrainer[], pagination: any, filters: any}>({
     queryKey: ['/api/trainers'],
   });
 
@@ -47,7 +47,7 @@ export default function Trainers() {
   }
 
   // API에서 가져온 데이터 또는 기본 빈 배열
-  const trainers: UnifiedTrainer[] = trainersData || [];
+  const trainers: UnifiedTrainer[] = trainersResponse?.trainers || [];
 
   // 훈련사 프로필 열기
   const openTrainerProfile = (trainer: UnifiedTrainer) => {

@@ -4019,19 +4019,43 @@ app.get('/api/search', async (req, res) => {
         sortOrder = 'desc'
       } = req.query;
 
-      let trainers = await storage.getAllTrainers();
+      let rawTrainers = await storage.getAllTrainers();
+
+      // 데이터를 UnifiedTrainer 형태로 변환
+      let trainers = rawTrainers.map(trainer => ({
+        id: trainer.id,
+        name: trainer.name,
+        specialty: Array.isArray(trainer.specialization) ? trainer.specialization.join(', ') : trainer.specialization || trainer.specialty || '전문 분야 없음',
+        description: trainer.bio || `${trainer.name}은 ${trainer.experience}년 경력의 전문 훈련사입니다.`,
+        rating: trainer.rating || 4.5,
+        reviewCount: trainer.reviewCount || 10,
+        reviews: trainer.reviews || trainer.reviewCount || 10,
+        certifications: trainer.certifications || [trainer.certification || '기본 자격증'],
+        location: trainer.location || trainer.address || '서울시',
+        experience: trainer.experience || '2년',
+        email: trainer.email,
+        phone: trainer.phone,
+        image: trainer.image || trainer.avatar || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(trainer.name)}&backgroundColor=6366f1&textColor=ffffff`,
+        avatar: trainer.avatar || trainer.image || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(trainer.name)}&backgroundColor=6366f1&textColor=ffffff`,
+        price: trainer.price || 80000,
+        featured: trainer.featured || false,
+        availableSlots: trainer.availableSlots || ["09:00", "11:00", "14:00", "16:00"],
+        contactInfo: {
+          phone: trainer.phone,
+          email: trainer.email
+        }
+      }));
 
       // 필터링 적용
       if (specialty && specialty !== 'all') {
         trainers = trainers.filter(trainer => 
-          trainer.specialties?.includes(specialty) || trainer.specialty === specialty
+          trainer.specialty.toLowerCase().includes(specialty.toLowerCase())
         );
       }
 
       if (location) {
         trainers = trainers.filter(trainer => 
-          trainer.address?.includes(location as string) ||
-          trainer.location?.includes(location as string)
+          trainer.location?.toLowerCase().includes((location as string).toLowerCase())
         );
       }
 
@@ -4047,8 +4071,8 @@ app.get('/api/search', async (req, res) => {
         const searchTerm = (search as string).toLowerCase();
         trainers = trainers.filter(trainer => 
           trainer.name.toLowerCase().includes(searchTerm) ||
-          trainer.bio?.toLowerCase().includes(searchTerm) ||
-          trainer.specialties?.some((spec: string) => spec.toLowerCase().includes(searchTerm))
+          trainer.description?.toLowerCase().includes(searchTerm) ||
+          trainer.specialty.toLowerCase().includes(searchTerm)
         );
       }
 
@@ -6848,7 +6872,8 @@ app.get('/api/search', async (req, res) => {
     }
   });
 
-  // TALEZ 인증 훈련사 API
+  // TALEZ 인증 훈련사 API - 주석 처리됨 (중복 엔드포인트 방지)
+  /*
   app.get("/api/trainers", async (req, res) => {
     try {
       // 중앙 집중식 데이터 소스에서 훈련사 목록 조회
@@ -6878,6 +6903,7 @@ app.get('/api/search', async (req, res) => {
       res.status(500).json({ error: "훈련사 목록을 불러올 수 없습니다" });
     }
   });
+  */
 
   // 강동훈 샘플 훈련사 데이터 임시 추가 (사용 안 함)
   // 실제 데이터는 shared/data-sources.ts에서 가져옴
