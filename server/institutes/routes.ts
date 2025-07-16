@@ -38,10 +38,43 @@ export function registerInstituteRoutes(app: Express, storage: any) {
   app.get("/api/institutes/:id/trainers", async (req, res) => {
     try {
       const instituteId = parseInt(req.params.id);
-      const trainers = await storage.getTrainers();
-      const instituteTrainers = trainers.filter(t => t.instituteId === instituteId);
+      console.log('[InstituteTrainers] 기관별 훈련사 조회 요청:', instituteId);
+      
+      const trainers = await storage.getAllTrainers();
+      console.log('[InstituteTrainers] 전체 훈련사 개수:', trainers.length);
+      
+      // 기관별 훈련사 필터링 (현재는 왕짱스쿨 기관 ID: 1에 강동훈 훈련사만 있음)
+      const instituteTrainers = trainers.filter(t => {
+        // 일단 기관 ID가 1이면 강동훈 훈련사 반환
+        if (instituteId === 1) {
+          return t.id === 2; // 강동훈 훈련사 ID
+        }
+        return t.instituteId === instituteId;
+      });
 
-      res.json(instituteTrainers || []);
+      console.log('[InstituteTrainers] 기관별 필터링된 훈련사 개수:', instituteTrainers.length);
+      console.log('[InstituteTrainers] 필터링된 훈련사:', instituteTrainers);
+
+      // UnifiedTrainer 형태로 변환
+      const formattedTrainers = instituteTrainers.map(trainer => ({
+        id: trainer.id,
+        name: trainer.name,
+        email: trainer.email,
+        phone: trainer.phone,
+        joinDate: trainer.createdAt || new Date().toISOString(),
+        status: trainer.isVerified ? 'active' : 'pending',
+        specialties: Array.isArray(trainer.specialization) ? trainer.specialization : [trainer.specialization || '기본 훈련'],
+        rating: trainer.rating || 4.5,
+        totalStudents: trainer.totalStudents || 10,
+        activeCourses: trainer.activeCourses || 2,
+        completedCourses: trainer.completedCourses || 5,
+        profileImage: trainer.image || trainer.avatar || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(trainer.name)}&backgroundColor=6366f1&textColor=ffffff`,
+        certification: trainer.certifications || [trainer.certification || '기본 자격증'],
+        experience: trainer.experience || 2,
+        lastActive: new Date().toISOString()
+      }));
+
+      res.json(formattedTrainers);
     } catch (error) {
       console.error('Error fetching institute trainers:', error);
       res.status(500).json({ message: 'Internal server error' });

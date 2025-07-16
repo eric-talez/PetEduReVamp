@@ -54,77 +54,28 @@ export default function InstituteTrainers() {
     const loadTrainers = async () => {
       setIsLoading(true);
       try {
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        console.log('[InstituteTrainers] API 호출 시작');
         
-        const mockTrainers: Trainer[] = [
-          {
-            id: 1,
-            name: '김영수',
-            email: 'kim.trainer@petedu.com',
-            phone: '010-1234-5678',
-            joinDate: '2023-03-15',
-            status: 'active',
-            specialties: ['기본 훈련', '문제 행동 교정'],
-            rating: 4.8,
-            totalStudents: 45,
-            activeCourses: 3,
-            completedCourses: 28,
-            certification: ['KKC 공인 훈련사', '동물 행동학 전문가'],
-            experience: 8,
-            lastActive: '2024-05-26T09:30:00Z'
+        // 기관 ID 1 (왕짱스쿨)의 훈련사 데이터 조회
+        const response = await fetch('/api/institutes/1/trainers', {
+          method: 'GET',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
           },
-          {
-            id: 2,
-            name: '이서연',
-            email: 'lee.trainer@petedu.com',
-            phone: '010-2345-6789',
-            joinDate: '2023-07-20',
-            status: 'active',
-            specialties: ['퍼피 훈련', '사회화'],
-            rating: 4.9,
-            totalStudents: 38,
-            activeCourses: 2,
-            completedCourses: 22,
-            certification: ['CCPDT 인증', '퍼피 전문가'],
-            experience: 5,
-            lastActive: '2024-05-26T11:15:00Z'
-          },
-          {
-            id: 3,
-            name: '박민준',
-            email: 'park.trainer@petedu.com',
-            phone: '010-3456-7890',
-            joinDate: '2024-01-10',
-            status: 'pending',
-            specialties: ['어질리티', '스포츠 훈련'],
-            rating: 4.6,
-            totalStudents: 12,
-            activeCourses: 1,
-            completedCourses: 8,
-            certification: ['어질리티 전문가'],
-            experience: 3,
-            lastActive: '2024-05-25T16:20:00Z'
-          },
-          {
-            id: 4,
-            name: '정미영',
-            email: 'jung.trainer@petedu.com',
-            phone: '010-4567-8901',
-            joinDate: '2022-11-05',
-            status: 'inactive',
-            specialties: ['시니어견 케어', '재활 훈련'],
-            rating: 4.7,
-            totalStudents: 32,
-            activeCourses: 0,
-            completedCourses: 35,
-            certification: ['재활 훈련 전문가', '노견 케어 전문가'],
-            experience: 12,
-            lastActive: '2024-04-15T10:00:00Z'
-          }
-        ];
+        });
+
+        console.log('[InstituteTrainers] API 응답 상태:', response.status);
+
+        if (!response.ok) {
+          throw new Error(`API 호출 실패: ${response.status}`);
+        }
+
+        const trainersData = await response.json();
+        console.log('[InstituteTrainers] API 응답 데이터:', trainersData);
         
-        setTrainers(mockTrainers);
-        setFilteredTrainers(mockTrainers);
+        setTrainers(trainersData);
+        setFilteredTrainers(trainersData);
       } catch (error) {
         console.error('훈련사 데이터 로딩 오류:', error);
         toast({
