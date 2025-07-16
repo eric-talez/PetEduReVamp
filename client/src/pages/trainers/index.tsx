@@ -17,7 +17,7 @@ import {
 
 import { useLocation } from "wouter";
 import { useAuth } from "@/hooks/useAuth"; // 모듈화된 useAuth 훅 사용
-import { TrainerProfileModal } from "@/components/TrainerProfileModal";
+import { UnifiedTrainerProfileModal } from "@/components/UnifiedTrainerProfileModal";
 
 export default function Trainers() {
   const [filter, setFilter] = useState("all");
@@ -721,136 +721,15 @@ export default function Trainers() {
 
       {/* 트레이너 프로필 모달 */}
       {isModalOpen && selectedTrainer && (
-        <div 
-          className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
-          onClick={closeTrainerModal}
-        >
-          <div 
-            className="bg-white dark:bg-gray-900 rounded-lg shadow-lg max-w-2xl w-full overflow-y-auto max-h-[90vh] p-0"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* 모달 헤더 */}
-            <div className="relative h-48 overflow-hidden">
-              <img
-                src={selectedTrainer.background}
-                alt={`${selectedTrainer.name} 배경`}
-                className="w-full h-full object-cover"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
-
-              <button 
-                onClick={closeTrainerModal}
-                className="absolute top-4 right-4 bg-black/30 hover:bg-black/50 text-white rounded-full p-1.5 transition-colors"
-                type="button"
-                aria-label="닫기"
-              >
-                <X size={20} />
-              </button>
-            </div>
-
-            {/* 모달 본문 */}
-            <div className="p-6">
-              {/* 기본 정보 섹션 */}
-              <div className="flex flex-col sm:flex-row mb-6 -mt-16 relative">
-                <div className="w-24 h-24 border-4 border-white dark:border-gray-900 rounded-full overflow-hidden shadow-lg">
-                  <img 
-                    src="https://images.unsplash.com/photo-1543466835-00a7907e9de1?q=80&w=300&auto=format&fit=crop&sharp=100" 
-                    alt={selectedTrainer.name} 
-                    className="w-full h-full object-cover brightness-110 contrast-110" 
-                  />
-                </div>
-
-                <div className="mt-4 sm:mt-6 sm:ml-4">
-                  <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-                    {selectedTrainer.name}
-                  </h2>
-                  <p className="text-sm text-gray-600 dark:text-gray-300">
-                    {selectedTrainer.title}
-                  </p>
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    <Badge variant="outline" className="bg-primary/10 dark:bg-primary/5 text-primary-foreground">
-                      {selectedTrainer.specialty}
-                    </Badge>
-
-                    {selectedTrainer.certification && (
-                      <Badge variant="success" className="flex items-center">
-                        <Award className="h-3 w-3 mr-1" />
-                        인증
-                      </Badge>
-                    )}
-
-                    {selectedTrainer.featured && (
-                      <Badge variant="warning" className="flex items-center">
-                        <Sparkles className="h-3 w-3 mr-1" />
-                        추천
-                      </Badge>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              {/* 상세 정보 */}
-              <div className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="flex items-center space-x-2 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                    <Star className="h-5 w-5 text-yellow-500 fill-yellow-500" />
-                    <div>
-                      <div className="text-sm font-medium">{selectedTrainer.rating} / 5.0</div>
-                      <div className="text-xs text-gray-500">{selectedTrainer.reviews} 후기</div>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center space-x-2 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                    <Briefcase className="h-5 w-5 text-gray-500" />
-                    <div>
-                      <div className="text-sm font-medium">경력 {selectedTrainer.experience}</div>
-                      <div className="text-xs text-gray-500">전문 훈련사</div>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center space-x-2 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                    <MapPin className="h-5 w-5 text-gray-500" />
-                    <div>
-                      <div className="text-sm font-medium">{selectedTrainer.location}</div>
-                      <div className="text-xs text-gray-500">활동 지역</div>
-                    </div>
-                  </div>
-                </div>
-
-                <div>
-                  <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">훈련사 소개</h3>
-                  <p className="text-gray-700 dark:text-gray-300">{selectedTrainer.bio}</p>
-                </div>
-
-                <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
-                  <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">강의 및 예약</h3>
-                  <p className="text-gray-600 dark:text-gray-400 mb-4">
-                    {selectedTrainer.name} 훈련사는 총 {selectedTrainer.courses}개의 강의를 진행하고 있습니다.
-                  </p>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    <Button 
-                      onClick={() => handleViewCourses(selectedTrainer.id)}
-                    >
-                      강의 보기
-                    </Button>
-                    <Button
-                      variant="outline"
-                      onClick={() => handleBookConsultation(selectedTrainer.id)}
-                    >
-                      상담 예약
-                    </Button>
-                    <Button
-                      variant="outline"
-                      onClick={() => handleCourseReservation(selectedTrainer.id)}
-                    >
-                      화상수업 예약
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+        <UnifiedTrainerProfileModal
+          trainer={selectedTrainer}
+          isOpen={isModalOpen}
+          onClose={closeTrainerModal}
+          onReservationClick={(trainer) => {
+            console.log(`${trainer.id}번 훈련사의 화상수업 예약하기`);
+            closeTrainerModal();
+          }}
+        />
       )}
     </div>
   );

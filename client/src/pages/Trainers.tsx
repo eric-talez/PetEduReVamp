@@ -4,13 +4,13 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Star, MapPin, Search, Filter, Briefcase, Award, Sparkles, Loader2 } from 'lucide-react';
-import { NewTrainerProfileModal, type Trainer } from '@/components/NewTrainerProfileModal';
+import { UnifiedTrainerProfileModal, type UnifiedTrainer } from '@/components/UnifiedTrainerProfileModal';
 import { TalezTrainerCertificationBadge } from '@/components/business/TalezTrainerCertificationBadge';
 import { useQuery } from '@tanstack/react-query';
 import { cn } from '@/lib/utils';
 
 export default function Trainers() {
-  const [selectedTrainer, setSelectedTrainer] = useState<Trainer | null>(null);
+  const [selectedTrainer, setSelectedTrainer] = useState<UnifiedTrainer | null>(null);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [filter, setFilter] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
@@ -47,10 +47,10 @@ export default function Trainers() {
   }
 
   // API에서 가져온 데이터 또는 기본 빈 배열
-  const trainers: Trainer[] = trainersData || [];
+  const trainers: UnifiedTrainer[] = trainersData || [];
 
   // 훈련사 프로필 열기
-  const openTrainerProfile = (trainer: Trainer) => {
+  const openTrainerProfile = (trainer: UnifiedTrainer) => {
     console.log("프로필 열기 클릭", trainer.name);
     try {
       setSelectedTrainer(trainer);
@@ -431,47 +431,13 @@ export default function Trainers() {
         </Button>
       </div>
 
-      {/* 훈련사 프로필 모달 - 기본 구현 */}
-      {isProfileOpen && (
-        <div 
-          className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center"
-          onClick={() => {
-            console.log("모달 배경 클릭");
-            setIsProfileOpen(false);
-          }}
-        >
-          <div 
-            className="bg-white dark:bg-gray-900 rounded-lg shadow-lg max-w-xl w-full p-6 relative"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button 
-              onClick={() => {
-                console.log("모달 닫기 X 버튼 클릭");
-                alert("모달을 닫습니다.");
-                setIsProfileOpen(false);
-              }}
-              className="absolute right-4 top-4 text-gray-500 hover:text-gray-700"
-              type="button"
-            >
-              X
-            </button>
-            <h2 className="text-xl font-bold mb-4">기본 모달 테스트</h2>
-            <p className="mb-4">이 모달은 훈련사 프로필 대신 표시되는 간단한 테스트 모달입니다.</p>
-            <p className="mb-6">모달이 제대로 열리고 닫히는지 확인하기 위한 것입니다.</p>
-            <div className="mt-4 flex justify-end">
-              <Button
-                onClick={() => {
-                  console.log("모달 닫기 버튼 클릭");
-                  alert("모달을 닫습니다.");
-                  setIsProfileOpen(false);
-                }}
-                variant="default"
-              >
-                닫기
-              </Button>
-            </div>
-          </div>
-        </div>
+      {/* 훈련사 프로필 모달 */}
+      {isProfileOpen && selectedTrainer && (
+        <UnifiedTrainerProfileModal
+          trainer={selectedTrainer}
+          isOpen={isProfileOpen}
+          onClose={() => setIsProfileOpen(false)}
+        />
       )}
     </div>
   );

@@ -15,7 +15,7 @@ import { Button } from '@/components/ui/button';
 import { Link } from 'wouter';
 import { TrendingUp, TrendingDown, Eye, Award, MoveUp, MapPin, Sparkles } from 'lucide-react';
 import { Star, Users, Clock } from "lucide-react";
-import { NewTrainerProfileModal, Trainer } from './NewTrainerProfileModal';
+import { UnifiedTrainerProfileModal, UnifiedTrainer } from './UnifiedTrainerProfileModal';
 
 // 훈련사 데이터
 const trendingTrainers = [
@@ -461,7 +461,7 @@ const trendingCourses2 = [
 ];
 
 // 트레이너 상세 정보를 위한 확장된 정보
-const trainerDetails: { [key: number]: Trainer } = {
+const trainerDetails: { [key: number]: UnifiedTrainer } = {
   1: {
     id: 1,
     name: '김민수',
@@ -566,7 +566,7 @@ const trainerDetails: { [key: number]: Trainer } = {
 
 export function TrendingSection() {
   const [selectedTab, setSelectedTab] = useState('trainers');
-  const [selectedTrainer, setSelectedTrainer] = useState<Trainer | null>(null);
+  const [selectedTrainer, setSelectedTrainer] = useState<UnifiedTrainer | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const renderGraphCard = (item: any) => (
@@ -890,7 +890,7 @@ export function TrendingSection() {
 
       {/* 트레이너 프로필 모달 */}
       {selectedTrainer && (
-        <NewTrainerProfileModal
+        <UnifiedTrainerProfileModal
           trainer={selectedTrainer}
           isOpen={isModalOpen}
           onClose={() => {
