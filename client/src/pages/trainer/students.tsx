@@ -434,109 +434,6 @@ export default function TrainerStudentsPage() {
       }
       
       return mockStudents;
-          email: "hong@example.com",
-          phone: "010-1234-5678",
-          address: "서울시 강남구",
-          joinDate: "2025-01-15",
-          status: 'active',
-          pet: {
-            id: 1,
-            name: "멍멍이",
-            breed: "골든 리트리버",
-            age: 2,
-            weight: 28.5,
-            gender: "수컷",
-            healthStatus: "양호",
-            specialNotes: "활발한 성격, 사람을 좋아함"
-          },
-          trainer: { id: 1, name: "김민수", email: "kim@example.com" },
-          course: {
-            id: 1,
-            title: "기초 복종 훈련",
-            startDate: "2025-01-15",
-            endDate: "2025-03-15",
-            progress: 65
-          },
-          attendance: {
-            totalSessions: 8,
-            attendedSessions: 7,
-            attendanceRate: 87.5,
-            lastAttendance: "2025-01-21"
-          },
-          performance: {
-            overallRating: 4.2,
-            behaviorScore: 85,
-            learningSpeed: 78,
-            socialSkills: 92,
-            notes: "매우 적극적이고 학습 의욕이 높음"
-          },
-          payments: {
-            totalAmount: 400000,
-            paidAmount: 300000,
-            pendingAmount: 100000,
-            lastPayment: "2025-01-20"
-          }
-        },
-        {
-          id: 2,
-          name: "김영희",
-          email: "kim@example.com",
-          phone: "010-9876-5432",
-          address: "서울시 서초구",
-          joinDate: "2025-01-10",
-          status: 'active',
-          pet: {
-            id: 2,
-            name: "바둑이",
-            breed: "보더 콜리",
-            age: 3,
-            weight: 22.0,
-            gender: "암컷",
-            healthStatus: "양호",
-            specialNotes: "매우 영리하고 에너지가 많음"
-          },
-          trainer: { id: 2, name: "이준호", email: "lee@example.com" },
-          course: {
-            id: 2,
-            title: "어질리티 기초",
-            startDate: "2025-01-10",
-            endDate: "2025-02-28",
-            progress: 80
-          },
-          attendance: {
-            totalSessions: 6,
-            attendedSessions: 6,
-            attendanceRate: 100,
-            lastAttendance: "2025-01-20"
-          },
-          performance: {
-            overallRating: 4.8,
-            behaviorScore: 95,
-            learningSpeed: 90,
-            socialSkills: 88,
-            notes: "뛰어난 신체 능력과 빠른 학습력"
-          },
-          payments: {
-            totalAmount: 350000,
-            paidAmount: 350000,
-            pendingAmount: 0,
-            lastPayment: "2025-01-15"
-          }
-        }
-      ];
-
-      // 선택된 훈련사에 따라 필터링
-      if (selectedTrainer) {
-        return mockStudents.filter(student => student.trainer.id === selectedTrainer);
-      }
-      
-      // 기관 관리자는 모든 학생 조회 가능
-      if (userRole === 'institute-admin') {
-        return mockStudents;
-      }
-      
-      // 개별 훈련사는 자신의 학생만
-      return mockStudents.filter(student => student.trainer.id === 1); // 현재 로그인한 훈련사 ID
     },
     enabled: isAuthenticated
   });
@@ -682,354 +579,310 @@ export default function TrainerStudentsPage() {
               <Card key={i} className="animate-pulse">
                 <CardContent className="p-6">
                   <div className="flex items-center space-x-4">
-                    <div className="h-12 w-12 bg-gray-200 rounded-full"></div>
+                    <div className="rounded-full bg-gray-300 h-12 w-12"></div>
                     <div className="space-y-2 flex-1">
-                      <div className="h-4 bg-gray-200 rounded w-1/4"></div>
-                      <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                      <div className="h-4 bg-gray-300 rounded w-3/4"></div>
+                      <div className="h-4 bg-gray-300 rounded w-1/2"></div>
                     </div>
                   </div>
                 </CardContent>
               </Card>
             ))}
           </div>
-        ) : filteredStudents && filteredStudents.length > 0 ? (
-          filteredStudents.map((student: Student) => (
-            <Card 
-              key={student.id} 
-              className="cursor-pointer hover:shadow-lg transition-shadow"
-              onClick={() => handleStudentClick(student)}
-            >
-              <CardContent className="p-6">
-                <div className="flex justify-between items-start">
-                  <div className="flex items-center gap-4 flex-1">
-                    <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                      <User className="w-6 h-6 text-blue-600" />
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-2">
-                        <h3 className="text-lg font-semibold">{student.name}</h3>
-                        <Badge variant={student.status === 'active' ? 'default' : 'secondary'}>
-                          {student.status === 'active' ? '수강중' : 
-                           student.status === 'inactive' ? '휴강중' : '수료'}
-                        </Badge>
-                        {userRole === 'institute-admin' && (
-                          <Badge variant="outline" className="text-xs">
-                            {student.trainer.name} 담당
-                          </Badge>
-                        )}
-                      </div>
-                      
-                      {/* 담당 훈련사 정보 (기관 관리자용) */}
-                      {userRole === 'institute-admin' && (
-                        <div className="mt-2 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                          <h4 className="text-sm font-semibold mb-2 flex items-center gap-1">
-                            <User className="h-4 w-4" />
-                            담당 훈련사 정보
-                          </h4>
-                          <div className="grid grid-cols-2 gap-2 text-xs">
-                            <div>
-                              <span className="text-gray-500">이름:</span>
-                              <span className="font-medium ml-1">{student.trainer.name}</span>
-                            </div>
-                            <div>
-                              <span className="text-gray-500">연락처:</span>
-                              <span className="font-medium ml-1">{student.trainer.email}</span>
-                            </div>
-                            <div>
-                              <span className="text-gray-500">전문분야:</span>
-                              <span className="font-medium ml-1">
-                                {trainers?.find(t => t.id === student.trainer.id)?.specialization.join(', ') || '기초 훈련'}
-                              </span>
-                            </div>
-                            <div>
-                              <span className="text-gray-500">평점:</span>
-                              <span className="font-medium ml-1 flex items-center gap-1">
-                                <Star className="h-3 w-3 text-yellow-400" />
-                                {trainers?.find(t => t.id === student.trainer.id)?.averageRating || 4.5}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                      )}
-                      
-                      <div className="mt-3">
-                      </div>
-                      
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                        <div>
-                          <span className="text-gray-500">반려동물:</span>
-                          <div className="font-medium">{student.pet.name} ({student.pet.breed})</div>
-                        </div>
-                        <div>
-                          <span className="text-gray-500">수강 과정:</span>
-                          <div className="font-medium">{student.course.title}</div>
-                        </div>
-                        <div>
-                          <span className="text-gray-500">출석률:</span>
-                          <div className="font-medium flex items-center gap-1">
-                            {student.attendance.attendanceRate}%
-                            {student.attendance.attendanceRate >= 90 ? (
-                              <CheckCircle className="h-3 w-3 text-green-500" />
-                            ) : student.attendance.attendanceRate >= 70 ? (
-                              <AlertCircle className="h-3 w-3 text-yellow-500" />
-                            ) : (
-                              <AlertCircle className="h-3 w-3 text-red-500" />
-                            )}
-                          </div>
-                        </div>
-                        <div>
-                          <span className="text-gray-500">진도율:</span>
-                          <div className="font-medium">{student.course.progress}%</div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="text-right">
-                    <div className="text-lg font-bold text-blue-600 mb-1">
-                      {student.performance.overallRating.toFixed(1)}
-                    </div>
-                    <div className="text-xs text-gray-500">종합 평점</div>
-                  </div>
-                </div>
-
-                <div className="mt-4 pt-4 border-t">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4 text-sm text-gray-600">
-                      <span className="flex items-center gap-1">
-                        <Calendar className="h-4 w-4" />
-                        가입: {student.joinDate}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <Clock className="h-4 w-4" />
-                        최근 출석: {student.attendance.lastAttendance}
-                      </span>
-                    </div>
-                    <Button variant="outline" size="sm">
-                      <Eye className="h-4 w-4 mr-2" />
-                      상세보기
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))
         ) : (
+          <div className="space-y-4">
+            {filteredStudents?.map((student: Student) => (
+              <Card 
+                key={student.id} 
+                className="cursor-pointer hover:shadow-md transition-shadow"
+                onClick={() => handleStudentClick(student)}
+              >
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-4">
+                      <Avatar className="h-12 w-12">
+                        <AvatarImage src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${student.name}`} />
+                        <AvatarFallback>{student.name[0]}</AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <h3 className="font-semibold text-lg">{student.name}</h3>
+                        <p className="text-gray-600 dark:text-gray-400">{student.email}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Badge variant={student.status === 'active' ? 'default' : 'secondary'}>
+                        {student.status === 'active' ? '수강중' : 
+                         student.status === 'inactive' ? '휴강중' : '수료'}
+                      </Badge>
+                      <ChevronRight className="h-4 w-4 text-gray-400" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
+
+        {!studentsLoading && (!filteredStudents || filteredStudents.length === 0) && (
           <Card>
-            <CardContent className="text-center py-8">
+            <CardContent className="p-12 text-center">
               <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-gray-600 mb-2">
-                {searchTerm || statusFilter !== 'all' ? 
-                  '검색 조건에 맞는 수강생이 없습니다' : 
-                  '등록된 수강생이 없습니다'
-                }
-              </h3>
-              <p className="text-gray-500">
-                {searchTerm || statusFilter !== 'all' ? 
-                  '다른 검색어나 필터를 시도해보세요' : 
-                  '새로운 수강생 등록을 기다리고 있습니다'
-                }
+              <h3 className="text-lg font-semibold mb-2">수강생이 없습니다</h3>
+              <p className="text-gray-600 dark:text-gray-400">
+                {searchTerm ? '검색 조건에 맞는 수강생이 없습니다.' : '아직 등록된 수강생이 없습니다.'}
               </p>
             </CardContent>
           </Card>
         )}
       </div>
 
-      {/* 학생 상세 정보 모달 */}
-      <Dialog open={isStudentDetailOpen} onOpenChange={setIsStudentDetailOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-          {selectedStudent && (
-            <>
-              <DialogHeader>
-                <DialogTitle className="text-xl flex items-center gap-2">
-                  <GraduationCap className="h-6 w-6" />
-                  {selectedStudent.name} 상세 정보
-                </DialogTitle>
-              </DialogHeader>
-
-              <Tabs defaultValue="basic" className="w-full">
-                <TabsList className="grid w-full grid-cols-4">
-                  <TabsTrigger value="basic">기본 정보</TabsTrigger>
-                  <TabsTrigger value="progress">학습 진도</TabsTrigger>
-                  <TabsTrigger value="attendance">출석 현황</TabsTrigger>
-                  <TabsTrigger value="payments">결제 정보</TabsTrigger>
-                </TabsList>
-
-                <TabsContent value="basic" className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <h4 className="font-semibold mb-3">학생 정보</h4>
-                      <div className="space-y-2 text-sm">
-                        <div className="flex items-center gap-2">
-                          <User className="h-4 w-4" />
-                          <span>{selectedStudent.name}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Mail className="h-4 w-4" />
-                          <span>{selectedStudent.email}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Phone className="h-4 w-4" />
-                          <span>{selectedStudent.phone}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <MapPin className="h-4 w-4" />
-                          <span>{selectedStudent.address}</span>
-                        </div>
-                      </div>
-                    </div>
-                    <div>
-                      <h4 className="font-semibold mb-3">반려동물 정보</h4>
-                      <div className="space-y-2 text-sm">
-                        <div className="flex items-center gap-2">
-                          <Heart className="h-4 w-4" />
-                          <span>{selectedStudent.pet.name} ({selectedStudent.pet.breed})</span>
-                        </div>
-                        <div><span className="font-medium">나이:</span> {selectedStudent.pet.age}살</div>
-                        <div><span className="font-medium">체중:</span> {selectedStudent.pet.weight}kg</div>
-                        <div><span className="font-medium">성별:</span> {selectedStudent.pet.gender}</div>
-                        <div><span className="font-medium">건강상태:</span> {selectedStudent.pet.healthStatus}</div>
-                        <div className="mt-2">
-                          <span className="font-medium">특이사항:</span>
-                          <p className="text-gray-600 mt-1">{selectedStudent.pet.specialNotes}</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </TabsContent>
-
-                <TabsContent value="progress" className="space-y-4">
-                  <div>
-                    <h4 className="font-semibold mb-3">수강 과정 정보</h4>
-                    <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
-                      <div className="flex justify-between items-center mb-2">
-                        <span className="font-medium">{selectedStudent.course.title}</span>
-                        <Badge variant="outline">{selectedStudent.course.progress}% 완료</Badge>
-                      </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2">
-                        <div 
-                          className="bg-blue-600 h-2 rounded-full" 
-                          style={{ width: `${selectedStudent.course.progress}%` }}
-                        ></div>
-                      </div>
-                      <div className="flex justify-between text-sm text-gray-600 mt-2">
-                        <span>시작: {selectedStudent.course.startDate}</span>
-                        <span>종료: {selectedStudent.course.endDate}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div>
-                    <h4 className="font-semibold mb-3">성과 평가</h4>
-                    <div className="space-y-3">
-                      <div className="flex justify-between items-center">
-                        <span>종합 평점</span>
-                        <div className="flex items-center gap-2">
-                          <div className="flex">
-                            {Array.from({ length: 5 }).map((_, i) => (
-                              <Star
-                                key={i}
-                                className={`h-4 w-4 ${
-                                  i < Math.floor(selectedStudent.performance.overallRating) 
-                                    ? 'text-yellow-400 fill-current' 
-                                    : 'text-gray-300'
-                                }`}
-                              />
-                            ))}
-                          </div>
-                          <span className="font-medium">{selectedStudent.performance.overallRating}</span>
-                        </div>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span>행동 점수</span>
-                        <span className="font-medium">{selectedStudent.performance.behaviorScore}점</span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span>학습 속도</span>
-                        <span className="font-medium">{selectedStudent.performance.learningSpeed}점</span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span>사회성</span>
-                        <span className="font-medium">{selectedStudent.performance.socialSkills}점</span>
-                      </div>
-                      <div className="mt-4">
-                        <span className="font-medium">훈련사 의견:</span>
-                        <p className="text-gray-600 mt-1 p-3 bg-gray-50 dark:bg-gray-800 rounded">
-                          {selectedStudent.performance.notes}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </TabsContent>
-
-                <TabsContent value="attendance" className="space-y-4">
-                  <div className="grid grid-cols-3 gap-4">
-                    <div className="text-center p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                      <div className="text-2xl font-bold text-blue-600">
-                        {selectedStudent.attendance.totalSessions}
-                      </div>
-                      <div className="text-sm text-gray-600">총 수업</div>
-                    </div>
-                    <div className="text-center p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
-                      <div className="text-2xl font-bold text-green-600">
-                        {selectedStudent.attendance.attendedSessions}
-                      </div>
-                      <div className="text-sm text-gray-600">출석</div>
-                    </div>
-                    <div className="text-center p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
-                      <div className="text-2xl font-bold text-yellow-600">
-                        {selectedStudent.attendance.attendanceRate}%
-                      </div>
-                      <div className="text-sm text-gray-600">출석률</div>
-                    </div>
-                  </div>
-                  <div>
-                    <span className="font-medium">최근 출석:</span>
-                    <span className="ml-2">{selectedStudent.attendance.lastAttendance}</span>
-                  </div>
-                </TabsContent>
-
-                <TabsContent value="payments" className="space-y-4">
-                  <div className="grid grid-cols-3 gap-4">
-                    <div className="text-center p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                      <div className="text-lg font-bold">
-                        {selectedStudent.payments.totalAmount.toLocaleString()}원
-                      </div>
-                      <div className="text-sm text-gray-600">총 수강료</div>
-                    </div>
-                    <div className="text-center p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
-                      <div className="text-lg font-bold text-green-600">
-                        {selectedStudent.payments.paidAmount.toLocaleString()}원
-                      </div>
-                      <div className="text-sm text-gray-600">납부 완료</div>
-                    </div>
-                    <div className="text-center p-4 bg-red-50 dark:bg-red-900/20 rounded-lg">
-                      <div className="text-lg font-bold text-red-600">
-                        {selectedStudent.payments.pendingAmount.toLocaleString()}원
-                      </div>
-                      <div className="text-sm text-gray-600">미납금</div>
-                    </div>
-                  </div>
-                  <div>
-                    <span className="font-medium">최근 결제:</span>
-                    <span className="ml-2">{selectedStudent.payments.lastPayment}</span>
-                  </div>
-                </TabsContent>
-              </Tabs>
-
-              <DialogFooter>
-                <Button variant="outline" onClick={() => setIsStudentDetailOpen(false)}>
-                  닫기
-                </Button>
-                <Button>
-                  <MessageSquare className="h-4 w-4 mr-2" />
-                  알림장 작성
-                </Button>
-              </DialogFooter>
-            </>
-          )}
-        </DialogContent>
-      </Dialog>
+      {/* 학생 상세 정보 다이얼로그 */}
+      {selectedStudent && (
+        <StudentDetailDialog 
+          student={selectedStudent}
+          open={isStudentDetailOpen}
+          onClose={() => setIsStudentDetailOpen(false)}
+        />
+      )}
     </div>
+  );
+}
+
+// 학생 상세 정보 다이얼로그 컴포넌트
+function StudentDetailDialog({ 
+  student, 
+  open, 
+  onClose 
+}: { 
+  student: Student; 
+  open: boolean; 
+  onClose: () => void; 
+}) {
+  if (!student) return null;
+
+  return (
+    <Dialog open={open} onOpenChange={onClose}>
+      <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-3">
+            <Avatar className="h-12 w-12">
+              <AvatarImage src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${student.name}`} />
+              <AvatarFallback>{student.name[0]}</AvatarFallback>
+            </Avatar>
+            <div>
+              <h2 className="text-xl font-bold">{student.name}</h2>
+              <p className="text-gray-600 dark:text-gray-400">{student.email}</p>
+            </div>
+          </DialogTitle>
+        </DialogHeader>
+
+        <Tabs defaultValue="basic" className="w-full">
+          <TabsList className="grid w-full grid-cols-5">
+            <TabsTrigger value="basic">기본정보</TabsTrigger>
+            <TabsTrigger value="pet">반려동물</TabsTrigger>
+            <TabsTrigger value="course">수강과정</TabsTrigger>
+            <TabsTrigger value="performance">성과</TabsTrigger>
+            <TabsTrigger value="payment">결제</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="basic" className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <span className="font-medium">이름:</span>
+                <span className="ml-2">{student.name}</span>
+              </div>
+              <div>
+                <span className="font-medium">이메일:</span>
+                <span className="ml-2">{student.email}</span>
+              </div>
+              <div>
+                <span className="font-medium">전화번호:</span>
+                <span className="ml-2">{student.phone}</span>
+              </div>
+              <div>
+                <span className="font-medium">가입일:</span>
+                <span className="ml-2">{student.joinDate}</span>
+              </div>
+              <div className="col-span-2">
+                <span className="font-medium">주소:</span>
+                <span className="ml-2">{student.address}</span>
+              </div>
+              <div>
+                <span className="font-medium">상태:</span>
+                <Badge variant={student.status === 'active' ? 'default' : 'secondary'} className="ml-2">
+                  {student.status === 'active' ? '수강중' : 
+                   student.status === 'inactive' ? '휴강중' : '수료'}
+                </Badge>
+              </div>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="pet" className="space-y-4">
+            <div className="flex items-center gap-4 mb-4">
+              <img 
+                src={student.pet.imageUrl} 
+                alt={student.pet.name}
+                className="w-16 h-16 rounded-full object-cover"
+              />
+              <div>
+                <h3 className="font-semibold text-lg">{student.pet.name}</h3>
+                <p className="text-gray-600 dark:text-gray-400">{student.pet.breed}</p>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <span className="font-medium">나이:</span>
+                <span className="ml-2">{student.pet.age}세</span>
+              </div>
+              <div>
+                <span className="font-medium">체중:</span>
+                <span className="ml-2">{student.pet.weight}kg</span>
+              </div>
+              <div>
+                <span className="font-medium">성별:</span>
+                <span className="ml-2">{student.pet.gender}</span>
+              </div>
+              <div>
+                <span className="font-medium">건강상태:</span>
+                <span className="ml-2">{student.pet.healthStatus}</span>
+              </div>
+              <div className="col-span-2">
+                <span className="font-medium">특이사항:</span>
+                <span className="ml-2">{student.pet.specialNotes}</span>
+              </div>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="course" className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <span className="font-medium">과정명:</span>
+                <span className="ml-2">{student.course.title}</span>
+              </div>
+              <div>
+                <span className="font-medium">담당 훈련사:</span>
+                <span className="ml-2">{student.trainer.name}</span>
+              </div>
+              <div>
+                <span className="font-medium">시작일:</span>
+                <span className="ml-2">{student.course.startDate}</span>
+              </div>
+              <div>
+                <span className="font-medium">종료일:</span>
+                <span className="ml-2">{student.course.endDate}</span>
+              </div>
+              <div className="col-span-2">
+                <span className="font-medium">진행률:</span>
+                <div className="flex items-center gap-2 mt-1">
+                  <div className="flex-1 bg-gray-200 rounded-full h-2">
+                    <div 
+                      className="bg-blue-600 h-2 rounded-full" 
+                      style={{ width: `${student.course.progress}%` }}
+                    ></div>
+                  </div>
+                  <span className="text-sm font-medium">{student.course.progress}%</span>
+                </div>
+              </div>
+            </div>
+            <div className="grid grid-cols-3 gap-4 mt-6">
+              <div className="text-center p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                <div className="text-2xl font-bold text-blue-600">
+                  {student.attendance.totalSessions}
+                </div>
+                <div className="text-sm text-gray-600">총 세션</div>
+              </div>
+              <div className="text-center p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                <div className="text-2xl font-bold text-green-600">
+                  {student.attendance.attendedSessions}
+                </div>
+                <div className="text-sm text-gray-600">참석</div>
+              </div>
+              <div className="text-center p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
+                <div className="text-2xl font-bold text-yellow-600">
+                  {student.attendance.attendanceRate}%
+                </div>
+                <div className="text-sm text-gray-600">출석률</div>
+              </div>
+            </div>
+            <div>
+              <span className="font-medium">최근 참석:</span>
+              <span className="ml-2">{student.attendance.lastAttendance}</span>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="performance" className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="text-center p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+                <div className="text-2xl font-bold text-purple-600">
+                  {student.performance.overallRating}
+                </div>
+                <div className="text-sm text-gray-600">종합 평점</div>
+              </div>
+              <div className="text-center p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg">
+                <div className="text-2xl font-bold text-indigo-600">
+                  {student.performance.behaviorScore}
+                </div>
+                <div className="text-sm text-gray-600">행동 점수</div>
+              </div>
+              <div className="text-center p-4 bg-pink-50 dark:bg-pink-900/20 rounded-lg">
+                <div className="text-2xl font-bold text-pink-600">
+                  {student.performance.learningSpeed}
+                </div>
+                <div className="text-sm text-gray-600">학습 속도</div>
+              </div>
+              <div className="text-center p-4 bg-cyan-50 dark:bg-cyan-900/20 rounded-lg">
+                <div className="text-2xl font-bold text-cyan-600">
+                  {student.performance.socialSkills}
+                </div>
+                <div className="text-sm text-gray-600">사회성</div>
+              </div>
+            </div>
+            <div>
+              <span className="font-medium">평가 노트:</span>
+              <p className="mt-2 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg text-sm">
+                {student.performance.notes}
+              </p>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="payment" className="space-y-4">
+            <div className="grid grid-cols-3 gap-4">
+              <div className="text-center p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                <div className="text-lg font-bold text-blue-600">
+                  {student.payments.totalAmount.toLocaleString()}원
+                </div>
+                <div className="text-sm text-gray-600">총 금액</div>
+              </div>
+              <div className="text-center p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                <div className="text-lg font-bold text-green-600">
+                  {student.payments.paidAmount.toLocaleString()}원
+                </div>
+                <div className="text-sm text-gray-600">결제완료</div>
+              </div>
+              <div className="text-center p-4 bg-red-50 dark:bg-red-900/20 rounded-lg">
+                <div className="text-lg font-bold text-red-600">
+                  {student.payments.pendingAmount.toLocaleString()}원
+                </div>
+                <div className="text-sm text-gray-600">미납금</div>
+              </div>
+            </div>
+            <div>
+              <span className="font-medium">최근 결제:</span>
+              <span className="ml-2">{student.payments.lastPayment}</span>
+            </div>
+          </TabsContent>
+        </Tabs>
+
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose}>
+            닫기
+          </Button>
+          <Button>
+            <MessageSquare className="h-4 w-4 mr-2" />
+            알림장 작성
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }

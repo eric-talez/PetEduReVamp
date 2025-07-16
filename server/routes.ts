@@ -46,7 +46,6 @@ import { WorkflowEngine } from './workflow-engine';
 import { uploadDocuments } from './middleware/upload';
 import xlsx from 'xlsx';
 import { contentCrawler } from './content-crawler';
-import Stripe from 'stripe';
 
 // 유료/무료 정보를 포함한 엑셀 파일에서 커리큘럼 정보 추출 함수
 function parseExcelCurriculumWithPricing(data: any[], filename: string) {
