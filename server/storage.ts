@@ -1715,6 +1715,48 @@ class Storage {
     return null;
   }
 
+  // 커리큘럼 관리 메서드
+  createCurriculum(curriculumData: any): any {
+    const curriculum = {
+      id: Date.now().toString(),
+      ...curriculumData,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+    
+    if (!this.courses) {
+      this.courses = [];
+    }
+    this.courses.push(curriculum);
+    return curriculum;
+  }
+
+  getAllCurricula(): any[] {
+    return this.courses || [];
+  }
+
+  getCurriculumById(id: string): any {
+    return this.courses.find(curriculum => curriculum.id === id);
+  }
+
+  updateCurriculum(id: string, updateData: any): any {
+    const curriculum = this.courses.find(c => c.id === id);
+    if (curriculum) {
+      Object.assign(curriculum, updateData, { updatedAt: new Date().toISOString() });
+      return curriculum;
+    }
+    return null;
+  }
+
+  deleteCurriculum(id: string): boolean {
+    const index = this.courses.findIndex(c => c.id === id);
+    if (index !== -1) {
+      this.courses.splice(index, 1);
+      return true;
+    }
+    return false;
+  }
+
   // 이벤트 관리 메서드
   getAllEvents(): any[] {
     return this.events || [];

@@ -1093,6 +1093,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // 커리큘럼 등록 API
+  app.post('/api/admin/curriculum', requireAuth('admin'), async (req, res) => {
+    try {
+      const curriculumData = req.body;
+      
+      // 커리큘럼 데이터를 저장소에 저장
+      const newCurriculum = await storage.createCurriculum(curriculumData);
+      
+      console.log('[Admin] 새 커리큘럼 등록:', newCurriculum.title);
+      
+      res.json({
+        success: true,
+        message: '커리큘럼이 성공적으로 등록되었습니다.',
+        curriculum: newCurriculum
+      });
+      
+    } catch (error) {
+      console.error('[Admin] 커리큘럼 등록 오류:', error);
+      res.status(500).json({ 
+        error: '커리큘럼 등록 중 오류가 발생했습니다.' 
+      });
+    }
+  });
+
+  // 커리큘럼 목록 조회 API
+  app.get('/api/admin/curriculum', requireAuth('admin'), async (req, res) => {
+    try {
+      const curricula = await storage.getAllCurricula();
+      res.json(curricula);
+    } catch (error) {
+      console.error('[Admin] 커리큘럼 목록 조회 오류:', error);
+      res.status(500).json({ 
+        error: '커리큘럼 목록 조회 중 오류가 발생했습니다.' 
+      });
+    }
+  });
+
   // 위치 검색 라우트 등록
   registerLocationRoutes(app);
 
