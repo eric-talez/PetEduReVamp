@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Calendar, Clock, MapPin, MessageSquare, Phone, Star, VideoIcon, X, Award, Briefcase, Sparkles } from 'lucide-react';
+import { Calendar, Clock, MapPin, MessageSquare, Phone, Star, VideoIcon, X, Award, Briefcase, Sparkles, CheckCircle, Mail, User } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
 
 // 훈련사 정보 타입 정의
 export interface Trainer {
@@ -113,69 +114,118 @@ export function SimpleTrainerProfileModal({ trainer, isOpen, onClose }: SimpleTr
         </div>
 
         {/* 내용 */}
-        <div className="p-6">
-          <div className="mb-6">
-            <h3 className="text-md font-semibold mb-2">소개</h3>
-            <p className="text-sm text-gray-600 dark:text-gray-300">
-              {trainer.description}
-            </p>
-          </div>
-
-          {trainer.experience && (
-            <div className="mb-6">
-              <h3 className="text-md font-semibold mb-2">경력</h3>
-              <p className="text-sm text-gray-600 dark:text-gray-300">
-                {trainer.experience}
+        <div className="p-6 space-y-6">
+          {/* 소개 */}
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-2 mb-3">
+                <User className="w-5 h-5 text-primary" />
+                <h3 className="text-lg font-semibold text-gray-800 dark:text-white">소개</h3>
+              </div>
+              <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
+                {trainer.description}
               </p>
-            </div>
+            </CardContent>
+          </Card>
+
+          {/* 경력 */}
+          {trainer.experience && (
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex items-center gap-2 mb-3">
+                  <Briefcase className="w-5 h-5 text-primary" />
+                  <h3 className="text-lg font-semibold text-gray-800 dark:text-white">경력</h3>
+                </div>
+                <p className="text-gray-600 dark:text-gray-300">
+                  {trainer.experience}
+                </p>
+              </CardContent>
+            </Card>
           )}
 
-          <div className="mb-6">
-            <h3 className="text-md font-semibold mb-2">자격증 및 전문분야</h3>
-            <div className="flex flex-wrap gap-2">
-              {trainer.certifications.map((cert, idx) => (
-                <Badge key={idx} variant="outline">{cert}</Badge>
-              ))}
-            </div>
-          </div>
-
-          {trainer.education && (
-            <div className="mb-6">
-              <h3 className="text-md font-semibold mb-2">학력 및 교육</h3>
-              <ul className="text-sm text-gray-600 dark:text-gray-300 list-disc pl-5">
-                {trainer.education.map((edu, idx) => (
-                  <li key={idx}>{edu}</li>
-                ))}
-              </ul>
-            </div>
-          )}
-
-          {trainer.languages && (
-            <div className="mb-6">
-              <h3 className="text-md font-semibold mb-2">구사 언어</h3>
+          {/* 자격증 */}
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-2 mb-3">
+                <Award className="w-5 h-5 text-primary" />
+                <h3 className="text-lg font-semibold text-gray-800 dark:text-white">자격증 및 전문분야</h3>
+              </div>
               <div className="flex flex-wrap gap-2">
-                {trainer.languages.map((lang, idx) => (
-                  <Badge key={idx} variant="secondary">{lang}</Badge>
+                {trainer.certifications.map((cert, idx) => (
+                  <Badge key={idx} variant="secondary" className="text-xs">
+                    <CheckCircle className="w-3 h-3 mr-1" />
+                    {cert}
+                  </Badge>
                 ))}
               </div>
-            </div>
+            </CardContent>
+          </Card>
+
+          {/* 학력 */}
+          {trainer.education && (
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex items-center gap-2 mb-3">
+                  <Sparkles className="w-5 h-5 text-primary" />
+                  <h3 className="text-lg font-semibold text-gray-800 dark:text-white">학력 및 교육</h3>
+                </div>
+                <ul className="text-gray-600 dark:text-gray-300 space-y-1">
+                  {trainer.education.map((edu, idx) => (
+                    <li key={idx} className="flex items-start">
+                      <span className="text-primary mr-2">•</span>
+                      {edu}
+                    </li>
+                  ))}
+                </ul>
+              </CardContent>
+            </Card>
           )}
 
+          {/* 구사 언어 */}
+          {trainer.languages && (
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex items-center gap-2 mb-3">
+                  <MessageSquare className="w-5 h-5 text-primary" />
+                  <h3 className="text-lg font-semibold text-gray-800 dark:text-white">구사 언어</h3>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {trainer.languages.map((lang, idx) => (
+                    <Badge key={idx} variant="outline" className="text-xs">
+                      {lang}
+                    </Badge>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* 가능 시간 */}
           {trainer.availableHours && (
-            <div className="mb-6">
-              <h3 className="text-md font-semibold mb-2">가능 시간</h3>
-              <div className="flex items-center text-sm text-gray-600 dark:text-gray-300">
-                <Clock className="w-4 h-4 mr-2" />
-                {trainer.availableHours}
-              </div>
-            </div>
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex items-center gap-2 mb-3">
+                  <Clock className="w-5 h-5 text-primary" />
+                  <h3 className="text-lg font-semibold text-gray-800 dark:text-white">가능 시간</h3>
+                </div>
+                <div className="flex items-center text-gray-600 dark:text-gray-300">
+                  <Clock className="w-4 h-4 mr-2" />
+                  {trainer.availableHours}
+                </div>
+              </CardContent>
+            </Card>
           )}
         </div>
 
         {/* 푸터 */}
         <div className="p-6 border-t border-gray-100 dark:border-gray-800">
-          <h3 className="text-md font-semibold mb-3">훈련사에게 연락하기</h3>
-          <div className="grid grid-cols-2 gap-3">
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-2 mb-3">
+                <MessageSquare className="w-5 h-5 text-primary" />
+                <h3 className="text-lg font-semibold text-gray-800 dark:text-white">훈련사에게 연락하기</h3>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <Button 
               className="w-full" 
               size="sm"
@@ -221,22 +271,36 @@ export function SimpleTrainerProfileModal({ trainer, isOpen, onClose }: SimpleTr
                 전화 연락
               </Button>
             )}
-          </div>
-
-          <div className="mt-4 flex justify-between">
-            <span className="text-sm">강의 {trainer.coursesCount}개</span>
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={(e) => {
-                e.preventDefault();
-                console.log("모달 내부 닫기 버튼 클릭");
-                onClose();
-              }}
-            >
-              닫기
-            </Button>
-          </div>
+                {trainer.contactInfo?.email && (
+                  <Button 
+                    className="w-full" 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => {
+                      alert(`${trainer.name} 훈련사 이메일 연락\n\n이메일: ${trainer.contactInfo?.email}\n응답 시간: 1-2일 내\n\n주의: 실제 서비스에서는 이메일 작성 창이 열립니다.`);
+                    }}
+                  >
+                    <Mail className="w-4 h-4 mr-2" />
+                    이메일 보내기
+                  </Button>
+                )}
+              </div>
+              <div className="mt-4 flex justify-between">
+                <span className="text-sm">강의 {trainer.coursesCount}개</span>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={(e) => {
+                    e.preventDefault();
+                    console.log("모달 내부 닫기 버튼 클릭");
+                    onClose();
+                  }}
+                >
+                  닫기
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>
