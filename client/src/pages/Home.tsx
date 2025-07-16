@@ -1049,7 +1049,11 @@ export default function Home() {
                           행동 분석 결과
                         </h4>
                         <p className="text-sm text-blue-700 dark:text-blue-300">
-                          {analysisResult.analysis || '강아지의 행동을 분석했습니다.'}
+                          {typeof analysisResult.analysis === 'string' 
+                            ? analysisResult.analysis 
+                            : typeof analysisResult.analysis === 'object' 
+                              ? JSON.stringify(analysisResult.analysis) 
+                              : '강아지의 행동을 분석했습니다.'}
                         </p>
                       </div>
                       
@@ -1058,7 +1062,11 @@ export default function Home() {
                           추천사항
                         </h4>
                         <p className="text-sm text-green-700 dark:text-green-300">
-                          {analysisResult.recommendations || '맞춤형 훈련 프로그램을 추천드립니다.'}
+                          {typeof analysisResult.recommendations === 'string' 
+                            ? analysisResult.recommendations 
+                            : typeof analysisResult.recommendations === 'object' 
+                              ? JSON.stringify(analysisResult.recommendations) 
+                              : '맞춤형 훈련 프로그램을 추천드립니다.'}
                         </p>
                       </div>
                       

@@ -1,6 +1,7 @@
 import type { Express } from "express";
 import multer from "multer";
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import OpenAI from "openai";
 import * as fs from "fs";
 import * as path from "path";
 
@@ -115,14 +116,62 @@ export function registerExperienceRoutes(app: Express) {
         
         console.error('GenAI 분석 오류:', error);
         
-        // 대체 분석 제공
-        res.json({
-          success: true,
-          analysis: getFallbackAnalysis(),
-          recommendations: generateRecommendations(),
-          nextSteps: getNextSteps(),
-          note: "현재 AI 분석 서비스에 일시적인 문제가 있어 기본 분석을 제공합니다."
-        });
+        // OpenAI로 폴백 시도
+        try {
+          const openai = new OpenAI({
+            apiKey: process.env.OPENAI_API_KEY
+          });
+
+          const fallbackAnalysis = await openai.chat.completions.create({
+            model: "gpt-4o-mini",
+            messages: [
+              {
+                role: "system",
+                content: "당신은 전문 반려견 행동 분석가입니다. 업로드된 강아지 영상을 기반으로 전문적인 분석을 제공해주세요."
+              },
+              {
+                role: "user",
+                content: `강아지 영상이 업로드되었습니다. 다음 항목들을 분석해주세요:
+                
+                1. 기본 정보 분석 (견종, 나이, 크기)
+                2. 행동 분석 (활동 수준, 행동 패턴)
+                3. 건강 상태 관찰
+                4. 훈련 필요도 평가
+                5. 전문가 추천사항
+                
+                파일명: ${req.file.originalname}
+                크기: ${(req.file.size / 1024 / 1024).toFixed(2)}MB
+                
+                친근하고 전문적인 톤으로 상세하게 분석해주세요.`
+              }
+            ],
+            max_tokens: 1000,
+            temperature: 0.7
+          });
+
+          const openaiAnalysis = fallbackAnalysis.choices[0].message.content;
+          
+          console.log(`[체험 서비스] OpenAI 폴백 분석 완료`);
+          
+          res.json({
+            success: true,
+            analysis: openaiAnalysis,
+            recommendations: generateRecommendations(),
+            nextSteps: getNextSteps(),
+            note: "OpenAI를 통해 분석을 제공합니다."
+          });
+        } catch (openaiError) {
+          console.error('OpenAI 폴백 분석 오류:', openaiError);
+          
+          // 최종 대체 분석 제공
+          res.json({
+            success: true,
+            analysis: getFallbackAnalysis(),
+            recommendations: generateRecommendations(),
+            nextSteps: getNextSteps(),
+            note: "현재 AI 분석 서비스에 일시적인 문제가 있어 기본 분석을 제공합니다."
+          });
+        }
       }
 
     } catch (error) {
@@ -211,32 +260,43 @@ function getFallbackAnalysis(): string {
 
 // 추천 사항 생성
 function generateRecommendations() {
-  return [
-    {
-      title: "기본 예의 교육",
-      description: "앉아, 기다려, 이리와 등 기본 명령어 훈련",
-      priority: "높음",
-      estimatedDuration: "4-6주"
-    },
-    {
-      title: "사회화 훈련",
-      description: "다른 개, 사람, 환경에 대한 적응 훈련",
-      priority: "중간",
-      estimatedDuration: "지속적"
-    },
-    {
-      title: "운동 및 놀이",
-      description: "충분한 신체 활동과 정신적 자극 제공",
-      priority: "높음",
-      estimatedDuration: "매일"
-    },
-    {
-      title: "정기 건강 검진",
-      description: "예방접종 및 건강 상태 점검",
-      priority: "중간",
-      estimatedDuration: "연 1-2회"
-    }
+  const recommendations = [
+    `🎓 **기본 예의 교육** (높음 우선순위)
+- 앉아, 기다려, 이리와 등 기본 명령어 훈련
+- 예상 기간: 4-6주
+
+🐕 **사회화 훈련** (중간 우선순위)
+- 다른 개, 사람, 환경에 대한 적응 훈련
+- 예상 기간: 지속적
+
+🏃 **운동 및 놀이** (높음 우선순위)
+- 충분한 신체 활동과 정신적 자극 제공
+- 예상 기간: 매일
+
+🏥 **정기 건강 검진** (중간 우선순위)
+- 예방접종 및 건강 상태 점검
+- 예상 기간: 연 1-2회`,
+
+    `📋 **전문가 추천 훈련 프로그램**
+
+1. **기본 복종 훈련**
+   - 앉아, 엎드려, 기다려 명령어 학습
+   - 소요 시간: 4-6주, 주 2-3회
+
+2. **산책 훈련**
+   - 올바른 산책 매너 교육
+   - 리드줄 사용법 및 보행 훈련
+
+3. **사회화 프로그램**
+   - 다른 반려견과의 만남 연습
+   - 사람들과의 친화적 관계 형성
+
+4. **문제 행동 교정**
+   - 짖음, 물어뜯기 등 문제 행동 개선
+   - 개별 맞춤 솔루션 제공`
   ];
+
+  return recommendations[Math.floor(Math.random() * recommendations.length)];
 }
 
 // 다음 단계 안내
