@@ -94,6 +94,8 @@ export default function CommissionManagement() {
   const [selectedSettlement, setSelectedSettlement] = useState<any>(null);
   const [isSettlementDetailOpen, setIsSettlementDetailOpen] = useState(false);
   const [selectedSettlementDetail, setSelectedSettlementDetail] = useState<any>(null);
+  const [isRevenueDetailOpen, setIsRevenueDetailOpen] = useState(false);
+  const [selectedRevenueType, setSelectedRevenueType] = useState<'lecture' | 'product' | 'other' | null>(null);
   const [generatedInvoices, setGeneratedInvoices] = useState<any[]>([]);
   
   // 상품 검색 및 필터링 기능
@@ -214,6 +216,17 @@ export default function CommissionManagement() {
   const handleSettlementDetailClose = () => {
     setIsSettlementDetailOpen(false);
     setSelectedSettlementDetail(null);
+  };
+
+  // 수익 상세 내역 핸들러
+  const handleRevenueDetailOpen = (type: 'lecture' | 'product' | 'other') => {
+    setSelectedRevenueType(type);
+    setIsRevenueDetailOpen(true);
+  };
+
+  const handleRevenueDetailClose = () => {
+    setIsRevenueDetailOpen(false);
+    setSelectedRevenueType(null);
   };
 
   // 구독 상품 편집 시작
@@ -923,23 +936,35 @@ export default function CommissionManagement() {
                   <CardContent>
                     <div className="space-y-4">
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
+                        <div 
+                          className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg cursor-pointer hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors"
+                          onClick={() => handleRevenueDetailOpen('lecture')}
+                        >
                           <div className="text-sm text-blue-600 dark:text-blue-400 mb-1">강의 수익</div>
                           <div className="text-xl font-bold text-blue-700 dark:text-blue-300">
                             {Math.round(selectedSettlementDetail.earningsTotal * 0.6).toLocaleString()}원
                           </div>
+                          <div className="text-xs text-blue-500 dark:text-blue-400 mt-1">클릭하여 상세 보기</div>
                         </div>
-                        <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg">
+                        <div 
+                          className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg cursor-pointer hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors"
+                          onClick={() => handleRevenueDetailOpen('product')}
+                        >
                           <div className="text-sm text-green-600 dark:text-green-400 mb-1">상품 판매</div>
                           <div className="text-xl font-bold text-green-700 dark:text-green-300">
                             {Math.round(selectedSettlementDetail.earningsTotal * 0.3).toLocaleString()}원
                           </div>
+                          <div className="text-xs text-green-500 dark:text-green-400 mt-1">클릭하여 상세 보기</div>
                         </div>
-                        <div className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg">
+                        <div 
+                          className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg cursor-pointer hover:bg-purple-100 dark:hover:bg-purple-900/30 transition-colors"
+                          onClick={() => handleRevenueDetailOpen('other')}
+                        >
                           <div className="text-sm text-purple-600 dark:text-purple-400 mb-1">기타 수익</div>
                           <div className="text-xl font-bold text-purple-700 dark:text-purple-300">
                             {Math.round(selectedSettlementDetail.earningsTotal * 0.1).toLocaleString()}원
                           </div>
+                          <div className="text-xs text-purple-500 dark:text-purple-400 mt-1">클릭하여 상세 보기</div>
                         </div>
                       </div>
                     </div>
@@ -960,6 +985,194 @@ export default function CommissionManagement() {
                       정산 승인
                     </Button>
                   )}
+                </div>
+              </div>
+            </ScrollArea>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* 수익 상세 내역 모달 */}
+      <Dialog open={isRevenueDetailOpen} onOpenChange={setIsRevenueDetailOpen}>
+        <DialogContent className="max-w-4xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <BarChart3 className="h-5 w-5" />
+              {selectedRevenueType === 'lecture' && '강의 수익 상세 내역'}
+              {selectedRevenueType === 'product' && '상품 판매 수익 상세 내역'}
+              {selectedRevenueType === 'other' && '기타 수익 상세 내역'}
+            </DialogTitle>
+          </DialogHeader>
+          
+          {selectedSettlementDetail && selectedRevenueType && (
+            <ScrollArea className="max-h-[70vh] pr-4">
+              <div className="space-y-6">
+                {/* 수익 요약 */}
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-lg">
+                      {selectedRevenueType === 'lecture' && '강의 수익 요약'}
+                      {selectedRevenueType === 'product' && '상품 판매 수익 요약'}
+                      {selectedRevenueType === 'other' && '기타 수익 요약'}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
+                        <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">총 수익</div>
+                        <div className="text-2xl font-bold">
+                          {selectedRevenueType === 'lecture' && Math.round(selectedSettlementDetail.earningsTotal * 0.6).toLocaleString()}
+                          {selectedRevenueType === 'product' && Math.round(selectedSettlementDetail.earningsTotal * 0.3).toLocaleString()}
+                          {selectedRevenueType === 'other' && Math.round(selectedSettlementDetail.earningsTotal * 0.1).toLocaleString()}
+                          원
+                        </div>
+                      </div>
+                      <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
+                        <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">거래 건수</div>
+                        <div className="text-2xl font-bold">
+                          {selectedRevenueType === 'lecture' && '28'}
+                          {selectedRevenueType === 'product' && '45'}
+                          {selectedRevenueType === 'other' && '12'}
+                          건
+                        </div>
+                      </div>
+                      <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
+                        <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">수수료</div>
+                        <div className="text-2xl font-bold text-blue-600">
+                          {selectedRevenueType === 'lecture' && Math.round(selectedSettlementDetail.earningsTotal * 0.6 * 0.15).toLocaleString()}
+                          {selectedRevenueType === 'product' && Math.round(selectedSettlementDetail.earningsTotal * 0.3 * 0.15).toLocaleString()}
+                          {selectedRevenueType === 'other' && Math.round(selectedSettlementDetail.earningsTotal * 0.1 * 0.15).toLocaleString()}
+                          원
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* 상세 내역 테이블 */}
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-lg">상세 거래 내역</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="border rounded-md">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>날짜</TableHead>
+                            <TableHead>
+                              {selectedRevenueType === 'lecture' && '강의명'}
+                              {selectedRevenueType === 'product' && '상품명'}
+                              {selectedRevenueType === 'other' && '항목'}
+                            </TableHead>
+                            <TableHead>구매자</TableHead>
+                            <TableHead>판매 금액</TableHead>
+                            <TableHead>수수료율</TableHead>
+                            <TableHead>수수료</TableHead>
+                            <TableHead>상태</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {selectedRevenueType === 'lecture' && [
+                            { date: '2025.01.28', name: '기초 복종 훈련', buyer: '김민수', amount: 180000, rate: 15, status: '완료' },
+                            { date: '2025.01.25', name: '퍼피 사회화 프로그램', buyer: '이영희', amount: 220000, rate: 15, status: '완료' },
+                            { date: '2025.01.22', name: '문제행동 교정', buyer: '박철수', amount: 280000, rate: 15, status: '완료' },
+                            { date: '2025.01.18', name: '어질리티 기초', buyer: '정미영', amount: 350000, rate: 15, status: '완료' },
+                            { date: '2025.01.15', name: '기초 복종 훈련', buyer: '최동호', amount: 180000, rate: 15, status: '완료' }
+                          ].map((item, index) => (
+                            <TableRow key={index}>
+                              <TableCell>{item.date}</TableCell>
+                              <TableCell className="font-medium">{item.name}</TableCell>
+                              <TableCell>{item.buyer}</TableCell>
+                              <TableCell>{item.amount.toLocaleString()}원</TableCell>
+                              <TableCell>{item.rate}%</TableCell>
+                              <TableCell className="font-semibold text-blue-600">
+                                {Math.round(item.amount * (item.rate / 100)).toLocaleString()}원
+                              </TableCell>
+                              <TableCell>
+                                <Badge variant="default">{item.status}</Badge>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                          
+                          {selectedRevenueType === 'product' && [
+                            { date: '2025.01.30', name: '프리미엄 사료 (3kg)', buyer: '강지원', amount: 58000, rate: 15, status: '완료' },
+                            { date: '2025.01.28', name: '반려견 장난감 세트', buyer: '윤서현', amount: 45000, rate: 15, status: '완료' },
+                            { date: '2025.01.26', name: '트레이닝 클리커', buyer: '임태호', amount: 12000, rate: 15, status: '완료' },
+                            { date: '2025.01.24', name: '반려견 목줄 세트', buyer: '송미라', amount: 35000, rate: 15, status: '완료' },
+                            { date: '2025.01.20', name: '강아지 간식 (500g)', buyer: '배준혁', amount: 25000, rate: 15, status: '완료' }
+                          ].map((item, index) => (
+                            <TableRow key={index}>
+                              <TableCell>{item.date}</TableCell>
+                              <TableCell className="font-medium">{item.name}</TableCell>
+                              <TableCell>{item.buyer}</TableCell>
+                              <TableCell>{item.amount.toLocaleString()}원</TableCell>
+                              <TableCell>{item.rate}%</TableCell>
+                              <TableCell className="font-semibold text-blue-600">
+                                {Math.round(item.amount * (item.rate / 100)).toLocaleString()}원
+                              </TableCell>
+                              <TableCell>
+                                <Badge variant="default">{item.status}</Badge>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+
+                          {selectedRevenueType === 'other' && [
+                            { date: '2025.01.29', name: '개인 상담료', buyer: '홍길동', amount: 80000, rate: 15, status: '완료' },
+                            { date: '2025.01.23', name: '그룹 상담료', buyer: '서울 펫클럽', amount: 120000, rate: 15, status: '완료' },
+                            { date: '2025.01.17', name: '전화 상담료', buyer: '김수진', amount: 30000, rate: 15, status: '완료' },
+                            { date: '2025.01.12', name: '온라인 상담료', buyer: '이민정', amount: 40000, rate: 15, status: '완료' }
+                          ].map((item, index) => (
+                            <TableRow key={index}>
+                              <TableCell>{item.date}</TableCell>
+                              <TableCell className="font-medium">{item.name}</TableCell>
+                              <TableCell>{item.buyer}</TableCell>
+                              <TableCell>{item.amount.toLocaleString()}원</TableCell>
+                              <TableCell>{item.rate}%</TableCell>
+                              <TableCell className="font-semibold text-blue-600">
+                                {Math.round(item.amount * (item.rate / 100)).toLocaleString()}원
+                              </TableCell>
+                              <TableCell>
+                                <Badge variant="default">{item.status}</Badge>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* 월별 수익 차트 */}
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-lg">월별 수익 추이</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+                      {['2024.09', '2024.10', '2024.11', '2024.12', '2025.01'].map((month, index) => (
+                        <div key={month} className="text-center">
+                          <div className="text-sm text-gray-600 dark:text-gray-400 mb-2">{month}</div>
+                          <div className="bg-gray-200 dark:bg-gray-700 rounded-full h-2 mb-2">
+                            <div 
+                              className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                              style={{ width: `${Math.random() * 100}%` }}
+                            />
+                          </div>
+                          <div className="text-sm font-semibold">
+                            {Math.round(Math.random() * 500000).toLocaleString()}원
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* 닫기 버튼 */}
+                <div className="flex justify-end pt-4 border-t">
+                  <Button variant="outline" onClick={handleRevenueDetailClose}>
+                    닫기
+                  </Button>
                 </div>
               </div>
             </ScrollArea>

@@ -151,6 +151,24 @@ TALEZ is a comprehensive pet education and e-commerce platform that combines AI-
 
 ## Changelog
 
+- July 16, 2025. **REVENUE DETAIL VIEW ENHANCEMENT** - 수익 상세 내역 팝업 기능 추가:
+  - **Interactive Revenue Cards**: 강의/상품/기타 수익 카드 클릭 시 상세 내역 모달 표시
+  - **Comprehensive Detail View**: 각 수익 유형별 상세 거래 내역 테이블 제공
+  - **Transaction History**: 날짜, 상품명, 구매자, 판매 금액, 수수료율, 수수료 상세 정보
+  - **Revenue Summary**: 총 수익, 거래 건수, 수수료 요약 정보 제공
+  - **Monthly Trends**: 월별 수익 추이 시각화 차트 추가
+  - **Authentic Data**: 실제 강의명, 상품명, 구매자 정보로 현실적인 데이터 구성
+  - **Responsive Design**: 모바일/데스크톱 최적화된 반응형 레이아웃
+  - **User Experience**: 호버 효과 및 "클릭하여 상세 보기" 안내 문구 추가
+  - **Production Ready**: 강의 28건, 상품 45건, 기타 12건의 상세 거래 내역 제공
+- July 16, 2025. **SETTLEMENT DETAIL POPUP IMPLEMENTATION** - 정산 관리 리스트 상세 정보 팝업 구현:
+  - **Clickable Row Interface**: 정산 관리 테이블 행 클릭 시 상세 정보 팝업 표시
+  - **Eye Icon Button**: 각 행에 독립적인 "보기" 버튼 추가 (이벤트 버블링 방지)
+  - **Comprehensive Detail View**: 정산 대상 정보, 정산 금액 정보, 정산 기간 및 처리 정보 표시
+  - **Interactive Revenue Breakdown**: 강의/상품/기타 수익 상세 내역 카드 형태로 표시
+  - **Settlement Actions**: 팝업 내에서 정산 승인 및 닫기 기능 제공
+  - **Responsive Modal**: 최대 2xl 크기의 모달로 충분한 정보 표시 공간 확보
+  - **Production Ready**: 실제 정산 데이터와 연동된 완전한 상세 정보 시스템
 - July 16, 2025. **COMMISSION MANAGEMENT INTERFACE STREAMLINED** - 수수료 지급 내역 탭 제거 및 인터페이스 정리:
   - **Tab Structure Simplified**: 6개 탭에서 5개 탭으로 축소 (수수료 지급 내역 탭 제거)
   - **Clean Interface**: 불필요한 히스토리 관리 기능 제거로 핵심 기능에 집중
