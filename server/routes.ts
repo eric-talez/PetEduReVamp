@@ -458,7 +458,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/users', async (req, res) => {
     try {
       const users = await storage.getAllUsers();
-      res.json(users || []);
+      // 사용자별 펫 정보 포함
+      const usersWithPets = users.map(user => ({
+        id: user.id,
+        name: user.name,
+        role: user.role,
+        pets: storage.pets.filter(pet => pet.ownerId === user.id).map(pet => ({
+          id: pet.id,
+          name: pet.name,
+          breed: pet.breed,
+          age: pet.age
+        }))
+      }));
+      res.json(usersWithPets || []);
     } catch (error) {
       console.error('Users API error:', error);
       res.status(500).json({ error: 'Failed to fetch users' });

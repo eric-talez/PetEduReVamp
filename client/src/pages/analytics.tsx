@@ -30,49 +30,38 @@ import {
   Radar
 } from 'lucide-react';
 
-// 샘플 데이터 - 실제 환경에서는 API로 가져와야 함
-const trainingProgressData = [
-  { skill: '앉기', progress: 95, level: '마스터', sessions: 12 },
-  { skill: '기다리기', progress: 80, level: '숙련', sessions: 8 },
-  { skill: '손 주기', progress: 65, level: '중급', sessions: 6 },
-  { skill: '엎드리기', progress: 45, level: '초급', sessions: 4 },
-  { skill: '돌기', progress: 30, level: '입문', sessions: 3 }
-];
-
-const learningStatsData = {
-  totalSessions: 28,
-  completedCourses: 3,
-  currentStreak: 7,
-  averageScore: 87,
-  totalHours: 42
-};
-
-const monthlyProgressData = [
-  { month: '1월', sessions: 8, score: 82 },
-  { month: '2월', sessions: 12, score: 85 },
-  { month: '3월', sessions: 15, score: 88 },
-  { month: '4월', sessions: 10, score: 86 },
-  { month: '5월', sessions: 18, score: 91 }
-];
+// API 호출로 실제 데이터 가져오기
 
 export default function AnalyticsPage() {
   const { userName } = useAuth();
   const [selectedPeriod, setSelectedPeriod] = useState('30일');
   const [chartType, setChartType] = useState('bar');
   const [progressViewMode, setProgressViewMode] = useState('detailed');
+  const [selectedUserId, setSelectedUserId] = useState(1); // 기본값을 1로 설정
 
   // 실제 API 데이터 가져오기
-  const { data: trainingData, isLoading: trainingLoading } = useQuery({
-    queryKey: ['/api/analytics/training-progress'],
+  const { data: trainingProgressData, isLoading: trainingLoading } = useQuery({
+    queryKey: ['/api/analytics/training-progress', selectedUserId],
     staleTime: 5 * 60 * 1000, // 5분간 캐시
   });
 
-  const { data: activityData, isLoading: activityLoading } = useQuery({
-    queryKey: ['/api/analytics/activity-logs'],
+  const { data: learningStatsData, isLoading: statsLoading } = useQuery({
+    queryKey: ['/api/analytics/learning-stats', selectedUserId],
     staleTime: 5 * 60 * 1000,
   });
 
-  const isLoading = trainingLoading || activityLoading;
+  const { data: monthlyProgressData, isLoading: monthlyLoading } = useQuery({
+    queryKey: ['/api/analytics/monthly-progress', selectedUserId],
+    staleTime: 5 * 60 * 1000,
+  });
+
+  // 사용자 목록 가져오기
+  const { data: usersList, isLoading: usersLoading } = useQuery({
+    queryKey: ['/api/users'],
+    staleTime: 10 * 60 * 1000, // 10분간 캐시
+  });
+
+  const isLoading = trainingLoading || statsLoading || monthlyLoading || usersLoading;
 
   const getProgressColor = (progress: number) => {
     if (progress >= 80) return 'bg-green-500';
@@ -123,29 +112,44 @@ export default function AnalyticsPage() {
   // Chart rendering functions
   const renderBarChart = () => (
     <div className="space-y-4">
-      {trainingProgressData.map((item, index) => (
-        <div key={index} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
-          <div className="flex-1">
-            <div className="flex items-center gap-3 mb-2">
-              <h3 className="font-medium">{item.skill}</h3>
-              <Badge className={getLevelBadgeColor(item.level)}>
-                {item.level}
-              </Badge>
-            </div>
-            <div className="flex items-center gap-3">
-              <Progress value={item.progress} className="flex-1" />
-              <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[3rem]">
-                {item.progress}%
-              </span>
-            </div>
-          </div>
-          <div className="text-right ml-4">
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              {item.sessions}회 세션
-            </p>
-          </div>
+      {isLoading ? (
+        <div className="text-center py-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
+            훈련 진행도를 불러오는 중...
+          </p>
         </div>
-      ))}
+      ) : trainingProgressData && trainingProgressData.length > 0 ? (
+        trainingProgressData.map((item, index) => (
+          <div key={index} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+            <div className="flex-1">
+              <div className="flex items-center gap-3 mb-2">
+                <h3 className="font-medium">{item.skill}</h3>
+                <Badge className={getLevelBadgeColor(item.level)}>
+                  {item.level}
+                </Badge>
+              </div>
+              <div className="flex items-center gap-3">
+                <Progress value={item.progress} className="flex-1" />
+                <span className="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[3rem]">
+                  {item.progress}%
+                </span>
+              </div>
+            </div>
+            <div className="text-right ml-4">
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                {item.sessions}회 세션
+              </p>
+            </div>
+          </div>
+        ))
+      ) : (
+        <div className="text-center py-8">
+          <p className="text-gray-600 dark:text-gray-400">
+            훈련 진행도 데이터가 없습니다.
+          </p>
+        </div>
+      )}
     </div>
   );
 
@@ -361,6 +365,18 @@ export default function AnalyticsPage() {
           </p>
         </div>
         <div className="flex gap-2">
+          <Select value={selectedUserId.toString()} onValueChange={(value) => setSelectedUserId(parseInt(value))}>
+            <SelectTrigger className="w-48">
+              <SelectValue placeholder="견주 선택" />
+            </SelectTrigger>
+            <SelectContent>
+              {usersList?.filter(user => user.role === 'pet-owner').map((user) => (
+                <SelectItem key={user.id} value={user.id.toString()}>
+                  {user.name} ({user.pets?.length || 0}마리)
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           <Button variant="outline" size="sm">
             <Filter className="h-4 w-4 mr-2" />
             필터
@@ -379,7 +395,13 @@ export default function AnalyticsPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600 dark:text-gray-400">총 훈련 세션</p>
-                <p className="text-2xl font-bold">{learningStatsData.totalSessions}</p>
+                <p className="text-2xl font-bold">
+                  {isLoading ? (
+                    <span className="animate-pulse">...</span>
+                  ) : (
+                    learningStatsData?.totalSessions || 0
+                  )}
+                </p>
               </div>
               <BookOpen className="h-8 w-8 text-blue-500" />
             </div>
@@ -391,7 +413,13 @@ export default function AnalyticsPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600 dark:text-gray-400">완료된 코스</p>
-                <p className="text-2xl font-bold">{learningStatsData.completedCourses}</p>
+                <p className="text-2xl font-bold">
+                  {isLoading ? (
+                    <span className="animate-pulse">...</span>
+                  ) : (
+                    learningStatsData?.completedCourses || 0
+                  )}
+                </p>
               </div>
               <Award className="h-8 w-8 text-green-500" />
             </div>
@@ -403,7 +431,13 @@ export default function AnalyticsPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600 dark:text-gray-400">평균 점수</p>
-                <p className="text-2xl font-bold">{learningStatsData.averageScore}%</p>
+                <p className="text-2xl font-bold">
+                  {isLoading ? (
+                    <span className="animate-pulse">...</span>
+                  ) : (
+                    `${learningStatsData?.averageScore || 0}%`
+                  )}
+                </p>
               </div>
               <Target className="h-8 w-8 text-purple-500" />
             </div>
@@ -415,7 +449,13 @@ export default function AnalyticsPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600 dark:text-gray-400">연속 학습일</p>
-                <p className="text-2xl font-bold">{learningStatsData.currentStreak}일</p>
+                <p className="text-2xl font-bold">
+                  {isLoading ? (
+                    <span className="animate-pulse">...</span>
+                  ) : (
+                    `${learningStatsData?.currentStreak || 0}일`
+                  )}
+                </p>
               </div>
               <Zap className="h-8 w-8 text-orange-500" />
             </div>
@@ -500,25 +540,40 @@ export default function AnalyticsPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {monthlyProgressData.map((month, index) => (
-                  <div key={index} className="flex items-center justify-between p-4 border rounded-lg">
-                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
-                        <Calendar className="h-6 w-6 text-primary" />
-                      </div>
-                      <div>
-                        <h3 className="font-medium">{month.month}</h3>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">
-                          {month.sessions}회 세션
-                        </p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-medium text-lg">{month.score}%</p>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">평균 점수</p>
-                    </div>
+                {isLoading ? (
+                  <div className="text-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
+                      월간 진행도를 불러오는 중...
+                    </p>
                   </div>
-                ))}
+                ) : monthlyProgressData && monthlyProgressData.length > 0 ? (
+                  monthlyProgressData.map((month, index) => (
+                    <div key={index} className="flex items-center justify-between p-4 border rounded-lg">
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
+                          <Calendar className="h-6 w-6 text-primary" />
+                        </div>
+                        <div>
+                          <h3 className="font-medium">{month.month}</h3>
+                          <p className="text-sm text-gray-600 dark:text-gray-400">
+                            {month.sessions}회 세션
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-medium text-lg">{month.avgScore}%</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">평균 점수</p>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-center py-8">
+                    <p className="text-gray-600 dark:text-gray-400">
+                      월간 진행도 데이터가 없습니다.
+                    </p>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>

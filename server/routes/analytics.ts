@@ -10,7 +10,7 @@ export function registerAnalyticsRoutes(app: Express) {
       const userId = parseInt(req.params.userId);
       
       // 사용자의 반려동물들 가져오기
-      const userPets = await db.select().from(pets).where(eq(pets.ownerId, userId));
+      const userPets = storage.pets.filter(pet => pet.ownerId === userId);
       
       if (userPets.length === 0) {
         return res.json([]);
@@ -18,25 +18,94 @@ export function registerAnalyticsRoutes(app: Express) {
       
       const petIds = userPets.map(pet => pet.id);
       
-      // Mock training progress data
-      const trainingProgress = [
-        {
-          skill: "기본복종",
-          progress: 75,
-          level: "중급",
-          sessionCount: 8,
-          avgScore: 85,
-          lastSession: new Date().toISOString()
-        },
-        {
-          skill: "사회화",
-          progress: 60,
-          level: "초급",
-          sessionCount: 5,
-          avgScore: 78,
-          lastSession: new Date(Date.now() - 24*60*60*1000).toISOString()
+      // 실제 훈련 세션 데이터 가져오기
+      const trainingJournals = storage.trainingJournals.filter(journal => 
+        petIds.includes(journal.petId) && journal.status === 'read'
+      );
+      
+      // 커리큘럼 데이터 가져오기
+      const curricula = storage.getAllCurricula();
+      
+      // 스킬별 진행도 분석
+      const skillProgress = {};
+      
+      // 훈련 세션에서 스킬 추출 및 분석
+      trainingJournals.forEach(journal => {
+        const title = journal.title.toLowerCase();
+        let skill = '기타';
+        let level = '입문';
+        
+        // 제목에서 스킬 카테고리 추출
+        if (title.includes('복종') || title.includes('앉기') || title.includes('기다리기')) {
+          skill = '기본 복종';
+          level = '초급';
+        } else if (title.includes('사회화') || title.includes('만남')) {
+          skill = '사회화';
+          level = '초급';
+        } else if (title.includes('어질리티') || title.includes('장애물')) {
+          skill = '어질리티';
+          level = '중급';
+        } else if (title.includes('산책') || title.includes('당기기')) {
+          skill = '산책 훈련';
+          level = '초급';
+        } else if (title.includes('문제') || title.includes('교정') || title.includes('짖기')) {
+          skill = '문제 행동 교정';
+          level = '중급';
+        } else if (title.includes('트릭') || title.includes('하이파이브')) {
+          skill = '트릭 훈련';
+          level = '중급';
+        } else if (title.includes('노즈워크') || title.includes('후각')) {
+          skill = '노즈워크';
+          level = '중급';
+        } else if (title.includes('매너') || title.includes('인사')) {
+          skill = '기본 매너';
+          level = '초급';
+        } else if (title.includes('심화') || title.includes('고급')) {
+          skill = '고급 훈련';
+          level = '고급';
+        } else if (title.includes('반응성')) {
+          skill = '반응성 훈련';
+          level = '중급';
+        } else if (title.includes('분리불안')) {
+          skill = '분리불안 교정';
+          level = '중급';
         }
-      ];
+        
+        if (!skillProgress[skill]) {
+          skillProgress[skill] = {
+            skill,
+            level,
+            sessions: [],
+            totalSessions: 0
+          };
+        }
+        
+        skillProgress[skill].sessions.push(journal);
+        skillProgress[skill].totalSessions++;
+      });
+      
+      // 진행도 계산 및 포맷팅
+      const trainingProgress = Object.values(skillProgress).map(skillData => {
+        const sessions = skillData.sessions.length;
+        const completedSessions = skillData.sessions.filter(s => s.status === 'read').length;
+        const progress = sessions > 0 ? Math.round((completedSessions / sessions) * 100) : 0;
+        
+        // 레벨 결정 (세션 수에 따라)
+        let level = '입문';
+        if (sessions >= 8) level = '고급';
+        else if (sessions >= 5) level = '중급';
+        else if (sessions >= 2) level = '초급';
+        
+        return {
+          skill: skillData.skill,
+          progress: Math.min(progress, 100),
+          level,
+          sessions: sessions,
+          avgScore: Math.round(75 + (progress * 0.2)), // 진행도 기반 점수 계산
+          lastSession: skillData.sessions.length > 0 ? 
+            skillData.sessions[skillData.sessions.length - 1].createdAt : null
+        };
+      });
       
       res.json(trainingProgress);
     } catch (error) {
@@ -51,7 +120,7 @@ export function registerAnalyticsRoutes(app: Express) {
       const userId = parseInt(req.params.userId);
       
       // 사용자의 반려동물들 가져오기
-      const userPets = await db.select().from(pets).where(eq(pets.ownerId, userId));
+      const userPets = storage.pets.filter(pet => pet.ownerId === userId);
       const petIds = userPets.map(pet => pet.id);
       
       if (petIds.length === 0) {
@@ -60,21 +129,61 @@ export function registerAnalyticsRoutes(app: Express) {
           completedCourses: 0,
           currentStreak: 0,
           averageScore: 0,
-          totalHours: 0,
-          achievements: 0
+          totalHours: 0
         });
       }
       
-      // Mock learning stats data
+      // 실제 훈련 세션 데이터 분석
+      const trainingJournals = storage.trainingJournals.filter(journal => 
+        petIds.includes(journal.petId)
+      );
+      
+      // 완료된 코스 수 계산 (커리큘럼별로)
+      const completedCourses = storage.getAllCurricula().filter(curriculum => {
+        // 해당 커리큘럼에 관련된 세션이 있는지 확인
+        const relatedSessions = trainingJournals.filter(journal => 
+          journal.title.toLowerCase().includes(curriculum.title.toLowerCase()) ||
+          journal.title.toLowerCase().includes(curriculum.category.toLowerCase())
+        );
+        return relatedSessions.length >= 3; // 3회 이상 세션이 있으면 완료로 간주
+      }).length;
+      
+      // 연속 학습일 계산
+      const sortedSessions = trainingJournals
+        .filter(journal => journal.status === 'read')
+        .sort((a, b) => new Date(b.trainingDate) - new Date(a.trainingDate));
+      
+      let currentStreak = 0;
+      if (sortedSessions.length > 0) {
+        const today = new Date();
+        const uniqueDates = [...new Set(sortedSessions.map(s => s.trainingDate))];
+        
+        for (let i = 0; i < uniqueDates.length; i++) {
+          const sessionDate = new Date(uniqueDates[i]);
+          const daysDiff = Math.floor((today - sessionDate) / (1000 * 60 * 60 * 24));
+          
+          if (daysDiff === i) {
+            currentStreak++;
+          } else {
+            break;
+          }
+        }
+      }
+      
+      // 평균 점수 계산 (세션 수 기반)
+      const averageScore = trainingJournals.length > 0 ? 
+        Math.round(75 + (trainingJournals.length * 2)) : 0;
+      
+      // 총 시간 계산 (세션당 평균 1시간으로 가정)
+      const totalHours = trainingJournals.filter(journal => journal.status === 'read').length;
+      
       const stats = {
-        totalSessions: 25,
-        completedCourses: 3,
-        currentStreak: 7,
-        averageScore: 85,
-        totalHours: 12,
-        achievements: 15
+        totalSessions: trainingJournals.length,
+        completedCourses,
+        currentStreak,
+        averageScore: Math.min(averageScore, 100),
+        totalHours
       };
-
       
       res.json(stats);
     } catch (error) {
