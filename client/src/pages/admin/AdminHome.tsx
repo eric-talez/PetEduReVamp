@@ -21,7 +21,11 @@ import {
   FileText,
   Check,
   X,
-  GraduationCap
+  GraduationCap,
+  Building,
+  UserCheck,
+  ShoppingBag,
+  Monitor
 } from 'lucide-react';
 import { CompactUserGrowthChart, CompactUserTypeChart, CompactRevenueChart, CompactSystemChart } from '@/components/charts/AdminCharts';
 import { useLocation } from 'wouter';
@@ -66,7 +70,7 @@ export default function AdminHome() {
       try {
         // 실제 구현 시 API 호출로 대체
         await new Promise(resolve => setTimeout(resolve, 1000));
-        
+
         // 시스템 상태 데이터
         const mockSystemStatus: SystemStatusItem[] = [
           {
@@ -100,7 +104,7 @@ export default function AdminHome() {
             load: 25
           }
         ];
-        
+
         // 플랫폼 통계 데이터
         const mockPlatformStats: PlatformStatsItem[] = [
           {
@@ -140,7 +144,7 @@ export default function AdminHome() {
             changeType: 'increase'
           }
         ];
-        
+
         setSystemStatus(mockSystemStatus);
         setPlatformStats(mockPlatformStats);
       } catch (error) {
@@ -149,7 +153,7 @@ export default function AdminHome() {
         setIsLoading(false);
       }
     };
-    
+
     loadData();
   }, []);
 
@@ -187,11 +191,11 @@ export default function AdminHome() {
   const handleSystemSettings = () => {
     setLocation('/admin/settings');
   };
-  
+
   const handleDetailedAnalysis = () => {
     setShowDetailedAnalysis(true);
   };
-  
+
   const handleViewAllNotifications = () => {
     setLocation('/admin/alerts');
   };
@@ -207,7 +211,7 @@ export default function AdminHome() {
               최근 30일 동안의 플랫폼 지표 및 추세 분석입니다.
             </DialogDescription>
           </DialogHeader>
-          
+
           <div className="mt-6 space-y-6">
             {/* 그래프 및 차트 섹션 */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
@@ -230,7 +234,7 @@ export default function AdminHome() {
                   </div>
                 </CardContent>
               </Card>
-              
+
               <Card>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-base">사용자 유형 분포</CardTitle>
@@ -259,7 +263,7 @@ export default function AdminHome() {
                 </CardContent>
               </Card>
             </div>
-            
+
             {/* 주요 지표 표 */}
             <Card>
               <CardHeader>
@@ -330,7 +334,7 @@ export default function AdminHome() {
               </CardContent>
             </Card>
           </div>
-          
+
           <DialogFooter className="flex justify-between items-center mt-6">
             <Button variant="outline" onClick={() => setLocation('/admin/reports/analytics')}>
               <FileText className="h-4 w-4 mr-2" />
@@ -345,7 +349,7 @@ export default function AdminHome() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-      
+
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold tracking-tight">관리자 대시보드</h1>
         <div className="flex items-center space-x-4">
@@ -359,7 +363,48 @@ export default function AdminHome() {
           </Button>
         </div>
       </div>
-      
+
+      {/* 빠른 접근 메뉴 */}
+      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-8">
+        <Card className="p-4 hover:shadow-lg transition-shadow cursor-pointer" onClick={() => window.location.href = '/admin/users'}>
+          <div className="flex flex-col items-center text-center">
+            <Users className="w-8 h-8 text-blue-600 mb-2" />
+            <span className="text-sm font-medium">사용자</span>
+          </div>
+        </Card>
+        <Card className="p-4 hover:shadow-lg transition-shadow cursor-pointer" onClick={() => window.location.href = '/admin/institutes'}>
+          <div className="flex flex-col items-center text-center">
+            <Building className="w-8 h-8 text-green-600 mb-2" />
+            <span className="text-sm font-medium">기관</span>
+          </div>
+        </Card>
+        <Card className="p-4 hover:shadow-lg transition-shadow cursor-pointer" onClick={() => window.location.href = '/admin/trainers'}>
+          <div className="flex flex-col items-center text-center">
+            <UserCheck className="w-8 h-8 text-purple-600 mb-2" />
+            <span className="text-sm font-medium">훈련사</span>
+          </div>
+        </Card>
+        <Card className="p-4 hover:shadow-lg transition-shadow cursor-pointer" onClick={() => window.location.href = '/admin/contents'}>
+          <div className="flex flex-col items-center text-center">
+            <FileText className="w-8 h-8 text-orange-600 mb-2" />
+            <span className="text-sm font-medium">콘텐츠</span>
+          </div>
+        </Card>
+        <Card className="p-4 hover:shadow-lg transition-shadow cursor-pointer" onClick={() => window.location.href = '/admin/shop'}>
+          <div className="flex flex-col items-center text-center">
+            <ShoppingBag className="w-8 h-8 text-pink-600 mb-2" />
+            <span className="text-sm font-medium">쇼핑몰</span>
+          </div>
+        </Card>
+        <Card className="p-4 hover:shadow-lg transition-shadow cursor-pointer" onClick={() => window.location.href = '/admin/review-management'}>
+          <div className="flex flex-col items-center text-center">
+            <Monitor className="w-8 h-8 text-red-600 mb-2" />
+            <span className="text-sm font-medium">모니터링</span>
+          </div>
+        </Card>
+      </div>
+
+      {/* 통계 카드 */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>
           <CardHeader className="pb-2">
@@ -374,7 +419,7 @@ export default function AdminHome() {
             </div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium">오늘의 방문자</CardTitle>
@@ -388,7 +433,7 @@ export default function AdminHome() {
             </div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium">시스템 상태</CardTitle>
@@ -403,7 +448,7 @@ export default function AdminHome() {
           </CardContent>
         </Card>
       </div>
-      
+
       <Tabs defaultValue="overview" onValueChange={setActiveTab} className="space-y-4">
         <TabsList>
           <TabsTrigger value="overview">개요</TabsTrigger>
@@ -411,7 +456,7 @@ export default function AdminHome() {
           <TabsTrigger value="users">사용자 관리</TabsTrigger>
           <TabsTrigger value="institutions">기관 관리</TabsTrigger>
         </TabsList>
-        
+
         <TabsContent value="overview" className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Card>
@@ -454,7 +499,7 @@ export default function AdminHome() {
                 </Button>
               </CardFooter>
             </Card>
-            
+
             <Card>
               <CardHeader>
                 <CardTitle>빠른 작업</CardTitle>
@@ -512,7 +557,7 @@ export default function AdminHome() {
               </CardContent>
             </Card>
           </div>
-          
+
           <Card>
             <CardHeader>
               <CardTitle>최근 알림</CardTitle>
@@ -565,7 +610,7 @@ export default function AdminHome() {
             </CardFooter>
           </Card>
         </TabsContent>
-        
+
         <TabsContent value="system" className="space-y-4">
           <Card>
             <CardHeader>
@@ -632,7 +677,7 @@ export default function AdminHome() {
             </CardFooter>
           </Card>
         </TabsContent>
-        
+
         <TabsContent value="users" className="space-y-4">
           <Card>
             <CardHeader>
@@ -662,7 +707,7 @@ export default function AdminHome() {
                     </div>
                   </div>
                 </div>
-                
+
                 <div>
                   <h3 className="text-lg font-semibold mb-2">사용자 분포</h3>
                   <div className="h-64">
@@ -670,7 +715,7 @@ export default function AdminHome() {
                   </div>
                 </div>
               </div>
-              
+
               <Button
                 className="w-full"
                 onClick={handleManageUsers}
@@ -681,7 +726,7 @@ export default function AdminHome() {
             </CardContent>
           </Card>
         </TabsContent>
-        
+
         <TabsContent value="institutions" className="space-y-4">
           <Card>
             <CardHeader>
@@ -728,6 +773,8 @@ export default function AdminHome() {
                         <span>베타 애견 학교</span>
                         <span className="font-medium">27명</span>
                       </div>
+                      <Progress value={27} max={ className="font-medium">27명</span>
+                      </div>
                       <Progress value={27} max={100} className="h-2" />
                     </div>
                     <div className="space-y-1">
@@ -754,7 +801,7 @@ export default function AdminHome() {
                   </div>
                 </div>
               </div>
-              
+
               <Button
                 className="w-full"
                 onClick={handleManageInstitutes}

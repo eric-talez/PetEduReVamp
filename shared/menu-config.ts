@@ -376,16 +376,28 @@ export const DEFAULT_MENU_ITEMS: MenuItem[] = [
     isPublic: false
   },
 
-  // === 관리자 전용 ===
+  // === 관리자 전용 (사용 빈도 순) ===
   {
-    id: 'system-management',
-    title: '시스템 관리',
-    path: '/admin/users',
-    icon: 'Settings',
+    id: 'admin-dashboard',
+    title: '관리자 대시보드',
+    path: '/admin/dashboard',
+    icon: 'BarChart3',
     type: 'internal',
     category: 'admin',
     roles: ['admin'],
     orderIndex: 0,
+    isActive: true,
+    isPublic: false
+  },
+  {
+    id: 'system-management',
+    title: '사용자 관리',
+    path: '/admin/users',
+    icon: 'Users',
+    type: 'internal',
+    category: 'admin',
+    roles: ['admin'],
+    orderIndex: 1,
     isActive: true,
     isPublic: false
   },
@@ -397,7 +409,19 @@ export const DEFAULT_MENU_ITEMS: MenuItem[] = [
     type: 'internal',
     category: 'admin',
     roles: ['admin'],
-    orderIndex: 1,
+    orderIndex: 2,
+    isActive: true,
+    isPublic: false
+  },
+  {
+    id: 'trainer-management',
+    title: '훈련사 관리',
+    path: '/admin/trainers',
+    icon: 'UserCheck',
+    type: 'internal',
+    category: 'admin',
+    roles: ['admin'],
+    orderIndex: 3,
     isActive: true,
     isPublic: false
   },
@@ -405,23 +429,23 @@ export const DEFAULT_MENU_ITEMS: MenuItem[] = [
     id: 'content-management',
     title: '콘텐츠 관리',
     path: '/admin/contents',
-    icon: 'Image',
+    icon: 'FileText',
     type: 'internal',
     category: 'admin',
     roles: ['admin'],
-    orderIndex: 2,
+    orderIndex: 4,
     isActive: true,
     isPublic: false
   },
   {
     id: 'financial-admin',
-    title: '가격 관리',
+    title: '수수료 관리',
     path: '/admin/commissions',
     icon: 'Percent',
     type: 'internal',
     category: 'admin',
     roles: ['admin'],
-    orderIndex: 3,
+    orderIndex: 5,
     isActive: true,
     isPublic: false
   },
@@ -433,7 +457,19 @@ export const DEFAULT_MENU_ITEMS: MenuItem[] = [
     type: 'internal',
     category: 'admin',
     roles: ['admin'],
-    orderIndex: 4,
+    orderIndex: 6,
+    isActive: true,
+    isPublic: false
+  },
+  {
+    id: 'service-monitoring',
+    title: '서비스 모니터링',
+    path: '/admin/review-management',
+    icon: 'Monitor',
+    type: 'internal',
+    category: 'admin',
+    roles: ['admin'],
+    orderIndex: 7,
     isActive: true,
     isPublic: false
   },
@@ -445,7 +481,7 @@ export const DEFAULT_MENU_ITEMS: MenuItem[] = [
     type: 'internal',
     category: 'admin',
     roles: ['admin'],
-    orderIndex: 5,
+    orderIndex: 8,
     isActive: true,
     isPublic: false
   }
