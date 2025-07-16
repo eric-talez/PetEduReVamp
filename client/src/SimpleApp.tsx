@@ -66,8 +66,7 @@ import AdminProductPricing from "./pages/admin/AdminProductPricing";
 import AdminSettlementPage from "./pages/admin/settlement";
 import ContentCrawler from "./pages/admin/ContentCrawler";
 import AdminCommunityManagement from "./pages/admin/AdminCommunityManagement";
-
-
+import InstituteNotebookMonitorPage from "./pages/institute-admin/NotebookMonitor";
 
 // 레이아웃 및 컴포넌트 임포트
 import { TopBar } from "@/components/TopBar";
@@ -783,7 +782,7 @@ function AppLayout({ children }: { children: ReactNode }) {
                     }}
                   </Route>
                   <Route path="/institute/notebook-monitor">
-                    <NotebookMonitorPage />
+                    <InstituteNotebookMonitorPage />
                   </Route>
                   <Route path="/institute/trainers">
                     {() => {

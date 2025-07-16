@@ -515,8 +515,9 @@ class Storage {
       }
     ];
     
-    // 훈련 일지 샘플 데이터
+    // 훈련 일지 샘플 데이터 - 다양한 훈련사들의 알림장 포함
     this.trainingJournals = [
+      // 강동훈 훈련사 (id: 1)
       {
         id: 1,
         trainerId: 1,
@@ -529,7 +530,8 @@ class Storage {
         status: "sent",
         createdAt: new Date('2025-01-10').toISOString(),
         sentAt: new Date('2025-01-10T18:00:00').toISOString(),
-        trainer: { name: "강동훈" }
+        trainer: { name: "강동훈" },
+        pet: { name: "맥스" }
       },
       {
         id: 2,
@@ -544,7 +546,8 @@ class Storage {
         createdAt: new Date('2025-01-12').toISOString(),
         sentAt: new Date('2025-01-12T18:30:00').toISOString(),
         readAt: new Date('2025-01-12T20:15:00').toISOString(),
-        trainer: { name: "강동훈" }
+        trainer: { name: "강동훈" },
+        pet: { name: "맥스" }
       },
       {
         id: 3,
@@ -557,7 +560,8 @@ class Storage {
         trainingDate: "2025-01-13",
         status: "draft",
         createdAt: new Date('2025-01-13').toISOString(),
-        trainer: { name: "강동훈" }
+        trainer: { name: "강동훈" },
+        pet: { name: "루나" }
       },
       {
         id: 4,
@@ -571,7 +575,181 @@ class Storage {
         status: "sent",
         createdAt: new Date('2025-01-14').toISOString(),
         sentAt: new Date('2025-01-14T19:00:00').toISOString(),
-        trainer: { name: "강동훈" }
+        trainer: { name: "강동훈" },
+        pet: { name: "초코" }
+      },
+      {
+        id: 5,
+        trainerId: 1,
+        petId: 1,
+        trainerName: "강동훈",
+        petName: "맥스",
+        title: "기본 복종 훈련 3회차",
+        content: "맥스가 '엎드려' 명령을 완전히 습득했습니다. 이제 거리를 두고도 명령을 잘 따릅니다.",
+        trainingDate: "2025-01-15",
+        status: "read",
+        createdAt: new Date('2025-01-15').toISOString(),
+        sentAt: new Date('2025-01-15T18:45:00').toISOString(),
+        readAt: new Date('2025-01-15T21:30:00').toISOString(),
+        trainer: { name: "강동훈" },
+        pet: { name: "맥스" }
+      },
+      // 김민수 훈련사 (id: 2)
+      {
+        id: 6,
+        trainerId: 2,
+        petId: 2,
+        trainerName: "김민수",
+        petName: "루나",
+        title: "어질리티 훈련 1회차",
+        content: "루나의 운동 능력이 뛰어나서 어질리티 훈련을 시작했습니다. 장애물 뛰어넘기에 자신감을 보입니다.",
+        trainingDate: "2025-01-11",
+        status: "sent",
+        createdAt: new Date('2025-01-11').toISOString(),
+        sentAt: new Date('2025-01-11T17:30:00').toISOString(),
+        trainer: { name: "김민수" },
+        pet: { name: "루나" }
+      },
+      {
+        id: 7,
+        trainerId: 2,
+        petId: 3,
+        trainerName: "김민수",
+        petName: "초코",
+        title: "산책 훈련 1회차",
+        content: "초코가 산책 시 당기는 습관을 교정하는 훈련을 했습니다. 조금씩 개선되고 있어요.",
+        trainingDate: "2025-01-12",
+        status: "read",
+        createdAt: new Date('2025-01-12').toISOString(),
+        sentAt: new Date('2025-01-12T16:15:00').toISOString(),
+        readAt: new Date('2025-01-12T19:45:00').toISOString(),
+        trainer: { name: "김민수" },
+        pet: { name: "초코" }
+      },
+      {
+        id: 8,
+        trainerId: 2,
+        petId: 1,
+        trainerName: "김민수",
+        petName: "맥스",
+        title: "고급 복종 훈련 1회차",
+        content: "맥스가 기본 훈련을 완료하여 고급 과정으로 진입했습니다. 원거리 명령 훈련을 시작합니다.",
+        trainingDate: "2025-01-13",
+        status: "sent",
+        createdAt: new Date('2025-01-13').toISOString(),
+        sentAt: new Date('2025-01-13T17:00:00').toISOString(),
+        trainer: { name: "김민수" },
+        pet: { name: "맥스" }
+      },
+      // 박지혜 훈련사 (id: 3)
+      {
+        id: 9,
+        trainerId: 3,
+        petId: 2,
+        trainerName: "박지혜",
+        petName: "루나",
+        title: "반응성 훈련 1회차",
+        content: "루나가 다른 개에게 과도한 반응을 보이는 문제를 다루고 있습니다. 진전이 보입니다.",
+        trainingDate: "2025-01-10",
+        status: "read",
+        createdAt: new Date('2025-01-10').toISOString(),
+        sentAt: new Date('2025-01-10T15:20:00').toISOString(),
+        readAt: new Date('2025-01-10T18:10:00').toISOString(),
+        trainer: { name: "박지혜" },
+        pet: { name: "루나" }
+      },
+      {
+        id: 10,
+        trainerId: 3,
+        petId: 3,
+        trainerName: "박지혜",
+        petName: "초코",
+        title: "분리불안 훈련 1회차",
+        content: "초코의 분리불안 증상을 완화하기 위한 훈련을 시작했습니다. 단계적으로 접근하고 있습니다.",
+        trainingDate: "2025-01-14",
+        status: "sent",
+        createdAt: new Date('2025-01-14').toISOString(),
+        sentAt: new Date('2025-01-14T16:45:00').toISOString(),
+        trainer: { name: "박지혜" },
+        pet: { name: "초코" }
+      },
+      // 최예린 훈련사 (id: 4)
+      {
+        id: 11,
+        trainerId: 4,
+        petId: 1,
+        trainerName: "최예린",
+        petName: "맥스",
+        title: "트릭 훈련 1회차",
+        content: "맥스에게 재미있는 트릭들을 가르치고 있습니다. '하이파이브'를 성공적으로 배웠어요!",
+        trainingDate: "2025-01-11",
+        status: "read",
+        createdAt: new Date('2025-01-11').toISOString(),
+        sentAt: new Date('2025-01-11T14:30:00').toISOString(),
+        readAt: new Date('2025-01-11T20:15:00').toISOString(),
+        trainer: { name: "최예린" },
+        pet: { name: "맥스" }
+      },
+      {
+        id: 12,
+        trainerId: 4,
+        petId: 2,
+        trainerName: "최예린",
+        petName: "루나",
+        title: "노즈워크 훈련 1회차",
+        content: "루나의 후각 능력을 활용한 노즈워크 훈련을 시작했습니다. 매우 집중력이 좋아요.",
+        trainingDate: "2025-01-15",
+        status: "draft",
+        createdAt: new Date('2025-01-15').toISOString(),
+        trainer: { name: "최예린" },
+        pet: { name: "루나" }
+      },
+      // 정수현 훈련사 (id: 5)
+      {
+        id: 13,
+        trainerId: 5,
+        petId: 3,
+        trainerName: "정수현",
+        petName: "초코",
+        title: "기본 매너 훈련 1회차",
+        content: "초코에게 기본적인 매너를 가르치고 있습니다. 인사법과 차분히 기다리기를 연습했어요.",
+        trainingDate: "2025-01-13",
+        status: "sent",
+        createdAt: new Date('2025-01-13').toISOString(),
+        sentAt: new Date('2025-01-13T13:45:00').toISOString(),
+        trainer: { name: "정수현" },
+        pet: { name: "초코" }
+      },
+      {
+        id: 14,
+        trainerId: 5,
+        petId: 1,
+        trainerName: "정수현",
+        petName: "맥스",
+        title: "심화 복종 훈련 1회차",
+        content: "맥스의 복종 훈련을 한 단계 더 발전시키고 있습니다. 복잡한 명령 조합을 연습하고 있어요.",
+        trainingDate: "2025-01-14",
+        status: "read",
+        createdAt: new Date('2025-01-14').toISOString(),
+        sentAt: new Date('2025-01-14T15:20:00').toISOString(),
+        readAt: new Date('2025-01-14T17:55:00').toISOString(),
+        trainer: { name: "정수현" },
+        pet: { name: "맥스" }
+      },
+      {
+        id: 15,
+        trainerId: 5,
+        petId: 2,
+        trainerName: "정수현",
+        petName: "루나",
+        title: "사회화 심화 훈련 1회차",
+        content: "루나의 사회화 능력을 더욱 발전시키기 위해 다양한 환경에서 훈련을 진행했습니다.",
+        trainingDate: "2025-01-15",
+        status: "sent",
+        createdAt: new Date('2025-01-15').toISOString(),
+        sentAt: new Date('2025-01-15T14:10:00').toISOString(),
+        trainer: { name: "정수현" },
+        pet: { name: "루나" }
       }
     ];
     

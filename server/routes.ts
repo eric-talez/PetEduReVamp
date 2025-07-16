@@ -3040,6 +3040,79 @@ app.get('/api/search', async (req, res) => {
     }
   });
 
+  // 기관 관리자 전용 - 소속 훈련사 알림장 현황 조회 API
+  app.get("/api/institute/notebook/status", async (req, res) => {
+    try {
+      const { startDate, endDate } = req.query;
+      
+      // 실제 훈련사 데이터를 가져와 기관 소속 훈련사 필터링
+      const allTrainers = await storage.getAllTrainers();
+      const allJournals = await storage.getAllTrainingJournals();
+      
+      // 기관 소속 훈련사 ID 추출 (실제 연결된 훈련사들)
+      const instituteTrainerIds = allTrainers.map(trainer => trainer.id);
+      
+      // 날짜 필터링
+      let filteredJournals = allJournals;
+      if (startDate && endDate) {
+        const start = new Date(startDate as string);
+        const end = new Date(endDate as string);
+        filteredJournals = allJournals.filter(journal => {
+          const journalDate = new Date(journal.trainingDate);
+          return journalDate >= start && journalDate <= end;
+        });
+      }
+      
+      // 기관 소속 훈련사의 알림장만 필터링
+      const instituteJournals = filteredJournals.filter(journal => 
+        instituteTrainerIds.includes(journal.trainerId)
+      );
+      
+      // 훈련사별 통계 계산
+      const trainerStats = {};
+      instituteJournals.forEach(journal => {
+        const trainerId = journal.trainerId;
+        const trainer = allTrainers.find(t => t.id === trainerId);
+        
+        if (!trainerStats[trainerId]) {
+          trainerStats[trainerId] = {
+            trainerId,
+            trainerName: trainer?.name || '알 수 없음',
+            totalJournals: 0,
+            sentJournals: 0,
+            readJournals: 0,
+            dates: []
+          };
+        }
+        trainerStats[trainerId].totalJournals++;
+        if (journal.status === 'sent' || journal.status === 'read') {
+          trainerStats[trainerId].sentJournals++;
+        }
+        if (journal.status === 'read') {
+          trainerStats[trainerId].readJournals++;
+        }
+        trainerStats[trainerId].dates.push({
+          date: journal.trainingDate,
+          status: journal.status,
+          petName: journal.pet?.name || '알 수 없음',
+          title: journal.title
+        });
+      });
+      
+      return res.json({
+        success: true,
+        stats: Object.values(trainerStats),
+        totalJournals: instituteJournals.length
+      });
+    } catch (error) {
+      console.error('기관 알림장 현황 조회 오류:', error);
+      return res.status(500).json({
+        success: false,
+        message: "기관 알림장 현황 조회 중 오류가 발생했습니다."
+      });
+    }
+  });
+
   // 사용자 즐겨찾기 강의 목록
   app.get("/api/users/:userId/favorite-courses", (req, res) => {
     const userId = parseInt(req.params.userId);

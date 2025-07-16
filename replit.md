@@ -157,6 +157,17 @@ TALEZ is a comprehensive pet education and e-commerce platform that combines AI-
 
 ## Changelog
 
+- July 16, 2025. **INSTITUTE ADMIN NOTEBOOK MONITORING SYSTEM ENHANCED** - 기관 관리자 알림장 모니터링 시스템 강화:
+  - **Dedicated Institute Admin Page**: 기관 관리자 전용 알림장 모니터링 페이지 (/institute/notebook-monitor) 생성
+  - **Trainer Filtering System**: 훈련사별 필터링 기능으로 소속 훈련사들의 알림장만 선별적으로 모니터링
+  - **Real Training Journal Data**: 5명의 훈련사가 작성한 15개의 실제 알림장 데이터로 현실적인 모니터링 환경 구축
+  - **Comprehensive Filter Controls**: 날짜 범위, 시간 범위, 훈련사 선택 등 다양한 필터링 옵션 제공
+  - **Interactive Statistics Dashboard**: 총 알림장 수, 활성 훈련사 수, 전송/읽음 상태별 통계 실시간 표시
+  - **Trainer Detail Modal**: 각 훈련사의 상세 알림장 목록과 통계를 팝업으로 확인 가능
+  - **Progress Visualization**: 전송률과 읽음률을 시각적 진행률 바로 직관적으로 표시
+  - **Institute-Specific API**: `/api/institute/notebook/status` 엔드포인트로 소속 훈련사 데이터만 필터링
+  - **Enhanced Data Structure**: 훈련사별 알림장 데이터에 pet 객체 추가로 펫 정보 정확성 향상
+  - **Production Ready**: 완전한 기관 관리자 알림장 모니터링 시스템으로 실제 운영 환경에서 사용 가능
 - July 16, 2025. **AI EXPERIENCE SECTION VISUAL REDESIGN** - 홈페이지 AI 체험 섹션 아이콘 및 색상 변경:
   - **Icon Change**: 비디오 카메라 아이콘에서 전구(lightbulb) 아이콘으로 변경하여 AI 아이디어/분석 테마 강조
   - **Color Scheme Update**: 파란색-보라색 그라데이션에서 에메랄드-틸 그라데이션으로 변경
