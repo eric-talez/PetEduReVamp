@@ -129,6 +129,7 @@ export default function CommissionManagement() {
 
   // 정산승인 처리
   const handleSettlementApproval = async (referrer: any) => {
+    console.log('정산승인 버튼 클릭됨:', referrer);
     try {
       // 로딩 상태 표시
       setReferrers(prev => 
@@ -683,6 +684,16 @@ export default function CommissionManagement() {
               <CardDescription>
                 훈련사, 기관, 제휴사에 대한 정산 현황을 관리합니다. 정산 승인 및 지급 처리를 할 수 있습니다.
               </CardDescription>
+              <Button 
+                size="sm" 
+                variant="outline"
+                onClick={() => {
+                  console.log('Test button clicked!');
+                  alert('Test button is working!');
+                }}
+              >
+                테스트 버튼
+              </Button>
             </CardHeader>
             <CardContent>
               <div className="grid gap-4 md:grid-cols-4 mb-6">
@@ -790,7 +801,10 @@ export default function CommissionManagement() {
                               <Button 
                                 size="sm" 
                                 variant="outline"
-                                onClick={() => handleSettlementApproval(referrer)}
+                                onClick={() => {
+                                  console.log('Button clicked, referrer:', referrer);
+                                  handleSettlementApproval(referrer);
+                                }}
                                 disabled={referrer.status === '처리중'}
                               >
                                 <FileText className="h-4 w-4 mr-1" />
