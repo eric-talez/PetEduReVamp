@@ -33,7 +33,7 @@ import {
   fusedSentimentAnalysis,
   compareModelPerformance
 } from "./ai-fusion";
-// import { setupCommissionRoutes } from './commission/routes';
+import { setupCommissionRoutes } from './commission/routes';
 // import { setupHealthRoutes } from './routes/health';
 import { registerAnalyticsRoutes } from './routes/analytics';
 import { setupSocialRoutes } from './routes/social';
@@ -450,6 +450,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // 관리자 라우트 등록
   registerAdminRoutes(app);
+
+  // 커미션 라우트 등록
+  setupCommissionRoutes(app);
 
   // 기본 사용자 API 라우트
   app.get('/api/users', async (req, res) => {

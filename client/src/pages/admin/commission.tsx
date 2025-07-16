@@ -128,9 +128,62 @@ export default function CommissionManagement() {
   };
 
   // 정산승인 처리
-  const handleSettlementApproval = (referrer: any) => {
-    setSelectedSettlement(referrer);
-    setIsInvoiceDialogOpen(true);
+  const handleSettlementApproval = async (referrer: any) => {
+    try {
+      // 로딩 상태 표시
+      setReferrers(prev => 
+        prev.map(r => 
+          r.id === referrer.id 
+            ? { ...r, status: '처리중' }
+            : r
+        )
+      );
+
+      // 실제 정산 처리 API 호출
+      const response = await fetch(`/api/commission/settlements/${referrer.id}/approve`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          referrerId: referrer.id,
+          amount: Math.round(referrer.earningsTotal * (referrer.role === '훈련사' ? 0.15 : referrer.role === '기관' ? 0.10 : 0.05)),
+          period: '2025.01.01 ~ 2025.01.31'
+        })
+      });
+
+      if (response.ok) {
+        // 정산 승인 성공 시 상태 업데이트
+        setReferrers(prev => 
+          prev.map(r => 
+            r.id === referrer.id 
+              ? { ...r, status: '지급완료' }
+              : r
+          )
+        );
+        
+        // 성공 메시지 표시
+        alert(`${referrer.name}님의 정산이 성공적으로 처리되었습니다.`);
+        
+        // 계산서 발행 다이얼로그 열기
+        setSelectedSettlement(referrer);
+        setIsInvoiceDialogOpen(true);
+      } else {
+        throw new Error('정산 처리 실패');
+      }
+    } catch (error) {
+      // 오류 발생 시 상태 되돌리기
+      setReferrers(prev => 
+        prev.map(r => 
+          r.id === referrer.id 
+            ? { ...r, status: '지급대기' }
+            : r
+        )
+      );
+      
+      console.error('정산 처리 오류:', error);
+      alert('정산 처리 중 오류가 발생했습니다. 다시 시도해주세요.');
+    }
   };
 
   // 계산서 발행 완료 처리
