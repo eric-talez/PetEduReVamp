@@ -1298,6 +1298,48 @@ export default function AdminCurriculum() {
     }
   };
 
+  // 커리큘럼 발행 상태 초기화 함수
+  const unpublishCurriculum = async (curriculumId: string) => {
+    if (!confirm('정말로 이 커리큘럼의 발행 상태를 초기화하시겠습니까?\n초기화 후 다시 발행 신청을 해야 합니다.')) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/admin/curriculums/${curriculumId}/unpublish`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.ok) {
+        // 커리큘럼 상태를 draft로 초기화
+        setCurriculums(prev => 
+          prev.map(curr => 
+            curr.id === curriculumId 
+              ? { ...curr, status: 'draft' as any }
+              : curr
+          )
+        );
+
+        toast({
+          title: "초기화 완료",
+          description: "커리큘럼이 draft 상태로 초기화되었습니다. 다시 발행 신청할 수 있습니다.",
+          variant: "default"
+        });
+      } else {
+        throw new Error('초기화 실패');
+      }
+    } catch (error) {
+      console.error('커리큘럼 초기화 실패:', error);
+      toast({
+        title: "초기화 실패",
+        description: "커리큘럼 초기화 중 오류가 발생했습니다.",
+        variant: "destructive"
+      });
+    }
+  };
+
   const createCustomCurriculum = async () => {
     // 입력값 검증
     const validationErrors: string[] = [];
@@ -1687,30 +1729,40 @@ export default function AdminCurriculum() {
                           <Edit className="w-3 h-3" />
                           수정
                         </Button>
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            publishCurriculum(curriculum.id);
-                          }}
-                          className={`flex items-center gap-1 ${
-                            curriculum.status === 'published' ? 'text-blue-600 border-blue-300' :
-                            curriculum.status === 'pending_approval' ? 'text-orange-600 border-orange-300' :
-                            'text-green-600 border-green-300'
-                          }`}
-                          disabled={curriculum.status === 'published'}
-                        >
-                          {curriculum.status === 'published' ? (
-                            <CheckCircle className="w-3 h-3" />
-                          ) : curriculum.status === 'pending_approval' ? (
-                            <Clock className="w-3 h-3" />
-                          ) : (
-                            <Send className="w-3 h-3" />
-                          )}
-                          {curriculum.status === 'published' ? '발행완료' : 
-                           curriculum.status === 'pending_approval' ? '승인대기' : '발행신청'}
-                        </Button>
+                        {curriculum.status === 'published' ? (
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              unpublishCurriculum(curriculum.id);
+                            }}
+                            className="flex items-center gap-1 text-orange-600 border-orange-300 hover:bg-orange-50 hover:text-orange-700 hover:border-orange-400 transition-all duration-200"
+                          >
+                            <XCircle className="w-3 h-3" />
+                            초기화
+                          </Button>
+                        ) : (
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              publishCurriculum(curriculum.id);
+                            }}
+                            className={`flex items-center gap-1 ${
+                              curriculum.status === 'pending_approval' ? 'text-orange-600 border-orange-300' :
+                              'text-green-600 border-green-300'
+                            }`}
+                          >
+                            {curriculum.status === 'pending_approval' ? (
+                              <Clock className="w-3 h-3" />
+                            ) : (
+                              <Send className="w-3 h-3" />
+                            )}
+                            {curriculum.status === 'pending_approval' ? '승인대기' : '발행신청'}
+                          </Button>
+                        )}
                         <Button 
                           variant="outline" 
                           size="sm"

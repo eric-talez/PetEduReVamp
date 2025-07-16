@@ -1216,6 +1216,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // 커리큘럼 발행 상태 초기화 API
+  app.post('/api/admin/curriculums/:id/unpublish', requireAuth('admin'), async (req, res) => {
+    try {
+      const { id } = req.params;
+      
+      console.log(`[Admin] 커리큘럼 발행 상태 초기화: ${id}`);
+      
+      const updatedCurriculum = await storage.updateCurriculum(id, { 
+        status: 'draft',
+        publishedAt: null
+      });
+      
+      if (!updatedCurriculum) {
+        return res.status(404).json({ error: '커리큘럼을 찾을 수 없습니다.' });
+      }
+      
+      res.json({
+        success: true,
+        message: '커리큘럼이 draft 상태로 초기화되었습니다.',
+        curriculum: updatedCurriculum
+      });
+    } catch (error) {
+      console.error('[Admin] 커리큘럼 초기화 오류:', error);
+      res.status(500).json({ 
+        error: '커리큘럼 초기화 중 오류가 발생했습니다.' 
+      });
+    }
+  });
+
   // 위치 검색 라우트 등록
   registerLocationRoutes(app);
 
