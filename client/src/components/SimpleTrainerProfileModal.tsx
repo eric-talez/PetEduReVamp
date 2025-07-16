@@ -37,7 +37,8 @@ export function SimpleTrainerProfileModal({ trainer, isOpen, onClose }: SimpleTr
   // 디버깅을 위한 훅 사용
   useEffect(() => {
     if (isOpen) {
-      console.log("SimpleTrainerProfileModal - 모달이 열렸습니다:", trainer.name);
+      console.log("🎯 SimpleTrainerProfileModal - 모달이 열렸습니다:", trainer.name);
+      console.log("🎯 훈련사 데이터:", trainer);
     }
   }, [isOpen, trainer]);
 
@@ -46,7 +47,7 @@ export function SimpleTrainerProfileModal({ trainer, isOpen, onClose }: SimpleTr
     return null;
   }
 
-  console.log("SimpleTrainerProfileModal - 렌더링:", trainer.name);
+  console.log("🎯 SimpleTrainerProfileModal - 렌더링:", trainer.name);
 
   return (
     <div 
@@ -64,9 +65,9 @@ export function SimpleTrainerProfileModal({ trainer, isOpen, onClose }: SimpleTr
         onClick={(e) => e.stopPropagation()} // 모달 내부 클릭 시 이벤트 버블링 방지
       >
         {/* 헤더 */}
-        <div className="p-6 border-b border-gray-100 dark:border-gray-800 relative">
+        <div className="p-6 border-b border-gray-100 dark:border-gray-800 relative bg-gradient-to-r from-blue-50 to-purple-50 dark:from-gray-800 dark:to-gray-700">
           <div className="flex items-start gap-4">
-            <div className="h-20 w-20 rounded-full overflow-hidden border-4 border-primary/20 shadow-lg">
+            <div className="h-20 w-20 rounded-full overflow-hidden border-4 border-white shadow-xl">
               <Avatar className="h-20 w-20 mb-4">
                 <AvatarImage 
                   src={trainer.image || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(trainer.name)}&backgroundColor=6366f1&textColor=ffffff`}
@@ -80,19 +81,19 @@ export function SimpleTrainerProfileModal({ trainer, isOpen, onClose }: SimpleTr
               </Avatar>
             </div>
             <div>
-              <h2 className="text-xl font-bold">{trainer.name} 트레이너</h2>
-              <p className="text-primary mt-1">{trainer.specialty}</p>
-              <div className="flex items-center mt-2">
-                <div className="flex items-center mr-2">
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{trainer.name} 트레이너</h2>
+              <p className="text-blue-600 dark:text-blue-400 font-medium text-lg mt-1">{trainer.specialty}</p>
+              <div className="flex items-center mt-3 gap-4">
+                <div className="flex items-center bg-yellow-50 dark:bg-yellow-900/20 px-3 py-1 rounded-full">
                   <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
-                  <span className="text-sm font-medium ml-1">{trainer.rating}</span>
+                  <span className="text-sm font-bold ml-1 text-yellow-600 dark:text-yellow-400">{trainer.rating}</span>
                 </div>
-                <span className="text-xs text-gray-500 dark:text-gray-400">
+                <span className="text-sm text-gray-600 dark:text-gray-300">
                   ({trainer.reviewCount} 리뷰)
                 </span>
                 {trainer.location && (
-                  <div className="ml-3 flex items-center text-xs text-gray-500 dark:text-gray-400">
-                    <MapPin className="w-3 h-3 mr-1" />
+                  <div className="flex items-center text-sm text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-600 px-2 py-1 rounded-full">
+                    <MapPin className="w-4 h-4 mr-1" />
                     {trainer.location}
                   </div>
                 )}
@@ -106,9 +107,9 @@ export function SimpleTrainerProfileModal({ trainer, isOpen, onClose }: SimpleTr
               console.log("모달 내부 X 버튼 클릭");
               onClose();
             }}
-            className="absolute right-4 top-4 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300"
+            className="absolute right-4 top-4 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 p-2 rounded-full hover:bg-white/50 dark:hover:bg-gray-600 transition-colors"
           >
-            <X className="h-5 w-5" />
+            <X className="h-6 w-6" />
             <span className="sr-only">닫기</span>
           </button>
         </div>
