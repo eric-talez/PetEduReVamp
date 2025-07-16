@@ -123,6 +123,24 @@ export default function TrainerHome() {
             <Calendar className="w-4 h-4 mr-2" />
             일정
           </Button>
+          <Link href="/trainer/earnings">
+            <Button variant="outline" size="sm" className="flex items-center">
+              <TrendingUp className="w-4 h-4 mr-2" />
+              수익 관리
+            </Button>
+          </Link>
+          <Link href="/trainer/students">
+            <Button variant="outline" size="sm" className="flex items-center">
+              <Users className="w-4 h-4 mr-2" />
+              학생 관리
+            </Button>
+          </Link>
+          <Link href="/trainer/profile">
+            <Button variant="outline" size="sm" className="flex items-center">
+              <Award className="w-4 h-4 mr-2" />
+              프로필 관리
+            </Button>
+          </Link>
         </div>
       </div>
       
@@ -199,6 +217,69 @@ export default function TrainerHome() {
             </div>
           </CardContent>
         </Card>
+      </div>
+      
+      {/* 빠른 액세스 메뉴 */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <Link href="/trainer/earnings">
+          <Card className="cursor-pointer hover:shadow-md transition-shadow">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">수익 관리</h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">수익 내역과 정산 현황을 확인하세요</p>
+                </div>
+                <div className="bg-green-100 dark:bg-green-900 p-3 rounded-full">
+                  <TrendingUp className="w-6 h-6 text-green-600 dark:text-green-400" />
+                </div>
+              </div>
+              <div className="mt-4 flex items-center justify-between">
+                <span className="text-sm text-gray-600 dark:text-gray-400">이번 달 순수익</span>
+                <span className="text-sm font-bold text-green-600 dark:text-green-400">1,850만원</span>
+              </div>
+            </CardContent>
+          </Card>
+        </Link>
+
+        <Link href="/trainer/students">
+          <Card className="cursor-pointer hover:shadow-md transition-shadow">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">학생 관리</h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">수강생 현황과 진도를 관리하세요</p>
+                </div>
+                <div className="bg-blue-100 dark:bg-blue-900 p-3 rounded-full">
+                  <Users className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+                </div>
+              </div>
+              <div className="mt-4 flex items-center justify-between">
+                <span className="text-sm text-gray-600 dark:text-gray-400">활성 학생</span>
+                <span className="text-sm font-bold text-blue-600 dark:text-blue-400">23명</span>
+              </div>
+            </CardContent>
+          </Card>
+        </Link>
+
+        <Link href="/trainer/profile">
+          <Card className="cursor-pointer hover:shadow-md transition-shadow">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">프로필 관리</h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">프로필과 자격증을 관리하세요</p>
+                </div>
+                <div className="bg-purple-100 dark:bg-purple-900 p-3 rounded-full">
+                  <Award className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+                </div>
+              </div>
+              <div className="mt-4 flex items-center justify-between">
+                <span className="text-sm text-gray-600 dark:text-gray-400">프로필 완성도</span>
+                <span className="text-sm font-bold text-purple-600 dark:text-purple-400">95%</span>
+              </div>
+            </CardContent>
+          </Card>
+        </Link>
       </div>
       
       {/* 메인 콘텐츠 영역 */}

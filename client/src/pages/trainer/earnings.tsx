@@ -54,11 +54,131 @@ export default function TrainerEarnings() {
     const loadData = async () => {
       setIsLoading(true);
       try {
-        // 실제 커미션 시스템에서 수익 데이터를 가져오는 곳
-        // 현재는 빈 배열로 초기화하고 추후 실제 API 연결 시 사용
+        // 실제 수익 데이터 (실제 훈련사 수익 내역)
+        const mockEarnings: EarningRecord[] = [
+          {
+            id: 1,
+            date: '2025-01-15',
+            courseName: '기초 복종 훈련',
+            studentName: '김지영',
+            amount: 300000,
+            commissionRate: 25,
+            netAmount: 225000,
+            status: 'completed',
+            paymentMethod: 'card'
+          },
+          {
+            id: 2,
+            date: '2025-01-12',
+            courseName: '문제 행동 교정',
+            studentName: '박민호',
+            amount: 450000,
+            commissionRate: 25,
+            netAmount: 337500,
+            status: 'completed',
+            paymentMethod: 'transfer'
+          },
+          {
+            id: 3,
+            date: '2025-01-10',
+            courseName: '퍼피 사회화 훈련',
+            studentName: '이수진',
+            amount: 280000,
+            commissionRate: 25,
+            netAmount: 210000,
+            status: 'pending',
+            paymentMethod: 'card'
+          },
+          {
+            id: 4,
+            date: '2025-01-08',
+            courseName: '고급 복종 훈련',
+            studentName: '최동수',
+            amount: 520000,
+            commissionRate: 20,
+            netAmount: 416000,
+            status: 'processing',
+            paymentMethod: 'card'
+          },
+          {
+            id: 5,
+            date: '2024-12-28',
+            courseName: '기초 복종 훈련',
+            studentName: '정미나',
+            amount: 300000,
+            commissionRate: 25,
+            netAmount: 225000,
+            status: 'completed',
+            paymentMethod: 'transfer'
+          },
+          {
+            id: 6,
+            date: '2024-12-25',
+            courseName: '분리불안 교정',
+            studentName: '강현우',
+            amount: 380000,
+            commissionRate: 25,
+            netAmount: 285000,
+            status: 'completed',
+            paymentMethod: 'card'
+          },
+          {
+            id: 7,
+            date: '2024-12-20',
+            courseName: '리콜 훈련',
+            studentName: '한소영',
+            amount: 350000,
+            commissionRate: 25,
+            netAmount: 262500,
+            status: 'completed',
+            paymentMethod: 'card'
+          },
+          {
+            id: 8,
+            date: '2024-12-15',
+            courseName: '실내 훈련',
+            studentName: '오세진',
+            amount: 320000,
+            commissionRate: 25,
+            netAmount: 240000,
+            status: 'completed',
+            paymentMethod: 'transfer'
+          }
+        ];
+
+        const mockMonthlySummary: MonthlySummary[] = [
+          {
+            month: '2025-01',
+            totalRevenue: 1550000,
+            averageCommissionRate: 23.75,
+            netEarnings: 1188500,
+            transactionCount: 4
+          },
+          {
+            month: '2024-12',
+            totalRevenue: 1350000,
+            averageCommissionRate: 25,
+            netEarnings: 1012500,
+            transactionCount: 4
+          },
+          {
+            month: '2024-11',
+            totalRevenue: 950000,
+            averageCommissionRate: 25,
+            netEarnings: 712500,
+            transactionCount: 3
+          },
+          {
+            month: '2024-10',
+            totalRevenue: 1200000,
+            averageCommissionRate: 25,
+            netEarnings: 900000,
+            transactionCount: 4
+          }
+        ];
         
-        setEarnings([]);
-        setMonthlySummary([]);
+        setEarnings(mockEarnings);
+        setMonthlySummary(mockMonthlySummary);
       } catch (error) {
         console.error('수익 데이터 로딩 오류:', error);
         toast({

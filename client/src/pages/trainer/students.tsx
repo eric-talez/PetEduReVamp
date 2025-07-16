@@ -50,6 +50,7 @@ interface Student {
     gender: string;
     healthStatus: string;
     specialNotes: string;
+    imageUrl: string;
   };
   trainer: {
     id: number;
@@ -173,6 +174,266 @@ export default function TrainerStudentsPage() {
         {
           id: 1,
           name: "홍길동",
+          email: "hong@example.com",
+          phone: "010-1234-5678",
+          address: "서울시 강남구 역삼동",
+          joinDate: "2024-12-01",
+          status: 'active',
+          pet: {
+            id: 1,
+            name: "맥스",
+            breed: "골든 리트리버",
+            age: 3,
+            weight: 28,
+            gender: "수컷",
+            healthStatus: "건강",
+            specialNotes: "사회화 훈련 필요",
+            imageUrl: `https://api.dicebear.com/7.x/pets/svg?seed=맥스&backgroundColor=ffd700`
+          },
+          trainer: {
+            id: 1,
+            name: "김민수",
+            email: "kim@example.com"
+          },
+          course: {
+            id: 1,
+            title: "기초 복종 훈련",
+            startDate: "2024-12-01",
+            endDate: "2025-02-28",
+            progress: 65
+          },
+          attendance: {
+            totalSessions: 20,
+            attendedSessions: 17,
+            attendanceRate: 85,
+            lastAttendance: "2025-01-15"
+          },
+          performance: {
+            overallRating: 4.2,
+            behaviorScore: 4.5,
+            learningSpeed: 4.0,
+            socialSkills: 3.8,
+            notes: "매우 적극적이고 학습 능력이 뛰어남. 다른 개들과의 상호작용에서 약간의 개선이 필요함."
+          },
+          payments: {
+            totalAmount: 450000,
+            paidAmount: 300000,
+            pendingAmount: 150000,
+            lastPayment: "2025-01-10"
+          }
+        },
+        {
+          id: 2,
+          name: "김미영",
+          email: "kim.my@example.com",
+          phone: "010-2345-6789",
+          address: "서울시 마포구 합정동",
+          joinDate: "2024-11-15",
+          status: 'active',
+          pet: {
+            id: 2,
+            name: "루나",
+            breed: "보더 콜리",
+            age: 2,
+            weight: 20,
+            gender: "암컷",
+            healthStatus: "건강",
+            specialNotes: "지능이 높아 고급 훈련 가능",
+            imageUrl: `https://api.dicebear.com/7.x/pets/svg?seed=루나&backgroundColor=87ceeb`
+          },
+          trainer: {
+            id: 2,
+            name: "이준호",
+            email: "lee@example.com"
+          },
+          course: {
+            id: 2,
+            title: "어질리티 훈련",
+            startDate: "2024-11-15",
+            endDate: "2025-01-31",
+            progress: 80
+          },
+          attendance: {
+            totalSessions: 16,
+            attendedSessions: 15,
+            attendanceRate: 94,
+            lastAttendance: "2025-01-14"
+          },
+          performance: {
+            overallRating: 4.8,
+            behaviorScore: 4.7,
+            learningSpeed: 4.9,
+            socialSkills: 4.6,
+            notes: "매우 똑똑하고 훈련을 잘 따름. 어질리티 훈련에 특히 뛰어난 재능을 보임."
+          },
+          payments: {
+            totalAmount: 380000,
+            paidAmount: 380000,
+            pendingAmount: 0,
+            lastPayment: "2024-12-20"
+          }
+        },
+        {
+          id: 3,
+          name: "박진우",
+          email: "park.jw@example.com",
+          phone: "010-3456-7890",
+          address: "서울시 종로구 인사동",
+          joinDate: "2024-10-20",
+          status: 'graduated',
+          pet: {
+            id: 3,
+            name: "초코",
+            breed: "프렌치 불독",
+            age: 4,
+            weight: 12,
+            gender: "수컷",
+            healthStatus: "양호",
+            specialNotes: "호흡기 문제로 격한 운동 주의",
+            imageUrl: `https://api.dicebear.com/7.x/pets/svg?seed=초코&backgroundColor=8b4513`
+          },
+          trainer: {
+            id: 3,
+            name: "박지혜",
+            email: "park@example.com"
+          },
+          course: {
+            id: 3,
+            title: "행동 교정 훈련",
+            startDate: "2024-10-20",
+            endDate: "2024-12-31",
+            progress: 100
+          },
+          attendance: {
+            totalSessions: 12,
+            attendedSessions: 11,
+            attendanceRate: 92,
+            lastAttendance: "2024-12-28"
+          },
+          performance: {
+            overallRating: 4.3,
+            behaviorScore: 4.4,
+            learningSpeed: 3.9,
+            socialSkills: 4.2,
+            notes: "처음에는 공격적인 행동이 있었으나 훈련 후 많이 개선됨. 졸업 후에도 꾸준한 관리 필요."
+          },
+          payments: {
+            totalAmount: 320000,
+            paidAmount: 320000,
+            pendingAmount: 0,
+            lastPayment: "2024-11-25"
+          }
+        },
+        {
+          id: 4,
+          name: "이서연",
+          email: "lee.sy@example.com",
+          phone: "010-4567-8901",
+          address: "서울시 송파구 잠실동",
+          joinDate: "2025-01-05",
+          status: 'active',
+          pet: {
+            id: 4,
+            name: "바둑이",
+            breed: "믹스견",
+            age: 1,
+            weight: 15,
+            gender: "수컷",
+            healthStatus: "건강",
+            specialNotes: "퍼피 사회화 훈련 중",
+            imageUrl: `https://api.dicebear.com/7.x/pets/svg?seed=바둑이&backgroundColor=90ee90`
+          },
+          trainer: {
+            id: 1,
+            name: "김민수",
+            email: "kim@example.com"
+          },
+          course: {
+            id: 4,
+            title: "퍼피 사회화 훈련",
+            startDate: "2025-01-05",
+            endDate: "2025-03-05",
+            progress: 15
+          },
+          attendance: {
+            totalSessions: 8,
+            attendedSessions: 2,
+            attendanceRate: 25,
+            lastAttendance: "2025-01-12"
+          },
+          performance: {
+            overallRating: 3.5,
+            behaviorScore: 3.2,
+            learningSpeed: 3.8,
+            socialSkills: 3.0,
+            notes: "아직 어린 나이라 기본적인 훈련 중. 사회화 훈련에 집중이 필요함."
+          },
+          payments: {
+            totalAmount: 280000,
+            paidAmount: 140000,
+            pendingAmount: 140000,
+            lastPayment: "2025-01-05"
+          }
+        },
+        {
+          id: 5,
+          name: "최영수",
+          email: "choi.ys@example.com",
+          phone: "010-5678-9012",
+          address: "서울시 강서구 방화동",
+          joinDate: "2024-09-10",
+          status: 'inactive',
+          pet: {
+            id: 5,
+            name: "뽀삐",
+            breed: "말티즈",
+            age: 6,
+            weight: 8,
+            gender: "암컷",
+            healthStatus: "양호",
+            specialNotes: "노령견으로 부드러운 훈련 필요",
+            imageUrl: `https://api.dicebear.com/7.x/pets/svg?seed=뽀삐&backgroundColor=ffe4e1`
+          },
+          trainer: {
+            id: 2,
+            name: "이준호",
+            email: "lee@example.com"
+          },
+          course: {
+            id: 5,
+            title: "시니어 케어 훈련",
+            startDate: "2024-09-10",
+            endDate: "2024-11-30",
+            progress: 40
+          },
+          attendance: {
+            totalSessions: 15,
+            attendedSessions: 6,
+            attendanceRate: 40,
+            lastAttendance: "2024-10-25"
+          },
+          performance: {
+            overallRating: 3.0,
+            behaviorScore: 3.5,
+            learningSpeed: 2.8,
+            socialSkills: 3.2,
+            notes: "건강상 문제로 훈련 중단. 집에서 할 수 있는 간단한 훈련으로 전환 필요."
+          },
+          payments: {
+            totalAmount: 200000,
+            paidAmount: 80000,
+            pendingAmount: 120000,
+            lastPayment: "2024-09-10"
+          }
+        }
+      ];
+
+      // 선택된 훈련사에 따라 필터링
+      if (selectedTrainer) {
+        return mockStudents.filter(student => student.trainer.id === selectedTrainer);
+      }
+      
+      return mockStudents;
           email: "hong@example.com",
           phone: "010-1234-5678",
           address: "서울시 강남구",

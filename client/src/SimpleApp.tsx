@@ -1570,7 +1570,7 @@ function AuthenticatedRoutes() {
 
         <Route path="/trainer/profile">
           {() => {
-            const ProfilePage = lazy(() => import('./pages/profile'));
+            const TrainerProfile = lazy(() => import('./pages/trainer/profile'));
             return (
               <Suspense fallback={
                 <div className="p-8 flex justify-center items-center">
@@ -1578,7 +1578,41 @@ function AuthenticatedRoutes() {
                 </div>
               }>
                 <ProtectedTrainerRoute 
-                  component={() => <ProfilePage userType="trainer" />} 
+                  component={() => <TrainerProfile />} 
+                />
+              </Suspense>
+            );
+          }}
+        </Route>
+
+        <Route path="/trainer/earnings">
+          {() => {
+            const TrainerEarnings = lazy(() => import('./pages/trainer/earnings'));
+            return (
+              <Suspense fallback={
+                <div className="p-8 flex justify-center items-center">
+                  <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
+                </div>
+              }>
+                <ProtectedTrainerRoute 
+                  component={() => <TrainerEarnings />} 
+                />
+              </Suspense>
+            );
+          }}
+        </Route>
+
+        <Route path="/trainer/students">
+          {() => {
+            const TrainerStudents = lazy(() => import('./pages/trainer/students'));
+            return (
+              <Suspense fallback={
+                <div className="p-8 flex justify-center items-center">
+                  <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
+                </div>
+              }>
+                <ProtectedTrainerRoute 
+                  component={() => <TrainerStudents />} 
                 />
               </Suspense>
             );
