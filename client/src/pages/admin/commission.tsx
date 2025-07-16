@@ -86,6 +86,8 @@ const MOCK_COMMISSION_HISTORY = [
 ];
 
 export default function CommissionManagement() {
+  console.log('CommissionManagement component rendered');
+  
   const [products, setProducts] = useState(MOCK_PRODUCTS);
   const [subscriptionProducts, setSubscriptionProducts] = useState(MOCK_SUBSCRIPTION_PRODUCTS);
   const [referrers, setReferrers] = useState(MOCK_REFERRERS);
@@ -130,6 +132,7 @@ export default function CommissionManagement() {
   // 정산승인 처리
   const handleSettlementApproval = async (referrer: any) => {
     console.log('정산승인 버튼 클릭됨:', referrer);
+    console.log('handleSettlementApproval function called with referrer:', referrer);
     try {
       // 로딩 상태 표시
       setReferrers(prev => 
@@ -687,10 +690,13 @@ export default function CommissionManagement() {
               <Button 
                 size="sm" 
                 variant="outline"
-                onClick={() => {
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
                   console.log('Test button clicked!');
                   alert('Test button is working!');
                 }}
+                type="button"
               >
                 테스트 버튼
               </Button>
@@ -801,11 +807,16 @@ export default function CommissionManagement() {
                               <Button 
                                 size="sm" 
                                 variant="outline"
-                                onClick={() => {
+                                type="button"
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
                                   console.log('Button clicked, referrer:', referrer);
+                                  alert('Button clicked! Referrer: ' + referrer.name);
                                   handleSettlementApproval(referrer);
                                 }}
                                 disabled={referrer.status === '처리중'}
+                                style={{ pointerEvents: 'auto', cursor: 'pointer' }}
                               >
                                 <FileText className="h-4 w-4 mr-1" />
                                 {referrer.status === '처리중' ? '처리 중...' : '정산 승인'}
