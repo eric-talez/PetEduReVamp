@@ -773,8 +773,6 @@ export default function AdminHome() {
                         <span>베타 애견 학교</span>
                         <span className="font-medium">27명</span>
                       </div>
-                      <Progress value={27} max={ className="font-medium">27명</span>
-                      </div>
                       <Progress value={27} max={100} className="h-2" />
                     </div>
                     <div className="space-y-1">
