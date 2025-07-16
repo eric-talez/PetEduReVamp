@@ -11,6 +11,10 @@ class Storage {
   pricingRules: any[] = [];
   trainingJournals: any[] = [];
   posts: any[] = [];
+  coursePurchases: any[] = [];
+  courseProgress: any[] = [];
+  progressSharing: any[] = [];
+  lessonSessions: any[] = [];
   events: any[] = [
     {
       id: 1,
@@ -753,8 +757,336 @@ class Storage {
       }
     ];
     
-    // courses data
-    this.courses = [];
+    // courses data - 커리큘럼 가격 정보 포함
+    this.courses = [
+      {
+        id: 1,
+        title: "기초 복종 훈련 완전정복",
+        description: "반려견의 기본적인 복종 훈련을 체계적으로 배우는 8주 완성 과정입니다. 앉아, 기다려, 이리와 등 기본 명령어부터 산책 매너까지 완전히 마스터할 수 있습니다.",
+        trainerId: 1,
+        trainerName: "강동훈",
+        duration: 8,
+        level: "beginner",
+        category: "기초 훈련",
+        price: 280000,
+        maxStudents: 20,
+        currentStudents: 15,
+        status: "published",
+        enrollmentCount: 15,
+        averageRating: 4.7,
+        reviewCount: 12,
+        modules: [
+          {
+            id: 1,
+            title: "기본 자세 훈련",
+            description: "앉아, 엎드려, 일어나 등 기본 자세 명령어 훈련",
+            duration: 60,
+            isFree: false,
+            price: 35000,
+            order: 1,
+            videoUrl: null,
+            materials: []
+          },
+          {
+            id: 2,
+            title: "호명 반응 훈련",
+            description: "이름 부르기에 대한 반응 향상 훈련",
+            duration: 60,
+            isFree: false,
+            price: 35000,
+            order: 2,
+            videoUrl: null,
+            materials: []
+          },
+          {
+            id: 3,
+            title: "기다려 명령 훈련",
+            description: "인내심을 기르는 기다려 명령 집중 훈련",
+            duration: 60,
+            isFree: false,
+            price: 35000,
+            order: 3,
+            videoUrl: null,
+            materials: []
+          },
+          {
+            id: 4,
+            title: "이리와 명령 훈련",
+            description: "안전한 호출 훈련과 즉시 반응 훈련",
+            duration: 60,
+            isFree: false,
+            price: 35000,
+            order: 4,
+            videoUrl: null,
+            materials: []
+          },
+          {
+            id: 5,
+            title: "산책 매너 훈련",
+            description: "리드줄 당기지 않기와 산책 예절 훈련",
+            duration: 60,
+            isFree: false,
+            price: 35000,
+            order: 5,
+            videoUrl: null,
+            materials: []
+          },
+          {
+            id: 6,
+            title: "실외 복종 훈련",
+            description: "실외 환경에서의 복종 명령 적용 훈련",
+            duration: 60,
+            isFree: false,
+            price: 35000,
+            order: 6,
+            videoUrl: null,
+            materials: []
+          },
+          {
+            id: 7,
+            title: "사회화 기초 훈련",
+            description: "다른 개와 사람에 대한 사회화 훈련",
+            duration: 60,
+            isFree: false,
+            price: 35000,
+            order: 7,
+            videoUrl: null,
+            materials: []
+          },
+          {
+            id: 8,
+            title: "종합 평가 및 마무리",
+            description: "전체 훈련 과정 종합 평가 및 유지 방법",
+            duration: 60,
+            isFree: false,
+            price: 35000,
+            order: 8,
+            videoUrl: null,
+            materials: []
+          }
+        ],
+        createdAt: new Date('2025-01-10').toISOString(),
+        updatedAt: new Date().toISOString()
+      },
+      {
+        id: 2,
+        title: "퍼피 사회화 전문 과정",
+        description: "생후 3-6개월 강아지를 위한 사회화 전문 과정입니다. 사람, 동물, 환경에 대한 적응력을 키우고 건강한 성격 형성을 도움니다.",
+        trainerId: 2,
+        trainerName: "김민수",
+        duration: 6,
+        level: "beginner",
+        category: "사회화",
+        price: 320000,
+        maxStudents: 15,
+        currentStudents: 8,
+        status: "published",
+        enrollmentCount: 8,
+        averageRating: 4.8,
+        reviewCount: 6,
+        modules: [
+          {
+            id: 1,
+            title: "사회화 기초 이론",
+            description: "퍼피 사회화의 중요성과 기본 원리",
+            duration: 45,
+            isFree: true,
+            price: 0,
+            order: 1,
+            videoUrl: null,
+            materials: []
+          },
+          {
+            id: 2,
+            title: "사람에 대한 사회화",
+            description: "다양한 연령대와 외모의 사람들과 친화력 기르기",
+            duration: 60,
+            isFree: false,
+            price: 53000,
+            order: 2,
+            videoUrl: null,
+            materials: []
+          },
+          {
+            id: 3,
+            title: "동물 간 사회화",
+            description: "다른 강아지들과의 건전한 상호작용 훈련",
+            duration: 60,
+            isFree: false,
+            price: 53000,
+            order: 3,
+            videoUrl: null,
+            materials: []
+          },
+          {
+            id: 4,
+            title: "환경 적응 훈련",
+            description: "다양한 소리와 환경에 대한 적응 훈련",
+            duration: 60,
+            isFree: false,
+            price: 53000,
+            order: 4,
+            videoUrl: null,
+            materials: []
+          },
+          {
+            id: 5,
+            title: "핸들링 적응 훈련",
+            description: "목욕, 미용, 건강 체크 등 핸들링 적응",
+            duration: 60,
+            isFree: false,
+            price: 53000,
+            order: 5,
+            videoUrl: null,
+            materials: []
+          },
+          {
+            id: 6,
+            title: "종합 사회화 테스트",
+            description: "전체 사회화 과정 평가 및 향후 계획",
+            duration: 60,
+            isFree: false,
+            price: 53000,
+            order: 6,
+            videoUrl: null,
+            materials: []
+          }
+        ],
+        createdAt: new Date('2025-01-08').toISOString(),
+        updatedAt: new Date().toISOString()
+      },
+      {
+        id: 3,
+        title: "문제 행동 교정 마스터 클래스",
+        description: "짖음, 물기, 분리불안 등 다양한 문제 행동을 체계적으로 교정하는 전문 과정입니다. 행동 분석부터 교정 방법까지 완전 마스터할 수 있습니다.",
+        trainerId: 3,
+        trainerName: "박지혜",
+        duration: 10,
+        level: "advanced",
+        category: "행동 교정",
+        price: 450000,
+        maxStudents: 12,
+        currentStudents: 10,
+        status: "published",
+        enrollmentCount: 10,
+        averageRating: 4.9,
+        reviewCount: 8,
+        modules: [
+          {
+            id: 1,
+            title: "행동 분석 기초",
+            description: "문제 행동의 원인 분석과 평가 방법",
+            duration: 90,
+            isFree: false,
+            price: 45000,
+            order: 1,
+            videoUrl: null,
+            materials: []
+          },
+          {
+            id: 2,
+            title: "과도한 짖음 교정",
+            description: "짖음 행동의 원인별 교정 방법",
+            duration: 90,
+            isFree: false,
+            price: 45000,
+            order: 2,
+            videoUrl: null,
+            materials: []
+          },
+          {
+            id: 3,
+            title: "물기 행동 교정",
+            description: "공격성과 물기 행동 교정 전문 기법",
+            duration: 90,
+            isFree: false,
+            price: 45000,
+            order: 3,
+            videoUrl: null,
+            materials: []
+          },
+          {
+            id: 4,
+            title: "분리불안 치료",
+            description: "분리불안 증상 완화와 독립성 기르기",
+            duration: 90,
+            isFree: false,
+            price: 45000,
+            order: 4,
+            videoUrl: null,
+            materials: []
+          },
+          {
+            id: 5,
+            title: "파괴 행동 교정",
+            description: "집 안 파괴 행동 예방과 교정 방법",
+            duration: 90,
+            isFree: false,
+            price: 45000,
+            order: 5,
+            videoUrl: null,
+            materials: []
+          },
+          {
+            id: 6,
+            title: "식탐 행동 교정",
+            description: "음식 보호 행동과 식탐 교정 훈련",
+            duration: 90,
+            isFree: false,
+            price: 45000,
+            order: 6,
+            videoUrl: null,
+            materials: []
+          },
+          {
+            id: 7,
+            title: "과잉 활동 조절",
+            description: "과도한 활동량과 흥분 조절 훈련",
+            duration: 90,
+            isFree: false,
+            price: 45000,
+            order: 7,
+            videoUrl: null,
+            materials: []
+          },
+          {
+            id: 8,
+            title: "반응성 교정",
+            description: "다른 개나 사람에 대한 과도한 반응 교정",
+            duration: 90,
+            isFree: false,
+            price: 45000,
+            order: 8,
+            videoUrl: null,
+            materials: []
+          },
+          {
+            id: 9,
+            title: "스트레스 관리",
+            description: "스트레스 신호 인식과 관리 방법",
+            duration: 90,
+            isFree: false,
+            price: 45000,
+            order: 9,
+            videoUrl: null,
+            materials: []
+          },
+          {
+            id: 10,
+            title: "종합 교정 계획",
+            description: "개별 맞춤형 교정 계획 수립 및 실행",
+            duration: 90,
+            isFree: false,
+            price: 45000,
+            order: 10,
+            videoUrl: null,
+            materials: []
+          }
+        ],
+        createdAt: new Date('2025-01-05').toISOString(),
+        updatedAt: new Date().toISOString()
+      }
+    ];
   }
 
   // 커리큘럼 관련 메서드들
@@ -1709,6 +2041,198 @@ class Storage {
     } catch (error) {
       console.error('[Storage] 상품 조회 실패:', error);
       return null;
+    }
+  }
+
+  // 강의 구매 관련 메소드
+  async purchaseCourse(userId: number, courseId: number, purchaseAmount: number, paymentMethod: string) {
+    try {
+      const purchase = {
+        id: this.coursePurchases.length + 1,
+        userId,
+        courseId,
+        purchaseAmount,
+        paymentMethod,
+        paymentStatus: 'completed',
+        accessGranted: true,
+        expiryDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(), // 1년 후
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+      
+      this.coursePurchases.push(purchase);
+      
+      // 강의 진행 상황 초기화
+      const progress = {
+        id: this.courseProgress.length + 1,
+        userId,
+        courseId,
+        currentLesson: 1,
+        completedLessons: 0,
+        totalLessons: 10, // 기본값
+        progressPercentage: 0,
+        timeSpent: 0,
+        averageScore: 0,
+        lastAccessedAt: new Date().toISOString(),
+        status: 'active',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+      
+      this.courseProgress.push(progress);
+      
+      return { purchase, progress };
+    } catch (error) {
+      console.error('[Storage] 강의 구매 실패:', error);
+      throw error;
+    }
+  }
+
+  // 강의 진행 상황 업데이트
+  async updateCourseProgress(userId: number, courseId: number, progressData: any) {
+    try {
+      const progressIndex = this.courseProgress.findIndex(p => p.userId === userId && p.courseId === courseId);
+      
+      if (progressIndex === -1) {
+        throw new Error('강의 진행 상황을 찾을 수 없습니다.');
+      }
+      
+      this.courseProgress[progressIndex] = {
+        ...this.courseProgress[progressIndex],
+        ...progressData,
+        updatedAt: new Date().toISOString()
+      };
+      
+      return this.courseProgress[progressIndex];
+    } catch (error) {
+      console.error('[Storage] 강의 진행 상황 업데이트 실패:', error);
+      throw error;
+    }
+  }
+
+  // 진행 상황 공유
+  async shareProgress(userId: number, courseId: number, shareType: string, trainerId?: number, instituteId?: number) {
+    try {
+      const sharing = {
+        id: this.progressSharing.length + 1,
+        userId,
+        courseId,
+        trainerId,
+        instituteId,
+        shareType,
+        sharedAt: new Date().toISOString(),
+        permissions: {
+          canViewProgress: true,
+          canViewDetailedStats: true,
+          canReceiveNotifications: true
+        },
+        isActive: true,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+      
+      this.progressSharing.push(sharing);
+      return sharing;
+    } catch (error) {
+      console.error('[Storage] 진행 상황 공유 실패:', error);
+      throw error;
+    }
+  }
+
+  // 사용자별 강의 구매 목록 조회
+  async getUserCoursePurchases(userId: number) {
+    try {
+      return this.coursePurchases.filter(purchase => purchase.userId === userId);
+    } catch (error) {
+      console.error('[Storage] 사용자 강의 구매 목록 조회 실패:', error);
+      return [];
+    }
+  }
+
+  // 사용자별 강의 진행 상황 조회
+  async getUserCourseProgress(userId: number) {
+    try {
+      return this.courseProgress.filter(progress => progress.userId === userId);
+    } catch (error) {
+      console.error('[Storage] 사용자 강의 진행 상황 조회 실패:', error);
+      return [];
+    }
+  }
+
+  // 훈련사별 공유된 진행 상황 조회
+  async getSharedProgressByTrainer(trainerId: number) {
+    try {
+      const sharedProgress = this.progressSharing.filter(sharing => 
+        sharing.trainerId === trainerId && sharing.isActive
+      );
+      
+      const progressWithDetails = sharedProgress.map(sharing => {
+        const progress = this.courseProgress.find(p => 
+          p.userId === sharing.userId && p.courseId === sharing.courseId
+        );
+        const user = this.users.find(u => u.id === sharing.userId);
+        const course = this.courses.find(c => c.id === sharing.courseId);
+        
+        return {
+          ...sharing,
+          progress,
+          user,
+          course
+        };
+      });
+      
+      return progressWithDetails;
+    } catch (error) {
+      console.error('[Storage] 훈련사별 공유 진행 상황 조회 실패:', error);
+      return [];
+    }
+  }
+
+  // 기관별 공유된 진행 상황 조회
+  async getSharedProgressByInstitute(instituteId: number) {
+    try {
+      const sharedProgress = this.progressSharing.filter(sharing => 
+        sharing.instituteId === instituteId && sharing.isActive
+      );
+      
+      const progressWithDetails = sharedProgress.map(sharing => {
+        const progress = this.courseProgress.find(p => 
+          p.userId === sharing.userId && p.courseId === sharing.courseId
+        );
+        const user = this.users.find(u => u.id === sharing.userId);
+        const course = this.courses.find(c => c.id === sharing.courseId);
+        
+        return {
+          ...sharing,
+          progress,
+          user,
+          course
+        };
+      });
+      
+      return progressWithDetails;
+    } catch (error) {
+      console.error('[Storage] 기관별 공유 진행 상황 조회 실패:', error);
+      return [];
+    }
+  }
+
+  // 강의 세션 기록 저장
+  async recordLessonSession(userId: number, courseId: number, sessionData: any) {
+    try {
+      const session = {
+        id: this.lessonSessions.length + 1,
+        userId,
+        courseId,
+        ...sessionData,
+        createdAt: new Date().toISOString()
+      };
+      
+      this.lessonSessions.push(session);
+      return session;
+    } catch (error) {
+      console.error('[Storage] 강의 세션 기록 실패:', error);
+      throw error;
     }
   }
 }

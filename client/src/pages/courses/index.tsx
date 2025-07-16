@@ -39,31 +39,10 @@ export default function Courses(props?: CoursesPageProps) {
   const [itemsPerPage] = useState(8);
   const { toast } = useToast();
 
-  // 수강 신청 처리 함수
-  const handleEnrollment = async (courseId: number) => {
-    console.log('수강 신청 클릭:', courseId);
-    try {
-      const response = await fetch(`/api/courses/${courseId}/enroll`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-      });
-
-      if (response.ok) {
-        console.log('수강 신청 성공:', courseId);
-        alert('수강 신청이 완료되었습니다!');
-        window.location.reload();
-      } else {
-        const error = await response.text();
-        console.error('수강 신청 실패:', error);
-        alert(`수강 신청 실패: ${error}`);
-      }
-    } catch (error) {
-      console.error('수강 신청 오류:', error);
-      alert('수강 신청 중 오류가 발생했습니다.');
-    }
+  // 강의 구매 처리 함수
+  const handlePurchase = (courseId: string) => {
+    console.log('강의 구매 클릭:', courseId);
+    window.location.href = `/checkout?courseId=${courseId}`;
   };
 
   // 강좌 상세보기 핸들러
@@ -365,9 +344,9 @@ export default function Courses(props?: CoursesPageProps) {
                   <Button 
                     size="sm"
                     className="flex-1 text-xs"
-                    onClick={() => handleJoinCourse(course.id)}
+                    onClick={() => handlePurchase(course.id)}
                   >
-                    수강 신청
+                    구매하기
                   </Button>
                 </div>
               </div>

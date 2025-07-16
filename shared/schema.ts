@@ -325,6 +325,69 @@ export const commissionPolicies = pgTable("commission_policies", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// 강의 구매 테이블
+export const coursePurchases = pgTable("course_purchases", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  courseId: integer("course_id").references(() => courses.id).notNull(),
+  purchaseAmount: decimal("purchase_amount", { precision: 10, scale: 2 }).notNull(),
+  paymentMethod: varchar("payment_method", { length: 50 }),
+  paymentStatus: varchar("payment_status", { length: 50 }).default("completed"),
+  accessGranted: boolean("access_granted").default(true),
+  expiryDate: timestamp("expiry_date"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// 강의 수강 진행 상황 테이블
+export const courseProgress = pgTable("course_progress", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  courseId: integer("course_id").references(() => courses.id).notNull(),
+  currentLesson: integer("current_lesson").default(1),
+  completedLessons: integer("completed_lessons").default(0),
+  totalLessons: integer("total_lessons").notNull(),
+  progressPercentage: decimal("progress_percentage", { precision: 5, scale: 2 }).default("0"),
+  timeSpent: integer("time_spent").default(0), // 분 단위
+  averageScore: decimal("average_score", { precision: 5, scale: 2 }).default("0"),
+  lastAccessedAt: timestamp("last_accessed_at"),
+  completedAt: timestamp("completed_at"),
+  status: varchar("status", { length: 50 }).default("active"), // active, completed, paused
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// 강의 진행 상황 공유 테이블
+export const progressSharing = pgTable("progress_sharing", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id).notNull(), // 견주
+  courseId: integer("course_id").references(() => courses.id).notNull(),
+  trainerId: integer("trainer_id").references(() => users.id), // 훈련사
+  instituteId: integer("institute_id").references(() => institutes.id), // 기관
+  sharedAt: timestamp("shared_at").defaultNow(),
+  shareType: varchar("share_type", { length: 50 }).notNull(), // "trainer", "institute", "both"
+  permissions: jsonb("permissions"), // 공유 권한 설정
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// 강의 세션 기록 테이블
+export const lessonSessions = pgTable("lesson_sessions", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  courseId: integer("course_id").references(() => courses.id).notNull(),
+  lessonNumber: integer("lesson_number").notNull(),
+  sessionStart: timestamp("session_start").notNull(),
+  sessionEnd: timestamp("session_end"),
+  watchTime: integer("watch_time").default(0), // 초 단위
+  completionPercentage: decimal("completion_percentage", { precision: 5, scale: 2 }).default("0"),
+  quiz_score: decimal("quiz_score", { precision: 5, scale: 2 }),
+  notes: text("notes"),
+  isCompleted: boolean("is_completed").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 export const commissionTransactions = pgTable("commission_transactions", {
   id: serial("id").primaryKey(),
   amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),

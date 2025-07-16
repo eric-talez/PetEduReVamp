@@ -399,6 +399,17 @@ function AppLayout({ children }: { children: ReactNode }) {
                       );
                     }}
                   </Route>
+                  <Route path="/checkout">
+                    {() => {
+                      const Checkout = lazy(() => import('./pages/checkout'));
+                      return (
+                        <Suspense fallback={<div className="p-8 text-center">결제 준비 중...</div>}>
+                          <Checkout />
+                        </Suspense>
+                      );
+                    }}
+                  </Route>
+                  
                   <Route path="/course/:id" component={CourseDetail} />
                   <Route path="/courses/:id">
                     {(params) => {

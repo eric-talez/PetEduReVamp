@@ -12,6 +12,7 @@ import { simpleProductRoutes } from "./routes/simple-products";
 import { registerUploadRoutes } from "./routes/upload";
 import { registerLocationRoutes } from "./location/routes";
 import { storage } from "./storage";
+import Stripe from "stripe";
 import { eventRoutes } from "./routes/events";
 import { eventUpdater } from "./services/eventUpdater";
 import { courses, users, institutes } from "../shared/schema";
@@ -37,6 +38,7 @@ import { setupCommissionRoutes } from './commission/routes';
 // import { setupHealthRoutes } from './routes/health';
 import { registerAnalyticsRoutes } from './routes/analytics';
 import { setupSocialRoutes } from './routes/social';
+import { registerCourseManagementRoutes } from './routes/course-management';
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
@@ -44,6 +46,7 @@ import { WorkflowEngine } from './workflow-engine';
 import { uploadDocuments } from './middleware/upload';
 import xlsx from 'xlsx';
 import { contentCrawler } from './content-crawler';
+import Stripe from 'stripe';
 
 // 유료/무료 정보를 포함한 엑셀 파일에서 커리큘럼 정보 추출 함수
 function parseExcelCurriculumWithPricing(data: any[], filename: string) {
@@ -363,6 +366,11 @@ function requireAuth(role?: string) {
     next();
   };
 }
+
+// Stripe 초기화
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
+  apiVersion: '2023-10-16',
+});
 
 export async function registerRoutes(app: Express): Promise<Server> {
 
@@ -4802,6 +4810,112 @@ app.get('/api/search', async (req, res) => {
       uptime: process.uptime(),
       environment: process.env.NODE_ENV || 'development'
     });
+  });
+
+  // Stripe 결제 시스템 API
+  
+  // 강의 구매 결제 인텐트 생성
+  app.post('/api/create-payment-intent', async (req, res) => {
+    try {
+      const { amount, courseId, courseTitle } = req.body;
+      
+      if (!amount || !courseId) {
+        return res.status(400).json({ error: '결제 금액과 강의 ID가 필요합니다.' });
+      }
+
+      // Stripe PaymentIntent 생성
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: Math.round(amount * 100), // 센트 단위로 변환
+        currency: 'krw',
+        metadata: {
+          courseId: courseId,
+          courseTitle: courseTitle || '강의 구매'
+        }
+      });
+
+      res.json({
+        clientSecret: paymentIntent.client_secret,
+        paymentIntentId: paymentIntent.id
+      });
+    } catch (error) {
+      console.error('Payment intent 생성 오류:', error);
+      res.status(500).json({ error: '결제 준비 중 오류가 발생했습니다.' });
+    }
+  });
+
+  // 결제 상태 확인 및 강의 등록
+  app.post('/api/confirm-payment', async (req, res) => {
+    try {
+      const { paymentIntentId, courseId } = req.body;
+      const userId = req.user?.id;
+
+      if (!userId) {
+        return res.status(401).json({ error: '로그인이 필요합니다.' });
+      }
+
+      // Stripe에서 결제 상태 확인
+      const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+      
+      if (paymentIntent.status === 'succeeded') {
+        // 강의 등록 처리
+        const enrollment = {
+          id: Date.now().toString(),
+          userId: userId,
+          courseId: courseId,
+          paymentIntentId: paymentIntentId,
+          amount: paymentIntent.amount / 100, // 원 단위로 변환
+          status: 'enrolled',
+          enrolledAt: new Date(),
+          progress: 0
+        };
+
+        // 실제 구현에서는 storage에 저장
+        console.log('[강의 등록] 결제 완료 후 강의 등록:', enrollment);
+
+        res.json({
+          success: true,
+          message: '결제가 완료되어 강의에 등록되었습니다.',
+          enrollment: enrollment
+        });
+      } else {
+        res.status(400).json({ error: '결제가 완료되지 않았습니다.' });
+      }
+    } catch (error) {
+      console.error('결제 확인 오류:', error);
+      res.status(500).json({ error: '결제 확인 중 오류가 발생했습니다.' });
+    }
+  });
+
+  // 결제 이력 조회
+  app.get('/api/payment-history', async (req, res) => {
+    try {
+      const userId = req.user?.id;
+      
+      if (!userId) {
+        return res.status(401).json({ error: '로그인이 필요합니다.' });
+      }
+
+      // 실제 구현에서는 데이터베이스에서 조회
+      const paymentHistory = [
+        {
+          id: '1',
+          courseId: 'course-basic-obedience',
+          courseTitle: '기초 복종훈련 완전정복',
+          amount: 180000,
+          status: 'completed',
+          paidAt: new Date('2025-01-15'),
+          paymentMethod: 'card'
+        }
+      ];
+
+      res.json({
+        success: true,
+        payments: paymentHistory
+      });
+    } catch (error) {
+      console.error('결제 이력 조회 오류:', error);
+      res.status(500).json({ error: '결제 이력 조회 중 오류가 발생했습니다.' });
+    }
   });
 
   // 훈련사 양성 과정 API
