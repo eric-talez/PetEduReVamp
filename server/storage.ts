@@ -1345,6 +1345,20 @@ class Storage {
     return (this.trainingJournals || []).filter(journal => journal.petId === petId);
   }
 
+  async getTrainingJournalsByOwner(ownerId: number): Promise<any[]> {
+    try {
+      const ownerPets = await this.getPetsByUserId(ownerId);
+      const petIds = ownerPets.map(pet => pet.id);
+      
+      return (this.trainingJournals || []).filter(journal => 
+        petIds.includes(journal.petId)
+      );
+    } catch (error) {
+      console.error('getTrainingJournalsByOwner 오류:', error);
+      return [];
+    }
+  }
+
   createTrainingJournal(journalData: any): any {
     const journal = {
       id: (this.trainingJournals || []).length + 1,
@@ -1675,6 +1689,27 @@ class Storage {
         priority: 'medium'
       }
     ];
+  }
+
+  // 상품 관련 메소드들
+  async getProducts() {
+    try {
+      console.log('[Storage] 상품 목록 조회');
+      return this.products || [];
+    } catch (error) {
+      console.error('[Storage] 상품 목록 조회 실패:', error);
+      return [];
+    }
+  }
+
+  async getProduct(id: number) {
+    try {
+      const product = this.products.find(p => p.id === id);
+      return product || null;
+    } catch (error) {
+      console.error('[Storage] 상품 조회 실패:', error);
+      return null;
+    }
   }
 }
 

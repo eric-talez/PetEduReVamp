@@ -2800,17 +2800,57 @@ app.get('/api/search', async (req, res) => {
   app.get("/api/notifications/training-journals", async (req, res) => {
     try {
       const userId = req.session?.user?.id || 108; // 기본값: 김지영
+      console.log(`[API] 견주 알림장 조회 - 사용자 ID: ${userId}`);
+      
       const journals = await storage.getTrainingJournalsByOwner(userId);
+      console.log(`[API] 조회된 알림장 수: ${journals?.length || 0}`);
       
       return res.json({
         success: true,
-        journals: journals
+        journals: journals || []
       });
     } catch (error) {
       console.error('견주 알림장 조회 오류:', error);
       return res.status(500).json({
         success: false,
         message: "알림장 조회 중 오류가 발생했습니다."
+      });
+    }
+  });
+
+  // 훈련 알림장 조회 API 추가 (GET /api/training-journals)
+  app.get("/api/training-journals", async (req, res) => {
+    try {
+      const { ownerId, trainerId } = req.query;
+      console.log(`[API] 훈련 알림장 조회 - 견주 ID: ${ownerId}, 훈련사 ID: ${trainerId}`);
+      
+      let journals = [];
+      
+      if (ownerId) {
+        // 견주별 알림장 조회
+        const userId = parseInt(ownerId as string);
+        journals = await storage.getTrainingJournalsByOwner(userId);
+        console.log(`[API] 견주 ${userId}의 알림장 ${journals?.length || 0}개 조회`);
+      } else if (trainerId) {
+        // 훈련사별 알림장 조회
+        const trainerIdNum = parseInt(trainerId as string);
+        journals = await storage.getTrainingJournalsByTrainer(trainerIdNum);
+        console.log(`[API] 훈련사 ${trainerIdNum}의 알림장 ${journals?.length || 0}개 조회`);
+      } else {
+        // 전체 알림장 조회
+        journals = await storage.getAllTrainingJournals();
+        console.log(`[API] 전체 알림장 ${journals?.length || 0}개 조회`);
+      }
+      
+      return res.json({
+        success: true,
+        journals: journals || []
+      });
+    } catch (error) {
+      console.error('훈련 알림장 조회 오류:', error);
+      return res.status(500).json({
+        success: false,
+        message: "훈련 알림장 조회 중 오류가 발생했습니다."
       });
     }
   });
@@ -6957,8 +6997,143 @@ app.get('/api/search', async (req, res) => {
     }
   });
 
+  // 훈련사 담당 반려동물 조회 API 추가
+  app.get("/api/trainers/:id/pets", async (req, res) => {
+    try {
+      const trainerId = parseInt(req.params.id);
+      console.log(`[API] 훈련사 담당 반려동물 조회 - 훈련사 ID: ${trainerId}`);
+      
+      if (!trainerId || isNaN(trainerId)) {
+        return res.status(400).json({ error: "유효하지 않은 훈련사 ID입니다" });
+      }
+
+      // 스토리지에서 해당 훈련사에게 배정된 반려동물 조회
+      const allPets = await storage.getAllPets();
+      const trainerPets = allPets.filter(pet => pet.assignedTrainerId === trainerId);
+      
+      console.log(`[API] 훈련사 ${trainerId}에게 배정된 반려동물 ${trainerPets.length}마리 발견`);
+      
+      const pets = trainerPets.map(pet => ({
+        id: pet.id,
+        name: pet.name,
+        species: pet.species,
+        breed: pet.breed,
+        age: pet.age,
+        gender: pet.gender,
+        weight: pet.weight,
+        color: pet.color,
+        personality: pet.personality,
+        imageUrl: pet.imageUrl,
+        trainingStatus: pet.trainingStatus,
+        trainingType: pet.trainingType,
+        trainingStartDate: pet.trainingStartDate,
+        lastNotebookEntry: pet.lastNotebookEntry,
+        owner: {
+          id: pet.ownerId,
+          name: "견주 이름" // 실제로는 owner 정보를 조회해야 함
+        }
+      }));
+
+      res.json({ success: true, pets });
+    } catch (error) {
+      console.error('훈련사 담당 반려동물 조회 오류:', error);
+      res.status(500).json({ error: "담당 반려동물 정보를 불러올 수 없습니다" });
+    }
+  });
+
+  // 메시지 조회 API 추가
+  app.get("/api/messages", async (req, res) => {
+    try {
+      const { userId } = req.query;
+      console.log(`[API] 메시지 조회 요청 - 사용자 ID: ${userId}`);
+      
+      // 테스트 메시지 데이터 반환
+      const messages = [
+        {
+          id: 1,
+          senderId: 2,
+          senderName: "강동훈 훈련사",
+          receiverId: 3,
+          receiverName: "테스트 사용자",
+          content: "안녕하세요! 맥스의 훈련 진행 상황을 알려드리겠습니다.",
+          timestamp: new Date().toISOString(),
+          read: false,
+          type: "text"
+        },
+        {
+          id: 2,
+          senderId: 3,
+          senderName: "테스트 사용자",
+          receiverId: 2,
+          receiverName: "강동훈 훈련사",
+          content: "감사합니다. 집에서도 계속 연습하고 있어요!",
+          timestamp: new Date(Date.now() - 1000 * 60 * 30).toISOString(),
+          read: true,
+          type: "text"
+        }
+      ];
+      
+      res.json({ success: true, messages });
+    } catch (error) {
+      console.error('메시지 조회 오류:', error);
+      res.status(500).json({ error: "메시지를 불러올 수 없습니다" });
+    }
+  });
+
+  // 예약 시스템 API 추가
+  app.get("/api/consultations", async (req, res) => {
+    try {
+      const { userId } = req.query;
+      console.log(`[API] 예약 조회 요청 - 사용자 ID: ${userId}`);
+      
+      // 테스트 예약 데이터 반환
+      const consultations = [
+        {
+          id: 1,
+          trainerId: 2,
+          trainerName: "강동훈 훈련사",
+          userId: 3,
+          userName: "테스트 사용자",
+          petId: 1,
+          petName: "맥스",
+          date: "2025-07-18",
+          time: "14:00",
+          duration: 60,
+          type: "video",
+          status: "confirmed",
+          notes: "기초 복종 훈련 상담",
+          createdAt: new Date().toISOString()
+        },
+        {
+          id: 2,
+          trainerId: 2,
+          trainerName: "강동훈 훈련사",
+          userId: 3,
+          userName: "테스트 사용자",
+          petId: 1,
+          petName: "맥스",
+          date: "2025-07-20",
+          time: "10:00",
+          duration: 90,
+          type: "offline",
+          status: "pending",
+          notes: "행동 교정 집중 훈련",
+          createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString()
+        }
+      ];
+      
+      res.json({ success: true, consultations });
+    } catch (error) {
+      console.error('예약 조회 오류:', error);
+      res.status(500).json({ error: "예약 정보를 불러올 수 없습니다" });
+    }
+  });
+
   // Register social/community routes
   setupSocialRoutes(app);
+
+  // Register shopping routes
+  registerShoppingRoutes(app, storage);
 
   // Gemini AI API endpoints
   app.post("/api/ai/analyze-behavior", async (req, res) => {
