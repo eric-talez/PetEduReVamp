@@ -77,21 +77,10 @@ const MOCK_REFERRERS = [
   { id: 4, name: '댕댕이 멍멍이', role: '제휴사', referralCode: 'AFFILIATE004', earningsTotal: 1650000, status: '지급완료' },
 ];
 
-const MOCK_COMMISSION_HISTORY = [
-  { id: 1, date: '2025-05-01', referrer: '김지훈', product: '기초 사회화 훈련 코스', amount: 12800, status: '지급완료' },
-  { id: 2, date: '2025-05-01', referrer: '서울 애견훈련소', product: '문제행동 교정 프로그램', amount: 24750, status: '지급완료' },
-  { id: 3, date: '2025-05-02', referrer: '박서연', product: '반려견 장난감 세트', amount: 3600, status: '지급대기' },
-  { id: 4, date: '2025-05-03', referrer: '댕댕이 멍멍이', product: '프리미엄 사료 (3kg)', amount: 2950, status: '지급대기' },
-  { id: 5, date: '2025-05-04', referrer: '서울 애견훈련소', product: '기초 사회화 훈련 코스', amount: 12800, status: '지급대기' },
-];
-
 export default function CommissionManagement() {
-  console.log('CommissionManagement component rendered');
-  
   const [products, setProducts] = useState(MOCK_PRODUCTS);
   const [subscriptionProducts, setSubscriptionProducts] = useState(MOCK_SUBSCRIPTION_PRODUCTS);
   const [referrers, setReferrers] = useState(MOCK_REFERRERS);
-  const [commissionHistory, setCommissionHistory] = useState(MOCK_COMMISSION_HISTORY);
   const [editingProductId, setEditingProductId] = useState<number | null>(null);
   const [editingSubscriptionId, setEditingSubscriptionId] = useState<number | null>(null);
   const [newCommissionRate, setNewCommissionRate] = useState<number>(0);
@@ -131,8 +120,6 @@ export default function CommissionManagement() {
 
   // 정산승인 처리
   const handleSettlementApproval = async (referrer: any) => {
-    console.log('정산승인 버튼 클릭됨:', referrer);
-    console.log('handleSettlementApproval function called with referrer:', referrer);
     try {
       // 로딩 상태 표시
       setReferrers(prev => 
@@ -248,12 +235,11 @@ export default function CommissionManagement() {
       </div>
       
       <Tabs defaultValue="products">
-        <TabsList className="grid w-full md:w-auto grid-cols-6">
+        <TabsList className="grid w-full md:w-auto grid-cols-5">
           <TabsTrigger value="products">상품별 수수료율</TabsTrigger>
           <TabsTrigger value="pricing">상품 가격 관리</TabsTrigger>
           <TabsTrigger value="subscriptions">구독 상품 관리</TabsTrigger>
           <TabsTrigger value="referrers">추천인 현황</TabsTrigger>
-          <TabsTrigger value="history">수수료 지급 내역</TabsTrigger>
           <TabsTrigger value="settlements">정산 관리</TabsTrigger>
         </TabsList>
         
@@ -626,58 +612,7 @@ export default function CommissionManagement() {
             </CardContent>
           </Card>
         </TabsContent>
-        
-        {/* 수수료 지급 내역 탭 */}
-        <TabsContent value="history" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>수수료 지급 내역</CardTitle>
-              <CardDescription>
-                추천 코드를 통한 구매에 대한 수수료 지급 내역을 관리합니다.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="border rounded-md">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>날짜</TableHead>
-                      <TableHead>추천인</TableHead>
-                      <TableHead>상품</TableHead>
-                      <TableHead>금액</TableHead>
-                      <TableHead>상태</TableHead>
-                      <TableHead>관리</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {commissionHistory.map(history => (
-                      <TableRow key={history.id}>
-                        <TableCell>{history.date}</TableCell>
-                        <TableCell className="font-medium">{history.referrer}</TableCell>
-                        <TableCell>{history.product}</TableCell>
-                        <TableCell>{history.amount.toLocaleString()}원</TableCell>
-                        <TableCell>
-                          <Badge 
-                            variant={history.status === '지급완료' ? 'default' : 'outline'}
-                          >
-                            {history.status}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          {history.status === '지급대기' && (
-                            <Button size="sm" variant="outline">
-                              지급처리
-                            </Button>
-                          )}
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
+
         
         {/* 정산 관리 탭 */}
         <TabsContent value="settlements" className="space-y-4">
@@ -687,19 +622,6 @@ export default function CommissionManagement() {
               <CardDescription>
                 훈련사, 기관, 제휴사에 대한 정산 현황을 관리합니다. 정산 승인 및 지급 처리를 할 수 있습니다.
               </CardDescription>
-              <Button 
-                size="sm" 
-                variant="outline"
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  console.log('Test button clicked!');
-                  alert('Test button is working!');
-                }}
-                type="button"
-              >
-                테스트 버튼
-              </Button>
             </CardHeader>
             <CardContent>
               <div className="grid gap-4 md:grid-cols-4 mb-6">
@@ -808,13 +730,7 @@ export default function CommissionManagement() {
                                 size="sm" 
                                 variant="outline"
                                 type="button"
-                                onClick={(e) => {
-                                  e.preventDefault();
-                                  e.stopPropagation();
-                                  console.log('Button clicked, referrer:', referrer);
-                                  alert('Button clicked! Referrer: ' + referrer.name);
-                                  handleSettlementApproval(referrer);
-                                }}
+                                onClick={() => handleSettlementApproval(referrer)}
                                 disabled={referrer.status === '처리중'}
                                 style={{ pointerEvents: 'auto', cursor: 'pointer' }}
                               >
