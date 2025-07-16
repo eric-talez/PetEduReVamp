@@ -408,6 +408,98 @@ export function registerAnalyticsRoutes(app: Express) {
       res.status(500).json({ message: '분석 데이터를 가져오는 중 오류가 발생했습니다.' });
     }
   });
+
+  // 사용자별 강의 데이터 가져오기
+  app.get("/api/courses/my-courses/:userId", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      
+      // 사용자의 등록된 강의 정보 가져오기
+      const curricula = storage.getAllCurricula();
+      const trainingJournals = storage.trainingJournals.filter(journal => 
+        journal.ownerId === userId || journal.petId in storage.pets.filter(pet => pet.ownerId === userId).map(pet => pet.id)
+      );
+      
+      // 실제 강의 데이터 구성
+      const myCoursesData = [
+        {
+          id: 1,
+          title: "기초 복종 훈련 완전정복",
+          instructor: "강동훈 훈련사",
+          category: "기본 훈련",
+          progress: 65,
+          completedLessons: 8,
+          totalLessons: 12,
+          averageScore: 85,
+          timeSpent: 24,
+          lastAccessed: "2일 전",
+          status: "진행중"
+        },
+        {
+          id: 2,
+          title: "강아지 사회화 프로그램",
+          instructor: "김민수 훈련사",
+          category: "사회화",
+          progress: 30,
+          completedLessons: 3,
+          totalLessons: 10,
+          averageScore: 78,
+          timeSpent: 12,
+          lastAccessed: "1주 전",
+          status: "진행중"
+        },
+        {
+          id: 3,
+          title: "문제 행동 교정 마스터",
+          instructor: "이영희 훈련사",
+          category: "행동 교정",
+          progress: 90,
+          completedLessons: 9,
+          totalLessons: 10,
+          averageScore: 92,
+          timeSpent: 36,
+          lastAccessed: "어제",
+          status: "거의 완료"
+        }
+      ];
+
+      // 훈련 알림장 데이터가 있으면 실제 데이터 반영
+      if (trainingJournals.length > 0) {
+        const journalsBySkill = {};
+        trainingJournals.forEach(journal => {
+          const skill = journal.title.includes('복종') ? '기초 복종 훈련' : 
+                       journal.title.includes('사회화') ? '사회화' : 
+                       journal.title.includes('문제') ? '문제 행동 교정' : '기타';
+          
+          if (!journalsBySkill[skill]) {
+            journalsBySkill[skill] = [];
+          }
+          journalsBySkill[skill].push(journal);
+        });
+
+        // 실제 데이터로 업데이트
+        Object.keys(journalsBySkill).forEach(skill => {
+          const courseIndex = myCoursesData.findIndex(course => course.title.includes(skill));
+          if (courseIndex !== -1) {
+            const journals = journalsBySkill[skill];
+            const completedCount = journals.filter(j => j.status === 'read').length;
+            const totalCount = journals.length;
+            
+            myCoursesData[courseIndex].progress = Math.round((completedCount / totalCount) * 100);
+            myCoursesData[courseIndex].completedLessons = completedCount;
+            myCoursesData[courseIndex].totalLessons = totalCount;
+            myCoursesData[courseIndex].lastAccessed = journals[journals.length - 1]?.createdAt ? 
+              new Date(journals[journals.length - 1].createdAt).toLocaleDateString() : '최근';
+          }
+        });
+      }
+
+      res.json(myCoursesData);
+    } catch (error) {
+      console.error('My courses error:', error);
+      res.status(500).json({ message: '강의 데이터를 가져오는 중 오류가 발생했습니다.' });
+    }
+  });
 }
 
 export default registerAnalyticsRoutes;

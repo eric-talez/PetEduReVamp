@@ -365,12 +365,12 @@ export const DEFAULT_MENU_ITEMS: MenuItem[] = [
   },
   {
     id: 'analytics',
-    title: '성과 분석',
+    title: '분석 리포트',
     path: '/analytics',
     icon: 'BarChart3',
     type: 'internal',
     category: 'tools',
-    roles: ['trainer', 'institute-admin', 'admin'],
+    roles: ['pet-owner', 'trainer', 'institute-admin', 'admin'],
     orderIndex: 5,
     isActive: true,
     isPublic: false

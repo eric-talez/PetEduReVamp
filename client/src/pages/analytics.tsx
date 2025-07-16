@@ -61,7 +61,13 @@ export default function AnalyticsPage() {
     staleTime: 10 * 60 * 1000, // 10분간 캐시
   });
 
-  const isLoading = trainingLoading || statsLoading || monthlyLoading || usersLoading;
+  // 내 강의 데이터 가져오기
+  const { data: myCoursesData, isLoading: coursesLoading } = useQuery({
+    queryKey: ['/api/courses/my-courses', selectedUserId],
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const isLoading = trainingLoading || statsLoading || monthlyLoading || usersLoading || coursesLoading;
 
   const getProgressColor = (progress: number) => {
     if (progress >= 80) return 'bg-green-500';
@@ -155,189 +161,270 @@ export default function AnalyticsPage() {
 
   const renderLineChart = () => (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {trainingProgressData.map((item, index) => (
-          <div key={index} className="p-4 border rounded-lg">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="font-medium">{item.skill}</h3>
-              <Badge className={getLevelBadgeColor(item.level)}>{item.level}</Badge>
-            </div>
-            <div className="h-16 bg-gradient-to-r from-blue-100 to-blue-200 dark:from-blue-900 dark:to-blue-800 rounded-lg flex items-end justify-center relative overflow-hidden">
-              <div 
-                className="bg-blue-500 w-full transition-all duration-1000 ease-out flex items-center justify-center text-white text-sm font-medium"
-                style={{ height: `${item.progress}%` }}
-              >
-                {item.progress}%
+      {isLoading ? (
+        <div className="text-center py-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
+            훈련 진행도를 불러오는 중...
+          </p>
+        </div>
+      ) : trainingProgressData && trainingProgressData.length > 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {trainingProgressData.map((item, index) => (
+            <div key={index} className="p-4 border rounded-lg">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="font-medium">{item.skill}</h3>
+                <Badge className={getLevelBadgeColor(item.level)}>{item.level}</Badge>
               </div>
+              <div className="h-16 bg-gradient-to-r from-blue-100 to-blue-200 dark:from-blue-900 dark:to-blue-800 rounded-lg flex items-end justify-center relative overflow-hidden">
+                <div 
+                  className="bg-blue-500 w-full transition-all duration-1000 ease-out flex items-center justify-center text-white text-sm font-medium"
+                  style={{ height: `${item.progress}%` }}
+                >
+                  {item.progress}%
+                </div>
+              </div>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mt-2 text-center">
+                {item.sessions}회 완료
+              </p>
             </div>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mt-2 text-center">
-              {item.sessions}회 완료
-            </p>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      ) : (
+        <div className="text-center py-8">
+          <p className="text-gray-600 dark:text-gray-400">
+            훈련 진행도 데이터가 없습니다.
+          </p>
+        </div>
+      )}
     </div>
   );
 
   const renderPieChart = () => (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-      <div className="space-y-4">
-        <h3 className="font-medium text-lg">훈련 레벨 분포</h3>
-        <div className="flex flex-col space-y-3">
-          {trainingProgressData.map((item, index) => (
-            <div key={index} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-              <div className="flex items-center gap-3">
-                <div 
-                  className="w-4 h-4 rounded-full"
-                  style={{
-                    backgroundColor: index === 0 ? '#8B5CF6' : 
-                                   index === 1 ? '#3B82F6' : 
-                                   index === 2 ? '#10B981' : 
-                                   index === 3 ? '#F59E0B' : '#6B7280'
-                  }}
-                />
-                <span className="font-medium">{item.skill}</span>
-              </div>
-              <span className="text-sm font-medium">{item.progress}%</span>
-            </div>
-          ))}
+      {isLoading ? (
+        <div className="col-span-2 text-center py-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
+            훈련 진행도를 불러오는 중...
+          </p>
         </div>
-      </div>
-      <div className="flex items-center justify-center">
-        <div className="w-48 h-48 rounded-full border-8 border-gray-200 dark:border-gray-700 flex items-center justify-center bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900 dark:to-purple-900">
-          <div className="text-center">
-            <div className="text-2xl font-bold text-gray-800 dark:text-white">
-              {Math.round(trainingProgressData.reduce((acc, item) => acc + item.progress, 0) / trainingProgressData.length)}%
+      ) : trainingProgressData && trainingProgressData.length > 0 ? (
+        <>
+          <div className="space-y-4">
+            <h3 className="font-medium text-lg">훈련 레벨 분포</h3>
+            <div className="flex flex-col space-y-3">
+              {trainingProgressData.map((item, index) => (
+                <div key={index} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <div 
+                      className="w-4 h-4 rounded-full"
+                      style={{
+                        backgroundColor: index === 0 ? '#8B5CF6' : 
+                                       index === 1 ? '#3B82F6' : 
+                                       index === 2 ? '#10B981' : 
+                                       index === 3 ? '#F59E0B' : '#6B7280'
+                      }}
+                    />
+                    <span className="font-medium">{item.skill}</span>
+                  </div>
+                  <span className="text-sm font-medium">{item.progress}%</span>
+                </div>
+              ))}
             </div>
-            <div className="text-sm text-gray-600 dark:text-gray-400">평균 진행도</div>
           </div>
+          <div className="flex items-center justify-center">
+            <div className="w-48 h-48 rounded-full border-8 border-gray-200 dark:border-gray-700 flex items-center justify-center bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900 dark:to-purple-900">
+              <div className="text-center">
+                <div className="text-2xl font-bold text-gray-800 dark:text-white">
+                  {Math.round(trainingProgressData.reduce((acc, item) => acc + item.progress, 0) / trainingProgressData.length)}%
+                </div>
+                <div className="text-sm text-gray-600 dark:text-gray-400">평균 진행도</div>
+              </div>
+            </div>
+          </div>
+        </>
+      ) : (
+        <div className="col-span-2 text-center py-8">
+          <p className="text-gray-600 dark:text-gray-400">
+            훈련 진행도 데이터가 없습니다.
+          </p>
         </div>
-      </div>
+      )}
     </div>
   );
 
   const renderDoughnutChart = () => (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      {trainingProgressData.map((item, index) => (
-        <div key={index} className="flex flex-col items-center p-4 border rounded-lg">
-          <div className="relative w-24 h-24 mb-3">
-            <div className="absolute inset-0 rounded-full border-4 border-gray-200 dark:border-gray-700"></div>
-            <div 
-              className="absolute inset-0 rounded-full border-4 border-t-transparent border-r-transparent transform -rotate-90 transition-all duration-1000"
-              style={{
-                borderLeftColor: index === 0 ? '#8B5CF6' : 
-                               index === 1 ? '#3B82F6' : 
-                               index === 2 ? '#10B981' : 
-                               index === 3 ? '#F59E0B' : '#6B7280',
-                borderBottomColor: index === 0 ? '#8B5CF6' : 
+      {isLoading ? (
+        <div className="col-span-3 text-center py-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
+            훈련 진행도를 불러오는 중...
+          </p>
+        </div>
+      ) : trainingProgressData && trainingProgressData.length > 0 ? (
+        trainingProgressData.map((item, index) => (
+          <div key={index} className="flex flex-col items-center p-4 border rounded-lg">
+            <div className="relative w-24 h-24 mb-3">
+              <div className="absolute inset-0 rounded-full border-4 border-gray-200 dark:border-gray-700"></div>
+              <div 
+                className="absolute inset-0 rounded-full border-4 border-t-transparent border-r-transparent transform -rotate-90 transition-all duration-1000"
+                style={{
+                  borderLeftColor: index === 0 ? '#8B5CF6' : 
                                  index === 1 ? '#3B82F6' : 
                                  index === 2 ? '#10B981' : 
                                  index === 3 ? '#F59E0B' : '#6B7280',
-                clipPath: `polygon(50% 50%, 50% 0%, ${50 + (item.progress / 100) * 50}% 0%, ${50 + (item.progress / 100) * 50}% 100%)`
-              }}
-            />
-            <div className="absolute inset-0 flex items-center justify-center">
-              <span className="text-sm font-bold">{item.progress}%</span>
+                  borderBottomColor: index === 0 ? '#8B5CF6' : 
+                                   index === 1 ? '#3B82F6' : 
+                                   index === 2 ? '#10B981' : 
+                                   index === 3 ? '#F59E0B' : '#6B7280',
+                  clipPath: `polygon(50% 50%, 50% 0%, ${50 + (item.progress / 100) * 50}% 0%, ${50 + (item.progress / 100) * 50}% 100%)`
+                }}
+              />
+              <div className="absolute inset-0 flex items-center justify-center">
+                <span className="text-sm font-bold">{item.progress}%</span>
+              </div>
             </div>
+            <h3 className="font-medium text-center">{item.skill}</h3>
+            <Badge className={`${getLevelBadgeColor(item.level)} mt-1`}>
+              {item.level}
+            </Badge>
+            <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+              {item.sessions}회 세션
+            </p>
           </div>
-          <h3 className="font-medium text-center">{item.skill}</h3>
-          <Badge className={`${getLevelBadgeColor(item.level)} mt-1`}>
-            {item.level}
-          </Badge>
-          <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
-            {item.sessions}회 세션
+        ))
+      ) : (
+        <div className="col-span-3 text-center py-8">
+          <p className="text-gray-600 dark:text-gray-400">
+            훈련 진행도 데이터가 없습니다.
           </p>
         </div>
-      ))}
+      )}
     </div>
   );
 
   const renderRadarChart = () => (
     <div className="space-y-6">
-      <div className="flex items-center justify-center">
-        <div className="relative w-80 h-80 border border-gray-200 dark:border-gray-700 rounded-full">
-          {/* Radar grid lines */}
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="w-full h-full relative">
-              {[20, 40, 60, 80, 100].map((radius) => (
-                <div
-                  key={radius}
-                  className="absolute border border-gray-300 dark:border-gray-600 rounded-full"
-                  style={{
-                    width: `${radius}%`,
-                    height: `${radius}%`,
-                    top: '50%',
-                    left: '50%',
-                    transform: 'translate(-50%, -50%)'
-                  }}
-                />
-              ))}
-              {/* Skill labels */}
-              {trainingProgressData.map((item, index) => {
-                const angle = (index * 360) / trainingProgressData.length - 90;
-                const x = 50 + 45 * Math.cos((angle * Math.PI) / 180);
-                const y = 50 + 45 * Math.sin((angle * Math.PI) / 180);
-                return (
-                  <div
-                    key={index}
-                    className="absolute text-xs font-medium"
-                    style={{
-                      left: `${x}%`,
-                      top: `${y}%`,
-                      transform: 'translate(-50%, -50%)'
-                    }}
-                  >
-                    {item.skill}
-                  </div>
-                );
-              })}
+      {isLoading ? (
+        <div className="text-center py-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
+            훈련 진행도를 불러오는 중...
+          </p>
+        </div>
+      ) : trainingProgressData && trainingProgressData.length > 0 ? (
+        <>
+          <div className="flex items-center justify-center">
+            <div className="relative w-80 h-80 border border-gray-200 dark:border-gray-700 rounded-full">
+              {/* Radar grid lines */}
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="w-full h-full relative">
+                  {[20, 40, 60, 80, 100].map((radius) => (
+                    <div
+                      key={radius}
+                      className="absolute border border-gray-300 dark:border-gray-600 rounded-full"
+                      style={{
+                        width: `${radius}%`,
+                        height: `${radius}%`,
+                        top: '50%',
+                        left: '50%',
+                        transform: 'translate(-50%, -50%)'
+                      }}
+                    />
+                  ))}
+                  {/* Skill labels */}
+                  {trainingProgressData.map((item, index) => {
+                    const angle = (index * 360) / trainingProgressData.length - 90;
+                    const x = 50 + 45 * Math.cos((angle * Math.PI) / 180);
+                    const y = 50 + 45 * Math.sin((angle * Math.PI) / 180);
+                    return (
+                      <div
+                        key={index}
+                        className="absolute text-xs font-medium"
+                        style={{
+                          left: `${x}%`,
+                          top: `${y}%`,
+                          transform: 'translate(-50%, -50%)'
+                        }}
+                      >
+                        {item.skill}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-      </div>
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-        {trainingProgressData.map((item, index) => (
-          <div key={index} className="text-center p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-            <div className="font-medium text-sm">{item.skill}</div>
-            <div className="text-lg font-bold text-primary">{item.progress}%</div>
-            <Badge className={`${getLevelBadgeColor(item.level)} text-xs mt-1`}>
-              {item.level}
-            </Badge>
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+            {trainingProgressData.map((item, index) => (
+              <div key={index} className="text-center p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                <div className="font-medium text-sm">{item.skill}</div>
+                <div className="text-lg font-bold text-primary">{item.progress}%</div>
+                <Badge className={`${getLevelBadgeColor(item.level)} text-xs mt-1`}>
+                  {item.level}
+                </Badge>
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
+        </>
+      ) : (
+        <div className="text-center py-8">
+          <p className="text-gray-600 dark:text-gray-400">
+            훈련 진행도 데이터가 없습니다.
+          </p>
+        </div>
+      )}
     </div>
   );
 
   const renderAreaChart = () => (
     <div className="space-y-6">
-      <div className="h-64 bg-gradient-to-t from-blue-50 to-transparent dark:from-blue-900 border rounded-lg p-4 relative overflow-hidden">
-        <div className="absolute bottom-0 left-0 right-0 h-full flex items-end justify-around">
-          {trainingProgressData.map((item, index) => (
-            <div key={index} className="flex flex-col items-center w-full">
-              <div 
-                className="bg-gradient-to-t from-blue-500 to-blue-300 w-8 transition-all duration-1000 ease-out rounded-t-lg"
-                style={{ height: `${(item.progress / 100) * 200}px` }}
-              />
-              <div className="text-xs font-medium mt-2 text-center">{item.skill}</div>
-            </div>
-          ))}
+      {isLoading ? (
+        <div className="text-center py-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
+            훈련 진행도를 불러오는 중...
+          </p>
         </div>
-      </div>
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-        {trainingProgressData.map((item, index) => (
-          <div key={index} className="text-center p-3 border rounded-lg">
-            <div className="font-medium">{item.skill}</div>
-            <div className="text-xl font-bold text-primary">{item.progress}%</div>
-            <Badge className={getLevelBadgeColor(item.level)}>
-              {item.level}
-            </Badge>
-            <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-              {item.sessions}회
+      ) : trainingProgressData && trainingProgressData.length > 0 ? (
+        <>
+          <div className="h-64 bg-gradient-to-t from-blue-50 to-transparent dark:from-blue-900 border rounded-lg p-4 relative overflow-hidden">
+            <div className="absolute bottom-0 left-0 right-0 h-full flex items-end justify-around">
+              {trainingProgressData.map((item, index) => (
+                <div key={index} className="flex flex-col items-center w-full">
+                  <div 
+                    className="bg-gradient-to-t from-blue-500 to-blue-300 w-8 transition-all duration-1000 ease-out rounded-t-lg"
+                    style={{ height: `${(item.progress / 100) * 200}px` }}
+                  />
+                  <div className="text-xs font-medium mt-2 text-center">{item.skill}</div>
+                </div>
+              ))}
             </div>
           </div>
-        ))}
-      </div>
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+            {trainingProgressData.map((item, index) => (
+              <div key={index} className="text-center p-3 border rounded-lg">
+                <div className="font-medium">{item.skill}</div>
+                <div className="text-xl font-bold text-primary">{item.progress}%</div>
+                <Badge className={getLevelBadgeColor(item.level)}>
+                  {item.level}
+                </Badge>
+                <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                  {item.sessions}회
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
+      ) : (
+        <div className="text-center py-8">
+          <p className="text-gray-600 dark:text-gray-400">
+            훈련 진행도 데이터가 없습니다.
+          </p>
+        </div>
+      )}
     </div>
   );
 
@@ -465,8 +552,9 @@ export default function AnalyticsPage() {
 
       {/* 탭 컨텐츠 */}
       <Tabs defaultValue="progress" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="progress">훈련 진행도</TabsTrigger>
+          <TabsTrigger value="courses">내 강의</TabsTrigger>
           <TabsTrigger value="monthly">월간 리포트</TabsTrigger>
           <TabsTrigger value="insights">인사이트</TabsTrigger>
         </TabsList>
@@ -522,6 +610,97 @@ export default function AnalyticsPage() {
             </CardHeader>
             <CardContent>
               {renderProgressChart()}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* 내 강의 탭 */}
+        <TabsContent value="courses" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <BookOpen className="h-5 w-5" />
+                내 강의 현황
+              </CardTitle>
+              <CardDescription>
+                수강 중인 강의의 진행 상황과 성과를 확인하세요
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {isLoading ? (
+                  <div className="text-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
+                      강의 데이터를 불러오는 중...
+                    </p>
+                  </div>
+                ) : myCoursesData && myCoursesData.length > 0 ? (
+                  <div className="grid gap-4">
+                    {myCoursesData.map((course, index) => (
+                      <div key={index} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-4">
+                            <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
+                              <BookOpen className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                            </div>
+                            <div>
+                              <h3 className="font-medium text-lg">{course.title || '강의 제목'}</h3>
+                              <p className="text-sm text-gray-600 dark:text-gray-400">
+                                {course.instructor || '강사명'} • {course.category || '카테고리'}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <div className="flex items-center gap-2 mb-1">
+                              <div className="w-24 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                                <div 
+                                  className="bg-blue-500 h-2 rounded-full transition-all duration-300"
+                                  style={{ width: `${course.progress || 0}%` }}
+                                />
+                              </div>
+                              <span className="text-sm font-medium">{course.progress || 0}%</span>
+                            </div>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">
+                              {course.completedLessons || 0}/{course.totalLessons || 0} 강의 완료
+                            </p>
+                          </div>
+                        </div>
+                        <div className="mt-3 grid grid-cols-3 gap-4 text-sm">
+                          <div className="text-center p-2 bg-gray-50 dark:bg-gray-800 rounded">
+                            <div className="font-medium text-green-600 dark:text-green-400">
+                              {course.averageScore || 0}%
+                            </div>
+                            <div className="text-gray-600 dark:text-gray-400">평균 점수</div>
+                          </div>
+                          <div className="text-center p-2 bg-gray-50 dark:bg-gray-800 rounded">
+                            <div className="font-medium text-blue-600 dark:text-blue-400">
+                              {course.timeSpent || 0}시간
+                            </div>
+                            <div className="text-gray-600 dark:text-gray-400">학습 시간</div>
+                          </div>
+                          <div className="text-center p-2 bg-gray-50 dark:bg-gray-800 rounded">
+                            <div className="font-medium text-purple-600 dark:text-purple-400">
+                              {course.lastAccessed || 'N/A'}
+                            </div>
+                            <div className="text-gray-600 dark:text-gray-400">최근 접속</div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <BookOpen className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                    <p className="text-gray-600 dark:text-gray-400">
+                      수강 중인 강의가 없습니다.
+                    </p>
+                    <p className="text-sm text-gray-500 dark:text-gray-500 mt-2">
+                      새로운 강의를 등록하여 학습을 시작해보세요.
+                    </p>
+                  </div>
+                )}
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
