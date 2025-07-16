@@ -11,6 +11,7 @@ import cors from "cors";
 import helmet from "helmet";
 import compression from "compression";
 import rateLimit from "express-rate-limit";
+import { setupPerformance } from "./performance";
 
 const app = express();
 const PORT = parseInt(process.env.PORT || "5000", 10);
@@ -53,8 +54,8 @@ if (process.env.NODE_ENV === 'production') {
   app.use(limiter);
 }
 
-// Compression
-app.use(compression());
+// 성능 최적화 설정 (압축, 캐시, 모니터링)
+setupPerformance(app);
 
 // Body parsing middleware
 app.use(express.json({ limit: '10mb' }));
