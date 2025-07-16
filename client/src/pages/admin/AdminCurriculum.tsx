@@ -1843,98 +1843,116 @@ export default function AdminCurriculum() {
 
 
 
-            {/* 커리큘럼 편집 모달 */}
-            {isEditing && selectedCurriculum && (
-              <Card className="mt-6 border-blue-200 bg-blue-50">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-blue-700">
+            {/* 커리큘럼 편집 다이얼로그 */}
+            <Dialog open={isEditing} onOpenChange={setIsEditing}>
+              <DialogContent className="max-w-4xl" aria-describedby="curriculum-edit-description">
+                <DialogHeader>
+                  <DialogTitle className="flex items-center gap-2">
                     <Edit className="w-5 h-5" />
                     커리큘럼 수정
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
+                  </DialogTitle>
+                </DialogHeader>
+                <div id="curriculum-edit-description" className="sr-only">
+                  커리큘럼 정보를 수정할 수 있는 대화상자입니다.
+                </div>
+                {selectedCurriculum && (
                   <div className="space-y-4">
-                    <Input
-                      placeholder="커리큘럼 제목"
-                      value={selectedCurriculum?.title || ''}
-                      onChange={(e) => setSelectedCurriculum(prev => prev ? { ...prev, title: e.target.value } : null)}
-                    />
-                    <Textarea
-                      placeholder="커리큘럼 설명"
-                      value={selectedCurriculum?.description || ''}
-                      onChange={(e) => setSelectedCurriculum(prev => prev ? { ...prev, description: e.target.value } : null)}
-                      rows={4}
-                    />
-                    <div className="grid grid-cols-2 gap-3">
-                      <Input
-                        placeholder="카테고리"
-                        value={selectedCurriculum?.category || ''}
-                        onChange={(e) => setSelectedCurriculum(prev => prev ? { ...prev, category: e.target.value } : null)}
-                      />
-                      <Input
-                        type="number"
-                        placeholder="가격"
-                        value={selectedCurriculum?.price || 0}
-                        onChange={(e) => setSelectedCurriculum(prev => prev ? { ...prev, price: parseInt(e.target.value) } : null)}
-                      />
+                    <div className="grid grid-cols-1 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium mb-2">커리큘럼 제목</label>
+                        <Input
+                          placeholder="커리큘럼 제목을 입력하세요"
+                          value={selectedCurriculum?.title || ''}
+                          onChange={(e) => setSelectedCurriculum(prev => prev ? { ...prev, title: e.target.value } : null)}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium mb-2">커리큘럼 설명</label>
+                        <Textarea
+                          placeholder="커리큘럼 설명을 입력하세요"
+                          value={selectedCurriculum?.description || ''}
+                          onChange={(e) => setSelectedCurriculum(prev => prev ? { ...prev, description: e.target.value } : null)}
+                          rows={4}
+                        />
+                      </div>
                     </div>
-                    <div className="grid grid-cols-2 gap-3">
-                      <Input
-                        type="number"
-                        placeholder="총 시간 (분)"
-                        value={selectedCurriculum?.duration || 0}
-                        onChange={(e) => setSelectedCurriculum(prev => prev ? { ...prev, duration: parseInt(e.target.value) } : null)}
-                      />
-                      <select
-                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
-                        value={selectedCurriculum?.difficulty || 'beginner'}
-                        onChange={(e) => setSelectedCurriculum(prev => prev ? { ...prev, difficulty: e.target.value as 'beginner' | 'intermediate' | 'advanced' } : null)}
-                      >
-                        <option value="beginner">초급</option>
-                        <option value="intermediate">중급</option>
-                        <option value="advanced">고급</option>
-                      </select>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium mb-2">카테고리</label>
+                        <Input
+                          placeholder="카테고리"
+                          value={selectedCurriculum?.category || ''}
+                          onChange={(e) => setSelectedCurriculum(prev => prev ? { ...prev, category: e.target.value } : null)}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium mb-2">가격 (원)</label>
+                        <Input
+                          type="number"
+                          placeholder="가격"
+                          value={selectedCurriculum?.price || 0}
+                          onChange={(e) => setSelectedCurriculum(prev => prev ? { ...prev, price: parseInt(e.target.value) } : null)}
+                        />
+                      </div>
                     </div>
-                    <div className="flex gap-2">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium mb-2">총 시간 (분)</label>
+                        <Input
+                          type="number"
+                          placeholder="총 시간 (분)"
+                          value={selectedCurriculum?.duration || 0}
+                          onChange={(e) => setSelectedCurriculum(prev => prev ? { ...prev, duration: parseInt(e.target.value) } : null)}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium mb-2">난이도</label>
+                        <select
+                          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
+                          value={selectedCurriculum?.difficulty || 'beginner'}
+                          onChange={(e) => setSelectedCurriculum(prev => prev ? { ...prev, difficulty: e.target.value as 'beginner' | 'intermediate' | 'advanced' } : null)}
+                        >
+                          <option value="beginner">초급</option>
+                          <option value="intermediate">중급</option>
+                          <option value="advanced">고급</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div className="flex justify-end gap-2 pt-4">
                       <Button
-                        onClick={() => selectedCurriculum && updateCurriculum(selectedCurriculum)}
-                        size="sm"
-                        className="flex-1"
+                        variant="outline"
+                        onClick={() => setIsEditing(false)}
                       >
-                        <Save className="w-4 h-4 mr-1" />
-                        저장
+                        취소
+                      </Button>
+                      <Button
+                        onClick={() => selectedCurriculum && handlePreviewCurriculum(selectedCurriculum)}
+                        variant="outline"
+                        className="flex items-center gap-2"
+                      >
+                        <Eye className="w-4 h-4" />
+                        미리보기
                       </Button>
                       <Button
                         onClick={() => selectedCurriculum && publishCurriculum(selectedCurriculum.id)}
-                        size="sm"
-                        className="flex-1 bg-green-600 hover:bg-green-700"
+                        className="bg-green-600 hover:bg-green-700"
                         disabled={selectedCurriculum?.status === 'published'}
                       >
                         <CheckCircle className="w-4 h-4 mr-1" />
                         {selectedCurriculum?.status === 'published' ? '발행됨' : '강의로 발행'}
                       </Button>
                       <Button
-                        onClick={() => selectedCurriculum && handlePreviewCurriculum(selectedCurriculum)}
-                        variant="outline"
-                        size="sm"
-                        className="flex-1"
+                        onClick={() => selectedCurriculum && updateCurriculum(selectedCurriculum)}
+                        className="flex items-center gap-2"
                       >
-                        <Eye className="w-4 h-4 mr-1" />
-                        미리보기
-                      </Button>
-                      <Button
-                        onClick={() => setIsEditing(false)}
-                        variant="outline"
-                        size="sm"
-                        className="flex-1"
-                      >
-                        취소
+                        <Save className="w-4 h-4" />
+                        저장
                       </Button>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
-            )}
+                )}
+              </DialogContent>
+            </Dialog>
 
             {/* 영상 업로드 모달 */}
             {isAddingVideo && selectedModule && (
