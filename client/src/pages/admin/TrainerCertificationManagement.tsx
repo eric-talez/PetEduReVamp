@@ -103,16 +103,20 @@ export default function TrainerCertificationManagement() {
     try {
       setLoading(true);
       
+      console.log('[DEBUG] API Request: GET /api/trainer-programs');
+      console.log('[DEBUG] API Request: GET /api/trainer-applications');
+      console.log('[DEBUG] API Request: GET /api/trainer-certifications');
+      
       // 병렬로 데이터 로드
-      const [programsRes, applicationsRes, certificationsRes] = await Promise.all([
+      const [programsData, applicationsData, certificationsData] = await Promise.all([
         apiRequest('GET', '/api/trainer-programs'),
         apiRequest('GET', '/api/trainer-applications'),
         apiRequest('GET', '/api/trainer-certifications')
       ]);
 
-      const programsData = await programsRes.json();
-      const applicationsData = await applicationsRes.json();
-      const certificationsData = await certificationsRes.json();
+      console.log('[DEBUG] API Success:', programsData);
+      console.log('[DEBUG] API Success:', applicationsData);
+      console.log('[DEBUG] API Success:', certificationsData);
 
       if (programsData.success) {
         setPrograms(programsData.programs || []);
