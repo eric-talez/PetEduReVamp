@@ -7,7 +7,9 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Pencil, Trash2, Search, Plus, Save, X, FileText, BarChart3 } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Pencil, Trash2, Search, Plus, Save, X, FileText, BarChart3, Eye, Calendar, CreditCard, User, Building, Clock } from 'lucide-react';
 import { InvoiceGenerator } from '@/components/InvoiceGenerator';
 import { CircularProgressbar, buildStyles } from 'react-circular-progressbar';
 import 'react-circular-progressbar/dist/styles.css';
@@ -90,6 +92,8 @@ export default function CommissionManagement() {
   const [categoryFilter, setCategoryFilter] = useState<string>('전체');
   const [isInvoiceDialogOpen, setIsInvoiceDialogOpen] = useState(false);
   const [selectedSettlement, setSelectedSettlement] = useState<any>(null);
+  const [isSettlementDetailOpen, setIsSettlementDetailOpen] = useState(false);
+  const [selectedSettlementDetail, setSelectedSettlementDetail] = useState<any>(null);
   const [generatedInvoices, setGeneratedInvoices] = useState<any[]>([]);
   
   // 상품 검색 및 필터링 기능
@@ -199,6 +203,17 @@ export default function CommissionManagement() {
   const handleInvoiceDialogClose = () => {
     setIsInvoiceDialogOpen(false);
     setSelectedSettlement(null);
+  };
+
+  // 정산 상세 정보 팝업 핸들러
+  const handleSettlementDetailOpen = (referrer: any) => {
+    setSelectedSettlementDetail(referrer);
+    setIsSettlementDetailOpen(true);
+  };
+
+  const handleSettlementDetailClose = () => {
+    setIsSettlementDetailOpen(false);
+    setSelectedSettlementDetail(null);
   };
 
   // 구독 상품 편집 시작
@@ -703,7 +718,7 @@ export default function CommissionManagement() {
                   </TableHeader>
                   <TableBody>
                     {referrers.map(referrer => (
-                      <TableRow key={referrer.id}>
+                      <TableRow key={referrer.id} className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800" onClick={() => handleSettlementDetailOpen(referrer)}>
                         <TableCell className="font-medium">{referrer.name}</TableCell>
                         <TableCell>
                           <Badge variant={referrer.role === '훈련사' ? 'default' : 'secondary'}>
@@ -730,18 +745,45 @@ export default function CommissionManagement() {
                                 size="sm" 
                                 variant="outline"
                                 type="button"
-                                onClick={() => handleSettlementApproval(referrer)}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleSettlementApproval(referrer);
+                                }}
                                 disabled={referrer.status === '처리중'}
                                 style={{ pointerEvents: 'auto', cursor: 'pointer' }}
                               >
                                 <FileText className="h-4 w-4 mr-1" />
                                 {referrer.status === '처리중' ? '처리 중...' : '정산 승인'}
                               </Button>
+                              <Button 
+                                size="sm" 
+                                variant="ghost"
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleSettlementDetailOpen(referrer);
+                                }}
+                              >
+                                <Eye className="h-4 w-4" />
+                              </Button>
                             </div>
                           ) : (
-                            <Badge variant="default" className="text-xs">
-                              {referrer.status}
-                            </Badge>
+                            <div className="flex gap-2 items-center">
+                              <Badge variant="default" className="text-xs">
+                                {referrer.status}
+                              </Badge>
+                              <Button 
+                                size="sm" 
+                                variant="ghost"
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleSettlementDetailOpen(referrer);
+                                }}
+                              >
+                                <Eye className="h-4 w-4" />
+                              </Button>
+                            </div>
                           )}
                         </TableCell>
                       </TableRow>
@@ -761,6 +803,169 @@ export default function CommissionManagement() {
         settlement={selectedSettlement}
         onInvoiceGenerated={handleInvoiceGenerated}
       />
+
+      {/* 정산 상세 정보 팝업 */}
+      <Dialog open={isSettlementDetailOpen} onOpenChange={setIsSettlementDetailOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <User className="h-5 w-5" />
+              정산 상세 정보
+            </DialogTitle>
+          </DialogHeader>
+          
+          {selectedSettlementDetail && (
+            <ScrollArea className="max-h-[70vh] pr-4">
+              <div className="space-y-6">
+                {/* 기본 정보 */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <Card>
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <User className="h-4 w-4" />
+                        정산 대상 정보
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-gray-600 dark:text-gray-400">이름</span>
+                        <span className="font-medium">{selectedSettlementDetail.name}</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-gray-600 dark:text-gray-400">유형</span>
+                        <Badge variant={selectedSettlementDetail.role === '훈련사' ? 'default' : 'secondary'}>
+                          {selectedSettlementDetail.role}
+                        </Badge>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-gray-600 dark:text-gray-400">추천 코드</span>
+                        <span className="font-mono text-sm bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">
+                          {selectedSettlementDetail.referralCode}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-gray-600 dark:text-gray-400">상태</span>
+                        <Badge variant={selectedSettlementDetail.status === '지급완료' ? 'default' : selectedSettlementDetail.status === '처리중' ? 'secondary' : 'outline'}>
+                          {selectedSettlementDetail.status}
+                        </Badge>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <CreditCard className="h-4 w-4" />
+                        정산 금액 정보
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-gray-600 dark:text-gray-400">총 수익</span>
+                        <span className="font-medium">{selectedSettlementDetail.earningsTotal.toLocaleString()}원</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-gray-600 dark:text-gray-400">수수료율</span>
+                        <span className="font-medium">
+                          {selectedSettlementDetail.role === '훈련사' ? '15%' : selectedSettlementDetail.role === '기관' ? '10%' : '5%'}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center border-t pt-3">
+                        <span className="text-sm font-medium text-gray-800 dark:text-gray-200">정산 금액</span>
+                        <span className="text-lg font-bold text-blue-600">
+                          {Math.round(selectedSettlementDetail.earningsTotal * (selectedSettlementDetail.role === '훈련사' ? 0.15 : selectedSettlementDetail.role === '기관' ? 0.10 : 0.05)).toLocaleString()}원
+                        </span>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* 정산 기간 및 처리 정보 */}
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      <Calendar className="h-4 w-4" />
+                      정산 기간 및 처리 정보
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-gray-600 dark:text-gray-400">정산 기간</span>
+                        <span className="font-medium">2025.01.01 ~ 2025.01.31</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-gray-600 dark:text-gray-400">신청일</span>
+                        <span className="font-medium">2025.01.15</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-gray-600 dark:text-gray-400">처리 예정일</span>
+                        <span className="font-medium">2025.02.05</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-gray-600 dark:text-gray-400">최종 처리일</span>
+                        <span className="font-medium">
+                          {selectedSettlementDetail.status === '지급완료' ? '2025.02.03' : '-'}
+                        </span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* 상세 수익 내역 */}
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      <BarChart3 className="h-4 w-4" />
+                      상세 수익 내역
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
+                          <div className="text-sm text-blue-600 dark:text-blue-400 mb-1">강의 수익</div>
+                          <div className="text-xl font-bold text-blue-700 dark:text-blue-300">
+                            {Math.round(selectedSettlementDetail.earningsTotal * 0.6).toLocaleString()}원
+                          </div>
+                        </div>
+                        <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg">
+                          <div className="text-sm text-green-600 dark:text-green-400 mb-1">상품 판매</div>
+                          <div className="text-xl font-bold text-green-700 dark:text-green-300">
+                            {Math.round(selectedSettlementDetail.earningsTotal * 0.3).toLocaleString()}원
+                          </div>
+                        </div>
+                        <div className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg">
+                          <div className="text-sm text-purple-600 dark:text-purple-400 mb-1">기타 수익</div>
+                          <div className="text-xl font-bold text-purple-700 dark:text-purple-300">
+                            {Math.round(selectedSettlementDetail.earningsTotal * 0.1).toLocaleString()}원
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* 액션 버튼 */}
+                <div className="flex justify-end gap-3 pt-4 border-t">
+                  <Button variant="outline" onClick={handleSettlementDetailClose}>
+                    닫기
+                  </Button>
+                  {selectedSettlementDetail.status === '지급대기' && (
+                    <Button onClick={() => {
+                      handleSettlementDetailClose();
+                      handleSettlementApproval(selectedSettlementDetail);
+                    }}>
+                      <FileText className="h-4 w-4 mr-2" />
+                      정산 승인
+                    </Button>
+                  )}
+                </div>
+              </div>
+            </ScrollArea>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
