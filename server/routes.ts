@@ -1130,6 +1130,92 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // 커리큘럼 수정 API
+  app.put('/api/admin/curriculum/:id', requireAuth('admin'), async (req, res) => {
+    try {
+      const { id } = req.params;
+      const updateData = req.body;
+      
+      console.log(`[Admin] 커리큘럼 수정: ${id}`);
+      
+      const updatedCurriculum = await storage.updateCurriculum(id, updateData);
+      
+      if (!updatedCurriculum) {
+        return res.status(404).json({ error: '커리큘럼을 찾을 수 없습니다.' });
+      }
+      
+      res.json({
+        success: true,
+        message: '커리큘럼이 성공적으로 수정되었습니다.',
+        curriculum: updatedCurriculum
+      });
+    } catch (error) {
+      console.error('[Admin] 커리큘럼 수정 오류:', error);
+      res.status(500).json({ 
+        error: '커리큘럼 수정 중 오류가 발생했습니다.' 
+      });
+    }
+  });
+
+  // 커리큘럼 삭제 API
+  app.delete('/api/admin/curriculum/:id', requireAuth('admin'), async (req, res) => {
+    try {
+      const { id } = req.params;
+      
+      console.log(`[Admin] 커리큘럼 삭제: ${id}`);
+      
+      const deleted = await storage.deleteCurriculum(id);
+      
+      if (!deleted) {
+        return res.status(404).json({ error: '커리큘럼을 찾을 수 없습니다.' });
+      }
+      
+      res.json({
+        success: true,
+        message: '커리큘럼이 성공적으로 삭제되었습니다.'
+      });
+    } catch (error) {
+      console.error('[Admin] 커리큘럼 삭제 오류:', error);
+      res.status(500).json({ 
+        error: '커리큘럼 삭제 중 오류가 발생했습니다.' 
+      });
+    }
+  });
+
+  // 커리큘럼 상태 변경 API (발행/비발행)
+  app.patch('/api/admin/curriculum/:id/status', requireAuth('admin'), async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { status } = req.body;
+      
+      console.log(`[Admin] 커리큘럼 상태 변경: ${id} -> ${status}`);
+      
+      if (!['draft', 'published', 'archived'].includes(status)) {
+        return res.status(400).json({ error: '올바르지 않은 상태입니다.' });
+      }
+      
+      const updatedCurriculum = await storage.updateCurriculum(id, { 
+        status,
+        publishedAt: status === 'published' ? new Date().toISOString() : null
+      });
+      
+      if (!updatedCurriculum) {
+        return res.status(404).json({ error: '커리큘럼을 찾을 수 없습니다.' });
+      }
+      
+      res.json({
+        success: true,
+        message: `커리큘럼이 ${status === 'published' ? '발행' : status === 'draft' ? '임시저장' : '보관'}되었습니다.`,
+        curriculum: updatedCurriculum
+      });
+    } catch (error) {
+      console.error('[Admin] 커리큘럼 상태 변경 오류:', error);
+      res.status(500).json({ 
+        error: '커리큘럼 상태 변경 중 오류가 발생했습니다.' 
+      });
+    }
+  });
+
   // 위치 검색 라우트 등록
   registerLocationRoutes(app);
 

@@ -1720,6 +1720,7 @@ class Storage {
     const curriculum = {
       id: Date.now().toString(),
       ...curriculumData,
+      status: curriculumData.status || 'draft', // 기본 상태를 draft로 설정
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
@@ -1736,11 +1737,11 @@ class Storage {
   }
 
   getCurriculumById(id: string): any {
-    return this.courses.find(curriculum => curriculum.id === id);
+    return this.courses.find(curriculum => curriculum.id == id);
   }
 
   updateCurriculum(id: string, updateData: any): any {
-    const curriculum = this.courses.find(c => c.id === id);
+    const curriculum = this.courses.find(c => c.id == id); // == 사용하여 타입 변환 허용
     if (curriculum) {
       Object.assign(curriculum, updateData, { updatedAt: new Date().toISOString() });
       return curriculum;
@@ -1749,7 +1750,7 @@ class Storage {
   }
 
   deleteCurriculum(id: string): boolean {
-    const index = this.courses.findIndex(c => c.id === id);
+    const index = this.courses.findIndex(c => c.id == id);
     if (index !== -1) {
       this.courses.splice(index, 1);
       return true;

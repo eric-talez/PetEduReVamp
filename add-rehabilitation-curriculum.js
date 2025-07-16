@@ -316,7 +316,7 @@ const rehabilitationCurriculum = {
   },
   totalRevenue: 0,
   enrollmentCount: 0,
-  status: "published"
+  status: "draft"
 };
 
 async function registerCurriculum() {

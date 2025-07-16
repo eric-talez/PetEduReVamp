@@ -168,6 +168,15 @@ TALEZ is a comprehensive pet education and e-commerce platform that combines AI-
 
 ## Changelog
 
+- July 16, 2025. **CURRICULUM MANAGEMENT SYSTEM COMPLETED** - 커리큘럼 관리 시스템 완전 구현 및 자동 발행 문제 해결:
+  - **Complete CRUD Operations**: 커리큘럼 생성, 조회, 수정, 삭제 기능 완전 구현
+  - **Auto-Publish Issue Fixed**: 커리큘럼 기본 상태를 'draft'로 설정하여 자동 발행 문제 해결
+  - **Manual Status Control**: 관리자가 수동으로 draft ↔ published 상태 변경 가능
+  - **ID Type Compatibility**: 숫자 ID와 문자열 ID 모두 지원하는 유연한 타입 처리
+  - **Update Functionality**: PUT /api/admin/curriculum/:id 엔드포인트로 커리큘럼 정보 수정
+  - **Status Management**: PATCH /api/admin/curriculum/:id/status 엔드포인트로 상태 변경
+  - **Timestamp Tracking**: 생성시간, 수정시간, 발행시간 자동 추적
+  - **Production Ready**: 실제 운영에 사용 가능한 완전한 커리큘럼 관리 시스템 구현
 - July 16, 2025. **API SYSTEM VALIDATION COMPLETED** - 모든 핵심 API 엔드포인트 검증 완료:
   - **5/5 Core APIs Operational**: 훈련 알림장, 메시지, 예약, 훈련사 반려동물, 쇼핑 API 모두 정상 동작
   - **JSON Response Validation**: 모든 API가 올바른 JSON 형식 응답 반환 확인
