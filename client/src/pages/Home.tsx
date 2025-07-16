@@ -844,7 +844,7 @@ export default function Home() {
 
         {/* TALEZ 체험 서비스 섹션 */}
         <div className="mb-8">
-          <div className="relative bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-2xl p-8 border border-blue-200 dark:border-blue-800 overflow-hidden">
+          <div className="relative bg-gradient-to-br from-emerald-50 to-teal-100 dark:from-emerald-900/20 dark:to-teal-900/20 rounded-2xl p-8 border border-emerald-200 dark:border-emerald-800 overflow-hidden">
             {/* 백그라운드 이미지 - 강아지와 AI 분석 테마 */}
             <div 
               className="absolute inset-0 opacity-10 bg-cover bg-center bg-no-repeat"
@@ -852,53 +852,53 @@ export default function Home() {
                 backgroundImage: `url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" fill="none">
                   <!-- 강아지 실루엣들 -->
                   <g opacity="0.3">
-                    <path d="M150 200c-10-20 10-40 30-30 20 10 40-10 30 30-10 40-40 20-60 0z" fill="%23007acc"/>
-                    <circle cx="140" cy="180" r="4" fill="%23007acc"/>
-                    <circle cx="160" cy="180" r="4" fill="%23007acc"/>
-                    <path d="M150 185c-3 3-3 7 0 10" stroke="%23007acc" stroke-width="2" fill="none"/>
+                    <path d="M150 200c-10-20 10-40 30-30 20 10 40-10 30 30-10 40-40 20-60 0z" fill="%2310b981"/>
+                    <circle cx="140" cy="180" r="4" fill="%2310b981"/>
+                    <circle cx="160" cy="180" r="4" fill="%2310b981"/>
+                    <path d="M150 185c-3 3-3 7 0 10" stroke="%2310b981" stroke-width="2" fill="none"/>
                   </g>
                   <g opacity="0.2">
-                    <path d="M600 150c-8-16 8-32 24-24 16 8 32-8 24 24-8 32-32 16-48 0z" fill="%23007acc"/>
-                    <circle cx="592" cy="135" r="3" fill="%23007acc"/>
-                    <circle cx="608" cy="135" r="3" fill="%23007acc"/>
+                    <path d="M600 150c-8-16 8-32 24-24 16 8 32-8 24 24-8 32-32 16-48 0z" fill="%2310b981"/>
+                    <circle cx="592" cy="135" r="3" fill="%2310b981"/>
+                    <circle cx="608" cy="135" r="3" fill="%2310b981"/>
                   </g>
                   
                   <!-- AI 네트워크 패턴 -->
                   <g opacity="0.15">
-                    <circle cx="300" cy="100" r="25" fill="none" stroke="%23007acc" stroke-width="2"/>
-                    <circle cx="500" cy="300" r="25" fill="none" stroke="%23007acc" stroke-width="2"/>
-                    <circle cx="100" cy="400" r="25" fill="none" stroke="%23007acc" stroke-width="2"/>
-                    <path d="M300 100L500 300L100 400" stroke="%23007acc" stroke-width="1" opacity="0.5"/>
-                    <circle cx="300" cy="100" r="4" fill="%23007acc"/>
-                    <circle cx="500" cy="300" r="4" fill="%23007acc"/>
-                    <circle cx="100" cy="400" r="4" fill="%23007acc"/>
+                    <circle cx="300" cy="100" r="25" fill="none" stroke="%2310b981" stroke-width="2"/>
+                    <circle cx="500" cy="300" r="25" fill="none" stroke="%2310b981" stroke-width="2"/>
+                    <circle cx="100" cy="400" r="25" fill="none" stroke="%2310b981" stroke-width="2"/>
+                    <path d="M300 100L500 300L100 400" stroke="%2310b981" stroke-width="1" opacity="0.5"/>
+                    <circle cx="300" cy="100" r="4" fill="%2310b981"/>
+                    <circle cx="500" cy="300" r="4" fill="%2310b981"/>
+                    <circle cx="100" cy="400" r="4" fill="%2310b981"/>
                   </g>
                   
                   <!-- 발자국 패턴 -->
                   <g opacity="0.1">
                     <g transform="translate(400,250)">
-                      <ellipse cx="0" cy="0" rx="12" ry="8" fill="%23007acc"/>
-                      <ellipse cx="-8" cy="-15" rx="5" ry="5" fill="%23007acc"/>
-                      <ellipse cx="8" cy="-15" rx="5" ry="5" fill="%23007acc"/>
-                      <ellipse cx="-12" cy="-25" rx="5" ry="5" fill="%23007acc"/>
-                      <ellipse cx="12" cy="-25" rx="5" ry="5" fill="%23007acc"/>
+                      <ellipse cx="0" cy="0" rx="12" ry="8" fill="%2310b981"/>
+                      <ellipse cx="-8" cy="-15" rx="5" ry="5" fill="%2310b981"/>
+                      <ellipse cx="8" cy="-15" rx="5" ry="5" fill="%2310b981"/>
+                      <ellipse cx="-12" cy="-25" rx="5" ry="5" fill="%2310b981"/>
+                      <ellipse cx="12" cy="-25" rx="5" ry="5" fill="%2310b981"/>
                     </g>
                     <g transform="translate(450,300)">
-                      <ellipse cx="0" cy="0" rx="12" ry="8" fill="%23007acc"/>
-                      <ellipse cx="-8" cy="-15" rx="5" ry="5" fill="%23007acc"/>
-                      <ellipse cx="8" cy="-15" rx="5" ry="5" fill="%23007acc"/>
-                      <ellipse cx="-12" cy="-25" rx="5" ry="5" fill="%23007acc"/>
-                      <ellipse cx="12" cy="-25" rx="5" ry="5" fill="%23007acc"/>
+                      <ellipse cx="0" cy="0" rx="12" ry="8" fill="%2310b981"/>
+                      <ellipse cx="-8" cy="-15" rx="5" ry="5" fill="%2310b981"/>
+                      <ellipse cx="8" cy="-15" rx="5" ry="5" fill="%2310b981"/>
+                      <ellipse cx="-12" cy="-25" rx="5" ry="5" fill="%2310b981"/>
+                      <ellipse cx="12" cy="-25" rx="5" ry="5" fill="%2310b981"/>
                     </g>
                   </g>
                   
                   <!-- 데이터 차트 요소 -->
                   <g opacity="0.2">
-                    <rect x="50" y="50" width="60" height="40" rx="5" fill="none" stroke="%23007acc" stroke-width="1"/>
-                    <rect x="60" y="60" width="40" height="3" fill="%23007acc" opacity="0.6"/>
-                    <rect x="60" y="67" width="30" height="3" fill="%23007acc" opacity="0.6"/>
-                    <rect x="60" y="74" width="35" height="3" fill="%23007acc" opacity="0.6"/>
-                    <rect x="60" y="81" width="25" height="3" fill="%23007acc" opacity="0.6"/>
+                    <rect x="50" y="50" width="60" height="40" rx="5" fill="none" stroke="%2310b981" stroke-width="1"/>
+                    <rect x="60" y="60" width="40" height="3" fill="%2310b981" opacity="0.6"/>
+                    <rect x="60" y="67" width="30" height="3" fill="%2310b981" opacity="0.6"/>
+                    <rect x="60" y="74" width="35" height="3" fill="%2310b981" opacity="0.6"/>
+                    <rect x="60" y="81" width="25" height="3" fill="%2310b981" opacity="0.6"/>
                   </g>
                 </svg>')`
               }}
@@ -906,9 +906,9 @@ export default function Home() {
             
             <div className="relative z-10 text-center mb-6">
               <div className="flex items-center justify-center mb-4">
-                <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center shadow-lg animate-pulse">
+                <div className="w-20 h-20 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-full flex items-center justify-center shadow-lg animate-pulse">
                   <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
                   </svg>
                 </div>
               </div>
@@ -927,11 +927,11 @@ export default function Home() {
               <div className="relative z-10 text-center">
                 <Button 
                   onClick={() => setShowExperience(true)}
-                  className="bg-gradient-to-r from-purple-500 via-blue-500 to-indigo-600 hover:from-purple-600 hover:via-blue-600 hover:to-indigo-700 text-white px-10 py-4 text-lg font-semibold shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105 relative overflow-hidden"
+                  className="bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-600 hover:from-emerald-600 hover:via-teal-600 hover:to-cyan-700 text-white px-10 py-4 text-lg font-semibold shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105 relative overflow-hidden"
                 >
                   <span className="relative z-10 flex items-center">
                     <svg className="mr-3 h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 7.172V5L8 4z" />
                     </svg>
                     AI 분석 무료 체험하기
                   </span>
