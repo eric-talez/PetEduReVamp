@@ -71,10 +71,10 @@ const MOCK_SUBSCRIPTION_PRODUCTS = [
 ];
 
 const MOCK_REFERRERS = [
-  { id: 1, name: '김지훈', role: '훈련사', referralCode: 'TRAINER001', earningsTotal: 1250000 },
-  { id: 2, name: '서울 애견훈련소', role: '기관', referralCode: 'INST002', earningsTotal: 2380000 },
-  { id: 3, name: '박서연', role: '훈련사', referralCode: 'TRAINER003', earningsTotal: 950000 },
-  { id: 4, name: '댕댕이 멍멍이', role: '제휴사', referralCode: 'AFFILIATE004', earningsTotal: 1650000 },
+  { id: 1, name: '김지훈', role: '훈련사', referralCode: 'TRAINER001', earningsTotal: 1250000, status: '지급대기' },
+  { id: 2, name: '서울 애견훈련소', role: '기관', referralCode: 'INST002', earningsTotal: 2380000, status: '지급완료' },
+  { id: 3, name: '박서연', role: '훈련사', referralCode: 'TRAINER003', earningsTotal: 950000, status: '지급대기' },
+  { id: 4, name: '댕댕이 멍멍이', role: '제휴사', referralCode: 'AFFILIATE004', earningsTotal: 1650000, status: '지급완료' },
 ];
 
 const MOCK_COMMISSION_HISTORY = [
@@ -780,25 +780,26 @@ export default function CommissionManagement() {
                           {Math.round(referrer.earningsTotal * (referrer.role === '훈련사' ? 0.15 : referrer.role === '기관' ? 0.10 : 0.05)).toLocaleString()}원
                         </TableCell>
                         <TableCell>
-                          <Badge variant={referrer.id % 2 === 0 ? 'default' : 'outline'}>
-                            {referrer.id % 2 === 0 ? '지급완료' : '지급대기'}
+                          <Badge variant={referrer.status === '지급완료' ? 'default' : referrer.status === '처리중' ? 'secondary' : 'outline'}>
+                            {referrer.status}
                           </Badge>
                         </TableCell>
                         <TableCell>
-                          {referrer.id % 2 !== 0 ? (
+                          {referrer.status === '지급대기' ? (
                             <div className="flex gap-2">
                               <Button 
                                 size="sm" 
                                 variant="outline"
                                 onClick={() => handleSettlementApproval(referrer)}
+                                disabled={referrer.status === '처리중'}
                               >
                                 <FileText className="h-4 w-4 mr-1" />
-                                정산 승인
+                                {referrer.status === '처리중' ? '처리 중...' : '정산 승인'}
                               </Button>
                             </div>
                           ) : (
                             <Badge variant="default" className="text-xs">
-                              지급완료
+                              {referrer.status}
                             </Badge>
                           )}
                         </TableCell>
