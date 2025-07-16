@@ -1,7 +1,7 @@
 /* 챗봇 스타일 */
 :root {
-  --primary-color: hsl(158, 54%, 79%);
-  --primary-hover: hsl(158, 54%, 74%);
+  --primary-color: #1d4ed8;
+  --primary-hover: #2563eb;
   --error-color: hsl(0, 84.2%, 60.2%);
   --gray-100: hsl(210, 40%, 96.1%);
   --gray-200: hsl(214.3, 31.8%, 91.4%);
@@ -155,8 +155,8 @@ html[class~="dark"] .chatbot-panel {
 
 .chat-message.bot {
   align-self: flex-start;
-  background-color: var(--gray-100, #f7fafc);
-  color: var(--gray-800, #2d3748);
+  background-color: #f3f4f6;
+  color: #1f2937;
   border-bottom-left-radius: 4px;
 }
 
@@ -185,8 +185,15 @@ html[class~="dark"] .chat-message.bot {
 .dark .chatbot-input-container,
 [data-theme="dark"] .chatbot-input-container,
 html[class~="dark"] .chatbot-input-container {
-  background-color: var(--gray-800, #1a202c);
-  border-color: var(--gray-700, #4a5568);
+  background-color: #1a1d23;
+  border-color: #6b7280;
+}
+
+.dark .chat-message.bot,
+[data-theme="dark"] .chat-message.bot,
+html[class~="dark"] .chat-message.bot {
+  background-color: #374151;
+  color: #f9fafb;
 }
 
 .chatbot-input {

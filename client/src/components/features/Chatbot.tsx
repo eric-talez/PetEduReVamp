@@ -165,14 +165,15 @@ export function Chatbot() {
           width: '60px', 
           height: '60px', 
           borderRadius: '30px',
-          backgroundColor: 'var(--primary-color, #a7e8c5)',
-          color: isDarkMode ? '#1a1d23' : 'white',
+          backgroundColor: isDarkMode ? '#2563eb' : '#1d4ed8',
+          color: 'white',
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
           cursor: 'pointer',
-          boxShadow: '0 4px 10px rgba(0, 0, 0, 0.2)',
-          border: 'none'
+          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
+          border: 'none',
+          transition: 'all 0.3s ease'
         }}
       >
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -218,7 +219,7 @@ export function Chatbot() {
       }}>
         <div className="chatbot-header" style={{
           padding: '15px 20px',
-          backgroundColor: 'var(--primary-color, #a7e8c5)',
+          backgroundColor: isDarkMode ? '#1e40af' : '#1d4ed8',
           color: 'white',
           fontWeight: '600',
           display: 'flex',
@@ -263,11 +264,11 @@ export function Chatbot() {
                 position: 'relative',
                 alignSelf: message.role === 'bot' ? 'flex-start' : 'flex-end',
                 backgroundColor: message.role === 'bot' 
-                  ? (isDarkMode ? '#2d3748' : '#f7fafc') 
-                  : 'var(--primary-color, #a7e8c5)',
+                  ? (isDarkMode ? '#374151' : '#f3f4f6') 
+                  : (isDarkMode ? '#2563eb' : '#1d4ed8'),
                 color: message.role === 'bot' 
-                  ? (isDarkMode ? '#e2e8f0' : '#2d3748') 
-                  : (isDarkMode ? '#1a1d23' : 'white'),
+                  ? (isDarkMode ? '#f9fafb' : '#1f2937') 
+                  : 'white',
                 borderBottomLeftRadius: message.role === 'bot' ? '4px' : '16px',
                 borderBottomRightRadius: message.role === 'bot' ? '16px' : '4px'
               }}
@@ -320,13 +321,13 @@ export function Chatbot() {
             type="text"
             style={{
               flex: '1',
-              border: isDarkMode ? '1px solid #4a5568' : '1px solid #e2e8f0',
+              border: isDarkMode ? '1px solid #6b7280' : '1px solid #d1d5db',
               borderRadius: '20px',
               padding: '10px 15px',
               fontSize: '14px',
               outline: 'none',
-              backgroundColor: isDarkMode ? '#2d3748' : 'white',
-              color: isDarkMode ? '#e2e8f0' : '#2d3748'
+              backgroundColor: isDarkMode ? '#374151' : 'white',
+              color: isDarkMode ? '#f9fafb' : '#1f2937'
             }}
             placeholder="메시지를 입력하세요..."
             value={inputValue}
@@ -338,7 +339,7 @@ export function Chatbot() {
               width: '36px',
               height: '36px',
               borderRadius: '50%',
-              backgroundColor: !inputValue.trim() ? '#e2e8f0' : 'var(--primary-color, #a7e8c5)',
+              backgroundColor: !inputValue.trim() ? '#9ca3af' : (isDarkMode ? '#2563eb' : '#1d4ed8'),
               color: 'white',
               display: 'flex',
               justifyContent: 'center',

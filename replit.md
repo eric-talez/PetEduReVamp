@@ -157,6 +157,15 @@ TALEZ is a comprehensive pet education and e-commerce platform that combines AI-
 
 ## Changelog
 
+- July 16, 2025. **CHATBOT COLOR ENHANCEMENT** - 챗봇 색상 및 가독성 개선:
+  - **Enhanced Button Visibility**: 챗봇 버튼을 밝은 파란색 계열로 변경하여 더 명확한 시각적 대비 제공
+  - **Improved Message Contrast**: 봇 메시지와 사용자 메시지 색상을 구분하여 가독성 향상
+  - **Dark Mode Optimization**: 다크모드에서 더 나은 색상 대비를 위한 최적화
+  - **Modern Color Palette**: 기존 연두색 계열에서 전문적인 파란색 계열로 변경
+  - **Input Field Enhancement**: 입력 필드와 전송 버튼 색상 개선으로 사용자 경험 향상
+  - **CSS Variable Updates**: 챗봇 전용 CSS 변수 업데이트로 일관된 색상 체계 구축
+  - **Accessibility Improvement**: 색상 대비 개선으로 시각적 접근성 향상
+  - **Production Ready**: 모든 테마에서 최적화된 챗봇 색상 시스템 완성
 - July 16, 2025. **REVENUE DETAIL VIEW ENHANCEMENT** - 수익 상세 내역 팝업 기능 추가:
   - **Interactive Revenue Cards**: 강의/상품/기타 수익 카드 클릭 시 상세 내역 모달 표시
   - **Comprehensive Detail View**: 각 수익 유형별 상세 거래 내역 테이블 제공
