@@ -157,6 +157,14 @@ TALEZ is a comprehensive pet education and e-commerce platform that combines AI-
 
 ## Changelog
 
+- July 16, 2025. **SIDEBAR MENU DEFAULT STATE CHANGED** - 사이드바 메뉴 기본 상태 변경:
+  - **All Menu Groups Closed**: 모든 사이드바 메뉴 그룹이 기본적으로 닫힌 상태로 시작
+  - **No Auto-Expand**: 권한이 있어도 메뉴 그룹이 자동으로 열리지 않음
+  - **Session-Only State**: 메뉴 그룹 상태가 localStorage에 저장되지 않고 세션동안만 유지
+  - **Clean Interface**: 사용자가 필요한 메뉴만 열어서 사용하는 깔끔한 인터페이스
+  - **Better UX**: 메뉴가 덜 복잡하고 사용자가 직접 제어할 수 있는 환경
+  - **Improved Performance**: 메뉴 그룹 상태 관리 단순화로 성능 향상
+  - **Production Ready**: 모든 메뉴 그룹이 일관된 닫힌 상태로 시작하는 완성된 시스템
 - July 16, 2025. **CHATBOT COLOR ENHANCEMENT** - 챗봇 색상 및 가독성 개선:
   - **Enhanced Button Visibility**: 챗봇 버튼을 밝은 파란색 계열로 변경하여 더 명확한 시각적 대비 제공
   - **Improved Message Contrast**: 봇 메시지와 사용자 메시지 색상을 구분하여 가독성 향상

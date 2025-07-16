@@ -224,24 +224,18 @@ export function Sidebar({
     return () => window.removeEventListener('resize', handleResize);
   }, [onToggleExpand]);
 
-  // 간소화된 메뉴 그룹 상태 초기화
+  // 모든 메뉴 그룹이 기본적으로 닫힌 상태로 시작
   const [menuGroups, setMenuGroups] = useState(() => {
-    const savedMenuGroups = localStorage.getItem('menuGroups');
-    if (savedMenuGroups) {
-      try {
-        return JSON.parse(savedMenuGroups);
-      } catch (e) {
-        console.error('저장된 메뉴 그룹 상태 파싱 오류:', e);
-      }
-    }
-
     return {
-      main: true,         // 메인 메뉴
+      main: false,        // 메인 메뉴
       learning: false,    // 학습 메뉴
       management: false,  // 운영 관리 메뉴
       tools: false,       // 도구 메뉴
-      admin: false        // 관리자 메뉴
-      //shopping: false
+      admin: false,       // 관리자 메뉴
+      trainer: false,     // 훈련사 메뉴
+      institute: false,   // 기관 메뉴
+      myLearning: false,  // 나의 학습 메뉴
+      features: false     // 기능 메뉴
     };
   });
 
@@ -264,24 +258,18 @@ export function Sidebar({
 
     // 로그인 상태가 변경되면 메뉴 그룹 상태 업데이트
     setMenuGroups((prevGroups: Record<string, boolean>) => {
-      // 권한에 따른 값 업데이트
+      // 권한에 따른 값 업데이트 - 모든 메뉴 그룹은 닫힌 상태 유지
       const updatedMenuGroups = {
         ...prevGroups,
-        trainer: isTrainer || isAdmin,
-        institute: isInstituteAdmin || isAdmin || isAdmin,
-        admin: isAdmin,
+        trainer: false,   // 권한이 있어도 기본 닫힌 상태
+        institute: false, // 권한이 있어도 기본 닫힌 상태
+        admin: false,     // 권한이 있어도 기본 닫힌 상태
         // 로그인 상태에 따라 메뉴 그룹 표시/숨김 처리
-        myLearning: isAuthenticated ? prevGroups.myLearning : false,
-        features: isAuthenticated ? prevGroups.features : false
+        myLearning: false,
+        features: false
       };
 
-      // localStorage에 업데이트된 메뉴 상태 저장
-      try {
-        localStorage.setItem('menuGroups', JSON.stringify(updatedMenuGroups));
-        console.log('메뉴 그룹 상태가 localStorage에 저장됨:', updatedMenuGroups);
-      } catch (e) {
-        console.error('메뉴 그룹 상태 저장 오류:', e);
-      }
+      // localStorage에 메뉴 상태 저장 안함 (기본 닫힌 상태 유지)
 
       console.log('메뉴 그룹 업데이트:', updatedMenuGroups);
       return updatedMenuGroups;
@@ -304,15 +292,8 @@ export function Sidebar({
         [groupId]: !prev[groupId]
       };
 
-      // localStorage에 상태 저장 - 안전한 처리
-      try {
-        const serializedState = JSON.stringify(updated);
-        localStorage.setItem('menuGroupStates', serializedState);
-        console.log(`✅ 메뉴 그룹 [${groupId}] 상태 변경:`, updated[groupId] ? '열림' : '닫힘');
-      } catch (error) {
-        console.error('❌ localStorage 저장 실패:', error);
-        // localStorage 실패 시에도 UI 상태는 업데이트
-      }
+      // 메뉴 그룹 상태 변경 로그 (localStorage 저장 안함)
+      console.log(`✅ 메뉴 그룹 [${groupId}] 상태 변경:`, updated[groupId] ? '열림' : '닫힘');
 
       return updated;
     });
