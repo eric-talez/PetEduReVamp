@@ -44,8 +44,7 @@ const learningStatsData = {
   completedCourses: 3,
   currentStreak: 7,
   averageScore: 87,
-  totalHours: 42,
-  achievements: 15
+  totalHours: 42
 };
 
 const monthlyProgressData = [
@@ -54,13 +53,6 @@ const monthlyProgressData = [
   { month: '3월', sessions: 15, score: 88 },
   { month: '4월', sessions: 10, score: 86 },
   { month: '5월', sessions: 18, score: 91 }
-];
-
-const recentAchievements = [
-  { title: '7일 연속 훈련', description: '꾸준한 학습자', icon: '🔥', date: '2일 전' },
-  { title: '첫 번째 코스 완주', description: '기본 훈련 마스터', icon: '🏆', date: '1주 전' },
-  { title: '완벽한 앉기', description: '100% 성공률 달성', icon: '⭐', date: '3일 전' },
-  { title: '훈련사 추천', description: '우수 학습자 인증', icon: '👨‍🏫', date: '5일 전' }
 ];
 
 export default function AnalyticsPage() {
@@ -433,10 +425,9 @@ export default function AnalyticsPage() {
 
       {/* 탭 컨텐츠 */}
       <Tabs defaultValue="progress" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="progress">훈련 진행도</TabsTrigger>
           <TabsTrigger value="monthly">월간 리포트</TabsTrigger>
-          <TabsTrigger value="achievements">성취 기록</TabsTrigger>
           <TabsTrigger value="insights">인사이트</TabsTrigger>
         </TabsList>
 
@@ -525,41 +516,6 @@ export default function AnalyticsPage() {
                     <div className="text-right">
                       <p className="font-medium text-lg">{month.score}%</p>
                       <p className="text-sm text-gray-600 dark:text-gray-400">평균 점수</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* 성취 기록 탭 */}
-        <TabsContent value="achievements" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Award className="h-5 w-5" />
-                최근 성취 기록
-              </CardTitle>
-              <CardDescription>
-                달성한 목표와 받은 인증을 확인하세요
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {recentAchievements.map((achievement, index) => (
-                  <div key={index} className="flex items-center gap-4 p-4 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-lg">
-                    <div className="text-2xl">{achievement.icon}</div>
-                    <div className="flex-1">
-                      <h3 className="font-medium">{achievement.title}</h3>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
-                        {achievement.description}
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-sm text-gray-500 dark:text-gray-400">
-                        {achievement.date}
-                      </p>
                     </div>
                   </div>
                 ))}
