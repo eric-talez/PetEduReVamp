@@ -794,7 +794,7 @@ class Storage {
             price: 35000,
             order: 1,
             videoUrl: null,
-            materials: []
+            materials: ['훈련용 간식', '클리커', '타겟 스틱', '매트']
           },
           {
             id: 2,
@@ -805,7 +805,7 @@ class Storage {
             price: 35000,
             order: 2,
             videoUrl: null,
-            materials: []
+            materials: ['고급 간식', '휘슬', '긴 리드줄']
           },
           {
             id: 3,
@@ -816,7 +816,7 @@ class Storage {
             price: 35000,
             order: 3,
             videoUrl: null,
-            materials: []
+            materials: ['훈련용 간식', '타이머', '매트', '장난감']
           },
           {
             id: 4,
@@ -827,7 +827,7 @@ class Storage {
             price: 35000,
             order: 4,
             videoUrl: null,
-            materials: []
+            materials: ['긴 리드줄', '호루라기', '고급 간식', '공']
           },
           {
             id: 5,
@@ -838,7 +838,7 @@ class Storage {
             price: 35000,
             order: 5,
             videoUrl: null,
-            materials: []
+            materials: ['목줄', '가슴줄', '짧은 리드줄', '긴 리드줄', '간식 파우치']
           },
           {
             id: 6,
@@ -849,7 +849,7 @@ class Storage {
             price: 35000,
             order: 6,
             videoUrl: null,
-            materials: []
+            materials: ['실외용 간식', '목줄', '리드줄', '물통', '휴지']
           },
           {
             id: 7,
@@ -860,7 +860,7 @@ class Storage {
             price: 35000,
             order: 7,
             videoUrl: null,
-            materials: []
+            materials: ['사회성 간식', '장난감', '목줄', '리드줄']
           },
           {
             id: 8,
@@ -871,7 +871,7 @@ class Storage {
             price: 35000,
             order: 8,
             videoUrl: null,
-            materials: []
+            materials: ['졸업증서', '기념품', '평가서', '사진']
           }
         ],
         createdAt: new Date('2025-01-10').toISOString(),
@@ -903,7 +903,7 @@ class Storage {
             price: 0,
             order: 1,
             videoUrl: null,
-            materials: []
+            materials: ['교육 자료', '사회화 체크리스트', '핸드북']
           },
           {
             id: 2,
@@ -914,7 +914,7 @@ class Storage {
             price: 53000,
             order: 2,
             videoUrl: null,
-            materials: []
+            materials: ['사회화 간식', '인형', '다양한 모자', '장갑']
           },
           {
             id: 3,
@@ -925,7 +925,7 @@ class Storage {
             price: 53000,
             order: 3,
             videoUrl: null,
-            materials: []
+            materials: ['사회화 간식', '장난감', '목줄', '리드줄']
           },
           {
             id: 4,
@@ -936,7 +936,7 @@ class Storage {
             price: 53000,
             order: 4,
             videoUrl: null,
-            materials: []
+            materials: ['음향 기기', '다양한 소리 파일', '포상 간식', '장난감']
           },
           {
             id: 5,
@@ -947,7 +947,7 @@ class Storage {
             price: 53000,
             order: 5,
             videoUrl: null,
-            materials: []
+            materials: ['미용 도구', '핸들링 간식', '브러시', '수건']
           },
           {
             id: 6,
@@ -958,7 +958,7 @@ class Storage {
             price: 53000,
             order: 6,
             videoUrl: null,
-            materials: []
+            materials: ['평가서', '졸업증서', '기념품', '포상 간식']
           }
         ],
         createdAt: new Date('2025-01-08').toISOString(),
@@ -990,7 +990,7 @@ class Storage {
             price: 45000,
             order: 1,
             videoUrl: null,
-            materials: []
+            materials: ['행동 분석 체크리스트', '관찰 기록지', '평가 도구', '교육 자료']
           },
           {
             id: 2,
@@ -1001,7 +1001,7 @@ class Storage {
             price: 45000,
             order: 2,
             videoUrl: null,
-            materials: []
+            materials: ['방음 도구', '진동 목걸이', '교정 간식', '조용한 장난감']
           },
           {
             id: 3,
@@ -1012,7 +1012,7 @@ class Storage {
             price: 45000,
             order: 3,
             videoUrl: null,
-            materials: []
+            materials: ['보호장갑', '물기 억제 장난감', '교정 간식', '안전 도구']
           },
           {
             id: 4,
@@ -1023,7 +1023,7 @@ class Storage {
             price: 45000,
             order: 4,
             videoUrl: null,
-            materials: []
+            materials: ['분리 훈련 도구', '위로 장난감', '안정 간식', '타이머']
           },
           {
             id: 5,
@@ -1034,7 +1034,7 @@ class Storage {
             price: 45000,
             order: 5,
             videoUrl: null,
-            materials: []
+            materials: ['파괴 방지 스프레이', '내구성 장난감', '교정 도구', '보호 용품']
           },
           {
             id: 6,
@@ -1045,7 +1045,7 @@ class Storage {
             price: 45000,
             order: 6,
             videoUrl: null,
-            materials: []
+            materials: ['급식 도구', '퍼즐 피더', '교정 간식', '슬로우 피더']
           },
           {
             id: 7,
@@ -1056,7 +1056,7 @@ class Storage {
             price: 45000,
             order: 7,
             videoUrl: null,
-            materials: []
+            materials: ['진정 매트', '릴렉스 음악', '진정 간식', '활동 제어 도구']
           },
           {
             id: 8,
@@ -1067,7 +1067,7 @@ class Storage {
             price: 45000,
             order: 8,
             videoUrl: null,
-            materials: []
+            materials: ['헤드컬러', '트레이닝 리드', '분산 간식', '차단 도구']
           },
           {
             id: 9,
@@ -1078,7 +1078,7 @@ class Storage {
             price: 45000,
             order: 9,
             videoUrl: null,
-            materials: []
+            materials: ['스트레스 측정 도구', '진정 제품', '휴식 매트', '안정 음악']
           },
           {
             id: 10,
@@ -1089,7 +1089,7 @@ class Storage {
             price: 45000,
             order: 10,
             videoUrl: null,
-            materials: []
+            materials: ['종합 평가서', '개별 계획서', '교정 도구 세트', '진행 체크리스트']
           }
         ],
         createdAt: new Date('2025-01-05').toISOString(),
@@ -1420,6 +1420,130 @@ class Storage {
 
   getCourse(id: number) {
     return this.courses?.find(course => course.id === id);
+  }
+
+  // 커리큘럼 관련 메서드들
+  getAllCurriculums() {
+    // 샘플 커리큘럼 데이터 (준비물 포함)
+    const sampleCurriculums = [
+      {
+        id: 'curriculum-sample-1',
+        title: '반려견 기초 복종 훈련 과정',
+        description: '반려견의 기본적인 복종 훈련을 위한 체계적인 교육 과정',
+        category: '기초훈련',
+        difficulty: 'beginner',
+        duration: 480,
+        price: 300000,
+        trainerName: '강동훈',
+        trainerEmail: 'donghoong@wangzzang.com',
+        status: 'published',
+        modules: [
+          {
+            title: '오리엔테이션',
+            duration: 60,
+            price: 0,
+            isFree: true,
+            description: '반려견 훈련의 기본 개념과 목표를 설명하는 시간',
+            materials: ['노트', '펜', '훈련 일지']
+          },
+          {
+            title: '기본 명령어 - 앉기',
+            duration: 90,
+            price: 50000,
+            isFree: false,
+            description: '앉기 명령어 훈련 및 보상 시스템 학습',
+            materials: ['클리커', '간식', '리드줄', '훈련용 매트']
+          },
+          {
+            title: '기본 명령어 - 기다려',
+            duration: 90,
+            price: 50000,
+            isFree: false,
+            description: '기다려 명령어 훈련 및 충동 조절 학습',
+            materials: ['타이머', '간식', '훈련용 콘']
+          },
+          {
+            title: '산책 훈련',
+            duration: 120,
+            price: 80000,
+            isFree: false,
+            description: '올바른 산책 방법과 리드 훈련',
+            materials: ['하네스', '리드줄', '산책용 가방', '배변봉투']
+          },
+          {
+            title: '사회화 훈련',
+            duration: 120,
+            price: 80000,
+            isFree: false,
+            description: '다른 개와의 만남 및 사회화 훈련',
+            materials: ['장난감', '간식', '사회화 도구']
+          }
+        ],
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      },
+      {
+        id: 'curriculum-sample-2',
+        title: '반려견 문제 행동 교정 과정',
+        description: '반려견의 문제 행동을 체계적으로 교정하는 전문 과정',
+        category: '행동교정',
+        difficulty: 'intermediate',
+        duration: 600,
+        price: 450000,
+        trainerName: '강동훈',
+        trainerEmail: 'donghoong@wangzzang.com',
+        status: 'published',
+        modules: [
+          {
+            title: '행동 분석 및 진단',
+            duration: 120,
+            price: 90000,
+            isFree: false,
+            description: '반려견의 문제 행동 원인 분석 및 진단',
+            materials: ['행동 분석표', '카메라', '녹음기', '관찰 일지']
+          },
+          {
+            title: '짖음 교정 훈련',
+            duration: 120,
+            price: 90000,
+            isFree: false,
+            description: '과도한 짖음 행동의 원인별 교정 방법',
+            materials: ['무시 훈련 도구', '분산 장난감', '진정 스프레이']
+          },
+          {
+            title: '공격성 교정',
+            duration: 120,
+            price: 90000,
+            isFree: false,
+            description: '공격성 행동의 단계별 교정 프로그램',
+            materials: ['안전 장비', '바디 랩', '안정화 도구']
+          },
+          {
+            title: '분리불안 해소',
+            duration: 120,
+            price: 90000,
+            isFree: false,
+            description: '분리불안 증상 완화를 위한 훈련',
+            materials: ['분리 훈련 도구', '안정화 음악', '퍼즐 장난감']
+          },
+          {
+            title: '지속적 관리법',
+            duration: 120,
+            price: 90000,
+            isFree: false,
+            description: '교정 후 지속적인 관리 방법',
+            materials: ['관리 일지', '점검 도구', '유지 훈련 키트']
+          }
+        ],
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      }
+    ];
+
+    // 기존 courses 배열과 샘플 커리큘럼 합치기
+    const allCurriculums = [...(this.courses || []), ...sampleCurriculums];
+    
+    return allCurriculums;
   }
 
   // 기관 관련 메서드들
