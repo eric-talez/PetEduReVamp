@@ -137,13 +137,23 @@ const CheckoutForm = ({ itemInfo, itemType }: { itemInfo: CourseInfo | ProductIn
 
 export default function Checkout() {
   const [location] = useLocation();
-  const searchParams = new URLSearchParams(location.split('?')[1]);
+  const searchParams = new URLSearchParams(location.split('?')[1] || '');
   const courseId = searchParams.get('courseId');
   const productId = searchParams.get('productId');
   const productName = searchParams.get('productName');
   const productPrice = searchParams.get('price');
   const itemType = searchParams.get('type') as 'course' | 'product';
   const [clientSecret, setClientSecret] = useState("");
+
+  // 디버깅을 위한 로깅
+  console.log('Checkout page - URL params:', {
+    location,
+    courseId,
+    productId,
+    productName,
+    productPrice,
+    itemType
+  });
 
   // 강의 정보 조회
   const { data: courseInfo, isLoading: isCourseLoading } = useQuery({
