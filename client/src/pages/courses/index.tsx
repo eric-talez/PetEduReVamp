@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -32,6 +32,7 @@ interface Course {
 
 export default function Courses(props?: CoursesPageProps) {
   const { mode = 'view', userType } = props || {};
+  const [, navigate] = useLocation();
   const [filter, setFilter] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [courses, setCourses] = useState<Course[]>([]);
@@ -49,13 +50,13 @@ export default function Courses(props?: CoursesPageProps) {
   // 강의 구매 처리 함수
   const handlePurchase = (courseId: string) => {
     console.log('강의 구매 클릭:', courseId);
-    window.location.href = `/checkout?courseId=${courseId}`;
+    navigate(`/checkout?courseId=${courseId}`);
   };
 
   // 강좌 상세보기 핸들러
   const handleCourseDetail = (courseId: number) => {
     console.log('강좌 상세보기 클릭:', courseId);
-    window.location.href = `/courses/${courseId}`;
+    navigate(`/courses/${courseId}`);
   };
 
   // 강좌 참여하기 핸들러
@@ -143,7 +144,9 @@ export default function Courses(props?: CoursesPageProps) {
         type: productData.type
       });
       
-      window.location.href = `/checkout?${queryParams.toString()}`;
+      // wouter를 사용하여 페이지 이동
+      navigate(`/checkout?${queryParams.toString()}`);
+      setShowProductModal(false);
     }
   };
 
