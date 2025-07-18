@@ -208,6 +208,7 @@ function parseExcelCurriculumWithPricing(data: any[], filename: string) {
           modules.push(module);
           duration += moduleDuration;
           
+          console.log(`[엑셀 파싱] 행 ${i} 전체 데이터:`, row);
           console.log('[엑셀 파싱] 모듈 추가:', {
             title: module.title,
             duration: module.duration,
@@ -215,6 +216,7 @@ function parseExcelCurriculumWithPricing(data: any[], filename: string) {
             price: module.price,
             materials: module.materials
           });
+          console.log(`[엑셀 파싱] 준비물 컬럼 원본 데이터 (row[6]):`, row[6], typeof row[6]);
           
           moduleIndex++;
           if (moduleIndex > 20) break; // 최대 20개 모듈
@@ -2227,7 +2229,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           completed: false
         };
 
-        console.log(`[엑셀 파싱] 모듈 추가: ${moduleData.title} (설명: ${moduleData.description.substring(0, 50)}..., 시간: ${moduleData.duration}분, 무료: ${moduleData.isFree}, 가격: ${moduleData.price}원, 준비물: ${moduleData.materials})`);
+        console.log(`[엑셀 파싱] 행 ${i} 전체 데이터:`, row);
+        console.log(`[엑셀 파싱] 모듈 추가: ${moduleData.title} (설명: ${moduleData.description.substring(0, 50)}..., 시간: ${moduleData.duration}분, 무료: ${moduleData.isFree}, 가격: ${moduleData.price}원, 준비물: "${moduleData.materials}")`);
+        console.log(`[엑셀 파싱] 준비물 컬럼 원본 데이터 (row[6]):`, row[6], typeof row[6]);
         modules.push(moduleData);
       }
     }
