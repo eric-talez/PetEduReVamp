@@ -48,9 +48,9 @@ export default function Courses(props?: CoursesPageProps) {
   const { toast } = useToast();
 
   // 강의 구매 처리 함수
-  const handlePurchase = (courseId: string) => {
+  const handlePurchase = (courseId: string | number) => {
     console.log('강의 구매 클릭:', courseId);
-    navigate(`/checkout?courseId=${courseId}`);
+    navigate(`/checkout?courseId=${courseId}&type=course`);
   };
 
   // 강좌 상세보기 핸들러
@@ -144,8 +144,11 @@ export default function Courses(props?: CoursesPageProps) {
         type: productData.type
       });
       
+      const url = `/checkout?${queryParams.toString()}`;
+      console.log('상품 구매 URL:', url);
+      
       // wouter를 사용하여 페이지 이동
-      navigate(`/checkout?${queryParams.toString()}`);
+      navigate(url);
       setShowProductModal(false);
     }
   };
