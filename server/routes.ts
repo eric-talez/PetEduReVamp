@@ -2098,6 +2098,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       difficulty: 'intermediate',
       duration: 480,
       price: 300000,
+      registrant: '',
+      institution: '',
       modules: []
     };
 
@@ -2106,11 +2108,53 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return curriculum;
     }
 
+    console.log('[엑셀 파싱] 전체 데이터 구조 확인:', data.map((row, index) => ({ index, firstCell: row[0], secondCell: row[1] })));
+
+    // 기본 정보 추출
+    for (let i = 0; i < data.length; i++) {
+      const row = data[i];
+      if (!row || row.length < 2) continue;
+
+      // 등록자 정보 추출
+      if (row[0] === '등록자명') {
+        curriculum.registrant = row[1] || '';
+        console.log(`[엑셀 파싱] 등록자명: ${curriculum.registrant}`);
+      }
+      if (row[0] === '소속기관') {
+        curriculum.institution = row[1] || '';
+        console.log(`[엑셀 파싱] 소속기관: ${curriculum.institution}`);
+      }
+      
+      // 커리큘럼 기본 정보 추출
+      if (row[0] === '제목') {
+        curriculum.title = row[1] || fileName;
+        console.log(`[엑셀 파싱] 제목: ${curriculum.title}`);
+      }
+      if (row[0] === '설명') {
+        curriculum.description = row[1] || '엑셀 파일에서 추출된 커리큘럼';
+        console.log(`[엑셀 파싱] 설명: ${curriculum.description}`);
+      }
+      if (row[0] === '카테고리') {
+        curriculum.category = row[1] || '전문교육';
+        console.log(`[엑셀 파싱] 카테고리: ${curriculum.category}`);
+      }
+      if (row[0] === '난이도') {
+        curriculum.difficulty = row[1] || 'intermediate';
+        console.log(`[엑셀 파싱] 난이도: ${curriculum.difficulty}`);
+      }
+      if (row[0] === '총 소요시간(분)') {
+        curriculum.duration = parseInt(row[1]) || 0;
+        console.log(`[엑셀 파싱] 총 소요시간: ${curriculum.duration}`);
+      }
+      if (row[0] === '전체가격(원)') {
+        curriculum.price = parseInt(row[1]) || 0;
+        console.log(`[엑셀 파싱] 전체가격: ${curriculum.price}`);
+      }
+    }
+
     // "강의 구성" 섹션 찾기
     let courseStartIndex = -1;
     let courseHeaderIndex = -1;
-    
-    console.log('[엑셀 파싱] 전체 데이터 구조 확인:', data.map((row, index) => ({ index, firstCell: row[0] })));
     
     for (let i = 0; i < data.length; i++) {
       const row = data[i];
@@ -2123,7 +2167,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     
     if (courseStartIndex === -1) {
       console.log('[엑셀 파싱] "강의 구성" 섹션을 찾을 수 없습니다.');
-      console.log('[엑셀 파싱] 사용 가능한 첫 번째 셀 값들:', data.map(row => row[0]).filter(cell => cell));
       return curriculum;
     }
     
@@ -2204,10 +2247,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
     console.log('[엑셀 파싱] 최종 커리큘럼 데이터:', {
       title: curriculum.title,
+      description: curriculum.description,
+      category: curriculum.category,
+      difficulty: curriculum.difficulty,
+      registrant: curriculum.registrant,
+      institution: curriculum.institution,
       moduleCount: modules.length,
       totalDuration: curriculum.duration,
       totalPrice: curriculum.price,
-      modules: modules.map(m => ({ title: m.title, duration: m.duration, price: m.price }))
+      modules: modules.map(m => ({ title: m.title, duration: m.duration, price: m.price, materials: m.materials }))
     });
 
     return curriculum;
