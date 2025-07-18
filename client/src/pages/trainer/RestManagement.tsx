@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { CalendarDays, Clock, Coffee, Award, Users, Plus, Calendar, CheckCircle, XCircle, AlertCircle } from "lucide-react";
+import { CalendarDays, Clock, Award, Plus, Calendar, CheckCircle, XCircle, AlertCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
 
@@ -30,19 +30,7 @@ interface RestApplication {
   rewardStatus?: 'none' | 'pending' | 'approved' | 'paid';
 }
 
-// 대체 훈련사 요청 타입 정의
-interface SubstituteOpportunity {
-  id: number;
-  restApplicationId: number;
-  requiredSkills: string[];
-  requiredLevel: 'same' | 'higher' | 'lower';
-  compensation: number;
-  workingHours: string;
-  startDate: string;
-  endDate: string;
-  trainerName: string;
-  status: 'open' | 'filled' | 'cancelled';
-}
+// 대체 훈련사 요청은 대체훈련사 게시판에서 관리됩니다.
 
 // 휴식 보상 타입 정의
 interface RestReward {
@@ -99,32 +87,7 @@ const mockRestApplications: RestApplication[] = [
   }
 ];
 
-const mockSubstituteOpportunities: SubstituteOpportunity[] = [
-  {
-    id: 1,
-    restApplicationId: 4,
-    requiredSkills: ['기초 복종 훈련', '사회화 훈련'],
-    requiredLevel: 'same',
-    compensation: 80000,
-    workingHours: '09:00-18:00',
-    startDate: '2025-01-22',
-    endDate: '2025-01-24',
-    trainerName: '이준호',
-    status: 'open'
-  },
-  {
-    id: 2,
-    restApplicationId: 5,
-    requiredSkills: ['공격성 교정', '분리불안 치료'],
-    requiredLevel: 'higher',
-    compensation: 120000,
-    workingHours: '10:00-19:00',
-    startDate: '2025-01-28',
-    endDate: '2025-01-30',
-    trainerName: '박민수',
-    status: 'open'
-  }
-];
+// 대체 훈련사 모집은 대체훈련사 게시판에서 관리됩니다.
 
 const mockRestRewards: RestReward[] = [
   {
@@ -203,12 +166,9 @@ const RestManagement: React.FC = () => {
     });
   };
 
-  // 대체 근무 지원
-  const handleApplySubstitute = (opportunityId: number) => {
-    toast({
-      title: "대체 근무 지원 완료",
-      description: "대체 근무 지원이 성공적으로 제출되었습니다.",
-    });
+  // 대체 훈련사 게시판으로 이동
+  const handleSubstituteBoardNavigate = () => {
+    window.location.href = '/trainer/substitute-board';
   };
 
   return (
@@ -217,7 +177,7 @@ const RestManagement: React.FC = () => {
         <div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">휴식 관리</h1>
           <p className="text-gray-600 dark:text-gray-400 mt-2">
-            휴식 신청, 대체 근무, 보상 관리를 한 곳에서 처리하세요
+            휴식 신청과 보상 관리를 한 곳에서 처리하세요. 대체 훈련사는 게시판에서 관리됩니다.
           </p>
         </div>
         <Dialog open={isNewApplicationOpen} onOpenChange={setIsNewApplicationOpen}>
@@ -282,7 +242,10 @@ const RestManagement: React.FC = () => {
                   checked={newApplication.substituteRequired}
                   onCheckedChange={(checked) => setNewApplication({...newApplication, substituteRequired: checked})}
                 />
-                <Label htmlFor="substituteRequired">대체 훈련사 필요</Label>
+                <div className="flex flex-col">
+                  <Label htmlFor="substituteRequired">대체 훈련사 필요</Label>
+                  <p className="text-xs text-gray-500">체크하면 대체훈련사 게시판에 자동으로 등록됩니다</p>
+                </div>
               </div>
               <div className="flex justify-end space-x-2">
                 <Button variant="outline" onClick={() => setIsNewApplicationOpen(false)}>
@@ -298,9 +261,8 @@ const RestManagement: React.FC = () => {
       </div>
 
       <Tabs value={selectedTab} onValueChange={setSelectedTab}>
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="applications">내 신청 현황</TabsTrigger>
-          <TabsTrigger value="substitute">대체 근무</TabsTrigger>
           <TabsTrigger value="rewards">휴식 보상</TabsTrigger>
           <TabsTrigger value="calendar">휴식 달력</TabsTrigger>
         </TabsList>
@@ -335,6 +297,16 @@ const RestManagement: React.FC = () => {
                     </div>
                     <div>
                       <span className="font-medium">대체 훈련사:</span> {application.substituteRequired ? '필요' : '불필요'}
+                      {application.substituteRequired && (
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="ml-2"
+                          onClick={handleSubstituteBoardNavigate}
+                        >
+                          게시판에서 찾기
+                        </Button>
+                      )}
                     </div>
                     <div>
                       <span className="font-medium">보상 금액:</span> {application.rewardAmount?.toLocaleString()}원
@@ -351,64 +323,7 @@ const RestManagement: React.FC = () => {
           </div>
         </TabsContent>
 
-        <TabsContent value="substitute" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <Users className="w-5 h-5 mr-2" />
-                대체 근무 기회
-              </CardTitle>
-              <CardDescription>
-                다른 훈련사의 휴식 기간 동안 대체 근무를 할 수 있는 기회입니다
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {mockSubstituteOpportunities.map((opportunity) => (
-                  <div key={opportunity.id} className="border rounded-lg p-4">
-                    <div className="flex items-center justify-between mb-3">
-                      <div>
-                        <h3 className="font-semibold">{opportunity.trainerName} 훈련사 대체 근무</h3>
-                        <p className="text-sm text-gray-600">
-                          {opportunity.startDate} ~ {opportunity.endDate}
-                        </p>
-                      </div>
-                      <div className="text-right">
-                        <div className="font-semibold text-lg text-primary">
-                          {opportunity.compensation.toLocaleString()}원
-                        </div>
-                        <div className="text-sm text-gray-600">
-                          {opportunity.workingHours}
-                        </div>
-                      </div>
-                    </div>
-                    <div className="mb-3">
-                      <p className="text-sm font-medium mb-1">필요 스킬:</p>
-                      <div className="flex flex-wrap gap-1">
-                        {opportunity.requiredSkills.map((skill, index) => (
-                          <Badge key={index} variant="secondary">{skill}</Badge>
-                        ))}
-                      </div>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <Badge variant="outline">
-                        {opportunity.requiredLevel === 'same' && '동일 레벨'}
-                        {opportunity.requiredLevel === 'higher' && '상급 레벨'}
-                        {opportunity.requiredLevel === 'lower' && '하급 레벨'}
-                      </Badge>
-                      <Button 
-                        onClick={() => handleApplySubstitute(opportunity.id)}
-                        disabled={opportunity.status !== 'open'}
-                      >
-                        {opportunity.status === 'open' ? '지원하기' : '마감됨'}
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
+
 
         <TabsContent value="rewards" className="space-y-4">
           <Card>

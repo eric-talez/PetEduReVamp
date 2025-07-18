@@ -77,6 +77,24 @@ const MOCK_POSTS: SubstituteClassPost[] = [
     maxApplicants: 2,
     status: 'open',
     originalTrainer: '이훈련사'
+  },
+  {
+    id: '3',
+    title: '[휴식 신청] 개인 사정으로 인한 대체 훈련사 모집',
+    description: '개인 사정으로 인한 휴식 기간 중 대체 훈련사를 모집합니다. 기존 학생들의 교육 연속성 유지를 위해 경험이 풍부한 훈련사를 찾습니다.',
+    classDate: '2025-01-25',
+    classTime: '전일 (09:00-18:00)',
+    location: '강남 훈련센터',
+    isOnline: false,
+    compensation: 150000,
+    studentCount: 8,
+    urgency: 'urgent',
+    requiredSkills: ['기초 복종', '사회화 훈련', '문제행동 교정'],
+    currentApplicants: 1,
+    maxApplicants: 1,
+    status: 'open',
+    originalTrainer: '박훈련사',
+    specialRequirements: '3년 이상 경험 필수, 기존 학생 인수인계 필요'
   }
 ];
 
