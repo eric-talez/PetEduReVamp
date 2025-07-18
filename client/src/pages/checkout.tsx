@@ -137,7 +137,11 @@ const CheckoutForm = ({ itemInfo, itemType }: { itemInfo: CourseInfo | ProductIn
 
 export default function Checkout() {
   const [location] = useLocation();
-  const searchParams = new URLSearchParams(location.split('?')[1] || '');
+  
+  // URL 전체를 가져오기 위해 window.location.search 사용
+  const searchString = window.location.search;
+  const searchParams = new URLSearchParams(searchString);
+  
   const courseId = searchParams.get('courseId');
   const productId = searchParams.get('productId');
   const productName = searchParams.get('productName');
@@ -148,6 +152,7 @@ export default function Checkout() {
   // 디버깅을 위한 로깅
   console.log('Checkout page - URL params:', {
     location,
+    searchString,
     courseId,
     productId,
     productName,
