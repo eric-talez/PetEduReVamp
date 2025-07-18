@@ -177,7 +177,7 @@ function parseExcelCurriculumWithPricing(data: any[], filename: string) {
             }
           } else if (j === 6 && cellValue) {
             // 일곱 번째 컬럼: 준비물
-            moduleMaterials = cellValue;
+            moduleMaterials = String(cellValue).trim();
           }
         }
 
@@ -202,7 +202,7 @@ function parseExcelCurriculumWithPricing(data: any[], filename: string) {
             isRequired: true,
             isFree: isFree,
             price: modulePrice,
-            materials: moduleMaterials
+            materials: moduleMaterials ? moduleMaterials.split(',').map(m => m.trim()).filter(m => m.length > 0) : []
           };
           
           modules.push(module);
@@ -2214,7 +2214,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const duration = parseInt(row[3]) || 60;
         const isFree = row[4] === 'Y' || row[4] === 'y' || row[4] === '무료';
         const price = isFree ? 0 : (parseInt(row[5]) || 50000);
-        const materials = row[6] || '';
+        const materialsString = (row.length > 6 && row[6]) ? String(row[6]).trim() : '';
+        const materials = materialsString ? materialsString.split(',').map(m => m.trim()).filter(m => m.length > 0) : [];
         
         const moduleData = {
           id: `module-${lessonNumber}`,
@@ -2230,7 +2231,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         };
 
         console.log(`[엑셀 파싱] 행 ${i} 전체 데이터:`, row);
-        console.log(`[엑셀 파싱] 모듈 추가: ${moduleData.title} (설명: ${moduleData.description.substring(0, 50)}..., 시간: ${moduleData.duration}분, 무료: ${moduleData.isFree}, 가격: ${moduleData.price}원, 준비물: "${moduleData.materials}")`);
+        console.log(`[엑셀 파싱] 모듈 추가: ${moduleData.title} (설명: ${moduleData.description.substring(0, 50)}..., 시간: ${moduleData.duration}분, 무료: ${moduleData.isFree}, 가격: ${moduleData.price}원, 준비물: [${moduleData.materials.join(', ')}])`);
         console.log(`[엑셀 파싱] 준비물 컬럼 원본 데이터 (row[6]):`, row[6], typeof row[6]);
         modules.push(moduleData);
       }
