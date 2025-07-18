@@ -2152,21 +2152,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
         break;
       }
       
-      // 회차 번호가 있는 실제 강의 행만 처리
-      if (row[0] && (typeof row[0] === 'number' || /^\d+$/.test(row[0].toString()))) {
+      // 강의 제목이 있는 실제 강의 행만 처리 (1강, 2강, 3강... 형태)
+      if (row[0] && (typeof row[0] === 'string' && /^\d+강$/.test(row[0].toString()))) {
+        const lessonNumber = row[0].replace('강', '');
         const moduleData = {
-          id: `module-${row[0]}`,
-          title: row[1] || `${row[0]}강`,
-          description: row[2] || `${row[1] || row[0] + '강'} 설명`,
-          duration: parseInt(row[3]) || 60,
-          isFree: row[4] === 'Y' || row[4] === 'y' || row[4] === '무료',
-          price: row[4] === 'Y' || row[4] === 'y' || row[4] === '무료' ? 0 : (parseInt(row[5]) || 50000),
-          materials: row[6] || '',
-          objectives: [`${row[1] || row[0] + '강'} 목표 달성`],
+          id: `module-${lessonNumber}`,
+          title: row[0] || `${lessonNumber}강`,
+          description: row[1] || `${row[0]} 설명`,
+          duration: parseInt(row[2]) || 60,
+          isFree: row[3] === 'Y' || row[3] === 'y' || row[3] === '무료',
+          price: row[3] === 'Y' || row[3] === 'y' || row[3] === '무료' ? 0 : (parseInt(row[4]) || 50000),
+          materials: row[5] || '',
+          objectives: [`${row[0]} 목표 달성`],
           activities: ['실습 활동'],
           completed: false
         };
 
+        console.log(`[엑셀 파싱] 모듈 추가: ${moduleData.title}`);
         modules.push(moduleData);
       }
     }
