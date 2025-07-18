@@ -5510,6 +5510,10 @@ app.get('/api/search', async (req, res) => {
     try {
       const { amount, courseId, courseTitle, itemId, itemName, itemType } = req.body;
       
+      // 실시간 API 키 재확인
+      const currentStripeKey = process.env.STRIPE_SECRET_KEY;
+      console.log('🚀 결제 API 호출 - 현재 Stripe 키:', currentStripeKey ? `${currentStripeKey.substring(0, 20)}...` : 'NOT SET');
+      
       if (!amount || (!courseId && !itemId)) {
         return res.status(400).json({ error: '결제 금액과 구매 항목 ID가 필요합니다.' });
       }
@@ -5526,8 +5530,13 @@ app.get('/api/search', async (req, res) => {
         metadata.type = 'course';
       }
 
+      // 실시간 Stripe 인스턴스 생성 (캐시 방지)
+      const currentStripe = new Stripe(currentStripeKey!, {
+        apiVersion: '2023-10-16',
+      });
+
       // Stripe PaymentIntent 생성
-      const paymentIntent = await stripe.paymentIntents.create({
+      const paymentIntent = await currentStripe.paymentIntents.create({
         amount: Math.round(amount * 100), // 센트 단위로 변환
         currency: 'krw',
         metadata: metadata
