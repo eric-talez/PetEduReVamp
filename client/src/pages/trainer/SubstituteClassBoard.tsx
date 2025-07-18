@@ -218,11 +218,20 @@ export default function SubstituteClassBoard() {
     e.preventDefault();
     
     const formData = new FormData(e.target as HTMLFormElement);
+    
+    // 시간 데이터 조합
+    const startHour = formData.get('startHour');
+    const startMinute = formData.get('startMinute');
+    const endHour = formData.get('endHour');
+    const endMinute = formData.get('endMinute');
+    
+    const classTime = `${startHour}:${startMinute}-${endHour}:${endMinute}`;
+    
     const postData = {
       title: formData.get('title'),
       description: formData.get('description'),
       classDate: formData.get('classDate'),
-      classTime: formData.get('classTime'),
+      classTime: classTime,
       location: formData.get('location'),
       compensation: Number(formData.get('compensation')),
       urgency: formData.get('urgency'),
@@ -388,25 +397,65 @@ export default function SubstituteClassBoard() {
                   <Input id="classDate" name="classDate" type="date" required />
                 </div>
                 <div>
-                  <Label htmlFor="classTime">수업 시간</Label>
-                  <Select name="classTime" required>
-                    <SelectTrigger>
-                      <SelectValue placeholder="시간을 선택하세요" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="09:00-10:30">09:00-10:30</SelectItem>
-                      <SelectItem value="10:00-11:30">10:00-11:30</SelectItem>
-                      <SelectItem value="11:00-12:30">11:00-12:30</SelectItem>
-                      <SelectItem value="13:00-14:30">13:00-14:30</SelectItem>
-                      <SelectItem value="14:00-15:30">14:00-15:30</SelectItem>
-                      <SelectItem value="15:00-16:30">15:00-16:30</SelectItem>
-                      <SelectItem value="16:00-17:30">16:00-17:30</SelectItem>
-                      <SelectItem value="17:00-18:30">17:00-18:30</SelectItem>
-                      <SelectItem value="18:00-19:30">18:00-19:30</SelectItem>
-                      <SelectItem value="19:00-20:30">19:00-20:30</SelectItem>
-                      <SelectItem value="전일 (09:00-18:00)">전일 (09:00-18:00)</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <Label>수업 시간</Label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <Label className="text-sm text-gray-600">시작 시간</Label>
+                      <div className="flex gap-1">
+                        <Select name="startHour" required>
+                          <SelectTrigger className="flex-1">
+                            <SelectValue placeholder="시" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {Array.from({ length: 24 }, (_, i) => (
+                              <SelectItem key={i} value={i.toString().padStart(2, '0')}>
+                                {i.toString().padStart(2, '0')}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <Select name="startMinute" required>
+                          <SelectTrigger className="flex-1">
+                            <SelectValue placeholder="분" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="00">00</SelectItem>
+                            <SelectItem value="15">15</SelectItem>
+                            <SelectItem value="30">30</SelectItem>
+                            <SelectItem value="45">45</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                    <div>
+                      <Label className="text-sm text-gray-600">종료 시간</Label>
+                      <div className="flex gap-1">
+                        <Select name="endHour" required>
+                          <SelectTrigger className="flex-1">
+                            <SelectValue placeholder="시" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {Array.from({ length: 24 }, (_, i) => (
+                              <SelectItem key={i} value={i.toString().padStart(2, '0')}>
+                                {i.toString().padStart(2, '0')}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <Select name="endMinute" required>
+                          <SelectTrigger className="flex-1">
+                            <SelectValue placeholder="분" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="00">00</SelectItem>
+                            <SelectItem value="15">15</SelectItem>
+                            <SelectItem value="30">30</SelectItem>
+                            <SelectItem value="45">45</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
