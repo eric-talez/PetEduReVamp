@@ -4,8 +4,9 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { Search, Filter, SlidersHorizontal, Star, BookOpen } from "lucide-react";
+import { Search, Filter, SlidersHorizontal, Star, BookOpen, Package, Video, VideoOff, Play, Clock, Eye, ChevronRight } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 interface CoursesPageProps {
   mode?: 'view' | 'create' | 'edit';
@@ -37,6 +38,10 @@ export default function Courses(props?: CoursesPageProps) {
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(8);
+  const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
+  const [showCourseModal, setShowCourseModal] = useState(false);
+  const [selectedModule, setSelectedModule] = useState<any>(null);
+  const [showVideoModal, setShowVideoModal] = useState(false);
   const { toast } = useToast();
 
   // 강의 구매 처리 함수
@@ -61,7 +66,26 @@ export default function Courses(props?: CoursesPageProps) {
   // 미리보기 핸들러
   const handlePreview = (courseId: string) => {
     console.log('미리보기 클릭:', courseId);
-    window.location.href = `/courses/${courseId}/preview`;
+    const course = courses.find(c => c.id === courseId);
+    if (course) {
+      setSelectedCourse(course);
+      setShowCourseModal(true);
+    }
+  };
+
+  // 수강신청 핸들러
+  const handleEnroll = () => {
+    toast({
+      title: "수강신청 완료",
+      description: "수강신청이 완료되었습니다!",
+    });
+    setShowCourseModal(false);
+  };
+
+  // 영상 재생 핸들러
+  const handlePlayVideo = (module: any) => {
+    setSelectedModule(module);
+    setShowVideoModal(true);
   };
 
   // 실제 등록된 커리큘럼에서 발행된 강의만 조회
@@ -414,6 +438,242 @@ export default function Courses(props?: CoursesPageProps) {
           </nav>
         </div>
       )}
+
+      {/* 강의 상세 정보 모달 */}
+      <Dialog open={showCourseModal} onOpenChange={setShowCourseModal}>
+        <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold">
+              {selectedCourse?.title}
+            </DialogTitle>
+          </DialogHeader>
+          
+          {selectedCourse && (
+            <div className="space-y-6">
+              {/* 기본 정보 */}
+              <div className="space-y-4">
+                <div className="flex items-center gap-4">
+                  <Badge variant="outline" className="text-sm">
+                    {selectedCourse.category}
+                  </Badge>
+                  {getDifficultyBadge(selectedCourse.difficulty)}
+                  <span className="text-sm text-gray-500">
+                    {Math.floor(selectedCourse.duration / 60)}시간 {selectedCourse.duration % 60}분
+                  </span>
+                </div>
+                
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Avatar className="w-8 h-8">
+                      <AvatarFallback>{selectedCourse.trainerName.charAt(0)}</AvatarFallback>
+                    </Avatar>
+                    <span className="font-medium">{selectedCourse.trainerName}</span>
+                  </div>
+                  <span className="text-2xl font-bold text-primary">
+                    {selectedCourse.price.toLocaleString()}원
+                  </span>
+                </div>
+              </div>
+
+              {/* 강의 소개 */}
+              <div>
+                <h4 className="text-lg font-semibold mb-3">강의 소개</h4>
+                <p className="text-gray-700 leading-relaxed">{selectedCourse.description}</p>
+              </div>
+
+              {/* 커리큘럼 모듈 */}
+              {selectedCourse.modules && selectedCourse.modules.length > 0 && (
+                <div>
+                  <h4 className="text-lg font-semibold mb-3">커리큘럼</h4>
+                  <div className="space-y-3">
+                    {selectedCourse.modules.map((module: any, index: number) => (
+                      <div key={index} className="p-4 bg-gray-50 rounded-lg">
+                        <div className="flex items-start gap-3">
+                          <div className="flex-shrink-0 w-8 h-8 bg-primary text-white rounded-full flex items-center justify-center text-sm font-semibold">
+                            {index + 1}
+                          </div>
+                          <div className="flex-1">
+                            <h5 className="font-semibold text-gray-900 mb-1">{module.title}</h5>
+                            {module.description && (
+                              <p className="text-gray-600 text-sm mb-2">{module.description}</p>
+                            )}
+                            
+                            {/* 시간 및 가격 정보 */}
+                            <div className="flex items-center gap-4 mb-3">
+                              {module.duration && (
+                                <div className="flex items-center gap-1">
+                                  <Clock className="w-4 h-4 text-gray-500" />
+                                  <span className="text-sm text-gray-500">{module.duration}분</span>
+                                </div>
+                              )}
+                              {module.price !== undefined && (
+                                <div className="flex items-center gap-1">
+                                  <span className="text-sm text-gray-500">
+                                    {module.isFree ? '무료' : `${module.price?.toLocaleString()}원`}
+                                  </span>
+                                </div>
+                              )}
+                            </div>
+
+                            {/* 준비물 정보 */}
+                            {module.materials && module.materials.length > 0 && (
+                              <div className="mb-3">
+                                <div className="flex items-center gap-2 mb-1">
+                                  <Package className="w-4 h-4 text-blue-600" />
+                                  <span className="text-sm font-medium text-gray-700">준비물</span>
+                                </div>
+                                <div className="flex flex-wrap gap-1 ml-6">
+                                  {module.materials.map((material: string, idx: number) => (
+                                    <Badge key={idx} variant="outline" className="text-xs">
+                                      {material}
+                                    </Badge>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+
+                            {/* 영상 정보 */}
+                            <div className="mt-3">
+                              {module.videoUrl || module.attachments?.some((att: any) => att.type === 'video') ? (
+                                <div className="flex items-center gap-2 p-3 bg-blue-50 rounded-lg">
+                                  <Video className="w-4 h-4 text-blue-600" />
+                                  <span className="text-sm text-blue-800">영상 강의 준비됨</span>
+                                  <Button 
+                                    size="sm" 
+                                    variant="outline" 
+                                    className="ml-auto"
+                                    onClick={() => handlePlayVideo(module)}
+                                  >
+                                    <Play className="w-3 h-3 mr-1" />
+                                    재생
+                                  </Button>
+                                </div>
+                              ) : (
+                                <div className="flex items-center gap-2 p-3 bg-gray-100 rounded-lg">
+                                  <VideoOff className="w-4 h-4 text-gray-500" />
+                                  <span className="text-sm text-gray-600">영상 강의 준비 중</span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* 하단 버튼 */}
+              <div className="flex gap-3 pt-4 border-t">
+                <Button 
+                  variant="outline" 
+                  onClick={() => setShowCourseModal(false)}
+                  className="flex-1"
+                >
+                  닫기
+                </Button>
+                <Button 
+                  onClick={handleEnroll}
+                  className="flex-1"
+                >
+                  수강 신청
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* 영상 재생 모달 */}
+      <Dialog open={showVideoModal} onOpenChange={setShowVideoModal}>
+        <DialogContent className="sm:max-w-[900px] max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold">
+              {selectedModule?.title}
+            </DialogTitle>
+          </DialogHeader>
+          
+          {selectedModule && (
+            <div className="space-y-4">
+              {/* 영상 플레이어 */}
+              <div className="aspect-video bg-gray-900 rounded-lg flex items-center justify-center">
+                {selectedModule.videoUrl ? (
+                  <video 
+                    controls 
+                    className="w-full h-full rounded-lg"
+                    src={selectedModule.videoUrl}
+                  >
+                    브라우저에서 비디오를 지원하지 않습니다.
+                  </video>
+                ) : selectedModule.attachments?.some((att: any) => att.type === 'video') ? (
+                  <video 
+                    controls 
+                    className="w-full h-full rounded-lg"
+                    src={selectedModule.attachments.find((att: any) => att.type === 'video')?.url}
+                  >
+                    브라우저에서 비디오를 지원하지 않습니다.
+                  </video>
+                ) : (
+                  <div className="text-center text-white">
+                    <VideoOff className="w-16 h-16 mx-auto mb-4 opacity-50" />
+                    <p className="text-lg mb-2">영상 준비 중</p>
+                    <p className="text-sm opacity-75">곧 업로드될 예정입니다.</p>
+                  </div>
+                )}
+              </div>
+
+              {/* 모듈 정보 */}
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <h4 className="font-semibold mb-2">{selectedModule.title}</h4>
+                {selectedModule.description && (
+                  <p className="text-gray-600 text-sm mb-3">{selectedModule.description}</p>
+                )}
+                
+                <div className="flex items-center gap-4 text-sm text-gray-600">
+                  {selectedModule.duration && (
+                    <div className="flex items-center gap-1">
+                      <Clock className="w-4 h-4" />
+                      <span>{selectedModule.duration}분</span>
+                    </div>
+                  )}
+                  {selectedModule.price !== undefined && (
+                    <div className="flex items-center gap-1">
+                      <span>{selectedModule.isFree ? '무료' : `${selectedModule.price?.toLocaleString()}원`}</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* 준비물 */}
+                {selectedModule.materials && selectedModule.materials.length > 0 && (
+                  <div className="mt-3">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Package className="w-4 h-4 text-blue-600" />
+                      <span className="font-medium text-gray-700">준비물</span>
+                    </div>
+                    <div className="flex flex-wrap gap-1">
+                      {selectedModule.materials.map((material: string, idx: number) => (
+                        <Badge key={idx} variant="outline" className="text-xs">
+                          {material}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* 닫기 버튼 */}
+              <div className="flex justify-end">
+                <Button 
+                  onClick={() => setShowVideoModal(false)}
+                  variant="outline"
+                >
+                  닫기
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
