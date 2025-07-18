@@ -152,6 +152,19 @@ export default function AdminCurriculum() {
     trainerPhone: ''
   });
   
+  const [newCurriculum, setNewCurriculum] = useState({
+    title: '',
+    description: '',
+    category: '',
+    difficulty: 'beginner' as const,
+    duration: 0,
+    price: 0,
+    trainerName: '',
+    trainerId: '',
+    trainerEmail: '',
+    trainerPhone: ''
+  });
+  
   // 영상강의 관련 상태
   const [videoLectures, setVideoLectures] = useState<VideoLecture[]>([]);
   const [selectedLecture, setSelectedLecture] = useState<VideoLecture | null>(null);
@@ -240,6 +253,22 @@ export default function AdminCurriculum() {
     setCreationStep(1);
   };
 
+  // 새 커리큘럼 상태 초기화
+  const resetNewCurriculum = () => {
+    setNewCurriculum({
+      title: '',
+      description: '',
+      category: '',
+      difficulty: 'beginner',
+      duration: 0,
+      price: 0,
+      trainerName: '',
+      trainerId: '',
+      trainerEmail: '',
+      trainerPhone: ''
+    });
+  };
+
   const handleStartCreation = () => {
     resetCreationForm();
     setShowCreationWizard(true);
@@ -314,6 +343,7 @@ export default function AdminCurriculum() {
     }));
   };
 
+  // 단계별 커리큘럼 생성 (formData 사용)
   const handleCreateCurriculum = async () => {
     // 최종 검증 (모든 단계)
     if (!validateCurrentStep()) {
@@ -382,6 +412,70 @@ export default function AdminCurriculum() {
           title: "커리큘럼 생성 완료",
           description: `"${formData.title}" 커리큘럼이 성공적으로 생성되었습니다.`,
         });
+      } else {
+        const errorData = await response.json();
+        throw new Error(errorData.message || '서버 오류가 발생했습니다.');
+      }
+    } catch (error: any) {
+      console.error('커리큘럼 생성 오류:', error);
+      toast({
+        title: "생성 실패",
+        description: error.message || "커리큘럼 생성 중 오류가 발생했습니다. 다시 시도해주세요.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  // 고급 생성 다이얼로그용 커리큘럼 생성 함수 (newCurriculum 사용)
+  const handleAdvancedCreateCurriculum = async () => {
+    // 입력값 검증
+    if (!newCurriculum.title.trim() || !newCurriculum.description.trim() || !newCurriculum.category.trim()) {
+      toast({
+        title: "입력값 확인 필요",
+        description: "커리큘럼 제목, 설명, 카테고리는 필수 입력 항목입니다.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      const curriculumData = {
+        ...newCurriculum,
+        id: `curriculum-${Date.now()}`,
+        status: 'draft',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        modules: [
+          {
+            id: 'module-1',
+            title: '1주차: 기본 소개',
+            description: '커리큘럼 기본 내용 소개',
+            order: 1,
+            duration: newCurriculum.duration || 60,
+            objectives: ['기본 개념 이해'],
+            content: '기본 커리큘럼 내용',
+            isRequired: true,
+            videos: []
+          }
+        ]
+      };
+
+      const response = await fetch('/api/admin/curriculums', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(curriculumData)
+      });
+
+      if (response.ok) {
+        const createdCurriculum = await response.json();
+        setCurriculums(prev => [...prev, createdCurriculum]);
+        setShowAdvancedCreation(false);
+        resetNewCurriculum();
+        toast({
+          title: "커리큘럼 생성 완료",
+          description: `"${newCurriculum.title}" 커리큘럼이 성공적으로 생성되었습니다.`,
+        });
+        fetchCurriculums(); // 목록 새로고침
       } else {
         const errorData = await response.json();
         throw new Error(errorData.message || '서버 오류가 발생했습니다.');
@@ -762,16 +856,7 @@ export default function AdminCurriculum() {
     }
   ];
 
-  const [newCurriculum, setNewCurriculum] = useState({
-    title: '',
-    description: '',
-    category: '',
-    difficulty: 'beginner' as const,
-    duration: 0,
-    price: 0,
-    trainerId: '',
-    trainerName: ''
-  });
+
 
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [isProcessingFile, setIsProcessingFile] = useState(false);
@@ -2817,6 +2902,190 @@ export default function AdminCurriculum() {
             </DialogContent>
           </Dialog>
         )}
+
+        {/* 고급 생성 다이얼로그 */}
+        <Dialog open={showAdvancedCreation} onOpenChange={setShowAdvancedCreation}>
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto" aria-describedby="advanced-creation-description">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2 text-gray-900 dark:text-white">
+                <Settings className="w-5 h-5" />
+                고급 커리큘럼 생성
+              </DialogTitle>
+            </DialogHeader>
+            <div id="advanced-creation-description" className="sr-only">
+              고급 옵션을 사용하여 커리큘럼을 생성하는 대화상자입니다.
+            </div>
+            
+            <div className="space-y-6">
+              {/* 파일 업로드 섹션 */}
+              <div className="p-4 border-2 border-dashed border-blue-300 rounded-lg bg-blue-50 dark:bg-blue-900/20">
+                <div className="text-center">
+                  <Upload className="w-10 h-10 mx-auto mb-3 text-blue-500" />
+                  <h3 className="text-lg font-semibold text-blue-700 dark:text-blue-300 mb-2">파일에서 커리큘럼 생성</h3>
+                  <p className="text-sm text-blue-600 dark:text-blue-400 mb-4">
+                    Excel 파일(.xlsx, .xls), 한글파일(.hwp, .hwpx), 워드파일(.docx, .doc) 지원
+                  </p>
+                  <p className="text-sm text-green-600 dark:text-green-400 mb-4">
+                    💡 Excel 파일: 회차별 세부 정보 및 가격 정보 자동 추출
+                  </p>
+                  <input
+                    type="file"
+                    accept=".hwp,.hwpx,.docx,.doc,.txt,.xlsx,.xls"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        handleFileUpload(file);
+                        setShowAdvancedCreation(false);
+                      }
+                    }}
+                    className="hidden"
+                    id="advanced-file-upload"
+                  />
+                  <label
+                    htmlFor="advanced-file-upload"
+                    className="inline-flex items-center px-6 py-3 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 cursor-pointer transition-colors shadow-sm hover:shadow-md"
+                  >
+                    <FileText className="w-5 h-5 mr-2" />
+                    파일 선택하기
+                  </label>
+                </div>
+              </div>
+
+              <div className="text-center">
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-gray-300 dark:border-gray-600"></div>
+                  </div>
+                  <div className="relative flex justify-center text-sm">
+                    <span className="px-2 bg-gray-50 dark:bg-gray-900 text-gray-500">또는</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* 직접 입력 섹션 */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">직접 입력</h3>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">커리큘럼 제목 *</label>
+                    <Input
+                      placeholder="예: 반려견 기초 훈련 완전정복"
+                      value={newCurriculum.title}
+                      onChange={(e) => setNewCurriculum(prev => ({ ...prev, title: e.target.value }))}
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">카테고리 *</label>
+                    <Select
+                      value={newCurriculum.category}
+                      onValueChange={(value) => setNewCurriculum(prev => ({ ...prev, category: value }))}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="카테고리 선택" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="기초훈련">기초훈련</SelectItem>
+                        <SelectItem value="문제행동교정">문제행동교정</SelectItem>
+                        <SelectItem value="어질리티">어질리티</SelectItem>
+                        <SelectItem value="사회화">사회화</SelectItem>
+                        <SelectItem value="전문가과정">전문가과정</SelectItem>
+                        <SelectItem value="재활치료">재활치료</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">커리큘럼 설명 *</label>
+                  <Textarea
+                    placeholder="커리큘럼의 목표와 내용을 자세히 설명해주세요"
+                    value={newCurriculum.description}
+                    onChange={(e) => setNewCurriculum(prev => ({ ...prev, description: e.target.value }))}
+                    rows={4}
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">난이도 *</label>
+                    <Select
+                      value={newCurriculum.difficulty}
+                      onValueChange={(value) => setNewCurriculum(prev => ({ ...prev, difficulty: value as 'beginner' | 'intermediate' | 'advanced' }))}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="beginner">초급</SelectItem>
+                        <SelectItem value="intermediate">중급</SelectItem>
+                        <SelectItem value="advanced">고급</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">총 시간 (분) *</label>
+                    <Input
+                      type="number"
+                      placeholder="480"
+                      value={newCurriculum.duration}
+                      onChange={(e) => setNewCurriculum(prev => ({ ...prev, duration: parseInt(e.target.value) || 0 }))}
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">가격 (원) *</label>
+                    <Input
+                      type="number"
+                      placeholder="300000"
+                      value={newCurriculum.price}
+                      onChange={(e) => setNewCurriculum(prev => ({ ...prev, price: parseInt(e.target.value) || 0 }))}
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">담당 훈련사 *</label>
+                    <Input
+                      placeholder="예: 강동훈"
+                      value={newCurriculum.trainerName}
+                      onChange={(e) => setNewCurriculum(prev => ({ ...prev, trainerName: e.target.value }))}
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">훈련사 ID</label>
+                    <Input
+                      placeholder="예: trainer-001"
+                      value={newCurriculum.trainerId}
+                      onChange={(e) => setNewCurriculum(prev => ({ ...prev, trainerId: e.target.value }))}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-3 pt-4 border-t">
+                <Button
+                  variant="outline"
+                  onClick={() => setShowAdvancedCreation(false)}
+                >
+                  취소
+                </Button>
+                <Button
+                  onClick={handleAdvancedCreateCurriculum}
+                  disabled={!newCurriculum.title || !newCurriculum.description || !newCurriculum.category}
+                  className="bg-blue-600 hover:bg-blue-700"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  커리큘럼 생성
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
 
         {/* 커리큘럼 미리보기 모달 */}
         {showPreviewModal && previewCurriculum && (

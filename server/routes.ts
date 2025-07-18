@@ -2149,7 +2149,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } else if (fileName.includes('중급')) {
       curriculum.difficulty = 'intermediate';
       curriculum.category = '중급교육';
+    } else if (fileName.includes('재활')) {
+      curriculum.difficulty = 'intermediate';
+      curriculum.category = '재활치료';
     }
+
+    console.log('[엑셀 파싱] 최종 커리큘럼 데이터:', {
+      title: curriculum.title,
+      moduleCount: modules.length,
+      totalDuration: curriculum.duration,
+      totalPrice: curriculum.price,
+      modules: modules.map(m => ({ title: m.title, duration: m.duration, price: m.price }))
+    });
 
     return curriculum;
   }
