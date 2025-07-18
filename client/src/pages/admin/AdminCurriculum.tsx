@@ -162,7 +162,8 @@ export default function AdminCurriculum() {
     trainerName: '',
     trainerId: '',
     trainerEmail: '',
-    trainerPhone: ''
+    trainerPhone: '',
+    modules: [] as any[] // 추출된 모듈 데이터를 저장하기 위한 속성
   });
   
   // 영상강의 관련 상태
@@ -265,7 +266,8 @@ export default function AdminCurriculum() {
       trainerName: '',
       trainerId: '',
       trainerEmail: '',
-      trainerPhone: ''
+      trainerPhone: '',
+      modules: []
     });
   };
 
@@ -445,7 +447,7 @@ export default function AdminCurriculum() {
         status: 'draft',
         createdAt: new Date(),
         updatedAt: new Date(),
-        modules: [
+        modules: newCurriculum.modules && newCurriculum.modules.length > 0 ? newCurriculum.modules : [
           {
             id: 'module-1',
             title: '1주차: 기본 소개',
@@ -1018,7 +1020,8 @@ export default function AdminCurriculum() {
           duration: extractedData.duration || 480, // 8시간 기본값
           price: extractedData.price || 300000,    // 30만원 기본값
           trainerId: registrantInfo.name || '강동훈',
-          trainerName: registrantInfo.name || '강동훈'
+          trainerName: registrantInfo.name || '강동훈',
+          modules: extractedData.modules || [] // 중요: 추출된 모듈 데이터 저장
         }));
 
         // 새 커리큘럼 생성 모드로 전환
@@ -1027,7 +1030,7 @@ export default function AdminCurriculum() {
 
         toast({
           title: "파일 업로드 및 자동 입력 완료",
-          description: `"${extractedData.title || file.name}" 커리큘럼 정보가 자동으로 입력되었습니다. 등록자: ${registrantInfo.name || '미확인'}`,
+          description: `"${extractedData.title || file.name}" 커리큘럼 정보가 자동으로 입력되었습니다. 모듈 ${extractedData.modules?.length || 0}개, 등록자: ${registrantInfo.name || '미확인'}`,
           variant: "default"
         });
       } else {
