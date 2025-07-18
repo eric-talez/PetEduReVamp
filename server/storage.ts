@@ -1254,40 +1254,11 @@ class Storage {
 
 
 
-  createCurriculum(curriculumData: any) {
-    const newCourse = {
-      id: this.courses.length + 1,
-      ...curriculumData,
-      createdAt: new Date().toISOString()
-    };
 
-    this.courses.push(newCourse);
-    return newCourse;
-  }
 
   // 기관 관련 메서드들
   getInstitutes() {
     return this.institutes || [];
-  }
-
-  getAllInstitutes() {
-    return this.institutes || [];
-  }
-
-  getSubscriptionPlan(planCode: string) {
-    return this.subscriptionPlans.find(plan => plan.code === planCode) || null;
-  }
-
-  getSubscriptionPlans() {
-    return this.subscriptionPlans || [];
-  }
-
-  getAllSubscriptionPlans() {
-    return this.subscriptionPlans || [];
-  }
-
-  getInstitute(id: number) {
-    return this.institutes?.find(institute => institute.id === id);
   }
 
   createInstitute(instituteData: any) {
@@ -1304,15 +1275,6 @@ class Storage {
     }
     this.institutes.push(newInstitute);
     return newInstitute;
-  }
-
-  updateInstitute(id: number, updateData: any) {
-    const institute = this.getInstitute(id);
-    if (institute) {
-      Object.assign(institute, updateData);
-      return institute;
-    }
-    return null;
   }
 
   // 사용자 관련 메서드들
@@ -2287,9 +2249,9 @@ class Storage {
     
     // 요청 상태 업데이트
     request.status = action === 'approve' ? 'approved' : 'rejected';
-    request.reviewedAt = new Date().toISOString();
-    request.reviewedBy = '관리자';
-    request.adminNotes = adminNotes;
+    (request as any).reviewedAt = new Date().toISOString();
+    (request as any).reviewedBy = '관리자';
+    (request as any).adminNotes = adminNotes;
     
     // 승인된 경우 실제 업체 정보 업데이트
     if (action === 'approve') {
@@ -2402,10 +2364,7 @@ class Storage {
     }
   }
 
-  // 모든 강의 조회
-  async getAllCourses(): Promise<any[]> {
-    return this.courses;
-  }
+
 
   // 훈련사 생성
   async createTrainer(trainerData: any): Promise<any> {
@@ -2494,15 +2453,7 @@ class Storage {
     }
   }
 
-  async getProduct(id: number) {
-    try {
-      const product = this.products.find(p => p.id === id);
-      return product || null;
-    } catch (error) {
-      console.error('[Storage] 상품 조회 실패:', error);
-      return null;
-    }
-  }
+
 
   // 강의 구매 관련 메소드
   async purchaseCourse(userId: number, courseId: number, purchaseAmount: number, paymentMethod: string) {
