@@ -6405,9 +6405,6 @@ app.get('/api/search', async (req, res) => {
       // 파일 형식에 따른 처리
       if (fileExtension === '.xlsx' || fileExtension === '.xls') {
         try {
-          // 파일 경로 확인 및 수정
-          const fs = require('fs');
-          
           // 파일 경로를 Buffer로 읽어서 한글 파일명 문제 해결
           let workbook;
           try {
