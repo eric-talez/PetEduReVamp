@@ -1071,3 +1071,150 @@ export type InsertLogoAsset = typeof logoAssets.$inferInsert;
 // 로고 관련 Zod 스키마
 export const insertLogoAssetSchema = createInsertSchema(logoAssets);
 export const selectLogoAssetSchema = createSelectSchema(logoAssets);
+
+// 훈련사 인증 등급 테이블
+export const trainerTiers = pgTable("trainer_tiers", {
+  id: serial("id").primaryKey(),
+  trainerId: integer("trainer_id").references(() => users.id).notNull(),
+  tier: varchar("tier", { length: 50 }).notNull().default("general"), // general, semi_certified, certified
+  classCount: integer("class_count").default(0), // 누적 수업 횟수
+  contentCount: integer("content_count").default(0), // 제작 콘텐츠 수
+  rating: decimal("rating", { precision: 3, scale: 2 }).default("0.0"), // 팬 평점
+  lastClassDate: timestamp("last_class_date"),
+  certificationExamPassed: boolean("certification_exam_passed").default(false),
+  substituteAgreementSigned: boolean("substitute_agreement_signed").default(false),
+  educationCompleted: boolean("education_completed").default(false),
+  specializedFields: text("specialized_fields").array(), // 전문 분야 배열
+  availableTimeSlots: jsonb("available_time_slots"), // 가능한 시간대
+  regionCoverage: text("region_coverage").array(), // 담당 가능 지역
+  updatedAt: timestamp("updated_at").defaultNow(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// 대체 수업 게시판 테이블
+export const substituteClassPosts = pgTable("substitute_class_posts", {
+  id: serial("id").primaryKey(),
+  originalTrainerId: integer("original_trainer_id").references(() => users.id).notNull(),
+  classId: integer("class_id").references(() => courses.id).notNull(),
+  title: varchar("title", { length: 200 }).notNull(),
+  description: text("description").notNull(),
+  requiredSkills: text("required_skills").array(), // 필요한 스킬
+  classDate: timestamp("class_date").notNull(),
+  classTime: varchar("class_time", { length: 20 }).notNull(), // 예: "14:00-15:30"
+  location: text("location"),
+  isOnline: boolean("is_online").default(false),
+  compensation: decimal("compensation", { precision: 10, scale: 2 }).notNull(),
+  maxApplicants: integer("max_applicants").default(3),
+  currentApplicants: integer("current_applicants").default(0),
+  status: varchar("status", { length: 20 }).default("open"), // open, in_progress, closed, completed
+  urgency: varchar("urgency", { length: 20 }).default("normal"), // low, normal, high, urgent
+  studentCount: integer("student_count").default(1),
+  studentAgeRange: varchar("student_age_range", { length: 50 }), // 예: "성인반", "아동반"
+  specialRequirements: text("special_requirements"), // 특별 요구사항
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// 대체 수업 신청 테이블
+export const substituteClassApplications = pgTable("substitute_class_applications", {
+  id: serial("id").primaryKey(),
+  postId: integer("post_id").references(() => substituteClassPosts.id).notNull(),
+  applicantId: integer("applicant_id").references(() => users.id).notNull(),
+  message: text("message"), // 신청 메시지
+  proposedCompensation: decimal("proposed_compensation", { precision: 10, scale: 2 }), // 제안 수수료
+  availableFrom: timestamp("available_from"),
+  availableTo: timestamp("available_to"),
+  status: varchar("status", { length: 20 }).default("pending"), // pending, accepted, rejected, completed
+  applicationDate: timestamp("application_date").defaultNow(),
+  reviewedAt: timestamp("reviewed_at"),
+  reviewNotes: text("review_notes"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// 대체 수업 배정 테이블
+export const substituteClassAssignments = pgTable("substitute_class_assignments", {
+  id: serial("id").primaryKey(),
+  postId: integer("post_id").references(() => substituteClassPosts.id).notNull(),
+  originalTrainerId: integer("original_trainer_id").references(() => users.id).notNull(),
+  substituteTrainerId: integer("substitute_trainer_id").references(() => users.id).notNull(),
+  classId: integer("class_id").references(() => courses.id).notNull(),
+  agreedCompensation: decimal("agreed_compensation", { precision: 10, scale: 2 }).notNull(),
+  classDate: timestamp("class_date").notNull(),
+  classTime: varchar("class_time", { length: 20 }).notNull(),
+  status: varchar("status", { length: 20 }).default("assigned"), // assigned, in_progress, completed, cancelled
+  assignedAt: timestamp("assigned_at").defaultNow(),
+  classStartedAt: timestamp("class_started_at"),
+  classCompletedAt: timestamp("class_completed_at"),
+  originalTrainerNotes: text("original_trainer_notes"), // 원래 훈련사 전달사항
+  substituteTrainerNotes: text("substitute_trainer_notes"), // 대체 훈련사 피드백
+  studentFeedback: text("student_feedback"), // 학생 피드백
+  paymentStatus: varchar("payment_status", { length: 20 }).default("pending"), // pending, paid, failed
+  paymentDate: timestamp("payment_date"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// 대체 수업 매칭 로그 테이블
+export const substituteMatchingLogs = pgTable("substitute_matching_logs", {
+  id: serial("id").primaryKey(),
+  postId: integer("post_id").references(() => substituteClassPosts.id).notNull(),
+  candidateTrainerId: integer("candidate_trainer_id").references(() => users.id).notNull(),
+  matchScore: decimal("match_score", { precision: 5, scale: 2 }), // 매칭 점수
+  matchingCriteria: jsonb("matching_criteria"), // 매칭 기준별 점수
+  isRecommended: boolean("is_recommended").default(false),
+  recommendationReason: text("recommendation_reason"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// 대체 수업 알림 테이블
+export const substituteClassNotifications = pgTable("substitute_class_notifications", {
+  id: serial("id").primaryKey(),
+  postId: integer("post_id").references(() => substituteClassPosts.id).notNull(),
+  recipientId: integer("recipient_id").references(() => users.id).notNull(),
+  type: varchar("type", { length: 50 }).notNull(), // post_created, application_received, assignment_made, class_reminder, payment_complete
+  title: varchar("title", { length: 200 }).notNull(),
+  message: text("message").notNull(),
+  isRead: boolean("is_read").default(false),
+  sentAt: timestamp("sent_at").defaultNow(),
+  readAt: timestamp("read_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// 대체 훈련사 시스템 타입 정의
+export type TrainerTier = typeof trainerTiers.$inferSelect;
+export type InsertTrainerTier = typeof trainerTiers.$inferInsert;
+
+export type SubstituteClassPost = typeof substituteClassPosts.$inferSelect;
+export type InsertSubstituteClassPost = typeof substituteClassPosts.$inferInsert;
+
+export type SubstituteClassApplication = typeof substituteClassApplications.$inferSelect;
+export type InsertSubstituteClassApplication = typeof substituteClassApplications.$inferInsert;
+
+export type SubstituteClassAssignment = typeof substituteClassAssignments.$inferSelect;
+export type InsertSubstituteClassAssignment = typeof substituteClassAssignments.$inferInsert;
+
+export type SubstituteMatchingLog = typeof substituteMatchingLogs.$inferSelect;
+export type InsertSubstituteMatchingLog = typeof substituteMatchingLogs.$inferInsert;
+
+export type SubstituteClassNotification = typeof substituteClassNotifications.$inferSelect;
+export type InsertSubstituteClassNotification = typeof substituteClassNotifications.$inferInsert;
+
+// 대체 훈련사 시스템 Zod 스키마
+export const insertTrainerTierSchema = createInsertSchema(trainerTiers);
+export const selectTrainerTierSchema = createSelectSchema(trainerTiers);
+
+export const insertSubstituteClassPostSchema = createInsertSchema(substituteClassPosts);
+export const selectSubstituteClassPostSchema = createSelectSchema(substituteClassPosts);
+
+export const insertSubstituteClassApplicationSchema = createInsertSchema(substituteClassApplications);
+export const selectSubstituteClassApplicationSchema = createSelectSchema(substituteClassApplications);
+
+export const insertSubstituteClassAssignmentSchema = createInsertSchema(substituteClassAssignments);
+export const selectSubstituteClassAssignmentSchema = createSelectSchema(substituteClassAssignments);
+
+export const insertSubstituteMatchingLogSchema = createInsertSchema(substituteMatchingLogs);
+export const selectSubstituteMatchingLogSchema = createSelectSchema(substituteMatchingLogs);
+
+export const insertSubstituteClassNotificationSchema = createInsertSchema(substituteClassNotifications);
+export const selectSubstituteClassNotificationSchema = createSelectSchema(substituteClassNotifications);

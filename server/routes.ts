@@ -8725,6 +8725,261 @@ export function registerTrainerCertificationRoutes(app: Express) {
     }
   });
 
+  // ===== 대체 훈련사 시스템 API =====
+
+  // 대체 훈련사 게시판 - 게시글 목록 조회
+  app.get("/api/substitute-trainer/posts", async (req, res) => {
+    try {
+      const { page = 1, limit = 10, status = 'all' } = req.query;
+      
+      // 실제 대체 훈련사 게시글 데이터 조회
+      const posts = await storage.getSubstituteTrainerPosts({
+        page: parseInt(page as string),
+        limit: parseInt(limit as string),
+        status: status as string
+      });
+      
+      res.json({
+        success: true,
+        posts,
+        totalPosts: posts.length,
+        currentPage: parseInt(page as string),
+        totalPages: Math.ceil(posts.length / parseInt(limit as string))
+      });
+    } catch (error) {
+      console.error('대체 훈련사 게시글 조회 오류:', error);
+      res.status(500).json({ error: '게시글 조회 중 오류가 발생했습니다' });
+    }
+  });
+
+  // 대체 훈련사 게시판 - 게시글 작성
+  app.post("/api/substitute-trainer/posts", async (req, res) => {
+    try {
+      const { 
+        title, 
+        content, 
+        substituteDate, 
+        substituteTime, 
+        location, 
+        trainingType, 
+        petInfo, 
+        requirements, 
+        paymentAmount 
+      } = req.body;
+
+      // 필수 필드 검증
+      if (!title || !content || !substituteDate || !substituteTime || !location) {
+        return res.status(400).json({
+          success: false,
+          message: "필수 정보가 누락되었습니다."
+        });
+      }
+
+      // 훈련사 ID는 세션에서 가져오기 (실제 구현에서는 인증 미들웨어 사용)
+      const trainerId = req.session?.user?.id || 1;
+
+      const newPost = await storage.createSubstituteTrainerPost({
+        trainerId,
+        title,
+        content,
+        substituteDate: new Date(substituteDate),
+        substituteTime,
+        location,
+        trainingType,
+        petInfo,
+        requirements,
+        paymentAmount: parseInt(paymentAmount) || 0,
+        status: 'open'
+      });
+
+      res.json({
+        success: true,
+        message: "대체 훈련사 요청이 등록되었습니다.",
+        post: newPost
+      });
+    } catch (error) {
+      console.error('대체 훈련사 게시글 작성 오류:', error);
+      res.status(500).json({ error: '게시글 작성 중 오류가 발생했습니다' });
+    }
+  });
+
+  // 대체 훈련사 게시판 - 게시글 상세 조회
+  app.get("/api/substitute-trainer/posts/:id", async (req, res) => {
+    try {
+      const postId = parseInt(req.params.id);
+      const post = await storage.getSubstituteTrainerPost(postId);
+      
+      if (!post) {
+        return res.status(404).json({
+          success: false,
+          message: "게시글을 찾을 수 없습니다."
+        });
+      }
+
+      res.json({
+        success: true,
+        post
+      });
+    } catch (error) {
+      console.error('대체 훈련사 게시글 상세 조회 오류:', error);
+      res.status(500).json({ error: '게시글 조회 중 오류가 발생했습니다' });
+    }
+  });
+
+  // 대체 훈련사 지원 신청
+  app.post("/api/substitute-trainer/posts/:id/apply", async (req, res) => {
+    try {
+      const postId = parseInt(req.params.id);
+      const { message } = req.body;
+
+      // 지원자 ID는 세션에서 가져오기
+      const applicantId = req.session?.user?.id || 2;
+
+      const application = await storage.createSubstituteTrainerApplication({
+        postId,
+        applicantId,
+        message: message || "",
+        status: 'pending'
+      });
+
+      res.json({
+        success: true,
+        message: "대체 훈련사 지원이 완료되었습니다.",
+        application
+      });
+    } catch (error) {
+      console.error('대체 훈련사 지원 신청 오류:', error);
+      res.status(500).json({ error: '지원 신청 중 오류가 발생했습니다' });
+    }
+  });
+
+  // 대체 훈련사 지원 승인/거절
+  app.post("/api/substitute-trainer/applications/:id/status", async (req, res) => {
+    try {
+      const applicationId = parseInt(req.params.id);
+      const { status } = req.body; // 'approved' 또는 'rejected'
+
+      if (!['approved', 'rejected'].includes(status)) {
+        return res.status(400).json({
+          success: false,
+          message: "잘못된 상태값입니다."
+        });
+      }
+
+      const updatedApplication = await storage.updateSubstituteTrainerApplication(applicationId, {
+        status,
+        reviewedAt: new Date(),
+        reviewedBy: req.session?.user?.id || 1
+      });
+
+      // 승인된 경우 게시글 상태도 업데이트
+      if (status === 'approved') {
+        await storage.updateSubstituteTrainerPost(updatedApplication.postId, {
+          status: 'assigned',
+          assignedTrainerId: updatedApplication.applicantId
+        });
+      }
+
+      res.json({
+        success: true,
+        message: status === 'approved' ? "지원이 승인되었습니다." : "지원이 거절되었습니다.",
+        application: updatedApplication
+      });
+    } catch (error) {
+      console.error('대체 훈련사 지원 상태 업데이트 오류:', error);
+      res.status(500).json({ error: '상태 업데이트 중 오류가 발생했습니다' });
+    }
+  });
+
+  // 기관 관리자 - 대체 훈련사 관리
+  app.get("/api/institute/substitute-trainer/overview", async (req, res) => {
+    try {
+      // 기관 소속 훈련사들의 대체 훈련사 요청 현황 조회
+      const posts = await storage.getSubstituteTrainerPosts({ instituteId: req.session?.user?.instituteId });
+      const applications = await storage.getSubstituteTrainerApplications({ instituteId: req.session?.user?.instituteId });
+
+      const stats = {
+        totalPosts: posts.length,
+        openPosts: posts.filter(p => p.status === 'open').length,
+        assignedPosts: posts.filter(p => p.status === 'assigned').length,
+        completedPosts: posts.filter(p => p.status === 'completed').length,
+        totalApplications: applications.length,
+        pendingApplications: applications.filter(a => a.status === 'pending').length
+      };
+
+      res.json({
+        success: true,
+        stats,
+        recentPosts: posts.slice(0, 5),
+        recentApplications: applications.slice(0, 5)
+      });
+    } catch (error) {
+      console.error('기관 대체 훈련사 현황 조회 오류:', error);
+      res.status(500).json({ error: '현황 조회 중 오류가 발생했습니다' });
+    }
+  });
+
+  // 관리자 - 대체 훈련사 전체 현황 조회
+  app.get("/api/admin/substitute-trainer/overview", async (req, res) => {
+    try {
+      const posts = await storage.getSubstituteTrainerPosts({});
+      const applications = await storage.getSubstituteTrainerApplications({});
+
+      const stats = {
+        totalPosts: posts.length,
+        openPosts: posts.filter(p => p.status === 'open').length,
+        assignedPosts: posts.filter(p => p.status === 'assigned').length,
+        completedPosts: posts.filter(p => p.status === 'completed').length,
+        totalApplications: applications.length,
+        pendingApplications: applications.filter(a => a.status === 'pending').length,
+        approvedApplications: applications.filter(a => a.status === 'approved').length,
+        rejectedApplications: applications.filter(a => a.status === 'rejected').length
+      };
+
+      res.json({
+        success: true,
+        stats,
+        posts,
+        applications
+      });
+    } catch (error) {
+      console.error('관리자 대체 훈련사 현황 조회 오류:', error);
+      res.status(500).json({ error: '현황 조회 중 오류가 발생했습니다' });
+    }
+  });
+
+  // 대체 훈련사 세션 완료 처리 및 결제
+  app.post("/api/substitute-trainer/sessions/:id/complete", async (req, res) => {
+    try {
+      const sessionId = parseInt(req.params.id);
+      const { notes, rating } = req.body;
+
+      // 세션 완료 처리
+      const session = await storage.completeSubstituteTrainerSession(sessionId, {
+        notes,
+        rating,
+        completedAt: new Date()
+      });
+
+      // 대체 훈련사에게 결제 처리
+      await storage.processSubstituteTrainerPayment({
+        sessionId,
+        trainerId: session.assignedTrainerId,
+        amount: session.paymentAmount,
+        paymentDate: new Date()
+      });
+
+      res.json({
+        success: true,
+        message: "세션이 완료되고 결제가 처리되었습니다.",
+        session
+      });
+    } catch (error) {
+      console.error('대체 훈련사 세션 완료 처리 오류:', error);
+      res.status(500).json({ error: '세션 완료 처리 중 오류가 발생했습니다' });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

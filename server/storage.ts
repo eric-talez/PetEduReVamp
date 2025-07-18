@@ -17,6 +17,10 @@ class Storage {
   lessonSessions: any[] = [];
   trainerActivityLogs: any[] = [];
   pointSettings: any = {};
+  // 대체 훈련사 시스템 데이터 저장소
+  substituteClassPosts: any[] = [];
+  substituteClassApplications: any[] = [];
+  trainers: any[] = [];
   events: any[] = [
     {
       id: 1,
@@ -184,6 +188,7 @@ class Storage {
   constructor() {
     console.log('🔄 운영 환경용 메모리 저장소 초기화...');
     this.initializeData();
+    this.initializeSubstituteTrainerData();
   }
 
   private initializeData() {
@@ -1245,26 +1250,7 @@ class Storage {
     }));
   }
 
-  getAllCurricula() {
-    return this.courses.map(course => ({
-      id: course.id,
-      title: course.title,
-      description: course.description,
-      trainerId: course.trainerId,
-      trainerName: course.trainerName,
-      duration: course.duration,
-      difficulty: course.level,
-      category: course.category || '기초 훈련',
-      price: course.price,
-      maxStudents: course.maxStudents,
-      status: 'published',
-      enrollmentCount: 0,
-      averageRating: 4.5,
-      modules: course.modules || [],
-      createdAt: course.createdAt || new Date().toISOString(),
-      updatedAt: course.updatedAt || new Date().toISOString()
-    }));
-  }
+
 
   createCurriculum(curriculumData: any) {
     const newCourse = {
@@ -2577,6 +2563,269 @@ class Storage {
   updatePointSettings(settings: any) {
     this.pointSettings = { ...this.pointSettings, ...settings };
     return this.pointSettings;
+  }
+
+  // ===== 대체 훈련사 시스템 메서드들 =====
+  
+  // 대체 훈련사 게시글 조회
+  async getSubstituteTrainerPosts(options: any = {}) {
+    const { page = 1, limit = 10, status = 'all', instituteId } = options;
+    
+    let posts = this.substituteClassPosts.filter(post => {
+      if (status !== 'all' && post.status !== status) return false;
+      if (instituteId && post.instituteId !== instituteId) return false;
+      return true;
+    });
+
+    // 훈련사 정보 포함
+    posts = posts.map(post => ({
+      ...post,
+      trainer: this.trainers.find(t => t.id === post.trainerId)
+    }));
+
+    // 페이지네이션 적용
+    const startIndex = (page - 1) * limit;
+    const endIndex = startIndex + limit;
+    
+    return posts.slice(startIndex, endIndex);
+  }
+
+  // 대체 훈련사 게시글 생성
+  async createSubstituteTrainerPost(postData: any) {
+    const newPost = {
+      id: this.substituteClassPosts.length + 1,
+      ...postData,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+    
+    this.substituteClassPosts.push(newPost);
+    return newPost;
+  }
+
+  // 대체 훈련사 게시글 단일 조회
+  async getSubstituteTrainerPost(postId: number) {
+    const post = this.substituteClassPosts.find(p => p.id === postId);
+    if (!post) return null;
+    
+    return {
+      ...post,
+      trainer: this.trainers.find(t => t.id === post.trainerId),
+      applications: this.substituteClassApplications.filter(app => app.postId === postId)
+    };
+  }
+
+  // 대체 훈련사 게시글 업데이트
+  async updateSubstituteTrainerPost(postId: number, updateData: any) {
+    const postIndex = this.substituteClassPosts.findIndex(p => p.id === postId);
+    if (postIndex === -1) throw new Error('게시글을 찾을 수 없습니다.');
+    
+    this.substituteClassPosts[postIndex] = {
+      ...this.substituteClassPosts[postIndex],
+      ...updateData,
+      updatedAt: new Date().toISOString()
+    };
+    
+    return this.substituteClassPosts[postIndex];
+  }
+
+  // 대체 훈련사 지원 신청 생성
+  async createSubstituteTrainerApplication(applicationData: any) {
+    const newApplication = {
+      id: this.substituteClassApplications.length + 1,
+      ...applicationData,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+    
+    this.substituteClassApplications.push(newApplication);
+    return newApplication;
+  }
+
+  // 대체 훈련사 지원 신청 조회
+  async getSubstituteTrainerApplications(options: any = {}) {
+    const { instituteId } = options;
+    
+    let applications = this.substituteClassApplications;
+    
+    if (instituteId) {
+      // 기관 소속 훈련사들의 지원 신청만 필터링
+      const institutePosts = this.substituteClassPosts.filter(p => p.instituteId === instituteId);
+      const institutePostIds = institutePosts.map(p => p.id);
+      applications = applications.filter(app => institutePostIds.includes(app.postId));
+    }
+
+    return applications.map(app => ({
+      ...app,
+      post: this.substituteClassPosts.find(p => p.id === app.postId),
+      applicant: this.trainers.find(t => t.id === app.applicantId)
+    }));
+  }
+
+  // 대체 훈련사 지원 신청 업데이트
+  async updateSubstituteTrainerApplication(applicationId: number, updateData: any) {
+    const applicationIndex = this.substituteClassApplications.findIndex(a => a.id === applicationId);
+    if (applicationIndex === -1) throw new Error('지원 신청을 찾을 수 없습니다.');
+    
+    this.substituteClassApplications[applicationIndex] = {
+      ...this.substituteClassApplications[applicationIndex],
+      ...updateData,
+      updatedAt: new Date().toISOString()
+    };
+    
+    return this.substituteClassApplications[applicationIndex];
+  }
+
+  // 대체 훈련사 세션 완료 처리
+  async completeSubstituteTrainerSession(sessionId: number, completionData: any) {
+    // 세션 완료 처리 로직 (실제 구현에서는 별도 세션 테이블 사용)
+    const session = {
+      id: sessionId,
+      ...completionData,
+      status: 'completed'
+    };
+    
+    return session;
+  }
+
+  // 대체 훈련사 결제 처리
+  async processSubstituteTrainerPayment(paymentData: any) {
+    // 결제 처리 로직 (실제 구현에서는 결제 시스템 연동)
+    const payment = {
+      id: Date.now(), // 임시 ID
+      ...paymentData,
+      paymentStatus: 'completed',
+      processedAt: new Date().toISOString()
+    };
+    
+    return payment;
+  }
+
+  // 대체 훈련사 시스템 초기 데이터 생성
+  private initializeSubstituteTrainerData() {
+    // 훈련사 데이터 추가
+    this.trainers = [
+      {
+        id: 1,
+        name: '강동훈',
+        email: 'donghoong@wangzzang.com',
+        phone: '010-4765-1909',
+        certification: '반려동물행동지도사 국가자격증 2급',
+        experience: 5,
+        specialization: ['기초 훈련', '문제 행동 교정', '사회화 훈련'],
+        instituteId: 1,
+        isActive: true,
+        createdAt: new Date().toISOString()
+      },
+      {
+        id: 2,
+        name: '김민수',
+        email: 'kim@trainingcenter.com',
+        phone: '010-1234-5678',
+        certification: '반려동물 훈련 전문가 자격증',
+        experience: 8,
+        specialization: ['사회화 훈련', '분리불안 치료', '기초 복종'],
+        instituteId: 1,
+        isActive: true,
+        createdAt: new Date().toISOString()
+      },
+      {
+        id: 3,
+        name: '박지혜',
+        email: 'park@behaviorplus.com',
+        phone: '010-9876-5432',
+        certification: '동물행동 전문가 자격증',
+        experience: 6,
+        specialization: ['행동 교정', '공격성 치료', '고급 훈련'],
+        instituteId: 2,
+        isActive: true,
+        createdAt: new Date().toISOString()
+      },
+      {
+        id: 4,
+        name: '이수현',
+        email: 'lee@puppytraining.com',
+        phone: '010-5678-9012',
+        certification: '반려동물 훈련사 자격증',
+        experience: 4,
+        specialization: ['퍼피 훈련', '소형견 전문', '기초 복종'],
+        instituteId: 2,
+        isActive: true,
+        createdAt: new Date().toISOString()
+      },
+      {
+        id: 5,
+        name: '최영진',
+        email: 'choi@advancedtraining.com',
+        phone: '010-3456-7890',
+        certification: '동물행동 치료사 자격증',
+        experience: 10,
+        specialization: ['고급 훈련', '특수 행동 치료', '전문 트레이닝'],
+        instituteId: 3,
+        isActive: true,
+        createdAt: new Date().toISOString()
+      }
+    ];
+
+    // 샘플 대체 훈련사 게시글 데이터
+    this.substituteClassPosts = [
+      {
+        id: 1,
+        trainerId: 1,
+        instituteId: 1,
+        title: "급하게 대체 훈련사 구합니다 - 골든리트리버 기초 훈련",
+        content: "갑작스러운 개인 사정으로 내일 오후 2시 수업을 진행할 수 없게 되었습니다. 골든리트리버 기초 복종 훈련이며, 반려견 경험이 풍부한 훈련사분을 찾습니다.",
+        substituteDate: new Date('2025-07-19'),
+        substituteTime: "14:00",
+        location: "강남구 테헤란로 123",
+        trainingType: "기초 복종 훈련",
+        petInfo: "골든리트리버, 2살, 수컷, 이름: 맥스",
+        requirements: "골든리트리버 훈련 경험 필수, TALEZ 인증 훈련사",
+        paymentAmount: 80000,
+        status: "open",
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      },
+      {
+        id: 2,
+        trainerId: 2,
+        instituteId: 1,
+        title: "주말 대체 훈련사 모집 - 소형견 사회화 훈련",
+        content: "이번 주말 토요일 오전 10시 소형견 사회화 훈련 수업을 대신 진행해주실 훈련사를 찾습니다. 소형견 특화 훈련 경험이 있으신 분 우대합니다.",
+        substituteDate: new Date('2025-07-20'),
+        substituteTime: "10:00",
+        location: "서초구 서초대로 456",
+        trainingType: "사회화 훈련",
+        petInfo: "요크셔테리어, 1살, 암컷, 이름: 루나",
+        requirements: "소형견 훈련 경험, 사회화 훈련 전문성",
+        paymentAmount: 60000,
+        status: "open",
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      }
+    ];
+
+    // 샘플 대체 훈련사 지원 신청 데이터
+    this.substituteClassApplications = [
+      {
+        id: 1,
+        postId: 1,
+        applicantId: 3,
+        message: "안녕하세요, 골든리트리버 훈련 경험이 5년 이상 있는 전문 훈련사입니다. 기초 복종 훈련에 특화되어 있으며, 해당 시간에 대체 수업 진행 가능합니다.",
+        status: "pending",
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      },
+      {
+        id: 2,
+        postId: 2,
+        applicantId: 4,
+        message: "소형견 사회화 훈련 전문가입니다. 특히 요크셔테리어 훈련 경험이 많으며, 주말 수업 진행에 문제없습니다.",
+        status: "pending",
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      }
+    ];
   }
 }
 

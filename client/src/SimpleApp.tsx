@@ -74,6 +74,9 @@ import TrainerMyPoints from "./pages/trainer/MyPoints";
 import InstituteMyPoints from "./pages/institute/MyPoints";
 import TrainerRestManagement from "./pages/trainer/RestManagement";
 import InstituteRestManagement from "./pages/institute/RestManagement";
+import SubstituteClassBoard from "./pages/trainer/SubstituteClassBoard";
+import SubstituteTrainerManagement from "./pages/institute/SubstituteTrainerManagement";
+import SubstituteTrainerOverview from "./pages/admin/SubstituteTrainerOverview";
 
 // 레이아웃 및 컴포넌트 임포트
 import { TopBar } from "@/components/TopBar";
@@ -336,6 +339,7 @@ function AppLayout({ children }: { children: ReactNode }) {
                   <Route path="/admin/trainer-activity-logs" component={TrainerActivityLogs} />
                   <Route path="/admin/point-management" component={PointManagement} />
                   <Route path="/admin/points-management" component={AdminPointsManagement} />
+                  <Route path="/admin/substitute-overview" component={SubstituteTrainerOverview} />
 
                   {/* 업체 등록 관리 */}
                   <Route path="/admin/business-registration">
@@ -742,6 +746,7 @@ function AppLayout({ children }: { children: ReactNode }) {
                     }}
                   </Route>
                   <Route path="/trainer/rest-management" component={TrainerRestManagement} />
+                  <Route path="/trainer/substitute-board" component={SubstituteClassBoard} />
 
 
 
@@ -821,6 +826,7 @@ function AppLayout({ children }: { children: ReactNode }) {
                   </Route>
                   <Route path="/institute/my-points" component={InstituteMyPoints} />
                   <Route path="/institute/rest-management" component={InstituteRestManagement} />
+                  <Route path="/institute/substitute-management" component={SubstituteTrainerManagement} />
                   <Route path="/institute/trainers">
                     {() => {
                       const InstituteTrainers = lazy(() => import('./pages/institute-admin/InstituteTrainers'));
