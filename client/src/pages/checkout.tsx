@@ -160,11 +160,26 @@ export default function Checkout() {
     itemType
   });
 
-  // 강의 정보 조회
-  const { data: courseInfo, isLoading: isCourseLoading } = useQuery({
-    queryKey: ['/api/courses', courseId],
+  // 강의 정보 조회 (전체 커리큘럼 목록에서 찾기)
+  const { data: courseData, isLoading: isCourseLoading } = useQuery({
+    queryKey: ['/api/admin/curriculums'],
     enabled: !!courseId,
   });
+
+  // 강의 정보 추출
+  const courseInfo: CourseInfo | null = courseData?.curriculums?.find((course: any) => course.id === parseInt(courseId || '0')) ? {
+    id: parseInt(courseId || '0'),
+    title: courseData.curriculums.find((course: any) => course.id === parseInt(courseId || '0'))?.title || '',
+    price: courseData.curriculums.find((course: any) => course.id === parseInt(courseId || '0'))?.price || 0,
+    description: courseData.curriculums.find((course: any) => course.id === parseInt(courseId || '0'))?.description || '',
+    duration: courseData.curriculums.find((course: any) => course.id === parseInt(courseId || '0'))?.duration || 0,
+    difficulty: courseData.curriculums.find((course: any) => course.id === parseInt(courseId || '0'))?.level || 'beginner',
+    category: courseData.curriculums.find((course: any) => course.id === parseInt(courseId || '0'))?.category || '기초 훈련',
+    instructor: courseData.curriculums.find((course: any) => course.id === parseInt(courseId || '0'))?.trainerName || '',
+    rating: 4.8,
+    totalStudents: courseData.curriculums.find((course: any) => course.id === parseInt(courseId || '0'))?.currentStudents || 0,
+    image: "/api/placeholder/400/300"
+  } : null;
 
   // 상품 정보 (URL 파라미터에서 가져오기)
   const productInfo: ProductInfo | null = productId && productName && productPrice ? {
@@ -186,14 +201,19 @@ export default function Checkout() {
   useEffect(() => {
     if (currentItem) {
       // PaymentIntent 생성
-      apiRequest("POST", "/api/create-payment-intent", {
+      const paymentData = {
         amount: currentItem.price,
         itemId: currentItem.id,
         itemName: currentType === 'course' ? (currentItem as CourseInfo).title : (currentItem as ProductInfo).name,
         itemType: currentType
-      })
+      };
+      
+      console.log('PaymentIntent 생성 요청:', paymentData);
+      
+      apiRequest("POST", "/api/create-payment-intent", paymentData)
         .then((res) => res.json())
         .then((data) => {
+          console.log('PaymentIntent 응답:', data);
           setClientSecret(data.clientSecret);
         })
         .catch((error) => {
