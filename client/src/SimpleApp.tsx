@@ -69,6 +69,9 @@ import AdminCommunityManagement from "./pages/admin/AdminCommunityManagement";
 import InstituteNotebookMonitorPage from "./pages/institute-admin/NotebookMonitor";
 import TrainerActivityLogs from "./pages/admin/TrainerActivityLogs";
 import PointManagement from "./pages/admin/PointManagement";
+import AdminPointsManagement from "./pages/admin/PointsManagement";
+import TrainerMyPoints from "./pages/trainer/MyPoints";
+import InstituteMyPoints from "./pages/institute/MyPoints";
 
 // 레이아웃 및 컴포넌트 임포트
 import { TopBar } from "@/components/TopBar";
@@ -330,6 +333,7 @@ function AppLayout({ children }: { children: ReactNode }) {
                   <Route path="/admin/spring-boot-test" component={SpringBootTestPage} />
                   <Route path="/admin/trainer-activity-logs" component={TrainerActivityLogs} />
                   <Route path="/admin/point-management" component={PointManagement} />
+                  <Route path="/admin/points-management" component={AdminPointsManagement} />
 
                   {/* 업체 등록 관리 */}
                   <Route path="/admin/business-registration">
@@ -724,16 +728,7 @@ function AppLayout({ children }: { children: ReactNode }) {
                       );
                     }}
                   </Route>
-                  <Route path="/trainer/my-points">
-                    {() => {
-                      const TrainerMyPoints = lazy(() => import('./pages/trainer/MyPoints'));
-                      return (
-                        <Suspense fallback={<div className="p-8 text-center">내 포인트 로딩 중...</div>}>
-                          <TrainerMyPoints />
-                        </Suspense>
-                      );
-                    }}
-                  </Route>
+                  <Route path="/trainer/my-points" component={TrainerMyPoints} />
                   <Route path="/trainer/settings">
                     {() => {
                       const TrainerSettings = lazy(() => import('./pages/trainer/Settings'));
@@ -755,16 +750,7 @@ function AppLayout({ children }: { children: ReactNode }) {
                     }}
                   </Route>
 
-                  <Route path="/trainer/my-points">
-                    {() => {
-                      const TrainerMyPoints = lazy(() => import('./pages/trainer/MyPoints'));
-                      return (
-                        <Suspense fallback={<div className="p-8 text-center">내 포인트 로딩 중...</div>}>
-                          <ProtectedRoute component={TrainerMyPoints} requiredRoles={['trainer']} />
-                        </Suspense>
-                      );
-                    }}
-                  </Route>
+
 
                   {/* 기관 관리자 메뉴 */}
                   <Route path="/institute/dashboard">
@@ -840,6 +826,7 @@ function AppLayout({ children }: { children: ReactNode }) {
                   <Route path="/institute/notebook-monitor">
                     <InstituteNotebookMonitorPage />
                   </Route>
+                  <Route path="/institute/my-points" component={InstituteMyPoints} />
                   <Route path="/institute/trainers">
                     {() => {
                       const InstituteTrainers = lazy(() => import('./pages/institute-admin/InstituteTrainers'));
