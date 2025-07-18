@@ -6599,9 +6599,12 @@ app.get('/api/search', async (req, res) => {
 
       console.log('[관리자 커리큘럼] 새 커리큘럼 생성:', newCurriculum.title);
       console.log('[관리자 커리큘럼] 모듈 개수:', newCurriculum.modules?.length || 0);
+      console.log('[관리자 커리큘럼] 모듈 데이터:', JSON.stringify(newCurriculum.modules, null, 2));
       
       // 실제로 storage에 저장
-      await storage.createCurriculum(newCurriculum);
+      const savedCurriculum = await storage.createCurriculum(newCurriculum);
+      
+      console.log('[관리자 커리큘럼] 저장된 커리큘럼 모듈 개수:', savedCurriculum.modules?.length || 0);
       
       res.json(newCurriculum);
     } catch (error) {
