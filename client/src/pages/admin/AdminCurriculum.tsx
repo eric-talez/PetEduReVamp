@@ -39,7 +39,9 @@ import {
   GraduationCap,
   Award,
   ChevronRight,
-  ChevronDown
+  ChevronDown,
+  ShoppingCart,
+  ExternalLink
 } from 'lucide-react';
 
 interface CurriculumData {
@@ -132,6 +134,21 @@ interface LectureModule {
   order: number;
 }
 
+// 상품 정보 인터페이스
+interface ProductInfo {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  imageUrl: string;
+  category: string;
+  brand: string;
+  rating: number;
+  reviewCount: number;
+  availability: 'in_stock' | 'out_of_stock' | 'pre_order';
+  specifications: { [key: string]: string };
+}
+
 export default function AdminCurriculum() {
   const { userRole } = useAuth();
   const [curriculums, setCurriculums] = useState<CurriculumData[]>([]);
@@ -173,8 +190,89 @@ export default function AdminCurriculum() {
   const [previewCurriculum, setPreviewCurriculum] = useState<CurriculumData | null>(null);
   const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [showCreationWizard, setShowCreationWizard] = useState(false);
+  const [showProductInfo, setShowProductInfo] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<ProductInfo | null>(null);
   
   const { toast } = useToast();
+
+  // 준비물 클릭 시 상품 정보 가져오기 함수
+  const handleMaterialClick = async (materialName: string) => {
+    try {
+      // 실제 API 호출 대신 샘플 데이터 사용
+      const mockProducts: ProductInfo[] = [
+        {
+          id: 'product-1',
+          name: '강아지 목줄',
+          description: '강아지 훈련용 고품질 목줄입니다. 조절 가능한 길이로 다양한 크기의 강아지에 적합합니다.',
+          price: 25000,
+          imageUrl: 'https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=400&h=300&fit=crop',
+          category: '훈련용품',
+          brand: 'PetTraining Pro',
+          rating: 4.8,
+          reviewCount: 156,
+          availability: 'in_stock',
+          specifications: {
+            '재질': '나일론',
+            '길이': '120cm',
+            '너비': '2cm',
+            '무게': '150g'
+          }
+        },
+        {
+          id: 'product-2',
+          name: '간식 파우치',
+          description: '훈련용 간식을 보관하고 휴대하기 편한 파우치입니다. 방수 기능이 있어 실용적입니다.',
+          price: 15000,
+          imageUrl: 'https://images.unsplash.com/photo-1583337130417-3346a1be7dee?w=400&h=300&fit=crop',
+          category: '훈련용품',
+          brand: 'DogTrainer',
+          rating: 4.5,
+          reviewCount: 89,
+          availability: 'in_stock',
+          specifications: {
+            '재질': '방수 나일론',
+            '크기': '15x10x5cm',
+            '용량': '200ml',
+            '무게': '80g'
+          }
+        },
+        {
+          id: 'product-3',
+          name: '클리커',
+          description: '강아지 훈련용 클리커입니다. 일정한 소리로 정확한 타이밍에 신호를 줄 수 있습니다.',
+          price: 8000,
+          imageUrl: 'https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?w=400&h=300&fit=crop',
+          category: '훈련용품',
+          brand: 'ClickTrain',
+          rating: 4.9,
+          reviewCount: 234,
+          availability: 'in_stock',
+          specifications: {
+            '재질': '플라스틱',
+            '소리': '55dB',
+            '크기': '6x4x2cm',
+            '무게': '30g'
+          }
+        }
+      ];
+
+      // 준비물 이름과 유사한 상품 찾기
+      const product = mockProducts.find(p => 
+        materialName.includes(p.name.substring(0, 2)) || 
+        p.name.includes(materialName.substring(0, 2))
+      ) || mockProducts[0];
+
+      setSelectedProduct(product);
+      setShowProductInfo(true);
+    } catch (error) {
+      console.error('상품 정보 가져오기 오류:', error);
+      toast({
+        title: "상품 정보 오류",
+        description: "상품 정보를 가져오는 중 오류가 발생했습니다.",
+        variant: "destructive"
+      });
+    }
+  };
 
   // 양식 다운로드 함수
   const handleDownloadTemplate = async () => {
@@ -3238,6 +3336,26 @@ export default function AdminCurriculum() {
                                 </div>
                               )}
                               
+                              {/* 준비물 섹션 */}
+                              {module.materials && Array.isArray(module.materials) && module.materials.length > 0 && (
+                                <div className="mb-3">
+                                  <h5 className="text-sm font-medium text-purple-700 mb-2">🛒 준비물/용품:</h5>
+                                  <div className="flex flex-wrap gap-2">
+                                    {module.materials.map((material, matIndex) => (
+                                      <button
+                                        key={matIndex}
+                                        onClick={() => handleMaterialClick(material)}
+                                        className="inline-flex items-center gap-1 px-2 py-1 bg-purple-100 text-purple-700 rounded-full text-xs hover:bg-purple-200 transition-colors cursor-pointer"
+                                      >
+                                        <Package className="w-3 h-3" />
+                                        <span>{material}</span>
+                                        <span className="text-xs opacity-70">(클릭하여 구매)</span>
+                                      </button>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+                              
                               {/* 영상 정보 */}
                               {module.videos && Array.isArray(module.videos) && module.videos.length > 0 && (
                                 <div className="mt-3 pt-3 border-t">
@@ -3971,6 +4089,110 @@ export default function AdminCurriculum() {
                   }}>
                     <Save className="w-4 h-4 mr-1" />
                     저장
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+        )}
+
+        {/* 상품 정보 팝업 다이얼로그 */}
+        {showProductInfo && selectedProduct && (
+          <Dialog open={showProductInfo} onOpenChange={setShowProductInfo}>
+            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2">
+                  <Package className="w-5 h-5" />
+                  상품 정보
+                </DialogTitle>
+              </DialogHeader>
+
+              <div className="space-y-6">
+                {/* 상품 이미지 */}
+                <div className="flex justify-center">
+                  <img 
+                    src={selectedProduct.imageUrl} 
+                    alt={selectedProduct.name}
+                    className="w-full max-w-md h-64 object-cover rounded-lg shadow-md"
+                  />
+                </div>
+
+                {/* 상품 기본 정보 */}
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="text-xl font-bold text-gray-900 dark:text-white">{selectedProduct.name}</h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">{selectedProduct.brand}</p>
+                  </div>
+                  
+                  <div className="flex items-center gap-4">
+                    <div className="text-2xl font-bold text-blue-600">
+                      ₩{selectedProduct.price.toLocaleString()}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="flex items-center">
+                        {[...Array(5)].map((_, i) => (
+                          <div key={i} className={`w-4 h-4 ${i < Math.floor(selectedProduct.rating) ? 'text-yellow-400' : 'text-gray-300'}`}>
+                            ⭐
+                          </div>
+                        ))}
+                      </div>
+                      <span className="text-sm text-gray-600">({selectedProduct.reviewCount}개 리뷰)</span>
+                    </div>
+                    <Badge variant={selectedProduct.availability === 'in_stock' ? 'default' : 'secondary'}>
+                      {selectedProduct.availability === 'in_stock' ? '재고 있음' : 
+                       selectedProduct.availability === 'out_of_stock' ? '품절' : '예약 주문'}
+                    </Badge>
+                  </div>
+                </div>
+
+                {/* 상품 설명 */}
+                <div>
+                  <h4 className="font-semibold mb-2">상품 설명</h4>
+                  <p className="text-gray-700 dark:text-gray-300 leading-relaxed">{selectedProduct.description}</p>
+                </div>
+
+                {/* 상품 사양 */}
+                <div>
+                  <h4 className="font-semibold mb-2">상품 사양</h4>
+                  <div className="grid grid-cols-2 gap-4">
+                    {Object.entries(selectedProduct.specifications).map(([key, value]) => (
+                      <div key={key} className="flex justify-between items-center p-2 bg-gray-50 dark:bg-gray-800 rounded">
+                        <span className="text-sm font-medium text-gray-600 dark:text-gray-400">{key}:</span>
+                        <span className="text-sm text-gray-900 dark:text-white">{value}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 카테고리 */}
+                <div>
+                  <Badge variant="outline" className="text-sm">
+                    {selectedProduct.category}
+                  </Badge>
+                </div>
+
+                {/* 액션 버튼 */}
+                <div className="flex gap-3 pt-4 border-t">
+                  <Button 
+                    variant="outline" 
+                    onClick={() => setShowProductInfo(false)}
+                    className="flex-1"
+                  >
+                    닫기
+                  </Button>
+                  <Button 
+                    className="flex-1 bg-blue-600 hover:bg-blue-700"
+                    onClick={() => {
+                      // 실제 구매 페이지로 이동하는 로직 구현
+                      toast({
+                        title: "쇼핑몰 연결",
+                        description: "상품 구매 페이지로 이동합니다.",
+                      });
+                      setShowProductInfo(false);
+                    }}
+                  >
+                    <Package className="w-4 h-4 mr-2" />
+                    구매하기
                   </Button>
                 </div>
               </div>
