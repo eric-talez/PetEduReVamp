@@ -235,6 +235,68 @@ export default function AdminCurriculum() {
     });
   };
 
+  // 파일 업로드 핸들러
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (!files) return;
+    processFiles(files);
+  };
+
+  // 파일 처리 함수
+  const processFiles = (files: FileList) => {
+    const maxFileSize = 100 * 1024 * 1024; // 100MB
+    const newAttachments = [];
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      
+      if (file.size > maxFileSize) {
+        toast({
+          title: "파일 크기 초과",
+          description: `${file.name}이(가) 100MB를 초과합니다.`,
+          variant: "destructive",
+        });
+        continue;
+      }
+
+      newAttachments.push({
+        name: file.name,
+        size: file.size,
+        type: file.type,
+        file: file,
+        id: Date.now() + Math.random() // 임시 ID
+      });
+    }
+
+    if (newAttachments.length > 0) {
+      setNewModule(prev => ({
+        ...prev,
+        attachments: [...prev.attachments, ...newAttachments]
+      }));
+      
+      toast({
+        title: "파일 첨부 완료",
+        description: `${newAttachments.length}개의 파일이 첨부되었습니다.`,
+      });
+    }
+  };
+
+  // 드래그 앤 드롭 핸들러
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    const files = e.dataTransfer.files;
+    if (files.length > 0) {
+      processFiles(files);
+    }
+  };
+
   // 모듈 저장 핸들러
   const handleSaveModule = async () => {
     if (!selectedModuleForEdit || !selectedCurriculum) return;
@@ -1117,7 +1179,7 @@ export default function AdminCurriculum() {
     }
   };
 
-  const handleFileUpload = async (file: File) => {
+  const handleCurriculumFileUpload = async (file: File) => {
     if (!file) return;
 
     // 파일 타입 검증
@@ -2066,7 +2128,7 @@ export default function AdminCurriculum() {
                             accept=".hwp,.hwpx,.docx,.doc,.txt,.xlsx,.xls"
                             onChange={(e) => {
                               const file = e.target.files?.[0];
-                              if (file) handleFileUpload(file);
+                              if (file) handleCurriculumFileUpload(file);
                             }}
                             className="hidden"
                             id="curriculum-file-upload"
@@ -3113,7 +3175,7 @@ export default function AdminCurriculum() {
                     onChange={(e) => {
                       const file = e.target.files?.[0];
                       if (file) {
-                        handleFileUpload(file);
+                        handleCurriculumFileUpload(file);
                         setShowAdvancedCreation(false);
                       }
                     }}
@@ -4465,6 +4527,75 @@ export default function AdminCurriculum() {
                   <Plus className="w-4 h-4 mr-1" />
                   준비물 추가
                 </Button>
+              </div>
+
+              {/* 파일 첨부 섹션 */}
+              <div>
+                <label className="block text-sm font-medium mb-2">강의 자료 첨부</label>
+                <div 
+                  className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-blue-500 hover:bg-blue-50 transition-colors"
+                  onDragOver={handleDragOver}
+                  onDrop={handleDrop}
+                >
+                  <input
+                    type="file"
+                    id="file-upload"
+                    multiple
+                    accept=".pdf,.doc,.docx,.ppt,.pptx,.mp4,.avi,.mov,.mkv,.jpg,.jpeg,.png,.gif"
+                    onChange={handleFileUpload}
+                    className="hidden"
+                  />
+                  <label
+                    htmlFor="file-upload"
+                    className="cursor-pointer flex flex-col items-center gap-2"
+                  >
+                    <Upload className="w-8 h-8 text-gray-400" />
+                    <div className="text-sm">
+                      <span className="font-medium text-blue-600">파일 선택</span>
+                      <span className="text-gray-500"> 또는 드래그 앤 드롭</span>
+                    </div>
+                    <p className="text-xs text-gray-500">
+                      지원 형식: PDF, DOC, PPT, MP4, AVI, MOV, JPG, PNG (최대 100MB)
+                    </p>
+                  </label>
+                </div>
+                
+                {/* 업로드된 파일 목록 */}
+                {newModule.attachments && newModule.attachments.length > 0 && (
+                  <div className="mt-4 space-y-2">
+                    <h4 className="text-sm font-medium">첨부된 파일 ({newModule.attachments.length}개)</h4>
+                    {newModule.attachments.map((attachment, index) => (
+                      <div key={index} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                        <div className="flex-shrink-0">
+                          {attachment.type?.startsWith('video/') ? (
+                            <Video className="w-5 h-5 text-red-500" />
+                          ) : attachment.type?.startsWith('image/') ? (
+                            <Image className="w-5 h-5 text-green-500" />
+                          ) : (
+                            <FileText className="w-5 h-5 text-blue-500" />
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium truncate">{attachment.name}</p>
+                          <p className="text-xs text-gray-500">
+                            {attachment.size ? `${(attachment.size / 1024 / 1024).toFixed(1)}MB` : '크기 정보 없음'}
+                          </p>
+                        </div>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            const newAttachments = newModule.attachments.filter((_, i) => i !== index);
+                            setNewModule(prev => ({ ...prev, attachments: newAttachments }));
+                          }}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
 

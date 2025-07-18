@@ -1991,6 +1991,19 @@ class Storage {
     return true;
   }
 
+  updateCurriculumModule(curriculumId: number, moduleId: string, updateData: any): any {
+    const result = this.updateModule(curriculumId.toString(), moduleId, updateData);
+    if (result) {
+      // 업데이트된 모듈을 반환
+      const curriculum = this.courses.find(c => c.id == curriculumId);
+      if (curriculum && curriculum.modules) {
+        const module = curriculum.modules.find(m => m.id == moduleId);
+        return module;
+      }
+    }
+    return null;
+  }
+
   deleteCurriculum(id: string): boolean {
     const index = this.courses.findIndex(c => c.id == id);
     if (index !== -1) {
