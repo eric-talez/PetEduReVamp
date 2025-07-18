@@ -159,6 +159,41 @@ export default function SubstituteClassBoard() {
     }
   });
 
+  // 신청 상태 변경 처리
+  const handleApplicationStatusChange = async (applicationId: string, status: 'accepted' | 'rejected') => {
+    try {
+      console.log('신청 상태 변경:', { applicationId, status });
+      
+      const response = await fetch(`/api/substitute-applications/${applicationId}/status`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ status })
+      });
+      
+      if (response.ok) {
+        const result = await response.json();
+        toast({
+          title: "신청 상태 변경",
+          description: result.message,
+        });
+        
+        // 신청 목록 새로고침
+        queryClient.invalidateQueries({ queryKey: ['/api/substitute-applications'] });
+      } else {
+        throw new Error('상태 변경 실패');
+      }
+    } catch (error) {
+      console.error('신청 상태 변경 오류:', error);
+      toast({
+        title: "오류",
+        description: "신청 상태 변경 중 오류가 발생했습니다.",
+        variant: "destructive"
+      });
+    }
+  };
+
   const getUrgencyColor = (urgency: string) => {
     switch (urgency) {
       case 'urgent': return 'bg-red-500';
@@ -179,8 +214,29 @@ export default function SubstituteClassBoard() {
     }
   };
 
-  const handleCreatePost = (formData: any) => {
-    createPostMutation.mutate(formData);
+  const handleCreatePost = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    const formData = new FormData(e.target as HTMLFormElement);
+    const postData = {
+      title: formData.get('title'),
+      description: formData.get('description'),
+      classDate: formData.get('classDate'),
+      classTime: formData.get('classTime'),
+      location: formData.get('location'),
+      compensation: Number(formData.get('compensation')),
+      urgency: formData.get('urgency'),
+      specialRequirements: formData.get('specialRequirements'),
+      // 기본값 설정
+      isOnline: false,
+      studentCount: 5,
+      requiredSkills: [],
+      maxApplicants: 3,
+      originalTrainer: '현재 훈련사'
+    };
+    
+    console.log('대체 수업 등록 데이터:', postData);
+    createPostMutation.mutate(postData);
   };
 
   const handleViewApplications = (post: any) => {
@@ -311,39 +367,56 @@ export default function SubstituteClassBoard() {
                 휴식이 필요한 수업을 다른 훈련사에게 맡기실 수 있습니다.
               </DialogDescription>
             </DialogHeader>
-            <div className="grid gap-4 py-4">
+            <form onSubmit={handleCreatePost} className="grid gap-4 py-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="title">수업 제목</Label>
-                  <Input id="title" placeholder="예: 기초 복종 훈련 - 성인반" />
+                  <Input id="title" name="title" placeholder="예: 기초 복종 훈련 - 성인반" required />
                 </div>
                 <div>
                   <Label htmlFor="compensation">수업료</Label>
-                  <Input id="compensation" type="number" placeholder="80000" />
+                  <Input id="compensation" name="compensation" type="number" placeholder="80000" required />
                 </div>
               </div>
               <div>
                 <Label htmlFor="description">수업 설명</Label>
-                <Textarea id="description" placeholder="수업 내용을 상세히 설명해주세요..." />
+                <Textarea id="description" name="description" placeholder="수업 내용을 상세히 설명해주세요..." required />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="classDate">수업 날짜</Label>
-                  <Input id="classDate" type="date" />
+                  <Input id="classDate" name="classDate" type="date" required />
                 </div>
                 <div>
                   <Label htmlFor="classTime">수업 시간</Label>
-                  <Input id="classTime" placeholder="14:00-15:30" />
+                  <Select name="classTime" required>
+                    <SelectTrigger>
+                      <SelectValue placeholder="시간을 선택하세요" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="09:00-10:30">09:00-10:30</SelectItem>
+                      <SelectItem value="10:00-11:30">10:00-11:30</SelectItem>
+                      <SelectItem value="11:00-12:30">11:00-12:30</SelectItem>
+                      <SelectItem value="13:00-14:30">13:00-14:30</SelectItem>
+                      <SelectItem value="14:00-15:30">14:00-15:30</SelectItem>
+                      <SelectItem value="15:00-16:30">15:00-16:30</SelectItem>
+                      <SelectItem value="16:00-17:30">16:00-17:30</SelectItem>
+                      <SelectItem value="17:00-18:30">17:00-18:30</SelectItem>
+                      <SelectItem value="18:00-19:30">18:00-19:30</SelectItem>
+                      <SelectItem value="19:00-20:30">19:00-20:30</SelectItem>
+                      <SelectItem value="전일 (09:00-18:00)">전일 (09:00-18:00)</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="location">수업 장소</Label>
-                  <Input id="location" placeholder="강남구 테헤란로 123" />
+                  <Input id="location" name="location" placeholder="강남구 테헤란로 123" required />
                 </div>
                 <div>
                   <Label htmlFor="urgency">긴급도</Label>
-                  <Select>
+                  <Select name="urgency" required>
                     <SelectTrigger>
                       <SelectValue placeholder="선택하세요" />
                     </SelectTrigger>
@@ -358,17 +431,17 @@ export default function SubstituteClassBoard() {
               </div>
               <div>
                 <Label htmlFor="requirements">특별 요구사항</Label>
-                <Textarea id="requirements" placeholder="대형견 경험 필수, 특별한 주의사항 등..." />
+                <Textarea id="requirements" name="specialRequirements" placeholder="대형견 경험 필수, 특별한 주의사항 등..." />
               </div>
-            </div>
-            <div className="flex justify-end gap-2">
-              <Button variant="outline" onClick={() => setNewPostDialog(false)}>
-                취소
-              </Button>
-              <Button onClick={handleCreatePost}>
-                등록하기
-              </Button>
-            </div>
+              <div className="flex justify-end gap-2">
+                <Button type="button" variant="outline" onClick={() => setNewPostDialog(false)}>
+                  취소
+                </Button>
+                <Button type="submit">
+                  등록하기
+                </Button>
+              </div>
+            </form>
           </DialogContent>
         </Dialog>
       </div>
@@ -463,11 +536,19 @@ export default function SubstituteClassBoard() {
                 </div>
                 {app.status === 'pending' && (
                   <div className="flex gap-2 mt-3">
-                    <Button size="sm" variant="outline">
+                    <Button 
+                      size="sm" 
+                      variant="outline" 
+                      onClick={() => handleApplicationStatusChange(app.id, 'accepted')}
+                    >
                       <CheckCircle className="h-4 w-4 mr-1" />
                       승인
                     </Button>
-                    <Button size="sm" variant="outline">
+                    <Button 
+                      size="sm" 
+                      variant="outline" 
+                      onClick={() => handleApplicationStatusChange(app.id, 'rejected')}
+                    >
                       거절
                     </Button>
                   </div>

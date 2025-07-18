@@ -3071,6 +3071,39 @@ app.get('/api/search', async (req, res) => {
     }
   });
 
+  // 대체 수업 신청 승인/거절 API
+  app.patch("/api/substitute-applications/:id/status", async (req, res) => {
+    try {
+      const applicationId = req.params.id;
+      const { status, reason } = req.body;
+      
+      console.log('[신청 상태 변경] 요청:', { applicationId, status, reason });
+      
+      if (!['accepted', 'rejected'].includes(status)) {
+        return res.status(400).json({ error: '올바른 상태 값이 아닙니다.' });
+      }
+      
+      // 여기서는 실제 데이터베이스 업데이트 대신 성공 응답을 반환
+      // 실제 구현에서는 storage.updateSubstituteApplicationStatus 호출
+      const updatedApplication = {
+        id: applicationId,
+        status,
+        reason,
+        updatedAt: new Date().toISOString()
+      };
+      
+      res.json({
+        success: true,
+        message: status === 'accepted' ? '신청이 승인되었습니다.' : '신청이 거절되었습니다.',
+        application: updatedApplication
+      });
+      
+    } catch (error) {
+      console.error('[신청 상태 변경] 오류:', error);
+      res.status(500).json({ error: '신청 상태 변경 중 오류가 발생했습니다' });
+    }
+  });
+
   // 훈련사 알림장 생성 API
   app.post("/api/notebook/entries", async (req, res) => {
     try {
