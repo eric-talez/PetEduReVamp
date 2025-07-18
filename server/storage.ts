@@ -20,6 +20,8 @@ class Storage {
   // 대체 훈련사 시스템 데이터 저장소
   substituteClassPosts: any[] = [];
   substituteClassApplications: any[] = [];
+  substitutePosts: any[] = [];
+  substituteAlerts: any[] = [];
   trainers: any[] = [];
   events: any[] = [
     {
@@ -1909,6 +1911,235 @@ class Storage {
     if (event) {
       Object.assign(event, updateData);
       return event;
+    }
+    return null;
+  }
+
+  // 대체 훈련사 게시판 관리 메서드
+  initializeSubstitutePosts(): any[] {
+    return [
+      {
+        id: '1',
+        title: '긴급! 오늘 오후 3시 기초 훈련 수업 대체 훈련사 필요',
+        description: '강남 펫 아카데미에서 기초 훈련 수업을 담당할 대체 훈련사를 찾고 있습니다.',
+        instituteName: '강남 펫 아카데미',
+        originalTrainerName: '김주훈련사',
+        date: '2025-01-24',
+        time: '15:00-16:00',
+        subject: '기초 훈련',
+        level: '초급',
+        pay: 150000,
+        location: '서울 강남구 역삼동',
+        requirements: ['기초 훈련 경험 2년 이상', '관련 자격증 보유'],
+        trainerId: 1,
+        trainerName: '김주훈련사',
+        urgent: true,
+        status: 'open',
+        applicants: [],
+        createdAt: '2025-01-24T09:00:00Z',
+        updatedAt: '2025-01-24T09:00:00Z'
+      },
+      {
+        id: '2',
+        title: '내일 아침 반려견 사회화 훈련 수업 대체 훈련사 구해요',
+        description: '서울 반려견 훈련소에서 사회화 훈련 수업을 담당할 대체 훈련사를 찾고 있습니다.',
+        instituteName: '서울 반려견 훈련소',
+        originalTrainerName: '박대훈련사',
+        date: '2025-01-25',
+        time: '10:00-11:30',
+        subject: '사회화 훈련',
+        level: '중급',
+        pay: 180000,
+        location: '서울 마포구 상암동',
+        requirements: ['사회화 훈련 경험 3년 이상', '퍼피 스쿨 경험'],
+        trainerId: 2,
+        trainerName: '박대훈련사',
+        urgent: false,
+        status: 'open',
+        applicants: [],
+        createdAt: '2025-01-24T10:30:00Z',
+        updatedAt: '2025-01-24T10:30:00Z'
+      },
+      {
+        id: '3',
+        title: '다음주 화요일 어질리티 훈련 수업',
+        description: '부산 펫 트레이닝 센터에서 어질리티 훈련 수업을 담당할 대체 훈련사를 찾고 있습니다.',
+        instituteName: '부산 펫 트레이닝 센터',
+        originalTrainerName: '이전문훈련사',
+        date: '2025-01-28',
+        time: '14:00-15:30',
+        subject: '어질리티 훈련',
+        level: '고급',
+        pay: 220000,
+        location: '부산 해운대구 우동',
+        requirements: ['어질리티 훈련 전문가', '대회 참가 경험'],
+        trainerId: 3,
+        trainerName: '이전문훈련사',
+        urgent: false,
+        status: 'open',
+        applicants: [],
+        createdAt: '2025-01-24T11:00:00Z',
+        updatedAt: '2025-01-24T11:00:00Z'
+      }
+    ];
+  }
+
+  getSubstitutePosts(): any[] {
+    if (!this.substitutePosts) {
+      this.substitutePosts = this.initializeSubstitutePosts();
+    }
+    return this.substitutePosts;
+  }
+
+  createSubstitutePost(postData: any): any {
+    const newPost = {
+      id: Date.now().toString(),
+      ...postData,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      applicants: []
+    };
+    
+    if (!this.substitutePosts) {
+      this.substitutePosts = [];
+    }
+    this.substitutePosts.push(newPost);
+    return newPost;
+  }
+
+  updateSubstitutePost(id: string, updateData: any): any {
+    const post = this.substitutePosts?.find(p => p.id === id);
+    if (post) {
+      Object.assign(post, updateData, { updatedAt: new Date().toISOString() });
+      return post;
+    }
+    return null;
+  }
+
+  deleteSubstitutePost(id: string): boolean {
+    if (!this.substitutePosts) return false;
+    const index = this.substitutePosts.findIndex(p => p.id === id);
+    if (index !== -1) {
+      this.substitutePosts.splice(index, 1);
+      return true;
+    }
+    return false;
+  }
+
+  applyForSubstitutePost(id: string, applicationData: any): any {
+    const post = this.substitutePosts?.find(p => p.id === id);
+    if (post) {
+      if (!post.applicants) {
+        post.applicants = [];
+      }
+      const application = {
+        id: Date.now().toString(),
+        ...applicationData,
+        appliedAt: new Date().toISOString()
+      };
+      post.applicants.push(application);
+      return application;
+    }
+    return null;
+  }
+
+  getSubstituteOverview(): any {
+    return {
+      totalPosts: this.substitutePosts?.length || 0,
+      activePosts: this.substitutePosts?.filter(p => p.status === 'open').length || 0,
+      totalApplications: this.substitutePosts?.reduce((sum, p) => sum + (p.applicants?.length || 0), 0) || 0,
+      completedSessions: 45,
+      monthlyGrowth: 12.5,
+      avgResponseTime: 2.3,
+      satisfactionRate: 94.8
+    };
+  }
+
+  getSubstituteInstitutes(): any[] {
+    return [
+      {
+        id: '1',
+        name: '강남 펫 아카데미',
+        activePosts: 8,
+        totalRequests: 25,
+        successRate: 92.0,
+        averageRating: 4.6,
+        totalTrainers: 12,
+        availableTrainers: 8,
+        lastRequestDate: '2025-01-24'
+      },
+      {
+        id: '2',
+        name: '서울 반려견 훈련소',
+        activePosts: 6,
+        totalRequests: 18,
+        successRate: 88.9,
+        averageRating: 4.4,
+        totalTrainers: 9,
+        availableTrainers: 6,
+        lastRequestDate: '2025-01-23'
+      }
+    ];
+  }
+
+  getSubstituteAlerts(): any[] {
+    return [
+      {
+        id: '1',
+        type: 'urgent',
+        title: '긴급 대체 훈련사 필요',
+        description: '강남 펫 아카데미에서 오늘 오후 2시 수업 대체 훈련사가 필요합니다.',
+        instituteName: '강남 펫 아카데미',
+        priority: 'high',
+        createdAt: '2025-01-24T09:30:00Z',
+        resolved: false
+      },
+      {
+        id: '2',
+        type: 'warning',
+        title: '대체 훈련사 부족',
+        description: '이번 주 대체 훈련사 신청이 평소보다 30% 감소했습니다.',
+        instituteName: '전체',
+        priority: 'medium',
+        createdAt: '2025-01-24T08:15:00Z',
+        resolved: false
+      }
+    ];
+  }
+
+  getSubstituteTrainers(): any[] {
+    return [
+      {
+        id: '1',
+        name: '박대체훈련사',
+        instituteName: '강남 펫 아카데미',
+        tier: 'certified',
+        totalSubstitutes: 15,
+        successRate: 96.7,
+        averageRating: 4.9,
+        totalEarnings: 1200000,
+        lastActiveDate: '2025-01-24'
+      },
+      {
+        id: '2',
+        name: '최대체훈련사',
+        instituteName: '서울 반려견 훈련소',
+        tier: 'semi_certified',
+        totalSubstitutes: 12,
+        successRate: 91.7,
+        averageRating: 4.7,
+        totalEarnings: 960000,
+        lastActiveDate: '2025-01-23'
+      }
+    ];
+  }
+
+  resolveSubstituteAlert(id: string): any {
+    const alert = this.substituteAlerts?.find(a => a.id === id);
+    if (alert) {
+      alert.resolved = true;
+      alert.resolvedAt = new Date().toISOString();
+      return alert;
     }
     return null;
   }

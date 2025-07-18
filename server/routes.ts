@@ -2887,6 +2887,116 @@ app.get('/api/search', async (req, res) => {
     });
   });
 
+  // 대체 훈련사 게시판 API
+  app.get("/api/substitute-posts", async (req, res) => {
+    try {
+      const posts = await storage.getSubstitutePosts();
+      res.json(posts);
+    } catch (error) {
+      console.error('대체 훈련사 게시판 조회 오류:', error);
+      res.status(500).json({ error: "대체 훈련사 게시판 조회 중 오류가 발생했습니다" });
+    }
+  });
+
+  app.post("/api/substitute-posts", async (req, res) => {
+    try {
+      const postData = req.body;
+      const newPost = await storage.createSubstitutePost(postData);
+      res.json(newPost);
+    } catch (error) {
+      console.error('대체 훈련사 게시글 생성 오류:', error);
+      res.status(500).json({ error: "대체 훈련사 게시글 생성 중 오류가 발생했습니다" });
+    }
+  });
+
+  app.put("/api/substitute-posts/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const updateData = req.body;
+      const updatedPost = await storage.updateSubstitutePost(id, updateData);
+      res.json(updatedPost);
+    } catch (error) {
+      console.error('대체 훈련사 게시글 수정 오류:', error);
+      res.status(500).json({ error: "대체 훈련사 게시글 수정 중 오류가 발생했습니다" });
+    }
+  });
+
+  app.delete("/api/substitute-posts/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      await storage.deleteSubstitutePost(id);
+      res.json({ success: true });
+    } catch (error) {
+      console.error('대체 훈련사 게시글 삭제 오류:', error);
+      res.status(500).json({ error: "대체 훈련사 게시글 삭제 중 오류가 발생했습니다" });
+    }
+  });
+
+  // 대체 훈련사 지원 API
+  app.post("/api/substitute-posts/:id/apply", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const applicationData = req.body;
+      const result = await storage.applyForSubstitutePost(id, applicationData);
+      res.json(result);
+    } catch (error) {
+      console.error('대체 훈련사 지원 오류:', error);
+      res.status(500).json({ error: "대체 훈련사 지원 중 오류가 발생했습니다" });
+    }
+  });
+
+  // 대체 훈련사 현황 관리 API
+  app.get("/api/substitute-overview", async (req, res) => {
+    try {
+      const overview = await storage.getSubstituteOverview();
+      res.json(overview);
+    } catch (error) {
+      console.error('대체 훈련사 현황 조회 오류:', error);
+      res.status(500).json({ error: "대체 훈련사 현황 조회 중 오류가 발생했습니다" });
+    }
+  });
+
+  app.get("/api/substitute-institutes", async (req, res) => {
+    try {
+      const institutes = await storage.getSubstituteInstitutes();
+      res.json(institutes);
+    } catch (error) {
+      console.error('대체 훈련사 기관 현황 조회 오류:', error);
+      res.status(500).json({ error: "대체 훈련사 기관 현황 조회 중 오류가 발생했습니다" });
+    }
+  });
+
+  app.get("/api/substitute-alerts", async (req, res) => {
+    try {
+      const alerts = await storage.getSubstituteAlerts();
+      res.json(alerts);
+    } catch (error) {
+      console.error('대체 훈련사 시스템 알림 조회 오류:', error);
+      res.status(500).json({ error: "대체 훈련사 시스템 알림 조회 중 오류가 발생했습니다" });
+    }
+  });
+
+  app.get("/api/substitute-trainers", async (req, res) => {
+    try {
+      const trainers = await storage.getSubstituteTrainers();
+      res.json(trainers);
+    } catch (error) {
+      console.error('대체 훈련사 성과 조회 오류:', error);
+      res.status(500).json({ error: "대체 훈련사 성과 조회 중 오류가 발생했습니다" });
+    }
+  });
+
+  app.put("/api/substitute-alerts/:id/resolve", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const result = await storage.resolveSubstituteAlert(id);
+      res.json(result);
+    } catch (error) {
+      console.error('대체 훈련사 알림 해결 오류:', error);
+      res.status(500).json({ error: "대체 훈련사 알림 해결 중 오류가 발생했습니다" });
+    }
+  });
+
   // 훈련사 알림장 생성 API
   app.post("/api/notebook/entries", async (req, res) => {
     try {

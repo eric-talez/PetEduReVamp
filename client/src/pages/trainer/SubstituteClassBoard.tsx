@@ -263,8 +263,8 @@ export default function SubstituteClassBoard() {
     </Card>
   );
 
-  const myPosts = posts.filter(post => post.trainerId === 1); // 현재 사용자 ID로 필터링
-  const availablePosts = posts.filter(post => post.status === 'open');
+  const myPosts = Array.isArray(posts) ? posts.filter(post => post.trainerId === 1) : []; // 현재 사용자 ID로 필터링
+  const availablePosts = Array.isArray(posts) ? posts.filter(post => post.status === 'open') : [];
 
   return (
     <div className="container mx-auto p-6 max-w-6xl">
