@@ -7182,19 +7182,54 @@ app.get('/api/search', async (req, res) => {
       const curriculumId = req.params.id;
       const updateData = req.body;
       
-      // 메모리에서 커리큘럼 업데이트 (실제 구현에서는 데이터베이스 사용)
-      const updatedCurriculum = {
-        ...updateData,
-        id: curriculumId,
-        updatedAt: new Date()
-      };
-
-      console.log('[관리자 커리큘럼] 커리큘럼 수정:', curriculumId, updateData.title);
+      console.log('[관리자 커리큘럼] 커리큘럼 수정 요청:', curriculumId, updateData.title);
       
-      res.json(updatedCurriculum);
+      const updatedCurriculum = storage.updateCurriculum(curriculumId, updateData);
+      
+      if (updatedCurriculum) {
+        res.json({ 
+          success: true, 
+          message: '커리큘럼이 성공적으로 수정되었습니다.',
+          curriculum: updatedCurriculum 
+        });
+      } else {
+        res.status(404).json({ 
+          success: false, 
+          message: '커리큘럼을 찾을 수 없습니다.' 
+        });
+      }
     } catch (error) {
       console.error('[관리자 커리큘럼] 수정 실패:', error);
       res.status(500).json({ message: '커리큘럼 수정에 실패했습니다.' });
+    }
+  });
+
+  // 모듈 수정 API
+  app.put('/api/admin/curriculums/:id/modules/:moduleId', requireAuth('admin'), async (req, res) => {
+    try {
+      const { id: curriculumId, moduleId } = req.params;
+      const updateData = req.body;
+      
+      console.log('[관리자 커리큘럼] 모듈 수정 요청:', curriculumId, moduleId, updateData.title);
+      
+      const success = storage.updateModule(curriculumId, moduleId, updateData);
+      
+      if (success) {
+        const updatedCurriculum = storage.getCurriculumById(curriculumId);
+        res.json({ 
+          success: true, 
+          message: '모듈이 성공적으로 수정되었습니다.',
+          curriculum: updatedCurriculum 
+        });
+      } else {
+        res.status(404).json({ 
+          success: false, 
+          message: '커리큘럼 또는 모듈을 찾을 수 없습니다.' 
+        });
+      }
+    } catch (error) {
+      console.error('[관리자 커리큘럼] 모듈 수정 실패:', error);
+      res.status(500).json({ message: '모듈 수정에 실패했습니다.' });
     }
   });
 

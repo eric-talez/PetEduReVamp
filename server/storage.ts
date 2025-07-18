@@ -1957,9 +1957,38 @@ class Storage {
     const curriculum = this.courses.find(c => c.id == id); // == 사용하여 타입 변환 허용
     if (curriculum) {
       Object.assign(curriculum, updateData, { updatedAt: new Date().toISOString() });
+      console.log(`[Storage] 커리큘럼 수정 완료: ${id}`);
       return curriculum;
     }
+    console.log(`[Storage] 커리큘럼 수정 실패: ${id} 찾을 수 없음`);
     return null;
+  }
+
+  updateModule(curriculumId: string, moduleId: string, updateData: any): boolean {
+    const curriculum = this.courses.find(c => c.id == curriculumId);
+    if (!curriculum || !curriculum.modules) {
+      console.log(`[Storage] 모듈 수정 실패: 커리큘럼 ${curriculumId} 찾을 수 없음`);
+      return false;
+    }
+
+    const moduleIndex = curriculum.modules.findIndex(m => m.id == moduleId);
+    if (moduleIndex === -1) {
+      console.log(`[Storage] 모듈 수정 실패: 모듈 ${moduleId} 찾을 수 없음`);
+      return false;
+    }
+
+    // 모듈 데이터 업데이트
+    curriculum.modules[moduleIndex] = {
+      ...curriculum.modules[moduleIndex],
+      ...updateData,
+      updatedAt: new Date().toISOString()
+    };
+
+    // 커리큘럼 업데이트 시간도 갱신
+    curriculum.updatedAt = new Date().toISOString();
+
+    console.log(`[Storage] 모듈 수정 완료: ${curriculumId}/${moduleId}`);
+    return true;
   }
 
   deleteCurriculum(id: string): boolean {

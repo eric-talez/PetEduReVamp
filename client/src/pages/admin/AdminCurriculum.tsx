@@ -193,7 +193,93 @@ export default function AdminCurriculum() {
   const [showProductInfo, setShowProductInfo] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<ProductInfo | null>(null);
   
+  // 모듈 수정 관련 상태
+  const [isEditingModule, setIsEditingModule] = useState(false);
+  const [selectedModuleForEdit, setSelectedModuleForEdit] = useState<any>(null);
+  const [newModule, setNewModule] = useState({
+    id: '',
+    title: '',
+    duration: 0,
+    description: '',
+    objectives: [''],
+    materials: [''],
+    attachments: [],
+    detailedContent: {
+      preparation: '',
+      keyPoints: [''],
+      activities: [''],
+      homework: ''
+    }
+  });
+  
   const { toast } = useToast();
+
+  // 모듈 선택 핸들러
+  const handleModuleSelect = (module: any) => {
+    setSelectedModuleForEdit(module);
+    setIsEditingModule(true);
+    setNewModule({
+      id: module.id,
+      title: module.title,
+      duration: module.duration,
+      description: module.description,
+      objectives: module.objectives || [''],
+      materials: module.materials || [''],
+      attachments: module.attachments || [],
+      detailedContent: module.detailedContent || {
+        preparation: '',
+        keyPoints: [''],
+        activities: [''],
+        homework: ''
+      }
+    });
+  };
+
+  // 모듈 저장 핸들러
+  const handleSaveModule = async () => {
+    if (!selectedModuleForEdit || !selectedCurriculum) return;
+    
+    try {
+      const response = await fetch(`/api/admin/curriculums/${selectedCurriculum.id}/modules/${selectedModuleForEdit.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newModule),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        if (result.success) {
+          // 로컬 데이터 업데이트
+          setSelectedCurriculum(prev => {
+            if (!prev) return prev;
+            const updatedModules = prev.modules.map(module => 
+              module.id === selectedModuleForEdit.id ? { ...module, ...newModule } : module
+            );
+            return { ...prev, modules: updatedModules };
+          });
+          
+          setIsEditingModule(false);
+          toast({
+            title: "저장 완료",
+            description: "강의 내용이 성공적으로 저장되었습니다.",
+          });
+        } else {
+          throw new Error(result.message || '저장 실패');
+        }
+      } else {
+        throw new Error('서버 응답 오류');
+      }
+    } catch (error) {
+      console.error('모듈 저장 실패:', error);
+      toast({
+        title: "저장 실패",
+        description: error.message || "강의 내용 저장 중 오류가 발생했습니다.",
+        variant: "destructive",
+      });
+    }
+  };
 
   // 준비물 클릭 시 상품 정보 가져오기 함수
   const handleMaterialClick = async (materialName: string) => {
@@ -975,23 +1061,7 @@ export default function AdminCurriculum() {
   });
 
   // 모듈 편집 상태
-  const [isEditingModule, setIsEditingModule] = useState(false);
   const [editingModule, setEditingModule] = useState<ModuleData | null>(null);
-  const [newModule, setNewModule] = useState({
-    title: '',
-    description: '',
-    duration: 0,
-    objectives: [''],
-    content: '',
-    detailedContent: {
-      introduction: '',
-      mainTopics: [''],
-      practicalExercises: [''],
-      keyPoints: [''],
-      homework: '',
-      resources: ['']
-    }
-  });
 
   useEffect(() => {
     loadCurriculums();
@@ -3272,6 +3342,19 @@ export default function AdminCurriculum() {
                                   )}
                                 </div>
                                 <p className="text-gray-600 text-sm mb-3">{module.description || '설명 없음'}</p>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => handleModuleSelect(module)}
+                                  className="flex items-center gap-1 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-300 transition-all duration-200"
+                                >
+                                  <Edit className="w-3 h-3" />
+                                  수정
+                                </Button>
+                              </div>
+                            </div>
                               
                               {/* 학습 목표 */}
                               {module.objectives && Array.isArray(module.objectives) && module.objectives.length > 0 && (
@@ -3386,44 +3469,7 @@ export default function AdminCurriculum() {
                                   </div>
                                 </div>
                               )}
-                            </div>
-                            
-                            <div className="ml-4 text-right">
-                              <div className="flex flex-col items-end gap-2">
-                                <div className="flex items-center gap-1 text-sm text-gray-500">
-                                  <Clock className="w-3 h-3" />
-                                  <span>{module.duration}분</span>
-                                </div>
-                                <Button 
-                                  size="sm" 
-                                  variant="outline"
-                                  onClick={() => {
-                                    setEditingModule(module);
-                                    setNewModule({
-                                      title: module.title,
-                                      description: module.description,
-                                      duration: module.duration,
-                                      objectives: module.objectives || [''],
-                                      content: module.content,
-                                      detailedContent: module.detailedContent || {
-                                        introduction: '',
-                                        mainTopics: [''],
-                                        practicalExercises: [''],
-                                        keyPoints: [''],
-                                        homework: '',
-                                        resources: ['']
-                                      }
-                                    });
-                                    setIsEditingModule(true);
-                                  }}
-                                >
-                                  <Edit className="w-3 h-3 mr-1" />
-                                  수정
-                                </Button>
-                              </div>
-                            </div>
-                          </div>
-                        </CardContent>
+                          </CardContent>
                       </Card>
                     ))
                     ) : (
@@ -4028,6 +4074,109 @@ export default function AdminCurriculum() {
                       />
                     </div>
 
+                    {/* 준비물 */}
+                    <div>
+                      <label className="block text-sm font-medium mb-2">준비물/용품</label>
+                      {newModule.materials.map((material, index) => (
+                        <div key={index} className="flex gap-2 mb-2">
+                          <Input
+                            value={material}
+                            onChange={(e) => {
+                              const newMaterials = [...newModule.materials];
+                              newMaterials[index] = e.target.value;
+                              setNewModule(prev => ({ ...prev, materials: newMaterials }));
+                            }}
+                            placeholder={`준비물 ${index + 1} (예: 리드줄, 간식)`}
+                          />
+                          {newModule.materials.length > 1 && (
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                const newMaterials = newModule.materials.filter((_, i) => i !== index);
+                                setNewModule(prev => ({ ...prev, materials: newMaterials }));
+                              }}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          )}
+                        </div>
+                      ))}
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setNewModule(prev => ({
+                            ...prev,
+                            materials: [...prev.materials, '']
+                          }));
+                        }}
+                      >
+                        <Plus className="w-4 h-4 mr-1" />
+                        준비물 추가
+                      </Button>
+                    </div>
+
+                    {/* 파일 첨부 */}
+                    <div>
+                      <label className="block text-sm font-medium mb-2">강의 자료 첨부</label>
+                      <div className="space-y-2">
+                        {newModule.attachments.map((attachment, index) => (
+                          <div key={index} className="flex items-center gap-2 p-2 bg-gray-50 dark:bg-gray-800 rounded">
+                            <FileText className="w-4 h-4 text-blue-500" />
+                            <span className="text-sm flex-1">{attachment.name}</span>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => {
+                                const newAttachments = newModule.attachments.filter((_, i) => i !== index);
+                                setNewModule(prev => ({ ...prev, attachments: newAttachments }));
+                              }}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        ))}
+                        <div className="flex gap-2">
+                          <input
+                            type="file"
+                            accept=".pdf,.doc,.docx,.hwp,.ppt,.pptx,.txt,.jpg,.jpeg,.png"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) {
+                                const newAttachment = {
+                                  name: file.name,
+                                  url: URL.createObjectURL(file),
+                                  type: file.type
+                                };
+                                setNewModule(prev => ({
+                                  ...prev,
+                                  attachments: [...prev.attachments, newAttachment]
+                                }));
+                              }
+                            }}
+                            className="hidden"
+                            id="attachment-upload"
+                          />
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => document.getElementById('attachment-upload')?.click()}
+                          >
+                            <Upload className="w-4 h-4 mr-1" />
+                            파일 첨부
+                          </Button>
+                        </div>
+                        <p className="text-xs text-gray-500">
+                          PDF, Word, PowerPoint, HWP, 이미지 파일 등을 첨부할 수 있습니다.
+                        </p>
+                      </div>
+                    </div>
+
                     {/* 학습 목표 */}
                     <div>
                       <label className="block text-sm font-medium mb-2">학습 목표</label>
@@ -4079,14 +4228,7 @@ export default function AdminCurriculum() {
                   <Button variant="outline" onClick={() => setIsEditingModule(false)}>
                     취소
                   </Button>
-                  <Button onClick={() => {
-                    // 모듈 업데이트 로직 구현
-                    setIsEditingModule(false);
-                    toast({
-                      title: "저장 완료",
-                      description: "강의 내용이 저장되었습니다.",
-                    });
-                  }}>
+                  <Button onClick={handleSaveModule}>
                     <Save className="w-4 h-4 mr-1" />
                     저장
                   </Button>
