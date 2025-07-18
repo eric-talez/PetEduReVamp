@@ -15,6 +15,8 @@ class Storage {
   courseProgress: any[] = [];
   progressSharing: any[] = [];
   lessonSessions: any[] = [];
+  trainerActivityLogs: any[] = [];
+  pointSettings: any = {};
   events: any[] = [
     {
       id: 1,
@@ -1085,6 +1087,141 @@ class Storage {
         ],
         createdAt: new Date('2025-01-05').toISOString(),
         updatedAt: new Date().toISOString()
+      }
+    ];
+
+    // 포인트 설정 초기화
+    this.pointSettings = {
+      video_upload: { points: 50, incentivePerPoint: 1000 },
+      comment: { points: 5, incentivePerPoint: 500 },
+      view: { points: 1, incentivePerPoint: 100 },
+      member_recruitment: { points: 100, incentivePerPoint: 2000 },
+      certification: { points: 200, incentivePerPoint: 5000 },
+      consultation: { points: 30, incentivePerPoint: 1500 },
+      course_creation: { points: 150, incentivePerPoint: 3000 }
+    };
+
+    // 샘플 활동 로그 데이터
+    this.trainerActivityLogs = [
+      {
+        id: 1,
+        trainerId: 2,
+        trainerName: "강동훈",
+        activityType: "video_upload",
+        activityTitle: "기초 복종 훈련 영상 업로드",
+        activityDescription: "앉아, 기다려 명령어 훈련 영상을 업로드했습니다.",
+        pointsEarned: 50,
+        incentiveAmount: "50000",
+        metadata: { videoId: "v001", duration: "15:30", views: 125 },
+        createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
+      },
+      {
+        id: 2,
+        trainerId: 2,
+        trainerName: "강동훈",
+        activityType: "comment",
+        activityTitle: "커뮤니티 댓글 작성",
+        activityDescription: "반려견 산책 관련 질문에 전문적인 답변을 제공했습니다.",
+        pointsEarned: 5,
+        incentiveAmount: "2500",
+        metadata: { postId: "p123", commentLength: 200 },
+        createdAt: new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString()
+      },
+      {
+        id: 3,
+        trainerId: 2,
+        trainerName: "강동훈",
+        activityType: "view",
+        activityTitle: "영상 조회수 달성",
+        activityDescription: "기초 복종 훈련 영상이 100회 조회를 달성했습니다.",
+        pointsEarned: 100,
+        incentiveAmount: "10000",
+        metadata: { videoId: "v001", totalViews: 100 },
+        createdAt: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString()
+      },
+      {
+        id: 4,
+        trainerId: 3,
+        trainerName: "이미정",
+        activityType: "member_recruitment",
+        activityTitle: "신규 회원 추천",
+        activityDescription: "지인을 통해 신규 회원 1명을 추천하여 가입을 유도했습니다.",
+        pointsEarned: 100,
+        incentiveAmount: "200000",
+        metadata: { newMemberId: "m456", referralCode: "REF001" },
+        createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString()
+      },
+      {
+        id: 5,
+        trainerId: 3,
+        trainerName: "이미정",
+        activityType: "certification",
+        activityTitle: "반려동물 행동 교정사 자격증 취득",
+        activityDescription: "한국반려동물협회 공인 행동 교정사 자격증을 취득했습니다.",
+        pointsEarned: 200,
+        incentiveAmount: "1000000",
+        metadata: { certificationId: "C789", issueDate: "2025-01-15" },
+        createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString()
+      },
+      {
+        id: 6,
+        trainerId: 4,
+        trainerName: "박지혜",
+        activityType: "consultation",
+        activityTitle: "온라인 상담 완료",
+        activityDescription: "프렌치 불독 분리불안 상담을 성공적으로 완료했습니다.",
+        pointsEarned: 30,
+        incentiveAmount: "45000",
+        metadata: { consultationId: "cons001", duration: "60분", rating: 5 },
+        createdAt: new Date(Date.now() - 18 * 60 * 60 * 1000).toISOString()
+      },
+      {
+        id: 7,
+        trainerId: 4,
+        trainerName: "박지혜",
+        activityType: "course_creation",
+        activityTitle: "새로운 강의 생성",
+        activityDescription: "소형견 전용 사회화 훈련 강의를 새로 개설했습니다.",
+        pointsEarned: 150,
+        incentiveAmount: "450000",
+        metadata: { courseId: "course789", modules: 8, duration: "4주" },
+        createdAt: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString()
+      },
+      {
+        id: 8,
+        trainerId: 5,
+        trainerName: "최예린",
+        activityType: "video_upload",
+        activityTitle: "트릭 훈련 영상 업로드",
+        activityDescription: "반려견 트릭 훈련 시리즈 첫 번째 영상을 업로드했습니다.",
+        pointsEarned: 50,
+        incentiveAmount: "50000",
+        metadata: { videoId: "v002", duration: "12:45", views: 87 },
+        createdAt: new Date(Date.now() - 8 * 60 * 60 * 1000).toISOString()
+      },
+      {
+        id: 9,
+        trainerId: 5,
+        trainerName: "최예린",
+        activityType: "comment",
+        activityTitle: "전문가 답변 제공",
+        activityDescription: "반려견 트릭 훈련 관련 질문에 상세한 답변을 제공했습니다.",
+        pointsEarned: 5,
+        incentiveAmount: "2500",
+        metadata: { postId: "p456", commentLength: 350 },
+        createdAt: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString()
+      },
+      {
+        id: 10,
+        trainerId: 6,
+        trainerName: "정수현",
+        activityType: "consultation",
+        activityTitle: "화상 상담 완료",
+        activityDescription: "골든 리트리버 복종 훈련 화상 상담을 완료했습니다.",
+        pointsEarned: 30,
+        incentiveAmount: "45000",
+        metadata: { consultationId: "cons002", duration: "45분", rating: 4.8 },
+        createdAt: new Date(Date.now() - 36 * 60 * 60 * 1000).toISOString()
       }
     ];
   }
@@ -2277,6 +2414,169 @@ class Storage {
       console.error('[Storage] 강의 세션 기록 실패:', error);
       throw error;
     }
+  }
+
+  // 포인트 관리 관련 메서드들
+  getTrainerActivityLogs(filters: any = {}) {
+    return this.trainerActivityLogs.filter(log => {
+      if (filters.search) {
+        const searchTerm = filters.search.toLowerCase();
+        const matchesSearch = log.trainerName.toLowerCase().includes(searchTerm) ||
+                             log.activityTitle.toLowerCase().includes(searchTerm) ||
+                             log.activityDescription.toLowerCase().includes(searchTerm);
+        if (!matchesSearch) return false;
+      }
+      
+      if (filters.activityType && filters.activityType !== 'all') {
+        if (log.activityType !== filters.activityType) return false;
+      }
+      
+      if (filters.trainer && filters.trainer !== 'all') {
+        if (log.trainerId.toString() !== filters.trainer) return false;
+      }
+      
+      if (filters.date && filters.date !== 'all') {
+        const logDate = new Date(log.createdAt);
+        const today = new Date();
+        
+        switch (filters.date) {
+          case 'today':
+            if (logDate.toDateString() !== today.toDateString()) return false;
+            break;
+          case 'week':
+            const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+            if (logDate < weekAgo) return false;
+            break;
+          case 'month':
+            const monthAgo = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
+            if (logDate < monthAgo) return false;
+            break;
+        }
+      }
+      
+      return true;
+    });
+  }
+
+  getActivitySummary() {
+    const logs = this.trainerActivityLogs;
+    
+    const totalActivities = logs.length;
+    const totalPoints = logs.reduce((sum, log) => sum + log.pointsEarned, 0);
+    const totalIncentives = logs.reduce((sum, log) => sum + Number(log.incentiveAmount), 0);
+    const activeTrainers = new Set(logs.map(log => log.trainerId)).size;
+    
+    // 활동 타입별 집계
+    const activityCounts: Record<string, any> = {};
+    logs.forEach(log => {
+      if (!activityCounts[log.activityType]) {
+        activityCounts[log.activityType] = {
+          activityType: log.activityType,
+          activityTitle: log.activityTitle,
+          count: 0,
+          totalPoints: 0
+        };
+      }
+      activityCounts[log.activityType].count++;
+      activityCounts[log.activityType].totalPoints += log.pointsEarned;
+    });
+    
+    const topActivities = Object.values(activityCounts)
+      .sort((a, b) => b.totalPoints - a.totalPoints)
+      .slice(0, 5);
+    
+    return {
+      totalActivities,
+      totalPoints,
+      totalIncentives,
+      activeTrainers,
+      topActivities
+    };
+  }
+
+  getTrainerStats() {
+    const logs = this.trainerActivityLogs;
+    const trainerStats: Record<number, any> = {};
+    
+    logs.forEach(log => {
+      if (!trainerStats[log.trainerId]) {
+        trainerStats[log.trainerId] = {
+          trainerId: log.trainerId,
+          trainerName: log.trainerName,
+          totalActivities: 0,
+          totalPoints: 0,
+          totalIncentives: 0,
+          lastActivity: log.createdAt,
+          topActivity: log.activityTitle,
+          rank: 0
+        };
+      }
+      
+      trainerStats[log.trainerId].totalActivities++;
+      trainerStats[log.trainerId].totalPoints += log.pointsEarned;
+      trainerStats[log.trainerId].totalIncentives += Number(log.incentiveAmount);
+      
+      if (new Date(log.createdAt) > new Date(trainerStats[log.trainerId].lastActivity)) {
+        trainerStats[log.trainerId].lastActivity = log.createdAt;
+      }
+    });
+    
+    const statsArray = Object.values(trainerStats)
+      .sort((a, b) => b.totalPoints - a.totalPoints)
+      .map((stat, index) => ({
+        ...stat,
+        rank: index + 1
+      }));
+    
+    return statsArray;
+  }
+
+  deleteTrainerActivityLog(logId: number) {
+    const index = this.trainerActivityLogs.findIndex(log => log.id === logId);
+    if (index !== -1) {
+      this.trainerActivityLogs.splice(index, 1);
+      return true;
+    }
+    return false;
+  }
+
+  recalculatePoints() {
+    // 포인트 재계산 로직
+    console.log('[Storage] 포인트 재계산 시작');
+    
+    // 여기서 실제로는 복잡한 포인트 재계산 로직이 들어가야 함
+    // 현재는 단순히 로그를 출력하고 성공 반환
+    this.trainerActivityLogs.forEach(log => {
+      log.pointsEarned = this.calculatePoints(log.activityType, log.metadata);
+    });
+    
+    console.log('[Storage] 포인트 재계산 완료');
+    return true;
+  }
+
+  private calculatePoints(activityType: string, metadata: any) {
+    // 활동 타입별 포인트 계산 로직
+    const pointValues = {
+      'video_upload': 50,
+      'comment': 5,
+      'view': 1,
+      'member_recruitment': 100,
+      'certification': 200,
+      'consultation': 30,
+      'course_creation': 150
+    };
+    
+    return pointValues[activityType as keyof typeof pointValues] || 0;
+  }
+
+  // 포인트 설정 관련 메서드들
+  getPointSettings() {
+    return this.pointSettings;
+  }
+
+  updatePointSettings(settings: any) {
+    this.pointSettings = { ...this.pointSettings, ...settings };
+    return this.pointSettings;
   }
 }
 

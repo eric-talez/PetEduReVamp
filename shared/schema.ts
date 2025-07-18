@@ -258,6 +258,7 @@ export const insertInstituteSchema = createInsertSchema(institutes);
 export const selectInstituteSchema = createSelectSchema(institutes);
 export const insertPetSchema = createInsertSchema(pets);
 export const selectPetSchema = createSelectSchema(pets);
+// 새로운 테이블들의 Zod 스키마는 하단에서 정의됨
 
 // Missing schema tables required by storage.ts
 export const events = pgTable("events", {
@@ -271,6 +272,94 @@ export const events = pgTable("events", {
   isActive: boolean("is_active").default(true),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// 훈련사 활동 로그 테이블
+export const trainerActivityLogs = pgTable("trainer_activity_logs", {
+  id: serial("id").primaryKey(),
+  trainerId: integer("trainer_id").references(() => users.id).notNull(),
+  activityType: varchar("activity_type", { length: 50 }).notNull(), // 'review_video', 'live_stream', 'comment', 'content_upload', 'consultation', 'course_creation'
+  activityTitle: varchar("activity_title", { length: 200 }),
+  activityDescription: text("activity_description"),
+  pointsEarned: integer("points_earned").default(0),
+  incentiveAmount: decimal("incentive_amount", { precision: 10, scale: 2 }).default("0"),
+  metadata: jsonb("metadata"), // 추가 정보 저장
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// 인센티브 지급 내역 테이블
+export const incentivePayments = pgTable("incentive_payments", {
+  id: serial("id").primaryKey(),
+  trainerId: integer("trainer_id").references(() => users.id).notNull(),
+  activityLogId: integer("activity_log_id").references(() => trainerActivityLogs.id),
+  paymentType: varchar("payment_type", { length: 50 }).notNull(), // 'review_video', 'point_reward', 'priority_settlement'
+  amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
+  currency: varchar("currency", { length: 10 }).default("KRW"),
+  status: varchar("status", { length: 30 }).default("pending"), // 'pending', 'approved', 'paid', 'rejected'
+  paymentDate: timestamp("payment_date"),
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// 훈련사 등급 시스템 테이블
+export const trainerRankings = pgTable("trainer_rankings", {
+  id: serial("id").primaryKey(),
+  trainerId: integer("trainer_id").references(() => users.id).notNull(),
+  month: varchar("month", { length: 7 }).notNull(), // 'YYYY-MM' format
+  totalPoints: integer("total_points").default(0),
+  activityScore: decimal("activity_score", { precision: 10, scale: 2 }).default("0"),
+  rankPosition: integer("rank_position"),
+  isTopPerformer: boolean("is_top_performer").default(false), // 상위 10%
+  prioritySettlement: boolean("priority_settlement").default(false),
+  bonusMultiplier: decimal("bonus_multiplier", { precision: 3, scale: 2 }).default("1.0"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// 포인트 규칙 테이블
+export const pointRules = pgTable("point_rules", {
+  id: serial("id").primaryKey(),
+  activityType: varchar("activity_type", { length: 50 }).notNull().unique(), // 활동 유형
+  activityName: varchar("activity_name", { length: 100 }).notNull(), // 활동 이름
+  pointsPerAction: integer("points_per_action").notNull(), // 기본 포인트
+  maxDailyPoints: integer("max_daily_points"), // 일일 최대 포인트
+  maxMonthlyPoints: integer("max_monthly_points"), // 월간 최대 포인트
+  isActive: boolean("is_active").default(true),
+  description: text("description"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// 월별 포인트 합산 테이블
+export const monthlyPointSummary = pgTable("monthly_point_summary", {
+  id: serial("id").primaryKey(),
+  trainerId: integer("trainer_id").references(() => users.id).notNull(),
+  month: varchar("month", { length: 7 }).notNull(), // 'YYYY-MM' format
+  totalPoints: integer("total_points").default(0),
+  videoUploadPoints: integer("video_upload_points").default(0),
+  commentPoints: integer("comment_points").default(0),
+  viewPoints: integer("view_points").default(0),
+  recruitmentPoints: integer("recruitment_points").default(0),
+  certificationPoints: integer("certification_points").default(0),
+  consultationPoints: integer("consultation_points").default(0),
+  courseCreationPoints: integer("course_creation_points").default(0),
+  lastCalculatedAt: timestamp("last_calculated_at").defaultNow(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// 포인트 거래 내역 테이블
+export const pointTransactions = pgTable("point_transactions", {
+  id: serial("id").primaryKey(),
+  trainerId: integer("trainer_id").references(() => users.id).notNull(),
+  activityLogId: integer("activity_log_id").references(() => trainerActivityLogs.id),
+  pointRuleId: integer("point_rule_id").references(() => pointRules.id),
+  transactionType: varchar("transaction_type", { length: 20 }).notNull(), // 'earned', 'deducted', 'bonus'
+  points: integer("points").notNull(),
+  description: text("description"),
+  metadata: jsonb("metadata"),
+  createdAt: timestamp("created_at").defaultNow(),
 });
 
 export const eventLocations = pgTable("event_locations", {
@@ -589,15 +678,7 @@ export const files = pgTable("files", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
-export const pointTransactions = pgTable("point_transactions", {
-  id: serial("id").primaryKey(),
-  userId: integer("user_id").references(() => users.id).notNull(),
-  amount: integer("amount").notNull(),
-  type: text("type").notNull(),
-  description: text("description"),
-  transactionType: text("transaction_type"),
-  createdAt: timestamp("created_at").defaultNow(),
-});
+// 기존 pointTransactions 제거됨 - 새로운 pointTransactions가 이미 위에 정의됨
 
 export const forums = pgTable("forums", {
   id: serial("id").primaryKey(),
@@ -617,6 +698,34 @@ export type InsertJournalComment = typeof journalComments.$inferInsert;
 
 export type JournalServiceRequest = typeof journalServiceRequests.$inferSelect;
 export type InsertJournalServiceRequest = typeof journalServiceRequests.$inferInsert;
+
+// 새로운 테이블들의 Zod 스키마
+export const insertTrainerActivityLogSchema = createInsertSchema(trainerActivityLogs);
+export const selectTrainerActivityLogSchema = createSelectSchema(trainerActivityLogs);
+export const insertIncentivePaymentSchema = createInsertSchema(incentivePayments);
+export const selectIncentivePaymentSchema = createSelectSchema(incentivePayments);
+export const insertTrainerRankingSchema = createInsertSchema(trainerRankings);
+export const selectTrainerRankingSchema = createSelectSchema(trainerRankings);
+export const insertPointRuleSchema = createInsertSchema(pointRules);
+export const selectPointRuleSchema = createSelectSchema(pointRules);
+export const insertMonthlyPointSummarySchema = createInsertSchema(monthlyPointSummary);
+export const selectMonthlyPointSummarySchema = createSelectSchema(monthlyPointSummary);
+export const insertPointTransactionSchema = createInsertSchema(pointTransactions);
+export const selectPointTransactionSchema = createSelectSchema(pointTransactions);
+
+// 새로운 테이블들의 타입 정의
+export type PointRule = typeof pointRules.$inferSelect;
+export type InsertPointRule = typeof pointRules.$inferInsert;
+export type MonthlyPointSummary = typeof monthlyPointSummary.$inferSelect;
+export type InsertMonthlyPointSummary = typeof monthlyPointSummary.$inferInsert;
+export type PointTransaction = typeof pointTransactions.$inferSelect;
+export type InsertPointTransaction = typeof pointTransactions.$inferInsert;
+export type TrainerActivityLog = typeof trainerActivityLogs.$inferSelect;
+export type InsertTrainerActivityLog = typeof trainerActivityLogs.$inferInsert;
+export type IncentivePayment = typeof incentivePayments.$inferSelect;
+export type InsertIncentivePayment = typeof incentivePayments.$inferInsert;
+export type TrainerRanking = typeof trainerRankings.$inferSelect;
+export type InsertTrainerRanking = typeof trainerRankings.$inferInsert;
 
 export type ContentApproval = typeof contentApprovals.$inferSelect;
 export type InsertContentApproval = typeof contentApprovals.$inferInsert;

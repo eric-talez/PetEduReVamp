@@ -4717,6 +4717,149 @@ app.get('/api/search', async (req, res) => {
 
   // ===== Logo Management Routes =====
 
+  // ===== Point Management Routes =====
+
+  // 포인트 설정 조회
+  app.get('/api/admin/point-configs', requireAuth('admin'), async (req, res) => {
+    try {
+      const configs = await storage.getPointConfigs();
+      res.json({
+        success: true,
+        configs
+      });
+    } catch (error) {
+      console.error('포인트 설정 조회 오류:', error);
+      res.status(500).json({ 
+        error: '포인트 설정 조회 중 오류가 발생했습니다.' 
+      });
+    }
+  });
+
+  // 포인트 설정 업데이트
+  app.put('/api/admin/point-configs/:activityType', requireAuth('admin'), async (req, res) => {
+    try {
+      const { activityType } = req.params;
+      const { points, incentivePerPoint } = req.body;
+      
+      if (!points || !incentivePerPoint) {
+        return res.status(400).json({ 
+          error: '포인트와 포인트당 인센티브 값이 필요합니다.' 
+        });
+      }
+      
+      const updatedConfig = await storage.updatePointConfig(activityType, {
+        points: parseInt(points),
+        incentivePerPoint: parseInt(incentivePerPoint)
+      });
+      
+      res.json({
+        success: true,
+        message: '포인트 설정이 업데이트되었습니다.',
+        config: updatedConfig
+      });
+    } catch (error) {
+      console.error('포인트 설정 업데이트 오류:', error);
+      res.status(500).json({ 
+        error: '포인트 설정 업데이트 중 오류가 발생했습니다.' 
+      });
+    }
+  });
+
+  // 훈련사 활동 로그 조회
+  app.get('/api/admin/trainer-activity-logs', requireAuth('admin'), async (req, res) => {
+    try {
+      const { trainerId, startDate, endDate, activityType } = req.query;
+      
+      const logs = await storage.getTrainerActivityLogs({
+        trainerId: trainerId ? parseInt(trainerId) : undefined,
+        startDate: startDate as string,
+        endDate: endDate as string,
+        activityType: activityType as string
+      });
+      
+      res.json({
+        success: true,
+        logs
+      });
+    } catch (error) {
+      console.error('훈련사 활동 로그 조회 오류:', error);
+      res.status(500).json({ 
+        error: '훈련사 활동 로그 조회 중 오류가 발생했습니다.' 
+      });
+    }
+  });
+
+  // 훈련사 활동 로그 추가
+  app.post('/api/admin/trainer-activity-logs', requireAuth('admin'), async (req, res) => {
+    try {
+      const { 
+        trainerId, 
+        trainerName, 
+        activityType, 
+        activityTitle, 
+        activityDescription, 
+        pointsEarned, 
+        incentiveAmount, 
+        metadata 
+      } = req.body;
+      
+      if (!trainerId || !trainerName || !activityType || !pointsEarned) {
+        return res.status(400).json({ 
+          error: '필수 필드가 누락되었습니다.' 
+        });
+      }
+      
+      const newLog = await storage.addTrainerActivityLog({
+        trainerId: parseInt(trainerId),
+        trainerName,
+        activityType,
+        activityTitle,
+        activityDescription,
+        pointsEarned: parseInt(pointsEarned),
+        incentiveAmount: incentiveAmount || '0',
+        metadata: metadata || {},
+        createdAt: new Date().toISOString()
+      });
+      
+      res.json({
+        success: true,
+        message: '훈련사 활동 로그가 추가되었습니다.',
+        log: newLog
+      });
+    } catch (error) {
+      console.error('훈련사 활동 로그 추가 오류:', error);
+      res.status(500).json({ 
+        error: '훈련사 활동 로그 추가 중 오류가 발생했습니다.' 
+      });
+    }
+  });
+
+  // 훈련사 기간별 포인트 조회
+  app.get('/api/admin/trainer-points/:trainerId', requireAuth('admin'), async (req, res) => {
+    try {
+      const { trainerId } = req.params;
+      const { startDate, endDate } = req.query;
+      
+      const points = await storage.getTrainerPointsForPeriod(
+        parseInt(trainerId),
+        startDate as string,
+        endDate as string
+      );
+      
+      res.json({
+        success: true,
+        points
+      });
+    } catch (error) {
+      console.error('훈련사 포인트 조회 오류:', error);
+      res.status(500).json({ 
+        error: '훈련사 포인트 조회 중 오류가 발생했습니다.' 
+      });
+    }
+  });
+
+  // ===== Logo Management Routes =====
+
   // 로고 설정 조회 (호환성을 위한 별칭)
   app.get('/api/admin/logos', async (req, res) => {
     try {

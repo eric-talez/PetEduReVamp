@@ -9,6 +9,16 @@
             "date": 1752624385489,
             "name": "/home/runner/workspace/logs/application-2025-07-16.log",
             "hash": "777fde8e33f64109fd6d78099fec1e1d6336477b63bb01e91b1c7940dbd2418a"
+        },
+        {
+            "date": 1752732648339,
+            "name": "/home/runner/workspace/logs/application-2025-07-17.log",
+            "hash": "449a92afb97ae9d987b6369ace41c2c688d04b092f75db2adf6ddd8026ebc879"
+        },
+        {
+            "date": 1752816318514,
+            "name": "/home/runner/workspace/logs/application-2025-07-18.log",
+            "hash": "25b41c12e7c108c0debec5236944b409b78cd13e9928f5b663b83668148fe095"
         }
     ],
     "hashType": "sha256"

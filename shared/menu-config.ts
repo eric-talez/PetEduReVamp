@@ -426,6 +426,30 @@ export const DEFAULT_MENU_ITEMS: MenuItem[] = [
     isPublic: false
   },
   {
+    id: 'trainer-activity-logs',
+    title: '훈련사 활동 로그',
+    path: '/admin/trainer-activity-logs',
+    icon: 'Activity',
+    type: 'internal',
+    category: 'admin',
+    roles: ['admin'],
+    orderIndex: 4,
+    isActive: true,
+    isPublic: false
+  },
+  {
+    id: 'point-management',
+    title: '포인트 관리',
+    path: '/admin/point-management',
+    icon: 'Award',
+    type: 'internal',
+    category: 'admin',
+    roles: ['admin'],
+    orderIndex: 5,
+    isActive: true,
+    isPublic: false
+  },
+  {
     id: 'content-management',
     title: '콘텐츠 관리',
     path: '/admin/contents',
@@ -433,7 +457,7 @@ export const DEFAULT_MENU_ITEMS: MenuItem[] = [
     type: 'internal',
     category: 'admin',
     roles: ['admin'],
-    orderIndex: 4,
+    orderIndex: 5,
     isActive: true,
     isPublic: false
   },

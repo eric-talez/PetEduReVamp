@@ -67,6 +67,8 @@ import AdminSettlementPage from "./pages/admin/settlement";
 import ContentCrawler from "./pages/admin/ContentCrawler";
 import AdminCommunityManagement from "./pages/admin/AdminCommunityManagement";
 import InstituteNotebookMonitorPage from "./pages/institute-admin/NotebookMonitor";
+import TrainerActivityLogs from "./pages/admin/TrainerActivityLogs";
+import PointManagement from "./pages/admin/PointManagement";
 
 // 레이아웃 및 컴포넌트 임포트
 import { TopBar } from "@/components/TopBar";
@@ -326,6 +328,8 @@ function AppLayout({ children }: { children: ReactNode }) {
                   <Route path="/admin/product-pricing" component={AdminProductPricing} />
                   <Route path="/admin/content-crawler" component={ContentCrawler} />
                   <Route path="/admin/spring-boot-test" component={SpringBootTestPage} />
+                  <Route path="/admin/trainer-activity-logs" component={TrainerActivityLogs} />
+                  <Route path="/admin/point-management" component={PointManagement} />
 
                   {/* 업체 등록 관리 */}
                   <Route path="/admin/business-registration">
