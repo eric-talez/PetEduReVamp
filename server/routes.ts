@@ -2155,20 +2155,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // 강의 제목이 있는 실제 강의 행만 처리 (1강, 2강, 3강... 형태)
       if (row[0] && (typeof row[0] === 'string' && /^\d+강$/.test(row[0].toString()))) {
         const lessonNumber = row[0].replace('강', '');
+        
+        // 엑셀 컬럼 순서: 회차, 강의명, 설명, 소요시간, 무료여부, 개별가격, 준비물
+        const lessonTitle = row[1] || `${row[0]} - 기본 강의`;
+        const description = row[2] || `${lessonTitle}에 대한 상세 설명`;
+        const duration = parseInt(row[3]) || 60;
+        const isFree = row[4] === 'Y' || row[4] === 'y' || row[4] === '무료';
+        const price = isFree ? 0 : (parseInt(row[5]) || 50000);
+        const materials = row[6] || '';
+        
         const moduleData = {
           id: `module-${lessonNumber}`,
-          title: row[0] || `${lessonNumber}강`,
-          description: row[1] || `${row[0]} 설명`,
-          duration: parseInt(row[2]) || 60,
-          isFree: row[3] === 'Y' || row[3] === 'y' || row[3] === '무료',
-          price: row[3] === 'Y' || row[3] === 'y' || row[3] === '무료' ? 0 : (parseInt(row[4]) || 50000),
-          materials: row[5] || '',
-          objectives: [`${row[0]} 목표 달성`],
+          title: lessonTitle,
+          description: description,
+          duration: duration,
+          isFree: isFree,
+          price: price,
+          materials: materials,
+          objectives: [`${lessonTitle} 목표 달성`],
           activities: ['실습 활동'],
           completed: false
         };
 
-        console.log(`[엑셀 파싱] 모듈 추가: ${moduleData.title}`);
+        console.log(`[엑셀 파싱] 모듈 추가: ${moduleData.title} (설명: ${moduleData.description.substring(0, 50)}..., 시간: ${moduleData.duration}분, 무료: ${moduleData.isFree}, 가격: ${moduleData.price}원, 준비물: ${moduleData.materials})`);
         modules.push(moduleData);
       }
     }
