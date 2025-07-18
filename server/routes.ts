@@ -375,12 +375,17 @@ function requireAuth(role?: string) {
   };
 }
 
-// Stripe 초기화
+// Stripe 초기화 - 환경 변수 강제 재로드
 const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
-console.log('Stripe Secret Key 확인:', stripeSecretKey ? `${stripeSecretKey.substring(0, 10)}...` : 'NOT SET');
+console.log('🔑 Stripe Secret Key 확인:', stripeSecretKey ? `${stripeSecretKey.substring(0, 15)}...` : 'NOT SET');
+console.log('🔑 환경 변수 디버깅:', {
+  nodeEnv: process.env.NODE_ENV,
+  stripeKeyLength: stripeSecretKey?.length,
+  stripeKeyPrefix: stripeSecretKey?.substring(0, 20)
+});
 
 if (!stripeSecretKey) {
-  console.error('STRIPE_SECRET_KEY 환경 변수가 설정되지 않았습니다!');
+  console.error('❌ STRIPE_SECRET_KEY 환경 변수가 설정되지 않았습니다!');
   throw new Error('STRIPE_SECRET_KEY 환경 변수가 필요합니다.');
 }
 
