@@ -1247,8 +1247,10 @@ class Storage {
       price: course.price,
       maxStudents: course.maxStudents,
       currentStudents: 0,
-      status: 'published',
-      createdAt: course.createdAt
+      status: course.status || 'published',
+      createdAt: course.createdAt,
+      modules: course.modules || [], // 모듈 정보 포함
+      difficulty: course.difficulty || course.level || 'beginner' // 난이도 정보 포함
     }));
   }
 
