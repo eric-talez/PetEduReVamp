@@ -134,6 +134,13 @@ export default function SubstituteClassBoard() {
   const posts = Array.isArray(postsData) ? postsData : [];
   const applications = Array.isArray(applicationsData) ? applicationsData : [];
 
+  // 현재 사용자 정보 (실제로는 인증된 사용자 정보를 사용해야 함)
+  const currentTrainer = '강동훈';
+
+  // 게시글 분류
+  const availablePosts = posts.filter(post => post.originalTrainer !== currentTrainer && post.status === 'open');
+  const myPosts = posts.filter(post => post.originalTrainer === currentTrainer);
+
   // 대체 수업 게시글 생성
   const createPostMutation = useMutation({
     mutationFn: (postData: any) => apiRequest('POST', '/api/substitute-posts', postData),
@@ -350,8 +357,7 @@ export default function SubstituteClassBoard() {
     </Card>
   );
 
-  const myPosts = Array.isArray(posts) ? posts.filter(post => post.trainerId === 1) : []; // 현재 사용자 ID로 필터링
-  const availablePosts = Array.isArray(posts) ? posts.filter(post => post.status === 'open') : [];
+
 
   return (
     <div className="container mx-auto p-6 max-w-6xl">
