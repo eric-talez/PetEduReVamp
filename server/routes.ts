@@ -2890,44 +2890,27 @@ app.get('/api/search', async (req, res) => {
   // 대체 훈련사 게시판 API
   app.get("/api/substitute-posts", async (req, res) => {
     try {
-      const mockPosts = [
-        {
-          id: '1',
-          title: '기초 복종 훈련 - 성인반',
-          description: '성견 대상 기초 복종 훈련 수업입니다. 앉아, 기다려, 이리와 등 기본 명령어 교육을 진행합니다.',
-          classDate: '2025-01-25',
-          classTime: '14:00-15:30',
-          location: '강남구 테헤란로 123',
-          isOnline: false,
-          compensation: 80000,
-          studentCount: 5,
-          urgency: 'high',
-          requiredSkills: ['기초 복종', '성견 훈련'],
-          currentApplicants: 2,
-          maxApplicants: 3,
-          status: 'open',
-          originalTrainer: '김훈련사',
-          specialRequirements: '대형견 경험 필수'
-        },
-        {
-          id: '2',
-          title: '퍼피 사회화 교육',
-          description: '3-6개월 퍼피 대상 사회화 교육 프로그램입니다.',
-          classDate: '2025-01-26',
-          classTime: '10:00-11:30',
-          location: '온라인 (Zoom)',
-          isOnline: true,
-          compensation: 60000,
-          studentCount: 3,
-          urgency: 'normal',
-          requiredSkills: ['퍼피 교육', '사회화 훈련'],
-          currentApplicants: 1,
-          maxApplicants: 2,
-          status: 'open',
-          originalTrainer: '이훈련사'
-        }
-      ];
-      res.json(mockPosts);
+      const posts = storage.getSubstitutePosts();
+      // 서버 데이터를 클라이언트 형식으로 변환
+      const transformedPosts = posts.map(post => ({
+        id: post.id,
+        title: post.title,
+        description: post.description,
+        classDate: post.date,
+        classTime: post.time,
+        location: post.location,
+        isOnline: post.location?.includes('온라인') || post.location?.includes('Zoom'),
+        compensation: post.pay,
+        studentCount: 5, // 기본값
+        urgency: post.urgent ? 'urgent' : 'normal',
+        requiredSkills: post.requirements || [],
+        currentApplicants: post.applicants?.length || 0,
+        maxApplicants: 3, // 기본값
+        status: post.status,
+        originalTrainer: post.originalTrainerName || post.trainerName,
+        specialRequirements: post.requirements?.join(', ') || ''
+      }));
+      res.json(transformedPosts);
     } catch (error) {
       console.error('대체 훈련사 게시판 조회 오류:', error);
       res.status(500).json({ error: "대체 훈련사 게시판 조회 중 오류가 발생했습니다" });
