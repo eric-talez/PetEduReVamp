@@ -4,7 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { Search, Filter, SlidersHorizontal, Star, BookOpen, Package, Video, VideoOff, Play, Clock, Eye, ChevronRight } from "lucide-react";
+import { Search, Filter, SlidersHorizontal, Star, BookOpen, Package, Video, VideoOff, Play, Clock, Eye, ChevronRight, ShoppingCart, Heart, Share2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
@@ -42,6 +42,8 @@ export default function Courses(props?: CoursesPageProps) {
   const [showCourseModal, setShowCourseModal] = useState(false);
   const [selectedModule, setSelectedModule] = useState<any>(null);
   const [showVideoModal, setShowVideoModal] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<any>(null);
+  const [showProductModal, setShowProductModal] = useState(false);
   const { toast } = useToast();
 
   // 강의 구매 처리 함수
@@ -86,6 +88,63 @@ export default function Courses(props?: CoursesPageProps) {
   const handlePlayVideo = (module: any) => {
     setSelectedModule(module);
     setShowVideoModal(true);
+  };
+
+  // 상품 정보 핸들러
+  const handleProductClick = (productName: string) => {
+    // 실제 상품 정보를 위한 mock 데이터 생성
+    const productInfo = {
+      name: productName,
+      price: Math.floor(Math.random() * 50000) + 5000,
+      description: `${productName}에 대한 상세한 설명입니다. 반려견 훈련에 꼭 필요한 전문 용품으로 높은 품질을 자랑합니다.`,
+      image: `https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=400&h=300&fit=crop`,
+      category: "훈련용품",
+      rating: 4.5,
+      reviews: Math.floor(Math.random() * 200) + 10,
+      inStock: true,
+      brand: "TALEZ",
+      features: [
+        "고품질 소재 사용",
+        "반려견 안전 인증",
+        "훈련 전문가 추천",
+        "내구성 보장"
+      ]
+    };
+    setSelectedProduct(productInfo);
+    setShowProductModal(true);
+  };
+
+  // 장바구니 추가 핸들러
+  const handleAddToCart = () => {
+    toast({
+      title: "장바구니에 추가됨",
+      description: `${selectedProduct?.name}이(가) 장바구니에 추가되었습니다.`,
+    });
+    setShowProductModal(false);
+  };
+
+  // 상품 구매 핸들러
+  const handleBuyProduct = () => {
+    if (selectedProduct) {
+      // 결제 페이지로 이동하면서 상품 정보 전달
+      const productData = {
+        id: `product_${Date.now()}`,
+        name: selectedProduct.name,
+        price: selectedProduct.price,
+        image: selectedProduct.image,
+        type: 'product'
+      };
+      
+      // URL 파라미터로 상품 정보 전달
+      const queryParams = new URLSearchParams({
+        productId: productData.id,
+        productName: productData.name,
+        price: productData.price.toString(),
+        type: productData.type
+      });
+      
+      window.location.href = `/checkout?${queryParams.toString()}`;
+    }
   };
 
   // 실제 등록된 커리큘럼에서 발행된 강의만 조회
@@ -524,7 +583,12 @@ export default function Courses(props?: CoursesPageProps) {
                                 </div>
                                 <div className="flex flex-wrap gap-1 ml-6">
                                   {module.materials.map((material: string, idx: number) => (
-                                    <Badge key={idx} variant="outline" className="text-xs">
+                                    <Badge 
+                                      key={idx} 
+                                      variant="outline" 
+                                      className="text-xs cursor-pointer hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300 transition-colors"
+                                      onClick={() => handleProductClick(material)}
+                                    >
                                       {material}
                                     </Badge>
                                   ))}
@@ -652,7 +716,12 @@ export default function Courses(props?: CoursesPageProps) {
                     </div>
                     <div className="flex flex-wrap gap-1">
                       {selectedModule.materials.map((material: string, idx: number) => (
-                        <Badge key={idx} variant="outline" className="text-xs">
+                        <Badge 
+                          key={idx} 
+                          variant="outline" 
+                          className="text-xs cursor-pointer hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300 transition-colors"
+                          onClick={() => handleProductClick(material)}
+                        >
                           {material}
                         </Badge>
                       ))}
@@ -669,6 +738,128 @@ export default function Courses(props?: CoursesPageProps) {
                 >
                   닫기
                 </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* 상품 정보 팝업 모달 */}
+      <Dialog open={showProductModal} onOpenChange={setShowProductModal}>
+        <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold">
+              상품 정보
+            </DialogTitle>
+          </DialogHeader>
+          
+          {selectedProduct && (
+            <div className="space-y-6">
+              {/* 상품 이미지 */}
+              <div className="aspect-video bg-gray-100 rounded-lg overflow-hidden">
+                <img 
+                  src={selectedProduct.image} 
+                  alt={selectedProduct.name}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+
+              {/* 상품 기본 정보 */}
+              <div className="space-y-4">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <h3 className="text-2xl font-bold text-gray-900 mb-2">
+                      {selectedProduct.name}
+                    </h3>
+                    <div className="flex items-center gap-2 mb-2">
+                      <Badge variant="outline" className="text-sm">
+                        {selectedProduct.category}
+                      </Badge>
+                      <Badge variant="outline" className="text-sm">
+                        {selectedProduct.brand}
+                      </Badge>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-3xl font-bold text-primary mb-1">
+                      {selectedProduct.price.toLocaleString()}원
+                    </div>
+                    <div className="text-sm text-green-600">
+                      {selectedProduct.inStock ? '재고 있음' : '품절'}
+                    </div>
+                  </div>
+                </div>
+
+                {/* 평점 및 리뷰 */}
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-1">
+                    <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
+                    <span className="font-medium">{selectedProduct.rating}</span>
+                  </div>
+                  <div className="text-sm text-gray-600">
+                    {selectedProduct.reviews}개 리뷰
+                  </div>
+                </div>
+
+                {/* 상품 설명 */}
+                <div>
+                  <h4 className="font-semibold mb-2">상품 설명</h4>
+                  <p className="text-gray-700 leading-relaxed">
+                    {selectedProduct.description}
+                  </p>
+                </div>
+
+                {/* 상품 특징 */}
+                <div>
+                  <h4 className="font-semibold mb-2">상품 특징</h4>
+                  <ul className="space-y-1">
+                    {selectedProduct.features.map((feature: string, idx: number) => (
+                      <li key={idx} className="flex items-center gap-2 text-sm text-gray-700">
+                        <div className="w-1.5 h-1.5 bg-primary rounded-full"></div>
+                        {feature}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+
+              {/* 액션 버튼 */}
+              <div className="flex gap-3 pt-4 border-t">
+                <div className="flex gap-2">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    className="flex items-center gap-1"
+                  >
+                    <Heart className="w-4 h-4" />
+                    찜하기
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    className="flex items-center gap-1"
+                  >
+                    <Share2 className="w-4 h-4" />
+                    공유
+                  </Button>
+                </div>
+                <div className="flex-1 flex gap-2">
+                  <Button 
+                    variant="outline"
+                    className="flex-1 flex items-center gap-1"
+                    onClick={handleAddToCart}
+                  >
+                    <ShoppingCart className="w-4 h-4" />
+                    장바구니
+                  </Button>
+                  <Button 
+                    className="flex-1"
+                    onClick={handleBuyProduct}
+                    disabled={!selectedProduct.inStock}
+                  >
+                    구매하기
+                  </Button>
+                </div>
               </div>
             </div>
           )}

@@ -5492,23 +5492,32 @@ app.get('/api/search', async (req, res) => {
 
   // Stripe 결제 시스템 API
   
-  // 강의 구매 결제 인텐트 생성
+  // 강의 구매 및 상품 구매 결제 인텐트 생성
   app.post('/api/create-payment-intent', async (req, res) => {
     try {
-      const { amount, courseId, courseTitle } = req.body;
+      const { amount, courseId, courseTitle, itemId, itemName, itemType } = req.body;
       
-      if (!amount || !courseId) {
-        return res.status(400).json({ error: '결제 금액과 강의 ID가 필요합니다.' });
+      if (!amount || (!courseId && !itemId)) {
+        return res.status(400).json({ error: '결제 금액과 구매 항목 ID가 필요합니다.' });
+      }
+
+      // 메타데이터 생성
+      const metadata: any = {};
+      if (itemType === 'product') {
+        metadata.productId = itemId;
+        metadata.productName = itemName || '상품 구매';
+        metadata.type = 'product';
+      } else {
+        metadata.courseId = courseId || itemId;
+        metadata.courseTitle = courseTitle || itemName || '강의 구매';
+        metadata.type = 'course';
       }
 
       // Stripe PaymentIntent 생성
       const paymentIntent = await stripe.paymentIntents.create({
         amount: Math.round(amount * 100), // 센트 단위로 변환
         currency: 'krw',
-        metadata: {
-          courseId: courseId,
-          courseTitle: courseTitle || '강의 구매'
-        }
+        metadata: metadata
       });
 
       res.json({

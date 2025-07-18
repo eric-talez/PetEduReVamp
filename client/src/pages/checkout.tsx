@@ -7,7 +7,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Loader2, ArrowLeft, CreditCard, BookOpen, Clock, Star } from "lucide-react";
+import { Loader2, ArrowLeft, CreditCard, BookOpen, Clock, Star, Package } from "lucide-react";
 
 // Stripe 공개 키 로드
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY);
@@ -27,7 +27,20 @@ interface CourseInfo {
   thumbnailUrl: string;
 }
 
-const CheckoutForm = ({ courseInfo }: { courseInfo: CourseInfo }) => {
+interface ProductInfo {
+  id: string;
+  name: string;
+  price: number;
+  image: string;
+  category: string;
+  brand: string;
+  description: string;
+  rating: number;
+  reviews: number;
+  inStock: boolean;
+}
+
+const CheckoutForm = ({ itemInfo, itemType }: { itemInfo: CourseInfo | ProductInfo; itemType: 'course' | 'product' }) => {
   const stripe = useStripe();
   const elements = useElements();
   const { toast } = useToast();
@@ -47,7 +60,9 @@ const CheckoutForm = ({ courseInfo }: { courseInfo: CourseInfo }) => {
       const { error } = await stripe.confirmPayment({
         elements,
         confirmParams: {
-          return_url: `${window.location.origin}/course/${courseInfo.id}`,
+          return_url: itemType === 'course' 
+            ? `${window.location.origin}/course/${itemInfo.id}`
+            : `${window.location.origin}/shop/order-complete?productId=${itemInfo.id}`,
         },
       });
 
@@ -61,9 +76,13 @@ const CheckoutForm = ({ courseInfo }: { courseInfo: CourseInfo }) => {
       } else {
         toast({
           title: "결제 완료",
-          description: "강의 구매가 완료되었습니다!",
+          description: itemType === 'course' ? "강의 구매가 완료되었습니다!" : "상품 구매가 완료되었습니다!",
         });
-        navigate(`/course/${courseInfo.id}`);
+        if (itemType === 'course') {
+          navigate(`/course/${itemInfo.id}`);
+        } else {
+          navigate(`/shop/order-complete?productId=${itemInfo.id}`);
+        }
       }
     } catch (error) {
       console.error('Payment error:', error);
@@ -87,11 +106,11 @@ const CheckoutForm = ({ courseInfo }: { courseInfo: CourseInfo }) => {
         <Button 
           type="button" 
           variant="outline" 
-          onClick={() => navigate("/courses")}
+          onClick={() => navigate(itemType === 'course' ? "/courses" : "/shop")}
           className="flex-1"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
-          강의 목록으로
+          {itemType === 'course' ? '강의 목록으로' : '쇼핑 목록으로'}
         </Button>
         
         <Button 
@@ -107,7 +126,7 @@ const CheckoutForm = ({ courseInfo }: { courseInfo: CourseInfo }) => {
           ) : (
             <>
               <CreditCard className="w-4 h-4 mr-2" />
-              {courseInfo.price.toLocaleString()}원 결제하기
+              {itemInfo.price.toLocaleString()}원 결제하기
             </>
           )}
         </Button>
@@ -120,6 +139,10 @@ export default function Checkout() {
   const [location] = useLocation();
   const searchParams = new URLSearchParams(location.split('?')[1]);
   const courseId = searchParams.get('courseId');
+  const productId = searchParams.get('productId');
+  const productName = searchParams.get('productName');
+  const productPrice = searchParams.get('price');
+  const itemType = searchParams.get('type') as 'course' | 'product';
   const [clientSecret, setClientSecret] = useState("");
 
   // 강의 정보 조회
@@ -128,13 +151,31 @@ export default function Checkout() {
     enabled: !!courseId,
   });
 
+  // 상품 정보 (URL 파라미터에서 가져오기)
+  const productInfo: ProductInfo | null = productId && productName && productPrice ? {
+    id: productId,
+    name: productName,
+    price: parseInt(productPrice),
+    image: "https://via.placeholder.com/400x300?text=Product+Image",
+    category: "반려동물용품",
+    brand: "TALEZ",
+    description: "훈련에 필요한 고품질 반려동물용품입니다.",
+    rating: 4.5,
+    reviews: 128,
+    inStock: true
+  } : null;
+
+  const currentItem = courseInfo || productInfo;
+  const currentType = itemType || (courseInfo ? 'course' : 'product');
+
   useEffect(() => {
-    if (courseInfo) {
+    if (currentItem) {
       // PaymentIntent 생성
       apiRequest("POST", "/api/create-payment-intent", {
-        amount: courseInfo.price,
-        courseId: courseInfo.id,
-        courseTitle: courseInfo.title
+        amount: currentItem.price,
+        itemId: currentItem.id,
+        itemName: currentType === 'course' ? (currentItem as CourseInfo).title : (currentItem as ProductInfo).name,
+        itemType: currentType
       })
         .then((res) => res.json())
         .then((data) => {
@@ -144,15 +185,15 @@ export default function Checkout() {
           console.error('PaymentIntent 생성 오류:', error);
         });
     }
-  }, [courseInfo]);
+  }, [currentItem, currentType]);
 
-  if (!courseId) {
+  if (!courseId && !productId) {
     return (
       <div className="container mx-auto px-4 py-8">
         <Card>
           <CardContent className="p-8 text-center">
-            <h2 className="text-xl font-semibold mb-2">강의를 찾을 수 없습니다</h2>
-            <p className="text-gray-600 mb-4">올바른 강의 링크를 통해 접근해주세요.</p>
+            <h2 className="text-xl font-semibold mb-2">구매할 상품을 찾을 수 없습니다</h2>
+            <p className="text-gray-600 mb-4">올바른 링크를 통해 접근해주세요.</p>
             <Button onClick={() => window.location.href = '/courses'}>
               강의 목록으로 돌아가기
             </Button>
@@ -175,12 +216,12 @@ export default function Checkout() {
     );
   }
 
-  if (!courseInfo) {
+  if (!currentItem) {
     return (
       <div className="container mx-auto px-4 py-8">
         <Card>
           <CardContent className="p-8 text-center">
-            <h2 className="text-xl font-semibold mb-2">강의를 찾을 수 없습니다</h2>
+            <h2 className="text-xl font-semibold mb-2">구매할 상품을 찾을 수 없습니다</h2>
             <Button onClick={() => window.location.href = '/courses'}>
               강의 목록으로 돌아가기
             </Button>
@@ -194,44 +235,78 @@ export default function Checkout() {
     <div className="container mx-auto px-4 py-8">
       <div className="max-w-2xl mx-auto">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">강의 구매</h1>
-          <p className="text-gray-600">안전한 결제 시스템으로 강의를 구매하세요</p>
+          <h1 className="text-3xl font-bold mb-2">
+            {currentType === 'course' ? '강의 구매' : '상품 구매'}
+          </h1>
+          <p className="text-gray-600">
+            안전한 결제 시스템으로 {currentType === 'course' ? '강의를' : '상품을'} 구매하세요
+          </p>
         </div>
 
         <div className="grid gap-6">
-          {/* 강의 정보 */}
+          {/* 상품/강의 정보 */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <BookOpen className="w-5 h-5" />
-                구매할 강의
+                {currentType === 'course' ? (
+                  <BookOpen className="w-5 h-5" />
+                ) : (
+                  <Package className="w-5 h-5" />
+                )}
+                {currentType === 'course' ? '구매할 강의' : '구매할 상품'}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex gap-4">
                 <div className="w-24 h-24 bg-gray-200 dark:bg-gray-700 rounded-lg flex items-center justify-center">
-                  <BookOpen className="w-8 h-8 text-gray-500" />
+                  {currentType === 'course' ? (
+                    <BookOpen className="w-8 h-8 text-gray-500" />
+                  ) : (
+                    <Package className="w-8 h-8 text-gray-500" />
+                  )}
                 </div>
                 <div className="flex-1">
-                  <h3 className="font-semibold text-lg mb-1">{courseInfo.title}</h3>
-                  <p className="text-sm text-gray-600 mb-2">{courseInfo.trainerName}</p>
+                  <h3 className="font-semibold text-lg mb-1">
+                    {currentType === 'course' ? (currentItem as CourseInfo).title : (currentItem as ProductInfo).name}
+                  </h3>
+                  <p className="text-sm text-gray-600 mb-2">
+                    {currentType === 'course' 
+                      ? (currentItem as CourseInfo).trainerName 
+                      : (currentItem as ProductInfo).brand}
+                  </p>
                   <div className="flex items-center gap-4 text-sm text-gray-500">
-                    <div className="flex items-center gap-1">
-                      <Clock className="w-4 h-4" />
-                      {Math.floor(courseInfo.duration / 60)}시간 {courseInfo.duration % 60}분
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                      {courseInfo.rating}
-                    </div>
+                    {currentType === 'course' ? (
+                      <>
+                        <div className="flex items-center gap-1">
+                          <Clock className="w-4 h-4" />
+                          {Math.floor((currentItem as CourseInfo).duration / 60)}시간 {(currentItem as CourseInfo).duration % 60}분
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                          {(currentItem as CourseInfo).rating}
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div className="flex items-center gap-1">
+                          <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                          {(currentItem as ProductInfo).rating}
+                        </div>
+                        <div className="text-sm text-gray-500">
+                          {(currentItem as ProductInfo).reviews}개 리뷰
+                        </div>
+                      </>
+                    )}
                   </div>
                 </div>
                 <div className="text-right">
                   <div className="text-2xl font-bold text-primary">
-                    {courseInfo.price.toLocaleString()}원
+                    {currentItem.price.toLocaleString()}원
                   </div>
                   <div className="text-sm text-gray-500">
-                    {courseInfo.enrollmentCount}명 수강중
+                    {currentType === 'course' 
+                      ? `${(currentItem as CourseInfo).enrollmentCount}명 수강중`
+                      : (currentItem as ProductInfo).inStock ? '재고 있음' : '품절'}
                   </div>
                 </div>
               </div>
@@ -248,7 +323,7 @@ export default function Checkout() {
             </CardHeader>
             <CardContent>
               <Elements stripe={stripePromise} options={{ clientSecret }}>
-                <CheckoutForm courseInfo={courseInfo} />
+                <CheckoutForm itemInfo={currentItem} itemType={currentType} />
               </Elements>
             </CardContent>
           </Card>
