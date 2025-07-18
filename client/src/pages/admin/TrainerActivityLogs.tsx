@@ -60,10 +60,24 @@ const TrainerActivityLogs: React.FC = () => {
   const queryClient = useQueryClient();
 
   // 활동 로그 조회
-  const { data: activityLogs = [], isLoading: logsLoading } = useQuery<TrainerActivityLog[]>({
+  const { data: activityLogsResponse, isLoading: logsLoading } = useQuery({
     queryKey: ['/api/admin/trainer-activity-logs', { search: searchTerm, activityType: activityTypeFilter, trainer: trainerFilter, date: dateFilter }],
-    queryFn: () => apiRequest('GET', '/api/admin/trainer-activity-logs', { search: searchTerm, activityType: activityTypeFilter, trainer: trainerFilter, date: dateFilter })
+    queryFn: async () => {
+      const params = new URLSearchParams();
+      if (searchTerm) params.append('search', searchTerm);
+      if (activityTypeFilter !== 'all') params.append('activityType', activityTypeFilter);
+      if (trainerFilter !== 'all') params.append('trainerId', trainerFilter);
+      if (dateFilter !== 'all') params.append('date', dateFilter);
+      
+      const response = await fetch(`/api/admin/trainer-activity-logs?${params.toString()}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch activity logs');
+      }
+      return response.json();
+    }
   });
+
+  const activityLogs = activityLogsResponse?.logs || [];
 
   // 활동 요약 조회
   const { data: activitySummary, isLoading: summaryLoading } = useQuery<ActivitySummary>({
