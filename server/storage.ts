@@ -1980,6 +1980,48 @@ class Storage {
         applicants: [],
         createdAt: '2025-01-24T11:00:00Z',
         updatedAt: '2025-01-24T11:00:00Z'
+      },
+      {
+        id: '4',
+        title: '강동훈 훈련사 - 행동 교정 수업',
+        description: '강동훈 훈련사가 등록한 개별 행동 교정 수업입니다. 짖음, 물기, 분리불안 등 문제행동 교정에 특화된 수업입니다.',
+        instituteName: '왕짱스쿨',
+        originalTrainerName: '강동훈',
+        date: '2025-01-27',
+        time: '16:00-17:30',
+        subject: '문제행동 교정',
+        level: '전문',
+        pay: 120000,
+        location: '경북 구미시 왕짱스쿨 구평센터',
+        requirements: ['문제행동 교정 경험 필수', '개별 훈련 경험'],
+        trainerId: 4,
+        trainerName: '강동훈',
+        urgent: false,
+        status: 'open',
+        applicants: [],
+        createdAt: '2025-01-24T12:00:00Z',
+        updatedAt: '2025-01-24T12:00:00Z'
+      },
+      {
+        id: '5',
+        title: '강동훈 훈련사 - 퍼피 기초 교육',
+        description: '강동훈 훈련사가 등록한 퍼피 기초 교육 프로그램입니다. 3-6개월 퍼피 대상 기본 예절 교육을 진행합니다.',
+        instituteName: '왕짱스쿨',
+        originalTrainerName: '강동훈',
+        date: '2025-01-28',
+        time: '10:00-11:30',
+        subject: '퍼피 교육',
+        level: '초급',
+        pay: 90000,
+        location: '경북 칠곡군 왕짱스쿨 석적센터',
+        requirements: ['퍼피 교육 경험 선호', '기초 복종 훈련'],
+        trainerId: 5,
+        trainerName: '강동훈',
+        urgent: false,
+        status: 'open',
+        applicants: [],
+        createdAt: '2025-01-24T13:00:00Z',
+        updatedAt: '2025-01-24T13:00:00Z'
       }
     ];
   }

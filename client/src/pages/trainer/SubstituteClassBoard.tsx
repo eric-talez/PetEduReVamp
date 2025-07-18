@@ -95,6 +95,42 @@ const MOCK_POSTS: SubstituteClassPost[] = [
     status: 'open',
     originalTrainer: '박훈련사',
     specialRequirements: '3년 이상 경험 필수, 기존 학생 인수인계 필요'
+  },
+  {
+    id: '4',
+    title: '강동훈 훈련사 - 행동 교정 수업',
+    description: '강동훈 훈련사가 등록한 개별 행동 교정 수업입니다. 짖음, 물기, 분리불안 등 문제행동 교정에 특화된 수업입니다.',
+    classDate: '2025-01-27',
+    classTime: '16:00-17:30',
+    location: '왕짱스쿨 구평센터',
+    isOnline: false,
+    compensation: 120000,
+    studentCount: 2,
+    urgency: 'normal',
+    requiredSkills: ['문제행동 교정', '개별 훈련', '행동 분석'],
+    currentApplicants: 0,
+    maxApplicants: 2,
+    status: 'open',
+    originalTrainer: '강동훈',
+    specialRequirements: '문제행동 교정 경험 필수'
+  },
+  {
+    id: '5',
+    title: '강동훈 훈련사 - 퍼피 기초 교육',
+    description: '강동훈 훈련사가 등록한 퍼피 기초 교육 프로그램입니다. 3-6개월 퍼피 대상 기본 예절 교육을 진행합니다.',
+    classDate: '2025-01-28',
+    classTime: '10:00-11:30',
+    location: '왕짱스쿨 석적센터',
+    isOnline: false,
+    compensation: 90000,
+    studentCount: 4,
+    urgency: 'low',
+    requiredSkills: ['퍼피 교육', '기초 복종', '사회화 훈련'],
+    currentApplicants: 1,
+    maxApplicants: 3,
+    status: 'open',
+    originalTrainer: '강동훈',
+    specialRequirements: '퍼피 교육 경험 선호'
   }
 ];
 
