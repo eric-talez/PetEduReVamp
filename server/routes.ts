@@ -6405,7 +6405,23 @@ app.get('/api/search', async (req, res) => {
       // 파일 형식에 따른 처리
       if (fileExtension === '.xlsx' || fileExtension === '.xls') {
         try {
-          const workbook = xlsx.readFile(filePath);
+          // 파일 경로 확인 및 수정
+          const fs = require('fs');
+          
+          // 파일 경로를 Buffer로 읽어서 한글 파일명 문제 해결
+          let workbook;
+          try {
+            // 먼저 파일 경로로 직접 시도
+            workbook = xlsx.readFile(filePath);
+          } catch (pathError) {
+            console.log('[엑셀 파싱] 파일 경로 접근 실패, Buffer로 읽기 시도:', pathError.message);
+            // 파일을 Buffer로 읽어서 처리
+            const fileBuffer = fs.readFileSync(filePath);
+            workbook = xlsx.read(fileBuffer, { type: 'buffer' });
+          }
+          
+          console.log('[엑셀 파싱] 파일 경로:', filePath);
+          console.log('[엑셀 파싱] 워크북 로드 성공');
           const sheetName = workbook.SheetNames[0];
           const worksheet = workbook.Sheets[sheetName];
           const data = xlsx.utils.sheet_to_json(worksheet, { header: 1 });
