@@ -441,6 +441,9 @@ export default function AdminCurriculum() {
     }
 
     try {
+      console.log('[클라이언트] 커리큘럼 생성 시도 - 모듈 개수:', newCurriculum.modules?.length || 0);
+      console.log('[클라이언트] newCurriculum 상태:', JSON.stringify(newCurriculum, null, 2));
+      
       const curriculumData = {
         ...newCurriculum,
         id: `curriculum-${Date.now()}`,
@@ -461,6 +464,8 @@ export default function AdminCurriculum() {
           }
         ]
       };
+      
+      console.log('[클라이언트] 서버로 전송할 데이터 - 모듈 개수:', curriculumData.modules?.length || 0);
 
       const response = await fetch('/api/admin/curriculums', {
         method: 'POST',
@@ -1011,6 +1016,9 @@ export default function AdminCurriculum() {
           }
         }
         
+        const modulesData = extractedData.modules || [];
+        console.log('[클라이언트] 추출된 모듈 데이터:', modulesData.length, '개');
+        
         setNewCurriculum(prev => ({
           ...prev,
           title: extractedData.title || file.name.replace(/\.[^/.]+$/, ""),
@@ -1021,7 +1029,7 @@ export default function AdminCurriculum() {
           price: extractedData.price || 300000,    // 30만원 기본값
           trainerId: registrantInfo.name || '강동훈',
           trainerName: registrantInfo.name || '강동훈',
-          modules: extractedData.modules || [] // 중요: 추출된 모듈 데이터 저장
+          modules: modulesData // 중요: 추출된 모듈 데이터 저장
         }));
 
         // 새 커리큘럼 생성 모드로 전환
