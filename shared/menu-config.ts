@@ -301,6 +301,30 @@ export const DEFAULT_MENU_ITEMS: MenuItem[] = [
     isActive: true,
     isPublic: false
   },
+  {
+    id: 'trainer-my-points',
+    title: '내 포인트',
+    path: '/trainer/my-points',
+    icon: 'Star',
+    type: 'internal',
+    category: 'management',
+    roles: ['trainer'],
+    orderIndex: 6,
+    isActive: true,
+    isPublic: false
+  },
+  {
+    id: 'institute-my-points',
+    title: '내 포인트',
+    path: '/institute/my-points',
+    icon: 'Star',
+    type: 'internal',
+    category: 'management',
+    roles: ['institute-admin'],
+    orderIndex: 7,
+    isActive: true,
+    isPublic: false
+  },
 
   // === 도구 및 기능 ===
   {

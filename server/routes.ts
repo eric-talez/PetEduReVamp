@@ -8544,6 +8544,187 @@ export function registerTrainerCertificationRoutes(app: Express) {
     }
   });
 
+  // 개인 포인트 관리 API
+  app.get("/api/trainer/my-points", async (req, res) => {
+    try {
+      const userId = req.session?.user?.id;
+      
+      if (!userId) {
+        return res.status(401).json({ error: "로그인이 필요합니다" });
+      }
+
+      // 현재 로그인한 사용자가 훈련사인지 확인
+      const user = await storage.getUser(userId);
+      if (!user || user.role !== 'trainer') {
+        return res.status(403).json({ error: "훈련사만 접근 가능합니다" });
+      }
+
+      // 훈련사 포인트 데이터 반환
+      const pointsData = {
+        currentPoints: 2450,
+        totalEarned: 8320,
+        monthlyPoints: 680,
+        level: 'Silver',
+        nextLevelPoints: 5000,
+        levelProgress: 49,
+        activities: [
+          {
+            id: '1',
+            type: 'review',
+            title: '영상 리뷰 작성',
+            description: '강아지 기초 훈련 영상 리뷰 작성',
+            points: 50,
+            date: '2025-01-18',
+            status: 'completed'
+          },
+          {
+            id: '2',
+            type: 'consultation',
+            title: '화상 상담 완료',
+            description: '보더콜리 행동 교정 상담',
+            points: 100,
+            date: '2025-01-17',
+            status: 'completed'
+          }
+        ],
+        achievements: [
+          {
+            id: '1',
+            title: '첫 번째 리뷰',
+            description: '첫 번째 영상 리뷰를 작성하세요',
+            icon: 'star',
+            points: 50,
+            unlockedAt: '2025-01-15',
+            progress: 1,
+            target: 1,
+            isCompleted: true
+          }
+        ],
+        rewards: [
+          {
+            id: '1',
+            title: '5만원 상금',
+            description: '현금 보상',
+            pointsCost: 2000,
+            category: 'cash',
+            available: true
+          }
+        ],
+        ranking: {
+          currentRank: 15,
+          totalTrainers: 120,
+          percentile: 87.5,
+          isStarTrainer: false
+        }
+      };
+
+      res.json(pointsData);
+    } catch (error) {
+      console.error('훈련사 포인트 조회 오류:', error);
+      res.status(500).json({ error: "포인트 정보를 불러오는 중 오류가 발생했습니다" });
+    }
+  });
+
+  app.get("/api/institute/my-points", async (req, res) => {
+    try {
+      const userId = req.session?.user?.id;
+      
+      if (!userId) {
+        return res.status(401).json({ error: "로그인이 필요합니다" });
+      }
+
+      // 현재 로그인한 사용자가 기관 관리자인지 확인
+      const user = await storage.getUser(userId);
+      if (!user || user.role !== 'institute-admin') {
+        return res.status(403).json({ error: "기관 관리자만 접근 가능합니다" });
+      }
+
+      // 기관 관리자 포인트 데이터 반환
+      const pointsData = {
+        currentPoints: 1850,
+        totalEarned: 5240,
+        monthlyPoints: 420,
+        level: 'Bronze',
+        nextLevelPoints: 3000,
+        levelProgress: 61.7,
+        trainerCount: 3,
+        activities: [
+          {
+            id: '1',
+            type: 'trainer_management',
+            title: '훈련사 등록 승인',
+            description: '새로운 훈련사 김민수 등록 승인',
+            points: 100,
+            date: '2025-01-18',
+            status: 'completed',
+            trainerName: '김민수'
+          },
+          {
+            id: '2',
+            type: 'facility_upgrade',
+            title: '시설 업그레이드',
+            description: '훈련장 장비 업그레이드 완료',
+            points: 200,
+            date: '2025-01-17',
+            status: 'completed'
+          }
+        ],
+        achievements: [
+          {
+            id: '1',
+            title: '첫 번째 훈련사',
+            description: '첫 번째 훈련사를 등록하세요',
+            icon: 'users',
+            points: 100,
+            unlockedAt: '2025-01-10',
+            progress: 1,
+            target: 1,
+            isCompleted: true
+          }
+        ],
+        rewards: [
+          {
+            id: '1',
+            title: '마케팅 지원',
+            description: '기관 홍보 마케팅 지원',
+            pointsCost: 1500,
+            category: 'marketing',
+            available: true
+          }
+        ],
+        ranking: {
+          currentRank: 8,
+          totalInstitutes: 45,
+          percentile: 82.2,
+          category: 'small'
+        },
+        trainerStats: [
+          {
+            id: '1',
+            name: '김민수',
+            points: 2100,
+            monthlyPoints: 350,
+            level: 'Silver',
+            isStarTrainer: false
+          },
+          {
+            id: '2',
+            name: '이영희',
+            points: 1800,
+            monthlyPoints: 280,
+            level: 'Bronze',
+            isStarTrainer: false
+          }
+        ]
+      };
+
+      res.json(pointsData);
+    } catch (error) {
+      console.error('기관 관리자 포인트 조회 오류:', error);
+      res.status(500).json({ error: "포인트 정보를 불러오는 중 오류가 발생했습니다" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { 
   DollarSign, 
   TrendingUp,
@@ -14,7 +15,9 @@ import {
   RefreshCw,
   CreditCard,
   ArrowUpRight,
-  ArrowDownRight
+  ArrowDownRight,
+  Eye,
+  ChevronRight
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ko } from 'date-fns/locale';
@@ -48,6 +51,8 @@ export default function TrainerEarnings() {
   const [selectedMonth, setSelectedMonth] = useState<string>('all');
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
+  const [selectedMonthDetail, setSelectedMonthDetail] = useState<MonthlySummary | null>(null);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
 
   // 수익 데이터 로드
   useEffect(() => {
@@ -367,26 +372,156 @@ export default function TrainerEarnings() {
         <CardContent>
           <div className="space-y-4">
             {monthlySummary.map((summary) => (
-              <div key={summary.month} className="flex items-center justify-between p-4 border rounded-lg">
+              <div 
+                key={summary.month} 
+                className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 cursor-pointer transition-colors"
+                onClick={() => {
+                  setSelectedMonthDetail(summary);
+                  setIsDetailModalOpen(true);
+                }}
+              >
                 <div className="flex items-center space-x-4">
                   <div className="text-lg font-semibold">
                     {format(new Date(summary.month + '-01'), 'yyyy년 MM월')}
                   </div>
                   <Badge variant="secondary">{summary.transactionCount}건</Badge>
                 </div>
-                <div className="text-right">
-                  <div className="text-lg font-bold text-green-600">
-                    {summary.netEarnings.toLocaleString()}원
+                <div className="text-right flex items-center space-x-2">
+                  <div>
+                    <div className="text-lg font-bold text-green-600">
+                      {summary.netEarnings.toLocaleString()}원
+                    </div>
+                    <div className="text-sm text-muted-foreground">
+                      매출 {summary.totalRevenue.toLocaleString()}원 - 수수료 {summary.averageCommissionRate}%
+                    </div>
                   </div>
-                  <div className="text-sm text-muted-foreground">
-                    매출 {summary.totalRevenue.toLocaleString()}원 - 수수료 {summary.averageCommissionRate}%
-                  </div>
+                  <ChevronRight className="h-5 w-5 text-muted-foreground" />
                 </div>
               </div>
             ))}
           </div>
         </CardContent>
       </Card>
+
+      {/* 월별 상세 내역 팝업 */}
+      <Dialog open={isDetailModalOpen} onOpenChange={setIsDetailModalOpen}>
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Calendar className="h-5 w-5" />
+              {selectedMonthDetail && format(new Date(selectedMonthDetail.month + '-01'), 'yyyy년 MM월')} 상세 내역
+            </DialogTitle>
+          </DialogHeader>
+          
+          {selectedMonthDetail && (
+            <div className="space-y-6">
+              {/* 월별 요약 */}
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <Card>
+                  <CardContent className="p-4">
+                    <div className="text-center">
+                      <p className="text-sm text-muted-foreground">총 매출</p>
+                      <p className="text-xl font-bold text-blue-600">
+                        {selectedMonthDetail.totalRevenue.toLocaleString()}원
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+                
+                <Card>
+                  <CardContent className="p-4">
+                    <div className="text-center">
+                      <p className="text-sm text-muted-foreground">순수익</p>
+                      <p className="text-xl font-bold text-green-600">
+                        {selectedMonthDetail.netEarnings.toLocaleString()}원
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+                
+                <Card>
+                  <CardContent className="p-4">
+                    <div className="text-center">
+                      <p className="text-sm text-muted-foreground">평균 수수료율</p>
+                      <p className="text-xl font-bold text-purple-600">
+                        {selectedMonthDetail.averageCommissionRate}%
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+                
+                <Card>
+                  <CardContent className="p-4">
+                    <div className="text-center">
+                      <p className="text-sm text-muted-foreground">거래 건수</p>
+                      <p className="text-xl font-bold text-amber-600">
+                        {selectedMonthDetail.transactionCount}건
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* 해당 월의 상세 거래 내역 */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>거래 내역</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead>
+                        <tr className="border-b">
+                          <th className="text-left py-3 px-2">날짜</th>
+                          <th className="text-left py-3 px-2">강의명</th>
+                          <th className="text-left py-3 px-2">수강생</th>
+                          <th className="text-right py-3 px-2">매출액</th>
+                          <th className="text-right py-3 px-2">수수료율</th>
+                          <th className="text-right py-3 px-2">순수익</th>
+                          <th className="text-center py-3 px-2">결제방법</th>
+                          <th className="text-center py-3 px-2">상태</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {earnings
+                          .filter(earning => earning.date.substring(0, 7) === selectedMonthDetail.month)
+                          .map((earning) => (
+                            <tr key={earning.id} className="border-b hover:bg-muted/50">
+                              <td className="py-3 px-2">
+                                {format(new Date(earning.date), 'MM.dd')}
+                              </td>
+                              <td className="py-3 px-2">
+                                <div className="font-medium">{earning.courseName}</div>
+                              </td>
+                              <td className="py-3 px-2">{earning.studentName}</td>
+                              <td className="py-3 px-2 text-right font-medium">
+                                {earning.amount.toLocaleString()}원
+                              </td>
+                              <td className="py-3 px-2 text-right text-red-600">
+                                {earning.commissionRate}%
+                              </td>
+                              <td className="py-3 px-2 text-right font-bold text-green-600">
+                                {earning.netAmount.toLocaleString()}원
+                              </td>
+                              <td className="py-3 px-2 text-center">
+                                <Badge variant="secondary">
+                                  {getPaymentMethodText(earning.paymentMethod)}
+                                </Badge>
+                              </td>
+                              <td className="py-3 px-2 text-center">
+                                {getStatusBadge(earning.status)}
+                              </td>
+                            </tr>
+                          ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
 
       {/* 필터 */}
       <div className="flex items-center space-x-4">

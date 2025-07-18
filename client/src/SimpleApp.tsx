@@ -724,6 +724,47 @@ function AppLayout({ children }: { children: ReactNode }) {
                       );
                     }}
                   </Route>
+                  <Route path="/trainer/my-points">
+                    {() => {
+                      const TrainerMyPoints = lazy(() => import('./pages/trainer/MyPoints'));
+                      return (
+                        <Suspense fallback={<div className="p-8 text-center">내 포인트 로딩 중...</div>}>
+                          <TrainerMyPoints />
+                        </Suspense>
+                      );
+                    }}
+                  </Route>
+                  <Route path="/trainer/settings">
+                    {() => {
+                      const TrainerSettings = lazy(() => import('./pages/trainer/Settings'));
+                      return (
+                        <Suspense fallback={<div className="p-8 text-center">설정 페이지 로딩 중...</div>}>
+                          <TrainerSettings />
+                        </Suspense>
+                      );
+                    }}
+                  </Route>
+                  <Route path="/trainer/rest-management">
+                    {() => {
+                      const TrainerRestManagement = lazy(() => import('./pages/trainer/RestManagement'));
+                      return (
+                        <Suspense fallback={<div className="p-8 text-center">휴식 관리 로딩 중...</div>}>
+                          <TrainerRestManagement />
+                        </Suspense>
+                      );
+                    }}
+                  </Route>
+
+                  <Route path="/trainer/my-points">
+                    {() => {
+                      const TrainerMyPoints = lazy(() => import('./pages/trainer/MyPoints'));
+                      return (
+                        <Suspense fallback={<div className="p-8 text-center">내 포인트 로딩 중...</div>}>
+                          <ProtectedRoute component={TrainerMyPoints} requiredRoles={['trainer']} />
+                        </Suspense>
+                      );
+                    }}
+                  </Route>
 
                   {/* 기관 관리자 메뉴 */}
                   <Route path="/institute/dashboard">
@@ -815,6 +856,17 @@ function AppLayout({ children }: { children: ReactNode }) {
                       return (
                         <Suspense fallback={<div className="p-8 text-center">회원 관리 로딩 중...</div>}>
                           <InstituteMembers />
+                        </Suspense>
+                      );
+                    }}
+                  </Route>
+
+                  <Route path="/institute/my-points">
+                    {() => {
+                      const InstituteMyPoints = lazy(() => import('./pages/institute-admin/MyPoints'));
+                      return (
+                        <Suspense fallback={<div className="p-8 text-center">내 포인트 로딩 중...</div>}>
+                          <ProtectedRoute component={InstituteMyPoints} requiredRoles={['institute-admin']} />
                         </Suspense>
                       );
                     }}
