@@ -3152,27 +3152,28 @@ export default function AdminCurriculum() {
                   </h3>
                   
                   <div className="space-y-4">
-                    {previewCurriculum.modules?.map((module, index) => (
-                      <Card key={index} className="border-l-4 border-l-blue-500">
-                        <CardContent className="p-4">
-                          <div className="flex justify-between items-start mb-3">
-                            <div className="flex-1">
-                              <div className="flex items-center gap-2 mb-2">
-                                <span className="bg-blue-100 text-blue-600 text-sm font-medium px-2 py-1 rounded">
-                                  {index + 1}강
-                                </span>
-                                <h4 className="font-semibold">{module.title}</h4>
-                                {module.isFree ? (
-                                  <Badge variant="secondary" className="text-xs bg-green-100 text-green-800">
-                                    무료
-                                  </Badge>
-                                ) : (
-                                  <Badge variant="default" className="text-xs bg-blue-100 text-blue-800">
-                                    유료 (₩{module.price?.toLocaleString()})
-                                  </Badge>
-                                )}
-                              </div>
-                              <p className="text-gray-600 text-sm mb-3">{module.description}</p>
+                    {previewCurriculum.modules && previewCurriculum.modules.length > 0 ? (
+                      previewCurriculum.modules.map((module, index) => (
+                        <Card key={module.id || index} className="border-l-4 border-l-blue-500">
+                          <CardContent className="p-4">
+                            <div className="flex justify-between items-start mb-3">
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2 mb-2">
+                                  <span className="bg-blue-100 text-blue-600 text-sm font-medium px-2 py-1 rounded">
+                                    {index + 1}강
+                                  </span>
+                                  <h4 className="font-semibold">{module.title || '제목 없음'}</h4>
+                                  {module.isFree ? (
+                                    <Badge variant="secondary" className="text-xs bg-green-100 text-green-800">
+                                      무료
+                                    </Badge>
+                                  ) : (
+                                    <Badge variant="default" className="text-xs bg-blue-100 text-blue-800">
+                                      유료 (₩{module.price?.toLocaleString() || '0'})
+                                    </Badge>
+                                  )}
+                                </div>
+                                <p className="text-gray-600 text-sm mb-3">{module.description || '설명 없음'}</p>
                               
                               {/* 학습 목표 */}
                               {module.objectives && module.objectives.length > 0 && (
@@ -3306,7 +3307,15 @@ export default function AdminCurriculum() {
                           </div>
                         </CardContent>
                       </Card>
-                    ))}
+                    ))
+                    ) : (
+                      <div className="text-center py-8">
+                        <div className="text-gray-500 mb-2">
+                          <BookOpen className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                          <p>등록된 모듈이 없습니다.</p>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
 
