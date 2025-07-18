@@ -2890,8 +2890,44 @@ app.get('/api/search', async (req, res) => {
   // 대체 훈련사 게시판 API
   app.get("/api/substitute-posts", async (req, res) => {
     try {
-      const posts = await storage.getSubstitutePosts();
-      res.json(posts);
+      const mockPosts = [
+        {
+          id: '1',
+          title: '기초 복종 훈련 - 성인반',
+          description: '성견 대상 기초 복종 훈련 수업입니다. 앉아, 기다려, 이리와 등 기본 명령어 교육을 진행합니다.',
+          classDate: '2025-01-25',
+          classTime: '14:00-15:30',
+          location: '강남구 테헤란로 123',
+          isOnline: false,
+          compensation: 80000,
+          studentCount: 5,
+          urgency: 'high',
+          requiredSkills: ['기초 복종', '성견 훈련'],
+          currentApplicants: 2,
+          maxApplicants: 3,
+          status: 'open',
+          originalTrainer: '김훈련사',
+          specialRequirements: '대형견 경험 필수'
+        },
+        {
+          id: '2',
+          title: '퍼피 사회화 교육',
+          description: '3-6개월 퍼피 대상 사회화 교육 프로그램입니다.',
+          classDate: '2025-01-26',
+          classTime: '10:00-11:30',
+          location: '온라인 (Zoom)',
+          isOnline: true,
+          compensation: 60000,
+          studentCount: 3,
+          urgency: 'normal',
+          requiredSkills: ['퍼피 교육', '사회화 훈련'],
+          currentApplicants: 1,
+          maxApplicants: 2,
+          status: 'open',
+          originalTrainer: '이훈련사'
+        }
+      ];
+      res.json(mockPosts);
     } catch (error) {
       console.error('대체 훈련사 게시판 조회 오류:', error);
       res.status(500).json({ error: "대체 훈련사 게시판 조회 중 오류가 발생했습니다" });
@@ -2994,6 +3030,44 @@ app.get('/api/search', async (req, res) => {
     } catch (error) {
       console.error('대체 훈련사 알림 해결 오류:', error);
       res.status(500).json({ error: "대체 훈련사 알림 해결 중 오류가 발생했습니다" });
+    }
+  });
+
+  // 대체 훈련사 지원 신청 조회 API
+  app.get("/api/substitute-applications", async (req, res) => {
+    try {
+      const mockApplications = [
+        {
+          id: '1',
+          postId: '1',
+          applicantName: '박대체훈련사',
+          message: '대형견 훈련 경험이 5년 이상 있습니다. 해당 시간에 수업 진행 가능합니다.',
+          proposedCompensation: 80000,
+          applicationDate: '2025-01-20',
+          status: 'pending',
+          postTitle: '기초 복종 훈련 - 성인반',
+          instituteName: '강남 훈련소',
+          classDate: '2025-01-25',
+          classTime: '14:00-15:30'
+        },
+        {
+          id: '2',
+          postId: '2',
+          applicantName: '이전문훈련사',
+          message: '퍼피 사회화 교육 전문가입니다. 많은 경험이 있습니다.',
+          proposedCompensation: 60000,
+          applicationDate: '2025-01-21',
+          status: 'pending',
+          postTitle: '퍼피 사회화 교육',
+          instituteName: '서울 펫센터',
+          classDate: '2025-01-26',
+          classTime: '10:00-11:30'
+        }
+      ];
+      res.json(mockApplications);
+    } catch (error) {
+      console.error('대체 훈련사 지원 신청 조회 오류:', error);
+      res.status(500).json({ error: "대체 훈련사 지원 신청 조회 중 오류가 발생했습니다" });
     }
   });
 

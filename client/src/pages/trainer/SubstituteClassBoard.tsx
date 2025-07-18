@@ -101,16 +101,20 @@ export default function SubstituteClassBoard() {
   const queryClient = useQueryClient();
 
   // 대체 수업 게시글 조회
-  const { data: posts = [], isLoading: isLoadingPosts } = useQuery({
+  const { data: postsData = [], isLoading: isLoadingPosts } = useQuery({
     queryKey: ['/api/substitute-posts'],
     queryFn: () => apiRequest('GET', '/api/substitute-posts')
   });
 
   // 대체 수업 지원 신청 조회
-  const { data: applications = [], isLoading: isLoadingApplications } = useQuery({
+  const { data: applicationsData = [], isLoading: isLoadingApplications } = useQuery({
     queryKey: ['/api/substitute-applications'],
     queryFn: () => apiRequest('GET', '/api/substitute-applications')
   });
+
+  // 안전한 배열 변환
+  const posts = Array.isArray(postsData) ? postsData : [];
+  const applications = Array.isArray(applicationsData) ? applicationsData : [];
 
   // 대체 수업 게시글 생성
   const createPostMutation = useMutation({

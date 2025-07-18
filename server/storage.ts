@@ -1985,10 +1985,8 @@ class Storage {
   }
 
   getSubstitutePosts(): any[] {
-    if (!this.substitutePosts) {
-      this.substitutePosts = this.initializeSubstitutePosts();
-    }
-    return this.substitutePosts;
+    // 강제로 초기화 데이터 반환
+    return this.initializeSubstitutePosts();
   }
 
   createSubstitutePost(postData: any): any {
@@ -2142,6 +2140,29 @@ class Storage {
       return alert;
     }
     return null;
+  }
+
+  getSubstituteApplications(): any[] {
+    // 모든 대체 훈련사 게시글에서 지원 신청 추출
+    const allApplications: any[] = [];
+    const posts = this.getSubstitutePosts();
+    
+    posts.forEach(post => {
+      if (post.applicants && Array.isArray(post.applicants)) {
+        post.applicants.forEach((applicant: any) => {
+          allApplications.push({
+            ...applicant,
+            postId: post.id,
+            postTitle: post.title,
+            instituteName: post.instituteName,
+            classDate: post.date,
+            classTime: post.time
+          });
+        });
+      }
+    });
+    
+    return allApplications;
   }
 
   // 커뮤니티 게시글 관리 메서드
