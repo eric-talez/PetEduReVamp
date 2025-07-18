@@ -72,6 +72,8 @@ import PointManagement from "./pages/admin/PointManagement";
 import AdminPointsManagement from "./pages/admin/PointsManagement";
 import TrainerMyPoints from "./pages/trainer/MyPoints";
 import InstituteMyPoints from "./pages/institute/MyPoints";
+import TrainerRestManagement from "./pages/trainer/RestManagement";
+import InstituteRestManagement from "./pages/institute/RestManagement";
 
 // 레이아웃 및 컴포넌트 임포트
 import { TopBar } from "@/components/TopBar";
@@ -739,16 +741,7 @@ function AppLayout({ children }: { children: ReactNode }) {
                       );
                     }}
                   </Route>
-                  <Route path="/trainer/rest-management">
-                    {() => {
-                      const TrainerRestManagement = lazy(() => import('./pages/trainer/RestManagement'));
-                      return (
-                        <Suspense fallback={<div className="p-8 text-center">휴식 관리 로딩 중...</div>}>
-                          <TrainerRestManagement />
-                        </Suspense>
-                      );
-                    }}
-                  </Route>
+                  <Route path="/trainer/rest-management" component={TrainerRestManagement} />
 
 
 
@@ -827,6 +820,7 @@ function AppLayout({ children }: { children: ReactNode }) {
                     <InstituteNotebookMonitorPage />
                   </Route>
                   <Route path="/institute/my-points" component={InstituteMyPoints} />
+                  <Route path="/institute/rest-management" component={InstituteRestManagement} />
                   <Route path="/institute/trainers">
                     {() => {
                       const InstituteTrainers = lazy(() => import('./pages/institute-admin/InstituteTrainers'));

@@ -571,6 +571,102 @@ export const journalServiceRequests = pgTable("journal_service_requests", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// 휴식 신청 테이블 - 훈련사 개인 OFF 신청
+export const restApplications = pgTable("rest_applications", {
+  id: serial("id").primaryKey(),
+  trainerId: integer("trainer_id").references(() => users.id).notNull(),
+  instituteId: integer("institute_id").references(() => institutes.id),
+  startDate: timestamp("start_date").notNull(),
+  endDate: timestamp("end_date").notNull(),
+  reason: varchar("reason", { length: 100 }).notNull(), // personal, sick, family, vacation, etc.
+  description: text("description"),
+  substituteRequired: boolean("substitute_required").default(false),
+  status: varchar("status", { length: 20 }).default("pending"), // pending, approved, rejected, completed
+  approvedBy: integer("approved_by").references(() => users.id),
+  approvedAt: timestamp("approved_at"),
+  rejectedReason: text("rejected_reason"),
+  // 대체 훈련사 관련
+  substituteTrainerId: integer("substitute_trainer_id").references(() => users.id),
+  substituteStatus: varchar("substitute_status", { length: 20 }).default("none"), // none, requested, confirmed, declined
+  // 보상 관련
+  rewardEligible: boolean("reward_eligible").default(false),
+  rewardAmount: decimal("reward_amount", { precision: 10, scale: 2 }),
+  rewardStatus: varchar("reward_status", { length: 20 }).default("none"), // none, pending, approved, paid
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// 대체 훈련사 요청 테이블 - 훈련소 관리자의 대체 인력 요청
+export const substituteRequests = pgTable("substitute_requests", {
+  id: serial("id").primaryKey(),
+  restApplicationId: integer("rest_application_id").references(() => restApplications.id).notNull(),
+  instituteId: integer("institute_id").references(() => institutes.id).notNull(),
+  requestingTrainerId: integer("requesting_trainer_id").references(() => users.id).notNull(),
+  requiredSkills: text("required_skills").array(), // 필요한 스킬/자격증
+  requiredLevel: varchar("required_level", { length: 20 }).default("same"), // same, higher, lower
+  workingHours: varchar("working_hours", { length: 100 }),
+  compensation: decimal("compensation", { precision: 10, scale: 2 }),
+  additionalNotes: text("additional_notes"),
+  status: varchar("status", { length: 20 }).default("open"), // open, in_progress, filled, cancelled
+  // 매칭된 대체 훈련사
+  matchedTrainerId: integer("matched_trainer_id").references(() => users.id),
+  matchedAt: timestamp("matched_at"),
+  acceptedAt: timestamp("accepted_at"),
+  completedAt: timestamp("completed_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// 대체 훈련사 지원 테이블 - 다른 훈련사의 대체 근무 지원
+export const substituteApplications = pgTable("substitute_applications", {
+  id: serial("id").primaryKey(),
+  substituteRequestId: integer("substitute_request_id").references(() => substituteRequests.id).notNull(),
+  applicantTrainerId: integer("applicant_trainer_id").references(() => users.id).notNull(),
+  availability: jsonb("availability"), // 근무 가능 시간/날짜
+  experience: text("experience"), // 관련 경험
+  certifications: text("certifications").array(), // 보유 자격증
+  expectedCompensation: decimal("expected_compensation", { precision: 10, scale: 2 }),
+  message: text("message"),
+  status: varchar("status", { length: 20 }).default("pending"), // pending, accepted, rejected
+  responseMessage: text("response_message"),
+  respondedBy: integer("responded_by").references(() => users.id),
+  respondedAt: timestamp("responded_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// 훈련소 전체 휴무 테이블 - 훈련소 관리자의 센터 단위 휴무
+export const instituteClosure = pgTable("institute_closure", {
+  id: serial("id").primaryKey(),
+  instituteId: integer("institute_id").references(() => institutes.id).notNull(),
+  managerId: integer("manager_id").references(() => users.id).notNull(),
+  startDate: timestamp("start_date").notNull(),
+  endDate: timestamp("end_date").notNull(),
+  reason: varchar("reason", { length: 100 }).notNull(), // holiday, maintenance, event, etc.
+  description: text("description"),
+  notificationSent: boolean("notification_sent").default(false),
+  customerNotice: text("customer_notice"),
+  alternativeOptions: text("alternative_options"), // 대체 서비스 안내
+  status: varchar("status", { length: 20 }).default("planned"), // planned, active, completed, cancelled
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// 휴식 리워드 테이블 - 소규모 훈련소 휴식 보상
+export const restRewards = pgTable("rest_rewards", {
+  id: serial("id").primaryKey(),
+  restApplicationId: integer("rest_application_id").references(() => restApplications.id).notNull(),
+  recipientId: integer("recipient_id").references(() => users.id).notNull(),
+  rewardType: varchar("reward_type", { length: 50 }).notNull(), // points, cash, credit, voucher
+  rewardAmount: decimal("reward_amount", { precision: 10, scale: 2 }).notNull(),
+  rewardReason: text("reward_reason"),
+  eligibilityChecked: boolean("eligibility_checked").default(false),
+  approvedBy: integer("approved_by").references(() => users.id),
+  approvedAt: timestamp("approved_at"),
+  paidAt: timestamp("paid_at"),
+  status: varchar("status", { length: 20 }).default("pending"), // pending, approved, paid, cancelled
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Type definitions
 export type UserRole = "admin" | "trainer" | "institute-admin" | "pet-owner";
 
@@ -886,6 +982,38 @@ export type InsertTrainerProgram = typeof trainerPrograms.$inferInsert;
 
 export type TrainerProgramEnrollment = typeof trainerProgramEnrollments.$inferSelect;
 export type InsertTrainerProgramEnrollment = typeof trainerProgramEnrollments.$inferInsert;
+
+// 휴식 관리 시스템 타입
+export type RestApplication = typeof restApplications.$inferSelect;
+export type InsertRestApplication = typeof restApplications.$inferInsert;
+
+export type SubstituteRequest = typeof substituteRequests.$inferSelect;
+export type InsertSubstituteRequest = typeof substituteRequests.$inferInsert;
+
+export type SubstituteApplication = typeof substituteApplications.$inferSelect;
+export type InsertSubstituteApplication = typeof substituteApplications.$inferInsert;
+
+export type InstituteClosure = typeof instituteClosure.$inferSelect;
+export type InsertInstituteClosure = typeof instituteClosure.$inferInsert;
+
+export type RestReward = typeof restRewards.$inferSelect;
+export type InsertRestReward = typeof restRewards.$inferInsert;
+
+// 휴식 관리 시스템 Zod 스키마
+export const insertRestApplicationSchema = createInsertSchema(restApplications);
+export const selectRestApplicationSchema = createSelectSchema(restApplications);
+
+export const insertSubstituteRequestSchema = createInsertSchema(substituteRequests);
+export const selectSubstituteRequestSchema = createSelectSchema(substituteRequests);
+
+export const insertSubstituteApplicationSchema = createInsertSchema(substituteApplications);
+export const selectSubstituteApplicationSchema = createSelectSchema(substituteApplications);
+
+export const insertInstituteClosureSchema = createInsertSchema(instituteClosure);
+export const selectInstituteClosureSchema = createSelectSchema(instituteClosure);
+
+export const insertRestRewardSchema = createInsertSchema(restRewards);
+export const selectRestRewardSchema = createSelectSchema(restRewards);
 
 // 상품 관련 타입 정의
 export type Product = typeof products.$inferSelect;

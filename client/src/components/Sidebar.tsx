@@ -77,7 +77,9 @@ import {
   Search,
   ChevronsRight,
   Percent,
-  Image as ImageIcon
+  Image as ImageIcon,
+  Clock,
+  Coffee
 } from "lucide-react";
 
 // 사이드바 컨텍스트 생성
@@ -772,6 +774,7 @@ export function Sidebar({
                         {showInstituteMenu && <AccessibleNavItem href="/institute/my-points" icon={<Star className="w-5 h-5 mr-2" />} active={isActive("/institute/my-points")} onClick={handleItemClick} show={true}>내 포인트</AccessibleNavItem>}
                         {showInstituteMenu && <AccessibleNavItem href="/institute/trainers" icon={<UserCog className="w-5 h-5 mr-2" />} active={isActive("/institute/trainers")} onClick={handleItemClick} show={true}>훈련사 관리</AccessibleNavItem>}
                         {showInstituteMenu && <AccessibleNavItem href="/institute/facility" icon={<Building className="w-5 h-5 mr-2" />} active={isActive("/institute/facility")} onClick={handleItemClick} show={true}>시설 관리</AccessibleNavItem>}
+                        {showInstituteMenu && <AccessibleNavItem href="/institute/rest-management" icon={<Calendar className="w-5 h-5 mr-2" />} hoverIcon={<Clock className="w-5 h-5 mr-2 text-primary" />} active={isActive("/institute/rest-management")} onClick={handleItemClick} show={true}>휴식 관리</AccessibleNavItem>}
                         {showInstituteMenu && <AccessibleNavItem href="/institute/notebook-monitor" icon={<FileText className="w-5 h-5 mr-2" />} hoverIcon={<Monitor className="w-5 h-5 mr-2 text-primary" />} active={isActive("/institute/notebook-monitor")} onClick={handleItemClick} show={true}>알림장 모니터링</AccessibleNavItem>}
                       </>
                     )}

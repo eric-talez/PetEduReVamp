@@ -1,498 +1,408 @@
 import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Calendar } from '@/components/ui/calendar';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Textarea } from '@/components/ui/textarea';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { 
-  Clock, 
-  Calendar as CalendarIcon, 
-  RefreshCw, 
-  Gift, 
-  CheckCircle,
-  XCircle,
-  AlertCircle,
-  Moon,
-  Sun,
-  Users,
-  Star,
-  Award,
-  Coffee,
-  Shield,
-  Heart,
-  MessageSquare,
-  Phone,
-  Mail
-} from 'lucide-react';
-import { useQuery } from '@tanstack/react-query';
-import { format } from 'date-fns';
-import { ko } from 'date-fns/locale';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import { CalendarDays, Clock, Coffee, Award, Users, Plus, Calendar, CheckCircle, XCircle, AlertCircle } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { useQuery } from "@tanstack/react-query";
 
-interface RestRequest {
-  id: string;
-  type: 'personal' | 'center';
-  duration: number;
+// 휴식 신청 타입 정의
+interface RestApplication {
+  id: number;
   startDate: string;
   endDate: string;
   reason: string;
-  status: 'pending' | 'approved' | 'rejected' | 'active';
+  description: string;
+  status: 'pending' | 'approved' | 'rejected';
   substituteRequired: boolean;
-  substituteAssigned?: string;
-  rewardEligible: boolean;
+  substituteStatus: 'none' | 'requested' | 'confirmed' | 'declined';
   createdAt: string;
+  approvedBy?: string;
+  rejectedReason?: string;
+  rewardAmount?: number;
+  rewardStatus?: 'none' | 'pending' | 'approved' | 'paid';
 }
 
-interface SubstituteRequest {
-  id: string;
-  requesterId: string;
-  requesterName: string;
-  centerName: string;
+// 대체 훈련사 요청 타입 정의
+interface SubstituteOpportunity {
+  id: number;
+  restApplicationId: number;
+  requiredSkills: string[];
+  requiredLevel: 'same' | 'higher' | 'lower';
+  compensation: number;
+  workingHours: string;
   startDate: string;
   endDate: string;
-  sessionType: string;
-  compensation: number;
-  status: 'pending' | 'accepted' | 'rejected';
+  trainerName: string;
+  status: 'open' | 'filled' | 'cancelled';
+}
+
+// 휴식 보상 타입 정의
+interface RestReward {
+  id: number;
+  rewardType: 'points' | 'cash' | 'credit' | 'voucher';
+  rewardAmount: number;
+  status: 'pending' | 'approved' | 'paid';
   description: string;
+  earnedDate: string;
 }
 
-interface RestStatistics {
-  totalRestDays: number;
-  thisMonthRest: number;
-  yearlyQuota: number;
-  remainingDays: number;
-  burnoutRisk: 'low' | 'medium' | 'high';
-  lastRest: string;
-  substituteEarnings: number;
-  rewardPoints: number;
-}
+// 모의 데이터
+const mockRestApplications: RestApplication[] = [
+  {
+    id: 1,
+    startDate: '2025-01-25',
+    endDate: '2025-01-27',
+    reason: 'personal',
+    description: '개인 사정으로 인한 휴식',
+    status: 'pending',
+    substituteRequired: true,
+    substituteStatus: 'requested',
+    createdAt: '2025-01-18T10:00:00Z',
+    rewardAmount: 50000,
+    rewardStatus: 'none'
+  },
+  {
+    id: 2,
+    startDate: '2025-02-10',
+    endDate: '2025-02-12',
+    reason: 'vacation',
+    description: '휴가',
+    status: 'approved',
+    substituteRequired: false,
+    substituteStatus: 'none',
+    createdAt: '2025-01-15T09:30:00Z',
+    approvedBy: '김관리자',
+    rewardAmount: 30000,
+    rewardStatus: 'approved'
+  },
+  {
+    id: 3,
+    startDate: '2025-01-10',
+    endDate: '2025-01-12',
+    reason: 'sick',
+    description: '몸살감기',
+    status: 'rejected',
+    substituteRequired: true,
+    substituteStatus: 'none',
+    createdAt: '2025-01-08T14:20:00Z',
+    rejectedReason: '대체 인력 확보 불가',
+    rewardAmount: 0,
+    rewardStatus: 'none'
+  }
+];
 
-export default function RestManagement() {
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
-  const [restDuration, setRestDuration] = useState(1);
-  const [restReason, setRestReason] = useState('');
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+const mockSubstituteOpportunities: SubstituteOpportunity[] = [
+  {
+    id: 1,
+    restApplicationId: 4,
+    requiredSkills: ['기초 복종 훈련', '사회화 훈련'],
+    requiredLevel: 'same',
+    compensation: 80000,
+    workingHours: '09:00-18:00',
+    startDate: '2025-01-22',
+    endDate: '2025-01-24',
+    trainerName: '이준호',
+    status: 'open'
+  },
+  {
+    id: 2,
+    restApplicationId: 5,
+    requiredSkills: ['공격성 교정', '분리불안 치료'],
+    requiredLevel: 'higher',
+    compensation: 120000,
+    workingHours: '10:00-19:00',
+    startDate: '2025-01-28',
+    endDate: '2025-01-30',
+    trainerName: '박민수',
+    status: 'open'
+  }
+];
 
-  const { data: restData, isLoading } = useQuery<{
-    statistics: RestStatistics;
-    requests: RestRequest[];
-    substituteRequests: SubstituteRequest[];
-  }>({
-    queryKey: ['/api/trainer/rest-management'],
-    refetchInterval: 30000,
+const mockRestRewards: RestReward[] = [
+  {
+    id: 1,
+    rewardType: 'points',
+    rewardAmount: 1000,
+    status: 'paid',
+    description: '소규모 훈련소 휴식 보상',
+    earnedDate: '2025-01-15'
+  },
+  {
+    id: 2,
+    rewardType: 'cash',
+    rewardAmount: 30000,
+    status: 'approved',
+    description: '대체 근무 보상',
+    earnedDate: '2025-01-12'
+  }
+];
+
+const RestManagement: React.FC = () => {
+  const { toast } = useToast();
+  const [selectedTab, setSelectedTab] = useState('applications');
+  const [isNewApplicationOpen, setIsNewApplicationOpen] = useState(false);
+  const [newApplication, setNewApplication] = useState({
+    startDate: '',
+    endDate: '',
+    reason: '',
+    description: '',
+    substituteRequired: false
   });
 
-  const defaultData = {
-    statistics: {
-      totalRestDays: 45,
-      thisMonthRest: 3,
-      yearlyQuota: 60,
-      remainingDays: 15,
-      burnoutRisk: 'medium' as const,
-      lastRest: '2025-01-10',
-      substituteEarnings: 180000,
-      rewardPoints: 850
-    },
-    requests: [
-      {
-        id: '1',
-        type: 'personal' as const,
-        duration: 2,
-        startDate: '2025-01-20',
-        endDate: '2025-01-21',
-        reason: '개인 휴식 및 재충전',
-        status: 'approved' as const,
-        substituteRequired: true,
-        substituteAssigned: '김대체 훈련사',
-        rewardEligible: false,
-        createdAt: '2025-01-15'
-      },
-      {
-        id: '2',
-        type: 'personal' as const,
-        duration: 1,
-        startDate: '2025-01-25',
-        endDate: '2025-01-25',
-        reason: '병원 진료',
-        status: 'pending' as const,
-        substituteRequired: false,
-        rewardEligible: true,
-        createdAt: '2025-01-18'
-      }
-    ],
-    substituteRequests: [
-      {
-        id: '1',
-        requesterId: '2',
-        requesterName: '박훈련사',
-        centerName: '서울 반려견 교육센터',
-        startDate: '2025-01-22',
-        endDate: '2025-01-23',
-        sessionType: '기초 훈련',
-        compensation: 120000,
-        status: 'pending' as const,
-        description: '2일간 기초 훈련 세션 대체 요청'
-      },
-      {
-        id: '2',
-        requesterId: '3',
-        requesterName: '이전문가',
-        centerName: '부산 펫 아카데미',
-        startDate: '2025-01-28',
-        endDate: '2025-01-29',
-        sessionType: '행동 교정',
-        compensation: 150000,
-        status: 'pending' as const,
-        description: '행동 교정 전문 세션 대체 요청'
-      }
-    ]
-  };
-
-  const data = restData || defaultData;
-
-  const getBurnoutRiskColor = (risk: string) => {
-    switch (risk) {
-      case 'low': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
-      case 'medium': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
-      case 'high': return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
-      default: return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200';
-    }
-  };
-
+  // 휴식 신청 상태별 색상
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'approved': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
-      case 'rejected': return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
-      case 'pending': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
-      case 'active': return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
-      default: return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200';
+      case 'pending': return 'bg-yellow-100 text-yellow-800';
+      case 'approved': return 'bg-green-100 text-green-800';
+      case 'rejected': return 'bg-red-100 text-red-800';
+      default: return 'bg-gray-100 text-gray-800';
     }
   };
 
-  const getStatusText = (status: string) => {
+  // 휴식 신청 상태별 아이콘
+  const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'approved': return '승인됨';
-      case 'rejected': return '거부됨';
-      case 'pending': return '대기중';
-      case 'active': return '진행중';
-      default: return '알 수 없음';
+      case 'pending': return <AlertCircle className="w-4 h-4" />;
+      case 'approved': return <CheckCircle className="w-4 h-4" />;
+      case 'rejected': return <XCircle className="w-4 h-4" />;
+      default: return <Clock className="w-4 h-4" />;
     }
   };
 
-  const handleRestRequest = async () => {
-    if (!selectedDate || !restReason.trim()) {
+  // 휴식 신청 제출
+  const handleSubmitApplication = () => {
+    if (!newApplication.startDate || !newApplication.endDate || !newApplication.reason) {
+      toast({
+        title: "필수 정보 누락",
+        description: "시작일, 종료일, 사유를 모두 입력해주세요.",
+        variant: "destructive"
+      });
       return;
     }
 
-    console.log('휴식 신청:', {
-      startDate: selectedDate,
-      duration: restDuration,
-      reason: restReason
+    toast({
+      title: "휴식 신청 완료",
+      description: "휴식 신청이 성공적으로 제출되었습니다. 승인 결과를 기다려주세요.",
     });
 
-    // API 호출 로직
-    setIsDialogOpen(false);
-    setRestReason('');
-    setRestDuration(1);
+    setIsNewApplicationOpen(false);
+    setNewApplication({
+      startDate: '',
+      endDate: '',
+      reason: '',
+      description: '',
+      substituteRequired: false
+    });
   };
 
-  const handleSubstituteResponse = async (requestId: string, action: 'accept' | 'reject') => {
-    console.log('대체 요청 응답:', { requestId, action });
-    // API 호출 로직
+  // 대체 근무 지원
+  const handleApplySubstitute = (opportunityId: number) => {
+    toast({
+      title: "대체 근무 지원 완료",
+      description: "대체 근무 지원이 성공적으로 제출되었습니다.",
+    });
   };
-
-  if (isLoading) {
-    return (
-      <div className="p-6 space-y-6">
-        <div className="animate-pulse">
-          <div className="h-8 bg-gray-200 rounded w-1/4 mb-4"></div>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="h-32 bg-gray-200 rounded"></div>
-            ))}
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   return (
-    <div className="p-6 space-y-6">
-      {/* 헤더 */}
+    <div className="container mx-auto p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">휴식 관리</h1>
-          <p className="text-gray-600 dark:text-gray-400">건강한 훈련 환경을 위한 휴식 제도</p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">휴식 관리</h1>
+          <p className="text-gray-600 dark:text-gray-400 mt-2">
+            휴식 신청, 대체 근무, 보상 관리를 한 곳에서 처리하세요
+          </p>
         </div>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <Dialog open={isNewApplicationOpen} onOpenChange={setIsNewApplicationOpen}>
           <DialogTrigger asChild>
-            <Button className="bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700">
-              <Moon className="w-4 h-4 mr-2" />
-              휴식 신청
+            <Button className="bg-primary hover:bg-primary/90">
+              <Plus className="w-4 h-4 mr-2" />
+              새 휴식 신청
             </Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="sm:max-w-[500px]">
             <DialogHeader>
-              <DialogTitle>휴식 신청</DialogTitle>
+              <DialogTitle>새 휴식 신청</DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
-              <div>
-                <Label htmlFor="start-date">시작일</Label>
-                <Calendar
-                  mode="single"
-                  selected={selectedDate}
-                  onSelect={setSelectedDate}
-                  locale={ko}
-                  className="rounded-md border"
-                />
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="startDate">시작일</Label>
+                  <Input
+                    id="startDate"
+                    type="date"
+                    value={newApplication.startDate}
+                    onChange={(e) => setNewApplication({...newApplication, startDate: e.target.value})}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="endDate">종료일</Label>
+                  <Input
+                    id="endDate"
+                    type="date"
+                    value={newApplication.endDate}
+                    onChange={(e) => setNewApplication({...newApplication, endDate: e.target.value})}
+                  />
+                </div>
               </div>
               <div>
-                <Label htmlFor="duration">기간 (일)</Label>
-                <Input
-                  id="duration"
-                  type="number"
-                  min="1"
-                  max="7"
-                  value={restDuration}
-                  onChange={(e) => setRestDuration(Number(e.target.value))}
-                />
+                <Label htmlFor="reason">사유</Label>
+                <Select value={newApplication.reason} onValueChange={(value) => setNewApplication({...newApplication, reason: value})}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="휴식 사유를 선택하세요" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="personal">개인 사정</SelectItem>
+                    <SelectItem value="sick">병가</SelectItem>
+                    <SelectItem value="family">가족 사정</SelectItem>
+                    <SelectItem value="vacation">휴가</SelectItem>
+                    <SelectItem value="training">교육 참석</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
               <div>
-                <Label htmlFor="reason">휴식 사유</Label>
+                <Label htmlFor="description">상세 설명</Label>
                 <Textarea
-                  id="reason"
-                  placeholder="휴식이 필요한 이유를 간단히 적어주세요"
-                  value={restReason}
-                  onChange={(e) => setRestReason(e.target.value)}
+                  id="description"
+                  placeholder="휴식 사유에 대한 상세한 설명을 입력하세요"
+                  value={newApplication.description}
+                  onChange={(e) => setNewApplication({...newApplication, description: e.target.value})}
                 />
               </div>
-              <Button onClick={handleRestRequest} className="w-full">
-                신청하기
-              </Button>
+              <div className="flex items-center space-x-2">
+                <Switch
+                  id="substituteRequired"
+                  checked={newApplication.substituteRequired}
+                  onCheckedChange={(checked) => setNewApplication({...newApplication, substituteRequired: checked})}
+                />
+                <Label htmlFor="substituteRequired">대체 훈련사 필요</Label>
+              </div>
+              <div className="flex justify-end space-x-2">
+                <Button variant="outline" onClick={() => setIsNewApplicationOpen(false)}>
+                  취소
+                </Button>
+                <Button onClick={handleSubmitApplication}>
+                  신청하기
+                </Button>
+              </div>
             </div>
           </DialogContent>
         </Dialog>
       </div>
 
-      {/* 통계 카드 */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card className="bg-gradient-to-r from-blue-500 to-purple-600 text-white">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-blue-100">총 휴식 일수</p>
-                <p className="text-3xl font-bold">{data.statistics.totalRestDays}</p>
-              </div>
-              <CalendarIcon className="w-8 h-8 text-white" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">이번 달 휴식</p>
-                <p className="text-2xl font-bold text-green-600">{data.statistics.thisMonthRest}일</p>
-              </div>
-              <Moon className="w-8 h-8 text-green-500" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">남은 휴식 일수</p>
-                <p className="text-2xl font-bold text-orange-600">{data.statistics.remainingDays}일</p>
-              </div>
-              <Clock className="w-8 h-8 text-orange-500" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">번아웃 위험도</p>
-                <Badge className={getBurnoutRiskColor(data.statistics.burnoutRisk)}>
-                  {data.statistics.burnoutRisk === 'low' ? '낮음' : 
-                   data.statistics.burnoutRisk === 'medium' ? '보통' : '높음'}
-                </Badge>
-              </div>
-              <Heart className="w-8 h-8 text-red-500" />
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* 플랫폼 보호 시스템 안내 */}
-      <Card className="bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-900/20 dark:to-blue-900/20">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Shield className="w-5 h-5 text-green-600" />
-            TALEZ 휴식 보호 시스템
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-3">
-              <div className="flex items-center gap-2">
-                <RefreshCw className="w-4 h-4 text-blue-600" />
-                <span className="text-sm">대체 훈련사 자동 연결</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Gift className="w-4 h-4 text-purple-600" />
-                <span className="text-sm">OFF 리워드 포인트 지급</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Users className="w-4 h-4 text-green-600" />
-                <span className="text-sm">팬 자동 공지 시스템</span>
-              </div>
-            </div>
-            <div className="space-y-2">
-              <div className="flex justify-between">
-                <span className="text-sm text-gray-600 dark:text-gray-400">대체 수익</span>
-                <span className="font-medium">{data.statistics.substituteEarnings.toLocaleString()}원</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm text-gray-600 dark:text-gray-400">리워드 포인트</span>
-                <span className="font-medium">{data.statistics.rewardPoints.toLocaleString()}P</span>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* 탭 섹션 */}
-      <Tabs defaultValue="requests" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="requests">내 휴식 신청</TabsTrigger>
-          <TabsTrigger value="substitute">대체 요청</TabsTrigger>
-          <TabsTrigger value="statistics">통계</TabsTrigger>
+      <Tabs value={selectedTab} onValueChange={setSelectedTab}>
+        <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="applications">내 신청 현황</TabsTrigger>
+          <TabsTrigger value="substitute">대체 근무</TabsTrigger>
+          <TabsTrigger value="rewards">휴식 보상</TabsTrigger>
+          <TabsTrigger value="calendar">휴식 달력</TabsTrigger>
         </TabsList>
 
-        {/* 휴식 신청 내역 */}
-        <TabsContent value="requests" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <CalendarIcon className="w-5 h-5" />
-                내 휴식 신청 내역
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {data.requests.map((request) => (
-                  <div key={request.id} className="border rounded-lg p-4 dark:border-gray-700">
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center gap-2">
-                        <Badge variant="outline">
-                          {request.type === 'personal' ? '개인 휴식' : '센터 휴식'}
-                        </Badge>
-                        <Badge className={getStatusColor(request.status)}>
-                          {getStatusText(request.status)}
-                        </Badge>
-                        {request.rewardEligible && (
-                          <Badge className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
-                            <Gift className="w-3 h-3 mr-1" />
-                            리워드 대상
-                          </Badge>
-                        )}
-                      </div>
-                      <span className="text-sm text-gray-500 dark:text-gray-400">
-                        {request.duration}일
-                      </span>
+        <TabsContent value="applications" className="space-y-4">
+          <div className="grid gap-4">
+            {mockRestApplications.map((application) => (
+              <Card key={application.id} className="hover:shadow-md transition-shadow">
+                <CardHeader className="pb-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      {getStatusIcon(application.status)}
+                      <CardTitle className="text-lg">
+                        {application.startDate} ~ {application.endDate}
+                      </CardTitle>
                     </div>
-                    <div className="space-y-2">
-                      <div className="flex justify-between">
-                        <span className="text-sm text-gray-600 dark:text-gray-400">기간</span>
-                        <span className="text-sm">
-                          {format(new Date(request.startDate), 'yyyy.MM.dd', { locale: ko })} - 
-                          {format(new Date(request.endDate), 'yyyy.MM.dd', { locale: ko })}
-                        </span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-sm text-gray-600 dark:text-gray-400">사유</span>
-                        <span className="text-sm">{request.reason}</span>
-                      </div>
-                      {request.substituteAssigned && (
-                        <div className="flex justify-between">
-                          <span className="text-sm text-gray-600 dark:text-gray-400">대체 훈련사</span>
-                          <span className="text-sm text-blue-600 dark:text-blue-400">
-                            {request.substituteAssigned}
-                          </span>
-                        </div>
-                      )}
+                    <Badge className={getStatusColor(application.status)}>
+                      {application.status === 'pending' && '대기중'}
+                      {application.status === 'approved' && '승인됨'}
+                      {application.status === 'rejected' && '거부됨'}
+                    </Badge>
+                  </div>
+                  <CardDescription>{application.description}</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <span className="font-medium">사유:</span> {application.reason}
+                    </div>
+                    <div>
+                      <span className="font-medium">신청일:</span> {new Date(application.createdAt).toLocaleDateString()}
+                    </div>
+                    <div>
+                      <span className="font-medium">대체 훈련사:</span> {application.substituteRequired ? '필요' : '불필요'}
+                    </div>
+                    <div>
+                      <span className="font-medium">보상 금액:</span> {application.rewardAmount?.toLocaleString()}원
                     </div>
                   </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+                  {application.rejectedReason && (
+                    <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-md">
+                      <span className="font-medium text-red-800">거부 사유:</span> {application.rejectedReason}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            ))}
+          </div>
         </TabsContent>
 
-        {/* 대체 요청 */}
         <TabsContent value="substitute" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <RefreshCw className="w-5 h-5" />
-                대체 훈련사 요청
+              <CardTitle className="flex items-center">
+                <Users className="w-5 h-5 mr-2" />
+                대체 근무 기회
               </CardTitle>
+              <CardDescription>
+                다른 훈련사의 휴식 기간 동안 대체 근무를 할 수 있는 기회입니다
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {data.substituteRequests.map((request) => (
-                  <div key={request.id} className="border rounded-lg p-4 dark:border-gray-700">
+                {mockSubstituteOpportunities.map((opportunity) => (
+                  <div key={opportunity.id} className="border rounded-lg p-4">
                     <div className="flex items-center justify-between mb-3">
                       <div>
-                        <h3 className="font-medium">{request.requesterName}</h3>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">{request.centerName}</p>
+                        <h3 className="font-semibold">{opportunity.trainerName} 훈련사 대체 근무</h3>
+                        <p className="text-sm text-gray-600">
+                          {opportunity.startDate} ~ {opportunity.endDate}
+                        </p>
                       </div>
                       <div className="text-right">
-                        <p className="font-bold text-green-600">{request.compensation.toLocaleString()}원</p>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">{request.sessionType}</p>
+                        <div className="font-semibold text-lg text-primary">
+                          {opportunity.compensation.toLocaleString()}원
+                        </div>
+                        <div className="text-sm text-gray-600">
+                          {opportunity.workingHours}
+                        </div>
                       </div>
                     </div>
-                    <div className="space-y-2 mb-3">
-                      <div className="flex justify-between">
-                        <span className="text-sm text-gray-600 dark:text-gray-400">기간</span>
-                        <span className="text-sm">
-                          {format(new Date(request.startDate), 'yyyy.MM.dd', { locale: ko })} - 
-                          {format(new Date(request.endDate), 'yyyy.MM.dd', { locale: ko })}
-                        </span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-sm text-gray-600 dark:text-gray-400">설명</span>
-                        <span className="text-sm">{request.description}</span>
+                    <div className="mb-3">
+                      <p className="text-sm font-medium mb-1">필요 스킬:</p>
+                      <div className="flex flex-wrap gap-1">
+                        {opportunity.requiredSkills.map((skill, index) => (
+                          <Badge key={index} variant="secondary">{skill}</Badge>
+                        ))}
                       </div>
                     </div>
-                    {request.status === 'pending' && (
-                      <div className="flex gap-2">
-                        <Button 
-                          size="sm" 
-                          onClick={() => handleSubstituteResponse(request.id, 'accept')}
-                          className="bg-green-600 hover:bg-green-700"
-                        >
-                          <CheckCircle className="w-4 h-4 mr-1" />
-                          수락
-                        </Button>
-                        <Button 
-                          size="sm" 
-                          variant="outline"
-                          onClick={() => handleSubstituteResponse(request.id, 'reject')}
-                        >
-                          <XCircle className="w-4 h-4 mr-1" />
-                          거절
-                        </Button>
-                      </div>
-                    )}
+                    <div className="flex items-center justify-between">
+                      <Badge variant="outline">
+                        {opportunity.requiredLevel === 'same' && '동일 레벨'}
+                        {opportunity.requiredLevel === 'higher' && '상급 레벨'}
+                        {opportunity.requiredLevel === 'lower' && '하급 레벨'}
+                      </Badge>
+                      <Button 
+                        onClick={() => handleApplySubstitute(opportunity.id)}
+                        disabled={opportunity.status !== 'open'}
+                      >
+                        {opportunity.status === 'open' ? '지원하기' : '마감됨'}
+                      </Button>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -500,82 +410,66 @@ export default function RestManagement() {
           </Card>
         </TabsContent>
 
-        {/* 통계 */}
-        <TabsContent value="statistics" className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Award className="w-5 h-5" />
-                  휴식 통계
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="flex justify-between">
-                    <span>연간 할당량</span>
-                    <span className="font-medium">{data.statistics.yearlyQuota}일</span>
+        <TabsContent value="rewards" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <Award className="w-5 h-5 mr-2" />
+                휴식 보상 내역
+              </CardTitle>
+              <CardDescription>
+                소규모 훈련소 휴식 보상 및 대체 근무 보상 내역입니다
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {mockRestRewards.map((reward) => (
+                  <div key={reward.id} className="border rounded-lg p-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h3 className="font-semibold">{reward.description}</h3>
+                        <p className="text-sm text-gray-600">
+                          {reward.earnedDate} 지급
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <div className="font-semibold text-lg">
+                          {reward.rewardType === 'points' ? `${reward.rewardAmount.toLocaleString()}P` : `${reward.rewardAmount.toLocaleString()}원`}
+                        </div>
+                        <Badge className={reward.status === 'paid' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}>
+                          {reward.status === 'paid' ? '지급완료' : '지급대기'}
+                        </Badge>
+                      </div>
+                    </div>
                   </div>
-                  <div className="flex justify-between">
-                    <span>사용한 일수</span>
-                    <span className="font-medium">{data.statistics.totalRestDays}일</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>남은 일수</span>
-                    <span className="font-medium text-green-600">{data.statistics.remainingDays}일</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>마지막 휴식</span>
-                    <span className="font-medium">
-                      {format(new Date(data.statistics.lastRest), 'yyyy.MM.dd', { locale: ko })}
-                    </span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
 
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Coffee className="w-5 h-5" />
-                  건강 관리 팁
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  <div className="flex items-start gap-2">
-                    <Sun className="w-4 h-4 text-yellow-500 mt-0.5" />
-                    <div>
-                      <p className="text-sm font-medium">규칙적인 휴식</p>
-                      <p className="text-xs text-gray-600 dark:text-gray-400">
-                        월 2-3일 정도의 정기적인 휴식을 권장합니다
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-2">
-                    <Heart className="w-4 h-4 text-red-500 mt-0.5" />
-                    <div>
-                      <p className="text-sm font-medium">번아웃 예방</p>
-                      <p className="text-xs text-gray-600 dark:text-gray-400">
-                        연속 근무 일수를 줄이고 충분한 수면을 취하세요
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-2">
-                    <Users className="w-4 h-4 text-blue-500 mt-0.5" />
-                    <div>
-                      <p className="text-sm font-medium">네트워크 활용</p>
-                      <p className="text-xs text-gray-600 dark:text-gray-400">
-                        대체 훈련사 시스템을 적극 활용하세요
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+        <TabsContent value="calendar" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <CalendarDays className="w-5 h-5 mr-2" />
+                휴식 달력
+              </CardTitle>
+              <CardDescription>
+                앞으로의 휴식 일정을 한눈에 확인하세요
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="text-center py-8">
+                <Calendar className="w-16 h-16 mx-auto mb-4 text-gray-400" />
+                <p className="text-gray-600">달력 기능은 곧 추가될 예정입니다.</p>
+              </div>
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
     </div>
   );
-}
+};
+
+export default RestManagement;
