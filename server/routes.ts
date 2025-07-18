@@ -145,6 +145,8 @@ function parseExcelCurriculumWithPricing(data: any[], filename: string) {
         let modulePrice = 0;
 
         // 각 컬럼에서 정보 추출
+        let moduleMaterials = '';
+        
         for (let j = 0; j < row.length; j++) {
           const cellValue = String(row[j] || '').trim();
           
@@ -173,6 +175,9 @@ function parseExcelCurriculumWithPricing(data: any[], filename: string) {
             if (!isNaN(parsedPrice)) {
               modulePrice = parsedPrice;
             }
+          } else if (j === 6 && cellValue) {
+            // 일곱 번째 컬럼: 준비물
+            moduleMaterials = cellValue;
           }
         }
 
@@ -196,7 +201,8 @@ function parseExcelCurriculumWithPricing(data: any[], filename: string) {
             videos: [],
             isRequired: true,
             isFree: isFree,
-            price: modulePrice
+            price: modulePrice,
+            materials: moduleMaterials
           };
           
           modules.push(module);
@@ -206,7 +212,8 @@ function parseExcelCurriculumWithPricing(data: any[], filename: string) {
             title: module.title,
             duration: module.duration,
             isFree: module.isFree,
-            price: module.price
+            price: module.price,
+            materials: module.materials
           });
           
           moduleIndex++;
