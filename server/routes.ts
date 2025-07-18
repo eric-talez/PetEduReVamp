@@ -2110,16 +2110,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     let courseStartIndex = -1;
     let courseHeaderIndex = -1;
     
+    console.log('[엑셀 파싱] 전체 데이터 구조 확인:', data.map((row, index) => ({ index, firstCell: row[0] })));
+    
     for (let i = 0; i < data.length; i++) {
       const row = data[i];
       if (row && row[0] === '강의 구성') {
         courseStartIndex = i;
+        console.log(`[엑셀 파싱] "강의 구성" 섹션 발견: ${i}행`);
         break;
       }
     }
     
     if (courseStartIndex === -1) {
       console.log('[엑셀 파싱] "강의 구성" 섹션을 찾을 수 없습니다.');
+      console.log('[엑셀 파싱] 사용 가능한 첫 번째 셀 값들:', data.map(row => row[0]).filter(cell => cell));
       return curriculum;
     }
     
