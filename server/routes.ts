@@ -2089,6 +2089,71 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Excel 파일 파싱 함수 (가격 정보 포함)
+  function parseExcelCurriculumWithPricing(data: any[][], fileName: string) {
+    const curriculum = {
+      title: fileName || '커리큘럼',
+      description: '엑셀 파일에서 추출된 커리큘럼',
+      category: '전문교육',
+      difficulty: 'intermediate',
+      duration: 480,
+      price: 300000,
+      modules: []
+    };
+
+    // 데이터가 충분한지 확인
+    if (data.length < 2) {
+      return curriculum;
+    }
+
+    // 첫 번째 행은 헤더로 가정하고 건너뛰기
+    // 두 번째 행부터 실제 데이터 처리
+    const modules = [];
+    
+    for (let i = 1; i < data.length; i++) {
+      const row = data[i];
+      
+      // 빈 행 건너뛰기
+      if (!row || row.length === 0 || !row[0]) {
+        continue;
+      }
+
+      const moduleData = {
+        id: `module-${i}`,
+        title: row[0] || `모듈 ${i}`,
+        description: row[1] || `${row[0] || '모듈'} 설명`,
+        duration: parseInt(row[2]) || 60,
+        isFree: row[3] === 'Y' || row[3] === 'y' || row[3] === '무료',
+        price: row[3] === 'Y' || row[3] === 'y' || row[3] === '무료' ? 0 : (parseInt(row[4]) || 50000),
+        materials: row[5] || '',
+        objectives: row[6] || `${row[0] || '모듈'} 목표 달성`,
+        activities: row[7] || '실습 활동',
+        completed: false
+      };
+
+      modules.push(moduleData);
+    }
+
+    // 전체 커리큘럼 정보 업데이트
+    curriculum.modules = modules;
+    curriculum.duration = modules.reduce((total, module) => total + module.duration, 0);
+    curriculum.price = modules.reduce((total, module) => total + module.price, 0);
+
+    // 파일명에서 추가 정보 추출 시도
+    if (fileName.includes('기초')) {
+      curriculum.difficulty = 'beginner';
+      curriculum.category = '기초교육';
+    } else if (fileName.includes('고급') || fileName.includes('전문')) {
+      curriculum.difficulty = 'advanced';
+      curriculum.category = '전문교육';
+    } else if (fileName.includes('중급')) {
+      curriculum.difficulty = 'intermediate';
+      curriculum.category = '중급교육';
+    }
+
+    return curriculum;
+  }
+
   // 로고 업로드를 위한 multer 설정
   const logoStorage = multer.diskStorage({
     destination: (req, file, cb) => {
@@ -6260,6 +6325,160 @@ app.get('/api/search', async (req, res) => {
     } catch (error) {
       console.error('[커리큘럼] 강의 생성 실패:', error);
       res.status(500).json({ message: '강의 생성에 실패했습니다.' });
+    }
+  });
+
+  // Excel 파일 업로드를 위한 multer 설정
+  const curriculumStorage = multer.diskStorage({
+    destination: (req, file, cb) => {
+      const uploadDir = 'uploads/curriculum';
+      if (!fs.existsSync(uploadDir)) {
+        fs.mkdirSync(uploadDir, { recursive: true });
+      }
+      cb(null, uploadDir);
+    },
+    filename: (req, file, cb) => {
+      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+      const originalName = Buffer.from(file.originalname, 'latin1').toString('utf8');
+      cb(null, 'curriculum-' + uniqueSuffix + '-' + originalName);
+    }
+  });
+
+  const curriculumUpload = multer({
+    storage: curriculumStorage,
+    limits: {
+      fileSize: 50 * 1024 * 1024, // 50MB
+    },
+    fileFilter: (req, file, cb) => {
+      const allowedTypes = [
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', // .xlsx
+        'application/vnd.ms-excel', // .xls
+        'application/x-hwp', // .hwp
+        'application/vnd.hancom.hwp' // .hwpx
+      ];
+      
+      if (allowedTypes.includes(file.mimetype) || 
+          file.originalname.match(/\.(xlsx|xls|hwp|hwpx)$/i)) {
+        cb(null, true);
+      } else {
+        cb(new Error('지원되지 않는 파일 형식입니다. Excel 파일(.xlsx, .xls) 또는 HWP 파일(.hwp, .hwpx)만 업로드 가능합니다.'), false);
+      }
+    }
+  });
+
+  // 커리큘럼 파일 업로드 API
+  app.post('/api/admin/curriculum/upload', curriculumUpload.single('file'), async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ 
+          success: false, 
+          message: '업로드할 파일이 없습니다.' 
+        });
+      }
+
+      const file = req.file;
+      const filePath = file.path;
+      const fileExtension = path.extname(file.originalname).toLowerCase();
+
+      console.log('[커리큘럼 업로드] 파일 정보:', {
+        originalName: file.originalname,
+        filename: file.filename,
+        mimetype: file.mimetype,
+        size: file.size,
+        extension: fileExtension
+      });
+
+      let extractedData = {};
+      let registrantInfo = {};
+
+      // 파일 형식에 따른 처리
+      if (fileExtension === '.xlsx' || fileExtension === '.xls') {
+        try {
+          const workbook = xlsx.readFile(filePath);
+          const sheetName = workbook.SheetNames[0];
+          const worksheet = workbook.Sheets[sheetName];
+          const data = xlsx.utils.sheet_to_json(worksheet, { header: 1 });
+
+          console.log('[엑셀 파싱] 시트명:', sheetName);
+          console.log('[엑셀 파싱] 데이터 행 수:', data.length);
+
+          // 파일 이름에서 기본 정보 추출
+          const fileName = file.originalname.replace(/\.(xlsx|xls)$/i, '');
+          
+          // 엑셀 파싱 함수 호출
+          extractedData = parseExcelCurriculumWithPricing(data, fileName);
+          
+          // 등록자 정보 추출 (첫 번째 행에서)
+          if (data.length > 0 && data[0].length > 0) {
+            registrantInfo = {
+              name: data[0][0] || '미확인',
+              email: data[0][1] || '',
+              phone: data[0][2] || '',
+              institution: data[0][3] || ''
+            };
+          }
+
+          console.log('[엑셀 파싱] 추출된 데이터:', extractedData);
+          console.log('[엑셀 파싱] 등록자 정보:', registrantInfo);
+
+        } catch (parseError) {
+          console.error('[엑셀 파싱] 파일 파싱 오류:', parseError);
+          return res.status(400).json({ 
+            success: false, 
+            message: 'Excel 파일을 읽는 중 오류가 발생했습니다. 파일 형식을 확인해주세요.' 
+          });
+        }
+      } else {
+        // HWP 파일 처리 (기본 정보만 추출)
+        const fileName = file.originalname.replace(/\.(hwp|hwpx)$/i, '');
+        extractedData = {
+          title: fileName,
+          description: `${fileName} 커리큘럼`,
+          category: '전문교육',
+          difficulty: 'intermediate',
+          duration: 480,
+          price: 300000,
+          modules: []
+        };
+        
+        registrantInfo = {
+          name: '미확인',
+          email: '',
+          phone: '',
+          institution: ''
+        };
+      }
+
+      // 파일 삭제 (임시 파일 정리)
+      try {
+        fs.unlinkSync(filePath);
+      } catch (unlinkError) {
+        console.warn('[파일 정리] 임시 파일 삭제 실패:', unlinkError);
+      }
+
+      res.json({
+        success: true,
+        data: extractedData,
+        registrantInfo: registrantInfo,
+        message: '파일이 성공적으로 처리되었습니다.'
+      });
+
+    } catch (error) {
+      console.error('[커리큘럼 업로드] 처리 오류:', error);
+      
+      // 파일 정리
+      if (req.file && req.file.path) {
+        try {
+          fs.unlinkSync(req.file.path);
+        } catch (unlinkError) {
+          console.warn('[파일 정리] 오류 발생 시 파일 삭제 실패:', unlinkError);
+        }
+      }
+      
+      res.status(500).json({ 
+        success: false, 
+        message: '파일 처리 중 오류가 발생했습니다. 파일 형식과 내용을 확인해주세요.' 
+      });
     }
   });
 

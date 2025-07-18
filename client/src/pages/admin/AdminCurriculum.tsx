@@ -137,6 +137,7 @@ export default function AdminCurriculum() {
   const [curriculums, setCurriculums] = useState<CurriculumData[]>([]);
   const [selectedCurriculum, setSelectedCurriculum] = useState<CurriculumData | null>(null);
   const [isCreating, setIsCreating] = useState(false);
+  const [showAdvancedCreation, setShowAdvancedCreation] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [creationStep, setCreationStep] = useState(1); // 생성 단계 추가
   const [formData, setFormData] = useState({
@@ -860,13 +861,13 @@ export default function AdminCurriculum() {
     if (!file) return;
 
     // 파일 타입 검증
-    const allowedTypes = ['.hwp', '.docx', '.doc', '.txt'];
+    const allowedTypes = ['.hwp', '.hwpx', '.docx', '.doc', '.txt', '.xlsx', '.xls'];
     const fileExtension = file.name.toLowerCase().slice(file.name.lastIndexOf('.'));
     
     if (!allowedTypes.includes(fileExtension)) {
       toast({
         title: "파일 형식 오류",
-        description: "지원하는 파일 형식: .hwp, .docx, .doc, .txt",
+        description: "지원하는 파일 형식: .hwp, .hwpx, .docx, .doc, .txt, .xlsx, .xls",
         variant: "destructive"
       });
       return;
@@ -1678,7 +1679,7 @@ export default function AdminCurriculum() {
                       쉬운 생성
                     </Button>
                     <Button 
-                      onClick={() => setIsCreating(true)}
+                      onClick={() => setShowAdvancedCreation(true)}
                       size="sm"
                       variant="outline"
                       className="flex items-center gap-1 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800/20 shadow-sm hover:shadow-md transition-all duration-200 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
