@@ -1,74 +1,214 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Progress } from '@/components/ui/progress';
+import { 
+  Star, 
+  TrendingUp, 
+  Trophy, 
+  Calendar, 
+  Activity,
+  Gift,
+  Target,
+  Award,
+  Video,
+  BookOpen,
+  MessageSquare,
+  Users,
+  Crown,
+  Zap,
+  ChevronRight,
+  Clock,
+  CheckCircle
+} from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Progress } from "@/components/ui/progress";
-import { Star, Award, Target, Calendar, TrendingUp, Gift, Users, Building } from "lucide-react";
 
-interface PointTransaction {
-  id: string;
-  type: '적립' | '사용' | '만료';
-  amount: number;
-  description: string;
-  date: string;
-  category: string;
-  source: string;
-}
-
-interface MonthlyPoints {
-  month: string;
-  earned: number;
-  used: number;
-  expired: number;
-}
-
-interface PointsData {
+interface MyPointsData {
   currentPoints: number;
-  monthlyEarned: number;
-  monthlyUsed: number;
-  totalLifetimePoints: number;
-  nextTierPoints: number;
-  currentTier: string;
-  transactions: PointTransaction[];
-  monthlyData: MonthlyPoints[];
-  upcomingExpiry: {
-    amount: number;
-    date: string;
-  };
+  totalEarned: number;
+  monthlyPoints: number;
+  level: string;
+  nextLevelPoints: number;
+  levelProgress: number;
+  activities: MyActivity[];
+  achievements: MyAchievement[];
+  rewards: AvailableReward[];
+  ranking: TrainerRanking;
+}
+
+interface MyActivity {
+  id: string;
+  type: 'review' | 'consultation' | 'course' | 'community' | 'referral';
+  title: string;
+  description: string;
+  points: number;
+  date: string;
+  status: 'completed' | 'pending' | 'processing';
+}
+
+interface MyAchievement {
+  id: string;
+  title: string;
+  description: string;
+  icon: string;
+  points: number;
+  unlockedAt?: string;
+  progress: number;
+  target: number;
+  isCompleted: boolean;
+}
+
+interface AvailableReward {
+  id: string;
+  title: string;
+  description: string;
+  pointsCost: number;
+  category: 'cash' | 'gift' | 'certification' | 'service';
+  available: boolean;
+  image?: string;
+}
+
+interface TrainerRanking {
+  currentRank: number;
+  totalTrainers: number;
+  percentile: number;
+  isStarTrainer: boolean;
 }
 
 export default function InstituteMyPoints() {
   const [activeTab, setActiveTab] = useState('overview');
 
-  const { data: pointsData, isLoading } = useQuery<PointsData>({
+  const { data: pointsData, isLoading } = useQuery<MyPointsData>({
     queryKey: ['/api/institute/my-points'],
-    queryFn: async () => {
-      const response = await fetch('/api/institute/my-points');
-      if (!response.ok) {
-        throw new Error('포인트 정보를 가져오지 못했습니다');
-      }
-      return response.json();
-    }
+    refetchInterval: 30000,
   });
 
-  const getTierColor = (tier: string) => {
-    switch (tier) {
-      case 'BRONZE': return 'bg-amber-100 text-amber-800';
-      case 'SILVER': return 'bg-gray-100 text-gray-800';
-      case 'GOLD': return 'bg-yellow-100 text-yellow-800';
-      case 'PLATINUM': return 'bg-blue-100 text-blue-800';
-      default: return 'bg-gray-100 text-gray-800';
+  const defaultData: MyPointsData = {
+    currentPoints: 2450,
+    totalEarned: 8320,
+    monthlyPoints: 680,
+    level: 'Silver',
+    nextLevelPoints: 5000,
+    levelProgress: 49,
+    activities: [
+      {
+        id: '1',
+        type: 'review',
+        title: '영상 리뷰 작성',
+        description: '강아지 기초 훈련 영상 리뷰 작성',
+        points: 50,
+        date: '2025-01-18',
+        status: 'completed'
+      },
+      {
+        id: '2',
+        type: 'consultation',
+        title: '화상 상담 완료',
+        description: '보더콜리 행동 교정 상담',
+        points: 100,
+        date: '2025-01-17',
+        status: 'completed'
+      },
+      {
+        id: '3',
+        type: 'course',
+        title: '커리큘럼 등록',
+        description: '퍼피 사회화 프로그램 등록',
+        points: 200,
+        date: '2025-01-16',
+        status: 'processing'
+      }
+    ],
+    achievements: [
+      {
+        id: '1',
+        title: '첫 번째 리뷰',
+        description: '첫 번째 영상 리뷰를 작성하세요',
+        icon: 'star',
+        points: 50,
+        unlockedAt: '2025-01-15',
+        progress: 1,
+        target: 1,
+        isCompleted: true
+      },
+      {
+        id: '2',
+        title: '상담 전문가',
+        description: '화상 상담 10회 완료',
+        icon: 'message-square',
+        points: 500,
+        progress: 7,
+        target: 10,
+        isCompleted: false
+      }
+    ],
+    rewards: [
+      {
+        id: '1',
+        title: '5만원 상금',
+        description: '현금 보상',
+        pointsCost: 2000,
+        category: 'cash',
+        available: true
+      },
+      {
+        id: '2',
+        title: '전문가 인증서',
+        description: 'TALEZ 전문가 인증서',
+        pointsCost: 3000,
+        category: 'certification',
+        available: false
+      }
+    ],
+    ranking: {
+      currentRank: 15,
+      totalTrainers: 120,
+      percentile: 87.5,
+      isStarTrainer: false
     }
   };
 
-  const getTransactionIcon = (type: string) => {
+  const data = pointsData || defaultData;
+
+  const getActivityIcon = (type: string) => {
     switch (type) {
-      case '적립': return <TrendingUp className="w-4 h-4 text-green-600" />;
-      case '사용': return <Gift className="w-4 h-4 text-blue-600" />;
-      case '만료': return <Calendar className="w-4 h-4 text-red-600" />;
-      default: return <Star className="w-4 h-4" />;
+      case 'review': return <Video className="w-4 h-4" />;
+      case 'consultation': return <MessageSquare className="w-4 h-4" />;
+      case 'course': return <BookOpen className="w-4 h-4" />;
+      case 'community': return <Users className="w-4 h-4" />;
+      case 'referral': return <Gift className="w-4 h-4" />;
+      default: return <Activity className="w-4 h-4" />;
+    }
+  };
+
+  const getActivityColor = (type: string) => {
+    switch (type) {
+      case 'review': return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
+      case 'consultation': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
+      case 'course': return 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200';
+      case 'community': return 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200';
+      case 'referral': return 'bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-200';
+      default: return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200';
+    }
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'completed': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
+      case 'pending': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
+      case 'processing': return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
+      default: return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200';
+    }
+  };
+
+  const getStatusText = (status: string) => {
+    switch (status) {
+      case 'completed': return '완료';
+      case 'pending': return '대기';
+      case 'processing': return '처리중';
+      default: return '알 수 없음';
     }
   };
 
@@ -78,8 +218,8 @@ export default function InstituteMyPoints() {
         <div className="animate-pulse">
           <div className="h-8 bg-gray-200 rounded w-1/4 mb-4"></div>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            {[...Array(4)].map((_, i) => (
-              <div key={i} className="h-24 bg-gray-200 rounded"></div>
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="h-32 bg-gray-200 rounded"></div>
             ))}
           </div>
         </div>
@@ -87,247 +227,305 @@ export default function InstituteMyPoints() {
     );
   }
 
-  const data = pointsData || {
-    currentPoints: 0,
-    monthlyEarned: 0,
-    monthlyUsed: 0,
-    totalLifetimePoints: 0,
-    nextTierPoints: 0,
-    currentTier: 'BRONZE',
-    transactions: [],
-    monthlyData: [],
-    upcomingExpiry: { amount: 0, date: '' }
-  };
-
-  const tierProgress = data.nextTierPoints > 0 ? (data.currentPoints / data.nextTierPoints) * 100 : 100;
-
   return (
     <div className="p-6 space-y-6">
       {/* 헤더 */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">내 포인트</h1>
-          <p className="text-gray-600 dark:text-gray-400">기관 포인트 현황 및 관리</p>
+          <h1 className="text-2xl font-bold">내 포인트</h1>
+          <p className="text-gray-600 dark:text-gray-400">활동 포인트를 확인하고 보상을 받아보세요</p>
         </div>
-        <div className="flex items-center space-x-2">
-          <Building className="w-5 h-5 text-primary" />
-          <Badge className={getTierColor(data.currentTier)}>
-            {data.currentTier} 등급
+        {data.ranking.isStarTrainer && (
+          <Badge className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white">
+            <Crown className="w-4 h-4 mr-1" />
+            Star Trainer
           </Badge>
-        </div>
+        )}
       </div>
 
-      {/* 포인트 요약 카드 */}
+      {/* 포인트 현황 카드 */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="flex items-center justify-between text-sm font-medium">
-              <span>보유 포인트</span>
-              <Star className="w-4 h-4 text-yellow-500" />
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-primary">{data.currentPoints.toLocaleString()}P</div>
-            <p className="text-xs text-gray-500 mt-1">현재 보유 중</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="flex items-center justify-between text-sm font-medium">
-              <span>이번 달 적립</span>
-              <TrendingUp className="w-4 h-4 text-green-500" />
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-600">{data.monthlyEarned.toLocaleString()}P</div>
-            <p className="text-xs text-gray-500 mt-1">이번 달 획득</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="flex items-center justify-between text-sm font-medium">
-              <span>이번 달 사용</span>
-              <Gift className="w-4 h-4 text-blue-500" />
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-blue-600">{data.monthlyUsed.toLocaleString()}P</div>
-            <p className="text-xs text-gray-500 mt-1">이번 달 사용</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="flex items-center justify-between text-sm font-medium">
-              <span>누적 포인트</span>
-              <Award className="w-4 h-4 text-purple-500" />
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-purple-600">{data.totalLifetimePoints.toLocaleString()}P</div>
-            <p className="text-xs text-gray-500 mt-1">총 누적 포인트</p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* 등급 진행률 */}
-      {data.nextTierPoints > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <Target className="w-5 h-5 text-primary" />
-              <span>등급 진행률</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span>다음 등급까지</span>
-                <span>{data.nextTierPoints - data.currentPoints}P 남음</span>
+        <Card className="bg-gradient-to-r from-blue-500 to-purple-600 text-white">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-blue-100">현재 포인트</p>
+                <p className="text-3xl font-bold">{data.currentPoints.toLocaleString()}</p>
               </div>
-              <Progress value={tierProgress} className="h-2" />
-              <p className="text-xs text-gray-500">
-                {data.currentPoints.toLocaleString()}P / {data.nextTierPoints.toLocaleString()}P
-              </p>
+              <Star className="w-8 h-8 text-yellow-300" />
             </div>
           </CardContent>
         </Card>
-      )}
 
-      {/* 탭 컨텐츠 */}
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600 dark:text-gray-400">총 획득 포인트</p>
+                <p className="text-2xl font-bold text-green-600">{data.totalEarned.toLocaleString()}</p>
+              </div>
+              <TrendingUp className="w-8 h-8 text-green-500" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600 dark:text-gray-400">이달 포인트</p>
+                <p className="text-2xl font-bold text-purple-600">{data.monthlyPoints.toLocaleString()}</p>
+              </div>
+              <Calendar className="w-8 h-8 text-purple-500" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600 dark:text-gray-400">전체 순위</p>
+                <p className="text-2xl font-bold text-orange-600">{data.ranking.currentRank}위</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">상위 {(100 - data.ranking.percentile).toFixed(1)}%</p>
+              </div>
+              <Trophy className="w-8 h-8 text-orange-500" />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* 레벨 진행률 */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Target className="w-5 h-5" />
+            레벨 진행률
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Badge variant="secondary" className="text-lg px-3 py-1">
+                  {data.level}
+                </Badge>
+                <ChevronRight className="w-4 h-4 text-gray-400" />
+                <span className="text-gray-600 dark:text-gray-400">다음 레벨</span>
+              </div>
+              <span className="text-sm text-gray-500 dark:text-gray-400">
+                {data.currentPoints} / {data.nextLevelPoints}
+              </span>
+            </div>
+            <Progress value={data.levelProgress} className="h-3" />
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              다음 레벨까지 {data.nextLevelPoints - data.currentPoints}포인트 필요
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* 탭 섹션 */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="overview">개요</TabsTrigger>
-          <TabsTrigger value="transactions">거래내역</TabsTrigger>
-          <TabsTrigger value="monthly">월별현황</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="overview">활동 내역</TabsTrigger>
+          <TabsTrigger value="achievements">업적</TabsTrigger>
+          <TabsTrigger value="rewards">보상</TabsTrigger>
+          <TabsTrigger value="ranking">순위</TabsTrigger>
         </TabsList>
 
+        {/* 활동 내역 */}
         <TabsContent value="overview" className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* 곧 만료될 포인트 */}
-            {data.upcomingExpiry.amount > 0 && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center space-x-2 text-orange-600">
-                    <Calendar className="w-5 h-5" />
-                    <span>곧 만료될 포인트</span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-orange-600">{data.upcomingExpiry.amount.toLocaleString()}P</div>
-                  <p className="text-sm text-gray-500 mt-1">만료일: {data.upcomingExpiry.date}</p>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* 포인트 획득 방법 */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <TrendingUp className="w-5 h-5 text-green-600" />
-                  <span>포인트 획득 방법</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span>훈련사 관리</span>
-                    <span className="text-green-600">+50P</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>시설 이용 관리</span>
-                    <span className="text-green-600">+30P</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>월간 리포트 작성</span>
-                    <span className="text-green-600">+100P</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>교육 프로그램 운영</span>
-                    <span className="text-green-600">+200P</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="transactions" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>최근 거래 내역</CardTitle>
+              <CardTitle className="flex items-center gap-2">
+                <Activity className="w-5 h-5" />
+                최근 활동 내역
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {data.transactions.length === 0 ? (
-                  <div className="text-center py-8">
-                    <Star className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                    <p className="text-gray-500">아직 포인트 거래 내역이 없습니다.</p>
-                  </div>
-                ) : (
-                  data.transactions.map((transaction) => (
-                    <div key={transaction.id} className="flex items-center justify-between p-4 border rounded-lg">
-                      <div className="flex items-center space-x-3">
-                        {getTransactionIcon(transaction.type)}
-                        <div>
-                          <p className="font-medium">{transaction.description}</p>
-                          <p className="text-sm text-gray-500">{transaction.category} · {transaction.date}</p>
+                {data.activities.map((activity) => (
+                  <div key={activity.id} className="flex items-center justify-between p-4 border rounded-lg dark:border-gray-700">
+                    <div className="flex items-center gap-3">
+                      <div className={`p-2 rounded-full ${getActivityColor(activity.type)}`}>
+                        {getActivityIcon(activity.type)}
+                      </div>
+                      <div>
+                        <h3 className="font-medium">{activity.title}</h3>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">{activity.description}</p>
+                        <div className="flex items-center gap-2 mt-1">
+                          <Clock className="w-3 h-3 text-gray-400" />
+                          <span className="text-xs text-gray-500 dark:text-gray-400">{activity.date}</span>
                         </div>
                       </div>
-                      <div className="text-right">
-                        <p className={`font-bold ${transaction.type === '적립' ? 'text-green-600' : transaction.type === '사용' ? 'text-blue-600' : 'text-red-600'}`}>
-                          {transaction.type === '적립' ? '+' : '-'}{transaction.amount.toLocaleString()}P
-                        </p>
-                        <p className="text-xs text-gray-500">{transaction.source}</p>
-                      </div>
                     </div>
-                  ))
-                )}
+                    <div className="flex items-center gap-2">
+                      <Badge className={getStatusColor(activity.status)}>
+                        {activity.status === 'completed' && <CheckCircle className="w-3 h-3 mr-1" />}
+                        {getStatusText(activity.status)}
+                      </Badge>
+                      <span className="font-bold text-blue-600 dark:text-blue-400">
+                        +{activity.points}P
+                      </span>
+                    </div>
+                  </div>
+                ))}
               </div>
             </CardContent>
           </Card>
         </TabsContent>
 
-        <TabsContent value="monthly" className="space-y-4">
+        {/* 업적 */}
+        <TabsContent value="achievements" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>월별 포인트 현황</CardTitle>
+              <CardTitle className="flex items-center gap-2">
+                <Award className="w-5 h-5" />
+                나의 업적
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {data.monthlyData.length === 0 ? (
-                  <div className="text-center py-8">
-                    <Calendar className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                    <p className="text-gray-500">아직 월별 데이터가 없습니다.</p>
-                  </div>
-                ) : (
-                  data.monthlyData.map((monthData) => (
-                    <div key={monthData.month} className="p-4 border rounded-lg">
-                      <div className="flex items-center justify-between mb-2">
-                        <h3 className="font-medium">{monthData.month}</h3>
-                        <Badge variant="outline">
-                          순증가: {(monthData.earned - monthData.used - monthData.expired).toLocaleString()}P
-                        </Badge>
+                {data.achievements.map((achievement) => (
+                  <div key={achievement.id} className="flex items-center justify-between p-4 border rounded-lg dark:border-gray-700">
+                    <div className="flex items-center gap-3">
+                      <div className={`p-2 rounded-full ${achievement.isCompleted ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' : 'bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400'}`}>
+                        <Trophy className="w-4 h-4" />
                       </div>
-                      <div className="grid grid-cols-3 gap-4 text-sm">
-                        <div className="text-center">
-                          <p className="text-green-600 font-bold">{monthData.earned.toLocaleString()}P</p>
-                          <p className="text-gray-500">적립</p>
-                        </div>
-                        <div className="text-center">
-                          <p className="text-blue-600 font-bold">{monthData.used.toLocaleString()}P</p>
-                          <p className="text-gray-500">사용</p>
-                        </div>
-                        <div className="text-center">
-                          <p className="text-red-600 font-bold">{monthData.expired.toLocaleString()}P</p>
-                          <p className="text-gray-500">만료</p>
+                      <div className="flex-1">
+                        <h3 className="font-medium">{achievement.title}</h3>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">{achievement.description}</p>
+                        <div className="mt-2">
+                          <div className="flex justify-between text-sm mb-1">
+                            <span>진행률</span>
+                            <span>{achievement.progress} / {achievement.target}</span>
+                          </div>
+                          <Progress value={(achievement.progress / achievement.target) * 100} className="h-2" />
                         </div>
                       </div>
                     </div>
-                  ))
-                )}
+                    <div className="text-right">
+                      {achievement.isCompleted ? (
+                        <Badge className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
+                          <Crown className="w-3 h-3 mr-1" />
+                          달성완료
+                        </Badge>
+                      ) : (
+                        <span className="text-sm text-gray-500 dark:text-gray-400">
+                          {achievement.points}P
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* 보상 */}
+        <TabsContent value="rewards" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Gift className="w-5 h-5" />
+                포인트 보상
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {data.rewards.map((reward) => (
+                  <div key={reward.id} className="border rounded-lg p-4 dark:border-gray-700">
+                    <div className="aspect-video bg-gradient-to-r from-blue-100 to-purple-100 dark:from-blue-900 dark:to-purple-900 rounded-lg mb-3 flex items-center justify-center">
+                      <Gift className="w-8 h-8 text-blue-600 dark:text-blue-400" />
+                    </div>
+                    <h3 className="font-medium mb-1">{reward.title}</h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">{reward.description}</p>
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-blue-600 dark:text-blue-400">
+                        {reward.pointsCost.toLocaleString()}P
+                      </span>
+                      <Button 
+                        size="sm" 
+                        disabled={!reward.available || data.currentPoints < reward.pointsCost}
+                        className="bg-blue-600 hover:bg-blue-700"
+                      >
+                        교환하기
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* 순위 */}
+        <TabsContent value="ranking" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Trophy className="w-5 h-5" />
+                나의 순위
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-6">
+                <div className="text-center">
+                  <div className="text-6xl font-bold text-orange-600 mb-2">
+                    {data.ranking.currentRank}
+                  </div>
+                  <div className="text-lg text-gray-600 dark:text-gray-400">
+                    전체 {data.ranking.totalTrainers}명 중
+                  </div>
+                  <div className="text-sm text-gray-500 dark:text-gray-400">
+                    상위 {(100 - data.ranking.percentile).toFixed(1)}%
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between p-4 bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 rounded-lg">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-yellow-100 dark:bg-yellow-900/30 rounded-full">
+                        <Crown className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />
+                      </div>
+                      <div>
+                        <h3 className="font-medium">Star Trainer 도전</h3>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                          상위 10%에 진입하여 특별 혜택을 받아보세요
+                        </p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-sm font-medium text-orange-600">
+                        {data.ranking.isStarTrainer ? '달성완료' : '도전중'}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="p-4 border rounded-lg dark:border-gray-700">
+                    <h3 className="font-medium mb-3">순위 향상 팁</h3>
+                    <div className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
+                      <div className="flex items-center gap-2">
+                        <Video className="w-4 h-4" />
+                        <span>영상 리뷰 작성하기 (+50P)</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <MessageSquare className="w-4 h-4" />
+                        <span>화상 상담 완료하기 (+100P)</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <BookOpen className="w-4 h-4" />
+                        <span>새 커리큘럼 등록하기 (+200P)</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Users className="w-4 h-4" />
+                        <span>커뮤니티 활동하기 (+30P)</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </CardContent>
           </Card>
