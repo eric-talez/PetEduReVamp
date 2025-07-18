@@ -1782,18 +1782,18 @@ export default function AdminCurriculum() {
 
                 {/* 커스텀 커리큘럼 생성 폼 */}
                 {isCreating && (
-                  <div className="p-4 border border-dashed border-gray-300 dark:border-gray-600 rounded-lg">
-                    <h4 className="font-medium mb-3 text-gray-900 dark:text-white">새 커리큘럼 생성</h4>
-                    <div className="space-y-3">
+                  <div className="p-4 border border-dashed border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800/50">
+                    <h4 className="font-medium mb-3 text-gray-900 dark:text-white">고급 커리큘럼 생성</h4>
+                    <div className="space-y-4">
                       {/* 파일 업로드 섹션 */}
-                      <div className="p-3 border-2 border-dashed border-blue-300 rounded-lg bg-blue-50">
+                      <div className="p-3 border-2 border-dashed border-blue-300 rounded-lg bg-blue-50 dark:bg-blue-900/20">
                         <div className="text-center">
                           <Upload className="w-8 h-8 mx-auto mb-2 text-blue-500" />
-                          <p className="text-sm font-medium text-blue-700 mb-1">파일에서 커리큘럼 생성</p>
-                          <p className="text-xs text-blue-600 mb-3">
+                          <p className="text-sm font-medium text-blue-700 dark:text-blue-300 mb-1">파일에서 커리큘럼 생성</p>
+                          <p className="text-xs text-blue-600 dark:text-blue-400 mb-3">
                             한글파일(.hwp), 워드(.docx), 엑셀(.xlsx/.xls), 텍스트(.txt) 파일을 업로드하세요
                           </p>
-                          <p className="text-xs text-green-600 mb-3">
+                          <p className="text-xs text-green-600 dark:text-green-400 mb-3">
                             💡 엑셀 파일: 회차별 유료/무료 정보 자동 추출
                           </p>
                           <input
@@ -1808,7 +1808,7 @@ export default function AdminCurriculum() {
                           />
                           <label
                             htmlFor="curriculum-file-upload"
-                            className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 cursor-pointer"
+                            className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 cursor-pointer transition-colors"
                           >
                             <FileText className="w-4 h-4 mr-2" />
                             파일 선택
@@ -1826,37 +1826,115 @@ export default function AdminCurriculum() {
                         </div>
                       </div>
 
-                      <div className="text-center text-gray-500 dark:text-gray-400 text-sm">또는</div>
+                      <div className="text-center text-gray-500 dark:text-gray-400 text-sm font-medium">또는 직접 입력</div>
 
-                      {/* 수동 입력 폼 */}
-                      <Input
-                        placeholder="커리큘럼 제목"
-                        value={newCurriculum.title}
-                        onChange={(e) => setNewCurriculum(prev => ({ ...prev, title: e.target.value }))}
-                      />
-                      <Textarea
-                        placeholder="커리큘럼 설명"
-                        value={newCurriculum.description}
-                        onChange={(e) => setNewCurriculum(prev => ({ ...prev, description: e.target.value }))}
-                        rows={3}
-                      />
-                      <div className="grid grid-cols-2 gap-3">
-                        <Input
-                          placeholder="카테고리"
-                          value={newCurriculum.category}
-                          onChange={(e) => setNewCurriculum(prev => ({ ...prev, category: e.target.value }))}
-                        />
-                        <Input
-                          type="number"
-                          placeholder="가격"
-                          value={newCurriculum.price}
-                          onChange={(e) => setNewCurriculum(prev => ({ ...prev, price: parseInt(e.target.value) }))}
-                        />
+                      {/* 수동 입력 폼 - 개선된 버전 */}
+                      <div className="grid grid-cols-1 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">커리큘럼 제목 *</label>
+                          <Input
+                            placeholder="예: 반려견 기초 훈련 완전정복"
+                            value={newCurriculum.title}
+                            onChange={(e) => setNewCurriculum(prev => ({ ...prev, title: e.target.value }))}
+                          />
+                        </div>
+                        
+                        <div>
+                          <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">커리큘럼 설명 *</label>
+                          <Textarea
+                            placeholder="커리큘럼의 목표와 내용을 설명해주세요"
+                            value={newCurriculum.description}
+                            onChange={(e) => setNewCurriculum(prev => ({ ...prev, description: e.target.value }))}
+                            rows={3}
+                          />
+                        </div>
+                        
+                        <div className="grid grid-cols-2 gap-3">
+                          <div>
+                            <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">카테고리 *</label>
+                            <Select
+                              value={newCurriculum.category}
+                              onValueChange={(value) => setNewCurriculum(prev => ({ ...prev, category: value }))}
+                            >
+                              <SelectTrigger>
+                                <SelectValue placeholder="카테고리 선택" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="기초훈련">기초훈련</SelectItem>
+                                <SelectItem value="문제행동교정">문제행동교정</SelectItem>
+                                <SelectItem value="어질리티">어질리티</SelectItem>
+                                <SelectItem value="사회화">사회화</SelectItem>
+                                <SelectItem value="전문가과정">전문가과정</SelectItem>
+                                <SelectItem value="재활치료">재활치료</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          
+                          <div>
+                            <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">난이도 *</label>
+                            <Select
+                              value={newCurriculum.difficulty}
+                              onValueChange={(value) => setNewCurriculum(prev => ({ ...prev, difficulty: value as any }))}
+                            >
+                              <SelectTrigger>
+                                <SelectValue placeholder="난이도 선택" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="beginner">초급</SelectItem>
+                                <SelectItem value="intermediate">중급</SelectItem>
+                                <SelectItem value="advanced">고급</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
+                        
+                        <div className="grid grid-cols-2 gap-3">
+                          <div>
+                            <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">총 시간 (분) *</label>
+                            <Input
+                              type="number"
+                              placeholder="예: 480 (8시간)"
+                              value={newCurriculum.duration}
+                              onChange={(e) => setNewCurriculum(prev => ({ ...prev, duration: parseInt(e.target.value) || 0 }))}
+                            />
+                          </div>
+                          
+                          <div>
+                            <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">가격 (원) *</label>
+                            <Input
+                              type="number"
+                              placeholder="예: 150000"
+                              value={newCurriculum.price}
+                              onChange={(e) => setNewCurriculum(prev => ({ ...prev, price: parseInt(e.target.value) || 0 }))}
+                            />
+                          </div>
+                        </div>
+                        
+                        <div className="grid grid-cols-2 gap-3">
+                          <div>
+                            <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">강사명 *</label>
+                            <Input
+                              placeholder="강사 이름"
+                              value={newCurriculum.trainerName}
+                              onChange={(e) => setNewCurriculum(prev => ({ ...prev, trainerName: e.target.value }))}
+                            />
+                          </div>
+                          
+                          <div>
+                            <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">강사 ID</label>
+                            <Input
+                              placeholder="강사 ID (선택사항)"
+                              value={newCurriculum.trainerId}
+                              onChange={(e) => setNewCurriculum(prev => ({ ...prev, trainerId: e.target.value }))}
+                            />
+                          </div>
+                        </div>
                       </div>
-                      <div className="flex gap-2">
-                        <Button onClick={createCustomCurriculum} size="sm" disabled={isProcessingFile}>
+                      
+                      <div className="flex gap-2 pt-4 border-t border-gray-200 dark:border-gray-700">
+                        <Button onClick={createCustomCurriculum} size="sm" disabled={isProcessingFile} className="bg-green-600 hover:bg-green-700">
                           <Save className="w-4 h-4 mr-1" />
-                          생성
+                          커리큘럼 생성
                         </Button>
                         <Button 
                           onClick={() => {
