@@ -376,7 +376,15 @@ function requireAuth(role?: string) {
 }
 
 // Stripe 초기화
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
+const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
+console.log('Stripe Secret Key 확인:', stripeSecretKey ? `${stripeSecretKey.substring(0, 10)}...` : 'NOT SET');
+
+if (!stripeSecretKey) {
+  console.error('STRIPE_SECRET_KEY 환경 변수가 설정되지 않았습니다!');
+  throw new Error('STRIPE_SECRET_KEY 환경 변수가 필요합니다.');
+}
+
+const stripe = new Stripe(stripeSecretKey, {
   apiVersion: '2023-10-16',
 });
 
