@@ -747,6 +747,7 @@ function AppLayout({ children }: { children: ReactNode }) {
                   </Route>
                   <Route path="/trainer/rest-management" component={TrainerRestManagement} />
                   <Route path="/trainer/substitute-board" component={SubstituteClassBoard} />
+                  <Route path="/trainer/substitute-class-board" component={SubstituteClassBoard} />
 
 
 
