@@ -3176,7 +3176,7 @@ export default function AdminCurriculum() {
                                 <p className="text-gray-600 text-sm mb-3">{module.description || '설명 없음'}</p>
                               
                               {/* 학습 목표 */}
-                              {module.objectives && module.objectives.length > 0 && (
+                              {module.objectives && Array.isArray(module.objectives) && module.objectives.length > 0 && (
                                 <div className="mb-3">
                                   <h5 className="text-sm font-medium text-blue-700 mb-2">🎯 학습 목표:</h5>
                                   <ul className="space-y-1">
@@ -3208,7 +3208,7 @@ export default function AdminCurriculum() {
                                     </div>
                                   )}
                                   
-                                  {module.detailedContent.mainTopics && module.detailedContent.mainTopics.length > 0 && (
+                                  {module.detailedContent.mainTopics && Array.isArray(module.detailedContent.mainTopics) && module.detailedContent.mainTopics.length > 0 && (
                                     <div>
                                       <h6 className="text-xs font-medium text-orange-700 mb-1">📖 주요 토픽:</h6>
                                       <ul className="text-xs text-gray-600 bg-orange-50 p-2 rounded space-y-1">
@@ -3222,7 +3222,7 @@ export default function AdminCurriculum() {
                                     </div>
                                   )}
                                   
-                                  {module.detailedContent.practicalExercises && module.detailedContent.practicalExercises.length > 0 && (
+                                  {module.detailedContent.practicalExercises && Array.isArray(module.detailedContent.practicalExercises) && module.detailedContent.practicalExercises.length > 0 && (
                                     <div>
                                       <h6 className="text-xs font-medium text-red-700 mb-1">🏃‍♂️ 실습:</h6>
                                       <ul className="text-xs text-gray-600 bg-red-50 p-2 rounded space-y-1">
@@ -3239,7 +3239,7 @@ export default function AdminCurriculum() {
                               )}
                               
                               {/* 영상 정보 */}
-                              {module.videos && module.videos.length > 0 && (
+                              {module.videos && Array.isArray(module.videos) && module.videos.length > 0 && (
                                 <div className="mt-3 pt-3 border-t">
                                   <div className="flex items-center gap-2 mb-2">
                                     <Video className="w-4 h-4 text-green-600" />

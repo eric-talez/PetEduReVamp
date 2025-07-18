@@ -2106,32 +2106,65 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return curriculum;
     }
 
-    // 첫 번째 행은 헤더로 가정하고 건너뛰기
-    // 두 번째 행부터 실제 데이터 처리
+    // "강의 구성" 섹션 찾기
+    let courseStartIndex = -1;
+    let courseHeaderIndex = -1;
+    
+    for (let i = 0; i < data.length; i++) {
+      const row = data[i];
+      if (row && row[0] === '강의 구성') {
+        courseStartIndex = i;
+        break;
+      }
+    }
+    
+    if (courseStartIndex === -1) {
+      console.log('[엑셀 파싱] "강의 구성" 섹션을 찾을 수 없습니다.');
+      return curriculum;
+    }
+    
+    // 강의 구성 헤더 찾기 (회차, 강의명, 설명, ...)
+    for (let i = courseStartIndex + 1; i < data.length; i++) {
+      const row = data[i];
+      if (row && row[0] === '회차') {
+        courseHeaderIndex = i;
+        break;
+      }
+    }
+    
+    if (courseHeaderIndex === -1) {
+      console.log('[엑셀 파싱] 강의 구성 헤더를 찾을 수 없습니다.');
+      return curriculum;
+    }
+    
+    // 실제 강의 데이터 처리 (헤더 다음 행부터)
     const modules = [];
     
-    for (let i = 1; i < data.length; i++) {
+    for (let i = courseHeaderIndex + 1; i < data.length; i++) {
       const row = data[i];
       
-      // 빈 행 건너뛰기
-      if (!row || row.length === 0 || !row[0]) {
-        continue;
+      // 빈 행이나 "작성 안내" 섹션 시작 시 중단
+      if (!row || row.length === 0 || !row[0] || row[0] === '작성 안내') {
+        break;
       }
+      
+      // 회차 번호가 있는 실제 강의 행만 처리
+      if (row[0] && (typeof row[0] === 'number' || /^\d+$/.test(row[0].toString()))) {
+        const moduleData = {
+          id: `module-${row[0]}`,
+          title: row[1] || `${row[0]}강`,
+          description: row[2] || `${row[1] || row[0] + '강'} 설명`,
+          duration: parseInt(row[3]) || 60,
+          isFree: row[4] === 'Y' || row[4] === 'y' || row[4] === '무료',
+          price: row[4] === 'Y' || row[4] === 'y' || row[4] === '무료' ? 0 : (parseInt(row[5]) || 50000),
+          materials: row[6] || '',
+          objectives: [`${row[1] || row[0] + '강'} 목표 달성`],
+          activities: ['실습 활동'],
+          completed: false
+        };
 
-      const moduleData = {
-        id: `module-${i}`,
-        title: row[0] || `모듈 ${i}`,
-        description: row[1] || `${row[0] || '모듈'} 설명`,
-        duration: parseInt(row[2]) || 60,
-        isFree: row[3] === 'Y' || row[3] === 'y' || row[3] === '무료',
-        price: row[3] === 'Y' || row[3] === 'y' || row[3] === '무료' ? 0 : (parseInt(row[4]) || 50000),
-        materials: row[5] || '',
-        objectives: row[6] || `${row[0] || '모듈'} 목표 달성`,
-        activities: row[7] || '실습 활동',
-        completed: false
-      };
-
-      modules.push(moduleData);
+        modules.push(moduleData);
+      }
     }
 
     // 전체 커리큘럼 정보 업데이트
