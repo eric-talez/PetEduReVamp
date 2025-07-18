@@ -140,6 +140,12 @@ export default function SubstituteClassBoard() {
   // 게시글 분류
   const availablePosts = posts.filter(post => post.originalTrainer !== currentTrainer && post.status === 'open');
   const myPosts = posts.filter(post => post.originalTrainer === currentTrainer);
+  
+  // 디버깅을 위한 로그
+  console.log('현재 훈련사:', currentTrainer);
+  console.log('전체 게시글:', posts);
+  console.log('내가 등록한 수업:', myPosts);
+  console.log('이용 가능한 수업:', availablePosts);
 
   // 대체 수업 게시글 생성
   const createPostMutation = useMutation({
@@ -248,7 +254,7 @@ export default function SubstituteClassBoard() {
       studentCount: 5,
       requiredSkills: [],
       maxApplicants: 3,
-      originalTrainer: '현재 훈련사'
+      originalTrainer: currentTrainer
     };
     
     console.log('대체 수업 등록 데이터:', postData);
