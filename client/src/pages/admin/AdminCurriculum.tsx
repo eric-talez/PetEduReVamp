@@ -2509,10 +2509,21 @@ export default function AdminCurriculum() {
                             title: newVideo.title,
                             fileName: newVideo.videoFile?.name
                           });
+                          
+                          if (!selectedModule || !selectedModule.id) {
+                            console.error('[영상 업로드 버튼] selectedModule이 없음:', selectedModule);
+                            toast({
+                              title: "오류",
+                              description: "모듈 정보가 선택되지 않았습니다.",
+                              variant: "destructive"
+                            });
+                            return;
+                          }
+                          
                           uploadVideoToModule(selectedModule.id);
                         }}
                         className="flex-1"
-                        disabled={!newVideo.videoFile || !newVideo.title.trim()}
+                        disabled={!newVideo.videoFile || !newVideo.title.trim() || !selectedModule?.id}
                       >
                         <Upload className="w-4 h-4 mr-1" />
                         업로드
