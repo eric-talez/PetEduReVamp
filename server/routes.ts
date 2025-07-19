@@ -6534,6 +6534,45 @@ app.get('/api/search', async (req, res) => {
     }
   });
 
+  // 영상 파일 업로드를 위한 multer 설정
+  const videoStorage = multer.diskStorage({
+    destination: (req, file, cb) => {
+      const uploadDir = 'uploads/videos';
+      if (!fs.existsSync(uploadDir)) {
+        fs.mkdirSync(uploadDir, { recursive: true });
+      }
+      cb(null, uploadDir);
+    },
+    filename: (req, file, cb) => {
+      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+      const originalName = Buffer.from(file.originalname, 'latin1').toString('utf8');
+      cb(null, 'video-' + uniqueSuffix + '-' + originalName);
+    }
+  });
+
+  const videoUpload = multer({
+    storage: videoStorage,
+    limits: {
+      fileSize: 500 * 1024 * 1024, // 500MB
+    },
+    fileFilter: (req, file, cb) => {
+      const allowedTypes = [
+        'video/mp4',
+        'video/avi', 
+        'video/mov',
+        'video/quicktime',
+        'video/x-msvideo'
+      ];
+      
+      if (allowedTypes.includes(file.mimetype) || 
+          file.originalname.match(/\.(mp4|avi|mov|quicktime)$/i)) {
+        cb(null, true);
+      } else {
+        cb(new Error('지원되지 않는 파일 형식입니다. MP4, AVI, MOV 파일만 업로드 가능합니다.'), false);
+      }
+    }
+  });
+
   // 커리큘럼 파일 업로드 API
   app.post('/api/admin/curriculum/upload', curriculumUpload.single('file'), async (req, res) => {
     try {
@@ -7300,12 +7339,26 @@ app.get('/api/search', async (req, res) => {
   });
 
   // 영상 업로드 API (Multer 미들웨어 사용)
-  app.post('/api/admin/curriculum/videos/upload', upload.single('video'), requireAuth('admin'), async (req, res) => {
+  app.post('/api/admin/curriculum/videos/upload', videoUpload.single('video'), requireAuth('admin'), async (req, res) => {
     try {
+      console.log('[영상 업로드] API 호출됨');
+      console.log('[영상 업로드] Request body:', req.body);
+      console.log('[영상 업로드] File info:', req.file ? {
+        filename: req.file.filename,
+        originalname: req.file.originalname,
+        mimetype: req.file.mimetype,
+        size: req.file.size
+      } : 'No file');
+
       const { title, description, moduleId } = req.body;
       const videoFile = req.file;
 
       if (!videoFile || !title || !moduleId) {
+        console.log('[영상 업로드] 필수 데이터 부족:', {
+          hasVideoFile: !!videoFile,
+          hasTitle: !!title,
+          hasModuleId: !!moduleId
+        });
         return res.status(400).json({ 
           message: '영상 파일, 제목, 모듈 ID가 필요합니다.' 
         });

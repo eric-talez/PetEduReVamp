@@ -1348,6 +1348,15 @@ export default function AdminCurriculum() {
 
   // 영상 업로드 함수
   const uploadVideoToModule = async (moduleId: string) => {
+    console.log('[영상 업로드 클라이언트] 시작 - moduleId:', moduleId);
+    console.log('[영상 업로드 클라이언트] newVideo 상태:', {
+      hasVideoFile: !!newVideo.videoFile,
+      title: newVideo.title,
+      description: newVideo.description,
+      videoFileName: newVideo.videoFile?.name,
+      videoFileSize: newVideo.videoFile?.size
+    });
+
     if (!newVideo.videoFile || !newVideo.title.trim()) {
       toast({
         title: "입력 오류",
@@ -1365,13 +1374,18 @@ export default function AdminCurriculum() {
       formData.append('description', newVideo.description);
       formData.append('moduleId', moduleId);
 
+      console.log('[영상 업로드 클라이언트] FormData 생성 완료, API 호출 시작');
+
       const response = await fetch('/api/admin/curriculum/videos/upload', {
         method: 'POST',
         body: formData
       });
 
+      console.log('[영상 업로드 클라이언트] API 응답 상태:', response.status);
+      
       if (response.ok) {
         const videoData = await response.json();
+        console.log('[영상 업로드 클라이언트] 성공 응답 데이터:', videoData);
         
         // 커리큘럼 상태 업데이트
         if (selectedCurriculum) {
@@ -1393,8 +1407,18 @@ export default function AdminCurriculum() {
           description: "영상이 성공적으로 업로드되었습니다.",
           variant: "default"
         });
+      } else {
+        console.error('[영상 업로드 클라이언트] API 응답 오류:', response.status, response.statusText);
+        const errorData = await response.text();
+        console.error('[영상 업로드 클라이언트] 오류 내용:', errorData);
+        toast({
+          title: "업로드 실패",
+          description: `서버 오류: ${response.status} ${response.statusText}`,
+          variant: "destructive"
+        });
       }
     } catch (error) {
+      console.error('[영상 업로드 클라이언트] 네트워크 오류:', error);
       toast({
         title: "오류",
         description: "영상 업로드에 실패했습니다.",
