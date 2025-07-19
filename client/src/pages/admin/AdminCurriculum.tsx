@@ -1346,7 +1346,7 @@ export default function AdminCurriculum() {
     }
 
     try {
-      const response = await fetch(`/api/admin/curriculums/${curriculumId}`, {
+      const response = await fetch(`/api/admin/curriculum/${curriculumId}`, {
         method: 'DELETE'
       });
 
@@ -1621,7 +1621,7 @@ export default function AdminCurriculum() {
     }
 
     try {
-      const response = await fetch(`/api/admin/curriculums/${curriculumId}`, {
+      const response = await fetch(`/api/admin/curriculum/${curriculumId}`, {
         method: 'DELETE'
       });
 
@@ -2474,8 +2474,17 @@ export default function AdminCurriculum() {
                         {selectedCurriculum?.status === 'published' ? '발행됨' : '강의로 발행'}
                       </Button>
                       <Button
-                        onClick={() => selectedCurriculum && updateCurriculum(selectedCurriculum)}
-                        className="flex items-center gap-2"
+                        onClick={() => {
+                          console.log('[저장 버튼] 클릭됨!');
+                          console.log('[저장 버튼] selectedCurriculum:', selectedCurriculum);
+                          if (selectedCurriculum) {
+                            console.log('[저장 버튼] updateCurriculum 호출 시작');
+                            updateCurriculum(selectedCurriculum);
+                          } else {
+                            console.error('[저장 버튼] selectedCurriculum이 없습니다!');
+                          }
+                        }}
+                        className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700"
                       >
                         <Save className="w-4 h-4" />
                         저장
