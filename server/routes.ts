@@ -7339,7 +7339,7 @@ app.get('/api/search', async (req, res) => {
   });
 
   // 영상 업로드 API (Multer 미들웨어 사용)
-  app.post('/api/admin/curriculum/videos/upload', videoUpload.single('video'), requireAuth('admin'), async (req, res) => {
+  app.post('/api/admin/curriculum/videos/upload', requireAuth('admin'), videoUpload.single('video'), async (req, res) => {
     try {
       console.log('[영상 업로드] API 호출됨');
       console.log('[영상 업로드] Request body:', req.body);

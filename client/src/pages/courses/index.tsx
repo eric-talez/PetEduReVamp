@@ -665,22 +665,6 @@ export default function Courses(props?: CoursesPageProps) {
                                   <span className="text-sm text-gray-600">영상 준비 중...</span>
                                 </div>
                               )}
-                                  <Button 
-                                    size="sm" 
-                                    variant="outline" 
-                                    className="ml-auto"
-                                    onClick={() => handlePlayVideo(module)}
-                                  >
-                                    <Play className="w-3 h-3 mr-1" />
-                                    재생
-                                  </Button>
-                                </div>
-                              ) : (
-                                <div className="flex items-center gap-2 p-3 bg-gray-100 rounded-lg">
-                                  <VideoOff className="w-4 h-4 text-gray-500" />
-                                  <span className="text-sm text-gray-600">영상 강의 준비 중</span>
-                                </div>
-                              )}
                             </div>
                           </div>
                         </div>
