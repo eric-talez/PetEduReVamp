@@ -167,22 +167,40 @@ export default function Courses(props?: CoursesPageProps) {
         // 발행된 상태의 커리큘럼만 필터링하여 강의 형태로 변환
         const publishedCourses = data.curriculums
           .filter((curriculum: any) => curriculum.status === 'published')
-          .map((curriculum: any) => ({
-            id: curriculum.id,
-            title: curriculum.title,
-            description: curriculum.description,
-            price: curriculum.price || 0,
-            difficulty: curriculum.difficulty || 'beginner',
-            category: curriculum.category || '기본 훈련',
-            duration: curriculum.duration || 0,
-            modules: curriculum.modules || [],
-            trainerName: curriculum.trainerName || '전문 훈련사',
-            status: curriculum.status,
-            enrollmentCount: curriculum.enrollmentCount || 0,
-            averageRating: curriculum.averageRating || 0,
-            createdAt: curriculum.createdAt || new Date().toISOString(),
-            updatedAt: curriculum.updatedAt || new Date().toISOString()
-          }));
+          .map((curriculum: any) => {
+            // 각 모듈의 영상 정보 포함하여 매핑
+            const modulesWithVideos = (curriculum.modules || []).map((module: any) => ({
+              ...module,
+              hasVideo: module.videos && module.videos.length > 0,
+              videoCount: module.videos ? module.videos.length : 0,
+              videos: module.videos || []
+            }));
+            
+            // 전체 강의의 영상 통계
+            const totalVideos = modulesWithVideos.reduce((sum: number, module: any) => sum + module.videoCount, 0);
+            const modulesWithVideoCount = modulesWithVideos.filter((module: any) => module.hasVideo).length;
+            
+            return {
+              id: curriculum.id,
+              title: curriculum.title,
+              description: curriculum.description,
+              price: curriculum.price || 0,
+              difficulty: curriculum.difficulty || 'beginner',
+              category: curriculum.category || '기본 훈련',
+              duration: curriculum.duration || 0,
+              modules: modulesWithVideos,
+              trainerName: curriculum.trainerName || '전문 훈련사',
+              status: curriculum.status,
+              enrollmentCount: curriculum.enrollmentCount || 0,
+              averageRating: curriculum.averageRating || 0,
+              createdAt: curriculum.createdAt || new Date().toISOString(),
+              updatedAt: curriculum.updatedAt || new Date().toISOString(),
+              // 영상 관련 정보 추가
+              totalVideos,
+              modulesWithVideoCount,
+              hasAnyVideo: totalVideos > 0
+            };
+          });
         
         console.log('🔥 발행된 강의 목록:', publishedCourses);
         setCourses(publishedCourses);
@@ -375,10 +393,20 @@ export default function Courses(props?: CoursesPageProps) {
           currentCourses.map((course) => (
             <Card key={course.id} className="overflow-hidden border border-gray-100 dark:border-gray-700 hover:shadow-md transition-shadow">
               <div className="relative h-40 bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
-                <BookOpen className="w-16 h-16 text-blue-400" />
+                {course.hasAnyVideo ? (
+                  <Video className="w-16 h-16 text-green-500" />
+                ) : (
+                  <BookOpen className="w-16 h-16 text-blue-400" />
+                )}
                 <Badge variant="default" className="absolute top-2 right-2">
                   발행됨
                 </Badge>
+                {course.hasAnyVideo && (
+                  <Badge className="absolute top-2 left-2 bg-green-500 text-white">
+                    <Video className="w-3 h-3 mr-1" />
+                    영상 {course.totalVideos}개
+                  </Badge>
+                )}
               </div>
               <div className="p-5">
                 <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-1">{course.title}</h3>
@@ -416,6 +444,15 @@ export default function Courses(props?: CoursesPageProps) {
                   <span>{Math.floor(course.duration / 60)}시간 {course.duration % 60}분</span>
                   <span className="mx-2">•</span>
                   <span>{course.modules.length}개 모듈</span>
+                  {course.hasAnyVideo && (
+                    <>
+                      <span className="mx-2">•</span>
+                      <span className="text-green-600 font-medium">
+                        <Video className="w-3 h-3 inline mr-1" />
+                        영상 {course.modulesWithVideoCount}/{course.modules.length}
+                      </span>
+                    </>
+                  )}
                   <span className="mx-2">•</span>
                   <span>{course.category}</span>
                 </div>
@@ -604,10 +641,30 @@ export default function Courses(props?: CoursesPageProps) {
 
                             {/* 영상 정보 */}
                             <div className="mt-3">
-                              {module.videoUrl || module.attachments?.some((att: any) => att.type === 'video') ? (
-                                <div className="flex items-center gap-2 p-3 bg-blue-50 rounded-lg">
-                                  <Video className="w-4 h-4 text-blue-600" />
-                                  <span className="text-sm text-blue-800">영상 강의 준비됨</span>
+                              {module.hasVideo ? (
+                                <div className="flex items-center justify-between gap-2 p-3 bg-green-50 rounded-lg border border-green-200">
+                                  <div className="flex items-center gap-2">
+                                    <Video className="w-4 h-4 text-green-600" />
+                                    <span className="text-sm font-medium text-green-700">
+                                      영상 강의 {module.videoCount}개 업로드됨
+                                    </span>
+                                  </div>
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className="bg-green-500 text-white border-green-500 hover:bg-green-600"
+                                    onClick={() => handlePlayVideo(module)}
+                                  >
+                                    <Play className="w-3 h-3 mr-1" />
+                                    재생
+                                  </Button>
+                                </div>
+                              ) : (
+                                <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                                  <VideoOff className="w-4 h-4 text-gray-500" />
+                                  <span className="text-sm text-gray-600">영상 준비 중...</span>
+                                </div>
+                              )}
                                   <Button 
                                     size="sm" 
                                     variant="outline" 

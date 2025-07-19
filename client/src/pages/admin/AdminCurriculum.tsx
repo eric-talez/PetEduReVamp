@@ -1378,7 +1378,8 @@ export default function AdminCurriculum() {
 
       const response = await fetch('/api/admin/curriculum/videos/upload', {
         method: 'POST',
-        body: formData
+        body: formData,
+        credentials: 'include'
       });
 
       console.log('[영상 업로드 클라이언트] API 응답 상태:', response.status);
@@ -2500,7 +2501,16 @@ export default function AdminCurriculum() {
 
                     <div className="flex gap-2">
                       <Button
-                        onClick={() => uploadVideoToModule(selectedModule.id)}
+                        onClick={() => {
+                          console.log('[영상 업로드 버튼] 클릭됨 - selectedModule:', selectedModule?.id);
+                          console.log('[영상 업로드 버튼] newVideo 상태:', {
+                            hasTitle: !!newVideo.title.trim(),
+                            hasVideoFile: !!newVideo.videoFile,
+                            title: newVideo.title,
+                            fileName: newVideo.videoFile?.name
+                          });
+                          uploadVideoToModule(selectedModule.id);
+                        }}
                         className="flex-1"
                         disabled={!newVideo.videoFile || !newVideo.title.trim()}
                       >
