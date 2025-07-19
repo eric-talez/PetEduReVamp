@@ -1349,6 +1349,7 @@ export default function AdminCurriculum() {
   // 영상 업로드 함수
   const uploadVideoToModule = async (moduleId: string) => {
     console.log('[영상 업로드 클라이언트] 시작 - moduleId:', moduleId);
+    console.log('[영상 업로드 클라이언트] selectedCurriculum:', selectedCurriculum?.id);
     console.log('[영상 업로드 클라이언트] newVideo 상태:', {
       hasVideoFile: !!newVideo.videoFile,
       title: newVideo.title,
@@ -1366,6 +1367,15 @@ export default function AdminCurriculum() {
       return;
     }
 
+    if (!selectedCurriculum?.id) {
+      toast({
+        title: "오류",
+        description: "커리큘럼 정보가 없습니다.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     try {
       setVideoUploadProgress(0);
       const formData = new FormData();
@@ -1373,6 +1383,7 @@ export default function AdminCurriculum() {
       formData.append('title', newVideo.title);
       formData.append('description', newVideo.description);
       formData.append('moduleId', moduleId);
+      formData.append('curriculumId', selectedCurriculum.id.toString());
 
       console.log('[영상 업로드 클라이언트] FormData 생성 완료, API 호출 시작');
 
@@ -1394,11 +1405,23 @@ export default function AdminCurriculum() {
             ...selectedCurriculum,
             modules: selectedCurriculum.modules.map(module =>
               module.id === moduleId
-                ? { ...module, videos: [...module.videos, videoData] }
+                ? { 
+                    ...module, 
+                    videos: [...(module.videos || []), videoData] 
+                  }
                 : module
             )
           };
           setSelectedCurriculum(updatedCurriculum);
+          
+          // 전체 커리큘럼 목록도 업데이트
+          setCurriculums(prev => 
+            prev.map(curriculum => 
+              curriculum.id === selectedCurriculum.id 
+                ? updatedCurriculum 
+                : curriculum
+            )
+          );
         }
 
         setIsAddingVideo(false);

@@ -7350,17 +7350,18 @@ app.get('/api/search', async (req, res) => {
         size: req.file.size
       } : 'No file');
 
-      const { title, description, moduleId } = req.body;
+      const { title, description, moduleId, curriculumId } = req.body;
       const videoFile = req.file;
 
-      if (!videoFile || !title || !moduleId) {
+      if (!videoFile || !title || !moduleId || !curriculumId) {
         console.log('[영상 업로드] 필수 데이터 부족:', {
           hasVideoFile: !!videoFile,
           hasTitle: !!title,
-          hasModuleId: !!moduleId
+          hasModuleId: !!moduleId,
+          hasCurriculumId: !!curriculumId
         });
         return res.status(400).json({ 
-          message: '영상 파일, 제목, 모듈 ID가 필요합니다.' 
+          message: '영상 파일, 제목, 모듈 ID, 커리큘럼 ID가 필요합니다.' 
         });
       }
 
@@ -7392,9 +7393,26 @@ app.get('/api/search', async (req, res) => {
         moduleId
       };
 
+      // 모듈에 영상 정보 저장
+      const addSuccess = storage.addVideoToModule(
+        curriculumId.toString(),
+        moduleId.toString(), 
+        videoData
+      );
+
+      if (!addSuccess) {
+        console.log('[영상 업로드] 모듈에 영상 추가 실패');
+        return res.status(500).json({ 
+          message: '영상 업로드는 성공했지만 모듈에 추가하는데 실패했습니다.' 
+        });
+      }
+
       console.log('[영상 업로드] 성공:', title, '모듈ID:', moduleId);
       
-      res.json(videoData);
+      res.json({
+        ...videoData,
+        message: '영상이 성공적으로 업로드되고 모듈에 추가되었습니다.'
+      });
     } catch (error) {
       console.error('[영상 업로드] 실패:', error);
       res.status(500).json({ message: '영상 업로드에 실패했습니다.' });

@@ -2013,6 +2013,36 @@ class Storage {
     return false;
   }
 
+  // 모듈에 영상 추가 메소드
+  addVideoToModule(curriculumId: string, moduleId: string, videoData: any): boolean {
+    const curriculum = this.courses.find(c => c.id == curriculumId);
+    if (!curriculum || !curriculum.modules) {
+      console.log(`[Storage] 영상 추가 실패: 커리큘럼 ${curriculumId} 찾을 수 없음`);
+      return false;
+    }
+
+    const module = curriculum.modules.find(m => m.id == moduleId);
+    if (!module) {
+      console.log(`[Storage] 영상 추가 실패: 모듈 ${moduleId} 찾을 수 없음`);
+      return false;
+    }
+
+    // 모듈에 videos 배열이 없으면 생성
+    if (!module.videos) {
+      module.videos = [];
+    }
+
+    // 영상 데이터 추가
+    module.videos.push(videoData);
+    
+    // 모듈과 커리큘럼 업데이트 시간 갱신
+    module.updatedAt = new Date().toISOString();
+    curriculum.updatedAt = new Date().toISOString();
+
+    console.log(`[Storage] 영상 추가 완료: ${curriculumId}/${moduleId} - ${videoData.title}`);
+    return true;
+  }
+
   // 이벤트 관리 메서드
   getAllEvents(): any[] {
     return this.events || [];
