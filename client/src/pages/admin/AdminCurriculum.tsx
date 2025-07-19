@@ -1287,32 +1287,54 @@ export default function AdminCurriculum() {
   };
 
   const updateCurriculum = async (curriculum: CurriculumData) => {
+    console.log('[커리큘럼 저장] 저장 버튼 클릭됨 - 커리큘럼 ID:', curriculum.id);
+    
     try {
-      const response = await fetch(`/api/admin/curriculums/${curriculum.id}`, {
+      const updateData = {
+        ...curriculum,
+        updatedAt: new Date().toISOString()
+      };
+      
+      console.log('[커리큘럼 저장] 업데이트 데이터:', updateData);
+      
+      const response = await fetch(`/api/admin/curriculum/${curriculum.id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...curriculum,
-          updatedAt: new Date()
-        })
+        headers: { 
+          'Content-Type': 'application/json',
+          'Cache-Control': 'no-cache'
+        },
+        body: JSON.stringify(updateData)
       });
+
+      console.log('[커리큘럼 저장] API 응답 상태:', response.status);
 
       if (response.ok) {
         const updatedCurriculum = await response.json();
+        console.log('[커리큘럼 저장] 성공 응답:', updatedCurriculum);
+        
         setCurriculums(prev => 
           prev.map(c => c.id === curriculum.id ? updatedCurriculum : c)
         );
+        
+        // 선택된 커리큘럼도 업데이트
+        setSelectedCurriculum(updatedCurriculum);
         setIsEditing(false);
+        
         toast({
-          title: "성공",
-          description: "커리큘럼이 수정되었습니다.",
+          title: "저장 완료",
+          description: `"${curriculum.title}" 커리큘럼이 성공적으로 저장되었습니다.`,
           variant: "default"
         });
+      } else {
+        const errorData = await response.text();
+        console.error('[커리큘럼 저장] 오류 응답:', errorData);
+        throw new Error(`Update failed: ${response.status} ${errorData}`);
       }
     } catch (error) {
+      console.error('[커리큘럼 저장] 오류 발생:', error);
       toast({
-        title: "오류",
-        description: "커리큘럼 수정에 실패했습니다.",
+        title: "저장 실패",
+        description: "커리큘럼 저장에 실패했습니다. 다시 시도해주세요.",
         variant: "destructive"
       });
     }

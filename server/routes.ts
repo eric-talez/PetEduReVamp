@@ -1158,23 +1158,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { id } = req.params;
       const updateData = req.body;
       
-      console.log(`[Admin] 커리큘럼 수정: ${id}`);
+      console.log(`[Admin] 커리큘럼 수정 요청: ${id}`, updateData.title || '제목 없음');
+      console.log(`[Admin] 수정 데이터:`, JSON.stringify(updateData, null, 2));
       
       const updatedCurriculum = await storage.updateCurriculum(id, updateData);
       
       if (!updatedCurriculum) {
+        console.error(`[Admin] 커리큘럼을 찾을 수 없음: ${id}`);
         return res.status(404).json({ error: '커리큘럼을 찾을 수 없습니다.' });
       }
       
-      res.json({
-        success: true,
-        message: '커리큘럼이 성공적으로 수정되었습니다.',
-        curriculum: updatedCurriculum
-      });
+      console.log(`[Admin] 커리큘럼 수정 성공: ${id}`, updatedCurriculum.title);
+      
+      res.json(updatedCurriculum); // 직접 커리큘럼 객체 반환
     } catch (error) {
       console.error('[Admin] 커리큘럼 수정 오류:', error);
       res.status(500).json({ 
-        error: '커리큘럼 수정 중 오류가 발생했습니다.' 
+        error: '커리큘럼 수정 중 오류가 발생했습니다.',
+        details: error.message 
       });
     }
   });
