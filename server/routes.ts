@@ -375,23 +375,24 @@ function requireAuth(role?: string) {
   };
 }
 
-// Stripe 초기화 - 환경 변수 강제 재로드
+// Stripe 초기화 - 환경 변수 선택적 로드 (없어도 서버 시작 가능)
 const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
 console.log('🔑 Stripe Secret Key 확인:', stripeSecretKey ? `${stripeSecretKey.substring(0, 15)}...` : 'NOT SET');
-console.log('🔑 환경 변수 디버깅:', {
-  nodeEnv: process.env.NODE_ENV,
-  stripeKeyLength: stripeSecretKey?.length,
-  stripeKeyPrefix: stripeSecretKey?.substring(0, 20)
-});
 
-if (!stripeSecretKey) {
-  console.error('❌ STRIPE_SECRET_KEY 환경 변수가 설정되지 않았습니다!');
-  throw new Error('STRIPE_SECRET_KEY 환경 변수가 필요합니다.');
+let stripe: Stripe | null = null;
+
+if (stripeSecretKey) {
+  try {
+    stripe = new Stripe(stripeSecretKey, {
+      apiVersion: '2023-10-16',
+    });
+    console.log('✅ Stripe 초기화 성공');
+  } catch (error) {
+    console.error('❌ Stripe 초기화 실패:', error);
+  }
+} else {
+  console.warn('⚠️ STRIPE_SECRET_KEY가 설정되지 않음 - 결제 기능 비활성화');
 }
-
-const stripe = new Stripe(stripeSecretKey, {
-  apiVersion: '2023-10-16',
-});
 
 export async function registerRoutes(app: Express): Promise<Server> {
 
@@ -5510,9 +5511,16 @@ app.get('/api/search', async (req, res) => {
     try {
       const { amount, courseId, courseTitle, itemId, itemName, itemType } = req.body;
       
-      // 실시간 API 키 재확인
+      // Stripe 사용 가능 여부 확인
       const currentStripeKey = process.env.STRIPE_SECRET_KEY;
-      console.log('🚀 결제 API 호출 - 현재 Stripe 키:', currentStripeKey ? `${currentStripeKey.substring(0, 20)}...` : 'NOT SET');
+      
+      if (!currentStripeKey) {
+        console.warn('⚠️ 결제 API 호출됨 - Stripe 키 없음');
+        return res.status(503).json({ 
+          error: '결제 시스템이 현재 설정되지 않았습니다. 관리자에게 문의하세요.',
+          code: 'PAYMENT_UNAVAILABLE'
+        });
+      }
       
       if (!amount || (!courseId && !itemId)) {
         return res.status(400).json({ error: '결제 금액과 구매 항목 ID가 필요합니다.' });
@@ -5531,9 +5539,15 @@ app.get('/api/search', async (req, res) => {
       }
 
       // 실시간 Stripe 인스턴스 생성 (캐시 방지)
-      const currentStripe = new Stripe(currentStripeKey!, {
-        apiVersion: '2023-10-16',
-      });
+      let currentStripe: Stripe;
+      try {
+        currentStripe = new Stripe(currentStripeKey, {
+          apiVersion: '2023-10-16',
+        });
+      } catch (error) {
+        console.error('Stripe 인스턴스 생성 실패:', error);
+        return res.status(500).json({ error: '결제 시스템 초기화에 실패했습니다.' });
+      }
 
       // Stripe PaymentIntent 생성
       const paymentIntent = await currentStripe.paymentIntents.create({
@@ -5563,6 +5577,10 @@ app.get('/api/search', async (req, res) => {
       }
 
       // Stripe에서 결제 상태 확인
+      if (!stripe) {
+        return res.status(503).json({ error: '결제 시스템이 설정되지 않았습니다.' });
+      }
+      
       const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
       
       if (paymentIntent.status === 'succeeded') {
