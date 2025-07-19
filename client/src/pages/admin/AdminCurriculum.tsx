@@ -41,7 +41,8 @@ import {
   ChevronRight,
   ChevronDown,
   ShoppingCart,
-  ExternalLink
+  ExternalLink,
+  RotateCcw
 } from 'lucide-react';
 
 interface CurriculumData {
@@ -1424,11 +1425,15 @@ export default function AdminCurriculum() {
           );
         }
 
-        setIsAddingVideo(false);
+        // 업로드 성공 후 폼만 초기화 (모달은 유지하여 연속 업로드 가능)
         setNewVideo({ title: '', description: '', videoFile: null });
+        // 파일 input도 초기화
+        const fileInput = document.querySelector('input[type="file"][accept="video/*"]') as HTMLInputElement;
+        if (fileInput) fileInput.value = '';
+        
         toast({
-          title: "성공",
-          description: "영상이 성공적으로 업로드되었습니다.",
+          title: "업로드 완료",
+          description: "영상이 성공적으로 업로드되었습니다. 추가 영상을 업로드하거나 완료 버튼을 눌러주세요.",
           variant: "default"
         });
       } else {
@@ -2494,17 +2499,35 @@ export default function AdminCurriculum() {
                       <input
                         type="file"
                         accept="video/*"
+                        multiple
                         onChange={(e) => {
-                          const file = e.target.files?.[0];
-                          if (file) {
-                            setNewVideo(prev => ({ ...prev, videoFile: file }));
+                          const files = Array.from(e.target.files || []);
+                          if (files.length > 0) {
+                            // 첫 번째 파일을 기본으로 설정하고, 나머지는 대기열에 추가
+                            setNewVideo(prev => ({ ...prev, videoFile: files[0] }));
+                            if (files.length > 1) {
+                              // 여러 파일 선택 시 알림
+                              toast({
+                                title: "여러 파일 선택됨",
+                                description: `${files.length}개 파일이 선택되었습니다. 하나씩 업로드해주세요.`,
+                                variant: "default"
+                              });
+                            }
                           }
                         }}
                         className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                       />
                       <p className="text-xs text-gray-500 mt-1">
-                        지원 형식: MP4, AVI, MOV (최대 500MB)
+                        지원 형식: MP4, AVI, MOV (최대 500MB) - 여러 파일 선택 가능
                       </p>
+                      {newVideo.videoFile && (
+                        <div className="mt-2 p-2 bg-blue-50 rounded text-xs">
+                          <span className="font-medium">선택된 파일:</span> {newVideo.videoFile.name}
+                          <span className="text-gray-500 ml-2">
+                            ({(newVideo.videoFile.size / (1024 * 1024)).toFixed(1)}MB)
+                          </span>
+                        </div>
+                      )}
                     </div>
 
                     {videoUploadProgress > 0 && (
@@ -2553,6 +2576,25 @@ export default function AdminCurriculum() {
                       </Button>
                       <Button
                         onClick={() => {
+                          // 업로드 후 폼만 초기화하고 모달은 유지 (연속 업로드를 위해)
+                          setNewVideo({ title: '', description: '', videoFile: null });
+                          // 파일 input도 초기화
+                          const fileInput = document.querySelector('input[type="file"][accept="video/*"]') as HTMLInputElement;
+                          if (fileInput) fileInput.value = '';
+                          toast({
+                            title: "폼 초기화",
+                            description: "새로운 영상을 추가할 수 있습니다.",
+                            variant: "default"
+                          });
+                        }}
+                        variant="outline"
+                        className="flex-1"
+                      >
+                        <RotateCcw className="w-4 h-4 mr-1" />
+                        폼 초기화
+                      </Button>
+                      <Button
+                        onClick={() => {
                           setIsAddingVideo(false);
                           setSelectedModule(null);
                           setNewVideo({ title: '', description: '', videoFile: null });
@@ -2560,7 +2602,7 @@ export default function AdminCurriculum() {
                         variant="outline"
                         className="flex-1"
                       >
-                        취소
+                        완료
                       </Button>
                     </div>
                   </div>
@@ -2713,43 +2755,123 @@ export default function AdminCurriculum() {
                             </div>
                           </div>
 
-                          {/* 모듈별 영상 상태 */}
+                          {/* 모듈별 영상 썸네일 및 제목 표시 */}
                           {modules.length > 0 && (
                             <div className="border-t pt-4">
-                              <h4 className="text-sm font-medium text-gray-700 mb-3">모듈별 영상 등록 현황</h4>
-                              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                              <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">모듈별 영상 강의</h4>
+                              <div className="space-y-3">
                                 {modules.slice(0, 6).map((module, index) => (
-                                  <div key={module.id} className="flex items-center justify-between p-2 bg-gray-50 rounded text-sm">
-                                    <div className="flex items-center gap-2">
-                                      <span className="bg-blue-100 text-blue-600 text-xs px-2 py-1 rounded font-medium">
+                                  <div key={module.id} className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3">
+                                    <div className="flex items-start gap-3">
+                                      <span className="bg-blue-100 text-blue-600 text-xs px-2 py-1 rounded font-medium flex-shrink-0">
                                         {index + 1}강
                                       </span>
-                                      <span className="truncate">{module.title}</span>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                      {module.videos && module.videos.length > 0 ? (
-                                        <>
-                                          <Badge variant="default" className="text-xs">
-                                            {module.videos.length}개
-                                          </Badge>
-                                          <div className="flex items-center gap-1">
-                                            {module.videos && module.videos.filter(v => v.status === 'ready').length === module.videos.length ? (
-                                              <CheckCircle className="w-3 h-3 text-green-500" />
-                                            ) : (
-                                              <Clock className="w-3 h-3 text-orange-500" />
-                                            )}
+                                      <div className="flex-1">
+                                        <h5 className="font-medium text-sm text-gray-900 dark:text-white mb-2">{module.title}</h5>
+                                        
+                                        {/* 영상 목록 표시 */}
+                                        {module.videos && module.videos.length > 0 ? (
+                                          <div className="space-y-2">
+                                            {module.videos.map((video, videoIndex) => (
+                                              <div key={video.id || videoIndex} className="flex items-center gap-3 bg-white dark:bg-gray-700 rounded p-2">
+                                                {/* 영상 썸네일 */}
+                                                <div className="w-16 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded flex items-center justify-center flex-shrink-0">
+                                                  <Video className="w-4 h-4 text-white" />
+                                                </div>
+                                                
+                                                {/* 영상 정보 */}
+                                                <div className="flex-1 min-w-0">
+                                                  <div className="text-xs font-medium text-gray-900 dark:text-white truncate">
+                                                    {video.title}
+                                                  </div>
+                                                  {video.description && (
+                                                    <div className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                                                      {video.description}
+                                                    </div>
+                                                  )}
+                                                  <div className="flex items-center gap-2 mt-1">
+                                                    <Badge variant="outline" className="text-xs">
+                                                      {video.duration || '00:00'}
+                                                    </Badge>
+                                                    <Badge variant={video.status === 'ready' ? 'default' : 'secondary'} className="text-xs">
+                                                      {video.status === 'ready' ? '준비완료' : '처리중'}
+                                                    </Badge>
+                                                  </div>
+                                                </div>
+                                                
+                                                {/* 영상 액션 버튼 */}
+                                                <div className="flex items-center gap-1">
+                                                  <Button
+                                                    variant="outline"
+                                                    size="sm"
+                                                    className="h-6 px-2 text-xs"
+                                                    onClick={() => {
+                                                      // 영상 미리보기 기능 (추후 구현)
+                                                      toast({
+                                                        title: "미리보기",
+                                                        description: "영상 미리보기 기능은 준비중입니다.",
+                                                        variant: "default"
+                                                      });
+                                                    }}
+                                                  >
+                                                    <Eye className="w-3 h-3" />
+                                                  </Button>
+                                                  <Button
+                                                    variant="outline"
+                                                    size="sm"
+                                                    className="h-6 px-2 text-xs text-red-600 border-red-300 hover:bg-red-50"
+                                                    onClick={() => deleteVideoFromModule(module.id, video.id)}
+                                                  >
+                                                    <Trash2 className="w-3 h-3" />
+                                                  </Button>
+                                                </div>
+                                              </div>
+                                            ))}
                                           </div>
-                                        </>
-                                      ) : (
-                                        <Badge variant="outline" className="text-xs">
-                                          미등록
-                                        </Badge>
-                                      )}
+                                        ) : (
+                                          <div className="flex items-center justify-center p-4 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded">
+                                            <div className="text-center">
+                                              <Video className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+                                              <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">등록된 영상이 없습니다</p>
+                                              <Button
+                                                variant="outline"
+                                                size="sm"
+                                                className="text-xs"
+                                                onClick={() => {
+                                                  setSelectedModule(module);
+                                                  setIsAddingVideo(true);
+                                                }}
+                                              >
+                                                <Upload className="w-3 h-3 mr-1" />
+                                                영상 업로드
+                                              </Button>
+                                            </div>
+                                          </div>
+                                        )}
+                                        
+                                        {/* 영상 추가 버튼 (이미 영상이 있는 경우) */}
+                                        {module.videos && module.videos.length > 0 && (
+                                          <div className="mt-2">
+                                            <Button
+                                              variant="outline"
+                                              size="sm"
+                                              className="w-full text-xs"
+                                              onClick={() => {
+                                                setSelectedModule(module);
+                                                setIsAddingVideo(true);
+                                              }}
+                                            >
+                                              <Plus className="w-3 h-3 mr-1" />
+                                              영상 추가
+                                            </Button>
+                                          </div>
+                                        )}
+                                      </div>
                                     </div>
                                   </div>
                                 ))}
                                 {modules.length > 6 && (
-                                  <div className="text-xs text-gray-500 flex items-center justify-center">
+                                  <div className="text-xs text-gray-500 dark:text-gray-400 text-center py-2">
                                     외 {modules.length - 6}개 모듈
                                   </div>
                                 )}
