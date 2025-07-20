@@ -8,6 +8,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { apiRequest, queryClient } from '@/lib/queryClient';
 import { useAuth } from '@/hooks/useAuth';
 import { 
   Plus, 
@@ -152,7 +154,21 @@ interface ProductInfo {
 
 export default function AdminCurriculum() {
   const { userRole } = useAuth();
-  const [curriculums, setCurriculums] = useState<CurriculumData[]>([]);
+  const { toast } = useToast();
+  const queryClientInstance = useQueryClient();
+  
+  // TanStack Query로 커리큘럼 데이터 관리
+  const { 
+    data: curriculums = [], 
+    isLoading: isLoadingCurriculums,
+    error: curriculumsError,
+    refetch: refetchCurriculums
+  } = useQuery({
+    queryKey: ['/api/admin/curriculum'],
+    staleTime: 1000 * 60 * 2, // 2분간 fresh 상태 유지
+    gcTime: 1000 * 60 * 10, // 10분간 캐시 유지
+  });
+
   const [selectedCurriculum, setSelectedCurriculum] = useState<CurriculumData | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [showAdvancedCreation, setShowAdvancedCreation] = useState(false);
@@ -212,8 +228,6 @@ export default function AdminCurriculum() {
       homework: ''
     }
   });
-  
-  const { toast } = useToast();
 
   // 모듈 선택 핸들러
   const handleModuleSelect = (module: any) => {
@@ -456,33 +470,51 @@ export default function AdminCurriculum() {
     }
   };
 
-  // 모듈 가격 설정 함수
+  // 모듈 가격 설정 Mutation
+  const updateModulePriceMutation = useMutation({
+    mutationFn: async ({ curriculumId, moduleId, isFree, price }: {
+      curriculumId: string;
+      moduleId: string;
+      isFree: boolean;
+      price: number;
+    }) => {
+      return await apiRequest('PUT', `/api/admin/curriculum/${curriculumId}/modules/${moduleId}/price`, {
+        isFree,
+        price: isFree ? 0 : price
+      });
+    },
+    onSuccess: (_, variables) => {
+      // 캐시 업데이트
+      queryClientInstance.setQueryData(['/api/admin/curriculum'], (oldData: CurriculumData[] = []) => {
+        return oldData.map(curriculum => {
+          if (curriculum.id === variables.curriculumId) {
+            return {
+              ...curriculum,
+              modules: curriculum.modules.map(module => {
+                if (module.id === variables.moduleId) {
+                  return {
+                    ...module,
+                    isFree: variables.isFree,
+                    price: variables.isFree ? 0 : variables.price
+                  };
+                }
+                return module;
+              })
+            };
+          }
+          return curriculum;
+        });
+      });
+      
+      toast({
+        title: "가격 설정 완료",
+        description: `모듈이 ${variables.isFree ? '무료' : `${variables.price.toLocaleString()}원`}로 설정되었습니다.`,
+      });
+    }
+  });
+
   const handleModulePriceUpdate = (curriculumId: string, moduleId: string, isFree: boolean, price: number = 0) => {
-    setCurriculums(prev => 
-      prev.map(curriculum => {
-        if (curriculum.id === curriculumId) {
-          return {
-            ...curriculum,
-            modules: curriculum.modules.map(module => {
-              if (module.id === moduleId) {
-                return {
-                  ...module,
-                  isFree: isFree,
-                  price: isFree ? 0 : price
-                };
-              }
-              return module;
-            })
-          };
-        }
-        return curriculum;
-      })
-    );
-        
-    toast({
-      title: "가격 설정 완료",
-      description: `모듈이 ${isFree ? '무료' : `${price.toLocaleString()}원`}로 설정되었습니다.`,
-    });
+    updateModulePriceMutation.mutate({ curriculumId, moduleId, isFree, price });
   };
 
   // 쉬운 커리큘럼 생성을 위한 마법사 함수들
@@ -722,14 +754,14 @@ export default function AdminCurriculum() {
 
       if (response.ok) {
         const createdCurriculum = await response.json();
-        setCurriculums(prev => [...prev, createdCurriculum]);
+        // 캐시 무효화로 처리
+        queryClientInstance.invalidateQueries({ queryKey: ['/api/admin/curriculum'] });
         setShowAdvancedCreation(false);
         resetNewCurriculum();
         toast({
           title: "커리큘럼 생성 완료",
           description: `"${newCurriculum.title}" 커리큘럼이 성공적으로 생성되었습니다.`,
         });
-        fetchCurriculums(); // 목록 새로고침
       } else {
         const errorData = await response.json();
         throw new Error(errorData.message || '서버 오류가 발생했습니다.');
@@ -744,50 +776,7 @@ export default function AdminCurriculum() {
     }
   };
 
-  // 영상강의 관련 함수들 추가
-  useEffect(() => {
-    fetchVideoLectures();
-  }, []);
-
-  const fetchVideoLectures = async () => {
-    try {
-      // 샘플 데이터로 대체 (실제로는 API 호출)
-      const sampleLectures: VideoLecture[] = [
-        {
-          id: 'lecture-1',
-          title: '반려동물 재활 전문과정',
-          instructor: '한성규',
-          description: '손상이나 질병 또는 장애를 가진 반려동물에게 의학적 중재 및 재활 훈련, 심리 치료 등을 통해 동물의 신체적, 정신적 기능을 최고의 수준으로 회복시키는 종합 재활 과정입니다.',
-          totalDuration: 900,
-          difficulty: 'advanced',
-          category: '재활치료',
-          price: 350000,
-          rating: 4.9,
-          reviewCount: 156,
-          studentCount: 289,
-          status: 'pending',
-          modules: [
-            {
-              id: 'module-1',
-              title: '1강: 오리엔테이션 (OT)',
-              description: '강의 내용 개요 및 반려동물 재활의 기본 개념',
-              duration: 45,
-              objectives: ['반려동물 재활의 기본 개념 이해', '강의 전체 구성 파악'],
-              materials: ['교재 및 학습노트', 'PPT 자료'],
-              format: 'theory',
-              isFree: true,
-              order: 1
-            }
-          ],
-          createdAt: new Date(),
-          updatedAt: new Date()
-        }
-      ];
-      setVideoLectures(sampleLectures);
-    } catch (error) {
-      console.error('영상강의 목록 조회 실패:', error);
-    }
-  };
+  // 샘플 데이터는 관련 useEffect와 함께 제거됨 - TanStack Query가 처리
 
   const handleApproveLecture = async (lectureId: string) => {
     try {
@@ -1126,21 +1115,7 @@ export default function AdminCurriculum() {
   // 모듈 편집 상태
   const [editingModule, setEditingModule] = useState<ModuleData | null>(null);
 
-  useEffect(() => {
-    loadCurriculums();
-  }, []);
-
-  const loadCurriculums = async () => {
-    try {
-      const response = await fetch('/api/admin/curriculums');
-      if (response.ok) {
-        const data = await response.json();
-        setCurriculums(data.curriculums || []);
-      }
-    } catch (error) {
-      console.error('커리큘럼 목록 로딩 실패:', error);
-    }
-  };
+  // loadCurriculums 함수 제거됨 - TanStack Query가 처리
 
   const createFromTemplate = async (template: typeof realCurriculumTemplates[0]) => {
     try {
@@ -1164,7 +1139,8 @@ export default function AdminCurriculum() {
 
       if (response.ok) {
         const result = await response.json();
-        setCurriculums(prev => [...prev, result]);
+        // 캐시 무효화로 처리
+        queryClientInstance.invalidateQueries({ queryKey: ['/api/admin/curriculum'] });
         toast({
           title: "성공",
           description: `"${template.title}" 커리큘럼이 생성되었습니다.`,
@@ -1286,10 +1262,11 @@ export default function AdminCurriculum() {
     }
   };
 
-  const updateCurriculum = async (curriculum: CurriculumData) => {
-    console.log('[커리큘럼 저장] 저장 버튼 클릭됨 - 커리큘럼 ID:', curriculum.id);
-    
-    try {
+  // 커리큘럼 업데이트 Mutation
+  const updateCurriculumMutation = useMutation({
+    mutationFn: async (curriculum: CurriculumData) => {
+      console.log('[커리큘럼 저장] Mutation 시작 - 커리큘럼 ID:', curriculum.id);
+      
       const updateData = {
         ...curriculum,
         updatedAt: new Date().toISOString()
@@ -1297,40 +1274,28 @@ export default function AdminCurriculum() {
       
       console.log('[커리큘럼 저장] 업데이트 데이터:', updateData);
       
-      const response = await fetch(`/api/admin/curriculum/${curriculum.id}`, {
-        method: 'PUT',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Cache-Control': 'no-cache'
-        },
-        body: JSON.stringify(updateData)
+      const response = await apiRequest('PUT', `/api/admin/curriculum/${curriculum.id}`, updateData);
+      return response;
+    },
+    onSuccess: (updatedCurriculum, variables) => {
+      console.log('[커리큘럼 저장] 성공 응답:', updatedCurriculum);
+      
+      // 캐시 무효화 및 업데이트
+      queryClientInstance.setQueryData(['/api/admin/curriculum'], (oldData: CurriculumData[] = []) => {
+        return oldData.map(c => c.id === variables.id ? updatedCurriculum : c);
       });
-
-      console.log('[커리큘럼 저장] API 응답 상태:', response.status);
-
-      if (response.ok) {
-        const updatedCurriculum = await response.json();
-        console.log('[커리큘럼 저장] 성공 응답:', updatedCurriculum);
-        
-        setCurriculums(prev => 
-          prev.map(c => c.id === curriculum.id ? updatedCurriculum : c)
-        );
-        
-        // 선택된 커리큘럼도 업데이트
-        setSelectedCurriculum(updatedCurriculum);
-        setIsEditing(false);
-        
-        toast({
-          title: "저장 완료",
-          description: `"${curriculum.title}" 커리큘럼이 성공적으로 저장되었습니다.`,
-          variant: "default"
-        });
-      } else {
-        const errorData = await response.text();
-        console.error('[커리큘럼 저장] 오류 응답:', errorData);
-        throw new Error(`Update failed: ${response.status} ${errorData}`);
-      }
-    } catch (error) {
+      
+      // 선택된 커리큘럼도 업데이트
+      setSelectedCurriculum(updatedCurriculum);
+      setIsEditing(false);
+      
+      toast({
+        title: "저장 완료",
+        description: `"${variables.title}" 커리큘럼이 성공적으로 저장되었습니다.`,
+        variant: "default"
+      });
+    },
+    onError: (error: any) => {
       console.error('[커리큘럼 저장] 오류 발생:', error);
       toast({
         title: "저장 실패",
@@ -1338,35 +1303,50 @@ export default function AdminCurriculum() {
         variant: "destructive"
       });
     }
+  });
+
+  const updateCurriculum = (curriculum: CurriculumData) => {
+    updateCurriculumMutation.mutate(curriculum);
   };
 
-  const deleteCurriculum = async (curriculumId: string) => {
-    if (!confirm('정말로 이 커리큘럼을 삭제하시겠습니까?')) {
-      return;
-    }
-
-    try {
-      const response = await fetch(`/api/admin/curriculum/${curriculumId}`, {
-        method: 'DELETE'
+  // 커리큘럼 삭제 Mutation
+  const deleteCurriculumMutation = useMutation({
+    mutationFn: async (curriculumId: string) => {
+      console.log('[커리큘럼 삭제] Mutation 시작 - ID:', curriculumId);
+      return await apiRequest('DELETE', `/api/admin/curriculum/${curriculumId}`);
+    },
+    onSuccess: (_, curriculumId) => {
+      console.log('[커리큘럼 삭제] 성공');
+      
+      // 캐시에서 해당 커리큘럼 제거
+      queryClientInstance.setQueryData(['/api/admin/curriculum'], (oldData: CurriculumData[] = []) => {
+        return oldData.filter(c => c.id !== curriculumId);
       });
-
-      if (response.ok) {
-        setCurriculums(prev => prev.filter(c => c.id !== curriculumId));
-        setSelectedCurriculum(null);
-        setIsEditing(false);
-        toast({
-          title: "성공",
-          description: "커리큘럼이 삭제되었습니다.",
-          variant: "default"
-        });
-      }
-    } catch (error) {
+      
+      setSelectedCurriculum(null);
+      setIsEditing(false);
+      
       toast({
-        title: "오류",
-        description: "커리큘럼 삭제에 실패했습니다.",
+        title: "삭제 완료",
+        description: "커리큘럼이 성공적으로 삭제되었습니다.",
+        variant: "default"
+      });
+    },
+    onError: (error: any) => {
+      console.error('[커리큘럼 삭제] 오류:', error);
+      toast({
+        title: "삭제 실패",
+        description: "커리큘럼 삭제에 실패했습니다. 다시 시도해주세요.",
         variant: "destructive"
       });
     }
+  });
+
+  const deleteCurriculum = (curriculumId: string) => {
+    if (!confirm('정말로 이 커리큘럼을 삭제하시겠습니까?')) {
+      return;
+    }
+    deleteCurriculumMutation.mutate(curriculumId);
   };
 
   // 영상 업로드 함수
@@ -1437,14 +1417,7 @@ export default function AdminCurriculum() {
           };
           setSelectedCurriculum(updatedCurriculum);
           
-          // 전체 커리큘럼 목록도 업데이트
-          setCurriculums(prev => 
-            prev.map(curriculum => 
-              curriculum.id === selectedCurriculum.id 
-                ? updatedCurriculum 
-                : curriculum
-            )
-          );
+          // 캐시는 자동으로 업데이트됨
         }
 
         // 업로드 성공 후 폼만 초기화 (모달은 유지하여 연속 업로드 가능)
@@ -1521,7 +1494,7 @@ export default function AdminCurriculum() {
     
     if (typeof curriculum === 'string') {
       // ID로 전달된 경우 해당 커리큘럼 찾기
-      targetCurriculum = curriculums.find(c => c.id === curriculum) || null;
+      targetCurriculum = data?.find(c => c.id === curriculum) || null;
     } else {
       // 객체로 전달된 경우
       targetCurriculum = curriculum;
@@ -1613,41 +1586,11 @@ export default function AdminCurriculum() {
     }
   };
 
-  // 커리큘럼 발행 함수
-  // 커리큘럼 삭제 함수
-  const handleDeleteCurriculum = async (curriculumId: string) => {
-    if (!confirm('정말로 이 커리큘럼을 삭제하시겠습니까?')) {
-      return;
-    }
-
-    try {
-      const response = await fetch(`/api/admin/curriculum/${curriculumId}`, {
-        method: 'DELETE'
-      });
-
-      if (response.ok) {
-        setCurriculums(prev => prev.filter(curr => curr.id !== curriculumId));
-        toast({
-          title: "삭제 완료",
-          description: "커리큘럼이 성공적으로 삭제되었습니다.",
-          variant: "default"
-        });
-      } else {
-        throw new Error('삭제 실패');
-      }
-    } catch (error) {
-      console.error('커리큘럼 삭제 실패:', error);
-      toast({
-        title: "삭제 실패",
-        description: "커리큘럼 삭제 중 오류가 발생했습니다.",
-        variant: "destructive"
-      });
-    }
-  };
+  // 중복된 삭제 함수 제거됨
 
   const publishCurriculum = async (curriculumId: string) => {
     try {
-      const curriculum = curriculums.find(c => c.id === curriculumId);
+      const curriculum = data?.find(c => c.id === curriculumId);
       if (!curriculum) {
         throw new Error('커리큘럼을 찾을 수 없습니다.');
       }
@@ -1673,14 +1616,14 @@ export default function AdminCurriculum() {
       if (response.ok) {
         const result = await response.json();
         
-        // 커리큘럼 상태 업데이트 - pending_approval로 설정
-        setCurriculums(prev => 
-          prev.map(curr => 
+        // 캐시 업데이트 - pending_approval로 설정
+        queryClientInstance.setQueryData(['/api/admin/curriculum'], (oldData: CurriculumData[] = []) => {
+          return oldData.map(curr => 
             curr.id === curriculumId 
               ? { ...curr, status: 'pending_approval' as any }
               : curr
-          )
-        );
+          );
+        });
 
         toast({
           title: "발행 신청 완료",
@@ -1715,14 +1658,14 @@ export default function AdminCurriculum() {
       });
 
       if (response.ok) {
-        // 커리큘럼 상태를 draft로 초기화
-        setCurriculums(prev => 
-          prev.map(curr => 
+        // 캐시 업데이트 - draft로 초기화
+        queryClientInstance.setQueryData(['/api/admin/curriculum'], (oldData: CurriculumData[] = []) => {
+          return oldData.map(curr => 
             curr.id === curriculumId 
               ? { ...curr, status: 'draft' as any }
               : curr
-          )
-        );
+          );
+        });
 
         toast({
           title: "초기화 완료",
@@ -1806,7 +1749,8 @@ export default function AdminCurriculum() {
 
       if (response.ok) {
         const result = await response.json();
-        setCurriculums(prev => [...prev, result]);
+        // 캐시 무효화로 처리
+        queryClientInstance.invalidateQueries({ queryKey: ['/api/admin/curriculum'] });
         setNewCurriculum({
           title: '',
           description: '',
@@ -2093,7 +2037,7 @@ export default function AdminCurriculum() {
                 </div>
               </CardHeader>
               <CardContent className="space-y-3">
-                {curriculums.map(curriculum => (
+                {(data || []).map(curriculum => (
                   <div
                     key={curriculum.id}
                     onClick={() => handlePreviewCurriculum(curriculum)}
@@ -2170,7 +2114,7 @@ export default function AdminCurriculum() {
                           size="sm"
                           onClick={(e) => {
                             e.stopPropagation();
-                            handleDeleteCurriculum(curriculum.id);
+                            deleteCurriculum(curriculum.id);
                           }}
                           className="flex items-center gap-1 text-red-600 border-red-300 hover:bg-red-50 hover:text-red-700 hover:border-red-400 transition-all duration-200"
                         >
@@ -2363,7 +2307,7 @@ export default function AdminCurriculum() {
                   </div>
                 )}
 
-                {curriculums.length === 0 && !isCreating && (
+                {(!data || data.length === 0) && !isCreating && (
                   <div className="text-center text-gray-500 dark:text-gray-400 py-8">
                     <BookOpen className="w-12 h-12 mx-auto mb-2 opacity-50" />
                     <div>등록된 커리큘럼이 없습니다.</div>
@@ -2649,12 +2593,12 @@ export default function AdminCurriculum() {
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-xl font-semibold text-gray-900 dark:text-white">커리큘럼 영상 등록 현황</h2>
               <div className="text-sm text-gray-500 dark:text-gray-400">
-                총 {curriculums.length}개 커리큘럼 등록됨
+                총 {data?.length || 0}개 커리큘럼 등록됨
               </div>
             </div>
 
             <div className="space-y-4">
-              {curriculums.map((curriculum) => {
+              {(data || []).map((curriculum) => {
                 const modules = curriculum.modules || [];
                 const totalModules = modules.length;
                 const modulesWithVideos = modules.filter(module => 
