@@ -188,6 +188,63 @@ app.post('/api/login', async (req, res) => {
   }
 });
 
+// 회원가입 API
+app.post('/api/register', async (req, res) => {
+  try {
+    const { username, password, email, name, userRole, instituteCode } = req.body;
+
+    if (!username || !password || !email || !name) {
+      return res.status(400).json({
+        success: false,
+        message: '필수 정보를 모두 입력해주세요.'
+      });
+    }
+
+    // 사용자명 중복 확인 (기본 테스트 계정과 중복 방지)
+    const testAccounts = ['test', 'testuser', 'trainer', 'trainer01', 'admin', 'institute', 'institute01'];
+    if (testAccounts.includes(username)) {
+      return res.status(409).json({
+        success: false,
+        message: '이미 사용 중인 아이디입니다.'
+      });
+    }
+
+    // 새 사용자 데이터 생성
+    const newUser = {
+      id: username,
+      username,
+      email,
+      name,
+      role: userRole || 'pet-owner',
+      password, // 실제 환경에서는 해시 처리 필요
+      instituteCode: userRole === 'institute-admin' ? instituteCode : null,
+      createdAt: new Date().toISOString(),
+      isActive: true
+    };
+
+    // 메모리 저장소에 사용자 추가 (실제로는 storage.createUser 사용)
+    console.log('새 사용자 등록:', newUser);
+
+    return res.json({
+      success: true,
+      message: '회원가입이 완료되었습니다.',
+      user: {
+        id: newUser.id,
+        username: newUser.username,
+        role: newUser.role,
+        name: newUser.name
+      }
+    });
+
+  } catch (error) {
+    console.error('회원가입 오류:', error);
+    return res.status(500).json({
+      success: false,
+      message: '회원가입 처리 중 오류가 발생했습니다.'
+    });
+  }
+});
+
 // 로그아웃 API
 app.post('/api/logout', (req, res) => {
   req.session.destroy((err) => {
