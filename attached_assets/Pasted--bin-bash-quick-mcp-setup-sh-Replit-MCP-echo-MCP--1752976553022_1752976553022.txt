@@ -1,0 +1,453 @@
+#!/bin/bash
+# quick-mcp-setup.sh - Replit에서 MCP 시스템 빠른 설정
+
+echo "🚀 MCP 자동 테스트 시스템 설정을 시작합니다..."
+
+# 1. 필요한 패키지 설치
+echo "📦 필요한 패키지 설치 중..."
+npm install --save-dev ts-node tsx typescript @types/node
+npm install @modelcontextprotocol/sdk puppeteer node-fetch
+
+# 2. package.json에 스크립트 추가 (백업 후)
+echo "📝 package.json 업데이트 중..."
+cp package.json package.json.backup
+
+# Node.js로 package.json 업데이트
+node -e "
+const fs = require('fs');
+const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+
+// 기존 스크립트 유지하면서 새로운 스크립트 추가
+pkg.scripts = {
+  ...pkg.scripts,
+  'dev': 'NODE_ENV=development ts-node server/index.ts',
+  'start': 'NODE_ENV=production node dist/index.js',
+  'build': 'tsc',
+  'complete-test': 'ts-node run-complete-test.ts',
+  'dev-fix': 'ts-node mcp-quick-fix.ts',
+  'user-test': 'ts-node user-test-simple.ts',
+  'production-ready': 'ts-node mcp-quick-fix.ts',
+  'health-check': 'curl http://localhost:3000/health || curl http://localhost:3000'
+};
+
+fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2));
+console.log('✅ package.json 업데이트 완료');
+"
+
+# 3. 간단한 MCP 테스트 파일 생성
+echo "📁 MCP 테스트 파일 생성 중..."
+
+# 간단한 자동 수정 스크립트
+cat > mcp-quick-fix.ts << 'EOF'
+// mcp-quick-fix.ts - 간단한 자동 수정 스크립트
+import { exec } from 'child_process';
+import { promisify } from 'util';
+import fs from 'fs/promises';
+
+const execAsync = promisify(exec);
+
+async function quickFix() {
+  console.log('🔧 빠른 자동 수정을 시작합니다...\n');
+  
+  let fixCount = 0;
+  const fixes: string[] = [];
+
+  try {
+    // 1. TypeScript 컴파일 체크
+    console.log('📝 TypeScript 체크 중...');
+    try {
+      await execAsync('npx tsc --noEmit');
+      console.log('  ✅ TypeScript 오류 없음');
+    } catch (error) {
+      console.log('  ⚠️ TypeScript 오류 발견, 수정 시도 중...');
+      
+      // tsconfig.json이 없으면 생성
+      try {
+        await fs.access('tsconfig.json');
+      } catch {
+        const defaultTsConfig = {
+          "compilerOptions": {
+            "target": "ES2020",
+            "module": "commonjs",
+            "outDir": "./dist",
+            "rootDir": "./server",
+            "strict": false,
+            "esModuleInterop": true,
+            "skipLibCheck": true,
+            "forceConsistentCasingInFileNames": true
+          },
+          "include": ["server/**/*"],
+          "exclude": ["node_modules", "dist"]
+        };
+        
+        await fs.writeFile('tsconfig.json', JSON.stringify(defaultTsConfig, null, 2));
+        fixes.push('tsconfig.json 생성');
+        fixCount++;
+      }
+    }
+
+    // 2. 패키지 의존성 체크
+    console.log('📦 패키지 의존성 체크 중...');
+    try {
+      await fs.access('node_modules');
+      console.log('  ✅ 패키지 설치됨');
+    } catch {
+      console.log('  📦 패키지 설치 중...');
+      await execAsync('npm install');
+      fixes.push('패키지 재설치');
+      fixCount++;
+    }
+
+    // 3. 기본 서버 파일 확인
+    console.log('🌐 서버 파일 체크 중...');
+    const serverFiles = ['server/index.ts', 'index.ts', 'src/index.ts'];
+    let hasServerFile = false;
+    
+    for (const file of serverFiles) {
+      try {
+        await fs.access(file);
+        hasServerFile = true;
+        console.log(`  ✅ 서버 파일 발견: ${file}`);
+        break;
+      } catch {
+        continue;
+      }
+    }
+
+    if (!hasServerFile) {
+      console.log('  📁 기본 서버 파일 생성 중...');
+      
+      // server 디렉토리 생성
+      await fs.mkdir('server', { recursive: true });
+      
+      // 기본 Express 서버 생성
+      const defaultServer = `import express from 'express';
+import cors from 'cors';
+import dotenv from 'dotenv';
+
+dotenv.config();
+
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+// 미들웨어
+app.use(cors());
+app.use(express.json());
+app.use(express.static('public'));
+
+// 헬스체크 엔드포인트
+app.get('/health', (req, res) => {
+  res.json({ 
+    status: 'ok', 
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    memory: process.memoryUsage()
+  });
+});
+
+// 기본 라우트
+app.get('/', (req, res) => {
+  res.json({ 
+    message: 'Hello World! 서비스가 정상 실행중입니다.',
+    version: '1.0.0',
+    environment: process.env.NODE_ENV || 'development'
+  });
+});
+
+// API 라우트 예시
+app.get('/api/status', (req, res) => {
+  res.json({
+    server: 'running',
+    timestamp: new Date().toISOString()
+  });
+});
+
+// 에러 핸들링
+app.use((err: any, req: any, res: any, next: any) => {
+  console.error('Error:', err);
+  res.status(500).json({ 
+    error: 'Internal Server Error',
+    message: process.env.NODE_ENV === 'development' ? err.message : 'Something went wrong'
+  });
+});
+
+// 404 핸들링
+app.use('*', (req, res) => {
+  res.status(404).json({ 
+    error: 'Not Found',
+    path: req.originalUrl 
+  });
+});
+
+// 서버 시작
+const server = app.listen(PORT, () => {
+  console.log(\`🚀 서버가 포트 \${PORT}에서 실행중입니다.\`);
+  console.log(\`📍 Health Check: http://localhost:\${PORT}/health\`);
+  console.log(\`🌐 API Endpoint: http://localhost:\${PORT}/api/status\`);
+});
+
+// 정상 종료 처리
+process.on('SIGTERM', () => {
+  console.log('SIGTERM 신호 수신, 서버 종료 중...');
+  server.close(() => {
+    console.log('서버가 정상적으로 종료되었습니다.');
+    process.exit(0);
+  });
+});
+
+process.on('SIGINT', () => {
+  console.log('SIGINT 신호 수신, 서버 종료 중...');
+  server.close(() => {
+    console.log('서버가 정상적으로 종료되었습니다.');
+    process.exit(0);
+  });
+});
+
+export default app;
+`;
+
+      await fs.writeFile('server/index.ts', defaultServer);
+      fixes.push('기본 Express 서버 생성');
+      fixCount++;
+    }
+
+    // 4. .env 파일 확인
+    console.log('🔐 환경변수 파일 체크 중...');
+    try {
+      await fs.access('.env');
+      console.log('  ✅ .env 파일 존재');
+    } catch {
+      console.log('  📝 .env 파일 생성 중...');
+      const defaultEnv = `# 환경 변수 설정
+NODE_ENV=development
+PORT=3000
+
+# 데이터베이스 설정 (필요시)
+# DB_HOST=localhost
+# DB_PORT=5432
+# DB_NAME=myapp
+# DB_USER=username
+# DB_PASS=password
+
+# API 키 설정 (필요시)
+# API_SECRET=your-secret-key
+# JWT_SECRET=your-jwt-secret
+
+# AWS 설정 (필요시)
+# AWS_ACCESS_KEY_ID=your-access-key
+# AWS_SECRET_ACCESS_KEY=your-secret-key
+# AWS_REGION=ap-northeast-2
+`;
+      
+      await fs.writeFile('.env', defaultEnv);
+      fixes.push('.env 파일 생성');
+      fixCount++;
+    }
+
+    // 5. 기본 의존성 설치 확인
+    console.log('📚 기본 의존성 확인 중...');
+    const packageJson = JSON.parse(await fs.readFile('package.json', 'utf-8'));
+    
+    if (!packageJson.dependencies?.express) {
+      console.log('  📦 Express 설치 중...');
+      await execAsync('npm install express cors dotenv');
+      await execAsync('npm install --save-dev @types/express @types/cors');
+      fixes.push('Express 및 기본 패키지 설치');
+      fixCount++;
+    }
+
+    // 결과 출력
+    console.log('\n' + '='.repeat(50));
+    console.log('🎉 빠른 수정 완료!');
+    console.log('='.repeat(50));
+    console.log(`📊 총 수정사항: ${fixCount}개`);
+    
+    if (fixes.length > 0) {
+      console.log('\n✅ 수행된 수정:');
+      fixes.forEach((fix, i) => {
+        console.log(`  ${i + 1}. ${fix}`);
+      });
+    }
+    
+    console.log('\n🚀 다음 단계:');
+    console.log('  1. npm run dev (서버 시작)');
+    console.log('  2. npm run complete-test (전체 테스트)');
+    console.log('='.repeat(50));
+
+  } catch (error) {
+    console.error('❌ 자동 수정 중 오류:', error.message);
+    console.log('\n💡 수동 해결 방법:');
+    console.log('  1. npm install');
+    console.log('  2. package.json 스크립트 확인');
+    console.log('  3. server/index.ts 파일 확인');
+  }
+}
+
+quickFix();
+EOF
+
+# 4. 간단한 사용자 테스트 스크립트
+cat > user-test-simple.ts << 'EOF'
+// user-test-simple.ts - 간단한 사용자 경험 테스트
+import fetch from 'node-fetch';
+
+async function simpleUserTest() {
+  console.log('👤 간단한 사용자 경험 테스트를 시작합니다...\n');
+  
+  const baseUrl = 'http://localhost:3000';
+  let score = 0;
+  const maxScore = 100;
+  
+  try {
+    // 1. 기본 접속 테스트
+    console.log('🌐 1. 웹사이트 접속 테스트...');
+    const startTime = Date.now();
+    const response = await fetch(baseUrl);
+    const loadTime = Date.now() - startTime;
+    
+    if (response.ok) {
+      console.log(`  ✅ 접속 성공 (${loadTime}ms)`);
+      score += 25;
+      
+      if (loadTime < 1000) {
+        console.log('  🚀 빠른 로딩 속도!');
+        score += 10;
+      } else if (loadTime < 3000) {
+        console.log('  ⚡ 적절한 로딩 속도');
+        score += 5;
+      }
+    } else {
+      console.log(`  ❌ 접속 실패 (${response.status})`);
+    }
+
+    // 2. 헬스체크 엔드포인트 테스트
+    console.log('🏥 2. 헬스체크 엔드포인트 테스트...');
+    try {
+      const healthResponse = await fetch(`${baseUrl}/health`);
+      if (healthResponse.ok) {
+        const healthData = await healthResponse.json();
+        console.log('  ✅ 헬스체크 성공');
+        console.log(`  📊 서버 가동시간: ${Math.round(healthData.uptime || 0)}초`);
+        score += 25;
+      } else {
+        console.log('  ⚠️ 헬스체크 엔드포인트 없음');
+      }
+    } catch {
+      console.log('  ⚠️ 헬스체크 엔드포인트 없음');
+    }
+
+    // 3. API 엔드포인트 테스트
+    console.log('🔌 3. API 엔드포인트 테스트...');
+    try {
+      const apiResponse = await fetch(`${baseUrl}/api/status`);
+      if (apiResponse.ok) {
+        console.log('  ✅ API 엔드포인트 정상');
+        score += 20;
+      } else {
+        console.log('  ⚠️ API 엔드포인트 응답 이상');
+        score += 10;
+      }
+    } catch {
+      console.log('  ⚠️ API 엔드포인트 없음');
+    }
+
+    // 4. 에러 처리 테스트
+    console.log('🚨 4. 에러 처리 테스트...');
+    try {
+      const errorResponse = await fetch(`${baseUrl}/nonexistent-page`);
+      if (errorResponse.status === 404) {
+        console.log('  ✅ 404 에러 적절히 처리됨');
+        score += 20;
+      } else {
+        console.log('  ⚠️ 404 에러 처리 개선 필요');
+        score += 10;
+      }
+    } catch {
+      console.log('  ⚠️ 에러 처리 확인 불가');
+    }
+
+    // 결과 출력
+    console.log('\n' + '='.repeat(50));
+    console.log('📊 사용자 경험 테스트 결과');
+    console.log('='.repeat(50));
+    console.log(`🎯 점수: ${score}/${maxScore} (${Math.round(score/maxScore*100)}%)`);
+    
+    let grade = '';
+    let recommendation = '';
+    
+    if (score >= 80) {
+      grade = '🎉 우수';
+      recommendation = '사용자 경험이 훌륭합니다! 서비스 오픈 준비 완료!';
+    } else if (score >= 60) {
+      grade = '✅ 양호';
+      recommendation = '기본적인 사용자 경험은 준비되었습니다. 몇 가지 개선하면 더 좋아질 것입니다.';
+    } else if (score >= 40) {
+      grade = '⚠️ 보통';
+      recommendation = '사용자 경험 개선이 필요합니다. API 엔드포인트와 에러 처리를 점검하세요.';
+    } else {
+      grade = '🚨 미흡';
+      recommendation = '사용자 경험에 문제가 있습니다. 서버 설정과 기본 기능을 점검하세요.';
+    }
+    
+    console.log(`🏆 등급: ${grade}`);
+    console.log(`💡 권장사항: ${recommendation}`);
+    console.log('='.repeat(50));
+
+  } catch (error) {
+    console.error('❌ 테스트 실행 중 오류:', error.message);
+    console.log('\n💡 해결 방법:');
+    console.log('  1. npm run dev로 서버가 실행 중인지 확인');
+    console.log('  2. http://localhost:3000 접속 확인');
+    console.log('  3. 방화벽이나 포트 설정 확인');
+  }
+}
+
+simpleUserTest();
+EOF
+
+# 5. 통합 실행 스크립트
+cat > run-complete-test.ts << 'EOF'
+// run-complete-test.ts - 통합 테스트 실행
+import { exec } from 'child_process';
+import { promisify } from 'util';
+
+const execAsync = promisify(exec);
+
+async function runCompleteTest() {
+  console.log('🎯 완전한 서비스 테스트를 시작합니다!\n');
+  
+  try {
+    // 1. 개발자 관점 자동 수정
+    console.log('🔧 1단계: 개발자 관점 자동 수정');
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    await execAsync('npm run dev-fix');
+    
+    // 2. 사용자 관점 테스트
+    console.log('\n👤 2단계: 사용자 관점 테스트');
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    await execAsync('npm run user-test');
+    
+    console.log('\n🎉 완전한 서비스 테스트 완료!');
+    console.log('\n📋 다음 단계:');
+    console.log('  1. 서버 시작: npm run dev');
+    console.log('  2. 브라우저에서 http://localhost:3000 확인');
+    console.log('  3. 문제가 있다면 다시 npm run complete-test 실행');
+    
+  } catch (error) {
+    console.error('❌ 테스트 실행 중 오류:', error.message);
+  }
+}
+
+runCompleteTest();
+EOF
+
+echo "✅ MCP 시스템 설정 완료!"
+echo ""
+echo "🚀 사용법:"
+echo "  npm run dev-fix          # 개발자 관점 자동 수정"
+echo "  npm run user-test         # 사용자 관점 테스트"
+echo "  npm run complete-test     # 통합 테스트"
+echo "  npm run dev              # 서버 시작"
+echo ""
+echo "💡 지금 바로 실행해보세요:"
+echo "  npm run dev-fix"
