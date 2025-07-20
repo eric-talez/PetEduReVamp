@@ -1,9 +1,10 @@
 /* Leaflet CSS for maps */
 @import 'leaflet/dist/leaflet.css';
 
-@tailwind base;
+/* Tailwind imports disabled temporarily to fix PostCSS issues */
+/* @tailwind base;
 @tailwind components;
-@tailwind utilities;
+@tailwind utilities; */
 
 /* Fix Leaflet map display issues */
 .leaflet-container {

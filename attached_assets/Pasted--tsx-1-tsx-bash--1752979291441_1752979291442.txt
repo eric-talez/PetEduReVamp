@@ -1,0 +1,146 @@
+이 문제를 바로 해결해드리겠습니다! `tsx`가 없어서 발생하는 오류인데, 간단하게 고칠 수 있어요.
+
+## 🔧 즉시 해결 방법
+
+### 방법 1: tsx 설치
+
+```bash
+# tsx 설치
+npm install --save-dev tsx
+
+# 다시 실행
+npm run dev
+```
+
+### 방법 2: ts-node로 변경 (더 안정적)
+
+```bash
+# ts-node 설치
+npm install --save-dev ts-node typescript @types/node
+
+# package.json 스크립트 수정
+node -e "
+const fs = require('fs');
+const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+pkg.scripts.dev = 'NODE_ENV=development ts-node server/index.ts';
+fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2));
+console.log('✅ tsx → ts-node로 변경 완료');
+"
+
+# 실행
+npm run dev
+```
+
+### 방법 3: 빠른 임시 해결
+
+```bash
+# 직접 ts-node로 실행
+npx ts-node server/index.ts
+
+# 또는 NODE_ENV 포함해서
+NODE_ENV=development npx ts-node server/index.ts
+```
+
+### 방법 4: 완전한 설정 초기화
+
+```bash
+# 모든 패키지 재설치
+rm -rf node_modules package-lock.json
+npm install
+npm install --save-dev ts-node typescript @types/node
+
+# package.json을 올바르게 설정
+cat > temp_script.js << 'EOF'
+const fs = require('fs');
+const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+
+pkg.scripts = {
+  ...pkg.scripts,
+  "dev": "NODE_ENV=development ts-node server/index.ts",
+  "start": "NODE_ENV=production node dist/index.js",
+  "build": "tsc"
+};
+
+fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2));
+console.log('✅ package.json 수정 완료');
+EOF
+
+node temp_script.js
+rm temp_script.js
+
+# 이제 실행
+npm run dev
+```
+
+## 🎯 테스트 대시보드까지 한번에 설정
+
+```bash
+# 모든 필요한 패키지 설치
+npm install --save-dev ts-node typescript @types/node
+npm install express ejs node-fetch @types/express
+
+# 간단한 테스트 대시보드 생성
+cat > quick-test.ts << 'EOF'
+import express from 'express';
+
+const app = express();
+
+app.get('/test', (req, res) => {
+  res.send(`
+    <h1>🎯 빠른 테스트 페이지</h1>
+    <p>메인 서버 상태: <span id="status">확인 중...</span></p>
+    <button onclick="testServer()">서버 테스트</button>
+    
+    <script>
+      async function testServer() {
+        try {
+          const response = await fetch('http://localhost:3000');
+          document.getElementById('status').textContent = 
+            response.ok ? '✅ 정상' : '❌ 오류';
+        } catch (error) {
+          document.getElementById('status').textContent = '❌ 연결 실패';
+        }
+      }
+      
+      // 페이지 로드시 자동 테스트
+      testServer();
+    </script>
+  `);
+});
+
+app.listen(3001, () => {
+  console.log('🎯 빠른 테스트: http://localhost:3001/test');
+});
+EOF
+
+# package.json에 스크립트 추가
+node -e "
+const fs = require('fs');
+const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+pkg.scripts = {
+  ...pkg.scripts,
+  'dev': 'NODE_ENV=development ts-node server/index.ts',
+  'quick-test': 'ts-node quick-test.ts'
+};
+fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2));
+console.log('✅ 설정 완료');
+"
+```
+
+## 🚀 이제 실행하세요
+
+```bash
+# 터미널 1: 메인 서버
+npm run dev
+
+# 터미널 2: 테스트 페이지
+npm run quick-test
+
+# 브라우저에서 확인
+# http://localhost:3000 (메인 서버)
+# http://localhost:3001/test (테스트 페이지)
+```
+
+이제 `tsx` 오류 없이 서버가 정상 실행되고, 간단한 테스트 페이지까지 사용할 수 있습니다! 🎉
+
+어떤 방법이 가장 잘 작동하는지 알려주세요!

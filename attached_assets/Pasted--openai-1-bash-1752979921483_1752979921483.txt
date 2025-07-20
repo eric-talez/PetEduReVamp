@@ -1,0 +1,340 @@
+이 오류는 `openai` 패키지가 설치되지 않아서 발생하는 문제입니다. 바로 해결해드리겠습니다!
+
+## 🔧 즉시 해결 방법
+
+### 1단계: 누락된 패키지 설치
+
+```bash
+# OpenAI 패키지 설치
+npm install openai
+
+# 다른 필요한 패키지들도 함께 설치
+npm install dotenv cors helmet express-rate-limit
+npm install --save-dev @types/cors @types/express
+```
+
+### 2단계: 만약 여전히 오류가 있다면 전체 의존성 확인
+
+```bash
+# package.json 확인 및 누락된 패키지 일괄 설치
+npm install
+
+# 만약 package-lock.json에 문제가 있다면
+rm -rf node_modules package-lock.json
+npm install
+```
+
+### 3단계: .env 파일 설정 확인
+
+```bash
+# .env 파일이 있는지 확인
+ls -la .env
+
+# 없다면 생성
+cat > .env << 'EOF'
+# OpenAI 설정
+OPENAI_API_KEY=your_openai_api_key_here
+
+# 서버 설정
+NODE_ENV=development
+PORT=3000
+
+# 기타 환경변수
+DATABASE_URL=your_database_url_here
+JWT_SECRET=your_jwt_secret_here
+EOF
+
+echo "✅ .env 파일 생성 완료"
+```
+
+### 4단계: AI 라우트 파일 확인 및 수정
+
+AI 라우트에서 오류가 발생할 수 있으니 확인해보겠습니다:
+
+```bash
+# server/routes/ai.ts 파일 확인
+cat server/routes/ai.ts
+```
+
+만약 파일에 문제가 있다면 기본 템플릿으로 교체:
+
+```typescript
+// server/routes/ai.ts - 기본 AI 라우트
+import express from 'express';
+import OpenAI from 'openai';
+import dotenv from 'dotenv';
+
+dotenv.config();
+
+const router = express.Router();
+
+// OpenAI 클라이언트 초기화
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY || 'demo-key'
+});
+
+// AI 채팅 엔드포인트
+router.post('/chat', async (req, res) => {
+  try {
+    const { message } = req.body;
+
+    if (!message) {
+      return res.status(400).json({ error: '메시지가 필요합니다' });
+    }
+
+    // OpenAI API 키가 설정되지 않은 경우 데모 응답
+    if (!process.env.OPENAI_API_KEY || process.env.OPENAI_API_KEY === 'demo-key') {
+      return res.json({
+        message: '안녕하세요! 이것은 데모 응답입니다. OpenAI API 키를 설정하면 실제 AI 응답을 받을 수 있습니다.',
+        isDemo: true
+      });
+    }
+
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-3.5-turbo',
+      messages: [
+        {
+          role: 'user',
+          content: message
+        }
+      ],
+      max_tokens: 150
+    });
+
+    res.json({
+      message: completion.choices[0].message?.content || '응답을 생성할 수 없습니다',
+      isDemo: false
+    });
+
+  } catch (error) {
+    console.error('AI 채팅 오류:', error);
+    res.status(500).json({ 
+      error: 'AI 서비스 오류가 발생했습니다',
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+});
+
+// AI 상태 확인
+router.get('/status', (req, res) => {
+  res.json({
+    status: 'ok',
+    hasApiKey: !!process.env.OPENAI_API_KEY && process.env.OPENAI_API_KEY !== 'demo-key',
+    timestamp: new Date().toISOString()
+  });
+});
+
+export default router;
+```
+
+### 5단계: 서버 재시작
+
+```bash
+# 이제 서버 실행
+npm run dev
+```
+
+## 🎯 추가 테스트 대시보드 설정
+
+이제 AI 기능까지 포함한 완전한 테스트 대시보드를 만들어보겠습니다:
+
+```bash
+# 테스트 대시보드에 AI 테스트 추가
+cat > ai-test-dashboard.ts << 'EOF'
+import express from 'express';
+import fetch from 'node-fetch';
+
+const app = express();
+app.use(express.json());
+
+app.get('/ai-test', (req, res) => {
+  res.send(`
+<!DOCTYPE html>
+<html>
+<head>
+    <title>🤖 AI 기능 테스트 대시보드</title>
+    <style>
+        body { font-family: system-ui; margin: 0; padding: 20px; background: #f5f5f5; }
+        .container { max-width: 800px; margin: 0 auto; }
+        .header { background: linear-gradient(135deg, #667eea, #764ba2); color: white; 
+                  padding: 30px; border-radius: 15px; text-align: center; margin-bottom: 20px; }
+        .test-card { background: white; padding: 20px; border-radius: 10px; margin: 20px 0; 
+                     box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .btn { padding: 12px 24px; margin: 5px; border: none; border-radius: 8px; 
+               cursor: pointer; font-weight: bold; }
+        .btn-primary { background: #007bff; color: white; }
+        .btn-success { background: #28a745; color: white; }
+        .btn-danger { background: #dc3545; color: white; }
+        .status { padding: 10px; border-radius: 5px; margin: 10px 0; }
+        .status.success { background: #d4edda; color: #155724; }
+        .status.error { background: #f8d7da; color: #721c24; }
+        .status.info { background: #d1ecf1; color: #0c5460; }
+        textarea { width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #ddd; }
+        #response { background: #f8f9fa; padding: 15px; border-radius: 5px; margin-top: 10px; 
+                    white-space: pre-wrap; min-height: 100px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 AI 기능 테스트 대시보드</h1>
+            <p>OpenAI API 연동 상태 및 기능 테스트</p>
+        </div>
+
+        <div class="test-card">
+            <h3>📊 시스템 상태 테스트</h3>
+            <button class="btn btn-primary" onclick="testServerStatus()">🌐 서버 상태 확인</button>
+            <button class="btn btn-primary" onclick="testAIStatus()">🤖 AI 상태 확인</button>
+            <button class="btn btn-success" onclick="runAllTests()">🚀 전체 테스트 실행</button>
+            <div id="statusResults"></div>
+        </div>
+
+        <div class="test-card">
+            <h3>💬 AI 채팅 테스트</h3>
+            <textarea id="chatMessage" placeholder="AI에게 보낼 메시지를 입력하세요..." rows="3">안녕하세요! 테스트 메시지입니다.</textarea>
+            <br><br>
+            <button class="btn btn-success" onclick="testAIChat()">💬 AI 채팅 테스트</button>
+            <div id="response"></div>
+        </div>
+
+        <div class="test-card">
+            <h3>📋 테스트 로그</h3>
+            <div id="logs" style="background: #2d3748; color: #e2e8f0; padding: 15px; border-radius: 5px; 
+                                   font-family: monospace; max-height: 300px; overflow-y: auto;">
+                테스트 로그가 여기에 표시됩니다...
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function addLog(message) {
+            const logs = document.getElementById('logs');
+            const timestamp = new Date().toLocaleTimeString();
+            logs.innerHTML += \`\\n[\${timestamp}] \${message}\`;
+            logs.scrollTop = logs.scrollHeight;
+        }
+
+        async function testServerStatus() {
+            addLog('🌐 서버 상태 테스트 시작...');
+            try {
+                const response = await fetch('http://localhost:3000');
+                const status = response.ok ? 'success' : 'error';
+                document.getElementById('statusResults').innerHTML += 
+                    \`<div class="status \${status}">서버 상태: \${response.ok ? '✅ 정상' : '❌ 오류'} (상태코드: \${response.status})</div>\`;
+                addLog(\`서버 테스트 완료: \${response.status}\`);
+            } catch (error) {
+                document.getElementById('statusResults').innerHTML += 
+                    \`<div class="status error">서버 상태: ❌ 연결 실패</div>\`;
+                addLog('❌ 서버 연결 실패: ' + error.message);
+            }
+        }
+
+        async function testAIStatus() {
+            addLog('🤖 AI 상태 테스트 시작...');
+            try {
+                const response = await fetch('http://localhost:3000/api/ai/status');
+                const data = await response.json();
+                const status = data.hasApiKey ? 'success' : 'info';
+                document.getElementById('statusResults').innerHTML += 
+                    \`<div class="status \${status}">AI 상태: \${data.hasApiKey ? '✅ API 키 설정됨' : '⚠️ 데모 모드 (API 키 미설정)'}</div>\`;
+                addLog(\`AI 상태 확인 완료: \${data.hasApiKey ? 'API 키 있음' : 'API 키 없음'}\`);
+            } catch (error) {
+                document.getElementById('statusResults').innerHTML += 
+                    \`<div class="status error">AI 상태: ❌ 연결 실패</div>\`;
+                addLog('❌ AI 상태 확인 실패: ' + error.message);
+            }
+        }
+
+        async function testAIChat() {
+            const message = document.getElementById('chatMessage').value;
+            if (!message.trim()) {
+                alert('메시지를 입력해주세요');
+                return;
+            }
+
+            addLog('💬 AI 채팅 테스트 시작...');
+            document.getElementById('response').textContent = '⏳ AI 응답 생성 중...';
+
+            try {
+                const response = await fetch('http://localhost:3000/api/ai/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    document.getElementById('response').textContent = 
+                        \`\${data.isDemo ? '[데모 응답] ' : '[AI 응답] '}\${data.message}\`;
+                    addLog(\`✅ AI 채팅 성공 (\${data.isDemo ? '데모' : '실제'})\`);
+                } else {
+                    document.getElementById('response').textContent = 
+                        \`❌ 오류: \${data.error}\`;
+                    addLog('❌ AI 채팅 실패: ' + data.error);
+                }
+            } catch (error) {
+                document.getElementById('response').textContent = 
+                    \`❌ 네트워크 오류: \${error.message}\`;
+                addLog('❌ AI 채팅 네트워크 오류: ' + error.message);
+            }
+        }
+
+        async function runAllTests() {
+            document.getElementById('statusResults').innerHTML = '';
+            addLog('🚀 전체 테스트 시작...');
+            
+            await testServerStatus();
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            await testAIStatus();
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            addLog('✅ 전체 테스트 완료!');
+        }
+
+        // 페이지 로드 시 자동으로 상태 확인
+        window.onload = function() {
+            addLog('📱 AI 테스트 대시보드 로드 완료');
+            runAllTests();
+        };
+    </script>
+</body>
+</html>
+  `);
+});
+
+app.listen(3002, () => {
+  console.log('🤖 AI 테스트 대시보드: http://localhost:3002/ai-test');
+});
+EOF
+
+# package.json에 스크립트 추가
+node -e "
+const fs = require('fs');
+const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+pkg.scripts = {
+  ...pkg.scripts,
+  'ai-test': 'ts-node ai-test-dashboard.ts'
+};
+fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2));
+console.log('✅ AI 테스트 스크립트 추가 완료');
+"
+```
+
+## 🚀 이제 모든 것을 실행하세요
+
+```bash
+# 터미널 1: 메인 서버 (AI 포함)
+npm run dev
+
+# 터미널 2: AI 테스트 대시보드
+npm run ai-test
+
+# 브라우저에서 확인
+# http://localhost:3000 (메인 서버)
+# http://localhost:3002/ai-test (AI 테스트 대시보드)
+```
+
+이제 OpenAI 오류가 해결되고, AI 기능까지 포함한 완전한 테스트 대시보드를 사용할 수 있습니다! 🎉
+
+AI API 키가 없어도 데모 모드로 작동하므로 바로 테스트해볼 수 있어요! 🤖✨
