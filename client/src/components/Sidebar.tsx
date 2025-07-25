@@ -260,10 +260,13 @@ export function Sidebar({
     console.log('권한 체크 - 기관 관리자:', isInstituteAdmin, '관리자:', isAdmin, '훈련사:', isTrainer);
 
     // 로그인 상태가 변경되면 메뉴 그룹 상태 업데이트
-    setMenuGroups((prevGroups: Record<string, boolean>) => {
+    setMenuGroups((prevGroups) => {
       // 권한에 따른 값 업데이트 - 모든 메뉴 그룹은 닫힌 상태 유지
       const updatedMenuGroups = {
-        ...prevGroups,
+        main: false,
+        learning: false,
+        management: false,
+        tools: false,
         trainer: false,   // 권한이 있어도 기본 닫힌 상태
         institute: false, // 권한이 있어도 기본 닫힌 상태
         admin: false,     // 권한이 있어도 기본 닫힌 상태
@@ -289,10 +292,10 @@ export function Sidebar({
 
   // 메뉴 그룹 토글 함수 - 개선된 에러 처리
   const toggleMenuGroup = useCallback((groupId: string) => {
-    setMenuGroups((prev: Record<string, boolean>) => {
+    setMenuGroups((prev) => {
       const updated = {
         ...prev,
-        [groupId]: !prev[groupId]
+        [groupId]: !prev[groupId as keyof typeof prev]
       };
 
       // 메뉴 그룹 상태 변경 로그 (localStorage 저장 안함)
@@ -549,7 +552,7 @@ export function Sidebar({
             <ScrollReveal direction="left" delay={100}>
               <a href="/" className="flex items-center justify-center w-full h-full group">
                 <img 
-                  src={logoData?.expandedLogo || "/logo-light.svg"} 
+                  src={(logoData as any)?.expandedLogo || "/logo-light.svg"} 
                   alt="TALEZ 로고" 
                   className="w-full h-full object-contain transition-all duration-300 group-hover:scale-105"
                 />
@@ -558,7 +561,7 @@ export function Sidebar({
           ) : (
             <a href="/" className="flex items-center justify-center w-full h-full transition-all duration-300 hover:scale-110">
               <img 
-                src={logoData?.compactLogo || "/logo-compact.svg"} 
+                src={(logoData as any)?.compactLogo || "/logo-compact.svg"} 
                 alt="TALEZ" 
                 className="w-full h-full object-contain transition-all duration-300 hover:scale-105"
               />
@@ -640,14 +643,14 @@ export function Sidebar({
                 <SidebarMenuGroup
                   expanded={expanded}
                   title="쇼핑"
-                  groupName="shopping"
-                  isOpen={menuGroups.shopping}
+                  groupName="features"
+                  isOpen={menuGroups.features}
                   toggleGroup={toggleMenuGroup}
                   icon={<ShoppingBag className="w-5 h-5 text-gray-500" />}
                 />
 
                 {/* 쇼핑몰 메뉴 그룹 내용 */}
-                {menuGroups.shopping && (
+                {menuGroups.features && (
                   <div className={cn("mt-1 pl-2", !expanded && "pl-0")}>
                     <SpecialShopLink expanded={expanded}>쇼핑몰</SpecialShopLink>
                   </div>

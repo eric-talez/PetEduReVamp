@@ -76,3 +76,6 @@ syntax = "typescript"
 
 [languages.typescript.languageServer]
 start = ["typescript-language-server", "--stdio"]
+
+[agent]
+integrations = ["javascript_stripe==1.0.0"]

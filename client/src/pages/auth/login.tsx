@@ -234,9 +234,9 @@ export default function Login() {
       </Dialog>
       
       {/* 왼쪽 컬럼 - 폼 영역 */}
-      <div className="flex-1 flex flex-col items-center justify-center p-6 bg-white dark:bg-gray-950">
+      <div className="flex-1 flex flex-col items-center justify-center p-6 bg-white dark:bg-gray-950 animate-fade-in">
         <div className="w-full max-w-md">
-          <div className="mb-8 text-center">
+          <div className="mb-8 text-center animate-slide-up">
             <h1 className="text-3xl font-bold">
               <span className="text-primary">Talez</span>
             </h1>
@@ -366,11 +366,16 @@ export default function Login() {
                 </p>
               </div>
               
-              <Button type="submit" className="w-full" disabled={isLoading}>
+              <Button 
+                type="submit" 
+                className="w-full focus-visible-enhanced" 
+                disabled={isLoading}
+                aria-describedby={isLoading ? "login-status" : undefined}
+              >
                 {isLoading ? (
                   <div className="flex items-center gap-2">
                     <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></div>
-                    <span>로그인 중...</span>
+                    <span id="login-status">로그인 중...</span>
                   </div>
                 ) : (
                   "로그인"

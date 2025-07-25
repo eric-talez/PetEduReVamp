@@ -352,12 +352,12 @@ export default function Home() {
   const convertAdminBannerToSlide = (banner: Banner) => ({
     id: banner.id,
     title: banner.title,
-    subtitle: banner.description || '',
+    subtitle: banner.content || '',
     features: [],
     image: banner.imageUrl,
     primaryAction: { 
-      text: "자세히 보기", 
-      path: banner.linkUrl || "/" 
+      text: banner.actionText || "자세히 보기", 
+      path: banner.actionUrl || "/" 
     },
     secondaryAction: { 
       text: "더 알아보기", 

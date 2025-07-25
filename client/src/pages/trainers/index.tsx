@@ -256,7 +256,7 @@ export default function Trainers() {
   // 로딩 상태 처리
   if (loading) {
     return (
-      <div className="py-8 px-4 sm:px-6 lg:px-8">
+      <div className="py-8 px-4 sm:px-6 lg:px-8 animate-fade-in">
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="text-center">
             <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-primary" />
@@ -270,16 +270,19 @@ export default function Trainers() {
   // 에러 상태 처리
   if (error) {
     return (
-      <div className="py-8 px-4 sm:px-6 lg:px-8">
+      <div className="py-8 px-4 sm:px-6 lg:px-8 animate-slide-up">
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="text-center">
             <AlertCircle className="h-8 w-8 mx-auto mb-4 text-red-500" />
             <p className="text-red-600 dark:text-red-400 mb-4">{error}</p>
-            <Button onClick={() => {
-              setError(null);
-              setLoading(true);
-              fetchTrainers();
-            }}>
+            <Button 
+              onClick={() => {
+                setError(null);
+                setLoading(true);
+                fetchTrainers();
+              }}
+              className="focus-visible-enhanced"
+            >
               다시 시도
             </Button>
           </div>
@@ -364,9 +367,14 @@ export default function Trainers() {
                   handleSearch();
                 }
               }}
-              className="flex-1 py-2 px-2 bg-transparent focus:outline-none text-gray-800 dark:text-gray-200"
+              className="flex-1 py-2 px-2 bg-transparent focus:outline-none text-gray-800 dark:text-gray-200 focus-visible-enhanced"
+              aria-label="훈련사 검색"
             />
-            <Button className="ml-2" onClick={handleSearch}>
+            <Button 
+              className="ml-2 focus-visible-enhanced" 
+              onClick={handleSearch}
+              aria-label="검색 실행"
+            >
               검색
             </Button>
           </div>
