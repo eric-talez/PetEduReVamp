@@ -92,8 +92,20 @@ export default function AdminSettings() {
   // 색상 설정 로드 후 상태 업데이트
   useEffect(() => {
     if (colorSettings?.settings) {
-      setPrimaryColor(colorSettings.settings.primary || '#7C3AED');
-      setSecondaryColor(colorSettings.settings.secondary || '#10B981');
+      const primary = colorSettings.settings.primary || '#7C3AED';
+      const secondary = colorSettings.settings.secondary || '#10B981';
+      
+      setPrimaryColor(primary);
+      setSecondaryColor(secondary);
+      
+      // CSS 변수에 HSL 값으로 적용
+      const primaryHsl = hexToHsl(primary);
+      const secondaryHsl = hexToHsl(secondary);
+      
+      document.documentElement.style.setProperty('--primary', primaryHsl);
+      document.documentElement.style.setProperty('--secondary', secondaryHsl);
+      
+      console.log('[색상 로드] 설정 적용:', { primary, secondary, primaryHsl, secondaryHsl });
     }
   }, [colorSettings]);
 
@@ -233,23 +245,80 @@ export default function AdminSettings() {
     },
   });
 
+  // HEX를 HSL로 변환하는 함수
+  const hexToHsl = (hex: string): string => {
+    // HEX를 RGB로 변환
+    const r = parseInt(hex.slice(1, 3), 16) / 255;
+    const g = parseInt(hex.slice(3, 5), 16) / 255;
+    const b = parseInt(hex.slice(5, 7), 16) / 255;
+
+    const max = Math.max(r, g, b);
+    const min = Math.min(r, g, b);
+    let h, s, l = (max + min) / 2;
+
+    if (max === min) {
+      h = s = 0; // achromatic
+    } else {
+      const d = max - min;
+      s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+      switch (max) {
+        case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+        case g: h = (b - r) / d + 2; break;
+        case b: h = (r - g) / d + 4; break;
+        default: h = 0;
+      }
+      h /= 6;
+    }
+
+    return `${Math.round(h * 360)} ${Math.round(s * 100)}% ${Math.round(l * 100)}%`;
+  };
+
   // 색상 변경 핸들러
   const handleColorChange = (colorType: 'primary' | 'secondary', value: string) => {
+    console.log(`[색상 변경] ${colorType} 색상:`, value);
+    
     if (colorType === 'primary') {
       setPrimaryColor(value);
-      document.documentElement.style.setProperty('--primary', value);
+      const hslValue = hexToHsl(value);
+      console.log(`[색상 변경] Primary HSL:`, hslValue);
+      document.documentElement.style.setProperty('--primary', hslValue);
+      
+      // 강제로 스타일 재적용
+      document.documentElement.classList.add('color-update-trigger');
+      setTimeout(() => {
+        document.documentElement.classList.remove('color-update-trigger');
+      }, 10);
     } else {
       setSecondaryColor(value);
-      document.documentElement.style.setProperty('--secondary', value);  
+      const hslValue = hexToHsl(value);
+      console.log(`[색상 변경] Secondary HSL:`, hslValue);
+      document.documentElement.style.setProperty('--secondary', hslValue);
+      
+      // 강제로 스타일 재적용
+      document.documentElement.classList.add('color-update-trigger');
+      setTimeout(() => {
+        document.documentElement.classList.remove('color-update-trigger');
+      }, 10);
     }
   };
 
   // 색상 설정 저장
   const saveColorSettings = () => {
+    console.log('[색상 저장] 현재 색상:', { primary: primaryColor, secondary: secondaryColor });
+    
     colorChangeMutation.mutate({
       primary: primaryColor,
       secondary: secondaryColor
     });
+    
+    // 즉시 CSS 변수 업데이트
+    const primaryHsl = hexToHsl(primaryColor);
+    const secondaryHsl = hexToHsl(secondaryColor);
+    
+    document.documentElement.style.setProperty('--primary', primaryHsl);
+    document.documentElement.style.setProperty('--secondary', secondaryHsl);
+    
+    console.log('[색상 저장] CSS 변수 업데이트 완료:', { primaryHsl, secondaryHsl });
   };
 
 
