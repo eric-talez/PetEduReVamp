@@ -341,6 +341,7 @@ function AppLayout({ children }: { children: ReactNode }) {
                   <Route path="/admin/points-management" component={AdminPointsManagement} />
                   <Route path="/admin/substitute-overview" component={SubstituteTrainerOverview} />
                   <Route path="/admin/payment" component={lazy(() => import('./pages/admin/PaymentManagement'))} />
+                  <Route path="/admin/payment-integration" component={lazy(() => import('./pages/admin/PaymentIntegration'))} />
 
                   {/* 업체 등록 관리 */}
                   <Route path="/admin/business-registration">
