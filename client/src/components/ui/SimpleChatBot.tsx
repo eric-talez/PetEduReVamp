@@ -27,8 +27,11 @@ export function SimpleChatBot() {
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [position, setPosition] = useState({ x: 24, y: 24 });
+  const [size, setSize] = useState({ width: 320, height: 480 });
   const [isDragging, setIsDragging] = useState(false);
+  const [isResizing, setIsResizing] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [resizeStart, setResizeStart] = useState({ x: 0, y: 0, width: 0, height: 0 });
   
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -55,6 +58,20 @@ export function SimpleChatBot() {
     e.stopPropagation();
   }, []);
 
+  // 리사이즈 시작
+  const handleResizeStart = useCallback((e: React.MouseEvent) => {
+    setIsResizing(true);
+    setResizeStart({
+      x: e.clientX,
+      y: e.clientY,
+      width: size.width,
+      height: size.height
+    });
+    
+    e.preventDefault();
+    e.stopPropagation();
+  }, [size]);
+
   // 마우스 이동 처리
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -63,22 +80,33 @@ export function SimpleChatBot() {
         const newY = e.clientY - dragStart.y;
         
         // 화면 경계 내로 제한
-        const constrainedX = Math.max(0, Math.min(window.innerWidth - 320, newX));
-        const constrainedY = Math.max(0, Math.min(window.innerHeight - 480, newY));
+        const constrainedX = Math.max(0, Math.min(window.innerWidth - size.width, newX));
+        const constrainedY = Math.max(0, Math.min(window.innerHeight - size.height, newY));
         
         // bottom/right 기준으로 좌표 변환
-        const bottomPosition = window.innerHeight - constrainedY - 480;
-        const rightPosition = window.innerWidth - constrainedX - 320;
+        const bottomPosition = window.innerHeight - constrainedY - size.height;
+        const rightPosition = window.innerWidth - constrainedX - size.width;
         
         setPosition({ x: rightPosition, y: bottomPosition });
+      }
+      
+      if (isResizing) {
+        const deltaX = e.clientX - resizeStart.x;
+        const deltaY = e.clientY - resizeStart.y;
+        
+        const newWidth = Math.max(280, Math.min(600, resizeStart.width + deltaX));
+        const newHeight = Math.max(400, Math.min(800, resizeStart.height + deltaY));
+        
+        setSize({ width: newWidth, height: newHeight });
       }
     };
 
     const handleMouseUp = () => {
       setIsDragging(false);
+      setIsResizing(false);
     };
 
-    if (isDragging) {
+    if (isDragging || isResizing) {
       document.addEventListener('mousemove', handleMouseMove);
       document.addEventListener('mouseup', handleMouseUp);
       document.body.style.userSelect = 'none';
@@ -89,7 +117,7 @@ export function SimpleChatBot() {
         document.body.style.userSelect = '';
       };
     }
-  }, [isDragging, dragStart]);
+  }, [isDragging, isResizing, dragStart, resizeStart, size]);
 
   // 메시지 전송 처리 - OpenAI API 사용
   const handleSendMessage = async () => {
@@ -384,10 +412,12 @@ export function SimpleChatBot() {
   return (
     <div 
       ref={chatbotRef}
-      className="fixed w-80 h-[480px] bg-white border border-gray-200 rounded-2xl shadow-2xl z-[60] flex flex-col overflow-hidden"
+      className="fixed bg-white border border-gray-200 rounded-2xl shadow-2xl z-[60] flex flex-col overflow-hidden"
       style={{
         bottom: `${position.y}px`,
-        right: `${position.x}px`
+        right: `${position.x}px`,
+        width: `${size.width}px`,
+        height: `${size.height}px`
       }}
     >
       {/* 헤더 - 드래그 가능 */}
@@ -498,6 +528,15 @@ export function SimpleChatBot() {
             ? 'AI가 반려동물 케어에 대한 맞춤형 조언을 제공합니다' 
             : '로그인하면 개인화된 반려동물 관리 조언을 받을 수 있습니다'}
         </div>
+      </div>
+
+      {/* 리사이즈 핸들 */}
+      <div
+        className="absolute bottom-0 right-0 w-4 h-4 cursor-nw-resize"
+        onMouseDown={handleResizeStart}
+      >
+        <div className="absolute bottom-1 right-1 w-3 h-3 border-r-2 border-b-2 border-gray-400"></div>
+        <div className="absolute bottom-0.5 right-0.5 w-2 h-2 border-r-2 border-b-2 border-gray-300"></div>
       </div>
     </div>
   );
