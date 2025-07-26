@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import './Chatbot.css';
 
 interface ChatMessage {
@@ -35,8 +35,18 @@ export function Chatbot() {
   const [inputValue, setInputValue] = useState<string>('');
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [showBadge, setShowBadge] = useState<boolean>(false);
+  
+  // 드래그 기능을 위한 상태 추가
+  const [position, setPosition] = useState({ x: 20, y: 120 });
+  const [size, setSize] = useState({ width: 350, height: 500 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [isResizing, setIsResizing] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [resizeStart, setResizeStart] = useState({ x: 0, y: 0, width: 0, height: 0 });
+  
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const chatbotRef = useRef<HTMLDivElement>(null);
 
   // 챗봇 초기 메시지 설정
   useEffect(() => {
@@ -151,12 +161,118 @@ export function Chatbot() {
     sendMessage(suggestion);
   };
 
+  // 드래그 시작 - 정확한 시작 위치 계산 개선
+  const handleDragStart = useCallback((e: React.MouseEvent) => {
+    if (isResizing) return;
+    
+    const rect = chatbotRef.current?.getBoundingClientRect();
+    if (!rect) return;
+
+    setIsDragging(true);
+    // getBoundingClientRect()를 사용하여 정확한 상대 위치 계산
+    setDragStart({
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top
+    });
+    
+    // 이벤트 처리 개선
+    e.preventDefault();
+    e.stopPropagation();
+  }, [isResizing]);
+
+  // 리사이즈 시작 - 이벤트 처리 개선
+  const handleResizeStart = useCallback((e: React.MouseEvent) => {
+    setIsResizing(true);
+    setResizeStart({
+      x: e.clientX,
+      y: e.clientY,
+      width: size.width,
+      height: size.height
+    });
+    
+    // 이벤트 처리 개선: preventDefault() 추가
+    e.preventDefault();
+    e.stopPropagation();
+  }, [size]);
+
+  // 마우스 이동 처리 - 좌표 시스템 및 이벤트 처리 개선
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      // 이벤트 처리 개선: preventDefault() 추가
+      e.preventDefault();
+      
+      if (isDragging) {
+        // 좌표 시스템 수정: top/left 기준으로 정확한 위치 계산
+        const newX = e.clientX - dragStart.x;
+        const newY = e.clientY - dragStart.y;
+        
+        // 화면 경계 내로 제한
+        const constrainedX = Math.max(0, Math.min(window.innerWidth - size.width, newX));
+        const constrainedY = Math.max(0, Math.min(window.innerHeight - size.height, newY));
+        
+        // bottom/right 기준에서 top/left 기준으로 좌표 변환
+        const bottomPosition = window.innerHeight - constrainedY - size.height;
+        const rightPosition = window.innerWidth - constrainedX - size.width;
+        
+        setPosition({ x: rightPosition, y: bottomPosition });
+      }
+
+      if (isResizing) {
+        const deltaX = e.clientX - resizeStart.x;
+        const deltaY = e.clientY - resizeStart.y;
+        const newWidth = Math.max(280, Math.min(600, resizeStart.width + deltaX));
+        const newHeight = Math.max(400, Math.min(700, resizeStart.height + deltaY));
+        setSize({ width: newWidth, height: newHeight });
+      }
+    };
+
+    const handleMouseUp = () => {
+      setIsDragging(false);
+      setIsResizing(false);
+      // 커서 스타일 개선: 상태에 따른 적절한 커서 복원
+      document.body.style.userSelect = '';
+      document.body.style.cursor = '';
+    };
+
+    if (isDragging || isResizing) {
+      // 이벤트 처리 개선: passive: false 옵션 사용
+      document.addEventListener('mousemove', handleMouseMove, { passive: false });
+      document.addEventListener('mouseup', handleMouseUp, { passive: false });
+      
+      // 커서 스타일 개선: 상태에 따른 적절한 커서 표시
+      document.body.style.userSelect = 'none';
+      document.body.style.cursor = isDragging ? 'grabbing' : 'se-resize';
+    }
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+      document.body.style.userSelect = '';
+      document.body.style.cursor = '';
+    };
+  }, [isDragging, isResizing, dragStart, resizeStart, size]);
+
+  // 위치 초기화
+  const resetPosition = () => {
+    setPosition({ x: 20, y: 120 });
+    setSize({ width: 350, height: 500 });
+  };
+
   // 다크 모드 여부 확인
   const isDarkMode = document.documentElement.classList.contains('dark') || 
                    document.documentElement.getAttribute('data-theme') === 'dark';
 
   return (
-    <div className="chatbot-container" style={{ position: 'fixed', bottom: '120px', right: '20px', zIndex: 9999 }}>
+    <div 
+      ref={chatbotRef}
+      className="chatbot-container" 
+      style={{ 
+        position: 'fixed', 
+        bottom: `${position.y}px`, 
+        right: `${position.x}px`, 
+        zIndex: 9999 
+      }}
+    >
       <button 
         className="chatbot-button"
         onClick={toggleChatbot}
@@ -202,8 +318,8 @@ export function Chatbot() {
         position: 'absolute',
         bottom: '75px',
         right: '0px',
-        width: '350px',
-        height: '500px',
+        width: `${size.width}px`,
+        height: `${size.height}px`,
         backgroundColor: isDarkMode ? '#1a1d23' : 'white',
         borderRadius: '12px',
         boxShadow: isDarkMode ? '0 4px 20px rgba(0, 0, 0, 0.5)' : '0 4px 20px rgba(0, 0, 0, 0.15)',
@@ -217,31 +333,57 @@ export function Chatbot() {
         pointerEvents: isOpen ? 'all' : 'none',
         zIndex: 9999
       }}>
-        <div className="chatbot-header" style={{
-          padding: '15px 20px',
-          backgroundColor: isDarkMode ? '#1e40af' : '#1d4ed8',
-          color: 'white',
-          fontWeight: '600',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center'
-        }}>
+        <div 
+          className="chatbot-header" 
+          onMouseDown={handleDragStart}
+          style={{
+            padding: '15px 20px',
+            backgroundColor: isDarkMode ? '#1e40af' : '#1d4ed8',
+            color: 'white',
+            fontWeight: '600',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            cursor: isDragging ? 'grabbing' : 'grab',
+            userSelect: 'none'
+          }}
+        >
           <span>테일즈 AI 도우미</span>
-          <button 
-            className="chatbot-close"
-            onClick={toggleChatbot}
-            aria-label="챗봇 닫기"
-            style={{
-              background: 'none',
-              border: 'none',
-              color: 'white',
-              cursor: 'pointer',
-              fontSize: '20px',
-              lineHeight: '1'
-            }}
-          >
-            ✕
-          </button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <button 
+              onClick={resetPosition}
+              aria-label="위치 초기화"
+              style={{
+                background: 'none',
+                border: 'none',
+                color: 'white',
+                cursor: 'pointer',
+                fontSize: '14px',
+                opacity: 0.7,
+                padding: '2px 6px',
+                borderRadius: '4px'
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.2)'}
+              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+            >
+              ⌂
+            </button>
+            <button 
+              className="chatbot-close"
+              onClick={toggleChatbot}
+              aria-label="챗봇 닫기"
+              style={{
+                background: 'none',
+                border: 'none',
+                color: 'white',
+                cursor: 'pointer',
+                fontSize: '20px',
+                lineHeight: '1'
+              }}
+            >
+              ✕
+            </button>
+          </div>
         </div>
         
         <div style={{
@@ -357,6 +499,42 @@ export function Chatbot() {
             </svg>
           </button>
         </form>
+        
+        {/* 리사이즈 핸들 - 시각적으로 개선된 디자인 */}
+        <div
+          onMouseDown={handleResizeStart}
+          style={{
+            position: 'absolute',
+            bottom: '0px',
+            right: '0px',
+            width: '20px',
+            height: '20px',
+            cursor: 'se-resize',
+            background: `linear-gradient(135deg, 
+              ${isDarkMode ? '#374151' : '#e5e7eb'} 0%, 
+              ${isDarkMode ? '#6b7280' : '#9ca3af'} 100%)`,
+            borderTopLeftRadius: '8px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '12px',
+            color: isDarkMode ? '#9ca3af' : '#6b7280',
+            transition: 'all 0.2s ease',
+            userSelect: 'none'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = `linear-gradient(135deg, 
+              ${isDarkMode ? '#4b5563' : '#d1d5db'} 0%, 
+              ${isDarkMode ? '#9ca3af' : '#6b7280'} 100%)`;
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = `linear-gradient(135deg, 
+              ${isDarkMode ? '#374151' : '#e5e7eb'} 0%, 
+              ${isDarkMode ? '#6b7280' : '#9ca3af'} 100%)`;
+          }}
+        >
+          ⋰
+        </div>
       </div>
     </div>
   );
