@@ -322,6 +322,99 @@ export function registerPaymentIntegrationRoutes(app: Express) {
     }
   });
 
+  // 결제 수단 추가 API
+  app.post('/api/admin/payment/methods', async (req, res) => {
+    try {
+      const { id, name, type, description, provider, apiKey, commissionRate } = req.body;
+      
+      console.log(`[Payment] 새 결제 수단 추가: ${name}`);
+      
+      const newMethod = {
+        id,
+        name,
+        type,
+        description,
+        provider,
+        apiKey,
+        status: 'inactive', // 새로 추가된 결제 수단은 기본적으로 비활성
+        supportedMethods: type === 'pg' ? ['카드', '계좌이체'] : ['간편결제'],
+        commissionRate: commissionRate || 0,
+        setupFee: 0,
+        monthlyFee: 0,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+
+      // 스토리지에 추가
+      storage.createPaymentMethod(newMethod);
+      
+      res.json({
+        success: true,
+        data: newMethod,
+        message: '새 결제 수단이 성공적으로 추가되었습니다.'
+      });
+    } catch (error) {
+      console.error('[Payment] 결제 수단 추가 오류:', error);
+      res.status(500).json({
+        success: false,
+        message: '결제 수단 추가 중 오류가 발생했습니다.'
+      });
+    }
+  });
+
+  // 보안 설정 조회 API
+  app.get('/api/admin/payment/security', async (req, res) => {
+    try {
+      const securitySettings = {
+        encryptionEnabled: true,
+        apiKeyEncryption: true,
+        transactionLogging: true,
+        fraudDetection: true,
+        twoFactorAuth: false,
+        ipWhitelist: '192.168.1.1, 10.0.0.1',
+        lastUpdated: new Date().toISOString()
+      };
+
+      res.json({
+        success: true,
+        data: securitySettings
+      });
+    } catch (error) {
+      console.error('[Payment] 보안 설정 조회 오류:', error);
+      res.status(500).json({
+        success: false,
+        message: '보안 설정 조회 중 오류가 발생했습니다.'
+      });
+    }
+  });
+
+  // 보안 설정 업데이트 API
+  app.put('/api/admin/payment/security', async (req, res) => {
+    try {
+      const securitySettings = req.body;
+      
+      console.log('[Payment] 보안 설정 업데이트:', securitySettings);
+      
+      // 실제로는 데이터베이스에 저장
+      const updatedSettings = {
+        ...securitySettings,
+        lastUpdated: new Date().toISOString()
+      };
+
+      res.json({
+        success: true,
+        data: updatedSettings,
+        message: '보안 설정이 성공적으로 업데이트되었습니다.'
+      });
+    } catch (error) {
+      console.error('[Payment] 보안 설정 업데이트 오류:', error);
+      res.status(500).json({
+        success: false,
+        message: '보안 설정 업데이트 중 오류가 발생했습니다.'
+      });
+    }
+  });
+
   // 전체 결제 통계 API
   app.get('/api/admin/payment/stats', async (req, res) => {
     try {

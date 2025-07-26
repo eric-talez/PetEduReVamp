@@ -279,14 +279,220 @@ export default function PaymentIntegration() {
           <p className="text-muted-foreground">결제 수단 및 권한별 요금제를 관리합니다</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline">
-            <Shield className="w-4 h-4 mr-2" />
-            보안 설정
-          </Button>
-          <Button>
-            <Plus className="w-4 h-4 mr-2" />
-            결제 수단 추가
-          </Button>
+          <Dialog open={showSecurityDialog} onOpenChange={setShowSecurityDialog}>
+            <DialogTrigger asChild>
+              <Button variant="outline">
+                <Shield className="w-4 h-4 mr-2" />
+                보안 설정
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-md">
+              <DialogHeader>
+                <DialogTitle>결제 보안 설정</DialogTitle>
+                <DialogDescription>
+                  결제 시스템의 보안 정책을 관리합니다
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label>데이터 암호화</Label>
+                    <p className="text-sm text-muted-foreground">결제 데이터 암호화 저장</p>
+                  </div>
+                  <Switch 
+                    checked={securitySettings.encryptionEnabled}
+                    onCheckedChange={(checked) => 
+                      setSecuritySettings(prev => ({ ...prev, encryptionEnabled: checked }))
+                    }
+                  />
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label>API 키 암호화</Label>
+                    <p className="text-sm text-muted-foreground">API 키 안전 저장</p>
+                  </div>
+                  <Switch 
+                    checked={securitySettings.apiKeyEncryption}
+                    onCheckedChange={(checked) => 
+                      setSecuritySettings(prev => ({ ...prev, apiKeyEncryption: checked }))
+                    }
+                  />
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label>거래 로깅</Label>
+                    <p className="text-sm text-muted-foreground">모든 거래 기록 저장</p>
+                  </div>
+                  <Switch 
+                    checked={securitySettings.transactionLogging}
+                    onCheckedChange={(checked) => 
+                      setSecuritySettings(prev => ({ ...prev, transactionLogging: checked }))
+                    }
+                  />
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label>사기 탐지</Label>
+                    <p className="text-sm text-muted-foreground">이상 거래 자동 감지</p>
+                  </div>
+                  <Switch 
+                    checked={securitySettings.fraudDetection}
+                    onCheckedChange={(checked) => 
+                      setSecuritySettings(prev => ({ ...prev, fraudDetection: checked }))
+                    }
+                  />
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label>2단계 인증</Label>
+                    <p className="text-sm text-muted-foreground">관리자 접근 보안 강화</p>
+                  </div>
+                  <Switch 
+                    checked={securitySettings.twoFactorAuth}
+                    onCheckedChange={(checked) => 
+                      setSecuritySettings(prev => ({ ...prev, twoFactorAuth: checked }))
+                    }
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>IP 화이트리스트</Label>
+                  <Input 
+                    placeholder="192.168.1.1, 10.0.0.1"
+                    value={securitySettings.ipWhitelist}
+                    onChange={(e) => 
+                      setSecuritySettings(prev => ({ ...prev, ipWhitelist: e.target.value }))
+                    }
+                  />
+                  <p className="text-sm text-muted-foreground">접근 허용 IP 주소 (쉼표로 구분)</p>
+                </div>
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setShowSecurityDialog(false)}>
+                  취소
+                </Button>
+                <Button onClick={updateSecuritySettings}>
+                  <Lock className="w-4 h-4 mr-2" />
+                  설정 저장
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+
+          <Dialog open={showAddMethodDialog} onOpenChange={setShowAddMethodDialog}>
+            <DialogTrigger asChild>
+              <Button>
+                <Plus className="w-4 h-4 mr-2" />
+                결제 수단 추가
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-md">
+              <DialogHeader>
+                <DialogTitle>새 결제 수단 추가</DialogTitle>
+                <DialogDescription>
+                  새로운 결제 서비스를 연동합니다
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="methodId">결제 수단 ID</Label>
+                  <Input 
+                    id="methodId"
+                    placeholder="paypal"
+                    value={newMethodForm.id}
+                    onChange={(e) => 
+                      setNewMethodForm(prev => ({ ...prev, id: e.target.value }))
+                    }
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="methodName">결제 수단 이름</Label>
+                  <Input 
+                    id="methodName"
+                    placeholder="PayPal"
+                    value={newMethodForm.name}
+                    onChange={(e) => 
+                      setNewMethodForm(prev => ({ ...prev, name: e.target.value }))
+                    }
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="methodType">유형</Label>
+                  <Select 
+                    value={newMethodForm.type} 
+                    onValueChange={(value) => 
+                      setNewMethodForm(prev => ({ ...prev, type: value }))
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="pg">PG (Payment Gateway)</SelectItem>
+                      <SelectItem value="wallet">전자지갑</SelectItem>
+                      <SelectItem value="bank">은행 계좌</SelectItem>
+                      <SelectItem value="crypto">암호화폐</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="provider">제공업체</Label>
+                  <Input 
+                    id="provider"
+                    placeholder="PayPal Inc."
+                    value={newMethodForm.provider}
+                    onChange={(e) => 
+                      setNewMethodForm(prev => ({ ...prev, provider: e.target.value }))
+                    }
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="description">설명</Label>
+                  <Textarea 
+                    id="description"
+                    placeholder="PayPal 글로벌 결제 시스템"
+                    value={newMethodForm.description}
+                    onChange={(e) => 
+                      setNewMethodForm(prev => ({ ...prev, description: e.target.value }))
+                    }
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="apiKey">API 키</Label>
+                  <Input 
+                    id="apiKey"
+                    type="password"
+                    placeholder="API 키를 입력하세요"
+                    value={newMethodForm.apiKey}
+                    onChange={(e) => 
+                      setNewMethodForm(prev => ({ ...prev, apiKey: e.target.value }))
+                    }
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="commission">수수료율 (%)</Label>
+                  <Input 
+                    id="commission"
+                    type="number"
+                    step="0.1"
+                    placeholder="3.4"
+                    value={newMethodForm.commissionRate}
+                    onChange={(e) => 
+                      setNewMethodForm(prev => ({ ...prev, commissionRate: parseFloat(e.target.value) || 0 }))
+                    }
+                  />
+                </div>
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setShowAddMethodDialog(false)}>
+                  취소
+                </Button>
+                <Button onClick={addPaymentMethod}>
+                  <CreditCard className="w-4 h-4 mr-2" />
+                  결제 수단 추가
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
 
