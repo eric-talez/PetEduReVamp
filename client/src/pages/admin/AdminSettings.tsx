@@ -46,7 +46,8 @@ import {
   Loader2,
   CheckCircle,
   XCircle,
-  Image as ImageIcon
+  Image as ImageIcon,
+  FileImage
 } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
@@ -876,243 +877,456 @@ export default function AdminSettings() {
                   
                   <Separator />
                   
-                  <div className="space-y-4">
-                    <h3 className="text-lg font-medium">로고 설정</h3>
-                    
-                    {/* 메인 로고 (라이트 모드) */}
-                    <div className="space-y-2">
-                      <Label>메인 로고 (라이트 모드)</Label>
-                      <div className="flex items-center space-x-4">
-                        <div className="h-16 w-32 bg-secondary rounded flex items-center justify-center border">
-                          {currentLogos?.main ? (
-                            <img 
-                              src={currentLogos.main} 
-                              alt="메인 로고" 
-                              className="max-h-full max-w-full object-contain"
-                            />
-                          ) : (
-                            <div className="text-sm text-muted-foreground">미리보기</div>
-                          )}
-                        </div>
-                        <div className="flex flex-col space-y-2">
-                          <ImageUpload
-                            value={currentLogos?.main || ''}
-                            onChange={(url) => {
-                              if (url) {
-                                handleLogoUpload('main', url);
-                              }
-                            }}
-                            maxSize={5}
-                            label="메인 로고 업로드"
-                            className="w-auto"
-                          />
-                          {currentLogos?.main && (
-                            <Button 
-                              variant="outline" 
-                              size="sm"
-                              onClick={() => handleLogoDelete('main')}
-                              disabled={logoDeleteMutation.isPending}
-                            >
-                              <XCircle className="h-4 w-4 mr-2" />
-                              삭제
-                            </Button>
-                          )}
-                        </div>
+                  <div className="space-y-6">
+                    {/* 헤더와 일괄 관리 */}
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-xl font-semibold flex items-center gap-2">
+                        <ImageIcon className="h-6 w-6 text-primary" />
+                        로고 설정
+                      </h3>
+                      <div className="flex space-x-2">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => {
+                            if (confirm('모든 로고를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) {
+                              ['main', 'mainDark', 'compact', 'compactDark', 'favicon'].forEach(type => {
+                                if (currentLogos?.[type as keyof typeof currentLogos]) {
+                                  handleLogoDelete(type);
+                                }
+                              });
+                            }
+                          }}
+                          className="text-red-600 hover:text-red-700 border-red-300 hover:border-red-400"
+                        >
+                          <XCircle className="h-4 w-4 mr-1" />
+                          전체 삭제
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => refetchLogos()}
+                          className="text-blue-600 hover:text-blue-700 border-blue-300 hover:border-blue-400"
+                        >
+                          <RefreshCw className="h-4 w-4 mr-1" />
+                          새로고침
+                        </Button>
                       </div>
                     </div>
 
-                    {/* 메인 로고 (다크 모드) */}
-                    <div className="space-y-2">
-                      <Label>메인 로고 (다크 모드)</Label>
-                      <div className="flex items-center space-x-4">
-                        <div className="h-16 w-32 bg-slate-800 rounded flex items-center justify-center border">
-                          {currentLogos?.mainDark ? (
-                            <img 
-                              src={currentLogos.mainDark} 
-                              alt="메인 로고 (다크)" 
-                              className="max-h-full max-w-full object-contain"
-                            />
-                          ) : (
-                            <div className="text-sm text-white">미리보기</div>
-                          )}
+                    {/* 로고 상태 개요 */}
+                    <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+                      {[
+                        { key: 'main', label: '메인', color: 'bg-blue-100 text-blue-800' },
+                        { key: 'mainDark', label: '메인(다크)', color: 'bg-slate-100 text-slate-800' },
+                        { key: 'compact', label: '컴팩트', color: 'bg-green-100 text-green-800' },
+                        { key: 'compactDark', label: '컴팩트(다크)', color: 'bg-purple-100 text-purple-800' },
+                        { key: 'favicon', label: '파비콘', color: 'bg-orange-100 text-orange-800' }
+                      ].map((logo) => (
+                        <div key={logo.key} className="text-center p-3 border rounded-lg bg-card">
+                          <div className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${logo.color}`}>
+                            {logo.label}
+                          </div>
+                          <div className="mt-2 text-sm">
+                            {currentLogos?.[logo.key as keyof typeof currentLogos] ? (
+                              <span className="text-green-600 font-medium">✓ 등록됨</span>
+                            ) : (
+                              <span className="text-gray-400">미등록</span>
+                            )}
+                          </div>
                         </div>
-                        <div className="flex flex-col space-y-2">
-                          <ImageUpload
-                            value={currentLogos?.mainDark || ''}
-                            onChange={(url) => {
-                              if (url) {
-                                handleLogoUpload('mainDark', url);
+                      ))}
+                    </div>
+                    
+                    {/* 메인 로고 (라이트 모드) - 향상된 UI */}
+                    <Card className="border-2 border-blue-200 bg-blue-50/30">
+                      <CardHeader className="pb-3">
+                        <div className="flex items-center space-x-2">
+                          <div className="h-3 w-3 bg-blue-500 rounded-full"></div>
+                          <CardTitle className="text-lg">메인 로고 (라이트 모드)</CardTitle>
+                          <div className="text-xs px-2 py-1 bg-blue-100 text-blue-800 rounded-full">180×60px 권장</div>
+                        </div>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="flex items-start space-x-6">
+                          <div className="space-y-2">
+                            <div className="h-20 w-40 bg-white rounded-lg border-2 border-dashed border-blue-300 flex items-center justify-center group hover:border-blue-500 transition-all duration-200 hover:shadow-md">
+                              {currentLogos?.main ? (
+                                <img 
+                                  src={currentLogos.main} 
+                                  alt="메인 로고" 
+                                  className="max-h-full max-w-full object-contain rounded"
+                                />
+                              ) : (
+                                <div className="text-center text-blue-400 group-hover:text-blue-600 transition-colors">
+                                  <ImageIcon className="h-8 w-8 mx-auto mb-1" />
+                                  <div className="text-xs font-medium">로고 업로드</div>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                          <div className="flex-1 space-y-3">
+                            <ImageUpload
+                              value={currentLogos?.main || ''}
+                              onChange={(url) => {
+                                if (url) {
+                                  handleLogoUpload('main', url);
+                                }
+                              }}
+                              maxSize={5}
+                              label="메인 로고 업로드"
+                              className="w-full"
+                            />
+                            <div className="flex flex-wrap gap-2">
+                              {currentLogos?.main && (
+                                <>
+                                  <Button 
+                                    variant="outline" 
+                                    size="sm"
+                                    onClick={() => handleLogoDelete('main')}
+                                    disabled={logoDeleteMutation.isPending}
+                                    className="text-red-600 hover:text-red-700 border-red-300 hover:border-red-400"
+                                  >
+                                    <XCircle className="h-4 w-4 mr-1" />
+                                    삭제
+                                  </Button>
+                                  <Button 
+                                    variant="outline" 
+                                    size="sm"
+                                    onClick={() => {
+                                      navigator.clipboard.writeText(currentLogos.main);
+                                      toast({ title: "링크 복사됨", description: "로고 URL이 클립보드에 복사되었습니다." });
+                                    }}
+                                    className="text-blue-600 hover:text-blue-700 border-blue-300 hover:border-blue-400"
+                                  >
+                                    <FileImage className="h-4 w-4 mr-1" />
+                                    링크 복사
+                                  </Button>
+                                </>
+                              )}
+                            </div>
+                            <p className="text-sm text-muted-foreground">
+                              사이드바 확장 시 표시되는 메인 로고입니다. PNG, JPG, SVG 형식을 지원합니다.
+                            </p>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {/* 메인 로고 (다크 모드) - 향상된 UI */}
+                    <Card className="border-2 border-slate-200 bg-slate-50/30 dark:border-slate-700 dark:bg-slate-800/30">
+                      <CardHeader className="pb-3">
+                        <div className="flex items-center space-x-2">
+                          <div className="h-3 w-3 bg-slate-600 rounded-full"></div>
+                          <CardTitle className="text-lg">메인 로고 (다크 모드)</CardTitle>
+                          <div className="text-xs px-2 py-1 bg-slate-100 text-slate-800 dark:bg-slate-700 dark:text-slate-200 rounded-full">180×60px 권장</div>
+                        </div>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="flex items-start space-x-6">
+                          <div className="space-y-2">
+                            <div className="h-20 w-40 bg-slate-800 rounded-lg border-2 border-dashed border-slate-400 flex items-center justify-center group hover:border-slate-500 transition-all duration-200 hover:shadow-md">
+                              {currentLogos?.mainDark ? (
+                                <img 
+                                  src={currentLogos.mainDark} 
+                                  alt="메인 로고 (다크)" 
+                                  className="max-h-full max-w-full object-contain rounded"
+                                />
+                              ) : (
+                                <div className="text-center text-slate-400 group-hover:text-slate-300 transition-colors">
+                                  <ImageIcon className="h-8 w-8 mx-auto mb-1" />
+                                  <div className="text-xs font-medium">로고 업로드</div>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                          <div className="flex-1 space-y-3">
+                            <ImageUpload
+                              value={currentLogos?.mainDark || ''}
+                              onChange={(url) => {
+                                if (url) {
+                                  handleLogoUpload('mainDark', url);
                               }
                             }}
                             maxSize={5}
                             label="다크 로고 업로드"
-                            className="w-auto"
+                            className="w-full"
                           />
-                          {currentLogos?.mainDark && (
-                            <Button 
-                              variant="outline" 
-                              size="sm"
-                              onClick={() => handleLogoDelete('mainDark')}
-                              disabled={logoDeleteMutation.isPending}
-                            >
-                              <XCircle className="h-4 w-4 mr-2" />
-                              삭제
-                            </Button>
-                          )}
+                          <div className="flex flex-wrap gap-2">
+                            {currentLogos?.mainDark && (
+                              <>
+                                <Button 
+                                  variant="outline" 
+                                  size="sm"
+                                  onClick={() => handleLogoDelete('mainDark')}
+                                  disabled={logoDeleteMutation.isPending}
+                                  className="text-red-600 hover:text-red-700 border-red-300 hover:border-red-400"
+                                >
+                                  <XCircle className="h-4 w-4 mr-1" />
+                                  삭제
+                                </Button>
+                                <Button 
+                                  variant="outline" 
+                                  size="sm"
+                                  onClick={() => {
+                                    navigator.clipboard.writeText(currentLogos.mainDark);
+                                    toast({ title: "링크 복사됨", description: "다크 로고 URL이 클립보드에 복사되었습니다." });
+                                  }}
+                                  className="text-slate-600 hover:text-slate-700 border-slate-300 hover:border-slate-400"
+                                >
+                                  <FileImage className="h-4 w-4 mr-1" />
+                                  링크 복사
+                                </Button>
+                              </>
+                            )}
+                          </div>
+                          <p className="text-sm text-muted-foreground">
+                            다크 모드에서 사이드바 확장 시 표시되는 로고입니다. PNG, JPG, SVG 형식을 지원합니다.
+                          </p>
                         </div>
                       </div>
-                    </div>
+                    </CardContent>
+                  </Card>
 
-                    {/* 컴팩트 로고 (라이트 모드) */}
-                    <div className="space-y-2">
-                      <Label>컴팩트 로고 (라이트 모드)</Label>
-                      <div className="flex items-center space-x-4">
-                        <div className="h-12 w-12 bg-secondary rounded flex items-center justify-center border">
-                          {currentLogos?.compact ? (
-                            <img 
-                              src={currentLogos.compact} 
-                              alt="컴팩트 로고" 
-                              className="max-h-full max-w-full object-contain"
-                            />
-                          ) : (
-                            <div className="text-xs text-muted-foreground">미리보기</div>
-                          )}
+                    {/* 컴팩트 로고 (라이트 모드) - 향상된 UI */}
+                    <Card className="border-2 border-green-200 bg-green-50/30">
+                      <CardHeader className="pb-3">
+                        <div className="flex items-center space-x-2">
+                          <div className="h-3 w-3 bg-green-500 rounded-full"></div>
+                          <CardTitle className="text-lg">컴팩트 로고 (라이트 모드)</CardTitle>
+                          <div className="text-xs px-2 py-1 bg-green-100 text-green-800 rounded-full">40×40px 권장</div>
                         </div>
-                        <div className="flex flex-col space-y-2">
-                          <ImageUpload
-                            value={currentLogos?.compact || ''}
-                            onChange={(url) => {
-                              if (url) {
-                                handleLogoUpload('compact', url);
-                              }
-                            }}
-                            maxSize={5}
-                            label="컴팩트 로고 업로드"
-                            className="w-auto"
-                          />
-                          {currentLogos?.compact && (
-                            <Button 
-                              variant="outline" 
-                              size="sm"
-                              onClick={() => handleLogoDelete('compact')}
-                              disabled={logoDeleteMutation.isPending}
-                            >
-                              <XCircle className="h-4 w-4 mr-2" />
-                              삭제
-                            </Button>
-                          )}
-                        </div>
-                      </div>
-                      <p className="text-sm text-muted-foreground">
-                        사이드바 축소 시 표시되는 로고 (권장 크기: 40x40px)
-                      </p>
-                    </div>
-
-                    {/* 컴팩트 로고 (다크 모드) */}
-                    <div className="space-y-2">
-                      <Label>컴팩트 로고 (다크 모드)</Label>
-                      <div className="flex items-center space-x-4">
-                        <div className="h-12 w-12 bg-slate-800 rounded flex items-center justify-center border">
-                          {currentLogos?.compactDark ? (
-                            <img 
-                              src={currentLogos.compactDark} 
-                              alt="컴팩트 로고 (다크)" 
-                              className="max-h-full max-w-full object-contain"
-                            />
-                          ) : (
-                            <div className="text-xs text-white">미리보기</div>
-                          )}
-                        </div>
-                        <div className="flex flex-col space-y-2">
-                          <ImageUpload
-                            onUpload={(file) => handleLogoUpload('compactDark', file)}
-                            accept="image/*"
-                            className="w-auto"
-                          >
-                            <Button variant="outline" disabled={uploadingLogo === 'compactDark'}>
-                              {uploadingLogo === 'compactDark' ? (
-                                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      </CardHeader>
+                      <CardContent>
+                        <div className="flex items-start space-x-6">
+                          <div className="space-y-2">
+                            <div className="h-16 w-16 bg-white rounded-lg border-2 border-dashed border-green-300 flex items-center justify-center group hover:border-green-500 transition-all duration-200 hover:shadow-md">
+                              {currentLogos?.compact ? (
+                                <img 
+                                  src={currentLogos.compact} 
+                                  alt="컴팩트 로고" 
+                                  className="max-h-full max-w-full object-contain rounded"
+                                />
                               ) : (
-                                <Upload className="h-4 w-4 mr-2" />
+                                <div className="text-center text-green-400 group-hover:text-green-600 transition-colors">
+                                  <ImageIcon className="h-6 w-6 mx-auto mb-1" />
+                                  <div className="text-xs font-medium">로고 업로드</div>
+                                </div>
                               )}
-                              컴팩트 다크 로고 업로드
-                            </Button>
-                          </ImageUpload>
-                          {currentLogos?.compactDark && (
-                            <Button 
-                              variant="outline" 
-                              size="sm"
-                              onClick={() => handleLogoDelete('compactDark')}
-                              disabled={logoDeleteMutation.isPending}
-                            >
-                              <XCircle className="h-4 w-4 mr-2" />
-                              삭제
-                            </Button>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                    
-                    {/* 파비콘 */}
-                    <div className="space-y-2">
-                      <Label>파비콘</Label>
-                      <div className="flex items-center space-x-4">
-                        <div className="h-8 w-8 bg-secondary rounded flex items-center justify-center border">
-                          {currentLogos?.favicon ? (
-                            <img 
-                              src={currentLogos.favicon} 
-                              alt="파비콘" 
-                              className="max-h-full max-w-full object-contain"
+                            </div>
+                          </div>
+                          <div className="flex-1 space-y-3">
+                            <ImageUpload
+                              value={currentLogos?.compact || ''}
+                              onChange={(url) => {
+                                if (url) {
+                                  handleLogoUpload('compact', url);
+                                }
+                              }}
+                              maxSize={5}
+                              label="컴팩트 로고 업로드"
+                              className="w-full"
                             />
-                          ) : (
-                            <div className="text-xs text-muted-foreground">ICO</div>
-                          )}
+                            <div className="flex flex-wrap gap-2">
+                              {currentLogos?.compact && (
+                                <>
+                                  <Button 
+                                    variant="outline" 
+                                    size="sm"
+                                    onClick={() => handleLogoDelete('compact')}
+                                    disabled={logoDeleteMutation.isPending}
+                                    className="text-red-600 hover:text-red-700 border-red-300 hover:border-red-400"
+                                  >
+                                    <XCircle className="h-4 w-4 mr-1" />
+                                    삭제
+                                  </Button>
+                                  <Button 
+                                    variant="outline" 
+                                    size="sm"
+                                    onClick={() => {
+                                      navigator.clipboard.writeText(currentLogos.compact);
+                                      toast({ title: "링크 복사됨", description: "컴팩트 로고 URL이 클립보드에 복사되었습니다." });
+                                    }}
+                                    className="text-green-600 hover:text-green-700 border-green-300 hover:border-green-400"
+                                  >
+                                    <FileImage className="h-4 w-4 mr-1" />
+                                    링크 복사
+                                  </Button>
+                                </>
+                              )}
+                            </div>
+                            <p className="text-sm text-muted-foreground">
+                              사이드바 축소 시 표시되는 작은 로고입니다. 정사각형 비율을 권장합니다.
+                            </p>
+                          </div>
                         </div>
-                        <div className="flex flex-col space-y-2">
-                          <ImageUpload
-                            value={currentLogos?.favicon || ''}
-                            onChange={(url) => {
-                              if (url) {
-                                handleLogoUpload('favicon', url);
-                              }
-                            }}
-                            maxSize={5}
-                            label="파비콘 업로드"
-                            className="w-auto"
-                          />
-                          {currentLogos?.favicon && (
-                            <Button 
-                              variant="outline" 
-                              size="sm"
-                              onClick={() => handleLogoDelete('favicon')}
-                              disabled={logoDeleteMutation.isPending}
-                            >
-                              <XCircle className="h-4 w-4 mr-2" />
-                              삭제
-                            </Button>
-                          )}
+                      </CardContent>
+                    </Card>
+
+                    {/* 컴팩트 로고 (다크 모드) - 향상된 UI */}
+                    <Card className="border-2 border-purple-200 bg-purple-50/30">
+                      <CardHeader className="pb-3">
+                        <div className="flex items-center space-x-2">
+                          <div className="h-3 w-3 bg-purple-500 rounded-full"></div>
+                          <CardTitle className="text-lg">컴팩트 로고 (다크 모드)</CardTitle>
+                          <div className="text-xs px-2 py-1 bg-purple-100 text-purple-800 rounded-full">40×40px 권장</div>
                         </div>
-                      </div>
-                      <p className="text-sm text-muted-foreground">
-                        32x32 크기의 파비콘 이미지를 업로드하세요.
-                      </p>
-                    </div>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="flex items-start space-x-6">
+                          <div className="space-y-2">
+                            <div className="h-16 w-16 bg-slate-800 rounded-lg border-2 border-dashed border-purple-400 flex items-center justify-center group hover:border-purple-600 transition-all duration-200 hover:shadow-md">
+                              {currentLogos?.compactDark ? (
+                                <img 
+                                  src={currentLogos.compactDark} 
+                                  alt="컴팩트 로고 (다크)" 
+                                  className="max-h-full max-w-full object-contain rounded"
+                                />
+                              ) : (
+                                <div className="text-center text-purple-400 group-hover:text-purple-300 transition-colors">
+                                  <ImageIcon className="h-6 w-6 mx-auto mb-1" />
+                                  <div className="text-xs font-medium">로고 업로드</div>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                          <div className="flex-1 space-y-3">
+                            <ImageUpload
+                              value={currentLogos?.compactDark || ''}
+                              onChange={(url) => {
+                                if (url) {
+                                  handleLogoUpload('compactDark', url);
+                                }
+                              }}
+                              maxSize={5}
+                              label="컴팩트 다크 로고 업로드"
+                              className="w-full"
+                            />
+                            <div className="flex flex-wrap gap-2">
+                              {currentLogos?.compactDark && (
+                                <>
+                                  <Button 
+                                    variant="outline" 
+                                    size="sm"
+                                    onClick={() => handleLogoDelete('compactDark')}
+                                    disabled={logoDeleteMutation.isPending}
+                                    className="text-red-600 hover:text-red-700 border-red-300 hover:border-red-400"
+                                  >
+                                    <XCircle className="h-4 w-4 mr-1" />
+                                    삭제
+                                  </Button>
+                                  <Button 
+                                    variant="outline" 
+                                    size="sm"
+                                    onClick={() => {
+                                      navigator.clipboard.writeText(currentLogos.compactDark);
+                                      toast({ title: "링크 복사됨", description: "컴팩트 다크 로고 URL이 클립보드에 복사되었습니다." });
+                                    }}
+                                    className="text-purple-600 hover:text-purple-700 border-purple-300 hover:border-purple-400"
+                                  >
+                                    <FileImage className="h-4 w-4 mr-1" />
+                                    링크 복사
+                                  </Button>
+                                </>
+                              )}
+                            </div>
+                            <p className="text-sm text-muted-foreground">
+                              다크 모드에서 사이드바 축소 시 표시되는 작은 로고입니다.
+                            </p>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                    
+                    {/* 파비콘 - 향상된 UI */}
+                    <Card className="border-2 border-orange-200 bg-orange-50/30">
+                      <CardHeader className="pb-3">
+                        <div className="flex items-center space-x-2">
+                          <div className="h-3 w-3 bg-orange-500 rounded-full"></div>
+                          <CardTitle className="text-lg">파비콘</CardTitle>
+                          <div className="text-xs px-2 py-1 bg-orange-100 text-orange-800 rounded-full">32×32px 권장</div>
+                        </div>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="flex items-start space-x-6">
+                          <div className="space-y-2">
+                            <div className="h-12 w-12 bg-white rounded-lg border-2 border-dashed border-orange-300 flex items-center justify-center group hover:border-orange-500 transition-all duration-200 hover:shadow-md">
+                              {currentLogos?.favicon ? (
+                                <img 
+                                  src={currentLogos.favicon} 
+                                  alt="파비콘" 
+                                  className="max-h-full max-w-full object-contain rounded"
+                                />
+                              ) : (
+                                <div className="text-center text-orange-400 group-hover:text-orange-600 transition-colors">
+                                  <ImageIcon className="h-5 w-5 mx-auto mb-0.5" />
+                                  <div className="text-xs font-medium">ICO</div>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                          <div className="flex-1 space-y-3">
+                            <ImageUpload
+                              value={currentLogos?.favicon || ''}
+                              onChange={(url) => {
+                                if (url) {
+                                  handleLogoUpload('favicon', url);
+                                }
+                              }}
+                              maxSize={5}
+                              label="파비콘 업로드"
+                              className="w-full"
+                            />
+                            <div className="flex flex-wrap gap-2">
+                              {currentLogos?.favicon && (
+                                <>
+                                  <Button 
+                                    variant="outline" 
+                                    size="sm"
+                                    onClick={() => handleLogoDelete('favicon')}
+                                    disabled={logoDeleteMutation.isPending}
+                                    className="text-red-600 hover:text-red-700 border-red-300 hover:border-red-400"
+                                  >
+                                    <XCircle className="h-4 w-4 mr-1" />
+                                    삭제
+                                  </Button>
+                                  <Button 
+                                    variant="outline" 
+                                    size="sm"
+                                    onClick={() => {
+                                      navigator.clipboard.writeText(currentLogos.favicon);
+                                      toast({ title: "링크 복사됨", description: "파비콘 URL이 클립보드에 복사되었습니다." });
+                                    }}
+                                    className="text-orange-600 hover:text-orange-700 border-orange-300 hover:border-orange-400"
+                                  >
+                                    <FileImage className="h-4 w-4 mr-1" />
+                                    링크 복사
+                                  </Button>
+                                </>
+                              )}
+                            </div>
+                            <p className="text-sm text-muted-foreground">
+                              브라우저 탭에 표시되는 파비콘입니다. ICO, PNG 형식을 지원합니다.
+                            </p>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
 
-                    {/* 로고 상태 표시 */}
-                    {logosLoading && (
-                      <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                        <span>로고 설정을 불러오는 중...</span>
-                      </div>
-                    )}
-
-                    {/* 적용 상태 알림 */}
-                    <Alert>
-                      <CheckCircle className="h-4 w-4" />
-                      <AlertTitle>로고 적용 안내</AlertTitle>
-                      <AlertDescription>
-                        로고를 업로드하면 즉시 사이드바에 적용됩니다. 
-                        페이지를 새로고침하면 변경사항을 확인할 수 있습니다.
+                    {/* 로고 관리 요약 */}
+                    <Alert className="border-blue-200 bg-blue-50/50">
+                      <CheckCircle className="h-4 w-4 text-blue-600" />
+                      <AlertTitle className="text-blue-900">로고 관리 완료 ✨</AlertTitle>
+                      <AlertDescription className="text-blue-800">
+                        <div className="space-y-2">
+                          <p>로고 업로드가 완료되면 즉시 시스템에 반영됩니다.</p>
+                          <div className="grid grid-cols-2 gap-2 text-sm mt-3">
+                            <div>• 메인 로고: 사이드바 확장 시 표시</div>
+                            <div>• 컴팩트 로고: 사이드바 축소 시 표시</div>
+                            <div>• 다크 모드: 어두운 테마에서 사용</div>
+                            <div>• 파비콘: 브라우저 탭에 표시</div>
+                          </div>
+                        </div>
                       </AlertDescription>
                     </Alert>
                   </div>
