@@ -833,8 +833,7 @@ function AppLayout({ children }: { children: ReactNode }) {
                     {() => {
                       const InstituteTrainers = lazy(() => import('./pages/institute-admin/InstituteTrainers'));
                       return (
-                        <Suspense fallback={<div```python
- className="p-8 text-center">훈련사 관리 로딩 중...</div>}>
+                        <Suspense fallback={<div className="p-8 text-center">훈련사 관리 로딩 중...</div>}>
                           <InstituteTrainers />
                         </Suspense>
                       );
