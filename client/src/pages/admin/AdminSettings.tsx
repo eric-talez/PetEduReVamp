@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { useMutation, useQuery } from '@tanstack/react-query';
@@ -88,14 +88,16 @@ export default function AdminSettings() {
 
   // 현재 색상 설정 조회
   const { data: colorSettings } = useQuery({
-    queryKey: ['/api/admin/colors'],
-    onSuccess: (data: any) => {
-      if (data?.settings) {
-        setPrimaryColor(data.settings.primary || '#7C3AED');
-        setSecondaryColor(data.settings.secondary || '#10B981');
-      }
-    }
+    queryKey: ['/api/admin/colors']
   });
+
+  // 색상 설정 로드 후 상태 업데이트
+  useEffect(() => {
+    if (colorSettings?.settings) {
+      setPrimaryColor(colorSettings.settings.primary || '#7C3AED');
+      setSecondaryColor(colorSettings.settings.secondary || '#10B981');
+    }
+  }, [colorSettings]);
 
   // 로고 업로드 뮤테이션
   const logoUploadMutation = useMutation({
@@ -137,9 +139,7 @@ export default function AdminSettings() {
   // 로고 삭제 뮤테이션
   const logoDeleteMutation = useMutation({
     mutationFn: async (type: string) => {
-      return apiRequest(`/api/admin/logos/${type}`, {
-        method: 'DELETE',
-      });
+      return apiRequest('DELETE', `/api/admin/logos/${type}`);
     },
     onSuccess: (data, type) => {
       toast({
@@ -202,20 +202,34 @@ export default function AdminSettings() {
   // 색상 변경 뮤테이션
   const colorChangeMutation = useMutation({
     mutationFn: async (colorData: { primary: string; secondary: string }) => {
+      console.log('[DEBUG] API Request: POST /api/admin/colors');
+      console.log('[DEBUG] Request payload:', colorData);
+      
       const response = await apiRequest("POST", "/api/admin/colors", colorData);
-      return response.json();
+      
+      console.log('[DEBUG] API Response:', response.status, response.statusText);
+      
+      if (!response.ok) {
+        throw new Error(`API 요청 실패: ${response.status}`);
+      }
+      
+      const result = await response.json();
+      console.log('[DEBUG] API Success:', result);
+      
+      return result;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log('[DEBUG] onSuccess called with data:', data);
       toast({
         title: "성공",
         description: "색상 설정이 업데이트되었습니다.",
       });
     },
-    onError: (error) => {
+    onError: (error: any) => {
       console.error('색상 설정 오류:', error);
       toast({
         title: "오류", 
-        description: "색상 설정 중 오류가 발생했습니다.",
+        description: error.message || "색상 설정 중 오류가 발생했습니다.",
         variant: "destructive",
       });
     },
