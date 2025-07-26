@@ -39,7 +39,7 @@ import {
   Globe,
   Upload,
   BellRing,
-  LayoutDashboard,
+
   Cog,
   FileText,
   MessageSquare,
@@ -47,7 +47,7 @@ import {
   CheckCircle,
   XCircle,
   Image as ImageIcon,
-  FileImage
+
 } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
@@ -63,10 +63,7 @@ export default function AdminSettings() {
   const [logoImages, setLogoImages] = useState<{ [key: string]: string }>({});
   const [uploadingLogo, setUploadingLogo] = useState<string | null>(null);
   
-  // 레이아웃 설정 상태
-  const [defaultLayout, setDefaultLayout] = useState('sidebar');
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [topNavEnabled, setTopNavEnabled] = useState(false);
+
 
   // 로고 타입 정의
   interface LogoSettings {
@@ -255,27 +252,7 @@ export default function AdminSettings() {
     });
   };
 
-  // 레이아웃 설정 핸들러
-  const handleLayoutChange = (layout: string) => {
-    setDefaultLayout(layout);
-    // 전역 상태 업데이트
-    localStorage.setItem('defaultLayout', layout);
-    
-    toast({
-      title: '레이아웃 설정 변경',
-      description: `${layout === 'sidebar' ? '사이드바 레이아웃' : '상단 네비게이션'}으로 변경되었습니다.`,
-    });
-  };
 
-  const handleSidebarToggle = (collapsed: boolean) => {
-    setSidebarCollapsed(collapsed);
-    localStorage.setItem('sidebarCollapsed', collapsed.toString());
-    
-    toast({
-      title: '사이드바 설정 변경',
-      description: `사이드바가 ${collapsed ? '축소' : '확장'}되었습니다.`,
-    });
-  };
   
   // 설정 저장 처리
   const handleSaveSettings = () => {
@@ -1054,18 +1031,7 @@ export default function AdminSettings() {
                                   <XCircle className="h-4 w-4 mr-1" />
                                   삭제
                                 </Button>
-                                <Button 
-                                  variant="outline" 
-                                  size="sm"
-                                  onClick={() => {
-                                    navigator.clipboard.writeText(currentLogos.mainDark);
-                                    toast({ title: "링크 복사됨", description: "다크 로고 URL이 클립보드에 복사되었습니다." });
-                                  }}
-                                  className="text-slate-600 hover:text-slate-700 border-slate-300 hover:border-slate-400"
-                                >
-                                  <FileImage className="h-4 w-4 mr-1" />
-                                  링크 복사
-                                </Button>
+
                               </>
                             )}
                           </div>
@@ -1129,18 +1095,7 @@ export default function AdminSettings() {
                                     <XCircle className="h-4 w-4 mr-1" />
                                     삭제
                                   </Button>
-                                  <Button 
-                                    variant="outline" 
-                                    size="sm"
-                                    onClick={() => {
-                                      navigator.clipboard.writeText(currentLogos.compact);
-                                      toast({ title: "링크 복사됨", description: "컴팩트 로고 URL이 클립보드에 복사되었습니다." });
-                                    }}
-                                    className="text-green-600 hover:text-green-700 border-green-300 hover:border-green-400"
-                                  >
-                                    <FileImage className="h-4 w-4 mr-1" />
-                                    링크 복사
-                                  </Button>
+
                                 </>
                               )}
                             </div>
@@ -1204,18 +1159,7 @@ export default function AdminSettings() {
                                     <XCircle className="h-4 w-4 mr-1" />
                                     삭제
                                   </Button>
-                                  <Button 
-                                    variant="outline" 
-                                    size="sm"
-                                    onClick={() => {
-                                      navigator.clipboard.writeText(currentLogos.compactDark);
-                                      toast({ title: "링크 복사됨", description: "컴팩트 다크 로고 URL이 클립보드에 복사되었습니다." });
-                                    }}
-                                    className="text-purple-600 hover:text-purple-700 border-purple-300 hover:border-purple-400"
-                                  >
-                                    <FileImage className="h-4 w-4 mr-1" />
-                                    링크 복사
-                                  </Button>
+
                                 </>
                               )}
                             </div>
@@ -1279,18 +1223,7 @@ export default function AdminSettings() {
                                     <XCircle className="h-4 w-4 mr-1" />
                                     삭제
                                   </Button>
-                                  <Button 
-                                    variant="outline" 
-                                    size="sm"
-                                    onClick={() => {
-                                      navigator.clipboard.writeText(currentLogos.favicon);
-                                      toast({ title: "링크 복사됨", description: "파비콘 URL이 클립보드에 복사되었습니다." });
-                                    }}
-                                    className="text-orange-600 hover:text-orange-700 border-orange-300 hover:border-orange-400"
-                                  >
-                                    <FileImage className="h-4 w-4 mr-1" />
-                                    링크 복사
-                                  </Button>
+
                                 </>
                               )}
                             </div>
@@ -1320,69 +1253,7 @@ export default function AdminSettings() {
                     </Alert>
                   </div>
                   
-                  <Separator />
-                  
-                  {/* 중복된 로고 설정 섹션 제거 완료 */}
-                  
-                  <Separator />
-                  
-                  <div className="space-y-4">
-                    <h3 className="text-lg font-medium">레이아웃 설정</h3>
-                    
-                    <div className="space-y-2">
-                      <Label htmlFor="defaultLayout">기본 레이아웃</Label>
-                      <Select 
-                        value={defaultLayout} 
-                        onValueChange={handleLayoutChange}
-                      >
-                        <SelectTrigger id="defaultLayout">
-                          <SelectValue placeholder="레이아웃 선택" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="sidebar">사이드바 레이아웃</SelectItem>
-                          <SelectItem value="topnav">상단 네비게이션</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <p className="text-sm text-muted-foreground">
-                        선택한 레이아웃이 기본 네비게이션 스타일로 적용됩니다.
-                      </p>
-                    </div>
-                    
-                    <div className="flex items-center justify-between space-x-2">
-                      <Label htmlFor="sidebarCollapsed" className="flex-1 cursor-pointer">
-                        <div>사이드바 기본 축소</div>
-                        <p className="text-sm font-normal text-muted-foreground">
-                          사이드바를 기본적으로 축소된 상태로 표시합니다.
-                        </p>
-                      </Label>
-                      <Switch 
-                        id="sidebarCollapsed" 
-                        checked={sidebarCollapsed}
-                        onCheckedChange={handleSidebarToggle}
-                      />
-                    </div>
-                    
-                    <div className="rounded-lg bg-muted p-4">
-                      <div className="flex items-center gap-2 text-sm mb-2">
-                        <LayoutDashboard className="h-4 w-4" />
-                        <span className="font-medium">현재 레이아웃 설정</span>
-                      </div>
-                      <div className="grid grid-cols-2 gap-2 text-sm">
-                        <div>
-                          <span className="text-muted-foreground">레이아웃:</span>
-                          <span className="ml-2 font-medium">
-                            {defaultLayout === 'sidebar' ? '사이드바' : '상단 네비게이션'}
-                          </span>
-                        </div>
-                        <div>
-                          <span className="text-muted-foreground">사이드바:</span>
-                          <span className="ml-2 font-medium">
-                            {sidebarCollapsed ? '축소' : '확장'}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+
                 </div>
               )}
               
