@@ -119,9 +119,10 @@ const SimpleChatbot: React.FC = () => {
 
   // 드래그 시작
   const handleDragStart = useCallback((e: React.MouseEvent) => {
-    if (isExpanded) return; // 확대 모드에서는 드래그 불가
+    if (isExpanded || isResizing) return; // 확대 모드나 리사이즈 중에는 드래그 불가
     
     e.preventDefault();
+    e.stopPropagation();
     setIsDragging(true);
     setDragStart({
       x: e.clientX,
@@ -129,7 +130,7 @@ const SimpleChatbot: React.FC = () => {
       posX: position.x,
       posY: position.y
     });
-  }, [position, isExpanded]);
+  }, [position, isExpanded, isResizing]);
 
   // 리사이즈 시작
   const handleResizeStart = useCallback((e: React.MouseEvent, direction: ResizeDirection) => {
@@ -211,9 +212,15 @@ const SimpleChatbot: React.FC = () => {
   // 이벤트 리스너 등록/해제
   useEffect(() => {
     if (isDragging || isResizing) {
-      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mousemove', handleMouseMove, { passive: false });
       document.addEventListener('mouseup', handleMouseUp);
       document.body.style.userSelect = 'none';
+      document.body.style.pointerEvents = 'none';
+      
+      // 챗봇 컨테이너는 포인터 이벤트 허용
+      if (chatRef.current) {
+        chatRef.current.style.pointerEvents = 'all';
+      }
       
       if (isDragging) {
         document.body.style.cursor = 'move';
@@ -237,6 +244,7 @@ const SimpleChatbot: React.FC = () => {
       document.removeEventListener('mouseup', handleMouseUp);
       document.body.style.cursor = '';
       document.body.style.userSelect = '';
+      document.body.style.pointerEvents = '';
     };
   }, [isDragging, isResizing, handleMouseMove, handleMouseUp]);
 
@@ -332,7 +340,7 @@ const SimpleChatbot: React.FC = () => {
   // 리사이즈 핸들 컴포넌트
   const ResizeHandle: React.FC<{ direction: ResizeDirection; className: string }> = ({ direction, className }) => (
     <div
-      className={cn("absolute opacity-0 hover:opacity-100 transition-opacity", className)}
+      className={cn("absolute bg-blue-500 opacity-20 hover:opacity-60 transition-opacity z-10", className)}
       onMouseDown={(e) => handleResizeStart(e, direction)}
       style={{ cursor: `${direction}-resize` }}
     />
@@ -405,22 +413,22 @@ const SimpleChatbot: React.FC = () => {
           {!isExpanded && (
             <>
               {/* 코너 핸들 */}
-              <ResizeHandle direction="nw" className="top-0 left-0 w-3 h-3 bg-gray-400 rounded-br-md" />
-              <ResizeHandle direction="ne" className="top-0 right-0 w-3 h-3 bg-gray-400 rounded-bl-md" />
-              <ResizeHandle direction="sw" className="bottom-0 left-0 w-3 h-3 bg-gray-400 rounded-tr-md" />
-              <ResizeHandle direction="se" className="bottom-0 right-0 w-3 h-3 bg-gray-400 rounded-tl-md" />
+              <ResizeHandle direction="nw" className="top-0 left-0 w-4 h-4" />
+              <ResizeHandle direction="ne" className="top-0 right-0 w-4 h-4" />
+              <ResizeHandle direction="sw" className="bottom-0 left-0 w-4 h-4" />
+              <ResizeHandle direction="se" className="bottom-0 right-0 w-4 h-4" />
               
               {/* 모서리 핸들 */}
-              <ResizeHandle direction="n" className="top-0 left-3 right-3 h-2 bg-gray-300 hover:bg-gray-400" />
-              <ResizeHandle direction="s" className="bottom-0 left-3 right-3 h-2 bg-gray-300 hover:bg-gray-400" />
-              <ResizeHandle direction="w" className="left-0 top-3 bottom-3 w-2 bg-gray-300 hover:bg-gray-400" />
-              <ResizeHandle direction="e" className="right-0 top-3 bottom-3 w-2 bg-gray-300 hover:bg-gray-400" />
+              <ResizeHandle direction="n" className="top-0 left-4 right-4 h-2" />
+              <ResizeHandle direction="s" className="bottom-0 left-4 right-4 h-2" />
+              <ResizeHandle direction="w" className="left-0 top-4 bottom-4 w-2" />
+              <ResizeHandle direction="e" className="right-0 top-4 bottom-4 w-2" />
             </>
           )}
 
           <CardHeader 
             className={cn(
-              "p-3 flex flex-row items-center justify-between space-y-0",
+              "p-3 flex flex-row items-center justify-between space-y-0 relative",
               !isExpanded && "cursor-move"
             )}
             onMouseDown={!isExpanded ? handleDragStart : undefined}
@@ -436,7 +444,8 @@ const SimpleChatbot: React.FC = () => {
                   variant="ghost" 
                   size="icon" 
                   className="h-8 w-8" 
-                  title="이동"
+                  title="드래그하여 이동"
+                  onMouseDown={handleDragStart}
                 >
                   <Move className="h-4 w-4" />
                 </Button>
