@@ -990,18 +990,7 @@ export default function AdminSettings() {
                                     <XCircle className="h-4 w-4 mr-1" />
                                     삭제
                                   </Button>
-                                  <Button 
-                                    variant="outline" 
-                                    size="sm"
-                                    onClick={() => {
-                                      navigator.clipboard.writeText(currentLogos.main);
-                                      toast({ title: "링크 복사됨", description: "로고 URL이 클립보드에 복사되었습니다." });
-                                    }}
-                                    className="text-blue-600 hover:text-blue-700 border-blue-300 hover:border-blue-400"
-                                  >
-                                    <FileImage className="h-4 w-4 mr-1" />
-                                    링크 복사
-                                  </Button>
+
                                 </>
                               )}
                             </div>
