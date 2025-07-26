@@ -216,15 +216,8 @@ export default function AdminSettings() {
       console.log('[DEBUG] API Request: POST /api/admin/colors');
       console.log('[DEBUG] Request payload:', colorData);
       
-      const response = await apiRequest("POST", "/api/admin/colors", colorData);
+      const result = await apiRequest("POST", "/api/admin/colors", colorData);
       
-      console.log('[DEBUG] API Response:', response.status, response.statusText);
-      
-      if (!response.ok) {
-        throw new Error(`API 요청 실패: ${response.status}`);
-      }
-      
-      const result = await response.json();
       console.log('[DEBUG] API Success:', result);
       
       return result;
