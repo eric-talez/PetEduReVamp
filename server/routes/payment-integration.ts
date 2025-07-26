@@ -99,6 +99,36 @@ export function registerPaymentIntegrationRoutes(app: Express) {
     }
   });
 
+  // 결제 수단 수정 API
+  app.put('/api/admin/payment/methods/:id', async (req, res) => {
+    try {
+      const { id } = req.params;
+      const updateData = req.body;
+      console.log(`[Payment] 결제 수단 수정: ${id}`, updateData);
+      
+      const updatedMethod = storage.updatePaymentMethod(id, updateData);
+      
+      if (!updatedMethod) {
+        return res.status(404).json({
+          success: false,
+          message: '해당 결제 수단을 찾을 수 없습니다.'
+        });
+      }
+      
+      res.json({
+        success: true,
+        data: updatedMethod,
+        message: `${updateData.name || id} 결제 수단이 성공적으로 수정되었습니다.`
+      });
+    } catch (error) {
+      console.error('[Payment] 결제 수단 수정 오류:', error);
+      res.status(500).json({
+        success: false,
+        message: '결제 수단 수정 중 오류가 발생했습니다.'
+      });
+    }
+  });
+
   // 사용자 요금제 목록 조회 API
   app.get('/api/admin/payment/plans', async (req, res) => {
     try {

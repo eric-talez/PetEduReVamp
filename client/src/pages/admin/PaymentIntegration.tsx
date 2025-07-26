@@ -55,6 +55,8 @@ export default function PaymentIntegration() {
   const [loading, setLoading] = useState(true);
   const [showSecurityDialog, setShowSecurityDialog] = useState(false);
   const [showAddMethodDialog, setShowAddMethodDialog] = useState(false);
+  const [showEditMethodDialog, setShowEditMethodDialog] = useState(false);
+  const [editingMethod, setEditingMethod] = useState<any>(null);
   const [newMethodForm, setNewMethodForm] = useState({
     id: '',
     name: '',
@@ -224,6 +226,42 @@ export default function PaymentIntegration() {
     } catch (error) {
       console.error('결제 수단 추가 오류:', error);
       alert('결제 수단 추가 중 오류가 발생했습니다.');
+    }
+  };
+
+  // 결제 수단 수정 다이얼로그 열기
+  const openEditMethodDialog = (method: any) => {
+    setEditingMethod({
+      id: method.id,
+      name: method.name,
+      type: method.type,
+      description: '',
+      provider: method.id,
+      apiKey: '***hidden***',
+      commissionRate: method.commission,
+      status: method.status
+    });
+    setShowEditMethodDialog(true);
+  };
+
+  // 결제 수단 수정
+  const updatePaymentMethod = async () => {
+    try {
+      const response = await fetch(`/api/admin/payment/methods/${editingMethod.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(editingMethod)
+      });
+
+      if (response.ok) {
+        await loadPaymentData(); // 데이터 새로고침
+        setShowEditMethodDialog(false);
+        setEditingMethod(null);
+        alert('결제 수단이 수정되었습니다.');
+      }
+    } catch (error) {
+      console.error('결제 수단 수정 오류:', error);
+      alert('결제 수단 수정 중 오류가 발생했습니다.');
     }
   };
 
@@ -572,6 +610,14 @@ export default function PaymentIntegration() {
                   <Button
                     variant="outline"
                     size="sm"
+                    onClick={() => openEditMethodDialog(method)}
+                  >
+                    <Edit className="w-4 h-4 mr-1" />
+                    수정
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
                     onClick={() => testPaymentMethod(method.id)}
                   >
                     <TestTube className="w-4 h-4 mr-1" />
@@ -673,6 +719,127 @@ export default function PaymentIntegration() {
           </CardContent>
         </Card>
       )}
+
+      {/* 결제 수단 수정 다이얼로그 */}
+      <Dialog open={showEditMethodDialog} onOpenChange={setShowEditMethodDialog}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>결제 수단 수정</DialogTitle>
+            <DialogDescription>
+              기존 결제 서비스의 정보를 수정합니다.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="edit-method-id" className="text-right">
+                결제 수단 ID
+              </Label>
+              <Input
+                id="edit-method-id"
+                value={editingMethod?.id || ''}
+                disabled
+                className="col-span-3 bg-gray-100"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="edit-method-name" className="text-right">
+                표시 이름
+              </Label>
+              <Input
+                id="edit-method-name"
+                value={editingMethod?.name || ''}
+                onChange={(e) => setEditingMethod(prev => ({ ...prev, name: e.target.value }))}
+                className="col-span-3"
+                placeholder="예: Stripe"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="edit-method-type" className="text-right">
+                유형
+              </Label>
+              <Select
+                value={editingMethod?.type || ''}
+                onValueChange={(value) => setEditingMethod(prev => ({ ...prev, type: value }))}
+              >
+                <SelectTrigger className="col-span-3">
+                  <SelectValue placeholder="결제 유형 선택" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="pg">PG사</SelectItem>
+                  <SelectItem value="card">카드</SelectItem>
+                  <SelectItem value="bank">계좌이체</SelectItem>
+                  <SelectItem value="mobile">휴대폰</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="edit-method-provider" className="text-right">
+                제공업체
+              </Label>
+              <Input
+                id="edit-method-provider"
+                value={editingMethod?.provider || ''}
+                onChange={(e) => setEditingMethod(prev => ({ ...prev, provider: e.target.value }))}
+                className="col-span-3"
+                placeholder="예: Stripe Inc."
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="edit-method-apikey" className="text-right">
+                API 키
+              </Label>
+              <Input
+                id="edit-method-apikey"
+                type="password"
+                value={editingMethod?.apiKey || ''}
+                onChange={(e) => setEditingMethod(prev => ({ ...prev, apiKey: e.target.value }))}
+                className="col-span-3"
+                placeholder="새 API 키를 입력하세요"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="edit-method-commission" className="text-right">
+                수수료율 (%)
+              </Label>
+              <Input
+                id="edit-method-commission"
+                type="number"
+                step="0.01"
+                value={editingMethod?.commissionRate || 0}
+                onChange={(e) => setEditingMethod(prev => ({ ...prev, commissionRate: parseFloat(e.target.value) || 0 }))}
+                className="col-span-3"
+                placeholder="0.00"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="edit-method-status" className="text-right">
+                상태
+              </Label>
+              <Select
+                value={editingMethod?.status || ''}
+                onValueChange={(value) => setEditingMethod(prev => ({ ...prev, status: value }))}
+              >
+                <SelectTrigger className="col-span-3">
+                  <SelectValue placeholder="상태 선택" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="active">활성</SelectItem>
+                  <SelectItem value="inactive">비활성</SelectItem>
+                  <SelectItem value="testing">테스트</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowEditMethodDialog(false)}>
+              취소
+            </Button>
+            <Button type="submit" onClick={updatePaymentMethod}>
+              수정
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
