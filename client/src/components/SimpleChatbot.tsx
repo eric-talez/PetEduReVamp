@@ -1,8 +1,8 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardFooter, CardTitle } from '@/components/ui/card';
-import { ChevronUp, X, Send, Maximize2, Minimize2, MessageCircle, PawPrint, RefreshCw } from 'lucide-react';
+import { ChevronUp, X, Send, Maximize2, Minimize2, MessageCircle, PawPrint, RefreshCw, GripVertical } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useTheme } from '../hooks/use-theme';
@@ -38,8 +38,12 @@ const SimpleChatbot: React.FC = () => {
     }
   ]);
   const [input, setInput] = useState('');
+  const [chatSize, setChatSize] = useState({ width: 380, height: 500 });
+  const [isResizing, setIsResizing] = useState(false);
+  const [resizeStart, setResizeStart] = useState({ x: 0, y: 0, width: 0, height: 0 });
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const chatRef = useRef<HTMLDivElement>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const { theme } = useTheme();
   
@@ -105,6 +109,10 @@ const SimpleChatbot: React.FC = () => {
   };
 
   const toggleExpand = () => {
+    if (isExpanded) {
+      // 축소할 때 이전 크기로 복원
+      resetChatSize();
+    }
     setIsExpanded(!isExpanded);
   };
 
@@ -185,6 +193,63 @@ const SimpleChatbot: React.FC = () => {
     ]);
   };
 
+  // 리사이즈 시작
+  const handleResizeStart = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsResizing(true);
+    setResizeStart({
+      x: e.clientX,
+      y: e.clientY,
+      width: chatSize.width,
+      height: chatSize.height
+    });
+  }, [chatSize]);
+
+  // 리사이즈 중
+  const handleResizeMove = useCallback((e: MouseEvent) => {
+    if (!isResizing) return;
+    
+    const deltaX = resizeStart.x - e.clientX;
+    const deltaY = e.clientY - resizeStart.y;
+    
+    const newWidth = Math.max(320, Math.min(800, resizeStart.width + deltaX));
+    const newHeight = Math.max(400, Math.min(700, resizeStart.height + deltaY));
+    
+    setChatSize({ width: newWidth, height: newHeight });
+  }, [isResizing, resizeStart]);
+
+  // 리사이즈 종료
+  const handleResizeEnd = useCallback(() => {
+    setIsResizing(false);
+  }, []);
+
+  // 마우스 이벤트 리스너 등록/해제
+  useEffect(() => {
+    if (isResizing) {
+      document.addEventListener('mousemove', handleResizeMove);
+      document.addEventListener('mouseup', handleResizeEnd);
+      document.body.style.cursor = 'nw-resize';
+      document.body.style.userSelect = 'none';
+    } else {
+      document.removeEventListener('mousemove', handleResizeMove);
+      document.removeEventListener('mouseup', handleResizeEnd);
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+    }
+
+    return () => {
+      document.removeEventListener('mousemove', handleResizeMove);
+      document.removeEventListener('mouseup', handleResizeEnd);
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+    };
+  }, [isResizing, handleResizeMove, handleResizeEnd]);
+
+  // 확대 모드일 때 크기 리셋
+  const resetChatSize = () => {
+    setChatSize({ width: 380, height: 500 });
+  };
+
   // 로그인 중이거나 특정 경로에서는 챗봇 버튼을 숨김
   const shouldHideChatbot = () => {
     // 관리자 페이지에서는 숨김
@@ -245,18 +310,35 @@ const SimpleChatbot: React.FC = () => {
 
       {isOpen && (
         <Card 
+          ref={chatRef}
           className={cn(
-            "fixed shadow-lg transition-all duration-300 z-50",
+            "fixed shadow-lg transition-all duration-300 z-50 select-none",
             isExpanded 
               ? "inset-4 md:inset-10" 
-              : "bottom-6 right-6 w-80 md:w-96"
+              : "bottom-6 right-6"
           )}
+          style={!isExpanded ? {
+            width: `${chatSize.width}px`,
+            height: `${chatSize.height}px`
+          } : undefined}
         >
-          <CardHeader className="p-3 flex flex-row items-center justify-between space-y-0">
+          <CardHeader className="p-3 flex flex-row items-center justify-between space-y-0 relative">
             <CardTitle className="text-sm md:text-base flex items-center">
               <PawPrint className="h-4 w-4 mr-2" />
               반려동물 AI 어시스턴트
             </CardTitle>
+            
+            {/* 리사이즈 핸들 (확대 모드가 아닐 때만 표시) */}
+            {!isExpanded && (
+              <div
+                className="absolute -left-2 -top-2 w-6 h-6 cursor-nw-resize hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full flex items-center justify-center opacity-60 hover:opacity-100 transition-opacity"
+                onMouseDown={handleResizeStart}
+                aria-label="창 크기 조절"
+              >
+                <GripVertical className="h-3 w-3 rotate-45" />
+              </div>
+            )}
+            
             <div className="flex space-x-1">
               <Button 
                 variant="ghost" 
@@ -281,7 +363,9 @@ const SimpleChatbot: React.FC = () => {
           
           <CardContent className={cn(
             "px-3 overflow-y-auto", 
-            isExpanded ? "h-[calc(100%-7rem)]" : "h-80"
+            isExpanded 
+              ? "h-[calc(100%-7rem)]" 
+              : `h-[${chatSize.height - 140}px]`
           )}>
             <div className="flex flex-col space-y-4">
               {messages.map((message) => (
@@ -354,6 +438,11 @@ const SimpleChatbot: React.FC = () => {
               >
                 {isAuthenticated ? '고급 AI 분석 사용하기 →' : '로그인하여 더 많은 기능 사용하기 →'}
               </button>
+              {!isExpanded && (
+                <span className="text-xs opacity-50">
+                  {chatSize.width}×{chatSize.height}
+                </span>
+              )}
             </div>
           </CardFooter>
         </Card>
