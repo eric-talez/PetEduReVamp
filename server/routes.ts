@@ -3122,6 +3122,62 @@ app.get('/api/search', async (req, res) => {
     });
   });
 
+  // 색상 설정 API
+  app.post("/api/admin/colors", (req, res) => {
+    try {
+      const { primary, secondary } = req.body;
+      
+      console.log('[색상 설정] 색상 변경 요청:', { primary, secondary });
+      
+      // 실제로는 데이터베이스나 설정 파일에 저장
+      // 현재는 메모리에 저장 (임시)
+      if (!global.colorSettings) {
+        global.colorSettings = {};
+      }
+      
+      global.colorSettings.primary = primary;
+      global.colorSettings.secondary = secondary;
+      
+      res.json({
+        success: true,
+        message: "색상 설정이 저장되었습니다.",
+        settings: {
+          primary,
+          secondary
+        }
+      });
+    } catch (error) {
+      console.error('[색상 설정] 오류:', error);
+      res.status(500).json({
+        success: false,
+        message: "색상 설정 저장 중 오류가 발생했습니다."
+      });
+    }
+  });
+
+  // 색상 설정 조회 API
+  app.get("/api/admin/colors", (req, res) => {
+    try {
+      const defaultSettings = {
+        primary: "#7C3AED",
+        secondary: "#10B981"
+      };
+      
+      const currentSettings = global.colorSettings || defaultSettings;
+      
+      res.json({
+        success: true,
+        settings: currentSettings
+      });
+    } catch (error) {
+      console.error('[색상 설정] 조회 오류:', error);
+      res.status(500).json({
+        success: false,
+        message: "색상 설정 조회 중 오류가 발생했습니다."
+      });
+    }
+  });
+
   // 강의 즐겨찾기 추가/제거
   app.post("/api/courses/:id/favorite", (req, res) => {
     const courseId = parseInt(req.params.id);

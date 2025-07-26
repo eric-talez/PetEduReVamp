@@ -67,10 +67,34 @@ export default function AdminSettings() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [topNavEnabled, setTopNavEnabled] = useState(false);
 
+  // 로고 타입 정의
+  interface LogoSettings {
+    main?: string;
+    mainDark?: string;
+    compact?: string;
+    compactDark?: string;
+    favicon?: string;
+  }
+
   // 현재 로고 설정 조회
-  const { data: currentLogos, isLoading: logosLoading, refetch: refetchLogos } = useQuery({
+  const { data: currentLogos, isLoading: logosLoading, refetch: refetchLogos } = useQuery<LogoSettings>({
     queryKey: ['/api/admin/logos'],
     retry: false,
+  });
+
+  // 색상 설정 상태
+  const [primaryColor, setPrimaryColor] = useState('#7C3AED');
+  const [secondaryColor, setSecondaryColor] = useState('#10B981');
+
+  // 현재 색상 설정 조회
+  const { data: colorSettings } = useQuery({
+    queryKey: ['/api/admin/colors'],
+    onSuccess: (data: any) => {
+      if (data?.settings) {
+        setPrimaryColor(data.settings.primary || '#7C3AED');
+        setSecondaryColor(data.settings.secondary || '#10B981');
+      }
+    }
   });
 
   // 로고 업로드 뮤테이션
@@ -173,6 +197,47 @@ export default function AdminSettings() {
   // 로고 삭제 핸들러
   const handleLogoDelete = (type: string) => {
     logoDeleteMutation.mutate(type);
+  };
+
+  // 색상 변경 뮤테이션
+  const colorChangeMutation = useMutation({
+    mutationFn: async (colorData: { primary: string; secondary: string }) => {
+      const response = await apiRequest("POST", "/api/admin/colors", colorData);
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "성공",
+        description: "색상 설정이 업데이트되었습니다.",
+      });
+    },
+    onError: (error) => {
+      console.error('색상 설정 오류:', error);
+      toast({
+        title: "오류", 
+        description: "색상 설정 중 오류가 발생했습니다.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // 색상 변경 핸들러
+  const handleColorChange = (colorType: 'primary' | 'secondary', value: string) => {
+    if (colorType === 'primary') {
+      setPrimaryColor(value);
+      document.documentElement.style.setProperty('--primary', value);
+    } else {
+      setSecondaryColor(value);
+      document.documentElement.style.setProperty('--secondary', value);  
+    }
+  };
+
+  // 색상 설정 저장
+  const saveColorSettings = () => {
+    colorChangeMutation.mutate({
+      primary: primaryColor,
+      secondary: secondaryColor
+    });
   };
 
   // 레이아웃 설정 핸들러
@@ -746,17 +811,52 @@ export default function AdminSettings() {
                     <div className="space-y-2">
                       <Label htmlFor="primaryColor">기본 색상</Label>
                       <div className="flex items-center space-x-2">
-                        <Input id="primaryColor" type="color" defaultValue="#7C3AED" className="w-16 h-10" />
-                        <Input defaultValue="#7C3AED" className="flex-1" />
+                        <Input 
+                          id="primaryColor" 
+                          type="color" 
+                          value={primaryColor}
+                          onChange={(e) => handleColorChange('primary', e.target.value)}
+                          className="w-16 h-10" 
+                        />
+                        <Input 
+                          value={primaryColor}
+                          onChange={(e) => handleColorChange('primary', e.target.value)}
+                          className="flex-1" 
+                        />
                       </div>
                     </div>
                     
                     <div className="space-y-2">
                       <Label htmlFor="secondaryColor">보조 색상</Label>
                       <div className="flex items-center space-x-2">
-                        <Input id="secondaryColor" type="color" defaultValue="#10B981" className="w-16 h-10" />
-                        <Input defaultValue="#10B981" className="flex-1" />
+                        <Input 
+                          id="secondaryColor" 
+                          type="color" 
+                          value={secondaryColor}
+                          onChange={(e) => handleColorChange('secondary', e.target.value)}
+                          className="w-16 h-10" 
+                        />
+                        <Input 
+                          value={secondaryColor}
+                          onChange={(e) => handleColorChange('secondary', e.target.value)}
+                          className="flex-1" 
+                        />
                       </div>
+                    </div>
+                    
+                    <div className="flex justify-end space-x-2 pt-4">
+                      <Button 
+                        onClick={saveColorSettings}
+                        disabled={colorChangeMutation.isPending}
+                        className="flex items-center gap-2"
+                      >
+                        {colorChangeMutation.isPending ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <Save className="h-4 w-4" />
+                        )}
+                        색상 설정 저장
+                      </Button>
                     </div>
                   </div>
                   
