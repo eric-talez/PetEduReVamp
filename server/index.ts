@@ -12,6 +12,8 @@ import helmet from "helmet";
 import compression from "compression";
 import rateLimit from "express-rate-limit";
 import { setupPerformance } from "./performance";
+import { registerAdminRoutes } from "./routes/admin";
+import { registerPaymentIntegrationRoutes } from "./routes/payment-integration";
 
 const app = express();
 const PORT = parseInt(process.env.PORT || "5000", 10);
@@ -512,6 +514,12 @@ async function startServer() {
 
     // Register institute routes
     registerInstituteRoutes(app, storage);
+
+    // 관리자 라우트 등록
+    registerAdminRoutes(app);
+
+    // 결제연동 관리 라우트 등록
+    registerPaymentIntegrationRoutes(app);
 
     // Setup Vite for development or serve static files for production
     // This MUST come AFTER API routes to prevent catch-all from intercepting API calls

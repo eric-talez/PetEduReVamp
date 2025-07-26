@@ -80,7 +80,8 @@ import {
   Image as ImageIcon,
   Clock,
   Coffee,
-  RefreshCw
+  RefreshCw,
+  CreditCard
 } from "lucide-react";
 
 // 사이드바 컨텍스트 생성
@@ -820,6 +821,7 @@ export function Sidebar({
                         <AccessibleNavItem href="/admin/content-crawler" icon={<Search className="w-5 h-5 mr-2" />} active={isActive("/admin/content-crawler")} onClick={handleItemClick} show={true}>콘텐츠 크롤링</AccessibleNavItem>
                         <AccessibleNavItem href="/admin/commissions" icon={<Percent className="w-5 h-5 mr-2" />} active={isActive("/admin/commissions")} onClick={handleItemClick} show={true}>가격 관리</AccessibleNavItem>
                         <AccessibleNavItem href="/admin/points-management" icon={<Star className="w-5 h-5 mr-2" />} active={isActive("/admin/points-management")} onClick={handleItemClick} show={true}>포인트 관리</AccessibleNavItem>
+                        <AccessibleNavItem href="/admin/payment-integration" icon={<CreditCard className="w-5 h-5 mr-2" />} active={isActive("/admin/payment-integration")} onClick={handleItemClick} show={true}>결제연동 관리</AccessibleNavItem>
                         <AccessibleNavItem href="/admin/substitute-overview" icon={<RefreshCw className="w-5 h-5 mr-2" />} hoverIcon={<UserCheck className="w-5 h-5 mr-2 text-primary" />} active={isActive("/admin/substitute-overview")} onClick={handleItemClick} show={true}>대체 훈련사 현황</AccessibleNavItem>
                         <AccessibleNavItem href="/admin/shop" icon={<ShoppingBag className="w-5 h-5 mr-2" />} active={isActive("/admin/shop")} onClick={handleItemClick} show={true}>쇼핑몰 관리</AccessibleNavItem>
                       </>
