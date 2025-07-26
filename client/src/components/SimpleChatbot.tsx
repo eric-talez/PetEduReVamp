@@ -43,7 +43,7 @@ export function SimpleChatBot() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // 드래그 시작
+  // 드래그 시작 - 정확한 시작 위치 계산 개선
   const handleDragStart = useCallback((e: React.MouseEvent) => {
     if (isResizing) return;
     
@@ -51,15 +51,18 @@ export function SimpleChatBot() {
     if (!rect) return;
 
     setIsDragging(true);
+    // getBoundingClientRect()를 사용하여 정확한 상대 위치 계산
     setDragStart({
       x: e.clientX - rect.left,
       y: e.clientY - rect.top
     });
+    
+    // 이벤트 처리 개선
     e.preventDefault();
     e.stopPropagation();
   }, [isResizing]);
 
-  // 리사이즈 시작
+  // 리사이즈 시작 - 이벤트 처리 개선
   const handleResizeStart = useCallback((e: React.MouseEvent) => {
     setIsResizing(true);
     setResizeStart({
@@ -68,22 +71,30 @@ export function SimpleChatBot() {
       width: size.width,
       height: size.height
     });
+    
+    // 이벤트 처리 개선: preventDefault() 추가
     e.preventDefault();
     e.stopPropagation();
   }, [size]);
 
-  // 마우스 이동 처리
+  // 마우스 이동 처리 - 좌표 시스템 및 이벤트 처리 개선
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
+      // 이벤트 처리 개선: preventDefault() 추가
       e.preventDefault();
       
       if (isDragging) {
-        const newX = Math.max(0, Math.min(window.innerWidth - size.width, e.clientX - dragStart.x));
-        const newY = Math.max(0, Math.min(window.innerHeight - size.height, e.clientY - dragStart.y));
+        // 좌표 시스템 수정: top/left 기준으로 정확한 위치 계산
+        const newX = e.clientX - dragStart.x;
+        const newY = e.clientY - dragStart.y;
         
-        // bottom, right 기준에서 top, left 기준으로 변환
-        const bottomPosition = window.innerHeight - newY - size.height;
-        const rightPosition = window.innerWidth - newX - size.width;
+        // 화면 경계 내로 제한
+        const constrainedX = Math.max(0, Math.min(window.innerWidth - size.width, newX));
+        const constrainedY = Math.max(0, Math.min(window.innerHeight - size.height, newY));
+        
+        // bottom/right 기준에서 top/left 기준으로 좌표 변환
+        const bottomPosition = window.innerHeight - constrainedY - size.height;
+        const rightPosition = window.innerWidth - constrainedX - size.width;
         
         setPosition({ x: rightPosition, y: bottomPosition });
       }
@@ -100,15 +111,19 @@ export function SimpleChatBot() {
     const handleMouseUp = () => {
       setIsDragging(false);
       setIsResizing(false);
+      // 커서 스타일 개선: 상태에 따른 적절한 커서 복원
       document.body.style.userSelect = '';
       document.body.style.cursor = '';
     };
 
     if (isDragging || isResizing) {
+      // 이벤트 처리 개선: passive: false 옵션 사용
       document.addEventListener('mousemove', handleMouseMove, { passive: false });
-      document.addEventListener('mouseup', handleMouseUp);
+      document.addEventListener('mouseup', handleMouseUp, { passive: false });
+      
+      // 커서 스타일 개선: 상태에 따른 적절한 커서 표시
       document.body.style.userSelect = 'none';
-      document.body.style.cursor = isDragging ? 'move' : 'se-resize';
+      document.body.style.cursor = isDragging ? 'grabbing' : 'se-resize';
     }
 
     return () => {
@@ -303,24 +318,33 @@ export function SimpleChatBot() {
         maxHeight: '700px'
       }}
     >
-      {/* 헤더 - 드래그 가능 */}
-      <div 
-        className="flex items-center justify-between p-4 bg-gradient-to-r from-primary to-primary/90 text-white select-none"
-        style={{ cursor: isDragging ? 'grabbing' : 'grab' }}
-      >
+      {/* 헤더 - 드래그 영역 명확화 */}
+      <div className="flex items-center justify-between p-4 bg-gradient-to-r from-primary to-primary/90 text-white select-none">
+        {/* 드래그 영역 - 헤더의 특정 영역에만 드래그 핸들러 적용 */}
         <div 
-          className="flex items-center gap-3 flex-1" 
+          className="flex items-center gap-3 flex-1 px-2 py-1 rounded-lg hover:bg-white/10 transition-colors" 
           onMouseDown={handleDragStart}
-          style={{ cursor: isDragging ? 'grabbing' : 'grab' }}
+          style={{ 
+            cursor: isDragging ? 'grabbing' : 'grab',
+            userSelect: 'none'
+          }}
+          title="드래그하여 이동"
         >
-          <Move size={16} className="text-white/80" />
-          <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
+          {/* 드래그 핸들 시각적 개선 */}
+          <div className="flex flex-col gap-0.5 opacity-60 hover:opacity-100 transition-opacity">
+            <div className="w-1 h-1 bg-white rounded-full"></div>
+            <div className="w-1 h-1 bg-white rounded-full"></div>
+            <div className="w-1 h-1 bg-white rounded-full"></div>
+            <div className="w-1 h-1 bg-white rounded-full"></div>
+          </div>
+          <Move size={14} className="text-white/70" />
+          <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
             <Bot size={18} />
           </div>
           <div>
             <span className="font-semibold text-sm">TALEZ AI 도우미</span>
             <div className="flex items-center gap-1 text-xs text-white/80">
-              <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+              <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse shadow-sm"></div>
               온라인
             </div>
           </div>
@@ -426,16 +450,35 @@ export function SimpleChatBot() {
         </div>
       </div>
 
-      {/* 리사이즈 핸들 */}
+      {/* 리사이즈 핸들 시각적 개선 */}
       <div
-        className="absolute bottom-0 right-0 w-5 h-5 cursor-se-resize opacity-60 hover:opacity-100 transition-opacity z-10"
+        className="absolute bottom-0 right-0 w-6 h-6 cursor-se-resize opacity-50 hover:opacity-80 transition-all duration-200 z-10 flex items-end justify-end p-1"
         onMouseDown={handleResizeStart}
         style={{
-          background: 'repeating-linear-gradient(45deg, #999 0, #999 2px, transparent 2px, transparent 4px)',
-          borderTopLeftRadius: '4px'
+          background: 'linear-gradient(135deg, transparent 50%, rgba(107, 114, 128, 0.3) 50%)',
+          borderTopLeftRadius: '6px'
         }}
-        title="크기 조절"
-      />
+        title="드래그하여 크기 조절"
+      >
+        {/* 더 명확한 리사이즈 핸들 디자인 */}
+        <div className="flex flex-col gap-0.5">
+          <div className="flex gap-0.5">
+            <div className="w-0.5 h-0.5 bg-gray-500 rounded-full"></div>
+            <div className="w-0.5 h-0.5 bg-gray-500 rounded-full"></div>
+          </div>
+          <div className="flex gap-0.5 justify-end">
+            <div className="w-0.5 h-0.5 bg-gray-500 rounded-full"></div>
+            <div className="w-0.5 h-0.5 bg-gray-500 rounded-full"></div>
+            <div className="w-0.5 h-0.5 bg-gray-500 rounded-full"></div>
+          </div>
+          <div className="flex gap-0.5 justify-end">
+            <div className="w-0.5 h-0.5 bg-gray-500 rounded-full"></div>
+            <div className="w-0.5 h-0.5 bg-gray-500 rounded-full"></div>
+            <div className="w-0.5 h-0.5 bg-gray-500 rounded-full"></div>
+            <div className="w-0.5 h-0.5 bg-gray-500 rounded-full"></div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
