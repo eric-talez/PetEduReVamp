@@ -1,8 +1,9 @@
+
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardFooter, CardTitle } from '@/components/ui/card';
-import { ChevronUp, X, Send, Maximize2, Minimize2, MessageCircle, PawPrint, RefreshCw, GripVertical } from 'lucide-react';
+import { ChevronUp, X, Send, Maximize2, Minimize2, MessageCircle, PawPrint, RefreshCw, Move } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useTheme } from '../hooks/use-theme';
@@ -25,6 +26,18 @@ type Message = {
   timestamp: Date;
 };
 
+type Position = {
+  x: number;
+  y: number;
+};
+
+type Size = {
+  width: number;
+  height: number;
+};
+
+type ResizeDirection = 'n' | 's' | 'e' | 'w' | 'ne' | 'nw' | 'se' | 'sw';
+
 const SimpleChatbot: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
@@ -38,9 +51,17 @@ const SimpleChatbot: React.FC = () => {
     }
   ]);
   const [input, setInput] = useState('');
-  const [chatSize, setChatSize] = useState({ width: 380, height: 500 });
-  const [isResizing, setIsResizing] = useState(false);
-  const [resizeStart, setResizeStart] = useState({ x: 0, y: 0, width: 0, height: 0 });
+  
+  // 위치 및 크기 상태
+  const [position, setPosition] = useState<Position>({ x: 24, y: 24 });
+  const [size, setSize] = useState<Size>({ width: 380, height: 500 });
+  
+  // 드래그 및 리사이즈 상태
+  const [isDragging, setIsDragging] = useState(false);
+  const [isResizing, setIsResizing] = useState<ResizeDirection | null>(null);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0, posX: 0, posY: 0 });
+  const [resizeStart, setResizeStart] = useState({ x: 0, y: 0, width: 0, height: 0, posX: 0, posY: 0 });
+  
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const chatRef = useRef<HTMLDivElement>(null);
@@ -50,11 +71,9 @@ const SimpleChatbot: React.FC = () => {
   // 전역 인증 상태 확인
   useEffect(() => {
     const checkAuthStatus = () => {
-      // window.__peteduAuthState가 있으면 해당 정보 사용
       if (window.__peteduAuthState && window.__peteduAuthState.isAuthenticated) {
         setIsAuthenticated(window.__peteduAuthState.isAuthenticated);
       } else {
-        // 로컬 스토리지에서 확인
         const storedAuth = localStorage.getItem('petedu_auth');
         if (storedAuth) {
           try {
@@ -71,7 +90,6 @@ const SimpleChatbot: React.FC = () => {
     
     checkAuthStatus();
     
-    // 로그인/로그아웃 이벤트 리스너
     const handleAuthChange = () => {
       checkAuthStatus();
     };
@@ -99,6 +117,129 @@ const SimpleChatbot: React.FC = () => {
     }
   }, [isOpen]);
 
+  // 드래그 시작
+  const handleDragStart = useCallback((e: React.MouseEvent) => {
+    if (isExpanded) return; // 확대 모드에서는 드래그 불가
+    
+    e.preventDefault();
+    setIsDragging(true);
+    setDragStart({
+      x: e.clientX,
+      y: e.clientY,
+      posX: position.x,
+      posY: position.y
+    });
+  }, [position, isExpanded]);
+
+  // 리사이즈 시작
+  const handleResizeStart = useCallback((e: React.MouseEvent, direction: ResizeDirection) => {
+    if (isExpanded) return; // 확대 모드에서는 리사이즈 불가
+    
+    e.preventDefault();
+    e.stopPropagation();
+    setIsResizing(direction);
+    setResizeStart({
+      x: e.clientX,
+      y: e.clientY,
+      width: size.width,
+      height: size.height,
+      posX: position.x,
+      posY: position.y
+    });
+  }, [size, position, isExpanded]);
+
+  // 마우스 이동 처리
+  const handleMouseMove = useCallback((e: MouseEvent) => {
+    if (isDragging) {
+      const deltaX = e.clientX - dragStart.x;
+      const deltaY = e.clientY - dragStart.y;
+      
+      // 화면 경계 제한
+      const maxX = window.innerWidth - size.width - 24;
+      const maxY = window.innerHeight - size.height - 24;
+      
+      const newX = Math.max(24, Math.min(maxX, dragStart.posX + deltaX));
+      const newY = Math.max(24, Math.min(maxY, dragStart.posY + deltaY));
+      
+      setPosition({ x: newX, y: newY });
+    }
+    
+    if (isResizing) {
+      const deltaX = e.clientX - resizeStart.x;
+      const deltaY = e.clientY - resizeStart.y;
+      
+      let newWidth = resizeStart.width;
+      let newHeight = resizeStart.height;
+      let newX = resizeStart.posX;
+      let newY = resizeStart.posY;
+      
+      // 방향에 따른 크기 조절
+      if (isResizing.includes('e')) {
+        newWidth = Math.max(320, Math.min(800, resizeStart.width + deltaX));
+      }
+      if (isResizing.includes('w')) {
+        const widthChange = Math.max(320, Math.min(800, resizeStart.width - deltaX)) - resizeStart.width;
+        newWidth = resizeStart.width + widthChange;
+        newX = resizeStart.posX - widthChange;
+      }
+      if (isResizing.includes('s')) {
+        newHeight = Math.max(400, Math.min(700, resizeStart.height + deltaY));
+      }
+      if (isResizing.includes('n')) {
+        const heightChange = Math.max(400, Math.min(700, resizeStart.height - deltaY)) - resizeStart.height;
+        newHeight = resizeStart.height + heightChange;
+        newY = resizeStart.posY - heightChange;
+      }
+      
+      // 화면 경계 제한
+      newX = Math.max(24, Math.min(window.innerWidth - newWidth - 24, newX));
+      newY = Math.max(24, Math.min(window.innerHeight - newHeight - 24, newY));
+      
+      setSize({ width: newWidth, height: newHeight });
+      setPosition({ x: newX, y: newY });
+    }
+  }, [isDragging, isResizing, dragStart, resizeStart, size]);
+
+  // 마우스 업 처리
+  const handleMouseUp = useCallback(() => {
+    setIsDragging(false);
+    setIsResizing(null);
+    document.body.style.cursor = '';
+    document.body.style.userSelect = '';
+  }, []);
+
+  // 이벤트 리스너 등록/해제
+  useEffect(() => {
+    if (isDragging || isResizing) {
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+      document.body.style.userSelect = 'none';
+      
+      if (isDragging) {
+        document.body.style.cursor = 'move';
+      } else if (isResizing) {
+        const cursorMap: Record<ResizeDirection, string> = {
+          'n': 'n-resize',
+          's': 's-resize',
+          'e': 'e-resize',
+          'w': 'w-resize',
+          'ne': 'ne-resize',
+          'nw': 'nw-resize',
+          'se': 'se-resize',
+          'sw': 'sw-resize'
+        };
+        document.body.style.cursor = cursorMap[isResizing];
+      }
+    }
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+    };
+  }, [isDragging, isResizing, handleMouseMove, handleMouseUp]);
+
   const handleOpen = () => {
     setIsOpen(true);
   };
@@ -110,8 +251,8 @@ const SimpleChatbot: React.FC = () => {
 
   const toggleExpand = () => {
     if (isExpanded) {
-      // 축소할 때 이전 크기로 복원
-      resetChatSize();
+      // 축소할 때 이전 위치로 복원
+      setPosition({ x: 24, y: 24 });
     }
     setIsExpanded(!isExpanded);
   };
@@ -121,7 +262,6 @@ const SimpleChatbot: React.FC = () => {
     
     if (!input.trim()) return;
     
-    // 사용자 메시지 추가
     const userMessage: Message = {
       id: Date.now().toString(),
       type: 'user',
@@ -134,8 +274,6 @@ const SimpleChatbot: React.FC = () => {
     setIsLoading(true);
     
     try {
-      // API 호출 처리 (실제로는 OpenAI API 호출)
-      // OPENAI_API_KEY 환경 변수 사용
       const response = await fetch('/api/ai-chat', {
         method: 'POST',
         headers: {
@@ -157,7 +295,6 @@ const SimpleChatbot: React.FC = () => {
       
       const data = await response.json();
       
-      // 봇 응답 추가
       const botMessage: Message = {
         id: (Date.now() + 1).toString(),
         type: 'bot',
@@ -167,7 +304,6 @@ const SimpleChatbot: React.FC = () => {
       
       setMessages(prev => [...prev, botMessage]);
     } catch (error) {
-      // 오류 처리
       console.error('AI 채팅 오류:', error);
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
@@ -193,87 +329,30 @@ const SimpleChatbot: React.FC = () => {
     ]);
   };
 
-  // 리사이즈 시작
-  const handleResizeStart = useCallback((e: React.MouseEvent) => {
-    e.preventDefault();
-    setIsResizing(true);
-    setResizeStart({
-      x: e.clientX,
-      y: e.clientY,
-      width: chatSize.width,
-      height: chatSize.height
-    });
-  }, [chatSize]);
+  // 리사이즈 핸들 컴포넌트
+  const ResizeHandle: React.FC<{ direction: ResizeDirection; className: string }> = ({ direction, className }) => (
+    <div
+      className={cn("absolute opacity-0 hover:opacity-100 transition-opacity", className)}
+      onMouseDown={(e) => handleResizeStart(e, direction)}
+      style={{ cursor: `${direction}-resize` }}
+    />
+  );
 
-  // 리사이즈 중
-  const handleResizeMove = useCallback((e: MouseEvent) => {
-    if (!isResizing) return;
-    
-    const deltaX = resizeStart.x - e.clientX;
-    const deltaY = e.clientY - resizeStart.y;
-    
-    const newWidth = Math.max(320, Math.min(800, resizeStart.width + deltaX));
-    const newHeight = Math.max(400, Math.min(700, resizeStart.height + deltaY));
-    
-    setChatSize({ width: newWidth, height: newHeight });
-  }, [isResizing, resizeStart]);
-
-  // 리사이즈 종료
-  const handleResizeEnd = useCallback(() => {
-    setIsResizing(false);
-  }, []);
-
-  // 마우스 이벤트 리스너 등록/해제
-  useEffect(() => {
-    if (isResizing) {
-      document.addEventListener('mousemove', handleResizeMove);
-      document.addEventListener('mouseup', handleResizeEnd);
-      document.body.style.cursor = 'nw-resize';
-      document.body.style.userSelect = 'none';
-    } else {
-      document.removeEventListener('mousemove', handleResizeMove);
-      document.removeEventListener('mouseup', handleResizeEnd);
-      document.body.style.cursor = '';
-      document.body.style.userSelect = '';
-    }
-
-    return () => {
-      document.removeEventListener('mousemove', handleResizeMove);
-      document.removeEventListener('mouseup', handleResizeEnd);
-      document.body.style.cursor = '';
-      document.body.style.userSelect = '';
-    };
-  }, [isResizing, handleResizeMove, handleResizeEnd]);
-
-  // 확대 모드일 때 크기 리셋
-  const resetChatSize = () => {
-    setChatSize({ width: 380, height: 500 });
-  };
-
-  // 로그인 중이거나 특정 경로에서는 챗봇 버튼을 숨김
   const shouldHideChatbot = () => {
-    // 관리자 페이지에서는 숨김
     if (window.location.pathname.includes('/admin')) return true;
-    
-    // 이미 AI 채팅/분석 페이지에 있는 경우 숨김
     if (window.location.pathname.includes('/ai-chatbot') || 
         window.location.pathname.includes('/ai-analysis')) return true;
-    
-    // 인증된 사용자이고 AI 관련 경로에 있는 경우 숨김
     if (isAuthenticated && (
       window.location.pathname.includes('/ai-') ||
       window.location.pathname.includes('/trainer/notebook')
     )) return true;
-    
     return false;
   };
 
-  // 로그인을 위한 이동 함수
   const handleGoToLogin = () => {
     window.location.href = "/auth/login";
   };
 
-  // 전체 Pet AI 분석으로 이동
   const handleGoToFullAnalysis = () => {
     if (isAuthenticated) {
       window.location.href = "/ai-analysis";
@@ -293,7 +372,7 @@ const SimpleChatbot: React.FC = () => {
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
-                className="fixed bottom-6 right-6 rounded-full w-14 h-14 shadow-lg"
+                className="fixed bottom-6 right-6 rounded-full w-14 h-14 shadow-lg z-50"
                 size="icon"
                 onClick={handleOpen}
                 aria-label="AI 반려동물 상담 챗봇 열기"
@@ -313,33 +392,55 @@ const SimpleChatbot: React.FC = () => {
           ref={chatRef}
           className={cn(
             "fixed shadow-lg transition-all duration-300 z-50 select-none",
-            isExpanded 
-              ? "inset-4 md:inset-10" 
-              : "bottom-6 right-6"
+            isExpanded ? "inset-4 md:inset-10" : ""
           )}
           style={!isExpanded ? {
-            width: `${chatSize.width}px`,
-            height: `${chatSize.height}px`
+            left: `${position.x}px`,
+            top: `${position.y}px`,
+            width: `${size.width}px`,
+            height: `${size.height}px`
           } : undefined}
         >
-          <CardHeader className="p-3 flex flex-row items-center justify-between space-y-0 relative">
+          {/* 리사이즈 핸들들 (확대 모드가 아닐 때만 표시) */}
+          {!isExpanded && (
+            <>
+              {/* 코너 핸들 */}
+              <ResizeHandle direction="nw" className="top-0 left-0 w-3 h-3 bg-gray-400 rounded-br-md" />
+              <ResizeHandle direction="ne" className="top-0 right-0 w-3 h-3 bg-gray-400 rounded-bl-md" />
+              <ResizeHandle direction="sw" className="bottom-0 left-0 w-3 h-3 bg-gray-400 rounded-tr-md" />
+              <ResizeHandle direction="se" className="bottom-0 right-0 w-3 h-3 bg-gray-400 rounded-tl-md" />
+              
+              {/* 모서리 핸들 */}
+              <ResizeHandle direction="n" className="top-0 left-3 right-3 h-2 bg-gray-300 hover:bg-gray-400" />
+              <ResizeHandle direction="s" className="bottom-0 left-3 right-3 h-2 bg-gray-300 hover:bg-gray-400" />
+              <ResizeHandle direction="w" className="left-0 top-3 bottom-3 w-2 bg-gray-300 hover:bg-gray-400" />
+              <ResizeHandle direction="e" className="right-0 top-3 bottom-3 w-2 bg-gray-300 hover:bg-gray-400" />
+            </>
+          )}
+
+          <CardHeader 
+            className={cn(
+              "p-3 flex flex-row items-center justify-between space-y-0",
+              !isExpanded && "cursor-move"
+            )}
+            onMouseDown={!isExpanded ? handleDragStart : undefined}
+          >
             <CardTitle className="text-sm md:text-base flex items-center">
               <PawPrint className="h-4 w-4 mr-2" />
               반려동물 AI 어시스턴트
             </CardTitle>
             
-            {/* 리사이즈 핸들 (확대 모드가 아닐 때만 표시) */}
-            {!isExpanded && (
-              <div
-                className="absolute -left-2 -top-2 w-6 h-6 cursor-nw-resize hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full flex items-center justify-center opacity-60 hover:opacity-100 transition-opacity"
-                onMouseDown={handleResizeStart}
-                aria-label="창 크기 조절"
-              >
-                <GripVertical className="h-3 w-3 rotate-45" />
-              </div>
-            )}
-            
             <div className="flex space-x-1">
+              {!isExpanded && (
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="h-8 w-8" 
+                  title="이동"
+                >
+                  <Move className="h-4 w-4" />
+                </Button>
+              )}
               <Button 
                 variant="ghost" 
                 size="icon" 
@@ -365,7 +466,7 @@ const SimpleChatbot: React.FC = () => {
             "px-3 overflow-y-auto", 
             isExpanded 
               ? "h-[calc(100%-7rem)]" 
-              : `h-[${chatSize.height - 140}px]`
+              : `h-[${size.height - 140}px]`
           )}>
             <div className="flex flex-col space-y-4">
               {messages.map((message) => (
@@ -440,7 +541,7 @@ const SimpleChatbot: React.FC = () => {
               </button>
               {!isExpanded && (
                 <span className="text-xs opacity-50">
-                  {chatSize.width}×{chatSize.height}
+                  {size.width}×{size.height}
                 </span>
               )}
             </div>
