@@ -3130,6 +3130,19 @@ class Storage {
     return this.paymentMethods;
   }
 
+  // 결제 수단 생성 (새로 추가)
+  createPaymentMethod(methodData: any) {
+    const newMethod = {
+      ...methodData,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+    
+    this.paymentMethods.push(newMethod);
+    console.log('[Payment] 새 결제 수단 추가:', newMethod.name);
+    return newMethod;
+  }
+
   // 결제 수단 등록
   registerPaymentMethod(methodData: any) {
     const newMethod = {
