@@ -53,6 +53,7 @@ import AdminCourses from "./pages/admin/AdminCourses";
 import AdminMenuManagement from "./pages/admin/menu-management";
 import AdminCommissionPage from "./pages/admin/commission";
 import AdminApprovals from './pages/admin/AdminApprovals';
+import PaymentIntegration from './pages/admin/PaymentIntegration';
 import AdminReports from './pages/admin/AdminReports';
 import NotebookMonitorPage from "./pages/admin/notebook-monitor";
 import AdminShop from './pages/admin/AdminShop';
@@ -341,7 +342,7 @@ function AppLayout({ children }: { children: ReactNode }) {
                   <Route path="/admin/points-management" component={AdminPointsManagement} />
                   <Route path="/admin/substitute-overview" component={SubstituteTrainerOverview} />
                   <Route path="/admin/payment" component={lazy(() => import('./pages/admin/PaymentManagement'))} />
-                  <Route path="/admin/payment-integration" component={lazy(() => import('./pages/admin/PaymentIntegration'))} />
+                  <Route path="/admin/payment-integration" component={PaymentIntegration} />
 
                   {/* 업체 등록 관리 */}
                   <Route path="/admin/business-registration">
