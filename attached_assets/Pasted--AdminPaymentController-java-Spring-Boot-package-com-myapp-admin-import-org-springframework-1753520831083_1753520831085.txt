@@ -1,0 +1,124 @@
+// AdminPaymentController.java (Spring Boot 기반)
+package com.myapp.admin;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.*;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestTemplate;
+import java.util.*;
+import java.util.Base64;
+
+@RestController
+@RequestMapping("/admin/payment")
+public class AdminPaymentController {
+
+    @Value("${toss.secretKey}")
+    private String tossSecretKey;
+
+    private final RestTemplate restTemplate = new RestTemplate();
+
+    // 1. Toss 테스트 결제
+    @PostMapping("/test")
+    public ResponseEntity<?> testPayment() {
+        String url = "https://api.tosspayments.com/v1/payments";
+
+        HttpHeaders headers = new HttpHeaders();
+        String encodedKey = Base64.getEncoder().encodeToString((tossSecretKey + ":").getBytes());
+        headers.set("Authorization", "Basic " + encodedKey);
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("amount", 1000);
+        payload.put("orderId", "TEST_ORDER_001");
+        payload.put("orderName", "관리자 테스트 결제");
+        payload.put("successUrl", "https://yourapp.com/payment/success");
+        payload.put("failUrl", "https://yourapp.com/payment/fail");
+
+        HttpEntity<Map<String, Object>> entity = new HttpEntity<>(payload, headers);
+        ResponseEntity<String> response = restTemplate.postForEntity(url, entity, String.class);
+
+        return ResponseEntity.status(response.getStatusCode()).body(response.getBody());
+    }
+
+    // 2. Toss 결제 취소
+    @PostMapping("/cancel/{paymentKey}")
+    public ResponseEntity<?> cancelPayment(@PathVariable String paymentKey) {
+        String url = "https://api.tosspayments.com/v1/payments/" + paymentKey + "/cancel";
+
+        HttpHeaders headers = new HttpHeaders();
+        String encodedKey = Base64.getEncoder().encodeToString((tossSecretKey + ":").getBytes());
+        headers.set("Authorization", "Basic " + encodedKey);
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("cancelReason", "관리자 취소 처리");
+
+        HttpEntity<Map<String, Object>> entity = new HttpEntity<>(payload, headers);
+        ResponseEntity<String> response = restTemplate.postForEntity(url, entity, String.class);
+
+        return ResponseEntity.status(response.getStatusCode()).body(response.getBody());
+    }
+
+    // 3. 결제 내역 조회 (추후 DB 연동 예정)
+    @GetMapping("/history")
+    public ResponseEntity<?> getPaymentHistory() {
+        // TODO: DB에서 결제 내역 조회 후 반환
+        List<Map<String, Object>> dummyData = new ArrayList<>();
+        Map<String, Object> item = new HashMap<>();
+        item.put("orderId", "TEST_ORDER_001");
+        item.put("amount", 1000);
+        item.put("status", "SUCCESS");
+        item.put("date", new Date());
+        dummyData.add(item);
+        return ResponseEntity.ok(dummyData);
+    }
+
+    // 4. Toss Webhook 수신 로그
+    private final List<Map<String, Object>> webhookLogs = new ArrayList<>();
+
+    @PostMapping("/webhook")
+    public ResponseEntity<?> receiveWebhook(@RequestBody Map<String, Object> webhookData) {
+        webhookLogs.add(webhookData);
+        return ResponseEntity.ok("Webhook received");
+    }
+
+    @GetMapping("/webhook/logs")
+    public ResponseEntity<?> getWebhookLogs() {
+        return ResponseEntity.ok(webhookLogs);
+    }
+
+    // 5. 다날(Danal) 연동 (휴대폰 본인인증/결제 API 예시)
+    @Value("${danal.url}")
+    private String danalUrl;
+
+    @Value("${danal.cid}")
+    private String danalCid;
+
+    @PostMapping("/danal/auth")
+    public ResponseEntity<?> danalPhoneAuth(@RequestBody Map<String, Object> payload) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+
+        payload.put("CID", danalCid);
+        payload.put("TXTYPE", "AUTH");
+
+        HttpEntity<Map<String, Object>> entity = new HttpEntity<>(payload, headers);
+        ResponseEntity<String> response = restTemplate.postForEntity(danalUrl, entity, String.class);
+
+        return ResponseEntity.status(response.getStatusCode()).body(response.getBody());
+    }
+
+    @PostMapping("/danal/pay")
+    public ResponseEntity<?> danalPhonePayment(@RequestBody Map<String, Object> payload) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+
+        payload.put("CID", danalCid);
+        payload.put("TXTYPE", "PAYMENT");
+
+        HttpEntity<Map<String, Object>> entity = new HttpEntity<>(payload, headers);
+        ResponseEntity<String> response = restTemplate.postForEntity(danalUrl, entity, String.class);
+
+        return ResponseEntity.status(response.getStatusCode()).body(response.getBody());
+    }
+}
