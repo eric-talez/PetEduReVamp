@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { X, Send, Loader2, Bot, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -26,14 +26,70 @@ export function SimpleChatBot() {
   ]);
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [position, setPosition] = useState({ x: 24, y: 24 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const chatbotRef = useRef<HTMLDivElement>(null);
   const { isAuthenticated } = useAuth();
 
   // 새 메시지가 추가될 때 스크롤을 아래로 이동
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+  // 드래그 시작
+  const handleDragStart = useCallback((e: React.MouseEvent) => {
+    const rect = chatbotRef.current?.getBoundingClientRect();
+    if (!rect) return;
+
+    setIsDragging(true);
+    setDragStart({
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top
+    });
+    
+    e.preventDefault();
+    e.stopPropagation();
+  }, []);
+
+  // 마우스 이동 처리
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (isDragging) {
+        const newX = e.clientX - dragStart.x;
+        const newY = e.clientY - dragStart.y;
+        
+        // 화면 경계 내로 제한
+        const constrainedX = Math.max(0, Math.min(window.innerWidth - 320, newX));
+        const constrainedY = Math.max(0, Math.min(window.innerHeight - 480, newY));
+        
+        // bottom/right 기준으로 좌표 변환
+        const bottomPosition = window.innerHeight - constrainedY - 480;
+        const rightPosition = window.innerWidth - constrainedX - 320;
+        
+        setPosition({ x: rightPosition, y: bottomPosition });
+      }
+    };
+
+    const handleMouseUp = () => {
+      setIsDragging(false);
+    };
+
+    if (isDragging) {
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+      document.body.style.userSelect = 'none';
+      
+      return () => {
+        document.removeEventListener('mousemove', handleMouseMove);
+        document.removeEventListener('mouseup', handleMouseUp);
+        document.body.style.userSelect = '';
+      };
+    }
+  }, [isDragging, dragStart]);
 
   // 메시지 전송 처리 - OpenAI API 사용
   const handleSendMessage = async () => {
@@ -295,7 +351,13 @@ export function SimpleChatBot() {
 
   if (!isOpen) {
     return (
-      <div className="fixed bottom-6 right-6 z-[60]">
+      <div 
+        className="fixed z-[60]"
+        style={{
+          bottom: `${position.y}px`,
+          right: `${position.x}px`
+        }}
+      >
         <Button
           onClick={() => setIsOpen(true)}
           className="w-14 h-14 rounded-full bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-110 border-2 border-white/20"
@@ -320,9 +382,19 @@ export function SimpleChatBot() {
   }
 
   return (
-    <div className="fixed bottom-6 right-6 w-80 h-[480px] bg-white border border-gray-200 rounded-2xl shadow-2xl z-[60] flex flex-col overflow-hidden">
-      {/* 헤더 */}
-      <div className="flex items-center justify-between p-4 bg-gradient-to-r from-primary to-primary/90 text-white">
+    <div 
+      ref={chatbotRef}
+      className="fixed w-80 h-[480px] bg-white border border-gray-200 rounded-2xl shadow-2xl z-[60] flex flex-col overflow-hidden"
+      style={{
+        bottom: `${position.y}px`,
+        right: `${position.x}px`
+      }}
+    >
+      {/* 헤더 - 드래그 가능 */}
+      <div 
+        className="flex items-center justify-between p-4 bg-gradient-to-r from-primary to-primary/90 text-white cursor-move"
+        onMouseDown={handleDragStart}
+      >
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
             <Bot size={18} />
@@ -338,7 +410,10 @@ export function SimpleChatBot() {
         <Button
           variant="ghost"
           size="sm"
-          onClick={() => setIsOpen(false)}
+          onClick={(e) => {
+            e.stopPropagation();
+            setIsOpen(false);
+          }}
           className="text-white hover:bg-white/20 w-8 h-8 p-0 rounded-full"
         >
           <X size={16} />
