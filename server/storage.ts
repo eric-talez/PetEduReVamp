@@ -22,6 +22,10 @@ class Storage {
   substituteClassApplications: any[] = [];
   substitutePosts: any[] = [];
   substituteAlerts: any[] = [];
+  // 결제 관리 데이터 저장소
+  paymentMethods: any[] = [];
+  userPaymentPlans: any[] = [];
+  paymentHistory: any[] = [];
   trainers: any[] = [];
   events: any[] = [
     {
@@ -3119,6 +3123,118 @@ class Storage {
     return this.substituteClassApplications[applicationIndex];
   }
 
+  // ===== 결제 관리 시스템 메서드들 =====
+  
+  // 결제 수단 조회
+  getPaymentMethods() {
+    return this.paymentMethods;
+  }
+
+  // 결제 수단 등록
+  registerPaymentMethod(methodData: any) {
+    const newMethod = {
+      id: `payment_${Date.now()}`,
+      ...methodData,
+      status: 'active',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+    
+    this.paymentMethods.push(newMethod);
+    return newMethod;
+  }
+
+  // 결제 수단 업데이트
+  updatePaymentMethod(methodId: string, updateData: any) {
+    const methodIndex = this.paymentMethods.findIndex(m => m.id === methodId);
+    if (methodIndex === -1) throw new Error('결제 수단을 찾을 수 없습니다.');
+    
+    this.paymentMethods[methodIndex] = {
+      ...this.paymentMethods[methodIndex],
+      ...updateData,
+      updatedAt: new Date().toISOString()
+    };
+    
+    return this.paymentMethods[methodIndex];
+  }
+
+  // 결제 수단 삭제
+  deletePaymentMethod(methodId: string) {
+    const methodIndex = this.paymentMethods.findIndex(m => m.id === methodId);
+    if (methodIndex === -1) throw new Error('결제 수단을 찾을 수 없습니다.');
+    
+    this.paymentMethods.splice(methodIndex, 1);
+    return true;
+  }
+
+  // 사용자 요금제 조회
+  getUserPaymentPlans() {
+    return this.userPaymentPlans;
+  }
+
+  // 사용자 요금제 업데이트
+  updateUserPaymentPlan(role: string, planData: any) {
+    const planIndex = this.userPaymentPlans.findIndex(p => p.role === role);
+    
+    if (planIndex === -1) {
+      // 새로운 요금제 생성
+      const newPlan = {
+        id: `plan_${Date.now()}`,
+        role,
+        ...planData,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+      this.userPaymentPlans.push(newPlan);
+      return newPlan;
+    } else {
+      // 기존 요금제 업데이트
+      this.userPaymentPlans[planIndex] = {
+        ...this.userPaymentPlans[planIndex],
+        ...planData,
+        updatedAt: new Date().toISOString()
+      };
+      return this.userPaymentPlans[planIndex];
+    }
+  }
+
+  // 결제 내역 조회
+  getPaymentHistory(options: any = {}) {
+    const { startDate, endDate, status, methodId } = options;
+    
+    let history = this.paymentHistory;
+    
+    if (startDate) {
+      history = history.filter(h => new Date(h.createdAt) >= new Date(startDate));
+    }
+    
+    if (endDate) {
+      history = history.filter(h => new Date(h.createdAt) <= new Date(endDate));
+    }
+    
+    if (status) {
+      history = history.filter(h => h.status === status);
+    }
+    
+    if (methodId) {
+      history = history.filter(h => h.paymentMethod === methodId);
+    }
+    
+    return history.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  }
+
+  // 결제 내역 추가
+  addPaymentHistory(historyData: any) {
+    const newHistory = {
+      id: `payment_history_${Date.now()}`,
+      ...historyData,
+      createdAt: new Date().toISOString()
+    };
+    
+    this.paymentHistory.push(newHistory);
+    return newHistory;
+  }
+
   // 대체 훈련사 세션 완료 처리
   async completeSubstituteTrainerSession(sessionId: number, completionData: any) {
     // 세션 완료 처리 로직 (실제 구현에서는 별도 세션 테이블 사용)
@@ -3267,6 +3383,193 @@ class Storage {
         status: "pending",
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
+      }
+    ];
+
+    // 결제 수단 초기화
+    this.initializePaymentMethods();
+    
+    // 사용자 요금제 초기화
+    this.initializeUserPaymentPlans();
+    
+    // 결제 내역 초기화
+    this.initializePaymentHistory();
+  }
+
+  // 결제 수단 초기 데이터
+  private initializePaymentMethods() {
+    this.paymentMethods = [
+      {
+        id: 'toss',
+        name: 'Toss Payments',
+        type: 'pg',
+        description: '토스페이먼츠 결제 게이트웨이',
+        provider: 'TossPayments',
+        apiKey: process.env.TOSS_SECRET_KEY || '',
+        status: 'active',
+        supportedMethods: ['카드', '계좌이체', '가상계좌', '간편결제'],
+        commissionRate: 2.9,
+        setupFee: 0,
+        monthlyFee: 0,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      },
+      {
+        id: 'kakao',
+        name: 'KakaoPay',
+        type: 'wallet',
+        description: '카카오페이 간편결제',
+        provider: 'Kakao',
+        apiKey: process.env.KAKAO_PAY_API_KEY || '',
+        status: 'active',
+        supportedMethods: ['간편결제', '카드'],
+        commissionRate: 2.5,
+        setupFee: 0,
+        monthlyFee: 0,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      },
+      {
+        id: 'naver',
+        name: 'NaverPay',
+        type: 'wallet',
+        description: '네이버페이 간편결제',
+        provider: 'Naver',
+        apiKey: process.env.NAVER_PAY_API_KEY || '',
+        status: 'active',
+        supportedMethods: ['간편결제', '카드', '포인트'],
+        commissionRate: 2.8,
+        setupFee: 0,
+        monthlyFee: 0,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      },
+      {
+        id: 'stripe',
+        name: 'Stripe',
+        type: 'pg',
+        description: 'Stripe 글로벌 결제 시스템',
+        provider: 'Stripe',
+        apiKey: process.env.STRIPE_SECRET_KEY || '',
+        status: 'active',
+        supportedMethods: ['카드', 'Apple Pay', 'Google Pay'],
+        commissionRate: 3.4,
+        setupFee: 0,
+        monthlyFee: 0,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      }
+    ];
+  }
+
+  // 사용자 요금제 초기 데이터
+  private initializeUserPaymentPlans() {
+    this.userPaymentPlans = [
+      {
+        id: 'plan_pet_owner',
+        role: 'pet-owner',
+        name: '반려인 기본 요금제',
+        description: '반려인을 위한 기본 서비스 이용 요금제',
+        monthlyFee: 0,
+        features: ['무료 상담 1회', '기본 훈련 콘텐츠 접근', '커뮤니티 참여'],
+        limitations: ['프리미엄 콘텐츠 제한', '월 상담 1회 한정'],
+        status: 'active',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      },
+      {
+        id: 'plan_trainer',
+        role: 'trainer',
+        name: '훈련사 프리미엄 요금제',
+        description: '전문 훈련사를 위한 프리미엄 서비스',
+        monthlyFee: 29000,
+        features: ['무제한 강의 등록', '수입 정산', '마케팅 지원', '고급 분석 도구'],
+        limitations: ['없음'],
+        status: 'active',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      },
+      {
+        id: 'plan_institute',
+        role: 'institute',
+        name: '교육기관 엔터프라이즈',
+        description: '교육기관을 위한 통합 관리 솔루션',
+        monthlyFee: 99000,
+        features: ['기관 관리 도구', '다중 훈련사 관리', '통합 정산', '고급 리포팅', '전담 지원'],
+        limitations: ['없음'],
+        status: 'active',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      },
+      {
+        id: 'plan_admin',
+        role: 'admin',
+        name: '시스템 관리자',
+        description: '플랫폼 전체 관리를 위한 관리자 권한',
+        monthlyFee: 0,
+        features: ['전체 시스템 관리', '모든 기능 접근', '사용자 관리', '결제 관리', '분석 도구'],
+        limitations: ['없음'],
+        status: 'active',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      }
+    ];
+  }
+
+  // 결제 내역 초기 데이터
+  private initializePaymentHistory() {
+    this.paymentHistory = [
+      {
+        id: 'payment_1',
+        orderId: 'order_20250126_001',
+        userId: 2,
+        userName: '김지영',
+        amount: 45000,
+        paymentMethod: 'kakao',
+        paymentMethodName: 'KakaoPay',
+        status: 'completed',
+        description: '기초 복종 훈련 강의 구매',
+        transactionId: 'kakao_tx_12345',
+        createdAt: new Date('2025-01-26T10:30:00').toISOString()
+      },
+      {
+        id: 'payment_2',
+        orderId: 'order_20250126_002',
+        userId: 3,
+        userName: '박민호',
+        amount: 29000,
+        paymentMethod: 'toss',
+        paymentMethodName: 'Toss Payments',
+        status: 'completed',
+        description: '훈련사 월 구독료',
+        transactionId: 'toss_tx_67890',
+        createdAt: new Date('2025-01-26T14:15:00').toISOString()
+      },
+      {
+        id: 'payment_3',
+        orderId: 'order_20250126_003',
+        userId: 4,
+        userName: '이수진',
+        amount: 15000,
+        paymentMethod: 'naver',
+        paymentMethodName: 'NaverPay',
+        status: 'pending',
+        description: '화상 상담 예약',
+        transactionId: 'naver_tx_11111',
+        createdAt: new Date('2025-01-26T16:45:00').toISOString()
+      },
+      {
+        id: 'payment_4',
+        orderId: 'order_20250125_001',
+        userId: 2,
+        userName: '김지영',
+        amount: 99000,
+        paymentMethod: 'stripe',
+        paymentMethodName: 'Stripe',
+        status: 'completed',
+        description: '기관 엔터프라이즈 구독',
+        transactionId: 'stripe_tx_22222',
+        createdAt: new Date('2025-01-25T09:20:00').toISOString()
       }
     ];
   }

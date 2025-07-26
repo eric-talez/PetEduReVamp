@@ -1,5 +1,6 @@
 
 import type { Express } from "express";
+import { storage } from "../storage";
 
 // 결제 수단 테스트 함수 (Toss Payments 기반)
 async function testTossPayment(amount: number = 1000) {
@@ -55,6 +56,68 @@ async function cancelTossPayment(paymentKey: string, reason: string = '관리자
 }
 
 export function registerPaymentIntegrationRoutes(app: Express) {
+  
+  // 결제 수단 목록 조회 API
+  app.get('/api/admin/payment/methods', async (req, res) => {
+    try {
+      const paymentMethods = storage.getPaymentMethods();
+      console.log(`[Payment] 결제 수단 목록 조회: ${paymentMethods.length}개`);
+      
+      res.json({
+        success: true,
+        data: paymentMethods,
+        message: '결제 수단 목록을 성공적으로 조회했습니다.'
+      });
+    } catch (error) {
+      console.error('[Payment] 결제 수단 조회 오류:', error);
+      res.status(500).json({
+        success: false,
+        message: '결제 수단 조회 중 오류가 발생했습니다.'
+      });
+    }
+  });
+
+  // 결제 수단 등록 API
+  app.post('/api/admin/payment/methods', async (req, res) => {
+    try {
+      const methodData = req.body;
+      console.log(`[Payment] 새 결제 수단 등록:`, methodData.name);
+      
+      const newMethod = storage.registerPaymentMethod(methodData);
+      
+      res.json({
+        success: true,
+        data: newMethod,
+        message: `${methodData.name} 결제 수단이 성공적으로 등록되었습니다.`
+      });
+    } catch (error) {
+      console.error('[Payment] 결제 수단 등록 오류:', error);
+      res.status(500).json({
+        success: false,
+        message: '결제 수단 등록 중 오류가 발생했습니다.'
+      });
+    }
+  });
+
+  // 사용자 요금제 목록 조회 API
+  app.get('/api/admin/payment/plans', async (req, res) => {
+    try {
+      const userPaymentPlans = storage.getUserPaymentPlans();
+      console.log(`[Payment] 사용자 요금제 목록 조회: ${userPaymentPlans.length}개`);
+      
+      res.json({
+        success: true,
+        data: userPaymentPlans,
+        message: '사용자 요금제 목록을 성공적으로 조회했습니다.'
+      });
+    } catch (error) {
+      console.error('[Payment] 사용자 요금제 조회 오류:', error);
+      res.status(500).json({
+        success: false,
+        message: '사용자 요금제 조회 중 오류가 발생했습니다.'
+      });
+    }
+  });
   // 결제 수단 테스트 API
   app.post('/api/admin/payment/test', async (req, res) => {
     try {
@@ -117,12 +180,7 @@ export function registerPaymentIntegrationRoutes(app: Express) {
 
       console.log(`[Payment] ${methodId} 결제 수단 상태 변경: ${status}`);
 
-      // 실제로는 데이터베이스에 저장
-      const updatedMethod = {
-        id: methodId,
-        status: status,
-        updatedAt: new Date().toISOString()
-      };
+      const updatedMethod = storage.updatePaymentMethod(methodId, { status });
 
       res.json({
         success: true,
@@ -146,12 +204,7 @@ export function registerPaymentIntegrationRoutes(app: Express) {
 
       console.log(`[Payment] ${role} 요금제 업데이트:`, updates);
 
-      // 실제로는 데이터베이스에 저장
-      const updatedPlan = {
-        role,
-        ...updates,
-        updatedAt: new Date().toISOString()
-      };
+      const updatedPlan = storage.updateUserPaymentPlan(role, updates);
 
       res.json({
         success: true,
@@ -170,32 +223,16 @@ export function registerPaymentIntegrationRoutes(app: Express) {
   // 결제 내역 조회 API
   app.get('/api/admin/payment/history', async (req, res) => {
     try {
-      // 실제로는 데이터베이스에서 조회
-      const paymentHistory = [
-        {
-          id: 1,
-          userId: 1,
-          userName: '김견주',
-          amount: 29000,
-          method: 'toss',
-          status: 'completed',
-          createdAt: '2024-12-20T10:00:00Z'
-        },
-        {
-          id: 2,
-          userId: 2,
-          userName: '박훈련',
-          amount: 99000,
-          method: 'kakao',
-          status: 'completed',
-          createdAt: '2024-12-19T15:30:00Z'
-        }
-      ];
-
+      const { startDate, endDate, status, methodId } = req.query;
+      const options = { startDate, endDate, status, methodId };
+      
+      const paymentHistory = storage.getPaymentHistory(options);
+      console.log(`[Payment] 결제 내역 조회: ${paymentHistory.length}건`);
+      
       res.json({
         success: true,
         data: paymentHistory,
-        total: paymentHistory.length
+        message: '결제 내역을 성공적으로 조회했습니다.'
       });
     } catch (error) {
       console.error('[Payment] 결제 내역 조회 오류:', error);
@@ -205,6 +242,51 @@ export function registerPaymentIntegrationRoutes(app: Express) {
       });
     }
   });
+
+  // 결제 내역 추가 API (시스템 내부용)
+  app.post('/api/admin/payment/history', async (req, res) => {
+    try {
+      const historyData = req.body;
+      console.log(`[Payment] 새 결제 내역 추가:`, historyData.orderId);
+      
+      const newHistory = storage.addPaymentHistory(historyData);
+      
+      res.json({
+        success: true,
+        data: newHistory,
+        message: '결제 내역이 성공적으로 추가되었습니다.'
+      });
+    } catch (error) {
+      console.error('[Payment] 결제 내역 추가 오류:', error);
+      res.status(500).json({
+        success: false,
+        message: '결제 내역 추가 중 오류가 발생했습니다.'
+      });
+    }
+  });
+
+  // 결제 수단 삭제 API
+  app.delete('/api/admin/payment/methods/:methodId', async (req, res) => {
+    try {
+      const { methodId } = req.params;
+      console.log(`[Payment] ${methodId} 결제 수단 삭제`);
+      
+      storage.deletePaymentMethod(methodId);
+      
+      res.json({
+        success: true,
+        message: `${methodId} 결제 수단이 성공적으로 삭제되었습니다.`
+      });
+    } catch (error) {
+      console.error('[Payment] 결제 수단 삭제 오류:', error);
+      res.status(500).json({
+        success: false,
+        message: '결제 수단 삭제 중 오류가 발생했습니다.'
+      });
+    }
+  });
+
+
 
   // 결제 취소 API
   app.post('/api/admin/payment/cancel/:paymentKey', async (req, res) => {

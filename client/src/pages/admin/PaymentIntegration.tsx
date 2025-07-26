@@ -43,65 +43,66 @@ interface UserPaymentPlan {
 }
 
 export default function PaymentIntegration() {
-  const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([
-    {
-      id: 'toss',
-      name: 'Toss Payments',
-      type: 'toss',
-      status: 'active',
-      commission: 2.9,
-      monthlyVolume: 1250000,
-      testMode: false
-    },
-    {
-      id: 'kakao',
-      name: 'KakaoPay',
-      type: 'kakao',
-      status: 'inactive',
-      commission: 3.1,
-      monthlyVolume: 0,
-      testMode: true
-    },
-    {
-      id: 'naver',
-      name: 'NaverPay',
-      type: 'naver',
-      status: 'testing',
-      commission: 3.0,
-      monthlyVolume: 45000,
-      testMode: true
-    }
-  ]);
-
-  const [userPaymentPlans, setUserPaymentPlans] = useState<UserPaymentPlan[]>([
-    {
-      role: 'pet-owner',
-      name: '견주 기본 플랜',
-      basePrice: 0,
-      commission: 0,
-      features: ['기본 상담', '알림장 작성', '커뮤니티 참여'],
-      status: 'active'
-    },
-    {
-      role: 'trainer',
-      name: '훈련사 프로 플랜',
-      basePrice: 29000,
-      commission: 15,
-      features: ['무제한 학생 관리', '수익 분석', '마케팅 도구'],
-      status: 'active'
-    },
-    {
-      role: 'institute-admin',
-      name: '기관 엔터프라이즈',
-      basePrice: 99000,
-      commission: 10,
-      features: ['다중 훈련사 관리', '통합 정산', '고급 분석'],
-      status: 'active'
-    }
-  ]);
-
+  const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
+  const [userPaymentPlans, setUserPaymentPlans] = useState<UserPaymentPlan[]>([]);
+  const [paymentHistory, setPaymentHistory] = useState<any[]>([]);
   const [selectedMethod, setSelectedMethod] = useState<PaymentMethod | null>(null);
   const [testResults, setTestResults] = useState<{ [key: string]: boolean }>({});
+  const [loading, setLoading] = useState(true);
+
+  // 데이터 로드
+  useEffect(() => {
+    loadPaymentData();
+  }, []);
+
+  const loadPaymentData = async () => {
+    try {
+      setLoading(true);
+      
+      // 결제 수단 목록 조회
+      const methodsResponse = await fetch('/api/admin/payment/methods');
+      if (methodsResponse.ok) {
+        const methodsData = await methodsResponse.json();
+        const adaptedMethods = methodsData.data.map((method: any) => ({
+          id: method.id,
+          name: method.name,
+          type: method.id as any,
+          status: method.status as any,
+          commission: method.commissionRate || 0,
+          monthlyVolume: 0, // 실제 데이터에서는 계산 필요
+          testMode: method.status === 'testing'
+        }));
+        setPaymentMethods(adaptedMethods);
+      }
+
+      // 사용자 요금제 목록 조회
+      const plansResponse = await fetch('/api/admin/payment/plans');
+      if (plansResponse.ok) {
+        const plansData = await plansResponse.json();
+        const adaptedPlans = plansData.data.map((plan: any) => ({
+          role: plan.role as any,
+          name: plan.name,
+          basePrice: plan.monthlyFee || 0,
+          commission: 0, // 실제 데이터에서 설정 필요
+          features: plan.features || [],
+          status: plan.status as any
+        }));
+        setUserPaymentPlans(adaptedPlans);
+      }
+
+      // 결제 내역 조회
+      const historyResponse = await fetch('/api/admin/payment/history');
+      if (historyResponse.ok) {
+        const historyData = await historyResponse.json();
+        setPaymentHistory(historyData.data);
+      }
+      
+    } catch (error) {
+      console.error('결제 데이터 로드 오류:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // 결제 수단 테스트
   const testPaymentMethod = async (methodId: string) => {
@@ -186,6 +187,17 @@ export default function PaymentIntegration() {
         return <Badge variant="secondary">{status}</Badge>;
     }
   };
+
+  if (loading) {
+    return (
+      <div className="container mx-auto p-6">
+        <div className="text-center py-12">
+          <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4" />
+          <p className="text-muted-foreground">결제 데이터를 불러오는 중...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto p-6 space-y-6">
