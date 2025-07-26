@@ -352,7 +352,7 @@ export default function AdminSettings() {
                 className="w-full justify-start"
                 onClick={() => setActiveTab('appearance')}
               >
-                <LayoutDashboard className="h-4 w-4 mr-2" />
+                <ImageIcon className="h-4 w-4 mr-2" />
                 화면 및 로고 설정
               </Button>
               <Button 
