@@ -161,32 +161,25 @@ export function Chatbot() {
     sendMessage(suggestion);
   };
 
-  // 드래그 시작 - 정확한 시작 위치 계산 개선
+  // 드래그 시작 핸들러
   const handleDragStart = useCallback((e: React.MouseEvent) => {
-    if (isResizing) return;
-    
-    // 클릭한 요소가 버튼이 아닌지 확인
+    // 버튼 클릭이면 드래그 방지
     const target = e.target as HTMLElement;
     if (target.tagName === 'BUTTON' || target.closest('button')) {
       return;
     }
     
-    const rect = chatbotRef.current?.getBoundingClientRect();
-    if (!rect) return;
-
-    console.log('드래그 시작!', { clientX: e.clientX, clientY: e.clientY, rect });
+    console.log('드래그 시작!');
     setIsDragging(true);
     
-    // 현재 위치 기준으로 드래그 시작점 계산
+    // 드래그 시작점을 마우스 현재 위치로 설정
     setDragStart({
-      x: e.clientX - rect.left,
-      y: e.clientY - rect.top
+      x: e.clientX,
+      y: e.clientY
     });
     
-    // 이벤트 처리 개선
     e.preventDefault();
-    e.stopPropagation();
-  }, [isResizing]);
+  }, []);
 
   // 리사이즈 시작 - 이벤트 처리 개선
   const handleResizeStart = useCallback((e: React.MouseEvent) => {
@@ -203,34 +196,24 @@ export function Chatbot() {
     e.stopPropagation();
   }, [size]);
 
-  // 마우스 이동 처리 - 좌표 시스템 및 이벤트 처리 개선
+  // 마우스 이동 처리
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       if (isDragging) {
-        console.log('드래그 중...', { clientX: e.clientX, clientY: e.clientY, dragStart });
+        console.log('드래그 중...', { x: e.clientX, y: e.clientY });
         
-        // 절대 좌표로 새 위치 계산
-        const newLeft = e.clientX - dragStart.x;
-        const newTop = e.clientY - dragStart.y;
+        // 마우스 이동량 계산
+        const deltaX = e.clientX - dragStart.x;
+        const deltaY = e.clientY - dragStart.y;
         
-        // 화면 경계 내로 제한
-        const maxLeft = window.innerWidth - size.width;
-        const maxTop = window.innerHeight - size.height;
+        // 현재 위치에서 이동량만큼 조정
+        const newRightPos = Math.max(0, Math.min(window.innerWidth - size.width, position.x - deltaX));
+        const newBottomPos = Math.max(0, Math.min(window.innerHeight - size.height, position.y - deltaY));
         
-        const constrainedLeft = Math.max(0, Math.min(maxLeft, newLeft));
-        const constrainedTop = Math.max(0, Math.min(maxTop, newTop));
+        setPosition({ x: newRightPos, y: newBottomPos });
         
-        // bottom/right CSS 속성 값으로 변환
-        const bottomValue = window.innerHeight - constrainedTop - size.height;
-        const rightValue = window.innerWidth - constrainedLeft - size.width;
-        
-        const newPosition = { 
-          x: Math.max(0, rightValue), 
-          y: Math.max(0, bottomValue) 
-        };
-        
-        console.log('새 위치:', newPosition);
-        setPosition(newPosition);
+        // 드래그 시작점 업데이트
+        setDragStart({ x: e.clientX, y: e.clientY });
       }
 
       if (isResizing) {
