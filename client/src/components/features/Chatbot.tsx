@@ -165,11 +165,19 @@ export function Chatbot() {
   const handleDragStart = useCallback((e: React.MouseEvent) => {
     if (isResizing) return;
     
+    // 클릭한 요소가 버튼이 아닌지 확인
+    const target = e.target as HTMLElement;
+    if (target.tagName === 'BUTTON' || target.closest('button')) {
+      return;
+    }
+    
     const rect = chatbotRef.current?.getBoundingClientRect();
     if (!rect) return;
 
+    console.log('드래그 시작!', { clientX: e.clientX, clientY: e.clientY, rect });
     setIsDragging(true);
-    // getBoundingClientRect()를 사용하여 정확한 상대 위치 계산
+    
+    // 현재 위치 기준으로 드래그 시작점 계산
     setDragStart({
       x: e.clientX - rect.left,
       y: e.clientY - rect.top
@@ -198,23 +206,31 @@ export function Chatbot() {
   // 마우스 이동 처리 - 좌표 시스템 및 이벤트 처리 개선
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
-      // 이벤트 처리 개선: preventDefault() 추가
-      e.preventDefault();
-      
       if (isDragging) {
-        // 좌표 시스템 수정: top/left 기준으로 정확한 위치 계산
-        const newX = e.clientX - dragStart.x;
-        const newY = e.clientY - dragStart.y;
+        console.log('드래그 중...', { clientX: e.clientX, clientY: e.clientY, dragStart });
+        
+        // 절대 좌표로 새 위치 계산
+        const newLeft = e.clientX - dragStart.x;
+        const newTop = e.clientY - dragStart.y;
         
         // 화면 경계 내로 제한
-        const constrainedX = Math.max(0, Math.min(window.innerWidth - size.width, newX));
-        const constrainedY = Math.max(0, Math.min(window.innerHeight - size.height, newY));
+        const maxLeft = window.innerWidth - size.width;
+        const maxTop = window.innerHeight - size.height;
         
-        // bottom/right 기준에서 top/left 기준으로 좌표 변환
-        const bottomPosition = window.innerHeight - constrainedY - size.height;
-        const rightPosition = window.innerWidth - constrainedX - size.width;
+        const constrainedLeft = Math.max(0, Math.min(maxLeft, newLeft));
+        const constrainedTop = Math.max(0, Math.min(maxTop, newTop));
         
-        setPosition({ x: rightPosition, y: bottomPosition });
+        // bottom/right CSS 속성 값으로 변환
+        const bottomValue = window.innerHeight - constrainedTop - size.height;
+        const rightValue = window.innerWidth - constrainedLeft - size.width;
+        
+        const newPosition = { 
+          x: Math.max(0, rightValue), 
+          y: Math.max(0, bottomValue) 
+        };
+        
+        console.log('새 위치:', newPosition);
+        setPosition(newPosition);
       }
 
       if (isResizing) {
