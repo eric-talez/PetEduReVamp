@@ -80,8 +80,7 @@ import {
   Image as ImageIcon,
   Clock,
   Coffee,
-  RefreshCw,
-  CreditCard
+  RefreshCw
 } from "lucide-react";
 
 // 사이드바 컨텍스트 생성

@@ -429,9 +429,10 @@ function AppLayout({ children }: { children: ReactNode }) {
                   <Route path="/courses/:id">
                     {(params) => {
                       const CourseDetail = lazy(() => import('./pages/courses/detail'));
+                      const courseId = params && params.id ? params.id : '';
                       return (
                         <Suspense fallback={<div className="p-8 text-center">강의 정보 로딩 중...</div>}>
-                          <CourseDetail courseId={params.id} />
+                          <CourseDetail courseId={courseId} />
                         </Suspense>
                       );
                     }}
@@ -440,9 +441,10 @@ function AppLayout({ children }: { children: ReactNode }) {
                   <Route path="/courses/:id/preview">
                     {(params) => {
                       const CoursePreview = lazy(() => import('./pages/courses/preview'));
+                      const courseId = params && params.id ? params.id : '';
                       return (
                         <Suspense fallback={<div className="p-8 text-center">미리보기 로딩 중...</div>}>
-                          <CoursePreview courseId={params.id} />
+                          <CoursePreview courseId={courseId} />
                         </Suspense>
                       );
                     }}
@@ -524,9 +526,10 @@ function AppLayout({ children }: { children: ReactNode }) {
                   <Route path="/trainers/:id">
                     {(params) => {
                       const TrainerDetail = lazy(() => import('./pages/trainers/detail'));
+                      const trainerId = params && params.id ? params.id : '';
                       return (
                         <Suspense fallback={<div className="p-8"><TrainerSkeleton /></div>}>
-                          <TrainerDetail trainerId={params.id} />
+                          <TrainerDetail trainerId={trainerId} />
                         </Suspense>
                       );
                     }}
@@ -535,9 +538,10 @@ function AppLayout({ children }: { children: ReactNode }) {
                   <Route path="/institutes/:id">
                     {(params) => {
                       const InstituteDetail = lazy(() => import('./pages/institutes/detail'));
+                      const instituteId = params && params.id ? params.id : '';
                       return (
                         <Suspense fallback={<div className="p-8 text-center">기관 정보 로딩 중...</div>}>
-                          <InstituteDetail instituteId={params.id} />
+                          <InstituteDetail instituteId={instituteId} />
                         </Suspense>
                       );
                     }}
@@ -580,7 +584,7 @@ function AppLayout({ children }: { children: ReactNode }) {
                       const EventDetailPageLazy = lazy(() => import('./pages/events/event-detail'));
                       return (
                         <Suspense fallback={<div className="p-8"><CourseSkeleton /></div>}>
-                          <EventDetailPageLazy eventId={params.id} />
+                          <EventDetailPageLazy />
                         </Suspense>
                       );
                     }}
@@ -833,8 +837,7 @@ function AppLayout({ children }: { children: ReactNode }) {
                     {() => {
                       const InstituteTrainers = lazy(() => import('./pages/institute-admin/InstituteTrainers'));
                       return (
-                        <Suspense fallback={<div```python
- className="p-8 text-center">훈련사 관리 로딩 중...</div>}>
+                        <Suspense fallback={<div className="p-8 text-center">훈련사 관리 로딩 중...</div>}>
                           <InstituteTrainers />
                         </Suspense>
                       );
@@ -2310,71 +2313,7 @@ function AuthenticatedRoutes() {
         </Route>
 
         {/* 상담 관련 라우트 추가 */}
-                  <Route path="/courses">
-                    {({ params }) => {
-                      const CoursesPage = lazy(() => import('./pages/courses/index'));
-                      return (
-                        <Suspense fallback={<DogLoading />}>
-                          <CoursesPage />
-                        </Suspense>
-                      );
-                    }}
-                  </Route>
 
-                  <Route path="/courses/:id">
-                    {({ params }) => {
-                      const CourseDetail = lazy(() => import('./pages/courses/CourseDetail'));
-                      return (
-                        <Suspense fallback={<DogLoading />}>
-                          <CourseDetail />
-                        </Suspense>
-                      );
-                    }}
-                  </Route>
-
-                  <Route path="/courses/:id/preview">
-                    {({ params }) => {
-                      const CourseDetail = lazy(() => import('./pages/courses/CourseDetail'));
-                      return (
-                        <Suspense fallback={<DogLoading />}>
-                          <CourseDetail />
-                        </Suspense>
-                      );
-                    }}
-                  </Route>
-
-                  <Route path="/learn/:id">
-                    {({ params }) => {
-                      const VideoPlayerPage = lazy(() => import('./pages/VideoPlayerPage'));
-                      return (
-                        <Suspense fallback={<DogLoading />}>
-                          <VideoPlayerPage />
-                        </Suspense>
-                      );
-                    }}
-                  </Route>
-
-                  <Route path="/process-test">
-                    {({ params }) => {
-                      const ProcessTest = lazy(() => import('./pages/ProcessTest'));
-                      return (
-                        <Suspense fallback={<DogLoading />}>
-                          <ProcessTest />
-                        </Suspense>
-                      );
-                    }}
-                  </Route>
-
-                  <Route path="/consultation">
-                    {({ params }) => {
-                      const ConsultationPage = lazy(() => import('./pages/consultation/index'));
-                      return (
-                        <Suspense fallback={<DogLoading />}>
-                          <ConsultationPage />
-                        </Suspense>
-                      );
-                    }}
-                  </Route>
 
         {/* 404 페이지 */}
         <Route component={NotFound} />
