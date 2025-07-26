@@ -254,10 +254,10 @@ function AppLayout({ children }: { children: ReactNode }) {
       <div className="bg-background text-foreground min-h-screen font-sans flex flex-col">
         {/* 글로벌 로딩바 */}
         <RouteLoadingBar />
-        
+
         {/* 로딩 메시지 (선택사항) */}
         <RouteLoadingMessage />
-        
+
         {/* 접근성 개선: 콘텐츠로 건너뛰기 링크 */}
         <SkipToContent contentId="main-content" />
 
@@ -340,6 +340,7 @@ function AppLayout({ children }: { children: ReactNode }) {
                   <Route path="/admin/point-management" component={PointManagement} />
                   <Route path="/admin/points-management" component={AdminPointsManagement} />
                   <Route path="/admin/substitute-overview" component={SubstituteTrainerOverview} />
+                  <Route path="/admin/payment" component={lazy(() => import('./pages/admin/PaymentManagement'))} />
 
                   {/* 업체 등록 관리 */}
                   <Route path="/admin/business-registration">
@@ -423,7 +424,7 @@ function AppLayout({ children }: { children: ReactNode }) {
                       );
                     }}
                   </Route>
-                  
+
                   <Route path="/course/:id" component={CourseDetail} />
                   <Route path="/courses/:id">
                     {(params) => {
@@ -832,7 +833,8 @@ function AppLayout({ children }: { children: ReactNode }) {
                     {() => {
                       const InstituteTrainers = lazy(() => import('./pages/institute-admin/InstituteTrainers'));
                       return (
-                        <Suspense fallback={<div className="p-8 text-center">훈련사 관리 로딩 중...</div>}>
+                        <Suspense fallback={<div```python
+ className="p-8 text-center">훈련사 관리 로딩 중...</div>}>
                           <InstituteTrainers />
                         </Suspense>
                       );

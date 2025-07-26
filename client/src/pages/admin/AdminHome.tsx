@@ -25,7 +25,8 @@ import {
   Building,
   UserCheck,
   ShoppingBag,
-  Monitor
+  Monitor,
+  CreditCard
 } from 'lucide-react';
 import { CompactUserGrowthChart, CompactUserTypeChart, CompactRevenueChart, CompactSystemChart } from '@/components/charts/AdminCharts';
 import { useLocation } from 'wouter';

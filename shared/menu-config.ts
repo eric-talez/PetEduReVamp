@@ -556,6 +556,18 @@ export const DEFAULT_MENU_ITEMS: MenuItem[] = [
     orderIndex: 10,
     isActive: true,
     isPublic: false
+  },
+  {
+    id: 'payment-management',
+    title: '결제연동 관리',
+    path: '/admin/payment',
+    icon: 'CreditCard',
+    type: 'internal',
+    category: 'admin',
+    roles: ['admin'],
+    orderIndex: 11,
+    isActive: true,
+    isPublic: false
   }
 ];
 
