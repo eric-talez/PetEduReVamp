@@ -7,6 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
 import { 
   CreditCard, 
   DollarSign, 
@@ -20,7 +22,9 @@ import {
   Percent,
   AlertTriangle,
   CheckCircle,
-  XCircle
+  XCircle,
+  Key,
+  Lock
 } from "lucide-react";
 
 interface PaymentMethod {
@@ -49,6 +53,25 @@ export default function PaymentIntegration() {
   const [selectedMethod, setSelectedMethod] = useState<PaymentMethod | null>(null);
   const [testResults, setTestResults] = useState<{ [key: string]: boolean }>({});
   const [loading, setLoading] = useState(true);
+  const [showSecurityDialog, setShowSecurityDialog] = useState(false);
+  const [showAddMethodDialog, setShowAddMethodDialog] = useState(false);
+  const [newMethodForm, setNewMethodForm] = useState({
+    id: '',
+    name: '',
+    type: 'pg',
+    description: '',
+    provider: '',
+    apiKey: '',
+    commissionRate: 0
+  });
+  const [securitySettings, setSecuritySettings] = useState({
+    encryptionEnabled: true,
+    apiKeyEncryption: true,
+    transactionLogging: true,
+    fraudDetection: true,
+    twoFactorAuth: false,
+    ipWhitelist: ''
+  });
 
   // 데이터 로드
   useEffect(() => {
@@ -172,6 +195,54 @@ export default function PaymentIntegration() {
     } catch (error) {
       console.error('요금제 업데이트 오류:', error);
       alert('요금제 업데이트 중 오류가 발생했습니다.');
+    }
+  };
+
+  // 새 결제 수단 추가
+  const addPaymentMethod = async () => {
+    try {
+      const response = await fetch('/api/admin/payment/methods', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newMethodForm)
+      });
+
+      if (response.ok) {
+        await loadPaymentData(); // 데이터 새로고침
+        setShowAddMethodDialog(false);
+        setNewMethodForm({
+          id: '',
+          name: '',
+          type: 'pg',
+          description: '',
+          provider: '',
+          apiKey: '',
+          commissionRate: 0
+        });
+        alert('새 결제 수단이 추가되었습니다.');
+      }
+    } catch (error) {
+      console.error('결제 수단 추가 오류:', error);
+      alert('결제 수단 추가 중 오류가 발생했습니다.');
+    }
+  };
+
+  // 보안 설정 업데이트
+  const updateSecuritySettings = async () => {
+    try {
+      const response = await fetch('/api/admin/payment/security', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(securitySettings)
+      });
+
+      if (response.ok) {
+        setShowSecurityDialog(false);
+        alert('보안 설정이 업데이트되었습니다.');
+      }
+    } catch (error) {
+      console.error('보안 설정 업데이트 오류:', error);
+      alert('보안 설정 업데이트 중 오류가 발생했습니다.');
     }
   };
 
