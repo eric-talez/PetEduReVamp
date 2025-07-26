@@ -91,9 +91,10 @@ export default function AdminSettings() {
 
   // 색상 설정 로드 후 상태 업데이트
   useEffect(() => {
-    if (colorSettings?.settings) {
-      const primary = colorSettings.settings.primary || '#7C3AED';
-      const secondary = colorSettings.settings.secondary || '#10B981';
+    if (colorSettings && (colorSettings as any).settings) {
+      const settings = (colorSettings as any).settings;
+      const primary = settings.primary || '#7C3AED';
+      const secondary = settings.secondary || '#10B981';
       
       setPrimaryColor(primary);
       setSecondaryColor(secondary);
