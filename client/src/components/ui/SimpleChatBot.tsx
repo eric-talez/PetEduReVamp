@@ -45,18 +45,24 @@ export function SimpleChatBot() {
 
   // 드래그 시작
   const handleDragStart = useCallback((e: React.MouseEvent) => {
-    const rect = chatbotRef.current?.getBoundingClientRect();
-    if (!rect) return;
-
     setIsDragging(true);
+    
+    // 현재 요소의 크기를 고려한 드래그 오프셋 계산
+    const currentWidth = isOpen ? size.width : 56; // 버튼: 56px, 창: size.width
+    const currentHeight = isOpen ? size.height : 56; // 버튼: 56px, 창: size.height
+    
+    // 현재 위치에서 마우스 클릭 지점의 상대 위치 계산
+    const currentLeft = window.innerWidth - position.x - currentWidth;
+    const currentTop = window.innerHeight - position.y - currentHeight;
+    
     setDragStart({
-      x: e.clientX - rect.left,
-      y: e.clientY - rect.top
+      x: e.clientX - currentLeft,
+      y: e.clientY - currentTop
     });
     
     e.preventDefault();
     e.stopPropagation();
-  }, []);
+  }, [position, size, isOpen]);
 
   // 리사이즈 시작
   const handleResizeStart = useCallback((e: React.MouseEvent) => {
@@ -79,13 +85,16 @@ export function SimpleChatBot() {
         const newX = e.clientX - dragStart.x;
         const newY = e.clientY - dragStart.y;
         
-        // 화면 경계 내로 제한
-        const constrainedX = Math.max(0, Math.min(window.innerWidth - size.width, newX));
-        const constrainedY = Math.max(0, Math.min(window.innerHeight - size.height, newY));
+        // 현재 크기에 따른 화면 경계 제한
+        const currentWidth = isOpen ? size.width : 56;
+        const currentHeight = isOpen ? size.height : 56;
+        
+        const constrainedX = Math.max(0, Math.min(window.innerWidth - currentWidth, newX));
+        const constrainedY = Math.max(0, Math.min(window.innerHeight - currentHeight, newY));
         
         // bottom/right 기준으로 좌표 변환
-        const bottomPosition = window.innerHeight - constrainedY - size.height;
-        const rightPosition = window.innerWidth - constrainedX - size.width;
+        const bottomPosition = window.innerHeight - constrainedY - currentHeight;
+        const rightPosition = window.innerWidth - constrainedX - currentWidth;
         
         setPosition({ x: rightPosition, y: bottomPosition });
       }
@@ -388,7 +397,8 @@ export function SimpleChatBot() {
       >
         <Button
           onClick={() => setIsOpen(true)}
-          className="w-14 h-14 rounded-full bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-110 border-2 border-white/20"
+          onMouseDown={handleDragStart}
+          className="w-14 h-14 rounded-full bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-110 border-2 border-white/20 cursor-move"
           style={{ 
             background: 'linear-gradient(135deg, #2BAA61 0%, #1e8b4f 100%)',
             boxShadow: '0 8px 32px rgba(43, 170, 97, 0.3), 0 2px 8px rgba(0, 0, 0, 0.1)',
