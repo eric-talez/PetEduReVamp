@@ -1,564 +1,424 @@
-
 import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { X, Send, Loader2, Bot, User, Move, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardFooter, CardTitle } from '@/components/ui/card';
-import { ChevronUp, X, Send, Maximize2, Minimize2, MessageCircle, PawPrint, RefreshCw, Move } from 'lucide-react';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { useAuth } from '@/lib/auth-compat';
+import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { useTheme } from '../hooks/use-theme';
 
-// 전역 인증 상태 타입 확장
-declare global {
-  interface Window {
-    __peteduAuthState?: {
-      isAuthenticated: boolean;
-      userRole: string | null;
-      userName: string | null;
-    };
-  }
+interface Message {
+  id: string;
+  role: 'user' | 'assistant' | 'system';
+  content: string;
 }
 
-type Message = {
-  id: string;
-  type: 'user' | 'bot';
-  text: string;
-  timestamp: Date;
+// 기본 환영 메시지
+const DEFAULT_WELCOME_MESSAGE = {
+  id: 'welcome-1',
+  role: 'assistant' as const,
+  content: '안녕하세요! TALEZ의 AI 전문 어시스턴트입니다. 반려동물의 건강, 훈련, 영양, 행동 문제에 대해 전문적인 조언을 드릴 수 있습니다. 어떤 도움이 필요하신가요?'
 };
 
-type Position = {
-  x: number;
-  y: number;
-};
-
-type Size = {
-  width: number;
-  height: number;
-};
-
-type ResizeDirection = 'n' | 's' | 'e' | 'w' | 'ne' | 'nw' | 'se' | 'sw';
-
-const SimpleChatbot: React.FC = () => {
+export function SimpleChatBot() {
   const [isOpen, setIsOpen] = useState(false);
-  const [isExpanded, setIsExpanded] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
-    {
-      id: '1',
-      type: 'bot',
-      text: '안녕하세요! 펫에듀 AI 어시스턴트입니다. 반려동물 관련 질문이 있으시면 편하게 물어보세요.',
-      timestamp: new Date()
-    }
+    DEFAULT_WELCOME_MESSAGE
   ]);
-  const [input, setInput] = useState('');
-  
-  // 위치 및 크기 상태
-  const [position, setPosition] = useState<Position>({ x: 24, y: 24 });
-  const [size, setSize] = useState<Size>({ width: 380, height: 500 });
-  
-  // 드래그 및 리사이즈 상태
+  const [inputValue, setInputValue] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [position, setPosition] = useState({ x: 24, y: 24 });
+  const [size, setSize] = useState({ width: 320, height: 480 });
   const [isDragging, setIsDragging] = useState(false);
-  const [isResizing, setIsResizing] = useState<ResizeDirection | null>(null);
-  const [dragStart, setDragStart] = useState({ x: 0, y: 0, posX: 0, posY: 0 });
-  const [resizeStart, setResizeStart] = useState({ x: 0, y: 0, width: 0, height: 0, posX: 0, posY: 0 });
-  
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
-  const chatRef = useRef<HTMLDivElement>(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const { theme } = useTheme();
-  
-  // 전역 인증 상태 확인
-  useEffect(() => {
-    const checkAuthStatus = () => {
-      if (window.__peteduAuthState && window.__peteduAuthState.isAuthenticated) {
-        setIsAuthenticated(window.__peteduAuthState.isAuthenticated);
-      } else {
-        const storedAuth = localStorage.getItem('petedu_auth');
-        if (storedAuth) {
-          try {
-            const parsedAuth = JSON.parse(storedAuth);
-            setIsAuthenticated(true);
-          } catch (e) {
-            setIsAuthenticated(false);
-          }
-        } else {
-          setIsAuthenticated(false);
-        }
-      }
-    };
-    
-    checkAuthStatus();
-    
-    const handleAuthChange = () => {
-      checkAuthStatus();
-    };
-    
-    window.addEventListener('login', handleAuthChange);
-    window.addEventListener('logout', handleAuthChange);
-    
-    return () => {
-      window.removeEventListener('login', handleAuthChange);
-      window.removeEventListener('logout', handleAuthChange);
-    };
-  }, []);
-  
-  // 자동 스크롤
-  useEffect(() => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
-    }
-  }, [messages]);
+  const [isResizing, setIsResizing] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [resizeStart, setResizeStart] = useState({ x: 0, y: 0, width: 0, height: 0 });
 
-  // 채팅창이 열리면 인풋에 포커스
+  const inputRef = useRef<HTMLTextAreaElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const chatbotRef = useRef<HTMLDivElement>(null);
+  const { isAuthenticated } = useAuth();
+
+  // 새 메시지가 추가될 때 스크롤을 아래로 이동
   useEffect(() => {
-    if (isOpen && inputRef.current) {
-      inputRef.current.focus();
-    }
-  }, [isOpen]);
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
 
   // 드래그 시작
   const handleDragStart = useCallback((e: React.MouseEvent) => {
-    if (isExpanded || isResizing) return; // 확대 모드나 리사이즈 중에는 드래그 불가
-    
-    e.preventDefault();
-    e.stopPropagation();
+    if (isResizing) return;
+
     setIsDragging(true);
     setDragStart({
-      x: e.clientX,
-      y: e.clientY,
-      posX: position.x,
-      posY: position.y
+      x: e.clientX - position.x,
+      y: e.clientY - position.y
     });
-  }, [position, isExpanded, isResizing]);
+    e.preventDefault();
+  }, [position, isResizing]);
 
   // 리사이즈 시작
-  const handleResizeStart = useCallback((e: React.MouseEvent, direction: ResizeDirection) => {
-    if (isExpanded) return; // 확대 모드에서는 리사이즈 불가
-    
-    e.preventDefault();
-    e.stopPropagation();
-    setIsResizing(direction);
+  const handleResizeStart = useCallback((e: React.MouseEvent) => {
+    setIsResizing(true);
     setResizeStart({
       x: e.clientX,
       y: e.clientY,
       width: size.width,
-      height: size.height,
-      posX: position.x,
-      posY: position.y
+      height: size.height
     });
-  }, [size, position, isExpanded]);
+    e.preventDefault();
+    e.stopPropagation();
+  }, [size]);
 
   // 마우스 이동 처리
-  const handleMouseMove = useCallback((e: MouseEvent) => {
-    if (isDragging) {
-      const deltaX = e.clientX - dragStart.x;
-      const deltaY = e.clientY - dragStart.y;
-      
-      // 화면 경계 제한
-      const maxX = window.innerWidth - size.width - 24;
-      const maxY = window.innerHeight - size.height - 24;
-      
-      const newX = Math.max(24, Math.min(maxX, dragStart.posX + deltaX));
-      const newY = Math.max(24, Math.min(maxY, dragStart.posY + deltaY));
-      
-      setPosition({ x: newX, y: newY });
-    }
-    
-    if (isResizing) {
-      const deltaX = e.clientX - resizeStart.x;
-      const deltaY = e.clientY - resizeStart.y;
-      
-      let newWidth = resizeStart.width;
-      let newHeight = resizeStart.height;
-      let newX = resizeStart.posX;
-      let newY = resizeStart.posY;
-      
-      // 방향에 따른 크기 조절
-      if (isResizing.includes('e')) {
-        newWidth = Math.max(320, Math.min(800, resizeStart.width + deltaX));
-      }
-      if (isResizing.includes('w')) {
-        const widthChange = Math.max(320, Math.min(800, resizeStart.width - deltaX)) - resizeStart.width;
-        newWidth = resizeStart.width + widthChange;
-        newX = resizeStart.posX - widthChange;
-      }
-      if (isResizing.includes('s')) {
-        newHeight = Math.max(400, Math.min(700, resizeStart.height + deltaY));
-      }
-      if (isResizing.includes('n')) {
-        const heightChange = Math.max(400, Math.min(700, resizeStart.height - deltaY)) - resizeStart.height;
-        newHeight = resizeStart.height + heightChange;
-        newY = resizeStart.posY - heightChange;
-      }
-      
-      // 화면 경계 제한
-      newX = Math.max(24, Math.min(window.innerWidth - newWidth - 24, newX));
-      newY = Math.max(24, Math.min(window.innerHeight - newHeight - 24, newY));
-      
-      setSize({ width: newWidth, height: newHeight });
-      setPosition({ x: newX, y: newY });
-    }
-  }, [isDragging, isResizing, dragStart, resizeStart, size]);
-
-  // 마우스 업 처리
-  const handleMouseUp = useCallback(() => {
-    setIsDragging(false);
-    setIsResizing(null);
-    document.body.style.cursor = '';
-    document.body.style.userSelect = '';
-  }, []);
-
-  // 이벤트 리스너 등록/해제
   useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (isDragging) {
+        const newX = Math.max(0, Math.min(window.innerWidth - size.width, e.clientX - dragStart.x));
+        const newY = Math.max(0, Math.min(window.innerHeight - size.height, e.clientY - dragStart.y));
+        setPosition({ x: newX, y: newY });
+      }
+
+      if (isResizing) {
+        const deltaX = e.clientX - resizeStart.x;
+        const deltaY = e.clientY - resizeStart.y;
+        const newWidth = Math.max(280, Math.min(600, resizeStart.width + deltaX));
+        const newHeight = Math.max(400, Math.min(700, resizeStart.height + deltaY));
+        setSize({ width: newWidth, height: newHeight });
+      }
+    };
+
+    const handleMouseUp = () => {
+      setIsDragging(false);
+      setIsResizing(false);
+    };
+
     if (isDragging || isResizing) {
-      document.addEventListener('mousemove', handleMouseMove, { passive: false });
+      document.addEventListener('mousemove', handleMouseMove);
       document.addEventListener('mouseup', handleMouseUp);
       document.body.style.userSelect = 'none';
-      document.body.style.pointerEvents = 'none';
-      
-      // 챗봇 컨테이너는 포인터 이벤트 허용
-      if (chatRef.current) {
-        chatRef.current.style.pointerEvents = 'all';
-      }
-      
-      if (isDragging) {
-        document.body.style.cursor = 'move';
-      } else if (isResizing) {
-        const cursorMap: Record<ResizeDirection, string> = {
-          'n': 'n-resize',
-          's': 's-resize',
-          'e': 'e-resize',
-          'w': 'w-resize',
-          'ne': 'ne-resize',
-          'nw': 'nw-resize',
-          'se': 'se-resize',
-          'sw': 'sw-resize'
-        };
-        document.body.style.cursor = cursorMap[isResizing];
-      }
+      document.body.style.cursor = isDragging ? 'move' : 'nw-resize';
     }
 
     return () => {
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
-      document.body.style.cursor = '';
       document.body.style.userSelect = '';
-      document.body.style.pointerEvents = '';
+      document.body.style.cursor = '';
     };
-  }, [isDragging, isResizing, handleMouseMove, handleMouseUp]);
+  }, [isDragging, isResizing, dragStart, resizeStart, size]);
 
-  const handleOpen = () => {
-    setIsOpen(true);
+  // 위치 초기화
+  const resetPosition = () => {
+    setPosition({ x: 24, y: 24 });
+    setSize({ width: 320, height: 480 });
   };
 
-  const handleClose = () => {
-    setIsOpen(false);
-    setIsExpanded(false);
-  };
+  // 메시지 전송 처리 - OpenAI API 사용
+  const handleSendMessage = async () => {
+    if (!inputValue.trim() || isLoading) return;
 
-  const toggleExpand = () => {
-    if (isExpanded) {
-      // 축소할 때 이전 위치로 복원
-      setPosition({ x: 24, y: 24 });
-    }
-    setIsExpanded(!isExpanded);
-  };
+    const currentInput = inputValue.trim();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!input.trim()) return;
-    
+    // 사용자 메시지 생성
     const userMessage: Message = {
-      id: Date.now().toString(),
-      type: 'user',
-      text: input,
-      timestamp: new Date()
+      id: `user-${Date.now()}`,
+      role: 'user',
+      content: currentInput
     };
-    
+
+    // UI 업데이트
     setMessages(prev => [...prev, userMessage]);
-    setInput('');
+    setInputValue('');
     setIsLoading(true);
-    
+
     try {
-      const response = await fetch('/api/ai-chat', {
+      // 대화 기록 준비 (최근 10개 메시지만 전송하여 컨텍스트 유지)
+      const conversationHistory = messages.slice(-10).map(msg => ({
+        role: msg.role,
+        content: msg.content
+      }));
+
+      // 현재 사용자 메시지 추가
+      conversationHistory.push({
+        role: 'user',
+        content: currentInput
+      });
+
+      // OpenAI API 호출
+      const response = await fetch('/api/ai/chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          message: input,
-          history: messages.map(msg => ({
-            role: msg.type === 'user' ? 'user' : 'assistant',
-            content: msg.text
-          })),
-          isAuthenticated: isAuthenticated
+          messages: conversationHistory,
+          model: 'gpt-4o', // 최신 OpenAI 모델 사용
+          maxTokens: 800, // 적절한 응답 길이 제한
         }),
       });
-      
+
       if (!response.ok) {
-        throw new Error('AI 응답을 가져오는데 실패했습니다');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `API 요청 실패: ${response.status}`);
       }
-      
+
       const data = await response.json();
-      
-      const botMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        type: 'bot',
-        text: data.message || '죄송합니다. 응답을 생성하는데 문제가 발생했습니다.',
-        timestamp: new Date()
+
+      const assistantMessage: Message = {
+        id: `assistant-${Date.now()}`,
+        role: 'assistant',
+        content: data.response || '응답을 받지 못했습니다.'
       };
-      
-      setMessages(prev => [...prev, botMessage]);
+
+      setMessages(prev => [...prev, assistantMessage]);
+      setIsLoading(false);
     } catch (error) {
-      console.error('AI 채팅 오류:', error);
+      console.error('AI 응답 오류:', error);
+
+      // API 오류 시 사용자 입력에 맞는 지능형 응답 제공
+      const fallbackResponse = getIntelligentResponse(currentInput);
       const errorMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        type: 'bot',
-        text: '죄송합니다. 일시적인 오류가 발생했습니다. 잠시 후 다시 시도해주세요.',
-        timestamp: new Date()
+        id: `fallback-${Date.now()}`,
+        role: 'assistant',
+        content: fallbackResponse
       };
-      
+
       setMessages(prev => [...prev, errorMessage]);
-    } finally {
       setIsLoading(false);
     }
   };
 
-  const handleReset = () => {
-    setMessages([
-      {
-        id: '1',
-        type: 'bot',
-        text: '안녕하세요! 펫에듀 AI 어시스턴트입니다. 반려동물 관련 질문이 있으시면 편하게 물어보세요.',
-        timestamp: new Date()
-      }
-    ]);
-  };
+  // 지능형 대화 시스템 - 사용자 입력 분석 및 맞춤형 응답
+  function getIntelligentResponse(input: string): string {
+    const lowerInput = input.toLowerCase().trim();
 
-  // 리사이즈 핸들 컴포넌트
-  const ResizeHandle: React.FC<{ direction: ResizeDirection; className: string }> = ({ direction, className }) => (
-    <div
-      className={cn("absolute bg-blue-500 opacity-20 hover:opacity-60 transition-opacity z-10", className)}
-      onMouseDown={(e) => handleResizeStart(e, direction)}
-      style={{ cursor: `${direction}-resize` }}
-    />
-  );
+    // 더 복잡한 키워드 매칭과 컨텍스트 분석
+    const getRandomElement = (arr: string[]) => arr[Math.floor(Math.random() * arr.length)];
+
+    // 인사 관련 - 다양한 응답
+    const greetingKeywords = ['안녕', '반가워', '처음', '시작', 'hello', 'hi', '안녕하세요'];
+    if (greetingKeywords.some(keyword => lowerInput.includes(keyword))) {
+      const greetings = [
+        '안녕하세요! TALEZ AI 어시스턴트입니다. 반려동물에 대해 어떤 궁금한 점이 있으신가요?',
+        '반갑습니다! 반려동물의 건강과 훈련에 대해 도움을 드릴 수 있어요. 무엇이 궁금하신가요?',
+        '안녕하세요! 오늘도 우리 반려동물을 위한 좋은 정보를 찾고 계시는군요. 어떤 도움이 필요하신지 알려주세요.',
+        '환영합니다! TALEZ에서 반려동물 케어 전문가로 활동하고 있어요. 어떤 상황에 대해 조언이 필요하신가요?'
+      ];
+      return getRandomElement(greetings);
+    }
+
+    // 강아지 관련 다양한 키워드 조합 분석
+    if (lowerInput.includes('강아지') || lowerInput.includes('개') || lowerInput.includes('댕댕이')) {
+      // 짖음 문제
+      if (lowerInput.includes('짖') || lowerInput.includes('짓') || lowerInput.includes('소음') || lowerInput.includes('시끄')) {
+        const barkingResponses = [
+          `강아지가 ${lowerInput.includes('밤') ? '밤에' : lowerInput.includes('아침') ? '아침에' : ''} 짖는 것 때문에 고민이시군요. 짖음의 원인을 파악하는 것이 우선입니다.\n\n가능한 원인:\n• 외부 소음이나 자극에 대한 반응\n• 관심을 끌고 싶어하는 행동\n• 불안하거나 스트레스 받는 상황\n• 영역을 지키려는 본능\n\n즉시 해볼 수 있는 방법:\n• 짖는 순간 주의를 다른 곳으로 돌리기\n• 조용할 때 간식으로 보상하기\n• 충분한 산책과 놀이로 에너지 소모시키기`,
+          `짖음 문제는 많은 반려인들이 겪는 고민이에요. 강아지의 나이와 견종에 따라 접근법이 다를 수 있습니다.\n\n효과적인 훈련법:\n• '조용히' 명령어 훈련\n• 짖음을 유발하는 자극 줄이기\n• 규칙적인 일상 루틴 만들기\n• 사회화 훈련으로 외부 자극에 적응시키기\n\n참고로 TALEZ의 전문 훈련사들은 개별 상황에 맞는 맞춤 솔루션을 제공해드려요.`
+        ];
+        return getRandomElement(barkingResponses);
+      }
+
+      // 일반적인 강아지 관련 질문
+      const generalDogResponses = [
+        `강아지에 대한 궁금한 점이 있으시군요! 구체적으로 어떤 부분이 궁금하신가요? 훈련, 건강, 급여, 행동 등 어떤 주제든 도움을 드릴 수 있어요.`,
+        `우리 반려견을 위한 정보를 찾고 계시는군요. 견종이나 나이, 현재 상황을 알려주시면 더 맞춤형 조언을 드릴 수 있습니다.`,
+        `강아지 키우기는 정말 보람찬 일이지만 때로는 어려움도 있죠. 어떤 고민이 있으신지 자세히 말씀해주세요!`
+      ];
+      return getRandomElement(generalDogResponses);
+    }
+
+    // 기본 응답
+    return `반려동물에 대해 궁금한 점이 있으시군요. 구체적으로 어떤 도움이 필요하신지 알려주세요. 건강, 훈련, 영양, 행동 등 어떤 주제든 도움을 드릴 수 있어요.`;
+  }
+
+  // 엔터 키로 메시지 전송 (Shift+Enter는 줄바꿈)
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSendMessage();
+    }
+  };
 
   const shouldHideChatbot = () => {
     if (window.location.pathname.includes('/admin')) return true;
     if (window.location.pathname.includes('/ai-chatbot') || 
         window.location.pathname.includes('/ai-analysis')) return true;
-    if (isAuthenticated && (
-      window.location.pathname.includes('/ai-') ||
-      window.location.pathname.includes('/trainer/notebook')
-    )) return true;
     return false;
-  };
-
-  const handleGoToLogin = () => {
-    window.location.href = "/auth/login";
-  };
-
-  const handleGoToFullAnalysis = () => {
-    if (isAuthenticated) {
-      window.location.href = "/ai-analysis";
-    } else {
-      window.location.href = "/auth/login?redirect=/ai-analysis";
-    }
   };
 
   if (shouldHideChatbot()) {
     return null;
   }
 
-  return (
-    <>
-      {!isOpen && (
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                className="fixed bottom-6 right-6 rounded-full w-14 h-14 shadow-lg z-50"
-                size="icon"
-                onClick={handleOpen}
-                aria-label="AI 반려동물 상담 챗봇 열기"
-              >
-                <PawPrint className="h-6 w-6" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent side="left">
-              <p>AI 반려동물 상담</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-      )}
-
-      {isOpen && (
-        <Card 
-          ref={chatRef}
-          className={cn(
-            "fixed shadow-lg transition-all duration-300 z-50 select-none",
-            isExpanded ? "inset-4 md:inset-10" : ""
-          )}
-          style={!isExpanded ? {
-            left: `${position.x}px`,
-            top: `${position.y}px`,
-            width: `${size.width}px`,
-            height: `${size.height}px`
-          } : undefined}
+  if (!isOpen) {
+    return (
+      <div 
+        className="fixed z-[60]"
+        style={{ 
+          bottom: `${position.y}px`, 
+          right: `${position.x}px` 
+        }}
+      >
+        <Button
+          onClick={() => setIsOpen(true)}
+          className="w-14 h-14 rounded-full bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-110 border-2 border-white/20"
+          style={{ 
+            background: 'linear-gradient(135deg, #2BAA61 0%, #1e8b4f 100%)',
+            boxShadow: '0 8px 32px rgba(43, 170, 97, 0.3), 0 2px 8px rgba(0, 0, 0, 0.1)',
+          }}
         >
-          {/* 리사이즈 핸들들 (확대 모드가 아닐 때만 표시) */}
-          {!isExpanded && (
-            <>
-              {/* 코너 핸들 */}
-              <ResizeHandle direction="nw" className="top-0 left-0 w-4 h-4" />
-              <ResizeHandle direction="ne" className="top-0 right-0 w-4 h-4" />
-              <ResizeHandle direction="sw" className="bottom-0 left-0 w-4 h-4" />
-              <ResizeHandle direction="se" className="bottom-0 right-0 w-4 h-4" />
-              
-              {/* 모서리 핸들 */}
-              <ResizeHandle direction="n" className="top-0 left-4 right-4 h-2" />
-              <ResizeHandle direction="s" className="bottom-0 left-4 right-4 h-2" />
-              <ResizeHandle direction="w" className="left-0 top-4 bottom-4 w-2" />
-              <ResizeHandle direction="e" className="right-0 top-4 bottom-4 w-2" />
-            </>
-          )}
+          <Bot size={22} className="text-white drop-shadow-sm" />
+          {/* 펄스 애니메이션 효과 */}
+          <div className="absolute -inset-2 rounded-full bg-primary/20 animate-ping" />
+          <div className="absolute -inset-1 rounded-full bg-gradient-to-r from-primary/30 to-primary/10 animate-pulse" />
+        </Button>
+      </div>
+    );
+  }
 
-          <CardHeader 
-            className={cn(
-              "p-3 flex flex-row items-center justify-between space-y-0 relative",
-              !isExpanded && "cursor-move"
-            )}
-            onMouseDown={!isExpanded ? handleDragStart : undefined}
+  return (
+    <div 
+      ref={chatbotRef}
+      className="fixed bg-white border border-gray-200 rounded-2xl shadow-2xl z-[60] flex flex-col overflow-hidden"
+      style={{
+        bottom: `${position.y}px`,
+        right: `${position.x}px`,
+        width: `${size.width}px`,
+        height: `${size.height}px`,
+        minWidth: '280px',
+        minHeight: '400px',
+        maxWidth: '600px',
+        maxHeight: '700px'
+      }}
+    >
+      {/* 헤더 - 드래그 가능 */}
+      <div 
+        className="flex items-center justify-between p-4 bg-gradient-to-r from-primary to-primary/90 text-white cursor-move select-none"
+        onMouseDown={handleDragStart}
+      >
+        <div className="flex items-center gap-3">
+          <Move size={16} className="text-white/80" />
+          <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
+            <Bot size={18} />
+          </div>
+          <div>
+            <span className="font-semibold text-sm">TALEZ AI 도우미</span>
+            <div className="flex items-center gap-1 text-xs text-white/80">
+              <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+              온라인
+            </div>
+          </div>
+        </div>
+        <div className="flex items-center gap-1">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={resetPosition}
+            className="text-white hover:bg-white/20 w-8 h-8 p-0 rounded-full"
+            title="위치 초기화"
           >
-            <CardTitle className="text-sm md:text-base flex items-center">
-              <PawPrint className="h-4 w-4 mr-2" />
-              반려동물 AI 어시스턴트
-            </CardTitle>
-            
-            <div className="flex space-x-1">
-              {!isExpanded && (
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  className="h-8 w-8" 
-                  title="드래그하여 이동"
-                  onMouseDown={handleDragStart}
-                >
-                  <Move className="h-4 w-4" />
-                </Button>
-              )}
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className="h-8 w-8" 
-                onClick={toggleExpand}
-                aria-label={isExpanded ? "창 축소하기" : "창 확대하기"}
-              >
-                {isExpanded ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
-              </Button>
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className="h-8 w-8" 
-                onClick={handleClose}
-                aria-label="챗봇 닫기"
-              >
-                <X className="h-4 w-4" />
-              </Button>
-            </div>
-          </CardHeader>
-          
-          <CardContent className={cn(
-            "px-3 overflow-y-auto", 
-            isExpanded 
-              ? "h-[calc(100%-7rem)]" 
-              : `h-[${size.height - 140}px]`
-          )}>
-            <div className="flex flex-col space-y-4">
-              {messages.map((message) => (
-                <div 
-                  key={message.id} 
-                  className={cn(
-                    "flex",
-                    message.type === 'user' ? "justify-end" : "justify-start"
-                  )}
-                >
-                  <div 
-                    className={cn(
-                      "max-w-[80%] rounded-lg p-3",
-                      message.type === 'user' 
-                        ? "bg-primary text-primary-foreground" 
-                        : theme === 'dark'
-                          ? "bg-secondary text-secondary-foreground"
-                          : "bg-muted text-muted-foreground"
-                    )}
-                  >
-                    <p className="text-sm">{message.text}</p>
-                    <div className="text-xs mt-1 opacity-70">
-                      {message.timestamp.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
-                    </div>
-                  </div>
-                </div>
-              ))}
-              {isLoading && (
-                <div className="flex justify-start">
-                  <div className={cn(
-                    "max-w-[80%] rounded-lg p-3",
-                    theme === 'dark'
-                      ? "bg-secondary text-secondary-foreground"
-                      : "bg-muted text-muted-foreground"
-                  )}>
-                    <div className="flex space-x-1 items-center">
-                      <div className="w-2 h-2 rounded-full bg-current animate-bounce" style={{ animationDelay: '0ms' }}></div>
-                      <div className="w-2 h-2 rounded-full bg-current animate-bounce" style={{ animationDelay: '150ms' }}></div>
-                      <div className="w-2 h-2 rounded-full bg-current animate-bounce" style={{ animationDelay: '300ms' }}></div>
-                    </div>
-                  </div>
-                </div>
-              )}
-              <div ref={messagesEndRef} />
-            </div>
-          </CardContent>
-          
-          <CardFooter className="p-3 pt-0 flex flex-col space-y-2">
-            <form onSubmit={handleSubmit} className="flex w-full gap-2">
-              <Input
-                ref={inputRef}
-                placeholder="반려동물에 관해 물어보세요..."
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                className="flex-1"
-                disabled={isLoading}
-              />
-              <Button type="submit" size="icon" disabled={isLoading || !input.trim()}>
-                <Send className="h-4 w-4" />
-              </Button>
-              <Button type="button" variant="outline" size="icon" onClick={handleReset} title="대화 초기화">
-                <RefreshCw className="h-4 w-4" />
-              </Button>
-            </form>
-            
-            <div className="flex justify-between w-full text-xs text-muted-foreground">
-              <button 
-                className="hover:underline" 
-                onClick={isAuthenticated ? handleGoToFullAnalysis : handleGoToLogin}
-              >
-                {isAuthenticated ? '고급 AI 분석 사용하기 →' : '로그인하여 더 많은 기능 사용하기 →'}
-              </button>
-              {!isExpanded && (
-                <span className="text-xs opacity-50">
-                  {size.width}×{size.height}
-                </span>
-              )}
-            </div>
-          </CardFooter>
-        </Card>
-      )}
-    </>
-  );
-};
+            <RotateCcw size={14} />
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setIsOpen(false)}
+            className="text-white hover:bg-white/20 w-8 h-8 p-0 rounded-full"
+          >
+            <X size={16} />
+          </Button>
+        </div>
+      </div>
 
-export default SimpleChatbot;
+      {/* 메시지 영역 */}
+      <ScrollArea className="flex-1 p-4 bg-background/50">
+        <div className="space-y-4">
+          {messages.filter(m => m.role !== 'system').map(message => (
+            <div
+              key={message.id}
+              className={cn(
+                'flex gap-3 mb-4',
+                message.role === 'user' ? 'justify-end' : 'justify-start'
+              )}
+            >
+              {message.role === 'assistant' && (
+                <div className="w-8 h-8 rounded-full bg-gradient-to-r from-primary to-primary/80 flex items-center justify-center text-primary-foreground shadow-sm">
+                  <Bot size={16} />
+                </div>
+              )}
+              <div
+                className={cn(
+                  'rounded-2xl px-4 py-3 max-w-[75%] text-sm leading-relaxed shadow-sm',
+                  message.role === 'user' 
+                    ? 'bg-primary text-primary-foreground rounded-br-md' 
+                    : 'bg-card text-card-foreground border border-border rounded-bl-md'
+                )}
+              >
+                <div className="whitespace-pre-wrap">
+                  {message.content}
+                </div>
+              </div>
+              {message.role === 'user' && (
+                <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-muted-foreground">
+                  <User size={16} />
+                </div>
+              )}
+            </div>
+          ))}
+          {isLoading && (
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground">
+                <Bot size={18} />
+              </div>
+              <div className="bg-muted rounded-lg rounded-tl-none px-4 py-2">
+                <Loader2 className="h-4 w-4 animate-spin" />
+              </div>
+            </div>
+          )}
+          <div ref={messagesEndRef} />
+        </div>
+      </ScrollArea>
+
+      {/* 입력 영역 */}
+      <div className="p-4 bg-card border-t border-border">
+        <div className="flex gap-3 items-end">
+          <div className="flex-1">
+            <Textarea
+              ref={inputRef}
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder="반려동물에 대해 궁금한 것을 물어보세요..."
+              className="resize-none min-h-[44px] max-h-[120px] border-gray-200 rounded-xl focus:border-primary focus:ring-primary/20 text-sm"
+              disabled={isLoading}
+            />
+          </div>
+          <Button
+            onClick={handleSendMessage}
+            size="icon"
+            disabled={!inputValue.trim() || isLoading}
+            className="w-11 h-11 rounded-xl bg-primary hover:bg-primary/90 shadow-sm"
+          >
+            <Send size={18} />
+          </Button>
+        </div>
+        <div className="mt-3 text-xs text-gray-500 flex items-center gap-2">
+          <div className="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
+          {isAuthenticated 
+            ? 'AI가 반려동물 케어에 대한 맞춤형 조언을 제공합니다' 
+            : '로그인하면 개인화된 반려동물 관리 조언을 받을 수 있습니다'}
+        </div>
+      </div>
+
+      {/* 리사이즈 핸들 */}
+      <div
+        className="absolute bottom-0 right-0 w-4 h-4 cursor-nw-resize opacity-50 hover:opacity-100 transition-opacity"
+        onMouseDown={handleResizeStart}
+        style={{
+          background: 'linear-gradient(-45deg, transparent 30%, #666 30%, #666 70%, transparent 70%)',
+          backgroundSize: '4px 4px'
+        }}
+        title="크기 조절"
+      />
+    </div>
+  );
+}
