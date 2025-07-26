@@ -46,14 +46,18 @@ export function SimpleChatBot() {
   // 드래그 시작
   const handleDragStart = useCallback((e: React.MouseEvent) => {
     if (isResizing) return;
+    
+    const rect = chatbotRef.current?.getBoundingClientRect();
+    if (!rect) return;
 
     setIsDragging(true);
     setDragStart({
-      x: e.clientX - position.x,
-      y: e.clientY - position.y
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top
     });
     e.preventDefault();
-  }, [position, isResizing]);
+    e.stopPropagation();
+  }, [isResizing]);
 
   // 리사이즈 시작
   const handleResizeStart = useCallback((e: React.MouseEvent) => {
@@ -71,10 +75,17 @@ export function SimpleChatBot() {
   // 마우스 이동 처리
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
+      e.preventDefault();
+      
       if (isDragging) {
         const newX = Math.max(0, Math.min(window.innerWidth - size.width, e.clientX - dragStart.x));
         const newY = Math.max(0, Math.min(window.innerHeight - size.height, e.clientY - dragStart.y));
-        setPosition({ x: newX, y: newY });
+        
+        // bottom, right 기준에서 top, left 기준으로 변환
+        const bottomPosition = window.innerHeight - newY - size.height;
+        const rightPosition = window.innerWidth - newX - size.width;
+        
+        setPosition({ x: rightPosition, y: bottomPosition });
       }
 
       if (isResizing) {
@@ -89,13 +100,15 @@ export function SimpleChatBot() {
     const handleMouseUp = () => {
       setIsDragging(false);
       setIsResizing(false);
+      document.body.style.userSelect = '';
+      document.body.style.cursor = '';
     };
 
     if (isDragging || isResizing) {
-      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mousemove', handleMouseMove, { passive: false });
       document.addEventListener('mouseup', handleMouseUp);
       document.body.style.userSelect = 'none';
-      document.body.style.cursor = isDragging ? 'move' : 'nw-resize';
+      document.body.style.cursor = isDragging ? 'move' : 'se-resize';
     }
 
     return () => {
@@ -292,10 +305,14 @@ export function SimpleChatBot() {
     >
       {/* 헤더 - 드래그 가능 */}
       <div 
-        className="flex items-center justify-between p-4 bg-gradient-to-r from-primary to-primary/90 text-white cursor-move select-none"
-        onMouseDown={handleDragStart}
+        className="flex items-center justify-between p-4 bg-gradient-to-r from-primary to-primary/90 text-white select-none"
+        style={{ cursor: isDragging ? 'grabbing' : 'grab' }}
       >
-        <div className="flex items-center gap-3">
+        <div 
+          className="flex items-center gap-3 flex-1" 
+          onMouseDown={handleDragStart}
+          style={{ cursor: isDragging ? 'grabbing' : 'grab' }}
+        >
           <Move size={16} className="text-white/80" />
           <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
             <Bot size={18} />
@@ -411,11 +428,11 @@ export function SimpleChatBot() {
 
       {/* 리사이즈 핸들 */}
       <div
-        className="absolute bottom-0 right-0 w-4 h-4 cursor-nw-resize opacity-50 hover:opacity-100 transition-opacity"
+        className="absolute bottom-0 right-0 w-5 h-5 cursor-se-resize opacity-60 hover:opacity-100 transition-opacity z-10"
         onMouseDown={handleResizeStart}
         style={{
-          background: 'linear-gradient(-45deg, transparent 30%, #666 30%, #666 70%, transparent 70%)',
-          backgroundSize: '4px 4px'
+          background: 'repeating-linear-gradient(45deg, #999 0, #999 2px, transparent 2px, transparent 4px)',
+          borderTopLeftRadius: '4px'
         }}
         title="크기 조절"
       />
