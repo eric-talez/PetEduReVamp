@@ -1,0 +1,293 @@
+// server.js에 추가할 API 엔드포인트들
+const express = require('express');
+const Database = require("@replit/database");
+const db = new Database();
+
+// 사용자 상호작용 로깅 API
+app.post('/api/user-interactions', async (req, res) => {
+  try {
+    const interactionData = req.body;
+    const logId = `interaction_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    
+    // Replit Database에 저장
+    await db.set(logId, {
+      ...interactionData,
+      serverTimestamp: new Date().toISOString(),
+      ip: req.ip,
+      userAgent: req.get('User-Agent')
+    });
+    
+    console.log(`📝 사용자 상호작용 로그: ${interactionData.type}`);
+    res.json({ success: true, id: logId });
+  } catch (error) {
+    console.error('상호작용 로그 저장 실패:', error);
+    res.status(500).json({ error: 'Failed to save interaction log' });
+  }
+});
+
+// 배치 상호작용 로깅
+app.post('/api/user-interactions/batch', async (req, res) => {
+  try {
+    const { sessionId, interactions } = req.body;
+    
+    for (const interaction of interactions) {
+      const logId = `batch_${sessionId}_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
+      await db.set(logId, {
+        ...interaction,
+        sessionId,
+        serverTimestamp: new Date().toISOString(),
+        ip: req.ip
+      });
+    }
+    
+    console.log(`📦 배치 로그 저장: ${interactions.length}개`);
+    res.json({ success: true, saved: interactions.length });
+  } catch (error) {
+    console.error('배치 로그 저장 실패:', error);
+    res.status(500).json({ error: 'Failed to save batch logs' });
+  }
+});
+
+// 버튼 이슈 리포팅
+app.post('/api/button-issues', async (req, res) => {
+  try {
+    const issueData = req.body;
+    const issueId = `button_issue_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    
+    await db.set(issueId, {
+      ...issueData,
+      severity: issueData.responseTime > 5000 ? 'high' : 'medium',
+      serverTimestamp: new Date().toISOString(),
+      ip: req.ip
+    });
+    
+    // 심각한 이슈는 즉시 알림
+    if (issueData.responseTime > 5000) {
+      console.error(`🚨 심각한 버튼 이슈: ${issueData.elementId} (${issueData.responseTime}ms)`);
+    }
+    
+    res.json({ success: true, id: issueId });
+  } catch (error) {
+    console.error('버튼 이슈 저장 실패:', error);
+    res.status(500).json({ error: 'Failed to save button issue' });
+  }
+});
+
+// 네비게이션 이슈 리포팅
+app.post('/api/navigation-issues', async (req, res) => {
+  try {
+    const issueData = req.body;
+    const issueId = `nav_issue_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    
+    await db.set(issueId, {
+      ...issueData,
+      serverTimestamp: new Date().toISOString(),
+      ip: req.ip
+    });
+    
+    console.log(`🔗 네비게이션 이슈: ${issueData.type} - ${issueData.url || issueData.href}`);
+    res.json({ success: true, id: issueId });
+  } catch (error) {
+    console.error('네비게이션 이슈 저장 실패:', error);
+    res.status(500).json({ error: 'Failed to save navigation issue' });
+  }
+});
+
+// 오류 데이터 조회 API
+app.get('/api/button-issues', async (req, res) => {
+  try {
+    const allKeys = await db.list();
+    const buttonIssueKeys = allKeys.filter(key => key.includes('button_issue') || key.includes('interaction'));
+    
+    const issues = [];
+    for (const key of buttonIssueKeys.slice(-50)) { // 최근 50개만
+      const issue = await db.get(key);
+      if (issue && (issue.type === 'button_no_response' || issue.type === 'button_timeout')) {
+        issues.push({ id: key, ...issue });
+      }
+    }
+    
+    res.json(issues.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)));
+  } catch (error) {
+    console.error('버튼 이슈 조회 실패:', error);
+    res.status(500).json({ error: 'Failed to fetch button issues' });
+  }
+});
+
+app.get('/api/navigation-issues', async (req, res) => {
+  try {
+    const allKeys = await db.list();
+    const navIssueKeys = allKeys.filter(key => key.includes('nav_issue'));
+    
+    const issues = [];
+    for (const key of navIssueKeys.slice(-50)) {
+      const issue = await db.get(key);
+      if (issue) {
+        issues.push({ id: key, ...issue });
+      }
+    }
+    
+    res.json(issues.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)));
+  } catch (error) {
+    console.error('네비게이션 이슈 조회 실패:', error);
+    res.status(500).json({ error: 'Failed to fetch navigation issues' });
+  }
+});
+
+// 대시보드 페이지 서빙
+app.get('/dashboard', (req, res) => {
+  res.sendFile(__dirname + '/public/dashboard.html');
+});
+
+// 관리자 대시보드 (간단한 인증)
+app.get('/admin/dashboard', (req, res) => {
+  const authToken = req.query.token || req.headers.authorization?.split(' ')[1];
+  
+  if (!authToken || authToken !== process.env.ADMIN_TOKEN) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+  
+  res.sendFile(__dirname + '/public/dashboard.html');
+});
+
+// 통계 API
+app.get('/api/stats', async (req, res) => {
+  try {
+    const allKeys = await db.list();
+    const now = Date.now();
+    const oneDayAgo = now - (24 * 60 * 60 * 1000);
+    
+    let todayButtonIssues = 0;
+    let todayNavIssues = 0;
+    let totalInteractions = 0;
+    
+    for (const key of allKeys) {
+      const data = await db.get(key);
+      if (data && data.timestamp) {
+        const timestamp = new Date(data.timestamp).getTime();
+        if (timestamp > oneDayAgo) {
+          if (data.type === 'button_no_response' || data.type === 'button_timeout') {
+            todayButtonIssues++;
+          } else if (data.type === 'broken_link' || data.type === 'navigation_timeout') {
+            todayNavIssues++;
+          } else if (data.type === 'button_click') {
+            totalInteractions++;
+          }
+        }
+      }
+    }
+    
+    res.json({
+      today: {
+        buttonIssues: todayButtonIssues,
+        navigationIssues: todayNavIssues,
+        interactions: totalInteractions
+      },
+      serverStatus: 'healthy',
+      lastUpdate: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('통계 조회 실패:', error);
+    res.status(500).json({ error: 'Failed to fetch stats' });
+  }
+});
+
+// 데이터 정리 API
+app.delete('/api/cleanup', async (req, res) => {
+  try {
+    const authToken = req.headers.authorization?.split(' ')[1];
+    if (!authToken || authToken !== process.env.ADMIN_TOKEN) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+    
+    const allKeys = await db.list();
+    const oneWeekAgo = Date.now() - (7 * 24 * 60 * 60 * 1000);
+    let deletedCount = 0;
+    
+    for (const key of allKeys) {
+      const data = await db.get(key);
+      if (data && data.timestamp) {
+        const timestamp = new Date(data.timestamp).getTime();
+        if (timestamp < oneWeekAgo) {
+          await db.delete(key);
+          deletedCount++;
+        }
+      }
+    }
+    
+    res.json({ success: true, deleted: deletedCount });
+  } catch (error) {
+    console.error('데이터 정리 실패:', error);
+    res.status(500).json({ error: 'Failed to cleanup data' });
+  }
+});
+
+// 실시간 알림을 위한 Server-Sent Events
+app.get('/api/events', (req, res) => {
+  res.writeHead(200, {
+    'Content-Type': 'text/event-stream',
+    'Cache-Control': 'no-cache',
+    'Connection': 'keep-alive',
+    'Access-Control-Allow-Origin': '*'
+  });
+  
+  // 클라이언트에 연결 확인 메시지 전송
+  res.write('data: {"type":"connected","message":"실시간 알림이 연결되었습니다"}\n\n');
+  
+  // 30초마다 keepalive 메시지 전송
+  const keepAlive = setInterval(() => {
+    res.write('data: {"type":"keepalive","timestamp":"' + new Date().toISOString() + '"}\n\n');
+  }, 30000);
+  
+  // 클라이언트 연결 종료시 정리
+  req.on('close', () => {
+    clearInterval(keepAlive);
+  });
+});
+
+// 긴급 알림 전송 함수
+async function sendUrgentAlert(alertData) {
+  // 여기서 실시간 알림을 모든 연결된 클라이언트에게 전송
+  // 실제 구현에서는 WebSocket이나 Server-Sent Events 사용
+  console.log('🚨 긴급 알림:', alertData);
+  
+  // Slack/Discord 웹훅으로 알림 (선택사항)
+  if (process.env.WEBHOOK_URL) {
+    try {
+      await fetch(process.env.WEBHOOK_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          text: `🚨 Replit 서비스 긴급 알림: ${alertData.message}`
+        })
+      });
+    } catch (error) {
+      console.error('웹훅 전송 실패:', error);
+    }
+  }
+}
+
+// 미들웨어: 심각한 오류 자동 감지
+app.use('/api/*', async (req, res, next) => {
+  const originalSend = res.send;
+  
+  res.send = function(data) {
+    // 500 에러나 심각한 문제 감지시 알림
+    if (res.statusCode >= 500) {
+      sendUrgentAlert({
+        type: 'server_error',
+        statusCode: res.statusCode,
+        path: req.path,
+        message: `서버 오류 발생: ${req.path} (${res.statusCode})`
+      });
+    }
+    
+    return originalSend.call(this, data);
+  };
+  
+  next();
+});
+
+console.log('🔍 사용자 오류 추적 API가 활성화되었습니다.');
+console.log('📊 대시보드: /dashboard');
+console.log('🔧 관리자: /admin/dashboard?token=YOUR_ADMIN_TOKEN');
