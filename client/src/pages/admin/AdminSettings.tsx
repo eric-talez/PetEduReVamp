@@ -312,18 +312,17 @@ export default function AdminSettings() {
 
   // 수동 에러 검사 실행
   const runManualCheck = useMutation({
-    mutationFn: () => apiRequest('POST', '/api/ai-fix/check'),
-    onSuccess: (response) => {
-      response.json().then(data => {
-        toast({
-          title: "검사 완료",
-          description: `${data.totalErrors}개 에러 발견, ${data.processedErrors}개 처리됨`,
-        });
-        refetchAiFixLogs();
-        refetchAiFixSettings();
+    mutationFn: () => apiRequest('POST', '/api/ai-fix/check').then(res => res.json()),
+    onSuccess: (data) => {
+      toast({
+        title: "검사 완료",
+        description: `${data.totalErrors}개 에러 발견, ${data.processedErrors}개 처리됨`,
       });
+      refetchAiFixLogs();
+      refetchAiFixSettings();
     },
-    onError: () => {
+    onError: (error) => {
+      console.error('에러 검사 실행 실패:', error);
       toast({
         title: "오류",
         description: "에러 검사 실행에 실패했습니다.",
