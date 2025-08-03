@@ -77,38 +77,39 @@ class AIErrorFixService {
 
   async checkForErrors(): Promise<any[]> {
     try {
-      // 빠른 검사를 위해 더미 에러 데이터 생성 (데모용)
-      console.log('[AI-Fix] 빠른 에러 검사 시작...');
+      console.log('[AI-Fix] 실제 TypeScript 검사 시작...');
       
-      const demoErrors = [
-        {
-          file: 'shared/menu-config.ts',
-          line: 15,
-          column: 10,
-          code: 'TS2322',
-          message: 'Type \'\"user\"\' is not assignable to type \'UserRole\'.',
-          type: 'type'
-        },
-        {
-          file: 'client/src/components/ui/button.tsx',
-          line: 25,
-          column: 5,
-          code: 'TS2339',
-          message: 'Property \'variant\' does not exist on type \'ButtonProps\'.',
-          type: 'type'
-        },
-        {
-          file: 'server/routes.ts',
-          line: 45,
-          column: 12,
-          code: 'TS1005',
-          message: '\',\' expected.',
-          type: 'syntax'
-        }
-      ];
+      // 실제 TypeScript 검사 실행
+      const tsOutput = await this.runTSCheck();
+      const errors = this.parseErrors(tsOutput);
       
-      console.log(`[AI-Fix] 총 ${demoErrors.length}개 에러 발견 (빠른 검사)`);
-      return demoErrors;
+      console.log(`[AI-Fix] 총 ${errors.length}개 실제 에러 발견`);
+      
+      // 에러가 없으면 더미 에러 반환 (데모용)
+      if (errors.length === 0) {
+        console.log('[AI-Fix] 실제 에러 없음 - 데모 에러 사용');
+        const demoErrors = [
+          {
+            file: 'client/src/components/ui/button.tsx',
+            line: 25,
+            column: 5,
+            code: 'TS2339',
+            message: 'Property \'variant\' does not exist on type \'ButtonProps\'.',
+            type: 'type'
+          },
+          {
+            file: 'server/routes.ts',
+            line: 45,
+            column: 12,
+            code: 'TS1005',
+            message: '\',\' expected.',
+            type: 'syntax'
+          }
+        ];
+        return demoErrors;
+      }
+      
+      return errors;
     } catch (error) {
       console.error('[AI-Fix] 에러 검사 실패:', error);
       return [];
