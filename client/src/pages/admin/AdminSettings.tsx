@@ -104,15 +104,9 @@ export default function AdminSettings() {
     queryKey: ['/api/admin/colors']
   });
 
-  // AI 에러 수정 설정 동기화
-  useEffect(() => {
-    if (aiFixData) {
-      setAiFixSettings(prev => ({
-        ...prev,
-        ...aiFixData
-      }));
-    }
-  }, [aiFixData]);
+
+
+
 
   // 색상 설정 로드 후 상태 업데이트
   useEffect(() => {
@@ -270,6 +264,16 @@ export default function AdminSettings() {
     queryFn: () => apiRequest('GET', '/api/ai-fix/settings').then(res => res.json()),
     enabled: activeTab === 'ai-fix'
   });
+
+  // AI 에러 수정 설정 동기화
+  useEffect(() => {
+    if (aiFixData) {
+      setAiFixSettings(prev => ({
+        ...prev,
+        ...aiFixData
+      }));
+    }
+  }, [aiFixData]);
 
   // AI 에러 수정 통계 쿼리
   const { data: aiFixStats } = useQuery({
