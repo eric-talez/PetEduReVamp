@@ -442,10 +442,18 @@ export function registerAIErrorFixRoutes(app: Express) {
       res.json(response);
     } catch (error) {
       console.error('[AI-Fix] 검사 실행 실패:', error);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      console.error('[AI-Fix] 검사 실행 상세 오류:', {
+        error,
+        message: errorMessage,
+        stack: error instanceof Error ? error.stack : undefined
+      });
+      
       res.status(500).json({ 
         success: false,
         error: '에러 검사 실행 중 오류가 발생했습니다.',
-        message: error instanceof Error ? error.message : String(error),
+        message: errorMessage,
+        details: error instanceof Error ? error.stack?.split('\n').slice(0, 3).join('\n') : undefined,
         timestamp: new Date().toISOString()
       });
     }
@@ -477,6 +485,31 @@ export function registerAIErrorFixRoutes(app: Express) {
     res.setHeader('Content-Type', 'text/csv');
     res.setHeader('Content-Disposition', 'attachment; filename=ai-fix-logs.csv');
     res.send(csvContent);
+  });
+
+  // 시스템 헬스체크
+  app.get('/api/ai-fix/health', (req, res) => {
+    try {
+      const health = {
+        status: 'healthy',
+        isEnabled: aiErrorFixService.isEnabled,
+        isRealTimeMonitoring: aiErrorFixService.isRealTimeMonitoring,
+        logsCount: aiErrorFixService.getRecentLogs(1000).length,
+        lastActivity: aiErrorFixService.getRecentLogs(1)[0]?.timestamp || null,
+        uptime: process.uptime(),
+        memory: process.memoryUsage(),
+        timestamp: new Date().toISOString()
+      };
+      
+      res.json(health);
+    } catch (error) {
+      console.error('[AI-Fix] 헬스체크 실패:', error);
+      res.status(500).json({
+        status: 'unhealthy',
+        error: error instanceof Error ? error.message : String(error),
+        timestamp: new Date().toISOString()
+      });
+    }
   });
 
   console.log('[AI-Fix] AI 에러 자동 수정 라우트가 등록되었습니다.');

@@ -420,7 +420,20 @@ export default function AdminSettings() {
         totalCount: 0
       });
       
-      const errorMessage = error?.message || error?.error || "에러 검사 실행에 실패했습니다.";
+      // 더 구체적인 에러 메시지 처리
+      let errorMessage = "에러 검사 실행에 실패했습니다.";
+      
+      if (error?.message) {
+        errorMessage = error.message;
+      } else if (error?.error) {
+        errorMessage = error.error;
+      } else if (error?.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (typeof error === 'string') {
+        errorMessage = error;
+      }
+      
+      console.log('[AI-Fix] 에러 메시지 처리:', { error, errorMessage });
       
       toast({
         title: "검사 실패",
