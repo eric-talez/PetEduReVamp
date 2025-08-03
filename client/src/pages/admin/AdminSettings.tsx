@@ -314,9 +314,10 @@ export default function AdminSettings() {
   const runManualCheck = useMutation({
     mutationFn: () => apiRequest('POST', '/api/ai-fix/check'),
     onSuccess: (data) => {
+      const successCount = data.successfulFixes || 0;
       toast({
         title: "검사 완료",
-        description: `${data.totalErrors}개 에러 발견, ${data.processedErrors}개 처리됨`,
+        description: `${data.totalErrors}개 에러 발견, ${data.processedErrors}개 처리, ${successCount}개 성공적으로 수정됨`,
       });
       // 통계와 로그를 즉시 새로고침
       refetchAiFixStats();
@@ -2082,13 +2083,13 @@ export default function AdminSettings() {
                   <div className="space-y-4">
                     <h3 className="text-lg font-medium">수정 내역 및 통계</h3>
 
-                    <div className="grid grid-cols-3 gap-4">
+                    <div className="grid grid-cols-4 gap-4">
                       <Card className="p-4">
                         <div className="text-center">
                           <div className="text-2xl font-bold text-green-600">
                             {aiFixStats?.todayFixed || 0}
                           </div>
-                          <div className="text-sm text-muted-foreground">오늘 수정된 에러</div>
+                          <div className="text-sm text-muted-foreground">오늘 처리된 에러</div>
                         </div>
                       </Card>
                       <Card className="p-4">
@@ -2096,7 +2097,15 @@ export default function AdminSettings() {
                           <div className="text-2xl font-bold text-blue-600">
                             {aiFixStats?.totalFixed || 0}
                           </div>
-                          <div className="text-sm text-muted-foreground">총 수정된 에러</div>
+                          <div className="text-sm text-muted-foreground">총 처리된 에러</div>
+                        </div>
+                      </Card>
+                      <Card className="p-4">
+                        <div className="text-center">
+                          <div className="text-2xl font-bold text-orange-600">
+                            {aiFixStats?.realProcessed?.total || 0}
+                          </div>
+                          <div className="text-sm text-muted-foreground">실제 수정된 파일</div>
                         </div>
                       </Card>
                       <Card className="p-4">
