@@ -344,17 +344,29 @@ export default function AdminSettings() {
         
         // 3단계: 실제 API 호출
         console.log('[AI-Fix Client] API 요청 시작');
-        const response = await apiRequest('POST', '/api/ai-fix/check');
         
-        if (!response.ok) {
-          throw new Error(`API 요청 실패: ${response.status} ${response.statusText}`);
-        }
-        
-        const data = await response.json();
-        console.log('[AI-Fix Client] API 응답 받음:', data);
-        
-        if (!data.success && data.error) {
-          throw new Error(data.message || data.error);
+        try {
+          const response = await apiRequest('POST', '/api/ai-fix/check');
+          console.log('[AI-Fix Client] Raw response:', response);
+          
+          if (!response.ok) {
+            const errorText = await response.text();
+            console.error('[AI-Fix Client] API 요청 실패 응답:', errorText);
+            throw new Error(`API 요청 실패: ${response.status} ${response.statusText}`);
+          }
+          
+          const data = await response.json();
+          console.log('[AI-Fix Client] API 응답 파싱 완료:', data);
+          
+          if (data.success === false && data.error) {
+            throw new Error(data.message || data.error);
+          }
+          
+          return data;
+          
+        } catch (apiError) {
+          console.error('[AI-Fix Client] API 요청 중 오류:', apiError);
+          throw new Error(`API 통신 오류: ${apiError instanceof Error ? apiError.message : String(apiError)}`);
         }
         
         // 4단계: 수정 처리 시뮬레이션
@@ -386,7 +398,11 @@ export default function AdminSettings() {
       }
     },
     onSuccess: (data) => {
-      const successCount = data.successfulFixes || 0;
+      console.log('[AI-Fix] API 성공 응답 받음:', data);
+      
+      const successCount = data?.successfulFixes || 0;
+      const totalErrors = data?.totalErrors || 0;
+      const processedErrors = data?.processedErrors || 0;
       
       setCheckProgress({
         isRunning: false,
@@ -397,7 +413,7 @@ export default function AdminSettings() {
       
       toast({
         title: "검사 완료",
-        description: `${data.totalErrors || 0}개 에러 발견, ${data.processedErrors || 0}개 처리, ${successCount}개 성공적으로 수정됨`,
+        description: `${totalErrors}개 에러 발견, ${processedErrors}개 처리, ${successCount}개 성공적으로 수정됨`,
       });
       
       console.log('[AI-Fix] 수동 검사 완료, 데이터 새로고침 시작...');

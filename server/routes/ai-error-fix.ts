@@ -439,6 +439,7 @@ export function registerAIErrorFixRoutes(app: Express) {
         timestamp: new Date().toISOString()
       };
       
+      console.log('[AI-Fix] 응답 전송:', JSON.stringify(response, null, 2));
       res.json(response);
     } catch (error) {
       console.error('[AI-Fix] 검사 실행 실패:', error);

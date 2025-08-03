@@ -32,67 +32,56 @@ async function throwIfResNotOk(res: Response) {
     error.statusCode = res.status;
     error.errorCode = errorCode;
     error.fieldErrors = fieldErrors;
-    
+
     throw error;
   }
 }
 
-export async function apiRequest(
-  method: string,
-  url: string,
-  data?: unknown | undefined,
-): Promise<any> {
-  console.log(`[DEBUG] API Request: ${method} ${url}`);
-  if (data) {
-    console.log('[DEBUG] Request payload:', data);
+export const apiRequest = async (method: string, url: string, data?: any) => {
+  const config: RequestInit = {
+    method: method.toUpperCase(),
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    credentials: 'include',
+  };
+
+  if (data && method.toUpperCase() !== 'GET') {
+    config.body = JSON.stringify(data);
   }
-  
-  // 로컬 스토리지에서 인증 정보 가져오기
-  const authHeaders: Record<string, string> = {};
-  const userRole = localStorage.getItem('userRole');
-  
-  // 인증 정보가 있으면 헤더에 추가
-  if (userRole) {
-    authHeaders['X-User-Role'] = userRole;
+
+  if (data && method.toUpperCase() === 'GET') {
+    const params = new URLSearchParams(data);
+    url += `?${params}`;
   }
-  
+
+  console.log(`[apiRequest] ${method.toUpperCase()} ${url}`, data ? { body: data } : {});
+
   try {
-    // FormData의 경우 Content-Type을 설정하지 않아야 브라우저가 자동으로 boundary를 설정함
-    const isFormData = data instanceof FormData;
-    
-    const res = await fetch(url, {
-      method,
-      headers: {
-        ...(data && !isFormData ? { "Content-Type": "application/json" } : {}),
-        ...authHeaders
-      },
-      body: data ? (isFormData ? data : JSON.stringify(data)) : undefined,
-      credentials: "include",
-    });
-    
-    console.log(`[DEBUG] API Response: ${res.status} ${res.statusText}`);
-    
-    // 응답 처리
-    if (!res.ok) {
-      const errorText = await res.text();
-      console.error(`[DEBUG] API Error: ${res.status} ${res.statusText}`, errorText);
-      throw new Error(`API 요청 실패: ${res.status} ${res.statusText}`);
+    const response = await fetch(url, config);
+
+    console.log(`[apiRequest] Response: ${response.status} ${response.statusText}`);
+
+    if (!response.ok) {
+      let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+
+      try {
+        const errorBody = await response.text();
+        if (errorBody) {
+          const errorData = JSON.parse(errorBody);
+          errorMessage = errorData.message || errorData.error || errorMessage;
+        }
+      } catch (parseError) {
+        console.warn('[apiRequest] 오류 응답 파싱 실패:', parseError);
+      }
+
+      throw new Error(errorMessage);
     }
-    
-    // JSON 응답 파싱
-    const contentType = res.headers.get("content-type");
-    if (contentType && contentType.includes("application/json")) {
-      const result = await res.json();
-      console.log('[DEBUG] API Success:', result);
-      return result;
-    } else {
-      const text = await res.text();
-      console.log('[DEBUG] API Success (text):', text);
-      return { success: true, data: text };
-    }
-  } catch (error) {
-    console.error('[DEBUG] API Request failed:', error);
-    throw error;
+
+    return response;
+  } catch (networkError) {
+    console.error(`[apiRequest] 네트워크 오류:`, networkError);
+    throw new Error(`네트워크 오류: ${networkError instanceof Error ? networkError.message : String(networkError)}`);
   }
 };
 
