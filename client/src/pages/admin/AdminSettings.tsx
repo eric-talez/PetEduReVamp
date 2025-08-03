@@ -458,6 +458,14 @@ export default function AdminSettings() {
                 <MessageSquare className="h-4 w-4 mr-2" />
                 채팅 설정
               </Button>
+              <Button 
+                variant={activeTab === 'ai-fix' ? 'default' : 'ghost'} 
+                className="w-full justify-start"
+                onClick={() => setActiveTab('ai-fix')}
+              >
+                <Bot className="h-4 w-4 mr-2" />
+                AI 에러 자동 수정
+              </Button>
             </div>
           </CardContent>
         </Card>
@@ -473,6 +481,7 @@ export default function AdminSettings() {
               {activeTab === 'localization' && '지역화 설정'}
               {activeTab === 'database' && '데이터베이스 설정'}
               {activeTab === 'users' && '사용자 설정'}
+              {activeTab === 'ai-fix' && 'AI 에러 자동 수정'}
               {activeTab === 'contents' && '콘텐츠 설정'}
               {activeTab === 'chat' && '채팅 설정'}
             </CardTitle>
@@ -1855,6 +1864,167 @@ export default function AdminSettings() {
                     <div className="space-y-2">
                       <Label htmlFor="zoomApiSecret">Zoom API 시크릿</Label>
                       <Input id="zoomApiSecret" type="password" defaultValue="********" />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* AI 에러 자동 수정 */}
+              {activeTab === 'ai-fix' && (
+                <div className="space-y-6">
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-medium">AI 자동 수정 설정</h3>
+
+                    <div className="flex items-center justify-between space-x-2">
+                      <Label htmlFor="aiAutoFix" className="flex-1 cursor-pointer">
+                        <div>AI 에러 자동 수정 활성화</div>
+                        <p className="text-sm font-normal text-muted-foreground">
+                          시스템에서 발생하는 에러를 AI가 자동으로 감지하고 수정합니다
+                        </p>
+                      </Label>
+                      <Switch id="aiAutoFix" defaultChecked />
+                    </div>
+
+                    <div className="flex items-center justify-between space-x-2">
+                      <Label htmlFor="aiRealTimeMonitoring" className="flex-1 cursor-pointer">
+                        <div>실시간 모니터링</div>
+                        <p className="text-sm font-normal text-muted-foreground">
+                          코드 변경 시 실시간으로 에러를 감지하고 수정합니다
+                        </p>
+                      </Label>
+                      <Switch id="aiRealTimeMonitoring" defaultChecked />
+                    </div>
+
+                    <div className="flex items-center justify-between space-x-2">
+                      <Label htmlFor="aiNotifications" className="flex-1 cursor-pointer">
+                        <div>수정 알림</div>
+                        <p className="text-sm font-normal text-muted-foreground">
+                          AI가 에러를 수정했을 때 관리자에게 알림을 전송합니다
+                        </p>
+                      </Label>
+                      <Switch id="aiNotifications" defaultChecked />
+                    </div>
+                  </div>
+
+                  <Separator />
+
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-medium">수정 범위 설정</h3>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="flex items-center space-x-2">
+                        <input type="checkbox" id="syntaxErrors" defaultChecked className="rounded" />
+                        <Label htmlFor="syntaxErrors">문법 에러</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <input type="checkbox" id="typeErrors" defaultChecked className="rounded" />
+                        <Label htmlFor="typeErrors">타입 에러</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <input type="checkbox" id="importErrors" defaultChecked className="rounded" />
+                        <Label htmlFor="importErrors">Import 에러</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <input type="checkbox" id="lintingErrors" defaultChecked className="rounded" />
+                        <Label htmlFor="lintingErrors">린팅 에러</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <input type="checkbox" id="runtimeErrors" className="rounded" />
+                        <Label htmlFor="runtimeErrors">런타임 에러</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <input type="checkbox" id="performanceIssues" className="rounded" />
+                        <Label htmlFor="performanceIssues">성능 문제</Label>
+                      </div>
+                    </div>
+                  </div>
+
+                  <Separator />
+
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-medium">AI 모델 설정</h3>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="aiModel">사용할 AI 모델</Label>
+                      <Select defaultValue="claude-4-sonnet">
+                        <SelectTrigger id="aiModel">
+                          <SelectValue placeholder="AI 모델 선택" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="claude-4-sonnet">Claude 4.0 Sonnet</SelectItem>
+                          <SelectItem value="gpt-4-turbo">GPT-4 Turbo</SelectItem>
+                          <SelectItem value="gemini-pro">Gemini Pro</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="aiApiKey">AI API 키</Label>
+                      <Input id="aiApiKey" type="password" defaultValue="sk-ant-api03-***" />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="maxRetries">최대 재시도 횟수</Label>
+                      <Input id="maxRetries" type="number" defaultValue="3" min="1" max="10" />
+                    </div>
+                  </div>
+
+                  <Separator />
+
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-medium">수정 내역 및 통계</h3>
+
+                    <div className="grid grid-cols-3 gap-4">
+                      <Card className="p-4">
+                        <div className="text-center">
+                          <div className="text-2xl font-bold text-green-600">47</div>
+                          <div className="text-sm text-muted-foreground">오늘 수정된 에러</div>
+                        </div>
+                      </Card>
+                      <Card className="p-4">
+                        <div className="text-center">
+                          <div className="text-2xl font-bold text-blue-600">1,234</div>
+                          <div className="text-sm text-muted-foreground">총 수정된 에러</div>
+                        </div>
+                      </Card>
+                      <Card className="p-4">
+                        <div className="text-center">
+                          <div className="text-2xl font-bold text-purple-600">98.5%</div>
+                          <div className="text-sm text-muted-foreground">수정 성공률</div>
+                        </div>
+                      </Card>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label>최근 수정 내역</Label>
+                      <div className="max-h-32 overflow-y-auto border rounded-md p-3 space-y-2">
+                        <div className="text-sm">
+                          <span className="text-green-600 font-medium">[수정완료]</span>
+                          <span className="ml-2">TypeScript 타입 에러 - CardFooter import 누락</span>
+                          <span className="text-muted-foreground ml-2">2분 전</span>
+                        </div>
+                        <div className="text-sm">
+                          <span className="text-green-600 font-medium">[수정완료]</span>
+                          <span className="ml-2">라우터 파라미터 타입 에러 수정</span>
+                          <span className="text-muted-foreground ml-2">5분 전</span>
+                        </div>
+                        <div className="text-sm">
+                          <span className="text-green-600 font-medium">[수정완료]</span>
+                          <span className="ml-2">문법 에러 - 잘못된 component 구문</span>
+                          <span className="text-muted-foreground ml-2">8분 전</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex gap-2">
+                      <Button variant="outline" size="sm">
+                        <CheckCircle className="h-4 w-4 mr-2" />
+                        수동 검사 실행
+                      </Button>
+                      <Button variant="outline" size="sm">
+                        <FileText className="h-4 w-4 mr-2" />
+                        수정 로그 다운로드
+                      </Button>
                     </div>
                   </div>
                 </div>
