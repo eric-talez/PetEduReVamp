@@ -279,7 +279,7 @@ export default function AdminSettings() {
   const { data: aiFixStats, refetch: refetchAiFixStats } = useQuery({
     queryKey: ['/api/ai-fix/stats'],
     queryFn: () => apiRequest('GET', '/api/ai-fix/stats').then(res => res.json()),
-    refetchInterval: 30000, // 30초마다 업데이트
+    refetchInterval: 5000, // 5초마다 업데이트
     enabled: activeTab === 'ai-fix'
   });
 
@@ -287,7 +287,7 @@ export default function AdminSettings() {
   const { data: aiFixLogs, refetch: refetchAiFixLogs } = useQuery({
     queryKey: ['/api/ai-fix/logs'],
     queryFn: () => apiRequest('GET', '/api/ai-fix/logs').then(res => res.json()),
-    refetchInterval: 10000, // 10초마다 업데이트
+    refetchInterval: 3000, // 3초마다 업데이트
     enabled: activeTab === 'ai-fix'
   });
 
@@ -319,10 +319,16 @@ export default function AdminSettings() {
         title: "검사 완료",
         description: `${data.totalErrors}개 에러 발견, ${data.processedErrors}개 처리, ${successCount}개 성공적으로 수정됨`,
       });
-      // 통계와 로그를 즉시 새로고침
-      refetchAiFixStats();
-      refetchAiFixLogs();
-      refetchAiFixSettings();
+      
+      console.log('[AI-Fix] 수동 검사 완료, 데이터 새로고침 시작...');
+      
+      // 통계와 로그를 즉시 새로고침 (약간의 지연 후)
+      setTimeout(() => {
+        refetchAiFixStats();
+        refetchAiFixLogs();
+        refetchAiFixSettings();
+        console.log('[AI-Fix] 데이터 새로고침 완료');
+      }, 500);
     },
     onError: (error) => {
       console.error('에러 검사 실행 실패:', error);

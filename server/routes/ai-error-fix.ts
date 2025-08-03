@@ -237,6 +237,8 @@ class AIErrorFixService {
         aiModel: this.settings.aiModel,
         isReal: isRealFile
       };
+      
+      console.log(`[AI-Fix] 새 로그 추가: ${error.file} - 성공: ${success}, 실제 파일: ${isRealFile}`);
 
       this.logs.unshift(logEntry);
 
@@ -293,16 +295,18 @@ class AIErrorFixService {
     
     // 실제 처리된 에러 수 계산 (데모 에러 제외)
     const realTodayFixed = todayLogs.filter(log => 
-      log.success && !log.file.includes('demo') && !log.fixApplied.includes('데모')
+      log.success && (log.isReal === true || (!log.file.includes('demo') && !log.fixApplied.includes('데모') && !log.fixApplied.includes('시뮬레이션')))
     ).length;
     
     const realTotalFixed = this.logs.filter(log => 
-      log.success && !log.file.includes('demo') && !log.fixApplied.includes('데모')
+      log.success && (log.isReal === true || (!log.file.includes('demo') && !log.fixApplied.includes('데모') && !log.fixApplied.includes('시뮬레이션')))
     ).length;
     
+    console.log(`[AI-Fix] 통계 계산: 오늘 성공 ${todaySuccessful.length}개, 전체 성공 ${totalSuccessful.length}개, 실제 처리 ${realTotalFixed}개`);
+    
     return {
-      todayFixed: Math.max(todaySuccessful.length, realTodayFixed),
-      totalFixed: Math.max(totalSuccessful.length, realTotalFixed),
+      todayFixed: todaySuccessful.length,
+      totalFixed: totalSuccessful.length,
       successRate: this.logs.length > 0 ? (totalSuccessful.length / this.logs.length * 100).toFixed(1) : '100.0',
       realProcessed: {
         today: realTodayFixed,
