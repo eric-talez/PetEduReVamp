@@ -276,7 +276,7 @@ export default function AdminSettings() {
   }, [aiFixData]);
 
   // AI 에러 수정 통계 쿼리
-  const { data: aiFixStats } = useQuery({
+  const { data: aiFixStats, refetch: refetchAiFixStats } = useQuery({
     queryKey: ['/api/ai-fix/stats'],
     queryFn: () => apiRequest('GET', '/api/ai-fix/stats').then(res => res.json()),
     refetchInterval: 30000, // 30초마다 업데이트
@@ -318,6 +318,8 @@ export default function AdminSettings() {
         title: "검사 완료",
         description: `${data.totalErrors}개 에러 발견, ${data.processedErrors}개 처리됨`,
       });
+      // 통계와 로그를 즉시 새로고침
+      refetchAiFixStats();
       refetchAiFixLogs();
       refetchAiFixSettings();
     },
