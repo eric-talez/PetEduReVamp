@@ -117,21 +117,32 @@ class AIErrorFixService {
   }
 
   private async runTSCheck(): Promise<string> {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
+      console.log('[AI-Fix] TypeScript 검사 프로세스 시작');
+      
       const tsc = spawn('npx', ['tsc', '--noEmit', '--skipLibCheck', '--incremental', 'false'], {
         cwd: process.cwd(),
         stdio: 'pipe',
-        timeout: 15000 // 15초 타임아웃
+        timeout: 10000 // 10초 타임아웃으로 단축
       });
 
       let output = '';
       let errorOutput = '';
+      let isResolved = false;
 
-      // 15초 후 강제 종료
+      // 10초 후 강제 종료
       const timeoutId = setTimeout(() => {
-        tsc.kill('SIGTERM');
-        resolve('검사 시간이 초과되었습니다.');
-      }, 15000);
+        if (!isResolved) {
+          console.log('[AI-Fix] TypeScript 검사 타임아웃, 프로세스 종료');
+          try {
+            tsc.kill('SIGTERM');
+          } catch (killError) {
+            console.error('[AI-Fix] 프로세스 종료 실패:', killError);
+          }
+          isResolved = true;
+          resolve('검사 시간이 초과되었습니다. (타임아웃 10초)');
+        }
+      }, 10000);
 
       tsc.stdout.on('data', (data) => {
         output += data.toString();
@@ -142,14 +153,21 @@ class AIErrorFixService {
       });
 
       tsc.on('close', (code) => {
-        clearTimeout(timeoutId);
-        resolve(errorOutput || output);
+        if (!isResolved) {
+          clearTimeout(timeoutId);
+          isResolved = true;
+          console.log(`[AI-Fix] TypeScript 검사 완료, 종료 코드: ${code}`);
+          resolve(errorOutput || output || '검사 완료 (출력 없음)');
+        }
       });
 
       tsc.on('error', (error) => {
-        clearTimeout(timeoutId);
-        console.error('[AI-Fix] TypeScript 검사 에러:', error);
-        resolve('TypeScript 검사 중 에러가 발생했습니다.');
+        if (!isResolved) {
+          clearTimeout(timeoutId);
+          isResolved = true;
+          console.error('[AI-Fix] TypeScript 검사 프로세스 에러:', error);
+          resolve(`TypeScript 검사 중 에러가 발생했습니다: ${error.message}`);
+        }
       });
     });
   }
@@ -366,39 +384,70 @@ export function registerAIErrorFixRoutes(app: Express) {
   // 수동 에러 검사 실행
   app.post('/api/ai-fix/check', async (req, res) => {
     try {
+      console.log('[AI-Fix] 수동 검사 요청 받음');
+      
       const errors = await aiErrorFixService.checkForErrors();
+      console.log(`[AI-Fix] 검사 결과: ${errors.length}개 에러 발견`);
       
       // 활성화된 에러 타입만 처리
-      const filteredErrors = errors.filter(error => 
-        aiErrorFixService.settings.enabledErrorTypes[error.type as keyof typeof aiErrorFixService.settings.enabledErrorTypes]
-      );
+      const filteredErrors = errors.filter(error => {
+        const isEnabled = aiErrorFixService.settings.enabledErrorTypes[error.type as keyof typeof aiErrorFixService.settings.enabledErrorTypes];
+        console.log(`[AI-Fix] 에러 타입 ${error.type} 활성화 상태: ${isEnabled}`);
+        return isEnabled;
+      });
+      
+      console.log(`[AI-Fix] 필터링 후: ${filteredErrors.length}개 에러 처리 예정`);
       
       // 각 에러에 대해 자동 수정 시도
       const fixResults = [];
       let successfulFixes = 0;
       
       for (const error of filteredErrors) {
-        const result = await aiErrorFixService.fixError(error);
-        if (result.success) {
-          successfulFixes++;
+        try {
+          console.log(`[AI-Fix] 에러 수정 시도: ${error.file} - ${error.message}`);
+          const result = await aiErrorFixService.fixError(error);
+          
+          if (result.success) {
+            successfulFixes++;
+            console.log(`[AI-Fix] 수정 성공: ${error.file}`);
+          } else {
+            console.log(`[AI-Fix] 수정 실패: ${error.file} - ${result.fix}`);
+          }
+          
+          fixResults.push({
+            error,
+            ...result
+          });
+        } catch (fixError) {
+          console.error(`[AI-Fix] 개별 에러 수정 실패:`, fixError);
+          fixResults.push({
+            error,
+            success: false,
+            fix: '수정 처리 중 오류 발생'
+          });
         }
-        fixResults.push({
-          error,
-          ...result
-        });
       }
       
       console.log(`[AI-Fix] 수동 검사 완료: ${filteredErrors.length}개 처리, ${successfulFixes}개 성공`);
       
-      res.json({
+      const response = {
+        success: true,
         totalErrors: errors.length,
         processedErrors: filteredErrors.length,
         successfulFixes: successfulFixes,
-        fixes: fixResults
-      });
+        fixes: fixResults,
+        timestamp: new Date().toISOString()
+      };
+      
+      res.json(response);
     } catch (error) {
       console.error('[AI-Fix] 검사 실행 실패:', error);
-      res.status(500).json({ error: '에러 검사 실행 중 오류가 발생했습니다.' });
+      res.status(500).json({ 
+        success: false,
+        error: '에러 검사 실행 중 오류가 발생했습니다.',
+        message: error instanceof Error ? error.message : String(error),
+        timestamp: new Date().toISOString()
+      });
     }
   });
 

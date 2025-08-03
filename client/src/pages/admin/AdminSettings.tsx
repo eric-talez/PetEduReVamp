@@ -333,44 +333,57 @@ export default function AdminSettings() {
         totalCount: 0
       });
 
-      // 진행 상황을 시뮬레이션하면서 실제 API 호출
-      const startTime = Date.now();
-      
-      // 1단계: 검사 시작
-      await new Promise(resolve => setTimeout(resolve, 500));
-      setCheckProgress(prev => ({ ...prev, currentStep: 'TypeScript 에러 검사 중...' }));
-      
-      // 2단계: 에러 분석
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      setCheckProgress(prev => ({ ...prev, currentStep: '에러 분석 및 분류 중...' }));
-      
-      // 3단계: 실제 API 호출
-      const response = await apiRequest('POST', '/api/ai-fix/check');
-      const data = await response.json();
-      
-      // 4단계: 수정 처리 시뮬레이션
-      if (data.processedErrors > 0) {
-        setCheckProgress(prev => ({ 
-          ...prev, 
-          currentStep: '에러 수정 적용 중...', 
-          totalCount: data.processedErrors 
-        }));
+      try {
+        // 1단계: 검사 시작
+        await new Promise(resolve => setTimeout(resolve, 500));
+        setCheckProgress(prev => ({ ...prev, currentStep: 'TypeScript 에러 검사 중...' }));
         
-        // 처리 진행률 표시
-        for (let i = 1; i <= data.processedErrors; i++) {
-          await new Promise(resolve => setTimeout(resolve, 200));
+        // 2단계: 에러 분석
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        setCheckProgress(prev => ({ ...prev, currentStep: '에러 분석 및 분류 중...' }));
+        
+        // 3단계: 실제 API 호출
+        console.log('[AI-Fix Client] API 요청 시작');
+        const response = await apiRequest('POST', '/api/ai-fix/check');
+        
+        if (!response.ok) {
+          throw new Error(`API 요청 실패: ${response.status} ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        console.log('[AI-Fix Client] API 응답 받음:', data);
+        
+        if (!data.success && data.error) {
+          throw new Error(data.message || data.error);
+        }
+        
+        // 4단계: 수정 처리 시뮬레이션
+        if (data.processedErrors > 0) {
           setCheckProgress(prev => ({ 
             ...prev, 
-            processedCount: i,
-            currentStep: `에러 수정 중... (${i}/${data.processedErrors})`
+            currentStep: '에러 수정 적용 중...', 
+            totalCount: data.processedErrors 
           }));
+          
+          // 처리 진행률 표시
+          for (let i = 1; i <= data.processedErrors; i++) {
+            await new Promise(resolve => setTimeout(resolve, 200));
+            setCheckProgress(prev => ({ 
+              ...prev, 
+              processedCount: i,
+              currentStep: `에러 수정 중... (${i}/${data.processedErrors})`
+            }));
+          }
         }
+        
+        setCheckProgress(prev => ({ ...prev, currentStep: '검사 완료' }));
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        return data;
+      } catch (error) {
+        console.error('[AI-Fix Client] 검사 실행 중 오류:', error);
+        throw error;
       }
-      
-      setCheckProgress(prev => ({ ...prev, currentStep: '검사 완료' }));
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      return data;
     },
     onSuccess: (data) => {
       const successCount = data.successfulFixes || 0;
@@ -384,12 +397,12 @@ export default function AdminSettings() {
       
       toast({
         title: "검사 완료",
-        description: `${data.totalErrors}개 에러 발견, ${data.processedErrors}개 처리, ${successCount}개 성공적으로 수정됨`,
+        description: `${data.totalErrors || 0}개 에러 발견, ${data.processedErrors || 0}개 처리, ${successCount}개 성공적으로 수정됨`,
       });
       
       console.log('[AI-Fix] 수동 검사 완료, 데이터 새로고침 시작...');
       
-      // 통계와 로그를 즉시 새로고침 (약간의 지연 후)
+      // 통계와 로그를 즉시 새로고침
       setTimeout(() => {
         refetchAiFixStats();
         refetchAiFixLogs();
@@ -397,7 +410,7 @@ export default function AdminSettings() {
         console.log('[AI-Fix] 데이터 새로고침 완료');
       }, 500);
     },
-    onError: (error) => {
+    onError: (error: any) => {
       console.error('에러 검사 실행 실패:', error);
       
       setCheckProgress({
@@ -407,9 +420,11 @@ export default function AdminSettings() {
         totalCount: 0
       });
       
+      const errorMessage = error?.message || error?.error || "에러 검사 실행에 실패했습니다.";
+      
       toast({
-        title: "오류",
-        description: "에러 검사 실행에 실패했습니다.",
+        title: "검사 실패",
+        description: errorMessage,
         variant: "destructive",
       });
     },
