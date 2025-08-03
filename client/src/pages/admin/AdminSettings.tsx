@@ -310,11 +310,78 @@ export default function AdminSettings() {
     },
   });
 
+  // 수동 검사 진행 상태
+  const [checkProgress, setCheckProgress] = useState<{
+    isRunning: boolean;
+    currentStep: string;
+    processedCount: number;
+    totalCount: number;
+  }>({
+    isRunning: false,
+    currentStep: '',
+    processedCount: 0,
+    totalCount: 0
+  });
+
   // 수동 에러 검사 실행
   const runManualCheck = useMutation({
-    mutationFn: () => apiRequest('POST', '/api/ai-fix/check'),
+    mutationFn: async () => {
+      setCheckProgress({
+        isRunning: true,
+        currentStep: '에러 검사 시작...',
+        processedCount: 0,
+        totalCount: 0
+      });
+
+      // 진행 상황을 시뮬레이션하면서 실제 API 호출
+      const startTime = Date.now();
+      
+      // 1단계: 검사 시작
+      await new Promise(resolve => setTimeout(resolve, 500));
+      setCheckProgress(prev => ({ ...prev, currentStep: 'TypeScript 에러 검사 중...' }));
+      
+      // 2단계: 에러 분석
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      setCheckProgress(prev => ({ ...prev, currentStep: '에러 분석 및 분류 중...' }));
+      
+      // 3단계: 실제 API 호출
+      const response = await apiRequest('POST', '/api/ai-fix/check');
+      const data = await response.json();
+      
+      // 4단계: 수정 처리 시뮬레이션
+      if (data.processedErrors > 0) {
+        setCheckProgress(prev => ({ 
+          ...prev, 
+          currentStep: '에러 수정 적용 중...', 
+          totalCount: data.processedErrors 
+        }));
+        
+        // 처리 진행률 표시
+        for (let i = 1; i <= data.processedErrors; i++) {
+          await new Promise(resolve => setTimeout(resolve, 200));
+          setCheckProgress(prev => ({ 
+            ...prev, 
+            processedCount: i,
+            currentStep: `에러 수정 중... (${i}/${data.processedErrors})`
+          }));
+        }
+      }
+      
+      setCheckProgress(prev => ({ ...prev, currentStep: '검사 완료' }));
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      return data;
+    },
     onSuccess: (data) => {
       const successCount = data.successfulFixes || 0;
+      
+      setCheckProgress({
+        isRunning: false,
+        currentStep: '',
+        processedCount: 0,
+        totalCount: 0
+      });
+      
       toast({
         title: "검사 완료",
         description: `${data.totalErrors}개 에러 발견, ${data.processedErrors}개 처리, ${successCount}개 성공적으로 수정됨`,
@@ -332,6 +399,14 @@ export default function AdminSettings() {
     },
     onError: (error) => {
       console.error('에러 검사 실행 실패:', error);
+      
+      setCheckProgress({
+        isRunning: false,
+        currentStep: '',
+        processedCount: 0,
+        totalCount: 0
+      });
+      
       toast({
         title: "오류",
         description: "에러 검사 실행에 실패했습니다.",
@@ -2145,30 +2220,64 @@ export default function AdminSettings() {
                       </div>
                     </div>
 
-                    <div className="flex gap-2">
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => runManualCheck.mutate()}
-                        disabled={runManualCheck.isPending}
-                      >
-                        {runManualCheck.isPending ? (
-                          <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                        ) : (
-                          <CheckCircle className="h-4 w-4 mr-2" />
-                        )}
-                        수동 검사 실행
-                      </Button>
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => {
-                          window.open('/api/ai-fix/logs/download', '_blank');
-                        }}
-                      >
-                        <FileText className="h-4 w-4 mr-2" />
-                        수정 로그 다운로드
-                      </Button>
+                    <div className="space-y-3">
+                      <div className="flex gap-2">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => runManualCheck.mutate()}
+                          disabled={runManualCheck.isPending || checkProgress.isRunning}
+                          className="relative"
+                        >
+                          {checkProgress.isRunning ? (
+                            <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                          ) : (
+                            <CheckCircle className="h-4 w-4 mr-2" />
+                          )}
+                          {checkProgress.isRunning ? '검사 진행 중...' : '수동 검사 실행'}
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => {
+                            window.open('/api/ai-fix/logs/download', '_blank');
+                          }}
+                        >
+                          <FileText className="h-4 w-4 mr-2" />
+                          수정 로그 다운로드
+                        </Button>
+                      </div>
+
+                      {/* 진행 상황 표시 */}
+                      {checkProgress.isRunning && (
+                        <Card className="p-4 bg-blue-50 border-blue-200">
+                          <div className="space-y-3">
+                            <div className="flex items-center gap-2">
+                              <RefreshCw className="h-4 w-4 animate-spin text-blue-600" />
+                              <span className="text-sm font-medium text-blue-800">
+                                {checkProgress.currentStep}
+                              </span>
+                            </div>
+                            
+                            {checkProgress.totalCount > 0 && (
+                              <div className="space-y-2">
+                                <div className="flex justify-between text-xs text-blue-600">
+                                  <span>진행률</span>
+                                  <span>{checkProgress.processedCount}/{checkProgress.totalCount}</span>
+                                </div>
+                                <div className="w-full bg-blue-200 rounded-full h-2">
+                                  <div 
+                                    className="bg-blue-600 h-2 rounded-full transition-all duration-300" 
+                                    style={{ 
+                                      width: `${(checkProgress.processedCount / checkProgress.totalCount) * 100}%` 
+                                    }}
+                                  />
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </Card>
+                      )}
                     </div>
                   </div>
                 </div>
