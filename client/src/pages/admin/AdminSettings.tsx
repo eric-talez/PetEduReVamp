@@ -39,7 +39,6 @@ import {
   Globe,
   Upload,
   BellRing,
-
   Cog,
   FileText,
   MessageSquare,
@@ -104,6 +103,16 @@ export default function AdminSettings() {
   const { data: colorSettings } = useQuery({
     queryKey: ['/api/admin/colors']
   });
+
+  // AI 에러 수정 설정 동기화
+  useEffect(() => {
+    if (aiFixData) {
+      setAiFixSettings(prev => ({
+        ...prev,
+        ...aiFixData
+      }));
+    }
+  }, [aiFixData]);
 
   // 색상 설정 로드 후 상태 업데이트
   useEffect(() => {
