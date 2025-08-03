@@ -16,7 +16,7 @@ window.addEventListener('unhandledrejection', (event) => {
   if (import.meta.env.DEV) {
     console.warn('Unhandled promise rejection:', event.reason);
   }
-  
+
   // 네트워크 에러나 중요하지 않은 에러는 무시
   const reason = event.reason;
   if (reason?.name === 'AbortError' || 
@@ -25,7 +25,7 @@ window.addEventListener('unhandledrejection', (event) => {
     event.preventDefault();
     return;
   }
-  
+
   // 중요한 에러만 로깅
   console.error('Critical unhandled rejection:', reason);
   event.preventDefault();

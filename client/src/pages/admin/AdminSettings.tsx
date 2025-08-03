@@ -47,7 +47,7 @@ import {
   CheckCircle,
   XCircle,
   Image as ImageIcon,
-
+  Bot
 } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
@@ -62,7 +62,7 @@ export default function AdminSettings() {
   const [showRestartDialog, setShowRestartDialog] = useState(false);
   const [logoImages, setLogoImages] = useState<{ [key: string]: string }>({});
   const [uploadingLogo, setUploadingLogo] = useState<string | null>(null);
-  
+
 
 
   // 로고 타입 정의
@@ -95,17 +95,17 @@ export default function AdminSettings() {
       const settings = (colorSettings as any).settings;
       const primary = settings.primary || '#7C3AED';
       const secondary = settings.secondary || '#10B981';
-      
+
       setPrimaryColor(primary);
       setSecondaryColor(secondary);
-      
+
       // CSS 변수에 HSL 값으로 적용
       const primaryHsl = hexToHsl(primary);
       const secondaryHsl = hexToHsl(secondary);
-      
+
       document.documentElement.style.setProperty('--primary', primaryHsl);
       document.documentElement.style.setProperty('--secondary', secondaryHsl);
-      
+
       console.log('[색상 로드] 설정 적용:', { primary, secondary, primaryHsl, secondaryHsl });
     }
   }, [colorSettings]);
@@ -116,16 +116,16 @@ export default function AdminSettings() {
       const formData = new FormData();
       formData.append('logo', file);
       formData.append('type', type);
-      
+
       const response = await fetch('/api/admin/logo/upload', {
         method: 'POST',
         body: formData,
       });
-      
+
       if (!response.ok) {
         throw new Error('로고 업로드 실패');
       }
-      
+
       return response.json();
     },
     onSuccess: (data, variables) => {
@@ -178,9 +178,9 @@ export default function AdminSettings() {
           type,
           url: urlOrFile
         });
-        
+
         const responseData = await response.json();
-        
+
         if (responseData.success) {
           toast({
             title: '로고 업로드 완료',
@@ -215,11 +215,11 @@ export default function AdminSettings() {
     mutationFn: async (colorData: { primary: string; secondary: string }) => {
       console.log('[DEBUG] API Request: POST /api/admin/colors');
       console.log('[DEBUG] Request payload:', colorData);
-      
+
       const result = await apiRequest("POST", "/api/admin/colors", colorData);
-      
+
       console.log('[DEBUG] API Success:', result);
-      
+
       return result;
     },
     onSuccess: (data) => {
@@ -270,13 +270,13 @@ export default function AdminSettings() {
   // 색상 변경 핸들러
   const handleColorChange = (colorType: 'primary' | 'secondary', value: string) => {
     console.log(`[색상 변경] ${colorType} 색상:`, value);
-    
+
     if (colorType === 'primary') {
       setPrimaryColor(value);
       const hslValue = hexToHsl(value);
       console.log(`[색상 변경] Primary HSL:`, hslValue);
       document.documentElement.style.setProperty('--primary', hslValue);
-      
+
       // 강제로 스타일 재적용
       document.documentElement.classList.add('color-update-trigger');
       setTimeout(() => {
@@ -287,7 +287,7 @@ export default function AdminSettings() {
       const hslValue = hexToHsl(value);
       console.log(`[색상 변경] Secondary HSL:`, hslValue);
       document.documentElement.style.setProperty('--secondary', hslValue);
-      
+
       // 강제로 스타일 재적용
       document.documentElement.classList.add('color-update-trigger');
       setTimeout(() => {
@@ -299,28 +299,28 @@ export default function AdminSettings() {
   // 색상 설정 저장
   const saveColorSettings = () => {
     console.log('[색상 저장] 현재 색상:', { primary: primaryColor, secondary: secondaryColor });
-    
+
     colorChangeMutation.mutate({
       primary: primaryColor,
       secondary: secondaryColor
     });
-    
+
     // 즉시 CSS 변수 업데이트
     const primaryHsl = hexToHsl(primaryColor);
     const secondaryHsl = hexToHsl(secondaryColor);
-    
+
     document.documentElement.style.setProperty('--primary', primaryHsl);
     document.documentElement.style.setProperty('--secondary', secondaryHsl);
-    
+
     console.log('[색상 저장] CSS 변수 업데이트 완료:', { primaryHsl, secondaryHsl });
   };
 
 
-  
+
   // 설정 저장 처리
   const handleSaveSettings = () => {
     setIsLoading(true);
-    
+
     // 실제 구현 시 API 호출로 대체
     setTimeout(() => {
       setIsLoading(false);
@@ -330,11 +330,11 @@ export default function AdminSettings() {
       });
     }, 1000);
   };
-  
+
   // 서버 재시작
   const handleRestartServer = () => {
     setIsLoading(true);
-    
+
     // 실제 구현 시 API 호출로 대체
     setTimeout(() => {
       setIsLoading(false);
@@ -345,7 +345,7 @@ export default function AdminSettings() {
       });
     }, 3000);
   };
-  
+
   return (
     <div className="p-6 space-y-6">
       <div className="flex justify-between items-center">
@@ -362,7 +362,7 @@ export default function AdminSettings() {
           </Button>
         </div>
       </div>
-      
+
       <Alert>
         <AlertCircle className="h-4 w-4" />
         <AlertTitle>주의</AlertTitle>
@@ -370,7 +370,7 @@ export default function AdminSettings() {
           일부 설정은 변경 후 서버 재시작이 필요합니다. 업무 시간 외에 변경하는 것을 권장합니다.
         </AlertDescription>
       </Alert>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-[250px_1fr] gap-6">
         <Card className="h-fit">
           <CardHeader className="py-4">
@@ -461,7 +461,7 @@ export default function AdminSettings() {
             </div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardHeader>
             <CardTitle>
@@ -501,7 +501,7 @@ export default function AdminSettings() {
                       사이트의 공식 이름입니다. 브라우저 탭과 이메일에 표시됩니다.
                     </p>
                   </div>
-                  
+
                   <div className="space-y-2">
                     <Label htmlFor="siteDescription">사이트 설명</Label>
                     <Textarea id="siteDescription" defaultValue="반려동물 훈련 및 교육을 위한 종합 플랫폼입니다." />
@@ -509,7 +509,7 @@ export default function AdminSettings() {
                       메타 태그에 사용되는 사이트 설명입니다.
                     </p>
                   </div>
-                  
+
                   <div className="space-y-2">
                     <Label htmlFor="adminEmail">관리자 이메일</Label>
                     <Input id="adminEmail" type="email" defaultValue="admin@petedu.com" />
@@ -517,12 +517,12 @@ export default function AdminSettings() {
                       시스템 알림을 받는 주 관리자 이메일입니다.
                     </p>
                   </div>
-                  
+
                   <Separator />
-                  
+
                   <div className="space-y-4">
                     <h3 className="text-lg font-medium">시스템 상태</h3>
-                    
+
                     <div className="flex items-center justify-between space-x-2">
                       <Label htmlFor="maintenanceMode" className="flex-1 cursor-pointer">
                         <div>유지보수 모드</div>
@@ -532,7 +532,7 @@ export default function AdminSettings() {
                       </Label>
                       <Switch id="maintenanceMode" />
                     </div>
-                    
+
                     <div className="space-y-2">
                       <Label htmlFor="maintenanceMessage">유지보수 메시지</Label>
                       <Textarea 
@@ -540,7 +540,7 @@ export default function AdminSettings() {
                         defaultValue="현재 시스템 유지보수 중입니다. 빠른 시일 내에 서비스를 재개하겠습니다." 
                       />
                     </div>
-                    
+
                     <div className="flex items-center justify-between space-x-2">
                       <Label htmlFor="debugMode" className="flex-1 cursor-pointer">
                         <div>디버그 모드</div>
@@ -553,13 +553,13 @@ export default function AdminSettings() {
                   </div>
                 </div>
               )}
-              
+
               {/* 보안 설정 */}
               {activeTab === 'security' && (
                 <div className="space-y-6">
                   <div className="space-y-4">
                     <h3 className="text-lg font-medium">인증 설정</h3>
-                    
+
                     <div className="flex items-center justify-between space-x-2">
                       <Label htmlFor="twoFactorAuth" className="flex-1 cursor-pointer">
                         <div>관리자 2단계 인증</div>
@@ -569,7 +569,7 @@ export default function AdminSettings() {
                       </Label>
                       <Switch id="twoFactorAuth" defaultChecked />
                     </div>
-                    
+
                     <div className="space-y-2">
                       <Label htmlFor="sessionTimeout">세션 타임아웃 (분)</Label>
                       <Input id="sessionTimeout" type="number" defaultValue="30" />
@@ -577,7 +577,7 @@ export default function AdminSettings() {
                         사용자 비활성 후 세션이 만료되는 시간(분)입니다.
                       </p>
                     </div>
-                    
+
                     <div className="flex items-center justify-between space-x-2">
                       <Label htmlFor="passwordPolicy" className="flex-1 cursor-pointer">
                         <div>강력한 비밀번호 정책 적용</div>
@@ -587,7 +587,7 @@ export default function AdminSettings() {
                       </Label>
                       <Switch id="passwordPolicy" defaultChecked />
                     </div>
-                    
+
                     <div className="space-y-2">
                       <Label htmlFor="passwordExpiration">비밀번호 만료 기간 (일)</Label>
                       <Input id="passwordExpiration" type="number" defaultValue="90" />
@@ -596,12 +596,12 @@ export default function AdminSettings() {
                       </p>
                     </div>
                   </div>
-                  
+
                   <Separator />
-                  
+
                   <div className="space-y-4">
                     <h3 className="text-lg font-medium">HTTPS 설정</h3>
-                    
+
                     <div className="flex items-center justify-between space-x-2">
                       <Label htmlFor="forceHTTPS" className="flex-1 cursor-pointer">
                         <div>HTTPS 강제 적용</div>
@@ -611,7 +611,7 @@ export default function AdminSettings() {
                       </Label>
                       <Switch id="forceHTTPS" defaultChecked />
                     </div>
-                    
+
                     <div className="flex items-center justify-between space-x-2">
                       <Label htmlFor="hsts" className="flex-1 cursor-pointer">
                         <div>HSTS 활성화</div>
@@ -622,12 +622,12 @@ export default function AdminSettings() {
                       <Switch id="hsts" defaultChecked />
                     </div>
                   </div>
-                  
+
                   <Separator />
-                  
+
                   <div className="space-y-4">
                     <h3 className="text-lg font-medium">접근 제어</h3>
-                    
+
                     <div className="space-y-2">
                       <Label htmlFor="allowedIPs">허용 IP 주소</Label>
                       <Textarea 
@@ -639,7 +639,7 @@ export default function AdminSettings() {
                         관리자 페이지 접근을 특정 IP로 제한합니다. 비워두면 모든 IP 허용.
                       </p>
                     </div>
-                    
+
                     <div className="space-y-2">
                       <Label htmlFor="loginAttempts">최대 로그인 시도 횟수</Label>
                       <Input id="loginAttempts" type="number" defaultValue="5" />
@@ -647,7 +647,7 @@ export default function AdminSettings() {
                         초과 시 계정이 일시적으로 잠깁니다.
                       </p>
                     </div>
-                    
+
                     <div className="space-y-2">
                       <Label htmlFor="lockoutDuration">계정 잠금 시간 (분)</Label>
                       <Input id="lockoutDuration" type="number" defaultValue="30" />
@@ -655,33 +655,33 @@ export default function AdminSettings() {
                   </div>
                 </div>
               )}
-              
+
               {/* 메일 설정 */}
               {activeTab === 'mail' && (
                 <div className="space-y-6">
                   <div className="space-y-4">
                     <h3 className="text-lg font-medium">SMTP 설정</h3>
-                    
+
                     <div className="space-y-2">
                       <Label htmlFor="smtpHost">SMTP 서버</Label>
                       <Input id="smtpHost" defaultValue="smtp.example.com" />
                     </div>
-                    
+
                     <div className="space-y-2">
                       <Label htmlFor="smtpPort">SMTP 포트</Label>
                       <Input id="smtpPort" type="number" defaultValue="587" />
                     </div>
-                    
+
                     <div className="space-y-2">
                       <Label htmlFor="smtpUser">SMTP 사용자명</Label>
                       <Input id="smtpUser" defaultValue="noreply@petedu.com" />
                     </div>
-                    
+
                     <div className="space-y-2">
                       <Label htmlFor="smtpPassword">SMTP 비밀번호</Label>
                       <Input id="smtpPassword" type="password" defaultValue="************" />
                     </div>
-                    
+
                     <div className="flex items-center justify-between space-x-2">
                       <Label htmlFor="smtpSsl" className="flex-1 cursor-pointer">
                         <div>SSL 사용</div>
@@ -692,28 +692,28 @@ export default function AdminSettings() {
                       <Switch id="smtpSsl" defaultChecked />
                     </div>
                   </div>
-                  
+
                   <Separator />
-                  
+
                   <div className="space-y-4">
                     <h3 className="text-lg font-medium">발신자 정보</h3>
-                    
+
                     <div className="space-y-2">
                       <Label htmlFor="senderName">발신자 이름</Label>
                       <Input id="senderName" defaultValue="펫에듀 플랫폼" />
                     </div>
-                    
+
                     <div className="space-y-2">
                       <Label htmlFor="senderEmail">발신자 이메일</Label>
                       <Input id="senderEmail" type="email" defaultValue="noreply@petedu.com" />
                     </div>
                   </div>
-                  
+
                   <Separator />
-                  
+
                   <div className="space-y-4">
                     <h3 className="text-lg font-medium">이메일 알림</h3>
-                    
+
                     <div className="flex items-center justify-between space-x-2">
                       <Label htmlFor="welcomeEmail" className="flex-1 cursor-pointer">
                         <div>가입 환영 이메일</div>
@@ -723,7 +723,7 @@ export default function AdminSettings() {
                       </Label>
                       <Switch id="welcomeEmail" defaultChecked />
                     </div>
-                    
+
                     <div className="flex items-center justify-between space-x-2">
                       <Label htmlFor="passwordResetEmail" className="flex-1 cursor-pointer">
                         <div>비밀번호 재설정 이메일</div>
@@ -733,7 +733,7 @@ export default function AdminSettings() {
                       </Label>
                       <Switch id="passwordResetEmail" defaultChecked />
                     </div>
-                    
+
                     <div className="flex items-center justify-between space-x-2">
                       <Label htmlFor="courseNotifications" className="flex-1 cursor-pointer">
                         <div>강의 관련 알림</div>
@@ -743,7 +743,7 @@ export default function AdminSettings() {
                       </Label>
                       <Switch id="courseNotifications" defaultChecked />
                     </div>
-                    
+
                     <div className="flex items-center justify-between space-x-2">
                       <Label htmlFor="adminAlerts" className="flex-1 cursor-pointer">
                         <div>관리자 알림</div>
@@ -756,13 +756,13 @@ export default function AdminSettings() {
                   </div>
                 </div>
               )}
-              
+
               {/* 알림 설정 */}
               {activeTab === 'notifications' && (
                 <div className="space-y-6">
                   <div className="space-y-4">
                     <h3 className="text-lg font-medium">인앱 알림</h3>
-                    
+
                     <div className="flex items-center justify-between space-x-2">
                       <Label htmlFor="courseUpdates" className="flex-1 cursor-pointer">
                         <div>강의 업데이트</div>
@@ -772,7 +772,7 @@ export default function AdminSettings() {
                       </Label>
                       <Switch id="courseUpdates" defaultChecked />
                     </div>
-                    
+
                     <div className="flex items-center justify-between space-x-2">
                       <Label htmlFor="messageNotifications" className="flex-1 cursor-pointer">
                         <div>새 메시지</div>
@@ -782,7 +782,7 @@ export default function AdminSettings() {
                       </Label>
                       <Switch id="messageNotifications" defaultChecked />
                     </div>
-                    
+
                     <div className="flex items-center justify-between space-x-2">
                       <Label htmlFor="commentNotifications" className="flex-1 cursor-pointer">
                         <div>댓글 알림</div>
@@ -792,7 +792,7 @@ export default function AdminSettings() {
                       </Label>
                       <Switch id="commentNotifications" defaultChecked />
                     </div>
-                    
+
                     <div className="space-y-2">
                       <Label htmlFor="notificationRetention">알림 보관 기간 (일)</Label>
                       <Input id="notificationRetention" type="number" defaultValue="30" />
@@ -801,12 +801,12 @@ export default function AdminSettings() {
                       </p>
                     </div>
                   </div>
-                  
+
                   <Separator />
-                  
+
                   <div className="space-y-4">
                     <h3 className="text-lg font-medium">푸시 알림</h3>
-                    
+
                     <div className="flex items-center justify-between space-x-2">
                       <Label htmlFor="enablePush" className="flex-1 cursor-pointer">
                         <div>푸시 알림 활성화</div>
@@ -816,12 +816,12 @@ export default function AdminSettings() {
                       </Label>
                       <Switch id="enablePush" defaultChecked />
                     </div>
-                    
+
                     <div className="space-y-2">
                       <Label htmlFor="vapidPublicKey">VAPID Public Key</Label>
                       <Input id="vapidPublicKey" defaultValue="BLVYfXwbMJ09NeN3z..." />
                     </div>
-                    
+
                     <div className="space-y-2">
                       <Label htmlFor="vapidPrivateKey">VAPID Private Key</Label>
                       <Input id="vapidPrivateKey" type="password" defaultValue="********" />
@@ -829,13 +829,13 @@ export default function AdminSettings() {
                   </div>
                 </div>
               )}
-              
+
               {/* 화면 설정 */}
               {activeTab === 'appearance' && (
                 <div className="space-y-6">
                   <div className="space-y-4">
                     <h3 className="text-lg font-medium">테마 설정</h3>
-                    
+
                     <div className="space-y-2">
                       <Label htmlFor="defaultTheme">기본 테마</Label>
                       <Select defaultValue="system">
@@ -852,8 +852,9 @@ export default function AdminSettings() {
                         사용자 설정이 없을 때 적용되는 기본 테마입니다.
                       </p>
                     </div>
-                    
+
                     <div className="flex items-center justify-between space-x-2">
+```text
                       <Label htmlFor="userThemeToggle" className="flex-1 cursor-pointer">
                         <div>사용자 테마 선택 허용</div>
                         <p className="text-sm font-normal text-muted-foreground">
@@ -862,7 +863,7 @@ export default function AdminSettings() {
                       </Label>
                       <Switch id="userThemeToggle" defaultChecked />
                     </div>
-                    
+
                     <div className="space-y-2">
                       <Label htmlFor="primaryColor">기본 색상</Label>
                       <div className="flex items-center space-x-2">
@@ -880,7 +881,7 @@ export default function AdminSettings() {
                         />
                       </div>
                     </div>
-                    
+
                     <div className="space-y-2">
                       <Label htmlFor="secondaryColor">보조 색상</Label>
                       <div className="flex items-center space-x-2">
@@ -898,7 +899,7 @@ export default function AdminSettings() {
                         />
                       </div>
                     </div>
-                    
+
                     <div className="flex justify-end space-x-2 pt-4">
                       <Button 
                         onClick={saveColorSettings}
@@ -914,9 +915,9 @@ export default function AdminSettings() {
                       </Button>
                     </div>
                   </div>
-                  
+
                   <Separator />
-                  
+
                   <div className="space-y-6">
                     {/* 헤더와 일괄 관리 */}
                     <div className="flex items-center justify-between">
@@ -977,7 +978,7 @@ export default function AdminSettings() {
                         </div>
                       ))}
                     </div>
-                    
+
                     {/* 메인 로고 (라이트 모드) - 향상된 UI */}
                     <Card className="border-2 border-blue-200 bg-blue-50/30">
                       <CardHeader className="pb-3">
@@ -1233,7 +1234,7 @@ export default function AdminSettings() {
                         </div>
                       </CardContent>
                     </Card>
-                    
+
                     {/* 파비콘 - 향상된 UI */}
                     <Card className="border-2 border-orange-200 bg-orange-50/30">
                       <CardHeader className="pb-3">
@@ -1315,17 +1316,17 @@ export default function AdminSettings() {
                       </AlertDescription>
                     </Alert>
                   </div>
-                  
+
 
                 </div>
               )}
-              
+
               {/* 지역화 설정 */}
               {activeTab === 'localization' && (
                 <div className="space-y-6">
                   <div className="space-y-4">
                     <h3 className="text-lg font-medium">언어 설정</h3>
-                    
+
                     <div className="space-y-2">
                       <Label htmlFor="defaultLanguage">기본 언어</Label>
                       <Select defaultValue="ko">
@@ -1343,7 +1344,7 @@ export default function AdminSettings() {
                         사용자 설정이 없을 때 적용되는 기본 언어입니다.
                       </p>
                     </div>
-                    
+
                     <div className="flex items-center justify-between space-x-2">
                       <Label htmlFor="multiLanguage" className="flex-1 cursor-pointer">
                         <div>다국어 지원 활성화</div>
@@ -1353,7 +1354,7 @@ export default function AdminSettings() {
                       </Label>
                       <Switch id="multiLanguage" defaultChecked />
                     </div>
-                    
+
                     <div className="space-y-2">
                       <Label htmlFor="availableLanguages">활성화된 언어</Label>
                       <div className="grid grid-cols-2 gap-2">
@@ -1376,12 +1377,12 @@ export default function AdminSettings() {
                       </div>
                     </div>
                   </div>
-                  
+
                   <Separator />
-                  
+
                   <div className="space-y-4">
                     <h3 className="text-lg font-medium">날짜 및 시간 형식</h3>
-                    
+
                     <div className="space-y-2">
                       <Label htmlFor="dateFormat">날짜 형식</Label>
                       <Select defaultValue="yyyy-MM-dd">
@@ -1396,7 +1397,7 @@ export default function AdminSettings() {
                         </SelectContent>
                       </Select>
                     </div>
-                    
+
                     <div className="space-y-2">
                       <Label htmlFor="timeFormat">시간 형식</Label>
                       <Select defaultValue="HH:mm">
@@ -1409,7 +1410,7 @@ export default function AdminSettings() {
                         </SelectContent>
                       </Select>
                     </div>
-                    
+
                     <div className="space-y-2">
                       <Label htmlFor="timezone">기본 시간대</Label>
                       <Select defaultValue="Asia/Seoul">
@@ -1428,7 +1429,7 @@ export default function AdminSettings() {
                   </div>
                 </div>
               )}
-              
+
               {/* 데이터베이스 설정 */}
               {activeTab === 'database' && (
                 <div className="space-y-6">
@@ -1439,41 +1440,41 @@ export default function AdminSettings() {
                       데이터베이스 설정을 변경하면 서버를 재시작해야 합니다. 데이터베이스 연결 정보를 변경하기 전에 백업을 확인하세요.
                     </AlertDescription>
                   </Alert>
-                  
+
                   <div className="space-y-4">
                     <h3 className="text-lg font-medium">데이터베이스 연결</h3>
-                    
+
                     <div className="space-y-2">
                       <Label htmlFor="dbHost">데이터베이스 호스트</Label>
                       <Input id="dbHost" defaultValue="localhost" />
                     </div>
-                    
+
                     <div className="space-y-2">
                       <Label htmlFor="dbPort">포트</Label>
                       <Input id="dbPort" type="number" defaultValue="5432" />
                     </div>
-                    
+
                     <div className="space-y-2">
                       <Label htmlFor="dbName">데이터베이스명</Label>
                       <Input id="dbName" defaultValue="petedu" />
                     </div>
-                    
+
                     <div className="space-y-2">
                       <Label htmlFor="dbUser">사용자명</Label>
                       <Input id="dbUser" defaultValue="petedu_user" />
                     </div>
-                    
+
                     <div className="space-y-2">
                       <Label htmlFor="dbPassword">비밀번호</Label>
                       <Input id="dbPassword" type="password" defaultValue="********" />
                     </div>
                   </div>
-                  
+
                   <Separator />
-                  
+
                   <div className="space-y-4">
                     <h3 className="text-lg font-medium">백업 설정</h3>
-                    
+
                     <div className="flex items-center justify-between space-x-2">
                       <Label htmlFor="autoBackup" className="flex-1 cursor-pointer">
                         <div>자동 백업 활성화</div>
@@ -1483,7 +1484,7 @@ export default function AdminSettings() {
                       </Label>
                       <Switch id="autoBackup" defaultChecked />
                     </div>
-                    
+
                     <div className="space-y-2">
                       <Label htmlFor="backupSchedule">백업 주기</Label>
                       <Select defaultValue="daily">
@@ -1498,17 +1499,17 @@ export default function AdminSettings() {
                         </SelectContent>
                       </Select>
                     </div>
-                    
+
                     <div className="space-y-2">
                       <Label htmlFor="backupRetention">백업 보관 기간 (일)</Label>
                       <Input id="backupRetention" type="number" defaultValue="30" />
                     </div>
-                    
+
                     <div className="space-y-2">
                       <Label htmlFor="backupLocation">백업 저장 경로</Label>
                       <Input id="backupLocation" defaultValue="/var/backups/petedu" />
                     </div>
-                    
+
                     <Button variant="outline">
                       <Database className="h-4 w-4 mr-2" />
                       지금 백업 실행
@@ -1516,13 +1517,13 @@ export default function AdminSettings() {
                   </div>
                 </div>
               )}
-              
+
               {/* 사용자 설정 */}
               {activeTab === 'users' && (
                 <div className="space-y-6">
                   <div className="space-y-4">
                     <h3 className="text-lg font-medium">사용자 등록 설정</h3>
-                    
+
                     <div className="flex items-center justify-between space-x-2">
                       <Label htmlFor="allowRegistration" className="flex-1 cursor-pointer">
                         <div>새 사용자 등록 허용</div>
@@ -1532,7 +1533,7 @@ export default function AdminSettings() {
                       </Label>
                       <Switch id="allowRegistration" defaultChecked />
                     </div>
-                    
+
                     <div className="flex items-center justify-between space-x-2">
                       <Label htmlFor="emailVerification" className="flex-1 cursor-pointer">
                         <div>이메일 인증 필수</div>
@@ -1542,7 +1543,7 @@ export default function AdminSettings() {
                       </Label>
                       <Switch id="emailVerification" defaultChecked />
                     </div>
-                    
+
                     <div className="space-y-2">
                       <Label htmlFor="defaultUserRole">기본 사용자 역할</Label>
                       <Select defaultValue="user">
@@ -1556,12 +1557,12 @@ export default function AdminSettings() {
                       </Select>
                     </div>
                   </div>
-                  
+
                   <Separator />
-                  
+
                   <div className="space-y-4">
                     <h3 className="text-lg font-medium">소셜 로그인</h3>
-                    
+
                     <div className="flex items-center justify-between space-x-2">
                       <Label htmlFor="googleLogin" className="flex-1 cursor-pointer">
                         <div>Google 로그인</div>
@@ -1571,19 +1572,19 @@ export default function AdminSettings() {
                       </Label>
                       <Switch id="googleLogin" defaultChecked />
                     </div>
-                    
+
                     <div className="space-y-2 ml-6">
                       <Label htmlFor="googleClientId">Google 클라이언트 ID</Label>
                       <Input id="googleClientId" defaultValue="123456789-abcdefg.apps.googleusercontent.com" />
                     </div>
-                    
+
                     <div className="space-y-2 ml-6">
                       <Label htmlFor="googleClientSecret">Google 클라이언트 시크릿</Label>
                       <Input id="googleClientSecret" type="password" defaultValue="********" />
                     </div>
-                    
+
                     <Separator className="my-2" />
-                    
+
                     <div className="flex items-center justify-between space-x-2">
                       <Label htmlFor="kakaoLogin" className="flex-1 cursor-pointer">
                         <div>카카오 로그인</div>
@@ -1593,23 +1594,23 @@ export default function AdminSettings() {
                       </Label>
                       <Switch id="kakaoLogin" defaultChecked />
                     </div>
-                    
+
                     <div className="space-y-2 ml-6">
                       <Label htmlFor="kakaoClientId">카카오 앱 키</Label>
                       <Input id="kakaoClientId" defaultValue="abcdef1234567890" />
                     </div>
-                    
+
                     <div className="space-y-2 ml-6">
                       <Label htmlFor="kakaoClientSecret">카카오 시크릿 키</Label>
                       <Input id="kakaoClientSecret" type="password" defaultValue="********" />
                     </div>
                   </div>
-                  
+
                   <Separator />
-                  
+
                   <div className="space-y-4">
                     <h3 className="text-lg font-medium">프로필 설정</h3>
-                    
+
                     <div className="flex items-center justify-between space-x-2">
                       <Label htmlFor="allowProfileCustomization" className="flex-1 cursor-pointer">
                         <div>프로필 커스터마이징 허용</div>
@@ -1619,7 +1620,7 @@ export default function AdminSettings() {
                       </Label>
                       <Switch id="allowProfileCustomization" defaultChecked />
                     </div>
-                    
+
                     <div className="flex items-center justify-between space-x-2">
                       <Label htmlFor="allowAvatarUpload" className="flex-1 cursor-pointer">
                         <div>프로필 이미지 업로드 허용</div>
@@ -1629,7 +1630,7 @@ export default function AdminSettings() {
                       </Label>
                       <Switch id="allowAvatarUpload" defaultChecked />
                     </div>
-                    
+
                     <div className="space-y-2">
                       <Label htmlFor="maxAvatarSize">최대 이미지 크기 (KB)</Label>
                       <Input id="maxAvatarSize" type="number" defaultValue="1024" />
@@ -1637,18 +1638,18 @@ export default function AdminSettings() {
                   </div>
                 </div>
               )}
-              
+
               {/* 콘텐츠 설정 */}
               {activeTab === 'contents' && (
                 <div className="space-y-6">
                   <div className="space-y-4">
                     <h3 className="text-lg font-medium">업로드 설정</h3>
-                    
+
                     <div className="space-y-2">
                       <Label htmlFor="maxUploadSize">최대 파일 크기 (MB)</Label>
                       <Input id="maxUploadSize" type="number" defaultValue="50" />
                     </div>
-                    
+
                     <div className="space-y-2">
                       <Label htmlFor="allowedFileTypes">허용된 파일 형식</Label>
                       <Input 
@@ -1659,7 +1660,7 @@ export default function AdminSettings() {
                         콤마로 구분된 파일 확장자
                       </p>
                     </div>
-                    
+
                     <div className="space-y-2">
                       <Label htmlFor="uploadPath">업로드 경로</Label>
                       <Input 
@@ -1668,12 +1669,12 @@ export default function AdminSettings() {
                       />
                     </div>
                   </div>
-                  
+
                   <Separator />
-                  
+
                   <div className="space-y-4">
                     <h3 className="text-lg font-medium">비디오 설정</h3>
-                    
+
                     <div className="space-y-2">
                       <Label htmlFor="videoProvider">기본 비디오 호스팅</Label>
                       <Select defaultValue="self">
@@ -1687,7 +1688,7 @@ export default function AdminSettings() {
                         </SelectContent>
                       </Select>
                     </div>
-                    
+
                     <div className="flex items-center justify-between space-x-2">
                       <Label htmlFor="hlsStreaming" className="flex-1 cursor-pointer">
                         <div>HLS 스트리밍 사용</div>
@@ -1697,7 +1698,7 @@ export default function AdminSettings() {
                       </Label>
                       <Switch id="hlsStreaming" defaultChecked />
                     </div>
-                    
+
                     <div className="flex items-center justify-between space-x-2">
                       <Label htmlFor="autoTranscode" className="flex-1 cursor-pointer">
                         <div>자동 트랜스코딩</div>
@@ -1708,12 +1709,12 @@ export default function AdminSettings() {
                       <Switch id="autoTranscode" defaultChecked />
                     </div>
                   </div>
-                  
+
                   <Separator />
-                  
+
                   <div className="space-y-4">
                     <h3 className="text-lg font-medium">이미지 처리</h3>
-                    
+
                     <div className="flex items-center justify-between space-x-2">
                       <Label htmlFor="imageOptimization" className="flex-1 cursor-pointer">
                         <div>이미지 자동 최적화</div>
@@ -1723,12 +1724,12 @@ export default function AdminSettings() {
                       </Label>
                       <Switch id="imageOptimization" defaultChecked />
                     </div>
-                    
+
                     <div className="space-y-2">
                       <Label htmlFor="maxImageWidth">최대 이미지 너비 (픽셀)</Label>
                       <Input id="maxImageWidth" type="number" defaultValue="1920" />
                     </div>
-                    
+
                     <div className="space-y-2">
                       <Label htmlFor="thumbnailSizes">썸네일 크기</Label>
                       <Input 
@@ -1742,13 +1743,13 @@ export default function AdminSettings() {
                   </div>
                 </div>
               )}
-              
+
               {/* 채팅 설정 */}
               {activeTab === 'chat' && (
                 <div className="space-y-6">
                   <div className="space-y-4">
                     <h3 className="text-lg font-medium">채팅 기능</h3>
-                    
+
                     <div className="flex items-center justify-between space-x-2">
                       <Label htmlFor="enableChat" className="flex-1 cursor-pointer">
                         <div>채팅 기능 활성화</div>
@@ -1758,7 +1759,7 @@ export default function AdminSettings() {
                       </Label>
                       <Switch id="enableChat" defaultChecked />
                     </div>
-                    
+
                     <div className="flex items-center justify-between space-x-2">
                       <Label htmlFor="groupChats" className="flex-1 cursor-pointer">
                         <div>그룹 채팅 허용</div>
@@ -1768,7 +1769,7 @@ export default function AdminSettings() {
                       </Label>
                       <Switch id="groupChats" defaultChecked />
                     </div>
-                    
+
                     <div className="flex items-center justify-between space-x-2">
                       <Label htmlFor="fileSharing" className="flex-1 cursor-pointer">
                         <div>파일 공유 허용</div>
@@ -1778,18 +1779,18 @@ export default function AdminSettings() {
                       </Label>
                       <Switch id="fileSharing" defaultChecked />
                     </div>
-                    
+
                     <div className="space-y-2">
                       <Label htmlFor="maxAttachmentSize">최대 첨부 파일 크기 (MB)</Label>
                       <Input id="maxAttachmentSize" type="number" defaultValue="10" />
                     </div>
                   </div>
-                  
+
                   <Separator />
-                  
+
                   <div className="space-y-4">
                     <h3 className="text-lg font-medium">메시지 관리</h3>
-                    
+
                     <div className="flex items-center justify-between space-x-2">
                       <Label htmlFor="messageModeration" className="flex-1 cursor-pointer">
                         <div>메시지 중재</div>
@@ -1799,7 +1800,7 @@ export default function AdminSettings() {
                       </Label>
                       <Switch id="messageModeration" defaultChecked />
                     </div>
-                    
+
                     <div className="space-y-2">
                       <Label htmlFor="bannedWords">금지어 목록</Label>
                       <Textarea 
@@ -1807,7 +1808,7 @@ export default function AdminSettings() {
                         placeholder="쉼표로 구분된 금지어"
                       />
                     </div>
-                    
+
                     <div className="space-y-2">
                       <Label htmlFor="messageHistory">메시지 보관 기간 (일)</Label>
                       <Input id="messageHistory" type="number" defaultValue="90" />
@@ -1816,12 +1817,12 @@ export default function AdminSettings() {
                       </p>
                     </div>
                   </div>
-                  
+
                   <Separator />
-                  
+
                   <div className="space-y-4">
                     <h3 className="text-lg font-medium">화상 채팅</h3>
-                    
+
                     <div className="flex items-center justify-between space-x-2">
                       <Label htmlFor="videoChat" className="flex-1 cursor-pointer">
                         <div>화상 채팅 활성화</div>
@@ -1831,7 +1832,7 @@ export default function AdminSettings() {
                       </Label>
                       <Switch id="videoChat" defaultChecked />
                     </div>
-                    
+
                     <div className="space-y-2">
                       <Label htmlFor="videoChatProvider">화상 채팅 제공자</Label>
                       <Select defaultValue="zoom">
@@ -1845,12 +1846,12 @@ export default function AdminSettings() {
                         </SelectContent>
                       </Select>
                     </div>
-                    
+
                     <div className="space-y-2">
                       <Label htmlFor="zoomApiKey">Zoom API 키</Label>
                       <Input id="zoomApiKey" defaultValue="abc123def456ghi" />
                     </div>
-                    
+
                     <div className="space-y-2">
                       <Label htmlFor="zoomApiSecret">Zoom API 시크릿</Label>
                       <Input id="zoomApiSecret" type="password" defaultValue="********" />
@@ -1858,7 +1859,7 @@ export default function AdminSettings() {
                   </div>
                 </div>
               )}
-              
+
               {/* 로고 설정 탭 제거 - appearance 탭으로 통합 완료 */}
             </ScrollArea>
           </CardContent>
@@ -1874,7 +1875,7 @@ export default function AdminSettings() {
           </CardFooter>
         </Card>
       </div>
-      
+
       {/* 서버 재시작 확인 대화상자 */}
       <Dialog open={showRestartDialog} onOpenChange={setShowRestartDialog}>
         <DialogContent>
