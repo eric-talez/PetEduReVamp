@@ -832,7 +832,8 @@ function AppLayout({ children }: { children: ReactNode }) {
                   <Route path="/institute/notebook-monitor">
                     <InstituteNotebookMonitorPage />
                   </Route>
-                  <Route path="/institute/my-points" component={InstituteMyPoints} />
+                  <Route path="/institute/my-points" component```text
+=InstituteMyPoints} />
                   <Route path="/institute/rest-management" component={InstituteRestManagement} />
                   <Route path="/institute/substitute-management" component={SubstituteTrainerManagement} />
                   <Route path="/institute/trainers">

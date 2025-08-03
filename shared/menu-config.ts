@@ -568,6 +568,18 @@ export const DEFAULT_MENU_ITEMS: MenuItem[] = [
     orderIndex: 11,
     isActive: true,
     isPublic: false
+  },
+  {
+    id: 'ai-error-autofix',
+    title: 'AI 에러 자동수정',
+    path: '/admin/ai-error-autofix',
+    icon: 'Sparkles',
+    type: 'internal',
+    category: 'admin',
+    roles: ['admin'],
+    orderIndex: 12,
+    isActive: true,
+    isPublic: false
   }
 ];
 
