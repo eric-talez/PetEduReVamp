@@ -312,7 +312,7 @@ export default function AdminSettings() {
 
   // 수동 에러 검사 실행
   const runManualCheck = useMutation({
-    mutationFn: () => apiRequest('POST', '/api/ai-fix/check').then(res => res.json()),
+    mutationFn: () => apiRequest('POST', '/api/ai-fix/check'),
     onSuccess: (data) => {
       toast({
         title: "검사 완료",
