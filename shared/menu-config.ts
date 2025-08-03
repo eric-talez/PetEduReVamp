@@ -51,7 +51,7 @@ export const DEFAULT_MENU_ITEMS: MenuItem[] = [
     icon: 'Home',
     type: 'internal',
     category: 'main',
-    roles: ['user', 'pet-owner', 'trainer', 'institute-admin', 'admin'],
+    roles: ['pet-owner', 'pet-owner', 'trainer', 'institute-admin', 'admin'],
     orderIndex: 0,
     isActive: true,
     isPublic: true
@@ -75,7 +75,7 @@ export const DEFAULT_MENU_ITEMS: MenuItem[] = [
     icon: 'GraduationCap',
     type: 'internal',
     category: 'main',
-    roles: ['user', 'pet-owner', 'trainer', 'institute-admin', 'admin'],
+    roles: ['pet-owner', 'pet-owner', 'trainer', 'institute-admin', 'admin'],
     orderIndex: 2,
     isActive: true,
     isPublic: true
@@ -87,7 +87,7 @@ export const DEFAULT_MENU_ITEMS: MenuItem[] = [
     icon: 'MapPin',
     type: 'internal',
     category: 'main',
-    roles: ['user', 'pet-owner', 'trainer', 'institute-admin', 'admin'],
+    roles: ['pet-owner', 'pet-owner', 'trainer', 'institute-admin', 'admin'],
     orderIndex: 3,
     isActive: true,
     isPublic: true
@@ -99,7 +99,7 @@ export const DEFAULT_MENU_ITEMS: MenuItem[] = [
     icon: 'UserRoundCheck',
     type: 'internal',
     category: 'main',
-    roles: ['user', 'pet-owner', 'trainer', 'institute-admin', 'admin'],
+    roles: ['pet-owner', 'pet-owner', 'trainer', 'institute-admin', 'admin'],
     orderIndex: 3,
     isActive: true,
     isPublic: true
@@ -111,7 +111,7 @@ export const DEFAULT_MENU_ITEMS: MenuItem[] = [
     icon: 'MessageSquare',
     type: 'internal',
     category: 'main',
-    roles: ['user', 'pet-owner', 'trainer', 'institute-admin', 'admin'],
+    roles: ['pet-owner', 'pet-owner', 'trainer', 'institute-admin', 'admin'],
     orderIndex: 4,
     isActive: true,
     isPublic: true
@@ -123,7 +123,7 @@ export const DEFAULT_MENU_ITEMS: MenuItem[] = [
     icon: 'ShoppingBag',
     type: 'external',
     category: 'main',
-    roles: ['user', 'pet-owner', 'trainer', 'institute-admin', 'admin'],
+    roles: ['pet-owner', 'pet-owner', 'trainer', 'institute-admin', 'admin'],
     orderIndex: 5,
     isActive: true,
     isPublic: true,
@@ -592,7 +592,7 @@ export const DEFAULT_MENU_GROUPS: MenuGroup[] = [
     orderIndex: 0,
     isActive: true,
     isPublic: true,
-    roles: ['user', 'pet-owner', 'trainer', 'institute-admin', 'admin'],
+    roles: ['pet-owner', 'pet-owner', 'trainer', 'institute-admin', 'admin'],
     isOpen: true
   },
   {
