@@ -429,9 +429,9 @@ function AppLayout({ children }: { children: ReactNode }) {
 
                   <Route path="/course/:id" component={CourseDetail} />
                   <Route path="/courses/:id">
-                    {(params) => {
+                    {(params: { id?: string }) => {
                       const CourseDetail = lazy(() => import('./pages/courses/detail'));
-                      const courseId = params && params.id ? params.id : '';
+                      const courseId = params?.id || '';
                       return (
                         <Suspense fallback={<div className="p-8 text-center">강의 정보 로딩 중...</div>}>
                           <CourseDetail courseId={courseId} />
@@ -441,9 +441,9 @@ function AppLayout({ children }: { children: ReactNode }) {
                   </Route>
 
                   <Route path="/courses/:id/preview">
-                    {(params) => {
+                    {(params: { id?: string }) => {
                       const CoursePreview = lazy(() => import('./pages/courses/preview'));
-                      const courseId = params && params.id ? params.id : '';
+                      const courseId = params?.id || '';
                       return (
                         <Suspense fallback={<div className="p-8 text-center">미리보기 로딩 중...</div>}>
                           <CoursePreview courseId={courseId} />
@@ -526,9 +526,9 @@ function AppLayout({ children }: { children: ReactNode }) {
                     }}
                   </Route>
                   <Route path="/trainers/:id">
-                    {(params) => {
+                    {(params: { id?: string }) => {
                       const TrainerDetail = lazy(() => import('./pages/trainers/detail'));
-                      const trainerId = params && params.id ? params.id : '';
+                      const trainerId = params?.id || '';
                       return (
                         <Suspense fallback={<div className="p-8"><TrainerSkeleton /></div>}>
                           <TrainerDetail trainerId={trainerId} />
@@ -538,9 +538,9 @@ function AppLayout({ children }: { children: ReactNode }) {
                   </Route>
                   <Route path="/institutes" component={Institutes} />
                   <Route path="/institutes/:id">
-                    {(params) => {
+                    {(params: { id?: string }) => {
                       const InstituteDetail = lazy(() => import('./pages/institutes/detail'));
-                      const instituteId = params && params.id ? params.id : '';
+                      const instituteId = params?.id || '';
                       return (
                         <Suspense fallback={<div className="p-8 text-center">기관 정보 로딩 중...</div>}>
                           <InstituteDetail instituteId={instituteId} />
@@ -832,8 +832,7 @@ function AppLayout({ children }: { children: ReactNode }) {
                   <Route path="/institute/notebook-monitor">
                     <InstituteNotebookMonitorPage />
                   </Route>
-                  <Route path="/institute/my-points" component```text
-=InstituteMyPoints} />
+                  
                   <Route path="/institute/rest-management" component={InstituteRestManagement} />
                   <Route path="/institute/substitute-management" component={SubstituteTrainerManagement} />
                   <Route path="/institute/trainers">
