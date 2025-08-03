@@ -60,6 +60,22 @@ export default function AdminSettings() {
   const [activeTab, setActiveTab] = useState('general');
   const [isLoading, setIsLoading] = useState(false);
   const [showRestartDialog, setShowRestartDialog] = useState(false);
+  
+  // AI 에러 수정 상태
+  const [aiFixSettings, setAiFixSettings] = useState({
+    isEnabled: true,
+    isRealTimeMonitoring: true,
+    aiModel: 'claude-4-sonnet',
+    maxRetries: 3,
+    enabledErrorTypes: {
+      syntax: true,
+      type: true,
+      import: true,
+      linting: true,
+      runtime: false,
+      performance: false
+    }
+  });
   const [logoImages, setLogoImages] = useState<{ [key: string]: string }>({});
   const [uploadingLogo, setUploadingLogo] = useState<string | null>(null);
 
@@ -234,6 +250,70 @@ export default function AdminSettings() {
       toast({
         title: "오류", 
         description: error.message || "색상 설정 중 오류가 발생했습니다.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // AI 에러 수정 설정 쿼리
+  const { data: aiFixData, refetch: refetchAiFixSettings } = useQuery({
+    queryKey: ['/api/ai-fix/settings'],
+    queryFn: () => apiRequest('GET', '/api/ai-fix/settings').then(res => res.json()),
+    enabled: activeTab === 'ai-fix'
+  });
+
+  // AI 에러 수정 통계 쿼리
+  const { data: aiFixStats } = useQuery({
+    queryKey: ['/api/ai-fix/stats'],
+    queryFn: () => apiRequest('GET', '/api/ai-fix/stats').then(res => res.json()),
+    refetchInterval: 30000, // 30초마다 업데이트
+    enabled: activeTab === 'ai-fix'
+  });
+
+  // AI 에러 수정 로그 쿼리
+  const { data: aiFixLogs, refetch: refetchAiFixLogs } = useQuery({
+    queryKey: ['/api/ai-fix/logs'],
+    queryFn: () => apiRequest('GET', '/api/ai-fix/logs').then(res => res.json()),
+    refetchInterval: 10000, // 10초마다 업데이트
+    enabled: activeTab === 'ai-fix'
+  });
+
+  // AI 에러 수정 설정 업데이트
+  const updateAiFixSettings = useMutation({
+    mutationFn: (settings: any) => apiRequest('POST', '/api/ai-fix/settings', settings),
+    onSuccess: () => {
+      toast({
+        title: "성공",
+        description: "AI 에러 자동 수정 설정이 저장되었습니다.",
+      });
+      refetchAiFixSettings();
+    },
+    onError: () => {
+      toast({
+        title: "오류",
+        description: "설정 저장에 실패했습니다.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // 수동 에러 검사 실행
+  const runManualCheck = useMutation({
+    mutationFn: () => apiRequest('POST', '/api/ai-fix/check'),
+    onSuccess: (response) => {
+      response.json().then(data => {
+        toast({
+          title: "검사 완료",
+          description: `${data.totalErrors}개 에러 발견, ${data.processedErrors}개 처리됨`,
+        });
+        refetchAiFixLogs();
+        refetchAiFixSettings();
+      });
+    },
+    onError: () => {
+      toast({
+        title: "오류",
+        description: "에러 검사 실행에 실패했습니다.",
         variant: "destructive",
       });
     },
@@ -1882,7 +1962,14 @@ export default function AdminSettings() {
                           시스템에서 발생하는 에러를 AI가 자동으로 감지하고 수정합니다
                         </p>
                       </Label>
-                      <Switch id="aiAutoFix" defaultChecked />
+                      <Switch 
+                        id="aiAutoFix" 
+                        checked={aiFixSettings.isEnabled}
+                        onCheckedChange={(checked) => {
+                          setAiFixSettings(prev => ({ ...prev, isEnabled: checked }));
+                          updateAiFixSettings.mutate({ isEnabled: checked });
+                        }}
+                      />
                     </div>
 
                     <div className="flex items-center justify-between space-x-2">
@@ -1892,7 +1979,14 @@ export default function AdminSettings() {
                           코드 변경 시 실시간으로 에러를 감지하고 수정합니다
                         </p>
                       </Label>
-                      <Switch id="aiRealTimeMonitoring" defaultChecked />
+                      <Switch 
+                        id="aiRealTimeMonitoring" 
+                        checked={aiFixSettings.isRealTimeMonitoring}
+                        onCheckedChange={(checked) => {
+                          setAiFixSettings(prev => ({ ...prev, isRealTimeMonitoring: checked }));
+                          updateAiFixSettings.mutate({ isRealTimeMonitoring: checked });
+                        }}
+                      />
                     </div>
 
                     <div className="flex items-center justify-between space-x-2">
@@ -1977,19 +2071,25 @@ export default function AdminSettings() {
                     <div className="grid grid-cols-3 gap-4">
                       <Card className="p-4">
                         <div className="text-center">
-                          <div className="text-2xl font-bold text-green-600">47</div>
+                          <div className="text-2xl font-bold text-green-600">
+                            {aiFixStats?.todayFixed || 0}
+                          </div>
                           <div className="text-sm text-muted-foreground">오늘 수정된 에러</div>
                         </div>
                       </Card>
                       <Card className="p-4">
                         <div className="text-center">
-                          <div className="text-2xl font-bold text-blue-600">1,234</div>
+                          <div className="text-2xl font-bold text-blue-600">
+                            {aiFixStats?.totalFixed || 0}
+                          </div>
                           <div className="text-sm text-muted-foreground">총 수정된 에러</div>
                         </div>
                       </Card>
                       <Card className="p-4">
                         <div className="text-center">
-                          <div className="text-2xl font-bold text-purple-600">98.5%</div>
+                          <div className="text-2xl font-bold text-purple-600">
+                            {aiFixStats?.successRate || '0'}%
+                          </div>
                           <div className="text-sm text-muted-foreground">수정 성공률</div>
                         </div>
                       </Card>
@@ -1998,30 +2098,45 @@ export default function AdminSettings() {
                     <div className="space-y-2">
                       <Label>최근 수정 내역</Label>
                       <div className="max-h-32 overflow-y-auto border rounded-md p-3 space-y-2">
-                        <div className="text-sm">
-                          <span className="text-green-600 font-medium">[수정완료]</span>
-                          <span className="ml-2">TypeScript 타입 에러 - CardFooter import 누락</span>
-                          <span className="text-muted-foreground ml-2">2분 전</span>
-                        </div>
-                        <div className="text-sm">
-                          <span className="text-green-600 font-medium">[수정완료]</span>
-                          <span className="ml-2">라우터 파라미터 타입 에러 수정</span>
-                          <span className="text-muted-foreground ml-2">5분 전</span>
-                        </div>
-                        <div className="text-sm">
-                          <span className="text-green-600 font-medium">[수정완료]</span>
-                          <span className="ml-2">문법 에러 - 잘못된 component 구문</span>
-                          <span className="text-muted-foreground ml-2">8분 전</span>
-                        </div>
+                        {aiFixLogs && aiFixLogs.length > 0 ? (
+                          aiFixLogs.map((log: any) => (
+                            <div key={log.id} className="text-sm">
+                              <span className={`font-medium ${log.success ? 'text-green-600' : 'text-red-600'}`}>
+                                [{log.success ? '수정완료' : '수정실패'}]
+                              </span>
+                              <span className="ml-2">{log.errorType} 에러 - {log.originalError.substring(0, 50)}...</span>
+                              <span className="text-muted-foreground ml-2">
+                                {new Date(log.timestamp).toLocaleString('ko-KR')}
+                              </span>
+                            </div>
+                          ))
+                        ) : (
+                          <div className="text-sm text-muted-foreground">아직 수정된 에러가 없습니다.</div>
+                        )}
                       </div>
                     </div>
 
                     <div className="flex gap-2">
-                      <Button variant="outline" size="sm">
-                        <CheckCircle className="h-4 w-4 mr-2" />
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => runManualCheck.mutate()}
+                        disabled={runManualCheck.isPending}
+                      >
+                        {runManualCheck.isPending ? (
+                          <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                        ) : (
+                          <CheckCircle className="h-4 w-4 mr-2" />
+                        )}
                         수동 검사 실행
                       </Button>
-                      <Button variant="outline" size="sm">
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => {
+                          window.open('/api/ai-fix/logs/download', '_blank');
+                        }}
+                      >
                         <FileText className="h-4 w-4 mr-2" />
                         수정 로그 다운로드
                       </Button>
