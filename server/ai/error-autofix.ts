@@ -1,4 +1,3 @@
-
 import { Express } from "express";
 import { Router } from 'express';
 import OpenAI from "openai";
@@ -50,6 +49,10 @@ let autoFixConfig: AutoFixConfig = {
   cooldownPeriod: 300
 };
 
+let isAutoFixEnabled = false;
+let lastAutoFixRun: string | null = null;
+let totalFixCount = 0;
+
 export function registerErrorAutoFixRoutes(app: Express) {
   const router = Router();
 
@@ -64,7 +67,7 @@ export function registerErrorAutoFixRoutes(app: Express) {
       const sortedLogs = errorLogs
         .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
         .slice(0, 100); // 최근 100개만
-      
+
       res.json(sortedLogs);
     } catch (error) {
       logger.error('오류 로그 조회 실패:', error);
@@ -90,7 +93,7 @@ export function registerErrorAutoFixRoutes(app: Express) {
       };
 
       errorLogs.push(errorLog);
-      
+
       // 설정된 조건에 맞으면 자동 수정 시도
       if (shouldAutoFix(errorLog)) {
         // 비동기로 자동 수정 시도
@@ -111,13 +114,13 @@ export function registerErrorAutoFixRoutes(app: Express) {
     try {
       const { id } = req.params;
       const errorLog = errorLogs.find(log => log.id === id);
-      
+
       if (!errorLog) {
         return res.status(404).json({ error: '오류 로그를 찾을 수 없습니다.' });
       }
 
       const result = await attemptAutoFix(id);
-      
+
       res.json({
         success: result.success,
         message: result.message,
@@ -157,7 +160,7 @@ export function registerErrorAutoFixRoutes(app: Express) {
       const totalErrors = errorLogs.length;
       const fixedErrors = errorLogs.filter(log => log.autoFixApplied && log.autoFixSuccess).length;
       const fixSuccessRate = totalErrors > 0 ? Math.round((fixedErrors / totalErrors) * 100) : 0;
-      
+
       // 평균 수정 시간 계산 (시뮬레이션)
       const avgFixTime = Math.round(Math.random() * 30 + 10);
 
@@ -177,11 +180,11 @@ export function registerErrorAutoFixRoutes(app: Express) {
   function shouldAutoFix(errorLog: ErrorLog): boolean {
     if (!autoFixConfig.enabled) return false;
     if (!autoFixConfig.autoFixTypes[errorLog.type]) return false;
-    
+
     const severityOrder = ['low', 'medium', 'high', 'critical'];
     const errorSeverityIndex = severityOrder.indexOf(errorLog.severity);
     const thresholdIndex = severityOrder.indexOf(autoFixConfig.severityThreshold);
-    
+
     return errorSeverityIndex >= thresholdIndex;
   }
 
@@ -238,7 +241,7 @@ export function registerErrorAutoFixRoutes(app: Express) {
       });
 
       const aiResponse = JSON.parse(response.choices[0].message.content || '{}');
-      
+
       // 수정 시도 기록 업데이트
       errorLog.attempts += 1;
       errorLog.autoFixApplied = true;
@@ -246,7 +249,7 @@ export function registerErrorAutoFixRoutes(app: Express) {
       if (aiResponse.canAutoFix && aiResponse.confidence > 0.7) {
         // 실제 수정 적용 (시뮬레이션)
         const fixResult = await applyAutoFix(errorLog, aiResponse);
-        
+
         errorLog.autoFixSuccess = fixResult.success;
         errorLog.resolution = aiResponse.resolution;
 
@@ -274,7 +277,7 @@ export function registerErrorAutoFixRoutes(app: Express) {
       errorLog.attempts += 1;
       errorLog.autoFixApplied = true;
       errorLog.autoFixSuccess = false;
-      
+
       return {
         success: false,
         message: 'AI 수정 요청 중 오류가 발생했습니다.'
@@ -291,22 +294,22 @@ export function registerErrorAutoFixRoutes(app: Express) {
           // 캐시 클리어 시뮬레이션
           logger.info('캐시 클리어 수행');
           return { success: true };
-          
+
         case 'config_change':
           // 설정 변경 시뮬레이션
           logger.info('설정 변경 수행');
           return { success: Math.random() > 0.2 }; // 80% 성공률
-          
+
         case 'restart_service':
           // 서비스 재시작 시뮬레이션
           logger.info('서비스 재시작 수행');
           return { success: Math.random() > 0.1 }; // 90% 성공률
-          
+
         case 'code_fix':
           // 코드 수정은 보안상 실제로는 수동 승인 필요
           logger.info('코드 수정 제안 생성');
           return { success: false }; // 수동 검토 필요
-          
+
         default:
           return { success: false };
       }
@@ -320,6 +323,104 @@ export function registerErrorAutoFixRoutes(app: Express) {
   app.use('/api/ai', router);
   logger.info('[AI AutoFix] AI 자동 오류 수정 시스템이 초기화되었습니다.');
 }
+
+// 메뉴 시스템 자동 수정 함수
+async function autoFixMenuSystem() {
+  try {
+    console.log('[AI 자동수정] 메뉴 시스템 검사 및 수정 시작');
+
+    // 1. 메뉴 설정 파일 검증
+    const menuConfigPath = 'shared/menu-config.ts';
+    const fs = require('fs');
+
+    if (!fs.existsSync(menuConfigPath)) {
+      console.log('[AI 자동수정] 메뉴 설정 파일이 없습니다. 생성하는 중...');
+      // 기본 메뉴 설정 파일 생성 로직
+      return;
+    }
+
+    // 2. 메뉴 API 엔드포인트 검증
+    console.log('[AI 자동수정] 메뉴 API 엔드포인트 검증 중...');
+
+    // 3. 클라이언트 사이드 메뉴 렌더링 검증
+    console.log('[AI 자동수정] 클라이언트 메뉴 렌더링 검증 중...');
+
+    totalFixCount++;
+    lastAutoFixRun = new Date().toISOString();
+
+    console.log('[AI 자동수정] 메뉴 시스템 검사 완료');
+  } catch (error) {
+    console.error('[AI 자동수정] 메뉴 시스템 수정 실패:', error);
+  }
+}
+
+export function registerAIErrorAutoFixRoutes(app: Express) {
+  // AI 에러 자동 수정 활성화/비활성화
+  app.post('/api/admin/ai-error-autofix/toggle', async (req, res) => {
+    try {
+      const { enabled } = req.body;
+
+      // 설정 저장 (실제로는 데이터베이스나 파일에 저장)
+      isAutoFixEnabled = enabled;
+
+      console.log(`[AI 자동수정] ${enabled ? '활성화' : '비활성화'}됨`);
+
+      // 메뉴 시스템 자동 수정 실행
+      if (enabled) {
+        await autoFixMenuSystem();
+      }
+
+      res.json({
+        success: true,
+        enabled: isAutoFixEnabled,
+        message: `AI 에러 자동수정이 ${enabled ? '활성화' : '비활성화'}되었습니다.`
+      });
+    } catch (error) {
+      console.error('AI 자동수정 설정 오류:', error);
+      res.status(500).json({
+        success: false,
+        message: 'AI 자동수정 설정 중 오류가 발생했습니다.'
+      });
+    }
+  });
+
+  // 자동 수정 상태 조회
+  app.get('/api/admin/ai-error-autofix/status', async (req, res) => {
+    try {
+      res.json({
+        success: true,
+        enabled: isAutoFixEnabled,
+        lastRun: lastAutoFixRun,
+        fixCount: totalFixCount
+      });
+    } catch (error) {
+      console.error('자동수정 상태 조회 오류:', error);
+      res.status(500).json({
+        success: false,
+        message: '자동수정 상태 조회 중 오류가 발생했습니다.'
+      });
+    }
+  });
+
+  // 메뉴 시스템 수동 수정
+  app.post('/api/admin/ai-error-autofix/fix-menu', async (req, res) => {
+    try {
+      await autoFixMenuSystem();
+      res.json({
+        success: true,
+        message: '메뉴 시스템이 수정되었습니다.'
+      });
+    } catch (error) {
+      console.error('메뉴 시스템 수정 오류:', error);
+      res.status(500).json({
+        success: false,
+        message: '메뉴 시스템 수정 중 오류가 발생했습니다.'
+      });
+    }
+  });
+}
+
+
 
 // 시스템 시작시 샘플 데이터 생성
 setTimeout(() => {

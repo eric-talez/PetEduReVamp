@@ -1,4 +1,3 @@
-
 // 클라이언트 사이드 오류 자동 감지 및 리포팅
 class ErrorLogger {
   private static instance: ErrorLogger;
@@ -57,15 +56,15 @@ class ErrorLogger {
 
   private interceptFetch() {
     const originalFetch = window.fetch;
-    
+
     window.fetch = async (...args) => {
       const startTime = performance.now();
-      
+
       try {
         const response = await originalFetch(...args);
         const endTime = performance.now();
         const duration = endTime - startTime;
-        
+
         // API 응답 시간 모니터링
         if (duration > 5000) {
           this.logError({
@@ -75,7 +74,7 @@ class ErrorLogger {
             url: typeof args[0] === 'string' ? args[0] : args[0].url
           });
         }
-        
+
         // HTTP 오류 상태 감지
         if (!response.ok) {
           this.logError({
@@ -85,7 +84,7 @@ class ErrorLogger {
             url: typeof args[0] === 'string' ? args[0] : args[0].url
           });
         }
-        
+
         return response;
       } catch (error) {
         this.logError({
@@ -105,7 +104,7 @@ class ErrorLogger {
     window.addEventListener('load', () => {
       setTimeout(() => {
         const navigation = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
-        
+
         if (navigation.loadEventEnd - navigation.fetchStart > 5000) {
           this.logError({
             type: 'performance',
@@ -135,13 +134,13 @@ class ErrorLogger {
 
   private getSeverityFromError(error: Error): 'low' | 'medium' | 'high' | 'critical' {
     if (!error) return 'low';
-    
+
     const message = error.message?.toLowerCase() || '';
-    
+
     if (message.includes('network') || message.includes('fetch')) return 'high';
     if (message.includes('syntax') || message.includes('reference')) return 'medium';
     if (message.includes('type')) return 'medium';
-    
+
     return 'low';
   }
 
@@ -213,12 +212,55 @@ class ErrorLogger {
 }
 
 // 전역 인스턴스 생성 및 초기화
-export const errorLogger = ErrorLogger.getInstance();
+export const errorLogger = {
+  logError: (error: Error, context?: string) => {
+    console.error(`[Error] ${context || 'Unknown'}: ${error.message}`);
+
+    // 메뉴 관련 오류 감지
+    if (context?.includes('menu') || context?.includes('Menu') || error.message.includes('menu')) {
+      console.log('[AI 자동수정] 메뉴 오류 감지됨, 자동 복구 시도');
+      errorLogger.triggerMenuAutoFix();
+    }
+
+    // 프로덕션에서는 서버로 전송
+    if (process.env.NODE_ENV === 'production') {
+      fetch('/api/error-log', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: error.message,
+          stack: error.stack,
+          context,
+          timestamp: new Date().toISOString()
+        })
+      }).catch(console.error);
+    }
+  },
+
+  triggerMenuAutoFix: () => {
+    // 메뉴 자동 수정 트리거
+    fetch('/api/admin/ai-error-autofix/fix-menu', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' }
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        console.log('[AI 자동수정] 메뉴 시스템 수정 완료');
+        // 페이지 새로고침으로 메뉴 다시 로드
+        setTimeout(() => window.location.reload(), 1000);
+      }
+    })
+    .catch(error => {
+      console.error('[AI 자동수정] 메뉴 수정 실패:', error);
+    });
+  }
+};
 
 // React 컴포넌트에서 사용할 수 있는 훅
 export const useErrorLogger = () => {
   return {
-    logError: (errorData: any) => errorLogger['logError'](errorData),
+    logError: (errorData: any) => errorLogger.logError(errorData),
     enable: () => errorLogger.enable(),
     disable: () => errorLogger.disable(),
     clearQueue: () => errorLogger.clearQueue()

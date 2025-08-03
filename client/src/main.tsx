@@ -41,6 +41,17 @@ window.addEventListener('error', (event) => {
       error: event.error
     });
   }
+
+  // 메뉴 관련 오류 자동 감지
+  if (event.error?.message?.includes('menu') || event.error?.stack?.includes('menu')) {
+    import('./utils/error-logger').then(({ errorLogger }) => {
+      errorLogger.triggerMenuAutoFix();
+    });
+  }
+});
+
+window.addEventListener('unhandledrejection', (event) => {
+  console.error('처리되지 않은 Promise 거부:', event.reason);
 });
 
 createRoot(document.getElementById("root")!).render(
