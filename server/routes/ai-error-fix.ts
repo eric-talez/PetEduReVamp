@@ -177,13 +177,18 @@ class AIErrorFixService {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     
-    const todayLogs = this.logs.filter(log => log.timestamp >= today);
-    const successfulFixes = this.logs.filter(log => log.success);
+    const todayLogs = this.logs.filter(log => {
+      const logDate = new Date(log.timestamp);
+      return logDate >= today;
+    });
+    
+    const todaySuccessful = todayLogs.filter(log => log.success);
+    const totalSuccessful = this.logs.filter(log => log.success);
     
     return {
-      todayFixed: todayLogs.length,
-      totalFixed: this.logs.length,
-      successRate: this.logs.length > 0 ? (successfulFixes.length / this.logs.length * 100).toFixed(1) : '0'
+      todayFixed: todaySuccessful.length,
+      totalFixed: totalSuccessful.length,
+      successRate: this.logs.length > 0 ? (totalSuccessful.length / this.logs.length * 100).toFixed(1) : '0'
     };
   }
 
