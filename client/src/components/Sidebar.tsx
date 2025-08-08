@@ -14,6 +14,7 @@ import { SidebarMenuGroup } from "./SidebarMenuGroup";
 import { ScrollReveal } from "@/components/ui/AnimatedContent";
 import { useQuery } from "@tanstack/react-query";
 const TalezSymbol = "/logo-symbol.svg";
+const TalezLogoType = "/attached_assets/Talez_로고 타입_1754664631229.png";
 
 import { AccessibilityFloatingButton } from "@/components/ui/AccessibilityControls";
 import {
@@ -562,7 +563,7 @@ export function Sidebar({
           ) : (
             <a href="/" className="flex items-center justify-center w-full h-full transition-all duration-300 hover:scale-110">
               <img 
-                src={TalezSymbol} 
+                src={TalezLogoType} 
                 alt="TALEZ" 
                 className="w-full h-full object-contain transition-all duration-300 hover:scale-105"
               />
