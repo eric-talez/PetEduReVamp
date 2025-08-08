@@ -13,8 +13,8 @@ import { AccessibleNavItem } from "./AccessibleNavItem";
 import { SidebarMenuGroup } from "./SidebarMenuGroup";
 import { ScrollReveal } from "@/components/ui/AnimatedContent";
 import { useQuery } from "@tanstack/react-query";
-const TalezSymbol = "/attached_assets/Talez_심볼마크_1754664834146.png";
-const TalezLogoType = "/attached_assets/Talez_로고 타입_1754664631229.png";
+const TalezSymbol = "/talez-symbol.png";
+const TalezLogoType = "/talez-logo-type.png";
 
 import { AccessibilityFloatingButton } from "@/components/ui/AccessibilityControls";
 import {
@@ -515,11 +515,29 @@ export function Sidebar({
 
   // 동적 로고 로딩
   const { data: logoData } = useQuery({
-    queryKey: ['/api/admin/logo'],
+    queryKey: ['/api/admin/logos'],
     retry: false,
     refetchOnWindowFocus: false,
     staleTime: 30000 // 30초
   });
+
+  // 로고 URL 결정
+  const getLogoUrl = (type: 'symbol' | 'compact') => {
+    if (!logoData || typeof logoData !== 'object') {
+      // 기본 로고 사용
+      return type === 'symbol' ? TalezSymbol : TalezLogoType;
+    }
+    
+    const logos = logoData as any; // 타입 단언으로 오류 해결
+    
+    if (type === 'symbol') {
+      // 확장된 상태에서 사용할 로고 (심볼마크)
+      return logos.logoSymbolLight || logos.logoLight || logos.logoUrl || TalezSymbol;
+    } else {
+      // 접힌 상태에서 사용할 로고 (컴팩트/로고타입)
+      return logos.logoSymbolDark || logos.logoDark || logos.compactLogoUrl || TalezLogoType;
+    }
+  };
 
   const contextValue = {
     expanded,
@@ -554,18 +572,26 @@ export function Sidebar({
             <ScrollReveal direction="left" delay={100}>
               <a href="/" className="flex items-center justify-center w-full h-full group">
                 <img 
-                  src={TalezSymbol} 
+                  src={getLogoUrl('symbol')} 
                   alt="TALEZ 로고" 
                   className="w-full h-full object-contain transition-all duration-300 group-hover:scale-105"
+                  onError={(e) => {
+                    // 이미지 로드 실패시 기본 이미지로 대체
+                    e.currentTarget.src = TalezSymbol;
+                  }}
                 />
               </a>
             </ScrollReveal>
           ) : (
             <a href="/" className="flex items-center justify-center w-full h-full transition-all duration-300 hover:scale-110">
               <img 
-                src={TalezLogoType} 
+                src={getLogoUrl('compact')} 
                 alt="TALEZ" 
                 className="w-full h-full object-contain transition-all duration-300 hover:scale-105"
+                onError={(e) => {
+                  // 이미지 로드 실패시 기본 이미지로 대체
+                  e.currentTarget.src = TalezLogoType;
+                }}
               />
             </a>
           )}

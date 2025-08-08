@@ -82,6 +82,27 @@ app.get('/favicon.svg', (req, res) => {
   res.sendFile('favicon.svg', { root: 'public' });
 });
 
+// 첨부 파일 이미지 직접 제공
+app.get('/attached_assets/:filename', (req, res) => {
+  const filename = req.params.filename;
+  
+  try {
+    // 적절한 Content-Type 설정
+    if (filename.endsWith('.png')) {
+      res.setHeader('Content-Type', 'image/png');
+    } else if (filename.endsWith('.jpg') || filename.endsWith('.jpeg')) {
+      res.setHeader('Content-Type', 'image/jpeg');
+    } else if (filename.endsWith('.svg')) {
+      res.setHeader('Content-Type', 'image/svg+xml');
+    }
+    
+    res.sendFile(filename, { root: 'attached_assets' });
+  } catch (error) {
+    console.error('첨부 파일 제공 오류:', error);
+    res.status(404).send('File not found');
+  }
+});
+
 // Session configuration
 app.use(session({
   secret: process.env.SESSION_SECRET || 'talez-super-secure-session-secret-2025-production-ready',
