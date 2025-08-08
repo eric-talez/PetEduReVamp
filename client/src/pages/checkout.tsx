@@ -106,6 +106,7 @@ const CheckoutForm = ({ itemInfo, itemType }: { itemInfo: CourseInfo | ProductIn
         <Button 
           type="button" 
           variant="outline" 
+          size="default"
           onClick={() => navigate(itemType === 'course' ? "/courses" : "/shop")}
           className="flex-1"
         >
@@ -116,6 +117,8 @@ const CheckoutForm = ({ itemInfo, itemType }: { itemInfo: CourseInfo | ProductIn
         <Button 
           type="submit" 
           disabled={!stripe || isProcessing}
+          variant="default"
+          size="lg"
           className="flex-1"
         >
           {isProcessing ? (

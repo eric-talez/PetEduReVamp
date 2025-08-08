@@ -1063,10 +1063,10 @@ export default function Home() {
                       </div>
                       
                       <div className="flex space-x-3">
-                        <Button onClick={resetExperience} variant="outline" className="flex-1">
+                        <Button onClick={resetExperience} variant="outline" size="default" className="flex-1">
                           다시 분석하기
                         </Button>
-                        <Button onClick={() => setLocation('/auth')} className="flex-1">
+                        <Button onClick={() => setLocation('/auth')} variant="default" size="default" className="flex-1">
                           전문가 상담 받기
                         </Button>
                       </div>
@@ -1113,7 +1113,7 @@ export default function Home() {
               </div>
               <h3 className="text-lg font-semibold mb-2">교육 프로그램</h3>
               <p className="text-gray-600 dark:text-gray-300 mb-4">다양한 상황에 맞는 교육 프로그램으로 반려견의 행동 개선을 도와드립니다.</p>
-              <Button variant="outline" size="sm" className="w-full">
+              <Button variant="default" size="default" className="w-full">
                 <Link href="/courses">프로그램 보기</Link>
               </Button>
             </div>
@@ -1126,7 +1126,7 @@ export default function Home() {
               </div>
               <h3 className="text-lg font-semibold mb-2">전문 트레이너</h3>
               <p className="text-gray-600 dark:text-gray-300 mb-4">반려견의 개별 특성과 성향에 맞춘 맞춤형 교육 솔루션을 제공합니다.</p>
-              <Button variant="outline" size="sm" className="w-full">
+              <Button variant="default" size="default" className="w-full">
                 <Link href="/trainers">트레이너 찾기</Link>
               </Button>
             </div>
@@ -1139,7 +1139,7 @@ export default function Home() {
               </div>
               <h3 className="text-lg font-semibold mb-2">온라인 화상 교육</h3>
               <p className="text-gray-600 dark:text-gray-300 mb-4">언제 어디서나 편리하게 전문가와 실시간 화상 교육을 통해 훈련할 수 있습니다.</p>
-              <Button variant="outline" size="sm" className="w-full">
+              <Button variant="default" size="default" className="w-full">
                 <Link href="/video-call">화상 교육 체험하기</Link>
               </Button>
             </div>

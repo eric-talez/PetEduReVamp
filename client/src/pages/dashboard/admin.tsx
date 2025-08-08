@@ -256,12 +256,14 @@ export default function AdminDashboard({ onAction }: AdminDashboardProps) {
           <div className="mt-4">
             <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400">
               <span>사용자 및 기관 승인</span>
-              <button 
+              <Button 
                 onClick={() => window.location.href = '/admin/approvals'}
-                className="text-primary hover:text-primary/80 text-xs font-medium"
+                variant="ghost"
+                size="sm"
+                className="text-primary hover:text-primary/80 text-xs font-medium h-6 px-2"
               >
                 검토
-              </button>
+              </Button>
             </div>
           </div>
         </Card>
@@ -281,12 +283,14 @@ export default function AdminDashboard({ onAction }: AdminDashboardProps) {
           <div className="mt-4">
             <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400">
               <span>처리 대기 중</span>
-              <button 
+              <Button 
                 onClick={() => window.location.href = '/admin/reports'}
-                className="text-primary hover:text-primary/80 text-xs font-medium"
+                variant="ghost"
+                size="sm"
+                className="text-primary hover:text-primary/80 text-xs font-medium h-6 px-2"
               >
                 처리
-              </button>
+              </Button>
             </div>
           </div>
         </Card>
