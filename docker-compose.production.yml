@@ -1,0 +1,156 @@
+version: '3.8'
+
+services:
+  # TALEZ 애플리케이션
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.production
+    container_name: talez-app
+    restart: unless-stopped
+    
+    # 환경 변수
+    env_file:
+      - .env.production
+    
+    # 포트 매핑 (내부용, nginx가 리버스 프록시)
+    expose:
+      - "5000"
+    
+    # 볼륨 마운트
+    volumes:
+      - ./logs:/app/logs
+      - ./uploads:/app/uploads
+      - ./backups:/app/backups
+    
+    # 의존성
+    depends_on:
+      - redis
+    
+    # 네트워크
+    networks:
+      - talez-network
+    
+    # 리소스 제한
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '0.5'
+        reservations:
+          memory: 512M
+          cpus: '0.25'
+    
+    # 헬스체크
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:5000/health', (res) => process.exit(res.statusCode === 200 ? 0 : 1))"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Redis 캐시
+  redis:
+    image: redis:7-alpine
+    container_name: talez-redis
+    restart: unless-stopped
+    
+    # Redis 설정
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}
+    
+    # 볼륨 (데이터 영속성)
+    volumes:
+      - redis-data:/data
+    
+    # 포트 (내부용)
+    expose:
+      - "6379"
+    
+    # 네트워크
+    networks:
+      - talez-network
+    
+    # 리소스 제한
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: '0.25'
+
+  # Nginx 리버스 프록시
+  nginx:
+    image: nginx:alpine
+    container_name: talez-nginx
+    restart: unless-stopped
+    
+    # 포트 매핑
+    ports:
+      - "80:80"
+      - "443:443"
+    
+    # 설정 파일 마운트
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./ssl:/etc/nginx/ssl:ro
+      - ./logs/nginx:/var/log/nginx
+    
+    # 의존성
+    depends_on:
+      - app
+    
+    # 네트워크
+    networks:
+      - talez-network
+
+  # 데이터베이스 백업 서비스
+  db-backup:
+    image: postgres:15-alpine
+    container_name: talez-backup
+    restart: "no"
+    
+    # 환경 변수
+    environment:
+      PGPASSWORD: ${PGPASSWORD}
+    
+    # 백업 볼륨
+    volumes:
+      - ./backups:/backups
+      - ./scripts/backup.sh:/backup.sh:ro
+    
+    # 네트워크
+    networks:
+      - talez-network
+    
+    # 백업 명령 (cron으로 실행)
+    entrypoint: ["sh", "/backup.sh"]
+
+  # 로그 수집기 (선택적)
+  logrotate:
+    image: blacklabelops/logrotate
+    container_name: talez-logrotate
+    restart: unless-stopped
+    
+    # 로그 볼륨
+    volumes:
+      - ./logs:/logs
+    
+    # 환경 변수
+    environment:
+      LOGS_DIRECTORIES: "/logs"
+      LOGROTATE_INTERVAL: "daily"
+      LOGROTATE_COPIES: "7"
+      LOGROTATE_SIZE: "100M"
+
+# 네트워크 정의
+networks:
+  talez-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
+# 볼륨 정의
+volumes:
+  redis-data:
+    driver: local

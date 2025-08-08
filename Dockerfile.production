@@ -1,0 +1,60 @@
+# TALEZ Production Dockerfile
+FROM node:20-alpine AS base
+
+# 보안을 위한 non-root 사용자 생성
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S talez -u 1001
+
+WORKDIR /app
+
+# 의존성 설치를 위한 별도 단계 (캐시 최적화)
+FROM base AS deps
+COPY package*.json ./
+RUN npm ci --only=production && npm cache clean --force
+
+# 빌드 단계
+FROM base AS builder
+COPY package*.json ./
+RUN npm ci
+COPY . .
+
+# TypeScript 컴파일 및 프론트엔드 빌드
+RUN npm run build
+
+# 운영 이미지
+FROM base AS runner
+
+# 보안 패키지 업데이트
+RUN apk update && apk upgrade && apk add --no-cache \
+    dumb-init \
+    && rm -rf /var/cache/apk/*
+
+# 사용자 전환
+USER talez
+
+# 의존성 복사
+COPY --from=deps --chown=talez:nodejs /app/node_modules ./node_modules
+
+# 빌드된 애플리케이션 복사
+COPY --from=builder --chown=talez:nodejs /app/dist ./dist
+COPY --from=builder --chown=talez:nodejs /app/public ./public
+
+# 패키지 정보 복사
+COPY --chown=talez:nodejs package*.json ./
+
+# 로그 및 업로드 디렉토리 생성
+RUN mkdir -p logs uploads && \
+    chown -R talez:nodejs logs uploads
+
+# 포트 노출
+EXPOSE 5000
+
+# 헬스체크
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD node -e "require('http').get('http://localhost:5000/health', (res) => process.exit(res.statusCode === 200 ? 0 : 1))"
+
+# dumb-init을 사용하여 안전한 프로세스 관리
+ENTRYPOINT ["dumb-init", "--"]
+
+# 애플리케이션 시작
+CMD ["node", "dist/index.js"]
