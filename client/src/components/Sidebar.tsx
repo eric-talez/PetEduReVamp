@@ -553,7 +553,7 @@ export function Sidebar({
             <ScrollReveal direction="left" delay={100}>
               <a href="/" className="flex items-center justify-center w-full h-full group">
                 <img 
-                  src={(logoData as any)?.expandedLogo || "/logo.svg"} 
+                  src={(logoData as any)?.expandedLogo || "attached_assets/Talez_심볼마크.png"} 
                   alt="TALEZ 로고" 
                   className="w-full h-full object-contain transition-all duration-300 group-hover:scale-105"
                 />
