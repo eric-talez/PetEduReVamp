@@ -534,10 +534,14 @@ export function Sidebar({
     
     if (type === 'expanded') {
       // 확장된 상태에서 사용할 로고 (로고타입 - 가로형)
-      return logos.logoLight || logos.logoUrl || TalezLogoType;
+      const expandedLogo = logos.logoLight || logos.logoUrl || TalezLogoType;
+      console.log('[Sidebar] Expanded logo URL:', expandedLogo);
+      return expandedLogo;
     } else {
       // 접힌 상태에서 사용할 로고 (심볼마크 - 정사각형)
-      return logos.logoSymbolLight || logos.compactLogoUrl || TalezSymbol;
+      const collapsedLogo = logos.logoSymbolLight || logos.compactLogoUrl || TalezSymbol;
+      console.log('[Sidebar] Collapsed logo URL:', collapsedLogo);
+      return collapsedLogo;
     }
   };
 

@@ -17,6 +17,7 @@ class Storage {
   lessonSessions: any[] = [];
   trainerActivityLogs: any[] = [];
   pointSettings: any = {};
+  logoSettings: any = {};
   // 대체 훈련사 시스템 데이터 저장소
   substituteClassPosts: any[] = [];
   substituteClassApplications: any[] = [];
@@ -195,6 +196,7 @@ class Storage {
     console.log('🔄 운영 환경용 메모리 저장소 초기화...');
     this.initializeData();
     this.initializeSubstituteTrainerData();
+    this.initializeLogoSettings();
   }
 
   private initializeData() {
@@ -1398,23 +1400,37 @@ class Storage {
   }
 
   // 로고 설정 관련 메서드들
-  getLogoSettings() {
-    return {
+  initializeLogoSettings() {
+    this.logoSettings = {
       id: 1,
       logoUrl: '/logo.svg',
       darkLogoUrl: '/logo-dark.svg',
       compactLogoUrl: '/logo-compact.svg',
       symbolUrl: '/logo-symbol.svg',
+      logoLight: '/logo.svg',
+      logoDark: '/logo-dark.svg',
+      logoSymbolLight: '/logo-compact.svg',
+      logoSymbolDark: '/logo-compact-dark.svg',
       isActive: true,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
   }
 
+  getLogoSettings() {
+    console.log('[Storage] 로고 설정 조회:', this.logoSettings);
+    return this.logoSettings;
+  }
+
   updateLogoSettings(settings: any) {
-    // 로고 설정 업데이트 로직
-    console.log('로고 설정 업데이트:', settings);
-    return this.getLogoSettings();
+    console.log('[Storage] 로고 설정 업데이트 요청:', settings);
+    this.logoSettings = { 
+      ...this.logoSettings, 
+      ...settings,
+      updatedAt: new Date().toISOString()
+    };
+    console.log('[Storage] 로고 설정 업데이트 완료:', this.logoSettings);
+    return this.logoSettings;
   }
 
   // 강좌 관련 메서드들  

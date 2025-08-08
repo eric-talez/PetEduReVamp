@@ -5479,11 +5479,13 @@ app.get('/api/search', async (req, res) => {
       };
 
       // 업데이트할 필드 결정
-      if (type === 'expanded') {
+      if (type === 'main') {
         updateData.logoLight = url;
+      } else if (type === 'mainDark') {
         updateData.logoDark = url;
       } else if (type === 'compact') {
         updateData.logoSymbolLight = url;
+      } else if (type === 'compactDark') {
         updateData.logoSymbolDark = url;
       }
 
