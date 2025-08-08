@@ -562,7 +562,7 @@ export function Sidebar({
           ) : (
             <a href="/" className="flex items-center justify-center w-full h-full transition-all duration-300 hover:scale-110">
               <img 
-                src={(logoData as any)?.compactLogo || "/logo-compact.svg"} 
+                src={TalezSymbol} 
                 alt="TALEZ" 
                 className="w-full h-full object-contain transition-all duration-300 hover:scale-105"
               />
