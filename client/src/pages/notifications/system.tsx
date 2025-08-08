@@ -189,7 +189,8 @@ export default function SystemNotificationsPage() {
             <Button 
               variant="outline" 
               size="icon"
-              onClick={() => {}}
+              onClick={() => window.location.href = '/notifications/settings'}
+              title="알림 설정"
             >
               <Settings className="w-4 h-4" />
             </Button>

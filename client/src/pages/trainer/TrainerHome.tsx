@@ -114,12 +114,22 @@ export default function TrainerHome() {
         </div>
         
         <div className="flex space-x-2 mt-4 md:mt-0">
-          <Button variant="outline" size="sm" className="flex items-center">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="flex items-center"
+            onClick={() => window.location.href = '/notifications'}
+          >
             <Bell className="w-4 h-4 mr-2" />
             알림
-            <Badge variant="destructive" className="w-5 h-5 ml-2 rounded-full p-0 flex items-center justify-center">3</Badge>
+            <Badge variant="danger" className="w-5 h-5 ml-2 rounded-full p-0 flex items-center justify-center">3</Badge>
           </Button>
-          <Button variant="outline" size="sm" className="flex items-center">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="flex items-center"
+            onClick={() => window.location.href = '/calendar'}
+          >
             <Calendar className="w-4 h-4 mr-2" />
             일정
           </Button>

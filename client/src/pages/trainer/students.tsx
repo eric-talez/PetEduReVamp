@@ -614,7 +614,7 @@ export default function TrainerStudentsPage() {
                         {student.status === 'active' ? '수강중' : 
                          student.status === 'inactive' ? '휴강중' : '수료'}
                       </Badge>
-                      <ChevronRight className="h-4 w-4 text-gray-400" />
+                      <Eye className="h-4 w-4 text-gray-400" />
                     </div>
                   </div>
                 </CardContent>

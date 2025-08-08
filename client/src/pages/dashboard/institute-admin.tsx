@@ -42,12 +42,14 @@ export default function InstituteAdminDashboard({ onAction }: InstituteAdminDash
           <div>
             <Button
               className="bg-white text-primary font-semibold hover:bg-gray-50 mr-3"
+              onClick={() => window.location.href = '/institute/courses/new'}
             >
               신규 강의 신청하기
             </Button>
             <Button
               variant="outline"
               className="border-2 border-white text-white hover:bg-white/10"
+              onClick={() => window.location.href = '/institute/trainers/invite'}
             >
               훈련사 초대하기
             </Button>

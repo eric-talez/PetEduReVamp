@@ -293,7 +293,7 @@ export default function TrainerProfile() {
     const expiryDate = new Date(cert.expiryDate);
     
     if (expiryDate < now) {
-      return <Badge variant="destructive">만료</Badge>;
+      return <Badge variant="danger">만료</Badge>;
     }
     
     const monthsUntilExpiry = Math.floor((expiryDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24 * 30));

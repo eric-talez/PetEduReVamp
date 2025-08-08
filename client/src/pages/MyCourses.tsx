@@ -170,7 +170,7 @@ export default function MyCourses() {
                 progress={course.progress}
                 trainer={course.trainer}
                 status={course.status}
-                onClick={() => {}}
+                onClick={() => window.location.href = `/courses/${course.id}`}
               >
                 <div className="mt-3 flex items-center text-xs text-gray-600 dark:text-gray-400">
                   <Clock className="w-3 h-3 mr-1" />
@@ -193,7 +193,7 @@ export default function MyCourses() {
                 progress={course.progress}
                 trainer={course.trainer}
                 status={course.status}
-                onClick={() => {}}
+                onClick={() => window.location.href = `/courses/${course.id}/review`}
               >
                 <div className="mt-3 flex items-center text-xs text-gray-600 dark:text-gray-400">
                   <CheckCircle className="w-3 h-3 mr-1 text-green-500" />
@@ -214,7 +214,7 @@ export default function MyCourses() {
                 description={course.description}
                 badge={course.badge}
                 trainer={course.trainer}
-                onClick={() => {}}
+                onClick={() => window.location.href = `/courses/${course.id}/enroll`}
               >
                 <div className="mt-3 flex items-center justify-between">
                   <span className="text-xs text-gray-600 dark:text-gray-400">{course.duration}</span>
