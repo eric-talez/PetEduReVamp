@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { apiRequest } from '@/lib/queryClient';
+import { apiRequest, queryClient } from '@/lib/queryClient';
 import {
   Card,
   CardContent,
@@ -155,6 +155,8 @@ export default function AdminSettings() {
       setUploadingLogo(null);
       // 로고 목록 다시 조회 (페이지 새로고침 없이)
       refetchLogos();
+      // 사이드바의 로고 쿼리도 무효화
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/logos'] });
     },
     onError: (error: any) => {
       toast({
@@ -178,6 +180,8 @@ export default function AdminSettings() {
       });
       // 로고 목록 다시 조회 (페이지 새로고침 없이)
       refetchLogos();
+      // 사이드바의 로고 쿼리도 무효화
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/logos'] });
     },
     onError: (error: any) => {
       toast({
@@ -207,6 +211,8 @@ export default function AdminSettings() {
           });
           // 로고 목록 다시 조회 (페이지 새로고침 없이)
           refetchLogos();
+          // 사이드바의 로고 쿼리도 무효화
+          queryClient.invalidateQueries({ queryKey: ['/api/admin/logos'] });
         } else {
           throw new Error(responseData.message || '로고 저장 실패');
         }
