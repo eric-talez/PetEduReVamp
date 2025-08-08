@@ -67,6 +67,7 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use('/images', express.static('public/images'));
 app.use('/assets', express.static('public/assets'));
 app.use('/uploads', express.static('public/uploads'));
+app.use('/attached_assets', express.static('attached_assets'));
 
 // 로고 파일 직접 제공
 app.get('/logo.svg', (req, res) => {
