@@ -522,20 +522,22 @@ export function Sidebar({
   });
 
   // 로고 URL 결정
-  const getLogoUrl = (type: 'symbol' | 'compact') => {
+  const getLogoUrl = (type: 'expanded' | 'collapsed') => {
+    console.log('[Sidebar] logoData:', logoData, 'type:', type);
+    
     if (!logoData || typeof logoData !== 'object') {
       // 기본 로고 사용
-      return type === 'symbol' ? TalezSymbol : TalezLogoType;
+      return type === 'expanded' ? TalezLogoType : TalezSymbol;
     }
     
-    const logos = logoData as any; // 타입 단언으로 오류 해결
+    const logos = logoData as any;
     
-    if (type === 'symbol') {
-      // 확장된 상태에서 사용할 로고 (심볼마크)
-      return logos.logoSymbolLight || logos.logoLight || logos.logoUrl || TalezSymbol;
+    if (type === 'expanded') {
+      // 확장된 상태에서 사용할 로고 (로고타입 - 가로형)
+      return logos.logoLight || logos.logoUrl || TalezLogoType;
     } else {
-      // 접힌 상태에서 사용할 로고 (컴팩트/로고타입)
-      return logos.logoSymbolDark || logos.logoDark || logos.compactLogoUrl || TalezLogoType;
+      // 접힌 상태에서 사용할 로고 (심볼마크 - 정사각형)
+      return logos.logoSymbolLight || logos.compactLogoUrl || TalezSymbol;
     }
   };
 
@@ -572,12 +574,12 @@ export function Sidebar({
             <ScrollReveal direction="left" delay={100}>
               <a href="/" className="flex items-center justify-center w-full h-full group">
                 <img 
-                  src={getLogoUrl('symbol')} 
+                  src={getLogoUrl('expanded')} 
                   alt="TALEZ 로고" 
                   className="w-full h-full object-contain transition-all duration-300 group-hover:scale-105"
                   onError={(e) => {
                     // 이미지 로드 실패시 기본 이미지로 대체
-                    e.currentTarget.src = TalezSymbol;
+                    e.currentTarget.src = TalezLogoType;
                   }}
                 />
               </a>
@@ -585,12 +587,12 @@ export function Sidebar({
           ) : (
             <a href="/" className="flex items-center justify-center w-full h-full transition-all duration-300 hover:scale-110">
               <img 
-                src={getLogoUrl('compact')} 
+                src={getLogoUrl('collapsed')} 
                 alt="TALEZ" 
                 className="w-full h-full object-contain transition-all duration-300 hover:scale-105"
                 onError={(e) => {
                   // 이미지 로드 실패시 기본 이미지로 대체
-                  e.currentTarget.src = TalezLogoType;
+                  e.currentTarget.src = TalezSymbol;
                 }}
               />
             </a>

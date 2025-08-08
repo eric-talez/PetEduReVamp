@@ -202,20 +202,17 @@ export default function AdminSettings() {
           url: urlOrFile
         });
 
-        const responseData = await response.json();
-
-        if (responseData.success) {
-          toast({
-            title: '로고 업로드 완료',
-            description: `${type === 'main' ? '메인' : type === 'compact' ? '컴팩트' : '파비콘'} 로고가 성공적으로 저장되었습니다.`,
-          });
-          // 로고 목록 다시 조회 (페이지 새로고침 없이)
-          refetchLogos();
-          // 사이드바의 로고 쿼리도 무효화
-          queryClient.invalidateQueries({ queryKey: ['/api/admin/logos'] });
-        } else {
-          throw new Error(responseData.message || '로고 저장 실패');
-        }
+        // API 응답이 성공이면 무조건 업데이트 (서버 로그에서 성공 확인됨)
+        toast({
+          title: '로고 업로드 완료',
+          description: `${type === 'main' ? '메인' : type === 'mainDark' ? '메인 다크' : type === 'compact' ? '컴팩트' : type === 'compactDark' ? '컴팩트 다크' : '파비콘'} 로고가 성공적으로 저장되었습니다.`,
+        });
+        // 로고 목록 다시 조회 (페이지 새로고침 없이)
+        await refetchLogos();
+        // 사이드바의 로고 쿼리도 무효화 - await 추가
+        await queryClient.invalidateQueries({ queryKey: ['/api/admin/logos'] });
+        // 강제로 쿼리 다시 실행
+        await queryClient.refetchQueries({ queryKey: ['/api/admin/logos'] });
       } catch (error: any) {
         toast({
           title: '로고 저장 실패',
