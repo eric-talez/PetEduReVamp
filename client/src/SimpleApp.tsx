@@ -88,7 +88,7 @@ import { ThemeManager } from "@/components/ThemeManager";
 import { AccessibilityFloatingButton } from "@/components/ui/AccessibilityControls";
 import { DogLoading, FullScreenLoading } from "@/components/DogLoading";
 import { SkipToContent } from "@/components/ui/skip-to-content";
-import ErrorBoundary from "@/components/ErrorBoundary";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { AIAssistant } from "@/components/ui/AIAssistant";
 import { ThemeProvider } from "@/context/theme-context";
 

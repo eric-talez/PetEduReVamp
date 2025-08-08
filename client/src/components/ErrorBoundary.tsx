@@ -1,118 +1,114 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { Button } from '@/components/ui/button';
-import { AlertTriangle } from 'lucide-react';
-import { DogLoading } from './DogLoading';
+import { AlertTriangle, RefreshCw } from 'lucide-react';
 
 interface Props {
   children: ReactNode;
   fallback?: ReactNode;
-  onError?: (error: Error, errorInfo: ErrorInfo) => void;
-  showDogLoading?: boolean;
 }
 
 interface State {
   hasError: boolean;
-  error: Error | null;
+  error?: Error;
+  errorInfo?: ErrorInfo;
 }
 
-/**
- * 에러 바운더리 컴포넌트
- * 
- * React 컴포넌트 트리에서 발생하는 JavaScript 에러를 캐치하고,
- * 에러 발생 시 폴백 UI를 렌더링하여 전체 애플리케이션이 중단되는 것을 방지
- * 
- * 접근성을 고려한 aria-* 속성 추가
- */
-class ErrorBoundary extends Component<Props, State> {
+export class ErrorBoundary extends Component<Props, State> {
   constructor(props: Props) {
     super(props);
-    this.state = { 
-      hasError: false,
-      error: null
-    };
+    this.state = { hasError: false };
   }
 
   static getDerivedStateFromError(error: Error): State {
-    // 다음 렌더링에서 폴백 UI가 보이도록 상태를 업데이트
     return { hasError: true, error };
   }
 
-  componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
-    // 에러 로깅 또는 에러 보고 서비스에 에러 정보 전송
-    console.error('Error caught by boundary:', error, errorInfo);
-
-    // 에러 리포팅 (개발 환경에서는 콘솔, 프로덕션에서는 서비스로 전송)
-    if (process.env.NODE_ENV === 'production') {
-      // 실제 서비스에서는 에러 모니터링 서비스로 전송
-      this.reportError(error, errorInfo);
+  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    this.setState({ error, errorInfo });
+    
+    // 에러 로깅 (실제 환경에서는 Sentry 등으로 전송)
+    console.error('ErrorBoundary caught an error:', error, errorInfo);
+    
+    // 개발 환경에서만 상세 정보 표시
+    if (import.meta.env.DEV) {
+      console.group('🚨 Error Boundary Details');
+      console.error('Error:', error);
+      console.error('Error Info:', errorInfo);
+      console.error('Component Stack:', errorInfo.componentStack);
+      console.groupEnd();
     }
   }
 
-  private reportError = (error: Error, errorInfo: ErrorInfo) => {
-    // 에러 정보를 서버로 전송하는 로직
-    fetch('/api/error-report', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        error: error.message,
-        stack: error.stack,
-        componentStack: errorInfo.componentStack,
-        timestamp: new Date().toISOString(),
-        userAgent: navigator.userAgent,
-        url: window.location.href
-      })
-    }).catch(err => console.error('Failed to report error:', err));
-  }
+  handleReset = () => {
+    this.setState({ hasError: false, error: undefined, errorInfo: undefined });
+  };
 
-  resetErrorBoundary = (): void => {
-    this.setState({ hasError: false, error: null });
-  }
-
-  render(): ReactNode {
+  render() {
     if (this.state.hasError) {
-      // 사용자 정의 폴백이 제공된 경우 사용
       if (this.props.fallback) {
         return this.props.fallback;
       }
 
-      // 기본 에러 UI
       return (
-        <div 
-          className="flex flex-col items-center justify-center min-h-[300px] p-6 space-y-4 border border-red-200 rounded-lg bg-red-50 dark:bg-red-900/10 dark:border-red-800"
-          role="alert"
-          aria-live="assertive"
-        >
-          {this.props.showDogLoading && <DogLoading size="small" message="문제 확인 중..." showTips={false} />}
-
-          <div className="flex items-center justify-center w-16 h-16 rounded-full bg-red-100 dark:bg-red-900/20">
-            <AlertTriangle className="h-8 w-8 text-red-600 dark:text-red-400" aria-hidden="true" />
-          </div>
-
-          <div className="text-center">
-            <h3 className="text-lg font-semibold text-red-800 dark:text-red-400">
-              문제가 발생했습니다
-            </h3>
-            <p className="mt-2 text-sm text-red-700 dark:text-red-300">
-              {this.state.error?.message || '알 수 없는 오류가 발생했습니다. 다시 시도해 주세요.'}
-            </p>
-          </div>
-
-          <div className="flex gap-3">
-            <Button 
-              variant="outline"
-              className="border-red-300 text-red-700 hover:bg-red-100 dark:border-red-700 dark:text-red-300 dark:hover:bg-red-900/30"
-              onClick={this.resetErrorBoundary}
-            >
-              다시 시도
-            </Button>
-
-            <Button 
-              variant="outline"
-              className="border-red-300 text-red-700 hover:bg-red-100 dark:border-red-700 dark:text-red-300 dark:hover:bg-red-900/30"
-              onClick={() => window.location.reload()}
-            >
-              페이지 새로고침
-            </Button>
+        <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+          <div className="max-w-md w-full mx-auto p-6">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8 text-center">
+              <div className="flex justify-center mb-4">
+                <div className="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center">
+                  <AlertTriangle className="w-8 h-8 text-red-600 dark:text-red-400" />
+                </div>
+              </div>
+              
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                앗! 문제가 발생했습니다
+              </h2>
+              
+              <p className="text-gray-600 dark:text-gray-300 mb-6">
+                예상치 못한 오류가 발생했습니다. 페이지를 새로고침하거나 잠시 후 다시 시도해주세요.
+              </p>
+              
+              {import.meta.env.DEV && this.state.error && (
+                <details className="mb-6 text-left">
+                  <summary className="cursor-pointer text-sm text-gray-500 hover:text-gray-700">
+                    개발자 정보 (클릭하여 펼치기)
+                  </summary>
+                  <div className="mt-2 p-3 bg-gray-100 dark:bg-gray-700 rounded text-xs font-mono">
+                    <div className="mb-2">
+                      <strong>Error:</strong> {this.state.error.message}
+                    </div>
+                    <div className="mb-2">
+                      <strong>Stack:</strong>
+                      <pre className="whitespace-pre-wrap">{this.state.error.stack}</pre>
+                    </div>
+                    {this.state.errorInfo && (
+                      <div>
+                        <strong>Component Stack:</strong>
+                        <pre className="whitespace-pre-wrap">{this.state.errorInfo.componentStack}</pre>
+                      </div>
+                    )}
+                  </div>
+                </details>
+              )}
+              
+              <div className="flex gap-3">
+                <Button 
+                  onClick={this.handleReset}
+                  variant="outline"
+                  className="flex-1"
+                >
+                  <RefreshCw className="w-4 h-4 mr-2" />
+                  다시 시도
+                </Button>
+                
+                <Button 
+                  onClick={() => window.location.href = '/'}
+                  variant="default"
+                  className="flex-1"
+                >
+                  홈으로 이동
+                </Button>
+              </div>
+            </div>
           </div>
         </div>
       );
@@ -121,5 +117,3 @@ class ErrorBoundary extends Component<Props, State> {
     return this.props.children;
   }
 }
-
-export default ErrorBoundary;

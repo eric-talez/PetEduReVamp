@@ -1,54 +1,41 @@
-import { useStripe, Elements, PaymentElement, useElements } from '@stripe/react-stripe-js';
+import React, { useState, useEffect } from 'react';
+import { useLocation } from 'wouter';
 import { loadStripe } from '@stripe/stripe-js';
-import { useEffect, useState } from 'react';
-import { apiRequest } from "@/lib/queryClient";
-import { useToast } from "@/hooks/use-toast";
-import { useQuery } from "@tanstack/react-query";
-import { useLocation } from "wouter";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Loader2, ArrowLeft, CreditCard, BookOpen, Clock, Star, Package } from "lucide-react";
+import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
+import { Button } from '@/components/ui/button';
+import { ArrowLeft, CreditCard, Loader2 } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { useQuery } from '@tanstack/react-query';
 
-// Stripe 공개 키 로드
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY);
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 
 interface CourseInfo {
-  id: string;
+  id: number;
   title: string;
-  description: string;
-  trainerId: string;
-  trainerName: string;
-  category: string;
-  difficulty: string;
-  duration: number;
   price: number;
-  enrollmentCount: number;
-  rating: number;
-  thumbnailUrl: string;
+  description: string;
+  duration: number;
 }
 
 interface ProductInfo {
-  id: string;
+  id: number;
   name: string;
   price: number;
-  image: string;
-  category: string;
-  brand: string;
   description: string;
-  rating: number;
-  reviews: number;
-  inStock: boolean;
 }
 
-const CheckoutForm = ({ itemInfo, itemType }: { itemInfo: CourseInfo | ProductInfo; itemType: 'course' | 'product' }) => {
+const CheckoutForm: React.FC<{
+  itemInfo: CourseInfo | ProductInfo;
+  itemType: 'course' | 'product';
+}> = ({ itemInfo, itemType }) => {
   const stripe = useStripe();
   const elements = useElements();
+  const [isProcessing, setIsProcessing] = useState(false);
   const { toast } = useToast();
   const [, navigate] = useLocation();
-  const [isProcessing, setIsProcessing] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
 
     if (!stripe || !elements) {
       return;
@@ -60,14 +47,11 @@ const CheckoutForm = ({ itemInfo, itemType }: { itemInfo: CourseInfo | ProductIn
       const { error } = await stripe.confirmPayment({
         elements,
         confirmParams: {
-          return_url: itemType === 'course' 
-            ? `${window.location.origin}/course/${itemInfo.id}`
-            : `${window.location.origin}/shop/order-complete?productId=${itemInfo.id}`,
+          return_url: `${window.location.origin}/payment-success`,
         },
       });
 
       if (error) {
-        console.error('Payment failed:', error);
         toast({
           title: "결제 실패",
           description: error.message || "결제 중 오류가 발생했습니다.",
@@ -141,7 +125,6 @@ const CheckoutForm = ({ itemInfo, itemType }: { itemInfo: CourseInfo | ProductIn
 export default function Checkout() {
   const [location] = useLocation();
   
-  // URL 전체를 가져오기 위해 window.location.search 사용
   const searchString = window.location.search;
   const searchParams = new URLSearchParams(searchString);
   
@@ -152,219 +135,113 @@ export default function Checkout() {
   const itemType = searchParams.get('type') as 'course' | 'product';
   const [clientSecret, setClientSecret] = useState("");
 
-  // 디버깅을 위한 로깅
-  console.log('Checkout page - URL params:', {
-    location,
-    searchString,
-    courseId,
-    productId,
-    productName,
-    productPrice,
-    itemType
-  });
-
-  // 강의 정보 조회 (전체 커리큘럼 목록에서 찾기)
+  // 강의 정보 조회
   const { data: courseData, isLoading: isCourseLoading } = useQuery({
     queryKey: ['/api/admin/curriculums'],
     enabled: !!courseId,
   });
 
   // 강의 정보 추출
-  const courseInfo: CourseInfo | null = courseData?.curriculums?.find((course: any) => course.id === parseInt(courseId || '0')) ? {
+  const courseInfo: CourseInfo | null = courseData?.curriculums?.find((course: any) => 
+    course.id === parseInt(courseId || '0')
+  ) ? {
     id: parseInt(courseId || '0'),
     title: courseData.curriculums.find((course: any) => course.id === parseInt(courseId || '0'))?.title || '',
     price: courseData.curriculums.find((course: any) => course.id === parseInt(courseId || '0'))?.price || 0,
     description: courseData.curriculums.find((course: any) => course.id === parseInt(courseId || '0'))?.description || '',
     duration: courseData.curriculums.find((course: any) => course.id === parseInt(courseId || '0'))?.duration || 0,
-    difficulty: courseData.curriculums.find((course: any) => course.id === parseInt(courseId || '0'))?.level || 'beginner',
-    category: courseData.curriculums.find((course: any) => course.id === parseInt(courseId || '0'))?.category || '기초 훈련',
-    instructor: courseData.curriculums.find((course: any) => course.id === parseInt(courseId || '0'))?.trainerName || '',
-    rating: 4.8,
-    totalStudents: courseData.curriculums.find((course: any) => course.id === parseInt(courseId || '0'))?.currentStudents || 0,
-    image: "/api/placeholder/400/300"
   } : null;
 
-  // 상품 정보 (URL 파라미터에서 가져오기)
-  const productInfo: ProductInfo | null = productId && productName && productPrice ? {
-    id: productId,
-    name: productName,
-    price: parseInt(productPrice),
-    image: "https://via.placeholder.com/400x300?text=Product+Image",
-    category: "반려동물용품",
-    brand: "TALEZ",
-    description: "훈련에 필요한 고품질 반려동물용품입니다.",
-    rating: 4.5,
-    reviews: 128,
-    inStock: true
+  // 상품 정보 생성
+  const productInfo: ProductInfo | null = productId ? {
+    id: parseInt(productId),
+    name: productName || '상품',
+    price: parseInt(productPrice || '0'),
+    description: '상품 설명',
   } : null;
 
-  const currentItem = courseInfo || productInfo;
-  const currentType = itemType || (courseInfo ? 'course' : 'product');
+  const itemInfo = itemType === 'course' ? courseInfo : productInfo;
 
   useEffect(() => {
-    if (currentItem) {
-      // PaymentIntent 생성
-      const paymentData = {
-        amount: currentItem.price,
-        itemId: currentItem.id,
-        itemName: currentType === 'course' ? (currentItem as CourseInfo).title : (currentItem as ProductInfo).name,
-        itemType: currentType
-      };
-      
-      console.log('PaymentIntent 생성 요청:', paymentData);
-      
-      apiRequest("POST", "/api/create-payment-intent", paymentData)
-        .then((res) => res.json())
-        .then((data) => {
-          console.log('PaymentIntent 응답:', data);
-          setClientSecret(data.clientSecret);
-        })
-        .catch((error) => {
-          console.error('PaymentIntent 생성 오류:', error);
-        });
+    if (itemInfo) {
+      // Payment Intent 생성
+      fetch('/api/create-payment-intent', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          amount: itemInfo.price * 100, // 원을 센트로 변환
+          currency: 'krw',
+          itemType,
+          itemId: itemInfo.id,
+        }),
+      })
+      .then(res => res.json())
+      .then(data => setClientSecret(data.clientSecret))
+      .catch(error => console.error('Payment Intent 생성 실패:', error));
     }
-  }, [currentItem, currentType]);
+  }, [itemInfo, itemType]);
 
-  if (!courseId && !productId) {
+  if ((itemType === 'course' && isCourseLoading) || !itemInfo) {
     return (
       <div className="container mx-auto px-4 py-8">
-        <Card>
-          <CardContent className="p-8 text-center">
-            <h2 className="text-xl font-semibold mb-2">구매할 상품을 찾을 수 없습니다</h2>
-            <p className="text-gray-600 mb-4">올바른 링크를 통해 접근해주세요.</p>
-            <Button onClick={() => window.location.href = '/courses'}>
-              강의 목록으로 돌아가기
-            </Button>
-          </CardContent>
-        </Card>
+        <div className="max-w-md mx-auto">
+          <div className="text-center">
+            <Loader2 className="w-8 h-8 mx-auto mb-4 animate-spin" />
+            <p>결제 정보를 불러오는 중...</p>
+          </div>
+        </div>
       </div>
     );
   }
 
-  if (isCourseLoading || !clientSecret) {
-    return (
-      <div className="container mx-auto px-4 py-8">
-        <Card>
-          <CardContent className="p-8 text-center">
-            <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4" />
-            <p>결제 준비 중...</p>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
+  const appearance = {
+    theme: 'stripe' as const,
+  };
 
-  if (!currentItem) {
-    return (
-      <div className="container mx-auto px-4 py-8">
-        <Card>
-          <CardContent className="p-8 text-center">
-            <h2 className="text-xl font-semibold mb-2">구매할 상품을 찾을 수 없습니다</h2>
-            <Button onClick={() => window.location.href = '/courses'}>
-              강의 목록으로 돌아가기
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
+  const options = {
+    clientSecret,
+    appearance,
+  };
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="max-w-2xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">
-            {currentType === 'course' ? '강의 구매' : '상품 구매'}
-          </h1>
-          <p className="text-gray-600">
-            안전한 결제 시스템으로 {currentType === 'course' ? '강의를' : '상품을'} 구매하세요
-          </p>
-        </div>
-
-        <div className="grid gap-6">
-          {/* 상품/강의 정보 */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                {currentType === 'course' ? (
-                  <BookOpen className="w-5 h-5" />
-                ) : (
-                  <Package className="w-5 h-5" />
-                )}
-                {currentType === 'course' ? '구매할 강의' : '구매할 상품'}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex gap-4">
-                <div className="w-24 h-24 bg-gray-200 dark:bg-gray-700 rounded-lg flex items-center justify-center">
-                  {currentType === 'course' ? (
-                    <BookOpen className="w-8 h-8 text-gray-500" />
-                  ) : (
-                    <Package className="w-8 h-8 text-gray-500" />
-                  )}
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-semibold text-lg mb-1">
-                    {currentType === 'course' ? (currentItem as CourseInfo).title : (currentItem as ProductInfo).name}
-                  </h3>
-                  <p className="text-sm text-gray-600 mb-2">
-                    {currentType === 'course' 
-                      ? (currentItem as CourseInfo).trainerName 
-                      : (currentItem as ProductInfo).brand}
-                  </p>
-                  <div className="flex items-center gap-4 text-sm text-gray-500">
-                    {currentType === 'course' ? (
-                      <>
-                        <div className="flex items-center gap-1">
-                          <Clock className="w-4 h-4" />
-                          {Math.floor((currentItem as CourseInfo).duration / 60)}시간 {(currentItem as CourseInfo).duration % 60}분
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                          {(currentItem as CourseInfo).rating}
-                        </div>
-                      </>
-                    ) : (
-                      <>
-                        <div className="flex items-center gap-1">
-                          <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                          {(currentItem as ProductInfo).rating}
-                        </div>
-                        <div className="text-sm text-gray-500">
-                          {(currentItem as ProductInfo).reviews}개 리뷰
-                        </div>
-                      </>
-                    )}
-                  </div>
-                </div>
-                <div className="text-right">
-                  <div className="text-2xl font-bold text-primary">
-                    {currentItem.price.toLocaleString()}원
-                  </div>
-                  <div className="text-sm text-gray-500">
-                    {currentType === 'course' 
-                      ? `${(currentItem as CourseInfo).enrollmentCount}명 수강중`
-                      : (currentItem as ProductInfo).inStock ? '재고 있음' : '품절'}
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* 결제 양식 */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <CreditCard className="w-5 h-5" />
-                결제 정보
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Elements stripe={stripePromise} options={{ clientSecret }}>
-                <CheckoutForm itemInfo={currentItem} itemType={currentType} />
-              </Elements>
-            </CardContent>
-          </Card>
+      <div className="max-w-md mx-auto">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 mb-6">
+          <h1 className="text-2xl font-bold mb-4">결제하기</h1>
+          
+          <div className="border-b pb-4 mb-4">
+            <h2 className="font-semibold">
+              {itemType === 'course' ? '강의' : '상품'}: {
+                itemType === 'course' 
+                  ? (itemInfo as CourseInfo).title 
+                  : (itemInfo as ProductInfo).name
+              }
+            </h2>
+            <p className="text-gray-600 dark:text-gray-300 text-sm mt-1">
+              {itemType === 'course' 
+                ? (itemInfo as CourseInfo).description 
+                : (itemInfo as ProductInfo).description
+              }
+            </p>
+            <div className="flex justify-between items-center mt-3">
+              <span className="text-lg font-bold">
+                {itemInfo.price.toLocaleString()}원
+              </span>
+              {itemType === 'course' && (
+                <span className="text-sm text-gray-500">
+                  {(itemInfo as CourseInfo).duration}분
+                </span>
+              )}
+            </div>
+          </div>
+          
+          {clientSecret && (
+            <Elements options={options} stripe={stripePromise}>
+              <CheckoutForm itemInfo={itemInfo} itemType={itemType} />
+            </Elements>
+          )}
         </div>
       </div>
     </div>

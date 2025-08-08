@@ -1,5 +1,6 @@
 import { useState } from 'react';
-// import { CourseCard } from '@/components/ui/card'; // 임시 주석 처리
+import { Card } from '@/components/ui/card';
+import { CourseCard } from '@/components/ui/CourseCard';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
