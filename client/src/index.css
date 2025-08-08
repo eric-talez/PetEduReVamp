@@ -5,6 +5,116 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  /* 기본 타이포그래피 설정 */
+  html {
+    font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+  
+  body {
+    font-size: 1rem;
+    line-height: 1.6;
+    letter-spacing: 0.01em;
+  }
+  
+  /* 반응형 기본 폰트 크기 */
+  @media (max-width: 640px) {
+    html {
+      font-size: 14px;
+    }
+  }
+  
+  @media (min-width: 1024px) {
+    html {
+      font-size: 16px;
+    }
+  }
+  
+  @media (min-width: 1280px) {
+    html {
+      font-size: 17px;
+    }
+  }
+  
+  /* 헤딩 기본 스타일 */
+  h1 {
+    @apply text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight;
+  }
+  
+  h2 {
+    @apply text-2xl md:text-3xl lg:text-4xl font-semibold tracking-tight;
+  }
+  
+  h3 {
+    @apply text-xl md:text-2xl lg:text-3xl font-semibold tracking-tight;
+  }
+  
+  h4 {
+    @apply text-lg md:text-xl lg:text-2xl font-medium tracking-tight;
+  }
+  
+  h5 {
+    @apply text-base md:text-lg lg:text-xl font-medium tracking-tight;
+  }
+  
+  h6 {
+    @apply text-sm md:text-base lg:text-lg font-medium tracking-tight;
+  }
+  
+  /* 본문 텍스트 */
+  p {
+    @apply text-base leading-relaxed;
+  }
+  
+  /* 작은 텍스트 */
+  .text-caption {
+    @apply text-sm text-muted-foreground leading-normal;
+  }
+  
+  /* 라벨 텍스트 */
+  .text-label {
+    @apply text-sm font-medium tracking-wide;
+  }
+  
+  /* 오버라인 텍스트 */
+  .text-overline {
+    @apply text-xs font-semibold uppercase tracking-widest;
+  }
+}
+
+@layer components {
+  /* 개선된 버튼 크기 */
+  .btn-sm {
+    @apply px-3 py-2 text-sm min-h-[2.25rem];
+  }
+  
+  .btn-md {
+    @apply px-4 py-2.5 text-base min-h-[2.75rem];
+  }
+  
+  .btn-lg {
+    @apply px-6 py-3 text-lg min-h-[3rem];
+  }
+  
+  /* 카드 컴포넌트 개선 */
+  .card-enhanced {
+    @apply bg-card text-card-foreground rounded-lg border shadow-sm hover:shadow-md transition-shadow duration-200;
+  }
+  
+  /* 폼 요소 개선 */
+  .form-input-enhanced {
+    @apply min-h-[2.75rem] px-3 py-2 text-base border rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors;
+  }
+  
+  /* 메뉴 아이템 크기 개선 */
+  .menu-item-enhanced {
+    @apply min-h-[2.75rem] px-3 py-2 text-base flex items-center gap-3 transition-colors duration-200;
+  }
+}
+
 /* 전역 스크롤바 스타일링 */
 ::-webkit-scrollbar {
   width: 6px;

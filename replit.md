@@ -5,6 +5,7 @@ TALEZ is a comprehensive pet education and e-commerce platform that combines AI-
 
 ## User Preferences
 Preferred communication style: Simple, everyday language.
+UI/UX Preferences: Enhanced font sizes and accessibility-focused design with improved touch targets and typography.
 
 ## System Architecture
 ### Core Architectural Decisions
@@ -42,7 +43,7 @@ TALEZ is built with a strong emphasis on modularity, scalability, and performanc
 - **AI Features**: AI-powered pet training services, content crawling for news, multi-model AI fusion (OpenAI, Gemini) for behavior, training, health, and sentiment analysis, automatic subtitle generation for videos.
 - **Admin Dashboard**: Comprehensive management for users, trainers, institutes, content, curriculum, revenue, and registrations. Enhanced visual analytics with circular progress bars.
 - **Location Services**: Naver Maps integration for pet-related facilities with reservation functionality.
-- **Design System**: Consistent UI/UX with a focus on dark mode compatibility, unified button styles, and enhanced visual elements including an AI-focused design for experience sections. Color scheme adheres to Figma specifications: Primary: #2BAA61, Secondary: #FFA726, Information: #29B5F6, Danger: #E74D3C.
+- **Design System**: Consistent UI/UX with enhanced typography system, improved font sizes (16px base), accessibility-focused design with 44px minimum touch targets, unified button styles, and enhanced visual elements including an AI-focused design for experience sections. Color scheme adheres to Figma specifications: Primary: #2BAA61, Secondary: #FFA726, Information: #29B5F6, Danger: #E74D3C.
 - **Deployment Strategy**: Dockerized for containerization, PM2 for process management, Nginx for reverse proxy. Configured for cloud deployment with automated Git-based CI/CD via GitHub Actions.
 
 ## External Dependencies
