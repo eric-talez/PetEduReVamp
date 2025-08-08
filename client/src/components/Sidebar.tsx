@@ -13,7 +13,7 @@ import { AccessibleNavItem } from "./AccessibleNavItem";
 import { SidebarMenuGroup } from "./SidebarMenuGroup";
 import { ScrollReveal } from "@/components/ui/AnimatedContent";
 import { useQuery } from "@tanstack/react-query";
-import TalezSymbol from "attached_assets/Talez_심볼마크.png";
+// import TalezSymbol from "@assets/talez-logo.png";
 
 import { AccessibilityFloatingButton } from "@/components/ui/AccessibilityControls";
 import {
@@ -553,7 +553,7 @@ export function Sidebar({
             <ScrollReveal direction="left" delay={100}>
               <a href="/" className="flex items-center justify-center w-full h-full group">
                 <img 
-                  src={(logoData as any)?.expandedLogo || TalezSymbol} 
+                  src={(logoData as any)?.expandedLogo || "/logo.svg"} 
                   alt="TALEZ 로고" 
                   className="w-full h-full object-contain transition-all duration-300 group-hover:scale-105"
                 />
