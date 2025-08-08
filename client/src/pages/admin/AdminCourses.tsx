@@ -28,30 +28,56 @@ export default function AdminCourses() {
   });
 
   // 강좌 추가 함수
-  const handleAddCourse = () => {
+  const handleAddCourse = async () => {
     if (!newCourse.title || !newCourse.institute || !newCourse.trainer || !newCourse.duration) {
       alert("필수 필드를 모두 입력해주세요.");
       return;
     }
     
-    console.log("새 강좌 추가:", newCourse);
-    // 여기서 실제 API 호출 구현
-    
-    // 폼 초기화
-    setNewCourse({
-      title: "",
-      institute: "",
-      trainer: "",
-      category: "기본 훈련",
-      level: "초급",
-      duration: "",
-      price: "",
-      maxStudents: "",
-      startDate: "",
-      endDate: "",
-      description: ""
-    });
-    setIsAddCourseOpen(false);
+    try {
+      const response = await fetch('/api/admin/courses', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...newCourse,
+          price: parseFloat(newCourse.price) || 0,
+          maxStudents: parseInt(newCourse.maxStudents) || 0,
+          duration: parseInt(newCourse.duration) || 0
+        }),
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.success) {
+        alert("강좌가 성공적으로 추가되었습니다!");
+        
+        // 폼 초기화
+        setNewCourse({
+          title: "",
+          institute: "",
+          trainer: "",
+          category: "기본 훈련",
+          level: "초급",
+          duration: "",
+          price: "",
+          maxStudents: "",
+          startDate: "",
+          endDate: "",
+          description: ""
+        });
+        setIsAddCourseOpen(false);
+        
+        // 페이지 새로고침 또는 데이터 재로드
+        window.location.reload();
+      } else {
+        throw new Error(result.message || '강좌 추가에 실패했습니다.');
+      }
+    } catch (error: any) {
+      console.error('강좌 추가 오류:', error);
+      alert(error.message || "강좌 추가 중 오류가 발생했습니다.");
+    }
   };
 
   // 샘플 강좌 데이터

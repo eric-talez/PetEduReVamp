@@ -122,8 +122,18 @@ export default function AdminBanners() {
     const loadBanners = async () => {
       setIsLoading(true);
       try {
-        // 실제 구현 시 API 호출로 대체
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        // 실제 API 호출
+        const response = await fetch('/api/admin/banners');
+        if (response.ok) {
+          const data = await response.json();
+          const bannersData = data.banners || data || [];
+          setBanners(bannersData);
+          setIsLoading(false);
+          return;
+        }
+        
+        // API가 실패하면 임시 데이터 사용
+        await new Promise(resolve => setTimeout(resolve, 500));
         
         // 임시 배너 데이터
         const mockBanners: Banner[] = [

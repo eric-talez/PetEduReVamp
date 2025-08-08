@@ -92,8 +92,18 @@ export default function AdminNotifications() {
     const loadNotifications = async () => {
       setIsLoading(true);
       try {
-        // 실제 구현 시 API 호출로 대체
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        // 실제 API 호출
+        const response = await fetch('/api/admin/notifications');
+        if (response.ok) {
+          const data = await response.json();
+          const notificationsData = data.notifications || data || [];
+          setNotifications(notificationsData);
+          setIsLoading(false);
+          return;
+        }
+        
+        // API가 실패하면 임시 데이터 사용
+        await new Promise(resolve => setTimeout(resolve, 500));
         
         // 임시 알림 데이터
         const mockNotifications: Notification[] = [

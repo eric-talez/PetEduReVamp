@@ -168,7 +168,8 @@ export default function AdminInstitutes() {
       console.log('[DEBUG] API Response:', response.status || '200 OK');
       
       // API 응답이 성공 상태인지 확인
-      if (response && (response.success === true || response.success === undefined)) {
+      const responseData = response as any;
+      if (responseData && (responseData.success === true || responseData.success === undefined)) {
         toast({
           title: '수정 완료',
           description: '기관 정보가 성공적으로 수정되었습니다.'
@@ -180,10 +181,10 @@ export default function AdminInstitutes() {
         setIsEditDialogOpen(false);
         setSelectedInstitute(null);
       } else {
-        console.error('[DEBUG] API Error:', response);
+        console.error('[DEBUG] API Error:', responseData);
         toast({
           title: '수정 실패',
-          description: response?.message || response?.error || '기관 정보 수정에 실패했습니다.',
+          description: responseData?.message || responseData?.error || '기관 정보 수정에 실패했습니다.',
           variant: 'destructive'
         });
       }

@@ -20,23 +20,44 @@ export default function AdminUsers() {
   });
 
   // 사용자 추가 함수
-  const handleAddUser = () => {
+  const handleAddUser = async () => {
     if (!newUser.name || !newUser.email || !newUser.password) {
       alert("모든 필드를 입력해주세요.");
       return;
     }
     
-    console.log("새 사용자 추가:", newUser);
-    // 여기서 실제 API 호출 구현
-    
-    // 폼 초기화
-    setNewUser({
-      name: "",
-      email: "",
-      role: "user",
-      password: ""
-    });
-    setIsAddUserOpen(false);
+    try {
+      const response = await fetch('/api/admin/users', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newUser),
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.success) {
+        alert("사용자가 성공적으로 추가되었습니다!");
+        
+        // 폼 초기화
+        setNewUser({
+          name: "",
+          email: "",
+          role: "user",
+          password: ""
+        });
+        setIsAddUserOpen(false);
+        
+        // 페이지 새로고침 또는 데이터 재로드
+        window.location.reload();
+      } else {
+        throw new Error(result.message || '사용자 추가에 실패했습니다.');
+      }
+    } catch (error: any) {
+      console.error('사용자 추가 오류:', error);
+      alert(error.message || "사용자 추가 중 오류가 발생했습니다.");
+    }
   };
 
   // 샘플 사용자 데이터
