@@ -88,11 +88,14 @@ interface ModuleData {
     keyPoints?: string[];
     homework?: string;
     resources?: string[];
+    preparation?: string;
+    activities?: string[];
   };
   videos: VideoData[];
   isRequired: boolean;
   isFree?: boolean;
   price?: number;
+  materials?: string[];  // 준비물 리스트 추가
 }
 
 interface VideoData {
@@ -222,10 +225,14 @@ export default function AdminCurriculum() {
     materials: [''],
     attachments: [],
     detailedContent: {
-      preparation: '',
+      introduction: '',
+      mainTopics: [''],
+      practicalExercises: [''],
       keyPoints: [''],
+      homework: '',
+      preparation: '',
       activities: [''],
-      homework: ''
+      resources: ['']
     }
   });
 
@@ -686,7 +693,10 @@ export default function AdminCurriculum() {
 
       if (response.ok) {
         const newCurriculum = await response.json();
-        setCurriculums(prev => [...prev, newCurriculum]);
+        // TanStack Query 캐시 업데이트
+        queryClientInstance.setQueryData(['/api/admin/curriculum'], (oldData: CurriculumData[] = []) => {
+          return [...oldData, newCurriculum];
+        });
         setShowCreationWizard(false);
         resetCreationForm();
         toast({
@@ -823,7 +833,15 @@ export default function AdminCurriculum() {
       })),
       status: lecture.status === 'approved' ? 'published' : 'draft',
       createdAt: lecture.createdAt,
-      updatedAt: lecture.updatedAt
+      updatedAt: lecture.updatedAt,
+      // 누락된 필드 추가
+      revenueShare: {
+        trainerShare: 70,
+        platformShare: 30
+      },
+      totalRevenue: 0,
+      enrollmentCount: 0,
+      lastSaleDate: undefined
     };
 
     setPreviewCurriculum(curriculumData);
@@ -1286,7 +1304,7 @@ export default function AdminCurriculum() {
       });
       
       // 선택된 커리큘럼도 업데이트
-      setSelectedCurriculum(updatedCurriculum);
+      setSelectedCurriculum(updatedCurriculum as CurriculumData);
       setIsEditing(false);
       
       toast({
@@ -1494,7 +1512,7 @@ export default function AdminCurriculum() {
     
     if (typeof curriculum === 'string') {
       // ID로 전달된 경우 해당 커리큘럼 찾기
-      targetCurriculum = data?.find(c => c.id === curriculum) || null;
+      targetCurriculum = curriculums?.find(c => c.id === curriculum) || null;
     } else {
       // 객체로 전달된 경우
       targetCurriculum = curriculum;
@@ -1559,7 +1577,7 @@ export default function AdminCurriculum() {
         });
         
         // 커리큘럼 목록 새로고침
-        loadCurriculums();
+        refetchCurriculums();
         setShowFileSelector(false);
         setSelectedFiles(null);
       } else {
@@ -1590,7 +1608,7 @@ export default function AdminCurriculum() {
 
   const publishCurriculum = async (curriculumId: string) => {
     try {
-      const curriculum = data?.find(c => c.id === curriculumId);
+      const curriculum = curriculums?.find(c => c.id === curriculumId);
       if (!curriculum) {
         throw new Error('커리큘럼을 찾을 수 없습니다.');
       }
@@ -1759,7 +1777,10 @@ export default function AdminCurriculum() {
           duration: 0,
           price: 0,
           trainerId: '',
-          trainerName: ''
+          trainerName: '',
+          trainerEmail: '',
+          trainerPhone: '',
+          modules: []
         });
         setIsCreating(false);
         toast({
@@ -2294,7 +2315,10 @@ export default function AdminCurriculum() {
                               duration: 0,
                               price: 0,
                               trainerId: '',
-                              trainerName: ''
+                              trainerName: '',
+                              trainerEmail: '',
+                              trainerPhone: '',
+                              modules: []
                             });
                           }} 
                           variant="outline" 
@@ -2307,7 +2331,7 @@ export default function AdminCurriculum() {
                   </div>
                 )}
 
-                {(!data || data.length === 0) && !isCreating && (
+                {(!curriculums || curriculums.length === 0) && !isCreating && (
                   <div className="text-center text-gray-500 dark:text-gray-400 py-8">
                     <BookOpen className="w-12 h-12 mx-auto mb-2 opacity-50" />
                     <div>등록된 커리큘럼이 없습니다.</div>
@@ -2593,12 +2617,12 @@ export default function AdminCurriculum() {
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-xl font-semibold text-gray-900 dark:text-white">커리큘럼 영상 등록 현황</h2>
               <div className="text-sm text-gray-500 dark:text-gray-400">
-                총 {data?.length || 0}개 커리큘럼 등록됨
+                총 {curriculums?.length || 0}개 커리큘럼 등록됨
               </div>
             </div>
 
             <div className="space-y-4">
-              {(data || []).map((curriculum) => {
+              {(curriculums || []).map((curriculum) => {
                 const modules = curriculum.modules || [];
                 const totalModules = modules.length;
                 const modulesWithVideos = modules.filter(module => 
@@ -4115,7 +4139,7 @@ export default function AdminCurriculum() {
                     <div>
                       <label className="block text-sm font-medium mb-2">도입부 (강의 시작 부분)</label>
                       <Textarea
-                        value={newModule.detailedContent.introduction}
+                        value={newModule.detailedContent.introduction || ''}
                         onChange={(e) => setNewModule(prev => ({
                           ...prev,
                           detailedContent: { ...prev.detailedContent, introduction: e.target.value }
@@ -4128,12 +4152,12 @@ export default function AdminCurriculum() {
                     {/* 주요 토픽들 */}
                     <div>
                       <label className="block text-sm font-medium mb-2">주요 토픽들</label>
-                      {newModule.detailedContent.mainTopics.map((topic, index) => (
+                      {(newModule.detailedContent.mainTopics || []).map((topic, index) => (
                         <div key={index} className="flex gap-2 mb-2">
                           <Input
                             value={topic}
                             onChange={(e) => {
-                              const newTopics = [...newModule.detailedContent.mainTopics];
+                              const newTopics = [...(newModule.detailedContent.mainTopics || [])];
                               newTopics[index] = e.target.value;
                               setNewModule(prev => ({
                                 ...prev,
@@ -4142,13 +4166,13 @@ export default function AdminCurriculum() {
                             }}
                             placeholder={`주요 토픽 ${index + 1}`}
                           />
-                          {newModule.detailedContent.mainTopics.length > 1 && (
+                          {(newModule.detailedContent.mainTopics || []).length > 1 && (
                             <Button
                               type="button"
                               variant="outline"
                               size="sm"
                               onClick={() => {
-                                const newTopics = newModule.detailedContent.mainTopics.filter((_, i) => i !== index);
+                                const newTopics = (newModule.detailedContent.mainTopics || []).filter((_, i) => i !== index);
                                 setNewModule(prev => ({
                                   ...prev,
                                   detailedContent: { ...prev.detailedContent, mainTopics: newTopics }
@@ -4169,7 +4193,7 @@ export default function AdminCurriculum() {
                             ...prev,
                             detailedContent: {
                               ...prev.detailedContent,
-                              mainTopics: [...prev.detailedContent.mainTopics, '']
+                              mainTopics: [...(prev.detailedContent.mainTopics || []), '']
                             }
                           }));
                         }}
@@ -4182,12 +4206,12 @@ export default function AdminCurriculum() {
                     {/* 실습 내용 */}
                     <div>
                       <label className="block text-sm font-medium mb-2">실습 내용</label>
-                      {newModule.detailedContent.practicalExercises.map((exercise, index) => (
+                      {(newModule.detailedContent.practicalExercises || []).map((exercise, index) => (
                         <div key={index} className="flex gap-2 mb-2">
                           <Input
                             value={exercise}
                             onChange={(e) => {
-                              const newExercises = [...newModule.detailedContent.practicalExercises];
+                              const newExercises = [...(newModule.detailedContent.practicalExercises || [])];
                               newExercises[index] = e.target.value;
                               setNewModule(prev => ({
                                 ...prev,
@@ -4196,13 +4220,13 @@ export default function AdminCurriculum() {
                             }}
                             placeholder={`실습 ${index + 1}`}
                           />
-                          {newModule.detailedContent.practicalExercises.length > 1 && (
+                          {(newModule.detailedContent.practicalExercises || []).length > 1 && (
                             <Button
                               type="button"
                               variant="outline"
                               size="sm"
                               onClick={() => {
-                                const newExercises = newModule.detailedContent.practicalExercises.filter((_, i) => i !== index);
+                                const newExercises = (newModule.detailedContent.practicalExercises || []).filter((_, i) => i !== index);
                                 setNewModule(prev => ({
                                   ...prev,
                                   detailedContent: { ...prev.detailedContent, practicalExercises: newExercises }
@@ -4223,7 +4247,7 @@ export default function AdminCurriculum() {
                             ...prev,
                             detailedContent: {
                               ...prev.detailedContent,
-                              practicalExercises: [...prev.detailedContent.practicalExercises, '']
+                              practicalExercises: [...(prev.detailedContent.practicalExercises || []), '']
                             }
                           }));
                         }}
@@ -4236,12 +4260,12 @@ export default function AdminCurriculum() {
                     {/* 핵심 포인트 */}
                     <div>
                       <label className="block text-sm font-medium mb-2">핵심 포인트</label>
-                      {newModule.detailedContent.keyPoints.map((point, index) => (
+                      {(newModule.detailedContent.keyPoints || []).map((point, index) => (
                         <div key={index} className="flex gap-2 mb-2">
                           <Input
                             value={point}
                             onChange={(e) => {
-                              const newPoints = [...newModule.detailedContent.keyPoints];
+                              const newPoints = [...(newModule.detailedContent.keyPoints || [])];
                               newPoints[index] = e.target.value;
                               setNewModule(prev => ({
                                 ...prev,
@@ -4250,13 +4274,13 @@ export default function AdminCurriculum() {
                             }}
                             placeholder={`핵심 포인트 ${index + 1}`}
                           />
-                          {newModule.detailedContent.keyPoints.length > 1 && (
+                          {(newModule.detailedContent.keyPoints || []).length > 1 && (
                             <Button
                               type="button"
                               variant="outline"
                               size="sm"
                               onClick={() => {
-                                const newPoints = newModule.detailedContent.keyPoints.filter((_, i) => i !== index);
+                                const newPoints = (newModule.detailedContent.keyPoints || []).filter((_, i) => i !== index);
                                 setNewModule(prev => ({
                                   ...prev,
                                   detailedContent: { ...prev.detailedContent, keyPoints: newPoints }
@@ -4277,7 +4301,7 @@ export default function AdminCurriculum() {
                             ...prev,
                             detailedContent: {
                               ...prev.detailedContent,
-                              keyPoints: [...prev.detailedContent.keyPoints, '']
+                              keyPoints: [...(prev.detailedContent.keyPoints || []), '']
                             }
                           }));
                         }}
@@ -4291,7 +4315,7 @@ export default function AdminCurriculum() {
                     <div>
                       <label className="block text-sm font-medium mb-2">과제</label>
                       <Textarea
-                        value={newModule.detailedContent.homework}
+                        value={newModule.detailedContent.homework || ''}
                         onChange={(e) => setNewModule(prev => ({
                           ...prev,
                           detailedContent: { ...prev.detailedContent, homework: e.target.value }
@@ -4304,24 +4328,24 @@ export default function AdminCurriculum() {
                     {/* 준비물 */}
                     <div>
                       <label className="block text-sm font-medium mb-2">준비물/용품</label>
-                      {newModule.materials.map((material, index) => (
+                      {(newModule.materials || []).map((material, index) => (
                         <div key={index} className="flex gap-2 mb-2">
                           <Input
                             value={material}
                             onChange={(e) => {
-                              const newMaterials = [...newModule.materials];
+                              const newMaterials = [...(newModule.materials || [])];
                               newMaterials[index] = e.target.value;
                               setNewModule(prev => ({ ...prev, materials: newMaterials }));
                             }}
                             placeholder={`준비물 ${index + 1} (예: 리드줄, 간식)`}
                           />
-                          {newModule.materials.length > 1 && (
+                          {(newModule.materials || []).length > 1 && (
                             <Button
                               type="button"
                               variant="outline"
                               size="sm"
                               onClick={() => {
-                                const newMaterials = newModule.materials.filter((_, i) => i !== index);
+                                const newMaterials = (newModule.materials || []).filter((_, i) => i !== index);
                                 setNewModule(prev => ({ ...prev, materials: newMaterials }));
                               }}
                             >
@@ -4337,7 +4361,7 @@ export default function AdminCurriculum() {
                         onClick={() => {
                           setNewModule(prev => ({
                             ...prev,
-                            materials: [...prev.materials, '']
+                            materials: [...(prev.materials || []), '']
                           }));
                         }}
                       >
@@ -4350,7 +4374,7 @@ export default function AdminCurriculum() {
                     <div>
                       <label className="block text-sm font-medium mb-2">강의 자료 첨부</label>
                       <div className="space-y-2">
-                        {newModule.attachments.map((attachment, index) => (
+                        {(newModule.attachments || []).map((attachment, index) => (
                           <div key={index} className="flex items-center gap-2 p-2 bg-gray-50 dark:bg-gray-800 rounded">
                             <FileText className="w-4 h-4 text-blue-500" />
                             <span className="text-sm flex-1">{attachment.name}</span>
@@ -4359,7 +4383,7 @@ export default function AdminCurriculum() {
                               variant="ghost"
                               size="sm"
                               onClick={() => {
-                                const newAttachments = newModule.attachments.filter((_, i) => i !== index);
+                                const newAttachments = (newModule.attachments || []).filter((_, i) => i !== index);
                                 setNewModule(prev => ({ ...prev, attachments: newAttachments }));
                               }}
                             >
@@ -4381,7 +4405,7 @@ export default function AdminCurriculum() {
                                 };
                                 setNewModule(prev => ({
                                   ...prev,
-                                  attachments: [...prev.attachments, newAttachment]
+                                  attachments: [...(prev.attachments || []), newAttachment]
                                 }));
                               }
                             }}
@@ -4407,24 +4431,24 @@ export default function AdminCurriculum() {
                     {/* 학습 목표 */}
                     <div>
                       <label className="block text-sm font-medium mb-2">학습 목표</label>
-                      {newModule.objectives.map((objective, index) => (
+                      {(newModule.objectives || []).map((objective, index) => (
                         <div key={index} className="flex gap-2 mb-2">
                           <Input
                             value={objective}
                             onChange={(e) => {
-                              const newObjectives = [...newModule.objectives];
+                              const newObjectives = [...(newModule.objectives || [])];
                               newObjectives[index] = e.target.value;
                               setNewModule(prev => ({ ...prev, objectives: newObjectives }));
                             }}
                             placeholder={`학습 목표 ${index + 1}`}
                           />
-                          {newModule.objectives.length > 1 && (
+                          {(newModule.objectives || []).length > 1 && (
                             <Button
                               type="button"
                               variant="outline"
                               size="sm"
                               onClick={() => {
-                                const newObjectives = newModule.objectives.filter((_, i) => i !== index);
+                                const newObjectives = (newModule.objectives || []).filter((_, i) => i !== index);
                                 setNewModule(prev => ({ ...prev, objectives: newObjectives }));
                               }}
                             >
@@ -4440,7 +4464,7 @@ export default function AdminCurriculum() {
                         onClick={() => {
                           setNewModule(prev => ({
                             ...prev,
-                            objectives: [...prev.objectives, '']
+                            objectives: [...(prev.objectives || []), '']
                           }));
                         }}
                       >
