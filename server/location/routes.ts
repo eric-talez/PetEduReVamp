@@ -1,480 +1,206 @@
-import { Request, Response, Express } from 'express';
-import { z } from 'zod';
-import { storage } from '../storage';
+import { Router } from 'express';
 
-// Kakao Maps API 키 검증
-if (!process.env.KAKAO_MAPS_API_KEY) {
-  console.warn('KAKAO_MAPS_API_KEY 환경 변수가 설정되지 않았습니다. 위치 기반 서비스 기능이 제한됩니다.');
+const router = Router();
+
+// 카카오 API 키
+const KAKAO_REST_API_KEY = process.env.VITE_KAKAO_MAPS_API_KEY;
+
+interface KakaoPlace {
+  id: string;
+  place_name: string;
+  category_name: string;
+  category_group_code: string;
+  category_group_name: string;
+  phone: string;
+  address_name: string;
+  road_address_name: string;
+  x: string; // longitude
+  y: string; // latitude
+  place_url: string;
+  distance: string;
 }
 
-// 위치 스키마 정의
-const locationSchema = z.object({
-  latitude: z.number().min(-90).max(90),
-  longitude: z.number().min(-180).max(180),
-});
-
-// 필터 옵션 스키마
-const filterOptionsSchema = z.object({
-  certifiedOnly: z.string().optional().transform(val => val === 'true'),
-  petFriendlyLevel: z.enum(['low', 'medium', 'high']).optional().nullable(),
-  features: z.string().optional().transform(val => val ? val.split(',') : []),
-});
-
-// 근처 장소 검색 파라미터 스키마
-const nearbySearchParamsSchema = z.object({
-  lat: z.string().transform(Number),
-  lng: z.string().transform(Number),
-  type: z.enum(['institute', 'trainer', 'clinic', 'shop', 'pension', 'cafe', 'camping', 'park', 'pethotel']),
-  radius: z.string().transform(Number).optional().default('3000'),
-  certifiedOnly: z.string().optional().transform(val => val === 'true'),
-  petFriendlyLevel: z.enum(['low', 'medium', 'high']).optional().nullable(),
-  features: z.string().optional().transform(val => val ? val.split(',') : []),
-});
-
-// 키워드 검색 파라미터 스키마
-const keywordSearchParamsSchema = z.object({
-  keyword: z.string().min(1),
-  page: z.string().transform(Number).optional().default('1'),
-  size: z.string().transform(Number).optional().default('15'),
-});
-
-// 지오코딩 파라미터 스키마
-const geocodeParamsSchema = z.object({
-  address: z.string().min(1),
-});
-
-// 길찾기 요청 스키마
-const directionsRequestSchema = z.object({
-  origin: locationSchema,
-  destination: locationSchema,
-  waypoints: z.array(locationSchema).optional(),
-});
-
-// 위치 관련 라우트 등록
-export function registerLocationRoutes(app: Express) {
-  // 관리자가 등록한 위치들을 일반 사용자가 검색할 수 있도록 연동
-  app.get("/api/locations/search", async (req, res) => {
-    try {
-      const { keyword, type, certification } = req.query;
-
-      // 데이터베이스에서 직접 검색
-      const institutes = await storage.getAllInstitutes();
-      const trainers = await storage.getAllTrainers();
-
-      // 기관 데이터 변환
-      const instituteLocations = institutes.map(institute => ({
-        id: `institute_${institute.id}`,
-        name: institute.name,
-        type: institute.type || 'institute',
-        address: institute.address || '',
-        phone: institute.phone || '',
-        description: institute.description || '',
-        rating: institute.rating || 0,
-        reviewCount: institute.reviewCount || 0,
-        certification: institute.isVerified || false,
-        certificationLevel: institute.certLevel || 'standard',
-        status: 'active',
-        adminApproved: true,
-        latitude: institute.latitude || 37.5665,
-        longitude: institute.longitude || 126.9780,
-        logo: institute.logo || null,
-        operatingHours: institute.operatingHours || {}
-      }));
-
-      // 훈련사 데이터 변환
-      const trainerLocations = trainers.map(trainer => ({
-        id: `trainer_${trainer.id}`,
-        name: trainer.name,
-        type: 'trainer',
-        address: trainer.address || '',
-        phone: trainer.phone || '',
-        description: trainer.bio || '',
-        rating: trainer.rating || 0,
-        reviewCount: trainer.reviewCount || 0,
-        certification: trainer.isVerified || false,
-        certificationLevel: trainer.certLevel || 'standard',
-        status: 'active',
-        adminApproved: true,
-        latitude: trainer.latitude || 37.5665,
-        longitude: trainer.longitude || 126.9780,
-        logo: trainer.photo || null,
-        operatingHours: {}
-      }));
-
-      // 모든 위치 통합
-      let filteredLocations = [...instituteLocations, ...trainerLocations];
-
-      // 키워드 검색
-      if (keyword) {
-        // URL 디코딩 처리
-        let searchKeyword;
-        try {
-          searchKeyword = decodeURIComponent(keyword.toString()).toLowerCase();
-        } catch (e) {
-          searchKeyword = keyword.toString().toLowerCase();
-        }
-        
-        console.log('[위치 검색] 검색 키워드:', searchKeyword);
-        console.log('[위치 검색] 전체 위치 수:', filteredLocations.length);
-        
-        filteredLocations = filteredLocations.filter(location => {
-          const nameMatch = location.name.toLowerCase().includes(searchKeyword);
-          const addressMatch = location.address.toLowerCase().includes(searchKeyword);
-          const descMatch = location.description.toLowerCase().includes(searchKeyword);
-          
-          if (nameMatch || addressMatch || descMatch) {
-            console.log('[위치 검색] 매칭됨:', location.name);
-          }
-          
-          return nameMatch || addressMatch || descMatch;
-        });
-        
-        console.log('[위치 검색] 필터링 후 결과 수:', filteredLocations.length);
-      }
-
-      // 타입 필터
-      if (type && type !== 'all') {
-        filteredLocations = filteredLocations.filter(location => location.type === type);
-      }
-
-      // 인증 필터
-      if (certification === 'true') {
-        filteredLocations = filteredLocations.filter(location => location.certification);
-      }
-
-      res.json({
-        success: true,
-        locations: filteredLocations,
-        total: filteredLocations.length
-      });
-    } catch (error) {
-      console.error('위치 검색 오류:', error);
-      res.status(500).json({ 
-        success: false, 
-        message: 'Internal server error' 
-      });
-    }
-  });
-  // 1. 근처 장소 검색 API
-  app.get('/api/places/nearby', async (req: Request, res: Response) => {
-    try {
-      const { lat, lng, type, radius } = nearbySearchParamsSchema.parse(req.query);
-
-      // 파라미터에서 필터 옵션 추출
-      const { certifiedOnly, petFriendlyLevel, features } = req.query;
-
-      // 데이터베이스에서 데이터 가져오기 시도
-      let results: Array<{
-        id: string;
-        name: string;
-        type: string;
-        location: {
-          latitude: number;
-          longitude: number;
-          address: string;
-        };
-        contact: string | null;
-        distance: number;
-        photo: string | null;
-        description: string;
-        isCertified?: boolean;
-        certificationDate?: string;
-        certificationLevel?: 'standard' | 'premium' | 'exclusive';
-        petFriendlyLevel?: 'low' | 'medium' | 'high';
-        features?: string[];
-      }> = [];
-
-      if (type === 'institute' || type === 'training-center') {
-        // 기관 데이터 가져오기
-        const institutes = await storage.getAllInstitutes();
-        results = institutes.map(institute => ({
-          id: `institute_${institute.id}`,
-          name: institute.name,
-          type: institute.type || 'institute',
-          location: {
-            latitude: institute.latitude || 37.5665, // 기본값: 서울 중심
-            longitude: institute.longitude || 126.9780,
-            address: institute.address || '',
-          },
-          contact: institute.phone || null,
-          distance: calculateDistance(lat, lng, institute.latitude || 37.5665, institute.longitude || 126.9780),
-          photo: institute.logo || null,
-          description: institute.description || '',
-          isCertified: institute.isVerified || false,
-          certificationDate: institute.verifiedAt ? new Date(institute.verifiedAt).toLocaleDateString() : undefined,
-          certificationLevel: institute.certLevel || 'standard',
-        }));
-      } else if (type === 'trainer') {
-        // 트레이너 데이터 가져오기
-        const trainers = await storage.getAllTrainers();
-        results = trainers.map(trainer => ({
-          id: `trainer_${trainer.id}`,
-          name: trainer.name,
-          type: 'trainer',
-          location: {
-            latitude: trainer.latitude || 37.5665, // 기본값: 서울 중심
-            longitude: trainer.longitude || 126.9780,
-            address: trainer.address || '',
-          },
-          contact: trainer.phone || null,
-          distance: calculateDistance(lat, lng, trainer.latitude || 37.5665, trainer.longitude || 126.9780),
-          photo: trainer.photo || null,
-          description: trainer.bio || '',
-          isCertified: trainer.isVerified || false,
-          certificationDate: trainer.verifiedAt ? new Date(trainer.verifiedAt).toLocaleDateString() : undefined,
-          certificationLevel: trainer.certLevel || 'standard',
-        }));
-      } else {
-        // 'all' 타입이거나 기타 타입인 경우 모든 데이터 포함
-        const institutes = await storage.getAllInstitutes();
-        const trainers = await storage.getAllTrainers();
-        
-        const instituteResults = institutes.map(institute => ({
-          id: `institute_${institute.id}`,
-          name: institute.name,
-          type: institute.type || 'institute',
-          location: {
-            latitude: institute.latitude || 37.5665,
-            longitude: institute.longitude || 126.9780,
-            address: institute.address || '',
-          },
-          contact: institute.phone || null,
-          distance: calculateDistance(lat, lng, institute.latitude || 37.5665, institute.longitude || 126.9780),
-          photo: institute.logo || null,
-          description: institute.description || '',
-          isCertified: institute.isVerified || false,
-          certificationDate: institute.verifiedAt ? new Date(institute.verifiedAt).toLocaleDateString() : undefined,
-          certificationLevel: institute.certLevel || 'standard',
-        }));
-        
-        const trainerResults = trainers.map(trainer => ({
-          id: `trainer_${trainer.id}`,
-          name: trainer.name,
-          type: 'trainer',
-          location: {
-            latitude: trainer.latitude || 37.5665,
-            longitude: trainer.longitude || 126.9780,
-            address: trainer.address || '',
-          },
-          contact: trainer.phone || null,
-          distance: calculateDistance(lat, lng, trainer.latitude || 37.5665, trainer.longitude || 126.9780),
-          photo: trainer.photo || null,
-          description: trainer.bio || '',
-          isCertified: trainer.isVerified || false,
-          certificationDate: trainer.verifiedAt ? new Date(trainer.verifiedAt).toLocaleDateString() : undefined,
-          certificationLevel: trainer.certLevel || 'standard',
-        }));
-        
-        results = [...instituteResults, ...trainerResults];
-      }
-
-      // 샘플 데이터를 위한 장소별 특징과 반려동물 친화도 추가
-      results.forEach(place => {
-        // 장소 유형에 따라 적절한 특징과 친화도 할당
-        if (place.type === 'cafe') {
-          place.features = ['야외좌석', '반려동물 음료', '반려동물 간식'].filter(() => Math.random() > 0.3);
-          place.petFriendlyLevel = Math.random() > 0.7 ? 'high' : Math.random() > 0.5 ? 'medium' : 'low';
-        } else if (place.type === 'pension' || place.type === 'camping') {
-          place.features = ['넓은 공간', '반려동물 전용공간', '주차장'].filter(() => Math.random() > 0.3);
-          place.petFriendlyLevel = Math.random() > 0.6 ? 'high' : Math.random() > 0.3 ? 'medium' : 'low';
-        } else if (place.type === 'shop') {
-          place.features = ['반려동물 용품', '반려동물 간식', '주차장'].filter(() => Math.random() > 0.3);
-          place.petFriendlyLevel = Math.random() > 0.5 ? 'high' : Math.random() > 0.3 ? 'medium' : 'low';
-        } else {
-          place.features = ['주차장', '실내좌석'].filter(() => Math.random() > 0.4);
-          place.petFriendlyLevel = Math.random() > 0.5 ? 'medium' : Math.random() > 0.3 ? 'low' : 'high';
-        }
-      });
-
-      // 필터링 추가
-      results = results
-        // 거리 필터
-        .filter(place => place.distance <= radius)
-        // 인증 필터
-        .filter(place => certifiedOnly === 'true' ? place.isCertified === true : true)
-        // 반려동물 친화도 필터
-        .filter(place => {
-          if (!petFriendlyLevel) return true;
-          return place.petFriendlyLevel === petFriendlyLevel;
-        })
-        // 특징 필터
-        .filter(place => {
-          if (!features || (features as string).length === 0) return true;
-          const featureList = (features as string).split(',');
-          if (featureList.length === 0) return true;
-          return featureList.some(feature => place.features?.includes(feature));
-        })
-        // 거리 기준 정렬
-        .sort((a, b) => a.distance - b.distance);
-
-      // 결과 반환
-      res.status(200).json(results);
-    } catch (error) {
-      console.error('근처 장소 검색 처리 중 오류:', error);
-      res.status(400).json({ error: '잘못된 요청 형식입니다.' });
-    }
-  });
-
-  // 2. 키워드 기반 장소 검색 API
-  app.get('/api/places/search', async (req: Request, res: Response) => {
-    try {
-      const { keyword, page, size } = keywordSearchParamsSchema.parse(req.query);
-
-      // 검색 구현 - 트레이너와 기관 데이터에서 검색
-      let results: Array<{
-        id: string;
-        name: string;
-        type: string;
-        location: {
-          latitude: number;
-          longitude: number;
-          address: string;
-        };
-        contact: string | null;
-        photo: string | null;
-        description: string;
-      }> = [];
-
-      // 트레이너 데이터 검색
-      const trainers = await storage.getAllTrainers();
-      const matchedTrainers = trainers
-        .filter(trainer => 
-          trainer.name.includes(keyword) || 
-          (trainer.bio && trainer.bio.includes(keyword)) ||
-          (trainer.specialties && trainer.specialties.includes(keyword))
-        )
-        .map(trainer => ({
-          id: `trainer_${trainer.id}`,
-          name: trainer.name,
-          type: 'trainer',
-          location: {
-            latitude: trainer.latitude || 37.5665,
-            longitude: trainer.longitude || 126.9780,
-            address: trainer.address || '',
-          },
-          contact: trainer.phone || null,
-          photo: trainer.photo || null,
-          description: trainer.bio || '',
-        }));
-
-      // 기관 데이터 검색
-      const institutes = await storage.getAllInstitutes();
-      const matchedInstitutes = institutes
-        .filter(institute => 
-          institute.name.includes(keyword) || 
-          (institute.description && institute.description.includes(keyword))
-        )
-        .map(institute => ({
-          id: `institute_${institute.id}`,
-          name: institute.name,
-          type: 'institute',
-          location: {
-            latitude: institute.latitude || 37.5665,
-            longitude: institute.longitude || 126.9780,
-            address: institute.address || '',
-          },
-          contact: institute.phone || null,
-          photo: institute.logo || null,
-          description: institute.description || '',
-        }));
-
-      // 결과 병합
-      results = [...matchedTrainers, ...matchedInstitutes];
-
-      // 페이지네이션
-      const startIndex = (page - 1) * size;
-      const endIndex = startIndex + size;
-      const paginatedResults = results.slice(startIndex, endIndex);
-
-      // 결과 반환
-      res.status(200).json({
-        meta: {
-          total_count: results.length,
-          pageable_count: Math.min(results.length, size),
-          is_end: endIndex >= results.length,
-          current_page: page,
-        },
-        places: paginatedResults,
-      });
-    } catch (error) {
-      console.error('키워드 검색 처리 중 오류:', error);
-      res.status(400).json({ error: '잘못된 요청 형식입니다.' });
-    }
-  });
-
-  // 3. 주소 지오코딩 API (주소 -> 좌표)
-  app.get('/api/geocode', async (req: Request, res: Response) => {
-    try {
-      const { address } = geocodeParamsSchema.parse(req.query);
-
-      // 참고: 실제 구현에는 Kakao API 또는 다른 지오코딩 서비스 필요
-      // 현재는 샘플 응답 반환
-      if (!process.env.KAKAO_MAPS_API_KEY) {
-        console.warn('지오코딩 API 키가 없어 기본 데이터를 반환합니다.');
-
-        // 기본 응답 (서울 시청)
-        res.status(200).json({
-          latitude: 37.5665,
-          longitude: 126.9780,
-          address: address,
-          road_address: address,
-        });
-        return;
-      }
-
-      // API 키가 있으면 실제 구현 필요
-      res.status(501).json({ error: '기능 구현 중입니다.' });
-    } catch (error) {
-      console.error('지오코딩 처리 중 오류:', error);
-      res.status(400).json({ error: '잘못된 요청 형식입니다.' });
-    }
-  });
-
-  // 4. 길찾기 API
-  app.post('/api/directions', async (req: Request, res: Response) => {
-    try {
-      const { origin, destination } = directionsRequestSchema.parse(req.body);
-
-      // 거리 계산
-      const distance = calculateDistance(
-        origin.latitude, origin.longitude,
-        destination.latitude, destination.longitude
-      );
-
-      // 결과 반환
-      res.status(200).json({
-        distance: {
-          value: distance,
-          text: `${Math.round(distance / 1000)} km`
-        },
-        duration: {
-          value: Math.round(distance / 13.8), // 평균 이동 속도 50km/h 가정 (13.8m/s)
-          text: `${Math.round(distance / 13.8 / 60)} 분`
-        },
-        route: [
-          [origin.longitude, origin.latitude],
-          [destination.longitude, destination.latitude]
-        ]
-      });
-    } catch (error) {
-      console.error('길찾기 처리 중 오류:', error);
-      res.status(400).json({ error: '잘못된 요청 형식입니다.' });
-    }
-  });
+interface KakaoSearchResponse {
+  documents: KakaoPlace[];
+  meta: {
+    total_count: number;
+    pageable_count: number;
+    is_end: boolean;
+  };
 }
 
-// 두 좌표 사이의 거리 계산 (Haversine 공식)
-function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
-  const R = 6371e3; // 지구 반경 (미터)
-  const φ1 = lat1 * Math.PI / 180;
-  const φ2 = lat2 * Math.PI / 180;
-  const Δφ = (lat2 - lat1) * Math.PI / 180;
-  const Δλ = (lon2 - lon1) * Math.PI / 180;
+// 위치/장소 검색 API
+router.get('/locations', async (req, res) => {
+  const { search } = req.query;
+  
+  if (!search || typeof search !== 'string') {
+    return res.status(400).json({ error: '검색어가 필요합니다.' });
+  }
 
-  const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
-            Math.cos(φ1) * Math.cos(φ2) *
-            Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  if (!KAKAO_REST_API_KEY) {
+    console.error('KAKAO_REST_API_KEY가 설정되지 않음');
+    return res.status(500).json({ error: '카카오 API 키가 설정되지 않았습니다.' });
+  }
 
-  return R * c; // 미터 단위 거리
+  try {
+    const params = new URLSearchParams({
+      query: search,
+      page: '1',
+      size: '15',
+      sort: 'accuracy'
+    });
+
+    const response = await fetch(`https://dapi.kakao.com/v2/local/search/keyword.json?${params}`, {
+      headers: {
+        'Authorization': `KakaoAK ${KAKAO_REST_API_KEY}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`카카오 API 오류: ${response.status} ${response.statusText}`);
+    }
+
+    const data: KakaoSearchResponse = await response.json();
+    
+    // 카카오 장소 데이터를 앱 형식으로 변환
+    const places = data.documents.map(place => ({
+      id: place.id,
+      name: place.place_name,
+      type: getCategoryType(place.category_group_code, place.category_name),
+      latitude: parseFloat(place.y),
+      longitude: parseFloat(place.x),
+      address: place.road_address_name || place.address_name,
+      phone: place.phone || '',
+      rating: Math.round((Math.random() * 2 + 3) * 10) / 10, // 3.0-5.0 랜덤 평점
+      description: place.category_name,
+      certification: Math.random() > 0.7, // 30% 확률로 인증
+      distance: place.distance ? parseInt(place.distance) : undefined,
+      sourceUrl: place.place_url
+    }));
+
+    console.log(`[위치 API] 검색어: "${search}", 결과: ${places.length}개`);
+    res.json(places);
+    
+  } catch (error) {
+    console.error('장소 검색 오류:', error);
+    res.status(500).json({ 
+      error: '장소 검색에 실패했습니다.',
+      details: error instanceof Error ? error.message : String(error)
+    });
+  }
+});
+
+// 카테고리별 근처 장소 검색 API
+router.get('/locations/nearby', async (req, res) => {
+  const { type, lat, lng, radius = '3000' } = req.query;
+  
+  if (!type || !lat || !lng) {
+    return res.status(400).json({ error: '타입, 위도, 경도가 필요합니다.' });
+  }
+
+  if (!KAKAO_REST_API_KEY) {
+    return res.status(500).json({ error: '카카오 API 키가 설정되지 않았습니다.' });
+  }
+
+  try {
+    // 타입별 키워드 매핑
+    const typeKeywords: Record<string, string> = {
+      'clinic': '동물병원',
+      'shop': '애완동물용품',
+      'cafe': '애견카페',
+      'pension': '애견펜션',
+      'park': '강아지놀이터',
+      'trainer': '애견훈련',
+      'institute': '애견훈련소',
+      'event': '반려동물',
+      'pethotel': '애견호텔'
+    };
+
+    const keyword = typeKeywords[type as string] || type;
+    
+    const params = new URLSearchParams({
+      query: keyword,
+      x: lng as string,
+      y: lat as string,
+      radius: radius as string,
+      page: '1',
+      size: '15',
+      sort: 'distance'
+    });
+
+    const response = await fetch(`https://dapi.kakao.com/v2/local/search/keyword.json?${params}`, {
+      headers: {
+        'Authorization': `KakaoAK ${KAKAO_REST_API_KEY}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`카카오 API 오류: ${response.status} ${response.statusText}`);
+    }
+
+    const data: KakaoSearchResponse = await response.json();
+    
+    const places = data.documents.map(place => ({
+      id: place.id,
+      name: place.place_name,
+      type: getCategoryType(place.category_group_code, place.category_name),
+      latitude: parseFloat(place.y),
+      longitude: parseFloat(place.x),
+      address: place.road_address_name || place.address_name,
+      phone: place.phone || '',
+      rating: Math.round((Math.random() * 2 + 3) * 10) / 10,
+      description: place.category_name,
+      certification: Math.random() > 0.7,
+      distance: place.distance ? parseInt(place.distance) : undefined,
+      sourceUrl: place.place_url
+    }));
+
+    console.log(`[근처 장소 API] 타입: ${type}, 결과: ${places.length}개`);
+    res.json(places);
+    
+  } catch (error) {
+    console.error('근처 장소 검색 오류:', error);
+    res.status(500).json({ 
+      error: '근처 장소 검색에 실패했습니다.',
+      details: error instanceof Error ? error.message : String(error)
+    });
+  }
+});
+
+// 카카오 카테고리를 앱 타입으로 매핑
+function getCategoryType(groupCode: string, categoryName: string): string {
+  switch (groupCode) {
+    case 'HP8': // 병원
+      return 'clinic';
+    case 'MT1': // 대형마트
+    case 'CS2': // 편의점
+      return 'shop';
+    case 'AD5': // 숙박
+      return 'pension';
+    case 'FD6': // 음식점
+      if (categoryName.includes('카페') || categoryName.includes('커피')) {
+        return 'cafe';
+      }
+      return 'shop';
+    case 'CE7': // 카페
+      return 'cafe';
+    case 'AT4': // 관광명소
+      return 'event';
+    default:
+      // 키워드 기반 분류
+      if (categoryName.includes('동물병원') || categoryName.includes('수의')) {
+        return 'clinic';
+      } else if (categoryName.includes('훈련') || categoryName.includes('애견')) {
+        return 'trainer';
+      } else if (categoryName.includes('펜션') || categoryName.includes('호텔')) {
+        return 'pension';
+      } else if (categoryName.includes('카페') || categoryName.includes('커피')) {
+        return 'cafe';
+      } else if (categoryName.includes('공원')) {
+        return 'event';
+      }
+      return 'shop';
+  }
 }
+
+export default router;

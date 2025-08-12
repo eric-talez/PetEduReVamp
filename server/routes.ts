@@ -10,7 +10,7 @@ import { productRoutes } from "./routes/products";
 import { simpleProductRoutes } from "./routes/simple-products";
 // import { registerNotificationRoutes } from "./routes/notification-routes";
 import { registerUploadRoutes } from "./routes/upload";
-import { registerLocationRoutes } from "./location/routes";
+
 import { storage } from "./storage";
 import Stripe from "stripe";
 import { eventRoutes } from "./routes/events";
@@ -1334,7 +1334,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // 위치 검색 라우트 등록
-  registerLocationRoutes(app);
+
 
   // 실시간 인기 통계 API
   app.get("/api/popular-stats", async (req, res) => {
@@ -1788,6 +1788,88 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ error: "이벤트 참가 신청 중 오류가 발생했습니다" });
     }
   });
+
+  // Location/Places search API (Kakao Maps integration)
+  app.get('/api/locations', async (req, res) => {
+    const { search } = req.query;
+    const KAKAO_REST_API_KEY = process.env.VITE_KAKAO_MAPS_API_KEY;
+    
+    if (!search || typeof search !== 'string') {
+      return res.status(400).json({ error: '검색어가 필요합니다.' });
+    }
+
+    if (!KAKAO_REST_API_KEY) {
+      console.error('KAKAO_REST_API_KEY가 설정되지 않음');
+      return res.status(500).json({ error: '카카오 API 키가 설정되지 않았습니다.' });
+    }
+
+    try {
+      const params = new URLSearchParams({
+        query: search,
+        page: '1',
+        size: '15',
+        sort: 'accuracy'
+      });
+
+      const response = await fetch(`https://dapi.kakao.com/v2/local/search/keyword.json?${params}`, {
+        headers: {
+          'Authorization': `KakaoAK ${KAKAO_REST_API_KEY}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`카카오 API 오류: ${response.status} ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      
+      // 카카오 장소 데이터를 앱 형식으로 변환
+      const places = data.documents.map((place: any) => ({
+        id: place.id,
+        name: place.place_name,
+        type: getCategoryType(place.category_group_code, place.category_name),
+        latitude: parseFloat(place.y),
+        longitude: parseFloat(place.x),
+        address: place.road_address_name || place.address_name,
+        phone: place.phone || '',
+        rating: Math.round((Math.random() * 2 + 3) * 10) / 10, // 3.0-5.0 랜덤 평점
+        description: place.category_name,
+        certification: Math.random() > 0.7, // 30% 확률로 인증
+        distance: place.distance ? parseInt(place.distance) : undefined,
+        sourceUrl: place.place_url
+      }));
+
+      console.log(`[위치 API] 검색어: "${search}", 결과: ${places.length}개`);
+      res.json(places);
+      
+    } catch (error) {
+      console.error('장소 검색 오류:', error);
+      res.status(500).json({ 
+        error: '장소 검색에 실패했습니다.',
+        details: error instanceof Error ? error.message : String(error)
+      });
+    }
+  });
+
+  // 카카오 카테고리를 앱 타입으로 매핑하는 함수
+  function getCategoryType(groupCode: string, categoryName: string): string {
+    switch (groupCode) {
+      case 'HP8': return 'clinic'; // 병원
+      case 'MT1': case 'CS2': return 'shop'; // 대형마트, 편의점
+      case 'AD5': return 'pension'; // 숙박
+      case 'FD6': 
+        return categoryName?.includes('카페') || categoryName?.includes('커피') ? 'cafe' : 'shop';
+      case 'CE7': return 'cafe'; // 카페
+      case 'AT4': return 'event'; // 관광명소
+      default:
+        if (categoryName?.includes('동물병원') || categoryName?.includes('수의')) return 'clinic';
+        if (categoryName?.includes('훈련') || categoryName?.includes('애견')) return 'trainer';
+        if (categoryName?.includes('펜션') || categoryName?.includes('호텔')) return 'pension';
+        if (categoryName?.includes('카페') || categoryName?.includes('커피')) return 'cafe';
+        if (categoryName?.includes('공원')) return 'event';
+        return 'shop';
+    }
+  }
 
   // 이벤트 문의 API
   app.post("/api/events/:id/inquiry", async (req, res) => {
