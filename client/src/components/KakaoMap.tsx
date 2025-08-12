@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { MapPin, Navigation, Phone, Clock, Star, ExternalLink } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import type { Place, Location } from '@/hooks/useMapService';
+import MapFallback from './MapFallback';
 
 interface KakaoMapProps {
   center?: Location;
@@ -56,11 +57,17 @@ export const KakaoMap: React.FC<KakaoMapProps> = ({
   const [infoWindow, setInfoWindow] = useState<KakaoInfoWindow | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedPlace, setSelectedPlace] = useState<Place | null>(null);
+  const [hasError, setHasError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
   const { toast } = useToast();
 
   // Kakao Maps API 로드 및 지도 초기화
   useEffect(() => {
     if (!KAKAO_MAPS_API_KEY) {
+      console.error('KAKAO_MAPS_API_KEY가 설정되지 않았습니다.');
+      setIsLoading(false);
+      setHasError(true);
+      setErrorMessage('카카오맵 API 키가 설정되지 않았습니다.');
       toast({
         title: "카카오맵 API 키 오류",
         description: "카카오맵 API 키가 설정되지 않았습니다.",
@@ -69,63 +76,121 @@ export const KakaoMap: React.FC<KakaoMapProps> = ({
       return;
     }
 
+    let script: HTMLScriptElement | null = null;
+    let mounted = true;
+
     const initializeMap = () => {
-      if (!window.kakao?.maps) return;
+      console.log('Kakao Maps 초기화 시도...');
+      
+      if (!mounted) return;
+      
+      try {
+        if (!window.kakao?.maps) {
+          console.error('window.kakao.maps가 정의되지 않았습니다.');
+          return;
+        }
 
-      window.kakao.maps.load(() => {
-        if (!mapContainer.current) return;
+        window.kakao.maps.load(() => {
+          if (!mounted || !mapContainer.current) return;
 
-        const options = {
-          center: new window.kakao.maps.LatLng(center.latitude, center.longitude),
-          level: 3, // 확대 레벨
-        };
+          try {
+            const options = {
+              center: new window.kakao.maps.LatLng(center.latitude, center.longitude),
+              level: 3,
+            };
 
-        const kakaoMap = new window.kakao.maps.Map(mapContainer.current, options);
-        setMap(kakaoMap);
+            const kakaoMap = new window.kakao.maps.Map(mapContainer.current, options);
+            setMap(kakaoMap);
 
-        // 정보창 생성
-        const kakaoInfoWindow = new window.kakao.maps.InfoWindow({
-          zIndex: 1,
+            // 정보창 생성
+            const kakaoInfoWindow = new window.kakao.maps.InfoWindow({
+              zIndex: 1,
+            });
+            setInfoWindow(kakaoInfoWindow);
+
+            setIsLoading(false);
+            console.log('Kakao Maps 초기화 성공');
+          } catch (error) {
+            console.error('Kakao Maps 초기화 실패:', error);
+            setIsLoading(false);
+            setHasError(true);
+            setErrorMessage('카카오맵 초기화 중 오류가 발생했습니다.');
+            toast({
+              title: "지도 초기화 실패",
+              description: "카카오맵 초기화 중 오류가 발생했습니다.",
+              variant: "destructive"
+            });
+          }
         });
-        setInfoWindow(kakaoInfoWindow);
-
+      } catch (error) {
+        console.error('Kakao Maps 로드 실패:', error);
         setIsLoading(false);
-        console.log('Kakao Maps 초기화 완료');
-      });
+        setHasError(true);
+        setErrorMessage('카카오맵 로드 중 오류가 발생했습니다.');
+      }
     };
 
-    // 이미 로드되어 있는 경우
+    // 기존 스크립트 확인
+    const existingScript = document.querySelector('script[src*="dapi.kakao.com"]');
+    
     if (window.kakao?.maps) {
-      initializeMap();
+      // 이미 로드된 경우
+      console.log('Kakao Maps SDK 이미 로드됨');
+      setTimeout(initializeMap, 100);
+    } else if (existingScript) {
+      // 스크립트는 있지만 아직 로드 안됨
+      console.log('Kakao Maps SDK 로드 대기 중...');
+      const checkLoaded = () => {
+        if (window.kakao?.maps) {
+          initializeMap();
+        } else {
+          setTimeout(checkLoaded, 100);
+        }
+      };
+      checkLoaded();
     } else {
-      // 스크립트 동적 로드
-      const script = document.createElement('script');
+      // 새로 스크립트 로드
+      console.log('Kakao Maps SDK 새로 로드 중...');
+      script = document.createElement('script');
       script.async = true;
-      script.src = `//dapi.kakao.com/v2/maps/sdk.js?appkey=${KAKAO_MAPS_API_KEY}&libraries=services&autoload=false`;
+      script.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${KAKAO_MAPS_API_KEY}&libraries=services&autoload=false`;
       
-      script.onload = initializeMap;
-      script.onerror = () => {
-        setIsLoading(false);
-        toast({
-          title: "지도 로드 실패",
-          description: "카카오맵을 불러오는데 실패했습니다.",
-          variant: "destructive"
-        });
+      script.onload = () => {
+        console.log('Kakao Maps SDK 스크립트 로드 완료');
+        if (mounted) {
+          // 약간의 지연을 두어 SDK 완전 로드 대기
+          setTimeout(initializeMap, 200);
+        }
+      };
+      
+      script.onerror = (error) => {
+        console.error('Kakao Maps SDK 스크립트 로드 실패:', error);
+        if (mounted) {
+          setIsLoading(false);
+          setHasError(true);
+          setErrorMessage('카카오맵 스크립트를 불러오는데 실패했습니다.');
+          toast({
+            title: "지도 스크립트 로드 실패",
+            description: "카카오맵 스크립트를 불러오는데 실패했습니다.",
+            variant: "destructive"
+          });
+        }
       };
       
       document.head.appendChild(script);
-
-      return () => {
-        if (document.head.contains(script)) {
-          document.head.removeChild(script);
-        }
-      };
     }
+
+    return () => {
+      mounted = false;
+    };
   }, [KAKAO_MAPS_API_KEY, center.latitude, center.longitude, toast]);
 
   // 장소 마커 표시
   useEffect(() => {
-    if (!map || !window.kakao?.maps) return;
+    if (!map || !window.kakao?.maps) {
+      console.log('Map 또는 Kakao SDK가 준비되지 않음:', { map: !!map, kakao: !!window.kakao?.maps });
+      return;
+    }
 
     // 기존 마커 제거
     markers.forEach(marker => marker.setMap(null));
@@ -175,15 +240,21 @@ export const KakaoMap: React.FC<KakaoMapProps> = ({
     setMarkers(newMarkers);
 
     // 모든 마커가 보이도록 지도 범위 조정
-    if (places.length > 1) {
-      const bounds = new window.kakao.maps.LatLngBounds();
-      places.forEach(place => {
-        bounds.extend(new window.kakao.maps.LatLng(place.location.latitude, place.location.longitude));
-      });
-      map.setBounds(bounds);
-    } else if (places.length === 1) {
-      map.setCenter(new window.kakao.maps.LatLng(places[0].location.latitude, places[0].location.longitude));
-      map.setLevel(3);
+    try {
+      if (places.length > 1) {
+        const bounds = new window.kakao.maps.LatLngBounds();
+        places.forEach(place => {
+          bounds.extend(new window.kakao.maps.LatLng(place.location.latitude, place.location.longitude));
+        });
+        if (map.setBounds) {
+          map.setBounds(bounds);
+        }
+      } else if (places.length === 1) {
+        map.setCenter(new window.kakao.maps.LatLng(places[0].location.latitude, places[0].location.longitude));
+        map.setLevel(3);
+      }
+    } catch (error) {
+      console.error('지도 범위 조정 오류:', error);
     }
   }, [map, places, infoWindow, onPlaceSelect]);
 
@@ -290,6 +361,14 @@ export const KakaoMap: React.FC<KakaoMapProps> = ({
     }
   };
 
+  // 새로고침 함수
+  const handleRefresh = () => {
+    setIsLoading(true);
+    setHasError(false);
+    setErrorMessage('');
+    window.location.reload();
+  };
+
   if (isLoading) {
     return (
       <div 
@@ -300,6 +379,20 @@ export const KakaoMap: React.FC<KakaoMapProps> = ({
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-3"></div>
           <p className="text-sm text-muted-foreground">카카오맵을 불러오는 중...</p>
         </div>
+      </div>
+    );
+  }
+
+  if (hasError || !map) {
+    return (
+      <div className={className} style={{ height }}>
+        <MapFallback 
+          places={places}
+          onRefresh={handleRefresh}
+          error={errorMessage}
+          center={center}
+          className="h-full"
+        />
       </div>
     );
   }
