@@ -73,6 +73,7 @@ import PointManagement from "./pages/admin/PointManagement";
 import AdminPointsManagement from "./pages/admin/PointsManagement";
 import TrainerMyPoints from "./pages/trainer/MyPoints";
 import InstituteMyPoints from "./pages/institute/MyPoints";
+import AdminAnalytics from "./pages/admin/AdminAnalytics";
 import TrainerRestManagement from "./pages/trainer/RestManagement";
 import InstituteRestManagement from "./pages/institute/RestManagement";
 import SubstituteClassBoard from "./pages/trainer/SubstituteClassBoard";
@@ -351,7 +352,7 @@ function AppLayout({ children }: { children: ReactNode }) {
                   <Route path="/admin/content-moderation" component={AdminContentModeration} />
                   <Route path="/admin/content-moderation-test" component={ContentModerationTest} />
                   <Route path="/admin/api-management" component={ApiManagement} />
-                  <Route path="/admin/analytics" component={lazy(() => import('./pages/admin/AdminAnalytics'))} />
+                  <Route path="/admin/analytics" component={AdminAnalytics} />
 
                   {/* 업체 등록 관리 */}
                   <Route path="/admin/business-registration">
