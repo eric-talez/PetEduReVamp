@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { apiRequest } from '@/lib/queryClient';
+import KakaoMap from '@/components/KakaoMap';
 
 /**
  * 위치 마커 컴포넌트
@@ -1117,6 +1118,8 @@ function getTypeLabel(type: string): string {
  * 메인 위치 검색 페이지 컨텐츠
  */
 function LocationPageContent() {
+  const { currentLocation, nearbyPlaces, selectedPlace, setSelectedPlace } = useMapService();
+  
   return (
     <div className="space-y-6">
       <Card>
@@ -1144,21 +1147,28 @@ function LocationPageContent() {
 
       <Card>
         <CardHeader>
-          <CardTitle>지도 보기</CardTitle>
+          <CardTitle>카카오맵 보기</CardTitle>
           <CardDescription>
-            주변 지역의 지도를 확인하세요
+            주변 지역의 지도와 검색된 장소들을 확인하세요
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="h-64 bg-muted rounded-md relative flex items-center justify-center">
-            <div className="text-center p-4">
-              <p className="mb-4">카카오맵이 로드됩니다</p>
-              <Button variant="outline">지도 불러오기</Button>
-            </div>
-            <LocationMarker />
-          </div>
-          <div className="mt-4 text-sm text-muted-foreground">
-            참고: 지도는 실제 기능 구현 시 카카오맵 API를 통해 로드됩니다.
+          <KakaoMap 
+            center={currentLocation || { latitude: 37.5665, longitude: 126.978 }}
+            places={nearbyPlaces}
+            onPlaceSelect={setSelectedPlace}
+            height="500px"
+            showControls={true}
+            className="border rounded-lg"
+          />
+          <div className="mt-4 text-sm text-muted-foreground flex items-center gap-2">
+            <MapPin className="h-4 w-4" />
+            카카오맵 API를 통해 실시간 지도 서비스를 제공합니다.
+            {currentLocation && (
+              <span className="text-primary">
+                현재 위치: {currentLocation.latitude.toFixed(4)}, {currentLocation.longitude.toFixed(4)}
+              </span>
+            )}
           </div>
         </CardContent>
       </Card>
