@@ -353,6 +353,7 @@ function AppLayout({ children }: { children: ReactNode }) {
                   <Route path="/admin/content-moderation-test" component={ContentModerationTest} />
                   <Route path="/admin/api-management" component={ApiManagement} />
                   <Route path="/admin/analytics" component={AdminAnalytics} />
+                  <Route path="/admin/revenue" component={AdminCommissionPage} />
 
                   {/* 업체 등록 관리 */}
                   <Route path="/admin/business-registration">
