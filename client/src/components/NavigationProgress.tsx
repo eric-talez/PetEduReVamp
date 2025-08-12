@@ -10,11 +10,41 @@ export const NavigationProgress: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [loadingText, setLoadingText] = useState('페이지 로딩 중...');
+  const [previousLocation, setPreviousLocation] = useState(location);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
 
   useEffect(() => {
-    // 페이지 변경 감지 시 프로그레스 시작
+    // 초기 로드 시에는 프로그레스 바를 표시하지 않음
+    if (isInitialLoad) {
+      setIsInitialLoad(false);
+      setPreviousLocation(location);
+      return;
+    }
+
+    // 같은 페이지면 프로그레스바를 표시하지 않음
+    if (location === previousLocation) {
+      return;
+    }
+
+    // 모달이나 팝업 관련 경로 변경은 무시
+    const ignoredRoutes = ['#', 'javascript:', 'mailto:', 'tel:'];
+    if (ignoredRoutes.some(route => location.startsWith(route))) {
+      return;
+    }
+
+    // URL 해시 변경만 일어난 경우는 무시 (같은 페이지 내 스크롤)
+    const prevBase = previousLocation.split('#')[0];
+    const currentBase = location.split('#')[0];
+    if (prevBase === currentBase) {
+      setPreviousLocation(location);
+      return;
+    }
+
+    // 실제 페이지 이동에 대해서만 프로그레스 시작
+    console.log('Navigation Progress: 실제 페이지 이동 감지', previousLocation, '->', location);
     setIsLoading(true);
     setProgress(0);
+    setPreviousLocation(location);
     
     // 로딩 텍스트 설정
     const pathTexts: Record<string, string> = {
@@ -53,20 +83,20 @@ export const NavigationProgress: React.FC = () => {
       timeouts.push(timeout);
     });
 
-    // 페이지 로딩 완료
+    // 페이지 로딩 완료 - 짧은 지연시간으로 실제 네비게이션인지 확인
     const completeTimeout = setTimeout(() => {
       setProgress(100);
       setTimeout(() => {
         setIsLoading(false);
         setProgress(0);
       }, 150);
-    }, 1000);
+    }, 600);
 
     return () => {
       timeouts.forEach(timeout => clearTimeout(timeout));
       clearTimeout(completeTimeout);
     };
-  }, [location]);
+  }, [location, previousLocation]);
 
   if (!isLoading) return null;
 
@@ -97,12 +127,7 @@ export const NavigationProgress: React.FC = () => {
         )}
       </div>
       
-      {/* 로딩 텍스트 (선택적) */}
-      {progress > 0 && progress < 100 && (
-        <div className="absolute top-2 left-4 text-xs text-primary/70 font-medium">
-          {loadingText}
-        </div>
-      )}
+      {/* 로딩 텍스트는 제거하여 더 깔끔한 UI 제공 */}
     </div>
   );
 };
