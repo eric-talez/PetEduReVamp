@@ -2460,12 +2460,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/consultations/:id/zoom", async (req, res) => {
     try {
       const consultationId = req.params.id;
+      
+      // 상담 정보 조회
+      const consultation = storage.getConsultationById(consultationId);
+      if (!consultation) {
+        return res.status(404).json({
+          success: false,
+          error: "상담 정보를 찾을 수 없습니다."
+        });
+      }
 
-      // 상담 정보 조회 (실제로는 데이터베이스에서 조회)
-      const consultation = {
+      // 훈련사 정보 조회
+      const trainer = storage.getTrainerByName(consultation.trainerName);
+      let zoomUrl = "https://zoom.us/j/123456789?pwd=abcd1234"; // 기본값
+      
+      if (trainer && trainer.zoomLink) {
+        zoomUrl = trainer.zoomLink;
+      }
+
+      const consultationInfo = {
         id: consultationId,
-        trainerName: "김훈련사",
-        zoomUrl: "https://zoom.us/j/123456789?pwd=abcd1234",
+        trainerName: consultation.trainerName,
+        zoomUrl: zoomUrl,
         meetingId: "123 456 789",
         passcode: "abcd1234",
         status: "scheduled",
@@ -2474,11 +2490,70 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       res.json({ 
         success: true, 
-        consultation: consultation
+        consultation: consultationInfo
       });
     } catch (error) {
       console.error('Zoom 링크 조회 오류:', error);
       res.status(500).json({ error: "Zoom 링크 조회 중 오류가 발생했습니다" });
+    }
+  });
+
+  // 훈련사 프로필 업데이트 API (Zoom 링크 포함)
+  app.put("/api/trainer/profile", async (req, res) => {
+    try {
+      const { zoomLink, videoCallPreference, ...profileData } = req.body;
+      
+      console.log('훈련사 프로필 업데이트 요청:', { zoomLink, videoCallPreference });
+      
+      // 실제 구현에서는 데이터베이스에 업데이트하고 인증된 사용자 확인
+      const updatedProfile = {
+        ...profileData,
+        zoomLink,
+        videoCallPreference: videoCallPreference || 'zoom',
+        updatedAt: new Date().toISOString()
+      };
+      
+      res.json({
+        success: true,
+        message: "프로필이 성공적으로 업데이트되었습니다.",
+        profile: updatedProfile
+      });
+    } catch (error) {
+      console.error('프로필 업데이트 오류:', error);
+      res.status(500).json({
+        success: false,
+        error: "프로필 업데이트 중 오류가 발생했습니다."
+      });
+    }
+  });
+
+  // 훈련사 프로필 조회 API
+  app.get("/api/trainer/profile", async (req, res) => {
+    try {
+      // 실제 구현에서는 인증된 훈련사의 프로필을 데이터베이스에서 조회
+      const trainerProfile = {
+        name: '훈련사',
+        email: 'trainer@example.com',
+        phone: '010-1234-5678',
+        address: '서울특별시 강남구',
+        bio: '10년 경력의 전문 반려동물 훈련사입니다.',
+        specialties: ['기초 훈련', '문제 행동 교정', '사회화 훈련'],
+        experience: '10년',
+        certification: 'TALEZ 인증 전문 훈련사',
+        zoomLink: '',
+        videoCallPreference: 'zoom'
+      };
+      
+      res.json({
+        success: true,
+        profile: trainerProfile
+      });
+    } catch (error) {
+      console.error('프로필 조회 오류:', error);
+      res.status(500).json({
+        success: false,
+        error: "프로필 조회 중 오류가 발생했습니다."
+      });
     }
   });
 

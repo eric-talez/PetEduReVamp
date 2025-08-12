@@ -24,6 +24,9 @@ export const users = pgTable("users", {
   aiUsage: integer("ai_usage").default(0),
   points: integer("points").default(0),
   fullName: varchar("full_name", { length: 200 }),
+  // 훈련사 화상수업 관련 필드
+  zoomLink: text("zoom_link"), // 개인 Zoom 링크
+  videoCallPreference: varchar("video_call_preference", { length: 50 }).default("zoom"), // zoom, teams, webex 등
 });
 
 // 강의 테이블

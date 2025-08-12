@@ -29,12 +29,16 @@ import {
   Save,
   Upload,
   AlertCircle,
-  CheckCircle
+  CheckCircle,
+  Video,
+  Monitor,
+  Link
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 export default function TrainerSettings() {
   const { toast } = useToast();
+  const [isLoading, setIsLoading] = useState(true);
   
   // 프로필 정보 상태
   const [profile, setProfile] = useState({
@@ -46,7 +50,9 @@ export default function TrainerSettings() {
     specialties: ['기초 훈련', '문제 행동 교정', '사회화 훈련'],
     experience: '10년',
     certification: 'TALEZ 인증 전문 훈련사',
-    profileImage: null as File | null
+    profileImage: null as File | null,
+    zoomLink: '',
+    videoCallPreference: 'zoom'
   });
 
   // 알림 설정 상태
@@ -88,16 +94,63 @@ export default function TrainerSettings() {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
 
+  // 프로필 로드
+  const loadProfile = async () => {
+    try {
+      const response = await fetch('/api/trainer/profile');
+      const result = await response.json();
+      
+      if (result.success) {
+        setProfile(prev => ({
+          ...prev,
+          ...result.profile
+        }));
+      }
+    } catch (error) {
+      console.error('프로필 로드 오류:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // 컴포넌트 마운트 시 프로필 로드
+  React.useEffect(() => {
+    loadProfile();
+  }, []);
+
   const handleProfileUpdate = async () => {
     try {
-      // API 호출 시뮬레이션
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      toast({
-        title: "프로필 업데이트 완료",
-        description: "프로필 정보가 성공적으로 업데이트되었습니다.",
+      // 훈련사 프로필 업데이트 API 호출
+      const response = await fetch('/api/trainer/profile', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: profile.name,
+          email: profile.email,
+          phone: profile.phone,
+          address: profile.address,
+          bio: profile.bio,
+          experience: profile.experience,
+          certification: profile.certification,
+          zoomLink: profile.zoomLink,
+          videoCallPreference: profile.videoCallPreference
+        })
       });
+
+      const result = await response.json();
+
+      if (result.success) {
+        toast({
+          title: "프로필 업데이트 완료",
+          description: "프로필 정보가 성공적으로 업데이트되었습니다.",
+        });
+      } else {
+        throw new Error(result.error || '업데이트 실패');
+      }
     } catch (error) {
+      console.error('프로필 업데이트 오류:', error);
       toast({
         title: "업데이트 실패",
         description: "프로필 업데이트 중 오류가 발생했습니다.",
@@ -164,6 +217,19 @@ export default function TrainerSettings() {
     }
   };
 
+  if (isLoading) {
+    return (
+      <div className="p-6 space-y-6">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <p className="text-gray-600 dark:text-gray-400">프로필 정보를 불러오고 있습니다...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="p-6 space-y-6">
       {/* 헤더 */}
@@ -176,8 +242,9 @@ export default function TrainerSettings() {
 
       {/* 탭 메뉴 */}
       <Tabs defaultValue="profile" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="profile">프로필</TabsTrigger>
+          <TabsTrigger value="video">화상수업</TabsTrigger>
           <TabsTrigger value="notifications">알림</TabsTrigger>
           <TabsTrigger value="security">보안</TabsTrigger>
           <TabsTrigger value="payment">결제</TabsTrigger>
@@ -310,6 +377,126 @@ export default function TrainerSettings() {
               <Button onClick={handleProfileUpdate} className="w-full">
                 <Save className="w-4 h-4 mr-2" />
                 프로필 저장
+              </Button>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* 화상수업 설정 */}
+        <TabsContent value="video" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Video className="w-5 h-5" />
+                화상수업 설정
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="videoCallPreference">화상회의 플랫폼</Label>
+                  <select
+                    id="videoCallPreference"
+                    value={profile.videoCallPreference}
+                    onChange={(e) => setProfile(prev => ({ ...prev, videoCallPreference: e.target.value }))}
+                    className="w-full p-2 border border-gray-300 rounded-md dark:border-gray-600 dark:bg-gray-800"
+                  >
+                    <option value="zoom">Zoom</option>
+                    <option value="teams">Microsoft Teams</option>
+                    <option value="meet">Google Meet</option>
+                    <option value="webex">Cisco Webex</option>
+                  </select>
+                </div>
+
+                <div>
+                  <Label htmlFor="zoomLink">개인 화상회의 링크</Label>
+                  <div className="space-y-2">
+                    <Input
+                      id="zoomLink"
+                      placeholder="https://zoom.us/j/1234567890?pwd=..."
+                      value={profile.zoomLink}
+                      onChange={(e) => setProfile(prev => ({ ...prev, zoomLink: e.target.value }))}
+                    />
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      수강생들이 화상수업에 참여할 때 사용할 개인 {profile.videoCallPreference === 'zoom' ? 'Zoom' : profile.videoCallPreference === 'teams' ? 'Teams' : profile.videoCallPreference === 'meet' ? 'Google Meet' : 'Webex'} 링크를 입력하세요.
+                    </p>
+                  </div>
+                </div>
+
+                {profile.videoCallPreference === 'zoom' && (
+                  <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                    <h4 className="font-medium text-blue-900 dark:text-blue-200 flex items-center gap-2 mb-2">
+                      <Monitor className="w-4 h-4" />
+                      Zoom 설정 가이드
+                    </h4>
+                    <ul className="text-sm text-blue-800 dark:text-blue-300 space-y-1">
+                      <li>• Zoom 앱에서 "개인 회의실" → "초대 링크 복사"</li>
+                      <li>• 링크 예시: https://zoom.us/j/1234567890?pwd=abcd1234</li>
+                      <li>• 대기실 설정을 비활성화하면 수강생이 바로 입장 가능합니다</li>
+                      <li>• 회의 ID와 비밀번호가 포함된 전체 링크를 입력하세요</li>
+                    </ul>
+                  </div>
+                )}
+
+                {profile.videoCallPreference === 'teams' && (
+                  <div className="p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+                    <h4 className="font-medium text-purple-900 dark:text-purple-200 flex items-center gap-2 mb-2">
+                      <Monitor className="w-4 h-4" />
+                      Teams 설정 가이드
+                    </h4>
+                    <ul className="text-sm text-purple-800 dark:text-purple-300 space-y-1">
+                      <li>• Teams에서 "새 모임" → "링크 복사"</li>
+                      <li>• 또는 개인 룸 링크를 사용하세요</li>
+                      <li>• 모임 옵션에서 로비 우회 설정을 권장합니다</li>
+                    </ul>
+                  </div>
+                )}
+
+                <div className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-green-100 dark:bg-green-900/20 rounded-full flex items-center justify-center">
+                      <Link className="w-5 h-5 text-green-600 dark:text-green-400" />
+                    </div>
+                    <div>
+                      <h4 className="font-medium">화상수업 링크 상태</h4>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        {profile.zoomLink ? '링크가 설정되었습니다' : '링크를 설정해주세요'}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {profile.zoomLink ? (
+                      <Badge className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                        <CheckCircle className="w-3 h-3 mr-1" />
+                        설정됨
+                      </Badge>
+                    ) : (
+                      <Badge className="bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200">
+                        <AlertCircle className="w-3 h-3 mr-1" />
+                        미설정
+                      </Badge>
+                    )}
+                  </div>
+                </div>
+
+                {profile.zoomLink && (
+                  <div className="space-y-2">
+                    <Label>링크 테스트</Label>
+                    <Button 
+                      variant="outline" 
+                      onClick={() => window.open(profile.zoomLink, '_blank')}
+                      className="w-full"
+                    >
+                      <Video className="w-4 h-4 mr-2" />
+                      화상회의 링크 테스트
+                    </Button>
+                  </div>
+                )}
+              </div>
+
+              <Button onClick={handleProfileUpdate} className="w-full">
+                <Save className="w-4 h-4 mr-2" />
+                화상수업 설정 저장
               </Button>
             </CardContent>
           </Card>

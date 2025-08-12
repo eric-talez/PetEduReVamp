@@ -291,15 +291,30 @@ export default function ConsultationStatusPage() {
             });
           }
 
-          // 실제 Zoom 링크로 연결 (훈련사별 고정 Zoom 룸)
-          const zoomLinks: { [key: string]: string } = {
-            '김훈련사': 'https://zoom.us/j/123456789?pwd=abcd1234',
-            '박전문가': 'https://zoom.us/j/987654321?pwd=efgh5678',
-            '이준호 어질리티 코치': 'https://zoom.us/j/555666777?pwd=ijkl9012',
-            '최예린 행동분석가': 'https://zoom.us/j/111222333?pwd=mnop3456'
-          };
+          // 훈련사의 개인 Zoom 링크 가져오기
+          let zoomUrl = 'https://zoom.us/j/default';
           
-          const zoomUrl = zoomLinks[consultation.trainerName] || result.videoCallUrl || 'https://zoom.us/j/default';
+          try {
+            const zoomResponse = await fetch(`/api/consultations/${consultation.id}/zoom`);
+            const zoomData = await zoomResponse.json();
+            
+            if (zoomData.success && zoomData.consultation?.zoomUrl) {
+              zoomUrl = zoomData.consultation.zoomUrl;
+            } else {
+              // 기본값 사용 (훈련사별 고정 링크)
+              const defaultZoomLinks: { [key: string]: string } = {
+                '김훈련사': 'https://zoom.us/j/123456789?pwd=abcd1234',
+                '박전문가': 'https://zoom.us/j/987654321?pwd=efgh5678',
+                '이준호 어질리티 코치': 'https://zoom.us/j/555666777?pwd=ijkl9012',
+                '최예린 행동분석가': 'https://zoom.us/j/111222333?pwd=mnop3456'
+              };
+              zoomUrl = defaultZoomLinks[consultation.trainerName] || 'https://zoom.us/j/default';
+            }
+          } catch (zoomError) {
+            console.error('Zoom 링크 조회 오류:', zoomError);
+            // 기본값 사용
+            zoomUrl = 'https://zoom.us/j/default';
+          }
           
           // Zoom 앱으로 연결 시도, 실패시 웹 브라우저로 연결
           setTimeout(() => {
