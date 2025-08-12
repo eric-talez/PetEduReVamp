@@ -181,7 +181,7 @@ export default function AdminCurriculum() {
     title: '',
     description: '',
     category: '',
-    difficulty: 'beginner' as const,
+    difficulty: 'beginner' as 'beginner' | 'intermediate' | 'advanced',
     duration: 0,
     price: 0,
     trainerName: '',
@@ -193,7 +193,7 @@ export default function AdminCurriculum() {
     title: '',
     description: '',
     category: '',
-    difficulty: 'beginner' as const,
+    difficulty: 'beginner' as 'beginner' | 'intermediate' | 'advanced',
     duration: 0,
     price: 0,
     trainerName: '',
@@ -1304,7 +1304,7 @@ export default function AdminCurriculum() {
       });
       
       // 선택된 커리큘럼도 업데이트
-      setSelectedCurriculum(updatedCurriculum as CurriculumData);
+      setSelectedCurriculum(updatedCurriculum as unknown as CurriculumData);
       setIsEditing(false);
       
       toast({
@@ -1512,7 +1512,7 @@ export default function AdminCurriculum() {
     
     if (typeof curriculum === 'string') {
       // ID로 전달된 경우 해당 커리큘럼 찾기
-      targetCurriculum = curriculums?.find(c => c.id === curriculum) || null;
+      targetCurriculum = (curriculums as CurriculumData[] | undefined)?.find(c => c.id === curriculum) || null;
     } else {
       // 객체로 전달된 경우
       targetCurriculum = curriculum;
@@ -1608,7 +1608,7 @@ export default function AdminCurriculum() {
 
   const publishCurriculum = async (curriculumId: string) => {
     try {
-      const curriculum = curriculums?.find(c => c.id === curriculumId);
+      const curriculum = (curriculums as CurriculumData[] | undefined)?.find(c => c.id === curriculumId);
       if (!curriculum) {
         throw new Error('커리큘럼을 찾을 수 없습니다.');
       }
@@ -2012,7 +2012,7 @@ export default function AdminCurriculum() {
                         variant="outline" 
                         size="sm"
                         className="flex items-center gap-1 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800/20 shadow-sm hover:shadow-md transition-all duration-200 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
-                        onClick={() => handlePreviewCurriculum(template)}
+                        onClick={() => handlePreviewCurriculum(template as CurriculumData)}
                         aria-label={`${template.title} 미리보기`}
                       >
                         <Eye className="w-4 h-4" />
@@ -2058,7 +2058,7 @@ export default function AdminCurriculum() {
                 </div>
               </CardHeader>
               <CardContent className="space-y-3">
-                {(data || []).map(curriculum => (
+                {((curriculums as CurriculumData[] | undefined) || []).map(curriculum => (
                   <div
                     key={curriculum.id}
                     onClick={() => handlePreviewCurriculum(curriculum)}
@@ -2117,17 +2117,10 @@ export default function AdminCurriculum() {
                               e.stopPropagation();
                               publishCurriculum(curriculum.id);
                             }}
-                            className={`flex items-center gap-1 ${
-                              curriculum.status === 'pending_approval' ? 'text-orange-600 border-orange-300' :
-                              'text-green-600 border-green-300'
-                            }`}
+                            className="flex items-center gap-1 text-green-600 border-green-300"
                           >
-                            {curriculum.status === 'pending_approval' ? (
-                              <Clock className="w-3 h-3" />
-                            ) : (
-                              <Send className="w-3 h-3" />
-                            )}
-                            {curriculum.status === 'pending_approval' ? '승인대기' : '발행신청'}
+                            <Send className="w-3 h-3" />
+                            발행신청
                           </Button>
                         )}
                         <Button 
@@ -2331,7 +2324,7 @@ export default function AdminCurriculum() {
                   </div>
                 )}
 
-                {(!curriculums || curriculums.length === 0) && !isCreating && (
+                {(!(curriculums as CurriculumData[] | undefined) || (curriculums as CurriculumData[] | undefined)!.length === 0) && !isCreating && (
                   <div className="text-center text-gray-500 dark:text-gray-400 py-8">
                     <BookOpen className="w-12 h-12 mx-auto mb-2 opacity-50" />
                     <div>등록된 커리큘럼이 없습니다.</div>
@@ -2617,12 +2610,12 @@ export default function AdminCurriculum() {
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-xl font-semibold text-gray-900 dark:text-white">커리큘럼 영상 등록 현황</h2>
               <div className="text-sm text-gray-500 dark:text-gray-400">
-                총 {curriculums?.length || 0}개 커리큘럼 등록됨
+                총 {(curriculums as CurriculumData[] | undefined)?.length || 0}개 커리큘럼 등록됨
               </div>
             </div>
 
             <div className="space-y-4">
-              {(curriculums || []).map((curriculum) => {
+              {((curriculums as CurriculumData[] | undefined) || []).map((curriculum) => {
                 const modules = curriculum.modules || [];
                 const totalModules = modules.length;
                 const modulesWithVideos = modules.filter(module => 
@@ -2915,7 +2908,7 @@ export default function AdminCurriculum() {
               })}
             </div>
 
-            {curriculums.length === 0 && (
+            {((curriculums as CurriculumData[] | undefined) || []).length === 0 && (
               <Card className="bg-gray-50">
                 <CardContent className="p-8 text-center">
                   <Video className="h-12 w-12 text-gray-400 mx-auto mb-4" />
@@ -2935,7 +2928,7 @@ export default function AdminCurriculum() {
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-xl font-semibold">수익 정산 관리</h2>
               <div className="text-sm text-gray-500">
-                총 {curriculums.length}개 커리큘럼
+                총 {((curriculums as CurriculumData[] | undefined) || []).length}개 커리큘럼
               </div>
             </div>
 
@@ -2944,7 +2937,7 @@ export default function AdminCurriculum() {
               <Card className="bg-gradient-to-r from-blue-500 to-blue-600 text-white">
                 <CardContent className="p-6 text-center">
                   <div className="text-2xl font-bold mb-2">
-                    ₩{curriculums.reduce((sum, c) => sum + (c.totalRevenue || 0), 0).toLocaleString()}
+                    ₩{((curriculums as CurriculumData[] | undefined) || []).reduce((sum, c) => sum + (c.totalRevenue || 0), 0).toLocaleString()}
                   </div>
                   <div className="text-blue-100">총 수익</div>
                 </CardContent>
@@ -2952,7 +2945,7 @@ export default function AdminCurriculum() {
               <Card className="bg-gradient-to-r from-green-500 to-green-600 text-white">
                 <CardContent className="p-6 text-center">
                   <div className="text-2xl font-bold mb-2">
-                    ₩{curriculums.reduce((sum, c) => sum + ((c.totalRevenue || 0) * (c.revenueShare?.trainerShare || 70) / 100), 0).toLocaleString()}
+                    ₩{((curriculums as CurriculumData[] | undefined) || []).reduce((sum, c) => sum + ((c.totalRevenue || 0) * (c.revenueShare?.trainerShare || 70) / 100), 0).toLocaleString()}
                   </div>
                   <div className="text-green-100">훈련사 수익</div>
                 </CardContent>
@@ -2960,7 +2953,7 @@ export default function AdminCurriculum() {
               <Card className="bg-gradient-to-r from-purple-500 to-purple-600 text-white">
                 <CardContent className="p-6 text-center">
                   <div className="text-2xl font-bold mb-2">
-                    ₩{curriculums.reduce((sum, c) => sum + ((c.totalRevenue || 0) * (c.revenueShare?.platformShare || 30) / 100), 0).toLocaleString()}
+                    ₩{((curriculums as CurriculumData[] | undefined) || []).reduce((sum, c) => sum + ((c.totalRevenue || 0) * (c.revenueShare?.platformShare || 30) / 100), 0).toLocaleString()}
                   </div>
                   <div className="text-purple-100">플랫폼 수익</div>
                 </CardContent>
@@ -2968,7 +2961,7 @@ export default function AdminCurriculum() {
               <Card className="bg-gradient-to-r from-orange-500 to-orange-600 text-white">
                 <CardContent className="p-6 text-center">
                   <div className="text-2xl font-bold mb-2">
-                    {curriculums.reduce((sum, c) => sum + (c.enrollmentCount || 0), 0)}
+                    {((curriculums as CurriculumData[] | undefined) || []).reduce((sum, c) => sum + (c.enrollmentCount || 0), 0)}
                   </div>
                   <div className="text-orange-100">총 등록 학생</div>
                 </CardContent>
@@ -2995,7 +2988,7 @@ export default function AdminCurriculum() {
                     </tr>
                   </thead>
                   <tbody>
-                    {curriculums.map((curriculum) => {
+                    {((curriculums as CurriculumData[] | undefined) || []).map((curriculum) => {
                       const trainerRevenue = (curriculum.totalRevenue || 0) * (curriculum.revenueShare?.trainerShare || 70) / 100;
                       const platformRevenue = (curriculum.totalRevenue || 0) * (curriculum.revenueShare?.platformShare || 30) / 100;
                       
@@ -3046,7 +3039,7 @@ export default function AdminCurriculum() {
                 </table>
               </div>
 
-              {curriculums.length === 0 && (
+              {((curriculums as CurriculumData[] | undefined) || []).length === 0 && (
                 <Card className="bg-gray-50 dark:bg-gray-800">
                   <CardContent className="p-8 text-center">
                     <Package className="h-12 w-12 text-gray-400 mx-auto mb-4" />
@@ -4759,7 +4752,7 @@ export default function AdminCurriculum() {
                           {attachment.type?.startsWith('video/') ? (
                             <Video className="w-5 h-5 text-red-500" />
                           ) : attachment.type?.startsWith('image/') ? (
-                            <Image className="w-5 h-5 text-green-500" />
+                            <FileText className="w-5 h-5 text-green-500" />
                           ) : (
                             <FileText className="w-5 h-5 text-blue-500" />
                           )}
