@@ -81,6 +81,7 @@ import SubstituteTrainerOverview from "./pages/admin/SubstituteTrainerOverview";
 import AdminContentModeration from "./pages/admin/AdminContentModeration";
 import ContentModerationTest from "./pages/admin/ContentModerationTest";
 import ApiManagement from "./pages/admin/ApiManagement";
+import NavigationProgress from "./components/NavigationProgress";
 
 // 레이아웃 및 컴포넌트 임포트
 import { TopBar } from "@/components/TopBar";
@@ -2567,6 +2568,7 @@ function SimpleApp() {
             <NotificationsProvider>
               <KeyboardShortcutsManager>
                 <>
+                  <NavigationProgress />
                   {auth.isAuthenticated ? <AuthenticatedRoutes /> : <UnauthenticatedRoutes />}
                   <DebugButton />
                   <Toaster />

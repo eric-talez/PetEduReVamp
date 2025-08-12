@@ -959,3 +959,19 @@ html:not(.dark) * {
 .high-contrast .text-muted-foreground {
   color: hsl(var(--foreground)) !important;
 }
+/* 네비게이션 프로그레스바 애니메이션 */
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  50% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.animate-shimmer {
+  animation: shimmer 1.5s infinite;
+}
