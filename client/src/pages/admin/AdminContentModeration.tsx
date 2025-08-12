@@ -232,7 +232,7 @@ const AdminContentModeration: React.FC = () => {
       }
       toast({ title: '기본 키워드가 설정되었습니다.' });
     } catch (error) {
-      toast({ title: '기본 키워드 설정에 실패했습니다.', variant: 'danger' });
+      toast({ title: '기본 키워드 설정에 실패했습니다.', variant: 'destructive' });
     }
   };
 
@@ -303,11 +303,11 @@ const AdminContentModeration: React.FC = () => {
                 />
                 <Select
                   value={editingKeyword?.category || newKeyword.category}
-                  onValueChange={(value) => {
+                  onValueChange={(value: string) => {
                     if (editingKeyword) {
-                      setEditingKeyword({ ...editingKeyword, category: value as 'illegal' | 'hate' | 'spam' });
+                      setEditingKeyword({ ...editingKeyword, category: value as any });
                     } else {
-                      setNewKeyword({ ...newKeyword, category: value as 'illegal' | 'hate' | 'spam' });
+                      setNewKeyword({ ...newKeyword, category: value as any });
                     }
                   }}
                 >
@@ -322,11 +322,11 @@ const AdminContentModeration: React.FC = () => {
                 </Select>
                 <Select
                   value={editingKeyword?.severity || newKeyword.severity}
-                  onValueChange={(value) => {
+                  onValueChange={(value: string) => {
                     if (editingKeyword) {
-                      setEditingKeyword({ ...editingKeyword, severity: value as 'low' | 'medium' | 'high' });
+                      setEditingKeyword({ ...editingKeyword, severity: value as any });
                     } else {
-                      setNewKeyword({ ...newKeyword, severity: value as 'low' | 'medium' | 'high' });
+                      setNewKeyword({ ...newKeyword, severity: value as any });
                     }
                   }}
                 >
