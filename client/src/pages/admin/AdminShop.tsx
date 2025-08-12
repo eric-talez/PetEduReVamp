@@ -81,7 +81,8 @@ import {
   Layers,
   Copy,
   Save,
-  RotateCcw
+  RotateCcw,
+  BookOpen
 } from 'lucide-react';
 import { 
   DropdownMenu,
@@ -173,6 +174,43 @@ interface TrainerRecommendation {
   totalCommission: number;
 }
 
+// 기관별 추천 상품 타입 정의
+interface InstituteRecommendation {
+  id: number;
+  instituteId: number;
+  instituteName: string;
+  productId: number;
+  productName: string;
+  recommendationType: 'featured' | 'essential' | 'popular' | 'seasonal';
+  priority: number;
+  customMessage?: string;
+  discountRate: number;
+  isActive: boolean;
+  clickCount: number;
+  purchaseCount: number;
+  revenue: number;
+  startDate?: string;
+  endDate?: string;
+}
+
+// 커리큘럼-상품 매핑 타입 정의
+interface CurriculumProductMapping {
+  id: number;
+  curriculumId: string;
+  curriculumTitle: string;
+  moduleId?: string;
+  moduleName?: string;
+  productId: number;
+  productName: string;
+  materialName: string;
+  quantity: number;
+  isRequired: boolean;
+  isOptional: boolean;
+  currentStock: number;
+  autoOrder: boolean;
+  estimatedDemand?: number;
+}
+
 export default function AdminShop() {
   const { userName } = useAuth();
   const { toast } = useToast();
@@ -202,6 +240,21 @@ export default function AdminShop() {
   const [showRecommendationModal, setShowRecommendationModal] = useState(false);
   const [selectedRecommendation, setSelectedRecommendation] = useState<TrainerRecommendation | null>(null);
   const [filterTrainer, setFilterTrainer] = useState<number | null>(null);
+  
+  // 기관별 추천 상품 관련 상태
+  const [institutes, setInstitutes] = useState<any[]>([]);
+  const [instituteRecommendations, setInstituteRecommendations] = useState<InstituteRecommendation[]>([]);
+  const [filteredInstituteRecommendations, setFilteredInstituteRecommendations] = useState<InstituteRecommendation[]>([]);
+  const [showInstituteRecommendationModal, setShowInstituteRecommendationModal] = useState(false);
+  const [selectedInstituteRecommendation, setSelectedInstituteRecommendation] = useState<InstituteRecommendation | null>(null);
+  const [filterInstitute, setFilterInstitute] = useState<number | null>(null);
+  
+  // 커리큘럼-상품 매핑 관련 상태
+  const [curriculumMappings, setCurriculumMappings] = useState<CurriculumProductMapping[]>([]);
+  const [filteredCurriculumMappings, setFilteredCurriculumMappings] = useState<CurriculumProductMapping[]>([]);
+  const [showCurriculumMappingModal, setShowCurriculumMappingModal] = useState(false);
+  const [selectedCurriculumMapping, setSelectedCurriculumMapping] = useState<CurriculumProductMapping | null>(null);
+  const [filterCurriculum, setFilterCurriculum] = useState<string | null>(null);
   
   // 모달 상태 로깅
   useEffect(() => {
@@ -955,6 +1008,14 @@ export default function AdminShop() {
             <TabsTrigger value="recommendations">
               <Award className="h-4 w-4 mr-2" />
               훈련사 추천
+            </TabsTrigger>
+            <TabsTrigger value="institute-recommendations">
+              <Building className="h-4 w-4 mr-2" />
+              기관 추천
+            </TabsTrigger>
+            <TabsTrigger value="curriculum-mapping">
+              <BookOpen className="h-4 w-4 mr-2" />
+              교육과정 연동
             </TabsTrigger>
             <TabsTrigger value="referrals">
               <HeartHandshake className="h-4 w-4 mr-2" />
@@ -2150,6 +2211,531 @@ export default function AdminShop() {
                     )}
                   </TableBody>
                 </Table>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* 기관별 추천 상품 탭 */}
+        <TabsContent value="institute-recommendations">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <Building className="h-5 w-5" />
+                <span>기관별 추천 상품 관리</span>
+              </CardTitle>
+              <CardDescription>
+                기관별 맞춤 상품 추천 시스템을 관리하고 성과를 추적합니다.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {/* 필터 및 검색 */}
+                <div className="flex space-x-2">
+                  <div className="relative flex-1">
+                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      placeholder="기관명, 상품명 검색..."
+                      className="pl-8"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                    />
+                  </div>
+                  <Select value={filterInstitute?.toString() || 'all'} onValueChange={(value) => setFilterInstitute(value === 'all' ? null : parseInt(value))}>
+                    <SelectTrigger className="w-[200px]">
+                      <SelectValue placeholder="기관 선택" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">모든 기관</SelectItem>
+                      <SelectItem value="1">서울펫아카데미</SelectItem>
+                      <SelectItem value="2">강남훈련센터</SelectItem>
+                      <SelectItem value="3">반려동물대학</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Button>
+                    <Plus className="h-4 w-4 mr-2" />
+                    추천 상품 추가
+                  </Button>
+                </div>
+
+                {/* 기관별 추천 상품 목록 */}
+                <Card>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>기관</TableHead>
+                        <TableHead>상품</TableHead>
+                        <TableHead>추천 유형</TableHead>
+                        <TableHead>우선순위</TableHead>
+                        <TableHead>할인율</TableHead>
+                        <TableHead>클릭수</TableHead>
+                        <TableHead>구매수</TableHead>
+                        <TableHead>수익</TableHead>
+                        <TableHead>상태</TableHead>
+                        <TableHead>관리</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      <TableRow>
+                        <TableCell>
+                          <div className="flex items-center space-x-2">
+                            <Avatar className="h-8 w-8">
+                              <AvatarImage src="/logos/seoul-pet-academy.png" />
+                              <AvatarFallback>서울</AvatarFallback>
+                            </Avatar>
+                            <span className="font-medium">서울펫아카데미</span>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center space-x-2">
+                            <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
+                              <Package className="h-5 w-5 text-gray-600" />
+                            </div>
+                            <div>
+                              <div className="font-medium">프리미엄 목줄 세트</div>
+                              <div className="text-sm text-muted-foreground">₩45,000</div>
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="secondary">필수 상품</Badge>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center space-x-1">
+                            <span>8</span>
+                            <span className="text-sm text-muted-foreground">/10</span>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="outline">15%</Badge>
+                        </TableCell>
+                        <TableCell>
+                          <div className="font-medium">142</div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="font-medium">23</div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="font-medium">₩873,000</div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge className="bg-green-100 text-green-800">활성</Badge>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center space-x-1">
+                            <Button variant="ghost" size="sm">
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                            <Button variant="ghost" size="sm">
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell>
+                          <div className="flex items-center space-x-2">
+                            <Avatar className="h-8 w-8">
+                              <AvatarImage src="/logos/gangnam-training.png" />
+                              <AvatarFallback>강남</AvatarFallback>
+                            </Avatar>
+                            <span className="font-medium">강남훈련센터</span>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center space-x-2">
+                            <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
+                              <Package className="h-5 w-5 text-gray-600" />
+                            </div>
+                            <div>
+                              <div className="font-medium">훈련용 간식 패키지</div>
+                              <div className="text-sm text-muted-foreground">₩28,000</div>
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="default">인기 상품</Badge>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center space-x-1">
+                            <span>6</span>
+                            <span className="text-sm text-muted-foreground">/10</span>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="outline">10%</Badge>
+                        </TableCell>
+                        <TableCell>
+                          <div className="font-medium">89</div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="font-medium">15</div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="font-medium">₩378,000</div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge className="bg-green-100 text-green-800">활성</Badge>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center space-x-1">
+                            <Button variant="ghost" size="sm">
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                            <Button variant="ghost" size="sm">
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    </TableBody>
+                  </Table>
+                </Card>
+
+                {/* 성과 요약 */}
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="flex items-center space-x-2">
+                        <Building className="h-5 w-5 text-blue-600" />
+                        <div>
+                          <div className="text-2xl font-bold">12</div>
+                          <div className="text-sm text-muted-foreground">연결된 기관</div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="flex items-center space-x-2">
+                        <Package className="h-5 w-5 text-green-600" />
+                        <div>
+                          <div className="text-2xl font-bold">45</div>
+                          <div className="text-sm text-muted-foreground">추천 상품</div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="flex items-center space-x-2">
+                        <ShoppingCart className="h-5 w-5 text-purple-600" />
+                        <div>
+                          <div className="text-2xl font-bold">127</div>
+                          <div className="text-sm text-muted-foreground">총 구매</div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="flex items-center space-x-2">
+                        <CircleDollarSign className="h-5 w-5 text-orange-600" />
+                        <div>
+                          <div className="text-2xl font-bold">₩2.4M</div>
+                          <div className="text-sm text-muted-foreground">총 수익</div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* 교육과정-상품 연동 탭 */}
+        <TabsContent value="curriculum-mapping">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <BookOpen className="h-5 w-5" />
+                <span>교육과정 상품 연동 관리</span>
+              </CardTitle>
+              <CardDescription>
+                커리큘럼별 필요 준비물과 상품을 연결하고 자동 재고 관리를 설정합니다.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {/* 필터 및 검색 */}
+                <div className="flex space-x-2">
+                  <div className="relative flex-1">
+                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      placeholder="커리큘럼명, 준비물명 검색..."
+                      className="pl-8"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                    />
+                  </div>
+                  <Select value={filterCurriculum || 'all'} onValueChange={setFilterCurriculum}>
+                    <SelectTrigger className="w-[200px]">
+                      <SelectValue placeholder="커리큘럼 선택" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">모든 커리큘럼</SelectItem>
+                      <SelectItem value="basic-obedience">기본 복종 훈련</SelectItem>
+                      <SelectItem value="advanced-training">고급 훈련 과정</SelectItem>
+                      <SelectItem value="puppy-socialization">퍼피 사회화</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Button>
+                    <Plus className="h-4 w-4 mr-2" />
+                    연동 추가
+                  </Button>
+                </div>
+
+                {/* 커리큘럼-상품 매핑 목록 */}
+                <Card>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>커리큘럼</TableHead>
+                        <TableHead>모듈</TableHead>
+                        <TableHead>준비물</TableHead>
+                        <TableHead>연결 상품</TableHead>
+                        <TableHead>필요수량</TableHead>
+                        <TableHead>현재재고</TableHead>
+                        <TableHead>필수여부</TableHead>
+                        <TableHead>자동주문</TableHead>
+                        <TableHead>예상수요</TableHead>
+                        <TableHead>관리</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      <TableRow>
+                        <TableCell>
+                          <div>
+                            <div className="font-medium">기본 복종 훈련</div>
+                            <div className="text-sm text-muted-foreground">4주 과정</div>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="outline">1주차: 기초</Badge>
+                        </TableCell>
+                        <TableCell>
+                          <div className="font-medium">훈련용 목줄</div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center space-x-2">
+                            <div className="w-8 h-8 bg-gray-100 rounded flex items-center justify-center">
+                              <Package className="h-4 w-4 text-gray-600" />
+                            </div>
+                            <div>
+                              <div className="font-medium">프리미엄 목줄</div>
+                              <div className="text-sm text-muted-foreground">₩45,000</div>
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="secondary">1개</Badge>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center space-x-1">
+                            <span className="text-red-600 font-medium">3</span>
+                            <span className="text-sm text-muted-foreground">/ 10</span>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge className="bg-red-100 text-red-800">필수</Badge>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center space-x-2">
+                            <div className="w-4 h-4 rounded-full bg-green-500"></div>
+                            <span className="text-sm">활성</span>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="font-medium">25명</div>
+                          <div className="text-sm text-muted-foreground">이번 달</div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center space-x-1">
+                            <Button variant="ghost" size="sm">
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                            <Button variant="ghost" size="sm">
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell>
+                          <div>
+                            <div className="font-medium">기본 복종 훈련</div>
+                            <div className="text-sm text-muted-foreground">4주 과정</div>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="outline">2주차: 강화</Badge>
+                        </TableCell>
+                        <TableCell>
+                          <div className="font-medium">훈련용 간식</div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center space-x-2">
+                            <div className="w-8 h-8 bg-gray-100 rounded flex items-center justify-center">
+                              <Package className="h-4 w-4 text-gray-600" />
+                            </div>
+                            <div>
+                              <div className="font-medium">프리미엄 간식 팩</div>
+                              <div className="text-sm text-muted-foreground">₩28,000</div>
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="secondary">2개</Badge>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center space-x-1">
+                            <span className="text-green-600 font-medium">15</span>
+                            <span className="text-sm text-muted-foreground">/ 5</span>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge className="bg-red-100 text-red-800">필수</Badge>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center space-x-2">
+                            <div className="w-4 h-4 rounded-full bg-gray-400"></div>
+                            <span className="text-sm">비활성</span>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="font-medium">40개</div>
+                          <div className="text-sm text-muted-foreground">이번 달</div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center space-x-1">
+                            <Button variant="ghost" size="sm">
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                            <Button variant="ghost" size="sm">
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    </TableBody>
+                  </Table>
+                </Card>
+
+                {/* 자동 재고 관리 현황 */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg">재고 부족 알림</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between p-3 bg-red-50 rounded-lg">
+                          <div className="flex items-center space-x-3">
+                            <div className="w-2 h-2 rounded-full bg-red-500"></div>
+                            <div>
+                              <div className="font-medium">프리미엄 목줄</div>
+                              <div className="text-sm text-muted-foreground">재고: 3개 / 기준: 10개</div>
+                            </div>
+                          </div>
+                          <Button size="sm" variant="outline">
+                            주문하기
+                          </Button>
+                        </div>
+                        <div className="flex items-center justify-between p-3 bg-yellow-50 rounded-lg">
+                          <div className="flex items-center space-x-3">
+                            <div className="w-2 h-2 rounded-full bg-yellow-500"></div>
+                            <div>
+                              <div className="font-medium">훈련용 클리커</div>
+                              <div className="text-sm text-muted-foreground">재고: 8개 / 기준: 15개</div>
+                            </div>
+                          </div>
+                          <Button size="sm" variant="outline">
+                            주문하기
+                          </Button>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg">자동 주문 현황</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
+                          <div className="flex items-center space-x-3">
+                            <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+                            <div>
+                              <div className="font-medium">간식 파우치 (50개)</div>
+                              <div className="text-sm text-muted-foreground">주문됨: 어제</div>
+                            </div>
+                          </div>
+                          <Badge className="bg-blue-100 text-blue-800">진행중</Badge>
+                        </div>
+                        <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
+                          <div className="flex items-center space-x-3">
+                            <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                            <div>
+                              <div className="font-medium">목줄 세트 (30개)</div>
+                              <div className="text-sm text-muted-foreground">배송 완료: 3일 전</div>
+                            </div>
+                          </div>
+                          <Badge className="bg-green-100 text-green-800">완료</Badge>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* 연동 통계 */}
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="flex items-center space-x-2">
+                        <BookOpen className="h-5 w-5 text-blue-600" />
+                        <div>
+                          <div className="text-2xl font-bold">8</div>
+                          <div className="text-sm text-muted-foreground">연결된 커리큘럼</div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="flex items-center space-x-2">
+                        <Package className="h-5 w-5 text-green-600" />
+                        <div>
+                          <div className="text-2xl font-bold">24</div>
+                          <div className="text-sm text-muted-foreground">연결된 상품</div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="flex items-center space-x-2">
+                        <RotateCcw className="h-5 w-5 text-purple-600" />
+                        <div>
+                          <div className="text-2xl font-bold">12</div>
+                          <div className="text-sm text-muted-foreground">자동 주문 활성</div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="flex items-center space-x-2">
+                        <CircleDollarSign className="h-5 w-5 text-orange-600" />
+                        <div>
+                          <div className="text-2xl font-bold">₹1.8M</div>
+                          <div className="text-sm text-muted-foreground">월 자동 주문액</div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
               </div>
             </CardContent>
           </Card>

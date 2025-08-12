@@ -9989,6 +9989,18 @@ export function registerTrainerCertificationRoutes(app: Express) {
     }
   });
 
+  // 커리큘럼-상품 매핑 및 기관별 추천 상품 라우트 추가
+  Promise.all([
+    import('./routes/curriculum-mapping'),
+    import('./routes/institute-recommendations')
+  ]).then(([curriculumMappingModule, instituteRecommendationModule]) => {
+    app.use('/api/curriculum-mapping', curriculumMappingModule.default);
+    app.use('/api/institute-recommendations', instituteRecommendationModule.default);
+    console.log('[Integration Routes] 커리큘럼-상품 매핑 및 기관별 추천 상품 라우트가 등록되었습니다.');
+  }).catch(error => {
+    console.error('[Integration Routes] 라우트 등록 실패:', error);
+  });
+
   // 콘텐츠 검열 라우트 추가
   import('./content-moderation.js').then(contentModerationModule => {
     app.use('/api/admin/content-moderation', contentModerationModule.default);

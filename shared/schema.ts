@@ -166,11 +166,69 @@ export const products = pgTable("products", {
   images: jsonb("images"),
   tags: jsonb("tags"),
   stock: integer("stock").default(0),
+  low_stock_threshold: integer("low_stock_threshold").default(10), // 재고 부족 알림 기준
+  auto_reorder_enabled: boolean("auto_reorder_enabled").default(false), // 자동 재주문 활성화
+  auto_reorder_quantity: integer("auto_reorder_quantity").default(50), // 자동 재주문 수량
+  supplier_id: integer("supplier_id"), // 공급업체 ID
   is_active: boolean("is_active").default(true),
   rating: integer("rating").default(0),
   review_count: integer("review_count").default(0),
   created_at: timestamp("created_at").defaultNow(),
   updated_at: timestamp("updated_at").defaultNow(),
+});
+
+// 기관별 추천 상품 테이블
+export const instituteProductRecommendations = pgTable("institute_product_recommendations", {
+  id: serial("id").primaryKey(),
+  instituteId: integer("institute_id").references(() => institutes.id).notNull(),
+  productId: integer("product_id").references(() => products.id).notNull(),
+  recommendationType: varchar("recommendation_type", { length: 50 }).notNull(), // 'featured', 'essential', 'popular', 'seasonal'
+  priority: integer("priority").default(5), // 우선순위 (1-10)
+  customMessage: text("custom_message"), // 기관별 맞춤 메시지
+  discountRate: decimal("discount_rate", { precision: 5, scale: 2 }).default("0"), // 기관 전용 할인율
+  isActive: boolean("is_active").default(true),
+  startDate: timestamp("start_date"),
+  endDate: timestamp("end_date"),
+  clickCount: integer("click_count").default(0),
+  purchaseCount: integer("purchase_count").default(0),
+  revenue: decimal("revenue", { precision: 12, scale: 2 }).default("0"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// 커리큘럼-상품 매핑 테이블
+export const curriculumProductMappings = pgTable("curriculum_product_mappings", {
+  id: serial("id").primaryKey(),
+  curriculumId: varchar("curriculum_id", { length: 100 }).notNull(), // 커리큘럼 ID
+  moduleId: varchar("module_id", { length: 100 }), // 모듈 ID (선택적)
+  productId: integer("product_id").references(() => products.id).notNull(),
+  materialName: varchar("material_name", { length: 200 }).notNull(), // 준비물 이름
+  quantity: integer("quantity").default(1), // 필요 수량
+  isRequired: boolean("is_required").default(true), // 필수 여부
+  isOptional: boolean("is_optional").default(false), // 선택 여부
+  suggestedAlternatives: jsonb("suggested_alternatives"), // 대체 상품 목록
+  usageDescription: text("usage_description"), // 사용법 설명
+  estimatedUsage: integer("estimated_usage"), // 예상 사용량 (시간/회차)
+  autoOrder: boolean("auto_order").default(false), // 자동 주문 설정
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// 자동 재고 주문 내역 테이블
+export const autoInventoryOrders = pgTable("auto_inventory_orders", {
+  id: serial("id").primaryKey(),
+  productId: integer("product_id").references(() => products.id).notNull(),
+  triggerType: varchar("trigger_type", { length: 50 }).notNull(), // 'low_stock', 'curriculum_demand', 'seasonal'
+  triggeredBy: varchar("triggered_by", { length: 100 }), // 트리거 원인 (커리큘럼 ID 등)
+  requestedQuantity: integer("requested_quantity").notNull(),
+  estimatedCost: decimal("estimated_cost", { precision: 10, scale: 2 }),
+  status: varchar("status", { length: 50 }).default("pending"), // 'pending', 'approved', 'ordered', 'received', 'cancelled'
+  orderDate: timestamp("order_date"),
+  expectedDelivery: timestamp("expected_delivery"),
+  actualDelivery: timestamp("actual_delivery"),
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
 // 상품 노출 연결 테이블
