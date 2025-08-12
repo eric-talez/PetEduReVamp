@@ -127,13 +127,13 @@ export function NewSidebar({
 
   // 메뉴 그룹 상태 관리 (기본 메뉴 그룹)
   const [menuGroups, setMenuGroups] = useState({
-    main: true,
-    features: true,
-    myLearning: true,
+    main: false,
+    features: false,
+    myLearning: false,
     help: true, // 도움말 메뉴 그룹 추가
-    trainer: userRole === 'trainer' || userRole === 'admin',
-    institute: userRole === 'institute-admin' || userRole === 'admin',
-    admin: userRole === 'admin'
+    trainer: false,
+    institute: false,
+    admin: false
   });
   
   // 도움말 영역 상태
@@ -145,11 +145,26 @@ export function NewSidebar({
   // 역할에 따라 메뉴 그룹 상태 업데이트
   useEffect(() => {
     console.log('NewSidebar userRole changed:', userRole);
-    // 명시적으로 모든 권한 그룹 완전 초기화
+    
+    if (!isAuthenticated) {
+      // 비로그인 사용자는 기본 메뉴만 표시
+      setMenuGroups({
+        main: false,
+        features: false,
+        myLearning: false,
+        help: true,
+        trainer: false,
+        institute: false,
+        admin: false
+      });
+      return;
+    }
+
+    // 로그인 사용자용 메뉴 설정
     const updatedMenuGroups = {
-      main: true,
-      features: true,
-      myLearning: true,
+      main: false,
+      features: false,
+      myLearning: false,
       help: true,
       trainer: false,
       institute: false,
@@ -158,20 +173,20 @@ export function NewSidebar({
     
     // 권한에 따라 선택적으로 활성화
     if (userRole === 'trainer' || userRole === 'admin') {
-      updatedMenuGroups.trainer = true;
+      updatedMenuGroups.trainer = false; // 기본적으로 닫힌 상태
     }
     
     if (userRole === 'institute-admin' || userRole === 'admin') {
-      updatedMenuGroups.institute = true;
+      updatedMenuGroups.institute = false; // 기본적으로 닫힌 상태
     }
     
     if (userRole === 'admin') {
-      updatedMenuGroups.admin = true;
+      updatedMenuGroups.admin = false; // 기본적으로 닫힌 상태
     }
     
     console.log('NewSidebar menuGroups updated:', updatedMenuGroups);
     setMenuGroups(updatedMenuGroups);
-  }, [userRole]);
+  }, [userRole, isAuthenticated]);
 
   // 화면 크기 변경 시 반응형 처리
   useEffect(() => {
@@ -586,11 +601,6 @@ export function NewSidebar({
                 )}
 
                 {/* Institute Admin Menu Group - only for institute admins and admins */}
-                {/* 디버그 메시지 */}
-                <div className="px-3 py-1 text-xs text-gray-400">
-                  유저 역할: {userRole || '미로그인'} / 
-                  메뉴 상태: {menuGroups.institute ? '표시' : '숨김'}
-                </div>
                 
                 {(userRole === 'institute-admin' || userRole === 'admin') && expanded ? (
                   <div
