@@ -955,7 +955,13 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
                   size="sm" 
                   aria-label="로그인 페이지로 이동"
                   onClick={() => {
-                    window.location.href = "/auth";
+                    const startTime = performance.now();
+                    console.log("🔄 로그인 버튼 클릭 시작");
+                    // Use Link navigation for React routing instead of window.location
+                    window.history.pushState({}, '', '/auth');
+                    window.dispatchEvent(new PopStateEvent('popstate'));
+                    const endTime = performance.now();
+                    console.log(`⚡ 로그인 내비게이션 완료: ${(endTime - startTime).toFixed(2)}ms`);
                   }}
                 >
                   로그인
@@ -965,7 +971,13 @@ export function TopBar({ sidebarOpen, onToggleSidebar }: TopBarProps) {
                   size="sm" 
                   aria-label="회원가입 페이지로 이동"
                   onClick={() => {
-                    window.location.href = "/auth?tab=register";
+                    const startTime = performance.now();
+                    console.log("🔄 회원가입 버튼 클릭 시작");
+                    // Use Link navigation for React routing instead of window.location
+                    window.history.pushState({}, '', '/auth?tab=register');
+                    window.dispatchEvent(new PopStateEvent('popstate'));
+                    const endTime = performance.now();
+                    console.log(`⚡ 회원가입 내비게이션 완료: ${(endTime - startTime).toFixed(2)}ms`);
                   }}
                 >
                   회원가입
