@@ -1,32 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-  LineChart,
-  Line,
-  AreaChart,
-  Area,
-  PieChart,
-  Pie,
-  Cell,
-  RadarChart,
-  Radar,
-  PolarGrid,
-  PolarAngleAxis,
-  PolarRadiusAxis,
-  ComposedChart
-} from 'recharts';
+import { Progress } from '@/components/ui/progress';
 import {
   TrendingUp,
   TrendingDown,
@@ -36,69 +14,18 @@ import {
   BookOpen,
   Calendar,
   Download,
-  Filter,
-  RefreshCw
+  RefreshCw,
+  BarChart3,
+  PieChart,
+  Activity
 } from 'lucide-react';
-
-// 색상 팔레트
-const COLORS = ['#2BAA61', '#FFA726', '#29B5F6', '#E74D3C', '#9C27B0', '#4CAF50'];
 
 export default function AdminAnalytics() {
   const [timeRange, setTimeRange] = useState('30days');
   const [isLoading, setIsLoading] = useState(false);
   
-  // 실제 API 데이터를 시뮬레이션하는 상태
-  const [analyticsData, setAnalyticsData] = useState({
-    overview: {
-      totalUsers: 156,
-      activeUsers: 89,
-      totalRevenue: 15450000,
-      totalOrders: 234,
-      completedTraining: 67,
-      activeTraining: 23
-    },
-    userGrowth: [
-      { month: '1월', users: 45, activeUsers: 28 },
-      { month: '2월', users: 52, activeUsers: 34 },
-      { month: '3월', users: 68, activeUsers: 41 },
-      { month: '4월', users: 79, activeUsers: 52 },
-      { month: '5월', users: 98, activeUsers: 63 },
-      { month: '6월', users: 123, activeUsers: 78 },
-      { month: '7월', users: 145, activeUsers: 89 }
-    ],
-    revenueData: [
-      { month: '1월', revenue: 1200000, orders: 28, training: 800000 },
-      { month: '2월', revenue: 1450000, orders: 34, training: 950000 },
-      { month: '3월', revenue: 1680000, orders: 41, training: 1120000 },
-      { month: '4월', revenue: 1950000, orders: 52, training: 1340000 },
-      { month: '5월', revenue: 2200000, orders: 63, training: 1580000 },
-      { month: '6월', revenue: 2650000, orders: 78, training: 1890000 },
-      { month: '7월', revenue: 2950000, orders: 89, training: 2100000 }
-    ],
-    trainingCategories: [
-      { name: '기본 훈련', value: 35, color: '#2BAA61' },
-      { name: '문제행동 교정', value: 28, color: '#FFA726' },
-      { name: '고급 훈련', value: 20, color: '#29B5F6' },
-      { name: '사회화 훈련', value: 17, color: '#E74D3C' }
-    ],
-    userDemographics: [
-      { age: '20-30세', count: 45 },
-      { age: '31-40세', count: 62 },
-      { age: '41-50세', count: 38 },
-      { age: '51-60세', count: 11 }
-    ],
-    regionData: [
-      { region: '서울', users: 67, revenue: 8900000 },
-      { region: '경기', users: 45, revenue: 5600000 },
-      { region: '부산', users: 23, revenue: 2800000 },
-      { region: '대구', users: 15, revenue: 1900000 },
-      { region: '기타', users: 6, revenue: 750000 }
-    ]
-  });
-
   const handleRefresh = async () => {
     setIsLoading(true);
-    // 실제 환경에서는 API 호출
     setTimeout(() => {
       setIsLoading(false);
     }, 1000);
@@ -165,42 +92,42 @@ export default function AdminAnalytics() {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         <StatCard
           title="총 사용자"
-          value={analyticsData.overview.totalUsers.toLocaleString()}
+          value="156"
           change="+12.5% 전월 대비"
           icon={Users}
           trend="up"
         />
         <StatCard
           title="활성 사용자"
-          value={analyticsData.overview.activeUsers.toLocaleString()}
+          value="89"
           change="+8.3% 전월 대비"
           icon={Users}
           trend="up"
         />
         <StatCard
           title="총 수익"
-          value={formatCurrency(analyticsData.overview.totalRevenue)}
+          value={formatCurrency(15450000)}
           change="+23.1% 전월 대비"
           icon={DollarSign}
           trend="up"
         />
         <StatCard
           title="총 주문"
-          value={analyticsData.overview.totalOrders.toLocaleString()}
+          value="234"
           change="+15.2% 전월 대비"
           icon={ShoppingCart}
           trend="up"
         />
         <StatCard
           title="완료된 훈련"
-          value={analyticsData.overview.completedTraining.toLocaleString()}
+          value="67"
           change="+18.7% 전월 대비"
           icon={BookOpen}
           trend="up"
         />
         <StatCard
           title="진행 중인 훈련"
-          value={analyticsData.overview.activeTraining.toLocaleString()}
+          value="23"
           change="-5.2% 전월 대비"
           icon={Calendar}
           trend="down"
@@ -222,84 +149,144 @@ export default function AdminAnalytics() {
           <div className="grid gap-4 md:grid-cols-2">
             <Card>
               <CardHeader>
-                <CardTitle>사용자 증가 추이</CardTitle>
+                <CardTitle className="flex items-center gap-2">
+                  <BarChart3 className="h-5 w-5" />
+                  사용자 증가 추이
+                </CardTitle>
                 <CardDescription>월별 신규 사용자 및 활성 사용자</CardDescription>
               </CardHeader>
               <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
-                  <ComposedChart data={analyticsData.userGrowth}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="month" />
-                    <YAxis />
-                    <Tooltip />
-                    <Legend />
-                    <Bar dataKey="users" fill="#2BAA61" name="총 사용자" />
-                    <Line type="monotone" dataKey="activeUsers" stroke="#FFA726" name="활성 사용자" />
-                  </ComposedChart>
-                </ResponsiveContainer>
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span>1월</span>
+                      <span>45명 / 28명 활성</span>
+                    </div>
+                    <Progress value={62} className="h-2" />
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span>2월</span>
+                      <span>52명 / 34명 활성</span>
+                    </div>
+                    <Progress value={65} className="h-2" />
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span>3월</span>
+                      <span>68명 / 41명 활성</span>
+                    </div>
+                    <Progress value={60} className="h-2" />
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span>4월</span>
+                      <span>79명 / 52명 활성</span>
+                    </div>
+                    <Progress value={66} className="h-2" />
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span>5월</span>
+                      <span>98명 / 63명 활성</span>
+                    </div>
+                    <Progress value={64} className="h-2" />
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span>6월</span>
+                      <span>123명 / 78명 활성</span>
+                    </div>
+                    <Progress value={63} className="h-2" />
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span>7월</span>
+                      <span>156명 / 89명 활성</span>
+                    </div>
+                    <Progress value={57} className="h-2" />
+                  </div>
+                </div>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader>
-                <CardTitle>훈련 카테고리 분포</CardTitle>
+                <CardTitle className="flex items-center gap-2">
+                  <PieChart className="h-5 w-5" />
+                  훈련 카테고리 분포
+                </CardTitle>
                 <CardDescription>훈련 유형별 비율</CardDescription>
               </CardHeader>
               <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
-                  <PieChart>
-                    <Pie
-                      data={analyticsData.trainingCategories}
-                      cx="50%"
-                      cy="50%"
-                      labelLine={false}
-                      label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                      outerRadius={80}
-                      fill="#8884d8"
-                      dataKey="value"
-                    >
-                      {analyticsData.trainingCategories.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
-                      ))}
-                    </Pie>
-                    <Tooltip />
-                  </PieChart>
-                </ResponsiveContainer>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 rounded-full" style={{ backgroundColor: '#2BAA61' }}></div>
+                      <span className="text-sm">기본 훈련</span>
+                    </div>
+                    <Badge>35%</Badge>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 rounded-full" style={{ backgroundColor: '#FFA726' }}></div>
+                      <span className="text-sm">문제행동 교정</span>
+                    </div>
+                    <Badge>28%</Badge>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 rounded-full" style={{ backgroundColor: '#29B5F6' }}></div>
+                      <span className="text-sm">고급 훈련</span>
+                    </div>
+                    <Badge>20%</Badge>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 rounded-full" style={{ backgroundColor: '#E74D3C' }}></div>
+                      <span className="text-sm">사회화 훈련</span>
+                    </div>
+                    <Badge>17%</Badge>
+                  </div>
+                </div>
               </CardContent>
             </Card>
           </div>
 
           <Card>
             <CardHeader>
-              <CardTitle>월별 수익 추이</CardTitle>
+              <CardTitle className="flex items-center gap-2">
+                <Activity className="h-5 w-5" />
+                월별 수익 추이
+              </CardTitle>
               <CardDescription>쇼핑몰 수익 vs 훈련 수익</CardDescription>
             </CardHeader>
             <CardContent>
-              <ResponsiveContainer width="100%" height={400}>
-                <AreaChart data={analyticsData.revenueData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="month" />
-                  <YAxis tickFormatter={(value) => `${value / 1000000}M`} />
-                  <Tooltip formatter={(value) => formatCurrency(Number(value))} />
-                  <Legend />
-                  <Area
-                    type="monotone"
-                    dataKey="training"
-                    stackId="1"
-                    stroke="#2BAA61"
-                    fill="#2BAA61"
-                    name="훈련 수익"
-                  />
-                  <Area
-                    type="monotone"
-                    dataKey="revenue"
-                    stackId="2"
-                    stroke="#FFA726"
-                    fill="#FFA726"
-                    name="총 수익"
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
+              <div className="space-y-4">
+                {[
+                  { month: '1월', total: 1200000, training: 800000 },
+                  { month: '2월', total: 1450000, training: 950000 },
+                  { month: '3월', total: 1680000, training: 1120000 },
+                  { month: '4월', total: 1950000, training: 1340000 },
+                  { month: '5월', total: 2200000, training: 1580000 },
+                  { month: '6월', total: 2650000, training: 1890000 },
+                  { month: '7월', total: 2950000, training: 2100000 }
+                ].map((item, index) => (
+                  <div key={index} className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span>{item.month}</span>
+                      <span>{formatCurrency(item.total)} (훈련: {formatCurrency(item.training)})</span>
+                    </div>
+                    <div className="relative">
+                      <Progress value={(item.total / 3000000) * 100} className="h-3" />
+                      <div 
+                        className="absolute top-0 left-0 h-3 bg-green-500 rounded-full"
+                        style={{ width: `${(item.training / 3000000) * 100}%` }}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
@@ -313,15 +300,22 @@ export default function AdminAnalytics() {
                 <CardDescription>사용자의 연령대 분석</CardDescription>
               </CardHeader>
               <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
-                  <BarChart data={analyticsData.userDemographics}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="age" />
-                    <YAxis />
-                    <Tooltip />
-                    <Bar dataKey="count" fill="#29B5F6" />
-                  </BarChart>
-                </ResponsiveContainer>
+                <div className="space-y-4">
+                  {[
+                    { age: '20-30세', count: 45, percentage: 29 },
+                    { age: '31-40세', count: 62, percentage: 40 },
+                    { age: '41-50세', count: 38, percentage: 24 },
+                    { age: '51-60세', count: 11, percentage: 7 }
+                  ].map((item, index) => (
+                    <div key={index} className="space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span>{item.age}</span>
+                        <span>{item.count}명 ({item.percentage}%)</span>
+                      </div>
+                      <Progress value={item.percentage} className="h-2" />
+                    </div>
+                  ))}
+                </div>
               </CardContent>
             </Card>
 
@@ -359,21 +353,22 @@ export default function AdminAnalytics() {
               <CardDescription>핵심 지표별 성과</CardDescription>
             </CardHeader>
             <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
-                <RadarChart data={[
-                  { subject: '앱 사용 빈도', A: 85, fullMark: 100 },
-                  { subject: '훈련 참여율', A: 78, fullMark: 100 },
-                  { subject: '구매 전환율', A: 65, fullMark: 100 },
-                  { subject: '리뷰 작성율', A: 42, fullMark: 100 },
-                  { subject: '추천 점수', A: 89, fullMark: 100 },
-                  { subject: '재방문율', A: 76, fullMark: 100 }
-                ]}>
-                  <PolarGrid />
-                  <PolarAngleAxis dataKey="subject" />
-                  <PolarRadiusAxis angle={30} domain={[0, 100]} />
-                  <Radar name="참여도" dataKey="A" stroke="#2BAA61" fill="#2BAA61" fillOpacity={0.6} />
-                </RadarChart>
-              </ResponsiveContainer>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                {[
+                  { label: '앱 사용 빈도', value: 85 },
+                  { label: '훈련 참여율', value: 78 },
+                  { label: '구매 전환율', value: 65 },
+                  { label: '리뷰 작성율', value: 42 },
+                  { label: '추천 점수', value: 89 },
+                  { label: '재방문율', value: 76 }
+                ].map((metric, index) => (
+                  <div key={index} className="text-center space-y-2">
+                    <div className="text-2xl font-bold">{metric.value}%</div>
+                    <div className="text-sm text-muted-foreground">{metric.label}</div>
+                    <Progress value={metric.value} className="h-2" />
+                  </div>
+                ))}
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
@@ -386,49 +381,37 @@ export default function AdminAnalytics() {
               <CardDescription>카테고리별 수익 추이</CardDescription>
             </CardHeader>
             <CardContent>
-              <ResponsiveContainer width="100%" height={400}>
-                <LineChart data={analyticsData.revenueData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="month" />
-                  <YAxis tickFormatter={(value) => `${value / 1000000}M`} />
-                  <Tooltip formatter={(value) => formatCurrency(Number(value))} />
-                  <Legend />
-                  <Line type="monotone" dataKey="revenue" stroke="#2BAA61" strokeWidth={3} name="총 수익" />
-                  <Line type="monotone" dataKey="training" stroke="#FFA726" strokeWidth={3} name="훈련 수익" />
-                </LineChart>
-              </ResponsiveContainer>
+              <div className="grid gap-4 md:grid-cols-3">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>수익 성장률</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold text-green-600">+23.1%</div>
+                    <p className="text-xs text-muted-foreground">전월 대비</p>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardHeader>
+                    <CardTitle>평균 주문 가격</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">{formatCurrency(66000)}</div>
+                    <p className="text-xs text-muted-foreground">+8.5% 전월 대비</p>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardHeader>
+                    <CardTitle>고객 생애 가치</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">{formatCurrency(324000)}</div>
+                    <p className="text-xs text-muted-foreground">+15.2% 전월 대비</p>
+                  </CardContent>
+                </Card>
+              </div>
             </CardContent>
           </Card>
-
-          <div className="grid gap-4 md:grid-cols-3">
-            <Card>
-              <CardHeader>
-                <CardTitle>수익 성장률</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-green-600">+23.1%</div>
-                <p className="text-xs text-muted-foreground">전월 대비</p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader>
-                <CardTitle>평균 주문 가격</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{formatCurrency(66000)}</div>
-                <p className="text-xs text-muted-foreground">+8.5% 전월 대비</p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader>
-                <CardTitle>고객 생애 가치</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{formatCurrency(324000)}</div>
-                <p className="text-xs text-muted-foreground">+15.2% 전월 대비</p>
-              </CardContent>
-            </Card>
-          </div>
         </TabsContent>
 
         {/* 훈련 탭 */}
@@ -441,21 +424,18 @@ export default function AdminAnalytics() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {analyticsData.trainingCategories.map((category, index) => (
-                    <div key={index} className="flex justify-between items-center">
-                      <span className="text-sm font-medium">{category.name}</span>
-                      <div className="flex items-center gap-2">
-                        <div className="w-24 bg-gray-200 rounded-full h-2">
-                          <div
-                            className="h-2 rounded-full"
-                            style={{
-                              width: `${category.value * 2}%`,
-                              backgroundColor: category.color
-                            }}
-                          />
-                        </div>
-                        <span className="text-sm text-muted-foreground">{category.value * 2}%</span>
+                  {[
+                    { name: '기본 훈련', completion: 70, color: '#2BAA61' },
+                    { name: '문제행동 교정', completion: 56, color: '#FFA726' },
+                    { name: '고급 훈련', completion: 40, color: '#29B5F6' },
+                    { name: '사회화 훈련', completion: 34, color: '#E74D3C' }
+                  ].map((category, index) => (
+                    <div key={index} className="space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span>{category.name}</span>
+                        <span>{category.completion}%</span>
                       </div>
+                      <Progress value={category.completion} className="h-2" />
                     </div>
                   ))}
                 </div>
@@ -497,22 +477,23 @@ export default function AdminAnalytics() {
               <CardDescription>주요 지역 분석</CardDescription>
             </CardHeader>
             <CardContent>
-              <ResponsiveContainer width="100%" height={400}>
-                <ComposedChart data={analyticsData.regionData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="region" />
-                  <YAxis yAxisId="left" />
-                  <YAxis yAxisId="right" orientation="right" tickFormatter={(value) => `${value / 1000000}M`} />
-                  <Tooltip 
-                    formatter={(value, name) => 
-                      name === 'revenue' ? formatCurrency(Number(value)) : value
-                    } 
-                  />
-                  <Legend />
-                  <Bar yAxisId="left" dataKey="users" fill="#2BAA61" name="사용자 수" />
-                  <Line yAxisId="right" type="monotone" dataKey="revenue" stroke="#FFA726" strokeWidth={3} name="수익" />
-                </ComposedChart>
-              </ResponsiveContainer>
+              <div className="space-y-4">
+                {[
+                  { region: '서울', users: 67, revenue: 8900000, percentage: 43 },
+                  { region: '경기', users: 45, revenue: 5600000, percentage: 29 },
+                  { region: '부산', users: 23, revenue: 2800000, percentage: 15 },
+                  { region: '대구', users: 15, revenue: 1900000, percentage: 10 },
+                  { region: '기타', users: 6, revenue: 750000, percentage: 3 }
+                ].map((area, index) => (
+                  <div key={index} className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span>{area.region}</span>
+                      <span>{area.users}명 ({formatCurrency(area.revenue)})</span>
+                    </div>
+                    <Progress value={area.percentage} className="h-2" />
+                  </div>
+                ))}
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
