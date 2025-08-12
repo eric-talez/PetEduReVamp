@@ -181,7 +181,7 @@ export function NewSidebar({
     }
     
     if (userRole === 'admin') {
-      updatedMenuGroups.admin = false; // 기본적으로 닫힌 상태
+      updatedMenuGroups.admin = true; // 관리자는 기본적으로 열려있음
     }
     
     console.log('NewSidebar menuGroups updated:', updatedMenuGroups);
