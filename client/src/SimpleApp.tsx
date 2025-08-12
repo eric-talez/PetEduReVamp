@@ -80,6 +80,7 @@ import SubstituteTrainerManagement from "./pages/institute/SubstituteTrainerMana
 import SubstituteTrainerOverview from "./pages/admin/SubstituteTrainerOverview";
 import AdminContentModeration from "./pages/admin/AdminContentModeration";
 import ContentModerationTest from "./pages/admin/ContentModerationTest";
+import ApiManagement from "./pages/admin/ApiManagement";
 
 // 레이아웃 및 컴포넌트 임포트
 import { TopBar } from "@/components/TopBar";
@@ -347,6 +348,7 @@ function AppLayout({ children }: { children: ReactNode }) {
                   <Route path="/admin/payment-integration" component={PaymentIntegration} />
                   <Route path="/admin/content-moderation" component={AdminContentModeration} />
                   <Route path="/admin/content-moderation-test" component={ContentModerationTest} />
+                  <Route path="/admin/api-management" component={ApiManagement} />
 
                   {/* 업체 등록 관리 */}
                   <Route path="/admin/business-registration">

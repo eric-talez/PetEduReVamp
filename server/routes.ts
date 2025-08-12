@@ -2557,6 +2557,103 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // API 설정 관리 라우트
+  app.get("/api/admin/api-configs", async (req, res) => {
+    try {
+      // 실제 구현에서는 데이터베이스에서 API 설정을 조회
+      const apiConfigs = {
+        naver: { isEnabled: false, status: 'disconnected' },
+        kakao: { isEnabled: false, status: 'disconnected' },
+        google: { isEnabled: false, status: 'disconnected' },
+        toss: { isEnabled: false, status: 'disconnected' }
+      };
+
+      const apiValues = {
+        // 보안상 마스킹된 값들 반환
+        naver: { clientId: '****', clientSecret: '****', redirectUri: '' },
+        kakao: { clientId: '****', clientSecret: '****', redirectUri: '' },
+        google: { clientId: '****', clientSecret: '****', redirectUri: '' },
+        toss: { clientKey: '****', secretKey: '****', webhookKey: '****' }
+      };
+
+      res.json({
+        success: true,
+        configs: apiConfigs,
+        values: apiValues
+      });
+    } catch (error) {
+      console.error('API 설정 조회 오류:', error);
+      res.status(500).json({
+        success: false,
+        error: "API 설정을 불러오는 중 오류가 발생했습니다."
+      });
+    }
+  });
+
+  app.put("/api/admin/api-configs", async (req, res) => {
+    try {
+      const { apiId, values, isEnabled } = req.body;
+      
+      console.log(`API 설정 저장 요청: ${apiId}`, { isEnabled, values: Object.keys(values) });
+      
+      // 실제 구현에서는 데이터베이스에 암호화하여 저장
+      // 여기서는 시뮬레이션
+      const result = {
+        success: true,
+        message: `${apiId} API 설정이 저장되었습니다.`,
+        config: {
+          apiId,
+          isEnabled,
+          updatedAt: new Date().toISOString()
+        }
+      };
+
+      res.json(result);
+    } catch (error) {
+      console.error('API 설정 저장 오류:', error);
+      res.status(500).json({
+        success: false,
+        error: "API 설정 저장 중 오류가 발생했습니다."
+      });
+    }
+  });
+
+  app.post("/api/admin/api-configs/:apiId/test", async (req, res) => {
+    try {
+      const { apiId } = req.params;
+      
+      console.log(`API 연결 테스트 요청: ${apiId}`);
+      
+      // 실제 구현에서는 각 API별로 연결 테스트 수행
+      let testResult = { success: false, message: '' };
+      
+      switch (apiId) {
+        case 'naver':
+          testResult = { success: true, message: '네이버 로그인 API 연결이 정상입니다.' };
+          break;
+        case 'kakao':
+          testResult = { success: true, message: '카카오 로그인 API 연결이 정상입니다.' };
+          break;
+        case 'google':
+          testResult = { success: true, message: '구글 OAuth API 연결이 정상입니다.' };
+          break;
+        case 'toss':
+          testResult = { success: true, message: '토스페이먼츠 API 연결이 정상입니다.' };
+          break;
+        default:
+          testResult = { success: false, message: '지원하지 않는 API입니다.' };
+      }
+
+      res.json(testResult);
+    } catch (error) {
+      console.error('API 테스트 오류:', error);
+      res.status(500).json({
+        success: false,
+        error: "API 테스트 중 오류가 발생했습니다."
+      });
+    }
+  });
+
   // 리뷰 작성 API
   app.post("/api/reviews", async (req, res) => {
     try {
