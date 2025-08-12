@@ -85,7 +85,7 @@ function NavItem({ href, icon, children, active, onClick, show }: NavItemProps) 
     <Link href={href}>
       <a
         className={cn(
-          "flex items-center px-3 py-2 rounded-md text-sm font-medium transition-colors",
+          "flex items-center px-4 py-2 rounded-md text-xs font-medium transition-colors",
           active
             ? "bg-primary/10 text-primary"
             : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800/50"
@@ -325,7 +325,7 @@ export function NewSidebar({
                 {/* Main Menu Group */}
                 {expanded ? (
                   <div className="px-3 py-2 flex items-center justify-between cursor-pointer" onClick={() => toggleMenuGroup('main')}>
-                    <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                       메인
                     </h3>
                     {menuGroups.main ? <ChevronDown className="h-4 w-4 text-gray-500" /> : <ChevronRight className="h-4 w-4 text-gray-500" />}
@@ -386,7 +386,7 @@ export function NewSidebar({
                     className="px-3 py-2 flex items-center justify-between cursor-pointer mt-6" 
                     onClick={() => toggleMenuGroup('features')}
                   >
-                    <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                       기능
                     </h3>
                     {menuGroups.features ? <ChevronDown className="h-4 w-4 text-gray-500" /> : <ChevronRight className="h-4 w-4 text-gray-500" />}
@@ -451,7 +451,7 @@ export function NewSidebar({
 
                     <SpecialShopLink className={
                       cn(
-                        "flex items-center px-3 py-2 rounded-md text-sm font-medium transition-colors",
+                        "flex items-center px-4 py-2 rounded-md text-xs font-medium transition-colors",
                         isActive("/shop")
                           ? "bg-primary/10 text-primary"
                           : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800/50"
@@ -469,7 +469,7 @@ export function NewSidebar({
                     className="px-3 py-2 flex items-center justify-between cursor-pointer mt-6"
                     onClick={() => toggleMenuGroup('myLearning')}
                   >
-                    <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                       나의 학습
                     </h3>
                     {menuGroups.myLearning ? <ChevronDown className="h-4 w-4 text-gray-500" /> : <ChevronRight className="h-4 w-4 text-gray-500" />}
@@ -530,7 +530,7 @@ export function NewSidebar({
                     className="px-3 py-2 mt-6 flex items-center justify-between cursor-pointer"
                     onClick={() => toggleMenuGroup('trainer')}
                   >
-                    <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                       훈련사 관리
                     </h3>
                     {menuGroups.trainer ? <ChevronDown className="h-4 w-4 text-gray-500" /> : <ChevronRight className="h-4 w-4 text-gray-500" />}
@@ -597,7 +597,7 @@ export function NewSidebar({
                     className="px-3 py-2 mt-6 flex items-center justify-between cursor-pointer"
                     onClick={() => toggleMenuGroup('institute')}
                   >
-                    <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                       기관 관리
                     </h3>
                     {menuGroups.institute ? <ChevronDown className="h-4 w-4 text-gray-500" /> : <ChevronRight className="h-4 w-4 text-gray-500" />}
@@ -658,7 +658,7 @@ export function NewSidebar({
                     className="px-3 py-2 mt-6 flex items-center justify-between cursor-pointer"
                     onClick={() => toggleMenuGroup('admin')}
                   >
-                    <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                       관리자
                     </h3>
                     {menuGroups.admin ? <ChevronDown className="h-4 w-4 text-gray-500" /> : <ChevronRight className="h-4 w-4 text-gray-500" />}
@@ -736,7 +736,7 @@ export function NewSidebar({
                 {/* 도움말 헤더 - 그룹 헤더 스타일 */}
                 {expanded && (
                   <div className="px-3 py-2 mt-6">
-                    <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                       도움말
                     </h3>
                   </div>
@@ -833,7 +833,7 @@ export function NewSidebar({
                 <Link href="/shop" target="_blank">
                   <a
                     className={cn(
-                      "flex items-center px-3 py-2 rounded-md text-sm font-medium transition-colors",
+                      "flex items-center px-4 py-2 rounded-md text-xs font-medium transition-colors",
                       isActive("/shop")
                         ? "bg-primary/10 text-primary"
                         : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800/50"
