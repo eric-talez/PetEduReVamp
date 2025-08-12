@@ -63,6 +63,7 @@ import SpringBootTestPage from "./pages/SpringBootTest";
 import AdminContents from "./pages/admin/AdminContents";
 import AdminMembersStatus from "./pages/admin/AdminMembersStatus";
 import TrainerCertificationManagement from "./pages/admin/TrainerCertificationManagement";
+import MessagingSettings from "./pages/admin/MessagingSettings";
 import AdminProductPricing from "./pages/admin/AdminProductPricing";
 import AdminSettlementPage from "./pages/admin/settlement";
 import ContentCrawler from "./pages/admin/ContentCrawler";
@@ -2040,6 +2041,18 @@ function AuthenticatedRoutes() {
                 <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
               </div>}>
                 <ProtectedAdminRoute component={AdminSettings} />
+              </Suspense>
+            );
+          }}
+        </Route>
+
+        <Route path="/admin/messaging-settings">
+          {() => {
+            return (
+              <Suspense fallback={<div className="p-8 flex justify-center items-center">
+                <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
+              </div>}>
+                <ProtectedAdminRoute component={MessagingSettings} />
               </Suspense>
             );
           }}

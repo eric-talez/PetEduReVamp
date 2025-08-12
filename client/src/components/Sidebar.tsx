@@ -83,7 +83,8 @@ import {
   ChevronsLeft,
   ChevronsRight,
   Clock,
-  Coffee
+  Coffee,
+  Mail
 } from "lucide-react";
 
 // 사이드바 컨텍스트 생성
@@ -876,6 +877,7 @@ export function Sidebar({
                         <AccessibleNavItem href="/admin/shop" icon={<ShoppingBag className="w-5 h-5 mr-2" />} hoverIcon={<Package className="w-5 h-5 mr-2 text-primary" />} active={isActive("/admin/shop")} onClick={handleItemClick} show={true}>쇼핑몰 관리</AccessibleNavItem>
                         <AccessibleNavItem href="/admin/api-management" icon={<Key className="w-5 h-5 mr-2" />} hoverIcon={<Settings className="w-5 h-5 mr-2 text-primary" />} active={isActive("/admin/api-management")} onClick={handleItemClick} show={true}>API 관리</AccessibleNavItem>
                         <AccessibleNavItem href="/admin/settings" icon={<Settings className="w-5 h-5 mr-2" />} hoverIcon={<Wrench className="w-5 h-5 mr-2 text-primary" />} active={isActive("/admin/settings")} onClick={handleItemClick} show={true}>시스템 설정</AccessibleNavItem>
+                        <AccessibleNavItem href="/admin/messaging-settings" icon={<MessageSquare className="w-5 h-5 mr-2" />} hoverIcon={<Mail className="w-5 h-5 mr-2 text-primary" />} active={isActive("/admin/messaging-settings")} onClick={handleItemClick} show={true}>메시징 설정</AccessibleNavItem>
                       </>
                     )}
                   </>

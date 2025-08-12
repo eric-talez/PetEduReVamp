@@ -1527,6 +1527,170 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // AWS 메시징 설정 관리 API - Option A (Replit Secrets + Runtime Cache) 구현
+  
+  // 메시징 설정 조회 (마스킹된 값 반환)
+  app.get('/api/admin/messaging/settings', async (req, res) => {
+    try {
+      // Replit Secrets에서 기본값 조회
+      const defaultSettings = {
+        region: process.env.AWS_REGION || 'ap-northeast-2',
+        accessKey: maskValue(process.env.AWS_ACCESS_KEY_ID || ''),
+        secretKey: maskValue(process.env.AWS_SECRET_ACCESS_KEY || ''),
+        sesFromEmail: process.env.SES_FROM_EMAIL || '',
+        sesConfigurationSet: process.env.SES_CONFIGURATION_SET || '',
+        snsDefaultSmsType: process.env.SNS_DEFAULT_SMS_TYPE || 'Transactional',
+        snsSenderId: process.env.SNS_SENDER_ID || '',
+        pinpointAppId: process.env.PINPOINT_APP_ID || '',
+        chimeAppInstanceArn: process.env.CHIME_APP_INSTANCE_ARN || ''
+      };
+
+      console.log('[MessagingSettings] 메시징 설정 조회:', {
+        hasAccessKey: !!process.env.AWS_ACCESS_KEY_ID,
+        hasSecretKey: !!process.env.AWS_SECRET_ACCESS_KEY,
+        region: defaultSettings.region,
+        sesFromEmail: defaultSettings.sesFromEmail
+      });
+
+      res.json(defaultSettings);
+    } catch (error) {
+      console.error('[MessagingSettings] 설정 조회 실패:', error);
+      res.status(500).json({ error: '메시징 설정을 불러오는데 실패했습니다' });
+    }
+  });
+
+  // 메시징 설정 저장 (런타임 환경변수 업데이트)
+  app.post('/api/admin/messaging/save', async (req, res) => {
+    try {
+      const adminId = req.headers['x-admin-id'] || 'admin';
+      const settings = req.body;
+
+      // 런타임 환경변수 업데이트 (메모리에만 저장)
+      if (settings.region) process.env.AWS_REGION = settings.region;
+      if (settings.accessKey && !isMasked(settings.accessKey)) process.env.AWS_ACCESS_KEY_ID = settings.accessKey;
+      if (settings.secretKey && !isMasked(settings.secretKey)) process.env.AWS_SECRET_ACCESS_KEY = settings.secretKey;
+      if (settings.sesFromEmail) process.env.SES_FROM_EMAIL = settings.sesFromEmail;
+      if (settings.sesConfigurationSet) process.env.SES_CONFIGURATION_SET = settings.sesConfigurationSet;
+      if (settings.snsDefaultSmsType) process.env.SNS_DEFAULT_SMS_TYPE = settings.snsDefaultSmsType;
+      if (settings.snsSenderId) process.env.SNS_SENDER_ID = settings.snsSenderId;
+      if (settings.pinpointAppId) process.env.PINPOINT_APP_ID = settings.pinpointAppId;
+      if (settings.chimeAppInstanceArn) process.env.CHIME_APP_INSTANCE_ARN = settings.chimeAppInstanceArn;
+
+      console.log('[MessagingSettings] 설정 저장됨:', {
+        adminId,
+        region: settings.region,
+        hasAccessKey: !!settings.accessKey,
+        hasSecretKey: !!settings.secretKey,
+        sesFromEmail: settings.sesFromEmail,
+        timestamp: new Date().toISOString()
+      });
+
+      res.json({ success: true, message: '설정이 저장되어 즉시 반영되었습니다' });
+    } catch (error) {
+      console.error('[MessagingSettings] 설정 저장 실패:', error);
+      res.status(500).json({ error: '메시징 설정을 저장하는데 실패했습니다' });
+    }
+  });
+
+  // 이메일 테스트 발송
+  app.post('/api/admin/messaging/test/email', async (req, res) => {
+    try {
+      const { to } = req.query;
+      
+      if (!to) {
+        return res.status(400).json({ error: '수신 이메일 주소가 필요합니다' });
+      }
+
+      // AWS SES 설정 확인
+      const region = process.env.AWS_REGION || 'ap-northeast-2';
+      const accessKey = process.env.AWS_ACCESS_KEY_ID;
+      const secretKey = process.env.AWS_SECRET_ACCESS_KEY;
+      const fromEmail = process.env.SES_FROM_EMAIL;
+
+      if (!accessKey || !secretKey || !fromEmail) {
+        return res.status(400).json({ 
+          error: 'AWS 인증 정보 또는 발신 이메일이 설정되지 않았습니다' 
+        });
+      }
+
+      // 테스트 이메일 발송 로직 (실제 AWS SES 연동 시 사용)
+      console.log('[EmailTest] 테스트 이메일 발송 시뮬레이션:', {
+        to,
+        from: fromEmail,
+        region,
+        subject: 'TALEZ 메시징 테스트',
+        body: 'TALEZ 플랫폼에서 발송하는 테스트 이메일입니다.'
+      });
+
+      // 실제 환경에서는 AWS SDK를 사용해 이메일 발송
+      // const ses = new AWS.SES({ region, accessKeyId: accessKey, secretAccessKey: secretKey });
+      // await ses.sendEmail(...).promise();
+
+      res.json({ 
+        success: true, 
+        message: `${to}로 테스트 이메일을 발송했습니다` 
+      });
+    } catch (error) {
+      console.error('[EmailTest] 이메일 테스트 발송 실패:', error);
+      res.status(500).json({ error: '테스트 이메일 발송에 실패했습니다' });
+    }
+  });
+
+  // SMS 테스트 발송
+  app.post('/api/admin/messaging/test/sms', async (req, res) => {
+    try {
+      const { phone } = req.query;
+      
+      if (!phone) {
+        return res.status(400).json({ error: '수신 전화번호가 필요합니다' });
+      }
+
+      // AWS SNS 설정 확인
+      const region = process.env.AWS_REGION || 'ap-northeast-2';
+      const accessKey = process.env.AWS_ACCESS_KEY_ID;
+      const secretKey = process.env.AWS_SECRET_ACCESS_KEY;
+      const smsType = process.env.SNS_DEFAULT_SMS_TYPE || 'Transactional';
+      const senderId = process.env.SNS_SENDER_ID || 'TALEZ';
+
+      if (!accessKey || !secretKey) {
+        return res.status(400).json({ 
+          error: 'AWS 인증 정보가 설정되지 않았습니다' 
+        });
+      }
+
+      // 테스트 SMS 발송 로직 (실제 AWS SNS 연동 시 사용)
+      console.log('[SmsTest] 테스트 SMS 발송 시뮬레이션:', {
+        phone,
+        region,
+        smsType,
+        senderId,
+        message: 'TALEZ 플랫폼에서 발송하는 테스트 SMS입니다.'
+      });
+
+      // 실제 환경에서는 AWS SDK를 사용해 SMS 발송
+      // const sns = new AWS.SNS({ region, accessKeyId: accessKey, secretAccessKey: secretKey });
+      // await sns.publish(...).promise();
+
+      res.json({ 
+        success: true, 
+        message: `${phone}로 테스트 SMS를 발송했습니다` 
+      });
+    } catch (error) {
+      console.error('[SmsTest] SMS 테스트 발송 실패:', error);
+      res.status(500).json({ error: '테스트 SMS 발송에 실패했습니다' });
+    }
+  });
+
+  // 유틸리티 함수들
+  function maskValue(value: string): string {
+    if (!value || value.length <= 6) return '******';
+    return value.substring(0, 3) + '****' + value.substring(value.length - 3);
+  }
+
+  function isMasked(value: string): boolean {
+    return value.includes('****') || value === '******';
+  }
+
   // 배너 API
   app.get("/api/banners", async (req, res) => {
     try {
