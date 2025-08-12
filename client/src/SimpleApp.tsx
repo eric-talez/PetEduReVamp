@@ -2059,6 +2059,7 @@ function AuthenticatedRoutes() {
           }}
         </Route>
 
+
         <Route path="/admin/facility">
           {() => {
             const AdminFacilityPage = lazy(() => import('./pages/institute/InstituteFacilityPage'));
