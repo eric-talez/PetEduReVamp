@@ -336,6 +336,7 @@ function AppLayout({ children }: { children: ReactNode }) {
                   <Route path="/admin/shop" component={AdminShop} />
                   <Route path="/admin/locations" component={LocationManagement} />
                   <Route path="/admin/settings" component={AdminSettings} />
+                  <Route path="/admin/messaging-settings" component={MessagingSettings} />
                   <Route path="/admin/contents" component={AdminContents} />
                   <Route path="/admin/community" component={AdminCommunityManagement} />
                   <Route path="/admin/curriculum" component={AdminCurriculum} />
@@ -1949,27 +1950,7 @@ function AuthenticatedRoutes() {
           }}
         </Route>
 
-        <Route path="/admin/messaging-settings">
-          {() => {
-            console.log("[DEBUG] Admin messaging settings route accessed!");
-            console.log("[DEBUG] Current path:", window.location.pathname);
-            // Try direct component rendering first
-            return (
-              <div className="p-8">
-                <div className="mb-4 p-4 bg-green-100 border border-green-400 rounded">
-                  <h2 className="text-lg font-bold text-green-800">메시징 설정 라우트 테스트</h2>
-                  <p className="text-green-700">라우팅이 성공했습니다! 이제 실제 컴포넌트를 로드합니다.</p>
-                </div>
-                <Suspense fallback={<div className="p-8 flex justify-center items-center">
-                  <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
-                  <span className="ml-2">메시징 설정 로딩 중...</span>
-                </div>}>
-                  <ProtectedAdminRoute component={MessagingSettings} />
-                </Suspense>
-              </div>
-            );
-          }}
-        </Route>
+
         <Route path="/admin/reports/analytics">
           {() => {
             const AnalyticsReportPage = lazy(() => import('./pages/admin/reports/analytics'));
