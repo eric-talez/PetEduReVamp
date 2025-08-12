@@ -53,25 +53,43 @@ const checkContent = (content: string, title?: string): { flagged: boolean; keyw
   let maxSeverity = 'low';
   
   const textToCheck = (title ? title + ' ' : '') + content;
+  console.log(`[Content Check] 검사 텍스트: "${textToCheck}"`);
+  console.log(`[Content Check] 활성 키워드 수: ${filterKeywords.filter(k => k.isActive).length}`);
   
   for (const filter of filterKeywords) {
     if (!filter.isActive) continue;
     
     try {
-      const regex = filter.isRegex ? new RegExp(filter.keyword, 'gi') : new RegExp(filter.keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
+      let regex: RegExp;
+      
+      if (filter.isRegex) {
+        // 이미 정규식인 경우, 이중 백슬래시 제거
+        const cleanKeyword = filter.keyword.replace(/\\\\b/g, '\\b').replace(/\\\\/g, '\\');
+        regex = new RegExp(cleanKeyword, 'gi');
+      } else {
+        // 일반 텍스트는 특수문자 이스케이프
+        regex = new RegExp(filter.keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
+      }
+      
+      console.log(`[Content Check] 키워드 "${filter.keyword}" 검사 중...`);
       
       if (regex.test(textToCheck)) {
+        console.log(`[Content Check] 키워드 매칭됨: "${filter.keyword}"`);
         flaggedKeywords.push(filter.keyword);
         
         // 심각도 업데이트
-        if (filter.severity === 'high' || (filter.severity === 'medium' && maxSeverity === 'low')) {
-          maxSeverity = filter.severity;
+        if (filter.severity === 'high') {
+          maxSeverity = 'high';
+        } else if (filter.severity === 'medium' && maxSeverity !== 'high') {
+          maxSeverity = 'medium';
         }
       }
     } catch (error) {
-      console.error(`정규식 오류: ${filter.keyword}`, error);
+      console.error(`[Content Check] 정규식 오류: ${filter.keyword}`, error);
     }
   }
+  
+  console.log(`[Content Check] 결과: flagged=${flaggedKeywords.length > 0}, keywords=[${flaggedKeywords.join(', ')}], severity=${maxSeverity}`);
   
   return {
     flagged: flaggedKeywords.length > 0,

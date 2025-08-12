@@ -9817,6 +9817,63 @@ export function registerTrainerCertificationRoutes(app: Express) {
   import('./content-moderation.js').then(contentModerationModule => {
     app.use('/api/admin/content-moderation', contentModerationModule.default);
     console.log('[Content Moderation] 콘텐츠 검열 라우트가 등록되었습니다.');
+    
+    // 콘텐츠 검열 함수를 전역으로 사용할 수 있도록 export
+    const { moderateContent } = contentModerationModule;
+    
+    // 게시글 작성 테스트 API (콘텐츠 검열 통합)
+    app.post('/api/posts/create', (req, res) => {
+      try {
+        const { title, content, authorId, authorName } = req.body;
+        
+        if (!title || !content || !authorId || !authorName) {
+          return res.status(400).json({ error: '필수 필드가 누락되었습니다.' });
+        }
+        
+        const postId = Date.now(); // 임시 ID
+        const postData = {
+          id: postId,
+          title,
+          content,
+          authorId,
+          authorName
+        };
+        
+        // 콘텐츠 검열 실행
+        const moderationResult = moderateContent(postData);
+        
+        if (moderationResult.blocked) {
+          console.log(`[Post Create] 게시글 차단됨: ${title} - ${moderationResult.reason}`);
+          return res.status(403).json({
+            success: false,
+            blocked: true,
+            message: moderationResult.reason,
+            postId
+          });
+        }
+        
+        // 검열 통과 시 게시글 생성 (실제로는 DB에 저장)
+        console.log(`[Post Create] 게시글 생성 성공: ${title}`);
+        res.json({
+          success: true,
+          blocked: false,
+          message: '게시글이 성공적으로 작성되었습니다.',
+          post: {
+            id: postId,
+            title,
+            content,
+            authorId,
+            authorName,
+            createdAt: new Date().toISOString()
+          }
+        });
+        
+      } catch (error) {
+        console.error('[Post Create] 게시글 작성 오류:', error);
+        res.status(500).json({ error: '게시글 작성에 실패했습니다.' });
+      }
+    });
+    
   }).catch(error => {
     console.error('[Content Moderation] 라우트 등록 실패:', error);
   });
